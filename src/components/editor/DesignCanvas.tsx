@@ -3,8 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
 import { Ellipse, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Transformer } from "react-konva";
 import { useEditor } from "@/store/editor";
-import { dielineSegments, faceCentroid } from "@/lib/dieline";
-import { flat, insetConvex, PX_PER_MM } from "@/lib/geometry";
+import { dielineSegments, faceCentroid, flat, insetConvex, PX_PER_MM } from "@packio/dieline";
 import { buildPatternTile } from "@/lib/patterns";
 import type { Dieline, DesignElement } from "@/lib/types";
 
