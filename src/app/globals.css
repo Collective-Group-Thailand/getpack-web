@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  /*
+   * ADR-0001 rules out runtime Google Fonts, and the self-hosted Thai-first families
+   * (Noto Sans Thai for UI, Anuphan for display, JetBrains Mono for codes) are wired up
+   * with next/font/local in F0 Session 0.2. Until then this falls back to whatever Thai
+   * face the device has.
+   */
+  --font-sans: "Noto Sans Thai", "IBM Plex Sans Thai", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 body {

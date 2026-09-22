@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SiteHeader } from "@/ui/brand";
+import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE_TH, SiteHeader } from "@/ui/brand";
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { BOX_STYLES } from "@/features/designer/catalog";
 
@@ -23,7 +23,7 @@ export default function Home() {
                 <span className="text-teal-600">ในขนาดจริง</span>
               </h1>
               <p className="mt-4 max-w-md text-lg text-slate-600">
-                เครื่องมือออกแบบบรรจุภัณฑ์บนเว็บ ใช้งานฟรี ไม่ต้องติดตั้งโปรแกรม
+                {BRAND_TAGLINE_TH} — ออกแบบบนแผ่นคลี่จริง แล้วได้ไฟล์ที่โรงพิมพ์ใช้ผลิตได้ทันที
               </p>
               <div className="mt-8 flex gap-3">
                 <Link
@@ -76,7 +76,7 @@ export default function Home() {
         </section>
       </main>
       <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">
-        © {new Date().getFullYear()} BoxStudio
+        © {new Date().getFullYear()} {BRAND_NAME} · {BRAND_COMPANY}
       </footer>
     </>
   );

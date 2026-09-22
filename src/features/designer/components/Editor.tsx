@@ -10,7 +10,7 @@ import { buildDieline, PX_PER_MM } from "@packio/dieline";
 import { getPaper, getStyle } from "@/features/designer/catalog";
 import { designRepo } from "@/features/designer/storage";
 import { exportDielineSvg, exportPdf, exportPng, makeThumbnail } from "@/features/designer/export";
-import { BrandMark } from "@/ui/brand";
+import { BRAND_NAME, BrandMark } from "@/ui/brand";
 import { SetupModal } from "./SetupModal";
 import { PrintRulesModal } from "./PrintRulesModal";
 import { Toolbar } from "./Toolbar";
@@ -170,7 +170,7 @@ export default function Editor({ id }: { id: string }) {
     <div className="flex h-dvh flex-col bg-slate-100 text-slate-900">
       {/* Header */}
       <header className="flex h-14 shrink-0 items-center gap-3 bg-slate-900 px-3 text-white">
-        <Link href="/" className="flex items-center gap-2" title="BoxStudio">
+        <Link href="/" className="flex items-center gap-2" title={BRAND_NAME}>
           <BrandMark size={30} />
         </Link>
         <input

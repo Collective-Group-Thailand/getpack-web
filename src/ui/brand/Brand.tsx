@@ -1,11 +1,18 @@
 import Link from "next/link";
+import { BRAND_HEX, BRAND_NAME } from "./config";
 
+/**
+ * Packio's own mark: a P whose bowl carries a crease line, drawn for this repo.
+ * No third-party logo or template is used anywhere in src/ui.
+ */
 export function BrandMark({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden>
-      <rect width="32" height="32" rx="8" fill="#0f766e" />
-      <path d="M16 6 26 11v10l-10 5-10-5V11z" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M6 11l10 5 10-5M16 16v10" fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round" />
+      <rect width="32" height="32" rx="9" fill={BRAND_HEX} />
+      <g fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11.5 24V8h6a4.5 4.5 0 0 1 0 9h-6" />
+        <path d="M11.5 12.5h6" opacity="0.45" />
+      </g>
     </svg>
   );
 }
@@ -14,9 +21,7 @@ export function Brand({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center gap-2 font-semibold tracking-tight">
       <BrandMark />
-      <span>
-        Box<span className="text-teal-600">Studio</span>
-      </span>
+      <span>{BRAND_NAME}</span>
     </Link>
   );
 }
