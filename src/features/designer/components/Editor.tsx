@@ -161,7 +161,7 @@ export default function Editor({ id }: { id: string }) {
 
   const close = () => {
     if (dirty && !confirm("มีการแก้ไขที่ยังไม่บันทึก ต้องการออกหรือไม่?")) return;
-    router.push("/my/designs");
+    router.push("/account/designs");
   };
 
   if (!loaded) return null;
@@ -336,7 +336,7 @@ export default function Editor({ id }: { id: string }) {
         open={setupOpen}
         initial={spec}
         hasContent={content.elements.length > 0}
-        onClose={spec ? () => setSetupOpen(false) : () => router.push("/my/designs")}
+        onClose={spec ? () => setSetupOpen(false) : () => router.push("/account/designs")}
         onConfirm={(s) => {
           st.setSpec(s);
           setSetupOpen(false);

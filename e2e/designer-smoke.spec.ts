@@ -10,7 +10,7 @@ import { expect, test, type Page } from "@playwright/test";
  */
 
 const HOME = "/";
-const MY_DESIGNS = "/my/designs";
+const MY_DESIGNS = "/account/designs";
 
 async function startNewDesign(page: Page) {
   await page.goto(HOME);
@@ -60,4 +60,18 @@ test("keeps the dieline in step with the box dimensions chosen in setup", async 
   await expect(page.getByText("ภายใน 150×100×80 มม.")).toBeVisible();
   // RSC flat sheet: (glue 25 + 2L + 2W) x (H + W) = 525 x 180 mm.
   await expect(page.getByText("525 × 180 มม.")).toBeVisible();
+});
+
+test("keeps the old BoxStudio path working", async ({ page }) => {
+  await page.goto("/my/designs");
+  await expect(page).toHaveURL(/\/account\/designs$/);
+  await expect(page.getByRole("heading", { name: "แบบของฉัน" })).toBeVisible();
+});
+
+test("serves the English locale under /en and Thai without a prefix", async ({ page }) => {
+  await page.goto("/en");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("lang", "th");
 });
