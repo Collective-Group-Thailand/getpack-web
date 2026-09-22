@@ -1,10 +1,27 @@
-legacy/
-node_modules
-dist
-*.local
-.env
-.DS_Store
-.firebase/
-docs/
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
 .next/
 out/
+dist/
+*.tsbuildinfo
+
+# test & tooling output
+coverage/
+playwright-report/
+test-results/
+storybook-static/
+
+# environment
+.env
+.env*.local
+*.local
+
+# local / editor
+.DS_Store
+.firebase/
+
+# read-only reference checkout of the legacy Locopack app (CLAUDE.md: inspiration only)
+legacy/
