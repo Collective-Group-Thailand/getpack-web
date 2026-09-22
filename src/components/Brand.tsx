@@ -30,7 +30,10 @@ export function SiteHeader() {
           <Link href="/my/designs" className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
             แบบของฉัน
           </Link>
-          <Link href="/design/new" className="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700">
+          <Link
+            href="/design/new"
+            className="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700"
+          >
             เริ่มออกแบบ
           </Link>
         </nav>

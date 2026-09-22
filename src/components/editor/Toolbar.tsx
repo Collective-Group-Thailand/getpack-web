@@ -4,7 +4,19 @@ import { useEditor } from "@/store/editor";
 import { FONT_FAMILIES } from "@/lib/catalog";
 import { IBox, ICircle, IImage, IInfo, IPattern, IRect, IRedo, IReset, IText, IUndo } from "./Icons";
 
-function Tool({ icon: Icon, label, onClick, disabled, active }: { icon: React.FC<{ className?: string }>; label: string; onClick: () => void; disabled?: boolean; active?: boolean }) {
+function Tool({
+  icon: Icon,
+  label,
+  onClick,
+  disabled,
+  active,
+}: {
+  icon: React.FC<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+}) {
   return (
     <button
       onClick={onClick}
@@ -42,11 +54,33 @@ export function Toolbar({
 
   const addText = () => {
     const c = center();
-    addElement({ ...base, type: "text", x: c.x - 30, y: c.y - 6, text: "ข้อความของคุณ", fontSize: 10, fontFamily: FONT_FAMILIES[0], fontStyle: "bold", fill: "#0f172a", align: "center" });
+    addElement({
+      ...base,
+      type: "text",
+      x: c.x - 30,
+      y: c.y - 6,
+      text: "ข้อความของคุณ",
+      fontSize: 10,
+      fontFamily: FONT_FAMILIES[0],
+      fontStyle: "bold",
+      fill: "#0f172a",
+      align: "center",
+    });
   };
   const addShape = (type: "rect" | "circle") => {
     const c = center();
-    addElement({ ...base, type, x: c.x - 25, y: c.y - 25, width: 50, height: 50, fill: "#14b8a6", stroke: "#0f172a", strokeWidth: 0, cornerRadius: 0 });
+    addElement({
+      ...base,
+      type,
+      x: c.x - 25,
+      y: c.y - 25,
+      width: 50,
+      height: 50,
+      fill: "#14b8a6",
+      stroke: "#0f172a",
+      strokeWidth: 0,
+      cornerRadius: 0,
+    });
   };
   const onFile = (f: File | undefined) => {
     if (!f) return;

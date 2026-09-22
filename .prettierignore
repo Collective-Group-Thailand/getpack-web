@@ -9,3 +9,5 @@ storybook-static
 legacy
 pnpm-lock.yaml
 *.min.*
+docs
+CLAUDE.md

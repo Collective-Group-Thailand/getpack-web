@@ -56,7 +56,10 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
   useEffect(() => {
     if (!width || !height) return;
     const pad = 60;
-    const z = Math.min((width - pad * 2) / (dieline.width * PX_PER_MM), (height - pad * 2) / (dieline.height * PX_PER_MM));
+    const z = Math.min(
+      (width - pad * 2) / (dieline.width * PX_PER_MM),
+      (height - pad * 2) / (dieline.height * PX_PER_MM),
+    );
     const nz = Math.max(0.1, Math.min(4, z));
     setZoom(nz);
     const s = nz * PX_PER_MM;
@@ -130,7 +133,8 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
       }}
       onWheel={onWheel}
       onMouseDown={(e) => {
-        if (e.target.name() !== "design-element" && !e.target.getParent()?.className?.includes("Transformer")) select(null);
+        if (e.target.name() !== "design-element" && !e.target.getParent()?.className?.includes("Transformer"))
+          select(null);
       }}
       onTouchStart={(e) => {
         if (e.target === e.target.getStage()) select(null);
@@ -222,7 +226,16 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
         <Group name="guide" listening={false}>
           {showSafeZone &&
             safe.map((pts, i) => (
-              <Line key={`s${i}`} points={flat(pts)} closed stroke="#16a34a" strokeWidth={0.8} dash={[3, 3]} strokeScaleEnabled={false} opacity={0.7} />
+              <Line
+                key={`s${i}`}
+                points={flat(pts)}
+                closed
+                stroke="#16a34a"
+                strokeWidth={0.8}
+                dash={[3, 3]}
+                strokeScaleEnabled={false}
+                opacity={0.7}
+              />
             ))}
           {segments.map((s, i) => (
             <Line

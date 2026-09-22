@@ -58,7 +58,16 @@ export const useEditor = create<EditorState>((set, get) => ({
   dirty: false,
 
   load: ({ id, name, spec, content }) =>
-    set({ designId: id, name, spec, content: content ?? emptyContent(), past: [], future: [], selectedId: null, dirty: false }),
+    set({
+      designId: id,
+      name,
+      spec,
+      content: content ?? emptyContent(),
+      past: [],
+      future: [],
+      selectedId: null,
+      dirty: false,
+    }),
 
   setSpec: (spec) => set({ spec, dirty: true }),
   setName: (name) => set({ name, dirty: true }),
@@ -101,7 +110,14 @@ export const useEditor = create<EditorState>((set, get) => ({
       const i = list.findIndex((e) => e.id === id);
       if (i < 0) return c;
       const [el] = list.splice(i, 1);
-      const to = dir === "top" ? list.length : dir === "bottom" ? 0 : dir === "up" ? Math.min(list.length, i + 1) : Math.max(0, i - 1);
+      const to =
+        dir === "top"
+          ? list.length
+          : dir === "bottom"
+            ? 0
+            : dir === "up"
+              ? Math.min(list.length, i + 1)
+              : Math.max(0, i - 1);
       list.splice(to, 0, el);
       return { ...c, elements: list };
     }),
@@ -118,7 +134,13 @@ export const useEditor = create<EditorState>((set, get) => ({
   undo: () => {
     const { past, content, future } = get();
     if (!past.length) return;
-    set({ content: past[past.length - 1], past: past.slice(0, -1), future: [content, ...future], selectedId: null, dirty: true });
+    set({
+      content: past[past.length - 1],
+      past: past.slice(0, -1),
+      future: [content, ...future],
+      selectedId: null,
+      dirty: true,
+    });
   },
 
   redo: () => {
