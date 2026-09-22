@@ -55,12 +55,47 @@ export interface Paper {
 }
 
 export const PAPERS: Paper[] = [
-  { id: "ivory-350", name: "Art Card ขาว 350 แกรม", color: "#fbfaf6", thickness: 0.45, styles: ["tuck-end", "tray"], printable: true },
-  { id: "kraft-350", name: "กระดาษคราฟท์ 350 แกรม", color: "#c8a47e", thickness: 0.5, styles: ["tuck-end", "tray"], printable: true },
-  { id: "e-white", name: "ลูกฟูก E-flute ผิวขาว", color: "#f4f2ec", thickness: 1.6, styles: ["rsc", "tray", "tuck-end"], printable: true },
-  { id: "e-kraft", name: "ลูกฟูก E-flute ผิวน้ำตาล", color: "#b98f62", thickness: 1.6, styles: ["rsc", "tray", "tuck-end"], printable: true },
+  {
+    id: "ivory-350",
+    name: "Art Card ขาว 350 แกรม",
+    color: "#fbfaf6",
+    thickness: 0.45,
+    styles: ["tuck-end", "tray"],
+    printable: true,
+  },
+  {
+    id: "kraft-350",
+    name: "กระดาษคราฟท์ 350 แกรม",
+    color: "#c8a47e",
+    thickness: 0.5,
+    styles: ["tuck-end", "tray"],
+    printable: true,
+  },
+  {
+    id: "e-white",
+    name: "ลูกฟูก E-flute ผิวขาว",
+    color: "#f4f2ec",
+    thickness: 1.6,
+    styles: ["rsc", "tray", "tuck-end"],
+    printable: true,
+  },
+  {
+    id: "e-kraft",
+    name: "ลูกฟูก E-flute ผิวน้ำตาล",
+    color: "#b98f62",
+    thickness: 1.6,
+    styles: ["rsc", "tray", "tuck-end"],
+    printable: true,
+  },
   { id: "b-kraft", name: "ลูกฟูก B-flute ผิวน้ำตาล", color: "#a97f53", thickness: 3, styles: ["rsc"], printable: true },
-  { id: "bc-kraft", name: "ลูกฟูก BC 2 ชั้น ผิวน้ำตาล", color: "#9c7349", thickness: 6.5, styles: ["rsc"], printable: false },
+  {
+    id: "bc-kraft",
+    name: "ลูกฟูก BC 2 ชั้น ผิวน้ำตาล",
+    color: "#9c7349",
+    thickness: 6.5,
+    styles: ["rsc"],
+    printable: false,
+  },
 ];
 
 export const getStyle = (id: BoxStyleId) => BOX_STYLES.find((s) => s.id === id)!;

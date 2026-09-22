@@ -17,17 +17,25 @@ export default function Home() {
         <section className="bg-gradient-to-b from-teal-50 to-white">
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
             <div>
-              <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+              <h1 className="text-4xl leading-tight font-bold md:text-5xl">
                 ออกแบบกล่องของคุณ
                 <br />
                 <span className="text-teal-600">ในขนาดจริง</span>
               </h1>
-              <p className="mt-4 max-w-md text-lg text-slate-600">เครื่องมือออกแบบบรรจุภัณฑ์บนเว็บ ใช้งานฟรี ไม่ต้องติดตั้งโปรแกรม</p>
+              <p className="mt-4 max-w-md text-lg text-slate-600">
+                เครื่องมือออกแบบบรรจุภัณฑ์บนเว็บ ใช้งานฟรี ไม่ต้องติดตั้งโปรแกรม
+              </p>
               <div className="mt-8 flex gap-3">
-                <Link href="/design/new" className="rounded-xl bg-teal-600 px-6 py-3 font-medium text-white hover:bg-teal-700">
+                <Link
+                  href="/design/new"
+                  className="rounded-xl bg-teal-600 px-6 py-3 font-medium text-white hover:bg-teal-700"
+                >
                   เริ่มออกแบบ
                 </Link>
-                <Link href="/my/designs" className="rounded-xl border border-slate-300 px-6 py-3 font-medium hover:bg-slate-50">
+                <Link
+                  href="/my/designs"
+                  className="rounded-xl border border-slate-300 px-6 py-3 font-medium hover:bg-slate-50"
+                >
                   แบบของฉัน
                 </Link>
               </div>
@@ -57,7 +65,9 @@ export default function Home() {
           <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-3">
             {STEPS.map(([t, d], i) => (
               <div key={t}>
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 font-semibold text-white">{i + 1}</div>
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 font-semibold text-white">
+                  {i + 1}
+                </div>
                 <h3 className="font-medium">{t}</h3>
                 <p className="mt-1 text-sm text-slate-600">{d}</p>
               </div>
@@ -65,7 +75,9 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">© {new Date().getFullYear()} BoxStudio</footer>
+      <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">
+        © {new Date().getFullYear()} BoxStudio
+      </footer>
     </>
   );
 }

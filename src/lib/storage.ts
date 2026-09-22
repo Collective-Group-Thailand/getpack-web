@@ -43,7 +43,13 @@ export const designRepo = {
     const src = readAll().find((d) => d.id === id);
     if (!src) return;
     const now = Date.now();
-    const copy: SavedDesign = { ...structuredClone(src), id: newId, name: `${src.name} (สำเนา)`, createdAt: now, updatedAt: now };
+    const copy: SavedDesign = {
+      ...structuredClone(src),
+      id: newId,
+      name: `${src.name} (สำเนา)`,
+      createdAt: now,
+      updatedAt: now,
+    };
     return writeAll([...readAll(), copy]) ? copy : undefined;
   },
 };

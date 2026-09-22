@@ -30,7 +30,10 @@ export default function MyDesigns() {
             onChange={(e) => setQ(e.target.value)}
             className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500"
           />
-          <Link href="/design/new" className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700">
+          <Link
+            href="/design/new"
+            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+          >
             + ออกแบบใหม่
           </Link>
         </div>
@@ -40,7 +43,10 @@ export default function MyDesigns() {
         <div className="rounded-2xl border-2 border-dashed border-slate-200 py-20 text-center">
           <p className="text-slate-600">{items.length ? "ไม่พบแบบที่ค้นหา" : "ยังไม่มีงานออกแบบ"}</p>
           {!items.length && (
-            <Link href="/design/new" className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white">
+            <Link
+              href="/design/new"
+              className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white"
+            >
               เริ่มออกแบบกล่องแรก
             </Link>
           )}
@@ -48,7 +54,10 @@ export default function MyDesigns() {
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d) => (
-            <li key={d.id} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-lg">
+            <li
+              key={d.id}
+              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-lg"
+            >
               <Link href={`/design/${d.id}`} className="block aspect-[4/3] bg-slate-50 p-4">
                 {d.thumbnail ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -62,7 +71,8 @@ export default function MyDesigns() {
                   {d.name}
                 </Link>
                 <p className="mt-1 text-xs text-slate-500">
-                  {getStyle(d.spec.style).name} · {d.spec.dims.length}×{d.spec.dims.width}×{d.spec.dims.height} มม. · {getPaper(d.spec.paperId).name}
+                  {getStyle(d.spec.style).name} · {d.spec.dims.length}×{d.spec.dims.width}×{d.spec.dims.height} มม. ·{" "}
+                  {getPaper(d.spec.paperId).name}
                 </p>
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-xs text-slate-400">แก้ไข {fmt.format(d.updatedAt)}</span>

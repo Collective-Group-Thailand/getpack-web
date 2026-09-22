@@ -25,9 +25,13 @@ export function SetupModal({
   hasContent: boolean;
 }) {
   const [style, setStyle] = useState<BoxStyleId>(initial?.style ?? "rsc");
-  const [mode, setMode] = useState<"preset" | "custom">(initial?.productDims ? "custom" : initial ? "custom" : "preset");
+  const [mode, setMode] = useState<"preset" | "custom">(
+    initial?.productDims ? "custom" : initial ? "custom" : "preset",
+  );
   const [presetIdx, setPresetIdx] = useState(0);
-  const [product, setProduct] = useState<BoxDims>(initial?.productDims ?? initial?.dims ?? { length: 200, width: 150, height: 100 });
+  const [product, setProduct] = useState<BoxDims>(
+    initial?.productDims ?? initial?.dims ?? { length: 200, width: 150, height: 100 },
+  );
   const [paperId, setPaperId] = useState(initial?.paperId ?? papersFor("rsc")[0].id);
 
   const styleDef = getStyle(style);
@@ -35,7 +39,10 @@ export function SetupModal({
   const paper = papers.find((p) => p.id === paperId) ?? papers[0];
 
   const dims: BoxDims = useMemo(
-    () => (mode === "preset" ? styleDef.presets[presetIdx]?.dims ?? styleDef.presets[0].dims : dimsFromProduct(product, paper.thickness)),
+    () =>
+      mode === "preset"
+        ? (styleDef.presets[presetIdx]?.dims ?? styleDef.presets[0].dims)
+        : dimsFromProduct(product, paper.thickness),
     [mode, styleDef, presetIdx, product, paper.thickness],
   );
 
@@ -56,7 +63,12 @@ export function SetupModal({
 
   const submit = () => {
     if (errors.length) return;
-    if (hasContent && initial && !confirm("การเปลี่ยนขนาด/รูปแบบกล่องอาจทำให้ตำแหน่งงานออกแบบเดิมคลาดเคลื่อน ต้องการดำเนินการต่อหรือไม่?")) return;
+    if (
+      hasContent &&
+      initial &&
+      !confirm("การเปลี่ยนขนาด/รูปแบบกล่องอาจทำให้ตำแหน่งงานออกแบบเดิมคลาดเคลื่อน ต้องการดำเนินการต่อหรือไม่?")
+    )
+      return;
     onConfirm({ style, dims, paperId: paper.id, productDims: mode === "custom" ? product : undefined });
   };
 
@@ -89,7 +101,9 @@ export function SetupModal({
                   key={s.id}
                   onClick={() => changeStyle(s.id)}
                   className={`rounded-xl border p-3 text-left text-sm transition ${
-                    s.id === style ? "border-teal-600 bg-teal-50 ring-2 ring-teal-600/20" : "border-slate-200 hover:border-slate-300"
+                    s.id === style
+                      ? "border-teal-600 bg-teal-50 ring-2 ring-teal-600/20"
+                      : "border-slate-200 hover:border-slate-300"
                   }`}
                 >
                   <div className="font-medium">{s.name}</div>
@@ -103,11 +117,21 @@ export function SetupModal({
             <h3 className="mb-2 text-sm font-medium text-slate-700">2. ขนาด</h3>
             <div className="mb-3 flex gap-4 text-sm">
               <label className="flex items-center gap-2">
-                <input type="radio" checked={mode === "preset"} onChange={() => setMode("preset")} className="accent-teal-600" />
+                <input
+                  type="radio"
+                  checked={mode === "preset"}
+                  onChange={() => setMode("preset")}
+                  className="accent-teal-600"
+                />
                 ขนาดมาตรฐาน
               </label>
               <label className="flex items-center gap-2">
-                <input type="radio" checked={mode === "custom"} onChange={() => setMode("custom")} className="accent-teal-600" />
+                <input
+                  type="radio"
+                  checked={mode === "custom"}
+                  onChange={() => setMode("custom")}
+                  className="accent-teal-600"
+                />
                 กำหนดเองจากขนาดสินค้า
               </label>
             </div>

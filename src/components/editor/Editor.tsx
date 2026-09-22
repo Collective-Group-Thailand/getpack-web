@@ -27,7 +27,9 @@ function useSize<T extends HTMLElement>() {
     roRef.current?.disconnect();
     roRef.current = null;
     if (!node) return;
-    const ro = new ResizeObserver(([e]) => setSize({ width: Math.floor(e.contentRect.width), height: Math.floor(e.contentRect.height) }));
+    const ro = new ResizeObserver(([e]) =>
+      setSize({ width: Math.floor(e.contentRect.width), height: Math.floor(e.contentRect.height) }),
+    );
     ro.observe(node);
     roRef.current = ro;
   }, []);
@@ -52,7 +54,9 @@ export default function Editor({ id }: { id: string }) {
   useEffect(() => {
     const existing = id !== "new" ? designRepo.get(id) : undefined;
     if (existing) {
-      useEditor.getState().load({ id: existing.id, name: existing.name, spec: existing.spec, content: existing.content });
+      useEditor
+        .getState()
+        .load({ id: existing.id, name: existing.name, spec: existing.spec, content: existing.content });
     } else {
       useEditor.getState().load({ id: id === "new" ? nanoid(10) : id, name: "แบบกล่องใหม่", spec: null });
       setSetupOpen(true);
@@ -188,15 +192,23 @@ export default function Editor({ id }: { id: string }) {
           )}
         </div>
         <div className="ml-auto flex items-center gap-1 md:ml-4">
-          <button onClick={save} disabled={!spec} className="flex items-center gap-1.5 rounded-md bg-teal-600 px-3 py-1.5 text-sm hover:bg-teal-500 disabled:opacity-50">
+          <button
+            onClick={save}
+            disabled={!spec}
+            className="flex items-center gap-1.5 rounded-md bg-teal-600 px-3 py-1.5 text-sm hover:bg-teal-500 disabled:opacity-50"
+          >
             <ISave className="h-4 w-4" /> บันทึก
           </button>
           <div className="relative">
-            <button onClick={() => setExportOpen((v) => !v)} disabled={!spec} className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-white/10 disabled:opacity-50">
+            <button
+              onClick={() => setExportOpen((v) => !v)}
+              disabled={!spec}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-white/10 disabled:opacity-50"
+            >
               <IDownload className="h-4 w-4" /> ส่งออก
             </button>
             {exportOpen && (
-              <div className="absolute right-0 top-full z-40 mt-1 w-64 overflow-hidden rounded-lg bg-white py-1 text-sm text-slate-800 shadow-xl">
+              <div className="absolute top-full right-0 z-40 mt-1 w-64 overflow-hidden rounded-lg bg-white py-1 text-sm text-slate-800 shadow-xl">
                 {(
                   [
                     ["pdf", "PDF สำหรับโรงพิมพ์", "ขนาดจริง + bleed 3 มม."],
@@ -205,7 +217,11 @@ export default function Editor({ id }: { id: string }) {
                     ["svg", "SVG ไดคัท", "เส้นตัด/พับ แยกเลเยอร์"],
                   ] as const
                 ).map(([k, t, d]) => (
-                  <button key={k} onClick={() => doExport(k)} className="block w-full px-4 py-2 text-left hover:bg-slate-50">
+                  <button
+                    key={k}
+                    onClick={() => doExport(k)}
+                    className="block w-full px-4 py-2 text-left hover:bg-slate-50"
+                  >
                     <div>{t}</div>
                     <div className="text-xs text-slate-500">{d}</div>
                   </button>
@@ -219,12 +235,29 @@ export default function Editor({ id }: { id: string }) {
         </div>
       </header>
 
-      <Toolbar center={viewCenter} onOpenSetup={() => setSetupOpen(true)} onOpenRules={() => setRulesOpen(true)} patternOpen={patternOpen} onTogglePattern={() => setPatternOpen((v) => !v)} />
+      <Toolbar
+        center={viewCenter}
+        onOpenSetup={() => setSetupOpen(true)}
+        onOpenRules={() => setRulesOpen(true)}
+        patternOpen={patternOpen}
+        onTogglePattern={() => setPatternOpen((v) => !v)}
+      />
 
       <div className="flex min-h-0 flex-1">
-        <div ref={wrapRef} className="relative min-w-0 flex-1 overflow-hidden" style={{ backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "18px 18px" }}>
+        <div
+          ref={wrapRef}
+          className="relative min-w-0 flex-1 overflow-hidden"
+          style={{ backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "18px 18px" }}
+        >
           {dieline && paper && size.width > 0 && (
-            <DesignCanvas dieline={dieline} paperColor={paper.color} stageRef={stageRef} width={size.width} height={size.height} fitSignal={fitSignal} />
+            <DesignCanvas
+              dieline={dieline}
+              paperColor={paper.color}
+              stageRef={stageRef}
+              width={size.width}
+              height={size.height}
+              fitSignal={fitSignal}
+            />
           )}
           {!spec && !setupOpen && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -233,7 +266,11 @@ export default function Editor({ id }: { id: string }) {
               </button>
             </div>
           )}
-          {toast && <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">{toast}</div>}
+          {toast && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">
+              {toast}
+            </div>
+          )}
         </div>
 
         {spec && (
@@ -266,7 +303,11 @@ export default function Editor({ id }: { id: string }) {
             <i className="inline-block w-4 border-t-2 border-dashed border-blue-600" /> พับ
           </span>
         </div>
-        <button onClick={() => setFitSignal((n) => n + 1)} className="flex items-center gap-1 rounded-md px-2 py-1 hover:bg-slate-100" title="พอดีจอ">
+        <button
+          onClick={() => setFitSignal((n) => n + 1)}
+          className="flex items-center gap-1 rounded-md px-2 py-1 hover:bg-slate-100"
+          title="พอดีจอ"
+        >
           <IFit className="h-4 w-4" /> พอดีจอ
         </button>
         <input
