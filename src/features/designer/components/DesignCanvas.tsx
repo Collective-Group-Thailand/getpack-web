@@ -2,10 +2,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
 import { Ellipse, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Transformer } from "react-konva";
-import { useEditor } from "@/store/editor";
+import { useEditor } from "@/features/designer/store/editor";
 import { dielineSegments, faceCentroid, flat, insetConvex, PX_PER_MM } from "@packio/dieline";
-import { buildPatternTile } from "@/lib/patterns";
-import type { Dieline, DesignElement } from "@/lib/types";
+import { buildPatternTile } from "@/features/designer/patterns";
+import type { Dieline, DesignElement } from "@/features/designer/types";
 
 export const SAFE_ZONE_MM = 3;
 const TILE_PX_PER_MM = 8;

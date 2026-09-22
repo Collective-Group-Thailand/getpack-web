@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { nanoid } from "nanoid";
-import { designRepo } from "@/lib/storage";
-import { getPaper, getStyle } from "@/lib/catalog";
-import type { SavedDesign } from "@/lib/types";
+import { designRepo } from "@/features/designer/storage";
+import { getPaper, getStyle } from "@/features/designer/catalog";
+import type { SavedDesign } from "@/features/designer/types";
 
 const fmt = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" });
 

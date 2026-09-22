@@ -1,8 +1,8 @@
 "use client";
-import { useEditor } from "@/store/editor";
-import { FONT_FAMILIES } from "@/lib/catalog";
-import { PATTERN_OPTIONS } from "@/lib/patterns";
-import type { DesignElement } from "@/lib/types";
+import { useEditor } from "@/features/designer/store/editor";
+import { FONT_FAMILIES } from "@/features/designer/catalog";
+import { PATTERN_OPTIONS } from "@/features/designer/patterns";
+import type { DesignElement } from "@/features/designer/types";
 import { inputCls } from "./Modal";
 import { ICopy, ITrash } from "./Icons";
 

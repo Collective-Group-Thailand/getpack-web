@@ -1,7 +1,7 @@
 "use client";
 import { useRef } from "react";
-import { useEditor } from "@/store/editor";
-import { FONT_FAMILIES } from "@/lib/catalog";
+import { useEditor } from "@/features/designer/store/editor";
+import { FONT_FAMILIES } from "@/features/designer/catalog";
 import { IBox, ICircle, IImage, IInfo, IPattern, IRect, IRedo, IReset, IText, IUndo } from "./Icons";
 
 function Tool({

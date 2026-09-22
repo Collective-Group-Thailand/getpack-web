@@ -1,4 +1,4 @@
-import Editor from "@/components/editor/Editor";
+import Editor from "@/features/designer/components/Editor";
 
 export const metadata = { title: "ออกแบบกล่อง — BoxStudio" };
 
