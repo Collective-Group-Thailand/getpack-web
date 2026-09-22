@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/components/Brand";
+import { SiteHeader } from "@/ui/brand";
 import MyDesigns from "./MyDesigns";
 
 export const metadata = { title: "แบบของฉัน — BoxStudio" };

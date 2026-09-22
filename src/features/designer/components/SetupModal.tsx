@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
-import { BOX_STYLES, dimsFromProduct, getPaper, getStyle, papersFor } from "@/lib/catalog";
-import type { BoxDims, BoxStyleId, DesignSpec } from "@/lib/types";
+import { BOX_STYLES, dimsFromProduct, getPaper, getStyle, papersFor } from "@/features/designer/catalog";
+import type { BoxDims, BoxStyleId, DesignSpec } from "@/features/designer/types";
 import { BoxPreview } from "./BoxPreview";
 import { btnGhost, btnPrimary, inputCls, Modal } from "./Modal";
 

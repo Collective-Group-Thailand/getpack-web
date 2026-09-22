@@ -1,5 +1,5 @@
 import { buildDieline, dielineSegments } from "@packio/dieline";
-import type { BoxDims, BoxStyleId } from "@/lib/types";
+import type { BoxDims, BoxStyleId } from "@/features/designer/types";
 
 /** Small SVG preview of a dieline, used in the setup dialog. */
 export function BoxPreview({ style, dims, color }: { style: BoxStyleId; dims: BoxDims; color: string }) {

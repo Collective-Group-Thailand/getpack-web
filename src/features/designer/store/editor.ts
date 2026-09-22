@@ -1,8 +1,8 @@
 "use client";
 import { create } from "zustand";
 import { nanoid } from "nanoid";
-import { DEFAULT_PATTERN } from "@/lib/catalog";
-import type { DesignContent, DesignElement, DesignSpec, NewElement, PatternSettings } from "@/lib/types";
+import { DEFAULT_PATTERN } from "@/features/designer/catalog";
+import type { DesignContent, DesignElement, DesignSpec, NewElement, PatternSettings } from "@/features/designer/types";
 
 const HISTORY_LIMIT = 100;
 

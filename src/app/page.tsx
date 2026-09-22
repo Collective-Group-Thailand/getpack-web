@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { SiteHeader } from "@/components/Brand";
-import { BoxPreview } from "@/components/editor/BoxPreview";
-import { BOX_STYLES } from "@/lib/catalog";
+import { SiteHeader } from "@/ui/brand";
+import { BoxPreview } from "@/features/designer/components/BoxPreview";
+import { BOX_STYLES } from "@/features/designer/catalog";
 
 const STEPS = [
   ["เลือกรูปแบบและขนาด", "เลือกจากขนาดมาตรฐานหรือกรอกขนาดสินค้า ระบบคำนวณแผ่นคลี่ให้อัตโนมัติ"],
