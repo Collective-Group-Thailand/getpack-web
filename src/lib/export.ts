@@ -1,8 +1,7 @@
 "use client";
 import type Konva from "konva";
 import { jsPDF } from "jspdf";
-import { dielineToSvg } from "./dieline";
-import { PX_PER_MM } from "./geometry";
+import { dielineToSvg, PX_PER_MM } from "@packio/dieline";
 import type { Dieline } from "./types";
 
 const MAX_CANVAS_PX = 12000;

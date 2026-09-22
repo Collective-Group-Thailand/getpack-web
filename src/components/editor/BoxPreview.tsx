@@ -1,4 +1,4 @@
-import { buildDieline, dielineSegments } from "@/lib/dieline";
+import { buildDieline, dielineSegments } from "@packio/dieline";
 import type { BoxDims, BoxStyleId } from "@/lib/types";
 
 /** Small SVG preview of a dieline, used in the setup dialog. */
