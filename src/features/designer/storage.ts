@@ -1,11 +1,31 @@
 import type { SavedDesign } from "./types";
 
-const KEY = "boxstudio.designs.v1";
+const KEY = "packio.designs.v1";
+
+/** Keys this store used before the rebrand, newest first. Read once, never written to. */
+const LEGACY_KEYS = ["boxstudio.designs.v1"];
+
+/**
+ * Designs saved before the Packio rebrand still open: the first read after the rename
+ * copies them across. The old entry is left where it is, so downgrading or opening an
+ * older build does not lose anybody's work.
+ */
+function adoptLegacyDesigns(): SavedDesign[] {
+  for (const legacyKey of LEGACY_KEYS) {
+    const raw = localStorage.getItem(legacyKey);
+    if (!raw) continue;
+    const list = JSON.parse(raw) as SavedDesign[];
+    if (!Array.isArray(list) || list.length === 0) continue;
+    localStorage.setItem(KEY, raw);
+    return list;
+  }
+  return [];
+}
 
 function readAll(): SavedDesign[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as SavedDesign[]) : [];
+    return raw ? (JSON.parse(raw) as SavedDesign[]) : adoptLegacyDesigns();
   } catch {
     return [];
   }
