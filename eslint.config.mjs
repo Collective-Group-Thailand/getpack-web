@@ -1,13 +1,8 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import coreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 import prettier from "eslint-config-prettier";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
-
+// eslint-config-next 16 ships native flat configs, so FlatCompat/@eslint/eslintrc is gone.
 const eslintConfig = [
   {
     ignores: [
@@ -23,8 +18,21 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...coreWebVitals,
+  ...nextTypescript,
   prettier,
+  {
+    // The React Compiler rules that eslint-config-next 16 turns on flag four pre-existing
+    // patterns in the designer that was inherited from BoxStudio (setState inside the
+    // localStorage load effects, and a useMemo the compiler cannot preserve). F0.1 must move
+    // that code without changing its behaviour, so they stay visible as warnings and are
+    // fixed in F0 Session 0.2, when the designer UI is rebuilt on src/ui.
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/preserve-manual-memoization": "warn",
+    },
+  },
 ];
 
 export default eslintConfig;
