@@ -33,7 +33,7 @@ export default function Home() {
                   เริ่มออกแบบ
                 </Link>
                 <Link
-                  href="/my/designs"
+                  href="/account/designs"
                   className="rounded-xl border border-slate-300 px-6 py-3 font-medium hover:bg-slate-50"
                 >
                   แบบของฉัน

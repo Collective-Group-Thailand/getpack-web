@@ -27,7 +27,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Brand />
         <nav className="flex items-center gap-2 text-sm">
-          <Link href="/my/designs" className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
+          <Link href="/account/designs" className="rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">
             แบบของฉัน
           </Link>
           <Link
