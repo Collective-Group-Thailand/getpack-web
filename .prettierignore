@@ -11,3 +11,5 @@ pnpm-lock.yaml
 *.min.*
 docs
 CLAUDE.md
+tsconfig.json
+next-env.d.ts
