@@ -17,3 +17,14 @@ export const routing = defineRouting({
 });
 
 export type Locale = (typeof routing.locales)[number];
+
+/**
+ * Admin and partner have no locale prefix — their URLs are tools, not indexed pages — so
+ * the choice lives in a host-only cookie instead (F1 1.1). Thai is still the default; the
+ * language switcher in those shells writes this cookie.
+ *
+ * JS-readable on purpose, like `pk_theme`: it carries no identity and the switcher writes
+ * it without a round trip.
+ */
+export const LOCALE_COOKIE = "pk_locale";
+export const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;

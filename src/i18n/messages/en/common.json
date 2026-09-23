@@ -38,6 +38,9 @@
   },
   "errors": {
     "genericTitle": "Something went wrong",
-    "genericBody": "Try again. If it keeps happening, contact us with the code below."
+    "genericBody": "Try again. If it keeps happening, contact us with the code below.",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The link may have expired, moved, or been mistyped.",
+    "requestId": "Request ID"
   }
 }
