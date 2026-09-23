@@ -87,3 +87,13 @@ export function isUpstreamPathAllowed(zone: Zone, path: string): boolean {
 
 /** The `x-packio-zone` request header the proxy stamps so server code can read the zone. */
 export const ZONE_HEADER = "x-packio-zone";
+
+/**
+ * The path as the browser asked for it, stamped by the proxy before any rewrite.
+ *
+ * Next gives a Server Component no way to read the current pathname, and by the time a page
+ * renders, the admin host's `/orders` has already become the internal `/admin/orders`. A
+ * layout guard needs the browser's spelling to build a `returnTo` someone can actually be
+ * sent back to.
+ */
+export const PATH_HEADER = "x-packio-path";

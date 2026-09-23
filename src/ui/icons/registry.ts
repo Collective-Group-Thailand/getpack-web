@@ -29,6 +29,9 @@ import {
   Info,
   LoaderCircle,
   Lock,
+  LogIn,
+  LogOut,
+  Mail,
   Maximize2,
   Menu,
   Minus,
@@ -39,6 +42,7 @@ import {
   Package,
   Palette,
   Pencil,
+  Phone,
   Plus,
   Redo2,
   RotateCcw,
@@ -48,14 +52,15 @@ import {
   Square,
   SquareDashed,
   Sun,
-  TriangleAlert,
   Trash2,
+  TriangleAlert,
   Truck,
   Type,
+  type LucideIcon,
   Undo2,
   Upload,
+  User,
   X,
-  type LucideIcon,
 } from "lucide-react";
 
 /**
@@ -78,6 +83,13 @@ export const ICONS = {
   check: Check,
   clock: Clock,
   lock: Lock,
+
+  // Identity and session
+  user: User,
+  mail: Mail,
+  phone: Phone,
+  "log-in": LogIn,
+  "log-out": LogOut,
 
   // Navigation and disclosure
   "chevron-down": ChevronDown,

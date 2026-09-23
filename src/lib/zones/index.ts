@@ -1,6 +1,7 @@
 export {
   isUpstreamPathAllowed,
   isZone,
+  PATH_HEADER,
   upstreamPrefixes,
   ZONE_CONFIG,
   ZONE_HEADER,

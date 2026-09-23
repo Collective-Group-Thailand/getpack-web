@@ -3,8 +3,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
 
-import { serverEnv } from "@/lib/env/server";
-import { ACCESS_COOKIE, sessionCookieName } from "@/lib/auth/cookies";
+import { apiInternalUrl } from "@/lib/env/lazy-server";
+import { readAccessToken } from "@/lib/auth/session";
 import type { Zone } from "@/lib/zones";
 
 import { createApiClient } from "./client";
@@ -23,12 +23,11 @@ import type { Client } from "openapi-fetch";
  * other name on a host where it cannot be set in the first place.
  */
 export async function serverApi(zone: Zone): Promise<Client<ApiPaths>> {
-  const [jar, locale] = await Promise.all([cookies(), getLocale()]);
-  const accessToken =
-    jar.get(sessionCookieName(ACCESS_COOKIE, true))?.value ?? jar.get(sessionCookieName(ACCESS_COOKIE, false))?.value;
+  const [jar, locale, baseUrl] = await Promise.all([cookies(), getLocale(), apiInternalUrl()]);
+  const accessToken = readAccessToken(jar);
 
   return createApiClient({
-    baseUrl: serverEnv.API_INTERNAL_URL,
+    baseUrl,
     accessToken,
     locale,
     // The zone does not change the base URL — a Server Component talks to the API directly.

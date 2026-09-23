@@ -24,7 +24,28 @@ export interface CspOrigins {
   realtime?: string;
   /** Sentry ingest, when a DSN is configured. */
   sentry?: string;
+  /**
+   * The Firebase auth domain, when Google/Apple sign-in is configured for this deployment.
+   * Absent means the option is not offered, and the origins stay out of the policy.
+   */
+  firebaseAuthDomain?: string;
+  /** Whether LINE Login is configured (a LIFF id is present). */
+  line?: boolean;
 }
+
+/**
+ * Customer sign-in with Google or Apple, brokered by Firebase Authentication.
+ *
+ * The SDK talks to Identity Toolkit and exchanges a refresh token with Secure Token, and a
+ * redirect or popup sign-in renders Google's own page inside the configured auth domain — so
+ * that host has to be frameable from here. The ID token it returns is exchanged for a Packio
+ * session by this app's server, never by the browser.
+ */
+const FIREBASE_CONNECT = ["https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"];
+
+/** LINE Login and LIFF (D-151): the authorisation page and the profile/token endpoints. */
+const LINE_FRAME = ["https://access.line.me"];
+const LINE_CONNECT = ["https://api.line.me", "https://access.line.me"];
 
 /** Google Tag Manager / GA4 — customer host only (D-102, F1 1.3). */
 const ANALYTICS_SCRIPT = ["https://www.googletagmanager.com"];
@@ -34,6 +55,17 @@ const ANALYTICS_IMG = ["https://www.googletagmanager.com", "https://www.google-a
 export function cspDirectives(zone: Zone, { nonce, isDev, origins }: CspOptions): Record<string, string[]> {
   const isCustomer = zone === "customer";
   const extra = [origins.asset, origins.realtime, origins.sentry].filter((value): value is string => Boolean(value));
+
+  // Sign-in origins belong to the customer zone only. Staff and partners sign in with a
+  // password against this app's own server, so widening their policy would buy nothing.
+  const firebaseDomain = isCustomer && origins.firebaseAuthDomain ? [`https://${origins.firebaseAuthDomain}`] : [];
+  const signInConnect = isCustomer
+    ? [
+        ...(origins.firebaseAuthDomain ? [...FIREBASE_CONNECT, ...firebaseDomain] : []),
+        ...(origins.line ? LINE_CONNECT : []),
+      ]
+    : [];
+  const signInFrame = isCustomer ? [...firebaseDomain, ...(origins.line ? LINE_FRAME : [])] : [];
 
   return {
     "default-src": ["'self'"],
@@ -76,13 +108,16 @@ export function cspDirectives(zone: Zone, { nonce, isDev, origins }: CspOptions)
       "'self'",
       ...extra,
       ...(isCustomer ? ANALYTICS_CONNECT : []),
+      ...signInConnect,
       // The dev server's HMR socket.
       ...(isDev ? ["ws:", "wss:"] : []),
     ],
     // The designer renders to a canvas and exports PDFs through blob: URLs.
     "worker-src": ["'self'", "blob:"],
     "form-action": ["'self'"],
-    "frame-src": ["'self'"],
+    // Firebase renders the provider's consent screen in an iframe on its auth domain, and
+    // LINE's authorisation page can be framed the same way.
+    "frame-src": ["'self'", ...signInFrame],
     // The storefront may be embedded by LINE's in-app browser; a staff or factory screen
     // may never be framed at all.
     "frame-ancestors": isCustomer ? ["'self'"] : ["'none'"],
