@@ -1,6 +1,7 @@
 # ADR-0005 — BFF, cookies and token handling
 
-**Status:** Accepted (2026-09-22) · implemented in F1
+**Status:** Accepted (2026-09-22) · cookie names, flags and the proxy's refresh decision
+implemented in F1 Deliverable 1.1; the BFF handler, the API clients and the login flows in 1.2
 
 ## Context
 
