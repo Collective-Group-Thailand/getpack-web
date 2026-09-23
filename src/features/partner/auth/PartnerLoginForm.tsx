@@ -29,16 +29,21 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
 
       <input type="hidden" name="returnTo" value={returnTo} />
 
-      <Field label={t("partner.username")} required requiredLabel={tCommon("state.required")}>
-        <Input name="username" autoComplete="username" inputSize="lg" autoFocus required />
+      <Field label={t("partner.email")} required requiredLabel={tCommon("state.required")}>
+        <Input name="email" type="email" autoComplete="username" inputSize="lg" autoFocus required />
       </Field>
 
-      <Field label={t("partner.password")} required requiredLabel={tCommon("state.required")}>
-        <Input name="password" type="password" autoComplete="current-password" inputSize="lg" required />
+      {/*
+        Neither the password nor the PIN is marked required: `PartnerLoginDto` requires only
+        the email, because a shared shop-floor device can be enrolled with a PIN instead of a
+        password. The action checks that one of the two was filled.
+      */}
+      <Field label={t("partner.password")}>
+        <Input name="password" type="password" autoComplete="current-password" inputSize="lg" />
       </Field>
 
       <Field label={t("partner.devicePin")} hint={t("partner.devicePinHint")}>
-        <Input name="devicePin" type="password" inputMode="numeric" autoComplete="off" inputSize="lg" />
+        <Input name="pin" type="password" inputMode="numeric" autoComplete="off" inputSize="lg" />
       </Field>
 
       <Button type="submit" size="xl" loading={pending} block>

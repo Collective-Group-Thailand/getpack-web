@@ -29,11 +29,14 @@ export {
 export { queryKeys, type QueryParams } from "./query-keys";
 export type {
   ApiPaths,
-  ContractPaths,
   CustomerMe,
-  MenuEntitlement,
+  FactoryAccess,
+  LinkedIdentity,
+  MenuEntry,
+  OtpChallenge,
   PartnerMe,
   Schemas,
   Session,
   StaffMe,
+  TokenSubject,
 } from "./types";

@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import { RequestIdNote } from "@/features/shared/auth/RequestIdNote";
 import { Button, Callout, Field, OTPInput, PhoneInput, Sheet } from "@/ui";
 
-import { requestOtp, verifyOtp, type OtpChallenge } from "./actions";
+import { requestOtp, verifyOtp } from "./actions";
+import { OTP_CODE_LENGTH, type OtpChallenge } from "./otp";
 import { firebaseConfigured, lineConfigured } from "./providers";
 import { useResendTimer } from "./useResendTimer";
 
@@ -51,7 +52,9 @@ export function SignInSheet({ open, onOpenChange, onSignedIn }: SignInSheetProps
       const result = await requestOtp(phone);
       if (result.challenge) {
         setChallenge(result.challenge);
-        setResendDeadline(Date.now() + result.challenge.resendAfterSeconds * 1000);
+        // The API gives the moment a resend becomes available, which is already the deadline
+        // the countdown needs — no arithmetic on a duration, and no clock of our own.
+        setResendDeadline(Date.parse(result.challenge.resendAvailableAt));
         setCode("");
       } else {
         setFailure({ errorKey: result.errorKey ?? "errors.unavailable", requestId: result.requestId });
@@ -63,7 +66,7 @@ export function SignInSheet({ open, onOpenChange, onSignedIn }: SignInSheetProps
     if (!challenge) return;
     setFailure(null);
     startTransition(async () => {
-      const result = await verifyOtp(phone, challenge.ref, value);
+      const result = await verifyOtp(challenge.challengeId, value);
       if (result.ok) {
         // Deliberately not `onOpenChange(false)`: closing and signing in are different
         // events, and a parent that treats a close as "the customer cancelled" — by going
@@ -93,14 +96,11 @@ export function SignInSheet({ open, onOpenChange, onSignedIn }: SignInSheetProps
 
         {challenge ? (
           <>
-            <Field
-              label={t("customer.otp")}
-              hint={t("customer.otpHint", { length: challenge.codeLength, phone, ref: challenge.ref })}
-            >
+            <Field label={t("customer.otp")} hint={t("customer.otpHint", { length: OTP_CODE_LENGTH, phone })}>
               <OTPInput
                 value={code}
                 onChange={setCode}
-                length={challenge.codeLength}
+                length={OTP_CODE_LENGTH}
                 disabled={pending}
                 // Submitting on the last digit saves a tap on a phone, where the keyboard
                 // is covering the button anyway.
@@ -108,16 +108,12 @@ export function SignInSheet({ open, onOpenChange, onSignedIn }: SignInSheetProps
               />
             </Field>
 
-            <p className="text-muted text-xs">
-              {t("customer.attemptsRemaining", { count: challenge.attemptsRemaining })}
-            </p>
-
             <Button
               type="button"
               size="lg"
               block
               loading={pending}
-              disabled={code.length !== challenge.codeLength}
+              disabled={code.length !== OTP_CODE_LENGTH}
               onClick={() => verify()}
             >
               {pending ? t("customer.verifying") : t("customer.verify")}

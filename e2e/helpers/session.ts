@@ -7,8 +7,8 @@ import { HOSTS } from "../../playwright.config";
  * runs when the server is started with `API_MOCKS=1`.
  */
 export const MOCK_STAFF = { email: "somchai.staff@packio.invalid", password: "mock-password" };
-export const MOCK_PARTNER = { username: "seed.planner", password: "mock-password" };
-export const MOCK_OTP = { phone: "0812345678", code: "000000", ref: "MOCK-4821" };
+export const MOCK_PARTNER = { email: "planner@factory.invalid", password: "mock-password", pin: "1234" };
+export const MOCK_OTP = { phone: "0812345678", code: "000000" };
 
 /** Signs in as staff and waits until the admin zone is actually rendering for them. */
 export async function signInAsStaff(page: Page): Promise<void> {
@@ -22,7 +22,7 @@ export async function signInAsStaff(page: Page): Promise<void> {
 /** Signs in as a partner-factory user. */
 export async function signInAsPartner(page: Page): Promise<void> {
   await page.goto(`${HOSTS.partner}/login`);
-  await page.getByLabel(/^ชื่อผู้ใช้/).fill(MOCK_PARTNER.username);
+  await page.getByLabel(/^อีเมล/).fill(MOCK_PARTNER.email);
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_PARTNER.password);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
   await expect(page.getByTestId("actor-name")).toBeVisible();

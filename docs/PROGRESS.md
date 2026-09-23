@@ -8,7 +8,7 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-22 | **F0 Session 0.1** — structure, tooling, dieline package, zone-ready routes, rebrand | pnpm + Node 24; strict TS, ESLint flat config, Prettier; Vitest + Playwright safety net (41 unit, 4 e2e); Next 16 + React 19.3; `@packio/dieline` extracted; target folder structure; `[locale]` customer zone + `src/proxy.ts`; rebrand to Packio with localStorage migration; CI; ADR-0004…0007 | F0 Session 0.2 (`src/ui` foundation: tokens, fonts, components, Storybook, Lighthouse CI) | See the notes under this table |
 | 2026-09-23 | **F0 Session 0.2** — design-system foundation (`src/ui`) | Tokens in TS → generated CSS with a WCAG contrast gate (ADR-0003); self-hosted Noto Sans Thai / Anuphan / JetBrains Mono (ADR-0001); 30 Radix + CVA components with axe tests (ADR-0002); `pk_theme` light/dark/high-contrast; namespaced th/en messages, `formatTHB`, Buddhist-era dates, `src/domain/status` shape; Storybook 10 + docs; designer, home and My designs migrated onto `src/ui`; Lighthouse CI; React Compiler rules back to `error` | The rest of `design-system.md` §3 (DataTable, Combobox, DatePicker, PhoneInput, AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, charts, partner shop-floor set) — built when F1–F5 first needs them | See the notes under the F0.2 heading |
 | 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
-| 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; a marked seed contract for the auth surface packio-api has not published yet; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
+| 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted packio-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
 
 ---
 
@@ -62,15 +62,14 @@ MSW and e2e → docs.
   `packio-api` and no credentials for a private release asset, so a drift gate that reached
   outside the repo could not be reproducible. `--adopt` is the only command that reaches out,
   and it rewrites the vendored copy and the lock together.
-- **The seed contract is a separate document and a separate generated file.** `packio-api` is
-  at B1.2; auth is its B1.3. Nothing in `mocks/seed-openapi.json` is invented — every path and
-  field comes from api-conventions §4, the backend's ADR-0004, or its own B1-foundation prompt,
-  which names each endpoint literally. Keeping it behind `SeedPaths` in `src/lib/api/types.ts`
-  means deleting one line when B1.3 ships turns every stale usage into a compile error.
-  Confirmed with the user before starting.
+- **The seed contract was a separate document and a separate generated file**, which is what
+  made retiring it a single day's work when B1.3 landed mid-deliverable (see below). Nothing in
+  it was invented: every path and field came from api-conventions §4, the backend's ADR-0004 or
+  its own B1-foundation prompt. Confirmed with the user before starting.
 - **Staff sign in with an email.** api-conventions §4 and the master plan both say
-  "username/password", but the backend's ADR-0004 — which is what B1.3 will implement — says
-  email + password. The seed follows the ADR.
+  "username/password", but the backend's ADR-0004 said email + password, so the seed followed
+  the ADR — and `StaffLoginDto` confirms it. Partner sign-in turned out to be an email too,
+  which the seed had guessed as a username.
 - **The idempotency key is minted per user intent, not per fetch.** A key generated inside the
   request would be new on every retry, which guarantees the double-submit the header exists to
   prevent. The middleware only fills one in when a flagged call arrives without one; no
@@ -93,16 +92,42 @@ MSW and e2e → docs.
 - **`auth` is the second namespace shared by all three zones.** Every zone signs someone in,
   and "your session has ended" should not drift between them. The unused copy per zone is a
   handful of strings.
-- **The OTP field is one input, not six boxes**, and every policy value — code length, expiry,
-  resend cooldown, attempts left — is rendered from the API's challenge. No `D-###` owns those
-  numbers; they are listed in `docs/contract-requests.md` as values the backend still has to
-  settle.
+- **The OTP field is one input, not six boxes.** Expiry and the resend instant come from the
+  challenge; the code length and the attempt count are not in the contract, so they are the two
+  open rows in `docs/contract-requests.md` and the length is named once rather than assumed at
+  each use.
 - **`/account/designs` is deliberately left unguarded.** Designs live in localStorage until F4
   Part B gives them a server-side home, so a guard would remove working behaviour rather than
   protect anything.
 - **`docs/contract/api-conventions.md` was re-synced from `packio-api`**, which had added §5
   (Swagger/Scalar documentation requirements) and renumbered Realtime to §6. CLAUDE.md requires
   the two copies to be identical. Confirmed with the user.
+
+### Adopting packio-api B1.3, the same day
+
+The backend published the real auth surface while this deliverable was finishing, so the seed
+was retired immediately rather than left to rot: `pnpm gen:api --adopt` pinned contract
+`54b2621b`, `mocks/seed-openapi.json` and `schema.seed.d.ts` were deleted, and the one
+`SeedPaths` line came out of `src/lib/api/types.ts`. Everything still typed against the seed
+then failed `pnpm typecheck`, which is precisely the mechanism ADR-0006 was written for — eight
+errors, each a real difference:
+
+| Seed assumed | The contract says | What changed |
+|---|---|---|
+| partner login `username` + `devicePin` | `PartnerLoginDto`: `email` required, `password` **or** `pin` (+ `deviceId`) | the partner form takes an email, and either credential signs in — a shared shop-floor device can be enrolled with a PIN and no password typed on a shared screen |
+| OTP challenge `ref`, `codeLength`, `resendAfterSeconds`, `attemptsRemaining` | `OtpChallengeDto`: `challengeId`, `expiresAt`, `resendAvailableAt` | the resend countdown now reads an instant straight from the API instead of computing one; the reference and the attempt counter left the UI |
+| OTP verify by `phone` + `ref` + `code` | `OtpVerifyDto`: `challengeId` + `code` | the number is not sent again, so a code issued for one number cannot be replayed against another |
+| OTP request `{ phone }` | `OtpRequestDto`: `phone` + `purpose` | `login` here; the same endpoint serves `link_phone`, which F3 uses to attach a number to a LINE or Firebase account |
+| `/me` with `type`, `scopes`, `userCode`, `lineLinked`, `companies` | `AdminMeDto` / `StoreMeDto` / `PartnerMeDto` | `featureFlags` is a string array, `menu` entries are `{ key, path }`, and a customer's linked providers arrive as `identities[]` |
+| factories with `id`, `name`, `status` | `FactoryAccessDto`: `factoryId` + `roles` | the partner zone shows roles; a display name is now a contract request, and F5's shell will need it |
+
+Two things the contract does **not** carry are now the only open requests: the OTP code length
+and the attempts remaining. The UI names the length once as `OTP_CODE_LENGTH` (6, per
+B1-foundation) rather than spelling it into the markup, and `docs/contract-requests.md` asks
+for both on the challenge.
+
+The build caught one more: a `"use server"` module may export only async functions, so
+`OTP_CODE_LENGTH` could not live beside the actions and moved to its own module.
 
 ### Deliberately not done
 
@@ -119,10 +144,11 @@ MSW and e2e → docs.
 
 ### Open questions for the backend
 
-`docs/contract-requests.md` now carries eleven seeded endpoints and a table of auth policy
-values that no decision owns — OTP length, expiry, resend cooldown and attempt limits, session
-idle timeout, and the partner device-PIN policy. The backend's own ADR-0004 lists these as
-"open for B1.3". The UI reads all of them from the API today rather than hard-coding any.
+B1.3 settled most of what was open. Two rows remain in `docs/contract-requests.md`, both on
+`OtpChallengeDto` — the code length and the attempts remaining — plus a display name on
+`FactoryAccessDto`, which the partner shell needs in F5. Everything else the UI needs is now in
+the contract and read from it: token lifetimes, OTP expiry, the resend instant, and the device
+PIN policy, which `PartnerLoginDto` expresses by requiring only the email.
 
 ---
 
