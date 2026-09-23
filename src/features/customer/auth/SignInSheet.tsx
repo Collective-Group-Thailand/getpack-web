@@ -65,7 +65,9 @@ export function SignInSheet({ open, onOpenChange, onSignedIn }: SignInSheetProps
     startTransition(async () => {
       const result = await verifyOtp(phone, challenge.ref, value);
       if (result.ok) {
-        onOpenChange(false);
+        // Deliberately not `onOpenChange(false)`: closing and signing in are different
+        // events, and a parent that treats a close as "the customer cancelled" — by going
+        // back, say — would undo the sign-in it just asked for.
         onSignedIn?.();
       } else {
         setFailure({ errorKey: result.errorKey ?? "errors.unavailable", requestId: result.requestId });
