@@ -7,8 +7,8 @@
  * credentials that can be wrong, an OTP that can be mistyped, and audiences that are actually
  * checked — while keeping the data obviously fake.
  *
- * Handlers marked CONTRACT-REQUEST stand in for endpoints packio-api has not published yet
- * (see docs/contract-requests.md); they go when B1.3 ships.
+ * Every endpoint here is one packio-api has published (B1.3), so these are shaped by the
+ * contract rather than standing in for it.
  */
 
 import { http, HttpResponse } from "msw";
@@ -17,8 +17,12 @@ import { generatedHandlers } from "./generated/handlers";
 
 /** The only credentials the mock accepts. Obviously not real, and never near production. */
 export const MOCK_STAFF = { email: "somchai.staff@packio.invalid", password: "mock-password" };
-export const MOCK_PARTNER = { username: "seed.planner", password: "mock-password" };
-export const MOCK_OTP = { phone: "0812345678", code: "000000", ref: "MOCK-4821" };
+export const MOCK_PARTNER = { email: "planner@factory.invalid", password: "mock-password", pin: "1234" };
+export const MOCK_OTP = {
+  phone: "0812345678",
+  code: "000000",
+  challengeId: "00000000-0000-4000-8000-0000000000c1",
+};
 
 type Audience = "customer" | "staff" | "partner";
 
@@ -103,7 +107,6 @@ function meHandler(path: string, audience: Audience, body: Record<string, unknow
 }
 
 export const handlers = [
-  // CONTRACT-REQUEST auth.staff.login
   http.post("*/v1/auth/staff/login", async ({ request }) => {
     const body = (await request.json()) as { email?: string; password?: string };
     if (body.email !== MOCK_STAFF.email || body.password !== MOCK_STAFF.password) {
@@ -112,41 +115,38 @@ export const handlers = [
     return session("staff", SUBJECTS.staff);
   }),
 
-  // CONTRACT-REQUEST auth.partner.login
   http.post("*/v1/auth/partner/login", async ({ request }) => {
-    const body = (await request.json()) as { username?: string; password?: string };
-    if (body.username !== MOCK_PARTNER.username || body.password !== MOCK_PARTNER.password) {
-      return problem(401, "auth.invalid_credentials", "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+    const body = (await request.json()) as { email?: string; password?: string; pin?: string };
+    // `PartnerLoginDto` requires only the email: a shared shop-floor device may be enrolled
+    // with a PIN instead of a password, so either one signs in.
+    const credentialOk = body.password === MOCK_PARTNER.password || body.pin === MOCK_PARTNER.pin;
+    if (body.email !== MOCK_PARTNER.email || !credentialOk) {
+      return problem(401, "auth.invalid_credentials", "อีเมล รหัสผ่าน หรือรหัส PIN ไม่ถูกต้อง");
     }
     return session("partner", SUBJECTS.partner);
   }),
 
-  // CONTRACT-REQUEST auth.customer.otp.request
   http.post("*/v1/auth/customer/otp/request", async ({ request }) => {
     const body = (await request.json()) as { phone?: string };
     if (!body.phone || !/^0\d{8,9}$/.test(body.phone)) {
       return problem(422, "auth.invalid_phone", "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง");
     }
     return HttpResponse.json({
-      ref: MOCK_OTP.ref,
-      codeLength: MOCK_OTP.code.length,
+      challengeId: MOCK_OTP.challengeId,
       expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
-      // Short, so a test is not made to wait out a real cooldown.
-      resendAfterSeconds: 3,
-      attemptsRemaining: 5,
+      // Seconds, not minutes: a test should not be made to wait out a real cooldown.
+      resendAvailableAt: new Date(Date.now() + 3_000).toISOString(),
     });
   }),
 
-  // CONTRACT-REQUEST auth.customer.otp.verify
   http.post("*/v1/auth/customer/otp/verify", async ({ request }) => {
-    const body = (await request.json()) as { code?: string };
-    if (body.code !== MOCK_OTP.code) {
+    const body = (await request.json()) as { challengeId?: string; code?: string };
+    if (body.challengeId !== MOCK_OTP.challengeId || body.code !== MOCK_OTP.code) {
       return problem(401, "auth.invalid_otp", "รหัส OTP ไม่ถูกต้อง");
     }
     return session("customer", SUBJECTS.customer);
   }),
 
-  // CONTRACT-REQUEST auth.refresh
   http.post("*/v1/auth/refresh", async ({ request }) => {
     const body = (await request.json()) as { refreshToken?: string };
     for (const audience of ["customer", "staff", "partner"] as const) {
@@ -155,43 +155,38 @@ export const handlers = [
     return problem(401, "auth.invalid_refresh_token", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง");
   }),
 
-  // CONTRACT-REQUEST store.me.show / admin.me.show / partner.me.show
   meHandler("/v1/store/me", "customer", {
     id: SUBJECTS.customer.id,
-    type: "customer",
     displayName: "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
-    userCode: "MOCK-C-0001",
-    phone: MOCK_OTP.phone,
     email: "seed.customer@packio.invalid",
+    phone: MOCK_OTP.phone,
     locale: "th",
-    lineLinked: false,
-    companies: [],
-    scopes: [],
+    roles: SUBJECTS.customer.roles,
+    permissions: SUBJECTS.customer.permissions,
+    scopes: SUBJECTS.customer.scopes,
+    identities: [{ provider: "phone_otp", linkedAt: "2026-09-23T10:00:00+07:00" }],
   }),
   meHandler("/v1/admin/me", "staff", {
     id: SUBJECTS.staff.id,
-    type: "staff",
     displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)",
     email: MOCK_STAFF.email,
     locale: "th",
     roles: SUBJECTS.staff.roles,
     permissions: SUBJECTS.staff.permissions,
-    scopes: SUBJECTS.staff.scopes,
     menu: [
-      { key: "dashboard", href: "/", icon: "box" },
-      { key: "orders", href: "/orders", icon: "package" },
+      { key: "dashboard", path: "/" },
+      { key: "orders", path: "/orders" },
     ],
-    features: { labelCalculator: true },
+    featureFlags: ["labelCalculator"],
   }),
   meHandler("/v1/partner/me", "partner", {
     id: SUBJECTS.partner.id,
-    type: "partner",
-    displayName: "โรงงานจำลอง หนึ่ง (ข้อมูลจำลอง)",
+    displayName: "ช่างวางแผน ตัวอย่าง (ข้อมูลจำลอง)",
+    email: MOCK_PARTNER.email,
     locale: "th",
     roles: SUBJECTS.partner.roles,
     permissions: SUBJECTS.partner.permissions,
-    scopes: SUBJECTS.partner.scopes,
-    factories: [{ id: "00000000-0000-4000-8000-0000000000f1", name: "โรงงานจำลอง หนึ่ง", status: "active" }],
+    factories: [{ factoryId: "00000000-0000-4000-8000-0000000000f1", roles: ["planner"] }],
   }),
 
   // Anything not overridden falls through to the contract's own examples.

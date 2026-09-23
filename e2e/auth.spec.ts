@@ -109,8 +109,9 @@ test.describe("customer OTP sign-in", () => {
     await page.getByLabel("เบอร์มือถือ").fill(OTP.phone);
     await page.getByRole("button", { name: "ขอรหัส OTP" }).click();
 
-    // The hint carries what the API said about its own policy, not anything assumed here.
-    await expect(page.getByText("MOCK-4821")).toBeVisible();
+    // The hint names the number the code went to, which is what someone needs in order to
+    // notice they typed the wrong one.
+    await expect(page.getByText(OTP.phone, { exact: false })).toBeVisible();
 
     await page.getByLabel("รหัส OTP").fill(OTP.code);
 
@@ -146,13 +147,27 @@ test.describe("partner sign-in", () => {
     await page.goto(`${HOSTS.partner}/`);
     await expect(page).toHaveURL(`${HOSTS.partner}/login`);
 
-    await page.getByLabel("ชื่อผู้ใช้").fill(PARTNER.username);
+    await page.getByLabel(/^อีเมล/).fill(PARTNER.email);
     // Anchored rather than exact: `Field` appends the required marker and its screen-reader
     // word to the label, and "รหัส PIN ของเครื่อง" is the other field a loose match would hit.
     await page.getByLabel(/^รหัสผ่าน/).fill(PARTNER.password);
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
 
     await expect(page).toHaveURL(`${HOSTS.partner}/`);
-    await expect(page.getByTestId("actor-factories")).toContainText("โรงงานจำลอง หนึ่ง");
+    // `FactoryAccessDto` carries the factory id and the roles held at it, not a name.
+    await expect(page.getByTestId("actor-factories")).toContainText("planner");
+  });
+
+  test("signs in with a device PIN instead of a password, on a shared device", async ({ page }) => {
+    // `PartnerLoginDto` requires only the email: a shop-floor device enrolled with a PIN is
+    // signed in without anyone typing a password on a shared screen.
+    await page.goto(`${HOSTS.partner}/login`);
+
+    await page.getByLabel(/^อีเมล/).fill(PARTNER.email);
+    await page.getByLabel("รหัส PIN ของเครื่อง").fill(PARTNER.pin);
+    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+
+    await expect(page).toHaveURL(`${HOSTS.partner}/`);
+    await expect(page.getByTestId("actor-name")).toBeVisible();
   });
 });

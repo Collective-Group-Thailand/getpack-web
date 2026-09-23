@@ -5,10 +5,9 @@
  *   pnpm gen:api --check   fail if a committed output is stale or was hand-edited (CI)
  *   pnpm gen:api --adopt   pull a newer contract from API_CONTRACT_SOURCE, then regenerate
  *
- * Three files are written, all committed:
- *   src/lib/api/schema.d.ts       from contract/openapi.json   — what packio-api has agreed to
- *   src/lib/api/schema.seed.d.ts  from mocks/seed-openapi.json — the temporary auth seed
- *   mocks/generated/handlers.ts   MSW handlers built from the examples in both documents
+ * Two files are written, both committed:
+ *   src/lib/api/schema.d.ts      from contract/openapi.json — what packio-api has agreed to
+ *   mocks/generated/handlers.ts  MSW handlers built from the contract's own examples
  *
  * Why a vendored copy of the contract rather than fetching it here: CI has no sibling
  * checkout of packio-api and no credentials for a private release asset, so the drift gate
@@ -28,9 +27,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const LOCK = resolve(ROOT, "contract.lock.json");
 const VENDORED = resolve(ROOT, "contract/openapi.json");
-const SEED = resolve(ROOT, "mocks/seed-openapi.json");
 const OUT_SCHEMA = resolve(ROOT, "src/lib/api/schema.d.ts");
-const OUT_SEED_SCHEMA = resolve(ROOT, "src/lib/api/schema.seed.d.ts");
 const OUT_HANDLERS = resolve(ROOT, "mocks/generated/handlers.ts");
 
 interface ContractLock {
@@ -115,7 +112,7 @@ function successResponse(
   return { status, example: body?.example ?? null };
 }
 
-function handlersFor(document: OpenApiDocument, origin: string, seeded: boolean): string[] {
+function handlersFor(document: OpenApiDocument, origin: string): string[] {
   const lines: string[] = [];
 
   for (const [path, item] of Object.entries(document.paths ?? {})) {
@@ -126,40 +123,34 @@ function handlersFor(document: OpenApiDocument, origin: string, seeded: boolean)
       const success = successResponse(document, operation);
       if (!success) continue;
 
-      const marker = seeded ? `  // CONTRACT-REQUEST ${operation.operationId ?? path}\n` : "";
       const body =
         success.example === null
           ? `new HttpResponse(null, { status: ${success.status} })`
           : `HttpResponse.json(${JSON.stringify(success.example)}, { status: ${success.status} })`;
 
-      lines.push(`${marker}  http.${method}(${JSON.stringify(toMswPath(path))}, () => ${body}),`);
+      lines.push(`  http.${method}(${JSON.stringify(toMswPath(path))}, () => ${body}),`);
     }
   }
 
   return lines.length > 0 ? [`  // ${origin}`, ...lines] : [];
 }
 
-function buildHandlers(contract: OpenApiDocument, seed: OpenApiDocument, lock: ContractLock): string {
-  const real = handlersFor(contract, `contract/openapi.json (packio-api ${lock.version})`, false);
-  const seeded = handlersFor(seed, "mocks/seed-openapi.json — SEED, not agreed by packio-api", true);
+function buildHandlers(contract: OpenApiDocument, lock: ContractLock): string {
+  const real = handlersFor(contract, `contract/openapi.json (packio-api ${lock.version})`);
 
   return [
-    banner("contract/openapi.json + mocks/seed-openapi.json"),
+    banner("contract/openapi.json"),
     "",
     "/**",
-    " * Base handlers: every operation answered with the example from the document it came from,",
+    " * Base handlers: every operation answered with the example the contract carries for it,",
     " * so `pnpm dev:mock` and the e2e suite run with no backend. Data is deliberately and",
     " * obviously fake. Override a handler in mocks/handlers.ts rather than editing this file.",
-    " *",
-    " * Handlers carrying a CONTRACT-REQUEST marker are served from the seed contract and have a",
-    " * row in docs/contract-requests.md. Both disappear when packio-api publishes the real one.",
     " */",
     "",
     'import { http, HttpResponse } from "msw";',
     "",
     "export const generatedHandlers = [",
     ...real,
-    ...seeded,
     "];",
     "",
   ].join("\n");
@@ -245,16 +236,12 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const [schema, seedSchema] = await Promise.all([
-    typesFor(VENDORED, `contract/openapi.json (packio-api ${lock.version})`),
-    typesFor(SEED, "mocks/seed-openapi.json — SEED, not agreed by packio-api"),
-  ]);
-  const handlers = buildHandlers(readJson<OpenApiDocument>(VENDORED), readJson<OpenApiDocument>(SEED), lock);
+  const schema = await typesFor(VENDORED, `contract/openapi.json (packio-api ${lock.version})`);
+  const handlers = buildHandlers(readJson<OpenApiDocument>(VENDORED), lock);
 
   if (check) {
     const ok = [
       compare(OUT_SCHEMA, schema, "src/lib/api/schema.d.ts"),
-      compare(OUT_SEED_SCHEMA, seedSchema, "src/lib/api/schema.seed.d.ts"),
       compare(OUT_HANDLERS, handlers, "mocks/generated/handlers.ts"),
     ].every(Boolean);
 
@@ -264,7 +251,6 @@ async function main(): Promise<void> {
   }
 
   write(OUT_SCHEMA, schema);
-  write(OUT_SEED_SCHEMA, seedSchema);
   write(OUT_HANDLERS, handlers);
 }
 

@@ -4,9 +4,7 @@ import { upstreamApi } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 import { startSession } from "@/features/shared/auth/session-actions";
-import type { SeedSchemas } from "@/lib/api/types";
-
-export type OtpChallenge = SeedSchemas["OtpChallenge"];
+import type { OtpChallenge } from "./otp";
 
 export interface OtpRequestResult {
   challenge?: OtpChallenge;
@@ -23,25 +21,35 @@ export interface OtpVerifyResult {
 /**
  * Ask for an OTP.
  *
- * The API answers with the policy — code length, expiry, cooldown, attempts left — and the
- * sheet renders those values rather than assuming them. No `D-###` owns these numbers yet
- * (see docs/contract-requests.md), and CLAUDE.md forbids the UI inventing what it is not told.
+ * The challenge carries `expiresAt` and `resendAvailableAt`, and the sheet counts down from
+ * those rather than from a cooldown of its own: the policy is the backend's, and the API is
+ * what actually refuses an early resend.
+ *
+ * `purpose` is `login` here. The same endpoint serves `link_phone`, which is the flow for
+ * attaching a number to an account signed in through LINE or Firebase (F3).
  */
 export async function requestOtp(phone: string): Promise<OtpRequestResult> {
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl() });
-    const { data } = await api.POST("/v1/auth/customer/otp/request", { body: { phone } });
+    const { data } = await api.POST("/v1/auth/customer/otp/request", {
+      body: { phone, purpose: "login" },
+    });
     return data ? { challenge: data } : { errorKey: "errors.unavailable" };
   } catch (error) {
     return { ...otpErrorFor(error) };
   }
 }
 
-/** Exchange an OTP for a customer session. */
-export async function verifyOtp(phone: string, ref: string, code: string): Promise<OtpVerifyResult> {
+/**
+ * Exchange an OTP for a customer session.
+ *
+ * The challenge id is what identifies the attempt — the phone number is not sent again, so a
+ * code issued for one number cannot be replayed against another.
+ */
+export async function verifyOtp(challengeId: string, code: string): Promise<OtpVerifyResult> {
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl() });
-    const { data } = await api.POST("/v1/auth/customer/otp/verify", { body: { phone, ref, code } });
+    const { data } = await api.POST("/v1/auth/customer/otp/verify", { body: { challengeId, code } });
     if (!data) return { errorKey: "errors.unavailable" };
 
     await startSession(data);

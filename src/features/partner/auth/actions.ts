@@ -16,22 +16,31 @@ export interface PartnerLoginState {
 /**
  * Partner-factory sign-in.
  *
- * The device PIN is optional and sent only when filled: whether a given factory's shared
- * shop-floor devices require one is a policy the backend owns, and is still open in its
- * ADR-0004 — so the UI offers the field and lets the API decide.
+ * `PartnerLoginDto` makes only `email` required: a shared shop-floor device can be enrolled
+ * with a PIN instead of a password, so the API accepts either and decides which this factory
+ * allows. The form offers both and sends what was filled, rather than guessing the policy —
+ * which is still open in the backend's ADR-0004.
+ *
+ * `deviceId` identifies the shared device a PIN belongs to. It is sent only alongside a PIN,
+ * because on its own it means nothing to the API.
  */
 export async function signInPartner(_state: PartnerLoginState, formData: FormData): Promise<PartnerLoginState> {
-  const username = String(formData.get("username") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const devicePin = String(formData.get("devicePin") ?? "").trim();
+  const pin = String(formData.get("pin") ?? "").trim();
+  const deviceId = String(formData.get("deviceId") ?? "").trim();
   const returnTo = safeReturnTo(String(formData.get("returnTo") ?? ""));
 
-  if (!username || !password) return { errorKey: "errors.invalidPartnerCredentials" };
+  if (!email || (!password && !pin)) return { errorKey: "errors.invalidPartnerCredentials" };
 
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl() });
     const { data } = await api.POST("/v1/auth/partner/login", {
-      body: { username, password, ...(devicePin ? { devicePin } : {}) },
+      body: {
+        email,
+        ...(password ? { password } : {}),
+        ...(pin ? { pin, ...(deviceId ? { deviceId } : {}) } : {}),
+      },
     });
     if (!data) return { errorKey: "errors.unavailable" };
 

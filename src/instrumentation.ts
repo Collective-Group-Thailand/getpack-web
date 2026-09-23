@@ -29,5 +29,8 @@ export async function register(): Promise<void> {
     },
   });
 
-  process.stdout.write("[packio] API mocks are serving this process (API_MOCKS=1)\n");
+  // `console.info`, not `process.stdout`: Next compiles this module for the edge runtime as
+  // well, where `process.stdout` does not exist — and warns about it on every build, even
+  // though the guard above means that copy never runs.
+  console.info("[packio] API mocks are serving this process (API_MOCKS=1)");
 }

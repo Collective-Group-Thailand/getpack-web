@@ -21,10 +21,15 @@ export default async function PartnerHomePage() {
           <p className="font-medium" data-testid="actor-name">
             {actor.displayName}
           </p>
+          {/*
+            The contract gives a factory id and the roles held at it, not a display name
+            (`FactoryAccessDto`), so the roles are what there is to show. F5 builds the real
+            shop-floor shell and needs the name — it is logged in docs/contract-requests.md.
+          */}
           <div className="mt-2 flex flex-wrap gap-1.5" data-testid="actor-factories">
-            {actor.factories.map((factory) => (
-              <Badge key={factory.id}>{factory.name}</Badge>
-            ))}
+            {actor.factories.map((factory) =>
+              factory.roles.map((role) => <Badge key={`${factory.factoryId}-${role}`}>{role}</Badge>),
+            )}
           </div>
           <div className="mt-4">
             <SignOutButton zone="partner" />
