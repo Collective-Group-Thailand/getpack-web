@@ -10,7 +10,12 @@ import "./globals.css";
  * The copy is therefore bilingual rather than translated: there is no message bundle to
  * read at this point, and the locale is exactly what has just been lost. It is short on
  * purpose; anything richer would need the tree that failed.
+ *
+ * This is the one file exempt from the hard-coded-string rule, for that reason. The rule is
+ * disabled for the whole component rather than per line so the exemption is visible at the
+ * top and cannot quietly spread to a second file.
  */
+/* eslint-disable react/jsx-no-literals -- no message bundle exists here; see above. */
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="th" className={fontClassNames}>

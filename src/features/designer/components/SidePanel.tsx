@@ -13,7 +13,7 @@ import { ColorField } from "@/ui/components/ColorField";
 import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { NumberInput, Textarea } from "@/ui/components/Input";
-import { Kbd } from "@/ui/components/Kbd";
+import { Kbd, KEYCAP } from "@/ui/components/Kbd";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Select } from "@/ui/components/Select";
 import { Slider } from "@/ui/components/Slider";
@@ -280,9 +280,9 @@ export function ViewPanel() {
         <p className="text-fg mb-1 font-medium">{t("shortcutsHeading")}</p>
         <p>{t("shortcutPan")}</p>
         <p className="mt-1 flex flex-wrap items-center gap-1">
-          <Kbd>Delete</Kbd>
-          <Kbd>Ctrl</Kbd>+<Kbd>Z</Kbd>
-          <Kbd>Ctrl</Kbd>+<Kbd>D</Kbd>
+          <Kbd>{KEYCAP.del}</Kbd>
+          <Kbd>{KEYCAP.ctrl}</Kbd>+<Kbd>{KEYCAP.z}</Kbd>
+          <Kbd>{KEYCAP.ctrl}</Kbd>+<Kbd>{KEYCAP.d}</Kbd>
           <span className="ms-1">{t("shortcutKeys")}</span>
         </p>
       </div>

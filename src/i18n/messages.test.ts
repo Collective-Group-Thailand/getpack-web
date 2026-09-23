@@ -1,3 +1,4 @@
+import { parse } from "@formatjs/icu-messageformat-parser";
 import { describe, expect, it } from "vitest";
 
 import { loadAllMessages } from "./messages";
@@ -56,6 +57,38 @@ describe("messages", () => {
       const enText = read(en, key);
       if (typeof thText !== "string" || typeof enText !== "string") continue;
       expect(placeholders(enText), `placeholders differ for ${key}`).toEqual(placeholders(thText));
+    }
+  });
+
+  it("parses as ICU in every locale", async () => {
+    // Plurals arrived with the resend timer and F2–F6 will add many more. A malformed one
+    // ("{n, plural, one {#}}" with no `other`) is accepted by the JSON parser, survives lint
+    // and typecheck, and only fails when a real user hits that branch — which for a plural is
+    // exactly the uncommon case nobody clicks through in review.
+    for (const locale of routing.locales) {
+      const messages = await loadAllMessages(locale);
+      for (const [namespace, value] of Object.entries(messages)) {
+        for (const key of flatten(value as Messages)) {
+          const text = key.split(".").reduce<unknown>((current, part) => (current as Messages)[part], value);
+          if (typeof text !== "string") continue;
+          expect(() => parse(text), `${locale}: ${namespace}.${key} is not valid ICU`).not.toThrow();
+        }
+      }
+    }
+  });
+
+  it("gives every plural an `other` branch", async () => {
+    // `other` is the only branch ICU requires and the only one Thai uses, so a message that
+    // omits it is broken in the default locale.
+    for (const locale of routing.locales) {
+      const messages = await loadAllMessages(locale);
+      for (const [namespace, value] of Object.entries(messages)) {
+        for (const key of flatten(value as Messages)) {
+          const text = key.split(".").reduce<unknown>((current, part) => (current as Messages)[part], value);
+          if (typeof text !== "string" || !text.includes("plural")) continue;
+          expect(text, `${locale}: ${namespace}.${key}`).toMatch(/other\s*\{/);
+        }
+      }
     }
   });
 });
