@@ -1,15 +1,18 @@
 # F5 — Partner zone (partner-factory PWA)
 
-> อ่าน `CLAUDE.md`, `00-master-plan.md`, `docs/decisions.md` (D-011, D-013, D-021, D-022, D-040, D-041, D-074…D-076, D-090, D-101, D-142, D-155), `docs/contract/api-conventions.md`, `design-system.md` §5 Partner ก่อน · ต้องทำ F1 เสร็จแล้ว
-> 3 session: **5.1** onboarding & cost tables · **5.2** jobs, milestones, QC, ship & POD · **5.3** billing, payouts, performance, settings
+> อ่าน `CLAUDE.md`, `00-master-plan.md`, `docs/decisions.md` (D-011, D-013, D-021, D-022, D-040…D-044, D-074…D-076, D-090, D-101, D-142, D-155), `docs/contract/api-conventions.md`, `design-system.md` §5 Partner ก่อน · ต้องทำ F1 เสร็จแล้ว
+> 3 session: **5.1** onboarding & price tables · **5.2** jobs, milestones, QC, ship & POD · **5.3** billing, payouts, performance, settings
 
 ---
 
 You are building the **partner zone** of `packio-web` (`src/app/partner/**`, `src/features/partner/**`, `PARTNER_HOST`) for Packio's partner factories. It talks only to `/v1/partner/*` through the partner BFF. Mobile-first and installable (offline sync is R2, D-111), Thai-first, designed for the shop floor: targets ≥ 48 px, 18 px base text, high-contrast theme, one-handed use, slow networks; tablet layout for office users. Factory roles: Owner, Planner, Operator, QC, Shipping, Factory Accountant (D-140) — screens follow entitlements from `/v1/partner/me`. Factories see only recipient name, address and phone of customers (D-142).
 
-## 5.1 Onboarding & cost tables
-- **Application wizard**: company, tax id & VAT status, addresses, contacts, bank account (verification status; changes require Packio approval), KYC uploads, capability matrix (product types, processes, machines, max sizes, materials, finishes, delivery zones), weekly capacity per product type, quantity tolerance (default + per type, D-021), shipping payout rate card (D-013), payout policy view (D-022), agreement review & e-acceptance, site-visit scheduling/status (D-041), status tracker (applied → review → trial → active). Shows items entered by Packio staff on the factory's behalf with **"review & sign off"** actions (assisted onboarding).
-- **Cost tables** (D-040): browse by group (materials, process rates, waste/setup, commercial terms, shipping payout), **propose changes** (bulk grid or Excel upload → preview), choose `effective_from`, add reason/evidence; proposal status and Packio's response (approved / rejected / counter-proposal with comment); version history. Suggested values are **not** shown to factories.
+## 5.1 Onboarding & price tables
+- **Application wizard**: company, tax id & VAT status, addresses, contacts, bank account (verification status; changes require Packio approval), KYC uploads, capability matrix (product types, processes, machines, max sizes, materials, finishes, delivery zones), weekly capacity per product type, quantity tolerance (default + per type, D-021), shipping buy rates (D-013), payout policy view (D-022), **pricing arrangement**: ownership mode and participation tier per product type shown plainly (D-042, D-043), agreement review & e-acceptance, site-visit scheduling/status (D-041), status tracker (applied → review → trial → active). Shows items entered by Packio staff on the factory's behalf with **"review & sign off"** actions (assisted onboarding).
+- **Price tables** (D-040, D-042): the screen adapts to the factory's mode —
+  - `platform_rate_card`: review the rate card version Packio proposes (lines, effective date, what changed vs the accepted version), **accept all**, accept with per-line exceptions, or request a change with a comment; acceptance evidence recorded.
+  - `factory_price_list`: browse by group (materials, process rates, waste/setup, commercial terms, shipping), **propose changes** (grid or Excel upload → preview), choose `effective_from`, add reason/evidence; see Packio's response (approved / rejected / counter-proposal).
+  Tier A shows the full table, tier B only the covered lines with an option to request tier A, tier C shows an explainer of what providing prices unlocks (instant quotes, more jobs) with a request button. Suggested values, other factories' prices and benchmarks are **never** shown (D-044). Version history of its own prices only.
 
 ## 5.2 Jobs, milestones, QC, shipping
 - **Today**: counters (to accept, due today, at risk, on hold), my queue, alerts.
@@ -26,4 +29,4 @@ You are building the **partner zone** of `packio-web` (`src/app/partner/**`, `sr
 - **Settings**: users & roles (Owner only), notification preferences incl. web push & LINE, printer/label size, language, theme (high contrast).
 
 ## Quality gates
-Playwright mobile viewport: onboarding wizard → staff-entered data sign-off → cost proposal with future effective date; accept job → milestones with photos → QC → split shipment with POD → billing statement confirm + tax invoice upload → payout statement visible; permission tests (Operator cannot manage users or see billing; other factory ids → 404); axe; Lighthouse partner budget (installable, ≤ 180 KB initial JS). `docs/PROGRESS.md` entries.
+Playwright mobile viewport: onboarding wizard → staff-entered data sign-off → price proposal with future effective date; accept job → milestones with photos → QC → split shipment with POD → billing statement confirm + tax invoice upload → payout statement visible; permission tests (Operator cannot manage users or see billing; other factory ids → 404); axe; Lighthouse partner budget (installable, ≤ 180 KB initial JS). `docs/PROGRESS.md` entries.

@@ -13,6 +13,7 @@ const eslintConfig = [
       "coverage/**",
       "playwright-report/**",
       "test-results/**",
+      "storybook-static/**",
       "legacy/**",
       "packages/*/dist/**",
       "next-env.d.ts",

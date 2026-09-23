@@ -1,0 +1,50 @@
+/*
+ * The same five faces src/ui/fonts/index.ts loads with next/font/local, declared by hand
+ * because Vite cannot run next/font. Family names match the CSS variables the tokens expect,
+ * so a story renders in the real typefaces.
+ *
+ * Keep in step with src/ui/fonts/index.ts and its README.
+ */
+
+@font-face {
+  font-family: "Packio Sans Latin";
+  src: url("/fonts/noto-sans-thai-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Packio Sans Thai";
+  src: url("/fonts/noto-sans-thai-thai.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Packio Display Latin";
+  src: url("/fonts/anuphan-latin.woff2") format("woff2");
+  font-weight: 100 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Packio Display Thai";
+  src: url("/fonts/anuphan-thai.woff2") format("woff2");
+  font-weight: 100 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Packio Mono";
+  src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root {
+  --font-pk-sans-latin: "Packio Sans Latin";
+  --font-pk-sans-thai: "Packio Sans Thai";
+  --font-pk-display-latin: "Packio Display Latin";
+  --font-pk-display-thai: "Packio Display Thai";
+  --font-pk-mono: "Packio Mono";
+}
