@@ -1,0 +1,115 @@
+{
+  "unknown": "ไม่ทราบสถานะ",
+  "order": {
+    "waitingPayment": "รอชำระเงิน",
+    "waitingPaymentReview": "รอตรวจสอบการชำระเงิน",
+    "paid": "ชำระเงินแล้ว",
+    "inProduction": "กำลังผลิต",
+    "shipping": "กำลังจัดส่ง",
+    "completed": "สำเร็จ",
+    "cancelled": "ยกเลิกแล้ว"
+  },
+  "payment": {
+    "pending": "รอชำระเงิน",
+    "awaitingVerification": "รอตรวจสอบสลิป",
+    "paid": "ชำระเงินแล้ว",
+    "failed": "ชำระเงินไม่สำเร็จ",
+    "refunded": "คืนเงินแล้ว"
+  },
+  "instalment": {
+    "scheduled": "ตามกำหนดชำระ",
+    "due": "ถึงกำหนดชำระ",
+    "overdue": "เกินกำหนดชำระ",
+    "paid": "ชำระแล้ว",
+    "waived": "ยกเว้นการชำระ",
+    "cancelled": "ยกเลิกแล้ว"
+  },
+  "artwork": {
+    "waitingArtwork": "รอไฟล์งานออกแบบ",
+    "uploaded": "อัปโหลดไฟล์แล้ว",
+    "inReview": "กำลังตรวจไฟล์",
+    "changesRequested": "ขอให้แก้ไขไฟล์",
+    "approved": "อนุมัติไฟล์แล้ว",
+    "productionConfirmed": "ยืนยันเข้าผลิตแล้ว"
+  },
+  "proof": {
+    "preparing": "กำลังจัดทำปรู๊ฟ",
+    "sent": "ส่งปรู๊ฟแล้ว",
+    "inReview": "ลูกค้ากำลังตรวจปรู๊ฟ",
+    "changesRequested": "ขอให้แก้ไขปรู๊ฟ",
+    "approved": "อนุมัติปรู๊ฟแล้ว",
+    "expired": "ปรู๊ฟหมดอายุ"
+  },
+  "rfq": {
+    "submitted": "ส่งคำขอใบเสนอราคาแล้ว",
+    "inReview": "กำลังพิจารณาคำขอ",
+    "quoted": "เสนอราคาแล้ว",
+    "accepted": "ลูกค้ารับราคาแล้ว",
+    "declined": "ปฏิเสธคำขอ",
+    "expired": "คำขอหมดอายุ"
+  },
+  "job": {
+    "pendingAcceptance": "รอโรงงานรับงาน",
+    "accepted": "โรงงานรับงานแล้ว",
+    "rejected": "โรงงานปฏิเสธงาน",
+    "inProduction": "กำลังผลิต",
+    "awaitingQc": "รอตรวจคุณภาพ",
+    "readyToShip": "พร้อมส่ง",
+    "shipped": "ส่งออกจากโรงงานแล้ว",
+    "completed": "ปิดงานแล้ว",
+    "onHold": "พักงานไว้",
+    "cancelled": "ยกเลิกงาน"
+  },
+  "shipment": {
+    "pending": "รอจัดส่ง",
+    "booked": "จองรอบส่งแล้ว",
+    "pickedUp": "รับของแล้ว",
+    "inTransit": "อยู่ระหว่างขนส่ง",
+    "outForDelivery": "กำลังนำส่ง",
+    "delivered": "ส่งถึงแล้ว",
+    "failed": "นำส่งไม่สำเร็จ",
+    "returned": "ตีกลับ",
+    "cancelled": "ยกเลิกการส่ง"
+  },
+  "claim": {
+    "submitted": "แจ้งเคลมแล้ว",
+    "inReview": "กำลังพิจารณาเคลม",
+    "awaitingEvidence": "รอหลักฐานเพิ่มเติม",
+    "approved": "อนุมัติเคลม",
+    "rejected": "ไม่อนุมัติเคลม",
+    "resolved": "ดำเนินการเรียบร้อย",
+    "withdrawn": "ยกเลิกคำขอเคลม"
+  },
+  "payout": {
+    "scheduled": "ตามกำหนดจ่าย",
+    "pendingApproval": "รออนุมัติการจ่าย",
+    "approved": "อนุมัติการจ่ายแล้ว",
+    "processing": "กำลังโอน",
+    "paid": "จ่ายแล้ว",
+    "failed": "โอนไม่สำเร็จ",
+    "onHold": "ระงับการจ่าย",
+    "cancelled": "ยกเลิกการจ่าย"
+  },
+  "document": {
+    "draft": "ฉบับร่าง",
+    "issued": "ออกเอกสารแล้ว",
+    "sent": "ส่งเอกสารแล้ว",
+    "void": "ยกเลิกเอกสาร",
+    "replaced": "ออกฉบับแทนแล้ว"
+  },
+  "action": {
+    "approve": "อนุมัติ",
+    "reject": "ไม่อนุมัติ",
+    "cancel": "ยกเลิก",
+    "submit": "ส่ง",
+    "pay": "ชำระเงิน",
+    "upload": "อัปโหลดไฟล์",
+    "requestChanges": "ขอให้แก้ไข",
+    "startProduction": "เริ่มผลิต",
+    "ship": "จัดส่ง",
+    "confirmReceipt": "ยืนยันรับของ",
+    "reorder": "สั่งซ้ำ",
+    "claim": "แจ้งเคลม",
+    "unknown": "ดำเนินการ"
+  }
+}

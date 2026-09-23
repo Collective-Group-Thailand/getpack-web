@@ -1,0 +1,115 @@
+{
+  "unknown": "Unknown status",
+  "order": {
+    "waitingPayment": "Awaiting payment",
+    "waitingPaymentReview": "Payment under review",
+    "paid": "Paid",
+    "inProduction": "In production",
+    "shipping": "Shipping",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "payment": {
+    "pending": "Awaiting payment",
+    "awaitingVerification": "Slip under review",
+    "paid": "Paid",
+    "failed": "Payment failed",
+    "refunded": "Refunded"
+  },
+  "instalment": {
+    "scheduled": "Scheduled",
+    "due": "Due",
+    "overdue": "Overdue",
+    "paid": "Paid",
+    "waived": "Waived",
+    "cancelled": "Cancelled"
+  },
+  "artwork": {
+    "waitingArtwork": "Awaiting artwork",
+    "uploaded": "Artwork uploaded",
+    "inReview": "Artwork under review",
+    "changesRequested": "Changes requested",
+    "approved": "Artwork approved",
+    "productionConfirmed": "Confirmed for production"
+  },
+  "proof": {
+    "preparing": "Preparing proof",
+    "sent": "Proof sent",
+    "inReview": "Proof under review",
+    "changesRequested": "Changes requested",
+    "approved": "Proof approved",
+    "expired": "Proof expired"
+  },
+  "rfq": {
+    "submitted": "Request submitted",
+    "inReview": "Under review",
+    "quoted": "Quoted",
+    "accepted": "Quote accepted",
+    "declined": "Declined",
+    "expired": "Expired"
+  },
+  "job": {
+    "pendingAcceptance": "Awaiting factory acceptance",
+    "accepted": "Accepted by factory",
+    "rejected": "Rejected by factory",
+    "inProduction": "In production",
+    "awaitingQc": "Awaiting QC",
+    "readyToShip": "Ready to ship",
+    "shipped": "Shipped from factory",
+    "completed": "Completed",
+    "onHold": "On hold",
+    "cancelled": "Cancelled"
+  },
+  "shipment": {
+    "pending": "Awaiting dispatch",
+    "booked": "Booked",
+    "pickedUp": "Picked up",
+    "inTransit": "In transit",
+    "outForDelivery": "Out for delivery",
+    "delivered": "Delivered",
+    "failed": "Delivery failed",
+    "returned": "Returned",
+    "cancelled": "Cancelled"
+  },
+  "claim": {
+    "submitted": "Claim submitted",
+    "inReview": "Claim under review",
+    "awaitingEvidence": "Awaiting evidence",
+    "approved": "Claim approved",
+    "rejected": "Claim rejected",
+    "resolved": "Resolved",
+    "withdrawn": "Withdrawn"
+  },
+  "payout": {
+    "scheduled": "Scheduled",
+    "pendingApproval": "Awaiting approval",
+    "approved": "Approved",
+    "processing": "Processing",
+    "paid": "Paid",
+    "failed": "Transfer failed",
+    "onHold": "On hold",
+    "cancelled": "Cancelled"
+  },
+  "document": {
+    "draft": "Draft",
+    "issued": "Issued",
+    "sent": "Sent",
+    "void": "Void",
+    "replaced": "Replaced"
+  },
+  "action": {
+    "approve": "Approve",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "pay": "Pay",
+    "upload": "Upload file",
+    "requestChanges": "Request changes",
+    "startProduction": "Start production",
+    "ship": "Ship",
+    "confirmReceipt": "Confirm receipt",
+    "reorder": "Reorder",
+    "claim": "Raise a claim",
+    "unknown": "Take action"
+  }
+}
