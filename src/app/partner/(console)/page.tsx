@@ -1,41 +1,21 @@
 import { getTranslations } from "next-intl/server";
 
-import { SignOutButton } from "@/features/shared/auth/SignOutButton";
-import { requireActor } from "@/features/shared/auth/guard";
-import { Badge, Card } from "@/ui";
+import { Card } from "@/ui";
 
 /**
- * Placeholder for the partner zone, now behind the session guard. The shop-floor shell —
- * bottom nav, big targets, offline feedback — is F5.
+ * The partner zone's landing screen. Still a placeholder — F5 builds Today, jobs, QC, ship and
+ * billing — but the shop-floor frame around it is real: bottom nav, 64 px targets, 18 px base
+ * text and the high-contrast theme.
  */
 export default async function PartnerHomePage() {
-  const [t, actor] = await Promise.all([getTranslations("partner.placeholder"), requireActor("partner")]);
+  const t = await getTranslations("partner.placeholder");
 
   return (
-    <main id="main" className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-4 py-16">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="text-2xl font-semibold">{t("heading")}</h1>
-      <p className="text-muted mt-2">{t("body")}</p>
-
-      {actor ? (
-        <Card className="mt-8" padding="lg">
-          <p className="font-medium" data-testid="actor-name">
-            {actor.displayName}
-          </p>
-          {/*
-            The contract gives a factory id and the roles held at it, not a display name
-            (`FactoryAccessDto`), so the roles are what there is to show. F5 builds the real
-            shop-floor shell and needs the name — it is logged in docs/contract-requests.md.
-          */}
-          <div className="mt-2 flex flex-wrap gap-1.5" data-testid="actor-factories">
-            {actor.factories.map((factory) =>
-              factory.roles.map((role) => <Badge key={`${factory.factoryId}-${role}`}>{role}</Badge>),
-            )}
-          </div>
-          <div className="mt-4">
-            <SignOutButton zone="partner" />
-          </div>
-        </Card>
-      ) : null}
-    </main>
+      <Card className="mt-6" padding="lg">
+        <p className="text-muted">{t("body")}</p>
+      </Card>
+    </div>
   );
 }

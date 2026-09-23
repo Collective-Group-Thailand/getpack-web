@@ -1,39 +1,24 @@
 import { getTranslations } from "next-intl/server";
 
-import { SignOutButton } from "@/features/shared/auth/SignOutButton";
-import { requireActor } from "@/features/shared/auth/guard";
-import { Badge, Card } from "@/ui";
+import { Card } from "@/ui";
 
 /**
- * Placeholder for the admin zone, now behind the session guard.
+ * The admin landing page.
  *
- * It shows who is signed in and what the API says they are, which is the smallest thing that
- * proves the whole chain — cookie, BFF, `/v1/admin/me`, guard — actually works. The real
- * shell (sidebar built from the menu entitlements, topbar, command palette) is F1 1.3.
+ * Still a placeholder — F2.1 builds the real dashboard — but the shell around it is now real:
+ * the sidebar comes from this user's `/v1/admin/me` entitlements, the topbar carries ⌘K, the
+ * notification centre and the environment badge, and the signed-in actor moved into the
+ * account menu where it belongs.
  */
 export default async function AdminHomePage() {
-  const [t, actor] = await Promise.all([getTranslations("admin.placeholder"), requireActor("admin")]);
+  const t = await getTranslations("admin.placeholder");
 
   return (
-    <main id="main" className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-4 py-16">
+    <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-2xl font-semibold">{t("heading")}</h1>
-      <p className="text-muted mt-2">{t("body")}</p>
-
-      {actor ? (
-        <Card className="mt-8" padding="lg">
-          <p className="font-medium" data-testid="actor-name">
-            {actor.displayName}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1.5" data-testid="actor-roles">
-            {actor.roles.map((role) => (
-              <Badge key={role}>{role}</Badge>
-            ))}
-          </div>
-          <div className="mt-4">
-            <SignOutButton zone="admin" />
-          </div>
-        </Card>
-      ) : null}
-    </main>
+      <Card className="mt-6" padding="lg">
+        <p className="text-muted">{t("body")}</p>
+      </Card>
+    </div>
   );
 }

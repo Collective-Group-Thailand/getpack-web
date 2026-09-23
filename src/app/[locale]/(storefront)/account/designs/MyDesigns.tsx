@@ -58,7 +58,7 @@ export default function MyDesigns() {
   };
 
   return (
-    <main id="main" className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
@@ -160,6 +160,6 @@ export default function MyDesigns() {
         cancelLabel={tCommon("actions.cancel")}
         onConfirm={confirmDelete}
       />
-    </main>
+    </div>
   );
 }

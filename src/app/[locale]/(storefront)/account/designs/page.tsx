@@ -1,8 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 
-import { SiteFooter, SiteHeader } from "@/features/customer/shell";
-
 import MyDesigns from "./MyDesigns";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,11 +12,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return (
-    <>
-      <SiteHeader />
-      <MyDesigns />
-      <SiteFooter />
-    </>
-  );
+  // The header, footer and bottom nav come from `(storefront)/layout.tsx`.
+  return <MyDesigns />;
 }

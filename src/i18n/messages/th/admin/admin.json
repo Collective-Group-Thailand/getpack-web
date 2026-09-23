@@ -3,5 +3,51 @@
   "placeholder": {
     "heading": "โซนผู้ดูแลระบบ",
     "body": "โครงของโซนนี้พร้อมแล้ว หน้าจอทำงานจะทยอยเพิ่มเข้ามา"
+  },
+  "shell": {
+    "nav": "เมนูหลัก",
+    "collapseNav": "ย่อเมนู",
+    "expandNav": "ขยายเมนู",
+    "searchPlaceholder": "ค้นหาคำสั่งซื้อ ลูกค้า โรงงาน",
+    "shortcuts": "ปุ่มลัด",
+    "shortcutEscape": "ปิดหน้าต่างที่เปิดอยู่",
+    "account": "บัญชีผู้ใช้",
+    "breadcrumb": "เส้นทางหน้า",
+    "env": {
+      "uat": "UAT",
+      "prod": "PROD"
+    },
+    "palette": {
+      "title": "ค้นหาและสั่งงาน",
+      "placeholder": "พิมพ์เพื่อค้นหา",
+      "empty": "ยังไม่มีข้อมูลให้ค้นหาในขั้นนี้"
+    }
+  },
+  "menu": {
+    "dashboard": "ภาพรวม",
+    "orders": "คำสั่งซื้อ",
+    "quotations": "ใบเสนอราคา",
+    "rfq": "คำขอใบเสนอราคา",
+    "prepress": "งานก่อนพิมพ์",
+    "catalogue": "แคตตาล็อก",
+    "partners": "โรงงานพาร์ตเนอร์",
+    "production": "แผนการผลิต",
+    "logistics": "การขนส่ง",
+    "shipments": "รอบจัดส่ง",
+    "claims": "งานเคลม",
+    "finance": "การเงิน",
+    "documents": "เอกสาร",
+    "payouts": "การจ่ายเงินโรงงาน",
+    "marketing": "การตลาด",
+    "campaigns": "แคมเปญ",
+    "customers": "ลูกค้า",
+    "companies": "บริษัทคู่ค้า",
+    "b2b": "ลูกค้าองค์กร",
+    "users": "ผู้ใช้และสิทธิ์",
+    "approvals": "รายการรออนุมัติ",
+    "audit_logs": "บันทึกการใช้งาน",
+    "analytics": "รายงานและวิเคราะห์",
+    "reports": "รายงาน",
+    "settings": "ตั้งค่าระบบ"
   }
 }

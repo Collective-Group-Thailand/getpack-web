@@ -42,5 +42,20 @@
     "notFoundTitle": "Page not found",
     "notFoundBody": "The link may have expired, moved, or been mistyped.",
     "requestId": "Request ID"
+  },
+  "notifications": {
+    "label": "Notifications",
+    "labelWithCount": "Notifications ({count} unread)",
+    "overflow": "99+",
+    "title": "Notifications",
+    "empty": {
+      "title": "No notifications yet",
+      "body": "Updates on your work appear here."
+    }
+  },
+  "locale": {
+    "label": "Language",
+    "th": "ไทย",
+    "en": "English"
   }
 }

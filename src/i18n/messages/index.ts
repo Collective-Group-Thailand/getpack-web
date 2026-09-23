@@ -16,7 +16,17 @@ import type { Locale } from "../routing";
  * The imports are explicit rather than a glob so the bundler can see every file, and so a
  * missing namespace is a type error rather than a key that silently renders as `home.title`.
  */
-const NAMESPACES = ["common", "auth", "status", "home", "designs", "designer", "admin", "partner"] as const;
+const NAMESPACES = [
+  "common",
+  "auth",
+  "status",
+  "storefront",
+  "home",
+  "designs",
+  "designer",
+  "admin",
+  "partner",
+] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
 
@@ -31,7 +41,7 @@ export type Namespace = (typeof NAMESPACES)[number];
  * than three near-identical namespaces that drift.
  */
 export const ZONE_NAMESPACES = {
-  customer: ["common", "auth", "status", "home", "designs", "designer"],
+  customer: ["common", "auth", "status", "storefront", "home", "designs", "designer"],
   admin: ["common", "auth", "status", "admin"],
   partner: ["common", "auth", "status", "partner"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
@@ -43,6 +53,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     common: () => import("./th/common/common.json"),
     auth: () => import("./th/common/auth.json"),
     status: () => import("./th/common/status.json"),
+    storefront: () => import("./th/customer/storefront.json"),
     home: () => import("./th/customer/home.json"),
     designs: () => import("./th/customer/designs.json"),
     designer: () => import("./th/customer/designer.json"),
@@ -53,6 +64,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     common: () => import("./en/common/common.json"),
     auth: () => import("./en/common/auth.json"),
     status: () => import("./en/common/status.json"),
+    storefront: () => import("./en/customer/storefront.json"),
     home: () => import("./en/customer/home.json"),
     designs: () => import("./en/customer/designs.json"),
     designer: () => import("./en/customer/designer.json"),
