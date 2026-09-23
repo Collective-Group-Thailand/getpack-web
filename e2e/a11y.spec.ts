@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
+import { signInAsPartner, signInAsStaff } from "./helpers/session";
 
 /**
  * The a11y gate that needs a real browser (design-system.md §6).
@@ -68,6 +69,51 @@ test.describe("axe, in a real browser", () => {
     }
   });
 
+  test("the admin shell is clean, open and collapsed, and with its overlays up", async ({ page }) => {
+    await signInAsStaff(page);
+    await expect(page.getByRole("navigation", { name: "เมนูหลัก" })).toBeVisible();
+
+    const open = await scan(page);
+    expect(open.violations, report(open.violations)).toEqual([]);
+
+    // Collapsed is a different tree, not a different stylesheet: the labels move into the
+    // accessibility tree only and each link gains a tooltip.
+    await page.getByRole("button", { name: "ย่อเมนู" }).click();
+    await expect(page.getByRole("button", { name: "ขยายเมนู" })).toBeVisible();
+    const collapsed = await scan(page);
+    expect(collapsed.violations, report(collapsed.violations)).toEqual([]);
+
+    // The command palette is a combobox in a modal — the most intricate ARIA in the shell.
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(page.getByRole("dialog", { name: "ค้นหาและสั่งงาน" })).toBeVisible();
+    const palette = await scan(page);
+    expect(palette.violations, report(palette.violations)).toEqual([]);
+
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("?");
+    await expect(page.getByRole("dialog", { name: "ปุ่มลัด" })).toBeVisible();
+    const shortcuts = await scan(page);
+    expect(shortcuts.violations, report(shortcuts.violations)).toEqual([]);
+  });
+
+  test("the partner shop-floor shell is clean on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await signInAsPartner(page);
+    await expect(page.getByRole("navigation", { name: "เมนูหลัก" })).toBeVisible();
+
+    const { violations } = await scan(page);
+    expect(violations, report(violations)).toEqual([]);
+  });
+
+  test("the storefront shell is clean on a phone, bottom nav and all", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await expect(page.getByRole("navigation", { name: "เมนูด้านล่าง" })).toBeVisible();
+
+    const { violations } = await scan(page);
+    expect(violations, report(violations)).toEqual([]);
+  });
+
   test("the dark theme keeps its contrast", async ({ page, context }) => {
     // The theme is a cookie the server reads, so setting it exercises the real path.
     await context.addCookies([{ name: "pk_theme", value: "dark", url: "http://localhost:3100" }]);
@@ -129,7 +175,7 @@ test.describe("keyboard paths", () => {
   test("the theme toggle switches theme and persists it", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "ธีม" }).click();
-    await page.getByRole("menuitemcheckbox", { name: "มืด" }).click();
+    await page.getByRole("menuitemradio", { name: "มืด" }).click();
 
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 

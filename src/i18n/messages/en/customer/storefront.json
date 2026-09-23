@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "primary": "Main navigation",
+    "mobile": "Bottom navigation",
+    "products": "Products",
+    "help": "Help",
+    "cart": "Cart",
+    "account": "My account",
+    "lineChat": "Chat with us on LINE",
+    "home": "Home",
+    "design": "Design",
+    "orders": "Orders"
+  },
+  "footer": {
+    "tagline": "Your Packaging Production Partner",
+    "lineContact": "Reach us on LINE, 09:00–18:00 daily",
+    "paymentMethods": "Pay by bank transfer · PromptPay QR · credit or debit card · instalments",
+    "help": {
+      "heading": "Help",
+      "howItWorks": "How ordering works",
+      "faq": "Frequently asked questions",
+      "glossary": "Packaging glossary",
+      "track": "Track an order"
+    },
+    "company": {
+      "heading": "Company",
+      "about": "About Packio",
+      "partner": "Become a partner factory",
+      "contact": "Contact us"
+    },
+    "legal": {
+      "heading": "Legal and privacy",
+      "terms": "Terms of use",
+      "privacy": "Privacy policy (PDPA)",
+      "cookies": "Cookie policy"
+    }
+  },
+  "comingSoon": {
+    "search": "Search",
+    "body": "This page is being built and arrives with the full storefront."
+  }
+}

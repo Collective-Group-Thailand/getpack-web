@@ -16,7 +16,11 @@ export interface MenuItem {
   disabled?: boolean;
   /** Draws a rule above this item. */
   separatorBefore?: boolean;
-  /** Renders as a radio item and shows a tick when true (the theme menu). */
+  /**
+   * Marks this item as part of a single-choice group — the theme menu, the language menu.
+   * Setting it on any item turns the whole menu into a radio group, so a screen reader
+   * announces "selected, 2 of 4" rather than four independent checkboxes.
+   */
   selected?: boolean;
   tone?: "default" | "destructive";
 }
@@ -48,6 +52,11 @@ export function DropdownMenu({
   label,
   className,
 }: DropdownMenuProps) {
+  // Radix needs one `RadioGroup` around the choices, with the value of the chosen one. Items
+  // without `selected` are ordinary actions and sit inside it quite happily.
+  const selectedId = items.find((item) => item.selected)?.id;
+  const hasChoices = items.some((item) => item.selected !== undefined);
+
   return (
     <MenuPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <MenuPrimitive.Trigger asChild>{trigger}</MenuPrimitive.Trigger>
@@ -63,49 +72,62 @@ export function DropdownMenu({
             className,
           )}
         >
-          {items.map((item) => {
-            const content = (
-              <>
-                {item.icon ? <Icon name={item.icon} size={16} className="mt-0.5" /> : null}
-                <span className="min-w-0 flex-1">
-                  <span className="block">{item.label}</span>
-                  {item.description ? <span className="text-muted block text-xs">{item.description}</span> : null}
-                </span>
-              </>
-            );
+          <Choices enabled={hasChoices} value={selectedId}>
+            {items.map((item) => {
+              const content = (
+                <>
+                  {item.icon ? <Icon name={item.icon} size={16} className="mt-0.5" /> : null}
+                  <span className="min-w-0 flex-1">
+                    <span className="block">{item.label}</span>
+                    {item.description ? <span className="text-muted block text-xs">{item.description}</span> : null}
+                  </span>
+                </>
+              );
 
-            const itemClassName = cn(
-              "flex w-full cursor-default items-start gap-2 rounded-md px-2 py-2 text-start text-sm outline-none",
-              "data-highlighted:bg-surface-subtle",
-              "data-disabled:pointer-events-none data-disabled:opacity-50",
-              item.tone === "destructive" && "text-danger data-highlighted:bg-danger-subtle",
-            );
+              const itemClassName = cn(
+                "flex w-full cursor-default items-start gap-2 rounded-md px-2 py-2 text-start text-sm outline-none",
+                "data-highlighted:bg-surface-subtle",
+                "data-disabled:pointer-events-none data-disabled:opacity-50",
+                item.tone === "destructive" && "text-danger data-highlighted:bg-danger-subtle",
+              );
 
-            return (
-              <div key={item.id}>
-                {item.separatorBefore ? <MenuPrimitive.Separator className="bg-border my-1 h-px" /> : null}
-                {item.selected === undefined ? (
-                  <MenuPrimitive.Item onSelect={item.onSelect} disabled={item.disabled} className={itemClassName}>
-                    {content}
-                  </MenuPrimitive.Item>
-                ) : (
-                  <MenuPrimitive.CheckboxItem
-                    checked={item.selected}
-                    onSelect={item.onSelect}
-                    disabled={item.disabled}
-                    className={itemClassName}
-                  >
-                    {content}
-                    <MenuPrimitive.ItemIndicator>
-                      <Icon name="check" size={16} />
-                    </MenuPrimitive.ItemIndicator>
-                  </MenuPrimitive.CheckboxItem>
-                )}
-              </div>
-            );
-          })}
+              return (
+                <div key={item.id}>
+                  {item.separatorBefore ? <MenuPrimitive.Separator className="bg-border my-1 h-px" /> : null}
+                  {item.selected === undefined ? (
+                    <MenuPrimitive.Item onSelect={item.onSelect} disabled={item.disabled} className={itemClassName}>
+                      {content}
+                    </MenuPrimitive.Item>
+                  ) : (
+                    <MenuPrimitive.RadioItem
+                      value={item.id}
+                      onSelect={item.onSelect}
+                      disabled={item.disabled}
+                      className={itemClassName}
+                    >
+                      {content}
+                      <MenuPrimitive.ItemIndicator>
+                        <Icon name="check" size={16} />
+                      </MenuPrimitive.ItemIndicator>
+                    </MenuPrimitive.RadioItem>
+                  )}
+                </div>
+              );
+            })}
+          </Choices>
         </MenuPrimitive.Content>
       </MenuPrimitive.Portal>
     </MenuPrimitive.Root>
   );
+}
+
+/**
+ * Wraps the items in a Radix `RadioGroup` only when the menu actually offers a choice.
+ *
+ * A menu of plain actions must not become a radio group: it would tell a screen reader that
+ * "Duplicate" and "Export" are alternatives one of which is selected.
+ */
+function Choices({ enabled, value, children }: { enabled: boolean; value?: string; children: React.ReactNode }) {
+  if (!enabled) return <>{children}</>;
+  return <MenuPrimitive.RadioGroup value={value}>{children}</MenuPrimitive.RadioGroup>;
 }

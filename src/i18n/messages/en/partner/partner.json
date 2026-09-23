@@ -3,5 +3,15 @@
   "placeholder": {
     "heading": "Partner zone",
     "body": "The zone shell is in place. Working screens arrive here as they are built."
+  },
+  "shell": {
+    "account": "Account"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "today": "Today",
+    "jobs": "Jobs",
+    "ship": "Ship",
+    "billing": "Billing"
   }
 }

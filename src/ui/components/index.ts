@@ -6,6 +6,21 @@
 
 export { AlertDialog, type AlertDialogProps } from "./AlertDialog";
 export { AppShell, type AppShellProps } from "./AppShell";
+export { Avatar, type AvatarProps } from "./Avatar";
+export { Breadcrumbs, type BreadcrumbsProps, type Crumb } from "./Breadcrumbs";
+export {
+  CommandPalette,
+  useCommandPaletteShortcut,
+  useModKey,
+  type CommandItem,
+  type CommandPaletteProps,
+} from "./CommandPalette";
+export {
+  ShortcutsOverlay,
+  useShortcutsOverlayShortcut,
+  type Shortcut,
+  type ShortcutsOverlayProps,
+} from "./ShortcutsOverlay";
 export { Badge, badgeVariants, type BadgeProps } from "./Badge";
 export { Button, buttonVariants, type ButtonProps } from "./Button";
 export { Callout, type CalloutProps } from "./Callout";

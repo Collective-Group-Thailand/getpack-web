@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { MOCK_OTP, MOCK_PARTNER, MOCK_STAFF, signInAsStaff } from "./helpers/session";
+import { accountButton, MOCK_OTP, MOCK_PARTNER, MOCK_STAFF, openAccountMenu, signInAsStaff } from "./helpers/session";
 
 /**
  * These run against MSW (`API_MOCKS=1` in the web server's env), so they exercise the whole
@@ -23,6 +23,7 @@ test.describe("staff sign-in", () => {
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
 
     await expect(page).toHaveURL(`${HOSTS.admin}/`);
+    await openAccountMenu(page);
     await expect(page.getByTestId("actor-name")).toHaveText("สมชาย ตัวอย่าง (ข้อมูลจำลอง)");
     await expect(page.getByTestId("actor-roles")).toContainText("cs");
   });
@@ -64,6 +65,7 @@ test.describe("staff sign-in", () => {
   test("signing out ends the session and asks for it again", async ({ page }) => {
     await signInAsStaff(page);
 
+    await openAccountMenu(page);
     await page.getByRole("button", { name: "ออกจากระบบ" }).click();
     // Longer than the default: this is a Server Action that calls the API, clears three
     // cookies and then redirects, and with the suite running four workers against one dev
@@ -91,7 +93,7 @@ test.describe("zone isolation", () => {
     // copied across by hand, the API rejects a token whose audience is not `staff`.
     await page.goto(`${HOSTS.admin}/`);
     await expect(page).toHaveURL(`${HOSTS.admin}/login`);
-    await expect(page.getByTestId("actor-name")).toHaveCount(0);
+    await expect(accountButton(page)).toHaveCount(0);
   });
 
   test("a staff session does not sign the customer in", async ({ page }) => {
@@ -155,6 +157,7 @@ test.describe("partner sign-in", () => {
 
     await expect(page).toHaveURL(`${HOSTS.partner}/`);
     // `FactoryAccessDto` carries the factory id and the roles held at it, not a name.
+    await openAccountMenu(page);
     await expect(page.getByTestId("actor-factories")).toContainText("planner");
   });
 
@@ -168,6 +171,7 @@ test.describe("partner sign-in", () => {
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
 
     await expect(page).toHaveURL(`${HOSTS.partner}/`);
+    await openAccountMenu(page);
     await expect(page.getByTestId("actor-name")).toBeVisible();
   });
 });

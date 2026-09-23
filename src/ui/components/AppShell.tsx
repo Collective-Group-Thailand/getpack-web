@@ -13,6 +13,18 @@ export interface AppShellProps {
   skipLabel: string;
   /** Accessible name for the sidebar's `<nav>`. */
   sidebarLabel?: string;
+  /**
+   * Whether the sidebar is showing icons only. The state lives with the zone shell, which is
+   * the client component that owns the toggle and persists the choice; this component stays a
+   * server component that only reacts to it.
+   */
+  sidebarCollapsed?: boolean;
+  /**
+   * Reserve room at the bottom for the mobile nav. Off by default so a page without one keeps
+   * its full height — the old comment asked each page to do this itself, which every page
+   * then had to remember.
+   */
+  reserveBottomNavSpace?: boolean;
   className?: string;
 }
 
@@ -20,9 +32,9 @@ export interface AppShellProps {
  * The page frame every zone shares: one skip link, one `<main id="main">`, landmarks in the
  * right order (design-system.md §6).
  *
- * Deliberately a server component with no state — the collapsible sidebar, command palette
- * and mobile nav behaviour arrive with the zone shells in F1. What is here is the structure
- * a11y depends on, so no screen has to remember it.
+ * Still a server component with no state of its own. The collapse *toggle* and the ⌘K palette
+ * are client components the zone shells own and pass in — keeping this one on the server is
+ * what stops every page in all three zones from becoming a client tree.
  */
 export function AppShell({
   header,
@@ -32,6 +44,8 @@ export function AppShell({
   children,
   skipLabel,
   sidebarLabel,
+  sidebarCollapsed = false,
+  reserveBottomNavSpace = false,
   className,
 }: AppShellProps) {
   return (
@@ -44,8 +58,18 @@ export function AppShell({
 
       <div className="flex min-h-0 flex-1">
         {sidebar ? (
-          <nav aria-label={sidebarLabel} className="border-border hidden w-60 shrink-0 border-e md:block">
-            {sidebar}
+          <nav
+            aria-label={sidebarLabel}
+            className={cn(
+              "border-border hidden shrink-0 border-e md:block",
+              // A width transition rather than a display swap, so the collapse reads as one
+              // movement and nothing below it jumps.
+              "motion-safe:transition-[width] motion-safe:duration-200",
+              sidebarCollapsed ? "w-16" : "w-60",
+            )}
+          >
+            {/* Sticky under the topbar, so a long queue scrolls without taking the nav away. */}
+            <div className="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-3">{sidebar}</div>
           </nav>
         ) : null}
 
@@ -53,7 +77,7 @@ export function AppShell({
           tabIndex={-1} so the skip link can move focus here; without it the link scrolls but
           keyboard focus stays in the header.
         */}
-        <main id="main" tabIndex={-1} className="min-w-0 flex-1">
+        <main id="main" tabIndex={-1} className={cn("min-w-0 flex-1", reserveBottomNavSpace && "pb-16 md:pb-0")}>
           {children}
         </main>
       </div>
@@ -61,9 +85,7 @@ export function AppShell({
       {footer}
 
       {bottomNav ? (
-        // 4rem of padding is reserved by the pages that use this, not added here, so a page
-        // without a bottom nav keeps its full height.
-        <div className="border-border bg-surface sticky bottom-0 border-t md:hidden">{bottomNav}</div>
+        <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t md:hidden">{bottomNav}</div>
       ) : null}
     </div>
   );
