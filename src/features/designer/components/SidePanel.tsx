@@ -1,67 +1,82 @@
 "use client";
-import { useEditor } from "@/features/designer/store/editor";
+
+import { useLocale, useTranslations } from "next-intl";
+
 import { FONT_FAMILIES } from "@/features/designer/catalog";
 import { PATTERN_OPTIONS } from "@/features/designer/patterns";
+import { useEditor } from "@/features/designer/store/editor";
 import type { DesignElement } from "@/features/designer/types";
-import { inputCls } from "./Modal";
-import { ICopy, ITrash } from "./Icons";
+import { formatNumber } from "@/i18n/format";
+import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
+import { ColorField } from "@/ui/components/ColorField";
+import { Field } from "@/ui/components/Field";
+import { IconButton } from "@/ui/components/IconButton";
+import { NumberInput, Textarea } from "@/ui/components/Input";
+import { Kbd } from "@/ui/components/Kbd";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Select } from "@/ui/components/Select";
+import { Slider } from "@/ui/components/Slider";
+import { cn } from "@/ui/lib/cn";
 
-const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <label className="block text-xs text-slate-600">
-    <span className="mb-1 block">{label}</span>
-    {children}
-  </label>
-);
-
-const Color = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-  <div className="flex items-center gap-2">
-    <input
-      type="color"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-10 cursor-pointer rounded border border-slate-300"
-    />
-    <input className={inputCls} value={value} onChange={(e) => onChange(e.target.value)} />
-  </div>
-);
+/** Below this printed height (mm) a glyph stops holding an edge on board — roughly 6 pt. */
+const MIN_LEGIBLE_TEXT_MM = 2.1;
 
 export function PatternPanel() {
+  const t = useTranslations("designer.pattern");
   const { content, setPattern } = useEditor();
-  const p = content.pattern;
+  const pattern = content.pattern;
+
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold">ลวดลายพื้นหลัง</h3>
+      <h3 className="font-semibold">{t("heading")}</h3>
+
       <div className="grid grid-cols-3 gap-2">
-        {PATTERN_OPTIONS.map((o) => (
+        {PATTERN_OPTIONS.map((option) => (
           <button
-            key={o.kind}
-            onClick={() => setPattern({ kind: o.kind })}
-            className={`rounded-lg border px-2 py-2 text-xs ${p.kind === o.kind ? "border-teal-600 bg-teal-50 text-teal-700" : "border-slate-200 hover:bg-slate-50"}`}
+            key={option.kind}
+            type="button"
+            onClick={() => setPattern({ kind: option.kind })}
+            aria-pressed={pattern.kind === option.kind}
+            className={cn(
+              "duration-fast ease-standard rounded-lg border px-2 py-2 text-xs transition-colors",
+              pattern.kind === option.kind
+                ? "border-primary bg-primary-subtle text-primary-subtle-fg"
+                : "border-border hover:bg-surface-subtle",
+            )}
           >
-            {o.label}
+            {option.label}
           </button>
         ))}
       </div>
-      {p.kind !== "none" && (
+
+      {pattern.kind !== "none" && (
         <>
-          <Row label="สีลาย">
-            <Color value={p.color} onChange={(color) => setPattern({ color })} />
-          </Row>
-          {p.kind !== "solid" && (
+          <Field label={t("color")}>
+            <ColorField
+              value={pattern.color}
+              onValueChange={(color) => setPattern({ color })}
+              hexLabel={t("hexLabel")}
+            />
+          </Field>
+          {pattern.kind !== "solid" && (
             <>
-              <Row label="สีพื้น">
-                <Color value={p.background} onChange={(background) => setPattern({ background })} />
-              </Row>
-              <Row label={`ขนาดลาย ${p.size} มม.`}>
-                <input
-                  type="range"
+              <Field label={t("background")}>
+                <ColorField
+                  value={pattern.background}
+                  onValueChange={(background) => setPattern({ background })}
+                  hexLabel={t("hexLabel")}
+                />
+              </Field>
+              <Field label={t("size", { size: pattern.size })}>
+                <Slider
+                  value={[pattern.size]}
                   min={4}
                   max={60}
-                  value={p.size}
-                  onChange={(e) => setPattern({ size: Number(e.target.value) })}
-                  className="w-full accent-teal-600"
+                  onValueChange={([size]) => setPattern({ size })}
+                  valueText={`${pattern.size} mm`}
                 />
-              </Row>
+              </Field>
             </>
           )}
         </>
@@ -71,213 +86,205 @@ export function PatternPanel() {
 }
 
 export function PropertiesPanel({ el }: { el: DesignElement }) {
+  const t = useTranslations("designer.properties");
+  const locale = useLocale() as "th" | "en";
   const { updateElement, removeElement, duplicateElement, reorder } = useEditor();
+
   const set = (patch: Partial<DesignElement>) => updateElement(el.id, patch);
-  const num = (v: string) => (Number.isFinite(Number(v)) ? Number(v) : 0);
-  const titles = { text: "ข้อความ", image: "รูปภาพ", rect: "สี่เหลี่ยม", circle: "วงกลม" };
+  const titles = { text: t("text"), image: t("image"), rect: t("rect"), circle: t("circle") };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">{titles[el.type]}</h3>
         <div className="flex gap-1">
-          <button
-            title="ทำสำเนา (Ctrl+D)"
-            onClick={() => duplicateElement(el.id)}
-            className="rounded p-1.5 hover:bg-slate-100"
-          >
-            <ICopy className="h-4 w-4" />
-          </button>
-          <button
-            title="ลบ (Delete)"
+          <IconButton name="copy" label={t("duplicate")} size="sm" onClick={() => duplicateElement(el.id)} />
+          <IconButton
+            name="trash"
+            label={t("remove")}
+            size="sm"
+            className="text-danger"
             onClick={() => removeElement(el.id)}
-            className="rounded p-1.5 text-rose-600 hover:bg-rose-50"
-          >
-            <ITrash className="h-4 w-4" />
-          </button>
+          />
         </div>
       </div>
 
       {el.type === "text" && (
         <>
-          <Row label="ข้อความ">
-            <textarea className={inputCls} rows={3} value={el.text} onChange={(e) => set({ text: e.target.value })} />
-          </Row>
-          <Row label="ฟอนต์">
-            <select className={inputCls} value={el.fontFamily} onChange={(e) => set({ fontFamily: e.target.value })}>
-              {FONT_FAMILIES.map((f) => (
-                <option key={f} style={{ fontFamily: f }}>
-                  {f}
-                </option>
-              ))}
-            </select>
-          </Row>
+          <Field label={t("textContent")}>
+            <Textarea rows={3} value={el.text} onChange={(event) => set({ text: event.target.value })} />
+          </Field>
+
+          <Field label={t("font")}>
+            <Select
+              value={el.fontFamily}
+              onValueChange={(fontFamily) => set({ fontFamily })}
+              options={FONT_FAMILIES.map((family) => ({
+                value: family,
+                label: <span style={{ fontFamily: family }}>{family}</span>,
+              }))}
+            />
+          </Field>
+
           <div className="grid grid-cols-2 gap-2">
-            <Row label="ขนาด (มม.)">
-              <input
-                type="number"
+            <Field label={t("fontSize")}>
+              <NumberInput
                 min={1}
                 step={0.5}
-                className={inputCls}
+                inputSize="sm"
+                unit="มม."
                 value={el.fontSize}
-                onChange={(e) => set({ fontSize: Math.max(1, num(e.target.value)) })}
+                onChange={(event) => set({ fontSize: Math.max(1, Number(event.target.value) || 0) })}
               />
-            </Row>
-            <Row label="รูปแบบ">
-              <select
-                className={inputCls}
+            </Field>
+            <Field label={t("fontStyle")}>
+              <Select
                 value={el.fontStyle}
-                onChange={(e) => set({ fontStyle: e.target.value as typeof el.fontStyle })}
-              >
-                <option value="normal">ปกติ</option>
-                <option value="bold">หนา</option>
-                <option value="italic">เอียง</option>
-                <option value="italic bold">หนา+เอียง</option>
-              </select>
-            </Row>
+                onValueChange={(fontStyle) => set({ fontStyle: fontStyle as typeof el.fontStyle })}
+                options={[
+                  { value: "normal", label: t("styleNormal") },
+                  { value: "bold", label: t("styleBold") },
+                  { value: "italic", label: t("styleItalic") },
+                  { value: "italic bold", label: t("styleBoldItalic") },
+                ]}
+              />
+            </Field>
           </div>
-          {el.fontSize * el.scaleY < 2.1 && (
-            <p className="text-xs text-amber-600">ตัวอักษรเล็กกว่า 6pt อาจพิมพ์ไม่ชัด</p>
-          )}
-          <Row label="จัดวาง">
-            <div className="grid grid-cols-3 gap-1">
-              {(["left", "center", "right"] as const).map((a) => (
-                <button
-                  key={a}
-                  onClick={() => set({ align: a })}
-                  className={`rounded border py-1 text-xs ${el.align === a ? "border-teal-600 bg-teal-50" : "border-slate-200"}`}
-                >
-                  {{ left: "ซ้าย", center: "กลาง", right: "ขวา" }[a]}
-                </button>
-              ))}
-            </div>
-          </Row>
-          <Row label="สี">
-            <Color value={el.fill} onChange={(fill) => set({ fill })} />
-          </Row>
+
+          {el.fontSize * el.scaleY < MIN_LEGIBLE_TEXT_MM && <Callout tone="warning" title={t("tooSmall")} />}
+
+          <Field label={t("align")}>
+            <SegmentedControl
+              label={t("align")}
+              size="sm"
+              value={el.align}
+              onValueChange={(align) => set({ align: align as typeof el.align })}
+              options={[
+                { value: "left", label: t("alignLeft"), icon: "align-left" },
+                { value: "center", label: t("alignCenter"), icon: "align-center" },
+                { value: "right", label: t("alignRight"), icon: "align-right" },
+              ]}
+            />
+          </Field>
+
+          <Field label={t("color")}>
+            <ColorField value={el.fill} onValueChange={(fill) => set({ fill })} hexLabel={t("color")} />
+          </Field>
         </>
       )}
 
       {(el.type === "rect" || el.type === "circle") && (
         <>
-          <Row label="สีพื้น">
-            <Color value={el.fill} onChange={(fill) => set({ fill })} />
-          </Row>
+          <Field label={t("fill")}>
+            <ColorField value={el.fill} onValueChange={(fill) => set({ fill })} hexLabel={t("fill")} />
+          </Field>
           <div className="grid grid-cols-2 gap-2">
-            <Row label="เส้นขอบ (มม.)">
-              <input
-                type="number"
+            <Field label={t("strokeWidth")}>
+              <NumberInput
                 min={0}
                 step={0.25}
-                className={inputCls}
+                inputSize="sm"
                 value={el.strokeWidth}
-                onChange={(e) => set({ strokeWidth: Math.max(0, num(e.target.value)) })}
+                onChange={(event) => set({ strokeWidth: Math.max(0, Number(event.target.value) || 0) })}
               />
-            </Row>
+            </Field>
             {el.type === "rect" && (
-              <Row label="มุมโค้ง (มม.)">
-                <input
-                  type="number"
+              <Field label={t("cornerRadius")}>
+                <NumberInput
                   min={0}
-                  className={inputCls}
+                  inputSize="sm"
                   value={el.cornerRadius}
-                  onChange={(e) => set({ cornerRadius: Math.max(0, num(e.target.value)) })}
+                  onChange={(event) => set({ cornerRadius: Math.max(0, Number(event.target.value) || 0) })}
                 />
-              </Row>
+              </Field>
             )}
           </div>
           {el.strokeWidth > 0 && (
-            <Row label="สีเส้นขอบ">
-              <Color value={el.stroke} onChange={(stroke) => set({ stroke })} />
-            </Row>
+            <Field label={t("stroke")}>
+              <ColorField value={el.stroke} onValueChange={(stroke) => set({ stroke })} hexLabel={t("stroke")} />
+            </Field>
           )}
         </>
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        <Row label="X (มม.)">
-          <input
-            type="number"
-            className={inputCls}
+        <Field label={t("x")}>
+          <NumberInput
+            inputSize="sm"
             value={Math.round(el.x * 10) / 10}
-            onChange={(e) => set({ x: num(e.target.value) })}
+            onChange={(event) => set({ x: Number(event.target.value) || 0 })}
           />
-        </Row>
-        <Row label="Y (มม.)">
-          <input
-            type="number"
-            className={inputCls}
+        </Field>
+        <Field label={t("y")}>
+          <NumberInput
+            inputSize="sm"
             value={Math.round(el.y * 10) / 10}
-            onChange={(e) => set({ y: num(e.target.value) })}
+            onChange={(event) => set({ y: Number(event.target.value) || 0 })}
           />
-        </Row>
-        <Row label="หมุน (°)">
-          <input
-            type="number"
-            className={inputCls}
+        </Field>
+        <Field label={t("rotation")}>
+          <NumberInput
+            inputSize="sm"
             value={Math.round(el.rotation)}
-            onChange={(e) => set({ rotation: num(e.target.value) })}
+            onChange={(event) => set({ rotation: Number(event.target.value) || 0 })}
           />
-        </Row>
-        <Row label={`ความทึบ ${Math.round(el.opacity * 100)}%`}>
-          <input
-            type="range"
+        </Field>
+        <Field label={t("opacity", { percent: Math.round(el.opacity * 100) })}>
+          <Slider
+            value={[el.opacity]}
             min={0.05}
             max={1}
             step={0.05}
-            value={el.opacity}
-            onChange={(e) => set({ opacity: Number(e.target.value) })}
-            className="mt-2 w-full accent-teal-600"
+            onValueChange={([opacity]) => set({ opacity })}
+            valueText={`${formatNumber(Math.round(el.opacity * 100), locale)} %`}
           />
-        </Row>
+        </Field>
       </div>
 
-      <Row label="ลำดับชั้น">
+      <Field label={t("layer")}>
         <div className="grid grid-cols-4 gap-1">
           {(
             [
-              ["top", "บนสุด"],
-              ["up", "ขึ้น"],
-              ["down", "ลง"],
-              ["bottom", "ล่างสุด"],
+              ["top", t("layerTop"), "layer-top"],
+              ["up", t("layerUp"), "layer-up"],
+              ["down", t("layerDown"), "layer-down"],
+              ["bottom", t("layerBottom"), "layer-bottom"],
             ] as const
-          ).map(([d, l]) => (
+          ).map(([direction, label]) => (
             <button
-              key={d}
-              onClick={() => reorder(el.id, d)}
-              className="rounded border border-slate-200 py-1 text-xs hover:bg-slate-50"
+              key={direction}
+              type="button"
+              onClick={() => reorder(el.id, direction)}
+              className="border-border hover:bg-surface-subtle rounded-md border py-1 text-xs"
             >
-              {l}
+              {label}
             </button>
           ))}
         </div>
-      </Row>
+      </Field>
     </div>
   );
 }
 
-export function EmptyPanel() {
+export function ViewPanel() {
+  const t = useTranslations("designer.view");
   const { showLabels, showSafeZone, toggle } = useEditor();
+
   return (
     <div className="space-y-4 text-sm">
-      <h3 className="font-semibold">มุมมอง</h3>
-      <label className="flex items-center gap-2">
-        <input type="checkbox" checked={showLabels} onChange={() => toggle("showLabels")} className="accent-teal-600" />{" "}
-        แสดงชื่อด้านกล่อง
-      </label>
-      <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={showSafeZone}
-          onChange={() => toggle("showSafeZone")}
-          className="accent-teal-600"
-        />{" "}
-        แสดงเขตปลอดภัย (3 มม.)
-      </label>
-      <div className="rounded-lg bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-        <p className="mb-1 font-medium text-slate-700">ทางลัด</p>
-        <p>ลากพื้นที่ว่างเพื่อเลื่อน · ล้อเมาส์เพื่อซูม</p>
-        <p>Delete ลบ · Ctrl+Z / Ctrl+Shift+Z · Ctrl+D ทำสำเนา · ลูกศรขยับ 1 มม. (Shift = 10 มม.)</p>
+      <h3 className="font-semibold">{t("heading")}</h3>
+      <Checkbox label={t("showLabels")} checked={showLabels} onCheckedChange={() => toggle("showLabels")} />
+      <Checkbox label={t("showSafeZone")} checked={showSafeZone} onCheckedChange={() => toggle("showSafeZone")} />
+
+      <div className="bg-surface-subtle text-muted rounded-lg p-3 text-xs leading-relaxed">
+        <p className="text-fg mb-1 font-medium">{t("shortcutsHeading")}</p>
+        <p>{t("shortcutPan")}</p>
+        <p className="mt-1 flex flex-wrap items-center gap-1">
+          <Kbd>Delete</Kbd>
+          <Kbd>Ctrl</Kbd>+<Kbd>Z</Kbd>
+          <Kbd>Ctrl</Kbd>+<Kbd>D</Kbd>
+          <span className="ms-1">{t("shortcutKeys")}</span>
+        </p>
       </div>
     </div>
   );

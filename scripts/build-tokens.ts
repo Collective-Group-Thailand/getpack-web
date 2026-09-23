@@ -57,7 +57,18 @@ function semanticVars(theme: keyof typeof THEMES): string[] {
 function themeBlock(): string {
   const lines: string[] = [];
 
-  lines.push("/* Tier 1 — primitive palette (OKLCH). Do not use directly in components. */");
+  lines.push(
+    "/*",
+    " * Tailwind's own palette, fonts, radii and shadows are replaced, not extended: `bg-teal-600`",
+    " * and `text-slate-500` must stop resolving, or the design system is a suggestion. Everything",
+    " * a screen may name is defined below.",
+    " */",
+    "--color-*: initial;",
+    "--radius-*: initial;",
+    "--shadow-*: initial;",
+    "",
+    "/* Tier 1 — primitive palette (OKLCH). Do not use directly in components. */",
+  );
   for (const [name, palette] of Object.entries(PALETTES)) {
     for (const step of STEPS) lines.push(`--color-${name}-${step}: ${oklchCss(palette[step])};`);
   }
@@ -69,7 +80,7 @@ function themeBlock(): string {
   lines.push("", "/* Tier 2 — semantic aliases. These are what components name; they follow the theme. */");
   for (const key of SEMANTIC_KEYS) lines.push(`--color-${key}: var(--sem-${key});`);
 
-  lines.push("", "/* Typography (ADR-0001). Tailwind's own --font-* defaults are replaced, not extended. */");
+  lines.push("", "/* Typography (ADR-0001). */");
   lines.push("--font-*: initial;");
   for (const [name, stack] of Object.entries(FONT_FAMILY)) lines.push(`--font-${name}: ${stack};`);
   for (const [name, size] of Object.entries(FONT_SIZE)) lines.push(`--text-${name}: ${size};`);

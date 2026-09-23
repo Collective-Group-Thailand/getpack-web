@@ -1,109 +1,165 @@
 "use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { nanoid } from "nanoid";
-import { designRepo } from "@/features/designer/storage";
-import { getPaper, getStyle } from "@/features/designer/catalog";
-import type { SavedDesign } from "@/features/designer/types";
 
-const fmt = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" });
+import { useCallback, useEffect, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { nanoid } from "nanoid";
+
+import { getPaper, getStyle } from "@/features/designer/catalog";
+import { designRepo } from "@/features/designer/storage";
+import type { SavedDesign } from "@/features/designer/types";
+import { Link } from "@/i18n/navigation";
+import { formatDateTime } from "@/i18n/format";
+import { AlertDialog } from "@/ui/components/AlertDialog";
+import { Button } from "@/ui/components/Button";
+import { Card } from "@/ui/components/Card";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { Field } from "@/ui/components/Field";
+import { Input } from "@/ui/components/Input";
+import { toast } from "@/ui/components/Toast";
 
 export default function MyDesigns() {
-  const [items, setItems] = useState<SavedDesign[] | null>(null);
-  const [q, setQ] = useState("");
-  const refresh = () => setItems(designRepo.list());
-  useEffect(refresh, []);
+  const t = useTranslations("designs");
+  const tCommon = useTranslations("common");
+  const locale = useLocale() as "th" | "en";
 
-  const filtered = (items ?? []).filter((d) => d.name.toLowerCase().includes(q.toLowerCase()));
+  // Reading localStorage during render would break SSR, so the list starts unknown and the
+  // first effect fills it. `null` renders nothing rather than a wrong empty state.
+  const [items, setItems] = useState<SavedDesign[] | null>(null);
+  const [query, setQuery] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<SavedDesign | null>(null);
+
+  const refresh = useCallback(() => setItems(designRepo.list()), []);
+
+  useEffect(() => {
+    /*
+     * Reading localStorage on mount is a one-off pull from an external store — the case this
+     * rule cannot express. Doing it during render would break SSR, and designs move to the
+     * API in F4 Part B, which removes the effect entirely.
+     */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh();
+  }, [refresh]);
+
+  const filtered = (items ?? []).filter((design) => design.name.toLowerCase().includes(query.toLowerCase()));
+
+  const duplicate = (design: SavedDesign) => {
+    if (!designRepo.duplicate(design.id, nanoid(10))) {
+      toast.error(t("duplicateFailed"));
+      return;
+    }
+    refresh();
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    designRepo.remove(pendingDelete.id);
+    setPendingDelete(null);
+    refresh();
+  };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <main id="main" className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">แบบของฉัน</h1>
-          <p className="text-sm text-slate-500">งานออกแบบที่บันทึกไว้ในเบราว์เซอร์นี้</p>
+          <h1 className="text-2xl font-semibold">{t("title")}</h1>
+          <p className="text-muted text-sm">{t("subtitle")}</p>
         </div>
-        <div className="flex gap-2">
-          <input
-            placeholder="ค้นหาชื่อแบบ"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-500"
-          />
-          <Link
-            href="/design/new"
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-          >
-            + ออกแบบใหม่
-          </Link>
+        <div className="flex items-end gap-2">
+          <Field label={t("searchLabel")} labelHidden className="w-56">
+            <Input
+              type="search"
+              placeholder={t("searchPlaceholder")}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              inputSize="sm"
+            />
+          </Field>
+          <Button asChild size="sm">
+            <Link href="/design/new">{t("new")}</Link>
+          </Button>
         </div>
       </div>
 
       {items === null ? null : filtered.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 py-20 text-center">
-          <p className="text-slate-600">{items.length ? "ไม่พบแบบที่ค้นหา" : "ยังไม่มีงานออกแบบ"}</p>
-          {!items.length && (
-            <Link
-              href="/design/new"
-              className="mt-4 inline-block rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white"
-            >
-              เริ่มออกแบบกล่องแรก
-            </Link>
-          )}
-        </div>
+        <EmptyState
+          icon="box"
+          title={items.length ? t("noResults.title") : t("empty.title")}
+          description={items.length ? t("noResults.body") : t("empty.body")}
+          action={
+            items.length ? null : (
+              <Button asChild>
+                <Link href="/design/new">{t("empty.action")}</Link>
+              </Button>
+            )
+          }
+        />
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((d) => (
-            <li
-              key={d.id}
-              className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-lg"
-            >
-              <Link href={`/design/${d.id}`} className="block aspect-[4/3] bg-slate-50 p-4">
-                {d.thumbnail ? (
+          {filtered.map((design) => (
+            <Card as="li" key={design.id} padding="none" className="overflow-hidden transition hover:shadow-lg">
+              <Link
+                href={`/design/${design.id}`}
+                className="bg-surface-subtle block aspect-[4/3] p-4"
+                tabIndex={-1}
+                aria-hidden={Boolean(design.thumbnail)}
+              >
+                {design.thumbnail ? (
+                  // The thumbnail is a data URL generated from the canvas, so next/image
+                  // cannot optimise it and the name below is the accessible label.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={d.thumbnail} alt={d.name} className="h-full w-full object-contain" />
+                  <img src={design.thumbnail} alt="" className="h-full w-full object-contain" />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-slate-400">ไม่มีภาพตัวอย่าง</div>
+                  <span className="text-subtle flex h-full items-center justify-center text-sm">
+                    {t("card.noThumbnail")}
+                  </span>
                 )}
               </Link>
               <div className="p-4">
-                <Link href={`/design/${d.id}`} className="font-medium hover:text-teal-700">
-                  {d.name}
+                <Link href={`/design/${design.id}`} className="hover:text-primary font-medium">
+                  {design.name}
                 </Link>
-                <p className="mt-1 text-xs text-slate-500">
-                  {getStyle(d.spec.style).name} · {d.spec.dims.length}×{d.spec.dims.width}×{d.spec.dims.height} มม. ·{" "}
-                  {getPaper(d.spec.paperId).name}
+                <p className="text-muted mt-1 text-xs">
+                  {t("card.spec", {
+                    style: getStyle(design.spec.style).name,
+                    length: design.spec.dims.length,
+                    width: design.spec.dims.width,
+                    height: design.spec.dims.height,
+                    paper: getPaper(design.spec.paperId).name,
+                  })}
                 </p>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xs text-slate-400">แก้ไข {fmt.format(d.updatedAt)}</span>
-                  <div className="flex gap-1 text-xs">
-                    <button
-                      className="rounded px-2 py-1 hover:bg-slate-100"
-                      onClick={() => {
-                        if (!designRepo.duplicate(d.id, nanoid(10))) alert("ทำสำเนาไม่สำเร็จ — พื้นที่จัดเก็บเต็ม");
-                        refresh();
-                      }}
-                    >
-                      ทำสำเนา
-                    </button>
-                    <button
-                      className="rounded px-2 py-1 text-rose-600 hover:bg-rose-50"
-                      onClick={() => {
-                        if (confirm(`ลบ “${d.name}”? ไม่สามารถกู้คืนได้`)) {
-                          designRepo.remove(d.id);
-                          refresh();
-                        }
-                      }}
-                    >
-                      ลบ
-                    </button>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <span className="text-subtle text-xs">
+                    {t("card.updated", { date: formatDateTime(design.updatedAt, locale) })}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => duplicate(design)}>
+                      {tCommon("actions.duplicate")}
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-danger" onClick={() => setPendingDelete(design)}>
+                      {tCommon("actions.delete")}
+                    </Button>
                   </div>
                 </div>
               </div>
-            </li>
+            </Card>
           ))}
         </ul>
       )}
+
+      {/*
+        Replaces window.confirm: a native dialog cannot be styled, cannot be translated, and
+        cannot restate what is about to be deleted (design-system.md §4).
+      */}
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        tone="destructive"
+        title={t("delete.title")}
+        description={t("delete.body", { name: pendingDelete?.name ?? "" })}
+        confirmLabel={t("delete.confirm")}
+        cancelLabel={tCommon("actions.cancel")}
+        onConfirm={confirmDelete}
+      />
     </main>
   );
 }

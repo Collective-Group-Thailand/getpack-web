@@ -5,6 +5,15 @@
  */
 
 @theme {
+  /*
+   * Tailwind's own palette, fonts, radii and shadows are replaced, not extended: `bg-teal-600`
+   * and `text-slate-500` must stop resolving, or the design system is a suggestion. Everything
+   * a screen may name is defined below.
+   */
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
   /* Tier 1 — primitive palette (OKLCH). Do not use directly in components. */
   --color-neutral-50: oklch(98.5% 0.0013 255);
   --color-neutral-100: oklch(96.2% 0.0031 255);
@@ -95,6 +104,7 @@
   --color-subtle: var(--sem-subtle);
   --color-fg-inverse: var(--sem-fg-inverse);
   --color-primary-hover: var(--sem-primary-hover);
+  --color-danger-hover: var(--sem-danger-hover);
   --color-focus-ring: var(--sem-focus-ring);
   --color-canvas: var(--sem-canvas);
   --color-canvas-grid: var(--sem-canvas-grid);
@@ -123,7 +133,7 @@
   --color-neutral-subtle: var(--sem-neutral-subtle);
   --color-neutral-subtle-fg: var(--sem-neutral-subtle-fg);
 
-  /* Typography (ADR-0001). Tailwind's own --font-* defaults are replaced, not extended. */
+  /* Typography (ADR-0001). */
   --font-*: initial;
   --font-sans: var(--font-pk-sans-latin), var(--font-pk-sans-thai), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-pk-display-latin), var(--font-pk-display-thai), var(--font-pk-sans-latin), sans-serif;
@@ -191,6 +201,7 @@
   --sem-subtle: oklch(65.8% 0.0207 255);
   --sem-fg-inverse: oklch(100% 0 0);
   --sem-primary-hover: oklch(42.8% 0.082 183);
+  --sem-danger-hover: oklch(42.8% 0.164 24);
   --sem-focus-ring: oklch(58.8% 0.1 183);
   --sem-canvas: oklch(96.2% 0.0031 255);
   --sem-canvas-grid: oklch(85.5% 0.0106 255);
@@ -238,6 +249,7 @@
     --sem-subtle: oklch(76.2% 0.0163 255);
     --sem-fg-inverse: oklch(26.2% 0.011 255);
     --sem-primary-hover: oklch(85.5% 0.048 183);
+    --sem-danger-hover: oklch(85.5% 0.096 24);
     --sem-focus-ring: oklch(76.2% 0.074 183);
     --sem-canvas: oklch(35.2% 0.015 255);
     --sem-canvas-grid: oklch(50.5% 0.0207 255);
@@ -282,6 +294,7 @@
   --sem-subtle: oklch(76.2% 0.0163 255);
   --sem-fg-inverse: oklch(26.2% 0.011 255);
   --sem-primary-hover: oklch(85.5% 0.048 183);
+  --sem-danger-hover: oklch(85.5% 0.096 24);
   --sem-focus-ring: oklch(76.2% 0.074 183);
   --sem-canvas: oklch(35.2% 0.015 255);
   --sem-canvas-grid: oklch(50.5% 0.0207 255);
@@ -325,6 +338,7 @@
   --sem-subtle: oklch(42.8% 0.018 255);
   --sem-fg-inverse: oklch(100% 0 0);
   --sem-primary-hover: oklch(26.2% 0.05 183);
+  --sem-danger-hover: oklch(26.2% 0.1 24);
   --sem-focus-ring: oklch(0% 0 0);
   --sem-canvas: oklch(100% 0 0);
   --sem-canvas-grid: oklch(65.8% 0.0207 255);

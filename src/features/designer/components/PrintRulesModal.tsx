@@ -1,35 +1,36 @@
 "use client";
-import { btnPrimary, Modal } from "./Modal";
 
-const RULES: [string, string][] = [
-  ["เขตปลอดภัย", "วางข้อความและโลโก้ห่างจากเส้นตัด/เส้นพับอย่างน้อย 3 มม. (เส้นประสีเขียว)"],
-  ["ระยะตกขอบ (Bleed)", "พื้นหลังและลวดลายควรเลยเส้นตัดออกไป 3 มม. ระบบจะส่งออก PDF พร้อมระยะนี้ให้"],
-  ["ความละเอียดภาพ", "รูปภาพควรมีความละเอียดอย่างน้อย 300 dpi ที่ขนาดจริง"],
-  ["ขนาดตัวอักษร", "ไม่ควรเล็กกว่า 6pt (ประมาณ 2.1 มม.) และเส้นไม่บางกว่า 0.25pt"],
-  ["สี", "สีบนจออาจต่างจากงานพิมพ์ (RGB → CMYK) โดยเฉพาะสีสดและสีนีออน"],
-  ["วัสดุลูกฟูก", "ผิวกระดาษน้ำตาลจะทำให้สีเข้มขึ้น ควรเลือกสีเข้ม/คอนทราสต์สูง"],
-];
+import { useTranslations } from "next-intl";
 
+import { Button } from "@/ui/components/Button";
+import { Dialog } from "@/ui/components/Dialog";
+
+const RULES = ["safeZone", "bleed", "resolution", "typeSize", "colour", "corrugated"] as const;
+
+/**
+ * The print rules a customer needs before committing artwork. Contextual help, in the
+ * customer's words, kept in one place so the same wording reaches the proof email (F3).
+ */
 export function PrintRulesModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useTranslations("designer.printRules");
+  const tCommon = useTranslations("common");
+
   return (
-    <Modal
+    <Dialog
       open={open}
-      onClose={onClose}
-      title="ข้อกำหนดงานพิมพ์"
-      footer={
-        <button className={btnPrimary} onClick={onClose}>
-          เข้าใจแล้ว
-        </button>
-      }
+      onOpenChange={(next) => !next && onClose()}
+      title={t("title")}
+      closeLabel={tCommon("actions.close")}
+      footer={<Button onClick={onClose}>{t("understood")}</Button>}
     >
       <dl className="space-y-3 text-sm">
-        {RULES.map(([t, d]) => (
-          <div key={t}>
-            <dt className="font-medium">{t}</dt>
-            <dd className="text-slate-600">{d}</dd>
+        {RULES.map((rule) => (
+          <div key={rule}>
+            <dt className="font-medium">{t(`${rule}Title`)}</dt>
+            <dd className="text-muted">{t(`${rule}Body`)}</dd>
           </div>
         ))}
       </dl>
-    </Modal>
+    </Dialog>
   );
 }

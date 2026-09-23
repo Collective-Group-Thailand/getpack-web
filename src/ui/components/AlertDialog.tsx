@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 
 import { cn } from "../lib/cn";
+import { useReturnFocus } from "../lib/useReturnFocus";
 import { Button } from "./Button";
 import { controlVariants } from "./Input";
 
@@ -53,11 +54,14 @@ export function AlertDialog({
   confirmationLabel,
   children,
 }: AlertDialogProps) {
+  const returnFocus = useReturnFocus();
+
   return (
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialogPrimitive.Portal>
         <AlertDialogPrimitive.Overlay className="z-overlay bg-overlay fixed inset-0" />
         <AlertDialogPrimitive.Content
+          {...returnFocus}
           className={cn(
             "z-modal fixed top-1/2 left-1/2 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2",
             "border-border bg-surface-raised rounded-2xl border p-5 shadow-xl",

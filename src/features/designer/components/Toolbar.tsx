@@ -1,38 +1,57 @@
 "use client";
-import { useRef } from "react";
-import { useEditor } from "@/features/designer/store/editor";
-import { FONT_FAMILIES } from "@/features/designer/catalog";
-import { IBox, ICircle, IImage, IInfo, IPattern, IRect, IRedo, IReset, IText, IUndo } from "./Icons";
 
+import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+
+import { ARTWORK_DEFAULTS } from "@/features/designer/canvas-colors";
+import { FONT_FAMILIES } from "@/features/designer/catalog";
+import { useEditor } from "@/features/designer/store/editor";
+import { AlertDialog } from "@/ui/components/AlertDialog";
+import { Separator } from "@/ui/components/Separator";
+import { toast } from "@/ui/components/Toast";
+import { Tooltip } from "@/ui/components/Tooltip";
+import { Icon, type IconName } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
+
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+/**
+ * A toolbar button: icon above a label, because a shop-floor or first-time user should not
+ * have to hover to learn what a glyph means. The label is the accessible name; the tooltip
+ * only repeats it for the mouse.
+ */
 function Tool({
-  icon: Icon,
+  icon,
   label,
   onClick,
   disabled,
   active,
 }: {
-  icon: React.FC<{ className?: string }>;
+  icon: IconName;
   label: string;
   onClick: () => void;
   disabled?: boolean;
   active?: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={label}
-      className={`flex min-w-16 flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-[11px] transition disabled:opacity-35 ${
-        active ? "bg-teal-50 text-teal-700" : "text-slate-700 hover:bg-slate-100"
-      }`}
-    >
-      <Icon />
-      <span className="whitespace-nowrap">{label}</span>
-    </button>
+    <Tooltip content={label}>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-pressed={active}
+        className={cn(
+          "flex min-w-16 flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-[11px]",
+          "duration-fast ease-standard transition-colors disabled:opacity-35",
+          active ? "bg-primary-subtle text-primary-subtle-fg" : "text-fg hover:bg-surface-subtle",
+        )}
+      >
+        <Icon name={icon} size={20} />
+        <span className="whitespace-nowrap">{label}</span>
+      </button>
+    </Tooltip>
   );
 }
-
-const Sep = () => <div className="mx-1 h-8 w-px bg-slate-200" />;
 
 export function Toolbar({
   center,
@@ -47,8 +66,11 @@ export function Toolbar({
   patternOpen: boolean;
   onTogglePattern: () => void;
 }) {
+  const t = useTranslations("designer");
+  const tCommon = useTranslations("common");
   const { past, future, undo, redo, resetAll, resetPattern, addElement, content } = useEditor();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [resetOpen, setResetOpen] = useState(false);
 
   const base = { rotation: 0, scaleX: 1, scaleY: 1, opacity: 1 };
 
@@ -59,14 +81,15 @@ export function Toolbar({
       type: "text",
       x: c.x - 30,
       y: c.y - 6,
-      text: "ข้อความของคุณ",
+      text: t("defaultText"),
       fontSize: 10,
       fontFamily: FONT_FAMILIES[0],
       fontStyle: "bold",
-      fill: "#0f172a",
+      fill: ARTWORK_DEFAULTS.text,
       align: "center",
     });
   };
+
   const addShape = (type: "rect" | "circle") => {
     const c = center();
     addElement({
@@ -76,58 +99,86 @@ export function Toolbar({
       y: c.y - 25,
       width: 50,
       height: 50,
-      fill: "#14b8a6",
-      stroke: "#0f172a",
+      fill: ARTWORK_DEFAULTS.shapeFill,
+      stroke: ARTWORK_DEFAULTS.shapeStroke,
       strokeWidth: 0,
       cornerRadius: 0,
     });
   };
-  const onFile = (f: File | undefined) => {
-    if (!f) return;
-    if (f.size > 8 * 1024 * 1024) return alert("ไฟล์ใหญ่เกิน 8 MB");
+
+  const onFile = (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(t("imageTooLarge"));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const src = reader.result as string;
       const img = new window.Image();
       img.onload = () => {
         const c = center();
-        const w = 80;
-        const h = (img.height / img.width) * w;
-        addElement({ ...base, type: "image", src, x: c.x - w / 2, y: c.y - h / 2, width: w, height: h });
+        const width = 80;
+        const height = (img.height / img.width) * width;
+        addElement({ ...base, type: "image", src, x: c.x - width / 2, y: c.y - height / 2, width, height });
       };
       img.src = src;
     };
-    reader.readAsDataURL(f);
+    reader.readAsDataURL(file);
   };
 
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto border-b border-slate-200 bg-white px-2 py-1">
-      <Tool icon={IUndo} label="ย้อนกลับ" onClick={undo} disabled={!past.length} />
-      <Tool icon={IRedo} label="ทำซ้ำ" onClick={redo} disabled={!future.length} />
+    <div
+      role="toolbar"
+      aria-label={t("toolbar.label")}
+      className="border-border bg-surface flex items-center gap-0.5 overflow-x-auto border-b px-2 py-1"
+    >
+      <Tool icon="undo" label={t("toolbar.undo")} onClick={undo} disabled={!past.length} />
+      <Tool icon="redo" label={t("toolbar.redo")} onClick={redo} disabled={!future.length} />
       <Tool
-        icon={IReset}
-        label="ล้างทั้งหมด"
-        onClick={() => confirm("ล้างงานออกแบบทั้งหมด? (ย้อนกลับได้)") && resetAll()}
+        icon="reset"
+        label={t("toolbar.resetAll")}
+        onClick={() => setResetOpen(true)}
         disabled={!content.elements.length && content.pattern.kind === "none"}
       />
-      <Tool icon={IReset} label="ล้างลวดลาย" onClick={resetPattern} disabled={content.pattern.kind === "none"} />
-      <Sep />
-      <Tool icon={IText} label="ข้อความ" onClick={addText} />
-      <Tool icon={IImage} label="รูปภาพ" onClick={() => fileRef.current?.click()} />
-      <Tool icon={IRect} label="สี่เหลี่ยม" onClick={() => addShape("rect")} />
-      <Tool icon={ICircle} label="วงกลม" onClick={() => addShape("circle")} />
-      <Tool icon={IPattern} label="ลวดลาย" onClick={onTogglePattern} active={patternOpen} />
-      <Sep />
-      <Tool icon={IBox} label="ตั้งค่ากล่อง" onClick={onOpenSetup} />
-      <Tool icon={IInfo} label="ข้อกำหนดงานพิมพ์" onClick={onOpenRules} />
+      <Tool
+        icon="pattern"
+        label={t("toolbar.resetPattern")}
+        onClick={resetPattern}
+        disabled={content.pattern.kind === "none"}
+      />
+      <Separator orientation="vertical" className="mx-1 h-8" />
+      <Tool icon="text" label={t("toolbar.text")} onClick={addText} />
+      <Tool icon="image" label={t("toolbar.image")} onClick={() => fileRef.current?.click()} />
+      <Tool icon="rectangle" label={t("toolbar.rectangle")} onClick={() => addShape("rect")} />
+      <Tool icon="circle" label={t("toolbar.circle")} onClick={() => addShape("circle")} />
+      <Tool icon="palette" label={t("toolbar.pattern")} onClick={onTogglePattern} active={patternOpen} />
+      <Separator orientation="vertical" className="mx-1 h-8" />
+      <Tool icon="box" label={t("toolbar.boxSetup")} onClick={onOpenSetup} />
+      <Tool icon="help" label={t("toolbar.printRules")} onClick={onOpenRules} />
+
       <input
         ref={fileRef}
         type="file"
         accept="image/png,image/jpeg,image/svg+xml,image/webp"
         hidden
-        onChange={(e) => {
-          onFile(e.target.files?.[0]);
-          e.target.value = "";
+        onChange={(event) => {
+          onFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
+
+      <AlertDialog
+        open={resetOpen}
+        onOpenChange={setResetOpen}
+        tone="destructive"
+        title={t("resetAllConfirm.title")}
+        description={t("resetAllConfirm.body")}
+        confirmLabel={t("resetAllConfirm.confirm")}
+        cancelLabel={tCommon("actions.cancel")}
+        onConfirm={() => {
+          resetAll();
+          setResetOpen(false);
         }}
       />
     </div>

@@ -58,6 +58,25 @@ describe("Button", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  it("renders as its child, with icons, without breaking Radix Slot", () => {
+    // Regression: with asChild, Slot needs to know which child to merge into. Without
+    // <Slottable> around the label it saw three children and threw at render — a failure
+    // jsdom-free component tests missed until the e2e server crashed on the home page.
+    render(
+      // A plain <a> rather than next/link: this is about Slot merging, and the real
+      // next/link case is exercised end to end in the e2e suite.
+      <Button asChild iconStart="save" iconEnd="chevron-right">
+        <a href="https://packio.example/design">เริ่มออกแบบ</a>
+      </Button>,
+    );
+
+    const link = screen.getByRole("link", { name: "เริ่มออกแบบ" });
+    expect(link).toHaveAttribute("href", "https://packio.example/design");
+    expect(link.querySelectorAll("svg")).toHaveLength(2);
+    // The rendered element is the child's, so no nested button appears.
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
   it("lets a caller override a conflicting utility", () => {
     render(<Button className="rounded-full">บันทึก</Button>);
     const className = screen.getByRole("button").className;

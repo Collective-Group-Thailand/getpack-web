@@ -32,6 +32,7 @@
     "svgHint": "Cut and fold on separate layers"
   },
   "toolbar": {
+    "label": "Design tools",
     "undo": "Undo",
     "redo": "Redo",
     "resetAll": "Clear all",

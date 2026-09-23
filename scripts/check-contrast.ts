@@ -50,6 +50,7 @@ export const PAIRS: Pair[] = [
   { fg: "success-fg", bg: "success", min: 4.5, why: "label on a solid success fill" },
   { fg: "warning-fg", bg: "warning", min: 4.5, why: "label on a solid warning fill" },
   { fg: "danger-fg", bg: "danger", min: 4.5, why: "label on a destructive button" },
+  { fg: "danger-fg", bg: "danger-hover", min: 4.5, why: "label on a hovered destructive button" },
   { fg: "info-fg", bg: "info", min: 4.5, why: "label on a solid info fill" },
   { fg: "neutral-fg", bg: "neutral", min: 4.5, why: "label on a solid neutral fill" },
   { fg: "primary-subtle-fg", bg: "primary-subtle", min: 4.5, why: "primary badge / callout" },
