@@ -67,6 +67,25 @@ jobs:
       - name: Build
         run: pnpm build
 
+  contract:
+    name: contract (no drift from packio-api)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Regenerates from the vendored contract/openapi.json — whose sha256 the script checks
+      # against contract.lock.json — and fails if any committed output differs. Adopting a
+      # newer backend contract is `pnpm gen:api --adopt`, which rewrites the vendored copy and
+      # the lock together, so it shows up in the diff of a PR rather than in a build.
+      - name: Generated API surface is up to date
+        run: pnpm gen:api:check
+
   storybook:
     name: storybook
     runs-on: ubuntu-latest
@@ -154,6 +173,5 @@ jobs:
           retention-days: 7
 
 # Added later, per docs/prompts/F0-setup.md and F1-foundation.md:
-#   F1 1.2 — contract drift: `pnpm gen:api` must leave src/lib/api/schema.d.ts unchanged
 #   F1 1.3 — the admin and partner Lighthouse URL sets (the hosts exist as of 1.1, but the
 #            real shells, and therefore a budget worth asserting, arrive with 1.3)
