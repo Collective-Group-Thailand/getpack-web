@@ -1,15 +1,30 @@
-# `src/domain` — how the API's vocabulary is presented
+# `src/domain` — domain presentation and client-side schemas
 
-Presentation metadata for the values the backend owns, and nothing else. No business
-rules: money, lead times and business dates are computed by `packio-api` and rendered
-here as they arrive.
+What a _value from the API_ means in the UI, shared by all three zones. No fetching, no
+business rules, no money or date arithmetic — the API owns all of that (CLAUDE.md).
 
-Planned in F1, once `pnpm gen:api` produces `src/lib/api/schema.d.ts`:
+| Folder     | Holds                                       | State                             |
+| ---------- | ------------------------------------------- | --------------------------------- |
+| `status/`  | tone + icon + label key per status          | shape in F0.2, maps in F1         |
+| `schemas/` | zod schemas for client-side form validation | F1, with the forms that need them |
 
-- `status/` — one entry per order, payment, graphic, job, shipment and claim status:
-  Thai and English label, tone and icon. Typed as `Record<Schemas["OrderStatus"], StatusMeta>`
-  so a new backend enum value fails this build until someone gives it a label
-  (`00-master-plan.md` §5).
-- form schemas (zod) shared by more than one zone.
+## `status/`
 
-Never rely on colour alone for a status — always icon plus text.
+`StatusMeta` is `{ tone, icon, labelKey }` — a status is never rendered from colour alone
+(design-system.md §2), so a tone always arrives with an icon and words. `src/ui`'s
+`StatusBadge` takes a `StatusMeta` and a resolved label; it cannot be handed a raw string, so
+there is nowhere for a second colour map to grow.
+
+`defineStatusMap<T>()` makes the map exhaustive. In F1 the type argument becomes a generated
+contract enum:
+
+```ts
+export const ORDER_STATUS = defineStatusMap<Schemas["OrderStatus"]>({ … });
+```
+
+A new status on the backend then fails `pnpm typecheck` until it has a tone, an icon and a
+label — the mechanism 00-master-plan.md §5 asks for. `statusMeta()` still falls back to a
+visible "?" badge at runtime, because a customer should never see a blank where a status
+belongs.
+
+Labels live in the `status` message namespace in `src/i18n`, added in F1 with the maps.

@@ -37,6 +37,7 @@ export { Skeleton, type SkeletonProps } from "./Skeleton";
 export { Sheet, type SheetProps } from "./Sheet";
 export { Slider, type SliderProps } from "./Slider";
 export { Spinner, type SpinnerProps } from "./Spinner";
+export { StatusBadge, type StatusBadgeProps } from "./StatusBadge";
 export { Switch, type SwitchProps } from "./Switch";
 export { Tabs, type TabItem, type TabsProps } from "./Tabs";
 export { toast, Toaster } from "./Toast";

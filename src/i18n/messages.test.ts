@@ -1,0 +1,61 @@
+import { describe, expect, it } from "vitest";
+
+import { loadMessages } from "./messages";
+import { routing } from "./routing";
+
+type Messages = Record<string, unknown>;
+
+function flatten(value: Messages, prefix = ""): string[] {
+  return Object.entries(value).flatMap(([key, child]) =>
+    child !== null && typeof child === "object" ? flatten(child as Messages, `${prefix}${key}.`) : [`${prefix}${key}`],
+  );
+}
+
+/**
+ * design-system.md §8 wants every string in `src/i18n` in both languages. A key that exists
+ * only in Thai renders as its own path in English, which is the kind of thing nobody notices
+ * until a customer does.
+ */
+describe("messages", () => {
+  it("has the same keys in every locale", async () => {
+    const [th, en] = await Promise.all(routing.locales.map((locale) => loadMessages(locale)));
+    const thKeys = flatten(th).sort();
+    const enKeys = flatten(en).sort();
+
+    expect(thKeys.filter((key) => !enKeys.includes(key))).toEqual([]);
+    expect(enKeys.filter((key) => !thKeys.includes(key))).toEqual([]);
+  });
+
+  it("has no empty strings", async () => {
+    for (const locale of routing.locales) {
+      const messages = await loadMessages(locale);
+      const empties = Object.entries(messages).flatMap(([namespace, value]) =>
+        flatten(value as Messages, `${namespace}.`).filter((key) => {
+          const parts = key.split(".").slice(1);
+          let current: unknown = value;
+          for (const part of parts) current = (current as Messages)[part];
+          return typeof current === "string" && current.trim() === "";
+        }),
+      );
+      expect(empties, `empty messages in ${locale}`).toEqual([]);
+    }
+  });
+
+  it("keeps the ICU placeholders identical across locales", async () => {
+    const placeholders = (text: string) => [...text.matchAll(/\{(\w+)/g)].map((match) => match[1]).sort();
+    const [th, en] = await Promise.all(routing.locales.map((locale) => loadMessages(locale)));
+
+    const read = (messages: Record<string, unknown>, key: string): string => {
+      let current: unknown = messages;
+      for (const part of key.split(".")) current = (current as Messages)[part];
+      return current as string;
+    };
+
+    for (const key of flatten(th)) {
+      const thText = read(th, key);
+      const enText = read(en, key);
+      if (typeof thText !== "string" || typeof enText !== "string") continue;
+      expect(placeholders(enText), `placeholders differ for ${key}`).toEqual(placeholders(thText));
+    }
+  });
+});

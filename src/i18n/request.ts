@@ -1,5 +1,6 @@
 import { hasLocale } from "next-intl";
 import { getRequestConfig } from "next-intl/server";
+import { loadMessages } from "./messages";
 import { routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
@@ -8,7 +9,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
+    // Every date the API returns is rendered in Bangkok time, wherever the user is
+    // (CLAUDE.md); no screen picks its own time zone.
     timeZone: "Asia/Bangkok",
-    messages: (await import(`./messages/${locale}.json`)).default,
+    messages: await loadMessages(locale),
   };
 });
