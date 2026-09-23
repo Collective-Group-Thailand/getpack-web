@@ -1,0 +1,27 @@
+{
+  "title": "My designs",
+  "subtitle": "Designs saved in this browser",
+  "searchPlaceholder": "Search by name",
+  "searchLabel": "Search by name",
+  "new": "+ New design",
+  "empty": {
+    "title": "No designs yet",
+    "body": "Design your first box — it is saved here so you can pick it up any time.",
+    "action": "Design your first box"
+  },
+  "noResults": {
+    "title": "No designs match that",
+    "body": "Try another word, or clear the search."
+  },
+  "card": {
+    "noThumbnail": "No preview",
+    "updated": "Edited {date}",
+    "spec": "{style} · {length}×{width}×{height} mm · {paper}"
+  },
+  "delete": {
+    "title": "Delete this design?",
+    "body": "“{name}” will be removed from this browser and cannot be recovered.",
+    "confirm": "Delete design"
+  },
+  "duplicateFailed": "Could not duplicate — storage is full"
+}

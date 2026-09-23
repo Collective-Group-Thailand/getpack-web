@@ -1,0 +1,43 @@
+{
+  "brand": {
+    "tagline": "Your Packaging Production Partner"
+  },
+  "nav": {
+    "skipToContent": "Skip to content",
+    "home": "Home",
+    "myDesigns": "My designs",
+    "startDesigning": "Start designing"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "export": "Export",
+    "retry": "Try again",
+    "search": "Search"
+  },
+  "state": {
+    "loading": "Loading",
+    "saved": "Saved",
+    "unsaved": "Unsaved",
+    "required": "required"
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "hc": "High contrast"
+  },
+  "units": {
+    "mm": "mm",
+    "percent": "%"
+  },
+  "errors": {
+    "genericTitle": "Something went wrong",
+    "genericBody": "Try again. If it keeps happening, contact us with the code below."
+  }
+}
