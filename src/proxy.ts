@@ -3,15 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { routing } from "@/i18n/routing";
 import {
-  ACCESS_COOKIE,
-  ACCESS_EXPIRY_COOKIE,
-  parseExpiry,
+  clearedSessionCookieWrites,
+  readSessionTokens,
   refreshDecision,
   refreshSession,
-  REFRESH_COOKIE,
-  sessionCookieName,
-  sessionCookieOptions,
-  type SessionCookie,
+  sessionCookieWrites,
 } from "@/lib/auth";
 import { clientEnv } from "@/lib/env";
 import { enabledZones, serverEnv, zoneHosts } from "@/lib/env/server";
@@ -117,8 +113,11 @@ function route(request: NextRequest, zone: Zone, requestHeaders: Headers): NextR
  * Refresh the access token before rendering when it is missing or nearly expired and a
  * refresh token is present, and rotate the cookies onto the outgoing response.
  *
- * `refreshSession` is the 1.2 seam; a `null` answer means the refresh failed, so the
- * session cookies are cleared rather than retried on every subsequent request.
+ * Server Components cannot set cookies, so this is the only place a token can be renewed
+ * before a page renders; the BFF does the same on a `401` for calls the browser makes after
+ * it. A `null` answer means the refresh failed, so the session cookies are cleared rather
+ * than retried on every subsequent request — refresh tokens are single-use, and presenting a
+ * spent one again would revoke the whole family (api-conventions §4).
  */
 async function applySessionRefresh(
   request: NextRequest,
@@ -126,12 +125,11 @@ async function applySessionRefresh(
   zone: Zone,
   isSecure: boolean,
 ): Promise<void> {
-  const name = (cookie: SessionCookie) => sessionCookieName(cookie, isSecure);
+  const { accessToken, accessExpiresAt, refreshToken } = readSessionTokens(request.cookies, isSecure);
 
-  const refreshToken = request.cookies.get(name(REFRESH_COOKIE))?.value;
   const decision = refreshDecision({
-    hasAccessToken: Boolean(request.cookies.get(name(ACCESS_COOKIE))?.value),
-    accessExpiresAt: parseExpiry(request.cookies.get(name(ACCESS_EXPIRY_COOKIE))?.value),
+    hasAccessToken: Boolean(accessToken),
+    accessExpiresAt,
     hasRefreshToken: Boolean(refreshToken),
     now: new Date(),
   });
@@ -139,33 +137,9 @@ async function applySessionRefresh(
   if (decision === "none" || !refreshToken) return;
 
   const session = await refreshSession(zone, refreshToken);
-  const options = sessionCookieOptions(isSecure);
+  const writes = session ? sessionCookieWrites(session, isSecure) : clearedSessionCookieWrites();
 
-  if (!session) {
-    for (const cookie of [ACCESS_COOKIE, ACCESS_EXPIRY_COOKIE, REFRESH_COOKIE] as const) {
-      response.cookies.set({ ...options, name: name(cookie), value: "", maxAge: 0 });
-    }
-    return;
-  }
-
-  response.cookies.set({
-    ...options,
-    name: name(ACCESS_COOKIE),
-    value: session.accessToken,
-    expires: session.accessTokenExpiresAt,
-  });
-  response.cookies.set({
-    ...options,
-    name: name(ACCESS_EXPIRY_COOKIE),
-    value: String(Math.floor(session.accessTokenExpiresAt.getTime() / 1000)),
-    expires: session.accessTokenExpiresAt,
-  });
-  response.cookies.set({
-    ...options,
-    name: name(REFRESH_COOKIE),
-    value: session.refreshToken,
-    expires: session.refreshTokenExpiresAt,
-  });
+  for (const cookie of writes) response.cookies.set(cookie);
 }
 
 function notFound(isSecure: boolean, zone?: Zone): NextResponse {
