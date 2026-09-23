@@ -19,7 +19,7 @@ import {
   NONCE_HEADER,
   securityHeaders,
 } from "@/lib/security";
-import { isInternalOnlyPath, resolveZone, ZONE_CONFIG, ZONE_HEADER, type Zone } from "@/lib/zones";
+import { isInternalOnlyPath, PATH_HEADER, resolveZone, ZONE_CONFIG, ZONE_HEADER, type Zone } from "@/lib/zones";
 
 /**
  * Next 16 replaces `middleware.ts` with `proxy.ts`. This is the seam every request passes
@@ -64,6 +64,10 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
       asset: clientEnv.NEXT_PUBLIC_ASSET_BASE_URL,
       realtime: clientEnv.NEXT_PUBLIC_REALTIME_HOST && `https://${clientEnv.NEXT_PUBLIC_REALTIME_HOST}`,
       sentry: sentryOrigin(serverEnv.SENTRY_DSN),
+      // Present only where the deployment has the credentials; absent keeps the sign-in
+      // origins out of the policy entirely, which is also what the sheet renders from.
+      firebaseAuthDomain: clientEnv.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+      line: Boolean(clientEnv.NEXT_PUBLIC_LIFF_ID),
     },
   });
 
@@ -73,6 +77,9 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
   requestHeaders.set(NONCE_HEADER, nonce);
   requestHeaders.set(CSP_HEADER, csp);
   requestHeaders.set(ZONE_HEADER, zone);
+  // Stamped before the rewrite, so a layout guard can build a `returnTo` in the spelling the
+  // browser used — by render time, the admin host's `/orders` is the internal `/admin/orders`.
+  requestHeaders.set(PATH_HEADER, pathname);
 
   const response = route(request, zone, requestHeaders);
   await applySessionRefresh(request, response, zone, isSecure);

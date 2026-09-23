@@ -11,15 +11,21 @@ import type { Locale } from "../routing";
  * missing namespace is a type error rather than a key that silently renders as `home.title`.
  * F1 Deliverable 1.3 splits these flat files per feature.
  */
-const NAMESPACES = ["common", "home", "designs", "designer", "admin", "partner"] as const;
+const NAMESPACES = ["common", "auth", "home", "designs", "designer", "admin", "partner"] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
 
-/** `common` is everywhere; the rest belong to exactly one zone. */
+/**
+ * `common` and `auth` are everywhere; the rest belong to exactly one zone.
+ *
+ * `auth` is shared because all three zones sign someone in, and the wording of "your session
+ * has ended" or "too many attempts" should not drift between them. The copy each zone does
+ * *not* use is a handful of strings, which is cheaper than three near-identical namespaces.
+ */
 export const ZONE_NAMESPACES = {
-  customer: ["common", "home", "designs", "designer"],
-  admin: ["common", "admin"],
-  partner: ["common", "partner"],
+  customer: ["common", "auth", "home", "designs", "designer"],
+  admin: ["common", "auth", "admin"],
+  partner: ["common", "auth", "partner"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
 type Loader = () => Promise<{ default: Record<string, unknown> }>;
@@ -27,6 +33,7 @@ type Loader = () => Promise<{ default: Record<string, unknown> }>;
 const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
   th: {
     common: () => import("./th/common.json"),
+    auth: () => import("./th/auth.json"),
     home: () => import("./th/home.json"),
     designs: () => import("./th/designs.json"),
     designer: () => import("./th/designer.json"),
@@ -35,6 +42,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
   },
   en: {
     common: () => import("./en/common.json"),
+    auth: () => import("./en/auth.json"),
     home: () => import("./en/home.json"),
     designs: () => import("./en/designs.json"),
     designer: () => import("./en/designer.json"),

@@ -17,7 +17,13 @@ export function securityHeaders(zone: Zone, { isHttps }: SecurityHeaderOptions):
   const headers: Record<string, string> = {
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "X-Content-Type-Options": "nosniff",
-    "Cross-Origin-Opener-Policy": "same-origin",
+    // `same-origin` everywhere except the storefront. Firebase's Google and Apple sign-in
+    // opens a popup and then talks to it through `window.opener`, which `same-origin` severs
+    // — the popup completes and the opener never hears about it, so sign-in hangs with no
+    // error. `same-origin-allow-popups` keeps this document isolated from anything that
+    // opened *it*, which is the protection that matters, while letting a popup it opened
+    // report back. Admin and partner have no third-party sign-in, so they keep the strict one.
+    "Cross-Origin-Opener-Policy": zone === "customer" ? "same-origin-allow-popups" : "same-origin",
     "Permissions-Policy": permissionsPolicy(zone),
   };
 

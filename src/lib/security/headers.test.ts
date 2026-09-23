@@ -13,7 +13,21 @@ describe("securityHeaders", () => {
 
     expect(headers["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
     expect(headers["X-Content-Type-Options"]).toBe("nosniff");
-    expect(headers["Cross-Origin-Opener-Policy"]).toBe("same-origin");
+    expect(headers["Cross-Origin-Opener-Policy"]).toBeDefined();
+  });
+
+  it("keeps staff and factory screens fully cross-origin isolated", () => {
+    expect(securityHeaders("admin", { isHttps: true })["Cross-Origin-Opener-Policy"]).toBe("same-origin");
+    expect(securityHeaders("partner", { isHttps: true })["Cross-Origin-Opener-Policy"]).toBe("same-origin");
+  });
+
+  it("lets the storefront hear back from a sign-in popup it opened", () => {
+    // Firebase's Google and Apple sign-in talks to its popup through `window.opener`, which
+    // `same-origin` severs: the popup completes and the opener never learns of it. The
+    // storefront still stays isolated from anything that opened *it*.
+    expect(securityHeaders("customer", { isHttps: true })["Cross-Origin-Opener-Policy"]).toBe(
+      "same-origin-allow-popups",
+    );
   });
 
   it("marks admin and partner noindex and leaves the storefront indexable", () => {
@@ -101,5 +115,49 @@ describe("contentSecurityPolicy", () => {
 
     expect(csp).toContain("connect-src 'self' https://cdn.packio.co.th https://o1.ingest.sentry.io");
     expect(csp).toContain("img-src 'self' data: blob: https://cdn.packio.co.th");
+  });
+});
+
+describe("sign-in origins", () => {
+  const withSignIn = { ...options, origins: { firebaseAuthDomain: "packio.firebaseapp.com", line: true } };
+
+  it("admits Firebase and LINE on the storefront when they are configured", () => {
+    const directives = cspDirectives("customer", withSignIn);
+
+    expect(directives["connect-src"]).toEqual(
+      expect.arrayContaining([
+        "https://identitytoolkit.googleapis.com",
+        "https://securetoken.googleapis.com",
+        "https://packio.firebaseapp.com",
+        "https://api.line.me",
+      ]),
+    );
+    // The provider's consent screen renders in an iframe on the auth domain.
+    expect(directives["frame-src"]).toEqual(
+      expect.arrayContaining(["https://packio.firebaseapp.com", "https://access.line.me"]),
+    );
+  });
+
+  it("admits nothing when the deployment has no credentials", () => {
+    const directives = cspDirectives("customer", options);
+
+    expect(directives["connect-src"]).not.toContain("https://identitytoolkit.googleapis.com");
+    expect(directives["frame-src"]).toEqual(["'self'"]);
+  });
+
+  it("adds only what is configured: LINE alone does not admit Firebase", () => {
+    const directives = cspDirectives("customer", { ...options, origins: { line: true } });
+
+    expect(directives["connect-src"]).toContain("https://api.line.me");
+    expect(directives["connect-src"]).not.toContain("https://identitytoolkit.googleapis.com");
+  });
+
+  it("never widens admin or partner, which have no third-party sign-in", () => {
+    for (const zone of ["admin", "partner"] as const) {
+      const directives = cspDirectives(zone, withSignIn);
+
+      expect(directives["frame-src"]).toEqual(["'self'"]);
+      expect(directives["connect-src"]).not.toContain("https://identitytoolkit.googleapis.com");
+    }
   });
 });
