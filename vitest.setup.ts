@@ -36,9 +36,13 @@ if (!globalThis.DOMRect) {
   } as unknown as typeof DOMRect;
 }
 
-Element.prototype.scrollIntoView ??= function scrollIntoView() {};
-Element.prototype.hasPointerCapture ??= function hasPointerCapture() {
-  return false;
-};
-Element.prototype.setPointerCapture ??= function setPointerCapture() {};
-Element.prototype.releasePointerCapture ??= function releasePointerCapture() {};
+// Not every suite runs in jsdom: `src/proxy.test.ts` uses the node environment, because a
+// proxy handler has no document and Next's Request/Response want Node's own globals.
+if (typeof Element !== "undefined") {
+  Element.prototype.scrollIntoView ??= function scrollIntoView() {};
+  Element.prototype.hasPointerCapture ??= function hasPointerCapture() {
+    return false;
+  };
+  Element.prototype.setPointerCapture ??= function setPointerCapture() {};
+  Element.prototype.releasePointerCapture ??= function releasePointerCapture() {};
+}
