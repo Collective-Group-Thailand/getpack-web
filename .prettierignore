@@ -13,3 +13,4 @@ docs
 CLAUDE.md
 tsconfig.json
 next-env.d.ts
+src/ui/generated

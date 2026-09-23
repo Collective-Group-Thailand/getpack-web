@@ -1,0 +1,138 @@
+/*
+ * Element defaults for every zone. Anything visual beyond this belongs in a component in
+ * src/ui/components — zones never restyle a primitive locally (design-system.md §1.8).
+ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
+  html {
+    /* Nothing here may depend on JavaScript: data-theme is stamped server-side. */
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+      color-scheme: dark;
+    }
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    /* Thai needs room for upper vowels and tone marks (design-system.md §2). */
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    line-height: var(--leading-tight);
+    font-weight: var(--font-weight-semibold);
+    /* Thai tone marks sit above the cap height; tight tracking collides with them. */
+    letter-spacing: 0;
+  }
+
+  /*
+   * Money, quantities and codes line up in columns. design-system.md §2 asks for tabular
+   * figures wherever a number is compared; `.tabular-nums` is applied by the components that
+   * render them (PriceSummary, DataTable), and monospace gets it unconditionally.
+   */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * One focus ring for the whole product, ≥ 2 px and offset so it is never mistaken for a
+   * border (design-system.md §6). Components must not override it — they may only change
+   * the offset when a ring would be clipped.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Placeholders are decorative text: the token is gated at 3:1, not 4.5:1. */
+  ::placeholder {
+    color: var(--color-subtle);
+    opacity: 1;
+  }
+
+  ::selection {
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+
+  /* An image or canvas must never push the layout around (CLS budget). */
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  /*
+   * Skip link: visually hidden until focused, then pinned top-left. Every zone's AppShell
+   * renders one (WCAG 2.4.1).
+   */
+  .skip-link {
+    position: fixed;
+    top: calc(var(--spacing) * 2);
+    left: calc(var(--spacing) * 2);
+    z-index: var(--z-toast);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    color: var(--color-fg);
+    box-shadow: var(--shadow-lg);
+    padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4);
+    transform: translateY(-200%);
+  }
+
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+}
+
+/*
+ * design-system.md §2: motion tokens exist, but a user who asked for less motion gets it.
+ * Kept to 0.01ms rather than 0 so transitionend/animationend handlers still fire.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

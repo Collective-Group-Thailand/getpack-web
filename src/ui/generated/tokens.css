@@ -1,0 +1,356 @@
+/*
+ * GENERATED FILE — do not edit.
+ * Source: src/ui/tokens/*.ts · Regenerate: pnpm tokens · Gate: pnpm tokens:check
+ * Contrast of every semantic pair is asserted by scripts/check-contrast.ts in pnpm test.
+ */
+
+@theme {
+  /* Tier 1 — primitive palette (OKLCH). Do not use directly in components. */
+  --color-neutral-50: oklch(98.5% 0.0013 255);
+  --color-neutral-100: oklch(96.2% 0.0031 255);
+  --color-neutral-200: oklch(91.8% 0.0062 255);
+  --color-neutral-300: oklch(85.5% 0.0106 255);
+  --color-neutral-400: oklch(76.2% 0.0163 255);
+  --color-neutral-500: oklch(65.8% 0.0207 255);
+  --color-neutral-600: oklch(58.8% 0.022 255);
+  --color-neutral-700: oklch(50.5% 0.0207 255);
+  --color-neutral-800: oklch(42.8% 0.018 255);
+  --color-neutral-900: oklch(35.2% 0.015 255);
+  --color-neutral-950: oklch(26.2% 0.011 255);
+  --color-brand-50: oklch(98.5% 0.006 183);
+  --color-brand-100: oklch(96.2% 0.014 183);
+  --color-brand-200: oklch(91.8% 0.028 183);
+  --color-brand-300: oklch(85.5% 0.048 183);
+  --color-brand-400: oklch(76.2% 0.074 183);
+  --color-brand-500: oklch(65.8% 0.094 183);
+  --color-brand-600: oklch(58.8% 0.1 183);
+  --color-brand-700: oklch(50.5% 0.094 183);
+  --color-brand-800: oklch(42.8% 0.082 183);
+  --color-brand-900: oklch(35.2% 0.068 183);
+  --color-brand-950: oklch(26.2% 0.05 183);
+  --color-green-50: oklch(98.5% 0.009 152);
+  --color-green-100: oklch(96.2% 0.021 152);
+  --color-green-200: oklch(91.8% 0.042 152);
+  --color-green-300: oklch(85.5% 0.072 152);
+  --color-green-400: oklch(76.2% 0.111 152);
+  --color-green-500: oklch(65.8% 0.141 152);
+  --color-green-600: oklch(58.8% 0.15 152);
+  --color-green-700: oklch(50.5% 0.141 152);
+  --color-green-800: oklch(42.8% 0.123 152);
+  --color-green-900: oklch(35.2% 0.102 152);
+  --color-green-950: oklch(26.2% 0.075 152);
+  --color-amber-50: oklch(98.5% 0.009 74);
+  --color-amber-100: oklch(96.2% 0.021 74);
+  --color-amber-200: oklch(91.8% 0.042 74);
+  --color-amber-300: oklch(85.5% 0.072 74);
+  --color-amber-400: oklch(76.2% 0.111 74);
+  --color-amber-500: oklch(65.8% 0.141 74);
+  --color-amber-600: oklch(58.8% 0.15 74);
+  --color-amber-700: oklch(50.5% 0.141 74);
+  --color-amber-800: oklch(42.8% 0.123 74);
+  --color-amber-900: oklch(35.2% 0.102 74);
+  --color-amber-950: oklch(26.2% 0.075 74);
+  --color-red-50: oklch(98.5% 0.012 24);
+  --color-red-100: oklch(96.2% 0.028 24);
+  --color-red-200: oklch(91.8% 0.056 24);
+  --color-red-300: oklch(85.5% 0.096 24);
+  --color-red-400: oklch(76.2% 0.148 24);
+  --color-red-500: oklch(65.8% 0.188 24);
+  --color-red-600: oklch(58.8% 0.2 24);
+  --color-red-700: oklch(50.5% 0.188 24);
+  --color-red-800: oklch(42.8% 0.164 24);
+  --color-red-900: oklch(35.2% 0.136 24);
+  --color-red-950: oklch(26.2% 0.1 24);
+  --color-blue-50: oklch(98.5% 0.0102 258);
+  --color-blue-100: oklch(96.2% 0.0238 258);
+  --color-blue-200: oklch(91.8% 0.0476 258);
+  --color-blue-300: oklch(85.5% 0.0816 258);
+  --color-blue-400: oklch(76.2% 0.1258 258);
+  --color-blue-500: oklch(65.8% 0.1598 258);
+  --color-blue-600: oklch(58.8% 0.17 258);
+  --color-blue-700: oklch(50.5% 0.1598 258);
+  --color-blue-800: oklch(42.8% 0.1394 258);
+  --color-blue-900: oklch(35.2% 0.1156 258);
+  --color-blue-950: oklch(26.2% 0.085 258);
+  --color-white: oklch(100% 0 0);
+  --color-black: oklch(0% 0 0);
+
+  /* Print marks — theme-independent: a cut line means the same thing in dark mode. */
+  --color-print-cut: oklch(58.8% 0.2 24);
+  --color-print-fold: oklch(58.8% 0.17 258);
+  --color-print-safe: oklch(58.8% 0.15 152);
+  --color-print-bleed: oklch(58.8% 0.15 74);
+
+  /* Tier 2 — semantic aliases. These are what components name; they follow the theme. */
+  --color-bg: var(--sem-bg);
+  --color-bg-subtle: var(--sem-bg-subtle);
+  --color-surface: var(--sem-surface);
+  --color-surface-subtle: var(--sem-surface-subtle);
+  --color-surface-raised: var(--sem-surface-raised);
+  --color-overlay: var(--sem-overlay);
+  --color-border: var(--sem-border);
+  --color-border-strong: var(--sem-border-strong);
+  --color-fg: var(--sem-fg);
+  --color-muted: var(--sem-muted);
+  --color-subtle: var(--sem-subtle);
+  --color-fg-inverse: var(--sem-fg-inverse);
+  --color-primary-hover: var(--sem-primary-hover);
+  --color-focus-ring: var(--sem-focus-ring);
+  --color-canvas: var(--sem-canvas);
+  --color-canvas-grid: var(--sem-canvas-grid);
+  --color-primary: var(--sem-primary);
+  --color-primary-fg: var(--sem-primary-fg);
+  --color-primary-subtle: var(--sem-primary-subtle);
+  --color-primary-subtle-fg: var(--sem-primary-subtle-fg);
+  --color-success: var(--sem-success);
+  --color-success-fg: var(--sem-success-fg);
+  --color-success-subtle: var(--sem-success-subtle);
+  --color-success-subtle-fg: var(--sem-success-subtle-fg);
+  --color-warning: var(--sem-warning);
+  --color-warning-fg: var(--sem-warning-fg);
+  --color-warning-subtle: var(--sem-warning-subtle);
+  --color-warning-subtle-fg: var(--sem-warning-subtle-fg);
+  --color-danger: var(--sem-danger);
+  --color-danger-fg: var(--sem-danger-fg);
+  --color-danger-subtle: var(--sem-danger-subtle);
+  --color-danger-subtle-fg: var(--sem-danger-subtle-fg);
+  --color-info: var(--sem-info);
+  --color-info-fg: var(--sem-info-fg);
+  --color-info-subtle: var(--sem-info-subtle);
+  --color-info-subtle-fg: var(--sem-info-subtle-fg);
+  --color-neutral: var(--sem-neutral);
+  --color-neutral-fg: var(--sem-neutral-fg);
+  --color-neutral-subtle: var(--sem-neutral-subtle);
+  --color-neutral-subtle-fg: var(--sem-neutral-subtle-fg);
+
+  /* Typography (ADR-0001). Tailwind's own --font-* defaults are replaced, not extended. */
+  --font-*: initial;
+  --font-sans: var(--font-pk-sans-latin), var(--font-pk-sans-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-pk-display-latin), var(--font-pk-display-thai), var(--font-pk-sans-latin), sans-serif;
+  --font-mono: var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --text-xs: clamp(0.75rem, 0.73rem + 0.09vw, 0.8125rem);
+  --text-sm: clamp(0.875rem, 0.85rem + 0.11vw, 0.9375rem);
+  --text-base: 1rem;
+  --text-lg: clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem);
+  --text-xl: clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem);
+  --text-2xl: clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem);
+  --text-3xl: clamp(1.875rem, 1.66rem + 0.98vw, 2.25rem);
+  --text-4xl: clamp(2.25rem, 1.87rem + 1.7vw, 3rem);
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Space, radius, elevation. */
+  --spacing: 0.25rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 oklch(20% 0.02 255 / 0.06);
+  --shadow-md: 0 2px 4px -1px oklch(20% 0.02 255 / 0.08), 0 1px 2px -1px oklch(20% 0.02 255 / 0.06);
+  --shadow-lg: 0 8px 16px -4px oklch(20% 0.02 255 / 0.1), 0 2px 6px -2px oklch(20% 0.02 255 / 0.06);
+  --shadow-xl: 0 20px 32px -8px oklch(20% 0.02 255 / 0.14), 0 4px 10px -4px oklch(20% 0.02 255 / 0.08);
+
+  /* Motion (respect prefers-reduced-motion — see src/ui/styles/base.css). */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Stacking order. */
+  --z-base: 0;
+  --z-sticky: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+}
+
+/* Light is the base: no cookie, no OS preference, no surprises. */
+
+:root {
+  --sem-bg: oklch(100% 0 0);
+  --sem-bg-subtle: oklch(98.5% 0.0013 255);
+  --sem-surface: oklch(100% 0 0);
+  --sem-surface-subtle: oklch(98.5% 0.0013 255);
+  --sem-surface-raised: oklch(100% 0 0);
+  --sem-overlay: oklch(26.2% 0.011 255 / 0.55);
+  --sem-border: oklch(91.8% 0.0062 255);
+  --sem-border-strong: oklch(58.8% 0.022 255);
+  --sem-fg: oklch(35.2% 0.015 255);
+  --sem-muted: oklch(50.5% 0.0207 255);
+  --sem-subtle: oklch(65.8% 0.0207 255);
+  --sem-fg-inverse: oklch(100% 0 0);
+  --sem-primary-hover: oklch(42.8% 0.082 183);
+  --sem-focus-ring: oklch(58.8% 0.1 183);
+  --sem-canvas: oklch(96.2% 0.0031 255);
+  --sem-canvas-grid: oklch(85.5% 0.0106 255);
+  --sem-primary: oklch(50.5% 0.094 183);
+  --sem-primary-fg: oklch(100% 0 0);
+  --sem-primary-subtle: oklch(98.5% 0.006 183);
+  --sem-primary-subtle-fg: oklch(35.2% 0.068 183);
+  --sem-success: oklch(50.5% 0.141 152);
+  --sem-success-fg: oklch(100% 0 0);
+  --sem-success-subtle: oklch(98.5% 0.009 152);
+  --sem-success-subtle-fg: oklch(35.2% 0.102 152);
+  --sem-warning: oklch(76.2% 0.111 74);
+  --sem-warning-fg: oklch(26.2% 0.011 255);
+  --sem-warning-subtle: oklch(98.5% 0.009 74);
+  --sem-warning-subtle-fg: oklch(35.2% 0.102 74);
+  --sem-danger: oklch(50.5% 0.188 24);
+  --sem-danger-fg: oklch(100% 0 0);
+  --sem-danger-subtle: oklch(98.5% 0.012 24);
+  --sem-danger-subtle-fg: oklch(35.2% 0.136 24);
+  --sem-info: oklch(50.5% 0.1598 258);
+  --sem-info-fg: oklch(100% 0 0);
+  --sem-info-subtle: oklch(98.5% 0.0102 258);
+  --sem-info-subtle-fg: oklch(35.2% 0.1156 258);
+  --sem-neutral: oklch(50.5% 0.0207 255);
+  --sem-neutral-fg: oklch(100% 0 0);
+  --sem-neutral-subtle: oklch(96.2% 0.0031 255);
+  --sem-neutral-subtle-fg: oklch(42.8% 0.018 255);
+}
+
+/* Nobody chose yet — follow the OS. Scoped to :root:not([data-theme]) so an explicit
+   choice always wins, and stamped server-side from pk_theme so there is no flash. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --sem-bg: oklch(26.2% 0.011 255);
+    --sem-bg-subtle: oklch(35.2% 0.015 255);
+    --sem-surface: oklch(35.2% 0.015 255);
+    --sem-surface-subtle: oklch(42.8% 0.018 255);
+    --sem-surface-raised: oklch(42.8% 0.018 255);
+    --sem-overlay: oklch(0% 0 0 / 0.65);
+    --sem-border: oklch(42.8% 0.018 255);
+    --sem-border-strong: oklch(65.8% 0.0207 255);
+    --sem-fg: oklch(98.5% 0.0013 255);
+    --sem-muted: oklch(85.5% 0.0106 255);
+    --sem-subtle: oklch(76.2% 0.0163 255);
+    --sem-fg-inverse: oklch(26.2% 0.011 255);
+    --sem-primary-hover: oklch(85.5% 0.048 183);
+    --sem-focus-ring: oklch(76.2% 0.074 183);
+    --sem-canvas: oklch(35.2% 0.015 255);
+    --sem-canvas-grid: oklch(50.5% 0.0207 255);
+    --sem-primary: oklch(76.2% 0.074 183);
+    --sem-primary-fg: oklch(26.2% 0.011 255);
+    --sem-primary-subtle: oklch(26.2% 0.05 183);
+    --sem-primary-subtle-fg: oklch(85.5% 0.048 183);
+    --sem-success: oklch(76.2% 0.111 152);
+    --sem-success-fg: oklch(26.2% 0.011 255);
+    --sem-success-subtle: oklch(26.2% 0.075 152);
+    --sem-success-subtle-fg: oklch(85.5% 0.072 152);
+    --sem-warning: oklch(76.2% 0.111 74);
+    --sem-warning-fg: oklch(26.2% 0.011 255);
+    --sem-warning-subtle: oklch(26.2% 0.075 74);
+    --sem-warning-subtle-fg: oklch(85.5% 0.072 74);
+    --sem-danger: oklch(76.2% 0.148 24);
+    --sem-danger-fg: oklch(26.2% 0.011 255);
+    --sem-danger-subtle: oklch(26.2% 0.1 24);
+    --sem-danger-subtle-fg: oklch(85.5% 0.096 24);
+    --sem-info: oklch(76.2% 0.1258 258);
+    --sem-info-fg: oklch(26.2% 0.011 255);
+    --sem-info-subtle: oklch(26.2% 0.085 258);
+    --sem-info-subtle-fg: oklch(85.5% 0.0816 258);
+    --sem-neutral: oklch(76.2% 0.0163 255);
+    --sem-neutral-fg: oklch(26.2% 0.011 255);
+    --sem-neutral-subtle: oklch(42.8% 0.018 255);
+    --sem-neutral-subtle-fg: oklch(91.8% 0.0062 255);
+  }
+}
+
+[data-theme="dark"] {
+  --sem-bg: oklch(26.2% 0.011 255);
+  --sem-bg-subtle: oklch(35.2% 0.015 255);
+  --sem-surface: oklch(35.2% 0.015 255);
+  --sem-surface-subtle: oklch(42.8% 0.018 255);
+  --sem-surface-raised: oklch(42.8% 0.018 255);
+  --sem-overlay: oklch(0% 0 0 / 0.65);
+  --sem-border: oklch(42.8% 0.018 255);
+  --sem-border-strong: oklch(65.8% 0.0207 255);
+  --sem-fg: oklch(98.5% 0.0013 255);
+  --sem-muted: oklch(85.5% 0.0106 255);
+  --sem-subtle: oklch(76.2% 0.0163 255);
+  --sem-fg-inverse: oklch(26.2% 0.011 255);
+  --sem-primary-hover: oklch(85.5% 0.048 183);
+  --sem-focus-ring: oklch(76.2% 0.074 183);
+  --sem-canvas: oklch(35.2% 0.015 255);
+  --sem-canvas-grid: oklch(50.5% 0.0207 255);
+  --sem-primary: oklch(76.2% 0.074 183);
+  --sem-primary-fg: oklch(26.2% 0.011 255);
+  --sem-primary-subtle: oklch(26.2% 0.05 183);
+  --sem-primary-subtle-fg: oklch(85.5% 0.048 183);
+  --sem-success: oklch(76.2% 0.111 152);
+  --sem-success-fg: oklch(26.2% 0.011 255);
+  --sem-success-subtle: oklch(26.2% 0.075 152);
+  --sem-success-subtle-fg: oklch(85.5% 0.072 152);
+  --sem-warning: oklch(76.2% 0.111 74);
+  --sem-warning-fg: oklch(26.2% 0.011 255);
+  --sem-warning-subtle: oklch(26.2% 0.075 74);
+  --sem-warning-subtle-fg: oklch(85.5% 0.072 74);
+  --sem-danger: oklch(76.2% 0.148 24);
+  --sem-danger-fg: oklch(26.2% 0.011 255);
+  --sem-danger-subtle: oklch(26.2% 0.1 24);
+  --sem-danger-subtle-fg: oklch(85.5% 0.096 24);
+  --sem-info: oklch(76.2% 0.1258 258);
+  --sem-info-fg: oklch(26.2% 0.011 255);
+  --sem-info-subtle: oklch(26.2% 0.085 258);
+  --sem-info-subtle-fg: oklch(85.5% 0.0816 258);
+  --sem-neutral: oklch(76.2% 0.0163 255);
+  --sem-neutral-fg: oklch(26.2% 0.011 255);
+  --sem-neutral-subtle: oklch(42.8% 0.018 255);
+  --sem-neutral-subtle-fg: oklch(91.8% 0.0062 255);
+}
+
+[data-theme="hc"] {
+  --sem-bg: oklch(100% 0 0);
+  --sem-bg-subtle: oklch(100% 0 0);
+  --sem-surface: oklch(100% 0 0);
+  --sem-surface-subtle: oklch(98.5% 0.0013 255);
+  --sem-surface-raised: oklch(100% 0 0);
+  --sem-overlay: oklch(0% 0 0 / 0.7);
+  --sem-border: oklch(50.5% 0.0207 255);
+  --sem-border-strong: oklch(0% 0 0);
+  --sem-fg: oklch(0% 0 0);
+  --sem-muted: oklch(35.2% 0.015 255);
+  --sem-subtle: oklch(42.8% 0.018 255);
+  --sem-fg-inverse: oklch(100% 0 0);
+  --sem-primary-hover: oklch(26.2% 0.05 183);
+  --sem-focus-ring: oklch(0% 0 0);
+  --sem-canvas: oklch(100% 0 0);
+  --sem-canvas-grid: oklch(65.8% 0.0207 255);
+  --sem-primary: oklch(35.2% 0.068 183);
+  --sem-primary-fg: oklch(100% 0 0);
+  --sem-primary-subtle: oklch(98.5% 0.006 183);
+  --sem-primary-subtle-fg: oklch(26.2% 0.05 183);
+  --sem-success: oklch(35.2% 0.102 152);
+  --sem-success-fg: oklch(100% 0 0);
+  --sem-success-subtle: oklch(98.5% 0.009 152);
+  --sem-success-subtle-fg: oklch(26.2% 0.075 152);
+  --sem-warning: oklch(85.5% 0.072 74);
+  --sem-warning-fg: oklch(0% 0 0);
+  --sem-warning-subtle: oklch(98.5% 0.009 74);
+  --sem-warning-subtle-fg: oklch(26.2% 0.075 74);
+  --sem-danger: oklch(35.2% 0.136 24);
+  --sem-danger-fg: oklch(100% 0 0);
+  --sem-danger-subtle: oklch(98.5% 0.012 24);
+  --sem-danger-subtle-fg: oklch(26.2% 0.1 24);
+  --sem-info: oklch(35.2% 0.1156 258);
+  --sem-info-fg: oklch(100% 0 0);
+  --sem-info-subtle: oklch(98.5% 0.0102 258);
+  --sem-info-subtle-fg: oklch(26.2% 0.085 258);
+  --sem-neutral: oklch(0% 0 0);
+  --sem-neutral-fg: oklch(100% 0 0);
+  --sem-neutral-subtle: oklch(96.2% 0.0031 255);
+  --sem-neutral-subtle-fg: oklch(0% 0 0);
+}
+
