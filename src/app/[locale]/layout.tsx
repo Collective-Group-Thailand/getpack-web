@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE } from "@/ui/brand";
+import { fontClassNames } from "@/ui/fonts";
 import { ThemeProvider } from "@/ui/theme";
 import { readThemeChoice } from "@/ui/theme/server";
 import { dataThemeAttribute } from "@/ui/theme/themes";
@@ -43,7 +44,7 @@ export default async function CustomerLayout({
   const themeChoice = await readThemeChoice("customer");
 
   return (
-    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)}>
+    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} className={fontClassNames}>
       <body>
         <NextIntlClientProvider>
           <ThemeProvider initialChoice={themeChoice} zone="customer">
