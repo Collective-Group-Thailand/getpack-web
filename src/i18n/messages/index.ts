@@ -3,13 +3,18 @@ import type { Zone } from "@/lib/zones";
 import type { Locale } from "../routing";
 
 /**
- * Messages are split per namespace (00-master-plan.md §3) and loaded **per zone**, so the
- * storefront never downloads back-office copy and vice versa — the same reason each zone
- * has its own root layout.
+ * Messages are split **per zone and per feature** on disk
+ * (`messages/{th,en}/{common,customer,admin,partner}/*.json`) and loaded per zone, so the
+ * storefront never downloads back-office copy and vice versa — the same reason each zone has
+ * its own root layout.
+ *
+ * The folder a file sits in says who may load it; the namespace is still flat, because
+ * `useTranslations("designs")` reads better than `useTranslations("customer.designs")` and the
+ * zone is already decided by the time messages are loaded. `ZONE_NAMESPACES` is what actually
+ * enforces the split.
  *
  * The imports are explicit rather than a glob so the bundler can see every file, and so a
  * missing namespace is a type error rather than a key that silently renders as `home.title`.
- * F1 Deliverable 1.3 splits these flat files per feature.
  */
 const NAMESPACES = ["common", "auth", "status", "home", "designs", "designer", "admin", "partner"] as const;
 
@@ -35,24 +40,24 @@ type Loader = () => Promise<{ default: Record<string, unknown> }>;
 
 const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
   th: {
-    common: () => import("./th/common.json"),
-    auth: () => import("./th/auth.json"),
-    status: () => import("./th/status.json"),
-    home: () => import("./th/home.json"),
-    designs: () => import("./th/designs.json"),
-    designer: () => import("./th/designer.json"),
-    admin: () => import("./th/admin.json"),
-    partner: () => import("./th/partner.json"),
+    common: () => import("./th/common/common.json"),
+    auth: () => import("./th/common/auth.json"),
+    status: () => import("./th/common/status.json"),
+    home: () => import("./th/customer/home.json"),
+    designs: () => import("./th/customer/designs.json"),
+    designer: () => import("./th/customer/designer.json"),
+    admin: () => import("./th/admin/admin.json"),
+    partner: () => import("./th/partner/partner.json"),
   },
   en: {
-    common: () => import("./en/common.json"),
-    auth: () => import("./en/auth.json"),
-    status: () => import("./en/status.json"),
-    home: () => import("./en/home.json"),
-    designs: () => import("./en/designs.json"),
-    designer: () => import("./en/designer.json"),
-    admin: () => import("./en/admin.json"),
-    partner: () => import("./en/partner.json"),
+    common: () => import("./en/common/common.json"),
+    auth: () => import("./en/common/auth.json"),
+    status: () => import("./en/common/status.json"),
+    home: () => import("./en/customer/home.json"),
+    designs: () => import("./en/customer/designs.json"),
+    designer: () => import("./en/customer/designer.json"),
+    admin: () => import("./en/admin/admin.json"),
+    partner: () => import("./en/partner/partner.json"),
   },
 };
 

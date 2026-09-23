@@ -30,7 +30,7 @@ export {
   type NumberInputProps,
   type TextareaProps,
 } from "./Input";
-export { Kbd, type KbdProps } from "./Kbd";
+export { isApplePlatform, Kbd, KEYCAP, type KbdProps } from "./Kbd";
 export { Popover, type PopoverProps } from "./Popover";
 export { RadioCards, type RadioCardOption, type RadioCardsProps } from "./RadioCards";
 export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from "./SegmentedControl";

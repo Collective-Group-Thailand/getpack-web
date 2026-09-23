@@ -29,7 +29,8 @@ it prevents a mistake — not on how friendly it sounds.
   absolute tooltip.
 - **Avoid English loanwords where a plain Thai word exists** — but keep industry terms the
   factory actually uses (ไดคัท, bleed, flexo, RSC), because that is the vocabulary a print buyer
-  and a factory planner share.
+  and a factory planner share. Which is which is settled in [`glossary.md`](./glossary.md), one
+  term to one translation across the UI, emails, LINE and PDFs.
 
 ## English
 

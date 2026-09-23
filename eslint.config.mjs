@@ -97,6 +97,87 @@ const eslintConfig = [
     },
   },
 
+  {
+    /**
+     * UI copy comes from `src/i18n`, not from JSX (design-system.md §8).
+     *
+     * A hard-coded string is not a style problem: it is a string that will never be
+     * translated, never reviewed against `docs/ui/voice-and-tone.md`, and never found when
+     * someone greps for wording to change. Thai is the default locale and English is a real
+     * audience, so a literal that slips through ships a half-English screen.
+     *
+     * `src/ui` is included deliberately. Its components take their copy as props
+     * (`skipLabel`, `label`, `choiceLabels`) precisely so they stay usable in Storybook and
+     * in exports — a primitive with a Thai string baked in breaks both.
+     *
+     * `allowedStrings` is punctuation, not copy: a separator between two translated parts, a
+     * required marker, a currency sign, an arrow. Anything with meaning goes through
+     * `src/i18n`, and anything numeric through `formatTHB` or the date formatters in
+     * `src/i18n/format.ts`.
+     */
+    files: ["src/app/**/*.tsx", "src/features/**/*.tsx", "src/ui/**/*.tsx"],
+    ignores: ["**/*.stories.tsx", "**/*.test.tsx"],
+    rules: {
+      "react/jsx-no-literals": [
+        "error",
+        {
+          noStrings: true,
+          // `ignoreProps: false` would flag `type="button"`, `name="email"` and every
+          // className in the repo — 350-odd findings, none of them copy, which is how a rule
+          // gets switched off. The attributes that *are* copy are caught precisely below.
+          ignoreProps: true,
+          allowedStrings: [
+            "·",
+            "—",
+            "–",
+            "-",
+            "/",
+            "|",
+            ":",
+            ",",
+            ".",
+            "×",
+            "+",
+            "@",
+            "?",
+            "!",
+            "฿",
+            "%",
+            "#",
+            "*",
+            "→",
+            "©",
+          ],
+          // `elementOverrides` would be the natural way to exempt `<Kbd>`, but it crashes
+          // eslint-plugin-react 7.37.5: enabling it registers a `VariableDeclaration` visitor
+          // that calls `isRequireStatement(d.init)` without a null check, so any `let x;` in
+          // the codebase takes the whole lint run down. Keycaps come from `KEYCAP` in
+          // `src/ui/components/Kbd.tsx` instead, which is where the ⌘/Ctrl split belongs
+          // anyway.
+        },
+      ],
+
+      /**
+       * The other half: attributes that are read aloud or shown to a person.
+       *
+       * A screen reader user hears `aria-label`, so an untranslated one is an English-only
+       * screen for exactly the audience least able to work around it (design-system.md §6).
+       * `alt` is required by the component API already; this makes sure it is not a literal.
+       * An empty `alt=""` is exempt: that is the standard way to mark an image decorative, and
+       * it is the absence of copy rather than untranslated copy.
+       */
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "JSXAttribute[name.name=/^(alt|title|placeholder|aria-label|aria-placeholder|aria-roledescription|aria-valuetext|aria-description)$/] > Literal[value!='']",
+          message:
+            "This attribute is read by a person or a screen reader, so its text belongs in src/i18n (design-system.md §8). Pass a translated string instead of a literal.",
+        },
+      ],
+    },
+  },
+
   zoneBoundary("customer", ["admin", "partner"]),
   zoneBoundary("admin", ["customer", "partner"]),
   zoneBoundary("partner", ["customer", "admin"]),

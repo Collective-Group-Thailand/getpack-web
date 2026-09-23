@@ -144,7 +144,12 @@ export function SignInSheet({ open, onOpenChange, onSignedIn }: SignInSheetProps
               required
               requiredLabel={tCommon("state.required")}
             >
-              <PhoneInput value={phone} onChange={setPhone} disabled={pending} placeholder="081 234 5678" />
+              <PhoneInput
+                value={phone}
+                onChange={setPhone}
+                disabled={pending}
+                placeholder={t("customer.phonePlaceholder")}
+              />
             </Field>
 
             <Button type="button" size="lg" block loading={pending} disabled={phone.length < 9} onClick={send}>
