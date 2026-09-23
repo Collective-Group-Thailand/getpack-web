@@ -8,6 +8,121 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-22 | **F0 Session 0.1** — structure, tooling, dieline package, zone-ready routes, rebrand | pnpm + Node 24; strict TS, ESLint flat config, Prettier; Vitest + Playwright safety net (41 unit, 4 e2e); Next 16 + React 19.3; `@packio/dieline` extracted; target folder structure; `[locale]` customer zone + `src/proxy.ts`; rebrand to Packio with localStorage migration; CI; ADR-0004…0007 | F0 Session 0.2 (`src/ui` foundation: tokens, fonts, components, Storybook, Lighthouse CI) | See the notes under this table |
 | 2026-09-23 | **F0 Session 0.2** — design-system foundation (`src/ui`) | Tokens in TS → generated CSS with a WCAG contrast gate (ADR-0003); self-hosted Noto Sans Thai / Anuphan / JetBrains Mono (ADR-0001); 30 Radix + CVA components with axe tests (ADR-0002); `pk_theme` light/dark/high-contrast; namespaced th/en messages, `formatTHB`, Buddhist-era dates, `src/domain/status` shape; Storybook 10 + docs; designer, home and My designs migrated onto `src/ui`; Lighthouse CI; React Compiler rules back to `error` | The rest of `design-system.md` §3 (DataTable, Combobox, DatePicker, PhoneInput, AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, charts, partner shop-floor set) — built when F1–F5 first needs them | See the notes under the F0.2 heading |
 | 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
+| 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; a marked seed contract for the auth surface packio-api has not published yet; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
+
+---
+
+## F1 Deliverable 1.2 — 2026-09-23
+
+The app can now talk to `packio-api` — typed, mocked and authenticated. Six commits, each
+with lint, typecheck, unit tests and build green: contract pipeline → clients → BFF → auth →
+MSW and e2e → docs.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A hand-edited `schema.d.ts`, or a forgotten `pnpm gen:api` | `pnpm gen:api --check`, its own CI job; proven to fail on an edit |
+| Moving to a newer backend contract without anyone noticing | the vendored `contract/openapi.json` is sha256-pinned in `contract.lock.json`; only `--adopt` rewrites both, and it shows up in the PR diff |
+| A response type invented by hand | there is nowhere to put one: everything comes from `schema.d.ts` or the marked seed |
+| A failed API call that returns rather than throws | `problemMiddleware` throws `ApiError`; a non-problem body still becomes one |
+| Admin code calling `/v1/store/...` | `surfaceZone` on `serverApi` refuses it in-process, before the request leaves |
+| The browser reaching a surface its zone has no business with | the BFF allow-list, built from `ZONE_CONFIG`, answering 404 |
+| A cross-site form post riding the session cookie | `Origin` + `x-packio-csrf` on every non-GET through the BFF |
+| A token in JS-readable storage | there is no code path that writes one; the e2e suite asserts `document.cookie` holds neither |
+| A back-office screen added without a guard | it inherits `(console)/layout.tsx` by where it is placed |
+| A staff password attempted from the browser | `/v1/auth/staff/login` is on no BFF allow-list; it is a Server Action only |
+| An OTP a customer cannot paste | one input, `autocomplete="one-time-code"`, asserted in both unit and e2e tests (WCAG 2.2 §3.3.8) |
+| A th/en drift in the new `auth` namespace | the existing `messages.test.ts` parity suite, which covers it automatically |
+
+### Bugs this session found and fixed
+
+1. **`maxLength` broke pasting a Thai OTP.** The OTP field stripped non-digits in its change
+   handler, but the browser applies `maxLength` to the raw text *first* — so pasting the whole
+   SMS, "รหัส OTP ของคุณคือ 123456", was cut to its first six characters and left a single
+   digit behind. Exactly the failure WCAG 2.2 §3.3.8 exists to prevent, in the component
+   written to satisfy it. The limit now applies after the non-digits are gone.
+2. **A successful sign-in navigated to `about:blank`.** The sheet called `onOpenChange(false)`
+   on success, and the page hosting it treats a close as a cancel and goes back — so signing
+   in undid itself. Closing and signing in are separate events now, and "back" is only taken
+   when there is history to go back to, which there is not when someone arrives from an SMS
+   link.
+3. **The zone catch-alls sat outside the guarded route group**, so an unknown admin path
+   answered 404 to anyone and quietly confirmed which paths do not exist. They are inside
+   `(console)` now.
+4. **`pnpm build` started demanding production secrets.** `next build` imports every route
+   module to collect its config, and the BFF chain reached `src/lib/env/server`, which
+   validates at module load. `apiInternalUrl()` defers that read; the proxy still validates
+   eagerly on every request, so a missing key still fails the deployment at boot with every
+   absent key named at once.
+
+### Decisions taken, with reasons
+
+- **The contract is vendored at `contract/openapi.json`.** CI has no sibling checkout of
+  `packio-api` and no credentials for a private release asset, so a drift gate that reached
+  outside the repo could not be reproducible. `--adopt` is the only command that reaches out,
+  and it rewrites the vendored copy and the lock together.
+- **The seed contract is a separate document and a separate generated file.** `packio-api` is
+  at B1.2; auth is its B1.3. Nothing in `mocks/seed-openapi.json` is invented — every path and
+  field comes from api-conventions §4, the backend's ADR-0004, or its own B1-foundation prompt,
+  which names each endpoint literally. Keeping it behind `SeedPaths` in `src/lib/api/types.ts`
+  means deleting one line when B1.3 ships turns every stale usage into a compile error.
+  Confirmed with the user before starting.
+- **Staff sign in with an email.** api-conventions §4 and the master plan both say
+  "username/password", but the backend's ADR-0004 — which is what B1.3 will implement — says
+  email + password. The seed follows the ADR.
+- **The idempotency key is minted per user intent, not per fetch.** A key generated inside the
+  request would be new on every retry, which guarantees the double-submit the header exists to
+  prevent. The middleware only fills one in when a flagged call arrives without one; no
+  operation is flagged yet, because F1 has none.
+- **`refreshSession` returns `null` for every failure, not only a 401.** Refresh tokens are
+  single-use and replaying a spent one revokes the whole family, so a token this app is unsure
+  about must never be sent twice. Signing someone out is recoverable; guessing is not.
+- **`getActor` treats 403 as "not signed in", and re-throws 5xx.** A 403 is a token for the
+  wrong audience — exactly what a customer cookie looks like on the admin host. A 500 is not a
+  lost session, and calling it one would bounce a signed-in user to a login screen because a
+  database was briefly slow.
+- **COOP relaxes to `same-origin-allow-popups` on the storefront only.** Firebase's Google and
+  Apple sign-in talks to its popup through `window.opener`, which `same-origin` severs: the
+  popup completes and the opener never hears, so sign-in hangs with no error. Admin and partner
+  have no third-party sign-in and keep full isolation.
+- **Firebase and LINE are plumbed, not wired.** UI, server-side exchange endpoints, CSP origins
+  and a configured/not-configured check are in place; the SDKs load on click in F3, which the
+  master plan already assigns LIFF to. A button that looks live and then fails is worse than
+  one that is visibly not on offer. Confirmed with the user.
+- **`auth` is the second namespace shared by all three zones.** Every zone signs someone in,
+  and "your session has ended" should not drift between them. The unused copy per zone is a
+  handful of strings.
+- **The OTP field is one input, not six boxes**, and every policy value — code length, expiry,
+  resend cooldown, attempts left — is rendered from the API's challenge. No `D-###` owns those
+  numbers; they are listed in `docs/contract-requests.md` as values the backend still has to
+  settle.
+- **`/account/designs` is deliberately left unguarded.** Designs live in localStorage until F4
+  Part B gives them a server-side home, so a guard would remove working behaviour rather than
+  protect anything.
+- **`docs/contract/api-conventions.md` was re-synced from `packio-api`**, which had added §5
+  (Swagger/Scalar documentation requirements) and renumbered Realtime to §6. CLAUDE.md requires
+  the two copies to be identical. Confirmed with the user.
+
+### Deliberately not done
+
+- No shells: the admin sidebar built from the `/v1/admin/me` menu entitlements, the topbar,
+  the command palette and the notification centre are all 1.3. The zone home pages show the
+  signed-in actor's name and roles only because that is the smallest thing that proves the
+  whole chain works end to end.
+- No `src/domain/status` maps, no observability, SEO, web push, realtime or analytics — 1.3.
+- No Storybook stories for `OTPInput`, `PhoneInput` or `FormField`; they are covered by unit
+  tests with axe. 1.3 adds the visual snapshots.
+- No Lighthouse URL set for the login pages: budgets arrive with the real shells in 1.3.
+- `IDEMPOTENT_PATHS` is empty. The mechanism and its tests exist; F2–F6 add their own
+  operations as they build them.
+
+### Open questions for the backend
+
+`docs/contract-requests.md` now carries eleven seeded endpoints and a table of auth policy
+values that no decision owns — OTP length, expiry, resend cooldown and attempt limits, session
+idle timeout, and the partner device-PIN policy. The backend's own ADR-0004 lists these as
+"open for B1.3". The UI reads all of them from the API today rather than hard-coding any.
 
 ---
 
