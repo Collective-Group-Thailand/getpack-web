@@ -14,3 +14,8 @@ CLAUDE.md
 tsconfig.json
 next-env.d.ts
 src/ui/generated
+src/lib/api/schema.d.ts
+src/lib/api/schema.seed.d.ts
+mocks/generated
+contract/openapi.json
+mocks/seed-openapi.json

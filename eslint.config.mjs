@@ -73,6 +73,11 @@ const eslintConfig = [
       "storybook-static/**",
       "legacy/**",
       "packages/*/dist/**",
+      // Generated from the OpenAPI contract (ADR-0006). Regenerate with `pnpm gen:api`;
+      // `pnpm gen:api --check` in CI is what keeps them honest, not the linter.
+      "src/lib/api/schema.d.ts",
+      "src/lib/api/schema.seed.d.ts",
+      "mocks/generated/**",
       "next-env.d.ts",
     ],
   },
