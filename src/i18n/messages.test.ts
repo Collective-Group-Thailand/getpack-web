@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadMessages } from "./messages";
+import { loadAllMessages } from "./messages";
 import { routing } from "./routing";
 
 type Messages = Record<string, unknown>;
@@ -18,7 +18,7 @@ function flatten(value: Messages, prefix = ""): string[] {
  */
 describe("messages", () => {
   it("has the same keys in every locale", async () => {
-    const [th, en] = await Promise.all(routing.locales.map((locale) => loadMessages(locale)));
+    const [th, en] = await Promise.all(routing.locales.map((locale) => loadAllMessages(locale)));
     const thKeys = flatten(th).sort();
     const enKeys = flatten(en).sort();
 
@@ -28,7 +28,7 @@ describe("messages", () => {
 
   it("has no empty strings", async () => {
     for (const locale of routing.locales) {
-      const messages = await loadMessages(locale);
+      const messages = await loadAllMessages(locale);
       const empties = Object.entries(messages).flatMap(([namespace, value]) =>
         flatten(value as Messages, `${namespace}.`).filter((key) => {
           const parts = key.split(".").slice(1);
@@ -43,7 +43,7 @@ describe("messages", () => {
 
   it("keeps the ICU placeholders identical across locales", async () => {
     const placeholders = (text: string) => [...text.matchAll(/\{(\w+)/g)].map((match) => match[1]).sort();
-    const [th, en] = await Promise.all(routing.locales.map((locale) => loadMessages(locale)));
+    const [th, en] = await Promise.all(routing.locales.map((locale) => loadAllMessages(locale)));
 
     const read = (messages: Record<string, unknown>, key: string): string => {
       let current: unknown = messages;

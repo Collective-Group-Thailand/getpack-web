@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
+import { ZoneProviders } from "@/features/shared/zone";
 import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE } from "@/ui/brand";
 import { fontClassNames } from "@/ui/fonts";
-import { Toaster } from "@/ui/components/Toast";
-import { ThemeProvider } from "@/ui/theme";
 import { readThemeChoice } from "@/ui/theme/server";
 import { dataThemeAttribute } from "@/ui/theme/themes";
 import { routing } from "@/i18n/routing";
@@ -53,13 +52,9 @@ export default async function CustomerLayout({
   return (
     <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} className={fontClassNames}>
       <body>
-        <NextIntlClientProvider>
-          <ThemeProvider initialChoice={themeChoice} zone="customer">
-            {children}
-            {/* One toaster per zone: toasts belong to the current page (design-system.md §4). */}
-            <Toaster />
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        <ZoneProviders zone="customer" themeChoice={themeChoice}>
+          {children}
+        </ZoneProviders>
       </body>
     </html>
   );
