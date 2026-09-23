@@ -7,6 +7,119 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-22 | Start | Repo contains the original BoxStudio single Next.js app (designer: RSC / tuck-end / tray dieline editor, localStorage designs, PNG/PDF/SVG export) plus the Packio prompt pack v3 (`docs/decisions.md` D-001…D-155, `docs/accounting-design.md`). Brand: **Packio — Your Packaging Production Partner** (Collective Group (Thailand)). | Everything from F0 Session 0.1 | ADR-0001…0003 are accepted decisions not yet implemented |
 | 2026-09-22 | **F0 Session 0.1** — structure, tooling, dieline package, zone-ready routes, rebrand | pnpm + Node 24; strict TS, ESLint flat config, Prettier; Vitest + Playwright safety net (41 unit, 4 e2e); Next 16 + React 19.3; `@packio/dieline` extracted; target folder structure; `[locale]` customer zone + `src/proxy.ts`; rebrand to Packio with localStorage migration; CI; ADR-0004…0007 | F0 Session 0.2 (`src/ui` foundation: tokens, fonts, components, Storybook, Lighthouse CI) | See the notes under this table |
 | 2026-09-23 | **F0 Session 0.2** — design-system foundation (`src/ui`) | Tokens in TS → generated CSS with a WCAG contrast gate (ADR-0003); self-hosted Noto Sans Thai / Anuphan / JetBrains Mono (ADR-0001); 30 Radix + CVA components with axe tests (ADR-0002); `pk_theme` light/dark/high-contrast; namespaced th/en messages, `formatTHB`, Buddhist-era dates, `src/domain/status` shape; Storybook 10 + docs; designer, home and My designs migrated onto `src/ui`; Lighthouse CI; React Compiler rules back to `error` | The rest of `design-system.md` §3 (DataTable, Combobox, DatePicker, PhoneInput, AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, charts, partner shop-floor set) — built when F1–F5 first needs them | See the notes under the F0.2 heading |
+| 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
+
+---
+
+## F1 Deliverable 1.1 — 2026-09-23
+
+Three hosts served from one build, each with its own `<html>`, providers, CSP and 404
+behaviour. No business screens — the admin and partner pages are placeholders that prove the
+rewrite, the layout, the theme and the per-zone messages work end to end.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| An unknown or forged `Host` picks no zone | `resolveZone` returns `null` → bare 404; there is no default zone |
+| `/admin/*` and `/partner/*` are unreachable from outside, on **every** host | `isInternalOnlyPath` in `src/proxy.ts`, before any app code runs |
+| A forgotten host or API URL in production | `src/lib/env/server.ts` throws at boot, naming every missing key at once |
+| `API_INTERNAL_URL` reaching a client bundle | `import "server-only"` in `src/lib/env/server.ts` |
+| A customer screen importing `features/admin` | `no-restricted-imports` (alias form) **and** `import/no-restricted-paths` (resolved form, catches `../../admin/…`) |
+| That those two rules are still wired to the right files | `src/lib/zones/eslint-boundaries.test.ts` lints fixture *strings* through the real config |
+| `X-Robots-Tag: noindex` on admin and partner, absent on the storefront | `securityHeaders`, unit-tested per zone, asserted again in `e2e/zones.spec.ts` |
+| Camera permission on the partner PWA only | `Permissions-Policy` per zone, same two layers |
+| A CSP that blocks something the page needs | `e2e/zones.spec.ts` fails on any CSP console violation, on all three hosts |
+| The nonce in the CSP is the nonce Next stamped | asserted against the served HTML, not the DOM (see below) |
+| A fourth zone half-added | `ZONES` in `src/lib/zones/zones.ts` is the one list; `ZONE_CONFIG` and `ZONE_DEFAULT_THEME` are `satisfies Record<Zone, …>` |
+
+### Bugs this session found and fixed
+
+Both came out of the browser, not the unit tests:
+
+1. **A nonced `style-src` broke every page's styling, silently.** `sonner` injects its 15 KB
+   stylesheet from a `document.createElement("style")` at module evaluation (`__insertCSS` —
+   no nonce option, no way to opt out), Turbopack does the same for CSS in development, and
+   Radix and Konva set `style` attributes, which have nowhere to put a nonce. A nonce in
+   `style-src` makes the browser **ignore** `'unsafe-inline'`, so all of it was refused and
+   every page logged violations. Styles are now `'self' 'unsafe-inline'` with the reasoning
+   written into `src/lib/security/csp.ts`; `script-src` keeps its nonce and
+   `'strict-dynamic'`, which is the allowance that matters, and `img-src`/`font-src`/
+   `connect-src` still bound where CSS-based exfiltration would have to send anything.
+2. **`script[nonce="…"]` can never match.** The CSP spec has browsers blank the `nonce`
+   content attribute once the document is parsed, so the obvious assertion — that Next
+   stamped the nonce the CSP advertises — passed vacuously as "0 elements, no failure" only
+   because it was written as `> 0`. It now reads the served HTML from the response.
+
+### Decisions taken, with reasons
+
+- **The nonce CSP makes every route dynamically rendered, and the F0.2 note about restoring
+  static rendering is superseded.** Next cannot statically render a page whose nonce changes
+  per request, so moving the `pk_theme` read from `cookies()` into a proxy request header
+  would buy nothing — reading a request header is equally dynamic. Confirmed with the user.
+  `readThemeChoice` stays as it is. Storefront caching becomes a CDN/ISR question for F3,
+  when there are real catalogue pages to cache.
+- **next-intl's middleware is kept, not replaced.** It builds its rewrite from
+  `new Headers(request.headers)` and forwards them through
+  `NextResponse.rewrite(url, { request: { headers } })`, so handing it a header-only clone of
+  the request carries `x-nonce`, the CSP and `x-packio-zone` through to the render — and
+  locale negotiation, the `Link` alternate-links header and trailing-slash normalisation stay
+  its job rather than becoming ours.
+- **Host matching ignores the port.** One set of `*_HOST` values therefore serves `pnpm dev`
+  (:3000), Playwright (:3100) and Lighthouse CI (:3200) without a per-tool override. A
+  trailing root dot and an IPv6 literal are normalised for the same reason a port is: they
+  are all ways to present the same host differently to an allow-list.
+- **A cross-zone probe gets a bare 404 from the proxy, not a styled page.** No app code runs
+  and there is no body, so a probe learns nothing about whether the route exists. A real miss
+  *inside* a zone still gets that zone's `not-found.tsx`; `src/app/{admin,partner}/[...rest]`
+  exists so Next has a route to attach the miss to — with no `src/app/layout.tsx`, an
+  unmatched path has no unambiguous root layout to render in.
+- **Hosts and `API_INTERNAL_URL` default only outside production.** `pnpm dev` needs no
+  `.env`; production requires them, because a host that silently fell back to `localhost`
+  would 404 that whole zone with nothing in the logs. CI therefore sets them rather than
+  skipping validation, so the schema is exercised on every build.
+- **The access token's expiry is a third cookie (`__Host-pk_ate`), not the JWT's `exp`.** The
+  proxy forwards a token it must not need to parse; the API owns the JWT format and is the
+  only thing that verifies it.
+- **The HTTP half of the refresh is a named seam for 1.2.** `refreshDecision` is pure and
+  tested; `refreshSession` returns `null`, which is the real "refresh failed → render
+  anonymous" answer rather than a placeholder. Writing the call now would mean hand-writing a
+  response shape ahead of `src/lib/api/schema.d.ts`, which CLAUDE.md forbids. Confirmed with
+  the user. Nothing sets a refresh cookie before 1.2, so the branch is unreachable today.
+- **`global-error.tsx` is bilingual, not translated.** It replaces the whole document,
+  including the next-intl provider, so there is no bundle to read and the locale is exactly
+  what has just been lost. Two short lines in Thai and English.
+- **The e2e suite now runs against a production build locally as well as in CI.** The dev
+  CSP legitimately differs (Turbopack's injected styles), so testing `pnpm dev` would give
+  false confidence in both directions.
+- **`Zone` moved to `src/lib/zones`** and `src/ui/theme/themes.ts` imports it. Which zones
+  exist is a platform fact, not a design-system one, and `ZONE_DEFAULT_THEME` now cannot
+  drift from the list the proxy resolves against.
+- **`@typescript-eslint/no-unused-vars` ignores `_`-prefixed arguments.** A seam like
+  `refreshSession(_zone, _refreshToken)` keeps the signature 1.2 needs. Unused *variables*
+  are still reported.
+- **The ESLint `files` glob is `src/app/**` minus the other two zones, not
+  `src/app/[locale]/**`.** A flat-config glob is minimatch, so `[locale]` reads as a
+  character class and matches nothing that exists — the fixture test found this. The broader
+  glob is also correct: the customer BFF at `src/app/bff` must not import admin features
+  either.
+
+### Deliberately not done
+
+- No `pnpm gen:api`, `schema.d.ts`, MSW, `serverApi`/`browserApi`, `createBffHandler`, login
+  screen or `getActor` — all F1 1.2. The BFF paths are routed by the proxy and allow-listed
+  in `ZONE_CONFIG` (`bffPath`, `apiPrefix`), but no route handler exists yet.
+- No real shells: the admin sidebar from `/v1/admin/me` entitlements, the topbar, the command
+  palette, the customer header/footer/bottom-nav and the partner bottom nav are all 1.3, as
+  are observability, SEO, web push, realtime and analytics.
+- Messages stay in the flat `{th,en}/*.json` files, now loaded per zone
+  (`ZONE_NAMESPACES`). The per-feature split and the lint rule against hard-coded strings are
+  1.3's item 2.
+- The Lighthouse URL sets for the admin and partner hosts wait for 1.3: the hosts exist, but
+  a placeholder page has no budget worth asserting.
+- `TanStack Query` defaults are plain (`staleTime: 30s`, no refetch on focus). 1.2 replaces
+  them with retry rules by HTTP status and stale times per resource type, once `ApiError`
+  exists to tell a 422 from a 503.
 
 ---
 

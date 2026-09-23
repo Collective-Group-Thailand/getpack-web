@@ -1,6 +1,6 @@
 # ADR-0004 — One app, three host-based zones
 
-**Status:** Accepted (2026-09-22) · implemented progressively: F0.1 prepares the shape, F1 creates the zones
+**Status:** Accepted (2026-09-22) · implemented in F1 Deliverable 1.1 (F0.1 prepared the shape)
 
 ## Context
 
@@ -29,7 +29,9 @@ storefront XSS able to ride a staff session.
   `src/domain`, `src/i18n`, `src/lib`. ESLint import boundaries stop customer code
   importing `features/admin|partner` and vice versa.
 - Locale routing is customer-only: Thai at `/`, English at `/en`, detection off so `/` is
-  always Thai and stays indexable and cacheable. Admin and partner are Thai-only.
+  always Thai and stays indexable. Admin and partner carry no locale prefix — their URLs are
+  tools, not indexed pages — and take their language from the `pk_locale` cookie instead,
+  Thai by default (F1 1.1).
 - One Docker image serves every host. If traffic or risk ever demands it, the same image
   is deployed twice with a `ZONES` env restricting which hosts it answers — no code change.
 
@@ -41,3 +43,9 @@ storefront XSS able to ride a staff session.
   is what catches an admin provider leaking into the customer bundle.
 - F0.1 removes `src/app/layout.tsx` and moves the customer routes under `[locale]` ahead
   of time, so F1 adds the other two zones without touching the customer tree.
+- With no `src/app/layout.tsx`, an unmatched path has no unambiguous root layout to render
+  in, so each zone needs its own catch-all (`src/app/{admin,partner}/[...rest]`) to give
+  Next a route to attach a 404 to. Customer misses land inside `[locale]` already.
+- The per-request CSP nonce (F1 1.1) makes **every** route dynamically rendered: Next cannot
+  statically render a page whose nonce changes per request. Storefront caching is therefore
+  a CDN/ISR question, revisited in F3 when there are catalogue pages to cache.
