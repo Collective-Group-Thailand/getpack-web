@@ -1,0 +1,41 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Voice & tone" />
+
+# Voice & tone
+
+The full guide is `docs/ui/voice-and-tone.md`. The short version, for when you are writing a
+string:
+
+## The voice
+
+Clear, polite, specific. Packio is a production partner, not a brochure. A customer is spending
+real money on a physical thing that cannot be un-printed, so copy is judged on whether it
+prevents a mistake.
+
+1. **Say what happens next** — "ส่งไฟล์ให้โรงพิมพ์แล้ว — พร้อมส่ง 18 ก.ย. 2569", not "สำเร็จ!"
+2. **Name the thing** — "กล่องฝาชน (RSC)", "PK-2569-00042"
+3. **Explain jargon inline**, once, where the decision is made
+4. **Never blame the user** — "ไฟล์ใหญ่เกิน 8 MB", not "คุณอัปโหลดไฟล์ผิด"
+5. **Be honest about money and time**
+
+## Thai specifics
+
+- ครับ/ค่ะ sparingly, and never guessing the reader's gender
+- buttons are verbs: บันทึก, เริ่มออกแบบ, ส่งออก — never ตกลง where a verb exists
+- no ALL CAPS in either script
+- numbers with separators and units: 1,234.56 ฿ · 525 × 180 มม.
+- Buddhist era for customers, ISO in exports
+- keep the industry terms a print buyer and a factory planner share: ไดคัท, bleed, flexo, RSC
+
+## Patterns
+
+| Situation | Do | Don't |
+|---|---|---|
+| Empty state | ยังไม่มีงานออกแบบ — เริ่มออกแบบกล่องแรกของคุณ | ไม่พบข้อมูล |
+| Error | บันทึกไม่สำเร็จ — พื้นที่จัดเก็บเต็ม (ลองลดขนาดรูปภาพ) | เกิดข้อผิดพลาด |
+| Destructive confirm | restate the target: “กล่องขนมปัง” จะถูกลบและไม่สามารถกู้คืนได้ | คุณแน่ใจหรือไม่? |
+| Success | name the outcome and the next step | เรียบร้อย! |
+
+Every string lives in `src/i18n/messages/{th,en}/`, in both languages, with matching ICU
+placeholders — a test asserts it.

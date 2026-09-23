@@ -1,0 +1,62 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Principles" />
+
+# Packio design system
+
+`src/ui` is the whole product's visual language — customer storefront, admin back office and
+partner PWA compose it, and none of them restyles a primitive locally. Extending the system
+means editing a file in `src/ui`, so the language stays single-sourced.
+
+## Experience principles
+
+`docs/prompts/design-system.md` §1, in the order they settle arguments:
+
+1. **Clarity over decoration.** Every screen answers *where am I, what is the status, what
+   should I do next?* One primary action per view.
+2. **Show the box.** Packaging is visual — live 2D/3D previews, true dimensions and material
+   swatches wherever a decision is made.
+3. **Honest pricing and time.** Price, VAT, one-off costs and the delivery date are visible
+   before commitment. A change is explained, never silent.
+4. **Progress you can trust.** Every order shows promised against actual, with evidence.
+5. **Thai-first, human copy.** Short, polite, specific Thai. Jargon is explained where the
+   decision is made.
+6. **Fast on real devices.** A mid-range Android on 4G is the reference device.
+7. **Accessible by default.** WCAG 2.2 AA, keyboard and screen-reader friendly, safe at 200 %
+   zoom.
+8. **Consistent and composable.** Zones compose `src/ui`.
+
+## What is enforced, not advised
+
+| Rule | Mechanism |
+|---|---|
+| Contrast of every semantic pair, in all three themes | `scripts/check-contrast.ts` in `pnpm test` |
+| Generated CSS matches the TypeScript tokens | `pnpm tokens:check` in CI |
+| Labels, hints and errors wired to their control | `<Field>` context (`useFieldProps`) |
+| An icon-only button has a name | `IconButton`'s `label` is a required prop |
+| A status is never colour alone | `StatusBadge` takes a `StatusMeta` — tone **and** icon **and** words |
+| No axe violations per component | a Vitest suite per component |
+| No axe violations per page, keyboard paths, focus restore | Playwright + `@axe-core/playwright` |
+| Both languages, matching ICU placeholders | `src/i18n/messages.test.ts` |
+| Performance budgets | Lighthouse CI (`lighthouserc.json`) |
+
+## Structure
+
+```
+src/ui/
+├─ tokens/      TypeScript tokens → generated/tokens.css (ADR-0003)
+├─ fonts/       self-hosted Noto Sans Thai, Anuphan, JetBrains Mono (ADR-0001)
+├─ theme/       pk_theme cookie, server stamp, provider, toggle
+├─ icons/       curated Lucide registry
+├─ components/  Radix + CVA primitives (ADR-0002)
+├─ styles/      element defaults, focus ring, skip link, reduced motion
+└─ docs/        these pages
+```
+
+## Not built yet
+
+`design-system.md` §3 lists the full component set. F0.2 built the foundation plus what the
+designer and the customer shell use today; the rest — DataTable, Combobox, DatePicker,
+PhoneInput, AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, the charts, the
+partner shop-floor components — is built when F1–F5 first needs it, so nothing is designed
+against a guess.

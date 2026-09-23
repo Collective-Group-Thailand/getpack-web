@@ -29,7 +29,7 @@ packio-web/
 │  ├─ app/
 │  │  ├─ [locale]/                  CUSTOMER zone (root layout) — (marketing) (catalog) configure/ rfq/ design/[id] cart/ checkout/ account/ business/ track/[token] liff/ …
 │  │  ├─ admin/                     ADMIN zone (root layout) — (auth)/login  (console)/… every back-office screen
-│  │  ├─ partner/                   PARTNER zone (root layout) — onboarding, cost tables, jobs, QC, ship, billing, payouts
+│  │  ├─ partner/                   PARTNER zone (root layout) — onboarding, price tables, jobs, QC, ship, billing, payouts
 │  │  ├─ bff/[...path]/route.ts     customer BFF  → /v1/store/*   (admin/bff and partner/bff are the zone equivalents)
 │  │  ├─ robots.ts sitemap.ts       customer host only
 │  │  └─ global-error.tsx
