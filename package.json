@@ -13,6 +13,9 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
+    "tokens": "tsx scripts/build-tokens.ts",
+    "tokens:check": "tsx scripts/build-tokens.ts --check",
+    "contrast": "tsx scripts/check-contrast.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm test:app && pnpm test:dieline",
@@ -57,6 +60,7 @@
     "prettier": "^3.9.8",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.1"
   },

@@ -3,6 +3,9 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE } from "@/ui/brand";
+import { ThemeProvider } from "@/ui/theme";
+import { readThemeChoice } from "@/ui/theme/server";
+import { dataThemeAttribute } from "@/ui/theme/themes";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -36,10 +39,17 @@ export default async function CustomerLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
+  // Stamped before the first byte, so the page never paints in the wrong theme (ADR-0003).
+  const themeChoice = await readThemeChoice("customer");
+
   return (
-    <html lang={locale}>
-      <body className="antialiased">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)}>
+      <body>
+        <NextIntlClientProvider>
+          <ThemeProvider initialChoice={themeChoice} zone="customer">
+            {children}
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

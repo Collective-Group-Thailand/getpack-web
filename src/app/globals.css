@@ -1,16 +1,8 @@
+/*
+ * The single CSS entry point for the customer zone. The admin and partner root layouts
+ * import the same two files in F1 — tokens and base are zone-agnostic; only the default
+ * theme differs, and that is a `data-theme` attribute, not a stylesheet.
+ */
 @import "tailwindcss";
-
-@theme {
-  /*
-   * ADR-0001 rules out runtime Google Fonts, and the self-hosted Thai-first families
-   * (Noto Sans Thai for UI, Anuphan for display, JetBrains Mono for codes) are wired up
-   * with next/font/local in F0 Session 0.2. Until then this falls back to whatever Thai
-   * face the device has.
-   */
-  --font-sans: "Noto Sans Thai", "IBM Plex Sans Thai", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-}
-
-body {
-  background: #ffffff;
-  color: #0f172a;
-}
+@import "../ui/generated/tokens.css";
+@import "../ui/styles/base.css";
