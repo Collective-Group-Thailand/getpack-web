@@ -1,3 +1,5 @@
+import type { Zone } from "@/lib/zones";
+
 /**
  * Theme selection (ADR-0003). Shared by the server stamp and the client provider, so it
  * must stay free of both `next/headers` and browser globals.
@@ -27,9 +29,9 @@ export const ZONE_DEFAULT_THEME = {
   customer: "system",
   admin: "light",
   partner: "light",
-} as const satisfies Record<string, ThemeChoice>;
+} as const satisfies Record<Zone, ThemeChoice>;
 
-export type Zone = keyof typeof ZONE_DEFAULT_THEME;
+export type { Zone };
 
 export function isThemeChoice(value: unknown): value is ThemeChoice {
   return typeof value === "string" && (THEME_CHOICES as readonly string[]).includes(value);
