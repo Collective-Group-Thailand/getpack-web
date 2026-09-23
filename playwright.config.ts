@@ -20,7 +20,12 @@ const zoneEnv = {
   PUBLIC_HOST: `localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
   PARTNER_HOST: `partner.localhost:${PORT}`,
+  // Deliberately a port nothing listens on: MSW intercepts in-process, so nothing should
+  // ever reach the network. If an interception is missed, the call fails fast and loudly
+  // rather than quietly finding some other service.
   API_INTERNAL_URL: "http://127.0.0.1:4999",
+  // Starts the mock API from src/instrumentation.ts, so the auth flows have a backend.
+  API_MOCKS: "1",
 };
 
 export default defineConfig({

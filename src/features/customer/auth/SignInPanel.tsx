@@ -11,7 +11,7 @@ import { SignInSheet } from "./SignInSheet";
  * Customers normally sign in from wherever they are — the sheet opens over the cart, the
  * configurator, an order. This page exists for the cases that need a URL: a guard sending
  * someone here with a `returnTo`, a link in an SMS or LINE message, and the LIFF entry point
- * F3 adds. Closing it goes back rather than leaving a dead page behind.
+ * F3 adds.
  */
 export function SignInPanel({ returnTo }: { returnTo: string }) {
   const router = useRouter();
@@ -22,7 +22,13 @@ export function SignInPanel({ returnTo }: { returnTo: string }) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) router.back();
+        // Closing is a cancel. Going back is the kind thing to do when there is somewhere to
+        // go back to — arriving here straight from an SMS link, there is not, and `back()`
+        // would land on `about:blank`.
+        if (!next) {
+          if (window.history.length > 1) router.back();
+          else router.replace("/");
+        }
       }}
       onSignedIn={() => {
         router.replace(returnTo);

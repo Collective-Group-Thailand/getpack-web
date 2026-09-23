@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
+import { signInAsStaff } from "./helpers/session";
 
 /**
  * The zone boundary, in a real browser (F1 Deliverable 1.1).
@@ -35,18 +36,28 @@ test.describe("each host renders its own zone", () => {
     expect(new URL(page.url()).pathname).toBe("/");
   });
 
+  // Since F1 1.2 every admin and partner screen needs a session, so an anonymous visit
+  // lands on that zone's login page — which is still that zone's root layout, theme, fonts
+  // and messages, and is what these tests are actually about.
   test("the admin host serves the admin zone, light and Thai", async ({ page }) => {
     await open(page, HOSTS.admin);
 
-    await expect(page.getByRole("heading", { name: "โซนผู้ดูแลระบบ" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "เข้าสู่ระบบสำหรับพนักงาน" })).toBeVisible();
     // Admin is a light-first workspace whatever the OS says (00-master-plan.md §2).
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     await expect(page.locator("html")).toHaveAttribute("lang", "th");
   });
 
+  test("the admin zone renders its own screens once there is a session", async ({ page }) => {
+    await signInAsStaff(page);
+
+    await expect(page.getByRole("heading", { name: "โซนผู้ดูแลระบบ" })).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  });
+
   test("the partner host serves the partner zone", async ({ page }) => {
     await open(page, HOSTS.partner);
-    await expect(page.getByRole("heading", { name: "โซนพาร์ตเนอร์" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "เข้าสู่ระบบโรงงานพันธมิตร" })).toBeVisible();
   });
 
   test("admin takes its language from a cookie rather than the URL", async ({ page, context }) => {
@@ -54,9 +65,9 @@ test.describe("each host renders its own zone", () => {
     await open(page, HOSTS.admin);
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.getByRole("heading", { name: "Admin zone" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Staff sign in" })).toBeVisible();
     // …and the URL still carries no locale prefix.
-    expect(new URL(page.url()).pathname).toBe("/");
+    expect(new URL(page.url()).pathname).toBe("/login");
   });
 });
 
@@ -82,10 +93,20 @@ test.describe("cross-zone paths are refused", () => {
   }
 
   test("a real miss inside a zone gets that zone's own 404 page", async ({ page }) => {
+    // Signed in first: the catch-all sits inside the guarded route group, so a signed-out
+    // visitor is asked to sign in rather than told which admin paths do not exist.
+    await signInAsStaff(page);
     const response = await open(page, `${HOSTS.admin}/nope`);
 
     expect(response.status()).toBe(404);
     await expect(page.getByText("ไม่พบหน้านี้").first()).toBeVisible();
+  });
+
+  test("an unknown admin path asks a signed-out visitor to sign in, and reveals nothing", async ({ page }) => {
+    await open(page, `${HOSTS.admin}/nope`);
+
+    await expect(page).toHaveURL(`${HOSTS.admin}/login?returnTo=%2Fnope`);
+    await expect(page.getByText("ไม่พบหน้านี้")).toHaveCount(0);
   });
 });
 
