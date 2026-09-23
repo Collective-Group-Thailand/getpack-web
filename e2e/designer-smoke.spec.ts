@@ -46,9 +46,11 @@ test("designs a box, saves it, finds it again and exports the dieline", async ({
   await card.click();
 
   await expect(page.locator("canvas").first()).toBeVisible();
+
+  // Export is a real ARIA menu since F0.2, not a div of buttons: the items are menuitems.
   await page.getByRole("button", { name: "ส่งออก" }).click();
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "SVG ไดคัท" }).click();
+  await page.getByRole("menuitem", { name: /SVG ไดคัท/ }).click();
   const file = await download;
   expect(file.suggestedFilename()).toMatch(/\.svg$/);
 });
@@ -59,7 +61,7 @@ test("keeps the dieline in step with the box dimensions chosen in setup", async 
   // Default style is RSC with its first preset, 150 x 100 x 80 mm.
   await expect(page.getByText("ภายใน 150×100×80 มม.")).toBeVisible();
   // RSC flat sheet: (glue 25 + 2L + 2W) x (H + W) = 525 x 180 mm.
-  await expect(page.getByText("525 × 180 มม.")).toBeVisible();
+  await expect(page.getByText("แผ่นคลี่ 525 × 180 มม.")).toBeVisible();
 });
 
 test("keeps the old BoxStudio path working", async ({ page }) => {

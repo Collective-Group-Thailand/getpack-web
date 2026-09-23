@@ -33,6 +33,8 @@ interface BaseSlots {
   /** Text on a solid dark/brand fill. */
   "fg-inverse": Oklch;
   "primary-hover": Oklch;
+  /** Hover fill for the destructive button. Dimming with opacity would dim its label too. */
+  "danger-hover": Oklch;
   "focus-ring": Oklch;
   /** The designer's work area: neutral chrome so artwork stands out (design-system.md §5). */
   canvas: Oklch;
@@ -83,6 +85,7 @@ const light = build(
     subtle: P.neutral[500],
     "fg-inverse": WHITE,
     "primary-hover": P.brand[800],
+    "danger-hover": P.red[800],
     "focus-ring": P.brand[600],
     canvas: P.neutral[100],
     "canvas-grid": P.neutral[300],
@@ -115,6 +118,7 @@ const dark = build(
     subtle: P.neutral[400],
     "fg-inverse": P.neutral[950],
     "primary-hover": P.brand[300],
+    "danger-hover": P.red[300],
     "focus-ring": P.brand[400],
     canvas: P.neutral[900],
     "canvas-grid": P.neutral[700],
@@ -148,6 +152,7 @@ const hc = build(
     subtle: P.neutral[800],
     "fg-inverse": WHITE,
     "primary-hover": P.brand[950],
+    "danger-hover": P.red[950],
     "focus-ring": BLACK,
     canvas: WHITE,
     "canvas-grid": P.neutral[500],

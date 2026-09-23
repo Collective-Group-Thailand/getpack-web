@@ -1,83 +1,104 @@
-import Link from "next/link";
-import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE_TH, SiteHeader } from "@/ui/brand";
-import { BoxPreview } from "@/features/designer/components/BoxPreview";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+
 import { BOX_STYLES } from "@/features/designer/catalog";
+import { BoxPreview } from "@/features/designer/components/BoxPreview";
+import { SiteFooter, SiteHeader } from "@/features/customer/shell";
+import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
+import { Card, CardDescription, CardTitle } from "@/ui/components/Card";
 
-const STEPS = [
-  ["เลือกรูปแบบและขนาด", "เลือกจากขนาดมาตรฐานหรือกรอกขนาดสินค้า ระบบคำนวณแผ่นคลี่ให้อัตโนมัติ"],
-  ["ออกแบบบนแผ่นคลี่", "เพิ่มข้อความ โลโก้ รูปทรง และลวดลาย พร้อมเส้นตัด เส้นพับ และเขตปลอดภัย"],
-  ["ส่งออกไฟล์", "ได้ PDF ขนาดจริงพร้อม bleed และไฟล์ SVG ไดคัทสำหรับโรงพิมพ์"],
-];
+/**
+ * Customer home. A placeholder until F3 builds the real storefront — the point of it in F0.2
+ * is that it is built entirely from `src/ui` and `src/i18n`, with no colour utility and no
+ * string of its own.
+ */
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
 
-export default function Home() {
+  const t = await getTranslations("home");
+  const tCommon = await getTranslations("common");
+
+  const steps = [
+    { title: t("steps.chooseTitle"), body: t("steps.chooseBody") },
+    { title: t("steps.designTitle"), body: t("steps.designBody") },
+    { title: t("steps.exportTitle"), body: t("steps.exportBody") },
+  ];
+
   return (
     <>
       <SiteHeader />
-      <main>
-        <section className="bg-gradient-to-b from-teal-50 to-white">
+      <main id="main">
+        <section className="bg-bg-subtle">
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
             <div>
               <h1 className="text-4xl leading-tight font-bold md:text-5xl">
-                ออกแบบกล่องของคุณ
+                {t("hero.titleLine1")}
                 <br />
-                <span className="text-teal-600">ในขนาดจริง</span>
+                <span className="text-primary">{t("hero.titleLine2")}</span>
               </h1>
-              <p className="mt-4 max-w-md text-lg text-slate-600">
-                {BRAND_TAGLINE_TH} — ออกแบบบนแผ่นคลี่จริง แล้วได้ไฟล์ที่โรงพิมพ์ใช้ผลิตได้ทันที
+              <p className="text-muted mt-4 max-w-md text-lg">
+                {t("hero.body", { tagline: tCommon("brand.tagline") })}
               </p>
-              <div className="mt-8 flex gap-3">
-                <Link
-                  href="/design/new"
-                  className="rounded-xl bg-teal-600 px-6 py-3 font-medium text-white hover:bg-teal-700"
-                >
-                  เริ่มออกแบบ
-                </Link>
-                <Link
-                  href="/account/designs"
-                  className="rounded-xl border border-slate-300 px-6 py-3 font-medium hover:bg-slate-50"
-                >
-                  แบบของฉัน
-                </Link>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg">
+                  <Link href="/design/new">{tCommon("nav.startDesigning")}</Link>
+                </Button>
+                <Button asChild size="lg" variant="secondary">
+                  <Link href="/account/designs">{tCommon("nav.myDesigns")}</Link>
+                </Button>
               </div>
             </div>
-            <div className="aspect-[4/3] rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-              <BoxPreview style="tuck-end" dims={{ length: 70, width: 40, height: 110 }} color="#f1f5f9" />
-            </div>
+            <Card elevation="raised" padding="lg" className="aspect-[4/3] rounded-2xl">
+              {/* The product, not a stock photo: a real dieline from @packio/dieline. */}
+              <BoxPreview
+                style="tuck-end"
+                dims={{ length: 70, width: 40, height: 110 }}
+                paper="ivory-350"
+                label={t("styles.heading")}
+              />
+            </Card>
           </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="mb-8 text-2xl font-semibold">รูปแบบกล่องที่รองรับ</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {BOX_STYLES.map((s) => (
-              <div key={s.id} className="rounded-2xl border border-slate-200 p-5">
-                <div className="aspect-[4/3] rounded-xl bg-slate-50 p-4">
-                  <BoxPreview style={s.id} dims={s.presets[0].dims} color="#e7d6c1" />
+          <h2 className="mb-8 text-2xl font-semibold">{t("styles.heading")}</h2>
+          <ul className="grid gap-6 md:grid-cols-3">
+            {BOX_STYLES.map((style) => (
+              <Card as="li" key={style.id} padding="md">
+                <div className="bg-surface-subtle aspect-[4/3] rounded-lg p-4">
+                  <BoxPreview style={style.id} dims={style.presets[0].dims} paper="e-kraft" />
                 </div>
-                <h3 className="mt-4 font-medium">{s.name}</h3>
-                <p className="mt-1 text-sm text-slate-500">{s.description}</p>
-              </div>
+                <CardTitle as="h3" className="mt-4 text-base">
+                  {style.name}
+                </CardTitle>
+                <CardDescription className="mt-1">{style.description}</CardDescription>
+              </Card>
             ))}
-          </div>
+          </ul>
         </section>
 
-        <section className="bg-slate-50">
-          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-16 md:grid-cols-3">
-            {STEPS.map(([t, d], i) => (
-              <div key={t}>
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 font-semibold text-white">
-                  {i + 1}
-                </div>
-                <h3 className="font-medium">{t}</h3>
-                <p className="mt-1 text-sm text-slate-600">{d}</p>
-              </div>
-            ))}
+        <section className="bg-bg-subtle">
+          <div className="mx-auto max-w-6xl px-4 py-16">
+            <h2 className="mb-8 text-2xl font-semibold">{t("steps.heading")}</h2>
+            <ol className="grid gap-6 md:grid-cols-3">
+              {steps.map((step, index) => (
+                <li key={step.title}>
+                  <span
+                    aria-hidden
+                    className="bg-primary text-primary-fg mb-3 flex size-9 items-center justify-center rounded-full font-semibold"
+                  >
+                    {index + 1}
+                  </span>
+                  <h3 className="font-medium">{step.title}</h3>
+                  <p className="text-muted mt-1 text-sm">{step.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
         </section>
       </main>
-      <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">
-        © {new Date().getFullYear()} {BRAND_NAME} · {BRAND_COMPANY}
-      </footer>
+      <SiteFooter />
     </>
   );
 }

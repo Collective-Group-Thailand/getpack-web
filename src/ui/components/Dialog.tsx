@@ -4,6 +4,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../lib/cn";
+import { useReturnFocus } from "../lib/useReturnFocus";
 import { IconButton } from "./IconButton";
 
 const contentVariants = cva(
@@ -57,11 +58,14 @@ export function Dialog({
   size,
   className,
 }: DialogProps) {
+  const returnFocus = useReturnFocus();
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="z-overlay bg-overlay fixed inset-0" />
         <DialogPrimitive.Content
+          {...returnFocus}
           className={cn(contentVariants({ size }), className)}
           // Without a close button, Escape and the scrim are the only ways out, so keep them.
           onInteractOutside={closeLabel ? undefined : (event) => event.preventDefault()}

@@ -44,9 +44,10 @@ describe("Dialog", () => {
 
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    // Returning focus to the trigger is Radix's FocusScope restoring document.activeElement,
-    // which jsdom does not reproduce; e2e/a11y.spec.ts asserts it in a real browser.
-    expect(trigger).toBeInTheDocument();
+    // Radix restores focus to its own Dialog.Trigger ref, which is null for a controlled
+    // dialog, so `useReturnFocus` captures and restores the real one. Asserted here and again
+    // in a real browser in e2e/a11y.spec.ts, which is where the bug surfaced.
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 
   it("has no axe violations while open", async () => {

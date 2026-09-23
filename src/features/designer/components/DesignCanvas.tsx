@@ -5,6 +5,7 @@ import { Ellipse, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Transf
 import { useEditor } from "@/features/designer/store/editor";
 import { dielineSegments, faceCentroid, flat, insetConvex, PX_PER_MM } from "@packio/dieline";
 import { buildPatternTile } from "@/features/designer/patterns";
+import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import type { Dieline, DesignElement } from "@/features/designer/types";
 
 export const SAFE_ZONE_MM = 3;
@@ -51,7 +52,12 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
     [dieline],
   );
 
-  // Fit to view whenever requested or the dieline/viewport changes.
+  /*
+   * Fit to view whenever asked, or when the sheet or the viewport changes size. This reacts to
+   * a *measured* DOM size, which is not knowable during render, so the setState calls below
+   * are the effect's purpose rather than a cascade — the case `set-state-in-effect` cannot
+   * express.
+   */
   useEffect(() => {
     if (!width || !height) return;
     const pad = 60;
@@ -62,6 +68,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
     const nz = Math.max(0.1, Math.min(4, z));
     setZoom(nz);
     const s = nz * PX_PER_MM;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPos({ x: (width - dieline.width * s) / 2, y: (height - dieline.height * s) / 2 });
   }, [fitSignal, dieline, width, height, setZoom]);
 
@@ -148,7 +155,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
               points={flat(f.points)}
               closed
               fill={paperColor}
-              shadowColor="#000"
+              shadowColor={CANVAS_COLORS.paperShadow}
               shadowOpacity={0.12}
               shadowBlur={12}
               shadowForStrokeEnabled={false}
@@ -229,7 +236,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
                 key={`s${i}`}
                 points={flat(pts)}
                 closed
-                stroke="#16a34a"
+                stroke={CANVAS_COLORS.safeZone}
                 strokeWidth={0.8}
                 dash={[3, 3]}
                 strokeScaleEnabled={false}
@@ -240,7 +247,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
             <Line
               key={i}
               points={[...s.a, ...s.b]}
-              stroke={s.kind === "cut" ? "#e11d48" : "#2563eb"}
+              stroke={s.kind === "cut" ? CANVAS_COLORS.cut : CANVAS_COLORS.fold}
               strokeWidth={1.3}
               dash={s.kind === "fold" ? [6, 4] : undefined}
               strokeScaleEnabled={false}
@@ -259,7 +266,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
                   width={100}
                   align="center"
                   fontSize={size}
-                  fill="#64748b"
+                  fill={CANVAS_COLORS.panelLabel}
                   opacity={0.8}
                 />
               );
@@ -272,8 +279,8 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
           rotateEnabled
           ignoreStroke
           anchorSize={9}
-          borderStroke="#0f766e"
-          anchorStroke="#0f766e"
+          borderStroke={CANVAS_COLORS.selection}
+          anchorStroke={CANVAS_COLORS.selection}
           anchorCornerRadius={2}
           boundBoxFunc={(o, n) => (Math.abs(n.width) < 4 || Math.abs(n.height) < 4 ? o : n)}
         />

@@ -4,6 +4,7 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../lib/cn";
+import { useReturnFocus } from "../lib/useReturnFocus";
 import { IconButton } from "./IconButton";
 
 const sheetVariants = cva(["fixed z-modal flex flex-col overflow-hidden border-border bg-surface-raised shadow-xl"], {
@@ -46,11 +47,13 @@ export function Sheet({
   side,
   className,
 }: SheetProps) {
+  const returnFocus = useReturnFocus();
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="z-overlay bg-overlay fixed inset-0" />
-        <DialogPrimitive.Content className={cn(sheetVariants({ side }), className)}>
+        <DialogPrimitive.Content {...returnFocus} className={cn(sheetVariants({ side }), className)}>
           <div className="border-border flex items-start justify-between gap-4 border-b px-4 py-3">
             <div className="min-w-0">
               <DialogPrimitive.Title className="text-base font-semibold">{title}</DialogPrimitive.Title>

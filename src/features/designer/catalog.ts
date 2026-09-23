@@ -54,6 +54,10 @@ export interface Paper {
   printable: boolean;
 }
 
+/**
+ * Board colours are literal on purpose: they describe how real kraft and art card look, so
+ * they must not follow the app theme or the brand. Paper is paper.
+ */
 export const PAPERS: Paper[] = [
   {
     id: "ivory-350",

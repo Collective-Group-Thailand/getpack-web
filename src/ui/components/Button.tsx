@@ -26,8 +26,14 @@ export const buttonVariants = cva(
       variant: {
         primary: "bg-primary text-primary-fg hover:bg-primary-hover",
         secondary: "border border-border-strong bg-surface text-fg hover:bg-surface-subtle",
-        ghost: "text-fg hover:bg-surface-subtle",
-        destructive: "bg-danger text-danger-fg hover:opacity-90",
+        /*
+         * Ghost inherits its colour instead of forcing `text-fg`, and tints its hover from
+         * that same colour. On a normal surface it inherits the body colour; on an inverted
+         * one — the designer's dark chrome — it inherits `neutral-fg` and stays legible.
+         * Forcing `text-fg` there gave 1.89:1, which only a real browser could measure.
+         */
+        ghost: "text-inherit hover:bg-current/10",
+        destructive: "bg-danger text-danger-fg hover:bg-danger-hover",
         link: "text-primary underline underline-offset-4 hover:text-primary-hover",
       },
       size: {
@@ -72,6 +78,12 @@ export function Button({
   ...props
 }: ButtonProps) {
   const Component = asChild ? Slot.Root : "button";
+  const iconBefore = loading ? (
+    <Icon name="spinner" className="animate-spin" />
+  ) : iconStart ? (
+    <Icon name={iconStart} />
+  ) : null;
+  const iconAfter = iconEnd ? <Icon name={iconEnd} /> : null;
 
   return (
     <Component
@@ -82,9 +94,14 @@ export function Button({
       aria-busy={loading || undefined}
       {...props}
     >
-      {loading ? <Icon name="spinner" className="animate-spin" /> : iconStart ? <Icon name={iconStart} /> : null}
-      {children}
-      {iconEnd ? <Icon name={iconEnd} /> : null}
+      {iconBefore}
+      {/*
+        Slottable tells Radix which child is the one to merge into, so `asChild` still works
+        when the button also renders icons — without it, Slot sees three children and throws
+        ("Slot failed to slot onto its children"), which is only visible in a real render.
+      */}
+      {asChild ? <Slot.Slottable>{children}</Slot.Slottable> : children}
+      {iconAfter}
     </Component>
   );
 }

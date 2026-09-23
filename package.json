@@ -23,6 +23,7 @@
     "e2e": "playwright test",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "lhci": "lhci autorun",
     "e2e:ui": "playwright test --ui",
     "test:app": "vitest run --passWithNoTests",
     "test:dieline": "pnpm --filter @packio/dieline test",
@@ -50,7 +51,9 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@changesets/cli": "^3.0.3",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/addon-docs": "^10.6.0",

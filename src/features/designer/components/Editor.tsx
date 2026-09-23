@@ -1,55 +1,80 @@
 "use client";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import type Konva from "konva";
 import { nanoid } from "nanoid";
-import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
+
 import { buildDieline, PX_PER_MM } from "@packio/dieline";
+import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { getPaper, getStyle } from "@/features/designer/catalog";
-import { designRepo } from "@/features/designer/storage";
 import { exportDielineSvg, exportPdf, exportPng, makeThumbnail } from "@/features/designer/export";
-import { BRAND_NAME, BrandMark } from "@/ui/brand";
-import { SetupModal } from "./SetupModal";
+import { designRepo } from "@/features/designer/storage";
+import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
+import { Link } from "@/i18n/navigation";
+import { formatNumber } from "@/i18n/format";
+import { AlertDialog } from "@/ui/components/AlertDialog";
+import { Button } from "@/ui/components/Button";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { IconButton } from "@/ui/components/IconButton";
+import { NumberInput } from "@/ui/components/Input";
+import { Slider } from "@/ui/components/Slider";
+import { toast } from "@/ui/components/Toast";
+import { TooltipProvider } from "@/ui/components/Tooltip";
+import { BrandMark } from "@/ui/brand";
+
 import { PrintRulesModal } from "./PrintRulesModal";
+import { SetupModal } from "./SetupModal";
+import { PatternPanel, PropertiesPanel, ViewPanel } from "./SidePanel";
 import { Toolbar } from "./Toolbar";
-import { EmptyPanel, PatternPanel, PropertiesPanel } from "./SidePanel";
-import { IClose, IDownload, IFit, ISave } from "./Icons";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
 
+type ExportKind = "pdf" | "png" | "png-guides" | "svg";
+
 function useSize<T extends HTMLElement>() {
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const roRef = useRef<ResizeObserver | null>(null);
+  const observerRef = useRef<ResizeObserver | null>(null);
   const ref = useCallback((node: T | null) => {
-    roRef.current?.disconnect();
-    roRef.current = null;
+    observerRef.current?.disconnect();
+    observerRef.current = null;
     if (!node) return;
-    const ro = new ResizeObserver(([e]) =>
-      setSize({ width: Math.floor(e.contentRect.width), height: Math.floor(e.contentRect.height) }),
+    const observer = new ResizeObserver(([entry]) =>
+      setSize({ width: Math.floor(entry.contentRect.width), height: Math.floor(entry.contentRect.height) }),
     );
-    ro.observe(node);
-    roRef.current = ro;
+    observer.observe(node);
+    observerRef.current = observer;
   }, []);
   return [ref, size] as const;
 }
 
 export default function Editor({ id }: { id: string }) {
+  const t = useTranslations("designer");
+  const tCommon = useTranslations("common");
+  const locale = useLocale() as "th" | "en";
   const router = useRouter();
-  const st = useEditor();
-  const { spec, content, selectedId, zoom, setZoom, name, dirty } = st;
+
+  const state = useEditor();
+  const { spec, content, selectedId, zoom, setZoom, name, dirty } = state;
+
   const stageRef = useRef<Konva.Stage | null>(null);
   const [wrapRef, size] = useSize<HTMLDivElement>();
   const [loaded, setLoaded] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [patternOpen, setPatternOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const [fitSignal, setFitSignal] = useState(0);
-  const [toast, setToast] = useState<string | null>(null);
 
-  // Load design
+  /*
+   * Loading the design. Both setState calls below are part of that load, not a reaction to
+   * it: the design lives in localStorage, which cannot be read during render, and the editor
+   * renders nothing until it arrives. That is the case `set-state-in-effect` cannot express,
+   * so the two calls are exempted individually rather than the rule being downgraded
+   * repo-wide. F4 Part B moves designs to the API and the effect goes with it.
+   */
   useEffect(() => {
     const existing = id !== "new" ? designRepo.get(id) : undefined;
     if (existing) {
@@ -57,101 +82,111 @@ export default function Editor({ id }: { id: string }) {
         .getState()
         .load({ id: existing.id, name: existing.name, spec: existing.spec, content: existing.content });
     } else {
-      useEditor.getState().load({ id: id === "new" ? nanoid(10) : id, name: "แบบกล่องใหม่", spec: null });
+      useEditor.getState().load({ id: id === "new" ? nanoid(10) : id, name: t("untitled"), spec: null });
+      // A design with no box opens straight into setup — there is nothing else to show.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSetupOpen(true);
     }
     setLoaded(true);
-  }, [id]);
+  }, [id, t]);
 
   const dieline = useMemo(() => (spec ? buildDieline(spec.style, spec.dims) : null), [spec]);
   const paper = spec ? getPaper(spec.paperId) : null;
-  const selected = content.elements.find((e) => e.id === selectedId);
-
-  const flash = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2200);
-  };
+  const selected = content.elements.find((element) => element.id === selectedId);
 
   const save = useCallback(() => {
-    const s = useEditor.getState();
-    if (!s.spec || !dieline || !stageRef.current) return;
+    const current = useEditor.getState();
+    if (!current.spec || !dieline || !stageRef.current) return;
+
     const now = Date.now();
-    const prev = designRepo.get(s.designId);
-    const ok = designRepo.save({
-      id: s.designId,
-      name: s.name.trim() || "ไม่มีชื่อ",
-      spec: s.spec,
-      content: s.content,
+    const previous = designRepo.get(current.designId);
+    const saved = designRepo.save({
+      id: current.designId,
+      name: current.name.trim() || t("unnamed"),
+      spec: current.spec,
+      content: current.content,
       thumbnail: makeThumbnail(stageRef.current, dieline),
-      createdAt: prev?.createdAt ?? now,
+      createdAt: previous?.createdAt ?? now,
       updatedAt: now,
     });
-    if (!ok) return flash("บันทึกไม่สำเร็จ — พื้นที่จัดเก็บเต็ม (ลองลดขนาดรูปภาพ)");
-    s.markSaved();
-    if (id === "new") router.replace(`/design/${s.designId}`);
-    flash("บันทึกแล้ว");
-  }, [dieline, id, router]);
 
-  // Keyboard shortcuts
+    if (!saved) {
+      toast.error(t("saveFailedStorageFull"));
+      return;
+    }
+
+    current.markSaved();
+    if (id === "new") router.replace(`/design/${current.designId}`);
+    toast.success(tCommon("state.saved"));
+  }, [dieline, id, router, t, tCommon]);
+
+  // Keyboard shortcuts. Deliberately skipped while a form control has focus, so typing "d"
+  // in the name field does not duplicate an element.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement;
-      if (t.closest("input, textarea, select, [contenteditable]")) return;
-      const s = useEditor.getState();
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        if (e.shiftKey) s.redo();
-        else s.undo();
-      } else if (mod && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        s.redo();
-      } else if (mod && e.key.toLowerCase() === "s") {
-        e.preventDefault();
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("input, textarea, select, [contenteditable]")) return;
+
+      const current = useEditor.getState();
+      const mod = event.ctrlKey || event.metaKey;
+      const key = event.key.toLowerCase();
+
+      if (mod && key === "z") {
+        event.preventDefault();
+        if (event.shiftKey) current.redo();
+        else current.undo();
+      } else if (mod && key === "y") {
+        event.preventDefault();
+        current.redo();
+      } else if (mod && key === "s") {
+        event.preventDefault();
         save();
-      } else if (mod && e.key.toLowerCase() === "d" && s.selectedId) {
-        e.preventDefault();
-        s.duplicateElement(s.selectedId);
-      } else if ((e.key === "Delete" || e.key === "Backspace") && s.selectedId) {
-        e.preventDefault();
-        s.removeElement(s.selectedId);
-      } else if (e.key === "Escape") {
-        s.select(null);
-      } else if (e.key.startsWith("Arrow") && s.selectedId) {
-        e.preventDefault();
-        const el = s.content.elements.find((x) => x.id === s.selectedId);
-        if (!el) return;
-        const step = e.shiftKey ? 10 : 1;
-        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
-        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
-        s.updateElement(el.id, { x: el.x + dx, y: el.y + dy });
+      } else if (mod && key === "d" && current.selectedId) {
+        event.preventDefault();
+        current.duplicateElement(current.selectedId);
+      } else if ((event.key === "Delete" || event.key === "Backspace") && current.selectedId) {
+        event.preventDefault();
+        current.removeElement(current.selectedId);
+      } else if (event.key === "Escape") {
+        current.select(null);
+      } else if (event.key.startsWith("Arrow") && current.selectedId) {
+        event.preventDefault();
+        const element = current.content.elements.find((candidate) => candidate.id === current.selectedId);
+        if (!element) return;
+        const step = event.shiftKey ? 10 : 1;
+        const dx = event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0;
+        const dy = event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0;
+        current.updateElement(element.id, { x: element.x + dx, y: element.y + dy });
       }
     };
+
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [save]);
 
-  // Warn on unsaved changes
+  // The browser's own unsaved-changes prompt, for a tab close we cannot intercept with a
+  // dialog of our own.
   useEffect(() => {
-    const h = (e: BeforeUnloadEvent) => {
-      if (useEditor.getState().dirty) e.preventDefault();
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (useEditor.getState().dirty) event.preventDefault();
     };
-    window.addEventListener("beforeunload", h);
-    return () => window.removeEventListener("beforeunload", h);
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
 
   const viewCenter = useCallback(() => {
     const stage = stageRef.current;
     if (!stage || !dieline) return { x: 0, y: 0 };
-    const s = stage.scaleX();
-    return { x: (size.width / 2 - stage.x()) / s, y: (size.height / 2 - stage.y()) / s };
+    const scale = stage.scaleX();
+    return { x: (size.width / 2 - stage.x()) / scale, y: (size.height / 2 - stage.y()) / scale };
   }, [dieline, size]);
 
-  const doExport = (kind: "png" | "png-guides" | "pdf" | "svg") => {
-    setExportOpen(false);
+  const doExport = (kind: ExportKind) => {
     const stage = stageRef.current;
     if (!stage || !dieline) return;
-    st.select(null);
+
+    // Deselect first: the transformer handles would otherwise be baked into the bitmap.
+    state.select(null);
     setTimeout(() => {
       if (kind === "svg") exportDielineSvg(dieline, name);
       else if (kind === "pdf") exportPdf(stage, dieline, name);
@@ -159,192 +194,224 @@ export default function Editor({ id }: { id: string }) {
     }, 50);
   };
 
-  const close = () => {
-    if (dirty && !confirm("มีการแก้ไขที่ยังไม่บันทึก ต้องการออกหรือไม่?")) return;
-    router.push("/account/designs");
-  };
+  const leave = () => router.push("/account/designs");
 
   if (!loaded) return null;
 
+  const zoomPercent = Math.round(zoom * 100);
+
   return (
-    <div className="flex h-dvh flex-col bg-slate-100 text-slate-900">
-      {/* Header */}
-      <header className="flex h-14 shrink-0 items-center gap-3 bg-slate-900 px-3 text-white">
-        <Link href="/" className="flex items-center gap-2" title={BRAND_NAME}>
-          <BrandMark size={30} />
-        </Link>
-        <input
-          value={name}
-          onChange={(e) => st.setName(e.target.value)}
-          className="w-40 rounded-md bg-transparent px-2 py-1 text-sm font-medium outline-none hover:bg-white/10 focus:bg-white/10 sm:w-64"
-          aria-label="ชื่อแบบ"
-        />
-        {dirty && <span className="hidden text-xs text-slate-400 sm:inline">ยังไม่บันทึก</span>}
-        <div className="ml-auto hidden text-sm text-slate-300 md:block">
-          {spec && dieline && (
-            <>
-              {getStyle(spec.style).name} · ภายใน {spec.dims.length}×{spec.dims.width}×{spec.dims.height} มม. · แผ่นคลี่{" "}
-              <b className="text-white">
-                {dieline.width.toFixed(0)} × {dieline.height.toFixed(0)} มม.
-              </b>
-            </>
-          )}
-        </div>
-        <div className="ml-auto flex items-center gap-1 md:ml-4">
-          <button
-            onClick={save}
-            disabled={!spec}
-            className="flex items-center gap-1.5 rounded-md bg-teal-600 px-3 py-1.5 text-sm hover:bg-teal-500 disabled:opacity-50"
-          >
-            <ISave className="h-4 w-4" /> บันทึก
-          </button>
-          <div className="relative">
-            <button
-              onClick={() => setExportOpen((v) => !v)}
-              disabled={!spec}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm hover:bg-white/10 disabled:opacity-50"
-            >
-              <IDownload className="h-4 w-4" /> ส่งออก
-            </button>
-            {exportOpen && (
-              <div className="absolute top-full right-0 z-40 mt-1 w-64 overflow-hidden rounded-lg bg-white py-1 text-sm text-slate-800 shadow-xl">
-                {(
-                  [
-                    ["pdf", "PDF สำหรับโรงพิมพ์", "ขนาดจริง + bleed 3 มม."],
-                    ["png", "PNG งานพิมพ์ (300 dpi)", "ไม่มีเส้นไกด์"],
-                    ["png-guides", "PNG พรีวิว", "พร้อมเส้นตัด/พับ"],
-                    ["svg", "SVG ไดคัท", "เส้นตัด/พับ แยกเลเยอร์"],
-                  ] as const
-                ).map(([k, t, d]) => (
-                  <button
-                    key={k}
-                    onClick={() => doExport(k)}
-                    className="block w-full px-4 py-2 text-left hover:bg-slate-50"
-                  >
-                    <div>{t}</div>
-                    <div className="text-xs text-slate-500">{d}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button onClick={close} className="rounded-md p-2 hover:bg-white/10" title="ปิด">
-            <IClose />
-          </button>
-        </div>
-      </header>
+    <TooltipProvider>
+      <div className="bg-canvas text-fg flex h-dvh flex-col">
+        <header className="bg-neutral text-neutral-fg flex h-14 shrink-0 items-center gap-3 px-3">
+          <Link href="/" aria-label={tCommon("nav.home")} className="flex items-center gap-2">
+            <BrandMark size={30} />
+          </Link>
 
-      <Toolbar
-        center={viewCenter}
-        onOpenSetup={() => setSetupOpen(true)}
-        onOpenRules={() => setRulesOpen(true)}
-        patternOpen={patternOpen}
-        onTogglePattern={() => setPatternOpen((v) => !v)}
-      />
-
-      <div className="flex min-h-0 flex-1">
-        <div
-          ref={wrapRef}
-          className="relative min-w-0 flex-1 overflow-hidden"
-          style={{ backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "18px 18px" }}
-        >
-          {dieline && paper && size.width > 0 && (
-            <DesignCanvas
-              dieline={dieline}
-              paperColor={paper.color}
-              stageRef={stageRef}
-              width={size.width}
-              height={size.height}
-              fitSignal={fitSignal}
-            />
-          )}
-          {!spec && !setupOpen && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button className="rounded-lg bg-teal-600 px-5 py-3 text-white" onClick={() => setSetupOpen(true)}>
-                เลือกกล่องเพื่อเริ่มออกแบบ
-              </button>
-            </div>
-          )}
-          {toast && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-slate-900 px-4 py-2 text-sm text-white shadow-lg">
-              {toast}
-            </div>
-          )}
-        </div>
-
-        {spec && (
-          <aside className="hidden w-72 shrink-0 overflow-y-auto border-l border-slate-200 bg-white p-4 lg:block">
-            {selected ? <PropertiesPanel el={selected} /> : patternOpen ? <PatternPanel /> : <EmptyPanel />}
-            {selected && patternOpen && (
-              <div className="mt-6 border-t border-slate-200 pt-4">
-                <PatternPanel />
-              </div>
-            )}
-          </aside>
-        )}
-      </div>
-
-      {/* Mobile bottom sheet for properties */}
-      {spec && (selected || patternOpen) && (
-        <div className="max-h-[40vh] overflow-y-auto border-t border-slate-200 bg-white p-4 lg:hidden">
-          {selected ? <PropertiesPanel el={selected} /> : <PatternPanel />}
-        </div>
-      )}
-
-      {/* Zoom bar */}
-      <footer className="flex h-11 shrink-0 items-center justify-end gap-3 border-t border-slate-200 bg-white px-3 text-sm">
-        <div className="mr-auto hidden items-center gap-3 text-xs text-slate-500 sm:flex">
-          {paper && <span>วัสดุ: {paper.name}</span>}
-          <span className="flex items-center gap-1">
-            <i className="inline-block h-0.5 w-4 bg-rose-600" /> ตัด
-          </span>
-          <span className="flex items-center gap-1">
-            <i className="inline-block w-4 border-t-2 border-dashed border-blue-600" /> พับ
-          </span>
-        </div>
-        <button
-          onClick={() => setFitSignal((n) => n + 1)}
-          className="flex items-center gap-1 rounded-md px-2 py-1 hover:bg-slate-100"
-          title="พอดีจอ"
-        >
-          <IFit className="h-4 w-4" /> พอดีจอ
-        </button>
-        <input
-          type="range"
-          aria-label="ซูม"
-          min={ZOOM_MIN * 100}
-          max={ZOOM_MAX * 100}
-          value={Math.round(zoom * 100)}
-          onChange={(e) => setZoom(Number(e.target.value) / 100)}
-          className="w-32 accent-teal-600 sm:w-48"
-        />
-        <label className="flex items-center gap-1">
           <input
-            type="number"
+            value={name}
+            onChange={(event) => state.setName(event.target.value)}
+            aria-label={t("nameLabel")}
+            className="w-40 rounded-md bg-transparent px-2 py-1 text-sm font-medium hover:bg-current/10 focus:bg-current/10 sm:w-64"
+          />
+          {dirty ? <span className="hidden text-xs sm:inline">{tCommon("state.unsaved")}</span> : null}
+
+          {/*
+           * Hierarchy here comes from size and weight, never `opacity-*`. Opacity compounds onto
+           * the whole subtree — a child cannot undo a parent's `opacity-80` — so it silently
+           * turns a gated 7.25:1 token pair into 4.46:1. axe in the browser caught exactly that.
+           */}
+          <p className="ml-auto hidden text-xs md:block">
+            {spec && dieline ? (
+              <>
+                {getStyle(spec.style).name} ·{" "}
+                {t("summary", { length: spec.dims.length, width: spec.dims.width, height: spec.dims.height })} ·{" "}
+                <b className="font-semibold">
+                  {t("flatSheet", { width: dieline.width.toFixed(0), height: dieline.height.toFixed(0) })}
+                </b>
+              </>
+            ) : null}
+          </p>
+
+          <div className="ml-auto flex items-center gap-1 md:ml-4">
+            <Button size="sm" onClick={save} disabled={!spec} iconStart="save">
+              {tCommon("actions.save")}
+            </Button>
+
+            <DropdownMenu
+              label={t("exportMenu.label")}
+              trigger={
+                <Button size="sm" variant="ghost" disabled={!spec} iconStart="download">
+                  {tCommon("actions.export")}
+                </Button>
+              }
+              items={[
+                {
+                  id: "pdf",
+                  label: t("exportMenu.pdf"),
+                  description: t("exportMenu.pdfHint"),
+                  onSelect: () => doExport("pdf"),
+                },
+                {
+                  id: "png",
+                  label: t("exportMenu.png"),
+                  description: t("exportMenu.pngHint"),
+                  onSelect: () => doExport("png"),
+                },
+                {
+                  id: "png-guides",
+                  label: t("exportMenu.pngGuides"),
+                  description: t("exportMenu.pngGuidesHint"),
+                  onSelect: () => doExport("png-guides"),
+                },
+                {
+                  id: "svg",
+                  label: t("exportMenu.svg"),
+                  description: t("exportMenu.svgHint"),
+                  onSelect: () => doExport("svg"),
+                },
+              ]}
+            />
+
+            <IconButton
+              name="close"
+              label={tCommon("actions.close")}
+              size="sm"
+              onClick={() => (dirty ? setLeaveOpen(true) : leave())}
+            />
+          </div>
+        </header>
+
+        <Toolbar
+          center={viewCenter}
+          onOpenSetup={() => setSetupOpen(true)}
+          onOpenRules={() => setRulesOpen(true)}
+          patternOpen={patternOpen}
+          onTogglePattern={() => setPatternOpen((open) => !open)}
+        />
+
+        <div className="flex min-h-0 flex-1">
+          <div
+            ref={wrapRef}
+            className="relative min-w-0 flex-1 overflow-hidden"
+            style={{
+              backgroundImage: "radial-gradient(var(--color-canvas-grid) 1px, transparent 1px)",
+              backgroundSize: "18px 18px",
+            }}
+          >
+            {dieline && paper && size.width > 0 ? (
+              <DesignCanvas
+                dieline={dieline}
+                paperColor={paper.color}
+                stageRef={stageRef}
+                width={size.width}
+                height={size.height}
+                fitSignal={fitSignal}
+              />
+            ) : null}
+
+            {!spec && !setupOpen ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Button size="lg" onClick={() => setSetupOpen(true)}>
+                  {t("chooseBoxFirst")}
+                </Button>
+              </div>
+            ) : null}
+          </div>
+
+          {spec ? (
+            <aside
+              aria-label={t("view.heading")}
+              className="border-border bg-surface hidden w-72 shrink-0 overflow-y-auto border-s p-4 lg:block"
+            >
+              {selected ? <PropertiesPanel el={selected} /> : patternOpen ? <PatternPanel /> : <ViewPanel />}
+              {selected && patternOpen ? (
+                <div className="border-border mt-6 border-t pt-4">
+                  <PatternPanel />
+                </div>
+              ) : null}
+            </aside>
+          ) : null}
+        </div>
+
+        {/* Properties as a bottom sheet on phones: the canvas keeps the top of the screen. */}
+        {spec && (selected || patternOpen) ? (
+          <div className="border-border bg-surface max-h-[40vh] overflow-y-auto border-t p-4 lg:hidden">
+            {selected ? <PropertiesPanel el={selected} /> : <PatternPanel />}
+          </div>
+        ) : null}
+
+        <footer className="border-border bg-surface flex h-11 shrink-0 items-center justify-end gap-3 border-t px-3 text-sm">
+          <div className="text-muted mr-auto hidden items-center gap-3 text-xs sm:flex">
+            {paper ? <span>{t("material", { name: paper.name })}</span> : null}
+            <span className="flex items-center gap-1">
+              <i className="inline-block h-0.5 w-4" style={{ backgroundColor: CANVAS_COLORS.cut }} />
+              {t("legend.cut")}
+            </span>
+            <span className="flex items-center gap-1">
+              <i className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: CANVAS_COLORS.fold }} />
+              {t("legend.fold")}
+            </span>
+          </div>
+
+          <Button size="sm" variant="ghost" iconStart="fit" onClick={() => setFitSignal((signal) => signal + 1)}>
+            {t("zoom.fit")}
+          </Button>
+
+          <Slider
+            aria-label={t("zoom.label")}
+            className="w-32 sm:w-48"
             min={ZOOM_MIN * 100}
             max={ZOOM_MAX * 100}
-            value={Math.round(zoom * 100)}
-            onChange={(e) => setZoom(Number(e.target.value) / 100)}
-            className="w-16 rounded border border-slate-300 px-2 py-0.5 text-right"
+            value={[zoomPercent]}
+            onValueChange={([percent]) => setZoom(percent / 100)}
+            valueText={`${formatNumber(zoomPercent, locale)} %`}
           />
-          %
-        </label>
-      </footer>
 
-      <SetupModal
-        key={setupOpen ? "open" : "closed"}
-        open={setupOpen}
-        initial={spec}
-        hasContent={content.elements.length > 0}
-        onClose={spec ? () => setSetupOpen(false) : () => router.push("/account/designs")}
-        onConfirm={(s) => {
-          st.setSpec(s);
-          setSetupOpen(false);
-          setFitSignal((n) => n + 1);
-        }}
-      />
-      <PrintRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
-    </div>
+          <NumberInput
+            aria-label={t("zoom.percentLabel")}
+            unit="%"
+            inputSize="sm"
+            className="w-24"
+            min={ZOOM_MIN * 100}
+            max={ZOOM_MAX * 100}
+            value={zoomPercent}
+            onChange={(event) => setZoom(Number(event.target.value) / 100)}
+          />
+        </footer>
+
+        <SetupModal
+          /*
+           * No `key` to force a remount. BoxStudio used one to reset the form, but remounting
+           * unmounts Radix's focus scope instead of letting it close, so focus never returns to
+           * the button that opened the dialog (WCAG 2.4.3 — e2e/a11y.spec.ts asserts it).
+           * SetupModal resets itself from `initial` instead.
+           */
+          open={setupOpen}
+          initial={spec}
+          hasContent={content.elements.length > 0}
+          onClose={spec ? () => setSetupOpen(false) : leave}
+          onConfirm={(nextSpec) => {
+            state.setSpec(nextSpec);
+            setSetupOpen(false);
+            setFitSignal((signal) => signal + 1);
+          }}
+        />
+
+        <PrintRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+
+        <AlertDialog
+          open={leaveOpen}
+          onOpenChange={setLeaveOpen}
+          tone="destructive"
+          title={t("leaveConfirm.title")}
+          description={t("leaveConfirm.body")}
+          confirmLabel={t("leaveConfirm.confirm")}
+          cancelLabel={tCommon("actions.cancel")}
+          onConfirm={leave}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
 
