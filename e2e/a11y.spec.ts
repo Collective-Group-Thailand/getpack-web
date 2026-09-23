@@ -1,6 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+import { HOSTS } from "../playwright.config";
+
 /**
  * The a11y gate that needs a real browser (design-system.md §6).
  *
@@ -54,6 +56,16 @@ test.describe("axe, in a real browser", () => {
 
     const shell = await scan(page);
     expect(shell.violations, report(shell.violations)).toEqual([]);
+  });
+
+  test("the admin and partner zones are clean, including a zone 404", async ({ page }) => {
+    for (const url of [HOSTS.admin, HOSTS.partner, `${HOSTS.admin}/nope`]) {
+      await page.goto(url);
+      await expect(page.locator("main#main")).toBeVisible();
+
+      const { violations } = await scan(page);
+      expect(violations, `${url}\n${report(violations)}`).toEqual([]);
+    }
   });
 
   test("the dark theme keeps its contrast", async ({ page, context }) => {

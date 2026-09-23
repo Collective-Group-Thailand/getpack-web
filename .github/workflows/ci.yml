@@ -11,6 +11,13 @@ concurrency:
 
 env:
   NEXT_TELEMETRY_DISABLED: "1"
+  # `next build` and `next start` run with NODE_ENV=production, where the env schema has no
+  # defaults on purpose (src/lib/env/schema.ts). Supplying real values here keeps validation
+  # **on** in CI, so the schema is exercised rather than skipped.
+  PUBLIC_HOST: "localhost:3000"
+  ADMIN_HOST: "admin.localhost:3000"
+  PARTNER_HOST: "partner.localhost:3000"
+  API_INTERNAL_URL: "http://127.0.0.1:4999"
 
 jobs:
   verify:
@@ -146,6 +153,7 @@ jobs:
           path: .lighthouseci/
           retention-days: 7
 
-# Added later, per docs/prompts/F0-setup.md:
-#   F1 — contract drift: `pnpm gen:api` must leave src/lib/api/schema.d.ts unchanged,
-#        and the admin/partner Lighthouse URL sets once those hosts exist
+# Added later, per docs/prompts/F0-setup.md and F1-foundation.md:
+#   F1 1.2 — contract drift: `pnpm gen:api` must leave src/lib/api/schema.d.ts unchanged
+#   F1 1.3 — the admin and partner Lighthouse URL sets (the hosts exist as of 1.1, but the
+#            real shells, and therefore a budget worth asserting, arrive with 1.3)
