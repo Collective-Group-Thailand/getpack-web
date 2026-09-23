@@ -25,3 +25,6 @@ storybook-static/
 
 # read-only reference checkout of the legacy Locopack app (CLAUDE.md: inspiration only)
 legacy/
+
+# Lighthouse CI run output (reports are uploaded as a CI artifact instead)
+.lighthouseci/

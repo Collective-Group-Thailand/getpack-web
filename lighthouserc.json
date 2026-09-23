@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/GoogleChrome/lighthouse-ci/main/packages/utils/src/lighthouserc-schema.json",
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm start -p 3200",
+      "startServerReadyPattern": "Ready in",
+      "url": ["http://localhost:3200/", "http://localhost:3200/account/designs", "http://localhost:3200/design/new"],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 1 }],
+        "categories:best-practices": ["warn", { "minScore": 0.95 }],
+        "categories:seo": ["warn", { "minScore": 0.9 }],
+
+        "total-byte-weight": ["warn", { "maxNumericValue": 1600000 }],
+        "unused-javascript": ["warn", { "maxNumericValue": 100000 }],
+        "modern-image-formats": "warn",
+        "uses-responsive-images": "warn",
+
+        "font-display": ["error", { "minScore": 1 }],
+        "unsized-images": ["error", { "minScore": 1 }],
+
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 300 }],
+        "max-potential-fid": ["warn", { "maxNumericValue": 200 }]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": ".lighthouseci" }
+  }
+}
