@@ -1,0 +1,140 @@
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  ArrowDownToLine,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpToLine,
+  Box,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Circle,
+  CircleAlert,
+  CircleCheck,
+  CircleHelp,
+  CircleX,
+  Clock,
+  Contrast,
+  Copy,
+  Download,
+  Ellipsis,
+  Eye,
+  FileText,
+  Grid2x2,
+  ImagePlus,
+  Info,
+  LoaderCircle,
+  Lock,
+  Maximize2,
+  Menu,
+  Minus,
+  Monitor,
+  Moon,
+  MoveDown,
+  MoveUp,
+  Package,
+  Palette,
+  Pencil,
+  Plus,
+  Redo2,
+  RotateCcw,
+  Ruler,
+  Save,
+  Search,
+  Square,
+  SquareDashed,
+  Sun,
+  TriangleAlert,
+  Trash2,
+  Truck,
+  Type,
+  Undo2,
+  Upload,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+
+/**
+ * The curated icon set (ADR-0002). One icon family — Lucide — reached through *names*, so
+ * `src/domain/status` can say `icon: "circle-check"` next to a status label without
+ * importing a component, and bundlers still tree-shake: only what is listed here ships.
+ *
+ * Adding an icon means adding a line here. That is the point: it keeps 1,600 icons out of
+ * the bundle and keeps two screens from picking two different ticks for the same idea.
+ */
+export const ICONS = {
+  // Status and feedback
+  info: Info,
+  success: CircleCheck,
+  warning: TriangleAlert,
+  danger: CircleAlert,
+  error: CircleX,
+  help: CircleHelp,
+  spinner: LoaderCircle,
+  check: Check,
+  clock: Clock,
+  lock: Lock,
+
+  // Navigation and disclosure
+  "chevron-down": ChevronDown,
+  "chevron-up": ChevronUp,
+  "chevron-left": ChevronLeft,
+  "chevron-right": ChevronRight,
+  "arrow-left": ArrowLeft,
+  "arrow-right": ArrowRight,
+  menu: Menu,
+  more: Ellipsis,
+  close: X,
+  search: Search,
+
+  // Actions
+  plus: Plus,
+  minus: Minus,
+  save: Save,
+  download: Download,
+  upload: Upload,
+  copy: Copy,
+  trash: Trash2,
+  edit: Pencil,
+  undo: Undo2,
+  redo: Redo2,
+  reset: RotateCcw,
+  eye: Eye,
+
+  // Theme
+  "theme-light": Sun,
+  "theme-dark": Moon,
+  "theme-system": Monitor,
+  "theme-contrast": Contrast,
+
+  // Designer
+  box: Box,
+  text: Type,
+  image: ImagePlus,
+  rectangle: Square,
+  circle: Circle,
+  pattern: Grid2x2,
+  "safe-zone": SquareDashed,
+  fit: Maximize2,
+  ruler: Ruler,
+  palette: Palette,
+  "layer-up": MoveUp,
+  "layer-down": MoveDown,
+  "layer-top": ArrowUpToLine,
+  "layer-bottom": ArrowDownToLine,
+  "align-left": AlignLeft,
+  "align-center": AlignCenter,
+  "align-right": AlignRight,
+
+  // Domain objects (F1+ status metadata leans on these)
+  package: Package,
+  truck: Truck,
+  document: FileText,
+} as const satisfies Record<string, LucideIcon>;
+
+export type IconName = keyof typeof ICONS;
+export const ICON_NAMES = Object.keys(ICONS) as IconName[];
