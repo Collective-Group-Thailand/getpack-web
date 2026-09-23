@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@packio/dieline": "workspace:*",
+    "@tanstack/react-query": "^5.103.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jspdf": "^4.2.1",
@@ -46,8 +47,10 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-konva": "^19.0.10",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
