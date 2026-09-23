@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { isUpstreamPathAllowed, upstreamPrefixes } from "./zones";
 import { isInternalOnlyPath, normaliseHost, resolveZone, type ZoneHosts } from "./resolve";
 
 const hosts: ZoneHosts = {
@@ -80,4 +81,39 @@ describe("isInternalOnlyPath", () => {
       expect(isInternalOnlyPath(pathname)).toBe(false);
     },
   );
+});
+
+describe("upstream surface allow-list", () => {
+  it("gives each zone its own API surface", () => {
+    expect(upstreamPrefixes("admin")).toEqual(["/v1/admin"]);
+    expect(upstreamPrefixes("partner")).toEqual(["/v1/partner"]);
+  });
+
+  it("lets the customer zone reach its own sign-in endpoints as well (ADR-0005)", () => {
+    expect(upstreamPrefixes("customer")).toEqual(["/v1/store", "/v1/auth/customer"]);
+    expect(isUpstreamPathAllowed("customer", "/v1/auth/customer/otp/request")).toBe(true);
+  });
+
+  it("refuses another zone's surface", () => {
+    expect(isUpstreamPathAllowed("customer", "/v1/admin/orders")).toBe(false);
+    expect(isUpstreamPathAllowed("admin", "/v1/store/orders")).toBe(false);
+    expect(isUpstreamPathAllowed("partner", "/v1/admin/me")).toBe(false);
+  });
+
+  it("refuses staff and partner sign-in through a zone BFF: those are Server Actions", () => {
+    expect(isUpstreamPathAllowed("admin", "/v1/auth/staff/login")).toBe(false);
+    expect(isUpstreamPathAllowed("partner", "/v1/auth/partner/login")).toBe(false);
+    expect(isUpstreamPathAllowed("customer", "/v1/auth/staff/login")).toBe(false);
+  });
+
+  it("matches only at a segment boundary, so a longer name cannot borrow a prefix", () => {
+    expect(isUpstreamPathAllowed("customer", "/v1/storefront/orders")).toBe(false);
+    expect(isUpstreamPathAllowed("customer", "/v1/store")).toBe(true);
+    expect(isUpstreamPathAllowed("customer", "/v1/store/orders")).toBe(true);
+  });
+
+  it("refuses traversal, which could otherwise climb out of the allowed surface", () => {
+    expect(isUpstreamPathAllowed("customer", "/v1/store/../admin/orders")).toBe(false);
+    expect(isUpstreamPathAllowed("admin", "/v1/admin/../../v1/store/me")).toBe(false);
+  });
 });
