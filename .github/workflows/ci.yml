@@ -159,9 +159,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Budgets from docs/performance-budgets.md. Resource-size and a11y assertions are
-      # errors; the field-metric ones are warnings, because a shared runner cannot stand in
-      # for a p75 measurement honestly — Web Vitals RUM is the real signal (F1).
+      # One run per URL set (docs/performance-budgets.md), against a single mock-mode server
+      # that answers all three hosts — see scripts/lhci.ts. Resource-size and a11y assertions
+      # are errors; the field-metric ones are warnings, because a shared runner cannot stand
+      # in for a p75 measurement honestly — Web Vitals RUM is the real signal.
+      #
+      # The script-size assertions are ratchets pinned above today's measurements, not the
+      # documented budgets: every route type is currently over, and the gap is recorded in
+      # docs/performance-budgets.md rather than absorbed by relaxing the target.
       - name: Lighthouse CI
         run: pnpm lhci
 
@@ -172,6 +177,45 @@ jobs:
           path: .lighthouseci/
           retention-days: 7
 
-# Added later, per docs/prompts/F0-setup.md and F1-foundation.md:
-#   F1 1.3 — the admin and partner Lighthouse URL sets (the hosts exist as of 1.1, but the
-#            real shells, and therefore a budget worth asserting, arrive with 1.3)
+  visual:
+    name: visual snapshots (storybook)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Not blocking yet: the committed baselines are macOS, and text rasterises differently on
+    # Linux, so every shot would differ for a reason that is not a regression. Generate the
+    # Linux set once on this runner — `pnpm e2e:visual:update`, download the artifact below,
+    # commit `e2e/__screenshots__/linux/` — then delete this line and the job becomes a gate.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Visual snapshots
+        run: pnpm e2e:visual
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: visual-diffs
+          path: |
+            test-results/
+            e2e/__screenshots__/
+          retention-days: 7
+
+# Added later:
+#   Storybook visual snapshots run on CI's Linux runner only, and need their baselines
+#   generated once there — see the `visual` project in playwright.config.ts.
