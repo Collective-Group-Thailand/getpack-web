@@ -1,0 +1,27 @@
+{
+  "extends": "./shared.json",
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:3200/account/designs", "http://localhost:3200/cart", "http://localhost:3200/sign-in"],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "extraHeaders": {
+          "Cookie": "pk_consent=a1m1"
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 400000
+          }
+        ]
+      }
+    }
+  },
+  "$comment": "Checkout and account: LCP <= 2.5s, initial JS <= 200 KB. Signed out, which is the heavier render for sign-in and the empty state for the rest. RATCHET: the target in docs/performance-budgets.md is 200 KB of initial JS; this build measures 381 KB, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down \u2014 it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
+}

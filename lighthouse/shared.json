@@ -1,0 +1,69 @@
+{
+  "$comment": "Warnings, not errors: a shared CI runner cannot stand in for a p75 measurement honestly. Web Vitals RUM through the BFF is the real signal (src/lib/observability).",
+  "ci": {
+    "assert": {
+      "assertions": {
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 1
+          }
+        ],
+        "categories:best-practices": [
+          "warn",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "font-display": [
+          "error",
+          {
+            "minScore": 1
+          }
+        ],
+        "unsized-images": [
+          "error",
+          {
+            "minScore": 1
+          }
+        ],
+        "modern-image-formats": "warn",
+        "uses-responsive-images": "warn",
+        "unused-javascript": [
+          "warn",
+          {
+            "maxNumericValue": 100000
+          }
+        ],
+        "largest-contentful-paint": [
+          "warn",
+          {
+            "maxNumericValue": 2500
+          }
+        ],
+        "cumulative-layout-shift": [
+          "warn",
+          {
+            "maxNumericValue": 0.1
+          }
+        ],
+        "total-blocking-time": [
+          "warn",
+          {
+            "maxNumericValue": 300
+          }
+        ],
+        "max-potential-fid": [
+          "warn",
+          {
+            "maxNumericValue": 200
+          }
+        ]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}
