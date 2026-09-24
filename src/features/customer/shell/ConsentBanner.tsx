@@ -1,0 +1,83 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
+import { CONSENT_ALL, CONSENT_DENIED, consentModeSignals } from "@/lib/analytics/consent";
+import { useConsent } from "@/lib/analytics/useConsent";
+import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
+
+/**
+ * The PDPA consent gate (D-144).
+ *
+ * Minimal on purpose: two buttons and a link. The full preferences centre — per-purpose
+ * toggles, a record of when consent was given, withdrawal — is F3, and it needs an endpoint to
+ * store consent against an account. What cannot wait is the gate itself, because GTM must not
+ * fire before an answer, and the answer has to be recorded somewhere.
+ *
+ * "Refuse" is a button of equal weight beside "accept", not a link in the corner. Consent that
+ * is harder to refuse than to give is not freely given, which is the PDPA's own test.
+ */
+export function ConsentBanner() {
+  const t = useTranslations("storefront.consent");
+  const { asked, save } = useConsent();
+
+  if (asked) return null;
+
+  function choose(granted: boolean) {
+    const next = granted ? CONSENT_ALL : CONSENT_DENIED;
+    save(next);
+
+    // Tell a container that is already running — it will not be, on a first answer, but it
+    // will be if someone narrows their choice later from the preferences centre (F3).
+    window.dataLayer?.push(["consent", "update", consentModeSignals(next)]);
+
+    /*
+     * A full reload, not `router.refresh()`.
+     *
+     * GTM is not on the page until consent exists, so it has to come from a fresh server
+     * render — and `router.refresh()` cannot deliver it: React does not execute a `<script>`
+     * that arrives during a client-side update, only one present in the initial HTML. The
+     * refresh appeared to work and the container silently never ran, which an e2e test
+     * caught by looking at `dataLayer` rather than at the DOM.
+     *
+     * The cost is one reload, on a button someone presses once a year. Refusing reloads too,
+     * so the two paths stay identical and the banner cannot linger in a stale tree.
+     */
+    window.location.reload();
+  }
+
+  return (
+    <div
+      // A region, not a dialog: it must not trap focus or block the page. Someone reading the
+      // privacy policy to decide has to be able to reach it.
+      role="region"
+      aria-label={t("title")}
+      className="border-border bg-surface-raised z-sticky fixed inset-x-0 bottom-0 border-t shadow-lg md:bottom-4 md:mx-auto md:max-w-2xl md:rounded-xl md:border"
+    >
+      <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
+        <p className="text-muted flex-1 text-sm">
+          {t("body")}{" "}
+          <Link href="/legal/cookies" className="underline underline-offset-2">
+            {t("learnMore")}
+          </Link>
+        </p>
+        <div className="flex gap-2">
+          {/* Equal weight: refusing must not be harder than accepting. */}
+          <Button variant="secondary" size="sm" onClick={() => choose(false)}>
+            {t("reject")}
+          </Button>
+          <Button size="sm" onClick={() => choose(true)}>
+            {t("accept")}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+  }
+}

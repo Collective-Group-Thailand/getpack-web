@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import { MobileBottomNav, SiteFooter, SiteHeader } from "@/features/customer/shell";
+import { ConsentBanner } from "@/features/customer/shell/ConsentBanner";
+import { GoogleTagManager } from "@/features/customer/shell/GoogleTagManager";
 import { OrganizationJsonLd } from "@/features/customer/shell/OrganizationJsonLd";
 import { publicOrigin } from "@/lib/seo";
 import { AppShell } from "@/ui/components/AppShell";
@@ -28,8 +30,10 @@ export default async function StorefrontLayout({ children }: { children: React.R
       bottomNav={<MobileBottomNav />}
       reserveBottomNavSpace
     >
+      <GoogleTagManager />
       <OrganizationJsonLd origin={origin} />
       {children}
+      <ConsentBanner />
     </AppShell>
   );
 }
