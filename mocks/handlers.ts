@@ -189,6 +189,49 @@ export const handlers = [
     factories: [{ factoryId: "00000000-0000-4000-8000-0000000000f1", roles: ["planner"] }],
   }),
 
+  // CONTRACT-REQUEST notifications.feed — the in-app notification centre (D-143).
+  // Two entries, obviously fake, so the badge and the list have something to render.
+  http.get("*/v1/:surface/notifications", () =>
+    HttpResponse.json({
+      data: [
+        {
+          id: "00000000-0000-4000-8000-00000000n001",
+          type: "order.paid",
+          title: "รับชำระเงินแล้ว (ข้อมูลจำลอง)",
+          body: "คำสั่งซื้อ PK-2569-00042 ชำระเงินครบแล้ว",
+          url: "/orders/PK-2569-00042",
+          readAt: null,
+          createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+        },
+        {
+          id: "00000000-0000-4000-8000-00000000n002",
+          type: "artwork.changes_requested",
+          title: "ขอให้แก้ไขไฟล์งาน (ข้อมูลจำลอง)",
+          body: "ไฟล์ของ PK-2569-00041 ต้องเพิ่มระยะตัดตก 3 มม.",
+          url: "/orders/PK-2569-00041",
+          readAt: "2026-09-23T10:00:00+07:00",
+          createdAt: new Date(Date.now() - 3 * 60 * 60_000).toISOString(),
+        },
+      ],
+      meta: { nextCursor: null, unreadCount: 1 },
+    }),
+  ),
+  http.post("*/v1/:surface/notifications/read", () => new HttpResponse(null, { status: 204 })),
+
+  // CONTRACT-REQUEST push.subscriptions — accepted and discarded; nothing is ever pushed here.
+  http.post("*/v1/:surface/push/subscriptions", () => new HttpResponse(null, { status: 201 })),
+
+  // CONTRACT-REQUEST realtime.auth / realtime.stream. The stream is deliberately *not* mocked:
+  // MSW cannot hold an SSE connection open usefully, and `NEXT_PUBLIC_REALTIME_DRIVER` is
+  // unset in development and in the e2e run, so nothing opens one.
+  http.post("*/v1/:surface/realtime/auth", () =>
+    HttpResponse.json({
+      channel: "mock",
+      token: "mock-realtime-token",
+      expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+    }),
+  ),
+
   // CONTRACT-REQUEST rum.web-vitals — no endpoint exists yet (docs/contract-requests.md).
   // Accepted and discarded, on all three surfaces, so `pnpm dev:mock` and the e2e run do not
   // fill the console with unhandled-request warnings on every page load.

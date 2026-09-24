@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isUpstreamPathAllowed, upstreamPrefixes } from "./zones";
+import { BROWSER_BFF_PATH, browserBffUrl, isUpstreamPathAllowed, upstreamPrefixes, ZONES } from "./zones";
 import { isInternalOnlyPath, normaliseHost, resolveZone, type ZoneHosts } from "./resolve";
 
 const hosts: ZoneHosts = {
@@ -115,5 +115,32 @@ describe("upstream surface allow-list", () => {
   it("refuses traversal, which could otherwise climb out of the allowed surface", () => {
     expect(isUpstreamPathAllowed("customer", "/v1/store/../admin/orders")).toBe(false);
     expect(isUpstreamPathAllowed("admin", "/v1/admin/../../v1/store/me")).toBe(false);
+  });
+});
+
+describe("browserBffUrl", () => {
+  it("always addresses /bff, whatever the zone", () => {
+    // The trap this exists for: `ZONE_CONFIG.admin.bffPath` is `/admin/bff`, which is the
+    // *internal* segment after the proxy has rewritten the request. A browser that asked for
+    // it directly would be refused by `isInternalOnlyPath` before any handler ran.
+    expect(browserBffUrl("customer", "/notifications")).toBe("/bff/v1/store/notifications");
+    expect(browserBffUrl("admin", "/notifications")).toBe("/bff/v1/admin/notifications");
+    expect(browserBffUrl("partner", "/notifications")).toBe("/bff/v1/partner/notifications");
+  });
+
+  it("produces a path the BFF allow-list accepts for that zone", () => {
+    // The other half: the upstream path has to start with the zone's own prefix, or the
+    // handler answers 404 and the feature silently does nothing.
+    for (const zone of ZONES) {
+      const url = browserBffUrl(zone, "/rum/web-vitals");
+      const upstream = url.slice(BROWSER_BFF_PATH.length);
+      expect(isUpstreamPathAllowed(zone, upstream), `${zone}: ${upstream}`).toBe(true);
+    }
+  });
+
+  it("never lets one zone address another's surface", () => {
+    const adminUpstream = browserBffUrl("admin", "/notifications").slice(BROWSER_BFF_PATH.length);
+    expect(isUpstreamPathAllowed("customer", adminUpstream)).toBe(false);
+    expect(isUpstreamPathAllowed("partner", adminUpstream)).toBe(false);
   });
 });

@@ -94,7 +94,7 @@ export function AdminTopbar({
           onClick={onOpenShortcuts}
           className="hidden md:inline-flex"
         />
-        <NotificationBell />
+        <NotificationBell zone="admin" />
         <LocaleMenu />
         <ThemeToggle
           label={tCommon("theme.label")}

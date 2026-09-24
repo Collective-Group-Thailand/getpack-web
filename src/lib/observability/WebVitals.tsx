@@ -3,7 +3,7 @@
 import { useReportWebVitals } from "next/web-vitals";
 import { useSelectedLayoutSegments } from "next/navigation";
 
-import { ZONE_CONFIG, type Zone } from "@/lib/zones";
+import { browserBffUrl, type Zone } from "@/lib/zones";
 
 import { sendReport, shouldReport } from "./web-vitals";
 
@@ -36,13 +36,12 @@ export function WebVitals({ zone }: { zone: Zone }) {
 }
 
 /**
- * Where the browser posts a sample: this zone's BFF, then this zone's upstream surface.
+ * Where the browser posts a sample.
  *
- * Both halves are needed. `bffPath` is the route on *this* origin (`/admin/bff`), and the rest
- * is the upstream path the BFF allow-lists — it refuses anything that does not start with the
- * zone's `apiPrefix`, so `/admin/bff/rum/web-vitals` would be a 404 rather than a report.
+ * `browserBffUrl` because both halves matter and both are easy to get wrong: the BFF is always
+ * `/bff` from the browser whatever the zone, and the upstream path must start with the zone's
+ * `apiPrefix` or the allow-list answers 404 rather than recording anything.
  */
 export function rumEndpoint(zone: Zone): string {
-  const { bffPath, apiPrefix } = ZONE_CONFIG[zone];
-  return `${bffPath}${apiPrefix}/rum/web-vitals`;
+  return browserBffUrl(zone, "/rum/web-vitals");
 }

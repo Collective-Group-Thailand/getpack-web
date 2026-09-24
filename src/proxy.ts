@@ -43,7 +43,14 @@ const intlMiddleware = createMiddleware(routing);
  * Next's metadata file conventions are served from the app root and belong to no zone, so
  * they are passed through unprefixed. They still get the security headers.
  */
-const ROOT_ASSETS = new Set(["/favicon.ico", "/icon.svg"]);
+const ROOT_ASSETS = new Set([
+  "/favicon.ico",
+  "/icon.svg",
+  // The service worker must be served from the root or its scope is not the whole origin, and
+  // it must not be rewritten onto a zone segment or the browser refuses to register it.
+  "/sw.js",
+  "/manifest.webmanifest",
+]);
 
 /**
  * Files that exist for crawlers, and only on the indexed zone.
