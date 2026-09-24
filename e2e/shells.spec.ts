@@ -36,8 +36,12 @@ test.describe("admin shell", () => {
   test("collapses the sidebar and remembers it across a reload", async ({ page }) => {
     await signInAsStaff(page);
 
-    const collapse = page.getByRole("button", { name: "ย่อเมนู" });
-    await collapse.click();
+    // Retried for the same reason as the account menu: the button is in the server HTML
+    // before the JavaScript that makes it do anything has hydrated.
+    await expect(async () => {
+      await page.getByRole("button", { name: "ย่อเมนู" }).click();
+      await expect(page.getByRole("button", { name: "ขยายเมนู" })).toBeVisible({ timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
 
     // Collapsed, the labels are hidden visually but still in the accessibility tree — a
     // sighted colleague collapsing the nav must not make it unusable to a screen reader.
