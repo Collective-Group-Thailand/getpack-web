@@ -26,6 +26,15 @@ const zoneEnv = {
   API_INTERNAL_URL: "http://127.0.0.1:4999",
   // Starts the mock API from src/instrumentation.ts, so the auth flows have a backend.
   API_MOCKS: "1",
+  /*
+   * A container id, so the consent tests are not vacuous.
+   *
+   * Without one `GoogleTagManager` renders nothing and "no tag fired before consent" passes
+   * for the wrong reason. With it, the consent-default script is really on the page and the
+   * assertion is really about the gate. Nothing reaches Google: the test only checks the
+   * refusal path, and the id is obviously fake.
+   */
+  NEXT_PUBLIC_GTM_ID: "GTM-TEST0000",
 };
 
 export default defineConfig({

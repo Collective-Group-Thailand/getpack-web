@@ -232,6 +232,9 @@ export const handlers = [
     }),
   ),
 
+  // CONTRACT-REQUEST analytics.events — the D-102 funnel, accepted and discarded.
+  http.post("*/v1/store/analytics/events", () => new HttpResponse(null, { status: 202 })),
+
   // CONTRACT-REQUEST rum.web-vitals — no endpoint exists yet (docs/contract-requests.md).
   // Accepted and discarded, on all three surfaces, so `pnpm dev:mock` and the e2e run do not
   // fill the console with unhandled-request warnings on every page load.

@@ -38,5 +38,12 @@
   "comingSoon": {
     "search": "Search",
     "body": "This page is being built and arrives with the full storefront."
+  },
+  "consent": {
+    "title": "Cookies",
+    "body": "We use cookies to measure how the site is used and to improve the service. You choose whether we may.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "learnMore": "Read the cookie policy"
   }
 }
