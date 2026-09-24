@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { reportError } from "@/lib/observability/report";
 import { fontClassNames } from "@/ui/fonts";
 import "./globals.css";
 
@@ -17,6 +20,12 @@ import "./globals.css";
  */
 /* eslint-disable react/jsx-no-literals -- no message bundle exists here; see above. */
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  // The only report that will ever be made for this failure: a root layout threw, so there is
+  // no segment boundary above and nothing else left running.
+  useEffect(() => {
+    reportError(error);
+  }, [error]);
+
   return (
     <html lang="th" className={fontClassNames}>
       <body>

@@ -1,5 +1,6 @@
 import { NextIntlClientProvider } from "next-intl";
 
+import { WebVitals } from "@/lib/observability";
 import { QueryProvider } from "@/lib/query";
 import type { Zone } from "@/lib/zones";
 import { Toaster } from "@/ui/components/Toast";
@@ -36,6 +37,8 @@ export function ZoneProviders({
         </TooltipProvider>
         {/* One toaster per zone: toasts belong to the current page (design-system.md §4). */}
         <Toaster />
+        {/* Renders nothing; reports field Web Vitals through this zone's BFF. */}
+        <WebVitals zone={zone} />
       </ThemeProvider>
     </NextIntlClientProvider>
   );

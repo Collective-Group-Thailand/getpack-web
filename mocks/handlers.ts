@@ -189,6 +189,11 @@ export const handlers = [
     factories: [{ factoryId: "00000000-0000-4000-8000-0000000000f1", roles: ["planner"] }],
   }),
 
+  // CONTRACT-REQUEST rum.web-vitals — no endpoint exists yet (docs/contract-requests.md).
+  // Accepted and discarded, on all three surfaces, so `pnpm dev:mock` and the e2e run do not
+  // fill the console with unhandled-request warnings on every page load.
+  http.post("*/v1/:surface/rum/web-vitals", () => new HttpResponse(null, { status: 202 })),
+
   // Anything not overridden falls through to the contract's own examples.
   ...generatedHandlers,
 ];

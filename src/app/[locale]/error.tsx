@@ -1,15 +1,26 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+
+import { reportError } from "@/lib/observability/report";
 import { Button, ErrorState } from "@/ui";
 
 /**
- * Segment error boundary. `digest` is the id Next puts in the server log for this failure,
- * so it is shown as the support code — the same slot the API's `requestId` fills once the
- * clients land in F1 Deliverable 1.2 (api-conventions.md §3).
+ * Segment error boundary. `digest` is the id Next puts in the server log for this failure, so
+ * it is shown as the support code (api-conventions §3).
+ *
+ * The error is reported here explicitly. `onRequestError` in `src/instrumentation.ts` catches
+ * what fails on the server, but a component that throws while *rendering in the browser* never
+ * reaches it — React hands it to this boundary instead, and without this call it would be
+ * invisible.
  */
 export default function ErrorBoundary({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const t = useTranslations("common");
+
+  useEffect(() => {
+    reportError(error);
+  }, [error]);
 
   return (
     <main id="main" className="mx-auto flex min-h-dvh max-w-2xl flex-col justify-center px-4 py-16">

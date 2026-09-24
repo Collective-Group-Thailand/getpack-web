@@ -38,6 +38,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@packio/dieline": "workspace:*",
+    "@sentry/nextjs": "^11.0.0",
     "@tanstack/react-query": "^5.103.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
