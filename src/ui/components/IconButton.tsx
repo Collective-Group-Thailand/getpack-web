@@ -6,6 +6,7 @@ import React from "react";
 
 import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
+import { useSlotChild } from "../lib/useSlotChild";
 import { buttonVariants } from "./Button";
 
 const iconButtonVariants = cva("", {
@@ -61,6 +62,7 @@ export function IconButton({
   ...props
 }: IconButtonProps) {
   const Component = asChild ? Slot.Root : "button";
+  const slotChild = useSlotChild(children);
   const icon = <Icon name={loading ? "spinner" : name} size={20} className={cn(loading && "animate-spin")} />;
 
   return (
@@ -78,8 +80,8 @@ export function IconButton({
         With `asChild`, Slot needs a single child to merge onto — the caller's element — so
         the icon is placed *inside* it rather than beside it.
       */}
-      {asChild && React.isValidElement(children)
-        ? React.cloneElement(children as React.ReactElement<{ children?: React.ReactNode }>, {}, icon)
+      {asChild && React.isValidElement(slotChild)
+        ? React.cloneElement(slotChild as React.ReactElement<{ children?: React.ReactNode }>, {}, icon)
         : icon}
     </Component>
   );

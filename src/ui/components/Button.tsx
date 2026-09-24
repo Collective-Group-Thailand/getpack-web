@@ -5,6 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
+import { useSlotChild } from "../lib/useSlotChild";
 
 /**
  * The one button (design-system.md §3). Variants are component-tier tokens expressed as
@@ -78,6 +79,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const Component = asChild ? Slot.Root : "button";
+  const slotChild = useSlotChild(children);
   const iconBefore = loading ? (
     <Icon name="spinner" className="animate-spin" />
   ) : iconStart ? (
@@ -100,7 +102,7 @@ export function Button({
         when the button also renders icons — without it, Slot sees three children and throws
         ("Slot failed to slot onto its children"), which is only visible in a real render.
       */}
-      {asChild ? <Slot.Slottable>{children}</Slot.Slottable> : children}
+      {asChild ? <Slot.Slottable>{slotChild}</Slot.Slottable> : children}
       {iconAfter}
     </Component>
   );

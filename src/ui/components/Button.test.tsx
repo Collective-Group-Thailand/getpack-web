@@ -1,10 +1,21 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { expectNoA11yViolations } from "../test/axe";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
+
+/**
+ * What a server component's `<Link>` looks like by the time it reaches a client `asChild`
+ * button: an RSC lazy reference over an already-streamed chunk — here nested, as seen on the
+ * storefront header — rather than an element.
+ */
+function rscLazy(value: ReactNode): ReactNode {
+  const chunk = Object.assign(Promise.resolve(value), { status: "fulfilled", value });
+  return { $$typeof: Symbol.for("react.lazy"), _payload: chunk } as unknown as ReactNode;
+}
 
 describe("Button", () => {
   it("has no axe violations in any variant", async () => {
@@ -77,6 +88,15 @@ describe("Button", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
+  it("slots onto a child that arrives as a lazy reference from a server component", () => {
+    // Regression: Radix Slot unwraps one lazy level only, so a nested one threw
+    // "Slot failed to slot onto its `Slottable`" and took down every page with the header.
+    render(<Button asChild>{rscLazy(rscLazy(<a href="https://packio.example/products">สินค้า</a>))}</Button>);
+
+    expect(screen.getByRole("link", { name: "สินค้า" })).toHaveAttribute("href", "https://packio.example/products");
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
   it("lets a caller override a conflicting utility", () => {
     render(<Button className="rounded-full">บันทึก</Button>);
     const className = screen.getByRole("button").className;
@@ -90,5 +110,19 @@ describe("IconButton", () => {
     const { container } = render(<IconButton name="close" label="ปิด" />);
     expect(screen.getByRole("button", { name: "ปิด" })).toBeInTheDocument();
     await expectNoA11yViolations(container);
+  });
+
+  it("slots onto a child that arrives as a lazy reference from a server component", () => {
+    // Without resolving the lazy first it was not a valid element, so Slot merged onto the
+    // <svg> instead and the link — href and all — silently disappeared.
+    render(
+      <IconButton asChild name="cart" label="ตะกร้า">
+        {rscLazy(<a href="https://packio.example/cart" />)}
+      </IconButton>,
+    );
+
+    const link = screen.getByRole("link", { name: "ตะกร้า" });
+    expect(link).toHaveAttribute("href", "https://packio.example/cart");
+    expect(link.querySelector("svg")).toBeInTheDocument();
   });
 });
