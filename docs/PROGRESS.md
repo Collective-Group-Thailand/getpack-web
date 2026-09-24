@@ -9,6 +9,160 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-23 | **F0 Session 0.2** — design-system foundation (`src/ui`) | Tokens in TS → generated CSS with a WCAG contrast gate (ADR-0003); self-hosted Noto Sans Thai / Anuphan / JetBrains Mono (ADR-0001); 30 Radix + CVA components with axe tests (ADR-0002); `pk_theme` light/dark/high-contrast; namespaced th/en messages, `formatTHB`, Buddhist-era dates, `src/domain/status` shape; Storybook 10 + docs; designer, home and My designs migrated onto `src/ui`; Lighthouse CI; React Compiler rules back to `error` | The rest of `design-system.md` §3 (DataTable, Combobox, DatePicker, PhoneInput, AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, charts, partner shop-floor set) — built when F1–F5 first needs them | See the notes under the F0.2 heading |
 | 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
 | 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted packio-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
+| 2026-09-24 | **F1 Deliverable 1.3** — shells, i18n, domain presentation, observability, quality gates | Eleven status maps behind one `contract.ts` indirection + the `status` namespace + `nextActions` renderer; messages split per zone with `react/jsx-no-literals`, ICU gates and the packaging glossary; the three zone shells (admin sidebar from `/v1/admin/me` entitlements, ⌘K, `?`, notification centre, storefront header/footer/bottom nav, partner shop-floor frame) and four new `src/ui` primitives; Sentry on all three runtimes with trace headers through the BFF and Web Vitals RUM; robots/sitemap/canonical/hreflang/JSON-LD on the indexed zone only; SSE→cache invalidation, web push, PWA manifest; typed D-102 funnel events behind a PDPA consent gate; five Lighthouse URL sets and Storybook visual snapshots. 481 unit, 78 e2e, 4 visual | F2–F6. The storefront's initial-JS budget is breached on every route type (see below) | See the notes under the F1.3 heading |
+
+---
+
+## F1 Deliverable 1.3 — 2026-09-24
+
+The last layer of the foundation. Nine commits, each with lint, typecheck, unit tests and
+build green: status domain → i18n → shells → observability → SEO → realtime & push →
+analytics → quality gates → docs.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A status rendered from colour alone | `StatusMeta` requires a tone, an icon *and* a label key; a test asserts all three on all 60 entries |
+| A status label that drifts between zones | one `status` namespace, shared like `auth`; a test resolves every `labelKey` in both locales |
+| Two statuses in one domain reading identically | a test comparing the Thai labels per map |
+| A status the backend adds without presentation | `defineStatusMap<T>()` against the union in `status/contract.ts` — one file to repoint at `Schemas[...]` |
+| UI copy hard-coded in JSX | `react/jsx-no-literals` on `src/app`, `src/features` and `src/ui`, plus `no-restricted-syntax` for `aria-label`, `alt`, `title`, `placeholder`; both proven by a fixture suite |
+| A malformed ICU message, or a plural with no `other` branch | two new gates in `messages.test.ts`, both verified to fail on a broken message |
+| The admin sidebar showing a screen this user may not open | it is built from `AdminMeDto.menu` and nothing else; an e2e test asserts exactly the two entries the mock returns |
+| A storefront link that 404s | an e2e test fetches every `href` in the header, footer and nav |
+| A canonical claiming every page is the home page | built from `x-packio-path`; an e2e test asserts each locale is canonical to itself |
+| `robots.txt` or `sitemap.xml` answering on a `noindex` zone | matched in `src/proxy.ts` before next-intl, gated on `ZONE_CONFIG[zone].indexable`; unit and e2e |
+| A sitemap entry that does not exist | an e2e test fetches every `<loc>` |
+| Business data in a realtime payload | `parseEvent` keeps three known string fields and drops everything else |
+| A notification permission prompt on page load | `usePushSubscription` exposes `enable` and no effect; `mayPrompt` refuses without a meaningful action; an e2e test patches `Notification.requestPermission` and asserts it is never called |
+| A service worker quietly caching stale prices or job states | it has no `fetch` handler; an e2e test asserts the absence |
+| A misspelt funnel step | `FunnelEvent` is a closed union |
+| Personal data in an analytics property | `AnalyticsProperties` is a narrow interface, not `Record<string, unknown>` |
+| A Google request before consent | GTM is not rendered at all until the cookie says yes; an e2e test watches the network, with a container id configured so it cannot pass vacuously |
+| Initial JS growing further | a Lighthouse ratchet per URL set, pinned above today's figure |
+
+### Bugs this session found and fixed
+
+All eight came from running the thing, not from reading it.
+
+1. **`TooltipProvider` was never in `ZoneProviders`.** Storybook had one in its own decorator,
+   so every tooltip story worked — while the first tooltip rendered in the real app, in the
+   collapsed admin sidebar, threw and took the whole sidebar down with it.
+2. **The notification bell wrapped its trigger in a `<span>`**, so Radix put `aria-expanded` on
+   a generic element: a critical `aria-allowed-attr` failure. The button is the trigger now and
+   the badge is a sibling.
+3. **`DropdownMenu` rendered mutually-exclusive choices as `menuitemcheckbox`** although its own
+   doc comment said radio. Theme and language are single-select; a screen reader now hears
+   "selected, 2 of 4".
+4. **Links to pages F3 has not built did not merely 404.** Next's 404 response to an RSC
+   *prefetch* carries no `content-length`, so the browser held each socket open until keep-alive
+   expired — `networkidle` became unreachable and a real visitor would have paid for it. The 17
+   destinations the shell links to now have real pages.
+5. **`account/designs` rendered its own header, footer and `<main id="main">`**, which the new
+   storefront layout also provides: two main landmarks and an ambiguous skip link.
+6. **Every storefront page claimed the site root as its canonical.** Metadata set in a layout is
+   inherited by every page under it, and a layout's `generateMetadata` is not given the
+   pathname — so the first version told crawlers the whole site was one page, which is worse
+   than no canonical. It reads `x-packio-path` now.
+7. **Three of the four new browser→BFF calls were silently 404ing in admin and partner.**
+   `ZONE_CONFIG[zone].bffPath` is the *internal* route segment (`/admin/bff`); a browser on the
+   admin host asks for `/bff/...` and the proxy adds the prefix. They share `browserBffUrl` now,
+   tested against `isUpstreamPathAllowed`.
+8. **Consent looked like it worked and did not.** Accepting called `router.refresh()`, but React
+   does not execute a `<script>` that arrives during a client-side update — only one present in
+   the initial HTML. The DOM looked right and the container never ran. Caught by asserting on
+   `dataLayer` rather than on the markup.
+
+And three the *tests* had, each found by deliberately breaking something and watching the test
+pass anyway: `http-server`'s default hour of `max-age` served the previous Storybook build; a
+`fullPage` screenshot hid three avatars changing colour inside a 1% tolerance; and a Playwright
+project registered conditionally exists in the main process but not in the worker.
+
+### The performance budgets are breached, on every route type
+
+Measured 2026-09-24 on a production build with **no** Sentry DSN and no GTM container — the
+floor, not the ceiling:
+
+| URL set | Target | Measured | Over |
+|---|---|---|---|
+| `customer-marketing` | 150 KB | 374 KB | 2.5× |
+| `customer-app` | 200 KB | 381 KB | 1.9× |
+| `admin` | 250 KB | 363 KB | 1.5× |
+| `designer` | 350 KB | 518 KB | 1.5× |
+| `partner` | 180 KB | 361 KB | 2.0× |
+
+React 73 KB, Radix ~85 KB across six chunks, next-intl ~29, Lucide 19, app code ~52. Not
+Sentry, and not the designer: `/` and a bare placeholder page load the same bundle, so it is
+the shared shell. The single largest lever is the storefront header mounting `DropdownMenu`,
+`Popover` and `Tooltip` on every page — deferring those three to interaction is worth roughly
+half the gap and belongs to F3's storefront-performance work.
+
+The Lighthouse assertions are **ratchets** pinned just above the current figures rather than at
+the targets: a gate that is red forever is a gate people learn to ignore, and one that has been
+quietly relaxed to green is worse. The documented budgets are unchanged.
+
+### Decisions taken, with reasons
+
+- **All eleven status maps ship now, with their provenance recorded per file.** The contract
+  carries no domain enums (B1.3 is auth only) and the decision log has no status tables, so
+  order, payment and artwork come from the legacy enumerations (§5.2, admitted by D-005) and
+  `document` from `accounting-design.md`; the other seven are marked proposals assembled from
+  the F2/F5/F6 vocabulary. They are a request to the backend, logged as `status.enums`, not a
+  claim about the contract. Confirmed with the user, who chose this over deferring them.
+- **Sentry's browser SDK is 152.7 KB gz, not the ~40 KB estimated when it was scoped.** That was
+  measured and put back to the user with the option of restricting it to admin and partner,
+  which the zone check makes a one-line change; they chose all three zones. It loads as a
+  separate chunk after hydration and is absent entirely from builds with no
+  `NEXT_PUBLIC_SENTRY_DSN` — a static import cost 133 KB whether or not a DSN was set, because
+  skipping `init()` does not remove the module from the graph.
+- **GTM is not loaded until consent, contrary to Google's own guidance.** Consent Mode is
+  designed to let the container load and restrict the tags inside it, but fetching
+  `googletagmanager.com` is itself a request to Google carrying the visitor's IP, before they
+  have agreed to a third-party processor. The e2e test asserting otherwise failed, which is how
+  this was decided rather than assumed.
+- **First-party funnel events are not gated on cookie consent**, on the reading that they are
+  necessary to operate the service, carry no advertising identifier and never leave Packio.
+  **This needs legal counsel to confirm before launch** — recorded here rather than assumed
+  silently.
+- **SSE rather than a websocket or Pusher**, because traffic is one-way, it reconnects itself,
+  and it rides the existing BFF — the same cookie and the same allow-list, with no second
+  authorisation path to get right. The Pusher driver the env schema allows would sit beside it.
+- **The calls whose endpoints are still contract requests use plain `fetch`, not `browserApi`.**
+  The typed client only knows paths in `schema.d.ts`; forcing one through with `as never` would
+  defeat the check that stops response types being invented (ADR-0006) and would keep compiling
+  on the day the real shape lands.
+- **`elementOverrides` is not used to exempt `<Kbd>` from the no-literals rule.** It crashes
+  eslint-plugin-react 7.37.5 on any declarator with no initialiser. Keycaps are a `KEYCAP`
+  constant instead, which is where the ⌘/Ctrl split belongs anyway.
+- **The command palette is Radix plus our own ARIA, not `cmdk`.** ADR-0002 fixes the component
+  base, and the hard parts — focus trap, scrim, Escape, scroll lock — are what `Dialog` already
+  does. The active option is tracked by item **id**, so a changing result set cannot leave
+  `aria-activedescendant` pointing at an element that no longer exists.
+- **Three e2e helpers retry.** A shell control exists in the server HTML before the JavaScript
+  that makes it work has hydrated, and a click in that window is simply dropped. Retrying is
+  what a real person does; there is no DOM signal for "hydrated".
+
+### Deliberately not done
+
+- The admin command palette searches nothing and the mega-menu has no catalogue: both need
+  endpoints F2 and F3 own. What ships is the shell, its keyboard behaviour and its a11y.
+- The full PDPA preferences centre — per-purpose toggles, a record of when consent was given,
+  withdrawal — is F3. Only the gate GTM legally needs is here.
+- `IDEMPOTENT_PATHS` is still empty: 1.3 adds no irreversible operation.
+- The 17 storefront destinations are placeholder pages, replaced by F3 rather than extended.
+- Linux baselines for the visual snapshots; the CI job is `continue-on-error` until they exist.
+- Firebase and LINE stay plumbed-but-not-wired, as 1.2 left them.
+
+### Open questions
+
+- **Legal**: whether first-party funnel events sit under legitimate interest, or need the same
+  consent GA4 does.
+- **Backend**: eight new contract requests — `status.enums`, `entity.next-actions`,
+  `rum.web-vitals`, `store.sitemap`, `notifications.feed`, `push.subscriptions`,
+  `realtime.auth` and `analytics.events`. The realtime one also needs the transport confirmed;
+  the client assumes SSE.
+- **Product**: the initial-JS gap above is not something F1 can close on its own.
 
 ---
 
