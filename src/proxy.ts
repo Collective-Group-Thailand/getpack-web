@@ -45,6 +45,17 @@ const intlMiddleware = createMiddleware(routing);
  */
 const ROOT_ASSETS = new Set(["/favicon.ico", "/icon.svg"]);
 
+/**
+ * Files that exist for crawlers, and only on the indexed zone.
+ *
+ * They must be passed through *before* next-intl, or `/robots.txt` is negotiated into
+ * `/th/robots.txt` and a crawler gets a 404 — the kind of failure nobody notices until the
+ * site is not in the index. On a zone that is `noindex` they do not exist at all: answering
+ * them on `admin.packio.co.th` would publish the shape of the back office to anyone who
+ * asked.
+ */
+const CRAWLER_FILES = new Set(["/robots.txt", "/sitemap.xml"]);
+
 export default async function proxy(request: NextRequest): Promise<NextResponse> {
   const zone = resolveZone(request.headers.get("host"), zoneHosts, enabledZones);
   const isSecure = isHttpsRequest(request.headers, request.nextUrl.protocol);
@@ -97,6 +108,13 @@ function route(request: NextRequest, zone: Zone, requestHeaders: Headers): NextR
   const { routePrefix, bffPath } = ZONE_CONFIG[zone];
 
   if (ROOT_ASSETS.has(pathname)) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  if (CRAWLER_FILES.has(pathname)) {
+    // Keyed off the config rather than a literal `"customer"`, so a fourth zone cannot be
+    // half-added: whatever `indexable` says is what a crawler gets.
+    if (!ZONE_CONFIG[zone].indexable) return notFound(isHttpsRequest(request.headers, request.nextUrl.protocol), zone);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

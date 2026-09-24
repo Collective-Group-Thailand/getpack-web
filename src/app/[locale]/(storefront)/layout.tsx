@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import { MobileBottomNav, SiteFooter, SiteHeader } from "@/features/customer/shell";
+import { OrganizationJsonLd } from "@/features/customer/shell/OrganizationJsonLd";
+import { publicOrigin } from "@/lib/seo";
 import { AppShell } from "@/ui/components/AppShell";
 
 /**
@@ -16,7 +18,7 @@ import { AppShell } from "@/ui/components/AppShell";
  * failure that looks like a styling bug.
  */
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations("common");
+  const [t, origin] = await Promise.all([getTranslations("common"), publicOrigin()]);
 
   return (
     <AppShell
@@ -26,6 +28,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
       bottomNav={<MobileBottomNav />}
       reserveBottomNavSpace
     >
+      <OrganizationJsonLd origin={origin} />
       {children}
     </AppShell>
   );
