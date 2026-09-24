@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { LocaleLink } from "./LocaleLink";
+import { NotificationBell } from "@/features/shared/shell";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
@@ -61,6 +62,7 @@ export async function SiteHeader() {
             <Link href="/account" />
           </IconButton>
 
+          <NotificationBell zone="customer" />
           <LocaleLink />
           <ThemeToggle
             label={tCommon("theme.label")}

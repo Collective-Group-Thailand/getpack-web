@@ -2,6 +2,7 @@ import { NextIntlClientProvider } from "next-intl";
 
 import { WebVitals } from "@/lib/observability";
 import { QueryProvider } from "@/lib/query";
+import { RealtimeProvider } from "@/lib/realtime";
 import type { Zone } from "@/lib/zones";
 import { Toaster } from "@/ui/components/Toast";
 import { TooltipProvider } from "@/ui/components/Tooltip";
@@ -33,7 +34,11 @@ export function ZoneProviders({
     <NextIntlClientProvider>
       <ThemeProvider initialChoice={themeChoice} zone={zone}>
         <TooltipProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            {children}
+            {/* Inside QueryProvider: it needs the client whose caches it invalidates. */}
+            <RealtimeProvider zone={zone} />
+          </QueryProvider>
         </TooltipProvider>
         {/* One toaster per zone: toasts belong to the current page (design-system.md §4). */}
         <Toaster />

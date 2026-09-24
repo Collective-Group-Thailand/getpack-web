@@ -51,7 +51,10 @@
     "empty": {
       "title": "No notifications yet",
       "body": "Updates on your work appear here."
-    }
+    },
+    "markAllRead": "Mark all read",
+    "loading": "Loading notifications",
+    "unread": "(unread)"
   },
   "locale": {
     "label": "Language",

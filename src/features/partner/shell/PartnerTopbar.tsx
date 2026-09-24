@@ -26,7 +26,7 @@ export async function PartnerTopbar({ actor }: { actor: PartnerMe }) {
       <Brand href="/" />
 
       <div className="ms-auto flex items-center gap-1">
-        <NotificationBell />
+        <NotificationBell zone="partner" />
         <LocaleMenu />
         <ThemeToggle
           label={tCommon("theme.label")}

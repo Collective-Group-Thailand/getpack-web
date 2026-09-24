@@ -85,6 +85,26 @@ export function isUpstreamPathAllowed(zone: Zone, path: string): boolean {
   return upstreamPrefixes(zone).some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
+/**
+ * The URL a **browser** uses to reach an upstream path through its zone's BFF.
+ *
+ * `ZONE_CONFIG[zone].bffPath` is the *internal* route segment — `/admin/bff` — which is where
+ * the handler lives in `src/app` after `src/proxy.ts` has rewritten the request. A browser on
+ * the admin host never sees that prefix: it asks for `/bff/...` on its own origin, exactly as
+ * the storefront does, and the proxy adds `/admin`. Asking for `/admin/bff/...` from the
+ * browser is refused by `isInternalOnlyPath` before any of it runs.
+ *
+ * `browserApi` hard-codes `/bff` for the same reason. This exists for the calls that cannot go
+ * through the typed client because their endpoint is still a contract request — Web Vitals,
+ * push subscriptions, notifications — so that the three of them cannot each get it wrong
+ * separately. (They each did.)
+ */
+export const BROWSER_BFF_PATH = "/bff";
+
+export function browserBffUrl(zone: Zone, upstreamPath: string): string {
+  return `${BROWSER_BFF_PATH}${ZONE_CONFIG[zone].apiPrefix}${upstreamPath}`;
+}
+
 /** The `x-packio-zone` request header the proxy stamps so server code can read the zone. */
 export const ZONE_HEADER = "x-packio-zone";
 

@@ -9,4 +9,5 @@ export {
   type Zone,
   type ZoneConfig,
 } from "./zones";
+export { BROWSER_BFF_PATH, browserBffUrl } from "./zones";
 export { isInternalOnlyPath, normaliseHost, resolveZone, type ZoneHosts } from "./resolve";
