@@ -36,15 +36,26 @@ import { bffProblem } from "./problem";
  */
 export const MAX_BODY_BYTES = 1024 * 1024;
 
-/** Headers forwarded from the browser. Everything else is this app's business, not the API's. */
+/**
+ * Headers forwarded from the browser. Everything else is this app's business, not the API's.
+ *
+ * The three trace headers are here because every browser call to the API goes through this
+ * handler (ADR-0005). Dropping them would end the trace at the BFF, so a slow endpoint would
+ * show up as "the BFF was slow" with nothing behind it — which is the opposite of what
+ * distributed tracing is for. `traceparent` is W3C; `sentry-trace` and `baggage` are what the
+ * SDK actually sends.
+ */
 const FORWARDED_REQUEST_HEADERS = [
   "accept",
   "accept-language",
+  "baggage",
   "content-type",
   "idempotency-key",
   "if-match",
   "if-none-match",
   "range",
+  "sentry-trace",
+  "traceparent",
 ] as const;
 
 /** Headers forwarded back. `set-cookie` is never among them: the API is cookie-agnostic. */

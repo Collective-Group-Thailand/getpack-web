@@ -109,6 +109,13 @@ export function clientEnvSchema() {
     NEXT_PUBLIC_GTM_ID: optionalText,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: optionalText,
 
+    /**
+     * The browser's Sentry DSN. Separate from the server's `SENTRY_DSN` because only
+     * `NEXT_PUBLIC_*` reaches the bundle — and because a deployment may well want server
+     * errors reported without shipping ~40 KB of SDK to every storefront visitor.
+     */
+    NEXT_PUBLIC_SENTRY_DSN: optionalText,
+
     /** Shown in the admin topbar so nobody mistakes UAT for production (F1 1.3). */
     NEXT_PUBLIC_ENV_BADGE: z.enum(["uat", "prod"]).optional(),
   });
