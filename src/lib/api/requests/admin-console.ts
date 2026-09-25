@@ -92,6 +92,12 @@ export const sodRule = z
   })
   .meta({ id: "SodRuleDto" });
 
+/* ------------------------------------------------------------------------------ staff directory */
+
+export const staffRef = z
+  .object({ id: uuid(), displayName: z.string(), roles: z.array(z.string()) })
+  .meta({ id: "StaffDirectoryEntryDto" });
+
 /* ---------------------------------------------------------------------------- import / export */
 
 export const importStatus = z
@@ -168,6 +174,12 @@ export const adminConsoleRequests = {
     request: "admin.dashboard",
     summary: "The work queues this actor may work, with counts and SLA state",
     response: dashboard,
+  }),
+  "GET /v1/admin/staff-directory": request({
+    request: "admin.staff-directory",
+    summary: "Active staff by name, for pickers: delegate an approval, assign a queue item, @mention",
+    query: z.object({ q: z.string().optional(), role: z.string().optional(), limit: z.coerce.number().int().max(50).optional() }),
+    response: z.object({ data: z.array(staffRef) }),
   }),
   "GET /v1/admin/sod-rules": request({
     request: "admin.sod-rules",

@@ -21,3 +21,4 @@ export { ResourceList, type ResourceListProps } from "./ResourceList";
 export { SavedViews } from "./SavedViews";
 export { useListState } from "./useListState";
 export { useSlaFormat } from "./useSlaFormat";
+export { useRoleLabel } from "./roles";

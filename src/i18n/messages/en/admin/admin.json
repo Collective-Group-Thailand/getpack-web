@@ -80,5 +80,31 @@
     "insights": "Insights",
     "system": "System",
     "other": "Other"
+  },
+  "roles": {
+    "superadmin": "Superadmin",
+    "c_level": "C-Level",
+    "vp": "VP",
+    "director": "Director",
+    "admin": "Admin",
+    "cs": "CS",
+    "cs_lead": "CS Lead",
+    "prepress": "Prepress",
+    "finance": "Finance",
+    "finance_manager": "Finance Manager",
+    "logistics": "Logistics",
+    "marketing": "Marketing",
+    "partner_manager": "Partner Manager",
+    "auditor": "Auditor (read-only)",
+    "factory_owner": "Factory Owner",
+    "factory_planner": "Planner",
+    "factory_operator": "Operator",
+    "factory_qc": "QC",
+    "factory_shipping": "Shipping",
+    "factory_accountant": "Factory Accountant",
+    "company_admin": "Company Admin",
+    "company_buyer": "Buyer",
+    "company_approver": "Approver",
+    "company_accountant": "Accountant"
   }
 }
