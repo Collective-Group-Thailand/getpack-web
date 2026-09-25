@@ -42,6 +42,8 @@ export function FormFields<TValues extends FieldValues>({
 }) {
   const tCommon = useTranslations("common");
   const t = useTranslations("console.form");
+  const tValidation = useTranslations("console.validation");
+  const formatError = (message: string) => (tValidation.has(message) ? tValidation(message) : message);
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -72,6 +74,7 @@ export function FormFields<TValues extends FieldValues>({
             hint={field.hint}
             required={field.required}
             requiredLabel={tCommon("state.required")}
+            formatError={formatError}
             className={field.wide || field.kind === "textarea" || field.kind === "custom" ? "sm:col-span-2" : undefined}
           >
             {({ value, onChange, onBlur, name }) => {

@@ -12,7 +12,7 @@ export function PartnersNav() {
       items={[
         { href: "/partners", label: t("factories"), exact: true },
         { href: "/partners/proposals", label: t("proposals") },
-        { href: "/partners/coverage", label: t("coverage"), permission: "catalog.read" },
+        { href: "/partners/coverage", label: t("coverage") },
         { href: "/partners/indices", label: t("indices") },
       ]}
     />

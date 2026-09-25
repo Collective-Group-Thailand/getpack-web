@@ -48,9 +48,6 @@
     "coverage": "Coverage",
     "indices": "Price indices"
   },
-  "form": {
-    "failed": "Could not save"
-  },
   "list": {
     "title": "Partner factories",
     "description": "Factories by onboarding stage; the Partner team creates them and invites the owner (D-171).",
