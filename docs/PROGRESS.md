@@ -11,6 +11,71 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted packio-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
 | 2026-09-24 | **F1 Deliverable 1.3** — shells, i18n, domain presentation, observability, quality gates | Eleven status maps behind one `contract.ts` indirection + the `status` namespace + `nextActions` renderer; messages split per zone with `react/jsx-no-literals`, ICU gates and the packaging glossary; the three zone shells (admin sidebar from `/v1/admin/me` entitlements, ⌘K, `?`, notification centre, storefront header/footer/bottom nav, partner shop-floor frame) and four new `src/ui` primitives; Sentry on all three runtimes with trace headers through the BFF and Web Vitals RUM; robots/sitemap/canonical/hreflang/JSON-LD on the indexed zone only; SSE→cache invalidation, web push, PWA manifest; typed D-102 funnel events behind a PDPA consent gate; five Lighthouse URL sets and Storybook visual snapshots. 481 unit, 78 e2e, 4 visual | F2–F6. The storefront's initial-JS budget is breached on every route type (see below) | See the notes under the F1.3 heading |
 | 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted packio-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
+| 2026-09-25 | **F2 Deliverable 2.2** — orders & CS desk | Nine contract-request groups (orders, order notes and actions, customers, geo, CS calculators, quotations, discount memos, CS create-order) with stateful mocks; the six CS queues; the order screen (sticky header with the API's next action, ten tabs, slip review, manual start, cancel, notes with @mentions, unified timeline, order groups); the seven D-100 calculators with a factory × print × quantity comparison and the D-052 memo threshold from the API; quotations, discount memos, create-order with split delivery; `keys-used` and `server-imports` unit gates. 562 unit, 113 e2e | 2.3–2.8 | See the notes under the F2.2 heading |
+---
+
+## F2 Deliverable 2.2 — 2026-09-25
+
+Orders and the CS desk. Same worktree and branch as 2.1. None of 2.2's endpoints exist in
+packio-api yet (its B3 is next on its side), so every screen runs on contract requests shaped by
+the approved schema design (§3.6 commerce, §3.7 fulfilment, §4 enums, §2.9 amounts as strings).
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A message key that does not exist, rendered as its own path | `src/i18n/keys-used.test.ts` resolves every literal key and every template key's prefix used in `src/app` and `src/features` |
+| A server page importing a constant or a resource definition from a `"use client"` module (compiles, fails at request time in production) | `src/app/server-imports.test.ts` — pages and layouts may import only components from client modules, following barrels one level |
+| The UI hard-coding the direct-discount limit (D-052) | the calculator input data carries `discountPolicy.directLimitPct`; above it the only path is a discount memo |
+| The UI comparing money to find the best price | calculation results come flagged `cheapest` / `fastest` by the API |
+| Margin or the factory shown to a role not allowed to see it (D-141) | optional in the schema, absent from the mock unless the actor holds `margin.read`; the UI renders the field only when present |
+| A slip action offered to CS | `nextActions` is per actor; slip review is Finance's (finance, finance_manager, superadmin) |
+
+### Bugs this session found and fixed
+
+1. **The settings editor's success toast rendered a raw key path** (`settings.saved` instead of
+   `settings.change.saved`), found by the new keys gate's first run.
+2. **Two server pages crashed in the production build only** ("includes is not a function"):
+   `ORDER_TABS` and `CALCULATORS` were imported from client modules and arrived as client
+   references. They now live in plain modules (`orders/tabs.ts`, `cs/calculators.ts`), and the
+   imports gate above catches the next one.
+3. **`text-warning` was used for text and icons** in six places; it is a fill colour and fails
+   contrast on white. Warning text is `text-warning-subtle-fg`.
+4. **A `1fr` column beside a fixed rail could not shrink below its table**, so the order screen's
+   rail spilled past the viewport. Every such grid in admin code is `minmax(0,1fr)` now.
+
+### Decisions taken, with reasons
+
+- **One page-shaped order aggregate** (`GET /v1/admin/orders/{orderId}`) carrying every tab,
+  rather than an endpoint per tab: the header restates statuses from all of them, and CS moves
+  between tabs constantly. The timeline and notes are separate because they page and change.
+- **One typed input per calculator** (a discriminated union on `calculator`, corrugate's combined
+  parts included) rather than a bag of keys, so a missing field is a 422 with a path, not a price.
+- **The calculator mock is illustrative, not the ported legacy maths.** The formulas belong to the
+  backend (B2.3, with golden tests against legacy); the UI only renders what comes back.
+- **The order tab lives in the URL without a server round trip** (local state plus
+  `history.replaceState`): a server navigation would refetch the aggregate on every tab change.
+- **Every irreversible order action needs the order code retyped**, restates the amount and sends
+  one idempotency key per intent. Manual production start (D-073) and cancellation also need a
+  reason.
+- **Mentions are notified only while the name is still in the note**: deleting "@name" before
+  sending un-mentions them.
+- **CS create-order starts from a saved quotation**, so the price locked for 15 days (D-051) is the
+  one ordered. The form keeps one idempotency key for its whole life.
+
+### Deliberately not done
+
+- Editing a placed order's lines or prices: not in 2.2's scope, and D-051's price lock makes it an
+  approval flow of its own.
+- The label calculator stays behind its feature flag, as legacy's `DISPLAY_MENU_LABEL` was.
+
+### Open questions
+
+- **Backend**: `admin.orders`, `admin.order-notes`, `admin.order-actions`, `admin.customers`,
+  `admin.geo`, `admin.cs-calculators`, `admin.quotations`, `admin.discount-memos`,
+  `admin.cs-create-order` (all in `docs/contract-requests.md` and the OpenAPI handoff document).
+- **Backend**: is the queue's SLA deadline computed server-side on the business calendar
+  (D-161), as assumed? The UI only renders `slaDueAt`.
 
 ---
 
