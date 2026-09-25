@@ -6,7 +6,7 @@ import { signInAsStaff } from "./helpers/session";
 /**
  * Notification centre, service worker and PWA manifest (F1 1.3 §6, D-143).
  *
- * The feed is a contract request, so these run against the MSW mock — what is being asserted
+ * These run against the MSW mock of the feed packio-api B1.3 published — what is being asserted
  * is this app's half: the count reaches the accessible name, the worker is served from a scope
  * that can actually receive a push, and the manifest differs per zone.
  */

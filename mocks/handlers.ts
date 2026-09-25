@@ -26,6 +26,26 @@ export const MOCK_OTP = {
 
 type Audience = "customer" | "staff" | "partner";
 
+/** The notification inbox every surface shares in the mock. Two items, one unread. */
+const inbox = [
+  {
+    id: "00000000-0000-4000-8000-00000000e001",
+    eventType: "order.paid",
+    title: "รับชำระเงินแล้ว (ข้อมูลจำลอง)",
+    body: "คำสั่งซื้อ PK-2569-00042 ชำระเงินครบแล้ว",
+    readAt: null as string | null,
+    createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+  },
+  {
+    id: "00000000-0000-4000-8000-00000000e002",
+    eventType: "artwork.changes_requested",
+    title: "ขอให้แก้ไขไฟล์งาน (ข้อมูลจำลอง)",
+    body: "ไฟล์ของ PK-2569-00041 ต้องเพิ่มระยะตัดตก 3 มม.",
+    readAt: "2026-09-23T10:00:00+07:00" as string | null,
+    createdAt: new Date(Date.now() - 3 * 60 * 60_000).toISOString(),
+  },
+];
+
 const token = (audience: Audience) => `seed.access.token.${audience}`;
 const refresh = (audience: Audience) => `seed-refresh-token-${audience}`;
 
@@ -189,48 +209,23 @@ export const handlers = [
     factories: [{ factoryId: "00000000-0000-4000-8000-0000000000f1", roles: ["planner"] }],
   }),
 
-  // CONTRACT-REQUEST notifications.feed — the in-app notification centre (D-143).
-  // Two entries, obviously fake, so the badge and the list have something to render.
+  // Notifications on the contract B1.3 published (InboxItemDto, cursor feed, per-item read).
+  // Stateful, so "mark read" visibly does something; obviously fake.
   http.get("*/v1/:surface/notifications", () =>
-    HttpResponse.json({
-      data: [
-        {
-          id: "00000000-0000-4000-8000-00000000n001",
-          type: "order.paid",
-          title: "รับชำระเงินแล้ว (ข้อมูลจำลอง)",
-          body: "คำสั่งซื้อ PK-2569-00042 ชำระเงินครบแล้ว",
-          url: "/orders/PK-2569-00042",
-          readAt: null,
-          createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
-        },
-        {
-          id: "00000000-0000-4000-8000-00000000n002",
-          type: "artwork.changes_requested",
-          title: "ขอให้แก้ไขไฟล์งาน (ข้อมูลจำลอง)",
-          body: "ไฟล์ของ PK-2569-00041 ต้องเพิ่มระยะตัดตก 3 มม.",
-          url: "/orders/PK-2569-00041",
-          readAt: "2026-09-23T10:00:00+07:00",
-          createdAt: new Date(Date.now() - 3 * 60 * 60_000).toISOString(),
-        },
-      ],
-      meta: { nextCursor: null, unreadCount: 1 },
-    }),
+    HttpResponse.json({ data: inbox.map((item) => ({ ...item })), meta: { nextCursor: null } }),
   ),
-  http.post("*/v1/:surface/notifications/read", () => new HttpResponse(null, { status: 204 })),
+  http.post("*/v1/:surface/notifications/:notificationId/actions/read", ({ params }) => {
+    const item = inbox.find((entry) => entry.id === params.notificationId);
+    if (item && item.readAt === null) item.readAt = new Date().toISOString();
+    return new HttpResponse(null, { status: 204 });
+  }),
 
-  // CONTRACT-REQUEST push.subscriptions — accepted and discarded; nothing is ever pushed here.
-  http.post("*/v1/:surface/push/subscriptions", () => new HttpResponse(null, { status: 201 })),
+  // Web push: the VAPID key is null, the contract's way of saying "not configured here", so
+  // nothing ever subscribes against the mock.
+  http.get("*/v1/:surface/web-push/vapid-public-key", () => HttpResponse.json({ vapidPublicKey: null })),
 
-  // CONTRACT-REQUEST realtime.auth / realtime.stream. The stream is deliberately *not* mocked:
-  // MSW cannot hold an SSE connection open usefully, and `NEXT_PUBLIC_REALTIME_DRIVER` is
-  // unset in development and in the e2e run, so nothing opens one.
-  http.post("*/v1/:surface/realtime/auth", () =>
-    HttpResponse.json({
-      channel: "mock",
-      token: "mock-realtime-token",
-      expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-    }),
-  ),
+  // Realtime: the stream is deliberately not mocked — `NEXT_PUBLIC_REALTIME_DRIVER` is unset in
+  // development and in the e2e run, so nothing opens one.
 
   // CONTRACT-REQUEST analytics.events — the D-102 funnel, accepted and discarded.
   http.post("*/v1/store/analytics/events", () => new HttpResponse(null, { status: 202 })),
