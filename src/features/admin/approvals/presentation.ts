@@ -72,9 +72,13 @@ export function currentStep(approval: Approval): Schemas["ApprovalStepDto"] | un
  * the rule: the API enforces maker-checker and may refuse for reasons this cannot see
  * (delegations, SoD action pairs).
  */
-export function decisionBlocker(approval: Approval, actorId: string): "not_pending" | "own_request" | "already_acted" | null {
+export function decisionBlocker(
+  approval: Approval,
+  actorId: string,
+): "not_pending" | "own_request" | "already_acted" | null {
   if (approval.status !== "pending") return "not_pending";
   if (approval.requester.id === actorId) return "own_request";
-  if (approval.actions.some((action) => action.actor.id === actorId && action.action === "approve")) return "already_acted";
+  if (approval.actions.some((action) => action.actor.id === actorId && action.action === "approve"))
+    return "already_acted";
   return null;
 }

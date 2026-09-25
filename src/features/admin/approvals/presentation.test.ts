@@ -28,7 +28,19 @@ describe("decisionBlocker", () => {
   });
 
   it("says someone who approved one step cannot approve another", () => {
-    const acted = { ...base, actions: [{ action: "approve", actor: { id: "d-1", displayName: "D" }, at: base.createdAt, comment: null, stepNo: 1, onBehalfOf: null }] } as Approval;
+    const acted = {
+      ...base,
+      actions: [
+        {
+          action: "approve",
+          actor: { id: "d-1", displayName: "D" },
+          at: base.createdAt,
+          comment: null,
+          stepNo: 1,
+          onBehalfOf: null,
+        },
+      ],
+    } as Approval;
     expect(decisionBlocker(acted, "d-1")).toBe("already_acted");
   });
 

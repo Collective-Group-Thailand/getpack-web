@@ -11,7 +11,8 @@ export const POLICIES = Object.keys(POLICY_ICONS);
 
 export const approvalsList = defineList<Approval>({
   key: "approval",
-  fetch: async ({ contract }, query) => (await contract.GET("/v1/admin/approvals", { params: { query: query as never } })).data!,
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/approvals", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   defaults: { filterKeys: ["status", "policy", "subjectType"], sort: "createdAt", order: "desc" },
 });

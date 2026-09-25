@@ -78,7 +78,12 @@ export function UsersList({ initial }: { initial: InitialPage<User> | null }) {
       searchLabel={t("search")}
       searchPlaceholder={t("searchPlaceholder")}
       filters={[
-        { id: "kind", label: t("columns.kind"), kind: "select", options: (["staff", "partner", "customer"] as const).map((value) => ({ value, label: t(`kinds.${value}`) })) },
+        {
+          id: "kind",
+          label: t("columns.kind"),
+          kind: "select",
+          options: (["staff", "partner", "customer"] as const).map((value) => ({ value, label: t(`kinds.${value}`) })),
+        },
         {
           id: "status",
           label: t("columns.status"),
@@ -97,7 +102,12 @@ function CreateUser() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [values, setValues] = useState({ displayName: "", email: "", initialPassword: "", kind: "staff" as "staff" | "partner" });
+  const [values, setValues] = useState({
+    displayName: "",
+    email: "",
+    initialPassword: "",
+    kind: "staff" as "staff" | "partner",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const create = useMutation({
@@ -117,7 +127,8 @@ function CreateUser() {
     },
   });
 
-  const set = (key: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) => setValues({ ...values, [key]: event.target.value });
+  const set = (key: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) =>
+    setValues({ ...values, [key]: event.target.value });
 
   return (
     <>
@@ -135,7 +146,11 @@ function CreateUser() {
             <Button variant="secondary" onClick={() => setOpen(false)}>
               {tCommon("actions.cancel")}
             </Button>
-            <Button onClick={() => create.mutate()} loading={create.isPending} disabled={!values.displayName || !values.email || values.initialPassword.length < PASSWORD_MIN}>
+            <Button
+              onClick={() => create.mutate()}
+              loading={create.isPending}
+              disabled={!values.displayName || !values.email || values.initialPassword.length < PASSWORD_MIN}
+            >
               {t("submit")}
             </Button>
           </>
@@ -160,8 +175,19 @@ function CreateUser() {
           <Field label={t("email")} required requiredLabel={tCommon("state.required")} error={errors.email}>
             <Input type="email" autoComplete="off" value={values.email} onChange={set("email")} />
           </Field>
-          <Field label={t("password")} hint={t("passwordHint", { min: PASSWORD_MIN })} required requiredLabel={tCommon("state.required")} error={errors.initialPassword}>
-            <Input type="password" autoComplete="new-password" value={values.initialPassword} onChange={set("initialPassword")} />
+          <Field
+            label={t("password")}
+            hint={t("passwordHint", { min: PASSWORD_MIN })}
+            required
+            requiredLabel={tCommon("state.required")}
+            error={errors.initialPassword}
+          >
+            <Input
+              type="password"
+              autoComplete="new-password"
+              value={values.initialPassword}
+              onChange={set("initialPassword")}
+            />
           </Field>
         </div>
       </Dialog>

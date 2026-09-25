@@ -16,14 +16,18 @@ export type SodRule = z.output<typeof sodRule>;
 /** Roles whose audience matches the account — a customer role on a staff account is meaningless. */
 export function grantableRoles(roles: readonly Role[], user: User): Role[] {
   const held = new Set(user.roles.map((grant) => `${grant.role}:${grant.scopeId ?? ""}`));
-  return roles.filter((role) => role.audience === user.kind && (role.scopeType !== "platform" || !held.has(`${role.key}:`)));
+  return roles.filter(
+    (role) => role.audience === user.kind && (role.scopeType !== "platform" || !held.has(`${role.key}:`)),
+  );
 }
 
 /** The SoD role-pair rules a new grant of `role` would break, given what the user already holds. */
 export function sodConflicts(rules: readonly SodRule[], user: User, role: string): SodRule[] {
   const held = new Set(user.roles.map((grant) => grant.role));
   return rules.filter(
-    (rule) => rule.kind === "role_pair" && ((rule.left === role && held.has(rule.right)) || (rule.right === role && held.has(rule.left))),
+    (rule) =>
+      rule.kind === "role_pair" &&
+      ((rule.left === role && held.has(rule.right)) || (rule.right === role && held.has(rule.left))),
   );
 }
 

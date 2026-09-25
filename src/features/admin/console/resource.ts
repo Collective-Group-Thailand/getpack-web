@@ -42,3 +42,9 @@ export interface InitialPage<TRow> {
 export function asPage<TRow>(rows: TRow[]): Page<TRow> {
   return { data: rows, meta: { page: 1, perPage: rows.length || 1, total: rows.length } };
 }
+
+/** "order · 0192f3a0" — a record named by its type and the start of its id, for logs and tables. */
+export function shortRef(type: string | null | undefined, id: string | null | undefined): string {
+  if (!type) return "—";
+  return id ? `${type} · ${id.slice(0, 8)}` : type;
+}

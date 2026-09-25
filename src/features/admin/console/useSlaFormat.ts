@@ -10,7 +10,8 @@ export function useSlaFormat() {
   const t = useTranslations("console.sla");
   const format = useFormat();
   return useCallback(
-    (distance: number, overdue: boolean) => t(overdue ? "overdue" : "remaining", { duration: format.duration(distance) }),
+    (distance: number, overdue: boolean) =>
+      t(overdue ? "overdue" : "remaining", { duration: format.duration(distance) }),
     [format, t],
   );
 }

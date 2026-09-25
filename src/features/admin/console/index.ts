@@ -16,7 +16,7 @@ export { ImportWizard } from "./ImportWizard";
 export { parseListState, serialiseListState, toApiQuery, type ListDefaults, type ListState } from "./list-state";
 export { problemMessage, QueryError } from "./QueryError";
 export { QueueTabs, useQueues, type QueueTab } from "./queues";
-export { asPage, defineList, type InitialPage, type ListResource } from "./resource";
+export { asPage, defineList, shortRef, type InitialPage, type ListResource } from "./resource";
 export { ResourceList, type ResourceListProps } from "./ResourceList";
 export { SavedViews } from "./SavedViews";
 export { useListState } from "./useListState";

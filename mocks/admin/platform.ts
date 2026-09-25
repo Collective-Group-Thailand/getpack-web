@@ -963,6 +963,22 @@ export const platformHandlers = [
       return HttpResponse.json(template);
     },
   ),
+  http.post("*/v1/admin/notification-templates/:templateId/versions", async ({ params, request }) => {
+    const template = templates.find((candidate) => candidate.id === params.templateId);
+    if (!template) return notFound();
+    const body = (await request.json()) as Schemas["AddTemplateVersionDto"];
+    if (template.channel === "email" && !body.subject?.trim()) {
+      return problem(422, "validation.failed", "อีเมลต้องมีหัวเรื่อง", [{ path: "subject", code: "isNotEmpty", message: "อีเมลต้องมีหัวเรื่อง" }]);
+    }
+    const versionNo = Math.max(0, ...template.versions.filter((v) => v.locale === body.locale).map((v) => v.versionNo)) + 1;
+    template.versions.push({ locale: body.locale, versionNo, status: "draft", subject: body.subject ?? null, body: body.body, publishedAt: null });
+    return HttpResponse.json(template, { status: 201 });
+  }),
+  http.post("*/v1/admin/notification-templates/:templateId/actions/test-send", ({ request }) => {
+    const persona = staffPersonaOf(request);
+    const masked = persona?.email.replace(/^(.).*(@.*)$/, "$1•••$2") ?? null;
+    return HttpResponse.json({ sentTo: masked } satisfies Schemas["TestSendResultDto"]);
+  }),
   http.get("*/v1/admin/notification-routes", () => HttpResponse.json(routes)),
   http.post("*/v1/admin/notification-routes/:routeId/actions/set-enabled", async ({ request, params }) => {
     const route = routes.find((candidate) => candidate.id === params.routeId);

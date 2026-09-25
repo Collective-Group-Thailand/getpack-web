@@ -25,7 +25,15 @@ import { Select } from "@/ui/components/Select";
 import { StatusBadge } from "@/ui/components/StatusBadge";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, ConfirmAction, problemMessage, QueryError, useActor, useCan, useRoleLabel } from "../console";
+import {
+  adminBrowserApis,
+  ConfirmAction,
+  problemMessage,
+  QueryError,
+  useActor,
+  useCan,
+  useRoleLabel,
+} from "../console";
 import { grantableRoles, missingPermissions, sodConflicts, type Role, type User } from "./grants";
 
 type Grant = User["roles"][number];
@@ -49,7 +57,8 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
 
   const query = useQuery({
     queryKey: key,
-    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/users/{userId}", { params: { path: { userId } } })).data!,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/users/{userId}", { params: { path: { userId } } })).data!,
     initialData: initial ?? undefined,
   });
 
@@ -66,10 +75,23 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
   const meta = statusMeta(USER_STATUS, user.status);
 
   const grantColumns: DataTableColumn<Grant>[] = [
-    { id: "role", header: t("grants.role"), cell: (grant) => <span className="font-medium">{roleLabel(grant.role)}</span> },
-    { id: "scope", header: t("grants.scope"), cell: (grant) => (grant.scopeId ? `${t(`scopes.${grant.scopeType}`)} · ${grant.scopeId.slice(0, 8)}` : t("scopes.platform")) },
+    {
+      id: "role",
+      header: t("grants.role"),
+      cell: (grant) => <span className="font-medium">{roleLabel(grant.role)}</span>,
+    },
+    {
+      id: "scope",
+      header: t("grants.scope"),
+      cell: (grant) =>
+        grant.scopeId ? `${t(`scopes.${grant.scopeType}`)} · ${grant.scopeId.slice(0, 8)}` : t("scopes.platform"),
+    },
     { id: "validFrom", header: t("grants.validFrom"), cell: (grant) => <When at={grant.validFrom} absoluteOnly /> },
-    { id: "validTo", header: t("grants.validTo"), cell: (grant) => (grant.validTo ? <When at={grant.validTo} absoluteOnly /> : t("grants.noEnd")) },
+    {
+      id: "validTo",
+      header: t("grants.validTo"),
+      cell: (grant) => (grant.validTo ? <When at={grant.validTo} absoluteOnly /> : t("grants.noEnd")),
+    },
     { id: "reason", header: t("grants.reason"), cell: (grant) => grant.reason },
     ...(canAssign && !self
       ? [
@@ -90,7 +112,12 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={<Breadcrumbs label={t("breadcrumb")} items={[{ label: t("users"), href: "/users" }, { label: user.displayName }]} />}
+        breadcrumbs={
+          <Breadcrumbs
+            label={t("breadcrumb")}
+            items={[{ label: t("users"), href: "/users" }, { label: user.displayName }]}
+          />
+        }
         title={user.displayName}
         meta={
           <>
@@ -144,7 +171,13 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
             </Button>
           ) : null}
         </CardHeader>
-        <DataTable caption={t("grants.title")} columns={grantColumns} rows={user.roles} getRowId={(grant) => grant.id} empty={t("grants.empty")} />
+        <DataTable
+          caption={t("grants.title")}
+          columns={grantColumns}
+          rows={user.roles}
+          getRowId={(grant) => grant.id}
+          empty={t("grants.empty")}
+        />
       </Card>
 
       {granting ? <GrantRole user={user} onClose={() => setGranting(false)} onGranted={refresh} /> : null}
@@ -159,10 +192,13 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
         reason={{ label: t("reason"), required: true, minLength: REASON_MIN, hint: t("reasonHint") }}
         onConfirm={async ({ reason }) => {
           try {
-            const { data } = await adminBrowserApis().contract.POST("/v1/admin/users/{userId}/roles/{grantId}/actions/revoke", {
-              params: { path: { userId, grantId: revoking!.id } },
-              body: { reason },
-            });
+            const { data } = await adminBrowserApis().contract.POST(
+              "/v1/admin/users/{userId}/roles/{grantId}/actions/revoke",
+              {
+                params: { path: { userId, grantId: revoking!.id } },
+                body: { reason },
+              },
+            );
             toast.success(t("grants.revoked"));
             refresh(data);
           } catch (error) {
@@ -180,14 +216,24 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
         confirmLabel={action ? t(`actions.${action}Confirm`) : ""}
         tone={action === "reactivate" ? "primary" : "destructive"}
         confirmationPhrase={action === "deactivate" ? (user.email ?? undefined) : undefined}
-        reason={action === "revoke_sessions" ? undefined : { label: t("reason"), required: true, minLength: REASON_MIN, hint: t("reasonHint") }}
+        reason={
+          action === "revoke_sessions"
+            ? undefined
+            : { label: t("reason"), required: true, minLength: REASON_MIN, hint: t("reasonHint") }
+        }
         onConfirm={async ({ reason }) => {
           const api = adminBrowserApis().contract;
           const path = { params: { path: { userId } } };
           try {
             if (action === "revoke_sessions") await api.POST("/v1/admin/users/{userId}/actions/revoke-sessions", path);
-            else if (action === "deactivate") refresh((await api.POST("/v1/admin/users/{userId}/actions/deactivate", { ...path, body: { reason } })).data);
-            else refresh((await api.POST("/v1/admin/users/{userId}/actions/reactivate", { ...path, body: { reason } })).data);
+            else if (action === "deactivate")
+              refresh(
+                (await api.POST("/v1/admin/users/{userId}/actions/deactivate", { ...path, body: { reason } })).data,
+              );
+            else
+              refresh(
+                (await api.POST("/v1/admin/users/{userId}/actions/reactivate", { ...path, body: { reason } })).data,
+              );
             toast.success(t(`actions.${action}Done`));
           } catch (error) {
             toast.error(problemMessage(error, t("failed")));
@@ -199,7 +245,15 @@ export function UserDetail({ userId, initial }: { userId: string; initial: User 
   );
 }
 
-function GrantRole({ user, onClose, onGranted }: { user: User; onClose: () => void; onGranted: (user: User | null | undefined) => void }) {
+function GrantRole({
+  user,
+  onClose,
+  onGranted,
+}: {
+  user: User;
+  onClose: () => void;
+  onGranted: (user: User | null | undefined) => void;
+}) {
   const t = useTranslations("iam.user.grant");
   const tCommon = useTranslations("common");
   const roleLabel = useRoleLabel();
@@ -235,15 +289,17 @@ function GrantRole({ user, onClose, onGranted }: { user: User; onClose: () => vo
 
   const grant = useMutation({
     mutationFn: async () =>
-      (await adminBrowserApis().contract.POST("/v1/admin/users/{userId}/roles", {
-        params: { path: { userId: user.id } },
-        body: {
-          role: roleKey,
-          reason: reason.trim(),
-          ...(scoped && scope ? { scope: { id: scope.value, type: role!.scopeType as "factory" | "company" } } : {}),
-          ...(validTo ? { validTo: `${validTo}:00+07:00` } : {}),
-        },
-      })).data,
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/users/{userId}/roles", {
+          params: { path: { userId: user.id } },
+          body: {
+            role: roleKey,
+            reason: reason.trim(),
+            ...(scoped && scope ? { scope: { id: scope.value, type: role!.scopeType as "factory" | "company" } } : {}),
+            ...(validTo ? { validTo: `${validTo}:00+07:00` } : {}),
+          },
+        })
+      ).data,
     onSuccess: (updated) => {
       toast.success(t("granted"));
       onGranted(updated);

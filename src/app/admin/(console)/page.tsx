@@ -1,24 +1,25 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { Card } from "@/ui";
+import { adminServerApis } from "@/features/admin/console/api.server";
+import { ConsolePage } from "@/features/admin/console/ConsolePage";
+import { Dashboard } from "@/features/admin/dashboard";
 
-/**
- * The admin landing page.
- *
- * Still a placeholder — F2.1 builds the real dashboard — but the shell around it is now real:
- * the sidebar comes from this user's `/v1/admin/me` entitlements, the topbar carries ⌘K, the
- * notification centre and the environment badge, and the signed-in actor moved into the
- * account menu where it belongs.
- */
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("dashboard"))("title") };
+}
+
+/** The admin landing page: this person's work queues first (F2 A.2.8). */
 export default async function AdminHomePage() {
-  const t = await getTranslations("admin.placeholder");
-
+  let initial = null;
+  try {
+    initial = await (await adminServerApis()).requests.call("GET /v1/admin/dashboard");
+  } catch {
+    // The client asks again; a missing endpoint shows as an error state with a request id.
+  }
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">{t("heading")}</h1>
-      <Card className="mt-6" padding="lg">
-        <p className="text-muted">{t("body")}</p>
-      </Card>
-    </div>
+    <ConsolePage>
+      <Dashboard initial={initial} />
+    </ConsolePage>
   );
 }
