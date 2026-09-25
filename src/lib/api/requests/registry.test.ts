@@ -62,7 +62,9 @@ describe("the request client", () => {
       fetch: async (input: Request | string | URL) => {
         const request = input instanceof Request ? input : new Request(input);
         seen.push(request);
-        return new Response(JSON.stringify({ data: [] }), { headers: { "content-type": "application/json" } });
+        return new Response(JSON.stringify({ data: [] }), {
+          headers: { "content-type": "application/json", etag: 'W/"v1"' },
+        });
       },
     });
     return { seen, requests: createRequestClient(REQUESTS, client as unknown as Client<never>) };
@@ -79,6 +81,20 @@ describe("the request client", () => {
       "https://api.example/v1/admin/imports/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/apply",
     );
     expect(seen[0]?.headers.get("Idempotency-Key")).toBe("k-1");
+  });
+
+  it("reads the ETag for an edit and sends it back as If-Match", async () => {
+    const { seen, requests } = recorder();
+    const campaignId = "0192f3a0-7c1e-7d2a-9b1f-00000000a002";
+    const { etag } = await requests.read("GET /v1/admin/campaigns/{campaignId}", { path: { campaignId } });
+    await requests.call("PATCH /v1/admin/campaigns/{campaignId}", {
+      path: { campaignId },
+      body: { name: "ใหม่" },
+      etag: etag!,
+    });
+
+    expect(etag).toBe('W/"v1"');
+    expect(seen[1]?.headers.get("If-Match")).toBe('W/"v1"');
   });
 
   it("drops empty filters instead of sending them as empty strings", async () => {

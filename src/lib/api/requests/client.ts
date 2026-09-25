@@ -49,6 +49,11 @@ export interface RequestClient<R extends RequestRegistry> {
     key: K,
     ...init: OptionalInit<R, K> extends true ? [CallInit<R, K>?] : [CallInit<R, K>]
   ): Promise<ResponseOf<R, K>>;
+  /** As `call`, plus the response's `ETag` — the read before an edit under `If-Match`. */
+  read<K extends keyof R & string>(
+    key: K,
+    ...init: OptionalInit<R, K> extends true ? [CallInit<R, K>?] : [CallInit<R, K>]
+  ): Promise<{ data: ResponseOf<R, K>; etag: string | null }>;
 }
 
 /** Fills `{userId}` from `path`; refuses to send a request with a hole in it. */
@@ -78,35 +83,42 @@ export function createRequestClient<R extends RequestRegistry>(_registry: R, cli
         headers?: HeadersInit;
         signal?: AbortSignal;
       },
-    ) => Promise<{ data?: unknown }>
+    ) => Promise<{ data?: unknown; response?: Response }>
   >;
+
+  async function send(key: string, init: unknown) {
+    const [method, path] = key.split(" ") as [HttpMethod, string];
+    const options = (init ?? {}) as {
+      path?: Record<string, string>;
+      query?: Record<string, unknown>;
+      body?: unknown;
+      idempotencyKey?: string;
+      etag?: string;
+      signal?: AbortSignal;
+    };
+
+    const headers: Record<string, string> = {};
+    if (options.idempotencyKey) headers[IDEMPOTENCY_HEADER] = options.idempotencyKey;
+    if (options.etag) Object.assign(headers, ifMatch(options.etag));
+
+    // openapi-fetch fills `{param}` itself and keeps the template as `schemaPath`, which the
+    // surface guard matches on — so the template goes in, not a pre-filled path.
+    fillPath(path, options.path); // validates that every parameter is present
+    return untyped[method](path, {
+      params: { path: options.path, query: compactQuery(options.query) },
+      body: options.body,
+      headers,
+      signal: options.signal,
+    });
+  }
 
   return {
     async call(key, ...[init]) {
-      const [method, path] = key.split(" ") as [HttpMethod, string];
-      const options = (init ?? {}) as {
-        path?: Record<string, string>;
-        query?: Record<string, unknown>;
-        body?: unknown;
-        idempotencyKey?: string;
-        etag?: string;
-        signal?: AbortSignal;
-      };
-
-      const headers: Record<string, string> = {};
-      if (options.idempotencyKey) headers[IDEMPOTENCY_HEADER] = options.idempotencyKey;
-      if (options.etag) Object.assign(headers, ifMatch(options.etag));
-
-      // openapi-fetch fills `{param}` itself and keeps the template as `schemaPath`, which the
-      // surface guard matches on — so the template goes in, not a pre-filled path.
-      fillPath(path, options.path); // validates that every parameter is present
-      const { data } = await untyped[method](path, {
-        params: { path: options.path, query: compactQuery(options.query) },
-        body: options.body,
-        headers,
-        signal: options.signal,
-      });
-      return data as never;
+      return (await send(key, init)).data as never;
+    },
+    async read(key, ...[init]) {
+      const { data, response } = await send(key, init);
+      return { data: data as never, etag: response?.headers.get("etag") ?? null };
     },
   };
 }
