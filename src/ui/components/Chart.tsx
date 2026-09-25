@@ -51,6 +51,7 @@ const colour = (tone: ChartTone) => `var(--color-${tone})`;
  * A bar or line chart (design-system.md §3 "Charts"): Recharts, coloured only from the semantic
  * tones, with the same figures as a data table. The drawing is hidden from assistive technology;
  * the table is what a screen reader reads, and anyone can show it instead of the drawing.
+ * Recharts' own keyboard layer is off: it would put focusable points inside the hidden drawing.
  *
  * Values are numbers for drawing only; `formatValue` turns them back into the words (฿, %) the
  * page already formats elsewhere. Imported by path — not in the `src/ui` barrel — so Recharts
@@ -123,7 +124,14 @@ export function Chart<TRow extends Record<string, unknown>>({
           color: "var(--color-fg)",
         }}
       />
-      {series.length > 1 ? <Legend formatter={(key) => series.find((item) => item.key === key)?.label ?? key} /> : null}
+      {series.length > 1 ? (
+        <Legend
+          formatter={(key) => (
+            // Legend text in body colour: a series tone is not a checked text-contrast pair.
+            <span style={{ color: "var(--color-fg)" }}>{series.find((item) => item.key === key)?.label ?? key}</span>
+          )}
+        />
+      ) : null}
     </>
   );
 
@@ -145,6 +153,7 @@ export function Chart<TRow extends Record<string, unknown>>({
           <ResponsiveContainer width="100%" height="100%">
             {kind === "bar" ? (
               <BarChart
+                accessibilityLayer={false}
                 data={data as TRow[]}
                 layout={vertical ? "vertical" : "horizontal"}
                 margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
@@ -162,7 +171,11 @@ export function Chart<TRow extends Record<string, unknown>>({
                 ))}
               </BarChart>
             ) : (
-              <LineChart data={data as TRow[]} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+              <LineChart
+                accessibilityLayer={false}
+                data={data as TRow[]}
+                margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+              >
                 {axes}
                 {series.map((item, at) => (
                   <Line
