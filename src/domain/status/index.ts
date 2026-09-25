@@ -41,6 +41,7 @@ export type {
   OrderStatus,
   PayableStatus,
   PaymentStatus,
+  PodReviewStatus,
   PointsStatus,
   PayoutStatus,
   PreflightStatus,
@@ -112,7 +113,7 @@ import {
 } from "./platform";
 import { PROOF_STATUS } from "./proof";
 import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
-import { SHIPMENT_STATUS } from "./shipment";
+import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 
 export {
   APPROVAL_STATUS,
@@ -147,6 +148,7 @@ export {
   PAYABLE_STATUS,
   PAYMENT_STATUS,
   PAYOUT_STATUS,
+  POD_REVIEW_STATUS,
   POINTS_STATUS,
   PREFLIGHT_STATUS,
   PROMOTION_STATUS,
@@ -207,6 +209,7 @@ export const STATUS_MAPS = {
   orderGroup: ORDER_GROUP_STATUS,
   payable: PAYABLE_STATUS,
   payment: PAYMENT_STATUS,
+  podReview: POD_REVIEW_STATUS,
   points: POINTS_STATUS,
   payout: PAYOUT_STATUS,
   preflight: PREFLIGHT_STATUS,

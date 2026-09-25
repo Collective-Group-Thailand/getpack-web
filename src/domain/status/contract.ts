@@ -83,6 +83,9 @@ export type PointsStatus = "pending" | "available" | "expired" | "reversed";
 /** A company's monthly statement (D-125, B5.2). **Proposed** in contract request `admin.company-credit`. */
 export type StatementStatus = "open" | "paid" | "overdue";
 
+/** The review of a proof of delivery (D-013): an accepted factory POD makes the payout eligible. **Proposed** in contract request `admin.shipments`. */
+export type PodReviewStatus = "pending" | "accepted" | "rejected";
+
 /** A member of a B2B company account (D-120). **Source: schema** (`member_status`). */
 export type MemberStatus = "invited" | "active" | "removed";
 
