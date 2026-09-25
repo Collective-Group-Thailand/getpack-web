@@ -139,6 +139,8 @@ export const preflightStatus = z
 export const documentType = z.enum(["qt", "iv", "tr", "rc", "cn", "dn"]).meta({ id: "CustomerDocumentType" });
 export const documentStatus = z.enum(["issued", "void"]).meta({ id: "CustomerDocumentStatus" });
 
+export const artworkSource = z.enum(["upload", "designer", "design_service"]).meta({ id: "ArtworkSource" });
+
 /** How urgent a row is, judged by the API against the promise and the business calendar. */
 export const urgency = z.enum(["normal", "due_soon", "late"]).meta({ id: "OrderUrgency" });
 
@@ -316,7 +318,7 @@ export const artworkSubmission = z
   .object({
     id: uuid(),
     versionNo: z.number().int(),
-    source: z.enum(["upload", "designer", "design_service"]).meta({ id: "ArtworkSource" }),
+    source: artworkSource,
     preflightStatus,
     findings: z.array(preflightFinding),
     files: z.array(fileRef()),
