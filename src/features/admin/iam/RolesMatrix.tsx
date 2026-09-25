@@ -47,7 +47,10 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
         label={t("audience")}
         value={audience}
         onValueChange={setAudience}
-        options={(["staff", "partner", "customer"] as const).map((value) => ({ value, label: t(`audiences.${value}`) }))}
+        options={(["staff", "partner", "customer"] as const).map((value) => ({
+          value,
+          label: t(`audiences.${value}`),
+        }))}
       />
       <p className="text-muted flex items-center gap-2 text-sm">
         <Icon name="shield-alert" size={16} className="text-warning" />
@@ -62,7 +65,11 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
                 {t("permission")}
               </th>
               {columns.map((role) => (
-                <th key={role.key} scope="col" className="text-muted px-2 py-2 text-center text-xs font-medium whitespace-nowrap">
+                <th
+                  key={role.key}
+                  scope="col"
+                  className="text-muted px-2 py-2 text-center text-xs font-medium whitespace-nowrap"
+                >
                   {roleLabel(role.key)}
                 </th>
               ))}
@@ -74,14 +81,20 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
               return (
                 <tr key={permission} className="border-border border-t">
                   <th scope="row" className="px-3 py-1.5 text-start font-mono text-xs font-normal whitespace-nowrap">
-                    {sensitive ? <Icon name="shield-alert" size={14} className="text-warning me-1 inline" aria-hidden /> : null}
+                    {sensitive ? (
+                      <Icon name="shield-alert" size={14} className="text-warning me-1 inline" aria-hidden />
+                    ) : null}
                     {permission}
                     {sensitive ? <span className="sr-only">{t("sensitive")}</span> : null}
                   </th>
                   {columns.map((role) =>
                     role.permissions.includes(permission) ? (
                       <td key={role.key} className="px-2 py-1.5 text-center">
-                        <Icon name="check" size={16} className={sensitive ? "text-warning inline" : "text-success inline"} />
+                        <Icon
+                          name="check"
+                          size={16}
+                          className={sensitive ? "text-warning inline" : "text-success inline"}
+                        />
                         <span className="sr-only">{t("granted")}</span>
                       </td>
                     ) : (

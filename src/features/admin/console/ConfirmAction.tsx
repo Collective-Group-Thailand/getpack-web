@@ -61,7 +61,10 @@ function ConfirmActionBody({
   const [missingReason, setMissingReason] = useState(false);
 
   async function confirm() {
-    if ((reason?.required && !text.trim()) || (reason?.minLength && text.trim().length > 0 && text.trim().length < reason.minLength)) {
+    if (
+      (reason?.required && !text.trim()) ||
+      (reason?.minLength && text.trim().length > 0 && text.trim().length < reason.minLength)
+    ) {
       setMissingReason(true);
       return;
     }
@@ -69,6 +72,9 @@ function ConfirmActionBody({
     try {
       await onConfirm({ idempotencyKey, reason: text.trim() });
       onOpenChange(false);
+    } catch {
+      // The caller has already said what went wrong (a toast, an inline error). The dialog stays
+      // open with the same key, so trying again replays the same intent rather than a new one.
     } finally {
       setBusy(false);
     }
@@ -95,7 +101,13 @@ function ConfirmActionBody({
           hint={reason.hint}
           required={reason.required}
           requiredLabel={tCommon("state.required")}
-          error={missingReason ? (reason.minLength ? t("reasonTooShort", { min: reason.minLength }) : t("reasonRequired")) : undefined}
+          error={
+            missingReason
+              ? reason.minLength
+                ? t("reasonTooShort", { min: reason.minLength })
+                : t("reasonRequired")
+              : undefined
+          }
           className="mt-4"
         >
           <Textarea

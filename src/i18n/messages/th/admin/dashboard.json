@@ -1,0 +1,75 @@
+{
+  "title": "ภาพรวมงาน",
+  "greeting": "สวัสดี {name}",
+  "queuesTitle": "คิวงานของคุณ",
+  "noQueuesTitle": "ไม่มีคิวงานสำหรับบทบาทของคุณ",
+  "noQueuesBody": "เมนูด้านซ้ายมีหน้าจอที่คุณเปิดได้ทั้งหมด",
+  "overdue": "เกินกำหนด {count} รายการ",
+  "nothingDue": "ไม่มีงานใกล้ครบกำหนด",
+  "approvalsTitle": "รอคุณอนุมัติ",
+  "allApprovals": "ดูทั้งหมด",
+  "noApprovals": "ไม่มีคำขอรอคุณอนุมัติ",
+  "queues": {
+    "approvals": {
+      "inbox": "รอฉันอนุมัติ"
+    },
+    "orders": {
+      "waiting_payment": "รอชำระ",
+      "slip_review": "รอตรวจสลิป",
+      "awaiting_artwork": "รอไฟล์",
+      "ready_to_produce": "รอเริ่มผลิต",
+      "due_soon": "ใกล้ครบกำหนดส่ง",
+      "late": "ล่าช้า"
+    },
+    "rfq": {
+      "new": "คำขอราคาใหม่",
+      "awaiting_factory": "รอราคาจากโรงงาน"
+    },
+    "prepress": {
+      "queue": "งานก่อนพิมพ์",
+      "design_rounds": "งานออกแบบ"
+    },
+    "production": {
+      "at_risk": "งานผลิตเสี่ยงล่าช้า",
+      "awaiting_acceptance": "รอโรงงานรับงาน",
+      "inspections": "งานตรวจคุณภาพ"
+    },
+    "shipments": {
+      "exceptions": "การจัดส่งมีปัญหา",
+      "pod_review": "รอตรวจหลักฐานส่งมอบ"
+    },
+    "claims": {
+      "new": "งานเคลมใหม่"
+    },
+    "partners": {
+      "proposals": "ข้อเสนอราคาโรงงาน",
+      "onboarding": "โรงงานรอพิจารณา"
+    },
+    "referrals": {
+      "review": "การแนะนำรอตรวจ"
+    },
+    "companies": {
+      "kyc": "บริษัทรอตรวจเอกสาร"
+    }
+  },
+  "policies": {
+    "discount_memo": "บันทึกขอส่วนลด",
+    "credit_limit": "วงเงินเครดิตลูกค้าองค์กร",
+    "payout_run": "รอบจ่ายเงินโรงงาน",
+    "price_proposal": "ข้อเสนอราคาโรงงาน",
+    "partner_activation": "เปิดใช้งานโรงงานพาร์ตเนอร์",
+    "partner_pricing_mode_change": "เปลี่ยนรูปแบบราคาโรงงาน",
+    "vendor_bank_account_change": "เปลี่ยนบัญชีธนาคารคู่ค้า",
+    "company_bank_account_change": "เปลี่ยนบัญชีธนาคารบริษัท",
+    "manual_journal": "บันทึกบัญชีด้วยมือ",
+    "credit_note": "ใบลดหนี้",
+    "refund": "คืนเงิน",
+    "write_off": "ตัดหนี้สูญ",
+    "posting_rule_change": "เปลี่ยนกฎการลงบัญชี",
+    "coa_change": "เปลี่ยนผังบัญชี",
+    "tax_setting_change": "เปลี่ยนค่าภาษี",
+    "document_series_change": "เปลี่ยนเลขชุดเอกสาร",
+    "company_order_approval": "อนุมัติคำสั่งซื้อของบริษัท",
+    "referral_review": "ตรวจสอบการแนะนำเพื่อน"
+  }
+}

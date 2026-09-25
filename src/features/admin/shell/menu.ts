@@ -74,7 +74,18 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
   { key: "supply", entries: ["partners", "catalogue"] },
   { key: "growth", entries: ["marketing", "customers", "companies"] },
   { key: "insights", entries: ["analytics", "reports", "finance"] },
-  { key: "system", entries: ["users", "settings", "feature_flags", "notification_templates", "notification_routes", "audit_logs", "outbox"] },
+  {
+    key: "system",
+    entries: [
+      "users",
+      "settings",
+      "feature_flags",
+      "notification_templates",
+      "notification_routes",
+      "audit_logs",
+      "outbox",
+    ],
+  },
 ];
 
 export interface SidebarGroup {

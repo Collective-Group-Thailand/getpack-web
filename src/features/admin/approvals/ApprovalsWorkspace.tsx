@@ -78,7 +78,13 @@ export function ApprovalsWorkspace({
           </Link>
         ))}
       </nav>
-      {active === "inbox" ? <Inbox initial={initialInbox} /> : active === "all" ? <AllRequests initial={initialAll} /> : <Delegations />}
+      {active === "inbox" ? (
+        <Inbox initial={initialInbox} />
+      ) : active === "all" ? (
+        <AllRequests initial={initialAll} />
+      ) : (
+        <Delegations />
+      )}
     </div>
   );
 }
@@ -138,7 +144,11 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
               </div>
               {item.amount ? <span className="font-medium tabular-nums">{format.thb(item.amount)}</span> : null}
               {item.pct ? <span className="text-muted tabular-nums">{format.percent(item.pct)}</span> : null}
-              <SlaTimer dueAt={step?.dueAt ?? null} format={sla} absolute={step?.dueAt ? format.dateTime(step.dueAt) : undefined} />
+              <SlaTimer
+                dueAt={step?.dueAt ?? null}
+                format={sla}
+                absolute={step?.dueAt ? format.dateTime(step.dueAt) : undefined}
+              />
             </Link>
           </li>
         );
@@ -172,7 +182,12 @@ function AllRequests({ initial }: { initial: InitialPage<Approval> | null }) {
       },
     },
     { id: "requester", header: t("columns.requester"), cell: (row) => row.requester.displayName },
-    { id: "amount", header: t("columns.amount"), numeric: true, cell: (row) => (row.amount ? format.thb(row.amount) : "—") },
+    {
+      id: "amount",
+      header: t("columns.amount"),
+      numeric: true,
+      cell: (row) => (row.amount ? format.thb(row.amount) : "—"),
+    },
     { id: "createdAt", header: t("columns.createdAt"), sortable: true, cell: (row) => <When at={row.createdAt} /> },
   ];
 
@@ -190,7 +205,12 @@ function AllRequests({ initial }: { initial: InitialPage<Approval> | null }) {
           kind: "select",
           options: Object.entries(APPROVAL_STATUS).map(([value, meta]) => ({ value, label: tStatus(meta.labelKey) })),
         },
-        { id: "policy", label: t("columns.policy"), kind: "select", options: POLICIES.map((value) => ({ value, label: policyLabel(value) })) },
+        {
+          id: "policy",
+          label: t("columns.policy"),
+          kind: "select",
+          options: POLICIES.map((value) => ({ value, label: policyLabel(value) })),
+        },
       ]}
     />
   );
@@ -215,9 +235,11 @@ function Delegations() {
 
   const revoke = useMutation({
     mutationFn: async (delegationId: string) =>
-      (await adminBrowserApis().contract.POST("/v1/admin/approval-delegations/{delegationId}/actions/revoke", {
-        params: { path: { delegationId } },
-      })).data,
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/approval-delegations/{delegationId}/actions/revoke", {
+          params: { path: { delegationId } },
+        })
+      ).data,
     onSuccess: () => {
       toast.success(t("revoked"));
       void queryClient.invalidateQueries({ queryKey: key });
@@ -226,7 +248,12 @@ function Delegations() {
   });
 
   const columns: DataTableColumn<Delegation>[] = [
-    { id: "delegate", header: t("delegate"), cell: (row) => (row.delegator.id === actor.id ? row.delegate.displayName : t("from", { name: row.delegator.displayName })) },
+    {
+      id: "delegate",
+      header: t("delegate"),
+      cell: (row) =>
+        row.delegator.id === actor.id ? row.delegate.displayName : t("from", { name: row.delegator.displayName }),
+    },
     { id: "policy", header: t("policy"), cell: (row) => (row.policy ? policyLabel(row.policy) : t("allPolicies")) },
     { id: "validFrom", header: t("validFrom"), cell: (row) => <When at={row.validFrom} absoluteOnly /> },
     { id: "validTo", header: t("validTo"), cell: (row) => <When at={row.validTo} absoluteOnly /> },
@@ -289,7 +316,15 @@ function bangkokInstant(local: string): string {
   return local.length === 16 ? `${local}:00+07:00` : local;
 }
 
-function CreateDelegation({ onClose, onCreated, closeLabel }: { onClose: () => void; onCreated: () => void; closeLabel: string }) {
+function CreateDelegation({
+  onClose,
+  onCreated,
+  closeLabel,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+  closeLabel: string;
+}) {
   const t = useTranslations("approvals.delegations");
   const tCommon = useTranslations("common");
   const policyLabel = usePolicyLabel();
@@ -304,21 +339,24 @@ function CreateDelegation({ onClose, onCreated, closeLabel }: { onClose: () => v
 
   const people = useQuery({
     queryKey: queryKeys.list("admin", "staff_directory", { q: query }),
-    queryFn: () => browserRequests().call("GET /v1/admin/staff-directory", { query: { q: query || undefined, limit: 20 } }),
+    queryFn: () =>
+      browserRequests().call("GET /v1/admin/staff-directory", { query: { q: query || undefined, limit: 20 } }),
     staleTime: STALE_TIME.reference,
   });
 
   const create = useMutation({
     mutationFn: async () =>
-      (await adminBrowserApis().contract.POST("/v1/admin/approval-delegations", {
-        body: {
-          delegateId: delegate!.value,
-          reason: reason.trim(),
-          validFrom: bangkokInstant(validFrom),
-          validTo: bangkokInstant(validTo),
-          ...(policy === "__all" ? {} : { policy }),
-        },
-      })).data,
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/approval-delegations", {
+          body: {
+            delegateId: delegate!.value,
+            reason: reason.trim(),
+            validFrom: bangkokInstant(validFrom),
+            validTo: bangkokInstant(validTo),
+            ...(policy === "__all" ? {} : { policy }),
+          },
+        })
+      ).data,
     onSuccess: onCreated,
   });
 
@@ -353,7 +391,11 @@ function CreateDelegation({ onClose, onCreated, closeLabel }: { onClose: () => v
             loading={people.isFetching}
             options={(people.data?.data ?? [])
               .filter((person) => person.id !== actor.id)
-              .map((person) => ({ value: person.id, label: person.displayName, description: person.roles.map(roleLabel).join(", ") }))}
+              .map((person) => ({
+                value: person.id,
+                label: person.displayName,
+                description: person.roles.map(roleLabel).join(", "),
+              }))}
             placeholder={t("delegatePlaceholder")}
             labels={{ loading: tCommon("state.loading"), empty: t("noPeople"), clear: t("clearDelegate") }}
           />
@@ -362,7 +404,10 @@ function CreateDelegation({ onClose, onCreated, closeLabel }: { onClose: () => v
           <Select
             value={policy}
             onValueChange={setPolicy}
-            options={[{ value: "__all", label: t("allPolicies") }, ...POLICIES.map((value) => ({ value, label: policyLabel(value) }))]}
+            options={[
+              { value: "__all", label: t("allPolicies") },
+              ...POLICIES.map((value) => ({ value, label: policyLabel(value) })),
+            ]}
           />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">

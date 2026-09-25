@@ -21,8 +21,24 @@ import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
-import { adminBrowserApis, ConfirmAction, problemMessage, QueryError, useActor, useCan, useRoleLabel, useSlaFormat } from "../console";
-import { CRITICAL_FLAGS, currentStep, decisionBlocker, PAYLOAD_KINDS, POLICY_ICONS, type Approval } from "./presentation";
+import {
+  adminBrowserApis,
+  ConfirmAction,
+  problemMessage,
+  QueryError,
+  useActor,
+  useCan,
+  useRoleLabel,
+  useSlaFormat,
+} from "../console";
+import {
+  CRITICAL_FLAGS,
+  currentStep,
+  decisionBlocker,
+  PAYLOAD_KINDS,
+  POLICY_ICONS,
+  type Approval,
+} from "./presentation";
 
 async function fetchApproval(requestId: string): Promise<Approval> {
   const { data } = await adminBrowserApis().contract.GET("/v1/admin/approvals/{requestId}", {
@@ -54,9 +70,18 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
     mutationFn: async ({ kind, comment }: { kind: Decision; comment: string }) => {
       const api = adminBrowserApis().contract;
       const path = { params: { path: { requestId } } };
-      if (kind === "approve") return (await api.POST("/v1/admin/approvals/{requestId}/actions/approve", { ...path, body: comment ? { comment } : {} })).data;
-      if (kind === "reject") return (await api.POST("/v1/admin/approvals/{requestId}/actions/reject", { ...path, body: { comment } })).data;
-      return (await api.POST("/v1/admin/approvals/{requestId}/actions/withdraw", { ...path, body: { reason: comment } })).data;
+      if (kind === "approve")
+        return (
+          await api.POST("/v1/admin/approvals/{requestId}/actions/approve", {
+            ...path,
+            body: comment ? { comment } : {},
+          })
+        ).data;
+      if (kind === "reject")
+        return (await api.POST("/v1/admin/approvals/{requestId}/actions/reject", { ...path, body: { comment } })).data;
+      return (
+        await api.POST("/v1/admin/approvals/{requestId}/actions/withdraw", { ...path, body: { reason: comment } })
+      ).data;
     },
     onSuccess: (updated, { kind }) => {
       toast.success(t(`decided.${kind}`));
@@ -91,7 +116,14 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
               : null;
     return {
       term: t.has(`fields.${key}`) ? t(`fields.${key}`) : key,
-      description: text === null ? <JsonView value={value} label={key} /> : kind === "code" ? <span className="font-mono">{text}</span> : text,
+      description:
+        text === null ? (
+          <JsonView value={value} label={key} />
+        ) : kind === "code" ? (
+          <span className="font-mono">{text}</span>
+        ) : (
+          text
+        ),
       wide: key === "reason" || text === null,
     };
   });
@@ -99,7 +131,12 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
-        breadcrumbs={<Breadcrumbs label={t("breadcrumb")} items={[{ label: t("title"), href: "/approvals" }, { label: policyLabel }]} />}
+        breadcrumbs={
+          <Breadcrumbs
+            label={t("breadcrumb")}
+            items={[{ label: t("title"), href: "/approvals" }, { label: policyLabel }]}
+          />
+        }
         title={
           <span className="flex items-center gap-2">
             <Icon name={POLICY_ICONS[approval.policy] ?? "stamp"} size={22} className="text-muted" />
@@ -108,7 +145,10 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
         }
         meta={
           <>
-            <StatusBadge meta={statusMeta(APPROVAL_STATUS, approval.status)} label={tStatus(statusMeta(APPROVAL_STATUS, approval.status).labelKey)} />
+            <StatusBadge
+              meta={statusMeta(APPROVAL_STATUS, approval.status)}
+              label={tStatus(statusMeta(APPROVAL_STATUS, approval.status).labelKey)}
+            />
             {approval.flags.map((flag) => (
               <Badge key={flag} tone={CRITICAL_FLAGS.has(flag) ? "danger" : "warning"} icon="warning">
                 {t.has(`flags.${flag}`) ? t(`flags.${flag}`) : flag}
@@ -156,12 +196,21 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
             </CardHeader>
             <DescriptionList
               items={[
-                ...(approval.amount ? [{ term: t("amount"), description: <span className="tabular-nums">{format.thb(approval.amount)}</span> }] : []),
+                ...(approval.amount
+                  ? [
+                      {
+                        term: t("amount"),
+                        description: <span className="tabular-nums">{format.thb(approval.amount)}</span>,
+                      },
+                    ]
+                  : []),
                 ...(approval.pct ? [{ term: t("pct"), description: format.percent(approval.pct) }] : []),
                 { term: t("requester"), description: approval.requester.displayName },
                 { term: t("createdAt"), description: <When at={approval.createdAt} /> },
                 { term: t("expiresAt"), description: <When at={approval.expiresAt} /> },
-                ...(approval.decidedAt ? [{ term: t("decidedAt"), description: <When at={approval.decidedAt} /> }] : []),
+                ...(approval.decidedAt
+                  ? [{ term: t("decidedAt"), description: <When at={approval.decidedAt} /> }]
+                  : []),
               ]}
             />
           </Card>
@@ -171,7 +220,11 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
               <CardTitle>{t("payload")}</CardTitle>
             </CardHeader>
             <p className="text-muted mb-3 text-sm">{t("payloadHint")}</p>
-            {payloadItems.length > 0 ? <DescriptionList items={payloadItems} /> : <p className="text-muted text-sm">{t("noPayload")}</p>}
+            {payloadItems.length > 0 ? (
+              <DescriptionList items={payloadItems} />
+            ) : (
+              <p className="text-muted text-sm">{t("noPayload")}</p>
+            )}
           </Card>
         </div>
 
@@ -241,7 +294,11 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
         reason={
           decision === "approve"
             ? { label: t("comment"), hint: t("commentHint") }
-            : { label: decision === "withdraw" ? t("withdrawReason") : t("rejectReason"), required: true, hint: t("commentHint") }
+            : {
+                label: decision === "withdraw" ? t("withdrawReason") : t("rejectReason"),
+                required: true,
+                hint: t("commentHint"),
+              }
         }
         onConfirm={async ({ reason }) => {
           await decide.mutateAsync({ kind: decision!, comment: reason });

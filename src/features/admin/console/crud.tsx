@@ -40,7 +40,6 @@ export interface ResourceConfig<TRow extends object, TValues extends FieldValues
   manage?: string;
   form?: {
     schema: z.ZodType<TValues, TValues>;
-    fields: readonly FieldDef<TValues>[];
     empty: TValues;
     toValues: (row: TRow) => TValues;
     create?: (apis: AdminApis, values: TValues) => Promise<unknown>;
@@ -59,6 +58,11 @@ export interface CrudListProps<TRow extends object, TValues extends FieldValues>
   config: ResourceConfig<TRow, TValues>;
   columns: readonly DataTableColumn<TRow>[];
   caption: string;
+  /**
+   * The form's fields. A prop rather than part of the resource, because their labels are
+   * translated at render time and the resource is a plain, server-importable declaration.
+   */
+  fields?: readonly FieldDef<TValues>[];
   filters?: readonly FilterDef[];
   searchLabel?: string;
   initial?: InitialPage<TRow> | null;
@@ -78,6 +82,7 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
   config,
   columns,
   caption,
+  fields = [],
   filters,
   searchLabel,
   initial,
@@ -151,6 +156,7 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
       {config.form && editing ? (
         <ResourceSheet
           form={config.form}
+          fields={fields}
           row={editing.row}
           title={
             editing.row ? (labels.editTitle?.(editing.row) ?? t("editTitle")) : (labels.createTitle ?? t("createTitle"))
@@ -190,12 +196,14 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
 
 function ResourceSheet<TRow extends object, TValues extends FieldValues>({
   form: definition,
+  fields,
   row,
   title,
   onClose,
   onSaved,
 }: {
   form: NonNullable<ResourceConfig<TRow, TValues>["form"]>;
+  fields: readonly FieldDef<TValues>[];
   row: TRow | null;
   title: string;
   onClose: () => void;
@@ -218,7 +226,7 @@ function ResourceSheet<TRow extends object, TValues extends FieldValues>({
     onError: (error) => {
       if (isApiError(error) && error.errors.length > 0) {
         const left = applyProblemToForm(error, (path, message) => form.setError(path as never, message), {
-          fields: definition.fields.map((field) => field.name),
+          fields: fields.map((field) => field.name),
         });
         setUnplaced(left.map((item) => item.message));
       } else {
@@ -265,7 +273,7 @@ function ResourceSheet<TRow extends object, TValues extends FieldValues>({
             </ul>
           </Callout>
         ) : null}
-        <FormFields control={form.control} fields={definition.fields} />
+        <FormFields control={form.control} fields={fields} />
       </form>
     </Sheet>
   );

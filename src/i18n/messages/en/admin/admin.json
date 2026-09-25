@@ -1,9 +1,5 @@
 {
   "zone": "Back office",
-  "placeholder": {
-    "heading": "Admin zone",
-    "body": "The frame for this zone is ready; the working screens arrive next."
-  },
   "shell": {
     "nav": "Main navigation",
     "collapseNav": "Collapse navigation",

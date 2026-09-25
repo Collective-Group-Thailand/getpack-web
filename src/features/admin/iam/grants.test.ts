@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { grantableRoles, missingPermissions, sodConflicts, type Role, type SodRule, type User } from "./grants";
 
-const role = (key: string, audience: Role["audience"], permissions: string[] = [], scopeType: Role["scopeType"] = "platform"): Role => ({
+const role = (
+  key: string,
+  audience: Role["audience"],
+  permissions: string[] = [],
+  scopeType: Role["scopeType"] = "platform",
+): Role => ({
   key,
   audience,
   scopeType,
@@ -20,12 +25,36 @@ const user = (kind: User["kind"], roles: string[]): User => ({
   status: "active",
   lastLoginAt: null,
   createdAt: "2026-09-22T09:00:00+07:00",
-  roles: roles.map((r, i) => ({ id: `g${i}`, role: r, scopeType: "platform", scopeId: null, reason: "x", validFrom: "2026-09-22T09:00:00+07:00", validTo: null })),
+  roles: roles.map((r, i) => ({
+    id: `g${i}`,
+    role: r,
+    scopeType: "platform",
+    scopeId: null,
+    reason: "x",
+    validFrom: "2026-09-22T09:00:00+07:00",
+    validTo: null,
+  })),
 });
 
 const AUDITOR_RULES: SodRule[] = [
-  { id: "1", kind: "role_pair", left: "auditor", right: "finance", enforcement: "block", description: "D-168", decisions: ["D-168"] },
-  { id: "2", kind: "action_pair", left: "refund.request", right: "refund.approve", enforcement: "block", description: "§8", decisions: [] },
+  {
+    id: "1",
+    kind: "role_pair",
+    left: "auditor",
+    right: "finance",
+    enforcement: "block",
+    description: "D-168",
+    decisions: ["D-168"],
+  },
+  {
+    id: "2",
+    kind: "action_pair",
+    left: "refund.request",
+    right: "refund.approve",
+    enforcement: "block",
+    description: "§8",
+    decisions: [],
+  },
 ];
 
 describe("role grants", () => {

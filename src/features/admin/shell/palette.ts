@@ -38,7 +38,11 @@ const MIN_QUERY = 2;
  * by code, phone, e-mail): the screens this person may open, matched on their translated
  * names, then the records the API finds — which only the API may decide this person can see.
  */
-export function usePaletteItems(query: string, screens: readonly SidebarItem[], close: () => void): {
+export function usePaletteItems(
+  query: string,
+  screens: readonly SidebarItem[],
+  close: () => void,
+): {
   items: CommandItem[];
   loading: boolean;
 } {

@@ -1,0 +1,75 @@
+{
+  "title": "Your work",
+  "greeting": "Hello, {name}",
+  "queuesTitle": "Your queues",
+  "noQueuesTitle": "No queues for your role",
+  "noQueuesBody": "The menu on the left has every screen you can open.",
+  "overdue": "{count} overdue",
+  "nothingDue": "Nothing due soon",
+  "approvalsTitle": "Waiting for your approval",
+  "allApprovals": "See all",
+  "noApprovals": "Nothing is waiting for you",
+  "queues": {
+    "approvals": {
+      "inbox": "Waiting for my approval"
+    },
+    "orders": {
+      "waiting_payment": "Awaiting payment",
+      "slip_review": "Slips to check",
+      "awaiting_artwork": "Awaiting artwork",
+      "ready_to_produce": "Ready to produce",
+      "due_soon": "Due soon",
+      "late": "Late"
+    },
+    "rfq": {
+      "new": "New RFQs",
+      "awaiting_factory": "Awaiting factory price"
+    },
+    "prepress": {
+      "queue": "Prepress queue",
+      "design_rounds": "Design rounds"
+    },
+    "production": {
+      "at_risk": "Jobs at risk",
+      "awaiting_acceptance": "Awaiting factory acceptance",
+      "inspections": "QC inspections"
+    },
+    "shipments": {
+      "exceptions": "Shipment exceptions",
+      "pod_review": "POD to review"
+    },
+    "claims": {
+      "new": "New claims"
+    },
+    "partners": {
+      "proposals": "Price proposals",
+      "onboarding": "Factories to review"
+    },
+    "referrals": {
+      "review": "Referrals to review"
+    },
+    "companies": {
+      "kyc": "Companies awaiting KYC"
+    }
+  },
+  "policies": {
+    "discount_memo": "Discount memo",
+    "credit_limit": "Company credit limit",
+    "payout_run": "Factory payout run",
+    "price_proposal": "Factory price proposal",
+    "partner_activation": "Partner activation",
+    "partner_pricing_mode_change": "Pricing mode change",
+    "vendor_bank_account_change": "Vendor bank account change",
+    "company_bank_account_change": "Company bank account change",
+    "manual_journal": "Manual journal",
+    "credit_note": "Credit note",
+    "refund": "Refund",
+    "write_off": "Write-off",
+    "posting_rule_change": "Posting rule change",
+    "coa_change": "Chart of accounts change",
+    "tax_setting_change": "Tax setting change",
+    "document_series_change": "Document series change",
+    "company_order_approval": "Company order approval",
+    "referral_review": "Referral review"
+  }
+}

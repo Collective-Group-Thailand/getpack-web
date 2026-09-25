@@ -65,13 +65,19 @@ describe("mergeIntoUrl", () => {
   it("rewrites the list's parameters and keeps the page's own", () => {
     const defaults = { filterKeys: ["status"] };
     const current = new URLSearchParams("tab=all&status=pending&page=3");
-    const next = mergeIntoUrl(current, updateListState(parseListState(current, defaults), { filters: { status: "approved" } }), defaults);
+    const next = mergeIntoUrl(
+      current,
+      updateListState(parseListState(current, defaults), { filters: { status: "approved" } }),
+      defaults,
+    );
     expect(Object.fromEntries(next)).toEqual({ tab: "all", status: "approved" });
   });
 
   it("drops a filter that was cleared", () => {
     const defaults = { filterKeys: ["status"] };
     const current = new URLSearchParams("tab=all&status=pending");
-    expect(mergeIntoUrl(current, updateListState(parseListState(current, defaults), { filters: {} }), defaults).toString()).toBe("tab=all");
+    expect(
+      mergeIntoUrl(current, updateListState(parseListState(current, defaults), { filters: {} }), defaults).toString(),
+    ).toBe("tab=all");
   });
 });
