@@ -968,10 +968,20 @@ export const platformHandlers = [
     if (!template) return notFound();
     const body = (await request.json()) as Schemas["AddTemplateVersionDto"];
     if (template.channel === "email" && !body.subject?.trim()) {
-      return problem(422, "validation.failed", "อีเมลต้องมีหัวเรื่อง", [{ path: "subject", code: "isNotEmpty", message: "อีเมลต้องมีหัวเรื่อง" }]);
+      return problem(422, "validation.failed", "อีเมลต้องมีหัวเรื่อง", [
+        { path: "subject", code: "isNotEmpty", message: "อีเมลต้องมีหัวเรื่อง" },
+      ]);
     }
-    const versionNo = Math.max(0, ...template.versions.filter((v) => v.locale === body.locale).map((v) => v.versionNo)) + 1;
-    template.versions.push({ locale: body.locale, versionNo, status: "draft", subject: body.subject ?? null, body: body.body, publishedAt: null });
+    const versionNo =
+      Math.max(0, ...template.versions.filter((v) => v.locale === body.locale).map((v) => v.versionNo)) + 1;
+    template.versions.push({
+      locale: body.locale,
+      versionNo,
+      status: "draft",
+      subject: body.subject ?? null,
+      body: body.body,
+      publishedAt: null,
+    });
     return HttpResponse.json(template, { status: 201 });
   }),
   http.post("*/v1/admin/notification-templates/:templateId/actions/test-send", ({ request }) => {
