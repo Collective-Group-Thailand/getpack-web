@@ -514,6 +514,8 @@ export const adminOrderRequests = {
       channel: salesChannel.optional(),
       productType: z.string().optional(),
       factoryId: uuid().optional(),
+      customerId: uuid().optional(),
+      companyId: uuid().optional(),
       createdFrom: date().optional(),
       createdTo: date().optional(),
     }),

@@ -40,6 +40,12 @@ const vatOf = (net: number) => Math.round(net * 0.07);
 
 /* -------------------------------------------------------------------------------- customers */
 
+let companyMembers: (companyId: string) => string[] = () => [];
+/** The companies mock says who belongs to a company, for the orders filter (no import cycle). */
+export function setCompanyMembers(lookup: (companyId: string) => string[]): void {
+  companyMembers = lookup;
+}
+
 const FAKE_CUSTOMERS: [string, "individual" | "juristic", string | null][] = [
   ["ร้านกาแฟตัวอย่าง", "individual", null],
   ["บริษัท ตัวอย่างขนม จำกัด", "juristic", "บริษัท ตัวอย่างขนม จำกัด"],
@@ -852,6 +858,8 @@ export const commerceHandlers = [
       .filter((order) => !query.artworkStatus || order.artworkStatus === query.artworkStatus)
       .filter((order) => !query.channel || order.channel === query.channel)
       .filter((order) => !query.productType || order.productType.code === query.productType)
+      .filter((order) => !query.customerId || order.customer.id === query.customerId)
+      .filter((order) => !query.companyId || companyMembers(query.companyId).includes(order.customer.id))
       .filter((order) => !query.createdFrom || order.createdAt.slice(0, 10) >= query.createdFrom)
       .filter((order) => !query.createdTo || order.createdAt.slice(0, 10) <= query.createdTo)
       .filter((order) =>

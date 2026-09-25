@@ -6,8 +6,10 @@
  * entry is well-formed and not already in the contract.
  */
 
+import { adminCompanyRequests } from "./admin-companies";
 import { adminConsoleRequests } from "./admin-console";
 import { adminCustomerRequests } from "./admin-customers";
+import { adminMarketingRequests } from "./admin-marketing";
 import { adminOrderRequests } from "./admin-orders";
 import { adminPartnerRequests } from "./admin-partners";
 import { adminPrepressRequests } from "./admin-prepress";
@@ -22,6 +24,8 @@ export const REQUESTS = {
   ...adminRfqRequests,
   ...adminPrepressRequests,
   ...adminPartnerRequests,
+  ...adminMarketingRequests,
+  ...adminCompanyRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;
