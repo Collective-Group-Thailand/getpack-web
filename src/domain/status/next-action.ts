@@ -62,6 +62,17 @@ const ACTION_META: Record<string, NextActionMeta> = {
   confirm_receipt: { tone: "success", icon: "package-check", labelKey: "action.confirmReceipt" },
   reorder: { tone: "neutral", icon: "refresh", labelKey: "action.reorder" },
   claim: { tone: "warning", icon: "flag", labelKey: "action.claim" },
+  // Work-queue verbs (F2 2.3 RFQ desk first; the same verbs will serve prepress and claims).
+  start_review: { tone: "primary", icon: "eye", labelKey: "action.startReview" },
+  assign: { tone: "neutral", icon: "user-plus", labelKey: "action.assign" },
+  request_info: { tone: "warning", icon: "help", labelKey: "action.requestInfo" },
+  decline: { tone: "danger", icon: "ban", labelKey: "action.decline" },
+  create_order: { tone: "primary", icon: "cart", labelKey: "action.createOrder" },
+  request_factory_cost: { tone: "primary", icon: "factory", labelKey: "action.requestFactoryCost" },
+  compose_quote: { tone: "primary", icon: "edit", labelKey: "action.composeQuote" },
+  edit_quote: { tone: "neutral", icon: "edit", labelKey: "action.editQuote" },
+  send_quote: { tone: "primary", icon: "send", labelKey: "action.sendQuote" },
+  record_acceptance: { tone: "success", icon: "check", labelKey: "action.recordAcceptance" },
 };
 
 /** Falls back to something visible and pressable rather than dropping the action. */

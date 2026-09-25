@@ -13,6 +13,7 @@ export { download, ExportButton } from "./ExportButton";
 export { FormFields, type FieldDef } from "./fields";
 export { FilterControl, ListSearch, useDebouncedValue, type FilterDef } from "./filters";
 export { ImportWizard } from "./ImportWizard";
+export { actionVerb, NextActionBar, type NextActionBarProps } from "./NextActionBar";
 export { parseListState, serialiseListState, toApiQuery, type ListDefaults, type ListState } from "./list-state";
 export { problemMessage, QueryError } from "./QueryError";
 export { QueueTabs, useQueues, type QueueTab } from "./queues";
@@ -20,6 +21,7 @@ export { asPage, defineList, shortRef, type InitialPage, type ListResource } fro
 export { ResourceList, type ResourceListProps } from "./ResourceList";
 export { SavedViews } from "./SavedViews";
 export { useListState } from "./useListState";
+export { useProductTypes } from "./useProductTypes";
 export { useSlaFormat } from "./useSlaFormat";
 export { useRoleLabel } from "./roles";
 export { StatusChip } from "./StatusChip";

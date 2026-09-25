@@ -345,6 +345,16 @@
     "confirmReceipt": "ยืนยันรับของ",
     "reorder": "สั่งซ้ำ",
     "claim": "แจ้งเคลม",
+    "startReview": "เริ่มพิจารณา",
+    "assign": "มอบหมาย",
+    "requestInfo": "ขอข้อมูลเพิ่ม",
+    "decline": "ปฏิเสธ",
+    "createOrder": "สร้างคำสั่งซื้อ",
+    "requestFactoryCost": "ขอราคาจากโรงงาน",
+    "composeQuote": "จัดทำใบเสนอราคา",
+    "editQuote": "แก้ไขฉบับร่าง",
+    "sendQuote": "ส่งใบเสนอราคา",
+    "recordAcceptance": "บันทึกการตอบรับ",
     "unknown": "ดำเนินการ"
   }
 }

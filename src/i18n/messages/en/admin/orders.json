@@ -307,8 +307,6 @@
     }
   },
   "actions": {
-    "more": "More actions",
-    "unsupported": "Not available on this screen yet",
     "failed": "That did not work",
     "restate": "Order {code} for {customer}, {amount}.",
     "labels": {
