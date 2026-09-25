@@ -14,6 +14,65 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-25 | **F2 Deliverable 2.2** — orders & CS desk | Nine contract-request groups (orders, order notes and actions, customers, geo, CS calculators, quotations, discount memos, CS create-order) with stateful mocks; the six CS queues; the order screen (sticky header with the API's next action, ten tabs, slip review, manual start, cancel, notes with @mentions, unified timeline, order groups); the seven D-100 calculators with a factory × print × quantity comparison and the D-052 memo threshold from the API; quotations, discount memos, create-order with split delivery; `keys-used` and `server-imports` unit gates. 562 unit, 113 e2e | 2.3–2.8 | See the notes under the F2.2 heading |
 | 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted packio-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
 | 2026-09-25 | **F2 Deliverable 2.4** — prepress & design services | Six contract-request groups (B4.1) with a mock on the commerce orders; the prepress desk by stage with SLA; the per-order workspace: preflight report by severity with accept/send back (D-070), proof versions with upload & send and decision evidence, annotation page map with reply/resolve, template sending and dieline drawing (501 engine-unavailable handled), hired-design rounds with free-round meter and next-round fee (D-071), mockup job (D-072); read-only `DesignViewer` in the shared designer + "working copy"; shared `AssignDialog`; submission & drawing status maps. 568 unit, 138 e2e | 2.5–2.8 | See the notes under the F2.4 heading |
+| 2026-09-26 | **F2 Deliverable 2.5** — catalogue & CMS | On the **published** B2.1 contract (no contract requests): a stateful table mock (ETag/If-Match, archive by status) seeded from the contract's own list examples, now emitted by `gen:api`; a typed table registry of ~40 catalogue, CMS and geography tables driving one CRUD screen; product types with the reasoned quote-mode action (D-100); Excel import with preview → confirm by hash (D-005, D-170); home-section ordering; articles with a TipTap `RichTextEditor` in `src/ui`; catalogue/CMS maps by section; `catalog.import`, `seo.manage`, `geography.manage` from `docs/rbac.md`. 576 unit, 154 e2e | 2.6–2.8 | See the notes under the F2.5 heading |
+
+---
+
+## F2 Deliverable 2.5 — 2026-09-26
+
+Catalogue and CMS. Same worktree and branch. Unlike 2.2–2.4 this deliverable runs on endpoints
+packio-api has **published** (B2.1, adopted in 2.3), so there are no contract requests: every
+call is the contract's, and the mocks stand in for it.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A catalogue screen inventing a field the API does not have | `define<RowDto, CreateDto, UpdateDto>()` in `catalogue/tables.ts` type-checks every column against the row DTO and every form field against the create DTO; fields missing from the update DTO are sent on create only |
+| A label missing for a field, table or enum value (looked up by template key, which the keys gate checks by prefix only) | `catalogue/tables.test.ts` walks the registry against both locales' messages |
+| An edit silently overwriting a colleague's | every update reads the row's `ETag` and `PATCH`es under `If-Match`; the mock answers `428` without it and `412` when stale, as the contract does |
+| `""` sent where the contract means "none" | the form model sends `null` for cleared optional text, references and nullable enums, omits empty non-nullable enums and numbers, and sends date-times with the Bangkok offset (unit-tested) |
+| Deleting catalogue rows | rows archive through `status`; only the tables the contract gives a `DELETE` (banners, sections, articles, FAQs, videos) show one |
+| An import applied other than as previewed | confirm sends the preview's `previewSha256` with one idempotency key per preview; a workbook with invalid rows has no confirm button, and the mock refuses a mismatched hash (`409`) |
+| Switching a type to instant before its calculator ships (D-100) | quote mode is its own action with a reason and the code retyped; the API's `409` is shown as is |
+| Mock rows drifting from the contract | `pnpm gen:api` now also writes `mocks/generated/examples.ts` (each list endpoint's example rows), under the same drift gate; the table mocks seed from it |
+
+### Decisions taken, with reasons
+
+- **One table engine, not forty screens.** A.2.1 counts about sixty legacy CRUD screens; B2.1
+  publishes ~40 tables with the same operations. The registry calls the contract client with
+  the path as data (`catalogue/api.ts`), typed at the registry instead of at each call.
+- **The editor is a `src/ui` primitive, loaded on demand.** `RichTextEditor` takes its labels as
+  props and is not in the `src/ui` barrel, so TipTap never reaches the storefront's bundle; the
+  article page imports it with `next/dynamic`.
+- **Articles get a page, not a side sheet** — a long rich-text body does not fit one — and
+  categories are saved as the contract's separate replaceable list, under the article's new ETag.
+- **References render as names** (a material's family, a finish's group) from one page of up to
+  100 rows per referenced table; a reference outside that page still renders, as its id.
+- **Catalogue and CMS images upload with purpose `document`.** The contract's `FilePurpose` has
+  no image/content purpose (see open questions).
+- **The mock's seven calculator types remain `instant`** (2.3's assumption), so the quote-mode
+  refusal is demonstrated on the RFQ-only categories.
+
+### Deliberately not done
+
+- Catalogue-product images and options (`…/catalog-products/{id}/images`, `…/options`,
+  `…/patterns`), stock-product images and attributes, pattern flute types: sub-resources with
+  their own shapes, left for the screen that needs them (the product detail in F3's preview work,
+  or a 2.8 follow-up). The rows themselves are editable here.
+- An imageset manager (A.2.4) and drag-to-sort; sort is a number, and home sections have
+  move up/down, as A.2.4 asks.
+- The 2.1 generic `ImportWizard` (`admin.imports` contract request) is now unused: the backend
+  chose per-module import endpoints, starting with the catalogue's.
+
+### Open questions
+
+- **Backend**: `FilePurpose` needs a purpose for CMS and catalogue images and design fonts
+  (`content`?); `document` is used meanwhile.
+- **Backend**: retire or keep the generic `admin.imports` / `admin.exports` requests, now that
+  the catalogue has its own import and export?
+- **This repo**: `docs/decisions.md` stops at D-169; packio-api's copy has D-170–D-173 (geography
+  entry, factory entry, suggestion band, override approvals), which 2.5 and 2.6 rely on. Sync it.
 
 ---
 
