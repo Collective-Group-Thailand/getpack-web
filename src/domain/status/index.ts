@@ -33,6 +33,7 @@ export type {
   InstalmentStatus,
   JobStatus,
   KycStatus,
+  MemberStatus,
   MemoStatus,
   MilestoneStatus,
   OnboardingStepStatus,
@@ -40,6 +41,7 @@ export type {
   OrderStatus,
   PayableStatus,
   PaymentStatus,
+  PointsStatus,
   PayoutStatus,
   PreflightStatus,
   PromotionStatus,
@@ -65,6 +67,7 @@ import { CLAIM_STATUS } from "./claim";
 import {
   COMPANY_STATUS,
   CREDIT_STATUS,
+  MEMBER_STATUS,
   MEMO_STATUS,
   ORDER_GROUP_STATUS,
   QUOTE_STATUS,
@@ -83,7 +86,7 @@ import {
 } from "./fulfilment";
 import { INSTALMENT_STATUS } from "./instalment";
 import { JOB_STATUS } from "./job";
-import { CAMPAIGN_STATUS, COUPON_STATUS, PROMOTION_STATUS, REFERRAL_STATUS } from "./marketing";
+import { CAMPAIGN_STATUS, COUPON_STATUS, POINTS_STATUS, PROMOTION_STATUS, REFERRAL_STATUS } from "./marketing";
 import { ORDER_STATUS } from "./order";
 import {
   BANK_ACCOUNT_STATUS,
@@ -133,6 +136,7 @@ export {
   INSTALMENT_STATUS,
   JOB_STATUS,
   KYC_STATUS,
+  MEMBER_STATUS,
   MEMO_STATUS,
   MILESTONE_STATUS,
   ONBOARDING_STEP_STATUS,
@@ -141,6 +145,7 @@ export {
   PAYABLE_STATUS,
   PAYMENT_STATUS,
   PAYOUT_STATUS,
+  POINTS_STATUS,
   PREFLIGHT_STATUS,
   PROMOTION_STATUS,
   PROOF_STATUS,
@@ -191,6 +196,7 @@ export const STATUS_MAPS = {
   instalment: INSTALMENT_STATUS,
   job: JOB_STATUS,
   kyc: KYC_STATUS,
+  member: MEMBER_STATUS,
   memo: MEMO_STATUS,
   milestone: MILESTONE_STATUS,
   onboardingStep: ONBOARDING_STEP_STATUS,
@@ -198,6 +204,7 @@ export const STATUS_MAPS = {
   orderGroup: ORDER_GROUP_STATUS,
   payable: PAYABLE_STATUS,
   payment: PAYMENT_STATUS,
+  points: POINTS_STATUS,
   payout: PAYOUT_STATUS,
   preflight: PREFLIGHT_STATUS,
   promotion: PROMOTION_STATUS,

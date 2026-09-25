@@ -1,5 +1,5 @@
 import { defineStatusMap } from "./types";
-import type { CampaignStatus, CouponStatus, PromotionStatus, ReferralStatus } from "./contract";
+import type { CampaignStatus, CouponStatus, PointsStatus, PromotionStatus, ReferralStatus } from "./contract";
 
 /** A campaign with a THB budget; auto-stops when exhausted (D-154). */
 export const CAMPAIGN_STATUS = defineStatusMap<CampaignStatus>({
@@ -33,4 +33,12 @@ export const REFERRAL_STATUS = defineStatusMap<ReferralStatus>({
   rewarded: { tone: "success", icon: "gift", labelKey: "referral.rewarded" },
   rejected_fraud: { tone: "danger", icon: "shield-alert", labelKey: "referral.rejectedFraud" },
   under_review: { tone: "warning", icon: "eye", labelKey: "referral.underReview" },
+});
+
+/** One line of a customer's points ledger (D-132, D-133). */
+export const POINTS_STATUS = defineStatusMap<PointsStatus>({
+  pending: { tone: "info", icon: "clock", labelKey: "points.pending" },
+  available: { tone: "success", icon: "check", labelKey: "points.available" },
+  expired: { tone: "neutral", icon: "archive", labelKey: "points.expired" },
+  reversed: { tone: "warning", icon: "undo", labelKey: "points.reversed" },
 });

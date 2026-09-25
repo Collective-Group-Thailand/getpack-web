@@ -384,5 +384,16 @@
     "drawDieline": "วาดแบบกล่อง",
     "requoteDesign": "เสนอราคาออกแบบใหม่",
     "unknown": "ดำเนินการ"
+  },
+  "points": {
+    "pending": "รอเข้าบัญชี",
+    "available": "ใช้ได้",
+    "expired": "หมดอายุ",
+    "reversed": "ถูกยกเลิก"
+  },
+  "member": {
+    "invited": "เชิญแล้ว",
+    "active": "ใช้งาน",
+    "removed": "นำออกแล้ว"
   }
 }
