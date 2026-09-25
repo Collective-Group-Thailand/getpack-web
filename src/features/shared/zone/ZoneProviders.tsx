@@ -9,6 +9,8 @@ import { TooltipProvider } from "@/ui/components/Tooltip";
 import { ThemeProvider } from "@/ui/theme";
 import type { ThemeChoice } from "@/ui/theme/themes";
 
+import { HydrationMark } from "./HydrationMark";
+
 /**
  * The provider stack every zone's root layout wraps its tree in.
  *
@@ -44,6 +46,7 @@ export function ZoneProviders({
         <Toaster />
         {/* Renders nothing; reports field Web Vitals through this zone's BFF. */}
         <WebVitals zone={zone} />
+        <HydrationMark />
       </ThemeProvider>
     </NextIntlClientProvider>
   );

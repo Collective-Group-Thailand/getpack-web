@@ -264,3 +264,35 @@ describe("DescriptionList, Timeline, Meter", () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe("CommandPalette with grouped results", () => {
+  it("puts only options and named groups in the listbox, and stays axe-clean", async () => {
+    const { CommandPalette } = await import("./CommandPalette");
+    render(
+      <CommandPalette
+        open
+        onOpenChange={() => {}}
+        title="ค้นหาและสั่งงาน"
+        placeholder="พิมพ์เพื่อค้นหา"
+        loadingLabel="กำลังค้นหา"
+        emptyLabel="ไม่พบ"
+        value="สม"
+        onValueChange={() => {}}
+        items={[
+          { id: "s1", label: "ภาพรวม", group: "หน้าจอ", onSelect: () => {} },
+          { id: "s2", label: "ผู้ใช้และสิทธิ์", group: "หน้าจอ", onSelect: () => {} },
+          { id: "u1", label: "สมชาย ตัวอย่าง", hint: "somchai@packio.invalid", group: "ผู้ใช้", onSelect: () => {} },
+        ]}
+      />,
+    );
+
+    const listbox = screen.getByRole("listbox");
+    expect(within(listbox).getByRole("group", { name: "หน้าจอ" })).toBeInTheDocument();
+    expect(
+      within(within(listbox).getByRole("group", { name: "ผู้ใช้" })).getByRole("option", { name: /สมชาย/ }),
+    ).toBeInTheDocument();
+    expect(within(listbox).getAllByRole("option")).toHaveLength(3);
+    // Rendered into a portal, so scan the document rather than the container.
+    await expectNoA11yViolations(document.body);
+  });
+});

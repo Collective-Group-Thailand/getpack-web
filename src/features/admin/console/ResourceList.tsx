@@ -87,7 +87,7 @@ export function ResourceList<TRow extends object>({
   const currentViewQuery = viewQuery(state, defaults);
 
   return (
-    <section aria-label={caption} className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       <Toolbar label={t("toolbar")}>
         {searchLabel ? (
           <ListSearch
@@ -199,6 +199,6 @@ export function ResourceList<TRow extends object>({
           }}
         />
       ) : null}
-    </section>
+    </div>
   );
 }

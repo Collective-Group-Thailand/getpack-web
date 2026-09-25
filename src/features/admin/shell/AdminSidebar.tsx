@@ -31,7 +31,7 @@ export function AdminSidebar({ items, collapsed }: { items: readonly SidebarItem
           <div key={group.key}>
             <p
               id={headingId}
-              className={cn("text-subtle mb-1 px-3 text-xs font-medium tracking-wide", collapsed && "sr-only")}
+              className={cn("text-muted mb-1 px-3 text-xs font-medium tracking-wide", collapsed && "sr-only")}
             >
               {t(`menuGroups.${group.key}`)}
             </p>
