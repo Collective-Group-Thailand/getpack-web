@@ -153,6 +153,8 @@ export function RichTextEditor({ value, onChange, label, labels, id, className }
             label={labels[tool.key]}
             aria-pressed={tool.active === undefined ? undefined : tool.active}
             disabled={tool.disabled}
+            // Keep the caret in the text: a pointer press on a tool must not move focus to the button.
+            onMouseDown={(event) => event.preventDefault()}
             onClick={tool.run}
           />
         ))}

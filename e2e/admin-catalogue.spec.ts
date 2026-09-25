@@ -161,6 +161,8 @@ test.describe("site content", () => {
     const body = page.getByRole("textbox", { name: "เนื้อหาภาษาไทย" });
     await body.click();
     await page.getByRole("button", { name: "หัวข้อใหญ่" }).click();
+    await expect(body).toBeFocused();
+    await expect(body.locator("h2")).toHaveCount(1);
     await page.keyboard.type("หัวข้อแรก");
     await page.keyboard.press("Enter");
     await page.keyboard.type("ย่อหน้าแรกของบทความ");
