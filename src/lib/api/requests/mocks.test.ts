@@ -33,6 +33,11 @@ function asPersona(persona: string) {
 const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/saved-views": { resource: "order" },
   "GET /v1/admin/search": { q: "ตัวอย่าง" },
+  "GET /v1/admin/analytics/overview": { from: "2026-09-01", to: "2026-09-30" },
+  "GET /v1/admin/analytics/demand": { from: "2026-09-01", to: "2026-09-30", dimension: "province" },
+  "GET /v1/admin/analytics/unmet-demand": { from: "2026-09-01", to: "2026-09-30" },
+  "GET /v1/admin/analytics/factories": { from: "2026-09-01", to: "2026-09-30" },
+  "GET /v1/admin/analytics/campaigns": { from: "2026-09-01", to: "2026-09-30" },
 };
 
 const gets = (Object.keys(REQUESTS) as RequestKey[]).filter((key) => key.startsWith("GET ") && !key.includes("{"));

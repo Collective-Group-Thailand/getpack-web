@@ -366,12 +366,15 @@ export const jobSummary = z
   })
   .meta({ id: "JobSummaryDto" });
 
+/** Who carries it: the factory itself (D-013), or a Packio-booked fallback (D-114). */
+export const carrierCode = z.enum(["factory_fleet", "flash_express", "deliveree"]).meta({ id: "CarrierCode" });
+
 export const shipmentSummary = z
   .object({
     id: uuid(),
     shipmentNo: z.string(),
     status: shipmentStatus,
-    carrier: z.enum(["factory_fleet", "flash_express", "deliveree"]).meta({ id: "CarrierCode" }),
+    carrier: carrierCode,
     trackingNo: z.string().nullable(),
     destination: addressSnapshot,
     quantity: z.number().int(),
