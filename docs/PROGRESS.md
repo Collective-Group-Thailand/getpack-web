@@ -12,6 +12,68 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-24 | **F1 Deliverable 1.3** — shells, i18n, domain presentation, observability, quality gates | Eleven status maps behind one `contract.ts` indirection + the `status` namespace + `nextActions` renderer; messages split per zone with `react/jsx-no-literals`, ICU gates and the packaging glossary; the three zone shells (admin sidebar from `/v1/admin/me` entitlements, ⌘K, `?`, notification centre, storefront header/footer/bottom nav, partner shop-floor frame) and four new `src/ui` primitives; Sentry on all three runtimes with trace headers through the BFF and Web Vitals RUM; robots/sitemap/canonical/hreflang/JSON-LD on the indexed zone only; SSE→cache invalidation, web push, PWA manifest; typed D-102 funnel events behind a PDPA consent gate; five Lighthouse URL sets and Storybook visual snapshots. 481 unit, 78 e2e, 4 visual | F2–F6. The storefront's initial-JS budget is breached on every route type (see below) | See the notes under the F1.3 heading |
 | 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted packio-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
 | 2026-09-25 | **F2 Deliverable 2.2** — orders & CS desk | Nine contract-request groups (orders, order notes and actions, customers, geo, CS calculators, quotations, discount memos, CS create-order) with stateful mocks; the six CS queues; the order screen (sticky header with the API's next action, ten tabs, slip review, manual start, cancel, notes with @mentions, unified timeline, order groups); the seven D-100 calculators with a factory × print × quantity comparison and the D-052 memo threshold from the API; quotations, discount memos, create-order with split delivery; `keys-used` and `server-imports` unit gates. 562 unit, 113 e2e | 2.3–2.8 | See the notes under the F2.2 heading |
+| 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted packio-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
+
+---
+
+## F2 Deliverable 2.3 — 2026-09-25
+
+The RFQ workspace (D-100). Same worktree and branch. The endpoints are packio-api's B2.5, not built
+yet, so they are contract requests shaped by schema-design §3.5; the product types they refer to
+come from B2.1's **published** catalogue, adopted at the start of this deliverable.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| CS pricing an RFQ from the factory's cost (D-141) | a consultation response carries `suggestedUnitPrice` (sell, from the sell-margin table); `buyUnitPrice` is optional and the mock leaves it out unless the actor holds `factory_cost.read` — e2e checks both sides |
+| The browser computing a quote's money | the composer copies the API's suggested price as text and checks only its shape (`^\d+(\.\d{1,6})?$`); net, VAT, total, margin and the margin-floor flag appear only after the API has priced the saved draft |
+| A quote sent below the margin floor | the API blocks `rfq.send_quote` with a `disabledReason`; the header and the quotes tab say why |
+| Asking a factory that cannot make the category | candidate factories carry `capable` and a reason from the API (D-043); an incapable one is shown disabled, and the mock answers `422 rfq.factory_not_capable` if forced |
+| A decline that analytics cannot group | decline needs a code from `GET /v1/admin/unmet-demand-reasons` (D-102) and the RFQ code retyped |
+| An accepted RFQ leaving the order pipeline | acceptance creates a quotation (`source = rfq`) and "create order" opens CS create-order on it — the same path as an instant quote |
+| Two action bars drifting apart | `NextActionBar` in the console renders `nextActions` for orders and RFQs alike |
+
+### Decisions taken, with reasons
+
+- **Adopted packio-api's committed B2.1 contract, not its working tree.** The backend checkout
+  holds uncommitted B2.2 factory endpoints that are still changing; adopting them would pin this
+  app to a contract that may never be published. Adoption came first because the RFQ category
+  filter and the RFQ's product type both come from `GET /v1/admin/catalog/product-types`.
+- **The spec arrives rendered** (`spec: [{ label, value }]`), rendered by the API from the
+  category's `rfqSpecSchema` at the RFQ's schema version. The UI does not interpret JSON Schema;
+  an old RFQ keeps the labels it was submitted with.
+- **SLA: the API computes the deadline, the UI shows the target.** Rows carry the category's
+  target in business hours and `slaDueAt`; the timer stops at `firstResponseAt`, and a
+  customer-visible message, a request for information or a sent quote all count as a first
+  response — **assumed**, to confirm with B2.5.
+- **One draft per RFQ.** Composing is disabled while a draft exists (`edit_quote` instead);
+  sending supersedes the previously sent version. Simpler to reason about than parallel drafts,
+  and it matches `rfq_quotes.version_no`.
+- **CS records acceptance** by phone or LINE with a note, because legacy CS work happens there;
+  the customer-side acceptance is F3's.
+- **`catalog.read` follows the backend now that it is defined** (packio-api `docs/rbac.md`,
+  B2.1): CS, CS Lead, Prepress, Marketing and Partner Manager gain it, executives lose it. The
+  product-type filter is omitted for a role without it, rather than failing.
+- **The staff directory takes `permission=`**, so "assign" offers only people who can take an
+  RFQ instead of everyone and a 422.
+
+### Deliberately not done
+
+- Attaching files to thread messages (the request accepts `fileIds`; the upload control waits for
+  2.4, which builds the proof-upload flow).
+- Customer-facing RFQ screens and the customer's own acceptance: F3.
+- The partner side of a consultation (answering with buy prices): F5.
+
+### Open questions
+
+- **Backend**: `admin.rfqs`, `admin.rfq-messages`, `admin.rfq-actions`, `admin.unmet-demand-reasons`,
+  `admin.rfq-consultations`, `admin.rfq-quotes`, plus the `source`/`rfq` fields on
+  `admin.quotations` and `permission=` on `admin.staff-directory`.
+- **Backend**: what counts as the first response for the RFQ SLA (assumed above), and whether the
+  SLA setting is per product type or per reporting category.
+- **Backend**: should declining a quoted RFQ supersede its sent version (the mock does)?
+
 ---
 
 ## F2 Deliverable 2.2 — 2026-09-25
