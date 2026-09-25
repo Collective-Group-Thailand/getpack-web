@@ -15,6 +15,72 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted packio-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
 | 2026-09-25 | **F2 Deliverable 2.4** — prepress & design services | Six contract-request groups (B4.1) with a mock on the commerce orders; the prepress desk by stage with SLA; the per-order workspace: preflight report by severity with accept/send back (D-070), proof versions with upload & send and decision evidence, annotation page map with reply/resolve, template sending and dieline drawing (501 engine-unavailable handled), hired-design rounds with free-round meter and next-round fee (D-071), mockup job (D-072); read-only `DesignViewer` in the shared designer + "working copy"; shared `AssignDialog`; submission & drawing status maps. 568 unit, 138 e2e | 2.5–2.8 | See the notes under the F2.4 heading |
 | 2026-09-26 | **F2 Deliverable 2.5** — catalogue & CMS | On the **published** B2.1 contract (no contract requests): a stateful table mock (ETag/If-Match, archive by status) seeded from the contract's own list examples, now emitted by `gen:api`; a typed table registry of ~40 catalogue, CMS and geography tables driving one CRUD screen; product types with the reasoned quote-mode action (D-100); Excel import with preview → confirm by hash (D-005, D-170); home-section ordering; articles with a TipTap `RichTextEditor` in `src/ui`; catalogue/CMS maps by section; `catalog.import`, `seo.manage`, `geography.manage` from `docs/rbac.md`. 576 unit, 154 e2e | 2.6–2.8 | See the notes under the F2.5 heading |
+| 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (77 paths, adopted in 1aaa711) plus six contract-request groups mirroring the backend's WIP (suggestions & simulations, index series, coverage, production board, inspections, scorecards): the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; Packio rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
+
+---
+
+## F2 Deliverable 2.6 — 2026-09-26
+
+Partners and price governance, and the production floor (the board, QC, scorecards). Same
+worktree and branch. The factory resources are on the **published** B2.2 contract; what B2.2 has
+not published yet — suggestions, simulations, index series, coverage, the board, inspections,
+scorecards — is written as contract requests that follow the backend's work-in-progress routes
+(`src/lib/api/requests/admin-partners.ts`), so adopting them should rename nothing.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A factory edit or status change overwriting a colleague's | the workspace reads the factory's `ETag` right before `PATCH` and every status action, and sends `If-Match`; the mock answers `428`/`412` as the contract does |
+| A factory-specific tolerance or payout policy applying before a Superadmin approves it (D-173) | those dialogs say "send for approval"; the version comes back `proposed` with its approval link, and stays in the version table as scheduled until approved |
+| A bank account changed without the D-033 call-back | a proposed account is `pending approval` with its approval link; recording the call needs `vendor_bank_accounts.verify` (Finance), and the call-back form says to call a number on file |
+| Activating a factory without a passed site visit (D-041) | the visits tab warns while none has passed; the API's `409` is shown if activation is still requested |
+| Destructive status changes (suspend, offboard) | a reason plus the factory code retyped |
+| Cost and suggestions shown to roles that may not see them (D-141, D-044) | price-list lines load only with `factory_cost.read`, suggestions and simulations only with `price_suggestions.read`; otherwise the page says the role does not see them |
+| An inspection judged in the browser | the dialog sends the defects found; pass or fail is the API's answer (the mock applies the ISO 2859-1 accept numbers), recorded under an idempotency key |
+
+### Decisions taken, with reasons
+
+- **One workspace with tabs per factory**, not a page per sub-resource: onboarding, documents,
+  terms and prices are read together when deciding on a factory. The tab is in `?tab=` so a link
+  (a queue, the scorecard) opens the right one.
+- **Versioned terms share one table** (`VersionTable`): the version in force and those scheduled,
+  from when, why, and the approval a proposed one waits on (D-063, D-173).
+- **Line values render as `column value` pairs.** The price-component registry names the columns
+  but not their meaning; catalogue references show their last six characters, the full id on
+  hover. Components themselves get th/en names (all 40 of the enum).
+- **Product types render by name** everywhere in partners (`useProductTypes().labelOf`), falling
+  back to the code for a role without `catalog.read`.
+- **The production board's columns come from the API** (`step_1…6` with their names); the mock's
+  follow the one route the commerce mock's jobs use.
+- **Menu**: `partners` and `production` entries are gated on `partners.read` and
+  `production.read`; `partners.read` is added for admin, Finance, the Finance manager and the
+  auditor, as the backend's B2.2 role map has it.
+
+### Bugs found and fixed
+
+- A meter inside `PageHeader`'s description put a block inside a `<p>` → hydration error #418.
+  The description is text only; the meter sits under the header. (A `PageHeader` description must
+  never hold a block element.)
+- The production-board mock crashed on a released job with no milestones yet (made by another
+  test's manual production start); such a job now waits at the first step.
+- The rich-text editor's toolbar took focus from the text on pointer press, so typing straight
+  after choosing a heading could be lost (a flaky 2.5 test); the toolbar now keeps the caret.
+
+### Deliberately not done
+
+- Editing machines, capacity versions and agreements beyond what onboarding needs; the owner
+  invitation creates the account only (no resend or reset), as B2.2 publishes.
+- A proposal line editor that knows each column's reference table: values are typed as the
+  registry's column types, as a pricing specialist would enter them.
+- Charts on the index series (Recharts arrives with 2.8's analytics).
+
+### Open questions
+
+- **Backend**: publish the suggestion, simulation, index-series, coverage, board, inspection and
+  scorecard routes (the contract requests follow the WIP; adopt when they land).
+- **This repo**: `docs/decisions.md` still stops at D-169; D-170–D-173 (from packio-api) are
+  cited in 2.5 and 2.6 copy. Sync it.
 
 ---
 
