@@ -146,5 +146,18 @@
   "actions": {
     "more": "More actions",
     "unsupported": "Not available on this screen yet"
+  },
+  "assign": {
+    "person": "Staff member",
+    "placeholder": "Type a name",
+    "nobody": "Nobody found",
+    "clearPick": "Clear",
+    "clear": "Unassign",
+    "me": "Take it myself",
+    "confirm": "Assign",
+    "current": "Currently: {name}",
+    "done": "Assigned",
+    "cleared": "Unassigned",
+    "failed": "Could not assign"
   }
 }

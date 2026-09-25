@@ -29,7 +29,12 @@
     },
     "prepress": {
       "queue": "Prepress queue",
-      "design_rounds": "Design rounds"
+      "design_rounds": "Design rounds",
+      "preflight": "Preflight to review",
+      "proof": "Proofs to prepare",
+      "changes_requested": "Proof changes requested",
+      "template": "Templates to send",
+      "design": "Design work"
     },
     "production": {
       "at_risk": "Jobs at risk",

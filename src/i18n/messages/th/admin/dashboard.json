@@ -29,7 +29,12 @@
     },
     "prepress": {
       "queue": "งานก่อนพิมพ์",
-      "design_rounds": "งานออกแบบ"
+      "design_rounds": "งานออกแบบ",
+      "preflight": "ไฟล์รอตรวจ (preflight)",
+      "proof": "รอทำปรู๊ฟ",
+      "changes_requested": "ลูกค้าขอแก้ปรู๊ฟ",
+      "template": "รอส่งแบบกล่อง",
+      "design": "งานออกแบบ"
     },
     "production": {
       "at_risk": "งานผลิตเสี่ยงล่าช้า",

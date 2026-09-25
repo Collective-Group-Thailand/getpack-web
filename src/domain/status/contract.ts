@@ -90,6 +90,12 @@ export type ProofStatus = "pending_customer" | "approved" | "changes_requested" 
 /** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). **Source: schema** (`preflight_status`). */
 export type PreflightStatus = "pending" | "running" | "passed" | "passed_with_warnings" | "blocked" | "error";
 
+/** One version of the artwork a customer submitted, before and after prepress looked at it (B4.1). **Source: schema** (`submission_status`). */
+export type SubmissionStatus = "submitted" | "superseded" | "accepted_for_proof" | "rejected";
+
+/** Drawing a dieline with `@packio/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: schema** (`drawing_status`). */
+export type DrawingStatus = "queued" | "running" | "succeeded" | "failed" | "engine_unavailable";
+
 /** A hired design job: 3 free revision rounds, then paid (D-071). **Source: schema** (`design_service_status`). */
 export type DesignServiceStatus =
   "brief_pending" | "in_progress" | "delivered" | "revision_requested" | "approved" | "cancelled" | "requoted";

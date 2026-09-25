@@ -6,6 +6,7 @@
 
 export { ActorProvider, useActor, useCan } from "./actor";
 export { adminBrowserApis, type AdminApis } from "./api";
+export { AssignDialog, type AssignDialogProps } from "./AssignDialog";
 export { ConfirmAction, type ConfirmActionProps } from "./ConfirmAction";
 export { ConsolePage } from "./ConsolePage";
 export { CrudList, defineResource, type CrudListProps, type ResourceConfig } from "./crud";

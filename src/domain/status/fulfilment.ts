@@ -2,9 +2,11 @@ import { defineStatusMap } from "./types";
 import type {
   DesignRoundStatus,
   DesignServiceStatus,
+  DrawingStatus,
   InspectionStatus,
   MilestoneStatus,
   PreflightStatus,
+  SubmissionStatus,
 } from "./contract";
 
 /** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). */
@@ -15,6 +17,23 @@ export const PREFLIGHT_STATUS = defineStatusMap<PreflightStatus>({
   passed_with_warnings: { tone: "warning", icon: "warning", labelKey: "preflight.passedWithWarnings" },
   blocked: { tone: "danger", icon: "ban", labelKey: "preflight.blocked" },
   error: { tone: "danger", icon: "error", labelKey: "preflight.error" },
+});
+
+/** One version of the artwork a customer submitted (B4.1). */
+export const SUBMISSION_STATUS = defineStatusMap<SubmissionStatus>({
+  submitted: { tone: "info", icon: "inbox", labelKey: "submission.submitted" },
+  superseded: { tone: "neutral", icon: "history", labelKey: "submission.superseded" },
+  accepted_for_proof: { tone: "success", icon: "check", labelKey: "submission.acceptedForProof" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "submission.rejected" },
+});
+
+/** Drawing a dieline with `@packio/dieline` (B4.1). */
+export const DRAWING_STATUS = defineStatusMap<DrawingStatus>({
+  queued: { tone: "neutral", icon: "clock", labelKey: "drawing.queued" },
+  running: { tone: "info", icon: "refresh", labelKey: "drawing.running" },
+  succeeded: { tone: "success", icon: "check", labelKey: "drawing.succeeded" },
+  failed: { tone: "danger", icon: "error", labelKey: "drawing.failed" },
+  engine_unavailable: { tone: "warning", icon: "warning", labelKey: "drawing.engineUnavailable" },
 });
 
 /** A hired design job: 3 free revision rounds, then paid (D-071). */

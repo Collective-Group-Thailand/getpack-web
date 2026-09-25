@@ -12,14 +12,13 @@ import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
-import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
-import { ConfirmAction, NextActionBar, problemMessage, useActor, useRoleLabel } from "../console";
+import { AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
 import type { Rfq } from "./resources";
 
 export type RfqActionKey =
@@ -98,7 +97,24 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
 
   switch (open) {
     case "assign":
-      return <AssignDialog rfq={rfq} onClose={onClose} onDone={settle} />;
+      return (
+        <AssignDialog
+          title={t("assign.title")}
+          description={t("assign.body", { code: rfq.rfqCode })}
+          current={rfq.assignee}
+          permission="rfq.manage"
+          personHint={t("assign.personHint")}
+          onAssign={async (assigneeId) =>
+            settle(
+              await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/actions/assign", {
+                path: { rfqId },
+                body: { assigneeId },
+              }),
+            )
+          }
+          onClose={onClose}
+        />
+      );
     case "request_factory_cost":
       return <ConsultDialog rfq={rfq} onClose={onClose} onDone={() => settle()} />;
     case "request_info":
@@ -255,93 +271,6 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
     default:
       return null;
   }
-}
-
-function AssignDialog({ rfq, onClose, onDone }: { rfq: Rfq; onClose: () => void; onDone: (rfq: Rfq) => void }) {
-  const t = useTranslations("rfq.actions.assign");
-  const tCommon = useTranslations("common");
-  const actor = useActor();
-  const roleLabel = useRoleLabel();
-  const [query, setQuery] = useState("");
-  const [picked, setPicked] = useState<ComboboxOption | null>(null);
-
-  const people = useQuery({
-    queryKey: queryKeys.list("admin", "staff_directory", { q: query, permission: "rfq.manage" }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/staff-directory", {
-        query: { q: query || undefined, permission: "rfq.manage", limit: 20 },
-      }),
-    staleTime: STALE_TIME.reference,
-  });
-
-  const assign = useMutation({
-    mutationFn: (assigneeId: string | null) =>
-      browserRequests().call("POST /v1/admin/rfqs/{rfqId}/actions/assign", {
-        path: { rfqId: rfq.id },
-        body: { assigneeId },
-      }),
-    onSuccess: (updated, assigneeId) => {
-      onDone(updated);
-      toast.success(assigneeId ? t("done", { name: updated.assignee?.displayName ?? "" }) : t("cleared"));
-      onClose();
-    },
-    onError: (error) => toast.error(problemMessage(error, t("failed"))),
-  });
-
-  return (
-    <Dialog
-      open
-      onOpenChange={(next) => (next ? undefined : onClose())}
-      title={t("title")}
-      description={t("body", { code: rfq.rfqCode })}
-      closeLabel={tCommon("actions.close")}
-      footer={
-        <>
-          {rfq.assignee ? (
-            <Button
-              variant="ghost"
-              loading={assign.isPending && assign.variables === null}
-              onClick={() => assign.mutate(null)}
-            >
-              {t("clear")}
-            </Button>
-          ) : null}
-          {rfq.assignee?.id !== actor.id ? (
-            <Button variant="secondary" onClick={() => assign.mutate(actor.id)}>
-              {t("me")}
-            </Button>
-          ) : null}
-          <Button
-            disabled={!picked}
-            loading={assign.isPending && assign.variables === picked?.value}
-            onClick={() => picked && assign.mutate(picked.value)}
-          >
-            {t("confirm")}
-          </Button>
-        </>
-      }
-    >
-      {rfq.assignee ? (
-        <p className="text-muted mb-3 text-sm">{t("current", { name: rfq.assignee.displayName })}</p>
-      ) : null}
-      <Field label={t("person")} hint={t("personHint")}>
-        <Combobox
-          value={picked}
-          onValueChange={setPicked}
-          query={query}
-          onQueryChange={setQuery}
-          loading={people.isFetching}
-          options={(people.data?.data ?? []).map((person) => ({
-            value: person.id,
-            label: person.displayName,
-            description: person.roles.map(roleLabel).join(", "),
-          }))}
-          placeholder={t("placeholder")}
-          labels={{ loading: tCommon("state.loading"), empty: t("nobody"), clear: t("clearPick") }}
-        />
-      </Field>
-    </Dialog>
-  );
 }
 
 /**

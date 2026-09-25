@@ -332,6 +332,19 @@
     "suspended": "Suspended",
     "inactive": "Inactive"
   },
+  "submission": {
+    "submitted": "Submitted",
+    "superseded": "Superseded",
+    "acceptedForProof": "Accepted for proof",
+    "rejected": "Sent back"
+  },
+  "drawing": {
+    "queued": "Queued",
+    "running": "Drawing",
+    "succeeded": "Drawn",
+    "failed": "Failed",
+    "engineUnavailable": "Engine unavailable"
+  },
   "action": {
     "approve": "Approve",
     "reject": "Reject",
@@ -355,6 +368,10 @@
     "editQuote": "Edit draft",
     "sendQuote": "Send quote",
     "recordAcceptance": "Record acceptance",
+    "sendTemplate": "Send template",
+    "deliverRound": "Deliver design",
+    "drawDieline": "Draw dieline",
+    "requoteDesign": "Re-quote design",
     "unknown": "Take action"
   }
 }
