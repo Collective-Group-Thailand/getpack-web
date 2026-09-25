@@ -21,6 +21,7 @@ export { QueueTabs, useQueues, type QueueTab } from "./queues";
 export { asPage, defineList, shortRef, type InitialPage, type ListResource } from "./resource";
 export { ResourceList, type ResourceListProps } from "./ResourceList";
 export { SavedViews } from "./SavedViews";
+export { SectionNav } from "./SectionNav";
 export { useListState } from "./useListState";
 export { useProductTypes } from "./useProductTypes";
 export { useSlaFormat } from "./useSlaFormat";
