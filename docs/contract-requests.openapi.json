@@ -2556,6 +2556,1219 @@
         }
       }
     },
+    "/v1/admin/rfqs": {
+      "get": {
+        "operationId": "admin.rfqs.list",
+        "summary": "RFQs, optionally one desk queue, each with its category's SLA",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfqs",
+        "x-decisions": [
+          "D-100",
+          "D-043"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "queue",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RfqQueue"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RfqStatus"
+            }
+          },
+          {
+            "name": "productType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assigneeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SalesChannel"
+            }
+          },
+          {
+            "name": "submittedFrom",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          },
+          {
+            "name": "submittedTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RFQs, optionally one desk queue, each with its category's SLA",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RfqSummaryDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "perPage": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "perPage",
+                        "total"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}": {
+      "get": {
+        "operationId": "admin.rfqs.get",
+        "summary": "One RFQ: spec, files, consultations, quote versions and the actions this actor may take",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfqs",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One RFQ: spec, files, consultations, quote versions and the actions this actor may take",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/actions/assign": {
+      "post": {
+        "operationId": "admin.rfqs.assign",
+        "summary": "Put a CS agent on the RFQ, or take it off (null)",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-actions",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "assigneeId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "assigneeId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Put a CS agent on the RFQ, or take it off (null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/actions/decline": {
+      "post": {
+        "operationId": "admin.rfqs.decline",
+        "summary": "Decline with a reason code; recorded as unmet demand (D-102)",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-actions",
+        "x-decisions": [
+          "D-102"
+        ],
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reasonCode": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "reasonCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decline with a reason code; recorded as unmet demand (D-102)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/actions/request-info": {
+      "post": {
+        "operationId": "admin.rfqs.requestInfo",
+        "summary": "Ask the customer for what is missing (→ need_info); the message is sent to them and counts as a first response",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-actions",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 4000
+                  }
+                },
+                "required": [
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ask the customer for what is missing (→ need_info); the message is sent to them and counts as a first response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/actions/start-review": {
+      "post": {
+        "operationId": "admin.rfqs.startReview",
+        "summary": "submitted → in_review",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-actions",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "submitted → in_review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/candidate-factories": {
+      "get": {
+        "operationId": "admin.rfqs.candidateFactories.list",
+        "summary": "Factories that could price this RFQ, with their participation tier for the category (D-043)",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-consultations",
+        "x-decisions": [
+          "D-043"
+        ],
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Factories that could price this RFQ, with their participation tier for the category (D-043)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RfqCandidateFactoryDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/consultations": {
+      "post": {
+        "operationId": "admin.rfqs.consultations.create",
+        "summary": "Ask one or more factories for their price; each sees only its own request, never the sell price",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-consultations",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "factoryIds": {
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "dueAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "factoryIds",
+                  "dueAt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ask one or more factories for their price; each sees only its own request, never the sell price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RfqConsultationDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind": {
+      "post": {
+        "operationId": "admin.rfqs.consultations.remind",
+        "summary": "Remind a factory that has not answered",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-consultations",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "consultationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Remind a factory that has not answered"
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/messages": {
+      "get": {
+        "operationId": "admin.rfqs.messages.list",
+        "summary": "The thread with the customer and the team's internal notes, oldest first",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-messages",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The thread with the customer and the team's internal notes, oldest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RfqMessageDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "admin.rfqs.messages.create",
+        "summary": "Write to the customer (visibility customer) or the team (internal)",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-messages",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "visibility": {
+                    "$ref": "#/components/schemas/MessageVisibility"
+                  },
+                  "fileIds": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                "required": [
+                  "body",
+                  "visibility"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Write to the customer (visibility customer) or the team (internal)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqMessageDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/quotes": {
+      "post": {
+        "operationId": "admin.rfqs.quotes.create",
+        "summary": "Start a draft quote version; the API prices each line's amounts and flags the margin floor",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-quotes",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "validUntil": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "customerNote": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "lines": {
+                    "minItems": 1,
+                    "maxItems": 12,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "unitPrice": {
+                          "type": "string",
+                          "pattern": "^\\d+(\\.\\d{1,6})?$",
+                          "description": "Decimal, up to 6 places"
+                        },
+                        "leadTimeDays": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 365
+                        },
+                        "consultationId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      "required": [
+                        "quantity",
+                        "unitPrice",
+                        "leadTimeDays"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "validUntil",
+                  "lines"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Start a draft quote version; the API prices each line's amounts and flags the margin floor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqQuoteDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/quotes/{quoteId}": {
+      "delete": {
+        "operationId": "admin.rfqs.quotes.delete",
+        "summary": "Discard a draft",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-quotes",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Discard a draft"
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "admin.rfqs.quotes.update",
+        "summary": "Replace a draft's lines, validity and note",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-quotes",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "validUntil": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "customerNote": {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  "lines": {
+                    "minItems": 1,
+                    "maxItems": 12,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 9007199254740991
+                        },
+                        "unitPrice": {
+                          "type": "string",
+                          "pattern": "^\\d+(\\.\\d{1,6})?$",
+                          "description": "Decimal, up to 6 places"
+                        },
+                        "leadTimeDays": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 365
+                        },
+                        "consultationId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      },
+                      "required": [
+                        "quantity",
+                        "unitPrice",
+                        "leadTimeDays"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "validUntil",
+                  "lines"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Replace a draft's lines, validity and note",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqQuoteDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance": {
+      "post": {
+        "operationId": "admin.rfqs.quotes.recordAcceptance",
+        "summary": "Record that the customer accepted a sent version by phone or LINE; creates the quotation it orders from",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-quotes",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "quantity",
+                  "note"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record that the customer accepted a sent version by phone or LINE; creates the quotation it orders from",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/send": {
+      "post": {
+        "operationId": "admin.rfqs.quotes.send",
+        "summary": "Send a draft to the customer (→ quoted); the version it replaces is superseded",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.rfq-quotes",
+        "x-decisions": [
+          "D-051"
+        ],
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Send a draft to the customer (→ quoted); the version it replaces is superseded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqDetailDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/saved-views": {
       "get": {
         "operationId": "admin.savedViews.list",
@@ -2847,6 +4060,50 @@
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/StaffDirectoryEntryDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/unmet-demand-reasons": {
+      "get": {
+        "operationId": "admin.unmetDemandReasons.list",
+        "summary": "Why an RFQ can be declined — the unmet-demand reason codes (D-102)",
+        "tags": [
+          "admin"
+        ],
+        "x-contract-request": "admin.unmet-demand-reasons",
+        "responses": {
+          "200": {
+            "description": "Why an RFQ can be declined — the unmet-demand reason codes (D-102)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UnmetDemandReasonDto"
                       }
                     }
                   },
@@ -3169,6 +4426,15 @@
           "quantity_short",
           "late",
           "other"
+        ]
+      },
+      "ConsultationStatus": {
+        "type": "string",
+        "enum": [
+          "requested",
+          "responded",
+          "declined",
+          "expired"
         ]
       },
       "CreateCustomerDto": {
@@ -5203,6 +6469,13 @@
           "applied"
         ]
       },
+      "MessageVisibility": {
+        "type": "string",
+        "enum": [
+          "customer",
+          "internal"
+        ]
+      },
       "MilestoneStatus": {
         "type": "string",
         "enum": [
@@ -6477,6 +7750,14 @@
           "late"
         ]
       },
+      "ParticipationTier": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
       "PaymentMethod": {
         "type": "string",
         "enum": [
@@ -6805,6 +8086,33 @@
           "quoteCode": {
             "type": "string"
           },
+          "source": {
+            "$ref": "#/components/schemas/QuoteSource"
+          },
+          "rfq": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "rfqCode": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "rfqCode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "customer": {
             "$ref": "#/components/schemas/CustomerRefDto"
           },
@@ -7071,6 +8379,8 @@
         "required": [
           "id",
           "quoteCode",
+          "source",
+          "rfq",
           "customer",
           "productType",
           "quantities",
@@ -7098,6 +8408,33 @@
           },
           "quoteCode": {
             "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/QuoteSource"
+          },
+          "rfq": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "rfqCode": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "rfqCode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "customer": {
             "$ref": "#/components/schemas/CustomerRefDto"
@@ -7172,6 +8509,8 @@
         "required": [
           "id",
           "quoteCode",
+          "source",
+          "rfq",
           "customer",
           "productType",
           "quantities",
@@ -7184,6 +8523,13 @@
           "createdAt"
         ],
         "additionalProperties": false
+      },
+      "QuoteSource": {
+        "type": "string",
+        "enum": [
+          "instant",
+          "rfq"
+        ]
       },
       "QuoteStatus": {
         "type": "string",
@@ -7203,6 +8549,1256 @@
           "production",
           "shipping"
         ]
+      },
+      "RfqCandidateFactoryDto": {
+        "type": "object",
+        "properties": {
+          "factory": {
+            "$ref": "#/components/schemas/FactoryRefDto"
+          },
+          "tier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParticipationTier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "capable": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alreadyConsulted": {
+            "type": "boolean"
+          },
+          "onTimeRatePct": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "Percent as a decimal string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "factory",
+          "tier",
+          "capable",
+          "reason",
+          "alreadyConsulted",
+          "onTimeRatePct"
+        ],
+        "additionalProperties": false
+      },
+      "RfqConsultationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "factory": {
+            "$ref": "#/components/schemas/FactoryRefDto"
+          },
+          "tier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ParticipationTier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConsultationStatus"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requestedBy": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "displayName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "displayName"
+            ],
+            "additionalProperties": false
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "respondedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "response": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "leadTimeDays": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "notes": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "tiers": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/RfqConsultationTierDto"
+                    }
+                  }
+                },
+                "required": [
+                  "leadTimeDays",
+                  "notes",
+                  "tiers"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declineNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "factory",
+          "tier",
+          "status",
+          "note",
+          "requestedBy",
+          "requestedAt",
+          "dueAt",
+          "respondedAt",
+          "response",
+          "declineNote"
+        ],
+        "additionalProperties": false
+      },
+      "RfqConsultationTierDto": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "suggestedUnitPrice": {
+            "type": "string",
+            "description": "Decimal, up to 6 places"
+          },
+          "buyUnitPrice": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "quantity",
+          "suggestedUnitPrice"
+        ],
+        "additionalProperties": false
+      },
+      "RfqDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rfqCode": {
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/SalesChannel"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqStatus"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerRefDto"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RfqDimensionsDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "targetDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slaTargetHours": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "slaDueAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "firstResponseAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "urgency": {
+            "$ref": "#/components/schemas/OrderUrgency"
+          },
+          "consultationCounts": {
+            "type": "object",
+            "properties": {
+              "requested": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "responded": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "requested",
+              "responded"
+            ],
+            "additionalProperties": false
+          },
+          "latestQuote": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RfqQuoteHeadlineDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "routedFromCalculator": {
+            "type": "boolean"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "phone",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          "spec": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "specSchemaVersion": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deliveryPostcode": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "originalName": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "thumbnailUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "originalName",
+                "mimeType",
+                "sizeBytes",
+                "thumbnailUrl",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "routedFrom": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  },
+                  "calculator": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "reason",
+                  "calculator"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declineReason": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declineNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "acceptedQuotation": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "quoteCode": {
+                    "type": "string"
+                  },
+                  "versionNo": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "id",
+                  "quoteCode",
+                  "versionNo"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consultations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RfqConsultationDto"
+            }
+          },
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RfqQuoteDto"
+            }
+          },
+          "quoteDefaults": {
+            "type": "object",
+            "properties": {
+              "validUntil": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              }
+            },
+            "required": [
+              "validUntil"
+            ],
+            "additionalProperties": false
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RfqEventDto"
+            }
+          },
+          "nextActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "irreversible": {
+                  "type": "boolean"
+                },
+                "disabledReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "rfqCode",
+          "channel",
+          "status",
+          "productType",
+          "customer",
+          "quantities",
+          "dimensions",
+          "targetDate",
+          "province",
+          "assignee",
+          "slaTargetHours",
+          "slaDueAt",
+          "firstResponseAt",
+          "urgency",
+          "consultationCounts",
+          "latestQuote",
+          "routedFromCalculator",
+          "submittedAt",
+          "contact",
+          "spec",
+          "specSchemaVersion",
+          "notes",
+          "deliveryPostcode",
+          "files",
+          "routedFrom",
+          "declineReason",
+          "declineNote",
+          "acceptedQuotation",
+          "consultations",
+          "quotes",
+          "quoteDefaults",
+          "events",
+          "nextActions"
+        ],
+        "additionalProperties": false
+      },
+      "RfqDimensionsDto": {
+        "type": "object",
+        "properties": {
+          "lengthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "widthMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heightMm": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lengthMm",
+          "widthMm",
+          "heightMm"
+        ],
+        "additionalProperties": false
+      },
+      "RfqEventDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "at",
+          "kind",
+          "title",
+          "actor"
+        ],
+        "additionalProperties": false
+      },
+      "RfqMessageAuthor": {
+        "type": "string",
+        "enum": [
+          "customer",
+          "staff"
+        ]
+      },
+      "RfqMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorKind": {
+            "$ref": "#/components/schemas/RfqMessageAuthor"
+          },
+          "author": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/MessageVisibility"
+          },
+          "body": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "originalName": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "thumbnailUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "originalName",
+                "mimeType",
+                "sizeBytes",
+                "thumbnailUrl",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "authorKind",
+          "author",
+          "visibility",
+          "body",
+          "files",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "RfqQueue": {
+        "type": "string",
+        "enum": [
+          "new",
+          "mine",
+          "need_info",
+          "awaiting_factory",
+          "quoted",
+          "overdue"
+        ]
+      },
+      "RfqQuoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqQuoteStatus"
+          },
+          "validUntil": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "customerNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RfqQuoteLineDto"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "createdBy": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "displayName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "displayName"
+            ],
+            "additionalProperties": false
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "sentAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "versionNo",
+          "status",
+          "validUntil",
+          "customerNote",
+          "lines",
+          "currency",
+          "createdBy",
+          "createdAt",
+          "sentAt",
+          "acceptedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RfqQuoteHeadlineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqQuoteStatus"
+          },
+          "validUntil": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "id",
+          "versionNo",
+          "status",
+          "validUntil"
+        ],
+        "additionalProperties": false
+      },
+      "RfqQuoteLineDto": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Decimal, up to 6 places"
+          },
+          "netAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "vatAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "leadTimeDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "suggestedUnitPrice": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "consultationId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "factory": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FactoryRefDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "buyUnitPrice": {
+            "type": "string"
+          },
+          "marginPct": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d+)?$",
+            "description": "Percent as a decimal string"
+          },
+          "belowMarginFloor": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "quantity",
+          "unitPrice",
+          "netAmount",
+          "vatAmount",
+          "grossAmount",
+          "leadTimeDays",
+          "suggestedUnitPrice",
+          "consultationId",
+          "belowMarginFloor"
+        ],
+        "additionalProperties": false
+      },
+      "RfqQuoteStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "sent",
+          "accepted",
+          "superseded",
+          "expired"
+        ]
+      },
+      "RfqStatus": {
+        "type": "string",
+        "enum": [
+          "submitted",
+          "in_review",
+          "need_info",
+          "quoted",
+          "accepted",
+          "declined",
+          "expired"
+        ]
+      },
+      "RfqSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rfqCode": {
+            "type": "string"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/SalesChannel"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqStatus"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerRefDto"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RfqDimensionsDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "targetDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "province": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "assignee": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slaTargetHours": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "slaDueAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "firstResponseAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "urgency": {
+            "$ref": "#/components/schemas/OrderUrgency"
+          },
+          "consultationCounts": {
+            "type": "object",
+            "properties": {
+              "requested": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "responded": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "requested",
+              "responded"
+            ],
+            "additionalProperties": false
+          },
+          "latestQuote": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RfqQuoteHeadlineDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "routedFromCalculator": {
+            "type": "boolean"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "rfqCode",
+          "channel",
+          "status",
+          "productType",
+          "customer",
+          "quantities",
+          "dimensions",
+          "targetDate",
+          "province",
+          "assignee",
+          "slaTargetHours",
+          "slaDueAt",
+          "firstResponseAt",
+          "urgency",
+          "consultationCounts",
+          "latestQuote",
+          "routedFromCalculator",
+          "submittedAt"
+        ],
+        "additionalProperties": false
       },
       "SalesChannel": {
         "type": "string",
@@ -7770,6 +10366,22 @@
           "address",
           "withholdsTax",
           "isDefault"
+        ],
+        "additionalProperties": false
+      },
+      "UnmetDemandReasonDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
         ],
         "additionalProperties": false
       }

@@ -181,6 +181,8 @@ export const adminConsoleRequests = {
     query: z.object({
       q: z.string().optional(),
       role: z.string().optional(),
+      /** Only people who hold this permission — "who can take this RFQ". */
+      permission: z.string().optional(),
       limit: z.coerce.number().int().max(50).optional(),
     }),
     response: z.object({ data: z.array(staffRef) }),

@@ -17,7 +17,8 @@ test.describe("admin shell", () => {
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
     // The mock builds a CS agent's menu from their permissions, as packio-api's menu catalogue
-    // does: these eleven entries and nothing else.
+    // does: these twelve entries and nothing else (catalogue since packio-api B2.1 granted CS
+    // `catalog.read`).
     const expected = [
       "ภาพรวม",
       "รายการรออนุมัติ",
@@ -28,6 +29,7 @@ test.describe("admin shell", () => {
       "บันทึกขอส่วนลด",
       "รอบจัดส่ง",
       "งานเคลม",
+      "แคตตาล็อก",
       "ลูกค้า",
       "บริษัทคู่ค้า",
     ];

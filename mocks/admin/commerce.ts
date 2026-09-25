@@ -18,6 +18,7 @@ import { staffPersonaOf } from "../auth";
 import { PERSONAS } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { productTypeRef } from "./catalog";
 import { indexForSearch, registerQueue } from "./console";
 
 type Order = z.output<typeof orderDetail>;
@@ -127,13 +128,9 @@ const summaryOfCustomer = (customer: Customer): CustomerSummary => ({
 
 /* ----------------------------------------------------------------------------------- orders */
 
-const PRODUCT_TYPES = [
-  { code: "folding_carton", name: "กล่องกระดาษพับ" },
-  { code: "corrugated", name: "กล่องลูกฟูก" },
-  { code: "label", name: "ฉลากและสติกเกอร์" },
-  { code: "pouch", name: "ซองบรรจุภัณฑ์" },
-  { code: "tag_sleeve", name: "ป้ายแขวนและปลอกสวม" },
-];
+const PRODUCT_TYPES = ["folding_carton", "corrugated", "label_sticker", "flexible_pouch", "tag_sleeve"].map(
+  productTypeRef,
+);
 
 export const FACTORY = {
   id: "00000000-0000-4000-8000-0000000000f1",

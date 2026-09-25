@@ -3,9 +3,18 @@
  * published surface; see each module for what it stands in for.
  */
 
+import { catalogHandlers } from "./catalog";
 import { commerceHandlers } from "./commerce";
 import { consoleHandlers } from "./console";
 import { platformHandlers } from "./platform";
+import { rfqHandlers } from "./rfq";
 import { salesHandlers } from "./sales";
 
-export const adminHandlers = [...consoleHandlers, ...commerceHandlers, ...salesHandlers, ...platformHandlers];
+export const adminHandlers = [
+  ...consoleHandlers,
+  ...commerceHandlers,
+  ...salesHandlers,
+  ...rfqHandlers,
+  ...catalogHandlers,
+  ...platformHandlers,
+];

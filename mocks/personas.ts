@@ -132,7 +132,9 @@ function persona(
   };
 }
 
-const commercialRead: Permission[] = [P.ordersRead, P.rfqRead, P.catalogRead, P.customersRead, P.companiesRead];
+// `catalog.read` is not here: packio-api B2.1 grants it to superadmin, admin, cs, cs_lead, prepress,
+// marketing and partner_manager only (docs/rbac.md).
+const commercialRead: Permission[] = [P.ordersRead, P.rfqRead, P.customersRead, P.companiesRead];
 const executive: Permission[] = [
   ...commercialRead,
   P.approvalsAct,
@@ -198,6 +200,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.memosRead,
       P.rfqRead,
       P.rfqManage,
+      P.catalogRead,
       P.customersRead,
       P.companiesRead,
       P.shipmentsRead,
@@ -220,6 +223,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.memosRead,
       P.rfqRead,
       P.rfqManage,
+      P.catalogRead,
       P.customersRead,
       P.companiesRead,
       P.shipmentsRead,
@@ -234,7 +238,7 @@ export const PERSONAS: readonly StaffPersona[] = [
     8,
     "ฝ่ายเตรียมพิมพ์ ตัวอย่าง (ข้อมูลจำลอง)",
     ["prepress"],
-    [P.ordersRead, P.prepressRead, P.prepressManage, P.rfqRead],
+    [P.ordersRead, P.prepressRead, P.prepressManage, P.rfqRead, P.catalogRead],
   ),
   persona(
     "finance",
@@ -315,6 +319,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.productionRead,
       P.qcInspect,
       P.rfqRead,
+      P.catalogRead,
       P.analyticsRead,
     ],
   ),
