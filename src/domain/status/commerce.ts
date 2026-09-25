@@ -7,6 +7,7 @@ import type {
   QuoteStatus,
   RefundStatus,
   SlipStatus,
+  MemberStatus,
 } from "./contract";
 
 /** One checkout: a group of orders with one payment schedule (B3.1). */
@@ -75,4 +76,11 @@ export const CREDIT_STATUS = defineStatusMap<CreditStatus>({
   eligible: { tone: "info", icon: "star", labelKey: "credit.eligible" },
   credit: { tone: "success", icon: "credit-card", labelKey: "credit.credit" },
   blocked_overdue: { tone: "danger", icon: "lock", labelKey: "credit.blockedOverdue" },
+});
+
+/** A member of a B2B company account (D-120). */
+export const MEMBER_STATUS = defineStatusMap<MemberStatus>({
+  invited: { tone: "info", icon: "user-plus", labelKey: "member.invited" },
+  active: { tone: "success", icon: "check", labelKey: "member.active" },
+  removed: { tone: "neutral", icon: "user-x", labelKey: "member.removed" },
 });

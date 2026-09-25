@@ -77,6 +77,12 @@ export type PromotionStatus = "draft" | "active" | "paused" | "ended";
 /** One coupon code (D-053). **Source: schema** (`coupon_status`). */
 export type CouponStatus = "active" | "used_up" | "disabled";
 
+/** One line of the points ledger (D-132): pending until completion + claim window. **Source: schema** (`points_status`). */
+export type PointsStatus = "pending" | "available" | "expired" | "reversed";
+
+/** A member of a B2B company account (D-120). **Source: schema** (`member_status`). */
+export type MemberStatus = "invited" | "active" | "removed";
+
 /** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: schema** (`referral_status`). */
 export type ReferralStatus = "pending" | "qualified" | "rewarded" | "rejected_fraud" | "under_review";
 

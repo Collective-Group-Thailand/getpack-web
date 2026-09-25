@@ -384,5 +384,16 @@
     "drawDieline": "Draw dieline",
     "requoteDesign": "Re-quote design",
     "unknown": "Take action"
+  },
+  "points": {
+    "pending": "Pending",
+    "available": "Available",
+    "expired": "Expired",
+    "reversed": "Reversed"
+  },
+  "member": {
+    "invited": "Invited",
+    "active": "Active",
+    "removed": "Removed"
   }
 }
