@@ -136,6 +136,13 @@ import {
   Wallet,
   Warehouse,
   X,
+  Bold,
+  Heading2,
+  Heading3,
+  Italic,
+  List,
+  ListOrdered,
+  Quote,
 } from "lucide-react";
 
 /**
@@ -188,6 +195,13 @@ export const ICONS = {
   trash: Trash2,
   edit: Pencil,
   undo: Undo2,
+  bold: Bold,
+  italic: Italic,
+  "heading-2": Heading2,
+  "heading-3": Heading3,
+  "list-bullet": List,
+  "list-ordered": ListOrdered,
+  quote: Quote,
   redo: Redo2,
   reset: RotateCcw,
   eye: Eye,
