@@ -30,9 +30,12 @@ export function useProductTypes() {
     staleTime: STALE_TIME.reference,
   });
   const types = query.data?.data ?? [];
+  const options = types.map((type) => ({ value: type.code, label: locale === "en" ? type.nameEn : type.nameTh }));
   return {
     ...query,
     types,
-    options: types.map((type) => ({ value: type.code, label: locale === "en" ? type.nameEn : type.nameTh })),
+    options,
+    /** The type's name, or its code while the list loads or when the role cannot read the catalogue. */
+    labelOf: (code: string) => options.find((option) => option.value === code)?.label ?? code,
   };
 }
