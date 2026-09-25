@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
-import { parseListState, serialiseListState, updateListState, type ListDefaults, type ListState } from "./list-state";
+import { mergeIntoUrl, parseListState, updateListState, type ListDefaults, type ListState } from "./list-state";
 
 /**
  * The list's state, read from and written to the URL (see `./list-state.ts`).
@@ -24,10 +24,10 @@ export function useListState(defaults: ListDefaults = {}) {
 
   const navigate = useCallback(
     (next: ListState) => {
-      const query = serialiseListState(next, stableDefaults).toString();
+      const query = mergeIntoUrl(new URLSearchParams(params.toString()), next, stableDefaults).toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
-    [pathname, router, stableDefaults],
+    [params, pathname, router, stableDefaults],
   );
 
   const update = useCallback((patch: Partial<ListState>) => navigate(updateListState(state, patch)), [navigate, state]);

@@ -22,7 +22,8 @@ export interface ConfirmActionProps {
   /** Irreversible: the person retypes this (an order code) before the action unlocks. */
   confirmationPhrase?: string;
   /** Ask for a reason; the API records it with the audit entry. */
-  reason?: { label: string; required?: boolean; hint?: string };
+  /** `minLength` as the contract states it — `ReasonDto.reason` is 3. */
+  reason?: { label: string; required?: boolean; hint?: string; minLength?: number };
   /**
    * Called with an `Idempotency-Key` minted once when the dialog opened — so a retry after a
    * timeout replays the same request instead of repeating the act (api-conventions §3).
@@ -60,7 +61,7 @@ function ConfirmActionBody({
   const [missingReason, setMissingReason] = useState(false);
 
   async function confirm() {
-    if (reason?.required && !text.trim()) {
+    if ((reason?.required && !text.trim()) || (reason?.minLength && text.trim().length > 0 && text.trim().length < reason.minLength)) {
       setMissingReason(true);
       return;
     }
@@ -94,7 +95,7 @@ function ConfirmActionBody({
           hint={reason.hint}
           required={reason.required}
           requiredLabel={tCommon("state.required")}
-          error={missingReason ? t("reasonRequired") : undefined}
+          error={missingReason ? (reason.minLength ? t("reasonTooShort", { min: reason.minLength }) : t("reasonRequired")) : undefined}
           className="mt-4"
         >
           <Textarea

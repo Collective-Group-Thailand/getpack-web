@@ -10,7 +10,8 @@
   },
   "confirm": {
     "typeToConfirm": "พิมพ์ {phrase} เพื่อยืนยัน",
-    "reasonRequired": "กรุณาระบุเหตุผล"
+    "reasonRequired": "กรุณาระบุเหตุผล",
+    "reasonTooShort": "กรุณาระบุเหตุผลอย่างน้อย {min} ตัวอักษร"
   },
   "filters": {
     "any": "ทั้งหมด",

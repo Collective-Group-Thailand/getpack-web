@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseListState, serialiseListState, toApiQuery, updateListState, viewQuery } from "./list-state";
+import { mergeIntoUrl, parseListState, serialiseListState, toApiQuery, updateListState, viewQuery } from "./list-state";
 
 const parse = (query: string, defaults = {}) => parseListState(new URLSearchParams(query), defaults);
 
@@ -16,6 +16,12 @@ describe("list state in the URL", () => {
       filters: { status: "paid" },
       hidden: ["channel", "factory"],
     });
+  });
+
+  it("reads only the declared filters, leaving a page's own parameters alone", () => {
+    // Regression: `/approvals?tab=all` sent `tab=all` to the API as a filter.
+    const state = parse("tab=all&status=pending&panel=open", { filterKeys: ["status", "policy"] });
+    expect(state.filters).toEqual({ status: "pending" });
   });
 
   it("falls back to the defaults, and to safe values for a hand-edited URL", () => {
@@ -52,5 +58,20 @@ describe("list state in the URL", () => {
 
   it("saves a view without its page or its hidden columns", () => {
     expect(viewQuery(parse("page=4&status=paid&hide=total"))).toEqual({ status: "paid" });
+  });
+});
+
+describe("mergeIntoUrl", () => {
+  it("rewrites the list's parameters and keeps the page's own", () => {
+    const defaults = { filterKeys: ["status"] };
+    const current = new URLSearchParams("tab=all&status=pending&page=3");
+    const next = mergeIntoUrl(current, updateListState(parseListState(current, defaults), { filters: { status: "approved" } }), defaults);
+    expect(Object.fromEntries(next)).toEqual({ tab: "all", status: "approved" });
+  });
+
+  it("drops a filter that was cleared", () => {
+    const defaults = { filterKeys: ["status"] };
+    const current = new URLSearchParams("tab=all&status=pending");
+    expect(mergeIntoUrl(current, updateListState(parseListState(current, defaults), { filters: {} }), defaults).toString()).toBe("tab=all");
   });
 });

@@ -10,7 +10,8 @@
   },
   "confirm": {
     "typeToConfirm": "Type {phrase} to confirm",
-    "reasonRequired": "Enter a reason"
+    "reasonRequired": "Enter a reason",
+    "reasonTooShort": "Enter a reason of at least {min} characters"
   },
   "filters": {
     "any": "Any",
