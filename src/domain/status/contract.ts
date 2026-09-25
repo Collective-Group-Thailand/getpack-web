@@ -80,6 +80,9 @@ export type CouponStatus = "active" | "used_up" | "disabled";
 /** One line of the points ledger (D-132): pending until completion + claim window. **Source: schema** (`points_status`). */
 export type PointsStatus = "pending" | "available" | "expired" | "reversed";
 
+/** A company's monthly statement (D-125, B5.2). **Proposed** in contract request `admin.company-credit`. */
+export type StatementStatus = "open" | "paid" | "overdue";
+
 /** A member of a B2B company account (D-120). **Source: schema** (`member_status`). */
 export type MemberStatus = "invited" | "active" | "removed";
 

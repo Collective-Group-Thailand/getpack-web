@@ -413,5 +413,15 @@
     "schedule": "Payment schedule",
     "instalment": "Instalment",
     "paid": "Paid"
+  },
+  "party": {
+    "title": "Orders",
+    "order": "Order",
+    "productType": "Product type",
+    "status": "Status",
+    "amount": "Total",
+    "placedBy": "Placed by",
+    "created": "Placed",
+    "empty": "No orders yet"
   }
 }

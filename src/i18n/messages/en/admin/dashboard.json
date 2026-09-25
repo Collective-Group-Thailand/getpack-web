@@ -56,7 +56,13 @@
       "review": "Referrals to review"
     },
     "companies": {
-      "kyc": "Companies awaiting KYC"
+      "kyc": "Companies awaiting KYC",
+      "kyc_review": "Companies awaiting KYC review",
+      "overdue": "Companies overdue"
+    },
+    "marketing": {
+      "referral_review": "Referrals to review",
+      "budget_alerts": "Campaigns at their budget alert"
     }
   },
   "policies": {

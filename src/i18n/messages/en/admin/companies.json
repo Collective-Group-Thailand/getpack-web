@@ -1,0 +1,205 @@
+{
+  "list": {
+    "title": "Companies (B2B)",
+    "description": "Company accounts, KYC, credit and receivables (D-120…D-125)",
+    "statusesLabel": "Account statuses",
+    "all": "All",
+    "search": "Search name, code or tax ID",
+    "empty": "No companies",
+    "days": "{days} days late",
+    "columns": {
+      "company": "Company",
+      "status": "Status",
+      "credit": "Credit",
+      "open": "Open",
+      "overdue": "Overdue",
+      "members": "Members",
+      "paidOrders": "Paid orders"
+    }
+  },
+  "detail": {
+    "title": "Company",
+    "breadcrumb": "Breadcrumb",
+    "companies": "Companies",
+    "taxId": "Tax ID {taxId}",
+    "tabsLabel": "Company sections",
+    "tabs": {
+      "overview": "Overview",
+      "kyc": "KYC",
+      "members": "Members",
+      "branches": "Branches",
+      "credit": "Credit",
+      "statements": "Statements",
+      "orders": "Orders"
+    },
+    "blocked": "Credit orders blocked: {days} days overdue",
+    "blockedBody": "Prepaid orders still work; the block lifts once the overdue amount is paid. No late fee (D-122).",
+    "reason": "Reason",
+    "changed": "Status changed",
+    "failed": "The action failed",
+    "actions": {
+      "approve-kyc": {
+        "label": "Approve KYC",
+        "title": "Approve the KYC",
+        "body": "{name} ({code}) becomes active; the required documents must be verified first (D-120)."
+      },
+      "return-kyc": {
+        "label": "Return",
+        "title": "Return the application",
+        "body": "{name} ({code}) goes back to applied; the reason is shown to the company."
+      },
+      "suspend": {
+        "label": "Suspend",
+        "title": "Suspend the company",
+        "body": "{name} ({code}) cannot order until reinstated."
+      },
+      "reinstate": {
+        "label": "Reinstate",
+        "title": "Reinstate the company",
+        "body": "{name} ({code}) can order again."
+      },
+      "close": {
+        "label": "Close",
+        "title": "Close the account",
+        "body": "{name} ({code}) is closed for good; open receivables are still collected."
+      }
+    }
+  },
+  "overview": {
+    "terms": "Terms",
+    "termsNote": "PO numbers and the internal approval threshold are set by the company's own admin (D-123, D-125)",
+    "vat": "VAT registered",
+    "vatYes": "Yes",
+    "vatNo": "No",
+    "poPolicy": "PO number",
+    "poPolicies": {
+      "required": "Required",
+      "optional": "Optional",
+      "none": "Not used"
+    },
+    "approvalThreshold": "Internal approval above",
+    "noThreshold": "Not set",
+    "kycApproved": "KYC approved",
+    "notYet": "Not yet",
+    "discount": "Company discount",
+    "noDiscount": "None",
+    "paidOrders": "Paid orders",
+    "receivables": "Receivables",
+    "receivablesNote": "The receivables ledger's figures",
+    "figures": {
+      "open": "Open",
+      "overdue": "Overdue",
+      "oldest": "Oldest overdue",
+      "available": "Credit available"
+    },
+    "days": "{days} days",
+    "nextDue": "Next due"
+  },
+  "kyc": {
+    "title": "KYC documents",
+    "rule": "Company certificate no older than 6 months, PP20 if VAT-registered, signatory details (D-120)",
+    "doc": "Document",
+    "types": {
+      "company_certificate": "Company certificate",
+      "vat_registration_pp20": "VAT registration (PP20)",
+      "signatory_id": "Signatory's ID",
+      "financial_statement": "Financial statement"
+    },
+    "status": "Status",
+    "issuedOn": "Issued",
+    "file": "File",
+    "note": "Note",
+    "review": "Review",
+    "reviewDoc": "Review: {doc}",
+    "reviewBody": "For {code}",
+    "save": "Save",
+    "needNote": "Say what to fix",
+    "failed": "Could not save the review",
+    "reviewed": "Review saved",
+    "outcome": "Outcome",
+    "verify": "Verified",
+    "reject": "Rejected",
+    "rejectHint": "Required; the company sees it",
+    "noteHint": "Optional",
+    "empty": "No documents yet"
+  },
+  "members": {
+    "title": "Members",
+    "note": "The company's admin invites and removes members",
+    "member": "Member",
+    "roles": "Roles",
+    "status": "Status",
+    "joined": "Joined",
+    "roleNames": {
+      "company_admin": "Company Admin",
+      "company_buyer": "Buyer",
+      "company_approver": "Approver",
+      "company_accountant": "Accountant"
+    }
+  },
+  "branches": {
+    "title": "Branches",
+    "note": "One tax invoice per branch (D-125)",
+    "code": "Branch code",
+    "name": "Name",
+    "headOffice": "Head office",
+    "address": "Address"
+  },
+  "credit": {
+    "title": "Credit",
+    "note": "New accounts pay first; a limit is requested once eligible, and who approves depends on the amount (D-121)",
+    "request": "Request a limit",
+    "limit": "Limit",
+    "term": "Term",
+    "termDays": "{days} days",
+    "termDefault": "{days} days (default)",
+    "prepaid": "Prepaid",
+    "available": "Available",
+    "eligibility": "Eligibility",
+    "eligible": {
+      "paid_orders": "Enough paid orders",
+      "financial_review": "Financial review passed",
+      "not_yet": "Not yet eligible"
+    },
+    "pending": "A limit request is waiting for approval",
+    "versions": "Limit history",
+    "noVersions": "No limit requested yet",
+    "version": "Version",
+    "basis": "Basis",
+    "bases": {
+      "paid_orders": "Paid orders",
+      "financial_review": "Financial review"
+    },
+    "status": "Status",
+    "reason": "Reason",
+    "approval": "Approval",
+    "openApproval": "Open the approval",
+    "requestTitle": "Request a credit limit",
+    "requestBody": "For {name} ({code}); it applies once approved",
+    "send": "Send for approval",
+    "needLimit": "Enter the limit",
+    "needTerm": "Choose the term",
+    "needReason": "Give a reason of at least 3 characters",
+    "sent": "Limit sent for approval",
+    "failed": "Could not send the request",
+    "routing": "Routed by the credit-limit approval policy; the approver depends on the amount",
+    "limitHint": "THB",
+    "termHint": "The allowed terms come from the setting b2b.credit_terms",
+    "termHidden": "Your role cannot read the credit-term setting",
+    "chooseTerm": "Choose a term"
+  },
+  "statements": {
+    "title": "Monthly statements",
+    "note": "For consolidated payment; tax invoices are still per order (D-125)",
+    "period": "Month",
+    "opening": "Opening",
+    "invoiced": "Invoiced",
+    "paid": "Paid",
+    "closing": "Closing",
+    "due": "Due",
+    "status": "Status",
+    "download": "Download",
+    "downloadPeriod": "Download {period}",
+    "empty": "No statements yet"
+  }
+}

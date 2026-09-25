@@ -56,6 +56,7 @@ export type {
   SettingConfirmation,
   ShipmentStatus,
   SlipStatus,
+  StatementStatus,
   UserStatus,
 } from "./contract";
 
@@ -73,6 +74,7 @@ import {
   QUOTE_STATUS,
   REFUND_STATUS,
   SLIP_STATUS,
+  STATEMENT_STATUS,
 } from "./commerce";
 import { DOCUMENT_STATUS } from "./document";
 import {
@@ -162,6 +164,7 @@ export {
   SITE_VISIT_RESULT,
   SUBMISSION_STATUS,
   SLIP_STATUS,
+  STATEMENT_STATUS,
   USER_STATUS,
 };
 
@@ -221,6 +224,7 @@ export const STATUS_MAPS = {
   shipment: SHIPMENT_STATUS,
   siteVisit: SITE_VISIT_RESULT,
   slip: SLIP_STATUS,
+  statement: STATEMENT_STATUS,
   submission: SUBMISSION_STATUS,
   user: USER_STATUS,
 } as const;
