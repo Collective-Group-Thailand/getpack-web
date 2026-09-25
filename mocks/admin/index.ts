@@ -5,8 +5,11 @@
 
 import { catalogueHandlers } from "./catalogue";
 import { commerceHandlers } from "./commerce";
+import { companyHandlers } from "./companies";
 import { consoleHandlers } from "./console";
 import { governanceHandlers } from "./governance";
+import { loyaltyHandlers } from "./loyalty";
+import { marketingHandlers } from "./marketing";
 import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
 import { prepressHandlers } from "./prepress";
@@ -22,5 +25,8 @@ export const adminHandlers = [
   ...catalogueHandlers,
   ...governanceHandlers,
   ...partnerHandlers,
+  ...marketingHandlers,
+  ...companyHandlers,
+  ...loyaltyHandlers,
   ...platformHandlers,
 ];

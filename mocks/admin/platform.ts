@@ -134,9 +134,33 @@ const ref = (persona: StaffPersona | undefined): Schemas["UserRefDto"] => ({
 });
 const byKey = (key: string) => PERSONAS.find((persona) => persona.key === key)!;
 
-function steps(policyKey: string, current = 1): Schemas["ApprovalStepDto"][] {
+type Condition =
+  { all: Condition[] } | { any: Condition[] } | { field: string; op: string; value?: string; ref?: string };
+type Subject = { amount: string | null; pct: string | null; flags: string[] };
+
+/** A policy step's condition against the subject, as the engine evaluates it (B1.3). */
+function applies(condition: Condition | undefined, subject: Subject): boolean {
+  if (!condition) return true;
+  if ("all" in condition) return condition.all.every((item) => applies(item, subject));
+  if ("any" in condition) return condition.any.some((item) => applies(item, subject));
+  // A threshold held by another record (`ref`) is the owning module's to check.
+  if (condition.value === undefined) return true;
+  if (condition.field === "flags")
+    return condition.op === "includes"
+      ? subject.flags.includes(condition.value)
+      : !subject.flags.includes(condition.value);
+  const actual = subject[condition.field as "amount" | "pct"];
+  if (actual === null) return true;
+  const [a, b] = [Number(actual), Number(condition.value)];
+  return { gt: a > b, gte: a >= b, lt: a < b, lte: a <= b, eq: a === b }[condition.op] ?? true;
+}
+
+function steps(policyKey: string, current = 1, subject?: Subject): Schemas["ApprovalStepDto"][] {
   const policy = approvalPolicies.find((candidate) => candidate.key === policyKey)!;
-  return policy.steps.slice(0, policyKey === "discount_memo" ? 1 : undefined).map((step, index) => ({
+  const chosen = subject
+    ? policy.steps.filter((step) => applies((step as { condition?: Condition }).condition, subject))
+    : policy.steps.slice(0, policyKey === "discount_memo" ? 1 : undefined);
+  return chosen.map((step, index) => ({
     stepNo: index + 1,
     role: step.role,
     quorum: 1,
@@ -177,6 +201,17 @@ function approval(
   };
 }
 
+type Decided = (approval: Approval, outcome: "approved" | "rejected", decider: StaffPersona) => void;
+const deciders = new Map<string, Decided>();
+
+/**
+ * What a business module does when the engine decides one of its approvals — the backend's
+ * `approval.decided` event, which moves the subject (a referral rewarded, a credit limit in force).
+ */
+export function onApprovalDecided(policy: string, handler: Decided): void {
+  deciders.set(policy, handler);
+}
+
 /**
  * Opens an approval the way a business module does (B1.3's engine): the policy's steps from the
  * backend's seed, requested by the acting persona. Returns the new request for the caller to link.
@@ -205,7 +240,7 @@ export function openApproval(input: {
     payload: input.payload,
     currentStepNo: 1,
     steps: known
-      ? steps(input.policy)
+      ? steps(input.policy, 1, { amount: input.amount ?? null, pct: input.pct ?? null, flags: [] })
       : [
           {
             stepNo: 1,
@@ -813,6 +848,7 @@ export const platformHandlers = [
         item.status = verb === "approve" ? "approved" : "rejected";
         item.currentStepNo = null;
         item.decidedAt = bangkokIso();
+        deciders.get(item.policy)?.(item, item.status, persona);
       } else {
         item.currentStepNo = next.stepNo;
       }

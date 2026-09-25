@@ -1,6 +1,7 @@
 /**
  * Customers as the back office sees them (F2 2.2 CS create-order, 2.7 customers), from the
- * schema design's `customer_profiles`, `customer_addresses` and `tax_profiles` (§3.6).
+ * schema design's `customer_profiles`, `customer_addresses` and `tax_profiles` (§3.6), the
+ * points ledger (B3.4, D-130…D-135) and consent records (PDPA, B1.3's consent purposes).
  */
 
 import { z } from "zod";
@@ -96,6 +97,67 @@ export const postcodeLookup = z
   })
   .meta({ id: "PostcodeLookupDto" });
 
+export const pointsEntryType = z
+  .enum([
+    "earn_order",
+    "earn_signup",
+    "earn_line_link",
+    "earn_review",
+    "earn_referral",
+    "earn_bonus",
+    "redeem",
+    "redeem_reversal",
+    "reversal_claim_refund",
+    "expire",
+    "adjust",
+  ])
+  .meta({ id: "PointsEntryType" });
+export const pointsStatus = z.enum(["pending", "available", "expired", "reversed"]).meta({ id: "PointsStatus" });
+
+/** One line of the append-only points ledger (schema-design `points_ledger`). */
+export const pointsEntry = z
+  .object({
+    id: uuid(),
+    entryType: pointsEntryType,
+    /** Signed: earnings positive, redemptions and expiry negative. */
+    points: z.number().int(),
+    /** Baht value at the point value in force when written (D-131). */
+    bahtValue: z.string(),
+    status: pointsStatus,
+    /** Pending earnings become available after completion and the claim window (D-132). */
+    availableAt: dateTime().nullable(),
+    expiresAt: dateTime().nullable(),
+    order: z.object({ id: uuid(), orderCode: z.string() }).nullable(),
+    note: z.string().nullable(),
+    createdAt: dateTime(),
+  })
+  .meta({ id: "PointsEntryDto" });
+
+export const pointsBalance = z
+  .object({
+    available: z.number().int(),
+    pending: z.number().int(),
+    /** Points that expire within the reminder window (setting `loyalty.points_expiry`). */
+    expiringSoon: z.number().int(),
+    expiringSoonAt: dateTime().nullable(),
+    availableBahtValue: z.string(),
+  })
+  .meta({ id: "PointsBalanceDto" });
+
+export const customerConsent = z
+  .object({
+    purpose: z.string(),
+    required: z.boolean(),
+    /** Latest decision; `null` = never asked. */
+    granted: z.boolean().nullable(),
+    versionNo: z.number().int().nullable(),
+    /** The latest decision was for an older text version. */
+    outdated: z.boolean(),
+    source: z.enum(["web", "line_liff", "cs", "partner_zone"]).nullable(),
+    recordedAt: dateTime().nullable(),
+  })
+  .meta({ id: "CustomerConsentDto" });
+
 export const adminCustomerRequests = {
   "GET /v1/admin/customers": request({
     request: "admin.customers",
@@ -121,6 +183,18 @@ export const adminCustomerRequests = {
     body: createAddress,
     response: customerAddress,
     status: 201,
+  }),
+  "GET /v1/admin/customers/{customerId}/points": request({
+    request: "admin.customer-loyalty",
+    summary: "A customer's points balance and ledger, newest first (D-130…D-135)",
+    decisions: ["D-131", "D-132"],
+    query: listQuery({ entryType: pointsEntryType.optional() }),
+    response: page(pointsEntry).extend({ balance: pointsBalance }),
+  }),
+  "GET /v1/admin/customers/{customerId}/consents": request({
+    request: "admin.customer-consents",
+    summary: "The customer's latest decision per consent purpose (PDPA), read-only for staff",
+    response: z.array(customerConsent),
   }),
   "GET /v1/admin/geo/postcodes/{postcode}": request({
     request: "admin.geo",
