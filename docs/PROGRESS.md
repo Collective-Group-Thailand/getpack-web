@@ -13,6 +13,61 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted packio-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
 | 2026-09-25 | **F2 Deliverable 2.2** — orders & CS desk | Nine contract-request groups (orders, order notes and actions, customers, geo, CS calculators, quotations, discount memos, CS create-order) with stateful mocks; the six CS queues; the order screen (sticky header with the API's next action, ten tabs, slip review, manual start, cancel, notes with @mentions, unified timeline, order groups); the seven D-100 calculators with a factory × print × quantity comparison and the D-052 memo threshold from the API; quotations, discount memos, create-order with split delivery; `keys-used` and `server-imports` unit gates. 562 unit, 113 e2e | 2.3–2.8 | See the notes under the F2.2 heading |
 | 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted packio-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
+| 2026-09-25 | **F2 Deliverable 2.4** — prepress & design services | Six contract-request groups (B4.1) with a mock on the commerce orders; the prepress desk by stage with SLA; the per-order workspace: preflight report by severity with accept/send back (D-070), proof versions with upload & send and decision evidence, annotation page map with reply/resolve, template sending and dieline drawing (501 engine-unavailable handled), hired-design rounds with free-round meter and next-round fee (D-071), mockup job (D-072); read-only `DesignViewer` in the shared designer + "working copy"; shared `AssignDialog`; submission & drawing status maps. 568 unit, 138 e2e | 2.5–2.8 | See the notes under the F2.4 heading |
+
+---
+
+## F2 Deliverable 2.4 — 2026-09-25
+
+Prepress and design services. Same worktree and branch. packio-api has not built B4.1, so the
+endpoints are contract requests shaped by schema-design §3.7; the mock hangs prepress state off
+the commerce mock's own orders, so `/orders/{id}` and `/prepress/{id}` describe one order.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A file with a blocking preflight finding going to proof (D-070) | the submission's own `nextActions` carry `submission.accept` with a `disabledReason`; the button is disabled with the reason shown, and the mock answers `409 preflight.blocking_findings` if forced |
+| Warnings accepted silently | accepting a submission with warnings requires a note, kept with the review |
+| A proof sent twice on a retry | proof upload is idempotent, one key per opening of the dialog; the files go through the published presign flow (purpose `proof`) first |
+| The UI deciding what a paid design round costs (D-071) | rounds carry `chargeable` and `feeAmount`, and `nextRound` says what the next one would cost — the API's figures; the UI states them |
+| A drawing engine that is not deployed looking like a bug | `POST …/drawing-jobs` answers `501 drawing.engine_unavailable` (as B4.1 specifies until `@packio/dieline` ships server-side) and the screen shows that message and offers sending a template file instead |
+| Editing the customer's design from the back office | the design is shown read-only; prepress works on a copy (`admin.design-documents`), never the customer's document |
+
+### Decisions taken, with reasons
+
+- **A read-only viewer, not the editor.** The designer's `Editor` keeps designs in `localStorage`,
+  uses the storefront's locale routing and loads the customer-zone `designer` messages; mounting
+  it in the admin zone would mean rewiring all three, which is F4 Part B's job (designs move to
+  the API). The new `DesignViewer` lives in `src/features/designer` (shared) and draws the same
+  geometry from `@packio/dieline` in the same millimetre coordinates as the canvas, as SVG.
+  **Deferred:** opening a working copy in the designer from the back office, until F4 Part B.
+- **Annotations without a PDF renderer.** The page map places each thread's pin or area by its
+  page-relative geometry over a blank page, beside the threads. Rendering the proof PDF itself is
+  the customer proof viewer's job (F3), which this can adopt later.
+- **The SLA per stage comes from the API.** Preflight, proof, template and design have their own
+  deadlines; a proof with the customer is shown as "with the customer" and never tints the row,
+  because it is not prepress's time.
+- **Routine and exceptional actions never lead.** The mock orders the stage's own work first,
+  then assign and draw, and re-quote (destructive) last; the UI keeps the API's order.
+- **`AssignDialog` is shared** by the RFQ desk and prepress, offering only people who hold the
+  permission (`staff-directory?permission=`).
+
+### Deliberately not done
+
+- Proof decisions recorded by CS on the customer's behalf (`decision_channel = cs_on_behalf`):
+  the schema supports it, but it is a CS action on the order screen, not prepress's.
+- Version compare between proof versions (D-110): listed per version; a side-by-side compare
+  needs the PDF renderer above.
+
+### Open questions
+
+- **Backend**: `admin.prepress`, `admin.prepress-actions`, `admin.prepress-proofs`,
+  `admin.prepress-template`, `admin.design-services`, `admin.design-documents`.
+- **Backend**: which setting holds each prepress stage's SLA, and whether a proof with the
+  customer has one (assumed not).
+- **Backend**: does a design round wait for the customer's payment before `in_progress`
+  automatically (assumed yes, D-071 "pays before the extra round starts")?
 
 ---
 
