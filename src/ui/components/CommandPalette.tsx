@@ -86,14 +86,19 @@ export function CommandPalette({
 
   const active = items[activeIndex];
 
-  /** Group headings are rendered before the first item carrying a new group name. */
-  const headings = useMemo(() => {
-    const seen = new Set<string>();
-    return items.map((item) => {
-      if (!item.group || seen.has(item.group)) return null;
-      seen.add(item.group);
-      return item.group;
+  /**
+   * Consecutive items with the same group form one section; an item with no group stands alone.
+   * The overall index is kept, because the active option is still counted across the whole list.
+   */
+  const sections = useMemo(() => {
+    const result: { key: string; name: string | null; entries: { item: CommandItem; index: number }[] }[] = [];
+    items.forEach((item, index) => {
+      const name = item.group ?? null;
+      const last = result.at(-1);
+      if (last && last.name === name && name !== null) last.entries.push({ item, index });
+      else result.push({ key: `${name ?? "none"}-${index}`, name, entries: [{ item, index }] });
     });
+    return result;
   }, [items]);
 
   function onKeyDown(event: React.KeyboardEvent) {
@@ -161,15 +166,16 @@ export function CommandPalette({
             {loading ? <Spinner size={16} label={loadingLabel} /> : null}
           </div>
 
+          {/*
+            A listbox may contain only options and groups. Consecutive items that share a group
+            become a `role="group"` named by its heading, so a screen reader announces
+            "หน้าจอ, group" before the first option in it — and nothing else sits in the listbox.
+          */}
           <ul id={listId} ref={listRef} role="listbox" aria-label={title} className="max-h-80 overflow-y-auto py-1">
-            {items.map((item, index) => (
-              <li key={item.id}>
-                {headings[index] ? (
-                  <p className="text-subtle px-4 pt-3 pb-1 text-xs font-medium tracking-wide uppercase">
-                    {headings[index]}
-                  </p>
-                ) : null}
-                <div
+            {sections.map((section) => {
+              const options = section.entries.map(({ item, index }) => (
+                <li
+                  key={item.id}
                   id={`${listId}-${item.id}`}
                   role="option"
                   aria-selected={index === activeIndex}
@@ -188,10 +194,26 @@ export function CommandPalette({
                 >
                   {item.icon ? <Icon name={item.icon} size={16} className="shrink-0" /> : null}
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  {item.hint ? <span className="text-subtle shrink-0 text-xs">{item.hint}</span> : null}
-                </div>
-              </li>
-            ))}
+                  {item.hint ? <span className="text-muted shrink-0 text-xs">{item.hint}</span> : null}
+                </li>
+              ));
+              if (!section.name) return options;
+              const headingId = `${listId}-group-${section.key}`;
+              return (
+                <li key={section.key} role="presentation">
+                  <ul role="group" aria-labelledby={headingId}>
+                    <li
+                      role="presentation"
+                      id={headingId}
+                      className="text-muted px-4 pt-3 pb-1 text-xs font-medium tracking-wide uppercase"
+                    >
+                      {section.name}
+                    </li>
+                    {options}
+                  </ul>
+                </li>
+              );
+            })}
           </ul>
 
           {items.length === 0 && !loading ? (

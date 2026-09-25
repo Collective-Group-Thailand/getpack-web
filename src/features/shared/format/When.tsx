@@ -10,7 +10,7 @@ import { useFormat } from "./useFormat";
  */
 export function When({ at, absoluteOnly = false }: { at: string | null | undefined; absoluteOnly?: boolean }) {
   const format = useFormat();
-  if (!at) return <span className="text-subtle">{"—"}</span>;
+  if (!at) return <span className="text-muted">{"—"}</span>;
   const absolute = format.dateTime(at);
   if (absoluteOnly) return <time dateTime={at}>{absolute}</time>;
   return (

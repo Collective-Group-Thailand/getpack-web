@@ -261,6 +261,12 @@ export function DataTable<TRow extends RowData>({
 
   return (
     <div
+      // A scroll container must be reachable by keyboard (WCAG 2.1.1, axe
+      // `scrollable-region-focusable`): a wide or long table otherwise cannot be scrolled
+      // without a mouse. Named after the table so the tab stop is not an anonymous box.
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
       className={cn("border-border bg-surface relative max-h-[72dvh] overflow-auto rounded-lg border", className)}
       aria-busy={loading || undefined}
     >

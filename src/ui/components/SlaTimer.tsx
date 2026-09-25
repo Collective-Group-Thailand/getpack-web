@@ -40,7 +40,7 @@ function useNow(intervalMs = 30_000): number {
  */
 export function SlaTimer({ dueAt, state, format, absolute, none = "—", className }: SlaTimerProps) {
   const now = useNow();
-  if (!dueAt) return <span className="text-subtle">{none}</span>;
+  if (!dueAt) return <span className="text-muted">{none}</span>;
 
   const distance = Date.parse(dueAt) - now;
   const overdue = state ? state === "breached" : distance < 0;

@@ -116,7 +116,7 @@ export function NotificationBell({ zone }: { zone: Zone }) {
                         {item.readAt ? null : <span className="sr-only"> {t("unread")}</span>}
                       </span>
                       {item.title ? <span className="text-muted block text-xs">{item.body}</span> : null}
-                      <time dateTime={item.createdAt} className="text-subtle block text-xs">
+                      <time dateTime={item.createdAt} className="text-muted block text-xs">
                         {formatDateTime(item.createdAt, locale)}
                       </time>
                     </span>

@@ -56,7 +56,12 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
         <Icon name="shield-alert" size={16} className="text-warning" />
         {t("sensitiveLegend")}
       </p>
-      <div className="border-border overflow-auto rounded-lg border">
+      <div
+        role="region"
+        aria-label={t("caption", { audience: t(`audiences.${audience}`) })}
+        tabIndex={0}
+        className="border-border overflow-auto rounded-lg border"
+      >
         <table className="text-sm">
           <caption className="sr-only">{t("caption", { audience: t(`audiences.${audience}`) })}</caption>
           <thead className="bg-surface-subtle sticky top-0">
