@@ -1,7 +1,6 @@
 /**
- * The catalogue endpoints packio-api B2.1 **published** that the F2 desks read before 2.5 builds
- * their own screens: product types (with each RFQ category's spec schema) — typed by `Schemas`,
- * as the contract's stand-in.
+ * The D-100 product types every mock refers to (orders, quotations, RFQs), typed by `Schemas`;
+ * `./catalogue.ts` serves them with the rest of the published catalogue.
  *
  * The 14 types are the backend's own seed (`prisma/seed/data/catalog.ts`, D-100), copied into
  * `./fixtures/product-types.json`. The backend seeds every type as `rfq` until its calculator
@@ -9,13 +8,9 @@
  * the CS desk of 2.2 already assumes.
  */
 
-import { http, HttpResponse } from "msw";
-
 import type { Schemas } from "@/lib/api/types";
 
-import { staffPersonaOf } from "../auth";
-import { can } from "../personas";
-import { matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { mockId } from "../support";
 import productTypeSeeds from "./fixtures/product-types.json";
 
 type ProductType = Schemas["ProductTypeDto"];
@@ -66,10 +61,15 @@ function specSchema(code: string): Record<string, unknown> | null {
   };
 }
 
+/** The contract's own examples point at these two ids (patterns, print types, catalogue products). */
+const EXAMPLE_IDS: Record<string, { id: string; categoryId: string }> = {
+  folding_carton: { id: "0192f3a0-7c1e-7d2a-9b1f-00000000c002", categoryId: "0192f3a0-7c1e-7d2a-9b1f-00000000c001" },
+};
+
 export const PRODUCT_TYPES: ProductType[] = productTypeSeeds.map((seed, index) => ({
-  id: mockId("typ", index + 1),
+  id: EXAMPLE_IDS[seed.code]?.id ?? mockId("typ", index + 1),
   code: seed.code,
-  categoryId: mockId("cty", index + 1),
+  categoryId: EXAMPLE_IDS[seed.code]?.categoryId ?? mockId("cty", index + 1),
   nameTh: seed.nameTh,
   nameEn: seed.nameEn,
   quoteMode: seed.calculatorKey ? "instant" : "rfq",
@@ -93,33 +93,3 @@ export function productTypeOfCalculator(calculator: string): { code: string; nam
   const type = PRODUCT_TYPES.find((candidate) => candidate.calculatorKey === calculator);
   return type ? { code: type.code, name: type.nameTh } : { code: calculator, name: calculator };
 }
-
-export const catalogHandlers = [
-  http.get("*/v1/admin/catalog/product-types", ({ request }) => {
-    if (!can(staffPersonaOf(request), "catalog.read")) return problem(403, "auth.forbidden", "ไม่มีสิทธิ์ดูแคตตาล็อก");
-    const url = new URL(request.url);
-    const q = url.searchParams.get("q") ?? undefined;
-    const status = url.searchParams.get("status");
-    const rows = PRODUCT_TYPES.filter((type) => !status || type.status === status).filter((type) =>
-      matchesQuery(q, type.code, type.nameTh, type.nameEn),
-    );
-    return HttpResponse.json(
-      paginate(
-        sortBy(
-          rows,
-          url.searchParams.get("sort") ?? "sort",
-          (url.searchParams.get("order") as "asc" | "desc") ?? "asc",
-        ),
-        {
-          page: Number(url.searchParams.get("page") ?? 1),
-          perPage: Number(url.searchParams.get("perPage") ?? 25),
-        },
-      ),
-    );
-  }),
-  http.get("*/v1/admin/catalog/product-types/:id", ({ request, params }) => {
-    if (!can(staffPersonaOf(request), "catalog.read")) return problem(403, "auth.forbidden", "ไม่มีสิทธิ์ดูแคตตาล็อก");
-    const type = PRODUCT_TYPES.find((candidate) => candidate.id === params.id);
-    return type ? HttpResponse.json(type) : problem(404, "catalog.not_found", "ไม่พบประเภทสินค้านี้");
-  }),
-];

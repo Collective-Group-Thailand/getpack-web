@@ -1065,4 +1065,4 @@ export const platformHandlers = [
   }),
 ];
 
-export { approvals, settings, users };
+export { approvals, files, settings, users };
