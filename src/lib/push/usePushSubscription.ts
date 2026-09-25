@@ -2,9 +2,10 @@
 
 import { useCallback, useState, useSyncExternalStore } from "react";
 
-import { CSRF_HEADER } from "@/lib/api/client";
+import { browserApi } from "@/lib/api/browser";
+import type { Schemas } from "@/lib/api/types";
 import { clientEnv } from "@/lib/env";
-import { browserBffUrl, type Zone } from "@/lib/zones";
+import type { Zone } from "@/lib/zones";
 
 import { decodeVapidKey, mayPrompt, pushPermissionState, type PushPermissionState } from "./vapid";
 
@@ -19,7 +20,8 @@ const SERVICE_WORKER_PATH = "/sw.js";
  * `state` tells a caller whether asking is even possible — so "prompt only after a meaningful
  * action" is enforced by there being no other way to do it, rather than by a comment.
  *
- * CONTRACT-REQUEST `push.subscriptions`.
+ * On the contract packio-api B1.3 published: `GET /v1/{surface}/web-push/vapid-public-key` and
+ * `POST /v1/{surface}/web-push/subscriptions`.
  */
 export function usePushSubscription(zone: Zone) {
   // `useSyncExternalStore` rather than state-plus-effect: permission is browser state this
@@ -37,11 +39,17 @@ export function usePushSubscription(zone: Zone) {
    */
   const enable = useCallback(
     async (afterMeaningfulAction = true): Promise<boolean> => {
-      const key = clientEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!key || !mayPrompt(state, afterMeaningfulAction)) return false;
+      // The env key is the switch that says web push is configured for this deployment at
+      // all; the key actually subscribed with is the API's, because it is the API that signs
+      // every push. Two keys that drift apart fail silently — the browser accepts the
+      // subscription and every message is then rejected by the push service.
+      if (!clientEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !mayPrompt(state, afterMeaningfulAction)) return false;
 
       setBusy(true);
       try {
+        const key = await serverVapidKey(zone);
+        if (!key) return false;
+
         const registration = await navigator.serviceWorker.register(SERVICE_WORKER_PATH);
         const permission = await Notification.requestPermission();
         // No `setState`: the permission store below is notified by the browser, and forcing a
@@ -55,23 +63,15 @@ export function usePushSubscription(zone: Zone) {
           applicationServerKey: decodeVapidKey(key),
         });
 
-        /*
-         * A plain `fetch`, not `browserApi()`.
-         *
-         * The typed client only knows paths that are in `schema.d.ts`, and this endpoint is a
-         * contract request — it is not in the contract yet. Forcing it through with `as never`
-         * would defeat the one mechanism that stops response types being invented (ADR-0006),
-         * and would silently keep compiling on the day the real endpoint lands with a
-         * different shape. This call goes back through `browserApi` as soon as it is real.
-         *
-         * Still through the BFF, so the session cookie authenticates it and no token reaches
-         * the browser. `toJSON()` gives the `{ endpoint, keys: { p256dh, auth } }` shape the
-         * push protocol defines and any server library expects.
-         */
-        await fetch(browserBffUrl(zone, "/push/subscriptions"), {
-          method: "POST",
-          headers: { "content-type": "application/json", [CSRF_HEADER]: "1" },
-          body: JSON.stringify(subscription.toJSON()),
+        // Through the BFF, so the session cookie authenticates it and no token reaches the
+        // browser. `toJSON()` is the push protocol's own `{ endpoint, keys }` shape; only the
+        // fields `SubscribeWebPushDto` names are sent.
+        const json = subscription.toJSON();
+        if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) return false;
+        await registerSubscription(zone, {
+          endpoint: json.endpoint,
+          keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+          userAgent: navigator.userAgent,
         });
         return true;
       } catch {
@@ -137,4 +137,26 @@ function readPermissionState(): PushPermissionState {
 /** Server render: no browser, so nothing is offered until the client says otherwise. */
 function readServerState(): PushPermissionState {
   return "unsupported";
+}
+
+/* ---------------------------------------------------------------------------------------- *
+ * The API calls, one per surface: openapi-fetch types a request by its literal path.
+ * ---------------------------------------------------------------------------------------- */
+
+async function serverVapidKey(zone: Zone): Promise<string | null> {
+  const api = browserApi();
+  const response =
+    zone === "admin"
+      ? await api.GET("/v1/admin/web-push/vapid-public-key")
+      : zone === "partner"
+        ? await api.GET("/v1/partner/web-push/vapid-public-key")
+        : await api.GET("/v1/store/web-push/vapid-public-key");
+  return response.data?.vapidPublicKey ?? null;
+}
+
+async function registerSubscription(zone: Zone, body: Schemas["SubscribeWebPushDto"]): Promise<void> {
+  const api = browserApi();
+  if (zone === "admin") await api.POST("/v1/admin/web-push/subscriptions", { body });
+  else if (zone === "partner") await api.POST("/v1/partner/web-push/subscriptions", { body });
+  else await api.POST("/v1/store/web-push/subscriptions", { body });
 }

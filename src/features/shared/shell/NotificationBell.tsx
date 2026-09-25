@@ -1,9 +1,11 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { formatDateTime } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Zone } from "@/lib/zones";
 import { Button } from "@/ui/components/Button";
@@ -12,28 +14,42 @@ import { IconButton } from "@/ui/components/IconButton";
 import { Popover } from "@/ui/components/Popover";
 import { Spinner } from "@/ui/components/Spinner";
 
-import { markAllRead, useNotifications } from "./notifications";
+import { markAllRead, markRead, useNotifications } from "./notifications";
+
+/** Beyond this the badge says "99+"; the exact figure is in the accessible name. */
+const BADGE_MAX = 99;
 
 /**
  * The in-app notification centre, in every zone (D-143).
  *
- * The feed is a contract request (`notifications.feed`), so what ships is the control, the
- * count, the empty state and the read action — against a mock. Realtime invalidates the same
- * query key, so when a driver is configured the badge updates without polling.
+ * Realtime invalidates the same query key, so when a driver is configured the badge updates
+ * without polling. Items are buttons that mark themselves read, not links: the contract gives
+ * an event type and a body but no destination yet (`notifications.unread-and-link`).
  */
 export function NotificationBell({ zone }: { zone: Zone }) {
   const t = useTranslations("common.notifications");
+  const locale = useLocale() as Locale;
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
   const { data, isPending } = useNotifications(zone);
-  const items = data?.data ?? [];
-  const unreadCount = data?.meta.unreadCount ?? 0;
+  const items = data?.items ?? [];
+  const unreadCount = data?.unreadCount ?? 0;
+  const lowerBound = data?.unreadIsLowerBound ?? false;
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.list(zone, "notifications") });
 
   async function onMarkAllRead() {
-    await markAllRead(zone);
-    await queryClient.invalidateQueries({ queryKey: queryKeys.list(zone, "notifications") });
+    await markAllRead(zone, items);
+    await invalidate();
   }
+
+  async function onRead(notificationId: string) {
+    await markRead(zone, notificationId);
+    await invalidate();
+  }
+
+  const countLabel = lowerBound ? t("countAtLeast", { count: unreadCount }) : String(unreadCount);
 
   return (
     /*
@@ -57,7 +73,7 @@ export function NotificationBell({ zone }: { zone: Zone }) {
             size="sm"
             // The count is in the accessible name, not only in the dot: a red dot says
             // "something" to a sighted user and nothing at all to a screen reader.
-            label={unreadCount > 0 ? t("labelWithCount", { count: unreadCount }) : t("label")}
+            label={unreadCount > 0 ? t("labelWithCount", { count: countLabel }) : t("label")}
           />
         }
       >
@@ -81,10 +97,11 @@ export function NotificationBell({ zone }: { zone: Zone }) {
             <ul className="max-h-96 overflow-y-auto">
               {items.map((item) => (
                 <li key={item.id} className="border-border border-b last:border-0">
-                  <a
-                    href={item.url ?? "#"}
-                    className="hover:bg-surface-subtle flex gap-2 px-3 py-2.5"
-                    onClick={() => setOpen(false)}
+                  <button
+                    type="button"
+                    className="hover:bg-surface-subtle flex w-full gap-2 px-3 py-2.5 text-start"
+                    onClick={() => (item.readAt ? undefined : void onRead(item.id))}
+                    aria-disabled={item.readAt ? true : undefined}
                   >
                     {/* Unread is a dot *and* a bolder title: never colour alone. */}
                     <span
@@ -95,12 +112,15 @@ export function NotificationBell({ zone }: { zone: Zone }) {
                     />
                     <span className="min-w-0">
                       <span className={item.readAt ? "block text-sm" : "block text-sm font-medium"}>
-                        {item.title}
+                        {item.title ?? item.body}
                         {item.readAt ? null : <span className="sr-only"> {t("unread")}</span>}
                       </span>
-                      <span className="text-muted block text-xs">{item.body}</span>
+                      {item.title ? <span className="text-muted block text-xs">{item.body}</span> : null}
+                      <time dateTime={item.createdAt} className="text-subtle block text-xs">
+                        {formatDateTime(item.createdAt, locale)}
+                      </time>
                     </span>
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -113,7 +133,7 @@ export function NotificationBell({ zone }: { zone: Zone }) {
           aria-hidden
           className="bg-danger text-danger-fg pointer-events-none absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[0.625rem] font-medium"
         >
-          {unreadCount > 99 ? t("overflow") : unreadCount}
+          {lowerBound ? countLabel : unreadCount > BADGE_MAX ? t("overflow") : unreadCount}
         </span>
       ) : null}
     </span>
