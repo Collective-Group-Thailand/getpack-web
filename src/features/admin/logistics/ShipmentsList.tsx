@@ -28,11 +28,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<ShipmentRow> |
           <Link href={`/shipments/${row.id}`} className="text-primary font-mono hover:underline">
             {row.shipmentNo}
           </Link>
-          <p className="text-muted text-xs">
-            <Link href={`/orders/${row.order.id}`} className="hover:underline">
-              {row.order.orderCode}
-            </Link>
-          </p>
+          <p className="text-muted text-xs">{row.order.orderCode}</p>
         </div>
       ),
     },
