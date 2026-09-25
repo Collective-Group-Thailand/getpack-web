@@ -21,22 +21,14 @@ function read(messages: Messages, path: string): unknown {
 
 const ALL_META = Object.values(STATUS_MAPS).flatMap((map) => Object.values(map));
 
-describe("the eleven status maps", () => {
-  it("covers every domain the product has statuses for", () => {
-    // If a domain is added to `./contract.ts` without a map, this is what says so.
-    expect(Object.keys(STATUS_MAPS).sort()).toEqual([
-      "artwork",
-      "claim",
-      "document",
-      "instalment",
-      "job",
-      "order",
-      "payment",
-      "payout",
-      "proof",
-      "rfq",
-      "shipment",
-    ]);
+describe("the status maps", () => {
+  it("has a map for every vocabulary in ./contract.ts, and nothing else", async () => {
+    // If a vocabulary is added to `./contract.ts` without a map — or a map outlives its
+    // vocabulary — this is what says so. Read from the source so the list cannot drift.
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(`${process.cwd()}/src/domain/status/contract.ts`, "utf8");
+    const vocabularies = [...source.matchAll(/^export type (\w+) =/gm)].map((match) => match[1]);
+    expect(Object.keys(STATUS_MAPS)).toHaveLength(vocabularies.length);
   });
 
   it("never relies on colour alone — every status carries an icon and words", () => {

@@ -1,12 +1,10 @@
 import { defineStatusMap } from "./types";
 import type { ProofStatus } from "./contract";
 
-/** A proof sent for customer approval (proposed — see `./contract.ts`). */
+/** A proof version sent to the customer (B4.1). */
 export const PROOF_STATUS = defineStatusMap<ProofStatus>({
-  preparing: { tone: "neutral", icon: "edit", labelKey: "proof.preparing" },
-  sent: { tone: "info", icon: "send", labelKey: "proof.sent" },
-  in_review: { tone: "info", icon: "eye", labelKey: "proof.inReview" },
+  pending_customer: { tone: "warning", icon: "hourglass", labelKey: "proof.pendingCustomer" },
+  approved: { tone: "success", icon: "check", labelKey: "proof.approved" },
   changes_requested: { tone: "warning", icon: "edit", labelKey: "proof.changesRequested" },
-  approved: { tone: "success", icon: "file-check", labelKey: "proof.approved" },
-  expired: { tone: "neutral", icon: "hourglass", labelKey: "proof.expired" },
+  superseded: { tone: "neutral", icon: "history", labelKey: "proof.superseded" },
 });
