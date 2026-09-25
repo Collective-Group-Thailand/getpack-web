@@ -52,7 +52,7 @@ export function SlaTimer({ dueAt, state, format, absolute, none = "—", classNa
       className={cn(
         "inline-flex items-center gap-1 text-xs font-medium whitespace-nowrap tabular-nums",
         tone === "danger" && "text-danger",
-        tone === "warning" && "text-warning",
+        tone === "warning" && "text-warning-subtle-fg",
         tone === "neutral" && "text-muted",
         className,
       )}

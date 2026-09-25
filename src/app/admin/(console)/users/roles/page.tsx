@@ -24,7 +24,12 @@ export default async function RolesPage() {
   return (
     <ConsolePage>
       <PageHeader
-        breadcrumbs={<Breadcrumbs label={t("breadcrumb")} items={[{ label: tUsers("title"), href: "/users" }, { label: t("title") }]} />}
+        breadcrumbs={
+          <Breadcrumbs
+            label={t("breadcrumb")}
+            items={[{ label: tUsers("title"), href: "/users" }, { label: t("title") }]}
+          />
+        }
         title={t("title")}
         description={t("description")}
       />

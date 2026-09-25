@@ -241,7 +241,7 @@ describe("SlaTimer", () => {
     const { rerender } = render(<SlaTimer dueAt="2099-01-01T00:00:00+07:00" format={format} />);
     expect(screen.getByText("เหลือเวลา")).toHaveClass("text-muted");
     rerender(<SlaTimer dueAt="2099-01-01T00:00:00+07:00" state="at_risk" format={format} />);
-    expect(screen.getByText("เหลือเวลา")).toHaveClass("text-warning");
+    expect(screen.getByText("เหลือเวลา")).toHaveClass("text-warning-subtle-fg");
   });
 });
 

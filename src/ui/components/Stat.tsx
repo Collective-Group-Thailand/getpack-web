@@ -33,7 +33,7 @@ export function Stat({
   const toneClass = {
     neutral: "text-muted",
     success: "text-success",
-    warning: "text-warning",
+    warning: "text-warning-subtle-fg",
     danger: "text-danger",
   }[tone];
 

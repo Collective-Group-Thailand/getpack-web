@@ -13,7 +13,9 @@ export default async function UserPage({ params }: { params: Promise<{ userId: s
   const { userId } = await params;
   let initial = null;
   try {
-    initial = (await (await adminServerApis()).contract.GET("/v1/admin/users/{userId}", { params: { path: { userId } } })).data ?? null;
+    initial =
+      (await (await adminServerApis()).contract.GET("/v1/admin/users/{userId}", { params: { path: { userId } } }))
+        .data ?? null;
   } catch {
     // Rendered by the client as the API answered it.
   }

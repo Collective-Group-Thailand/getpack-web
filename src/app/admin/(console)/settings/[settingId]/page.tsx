@@ -14,7 +14,11 @@ export default async function SettingPage({ params }: { params: Promise<{ settin
   let initial = null;
   try {
     initial =
-      (await (await adminServerApis()).contract.GET("/v1/admin/settings/{settingId}", { params: { path: { settingId } } })).data ?? null;
+      (
+        await (
+          await adminServerApis()
+        ).contract.GET("/v1/admin/settings/{settingId}", { params: { path: { settingId } } })
+      ).data ?? null;
   } catch {
     // Rendered by the client as the API answered it.
   }

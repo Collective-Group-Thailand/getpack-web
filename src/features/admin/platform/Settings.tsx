@@ -226,7 +226,9 @@ export function SettingDetailView({ settingId, initial }: { settingId: string; i
     onSuccess: (updated) => {
       queryClient.setQueryData(key, updated);
       void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "setting") });
-      toast.success(updated.pending ? t("changePending") : when === "now" ? t("changed") : t("scheduled"));
+      toast.success(
+        updated.pending ? t("change.changePending") : when === "now" ? t("change.changed") : t("change.scheduled"),
+      );
       setDraft(null);
       setReason("");
       setError(null);
@@ -288,7 +290,7 @@ export function SettingDetailView({ settingId, initial }: { settingId: string; i
         <Callout tone="warning" title={t(`confirmationHint.${setting.confirmationStatus}`)} />
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-5">
           <Card padding="lg">
             <CardHeader>
