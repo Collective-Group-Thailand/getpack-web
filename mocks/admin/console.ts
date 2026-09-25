@@ -197,7 +197,9 @@ export const consoleHandlers = [
 consoleHandlers.push(
   mockRequest("GET /v1/admin/staff-directory", ({ query }) => ({
     data: PERSONAS.filter(
-      (persona) => matchesQuery(query.q, persona.displayName, persona.email) && (!query.role || persona.roles.includes(query.role)),
+      (persona) =>
+        matchesQuery(query.q, persona.displayName, persona.email) &&
+        (!query.role || persona.roles.includes(query.role)),
     )
       .slice(0, query.limit ?? 20)
       .map((persona) => ({ id: persona.id, displayName: persona.displayName, roles: persona.roles })),

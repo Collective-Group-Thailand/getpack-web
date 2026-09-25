@@ -7,9 +7,15 @@
  */
 
 import { adminConsoleRequests } from "./admin-console";
+import { adminCustomerRequests } from "./admin-customers";
+import { adminOrderRequests } from "./admin-orders";
+import { adminSalesRequests } from "./admin-sales";
 
 export const REQUESTS = {
   ...adminConsoleRequests,
+  ...adminOrderRequests,
+  ...adminCustomerRequests,
+  ...adminSalesRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

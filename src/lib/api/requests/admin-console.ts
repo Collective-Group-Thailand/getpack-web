@@ -178,7 +178,11 @@ export const adminConsoleRequests = {
   "GET /v1/admin/staff-directory": request({
     request: "admin.staff-directory",
     summary: "Active staff by name, for pickers: delegate an approval, assign a queue item, @mention",
-    query: z.object({ q: z.string().optional(), role: z.string().optional(), limit: z.coerce.number().int().max(50).optional() }),
+    query: z.object({
+      q: z.string().optional(),
+      role: z.string().optional(),
+      limit: z.coerce.number().int().max(50).optional(),
+    }),
     response: z.object({ data: z.array(staffRef) }),
   }),
   "GET /v1/admin/sod-rules": request({
