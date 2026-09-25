@@ -25,6 +25,10 @@ const STORIES = [
   "navigation-shell-furniture--palette",
   "navigation-shell-furniture--shortcuts",
   "navigation-shell-furniture--avatars",
+  "data-display-charts--bars",
+  "data-display-charts--horizontal-grouped",
+  "data-display-charts--lines",
+  "data-display-charts--meter-with-threshold",
 ];
 
 for (const id of STORIES) {
