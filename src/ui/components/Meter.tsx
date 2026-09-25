@@ -9,15 +9,20 @@ export interface MeterProps {
   valueText: string;
   tone?: "primary" | "success" | "warning" | "danger";
   className?: string;
+  /**
+   * A threshold drawn on the track (e.g. a budget alert). Its meaning belongs in `valueText`
+   * too: the tick is decoration for sighted users, not the only carrier of the information.
+   */
+  marker?: number;
 }
 
 /**
  * A gauge (`role="meter"`), not a progress bar: it measures an amount, it is not a task
  * finishing. The value is clamped for drawing only; `valueText` carries the real figures.
  */
-export function Meter({ value, label, valueText, tone = "primary", className }: MeterProps) {
+export function Meter({ value, label, valueText, tone = "primary", className, marker }: MeterProps) {
   const width = Math.min(100, Math.max(0, value));
-  return (
+  const meter = (
     <div
       role="meter"
       aria-label={label}
@@ -36,6 +41,17 @@ export function Meter({ value, label, valueText, tone = "primary", className }: 
           tone === "danger" && "bg-danger",
         )}
         style={{ width: `${width}%` }}
+      />
+    </div>
+  );
+  if (marker === undefined) return meter;
+  return (
+    <div className="relative">
+      {meter}
+      <span
+        aria-hidden
+        className="bg-fg absolute -top-0.5 h-3 w-0.5 rounded-full"
+        style={{ left: `calc(${Math.min(100, Math.max(0, marker))}% - 1px)` }}
       />
     </div>
   );
