@@ -73,6 +73,11 @@ const ACTION_META: Record<string, NextActionMeta> = {
   edit_quote: { tone: "neutral", icon: "edit", labelKey: "action.editQuote" },
   send_quote: { tone: "primary", icon: "send", labelKey: "action.sendQuote" },
   record_acceptance: { tone: "success", icon: "check", labelKey: "action.recordAcceptance" },
+  // Prepress (F2 2.4).
+  send_template: { tone: "primary", icon: "send", labelKey: "action.sendTemplate" },
+  deliver_round: { tone: "primary", icon: "send", labelKey: "action.deliverRound" },
+  draw_dieline: { tone: "neutral", icon: "ruler", labelKey: "action.drawDieline" },
+  requote_design: { tone: "warning", icon: "refresh", labelKey: "action.requoteDesign" },
 };
 
 /** Falls back to something visible and pressable rather than dropping the action. */

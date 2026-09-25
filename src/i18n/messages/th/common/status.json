@@ -332,6 +332,19 @@
     "suspended": "ระงับชั่วคราว",
     "inactive": "ปิดใช้งาน"
   },
+  "submission": {
+    "submitted": "ส่งไฟล์แล้ว",
+    "superseded": "มีไฟล์ใหม่แทนแล้ว",
+    "acceptedForProof": "ผ่านการตรวจ พร้อมทำปรู๊ฟ",
+    "rejected": "ส่งคืนให้แก้ไข"
+  },
+  "drawing": {
+    "queued": "รอวาดแบบ",
+    "running": "กำลังวาดแบบ",
+    "succeeded": "วาดแบบเสร็จแล้ว",
+    "failed": "วาดแบบไม่สำเร็จ",
+    "engineUnavailable": "ระบบวาดแบบยังไม่พร้อม"
+  },
   "action": {
     "approve": "อนุมัติ",
     "reject": "ไม่อนุมัติ",
@@ -355,6 +368,10 @@
     "editQuote": "แก้ไขฉบับร่าง",
     "sendQuote": "ส่งใบเสนอราคา",
     "recordAcceptance": "บันทึกการตอบรับ",
+    "sendTemplate": "ส่งแบบกล่อง",
+    "deliverRound": "ส่งงานออกแบบ",
+    "drawDieline": "วาดแบบกล่อง",
+    "requoteDesign": "เสนอราคาออกแบบใหม่",
     "unknown": "ดำเนินการ"
   }
 }

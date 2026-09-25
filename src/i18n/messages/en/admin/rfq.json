@@ -104,18 +104,7 @@
     "assign": {
       "title": "Assign an owner",
       "body": "Choose who looks after {code}.",
-      "current": "Currently: {name}",
-      "person": "Staff member",
-      "personHint": "Only people who can handle RFQs.",
-      "placeholder": "Type a name",
-      "nobody": "Nobody found",
-      "clearPick": "Clear",
-      "clear": "Unassign",
-      "me": "Take it myself",
-      "confirm": "Assign",
-      "done": "Assigned to {name}",
-      "cleared": "Unassigned",
-      "failed": "Could not assign"
+      "personHint": "Only people who can handle RFQs."
     },
     "consult": {
       "title": "Request factory cost",
