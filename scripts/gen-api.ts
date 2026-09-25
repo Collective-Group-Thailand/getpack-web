@@ -5,9 +5,10 @@
  *   pnpm gen:api --check   fail if a committed output is stale or was hand-edited (CI)
  *   pnpm gen:api --adopt   pull a newer contract from API_CONTRACT_SOURCE, then regenerate
  *
- * Two files are written, both committed:
+ * Three files are written, all committed:
  *   src/lib/api/schema.d.ts      from contract/openapi.json — what packio-api has agreed to
  *   mocks/generated/handlers.ts  MSW handlers built from the contract's own examples
+ *   docs/contract-requests.openapi.json  the frontend's contract requests, for the backend
  *
  * Why a vendored copy of the contract rather than fetching it here: CI has no sibling
  * checkout of packio-api and no credentials for a private release asset, so the drift gate
@@ -23,12 +24,16 @@ import { fileURLToPath } from "node:url";
 
 import openapiTS, { astToString } from "openapi-typescript";
 
+import { buildRequestsDocument } from "./requests-openapi";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const LOCK = resolve(ROOT, "contract.lock.json");
 const VENDORED = resolve(ROOT, "contract/openapi.json");
 const OUT_SCHEMA = resolve(ROOT, "src/lib/api/schema.d.ts");
 const OUT_HANDLERS = resolve(ROOT, "mocks/generated/handlers.ts");
+/** The contract requests, as an OpenAPI document for the backend (`src/lib/api/requests`). */
+const OUT_REQUESTS = resolve(ROOT, "docs/contract-requests.openapi.json");
 
 interface ContractLock {
   version: string;
@@ -238,11 +243,13 @@ async function main(): Promise<void> {
 
   const schema = await typesFor(VENDORED, `contract/openapi.json (packio-api ${lock.version})`);
   const handlers = buildHandlers(readJson<OpenApiDocument>(VENDORED), lock);
+  const requests = buildRequestsDocument();
 
   if (check) {
     const ok = [
       compare(OUT_SCHEMA, schema, "src/lib/api/schema.d.ts"),
       compare(OUT_HANDLERS, handlers, "mocks/generated/handlers.ts"),
+      compare(OUT_REQUESTS, requests, "docs/contract-requests.openapi.json"),
     ].every(Boolean);
 
     if (!ok) process.exit(1);
@@ -252,6 +259,7 @@ async function main(): Promise<void> {
 
   write(OUT_SCHEMA, schema);
   write(OUT_HANDLERS, handlers);
+  write(OUT_REQUESTS, requests);
 }
 
 main().catch((error: unknown) => {

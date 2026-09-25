@@ -1,0 +1,72 @@
+[
+  {
+    "key": "payout_run_maker_checker",
+    "description": "The creator of a payout run cannot approve it (D-022, §8)",
+    "decisions": ["D-022", "D-033"],
+    "kind": "action_pair",
+    "actions": ["payout_run.create", "payout_run.approve"],
+    "subjectMatch": "same_subject"
+  },
+  {
+    "key": "vendor_bill_vs_bank_account",
+    "description": "Whoever records a vendor bill cannot change that vendor's bank account (§8)",
+    "decisions": ["D-033"],
+    "kind": "action_pair",
+    "actions": ["vendor_invoice.record", "vendor_bank_account.change"],
+    "subjectMatch": "same_vendor"
+  },
+  {
+    "key": "manual_journal_maker_checker",
+    "description": "The maker of a manual journal cannot approve it (§8)",
+    "decisions": ["D-033"],
+    "kind": "action_pair",
+    "actions": ["journal.create", "journal.approve"],
+    "subjectMatch": "same_subject"
+  },
+  {
+    "key": "credit_note_maker_checker",
+    "description": "Whoever requests a credit note cannot issue it (§8)",
+    "decisions": ["D-033"],
+    "kind": "action_pair",
+    "actions": ["credit_note.request", "credit_note.issue"],
+    "subjectMatch": "same_subject"
+  },
+  {
+    "key": "refund_maker_checker",
+    "description": "Whoever requests a refund cannot approve it (§8)",
+    "decisions": ["D-033"],
+    "kind": "action_pair",
+    "actions": ["refund.request", "refund.approve"],
+    "subjectMatch": "same_subject"
+  },
+  {
+    "key": "write_off_maker_checker",
+    "description": "Whoever proposes a write-off cannot approve it (§8)",
+    "decisions": ["D-033"],
+    "kind": "action_pair",
+    "actions": ["write_off.request", "write_off.approve"],
+    "subjectMatch": "same_subject"
+  },
+  {
+    "key": "bank_account_change_maker_checker",
+    "description": "Whoever changes a bank account cannot approve the change (§8)",
+    "decisions": ["D-033"],
+    "kind": "action_pair",
+    "actions": ["vendor_bank_account.change", "vendor_bank_account.approve"],
+    "subjectMatch": "same_subject"
+  },
+  {
+    "key": "auditor_independent_of_finance",
+    "description": "D-168 the time-boxed Auditor role is never combined with Finance (auditor independence, §8)",
+    "decisions": ["D-168", "D-140"],
+    "kind": "role_pair",
+    "roles": ["auditor", "finance"]
+  },
+  {
+    "key": "auditor_independent_of_finance_manager",
+    "description": "D-168 the time-boxed Auditor role is never combined with Finance Manager (auditor independence, §8)",
+    "decisions": ["D-168", "D-140"],
+    "kind": "role_pair",
+    "roles": ["auditor", "finance_manager"]
+  }
+]
