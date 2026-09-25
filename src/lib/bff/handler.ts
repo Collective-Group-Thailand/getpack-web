@@ -90,7 +90,7 @@ export function createBffHandler(zone: Zone) {
 
     const mutating = !METHODS_WITHOUT_BODY.has(request.method);
     if (mutating) {
-      const refusal = checkCsrf(request, requestId);
+      const refusal = checkCsrf(request, requestId, isBeaconPath(upstreamPath));
       if (refusal) return refusal;
     }
 
@@ -140,8 +140,21 @@ export function createBffHandler(zone: Zone) {
  * `x-packio-csrf` closes that: a form post cannot set a custom header, so only code running
  * on this origin can produce one, and the `Origin` check makes sure that origin is ours.
  */
-function checkCsrf(request: NextRequest, requestId: string): NextResponse | null {
-  if (request.headers.get(CSRF_HEADER) !== "1") {
+/**
+ * Fire-and-forget telemetry posted with `navigator.sendBeacon`, which cannot set a header — so
+ * `x-packio-csrf` can never be present and, before this list, every beacon was refused with a
+ * 403 and field Web Vitals and the funnel never reached the API. The `Origin` check still
+ * applies to them in full: a beacon from another site is refused exactly as before. What is
+ * given up is only the header, on endpoints whose worst abuse is a fake measurement.
+ */
+const BEACON_PATHS: readonly RegExp[] = [/^\/v1\/(store|admin|partner)\/rum\/web-vitals$/, /^\/v1\/store\/analytics\/events$/];
+
+export function isBeaconPath(upstreamPath: string): boolean {
+  return BEACON_PATHS.some((pattern) => pattern.test(upstreamPath));
+}
+
+function checkCsrf(request: NextRequest, requestId: string, beacon = false): NextResponse | null {
+  if (!beacon && request.headers.get(CSRF_HEADER) !== "1") {
     return bffProblem(
       403,
       "bff.csrf_header_missing",
