@@ -17,6 +17,68 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-26 | **F2 Deliverable 2.5** — catalogue & CMS | On the **published** B2.1 contract (no contract requests): a stateful table mock (ETag/If-Match, archive by status) seeded from the contract's own list examples, now emitted by `gen:api`; a typed table registry of ~40 catalogue, CMS and geography tables driving one CRUD screen; product types with the reasoned quote-mode action (D-100); Excel import with preview → confirm by hash (D-005, D-170); home-section ordering; articles with a TipTap `RichTextEditor` in `src/ui`; catalogue/CMS maps by section; `catalog.import`, `seo.manage`, `geography.manage` from `docs/rbac.md`. 576 unit, 154 e2e | 2.6–2.8 | See the notes under the F2.5 heading |
 | 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (adopted in 1aaa711 and 2880e4e) plus contract requests for the production board, inspections and scorecards: the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; Packio rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
 | 2026-09-26 | **F2 Deliverable 2.7** — marketing, B2B, customers | Eight contract-request groups for B3.3–B3.5 (campaigns, promotions, coupons, referrals, customer points and consents, companies, company credit) with stateful mocks; campaigns with the budget meter against the alert threshold (D-154); the promotion editor with typed D-053 conditions and benefit and its coupon codes; promotion priority; the referral review queue decided in approvals (D-136); loyalty and referral rules as setting versions; customers (profile, orders, points ledger, referrals, consents); companies (KYC review D-120, members, branches, credit via the `credit_limit` policy D-121, overdue block D-122, statements D-125, orders). Validation codes now read as words in every form; the approvals mock routes by step condition and notifies the subject. 584 unit, 184 e2e | 2.8 | See the notes under the F2.7 heading |
+| 2026-09-26 | **F2 Deliverable 2.8** — logistics, claims, analytics, hardening | Five contract-request groups (B4.3, B4.5, B6.1, B6.2) with stateful mocks: shipments (queues, split, fallback carrier quotes and booking, exceptions, labels, POD review with the tolerance result), claims (evidence, liability by rule with a permissioned override, idempotent resolutions), the demand dashboard on a new accessible `Chart` (Recharts, data-table fallback, loaded on demand) with suppressed small groups and the anonymised prospectus, and typed operational reports with the API's totals. Hardening: every role's menu opens cleanly (14 roles), axe on the new screens, chart visual baselines, and zod out of the browser — admin shell 490 → 363 KB, lists 501 → 390 KB — with the admin Lighthouse set split and re-ratcheted. 595 unit, 211 e2e, 8 visual | F3 onwards | See the notes under the F2.8 heading |
+
+---
+
+## F2 Deliverable 2.8 — 2026-09-26
+
+Logistics, claims, the demand dashboard, reports, and the hardening pass that closes F2. Same
+worktree and branch. Nothing of B4.3, B4.5 or B6 is published, so all of it is contract requests
+(`admin-logistics.ts`, `admin-analytics.ts`); the mocks build on the commerce mock's orders.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A delivery leaving while a before-shipping instalment is unpaid (B3.2) | the shipment says so, and the mock refuses the booking (`shipment.payment_required`) |
+| The tolerance outcome computed in the browser (D-021, D-080, D-165) | the POD carries the API's `ToleranceResultDto` (ordered, delivered, band, outcome, the auto-claim) |
+| A claim approved with nobody liable (D-083) | the API refuses (`claim.liability_undetermined`); an override needs `claims.override_liability` and a reason, and is shown as such next to the rule's answer |
+| A resolution executed twice | one idempotency key per "resolve" intent; the resolution names the document it made (CN, refund, re-production job, deduction) |
+| "Last 30 days" computed in the browser | analytics take a `range` preset the API resolves in Asia/Bangkok, and return the period |
+| A small group identifying a customer or factory (D-044) | the API withholds groups under its minimum and says how many; the screen and the prospectus toast repeat it |
+| A chart only sighted mouse users can read | `src/ui` `Chart`: the drawing is `aria-hidden` without focusable points, the same figures are a table screen readers read and anyone can show, colours are semantic tones, legend text is body colour |
+| Recharts on every admin page | `Chart` is not in the barrel and the dashboard loads it with `next/dynamic`; the `admin-lists` Lighthouse set includes `/analytics` to prove it |
+| A role's menu linking to a page that fails for that role | `e2e/admin-roles.spec.ts` signs in as each of the 14 roles, checks the sidebar is exactly its entitlement (from the same catalogue the mock serves), and opens every entry |
+| Initial JavaScript growing unseen | admin Lighthouse split into `admin` (shell, 365 KB), `admin-lists` (392 KB), `admin-crud` (492 KB), each pinned just above the measured figure (`docs/performance-budgets.md`) |
+
+### Decisions taken, with reasons
+
+- **zod does not run in the browser.** It was ~89 KB gz of every admin page (see the budget doc
+  for the three doors it came through). The server validates the public variables at boot with
+  the same schema; the browser only normalises them, and a unit test checks they agree.
+- **Reports are one typed table per report**, columns typed by the API (money, number, percent,
+  date, code) with the API's totals row; nothing is summed in the browser. Exports go through the
+  existing `admin.exports` with `resource: report:<key>`.
+- **Referral and credit approvals, and now claims, use existing mechanisms** — the approvals engine
+  and the finance documents — rather than new decision screens.
+- **The prospectus minimum group**: D-044 says k ≥ 3 factories per price breakdown, B6.1 k ≥ 5 per
+  group. The screen shows whatever `minGroupSize` the API returns; the mock uses 5. Flagged in the
+  contract request.
+
+### Proposed permission changes (for packio-api's rbac.md)
+
+- `claims.override_liability` (CS Lead) — D-083's "override by permission".
+- `analytics.prospectus` (Partner Manager, C-Level) — the prospectus is a recruiting document.
+- `settings.read` for Marketing (from 2.7).
+
+### Bugs found and fixed
+
+- Recharts' keyboard layer made points focusable inside the hidden drawing (axe
+  `aria-hidden-focus`); the small order link in a shipment row failed `target-size`.
+- The dashboard, lists and details carried all of zod (above).
+
+### Deliberately not done
+
+- Carrier webhooks and polling, label rendering, and the partner-side POD capture (F5).
+- Report scheduling by e-mail and the R2 reports (calculate/search/drawing logs, D-111).
+- Loading `CrudList` forms on demand — the next bundle lever (`admin-crud` still carries zod).
+
+### Open questions
+
+- **Backend**: B4.3, B4.5 and B6 routes and permission names; the prospectus threshold (above).
+- **This repo**: `docs/decisions.md` still stops at D-169; the customer Lighthouse sets should be
+  re-measured and lowered now that zod left the browser (F3).
 
 ---
 
