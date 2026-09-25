@@ -50,7 +50,8 @@
     "feature_flags": "Feature flags",
     "notification_templates": "Notification templates",
     "notification_routes": "Notification routes",
-    "outbox": "Event outbox"
+    "outbox": "Event outbox",
+    "cms": "Site content"
   },
   "palette": {
     "screens": "Screens",

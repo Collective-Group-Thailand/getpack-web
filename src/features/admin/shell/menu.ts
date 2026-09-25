@@ -47,6 +47,7 @@ const MENU_ICONS: Record<string, IconName> = {
   claims: "flag",
   partners: "handshake",
   catalogue: "box",
+  cms: "article",
   marketing: "megaphone",
   customers: "user",
   companies: "building",
@@ -72,7 +73,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
   { key: "sales", entries: ["orders", "cs_calculators", "quotations", "rfq", "discount_memos"] },
   { key: "operations", entries: ["prepress", "production", "shipments", "claims"] },
   { key: "supply", entries: ["partners", "catalogue"] },
-  { key: "growth", entries: ["marketing", "customers", "companies"] },
+  { key: "growth", entries: ["marketing", "cms", "customers", "companies"] },
   { key: "insights", entries: ["analytics", "reports", "finance"] },
   {
     key: "system",
