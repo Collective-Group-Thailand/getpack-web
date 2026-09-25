@@ -585,7 +585,7 @@
     "simulate": "Simulate impact",
     "simulateFailed": "The simulation failed",
     "simulating": "Re-pricing past quotes…",
-    "simulationTitle": "90-day impact",
+    "simulationTitle": "Impact on past quotes",
     "window": "Window",
     "simulation": {
       "quotes": "Quotes re-priced",
@@ -672,14 +672,17 @@
     "rfqOnly": "RFQ only",
     "why": "Why",
     "reasons": {
-      "instant": "Calculator shipped and an A/B factory",
-      "noCalculator": "No calculator yet (D-100)",
-      "notSwitched": "Not switched to instant",
-      "noFactory": "No active A/B factory"
+      "instant_available": "An active tier-A factory with prices in force",
+      "type_rfq_only": "The type is quoted on request (D-100)",
+      "no_active_factory": "No active factory makes it",
+      "no_price_list": "No tier A/B price list in force",
+      "envelope_not_covered": "Tier B only: instant within its envelope"
     },
     "factories": "Factories",
     "none": "No factory",
-    "chip": "{code} · {tier}"
+    "chip": "{code} · tier {tier}",
+    "chipInactive": "{code} · tier {tier} · {status}",
+    "capabilityInactive": "capability off"
   },
   "indices": {
     "title": "Price indices",

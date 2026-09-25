@@ -9,7 +9,6 @@ import { PROPOSAL_LINE_STATUS, PROPOSAL_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -110,17 +109,23 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
   });
   const suggestions = useQuery({
     queryKey: queryKeys.related("admin", "price_proposal", proposalId, "suggestions"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/price-proposals/{proposalId}/suggestions", { path: { proposalId } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/price-proposals/{proposalId}/suggestions", {
+          params: { path: { proposalId } },
+        })
+      ).data!,
     enabled: canSuggest,
   });
   const [simulationId, setSimulationId] = useState<string | null>(null);
   const simulation = useQuery({
     queryKey: queryKeys.related("admin", "price_proposal", proposalId, `simulation:${simulationId}`),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/price-proposals/{proposalId}/simulations/{simulationId}", {
-        path: { proposalId, simulationId: simulationId! },
-      }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/price-proposals/{proposalId}/simulations/{simulationId}", {
+          params: { path: { proposalId, simulationId: simulationId! } },
+        })
+      ).data!,
     enabled: Boolean(simulationId),
     // The worker re-prices in the background: poll until it is done.
     refetchInterval: (query) =>
@@ -157,8 +162,12 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
   });
 
   const simulate = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/price-proposals/{proposalId}/simulations", { path: { proposalId } }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/price-proposals/{proposalId}/simulations", {
+          params: { path: { proposalId } },
+        })
+      ).data!,
     onSuccess: (started) => setSimulationId(started.id),
     onError: (error) => toast.error(problemMessage(error, t("simulateFailed"))),
   });
@@ -218,7 +227,10 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
       values: (line.action === "remove" ? line.currentValues : line.proposedValues) ?? {},
     }));
 
+  // The contract leaves the result an open object (see contract request admin.price-simulation-result):
+  // each figure is shown only when it is the decimal string the backend's re-pricer writes.
   const result = simulation.data?.result;
+  const percentOf = (value: unknown) => (typeof value === "string" ? format.percent(value) : "–");
 
   return (
     <div className="flex flex-col gap-5">
@@ -337,13 +349,10 @@ export function ProposalReview({ proposalId }: { proposalId: string }) {
             <div className="grid gap-3 sm:grid-cols-4">
               {(
                 [
-                  ["quotes", format.number(result.quotesInWindow)],
-                  ["price", result.priceChangePct === null ? "–" : format.percent(result.priceChangePct)],
-                  ["margin", result.marginChangePct === null ? "–" : format.percent(result.marginChangePct)],
-                  [
-                    "share",
-                    result.selectionShareChangePct === null ? "–" : format.percent(result.selectionShareChangePct),
-                  ],
+                  ["quotes", typeof result.quotesInWindow === "number" ? format.number(result.quotesInWindow) : "–"],
+                  ["price", percentOf(result.priceChangePct)],
+                  ["margin", percentOf(result.marginChangePct)],
+                  ["share", percentOf(result.selectionShareChangePct)],
                 ] as const
               ).map(([name, value]) => (
                 <div key={name} className="rounded-md border p-3">

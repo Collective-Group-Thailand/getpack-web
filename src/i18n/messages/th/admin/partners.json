@@ -585,7 +585,7 @@
     "simulate": "จำลองผลกระทบ",
     "simulateFailed": "จำลองไม่สำเร็จ",
     "simulating": "กำลังคำนวณใบเสนอราคาย้อนหลัง…",
-    "simulationTitle": "ผลกระทบย้อนหลัง 90 วัน",
+    "simulationTitle": "ผลกระทบต่อใบเสนอราคาที่ผ่านมา",
     "window": "ช่วงเวลา",
     "simulation": {
       "quotes": "ใบเสนอราคาที่คำนวณใหม่",
@@ -672,14 +672,17 @@
     "rfqOnly": "ขอราคาเท่านั้น",
     "why": "เหตุผล",
     "reasons": {
-      "instant": "มีเครื่องคำนวณและโรงงานระดับ A/B",
-      "noCalculator": "ยังไม่มีเครื่องคำนวณ (D-100)",
-      "notSwitched": "ยังไม่เปิดราคาทันที",
-      "noFactory": "ไม่มีโรงงานระดับ A/B ที่ใช้งานอยู่"
+      "instant_available": "มีโรงงานระดับ A ที่มีราคาใช้งานอยู่",
+      "type_rfq_only": "ประเภทนี้ขอราคาเท่านั้น (D-100)",
+      "no_active_factory": "ไม่มีโรงงานที่ใช้งานอยู่รองรับ",
+      "no_price_list": "โรงงานที่รองรับยังไม่มีราคาระดับ A/B",
+      "envelope_not_covered": "มีเฉพาะระดับ B ได้ราคาทันทีเฉพาะสเปกที่อยู่ในขอบเขต"
     },
     "factories": "โรงงาน",
     "none": "ยังไม่มีโรงงาน",
-    "chip": "{code} · {tier}"
+    "chip": "{code} · ระดับ {tier}",
+    "chipInactive": "{code} · ระดับ {tier} · {status}",
+    "capabilityInactive": "ปิดความสามารถนี้"
   },
   "indices": {
     "title": "ดัชนีราคา",

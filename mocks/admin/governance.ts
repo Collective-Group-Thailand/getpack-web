@@ -1,9 +1,10 @@
 /**
- * Partner governance the published contract does not cover yet, mocked (CONTRACT-REQUEST
- * admin.price-suggestions, admin.index-series, admin.coverage, admin.production-board,
- * admin.inspections, admin.scorecards).
+ * Price governance and the production floor, mocked: suggestions, simulations, index series and
+ * the coverage map on the published B2.2 contract; the production board, inspections and
+ * scorecards as contract requests (CONTRACT-REQUEST admin.production-board, admin.inspections,
+ * admin.scorecards).
  *
- * Suggestions follow packio-api's work in progress: a material line is suggested from its index
+ * Suggestions follow packio-api's pricing service: a material line is suggested from its index
  * series (then → now ratio), a process rate from the factory's own history, a new line from
  * peers (never naming them), a margin line has no method. The deviation is
  * (proposed − suggested) ÷ suggested × 100 on the primary column, computed here in the mock's
@@ -12,28 +13,24 @@
 
 import type { z } from "zod";
 
-import type {
-  boardJob,
-  indexPoint,
-  indexSeries,
-  inspection,
-  priceLineSuggestion,
-  priceSimulation,
-} from "@/lib/api/requests/admin-partners";
+import { http, HttpResponse } from "msw";
+
+import type { boardJob, inspection } from "@/lib/api/requests/admin-partners";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
 import { mockRequest } from "../route";
-import { bangkokIso, mockId, paginate, problem } from "../support";
+import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { PRODUCT_TYPES } from "./catalog";
 import { FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
-import { factoryTiers, proposals } from "./partners";
+import { coverageOf, factoryTiers, proposals } from "./partners";
 
-type Suggestion = z.output<typeof priceLineSuggestion>;
-type Simulation = z.output<typeof priceSimulation>;
-type Series = z.output<typeof indexSeries>;
-type Point = z.output<typeof indexPoint>;
+type Suggestion = Schemas["PriceLineSuggestionDto"];
+type Simulation = Schemas["PriceSimulationDto"];
+type Series = Schemas["IndexSeriesDto"];
+type Point = Schemas["IndexPointDto"];
 type Job = z.output<typeof boardJob>;
 type Inspection = z.output<typeof inspection>;
 
@@ -312,21 +309,30 @@ registerQueue("production.read", () => {
 /* --------------------------------------------------------------------------------- handlers */
 
 export const governanceHandlers = [
-  mockRequest("GET /v1/admin/price-proposals/{proposalId}/suggestions", ({ params, request }) => {
+  http.get("*/v1/admin/price-proposals/:proposalId/suggestions", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "price_suggestions.read")) return forbidden();
-    if (!proposals.some((item) => item.id === params.proposalId))
-      return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    return { proposalId: params.proposalId!, computedAt: bangkokIso(-30), lines: suggestFor(params.proposalId!) };
+    const proposalId = String(params.proposalId);
+    if (!proposals.some((item) => item.id === proposalId)) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
+    return HttpResponse.json<Schemas["PriceSuggestionsDto"]>({
+      proposalId,
+      computedAt: bangkokIso(-30),
+      lines: suggestFor(proposalId),
+    });
   }),
-  mockRequest("POST /v1/admin/price-proposals/{proposalId}/suggestions/actions/recompute", ({ params, request }) => {
+  http.post("*/v1/admin/price-proposals/:proposalId/suggestions/actions/recompute", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "price_suggestions.read")) return forbidden();
-    return { proposalId: params.proposalId!, computedAt: bangkokIso(), lines: suggestFor(params.proposalId!) };
+    const proposalId = String(params.proposalId);
+    return HttpResponse.json<Schemas["PriceSuggestionsDto"]>({
+      proposalId,
+      computedAt: bangkokIso(),
+      lines: suggestFor(proposalId),
+    });
   }),
-  mockRequest("POST /v1/admin/price-proposals/{proposalId}/simulations", ({ params, request }) => {
+  http.post("*/v1/admin/price-proposals/:proposalId/simulations", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "price_suggestions.read")) return forbidden();
     const item = proposals.find((candidate) => candidate.id === params.proposalId);
     if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    // The worker has finished by the first poll, in the mock.
+    // The worker has finished by the first poll, in the mock; the window is the setting's default.
     const simulation: Simulation = {
       id: mockId("sim", simulations.size + 1),
       proposalId: item.id,
@@ -344,18 +350,31 @@ export const governanceHandlers = [
       completedAt: bangkokIso(),
     };
     simulations.set(simulation.id, simulation);
-    return simulation;
+    return HttpResponse.json(simulation, { status: 202 });
   }),
-  mockRequest("GET /v1/admin/price-proposals/{proposalId}/simulations/{simulationId}", ({ params, request }) => {
+  http.get("*/v1/admin/price-proposals/:proposalId/simulations/:simulationId", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "price_suggestions.read")) return forbidden();
-    return simulations.get(params.simulationId!) ?? problem(404, "http.not_found", "ไม่พบการจำลองนี้");
+    const simulation = simulations.get(String(params.simulationId));
+    return simulation ? HttpResponse.json(simulation) : problem(404, "http.not_found", "ไม่พบการจำลองนี้");
   }),
-  mockRequest("GET /v1/admin/index-series", ({ query, request }) => {
+  http.get("*/v1/admin/index-series", ({ request }) => {
     if (!can(staffPersonaOf(request), "partners.read")) return forbidden();
-    return paginate(SERIES.filter((series) => !query.kind || series.kind === query.kind).map(withLatest), query);
+    const url = new URL(request.url);
+    const kind = url.searchParams.get("kind");
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = SERIES.filter((series) => !kind || series.kind === kind)
+      .filter((series) => matchesQuery(q, series.code, series.nameTh, series.nameEn))
+      .map(withLatest);
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
+    );
   }),
-  mockRequest("POST /v1/admin/index-series", ({ body, request }) => {
+  http.post("*/v1/admin/index-series", async ({ request }) => {
     if (!can(staffPersonaOf(request), "index_series.manage")) return forbidden();
+    const body = (await request.json()) as Schemas["CreateIndexSeriesDto"];
     if (SERIES.some((series) => series.code === body.code))
       return problem(409, "index.duplicate_code", "มีดัชนีรหัสนี้แล้ว", [
         { path: "code", code: "unique", message: "ซ้ำกับที่มีอยู่" },
@@ -369,29 +388,36 @@ export const governanceHandlers = [
       nameEn: body.nameEn,
       unit: body.unit,
       source: body.source ?? "manual",
-      adapterKey: null,
+      adapterKey: body.adapterKey ?? null,
       latestPoint: null,
       createdAt: bangkokIso(),
     };
     SERIES.push(created);
     POINTS.set(created.id, []);
-    return created;
+    return HttpResponse.json(created, { status: 201 });
   }),
-  mockRequest("GET /v1/admin/index-series/{seriesId}/points", ({ params, request }) => {
+  http.get("*/v1/admin/index-series/:seriesId", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "partners.read")) return forbidden();
-    const points = POINTS.get(params.seriesId!);
-    return points ?? problem(404, "http.not_found", "ไม่พบดัชนีนี้");
+    const series = SERIES.find((item) => item.id === params.seriesId);
+    return series ? HttpResponse.json(withLatest(series)) : problem(404, "http.not_found", "ไม่พบดัชนีนี้");
   }),
-  mockRequest("PUT /v1/admin/index-series/{seriesId}/points/{period}", ({ params, body, request }) => {
+  http.get("*/v1/admin/index-series/:seriesId/points", ({ params, request }) => {
+    if (!can(staffPersonaOf(request), "partners.read")) return forbidden();
+    const points = POINTS.get(String(params.seriesId));
+    return points ? HttpResponse.json(points) : problem(404, "http.not_found", "ไม่พบดัชนีนี้");
+  }),
+  http.put("*/v1/admin/index-series/:seriesId/points/:period", async ({ params, request }) => {
     if (!can(staffPersonaOf(request), "index_series.manage")) return forbidden();
-    const points = POINTS.get(params.seriesId!);
+    const points = POINTS.get(String(params.seriesId));
     if (!points) return problem(404, "http.not_found", "ไม่พบดัชนีนี้");
-    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(params.period!))
+    const period = String(params.period);
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period))
       return problem(422, "validation.failed", "เดือนไม่ถูกต้อง", [
         { path: "period", code: "pattern", message: "YYYY-MM" },
       ]);
+    const body = (await request.json()) as Schemas["SetIndexPointDto"];
     const point: Point = {
-      period: params.period!,
+      period,
       value: Number(body.value).toFixed(6),
       sourceRef: body.sourceRef ?? null,
       updatedAt: bangkokIso(),
@@ -400,34 +426,16 @@ export const governanceHandlers = [
     if (at >= 0) points[at] = point;
     else points.push(point);
     points.sort((a, b) => a.period.localeCompare(b.period));
-    return point;
+    return HttpResponse.json(point);
   }),
-  mockRequest("GET /v1/admin/catalog/coverage", ({ request }) => {
-    const who = staffPersonaOf(request);
-    if (!can(who, "catalog.read") && !can(who, "partners.read")) return forbidden();
-    const factories = factoryTiers();
-    return {
-      data: PRODUCT_TYPES.map((type) => {
-        const covering = factories.flatMap((entry) =>
-          entry.tiers
-            .filter((tier) => tier.productTypeId === type.id)
-            .map((tier) => ({
-              factory: entry.factory,
-              tier: tier.tier,
-              envelopeNote: tier.envelopeNote,
-              factoryStatus: entry.status,
-            })),
-        );
-        const live = covering.filter((item) => item.factoryStatus === "active");
-        return {
-          productType: { id: type.id, code: type.code, name: type.nameTh },
-          quoteMode: type.quoteMode,
-          calculatorKey: type.calculatorKey,
-          instantPath: type.quoteMode === "instant" && live.some((item) => item.tier === "A" || item.tier === "B"),
-          factories: covering,
-        };
-      }),
-    };
+  http.get("*/v1/admin/partners/coverage", ({ request }) => {
+    if (!can(staffPersonaOf(request), "partners.read")) return forbidden();
+    const productTypeId = new URL(request.url).searchParams.get("productTypeId");
+    const types = PRODUCT_TYPES.filter((type) => type.status === "active")
+      .filter((type) => !productTypeId || type.id === productTypeId)
+      .sort((a, b) => a.code.localeCompare(b.code));
+    if (productTypeId && types.length === 0) return problem(404, "http.not_found", "ไม่พบประเภทสินค้านี้");
+    return HttpResponse.json(types.map(coverageOf));
   }),
   mockRequest("GET /v1/admin/production-board", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "production.read")) return forbidden();

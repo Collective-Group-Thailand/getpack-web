@@ -6,7 +6,6 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
@@ -17,6 +16,7 @@ import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
 import { problemMessage, QueryError, useCan } from "../console";
+import { adminBrowserApis } from "../console/api";
 
 /** This month, in Bangkok, as `YYYY-MM`. */
 const thisMonth = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 7);
@@ -36,22 +36,29 @@ export function IndexSeries() {
 
   const series = useQuery({
     queryKey: queryKeys.list("admin", "index_series", {}),
-    queryFn: () => browserRequests().call("GET /v1/admin/index-series", { query: { perPage: 100 } }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/index-series", { params: { query: { perPage: 100 } } })).data!,
   });
   const current = selected ?? series.data?.data[0]?.id ?? null;
   const points = useQuery({
     queryKey: queryKeys.related("admin", "index_series", current ?? "none", "points"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/index-series/{seriesId}/points", { path: { seriesId: current! } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/index-series/{seriesId}/points", {
+          params: { path: { seriesId: current! } },
+        })
+      ).data!,
     enabled: Boolean(current),
   });
 
   const record = useMutation({
-    mutationFn: () =>
-      browserRequests().call("PUT /v1/admin/index-series/{seriesId}/points/{period}", {
-        path: { seriesId: current!, period: point.period },
-        body: { value: point.value.trim(), sourceRef: point.sourceRef.trim() || null },
-      }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.PUT("/v1/admin/index-series/{seriesId}/points/{period}", {
+          params: { path: { seriesId: current!, period: point.period } },
+          body: { value: point.value.trim(), sourceRef: point.sourceRef.trim() || null },
+        })
+      ).data!,
     onSuccess: () => {
       toast.success(t("recorded"));
       setPoint({ ...point, value: "", sourceRef: "" });

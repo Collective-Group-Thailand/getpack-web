@@ -179,8 +179,10 @@ test.describe("price proposals (D-040, D-042)", () => {
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "จำลองผลกระทบ" }).click();
-    await expect(page.getByRole("heading", { name: "ผลกระทบย้อนหลัง 90 วัน" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "ผลกระทบต่อใบเสนอราคาที่ผ่านมา" })).toBeVisible();
     await expect(page.getByText("ใบเสนอราคาที่คำนวณใหม่")).toBeVisible();
+    // The window is a setting (partners.impact_simulation_window_days): the page shows its dates.
+    await expect(page.getByText(/^ช่วงเวลา/)).toBeVisible();
 
     await page
       .getByRole("radiogroup", { name: "การตัดสินรายการที่ 1" })

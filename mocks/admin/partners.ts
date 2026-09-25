@@ -682,6 +682,59 @@ export function factoryTiers(): {
   }));
 }
 
+/**
+ * The coverage map for one product type, as packio-api's quote-path service computes it (D-043):
+ * every factory not offboarded with a capability for the type, and the instant path — the type
+ * quoted instantly and an active factory with an active capability at tier A with a price list in
+ * force (tier B needs a configuration to match its envelope, so the map says `envelope_not_covered`).
+ */
+export function coverageOf(type: {
+  id: string;
+  code: string;
+  quoteMode: Schemas["QuoteMode"];
+}): Schemas["ProductTypeCoverageDto"] {
+  const candidates = [...stores.values()]
+    .filter((store) => store.factory.status !== "offboarded")
+    .flatMap((store) => {
+      const capability = store.capabilities.find((item) => item.productTypeId === type.id);
+      if (!capability) return [];
+      const tier = store.config.participations.find((item) => item.productTypeId === type.id)?.current?.tier ?? null;
+      const list = store.priceLists.find((item) => item.productTypeId === type.id);
+      const capacity = store.config.capacities.find((item) => item.productTypeId === type.id)?.current;
+      return [
+        {
+          factoryId: store.factory.id,
+          factoryCode: store.factory.code,
+          factoryStatus: store.factory.status,
+          capabilityStatus: capability.status,
+          tier,
+          priceListVersionNo: list?.current?.versionNo ?? null,
+          weeklyCapacity: capacity?.weeklyCapacity ?? null,
+          capacityUnit: capacity?.capacityUnit ?? null,
+        },
+      ];
+    });
+  const live = candidates.filter((item) => item.factoryStatus === "active" && item.capabilityStatus === "active");
+  const priced = live.filter((item) => (item.tier === "A" || item.tier === "B") && item.priceListVersionNo !== null);
+  const instantPath: Schemas["QuotePathReason"] =
+    type.quoteMode !== "instant"
+      ? "type_rfq_only"
+      : live.length === 0
+        ? "no_active_factory"
+        : priced.length === 0
+          ? "no_price_list"
+          : priced.some((item) => item.tier === "A")
+            ? "instant_available"
+            : "envelope_not_covered";
+  return {
+    productTypeId: type.id,
+    productTypeCode: type.code,
+    quoteMode: type.quoteMode,
+    instantPath,
+    factories: candidates,
+  };
+}
+
 registerQueue("partners.read", () => {
   const rows = [...stores.values()].filter((store) => ["applied", "under_review"].includes(store.factory.status));
   return {
