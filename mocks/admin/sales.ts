@@ -17,6 +17,7 @@ import { staffPersonaOf } from "../auth";
 import { can } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { productTypeOfCalculator, productTypeRef } from "./catalog";
 import { baht, customers, FACTORY, orders } from "./commerce";
 import { approvals, settings } from "./platform";
 
@@ -197,12 +198,14 @@ const seedCustomer = (index: number) => {
 };
 
 /** Two quotations CS saved earlier, so the list and the create-order flow have something real. */
-const quotations: Quotation[] = [
+export const quotations: Quotation[] = [
   {
     id: mockId("quo", 900),
     quoteCode: "QT-2569-00118",
+    source: "instant",
+    rfq: null,
     customer: seedCustomer(1),
-    productType: { code: "folding_carton", name: "กล่องกระดาษพับ" },
+    productType: productTypeRef("folding_carton"),
     quantities: [3000],
     grossAmount: "38520.00",
     currency: "THB",
@@ -235,8 +238,10 @@ const quotations: Quotation[] = [
   {
     id: mockId("quo", 901),
     quoteCode: "QT-2569-00121",
+    source: "instant",
+    rfq: null,
     customer: seedCustomer(0),
-    productType: { code: "label", name: "ฉลากและสติกเกอร์" },
+    productType: productTypeRef("label_sticker"),
     quantities: [5000],
     grossAmount: "4494.00",
     currency: "THB",
@@ -459,13 +464,15 @@ export const salesHandlers = [
     const quote: Quotation = {
       id: mockId("quo", quotations.length + 1),
       quoteCode: `QT-2569-${String(200 + quotations.length).padStart(5, "0")}`,
+      source: "instant",
+      rfq: null,
       customer: {
         id: customer.id,
         customerCode: customer.customerCode,
         displayName: customer.displayName,
         companyName: customer.companyName,
       },
-      productType: { code: calculation.type, name: calculation.type },
+      productType: productTypeOfCalculator(calculation.type),
       quantities: [row.quantity],
       grossAmount: baht(gross),
       currency: "THB",

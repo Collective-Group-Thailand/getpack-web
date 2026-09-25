@@ -223,10 +223,15 @@ export const quoteStatus = z
   .enum(["calculated", "saved", "shared", "converted", "expired", "superseded"])
   .meta({ id: "QuoteStatus" });
 
+export const quoteSource = z.enum(["instant", "rfq"]).meta({ id: "QuoteSource" });
+
 export const quotationSummary = z
   .object({
     id: uuid(),
     quoteCode: z.string(),
+    /** `rfq`: a manual snapshot of an accepted RFQ quote version (schema-design §3.5). */
+    source: quoteSource,
+    rfq: z.object({ id: uuid(), rfqCode: z.string() }).nullable(),
     customer: customerRef,
     productType: productTypeRef,
     quantities: z.array(z.number().int()),

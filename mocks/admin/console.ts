@@ -199,7 +199,8 @@ consoleHandlers.push(
     data: PERSONAS.filter(
       (persona) =>
         matchesQuery(query.q, persona.displayName, persona.email) &&
-        (!query.role || persona.roles.includes(query.role)),
+        (!query.role || persona.roles.includes(query.role)) &&
+        (!query.permission || can(persona, query.permission)),
     )
       .slice(0, query.limit ?? 20)
       .map((persona) => ({ id: persona.id, displayName: persona.displayName, roles: persona.roles })),
