@@ -23,7 +23,9 @@
     },
     "rfq": {
       "new": "New RFQs",
-      "awaiting_factory": "Awaiting factory price"
+      "awaiting_factory": "Awaiting factory price",
+      "mine": "My RFQs",
+      "overdue": "RFQs past SLA"
     },
     "prepress": {
       "queue": "Prepress queue",

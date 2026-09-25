@@ -142,5 +142,9 @@
     "copy": "Copy",
     "copied": "Copied",
     "open": "Open"
+  },
+  "actions": {
+    "more": "More actions",
+    "unsupported": "Not available on this screen yet"
   }
 }

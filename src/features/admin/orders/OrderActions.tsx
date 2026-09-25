@@ -4,22 +4,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { nextActionMeta, primaryAction, type NextAction } from "@/domain/status";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
-import { Button } from "@/ui/components/Button";
-import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
-import { Tooltip } from "@/ui/components/Tooltip";
 
-import { ConfirmAction, problemMessage } from "../console";
+import { ConfirmAction, NextActionBar, problemMessage } from "../console";
 import type { Order } from "./resources";
 
 type Slip = Order["payments"][number]["slips"][number];
@@ -34,81 +30,17 @@ const SUPPORTED = new Set<string>([
   "send_payment_reminder",
   "record_slip",
 ]);
-const verb = (key: string) => key.slice(key.lastIndexOf(".") + 1);
 
-/**
- * The order's actions, exactly as the API offered them (`nextActions`, ADR-0005): the first
- * unblocked one leads (design-system.md §4 "the single next best action"), the rest sit behind
- * "more", and a blocked one says why. An action key this version cannot perform is shown
- * disabled rather than hidden, so a new backend capability is visible, not lost.
- */
-export function OrderActionBar({
-  order,
-  onAction,
-}: {
-  order: Order;
-  onAction: (key: OrderActionKey, slip?: Slip) => void;
-}) {
-  const t = useTranslations("status");
-  const tOrders = useTranslations("orders.actions");
-  const lead = primaryAction(order.nextActions);
-  const rest = order.nextActions.filter((action) => action !== lead);
-
-  const label = (action: NextAction) => {
-    const key = verb(action.key);
-    return tOrders.has(`labels.${key}`) ? tOrders(`labels.${key}`) : t(nextActionMeta(action.key).labelKey);
-  };
-
-  const run = (action: NextAction) => {
-    const key = verb(action.key);
-    if (SUPPORTED.has(key)) onAction(key as OrderActionKey);
-  };
-
-  if (order.nextActions.length === 0) return null;
-
+/** The order's actions, exactly as the API offered them — see `NextActionBar`. */
+export function OrderActionBar({ order, onAction }: { order: Order; onAction: (key: OrderActionKey) => void }) {
+  const t = useTranslations("orders.actions");
   return (
-    <>
-      {rest.length > 0 ? (
-        <DropdownMenu
-          label={tOrders("more")}
-          align="end"
-          items={rest.map((action) => ({
-            id: action.key,
-            label: label(action),
-            description:
-              action.disabledReason ?? (SUPPORTED.has(verb(action.key)) ? undefined : tOrders("unsupported")),
-            icon: nextActionMeta(action.key).icon,
-            tone: nextActionMeta(action.key).tone === "danger" ? "destructive" : "default",
-            disabled: Boolean(action.disabledReason) || !SUPPORTED.has(verb(action.key)),
-            onSelect: () => run(action),
-          }))}
-          trigger={
-            <Button variant="secondary" iconEnd="chevron-down">
-              {tOrders("more")}
-            </Button>
-          }
-        />
-      ) : null}
-      {lead ? (
-        lead.disabledReason ? (
-          <Tooltip content={lead.disabledReason}>
-            <span tabIndex={0}>
-              <Button disabled iconStart={nextActionMeta(lead.key).icon}>
-                {label(lead)}
-              </Button>
-            </span>
-          </Tooltip>
-        ) : (
-          <Button
-            iconStart={nextActionMeta(lead.key).icon}
-            variant={nextActionMeta(lead.key).tone === "danger" ? "destructive" : "primary"}
-            onClick={() => run(lead)}
-          >
-            {label(lead)}
-          </Button>
-        )
-      ) : null}
-    </>
+    <NextActionBar
+      actions={order.nextActions}
+      supported={SUPPORTED}
+      labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
+      onAction={(key) => onAction(key as OrderActionKey)}
+    />
   );
 }
 

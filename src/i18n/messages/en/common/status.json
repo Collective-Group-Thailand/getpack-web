@@ -345,6 +345,16 @@
     "confirmReceipt": "Confirm receipt",
     "reorder": "Reorder",
     "claim": "Raise a claim",
+    "startReview": "Start review",
+    "assign": "Assign",
+    "requestInfo": "Ask for information",
+    "decline": "Decline",
+    "createOrder": "Create order",
+    "requestFactoryCost": "Request factory cost",
+    "composeQuote": "Compose quote",
+    "editQuote": "Edit draft",
+    "sendQuote": "Send quote",
+    "recordAcceptance": "Record acceptance",
     "unknown": "Take action"
   }
 }
