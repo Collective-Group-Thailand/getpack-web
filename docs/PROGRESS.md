@@ -16,6 +16,74 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-25 | **F2 Deliverable 2.4** — prepress & design services | Six contract-request groups (B4.1) with a mock on the commerce orders; the prepress desk by stage with SLA; the per-order workspace: preflight report by severity with accept/send back (D-070), proof versions with upload & send and decision evidence, annotation page map with reply/resolve, template sending and dieline drawing (501 engine-unavailable handled), hired-design rounds with free-round meter and next-round fee (D-071), mockup job (D-072); read-only `DesignViewer` in the shared designer + "working copy"; shared `AssignDialog`; submission & drawing status maps. 568 unit, 138 e2e | 2.5–2.8 | See the notes under the F2.4 heading |
 | 2026-09-26 | **F2 Deliverable 2.5** — catalogue & CMS | On the **published** B2.1 contract (no contract requests): a stateful table mock (ETag/If-Match, archive by status) seeded from the contract's own list examples, now emitted by `gen:api`; a typed table registry of ~40 catalogue, CMS and geography tables driving one CRUD screen; product types with the reasoned quote-mode action (D-100); Excel import with preview → confirm by hash (D-005, D-170); home-section ordering; articles with a TipTap `RichTextEditor` in `src/ui`; catalogue/CMS maps by section; `catalog.import`, `seo.manage`, `geography.manage` from `docs/rbac.md`. 576 unit, 154 e2e | 2.6–2.8 | See the notes under the F2.5 heading |
 | 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (adopted in 1aaa711 and 2880e4e) plus contract requests for the production board, inspections and scorecards: the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; Packio rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
+| 2026-09-26 | **F2 Deliverable 2.7** — marketing, B2B, customers | Eight contract-request groups for B3.3–B3.5 (campaigns, promotions, coupons, referrals, customer points and consents, companies, company credit) with stateful mocks; campaigns with the budget meter against the alert threshold (D-154); the promotion editor with typed D-053 conditions and benefit and its coupon codes; promotion priority; the referral review queue decided in approvals (D-136); loyalty and referral rules as setting versions; customers (profile, orders, points ledger, referrals, consents); companies (KYC review D-120, members, branches, credit via the `credit_limit` policy D-121, overdue block D-122, statements D-125, orders). Validation codes now read as words in every form; the approvals mock routes by step condition and notifies the subject. 584 unit, 184 e2e | 2.8 | See the notes under the F2.7 heading |
+
+---
+
+## F2 Deliverable 2.7 — 2026-09-26
+
+Marketing, B2B companies and customers. Same worktree and branch. Nothing of B3.3–B3.5 is
+published yet, so every call is a contract request (`admin-marketing.ts`, `admin-companies.ts`,
+and the points and consents added to `admin-customers.ts`), shaped by schema-design's
+promotions, loyalty, companies and discount-memo tables. `admin.orders` gains `customerId` and
+`companyId` filters.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A campaign alert threshold hard-coded in the UI (D-154) | every campaign carries `alertThresholdPct` from the API (setting `campaigns.budget_alert_pct`); the meter marks it and says it in words |
+| A promotion editor writing free JSON (D-053) | conditions and benefit are typed objects with `schemaVersion: 1`; only the fields of the benefit's type are sent |
+| Changing what customers already redeemed | once a promotion has redemptions, the benefit fields are disabled, and the mock refuses the change (`promotion.benefit_locked`) |
+| Generating a coupon batch twice | one idempotency key per "generate" intent |
+| A referral reward decided outside the approvals engine (D-136) | a held referral carries its `referral_review` approval; Marketing decides it there, and the referral follows (the mock's new `onApprovalDecided`, standing in for `approval.decided`) |
+| Credit terms and limits as constants (D-121) | terms come from the setting `b2b.credit_terms`; the limit is routed by the seeded `credit_limit` policy, and the copy does not repeat its THB boundary |
+| An approval with every step regardless of amount | the approvals mock now evaluates step conditions: an ฿80,000 limit waits on Finance only |
+| An edit of a campaign, promotion or company overwriting another's | `RequestClient.read` returns the ETag; every change goes under `If-Match` |
+| A form showing the schema's code ("required") | `FormField` takes `formatError`; `FormFields` reads the codes from `console.validation` (this also fixes the 2.5/2.6 forms) |
+
+### Decisions taken, with reasons
+
+- **Loyalty and referral rules are settings, not a new API.** The backend seeds them
+  (`loyalty.*`, `referral.rules`, `campaigns.budget_alert_pct`), so the page writes new versions
+  through the published settings endpoint, field by field, keeping each field's type. Only the
+  setting's owner (Superadmin, `settings.change`) sees "new version".
+- **Customers are read-only here.** Profiles and consents belong to the customer; staff read them.
+  Points adjustments are not offered (they would need a policy and an approval).
+- **The company's own settings are shown, not edited**: the approval threshold (D-123) and PO
+  policy (D-125) are set by the company admin.
+- **The form dialog and section card moved to the console**, now that three features use them.
+- **Discount memos**: the list from 2.2 is unchanged; a company's discount links to its memo.
+
+### Proposed permission changes (for packio-api's rbac.md)
+
+- `settings.read` for **Marketing**: the loyalty and referral rules are Marketing's to reason about,
+  but the backend's matrix does not give Marketing `settings.read`, so the loyalty page is hidden
+  from them. Followed as is; proposed.
+- B3 has no permission keys yet; the mocks use `marketing.read|manage`, `customers.read`,
+  `companies.read|manage` from the web's menu catalogue.
+
+### Bugs found and fixed
+
+- Zod messages were shown as their codes in every CRUD form (above).
+- Rewriting the console messages "fresh" dropped keys added outside its source; restored from git
+  and merged. Shared namespaces are now always merged.
+- `PartnersNav` hid coverage behind `catalog.read` although the published endpoint needs
+  `partners.read`.
+
+### Deliberately not done
+
+- Payment-method and province conditions have fields in the request but no editor controls yet
+  (sent empty = any); the per-piece price override benefit (D-053) is not offered.
+- Evidence files on a credit-limit request (`evidenceFileIds` is sent empty); coupon batch
+  export (goes through `admin.exports` once that lands).
+- Promotion usage logs and reports: 2.8 (promotion usage report).
+
+### Open questions
+
+- **Backend**: B3.3–B3.5 route and permission names; the requests follow schema-design and
+  api-conventions and should adopt with renames at most.
+- **This repo**: `docs/decisions.md` still stops at D-169.
 
 ---
 
