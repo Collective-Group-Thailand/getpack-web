@@ -1113,4 +1113,11 @@ export const platformHandlers = [
   }),
 ];
 
+/** A setting's value in force, as the backend's services read it. */
+export function settingValue<T = unknown>(key: string): T {
+  const setting = settings.find((item) => item.key === key);
+  if (!setting?.current) throw new Error(`mock setting ${key} is not seeded`);
+  return setting.current.value as T;
+}
+
 export { approvals, files, settings, users };

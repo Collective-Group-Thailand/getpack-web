@@ -4,101 +4,136 @@
     "valueType": "percent",
     "value": "10",
     "description": "D-012 margin floor: reassignment, discounts and promotions never go below it",
-    "decisions": ["D-012", "D-063"]
+    "decisions": [
+      "D-012",
+      "D-063"
+    ]
   },
   {
     "key": "quotes.validity_days",
     "valueType": "integer",
     "value": 15,
     "description": "D-051 quotation validity with price lock (days)",
-    "decisions": ["D-051"]
+    "decisions": [
+      "D-051"
+    ]
   },
   {
     "key": "discounts.cs_limit_pct",
     "valueType": "percent",
     "value": "5",
     "description": "D-052 discount CS may give without a discount memo",
-    "decisions": ["D-052"]
+    "decisions": [
+      "D-052"
+    ]
   },
   {
     "key": "campaigns.budget_alert_pct",
     "valueType": "percent",
     "value": "80",
     "description": "D-154 Marketing is alerted when a campaign has used this share of its budget",
-    "decisions": ["D-154"]
+    "decisions": [
+      "D-154"
+    ]
   },
   {
     "key": "payments.schedule_split_threshold",
     "valueType": "money",
     "value": "20000.00",
     "description": "D-020 order value (THB) from which the 50 % deposit + 50 % before shipping schedule applies",
-    "decisions": ["D-020"]
+    "decisions": [
+      "D-020"
+    ]
   },
   {
     "key": "payments.slip_review_sla_business_hours",
     "valueType": "integer",
     "value": 4,
     "description": "D-061 Finance SLA for slips that fail automatic verification (business hours)",
-    "decisions": ["D-061"]
+    "decisions": [
+      "D-061"
+    ]
   },
   {
     "key": "payouts.advance_pct",
     "valueType": "percent",
     "value": "30",
     "description": "D-022 default factory advance paid on job acceptance",
-    "decisions": ["D-022"]
+    "decisions": [
+      "D-022"
+    ]
   },
   {
     "key": "payouts.balance_trigger",
     "valueType": "enum",
     "value": "after_pod_and_claim_window",
     "valueSchema": {
-      "enum": ["after_pod_and_claim_window", "after_pod", "immediate"]
+      "enum": [
+        "after_pod_and_claim_window",
+        "after_pod",
+        "immediate"
+      ]
     },
     "description": "D-022 default trigger of the factory balance payout",
-    "decisions": ["D-022"]
+    "decisions": [
+      "D-022"
+    ]
   },
   {
     "key": "payouts.retention_pct",
     "valueType": "percent",
     "value": "5",
     "description": "D-022 default retention held from the factory balance payout",
-    "decisions": ["D-022"]
+    "decisions": [
+      "D-022"
+    ]
   },
   {
     "key": "payouts.retention_release_days",
     "valueType": "integer",
     "value": 30,
     "description": "D-164 days after the claim window closes until the retention is released",
-    "decisions": ["D-164", "D-022"]
+    "decisions": [
+      "D-164",
+      "D-022"
+    ]
   },
   {
     "key": "production.factory_acceptance_sla_business_days",
     "valueType": "integer",
     "value": 1,
     "description": "D-074 time a factory has to accept a released job (business days)",
-    "decisions": ["D-074"]
+    "decisions": [
+      "D-074"
+    ]
   },
   {
     "key": "fulfilment.tolerance_default_pct",
     "valueType": "percent",
     "value": "5",
     "description": "D-163 default quantity tolerance ± % (shortage and overage) until a factory sets its own",
-    "decisions": ["D-163", "D-021"]
+    "decisions": [
+      "D-163",
+      "D-021"
+    ]
   },
   {
     "key": "orders.auto_complete_days",
     "valueType": "integer",
     "value": 7,
     "description": "D-081 days after delivery until an order completes automatically",
-    "decisions": ["D-081"]
+    "decisions": [
+      "D-081"
+    ]
   },
   {
     "key": "claims.window_days",
     "valueType": "integer",
     "value": 7,
     "description": "D-082 claim window after receipt (days)",
-    "decisions": ["D-082"]
+    "decisions": [
+      "D-082"
+    ]
   },
   {
     "key": "qc.inspection_sampling",
@@ -121,7 +156,9 @@
       }
     },
     "description": "D-076 Packio risk-based inspection sampling (ISO 2859-1)",
-    "decisions": ["D-076"]
+    "decisions": [
+      "D-076"
+    ]
   },
   {
     "key": "design.hired_design_sla",
@@ -131,14 +168,18 @@
       "maxBusinessDays": 10
     },
     "description": "D-071 hired design delivery target and maximum",
-    "decisions": ["D-071"]
+    "decisions": [
+      "D-071"
+    ]
   },
   {
     "key": "design.free_revision_rounds",
     "valueType": "integer",
     "value": 3,
     "description": "D-071 free revision rounds per hired design",
-    "decisions": ["D-071"]
+    "decisions": [
+      "D-071"
+    ]
   },
   {
     "key": "design.extra_revision_fee",
@@ -148,7 +189,9 @@
       "pctOfDesignFee": "20"
     },
     "description": "D-071 fee per revision round from round 4: max(minimum, % of the design fee)",
-    "decisions": ["D-071"]
+    "decisions": [
+      "D-071"
+    ]
   },
   {
     "key": "loyalty.earn_rate",
@@ -158,21 +201,28 @@
       "basis": "paid_before_vat_excluding_shipping"
     },
     "description": "D-130 one point per THB 500 paid (before VAT, excluding shipping)",
-    "decisions": ["D-130"]
+    "decisions": [
+      "D-130"
+    ]
   },
   {
     "key": "loyalty.point_value",
     "valueType": "money",
     "value": "2.50",
     "description": "D-131 value of one point (THB); posting rule P10",
-    "decisions": ["D-131"]
+    "decisions": [
+      "D-131"
+    ]
   },
   {
     "key": "loyalty.expected_redemption_rate_pct",
     "valueType": "percent",
     "value": "100",
     "description": "D-131 / P10 expected redemption rate for the points liability (accounting-design.md §5, ⚖ points liability method)",
-    "decisions": ["D-131", "D-033"],
+    "decisions": [
+      "D-131",
+      "D-033"
+    ],
     "confirmation": "pending_cpa"
   },
   {
@@ -183,7 +233,9 @@
       "reminderDaysBefore": 30
     },
     "description": "D-132 points expire 12 months per earning, reminder 30 days before",
-    "decisions": ["D-132"]
+    "decisions": [
+      "D-132"
+    ]
   },
   {
     "key": "loyalty.redemption_limits",
@@ -193,7 +245,9 @@
       "maxPctOfOrder": "20"
     },
     "description": "D-133 minimum redemption (THB equivalent) and maximum share of the order value",
-    "decisions": ["D-133"]
+    "decisions": [
+      "D-133"
+    ]
   },
   {
     "key": "loyalty.tiers",
@@ -216,7 +270,9 @@
       }
     ],
     "description": "D-134 tiers by 12-month spend with earn multipliers",
-    "decisions": ["D-134"]
+    "decisions": [
+      "D-134"
+    ]
   },
   {
     "key": "loyalty.activity_rewards",
@@ -227,7 +283,10 @@
       "reviewBaht": "10.00"
     },
     "description": "D-135 activity rewards in baht, converted to points at the point value (rounded down)",
-    "decisions": ["D-135", "D-131"]
+    "decisions": [
+      "D-135",
+      "D-131"
+    ]
   },
   {
     "key": "referral.rules",
@@ -239,24 +298,35 @@
       "maxRewardedReferralsPerMonth": 10
     },
     "description": "D-136 referral rewards and monthly cap",
-    "decisions": ["D-136"]
+    "decisions": [
+      "D-136"
+    ]
   },
   {
     "key": "b2b.credit_terms",
     "valueType": "json",
     "value": {
-      "allowedDays": [15, 30, 45, 60],
+      "allowedDays": [
+        15,
+        30,
+        45,
+        60
+      ],
       "defaultDays": 30
     },
     "description": "D-121 credit terms a company may be given",
-    "decisions": ["D-121"]
+    "decisions": [
+      "D-121"
+    ]
   },
   {
     "key": "b2b.credit_eligibility_paid_orders",
     "valueType": "integer",
     "value": 3,
     "description": "D-121 paid orders after which a prepaid company becomes eligible for credit",
-    "decisions": ["D-121"]
+    "decisions": [
+      "D-121"
+    ]
   },
   {
     "key": "b2b.overdue_rules",
@@ -266,7 +336,9 @@
       "blockCreditOrdersAfterDaysOverdue": 7
     },
     "description": "D-122 overdue reminders and credit-order blocking",
-    "decisions": ["D-122"]
+    "decisions": [
+      "D-122"
+    ]
   },
   {
     "key": "notifications.marketing_window",
@@ -277,7 +349,9 @@
       "timezone": "Asia/Bangkok"
     },
     "description": "D-144 marketing messages are sent only inside this window (transactional anytime)",
-    "decisions": ["D-144"]
+    "decisions": [
+      "D-144"
+    ]
   },
   {
     "key": "auth.access_token_ttl_seconds",
@@ -288,7 +362,9 @@
       "maximum": 900
     },
     "description": "D-063 / ADR-0004 access-token lifetime in seconds (contract §4: 10–15 minutes)",
-    "decisions": ["D-063"],
+    "decisions": [
+      "D-063"
+    ],
     "confirmation": "proposed"
   },
   {
@@ -309,7 +385,9 @@
       }
     },
     "description": "D-063 / ADR-0004 refresh-token absolute and idle lifetimes per audience (hours)",
-    "decisions": ["D-063"],
+    "decisions": [
+      "D-063"
+    ],
     "confirmation": "proposed"
   },
   {
@@ -324,7 +402,9 @@
       "maxPerIpPerHour": 20
     },
     "description": "D-063 / ADR-0004 customer phone OTP: expiry, attempts and rate limits",
-    "decisions": ["D-063"],
+    "decisions": [
+      "D-063"
+    ],
     "confirmation": "proposed"
   },
   {
@@ -335,7 +415,9 @@
       "lockMinutes": 15
     },
     "description": "D-063 / ADR-0004 staff and partner password lockout after failed logins",
-    "decisions": ["D-063"],
+    "decisions": [
+      "D-063"
+    ],
     "confirmation": "proposed"
   },
   {
@@ -347,7 +429,9 @@
       "lockMinutes": 15
     },
     "description": "D-063 / ADR-0004 optional partner device PIN: length and attempt limit",
-    "decisions": ["D-063"],
+    "decisions": [
+      "D-063"
+    ],
     "confirmation": "proposed"
   },
   {
@@ -355,20 +439,38 @@
     "valueType": "integer",
     "value": 2,
     "description": "D-101 active factories per product type before auto-selection and auto-reassignment switch on",
-    "decisions": ["D-101", "D-012"]
+    "decisions": [
+      "D-101",
+      "D-012"
+    ]
   },
   {
     "key": "partners.peer_benchmark_min_factories",
     "valueType": "integer",
     "value": 3,
     "description": "D-101 / D-044 active factories per product type before peer benchmarks are computed",
-    "decisions": ["D-101", "D-044"]
+    "decisions": [
+      "D-101",
+      "D-044"
+    ]
+  },
+  {
+    "key": "partners.impact_simulation_window_days",
+    "valueType": "integer",
+    "value": 90,
+    "description": "D-040 note: the impact simulation re-prices the factory quotes of the last 90 days",
+    "decisions": [
+      "D-040"
+    ]
   },
   {
     "key": "analytics.prospectus_min_group_size",
     "valueType": "integer",
     "value": 3,
     "description": "D-160 minimum factories per breakdown in anonymised exports and the partner prospectus",
-    "decisions": ["D-160", "D-044"]
+    "decisions": [
+      "D-160",
+      "D-044"
+    ]
   }
 ]

@@ -26,6 +26,7 @@ import { PRODUCT_TYPES } from "./catalog";
 import { FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
 import { coverageOf, factoryTiers, proposals } from "./partners";
+import { settingValue } from "./platform";
 
 type Suggestion = Schemas["PriceLineSuggestionDto"];
 type Simulation = Schemas["PriceSimulationDto"];
@@ -332,12 +333,13 @@ export const governanceHandlers = [
     if (!can(staffPersonaOf(request), "price_suggestions.read")) return forbidden();
     const item = proposals.find((candidate) => candidate.id === params.proposalId);
     if (!item) return problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
-    // The worker has finished by the first poll, in the mock; the window is the setting's default.
+    // The worker has finished by the first poll, in the mock; the window is a setting.
+    const days = settingValue<number>("partners.impact_simulation_window_days");
     const simulation: Simulation = {
       id: mockId("sim", simulations.size + 1),
       proposalId: item.id,
       status: "succeeded",
-      windowFrom: bangkokIso(-60 * 24 * 90),
+      windowFrom: bangkokIso(-60 * 24 * days),
       windowTo: bangkokIso(),
       result: {
         quotesInWindow: 38,
