@@ -8,7 +8,7 @@ import type { z } from "zod";
 import type { savedView, searchResult, importJob, queueSummary } from "@/lib/api/requests/admin-console";
 
 import { staffPersonaOf } from "../auth";
-import { can, type StaffPersona } from "../personas";
+import { can, PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, problem } from "../support";
 import { approvals, mayDecide, SOD_RULES, users } from "./platform";
@@ -193,3 +193,13 @@ export const consoleHandlers = [
     truncated: false,
   })),
 ];
+
+consoleHandlers.push(
+  mockRequest("GET /v1/admin/staff-directory", ({ query }) => ({
+    data: PERSONAS.filter(
+      (persona) => matchesQuery(query.q, persona.displayName, persona.email) && (!query.role || persona.roles.includes(query.role)),
+    )
+      .slice(0, query.limit ?? 20)
+      .map((persona) => ({ id: persona.id, displayName: persona.displayName, roles: persona.roles })),
+  })),
+);

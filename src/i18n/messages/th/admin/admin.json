@@ -80,5 +80,31 @@
     "insights": "รายงาน",
     "system": "ระบบ",
     "other": "อื่น ๆ"
+  },
+  "roles": {
+    "superadmin": "ซูเปอร์แอดมิน",
+    "c_level": "ผู้บริหารระดับสูง",
+    "vp": "รองประธาน",
+    "director": "ผู้อำนวยการ",
+    "admin": "ผู้ดูแลระบบ",
+    "cs": "ฝ่ายบริการลูกค้า",
+    "cs_lead": "หัวหน้าฝ่ายบริการลูกค้า",
+    "prepress": "ฝ่ายเตรียมพิมพ์",
+    "finance": "ฝ่ายการเงิน",
+    "finance_manager": "ผู้จัดการฝ่ายการเงิน",
+    "logistics": "ฝ่ายขนส่ง",
+    "marketing": "ฝ่ายการตลาด",
+    "partner_manager": "ผู้จัดการพันธมิตร",
+    "auditor": "ผู้ตรวจสอบบัญชี",
+    "factory_owner": "เจ้าของโรงงาน",
+    "factory_planner": "ผู้วางแผนการผลิต",
+    "factory_operator": "ผู้ปฏิบัติงาน",
+    "factory_qc": "ฝ่ายควบคุมคุณภาพ",
+    "factory_shipping": "ฝ่ายจัดส่ง",
+    "factory_accountant": "ฝ่ายบัญชีโรงงาน",
+    "company_admin": "ผู้ดูแลบัญชีบริษัท",
+    "company_buyer": "ผู้สั่งซื้อ",
+    "company_approver": "ผู้อนุมัติ",
+    "company_accountant": "ฝ่ายบัญชีบริษัท"
   }
 }
