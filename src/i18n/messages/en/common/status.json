@@ -345,6 +345,17 @@
     "failed": "Failed",
     "engineUnavailable": "Engine unavailable"
   },
+  "bankAccount": {
+    "pendingApproval": "Awaiting approval",
+    "active": "Active",
+    "superseded": "Superseded",
+    "rejected": "Rejected"
+  },
+  "siteVisit": {
+    "pass": "Passed",
+    "conditional": "Passed with conditions",
+    "fail": "Failed"
+  },
   "action": {
     "approve": "Approve",
     "reject": "Reject",

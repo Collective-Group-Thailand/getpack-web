@@ -345,6 +345,17 @@
     "failed": "วาดแบบไม่สำเร็จ",
     "engineUnavailable": "ระบบวาดแบบยังไม่พร้อม"
   },
+  "bankAccount": {
+    "pendingApproval": "รออนุมัติ",
+    "active": "ใช้งาน",
+    "superseded": "มีบัญชีใหม่แทนแล้ว",
+    "rejected": "ไม่อนุมัติ"
+  },
+  "siteVisit": {
+    "pass": "ผ่าน",
+    "conditional": "ผ่านแบบมีเงื่อนไข",
+    "fail": "ไม่ผ่าน"
+  },
   "action": {
     "approve": "อนุมัติ",
     "reject": "ไม่อนุมัติ",

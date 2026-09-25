@@ -1,5 +1,13 @@
 import { defineStatusMap } from "./types";
-import type { FactoryStatus, KycStatus, OnboardingStepStatus, ProposalLineDecision, ProposalStatus } from "./contract";
+import type {
+  BankAccountStatus,
+  FactoryStatus,
+  KycStatus,
+  OnboardingStepStatus,
+  ProposalLineDecision,
+  ProposalStatus,
+  SiteVisitResult,
+} from "./contract";
 
 /** A partner factory: at least one site visit before trial → active (D-011, D-041). */
 export const FACTORY_STATUS = defineStatusMap<FactoryStatus>({
@@ -48,4 +56,19 @@ export const PROPOSAL_LINE_STATUS = defineStatusMap<ProposalLineDecision>({
   accepted: { tone: "success", icon: "check", labelKey: "proposalLine.accepted" },
   rejected: { tone: "danger", icon: "ban", labelKey: "proposalLine.rejected" },
   countered: { tone: "warning", icon: "scale", labelKey: "proposalLine.countered" },
+});
+
+/** A factory's bank account (D-033): a change is dual-approved after a call-back. */
+export const BANK_ACCOUNT_STATUS = defineStatusMap<BankAccountStatus>({
+  pending_approval: { tone: "warning", icon: "hourglass", labelKey: "bankAccount.pendingApproval" },
+  active: { tone: "success", icon: "check", labelKey: "bankAccount.active" },
+  superseded: { tone: "neutral", icon: "history", labelKey: "bankAccount.superseded" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "bankAccount.rejected" },
+});
+
+/** A site visit's outcome (D-041). */
+export const SITE_VISIT_RESULT = defineStatusMap<SiteVisitResult>({
+  pass: { tone: "success", icon: "check", labelKey: "siteVisit.pass" },
+  conditional: { tone: "warning", icon: "warning", labelKey: "siteVisit.conditional" },
+  fail: { tone: "danger", icon: "ban", labelKey: "siteVisit.fail" },
 });

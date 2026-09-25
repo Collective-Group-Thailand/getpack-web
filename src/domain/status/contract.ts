@@ -156,29 +156,20 @@ export type PayableStatus = "open" | "eligible" | "in_run" | "paid" | "cancelled
 /** A customer document — tax invoice, receipt, credit note. A voided document keeps its number (accounting-design §5). **Source: schema** (`customer_document_status`). */
 export type DocumentStatus = "issued" | "void";
 
-/** A partner factory: at least one site visit before trial → active (D-011, D-041). **Source: schema** (`factory_status`). */
-export type FactoryStatus = "applied" | "under_review" | "trial" | "active" | "suspended" | "offboarded";
+/** A partner factory: at least one site visit before trial → active (D-011, D-041). **Source: contract** (B2.2). */
+export type FactoryStatus = Schemas["FactoryStatus"];
 
-/** One onboarding step of a factory (D-011). **Source: schema** (`onboarding_step_status`). */
-export type OnboardingStepStatus = "pending" | "in_progress" | "submitted" | "approved" | "rejected" | "waived";
+/** One onboarding step of a factory (D-011). **Source: contract** (B2.2). */
+export type OnboardingStepStatus = Schemas["OnboardingStepStatus"];
 
-/** A KYC document of a factory or company (D-011, D-120). **Source: schema** (`kyc_status`). */
-export type KycStatus = "pending" | "verified" | "rejected" | "expired";
+/** A KYC document of a factory or company (D-011, D-120). **Source: contract** (B2.2). */
+export type KycStatus = Schemas["KycStatus"];
 
-/** A price-list proposal or rate-card version (D-040, D-042). **Source: schema** (`proposal_status`). */
-export type ProposalStatus =
-  | "draft"
-  | "submitted"
-  | "under_review"
-  | "countered"
-  | "approved"
-  | "partially_approved"
-  | "rejected"
-  | "withdrawn"
-  | "accepted_by_factory";
+/** A price-list proposal or rate-card version (D-040, D-042). **Source: contract** (B2.2). */
+export type ProposalStatus = Schemas["ProposalStatus"];
 
-/** The decision on one line of a proposal (D-040). **Source: schema** (`proposal_line_decision`). */
-export type ProposalLineDecision = "pending" | "accepted" | "rejected" | "countered";
+/** The decision on one line of a proposal (D-040). **Source: contract** (B2.2). */
+export type ProposalLineDecision = Schemas["ProposalLineDecision"];
 
 /** A catalogue record: product type, pattern, material, stock product (B2.1). **Source: schema** (`catalog_status`). */
 export type CatalogStatus = "draft" | "active" | "inactive" | "archived";
@@ -195,7 +186,7 @@ export type ApprovalStepStatus = Schemas["ApprovalStepStatus"];
 /** A staff, partner or customer account. **Source: contract** (`UserStatus`). */
 export type UserStatus = Schemas["UserStatus"];
 
-/** A version of an effective-dated setting (ADR-0005, D-063). **Source: contract** (`ConfigVersionStatus`). */
+/** A version of an effective-dated setting or factory term — capacity, tier, tolerance, payout, pricing mode (ADR-0005, D-063). **Source: contract** (`ConfigVersionStatus`). */
 export type ConfigVersionStatus = Schemas["ConfigVersionStatus"];
 
 /** Whether a decision-backed value is confirmed or still awaiting sign-off (the ⚖ items). **Source: contract** (`SettingConfirmation`). */
@@ -206,3 +197,9 @@ export type AuditOutcome = Schemas["AuditOutcome"];
 
 /** The malware scan of an uploaded file; only `clean` downloads. **Source: contract** (`FileScanStatus`). */
 export type FileScanStatus = Schemas["FileScanStatus"];
+
+/** A factory's bank account, dual-approved after a call-back (D-033). **Source: contract** (B2.2). */
+export type BankAccountStatus = Schemas["BankAccountStatus"];
+
+/** The outcome of a site visit, required before activation (D-041). **Source: contract** (B2.2). */
+export type SiteVisitResult = Schemas["SiteVisitResult"];
