@@ -35,6 +35,10 @@ const P = {
   factoryCost: "factory_cost.read",
   marginRead: "margin.read",
   marginWhenDiscounting: "margin.read_pct_when_discounting",
+  // docs/rbac.md (B2.1)
+  catalogImport: "catalog.import",
+  seoManage: "seo.manage",
+  geographyManage: "geography.manage",
   // proposed for F2 (admin.permissions)
   ordersRead: "orders.read",
   ordersManage: "orders.manage",
@@ -96,6 +100,7 @@ export const MENU_CATALOGUE: readonly { key: string; path: string; permission: P
   { key: "claims", path: "/admin/claims", permission: P.claimsRead },
   { key: "partners", path: "/admin/partners", permission: P.partnersRead },
   { key: "catalogue", path: "/admin/catalogue", permission: P.catalogRead },
+  { key: "cms", path: "/admin/cms", permission: P.cmsManage },
   { key: "marketing", path: "/admin/marketing", permission: P.marketingRead },
   { key: "customers", path: "/admin/customers", permission: P.customersRead },
   { key: "companies", path: "/admin/companies", permission: P.companiesRead },
@@ -182,7 +187,10 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.rolesAssign,
       P.catalogRead,
       P.catalogManage,
+      P.catalogImport,
       P.cmsManage,
+      P.seoManage,
+      P.geographyManage,
     ],
   ),
   persona(
@@ -298,6 +306,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.marketingManage,
       P.customersRead,
       P.cmsManage,
+      P.seoManage,
       P.catalogRead,
       P.analyticsRead,
       P.reportsRead,
