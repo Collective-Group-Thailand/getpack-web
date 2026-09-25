@@ -10,6 +10,96 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
 | 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted packio-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
 | 2026-09-24 | **F1 Deliverable 1.3** — shells, i18n, domain presentation, observability, quality gates | Eleven status maps behind one `contract.ts` indirection + the `status` namespace + `nextActions` renderer; messages split per zone with `react/jsx-no-literals`, ICU gates and the packaging glossary; the three zone shells (admin sidebar from `/v1/admin/me` entitlements, ⌘K, `?`, notification centre, storefront header/footer/bottom nav, partner shop-floor frame) and four new `src/ui` primitives; Sentry on all three runtimes with trace headers through the BFF and Web Vitals RUM; robots/sitemap/canonical/hreflang/JSON-LD on the indexed zone only; SSE→cache invalidation, web push, PWA manifest; typed D-102 funnel events behind a PDPA consent gate; five Lighthouse URL sets and Storybook visual snapshots. 481 unit, 78 e2e, 4 visual | F2–F6. The storefront's initial-JS budget is breached on every route type (see below) | See the notes under the F1.3 heading |
+| 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted packio-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
+
+---
+
+## F2 Deliverable 2.1 — 2026-09-25
+
+The back-office foundation. Worked in its own git worktree (`../packio-web-f2`, branch
+`feat/f2-admin`), because two other sessions were editing the shared checkout — the master plan
+says F2–F6 run in separate worktrees for exactly that reason.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A response type written by hand for an endpoint that does not exist | every contract request is a zod definition in `src/lib/api/requests`; `requests.call(key, …)` is typed by it |
+| A mock that drifts from what the backend was asked for | `mockRequest` validates every response against the request's schema (`500 mock.drift`), and a test drives every requested GET through MSW |
+| A contract request nobody retires after the backend ships it | `registry.test.ts` fails as soon as its method and path are in `contract/openapi.json` |
+| A request the backend was never told about | the same test fails when an entry has no row in `docs/contract-requests.md`; `pnpm gen:api` renders the registry as `docs/contract-requests.openapi.json` under the drift gate |
+| An irreversible request sent without the caller's idempotency key | `CallInit` makes `idempotencyKey` a required property for `idempotent: true` entries (asserted with `@ts-expect-error`) |
+| A status the backend adds without presentation | seven maps typed on `Schemas[…]`; the other 37 copied verbatim from the approved schema design, one line to repoint each |
+| A page's own URL parameters reaching the API as filters | lists declare `filterKeys`; `mergeIntoUrl` keeps everything that is not the list's |
+| A grant certain to be refused | SoD role pairs (`admin.sod-rules`) and the anti-escalation rule (`RoleDto.permissions` vs the grantor's) are shown and block submit before the API's 409/403 |
+| A consequential action with no restated target or a fresh key per retry | `ConfirmAction`: restatement, optional typed phrase and reason, one key per opening, dialog stays open on failure |
+| An e2e click that lands before hydration | `<html data-hydrated>` from `HydrationMark`; `signInAsStaff` and `gotoHydrated` wait for it |
+
+### Bugs this session found and fixed
+
+1. **Every Web Vitals beacon and every funnel event was a 403** (F1 1.3). `sendBeacon` cannot set
+   a header and the BFF required `x-packio-csrf` on every POST, so field RUM and the D-102 funnel
+   never reached the API. The two beacon endpoints are exempt from the header only; the `Origin`
+   check still applies.
+2. **The realtime client could not have received anything.** The published stream sends named
+   SSE events, which `EventSource`'s `message` listener never sees, and authorises with a
+   60-second token `EventSource` would keep resending after it expired. Replaced with a `fetch`
+   reader: every frame, a fresh token per connection, jittered backoff, a refetch after gaps.
+3. **The command palette's listbox held a `<p>` and role-less `<li>`s** once it had grouped
+   results (critical `aria-required-children`) — F1's palette was always empty, so nothing had
+   tested it. Groups are `role="group"` now.
+4. **`/approvals?tab=all` sent `tab=all` to the API**, and changing a filter would have dropped
+   the tab. See `filterKeys` above.
+5. **`text-subtle` was used for real text** in the sidebar, the palette and the bell (contrast).
+6. **A wide or long table scrolled where no keyboard could reach** (`scrollable-region-focusable`).
+7. **Avatar initials took a parenthetical for a name** ("ผ(" for "ผู้อำนวยการ ตัวอย่าง (ข้อมูลจำลอง)").
+
+### Decisions taken, with reasons
+
+- **Adopted packio-api's newer B1.3 contract** (`pnpm gen:api --adopt`, still versioned 0.1.0 on
+  its `feat/b1.3-platform` branch). 2.1 is mostly screens for endpoints that contract publishes,
+  and building them against mocks while the real shapes existed would have meant writing them
+  twice. The lock's `source` still names the v0.1.0 release asset — **re-pin when packio-api tags
+  a release with this document.**
+- **The status vocabularies follow the backend's approved schema design (§4)**, replacing the
+  seven F1 had to propose. The design was approved on 2026-09-23 and says each enum becomes a named
+  OpenAPI component; copying it now means the day the components ship is a one-line change per
+  map. Other branches that render statuses (F3–F6) will see the new values when they merge.
+- **Contract requests are zod, not hand-written interfaces.** At F2's scale a per-call-site
+  interface is a hundred and fifty places to drift. One definition typing the call, checking the
+  mock and generating the handoff document is the same rule — nothing invented silently — made
+  mechanical.
+- **Mock reference data is the backend's own seed**, copied into `mocks/admin/fixtures` (settings,
+  approval policies, SoD rules, roles, permissions) rather than imported: CI has no sibling
+  checkout. The admin menu mirrors packio-api's `menu.catalog.ts` verbatim, which is how feature
+  flags, notification templates/routes and the outbox entered 2.1's scope.
+- **A staff directory is a contract request**, not a use of `GET /v1/admin/users`: that needs
+  `users.read`, which a Director delegating an approval does not hold.
+- **Money typed into a setting is normalised as text** (`"20000"` → `"20000.00"`) and never passes
+  through a float; percentages stay decimal strings, as the contract sends them.
+- **The SLA timer invents no "at risk" threshold.** It renders the distance to a deadline the API
+  computed, and trusts an API-sent state when there is one; a threshold would be a business rule.
+- **Verification runs on a production build.** In `pnpm dev:mock`, MSW intermittently stops
+  intercepting — it looks like Next's own `fetch` patch capturing the unpatched `fetch` depending
+  on start-up order. The e2e suite already builds for production, for its own reasons.
+
+### Deliberately not done
+
+- No bespoke DatePicker: date and time fields are native `date` / `datetime-local` inputs, labelled
+  as Bangkok time. A Buddhist-era calendar picker waits for a screen whose users need one.
+- Role grants pick a factory or company scope through `admin.search`; a dedicated picker comes
+  with the partner and company screens (2.6, 2.7).
+- Creating notification routes and templates from scratch: the backend seeds the D-143 matrix
+  (B4.6), and 2.1 edits, previews, test-sends and publishes what exists.
+- The sidebar lists every entry the API sends, so a persona sees F2.2–2.8 screens that answer 404
+  until those deliverables land.
+
+### Open questions
+
+- **Backend**: `admin.saved-views`, `admin.search`, `admin.dashboard`, `admin.sod-rules`,
+  `admin.staff-directory`, `admin.imports`, `admin.exports`, `admin.menu-entries`,
+  `admin.permissions`, and `notifications.unread-and-link` (the rest of `notifications.feed`).
+- **Backend**: re-publish the contract under a release tag so `contract.lock.json` can point at it.
 
 ---
 
