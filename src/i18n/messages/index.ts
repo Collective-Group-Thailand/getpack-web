@@ -27,6 +27,7 @@ const NAMESPACES = [
   "admin",
   "console",
   "approvals",
+  "iam",
   "partner",
 ] as const;
 
@@ -44,7 +45,7 @@ export type Namespace = (typeof NAMESPACES)[number];
  */
 export const ZONE_NAMESPACES = {
   customer: ["common", "auth", "status", "storefront", "home", "designs", "designer"],
-  admin: ["common", "auth", "status", "admin", "console", "approvals"],
+  admin: ["common", "auth", "status", "admin", "console", "iam", "approvals"],
   partner: ["common", "auth", "status", "partner"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
@@ -61,6 +62,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     designer: () => import("./th/customer/designer.json"),
     admin: () => import("./th/admin/admin.json"),
     console: () => import("./th/admin/console.json"),
+    iam: () => import("./th/admin/iam.json"),
     approvals: () => import("./th/admin/approvals.json"),
     partner: () => import("./th/partner/partner.json"),
   },
@@ -74,6 +76,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     designer: () => import("./en/customer/designer.json"),
     admin: () => import("./en/admin/admin.json"),
     console: () => import("./en/admin/console.json"),
+    iam: () => import("./en/admin/iam.json"),
     approvals: () => import("./en/admin/approvals.json"),
     partner: () => import("./en/partner/partner.json"),
   },

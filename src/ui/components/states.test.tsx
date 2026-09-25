@@ -52,3 +52,12 @@ describe("Skeleton", () => {
     await expectNoA11yViolations(container);
   });
 });
+
+describe("Avatar initials", () => {
+  it("skips a parenthetical, so a note after the name is not an initial", async () => {
+    const { initialsOf } = await import("./Avatar");
+    expect(initialsOf("ผู้อำนวยการ ตัวอย่าง (ข้อมูลจำลอง)")).toBe("ผต");
+    expect(initialsOf("Somchai Jaidee")).toBe("SJ");
+    expect(initialsOf("(ข้อมูลจำลอง)")).toBe("");
+  });
+});

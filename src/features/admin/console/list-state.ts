@@ -23,6 +23,11 @@ export interface ListState {
 }
 
 export interface ListDefaults {
+  /**
+   * The URL parameters that are this list's filters. Anything else in the URL — a page's own
+   * tab, a panel that is open — is left alone and never reaches the API.
+   */
+  filterKeys?: readonly string[];
   perPage?: number;
   sort?: string | null;
   order?: "asc" | "desc";
@@ -43,8 +48,11 @@ export function parseListState(params: SearchParamsLike, defaults: ListDefaults 
   const order = params.get("order");
   const filters: Record<string, string> = { ...defaults.filters };
 
+  const allowed = defaults.filterKeys ? new Set(defaults.filterKeys) : null;
   params.forEach((value, key) => {
-    if (!RESERVED.has(key) && value !== "") filters[key] = value;
+    if (RESERVED.has(key) || value === "") return;
+    if (allowed && !allowed.has(key)) return;
+    filters[key] = value;
   });
 
   const hide = params.get("hide");
@@ -106,4 +114,20 @@ export function viewQuery(state: ListState, defaults: ListDefaults = {}): Record
   const params = serialiseListState({ ...state, page: 1 }, defaults);
   params.delete("hide");
   return Object.fromEntries(params);
+}
+
+/**
+ * The URL after a change: the list's own parameters rewritten, everything else — the page's tab,
+ * an open panel — kept exactly as it was. Without this, filtering the "all requests" tab would
+ * drop `?tab=all` and put the person back on the inbox.
+ */
+export function mergeIntoUrl(current: URLSearchParams, state: ListState, defaults: ListDefaults = {}): URLSearchParams {
+  const next = new URLSearchParams();
+  const allowed = defaults.filterKeys ? new Set(defaults.filterKeys) : null;
+  current.forEach((value, key) => {
+    const ownedByList = RESERVED.has(key) || (allowed ? allowed.has(key) : true);
+    if (!ownedByList || key === "view") next.set(key, value);
+  });
+  serialiseListState(state, defaults).forEach((value, key) => next.set(key, value));
+  return next;
 }

@@ -105,7 +105,7 @@ export function ResourceList<TRow extends object>({
             onChange={(value) => setFilter(filter.id, value)}
           />
         ))}
-        {Object.keys(state.filters).length > 0 || state.q ? (
+        {state.q || JSON.stringify(state.filters) !== JSON.stringify(defaults.filters ?? {}) ? (
           <Button
             variant="ghost"
             size="sm"
