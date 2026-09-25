@@ -6,6 +6,8 @@
 import { catalogueHandlers } from "./catalogue";
 import { commerceHandlers } from "./commerce";
 import { consoleHandlers } from "./console";
+import { governanceHandlers } from "./governance";
+import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
 import { prepressHandlers } from "./prepress";
 import { rfqHandlers } from "./rfq";
@@ -18,5 +20,7 @@ export const adminHandlers = [
   ...rfqHandlers,
   ...prepressHandlers,
   ...catalogueHandlers,
+  ...governanceHandlers,
+  ...partnerHandlers,
   ...platformHandlers,
 ];
