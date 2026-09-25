@@ -12,6 +12,7 @@ export { ConsolePage } from "./ConsolePage";
 export { CrudList, defineResource, type CrudListProps, type ResourceConfig } from "./crud";
 export { download, ExportButton } from "./ExportButton";
 export { FormFields, type FieldDef } from "./fields";
+export { FormDialog, FormError, Section } from "./FormDialog";
 export { FilterControl, ListSearch, useDebouncedValue, type FilterDef } from "./filters";
 export { ImportWizard } from "./ImportWizard";
 export { actionVerb, NextActionBar, type NextActionBarProps } from "./NextActionBar";
