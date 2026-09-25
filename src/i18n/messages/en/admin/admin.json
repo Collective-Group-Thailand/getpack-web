@@ -8,7 +8,7 @@
     "nav": "Main navigation",
     "collapseNav": "Collapse navigation",
     "expandNav": "Expand navigation",
-    "searchPlaceholder": "Search orders, customers, factories",
+    "searchPlaceholder": "Search orders, customers, factories or screens",
     "shortcuts": "Keyboard shortcuts",
     "shortcutEscape": "Close the open overlay",
     "account": "Account",
@@ -20,7 +20,7 @@
     "palette": {
       "title": "Search and commands",
       "placeholder": "Type to search",
-      "empty": "There is nothing to search yet."
+      "empty": "Nothing found. Try an order code, a phone number or an e-mail."
     }
   },
   "menu": {
@@ -48,6 +48,37 @@
     "audit_logs": "Audit log",
     "analytics": "Analytics",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "cs_calculators": "CS calculators",
+    "discount_memos": "Discount memos",
+    "feature_flags": "Feature flags",
+    "notification_templates": "Notification templates",
+    "notification_routes": "Notification routes",
+    "outbox": "Event outbox"
+  },
+  "palette": {
+    "screens": "Screens",
+    "types": {
+      "order": "Orders",
+      "order_group": "Order groups",
+      "quote": "Quotations",
+      "rfq": "RFQs",
+      "customer": "Customers",
+      "company": "Companies",
+      "factory": "Factories",
+      "shipment": "Shipments",
+      "claim": "Claims",
+      "user": "Users"
+    }
+  },
+  "menuGroups": {
+    "overview": "Overview",
+    "sales": "Sales & CS",
+    "operations": "Operations",
+    "supply": "Supply",
+    "growth": "Customers & marketing",
+    "insights": "Insights",
+    "system": "System",
+    "other": "Other"
   }
 }

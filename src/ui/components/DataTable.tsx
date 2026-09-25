@@ -81,7 +81,8 @@ export interface DataTableProps<TRow> {
   selectable?: boolean;
   selected?: readonly string[];
   onSelectedChange?: (ids: string[]) => void;
-  labels: DataTableLabels;
+  /** Required when the table is sortable or selectable — those are the only controls with copy. */
+  labels?: DataTableLabels;
   /** True while a page is loading. With no rows yet, skeleton rows hold the layout. */
   loading?: boolean;
   /** Rendered in place of the body when there are no rows and nothing is loading. */
@@ -230,7 +231,7 @@ export function DataTable<TRow extends RowData>({
                 className="accent-primary size-4 align-middle"
                 checked={isSelected}
                 onChange={row.getToggleSelectedHandler()}
-                aria-label={labels.selectRow(getRowName?.(row.original) ?? row.id)}
+                aria-label={labels?.selectRow(getRowName?.(row.original) ?? row.id)}
               />
             </td>
           ) : null}
@@ -279,7 +280,7 @@ export function DataTable<TRow extends RowData>({
                     }}
                     onChange={table.getToggleAllRowsSelectedHandler()}
                     disabled={!hasRows}
-                    aria-label={labels.selectAll}
+                    aria-label={labels?.selectAll}
                   />
                 </th>
               ) : null}
@@ -307,7 +308,7 @@ export function DataTable<TRow extends RowData>({
                           sorted && "text-fg",
                         )}
                       >
-                        <span className="sr-only">{labels.sortBy}</span>
+                        {labels ? <span className="sr-only">{labels.sortBy}</span> : null}
                         <table.FlexRender header={header} />
                         <Icon
                           name={sorted === "asc" ? "sort-asc" : sorted === "desc" ? "sort-desc" : "sort"}

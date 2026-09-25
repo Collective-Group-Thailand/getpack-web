@@ -30,36 +30,67 @@ export function browserPath(path: string): string {
 }
 
 /**
- * Icons for the menu keys F2 introduces. A key with no icon still renders — with no icon —
- * rather than being dropped or given a wrong one.
+ * Icons for the menu keys. A key with no icon still renders — with no icon — rather than being
+ * dropped or given a wrong one.
  */
 const MENU_ICONS: Record<string, IconName> = {
-  dashboard: "pattern",
+  dashboard: "dashboard",
+  approvals: "stamp",
   orders: "package",
+  cs_calculators: "calculator",
   quotations: "receipt",
   rfq: "chat",
+  discount_memos: "percent",
   prepress: "image",
-  catalogue: "box",
-  partners: "factory",
   production: "factory",
-  logistics: "truck",
   shipments: "truck",
   claims: "flag",
-  finance: "wallet",
-  documents: "document",
-  payouts: "credit-card",
-  marketing: "flag",
-  campaigns: "flag",
+  partners: "handshake",
+  catalogue: "box",
+  marketing: "megaphone",
   customers: "user",
-  companies: "user",
-  b2b: "user",
-  users: "user",
-  approvals: "check",
-  audit_logs: "eye",
-  analytics: "pattern",
+  companies: "building",
+  analytics: "chart",
   reports: "document",
-  settings: "edit",
+  finance: "wallet",
+  users: "users",
+  settings: "settings",
+  feature_flags: "flag",
+  notification_templates: "mail",
+  notification_routes: "route",
+  audit_logs: "history",
+  outbox: "inbox",
 };
+
+/**
+ * How the sidebar groups what the API sent (F2 A.3: "collapsible sidebar grouped by the role
+ * menu"). Presentation only: grouping never adds or removes an entry, and a key in no group
+ * lands in `other` rather than disappearing. Within a group the API's order is kept.
+ */
+export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[] = [
+  { key: "overview", entries: ["dashboard", "approvals"] },
+  { key: "sales", entries: ["orders", "cs_calculators", "quotations", "rfq", "discount_memos"] },
+  { key: "operations", entries: ["prepress", "production", "shipments", "claims"] },
+  { key: "supply", entries: ["partners", "catalogue"] },
+  { key: "growth", entries: ["marketing", "customers", "companies"] },
+  { key: "insights", entries: ["analytics", "reports", "finance"] },
+  { key: "system", entries: ["users", "settings", "feature_flags", "notification_templates", "notification_routes", "audit_logs", "outbox"] },
+];
+
+export interface SidebarGroup {
+  key: string;
+  items: SidebarItem[];
+}
+
+export function groupSidebar(items: readonly SidebarItem[]): SidebarGroup[] {
+  const groups = MENU_GROUPS.map((group) => ({
+    key: group.key,
+    items: items.filter((item) => group.entries.includes(item.key)),
+  }));
+  const known = new Set(MENU_GROUPS.flatMap((group) => group.entries));
+  const other = items.filter((item) => !known.has(item.key));
+  return [...groups, { key: "other", items: other }].filter((group) => group.items.length > 0);
+}
 
 export interface SidebarItem {
   key: string;
