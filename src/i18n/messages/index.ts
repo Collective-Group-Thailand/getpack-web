@@ -37,6 +37,9 @@ const NAMESPACES = [
   "catalogue",
   "partners",
   "production",
+  "marketing",
+  "customers",
+  "companies",
   "partner",
 ] as const;
 
@@ -70,8 +73,7 @@ export const ZONE_NAMESPACES = {
     "prepress",
     "catalogue",
     "partners",
-    "production",
-  ],
+    "production", "marketing", "customers", "companies"],
   partner: ["common", "auth", "status", "partner"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
@@ -87,6 +89,9 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     designs: () => import("./th/customer/designs.json"),
     designer: () => import("./th/customer/designer.json"),
     admin: () => import("./th/admin/admin.json"),
+    companies: () => import("./th/admin/companies.json"),
+    customers: () => import("./th/admin/customers.json"),
+    marketing: () => import("./th/admin/marketing.json"),
     production: () => import("./th/admin/production.json"),
     partners: () => import("./th/admin/partners.json"),
     catalogue: () => import("./th/admin/catalogue.json"),
@@ -110,6 +115,9 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     designs: () => import("./en/customer/designs.json"),
     designer: () => import("./en/customer/designer.json"),
     admin: () => import("./en/admin/admin.json"),
+    companies: () => import("./en/admin/companies.json"),
+    customers: () => import("./en/admin/customers.json"),
+    marketing: () => import("./en/admin/marketing.json"),
     production: () => import("./en/admin/production.json"),
     partners: () => import("./en/admin/partners.json"),
     catalogue: () => import("./en/admin/catalogue.json"),

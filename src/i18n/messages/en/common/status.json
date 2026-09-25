@@ -395,5 +395,10 @@
     "invited": "Invited",
     "active": "Active",
     "removed": "Removed"
+  },
+  "statement": {
+    "open": "Open",
+    "paid": "Paid",
+    "overdue": "Overdue"
   }
 }

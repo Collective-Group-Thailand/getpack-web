@@ -8,6 +8,7 @@ import type {
   RefundStatus,
   SlipStatus,
   MemberStatus,
+  StatementStatus,
 } from "./contract";
 
 /** One checkout: a group of orders with one payment schedule (B3.1). */
@@ -83,4 +84,11 @@ export const MEMBER_STATUS = defineStatusMap<MemberStatus>({
   invited: { tone: "info", icon: "user-plus", labelKey: "member.invited" },
   active: { tone: "success", icon: "check", labelKey: "member.active" },
   removed: { tone: "neutral", icon: "user-x", labelKey: "member.removed" },
+});
+
+/** A company's monthly statement for consolidated payment (D-125). */
+export const STATEMENT_STATUS = defineStatusMap<StatementStatus>({
+  open: { tone: "info", icon: "receipt", labelKey: "statement.open" },
+  paid: { tone: "success", icon: "check", labelKey: "statement.paid" },
+  overdue: { tone: "danger", icon: "warning", labelKey: "statement.overdue" },
 });
