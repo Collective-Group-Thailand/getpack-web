@@ -3,11 +3,13 @@
  * published surface; see each module for what it stands in for.
  */
 
+import { analyticsHandlers } from "./analytics";
 import { catalogueHandlers } from "./catalogue";
 import { commerceHandlers } from "./commerce";
 import { companyHandlers } from "./companies";
 import { consoleHandlers } from "./console";
 import { governanceHandlers } from "./governance";
+import { logisticsHandlers } from "./logistics";
 import { loyaltyHandlers } from "./loyalty";
 import { marketingHandlers } from "./marketing";
 import { partnerHandlers } from "./partners";
@@ -28,5 +30,7 @@ export const adminHandlers = [
   ...marketingHandlers,
   ...companyHandlers,
   ...loyaltyHandlers,
+  ...logisticsHandlers,
+  ...analyticsHandlers,
   ...platformHandlers,
 ];

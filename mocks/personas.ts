@@ -75,6 +75,8 @@ const P = {
   shipmentsManage: "shipments.manage",
   claimsRead: "claims.read",
   claimsDecide: "claims.decide",
+  claimsOverride: "claims.override_liability",
+  prospectus: "analytics.prospectus",
   analyticsRead: "analytics.read",
   reportsRead: "reports.read",
 } as const;
@@ -171,7 +173,7 @@ export const PERSONAS: readonly StaffPersona[] = [
     2,
     "ผู้บริหาร ตัวอย่าง (ข้อมูลจำลอง)",
     ["c_level"],
-    [...executive, P.settingsReadSensitive, P.suggestionsRead],
+    [...executive, P.settingsReadSensitive, P.suggestionsRead, P.prospectus],
   ),
   persona(
     "vp",
@@ -251,6 +253,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.shipmentsRead,
       P.claimsRead,
       P.claimsDecide,
+      P.claimsOverride,
       P.marginWhenDiscounting,
       P.reportsRead,
     ],
@@ -351,6 +354,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.qcInspect,
       P.rfqRead,
       P.catalogRead,
+      P.prospectus,
       P.analyticsRead,
     ],
   ),
