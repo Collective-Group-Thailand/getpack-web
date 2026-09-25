@@ -14,8 +14,11 @@ export default async function ApprovalPage({ params }: { params: Promise<{ reque
   let initial = null;
   try {
     initial =
-      (await (await adminServerApis()).contract.GET("/v1/admin/approvals/{requestId}", { params: { path: { requestId } } })).data ??
-      null;
+      (
+        await (
+          await adminServerApis()
+        ).contract.GET("/v1/admin/approvals/{requestId}", { params: { path: { requestId } } })
+      ).data ?? null;
   } catch {
     // The client asks again and renders the answer — a 404 or 403 as itself, with a request id.
   }

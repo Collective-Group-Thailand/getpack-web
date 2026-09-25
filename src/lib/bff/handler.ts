@@ -147,7 +147,10 @@ export function createBffHandler(zone: Zone) {
  * applies to them in full: a beacon from another site is refused exactly as before. What is
  * given up is only the header, on endpoints whose worst abuse is a fake measurement.
  */
-const BEACON_PATHS: readonly RegExp[] = [/^\/v1\/(store|admin|partner)\/rum\/web-vitals$/, /^\/v1\/store\/analytics\/events$/];
+const BEACON_PATHS: readonly RegExp[] = [
+  /^\/v1\/(store|admin|partner)\/rum\/web-vitals$/,
+  /^\/v1\/store\/analytics\/events$/,
+];
 
 export function isBeaconPath(upstreamPath: string): boolean {
   return BEACON_PATHS.some((pattern) => pattern.test(upstreamPath));

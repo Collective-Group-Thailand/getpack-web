@@ -17,7 +17,11 @@ describe("createSseParser", () => {
       'event: notification.created\ndata: {"type":"notification.created","id":"e1","channel":"user:u1"}\n\n',
     );
     expect(frames).toEqual([
-      { event: "notification.created", data: '{"type":"notification.created","id":"e1","channel":"user:u1"}', id: undefined },
+      {
+        event: "notification.created",
+        data: '{"type":"notification.created","id":"e1","channel":"user:u1"}',
+        id: undefined,
+      },
     ]);
   });
 

@@ -188,7 +188,7 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
         </Callout>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex flex-col gap-5">
           <Card padding="lg">
             <CardHeader>

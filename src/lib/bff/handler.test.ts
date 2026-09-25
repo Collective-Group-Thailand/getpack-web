@@ -180,7 +180,12 @@ describe("CSRF", () => {
 
   it("still refuses a beacon from another origin", async () => {
     const response = await createBffHandler("customer")(
-      ...bffRequest("/v1/store/analytics/events", { method: "POST", csrf: false, origin: "https://evil.test", body: "{}" }),
+      ...bffRequest("/v1/store/analytics/events", {
+        method: "POST",
+        csrf: false,
+        origin: "https://evil.test",
+        body: "{}",
+      }),
     );
     expect(response.status).toBe(403);
     await expect(response.json()).resolves.toMatchObject({ code: "bff.origin_mismatch" });

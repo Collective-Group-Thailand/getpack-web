@@ -53,7 +53,7 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
         }))}
       />
       <p className="text-muted flex items-center gap-2 text-sm">
-        <Icon name="shield-alert" size={16} className="text-warning" />
+        <Icon name="shield-alert" size={16} className="text-warning-subtle-fg" />
         {t("sensitiveLegend")}
       </p>
       <div
@@ -87,7 +87,7 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
                 <tr key={permission} className="border-border border-t">
                   <th scope="row" className="px-3 py-1.5 text-start font-mono text-xs font-normal whitespace-nowrap">
                     {sensitive ? (
-                      <Icon name="shield-alert" size={14} className="text-warning me-1 inline" aria-hidden />
+                      <Icon name="shield-alert" size={14} className="text-warning-subtle-fg me-1 inline" aria-hidden />
                     ) : null}
                     {permission}
                     {sensitive ? <span className="sr-only">{t("sensitive")}</span> : null}
@@ -98,7 +98,7 @@ export function RolesMatrix({ initial }: { initial: Role[] | null }) {
                         <Icon
                           name="check"
                           size={16}
-                          className={sensitive ? "text-warning inline" : "text-success inline"}
+                          className={sensitive ? "text-warning-subtle-fg inline" : "text-success inline"}
                         />
                         <span className="sr-only">{t("granted")}</span>
                       </td>
