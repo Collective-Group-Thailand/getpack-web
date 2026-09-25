@@ -46,7 +46,8 @@
       "pod_review": "POD to review"
     },
     "claims": {
-      "new": "New claims"
+      "new": "New claims",
+      "open": "Open claims"
     },
     "partners": {
       "proposals": "Price proposals",
@@ -63,6 +64,10 @@
     "marketing": {
       "referral_review": "Referrals to review",
       "budget_alerts": "Campaigns at their budget alert"
+    },
+    "logistics": {
+      "exceptions": "Shipment exceptions",
+      "pod_review": "PODs to review"
     }
   },
   "policies": {
