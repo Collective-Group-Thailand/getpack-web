@@ -28,6 +28,7 @@ import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../
 import { productTypeRef } from "./catalog";
 import { baht, customers, FACTORY } from "./commerce";
 import { indexForSearch, registerQueue } from "./console";
+import { PARTICIPATION } from "./partners";
 import { settings } from "./platform";
 import { quotations } from "./sales";
 
@@ -51,13 +52,6 @@ export const FACTORIES = [
   { id: mockId("fac", 4), code: "F004", name: "โรงงานสิ่งพิมพ์ ตัวอย่าง (ข้อมูลจำลอง)" },
 ];
 
-/** Participation per factory per category (D-043); absent = cannot make it. */
-const PARTICIPATION: Record<string, Record<string, "A" | "B" | "C">> = {
-  [FACTORIES[0]!.id]: { folding_carton: "A", paper_bag: "C", custom_tape: "C", pop_display: "C", food_packaging: "B" },
-  [FACTORIES[1]!.id]: { rigid_box: "C", paper_bag: "B", tube: "C", pop_display: "C" },
-  [FACTORIES[2]!.id]: { food_packaging: "C", paper_bag: "C", tube: "C" },
-  [FACTORIES[3]!.id]: { folding_carton: "B", rigid_box: "C", custom_tape: "C", other: "C" },
-};
 const ON_TIME: Record<string, string> = {
   [FACTORIES[0]!.id]: "96.5000",
   [FACTORIES[1]!.id]: "91.0000",

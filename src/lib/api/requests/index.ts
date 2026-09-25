@@ -19,6 +19,7 @@ export { REQUESTS, type RequestKey, type Requests } from "./registry";
 export * from "./admin-console";
 export * from "./admin-customers";
 export * from "./admin-orders";
+export * from "./admin-partners";
 export * from "./admin-prepress";
 export * from "./admin-rfq";
 export * from "./admin-sales";

@@ -9,6 +9,7 @@
 import { adminConsoleRequests } from "./admin-console";
 import { adminCustomerRequests } from "./admin-customers";
 import { adminOrderRequests } from "./admin-orders";
+import { adminPartnerRequests } from "./admin-partners";
 import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
 import { adminSalesRequests } from "./admin-sales";
@@ -20,6 +21,7 @@ export const REQUESTS = {
   ...adminSalesRequests,
   ...adminRfqRequests,
   ...adminPrepressRequests,
+  ...adminPartnerRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

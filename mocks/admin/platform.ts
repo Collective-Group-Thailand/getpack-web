@@ -177,6 +177,54 @@ function approval(
   };
 }
 
+/**
+ * Opens an approval the way a business module does (B1.3's engine): the policy's steps from the
+ * backend's seed, requested by the acting persona. Returns the new request for the caller to link.
+ */
+export function openApproval(input: {
+  policy: string;
+  subjectType: string;
+  subjectId: string;
+  requester: StaffPersona;
+  payload: Record<string, unknown>;
+  amount?: string | null;
+  pct?: string | null;
+}): Approval {
+  const known = approvalPolicies.some((candidate) => candidate.key === input.policy);
+  const created: Approval = {
+    id: mockId("appr", 5000 + approvals.length),
+    policy: input.policy,
+    subjectType: input.subjectType,
+    subjectId: input.subjectId,
+    status: "pending",
+    requester: ref(input.requester),
+    amount: input.amount ?? null,
+    currency: "THB",
+    pct: input.pct ?? null,
+    flags: [],
+    payload: input.payload,
+    currentStepNo: 1,
+    steps: known
+      ? steps(input.policy)
+      : [
+          {
+            stepNo: 1,
+            role: "superadmin",
+            quorum: 1,
+            status: "pending",
+            dueAt: bangkokIso(60 * 24),
+            completedAt: null,
+          },
+        ],
+    actions: [],
+    createdAt: bangkokIso(),
+    expiresAt: bangkokIso(60 * 24 * 14),
+    decidedAt: null,
+  };
+  approvals.unshift(created);
+  return created;
+}
+
 const approvals: Approval[] = [
   approval(
     1,

@@ -39,6 +39,14 @@ const P = {
   catalogImport: "catalog.import",
   seoManage: "seo.manage",
   geographyManage: "geography.manage",
+  // docs/rbac.md (B2.2)
+  siteVisits: "partners.site_visits.record",
+  proposalsReview: "price_proposals.review",
+  suggestionsRead: "price_suggestions.read",
+  agreementsManage: "agreements.manage",
+  zonesManage: "zones.manage",
+  bankVerify: "vendor_bank_accounts.verify",
+  indexSeries: "index_series.manage",
   // proposed for F2 (admin.permissions)
   ordersRead: "orders.read",
   ordersManage: "orders.manage",
@@ -56,7 +64,6 @@ const P = {
   cmsManage: "cms.manage",
   partnersRead: "partners.read",
   partnersManage: "partners.manage",
-  pricesReview: "price_lists.review",
   productionRead: "production.read",
   qcInspect: "qc.inspect",
   marketingRead: "marketing.read",
@@ -159,7 +166,13 @@ const executive: Permission[] = [
 
 export const PERSONAS: readonly StaffPersona[] = [
   persona("superadmin", 1, "ผู้ดูแลสูงสุด ตัวอย่าง (ข้อมูลจำลอง)", ["superadmin"], Object.values(P)),
-  persona("c_level", 2, "ผู้บริหาร ตัวอย่าง (ข้อมูลจำลอง)", ["c_level"], [...executive, P.settingsReadSensitive]),
+  persona(
+    "c_level",
+    2,
+    "ผู้บริหาร ตัวอย่าง (ข้อมูลจำลอง)",
+    ["c_level"],
+    [...executive, P.settingsReadSensitive, P.suggestionsRead],
+  ),
   persona(
     "vp",
     3,
@@ -191,6 +204,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.cmsManage,
       P.seoManage,
       P.geographyManage,
+      P.partnersRead,
     ],
   ),
   persona(
@@ -265,6 +279,8 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.customersRead,
       P.reportsRead,
       P.memosRead,
+      P.partnersRead,
+      P.bankVerify,
     ],
   ),
   persona(
@@ -286,6 +302,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.customersRead,
       P.reportsRead,
       P.memosRead,
+      P.partnersRead,
     ],
   ),
   persona(
@@ -324,7 +341,12 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.marginRead,
       P.partnersRead,
       P.partnersManage,
-      P.pricesReview,
+      P.siteVisits,
+      P.proposalsReview,
+      P.suggestionsRead,
+      P.agreementsManage,
+      P.zonesManage,
+      P.indexSeries,
       P.productionRead,
       P.qcInspect,
       P.rfqRead,
@@ -337,7 +359,7 @@ export const PERSONAS: readonly StaffPersona[] = [
     14,
     "ผู้ตรวจสอบบัญชี ตัวอย่าง (ข้อมูลจำลอง)",
     ["auditor"],
-    [P.settingsRead, P.usersRead, P.auditRead, P.auditExport, P.reportsRead],
+    [P.settingsRead, P.usersRead, P.auditRead, P.auditExport, P.reportsRead, P.partnersRead],
   ),
 ];
 
