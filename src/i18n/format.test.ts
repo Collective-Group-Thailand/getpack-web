@@ -7,6 +7,10 @@ import {
   formatIsoDate,
   formatMm,
   formatNumber,
+  formatBytes,
+  formatDuration,
+  formatPercent,
+  formatRelativeTime,
   formatTHB,
 } from "./format";
 
@@ -90,5 +94,53 @@ describe("dimensions and units", () => {
 
   it("groups thousands", () => {
     expect(formatNumber(12500, "en")).toBe("12,500");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  const now = Date.parse("2026-09-25T10:00:00+07:00");
+
+  it("says how long ago, coarsely, in both languages", () => {
+    expect(formatRelativeTime("2026-09-25T09:55:00+07:00", "en", now)).toBe("5 minutes ago");
+    expect(formatRelativeTime("2026-09-25T07:00:00+07:00", "en", now)).toBe("3 hours ago");
+    expect(formatRelativeTime("2026-09-25T09:59:50+07:00", "en", now)).toBe("now");
+    expect(formatRelativeTime("2026-09-25T12:00:00+07:00", "th", now)).toContain("2");
+  });
+
+  it("does not invent a time for a malformed input", () => {
+    expect(formatRelativeTime("not a date", "th", now)).toBe("—");
+  });
+});
+
+describe("formatDuration", () => {
+  it("renders the largest two units", () => {
+    expect(formatDuration((2 * 60 + 15) * 60 * 1000, "en")).toBe("2 hrs 15 mins");
+    expect(formatDuration(26 * 60 * 60 * 1000, "en")).toBe("1 day 2 hrs");
+    expect(formatDuration(30_000, "en")).toBe("0 mins");
+  });
+
+  it("is a distance, so the sign does not matter", () => {
+    expect(formatDuration(-45 * 60_000, "en")).toBe("45 mins");
+  });
+});
+
+describe("formatPercent", () => {
+  it("trims the API's decimal string without doing arithmetic on it", () => {
+    expect(formatPercent("12.5000", "en")).toBe("12.5%");
+    expect(formatPercent("5", "en")).toBe("5%");
+    expect(formatPercent("-3.1400", "en")).toBe("-3.14%");
+    expect(formatPercent("0.3333", "en", 1)).toBe("0.3%");
+  });
+
+  it("refuses a malformed value rather than printing NaN", () => {
+    expect(formatPercent("abc", "en")).toBe("—");
+  });
+});
+
+describe("formatBytes", () => {
+  it("picks a readable unit", () => {
+    expect(formatBytes(512, "en")).toBe("512 byte");
+    expect(formatBytes(1536, "en")).toBe("1.5 kB");
+    expect(formatBytes(5 * 1024 * 1024, "en")).toBe("5 MB");
   });
 });
