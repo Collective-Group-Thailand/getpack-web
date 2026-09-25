@@ -1,12 +1,13 @@
 import { defineStatusMap } from "./types";
 import type { InstalmentStatus } from "./contract";
 
-/** One instalment of an order's schedule (proposed — see `./contract.ts`). */
+/** One instalment of an order group's payment schedule (D-020, D-122). */
 export const INSTALMENT_STATUS = defineStatusMap<InstalmentStatus>({
-  scheduled: { tone: "neutral", icon: "clock", labelKey: "instalment.scheduled" },
-  due: { tone: "warning", icon: "credit-card", labelKey: "instalment.due" },
-  overdue: { tone: "danger", icon: "warning", labelKey: "instalment.overdue" },
+  pending: { tone: "neutral", icon: "clock", labelKey: "instalment.pending" },
+  due: { tone: "warning", icon: "clock", labelKey: "instalment.due" },
+  partially_paid: { tone: "warning", icon: "wallet", labelKey: "instalment.partiallyPaid" },
   paid: { tone: "success", icon: "check", labelKey: "instalment.paid" },
-  waived: { tone: "info", icon: "info", labelKey: "instalment.waived" },
+  overdue: { tone: "danger", icon: "warning", labelKey: "instalment.overdue" },
   cancelled: { tone: "neutral", icon: "ban", labelKey: "instalment.cancelled" },
+  refunded: { tone: "neutral", icon: "reset", labelKey: "instalment.refunded" },
 });

@@ -1,0 +1,55 @@
+import { defineStatusMap } from "./types";
+import type {
+  DesignRoundStatus,
+  DesignServiceStatus,
+  InspectionStatus,
+  MilestoneStatus,
+  PreflightStatus,
+} from "./contract";
+
+/** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). */
+export const PREFLIGHT_STATUS = defineStatusMap<PreflightStatus>({
+  pending: { tone: "neutral", icon: "clock", labelKey: "preflight.pending" },
+  running: { tone: "info", icon: "refresh", labelKey: "preflight.running" },
+  passed: { tone: "success", icon: "check", labelKey: "preflight.passed" },
+  passed_with_warnings: { tone: "warning", icon: "warning", labelKey: "preflight.passedWithWarnings" },
+  blocked: { tone: "danger", icon: "ban", labelKey: "preflight.blocked" },
+  error: { tone: "danger", icon: "error", labelKey: "preflight.error" },
+});
+
+/** A hired design job: 3 free revision rounds, then paid (D-071). */
+export const DESIGN_SERVICE_STATUS = defineStatusMap<DesignServiceStatus>({
+  brief_pending: { tone: "warning", icon: "edit", labelKey: "designService.briefPending" },
+  in_progress: { tone: "primary", icon: "palette", labelKey: "designService.inProgress" },
+  delivered: { tone: "info", icon: "send", labelKey: "designService.delivered" },
+  revision_requested: { tone: "warning", icon: "reset", labelKey: "designService.revisionRequested" },
+  approved: { tone: "success", icon: "check", labelKey: "designService.approved" },
+  cancelled: { tone: "neutral", icon: "ban", labelKey: "designService.cancelled" },
+  requoted: { tone: "info", icon: "receipt", labelKey: "designService.requoted" },
+});
+
+/** One round of a hired design; a paid round waits for payment (D-071). */
+export const DESIGN_ROUND_STATUS = defineStatusMap<DesignRoundStatus>({
+  awaiting_payment: { tone: "warning", icon: "wallet", labelKey: "designRound.awaitingPayment" },
+  in_progress: { tone: "primary", icon: "palette", labelKey: "designRound.inProgress" },
+  delivered: { tone: "info", icon: "send", labelKey: "designRound.delivered" },
+  approved: { tone: "success", icon: "check", labelKey: "designRound.approved" },
+  changes_requested: { tone: "warning", icon: "edit", labelKey: "designRound.changesRequested" },
+});
+
+/** One stage of a job's route (D-075). */
+export const MILESTONE_STATUS = defineStatusMap<MilestoneStatus>({
+  pending: { tone: "neutral", icon: "clock", labelKey: "milestone.pending" },
+  in_progress: { tone: "primary", icon: "refresh", labelKey: "milestone.inProgress" },
+  completed: { tone: "success", icon: "check", labelKey: "milestone.completed" },
+  skipped: { tone: "neutral", icon: "minus", labelKey: "milestone.skipped" },
+});
+
+/** A Packio QC inspection, chosen by risk-based sampling (D-076). */
+export const INSPECTION_STATUS = defineStatusMap<InspectionStatus>({
+  planned: { tone: "neutral", icon: "calendar", labelKey: "inspection.planned" },
+  in_progress: { tone: "primary", icon: "eye", labelKey: "inspection.inProgress" },
+  passed: { tone: "success", icon: "check", labelKey: "inspection.passed" },
+  failed: { tone: "danger", icon: "error", labelKey: "inspection.failed" },
+  waived: { tone: "neutral", icon: "minus", labelKey: "inspection.waived" },
+});

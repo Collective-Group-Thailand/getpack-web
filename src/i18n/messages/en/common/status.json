@@ -1,101 +1,336 @@
 {
   "unknown": "Unknown status",
+  "approval": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "expired": "Expired"
+  },
+  "approvalStep": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "skipped": "Skipped",
+    "expired": "Expired"
+  },
+  "artwork": {
+    "awaitingTemplate": "Awaiting template",
+    "awaitingUpload": "Awaiting artwork",
+    "uploaded": "Uploaded",
+    "inReview": "In review",
+    "proofSent": "Proof sent",
+    "changesRequested": "Changes requested",
+    "approved": "Approved"
+  },
+  "auditOutcome": {
+    "success": "Succeeded",
+    "denied": "Denied",
+    "failure": "Failed"
+  },
+  "campaign": {
+    "draft": "Draft",
+    "scheduled": "Scheduled",
+    "active": "Active",
+    "paused": "Paused",
+    "exhausted": "Budget exhausted",
+    "ended": "Ended"
+  },
+  "catalog": {
+    "draft": "Draft",
+    "active": "Active",
+    "inactive": "Inactive",
+    "archived": "Archived"
+  },
+  "claim": {
+    "submitted": "Submitted",
+    "underReview": "Under review",
+    "needInfo": "Needs information",
+    "factoryReview": "Factory review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "resolved": "Resolved",
+    "closed": "Closed"
+  },
+  "company": {
+    "applied": "Applied",
+    "kycReview": "KYC review",
+    "active": "Active",
+    "suspended": "Suspended",
+    "closed": "Closed"
+  },
+  "consultation": {
+    "requested": "Requested",
+    "responded": "Responded",
+    "declined": "Declined",
+    "expired": "Expired"
+  },
+  "content": {
+    "draft": "Draft",
+    "published": "Published",
+    "archived": "Archived"
+  },
+  "coupon": {
+    "active": "Active",
+    "usedUp": "Used up",
+    "disabled": "Disabled"
+  },
+  "credit": {
+    "prepaid": "Prepaid",
+    "eligible": "Eligible",
+    "credit": "On credit",
+    "blockedOverdue": "Blocked (overdue)"
+  },
+  "designRound": {
+    "awaitingPayment": "Awaiting payment",
+    "inProgress": "In progress",
+    "delivered": "Delivered",
+    "approved": "Approved",
+    "changesRequested": "Changes requested"
+  },
+  "designService": {
+    "briefPending": "Awaiting brief",
+    "inProgress": "In progress",
+    "delivered": "Delivered",
+    "revisionRequested": "Revision requested",
+    "approved": "Approved",
+    "cancelled": "Cancelled",
+    "requoted": "Re-quoted"
+  },
+  "document": {
+    "issued": "Issued",
+    "void": "Void"
+  },
+  "factory": {
+    "applied": "Applied",
+    "underReview": "Under review",
+    "trial": "Trial",
+    "active": "Active",
+    "suspended": "Suspended",
+    "offboarded": "Offboarded"
+  },
+  "fileScan": {
+    "pending": "Pending scan",
+    "clean": "Clean",
+    "infected": "Infected",
+    "failed": "Scan failed",
+    "skipped": "Not scanned"
+  },
+  "inspection": {
+    "planned": "Planned",
+    "inProgress": "In progress",
+    "passed": "Passed",
+    "failed": "Failed",
+    "waived": "Waived"
+  },
+  "instalment": {
+    "pending": "Scheduled",
+    "due": "Due",
+    "partiallyPaid": "Partially paid",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "cancelled": "Cancelled",
+    "refunded": "Refunded"
+  },
+  "job": {
+    "released": "Awaiting acceptance",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "inProgress": "In production",
+    "onHold": "On hold",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "kyc": {
+    "pending": "Pending",
+    "verified": "Verified",
+    "rejected": "Rejected",
+    "expired": "Expired"
+  },
+  "memo": {
+    "draft": "Draft",
+    "pendingApproval": "Pending approval",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "expired": "Expired",
+    "applied": "Applied"
+  },
+  "milestone": {
+    "pending": "Not started",
+    "inProgress": "In progress",
+    "completed": "Done",
+    "skipped": "Skipped"
+  },
+  "onboardingStep": {
+    "pending": "Not started",
+    "inProgress": "In progress",
+    "submitted": "Submitted",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "waived": "Waived"
+  },
   "order": {
     "waitingPayment": "Awaiting payment",
-    "waitingPaymentReview": "Payment under review",
-    "paid": "Paid",
+    "paidForProduction": "Paid",
+    "artworkApproved": "Artwork approved",
     "inProduction": "In production",
     "shipping": "Shipping",
     "completed": "Completed",
     "cancelled": "Cancelled"
   },
-  "payment": {
-    "pending": "Awaiting payment",
-    "awaitingVerification": "Slip under review",
-    "paid": "Paid",
-    "failed": "Payment failed",
-    "refunded": "Refunded"
-  },
-  "instalment": {
-    "scheduled": "Scheduled",
-    "due": "Due",
-    "overdue": "Overdue",
-    "paid": "Paid",
-    "waived": "Waived",
+  "orderGroup": {
+    "pendingCompanyApproval": "Awaiting company approval",
+    "waitingPayment": "Awaiting payment",
+    "inProgress": "In progress",
+    "completed": "Completed",
     "cancelled": "Cancelled"
   },
-  "artwork": {
-    "waitingArtwork": "Awaiting artwork",
-    "uploaded": "Artwork uploaded",
-    "inReview": "Artwork under review",
-    "changesRequested": "Changes requested",
-    "approved": "Artwork approved",
-    "productionConfirmed": "Confirmed for production"
+  "payable": {
+    "open": "Open",
+    "eligible": "Eligible",
+    "inRun": "In a payout run",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
+  },
+  "payment": {
+    "initiated": "Initiated",
+    "pending": "Pending",
+    "awaitingVerification": "Awaiting verification",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "expired": "Expired",
+    "refunded": "Refunded",
+    "partiallyRefunded": "Partially refunded"
+  },
+  "payout": {
+    "draft": "Draft",
+    "proposed": "Proposed",
+    "pendingApproval": "Pending approval",
+    "approved": "Approved",
+    "fileGenerated": "File generated",
+    "sent": "Sent to bank",
+    "confirmed": "Confirmed",
+    "partiallyFailed": "Partially failed",
+    "posted": "Posted",
+    "cancelled": "Cancelled"
+  },
+  "preflight": {
+    "pending": "Pending",
+    "running": "Running",
+    "passed": "Passed",
+    "passedWithWarnings": "Passed with warnings",
+    "blocked": "Blocked",
+    "error": "Check failed"
+  },
+  "promotion": {
+    "draft": "Draft",
+    "active": "Active",
+    "paused": "Paused",
+    "ended": "Ended"
   },
   "proof": {
-    "preparing": "Preparing proof",
-    "sent": "Proof sent",
-    "inReview": "Proof under review",
+    "pendingCustomer": "Awaiting customer",
+    "approved": "Approved",
     "changesRequested": "Changes requested",
-    "approved": "Proof approved",
-    "expired": "Proof expired"
+    "superseded": "Superseded"
+  },
+  "proposal": {
+    "draft": "Draft",
+    "submitted": "Submitted",
+    "underReview": "Under review",
+    "countered": "Countered",
+    "approved": "Approved",
+    "partiallyApproved": "Partially approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "acceptedByFactory": "Accepted by factory"
+  },
+  "proposalLine": {
+    "pending": "Pending",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "countered": "Countered"
+  },
+  "quote": {
+    "calculated": "Calculated",
+    "saved": "Saved",
+    "shared": "Shared",
+    "converted": "Converted",
+    "expired": "Expired",
+    "superseded": "Superseded"
+  },
+  "referral": {
+    "pending": "Pending",
+    "qualified": "Qualified",
+    "rewarded": "Rewarded",
+    "rejectedFraud": "Rejected (fraud)",
+    "underReview": "Under review"
+  },
+  "refund": {
+    "requested": "Requested",
+    "pendingApproval": "Pending approval",
+    "approved": "Approved",
+    "processing": "Processing",
+    "succeeded": "Refunded",
+    "failed": "Failed",
+    "rejected": "Rejected"
   },
   "rfq": {
-    "submitted": "Request submitted",
-    "inReview": "Under review",
+    "submitted": "Submitted",
+    "inReview": "In review",
+    "needInfo": "Needs information",
     "quoted": "Quoted",
-    "accepted": "Quote accepted",
+    "accepted": "Accepted",
     "declined": "Declined",
     "expired": "Expired"
   },
-  "job": {
-    "pendingAcceptance": "Awaiting factory acceptance",
-    "accepted": "Accepted by factory",
-    "rejected": "Rejected by factory",
-    "inProduction": "In production",
-    "awaitingQc": "Awaiting QC",
-    "readyToShip": "Ready to ship",
-    "shipped": "Shipped from factory",
-    "completed": "Completed",
-    "onHold": "On hold",
-    "cancelled": "Cancelled"
+  "rfqQuote": {
+    "draft": "Draft",
+    "sent": "Sent",
+    "accepted": "Accepted",
+    "superseded": "Superseded",
+    "expired": "Expired"
+  },
+  "settingConfirmation": {
+    "confirmed": "Confirmed",
+    "proposed": "Proposed",
+    "pendingCpa": "Pending CPA",
+    "pendingBusiness": "Pending business"
+  },
+  "settingVersion": {
+    "draft": "Draft",
+    "proposed": "Proposed",
+    "pendingAcceptance": "Pending acceptance",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn"
   },
   "shipment": {
-    "pending": "Awaiting dispatch",
-    "booked": "Booked",
+    "draft": "Draft",
+    "ready": "Ready",
     "pickedUp": "Picked up",
     "inTransit": "In transit",
     "outForDelivery": "Out for delivery",
     "delivered": "Delivered",
-    "failed": "Delivery failed",
+    "failed": "Failed",
     "returned": "Returned",
     "cancelled": "Cancelled"
   },
-  "claim": {
-    "submitted": "Claim submitted",
-    "inReview": "Claim under review",
-    "awaitingEvidence": "Awaiting evidence",
-    "approved": "Claim approved",
-    "rejected": "Claim rejected",
-    "resolved": "Resolved",
-    "withdrawn": "Withdrawn"
+  "slip": {
+    "pending": "Pending",
+    "passed": "Passed",
+    "failed": "Failed",
+    "manualReview": "Manual review",
+    "manualApproved": "Approved by Finance",
+    "manualRejected": "Rejected by Finance"
   },
-  "payout": {
-    "scheduled": "Scheduled",
-    "pendingApproval": "Awaiting approval",
-    "approved": "Approved",
-    "processing": "Processing",
-    "paid": "Paid",
-    "failed": "Transfer failed",
-    "onHold": "On hold",
-    "cancelled": "Cancelled"
-  },
-  "document": {
-    "draft": "Draft",
-    "issued": "Issued",
-    "sent": "Sent",
-    "void": "Void",
-    "replaced": "Replaced"
+  "user": {
+    "pendingVerification": "Pending verification",
+    "active": "Active",
+    "suspended": "Suspended",
+    "inactive": "Inactive"
   },
   "action": {
     "approve": "Approve",

@@ -3,111 +3,122 @@
  *
  * `00-master-plan.md` §5 wants every status map typed against a generated contract enum, so
  * that a value the backend adds fails `pnpm typecheck` until it has a tone, an icon and a
- * label. `packio-api` has published its auth surface (B1.3) and nothing else: there is no
- * `OrderStatus` component in `contract/openapi.json` yet, so there is nothing to import.
+ * label. Two sources, marked on every line:
  *
- * Rather than scatter eleven hand-written unions through eleven map files — each one a
- * response type written by hand, which CLAUDE.md forbids — they are declared here, once.
- * When the enums land, each line becomes
+ * - **contract** — the enum is a named component in `contract/openapi.json` already, so the
+ *   type *is* `Schemas["…"]` and the compiler checks the map against the real vocabulary.
+ * - **schema** — packio-api's approved `docs/schema-design.md` §4 (the enum catalogue, approved
+ *   2026-09-23), where every value is listed and "each becomes a named OpenAPI component
+ *   (PascalCase) when it appears in the contract. Values are only ever added." The endpoint
+ *   that will carry it has not shipped, so the union is copied here verbatim — and when it
+ *   does ship, the line becomes `Schemas["…"]` and any drift arrives as a type error.
  *
- * ```ts
- * export type OrderStatus = Schemas["OrderStatus"];
- * ```
- *
- * and every map in this folder is re-checked against the real vocabulary by the compiler.
- * That is the whole point of the indirection: one file to edit, and the differences arrive as
- * type errors naming the exact values that moved, which is what ADR-0006 was written for.
- *
- * ## Provenance
- *
- * Nothing here is freely invented. Each union is marked with where its values come from:
- *
- * - **legacy** — `docs/legacy/00-domain-context.md` §5.2, the enumerations Locopack actually
- *   ran on, which CLAUDE.md admits as a logic reference (D-005). Numeric ids become
- *   `snake_case` names per api-conventions §3.
- * - **accounting** — `docs/accounting-design.md`.
- * - **proposed** — assembled from the vocabulary the F2/F5/F6 prompts and the decision log
- *   already use for that workflow. These are a **request to the backend**, logged as
- *   `status.enums` in `docs/contract-requests.md`, not a claim about the contract.
+ * F1 had to propose seven of these vocabularies because the backend had none; the schema
+ * design has since settled all of them, and its values replace those proposals (F2, 2026-09-25).
+ * This is still the only file to edit.
  */
 
-/**
- * Customer order lifecycle. **Source: legacy** (`order_status` 1, 2, 3, 7, 4, 5, 6).
- *
- * Legacy's `deleted` (8) is deliberately absent: it was a soft-delete flag rather than
- * something a person is ever shown, and Packio starts with no rows to hide (D-005).
- *
- * Artwork is *not* a phase of this enum. Legacy tracked it on a second axis (`graphic_status`)
- * and so does Packio — see `ArtworkStatus` — because production waits on artwork approval and
- * payment independently (D-073).
- */
+import type { Schemas } from "@/lib/api/types";
+
+/** A customer order (one configuration). Driven by facts — instalments, artwork, jobs, shipments — not set by hand (B3.1). **Source: schema** (`order_status`). */
 export type OrderStatus =
-  "waiting_payment" | "waiting_payment_review" | "paid" | "in_production" | "shipping" | "completed" | "cancelled";
-
-/**
- * **Source: legacy** (`payment_status` 1, 2, 3), **extended: proposed**.
- *
- * Legacy carried only the three happy-path values. `failed` is required by D-061 (slips are
- * verified automatically; only failures reach Finance) and `refunded` by the credit-note and
- * refund postings in `accounting-design.md` §6 (P19, P20) — a payment that has been refunded
- * cannot keep reading as `paid`.
- */
-export type PaymentStatus = "pending" | "awaiting_verification" | "paid" | "failed" | "refunded";
-
-/**
- * One instalment of an order's payment schedule. **Proposed** (D-110 instalments, D-122
- * overdue handling: reminders 7 days before and on the due date, > 7 days overdue blocks new
- * credit orders).
- */
-export type InstalmentStatus = "scheduled" | "due" | "overdue" | "paid" | "waived" | "cancelled";
-
-/**
- * The artwork workflow. **Source: legacy** (`graphic_status` 0–5).
- *
- * Legacy's ids in order: 0 designing/waiting template, 1 uploaded, 2 submitted for check,
- * 3 rejected / changes requested, 4 approved and waiting the customer's production confirm,
- * 5 customer confirmed and ready to produce.
- */
-export type ArtworkStatus =
-  "waiting_artwork" | "uploaded" | "in_review" | "changes_requested" | "approved" | "production_confirmed";
-
-/**
- * A proof sent to the customer for approval. **Proposed** (D-110 proof annotations and version
- * compare; F2.4 prepress queue).
- */
-export type ProofStatus = "preparing" | "sent" | "in_review" | "changes_requested" | "approved" | "expired";
-
-/** A quote-on-request. **Proposed** (D-100 RFQ with an SLA, D-043 tier C, F2.3 RFQ workspace). */
-export type RfqStatus = "submitted" | "in_review" | "quoted" | "accepted" | "declined" | "expired";
-
-/**
- * A production job at a partner factory. **Proposed** (D-074 accept within 1 business day,
- * D-075 stage updates, D-076 QC; the queue filters F5.2 names are รอรับงาน / กำลังผลิต /
- * รอ QC / พร้อมส่ง / ล่าช้า).
- *
- * `delayed` is not here: F5.2 lists it as a filter, but being late is a property of a promised
- * date against the clock, not a state a factory moves a job into. The API decides lateness and
- * the UI renders it beside the status.
- */
-export type JobStatus =
-  | "pending_acceptance"
-  | "accepted"
-  | "rejected"
+  | "waiting_payment"
+  | "paid_for_production"
+  | "artwork_approved"
   | "in_production"
-  | "awaiting_qc"
-  | "ready_to_ship"
-  | "shipped"
+  | "shipping"
   | "completed"
-  | "on_hold"
   | "cancelled";
 
-/**
- * A delivery. **Proposed** (D-013 factory fleet with mandatory POD, D-114 the common
- * `CarrierAdapter` fallback — so the vocabulary has to fit both a factory van and a carrier).
- */
-export type ShipmentStatus =
+/** One checkout: a group of orders with one payment schedule (B3.1). **Source: schema** (`order_group_status`). */
+export type OrderGroupStatus =
+  "pending_company_approval" | "waiting_payment" | "in_progress" | "completed" | "cancelled";
+
+/** One payment attempt against an instalment (B3.2, D-061). **Source: schema** (`payment_status`). */
+export type PaymentStatus =
+  | "initiated"
   | "pending"
-  | "booked"
+  | "awaiting_verification"
+  | "succeeded"
+  | "failed"
+  | "cancelled"
+  | "expired"
+  | "refunded"
+  | "partially_refunded";
+
+/** One instalment of an order group's payment schedule (D-020, D-122). **Source: schema** (`instalment_status`). */
+export type InstalmentStatus = "pending" | "due" | "partially_paid" | "paid" | "overdue" | "cancelled" | "refunded";
+
+/** A bank-transfer slip: verified automatically, only failures reach Finance (D-061). **Source: schema** (`slip_status`). */
+export type SlipStatus = "pending" | "passed" | "failed" | "manual_review" | "manual_approved" | "manual_rejected";
+
+/** A refund, which needs approval (B3.2, D-169). **Source: schema** (`refund_status`). */
+export type RefundStatus =
+  "requested" | "pending_approval" | "approved" | "processing" | "succeeded" | "failed" | "rejected";
+
+/** A saved instant or CS quote, valid 15 days with the price locked (D-051). **Source: schema** (`quote_status`). */
+export type QuoteStatus = "calculated" | "saved" | "shared" | "converted" | "expired" | "superseded";
+
+/** A discount memo, above the CS limit (D-052, D-162). **Source: schema** (`memo_status`). */
+export type MemoStatus = "draft" | "pending_approval" | "approved" | "rejected" | "withdrawn" | "expired" | "applied";
+
+/** A B2B company account (D-120). **Source: schema** (`company_status`). */
+export type CompanyStatus = "applied" | "kyc_review" | "active" | "suspended" | "closed";
+
+/** A company's credit standing (D-121, D-122). **Source: schema** (`credit_status`). */
+export type CreditStatus = "prepaid" | "eligible" | "credit" | "blocked_overdue";
+
+/** A campaign with a THB budget; auto-stops when exhausted (D-154). **Source: schema** (`campaign_status`). */
+export type CampaignStatus = "draft" | "scheduled" | "active" | "paused" | "exhausted" | "ended";
+
+/** A coupon, automatic or referral promotion (D-053). **Source: schema** (`promotion_status`). */
+export type PromotionStatus = "draft" | "active" | "paused" | "ended";
+
+/** One coupon code (D-053). **Source: schema** (`coupon_status`). */
+export type CouponStatus = "active" | "used_up" | "disabled";
+
+/** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: schema** (`referral_status`). */
+export type ReferralStatus = "pending" | "qualified" | "rewarded" | "rejected_fraud" | "under_review";
+
+/** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: schema** (`artwork_status`). */
+export type ArtworkStatus =
+  "awaiting_template" | "awaiting_upload" | "uploaded" | "in_review" | "proof_sent" | "changes_requested" | "approved";
+
+/** A proof version sent to the customer (B4.1). **Source: schema** (`proof_status`). */
+export type ProofStatus = "pending_customer" | "approved" | "changes_requested" | "superseded";
+
+/** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). **Source: schema** (`preflight_status`). */
+export type PreflightStatus = "pending" | "running" | "passed" | "passed_with_warnings" | "blocked" | "error";
+
+/** A hired design job: 3 free revision rounds, then paid (D-071). **Source: schema** (`design_service_status`). */
+export type DesignServiceStatus =
+  "brief_pending" | "in_progress" | "delivered" | "revision_requested" | "approved" | "cancelled" | "requoted";
+
+/** One round of a hired design; a paid round waits for payment (D-071). **Source: schema** (`design_round_status`). */
+export type DesignRoundStatus = "awaiting_payment" | "in_progress" | "delivered" | "approved" | "changes_requested";
+
+/** A request for quote, with an SLA per category (D-100, D-043). **Source: schema** (`rfq_status`). */
+export type RfqStatus = "submitted" | "in_review" | "need_info" | "quoted" | "accepted" | "declined" | "expired";
+
+/** A quote composed for an RFQ (B2.5). **Source: schema** (`rfq_quote_status`). */
+export type RfqQuoteStatus = "draft" | "sent" | "accepted" | "superseded" | "expired";
+
+/** A request to a factory for its price on an RFQ (B2.5). **Source: schema** (`consultation_status`). */
+export type ConsultationStatus = "requested" | "responded" | "declined" | "expired";
+
+/** A production job at a partner factory: accept within 1 business day (D-074). Lateness is a property the API reports beside the status, not a status. **Source: schema** (`production_job_status`). */
+export type JobStatus = "released" | "accepted" | "rejected" | "in_progress" | "on_hold" | "completed" | "cancelled";
+
+/** One stage of a job's route (D-075). **Source: schema** (`milestone_status`). */
+export type MilestoneStatus = "pending" | "in_progress" | "completed" | "skipped";
+
+/** A Packio QC inspection, chosen by risk-based sampling (D-076). **Source: schema** (`inspection_status`). */
+export type InspectionStatus = "planned" | "in_progress" | "passed" | "failed" | "waived";
+
+/** A delivery — by the factory's own fleet with mandatory POD, or a fallback carrier (D-013, D-114). **Source: schema** (`shipment_status`). */
+export type ShipmentStatus =
+  | "draft"
+  | "ready"
   | "picked_up"
   | "in_transit"
   | "out_for_delivery"
@@ -116,23 +127,76 @@ export type ShipmentStatus =
   | "returned"
   | "cancelled";
 
-/**
- * A customer claim. **Proposed** (D-082 7-day window with photo evidence, D-083 liability
- * rules, F2.8 claims queue and decision).
- */
+/** A claim within 7 days of receipt; liability per D-083 (D-082). **Source: schema** (`claim_status`). */
 export type ClaimStatus =
-  "submitted" | "in_review" | "awaiting_evidence" | "approved" | "rejected" | "resolved" | "withdrawn";
+  "submitted" | "under_review" | "need_info" | "factory_review" | "approved" | "rejected" | "resolved" | "closed";
 
-/**
- * Money owed to a factory. **Proposed** (D-022 payout schedule with retention, D-093 bank
- * files per run, F5.3 and F6 payout runs).
- */
+/** A payout run: Finance proposes, C-Level approves (D-022, D-166). **Source: schema** (`payout_run_status`). */
 export type PayoutStatus =
-  "scheduled" | "pending_approval" | "approved" | "processing" | "paid" | "failed" | "on_hold" | "cancelled";
+  | "draft"
+  | "proposed"
+  | "pending_approval"
+  | "approved"
+  | "file_generated"
+  | "sent"
+  | "confirmed"
+  | "partially_failed"
+  | "posted"
+  | "cancelled";
 
-/**
- * An accounting document — quotation, invoice, receipt, credit note, WHT certificate.
- * **Source: accounting** (`accounting-design.md` §5: gapless series per (entity, type, period);
- * "voided documents keep their number with status `void` and a reason").
- */
-export type DocumentStatus = "draft" | "issued" | "sent" | "void" | "replaced";
+/** Money owed to a factory, before it joins a run (D-022). **Source: schema** (`payable_status`). */
+export type PayableStatus = "open" | "eligible" | "in_run" | "paid" | "cancelled";
+
+/** A customer document — tax invoice, receipt, credit note. A voided document keeps its number (accounting-design §5). **Source: schema** (`customer_document_status`). */
+export type DocumentStatus = "issued" | "void";
+
+/** A partner factory: at least one site visit before trial → active (D-011, D-041). **Source: schema** (`factory_status`). */
+export type FactoryStatus = "applied" | "under_review" | "trial" | "active" | "suspended" | "offboarded";
+
+/** One onboarding step of a factory (D-011). **Source: schema** (`onboarding_step_status`). */
+export type OnboardingStepStatus = "pending" | "in_progress" | "submitted" | "approved" | "rejected" | "waived";
+
+/** A KYC document of a factory or company (D-011, D-120). **Source: schema** (`kyc_status`). */
+export type KycStatus = "pending" | "verified" | "rejected" | "expired";
+
+/** A price-list proposal or rate-card version (D-040, D-042). **Source: schema** (`proposal_status`). */
+export type ProposalStatus =
+  | "draft"
+  | "submitted"
+  | "under_review"
+  | "countered"
+  | "approved"
+  | "partially_approved"
+  | "rejected"
+  | "withdrawn"
+  | "accepted_by_factory";
+
+/** The decision on one line of a proposal (D-040). **Source: schema** (`proposal_line_decision`). */
+export type ProposalLineDecision = "pending" | "accepted" | "rejected" | "countered";
+
+/** A catalogue record: product type, pattern, material, stock product (B2.1). **Source: schema** (`catalog_status`). */
+export type CatalogStatus = "draft" | "active" | "inactive" | "archived";
+
+/** CMS content: banners, articles, FAQs (B2.1). **Source: schema** (`content_status`). */
+export type ContentStatus = "draft" | "published" | "archived";
+
+/** A request in the generic approvals engine (ADR-0006). **Source: contract** (`ApprovalStatus`). */
+export type ApprovalStatus = Schemas["ApprovalStatus"];
+
+/** One step of an approval request. **Source: contract** (`ApprovalStepStatus`). */
+export type ApprovalStepStatus = Schemas["ApprovalStepStatus"];
+
+/** A staff, partner or customer account. **Source: contract** (`UserStatus`). */
+export type UserStatus = Schemas["UserStatus"];
+
+/** A version of an effective-dated setting (ADR-0005, D-063). **Source: contract** (`ConfigVersionStatus`). */
+export type ConfigVersionStatus = Schemas["ConfigVersionStatus"];
+
+/** Whether a decision-backed value is confirmed or still awaiting sign-off (the ⚖ items). **Source: contract** (`SettingConfirmation`). */
+export type SettingConfirmation = Schemas["SettingConfirmation"];
+
+/** The outcome recorded for an audited action. **Source: contract** (`AuditOutcome`). */
+export type AuditOutcome = Schemas["AuditOutcome"];
+
+/** The malware scan of an uploaded file; only `clean` downloads. **Source: contract** (`FileScanStatus`). */
+export type FileScanStatus = Schemas["FileScanStatus"];
