@@ -16,7 +16,13 @@ import { SlaTimer } from "@/ui/components/SlaTimer";
 import { Stat } from "@/ui/components/Stat";
 import type { IconName } from "@/ui/icons";
 
-import { adminBrowserApis, QueryError, useActor, useCan, useQueues, useSlaFormat } from "../console";
+// By path, not through the console barrel: the barrel holds the form engine (zod,
+// react-hook-form) that the landing page does not need.
+import { useActor, useCan } from "../console/actor";
+import { adminBrowserApis } from "../console/api";
+import { QueryError } from "../console/QueryError";
+import { useQueues } from "../console/queues";
+import { useSlaFormat } from "../console/useSlaFormat";
 import { browserPath } from "../shell/menu";
 
 type Dashboard = z.output<typeof dashboard>;

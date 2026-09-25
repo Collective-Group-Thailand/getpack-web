@@ -17,11 +17,11 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 380000
+            "maxNumericValue": 365000
           }
         ]
       }
     }
   },
-  "$comment": "Admin list/detail: LCP <= 2.5s, initial JS <= 250 KB. The session comes from the mock's fixed token, so the shell renders rather than redirecting to /login. RATCHET: the target in docs/performance-budgets.md is 250 KB of initial JS; this build measures 363 KB, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down \u2014 it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
+  "$comment": "Admin shell (dashboard, sign-in): initial JS target 250 KB (docs/performance-budgets.md). RATCHET pinned just above the measured 363 KB (F2 2.8, lowered from 380 KB after zod left the shell). Lower it whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
 }
