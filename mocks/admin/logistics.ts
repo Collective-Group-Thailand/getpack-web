@@ -41,8 +41,8 @@ const factoryOf = (order: (typeof orders)[number]) => order.jobs[0]?.factory ?? 
 /* -------------------------------------------------------------------------------- shipments */
 
 const ACTIONS: Record<Shipment["status"], Shipment["allowedActions"]> = {
-  draft: ["mark-ready", "split", "cancel"],
-  ready: ["split", "book-carrier", "cancel"],
+  draft: ["split"],
+  ready: ["split", "book-carrier"],
   picked_up: [],
   in_transit: [],
   out_for_delivery: [],

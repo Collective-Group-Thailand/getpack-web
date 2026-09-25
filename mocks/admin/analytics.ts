@@ -28,6 +28,23 @@ function days(from: string, to: string): number {
 const addDays = (day: string, n: number) =>
   new Date(Date.parse(`${day}T00:00:00+07:00`) + n * DAY_MS + 7 * 3_600_000).toISOString().slice(0, 10);
 const period = (from: string, to: string) => ({ from, to });
+
+/** The API resolves a preset against yesterday in Asia/Bangkok (the rollups are nightly). */
+function resolve(query: {
+  range: "7d" | "30d" | "90d" | "custom";
+  from?: string;
+  to?: string;
+}): [string, string] | Response {
+  if (query.range === "custom") {
+    if (!query.from || !query.to || query.from > query.to)
+      return problem(422, "validation.failed", "ช่วงวันที่ไม่ถูกต้อง", [
+        { path: "from", code: "range", message: "จาก ≤ ถึง" },
+      ]);
+    return [query.from, query.to];
+  }
+  const to = addDays(bangkokIso().slice(0, 10), -1);
+  return [addDays(to, -({ "7d": 7, "30d": 30, "90d": 90 }[query.range] - 1)), to];
+}
 const wave = (i: number) => 1 + 0.35 * Math.sin(i / 2.3) + (i % 7 === 5 || i % 7 === 6 ? -0.25 : 0);
 
 function overview(from: string, to: string) {
@@ -152,15 +169,26 @@ function unmet(from: string, to: string) {
     specs: [
       {
         productTypeCode: "pop_display",
+        productTypeName: "ชั้นวางสินค้า POP",
         spec: "ชั้นวางกระดาษลูกฟูกพิมพ์ 4 สี สูง 150 ซม.",
         requests: Math.round(scale * 0.6),
       },
-      { productTypeCode: "flexible_pouch", spec: "ถุงซิปล็อกฟอยล์ ตั้งได้", requests: Math.round(scale * 0.5) },
-      { productTypeCode: "tube", spec: "กระบอกกระดาษ เส้นผ่านศูนย์กลาง 8 ซม.", requests: Math.round(scale * 0.3) },
+      {
+        productTypeCode: "flexible_pouch",
+        productTypeName: "ซองบรรจุภัณฑ์",
+        spec: "ถุงซิปล็อกฟอยล์ ตั้งได้",
+        requests: Math.round(scale * 0.5),
+      },
+      {
+        productTypeCode: "tube",
+        productTypeName: "บรรจุภัณฑ์ทรงกระบอก",
+        spec: "กระบอกกระดาษ เส้นผ่านศูนย์กลาง 8 ซม.",
+        requests: Math.round(scale * 0.3),
+      },
     ],
     capacityLimited: [
-      { week: "2026-W44", productTypeCode: "folding_carton", requests: 14 },
-      { week: "2026-W45", productTypeCode: "corrugated", requests: 9 },
+      { week: "2026-W44", productTypeCode: "folding_carton", productTypeName: "กล่องกระดาษแข็ง", requests: 14 },
+      { week: "2026-W45", productTypeCode: "corrugated", productTypeName: "กล่องกระดาษลูกฟูก", requests: 9 },
     ],
     rfqsDeclined: Math.round(scale * 2.6),
     rfqsExpired: Math.round(scale * 1.3),
@@ -489,29 +517,36 @@ const REPORTS: {
 export const analyticsHandlers = [
   mockRequest("GET /v1/admin/analytics/overview", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
-    return overview(query.from, query.to);
+    const range = resolve(query);
+    return range instanceof Response ? range : overview(...range);
   }),
   mockRequest("GET /v1/admin/analytics/demand", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
-    return demand(query.from, query.to, query.dimension);
+    const range = resolve(query);
+    return range instanceof Response ? range : demand(...range, query.dimension);
   }),
   mockRequest("GET /v1/admin/analytics/unmet-demand", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
-    return unmet(query.from, query.to);
+    const range = resolve(query);
+    return range instanceof Response ? range : unmet(...range);
   }),
   mockRequest("GET /v1/admin/analytics/factories", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
-    return factories(query.from, query.to);
+    const range = resolve(query);
+    return range instanceof Response ? range : factories(...range);
   }),
   mockRequest("GET /v1/admin/analytics/campaigns", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
-    return campaignsReport(query.from, query.to);
+    const range = resolve(query);
+    return range instanceof Response ? range : campaignsReport(...range);
   }),
   mockRequest("POST /v1/admin/analytics/prospectus", ({ body, request }) => {
     if (!can(staffPersonaOf(request), "analytics.prospectus")) return forbidden();
-    const suppressed = demand(body.from, body.to, "province").suppressedGroups;
+    const range = resolve(body);
+    if (range instanceof Response) return range;
+    const suppressed = demand(...range, "province").suppressedGroups;
     return {
-      url: `https://files.example.invalid/prospectus-${body.from}-${body.to}.${body.format}`,
+      url: `https://files.example.invalid/prospectus-${range[0]}-${range[1]}.${body.format}`,
       expiresAt: bangkokIso(15),
       minGroupSize: MIN_GROUP,
       suppressedGroups: suppressed,

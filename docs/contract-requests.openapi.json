@@ -20,9 +20,17 @@
         ],
         "parameters": [
           {
-            "name": "from",
+            "name": "range",
             "in": "query",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/AnalyticsRange"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -31,7 +39,7 @@
           {
             "name": "to",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -76,9 +84,17 @@
         ],
         "parameters": [
           {
-            "name": "from",
+            "name": "range",
             "in": "query",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/AnalyticsRange"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -87,7 +103,7 @@
           {
             "name": "to",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -148,9 +164,17 @@
         ],
         "parameters": [
           {
-            "name": "from",
+            "name": "range",
             "in": "query",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/AnalyticsRange"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -159,7 +183,7 @@
           {
             "name": "to",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -203,9 +227,17 @@
         ],
         "parameters": [
           {
-            "name": "from",
+            "name": "range",
             "in": "query",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/AnalyticsRange"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -214,7 +246,7 @@
           {
             "name": "to",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -264,6 +296,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "range": {
+                    "$ref": "#/components/schemas/AnalyticsRange"
+                  },
                   "from": {
                     "type": "string",
                     "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -281,8 +316,7 @@
                   }
                 },
                 "required": [
-                  "from",
-                  "to",
+                  "range",
                   "format"
                 ]
               }
@@ -354,9 +388,17 @@
         ],
         "parameters": [
           {
-            "name": "from",
+            "name": "range",
             "in": "query",
             "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/AnalyticsRange"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -365,7 +407,7 @@
           {
             "name": "to",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
@@ -10048,6 +10090,15 @@
         ],
         "additionalProperties": false
       },
+      "AnalyticsRange": {
+        "type": "string",
+        "enum": [
+          "7d",
+          "30d",
+          "90d",
+          "custom"
+        ]
+      },
       "AnalyticsUnmetDemandDto": {
         "type": "object",
         "properties": {
@@ -10102,6 +10153,9 @@
                 "productTypeCode": {
                   "type": "string"
                 },
+                "productTypeName": {
+                  "type": "string"
+                },
                 "spec": {
                   "type": "string"
                 },
@@ -10113,6 +10167,7 @@
               },
               "required": [
                 "productTypeCode",
+                "productTypeName",
                 "spec",
                 "requests"
               ],
@@ -10130,6 +10185,9 @@
                 "productTypeCode": {
                   "type": "string"
                 },
+                "productTypeName": {
+                  "type": "string"
+                },
                 "requests": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -10139,6 +10197,7 @@
               "required": [
                 "week",
                 "productTypeCode",
+                "productTypeName",
                 "requests"
               ],
               "additionalProperties": false
@@ -21397,9 +21456,7 @@
         "enum": [
           "split",
           "book-carrier",
-          "mark-ready",
-          "resolve-exception",
-          "cancel"
+          "resolve-exception"
         ]
       },
       "ShipmentDetailDto": {

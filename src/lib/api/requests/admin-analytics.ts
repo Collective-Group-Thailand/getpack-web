@@ -71,8 +71,22 @@ export const analyticsUnmetDemand = z
   .object({
     period,
     reasons: z.array(z.object({ code: z.string(), label: z.string(), count: z.number().int() })),
-    specs: z.array(z.object({ productTypeCode: z.string(), spec: z.string(), requests: z.number().int() })),
-    capacityLimited: z.array(z.object({ week: z.string(), productTypeCode: z.string(), requests: z.number().int() })),
+    specs: z.array(
+      z.object({
+        productTypeCode: z.string(),
+        productTypeName: z.string(),
+        spec: z.string(),
+        requests: z.number().int(),
+      }),
+    ),
+    capacityLimited: z.array(
+      z.object({
+        week: z.string(),
+        productTypeCode: z.string(),
+        productTypeName: z.string(),
+        requests: z.number().int(),
+      }),
+    ),
     rfqsDeclined: z.number().int(),
     rfqsExpired: z.number().int(),
   })
@@ -108,7 +122,9 @@ export const analyticsCampaigns = z
   })
   .meta({ id: "AnalyticsCampaignsDto" });
 
-const periodQuery = z.object({ from: date(), to: date() });
+/** A preset the API resolves in Asia/Bangkok, or `custom` with both dates; the period comes back. */
+export const analyticsRange = z.enum(["7d", "30d", "90d", "custom"]).meta({ id: "AnalyticsRange" });
+const periodQuery = z.object({ range: analyticsRange, from: date().optional(), to: date().optional() });
 
 /* ---------------------------------------------------------------------------------- reports */
 
@@ -196,7 +212,7 @@ export const adminAnalyticsRequests = {
     request: "admin.prospectus",
     summary: "The partner prospectus (PDF or XLSX): aggregated and anonymised only (D-102, D-044)",
     decisions: ["D-102", "D-044"],
-    body: z.object({ from: date(), to: date(), format: z.enum(["pdf", "xlsx"]) }),
+    body: periodQuery.extend({ format: z.enum(["pdf", "xlsx"]) }),
     response: z.object({
       url: z.string(),
       expiresAt: dateTime(),
