@@ -400,5 +400,10 @@
     "open": "Open",
     "paid": "Paid",
     "overdue": "Overdue"
+  },
+  "podReview": {
+    "pending": "POD to review",
+    "accepted": "POD accepted",
+    "rejected": "POD rejected"
   }
 }
