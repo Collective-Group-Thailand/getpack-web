@@ -19,6 +19,7 @@ import { adminRfqRequests } from "./admin-rfq";
 import { adminSalesRequests } from "./admin-sales";
 import { storeAccountRequests } from "./store-account";
 import { storeArtworkRequests } from "./store-artwork";
+import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeCartRequests } from "./store-cart";
 import { storeCatalogRequests } from "./store-catalog";
 import { storeCheckoutRequests } from "./store-checkout";
@@ -46,6 +47,7 @@ export const REQUESTS = {
   ...storeCheckoutRequests,
   ...storeOrderRequests,
   ...storeArtworkRequests,
+  ...storeFulfilmentRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

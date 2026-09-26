@@ -153,6 +153,8 @@ type Seed = {
   slip?: boolean;
   urgency?: Order["urgency"];
   shipDays?: number;
+  /** Delivered this many days ago (negative) while the order still waits for its receipt (F3 3.6). */
+  deliveredDays?: number;
 };
 
 /** The spread of states the queues are made of. */
@@ -168,7 +170,13 @@ const SEEDS: Seed[] = [
     urgency: i < 2 ? "late" : i < 4 ? "due_soon" : "normal",
     shipDays: i < 2 ? -2 : i < 4 ? 2 : 9,
   })),
-  ...Array.from({ length: 3 }, (): Seed => ({ status: "shipping", artwork: "approved", shipDays: 0 })),
+  // The third was delivered yesterday, a little short within tolerance, and waits for its receipt.
+  ...Array.from({ length: 3 }, (_, i): Seed => ({
+    status: "shipping",
+    artwork: "approved",
+    shipDays: 0,
+    ...(i === 2 ? { deliveredDays: -1 } : {}),
+  })),
   ...Array.from({ length: 5 }, (): Seed => ({ status: "completed", artwork: "approved", shipDays: -10 })),
   { status: "cancelled", artwork: "awaiting_upload" },
 ];
@@ -547,19 +555,28 @@ function buildOrder(seed: Seed, index: number): Order {
           {
             id: mockId("shp", index + 1),
             shipmentNo: `S-2569-${String(500 + index).padStart(5, "0")}`,
-            status: seed.status === "completed" ? "delivered" : "in_transit",
+            status: seed.status === "completed" || seed.deliveredDays !== undefined ? "delivered" : "in_transit",
             carrier: "factory_fleet",
             trackingNo: null,
             destination: customer.addresses[0]!,
             quantity,
             cartons: Math.ceil(quantity / 250),
-            deliveredAt: seed.status === "completed" ? bangkokIso(-60 * 24 * 8) : null,
-            pod:
+            deliveredAt:
               seed.status === "completed"
+                ? bangkokIso(-60 * 24 * 8)
+                : seed.deliveredDays !== undefined
+                  ? bangkokIso(60 * 24 * seed.deliveredDays)
+                  : null,
+            pod:
+              seed.status === "completed" || seed.deliveredDays !== undefined
                 ? {
                     receiverName: "ผู้รับ (ข้อมูลจำลอง)",
-                    deliveredQuantity: quantity,
-                    capturedAt: bangkokIso(-60 * 24 * 8),
+                    // 3 % short: within the default ± 5 % (D-163), credited pro rata (D-080).
+                    deliveredQuantity: seed.deliveredDays !== undefined ? Math.floor(quantity * 0.97) : quantity,
+                    capturedAt:
+                      seed.deliveredDays !== undefined
+                        ? bangkokIso(60 * 24 * seed.deliveredDays)
+                        : bangkokIso(-60 * 24 * 8),
                     photos: [],
                   }
                 : null,
