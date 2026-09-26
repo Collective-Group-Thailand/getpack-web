@@ -2872,6 +2872,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/cs/folding/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a folding configuration for a customer (CS)
+         * @description The store calculation plus the staff view: selected factory and print type, price-list version, production run, margin-floor flag (D-012) and each option’s reason when it has no price. Buy prices need `factory_cost.read`, the margin `margin.read` (D-141); they are null otherwise. Works before the type is switched to instant, for checks.
+         *
+         *     Implements: D-100, D-043, D-050, D-051, D-101, D-012, D-141.
+         */
+        post: operations["admin.csFolding.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cs/folding/input-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catalogue choices of the CS folding calculator
+         * @description Active folding patterns with their parts, papers, ink colours, finishes 1 and 2, die-cuts, assemblies and difficulty levels (D-100).
+         *
+         *     Implements: D-100.
+         */
+        get: operations["admin.csFolding.inputData"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/factories": {
         parameters: {
             query?: never;
@@ -3608,6 +3652,194 @@ export interface paths {
          *     Implements: D-042, D-167.
          */
         post: operations["admin.factories.setPricingArrangement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a factory’s shipping payout card
+         * @description The version in force, the next scheduled one and the open draft or version awaiting the factory. Buy prices: D-141 roles only; every read is audited (D-044, D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        get: operations["admin.factoryShippingRates.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the versions of a factory’s payout card
+         * @description Every version, newest first, without rates (effective-dated, ADR-0005); audited (D-044).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        get: operations["admin.factoryShippingRates.listVersions"];
+        put?: never;
+        /**
+         * Draft a new payout-card version
+         * @description A complete set of payout lines over the `customer_default` zones (copy-on-write). One draft or version awaiting the factory at a time; not back-dated (D-013, D-042).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        post: operations["admin.factoryShippingRates.createVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions/{versionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a payout-card version with its lines
+         * @description Lines with the factory’s answer per line (accepted / countered); audited (D-044, D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        get: operations["admin.factoryShippingRates.getVersion"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft payout-card version
+         * @description Drafts only; sent and decided versions are kept (ADR-0005, D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        delete: operations["admin.factoryShippingRates.deleteDraft"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions/{versionId}/actions/answer-counters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer the factory’s counters
+         * @description `accept_counter` takes the factory’s values for the line; `keep` returns Packio’s value to the factory for a new answer. The version applies once every line is accepted (D-042, D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        post: operations["admin.factoryShippingRates.answerCounters"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions/{versionId}/actions/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a draft to the factory for acceptance
+         * @description The version becomes `pending_acceptance` and visible to the factory, which accepts the whole card or answers per line; it applies only once every line is accepted (D-042, D-013). Event `factory_shipping_rate_card.version_sent`.
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        post: operations["admin.factoryShippingRates.sendVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions/{versionId}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a version awaiting the factory
+         * @description The version is closed without applying; the card in force stays (D-042, D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        post: operations["admin.factoryShippingRates.withdrawVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions/{versionId}/rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace the lines of a draft
+         * @description Drafts only; a sent version changes only through the factory’s answers (D-042, D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        put: operations["admin.factoryShippingRates.replaceRates"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/factories/{factoryId}/shipping-rate-card/versions/{versionId}/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Staff-only payout suggestions for a version
+         * @description Per line: the customer rate of the same band less the target shipping margin (D-040 group 5; the setting `shipping.target_margin_pct` has no value until the business sets it) and the peer median only with ≥ `partners.peer_benchmark_min_factories` other active factories (D-101). Never shown to factories (D-044); audited.
+         *
+         *     Implements: D-040, D-044, D-101, D-013.
+         */
+        get: operations["admin.factoryShippingRates.suggestions"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4708,6 +4940,84 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/sell-margin-tables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Packio’s sell-margin tables
+         * @description Margin tiers, fix costs and design fees per product type / print type, with the version in force (D-063).
+         *
+         *     Implements: D-063, D-012.
+         */
+        get: operations["admin.sellMarginTables.list"];
+        put?: never;
+        /**
+         * Create a sell-margin table
+         * @description One per product type, print type (or every print type) and kind; audited (D-063).
+         *
+         *     Implements: D-063, D-012.
+         */
+        post: operations["admin.sellMarginTables.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sell-margin-tables/{tableId}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the versions of a sell-margin table
+         * @description Every version, newest first, with its lines (effective-dated, ADR-0005).
+         *
+         *     Implements: D-063, D-012.
+         */
+        get: operations["admin.sellMarginTables.listVersions"];
+        put?: never;
+        /**
+         * Draft a new version of a sell-margin table
+         * @description A complete set of lines (copy-on-write): run bands inclusive, price bands half-open, no overlap; one of a percentage or an amount per line; the fallback applies when no line matches (A-23, D-063).
+         *
+         *     Implements: D-063, D-012.
+         */
+        post: operations["admin.sellMarginTables.createVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/sell-margin-tables/versions/{versionId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a draft sell-margin version
+         * @description Freezes its lines; it applies from its effective date, or from now when that date has passed (never retroactively). Superadmin / C-Level (D-063); audited, event `sell_margin_table.version_approved`.
+         *
+         *     Implements: D-063, D-012.
+         */
+        post: operations["admin.sellMarginTables.approveVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -4768,6 +5078,370 @@ export interface paths {
          *     Implements: ADR-0005, D-063.
          */
         post: operations["admin.settings.changeValue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/carriers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List delivery methods and fallback carriers
+         * @description The factory fleet (default, D-013) and the Packio-booked fallback carriers with Packio’s accounts; credentials are never returned (D-114, D-005).
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        get: operations["admin.carriers.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/carriers/{code}/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register Packio’s account with a carrier
+         * @description Stores the Secrets Manager reference of the credentials (never the credentials, D-005); the previous active account of the same environment is closed. Audited.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["admin.carriers.addAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/carriers/{code}/actions/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable a fallback carrier
+         * @description The carrier is no longer asked for estimates or bookings (D-114). Audited.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["admin.carriers.disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/carriers/{code}/actions/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enable a fallback carrier
+         * @description Needs an active Packio account for the carrier. Enabled carriers are asked for estimates where a factory cannot serve a zone (D-114, D-013). Audited, event `carrier.enabled`.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["admin.carriers.enable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/carriers/{code}/actions/test-quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a carrier for a quote with Packio’s account
+         * @description Checks an account against the carrier (sandbox or production); Deliveree needs coordinates for both places (D-114). Provider errors are returned as problems.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["admin.carriers.testQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/carriers/accounts/{accountId}/actions/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate a carrier account
+         * @description The account is kept for history and no longer used (D-114). Audited.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["admin.carriers.deactivateAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the customer shipping rate card
+         * @description The version in force, the next scheduled version and the drafts / versions in approval of the customer rate card (D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        get: operations["admin.customerShippingRates.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/actions/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a parcel on the customer rate card
+         * @description Resolves the version in force at `at`, the zone of the postcode and the matching band; the amount is VAT-exclusive (VAT is added on the quote line, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.quote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the versions of the customer rate card
+         * @description Every version, newest first, without its rates (effective-dated, ADR-0005, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        get: operations["admin.customerShippingRates.listVersions"];
+        put?: never;
+        /**
+         * Draft a new version of the customer rate card
+         * @description A complete set of rates (copy-on-write): given, copied from another version, or empty to import from Excel. Bands are half-open and may not overlap within a zone or postcode; a postcode row overrides its zone. Not back-dated (ADR-0005, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.createVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a customer rate-card version with its rates
+         * @description All rates of the version: zone or postcode × weight / volume band, VAT-exclusive (D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        get: operations["admin.customerShippingRates.getVersion"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a draft
+         * @description Drafts only, by their author; decided versions are kept forever (ADR-0005, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        delete: operations["admin.customerShippingRates.deleteDraft"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}/actions/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export a version’s rates to Excel
+         * @description The same layout the import reads; a short-lived signed download URL (audited export, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.exportVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}/actions/import-confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replace a draft’s rates with a previewed Excel file
+         * @description Re-reads the file and writes the rates only when the plan still matches `previewSha256` and has no errors (A-14, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.confirmImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}/actions/import-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview an Excel file of rates for a draft
+         * @description Dry run of an uploaded `.xlsx` (sheet `rates`: zone_code, postcode, weight_min_g, weight_max_g, volume_min_cm3, volume_max_cm3, price_amount, per_extra_kg). Returns row errors and `previewSha256` to confirm exactly this plan (A-14, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.previewImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}/actions/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit a draft for C-Level approval
+         * @description The version becomes `proposed` with an approval request (policy `customer_shipping_rate_change`, one C-Level step, chosen at B2.4 planning); on approval it applies from its effective date, or from the decision when that date has passed. One version in approval at a time (D-013, D-063).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.submitVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a version in approval
+         * @description The requester withdraws the version and its approval request together (ADR-0006, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        post: operations["admin.customerShippingRates.withdrawVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/shipping/customer-rate-card/versions/{versionId}/rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace the rates of a draft
+         * @description Only the author edits a draft; submitted and decided versions are frozen (ADR-0005, D-013).
+         *
+         *     Implements: D-013, D-063.
+         */
+        put: operations["admin.customerShippingRates.replaceRates"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6012,6 +6686,116 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/pricing/folding/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a folding configuration on my own price list
+         * @description The buy side only, on the factory’s own price list in force: cost, buy price per part, layouts, sheets, lead time, per print type. Never Packio’s sell price or another factory (D-044, D-042); another factory is 404.
+         *
+         *     Implements: D-044, D-042, D-040.
+         */
+        post: operations["partner.pricingFolding.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/shipping-rate-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the own shipping payout card
+         * @description What Packio pays the factory for delivering with its own fleet: in force, scheduled, awaiting an answer (D-013).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        get: operations["partner.shippingRates.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/shipping-rate-card/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the own payout-card versions
+         * @description Every version sent to the factory, newest first (D-013, D-042).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        get: operations["partner.shippingRates.listVersions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/shipping-rate-card/versions/{versionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get an own payout-card version
+         * @description Lines and the factory’s answers; drafts are not visible before Packio sends them (D-042).
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        get: operations["partner.shippingRates.getVersion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/partner/factories/{factoryId}/shipping-rate-card/versions/{versionId}/actions/respond": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept or counter a payout card
+         * @description Without `lines` every pending line is accepted (the whole card); otherwise each named line is accepted or countered with an amount. The card applies once every line is accepted, from its effective date or now (D-042, D-013). A replay with the same `Idempotency-Key` within 24 h returns the original response.
+         *
+         *     Implements: D-013, D-042, D-044.
+         */
+        post: operations["partner.shippingRates.respond"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/files/{fileId}": {
         parameters: {
             query?: never;
@@ -7102,6 +7886,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/store/quotes/actions/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calculate an instant price for a configuration
+         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously.
+         *
+         *     Implements: D-100, D-043, D-050, D-051, D-101.
+         */
+        post: operations["store.quotes.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/store/realtime/auth": {
         parameters: {
             query?: never;
@@ -7212,6 +8018,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/webhooks/carriers/deliveree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deliveree delivery status callback
+         * @description Authenticated by Packio’s webhook key in `Authorization`; stored in the webhook inbox (replays are no-ops) and published as `carrier.webhook_received` (D-114). 200 when accepted, 401 otherwise.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["webhooks.carriers.deliveree"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhooks/carriers/flash-express": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Flash Express status callback
+         * @description Signed with SHA-256 over `mchId` and `nonceStr` plus Packio’s secret key; stored in the webhook inbox (replays are no-ops) and published as `carrier.webhook_received` (D-114). Answers `{"errorCode":"1"}` when accepted; 401 when the signature is invalid.
+         *
+         *     Implements: D-114, D-013, D-005.
+         */
+        post: operations["webhooks.carriers.flashExpress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -7230,6 +8080,20 @@ export interface components {
         };
         /** @enum {string} */
         ActorType: "user" | "api_client" | "system" | "webhook";
+        AddCarrierAccountDto: {
+            /**
+             * @description Secrets Manager id of a JSON secret with the carrier credentials (never the credentials)
+             * @example packio/sandbox/carriers/flash-express
+             */
+            credentialsSecretRef: string;
+            /** @example Packio Flash sandbox (fake) */
+            label: string;
+            /**
+             * @description Provider test environment
+             * @example true
+             */
+            sandbox: boolean;
+        };
         AddImageDto: {
             /**
              * Format: uuid
@@ -7299,6 +8163,79 @@ export interface components {
             /** @example [] */
             roles: string[];
         };
+        AdminQuoteCalculationDto: {
+            /** @example 1.0.0 */
+            calculatorVersion: string;
+            options: components["schemas"]["QuoteOptionDto"][];
+            steps: components["schemas"]["AdminQuoteStepDto"][];
+        };
+        AdminQuoteStepDto: {
+            /** @example 0.00 */
+            designFeeAmount: string | null;
+            /**
+             * Format: date
+             * @description Asia/Bangkok date (D-101)
+             * @example 2026-10-09
+             */
+            earliestShipDate: string | null;
+            /**
+             * @description Total incl. VAT
+             * @example 13380.00
+             */
+            grossAmount: string | null;
+            /**
+             * @description false = no instant price; the configurator routes to RFQ (D-043)
+             * @example true
+             */
+            instant: boolean;
+            internal: components["schemas"]["QuoteInternalDto"] | null;
+            /** @example 7 */
+            leadTimeDays: number | null;
+            /**
+             * @description Pieces incl. VAT
+             * @example 13380.00
+             */
+            productAmount: string | null;
+            /** @example 1000 */
+            quantity: number;
+            /**
+             * @description Why there is no instant price
+             * @example null
+             */
+            reason: components["schemas"]["QuoteNoPriceReason"] | null;
+            /**
+             * @description Shipping incl. VAT (0 until B2.4)
+             * @example 0.00
+             */
+            shippingAmount: string | null;
+            /**
+             * @description Shipping is not priced yet (B2.4)
+             * @example true
+             */
+            shippingPending: boolean;
+            /** @example 0.00 */
+            structureDesignFeeAmount: string | null;
+            /**
+             * @description Quantity tolerance, overage % (D-021)
+             * @example 5.0000
+             */
+            toleranceOveragePct: string | null;
+            /**
+             * @description Quantity tolerance, shortage % (D-021)
+             * @example 5.0000
+             */
+            toleranceShortagePct: string | null;
+            /**
+             * @description Per piece incl. VAT and shipping
+             * @example 13.38
+             */
+            unitPrice: string | null;
+            /**
+             * @description VAT included in the amounts
+             * @example 875.33
+             */
+            vatAmount: string | null;
+        };
         AgreementStatusDto: {
             /** @example false */
             accepted: boolean;
@@ -7359,6 +8296,9 @@ export interface components {
         };
         AnswerCountersDto: {
             lines: components["schemas"]["CounterAnswerInput"][];
+        };
+        AnswerShippingCountersDto: {
+            lines: components["schemas"]["ShippingCounterAnswerDto"][];
         };
         ApprovalActionDto: {
             /** @example approve */
@@ -7811,6 +8751,16 @@ export interface components {
         };
         /** @enum {string} */
         BannerPosition: "home_hero" | "home_strip" | "category" | "popup";
+        CalculateQuoteDto: {
+            configuration: components["schemas"]["FoldingConfigurationDto"];
+            /**
+             * @description Delivery postcode (shipping arrives with B2.4)
+             * @example 10110
+             */
+            deliveryPostcode?: string;
+            /** @example folding_carton */
+            productTypeCode: string;
+        };
         /** @enum {string} */
         CalculatorKey: "folding" | "corrugate" | "label" | "tag_sleeve" | "pouch" | "standard_product" | "service";
         CapabilityDto: {
@@ -7939,6 +8889,122 @@ export interface components {
              * @example 2026-09-28
              */
             weekStart: string;
+        };
+        CarrierAccountDto: {
+            /**
+             * @description false once replaced or deactivated (kept for history)
+             * @example true
+             */
+            active: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-10-01T09:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Legal entity holding the account
+             * @example CGT
+             */
+            entityCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d422
+             */
+            id: string;
+            /** @example Packio Flash sandbox (fake) */
+            label: string;
+            /**
+             * @description Provider test environment
+             * @example true
+             */
+            sandbox: boolean;
+        };
+        /** @enum {string} */
+        CarrierCapability: "quote" | "book" | "label" | "track" | "cancel" | "webhook";
+        /** @enum {string} */
+        CarrierCode: "factory_fleet" | "flash_express" | "deliveree";
+        CarrierDto: {
+            /** @description Credentials stay in Secrets Manager and are never returned */
+            accounts: components["schemas"]["CarrierAccountDto"][];
+            /** @example flash_express */
+            code: components["schemas"]["CarrierCode"];
+            /**
+             * @description Used as fallback only when enabled (D-114)
+             * @example false
+             */
+            enabled: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d421
+             */
+            id: string;
+            /** @example Flash Express */
+            name: string;
+            /**
+             * @example [
+             *       "quote",
+             *       "book"
+             *     ]
+             */
+            supports: components["schemas"]["CarrierCapability"][];
+        };
+        CarrierParcelDto: {
+            /**
+             * @description Unit: cm.
+             * @example 13
+             */
+            heightCm?: number | null;
+            /**
+             * @description Unit: cm.
+             * @example 50
+             */
+            lengthCm?: number | null;
+            /**
+             * @description Unit: g.
+             * @example 3200
+             */
+            weightG: number;
+            /**
+             * @description Unit: cm.
+             * @example 48
+             */
+            widthCm?: number | null;
+        };
+        CarrierPlaceDto: {
+            /** @example 13.7563 */
+            lat?: number | null;
+            /** @example 100.5018 */
+            lng?: number | null;
+            /** @example 10110 */
+            postcode: string;
+        };
+        CarrierQuoteDto: {
+            /**
+             * @description THB as quoted by the carrier
+             * @example 85.00
+             */
+            amount: string;
+            /**
+             * @description Always THB (one currency)
+             * @example THB
+             */
+            currency: components["schemas"]["Currency"];
+            /** @example 2 */
+            transitDays: number | null;
+        };
+        CarrierTestQuoteDto: {
+            from: components["schemas"]["CarrierPlaceDto"];
+            parcels: components["schemas"]["CarrierParcelDto"][];
+            to: components["schemas"]["CarrierPlaceDto"];
+        };
+        CarrierWebhookAckDto: {
+            /**
+             * @description Flash Express: `1` = processed (anything else makes Flash retry)
+             * @example 1
+             */
+            errorCode: string;
+            /** @example success */
+            state: string;
         };
         CatalogExportDto: {
             /**
@@ -8474,6 +9540,24 @@ export interface components {
              */
             videoUrl?: string | null;
         };
+        CreateCustomerRateVersionDto: {
+            /**
+             * Format: uuid
+             * @description Copy the rates of this version (copy-on-write); ignored when `rates` is given
+             * @example null
+             */
+            copyFromVersionId?: string | null;
+            /**
+             * Format: date-time
+             * @description Applies from this instant once approved; never before the approval (not back-dated)
+             * @example 2026-10-15T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /** @description At most 5000 rates */
+            rates?: components["schemas"]["CustomerRateInputDto"][];
+            /** @example Q4 rates (fake) */
+            reason: string;
+        };
         CreateDelegationDto: {
             /**
              * Format: uuid
@@ -8619,6 +9703,24 @@ export interface components {
              * @example 2020-01-15
              */
             vatRegisteredOn?: string | null;
+        };
+        CreateFactoryRateVersionDto: {
+            /**
+             * Format: uuid
+             * @description Copy the rates of this version of the same card; ignored when `rates` is given
+             * @example null
+             */
+            copyFromVersionId?: string | null;
+            /**
+             * Format: date-time
+             * @description Applies from this instant once the factory has accepted every line; never back-dated
+             * @example 2026-10-15T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /** @description At most 5000 rates */
+            rates?: components["schemas"]["FactoryRateInputDto"][];
+            /** @example Initial payout card (fake) */
+            reason: string;
         };
         CreateFaqCategoryDto: {
             /** @example ordering */
@@ -9121,6 +10223,41 @@ export interface components {
              */
             templateId: string;
         };
+        CreateSellMarginTableDto: {
+            /** @example Folding sell margin by run */
+            description: string;
+            /** @example margin */
+            kind: components["schemas"]["SellMarginKind"];
+            /**
+             * Format: uuid
+             * @description Null = every print type of the product type
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a107
+             */
+            printTypeId: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c002
+             */
+            productTypeId: string;
+        };
+        CreateSellMarginVersionDto: {
+            /**
+             * Format: date-time
+             * @description Never before the approval (not back-dated)
+             * @example 2026-10-01T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /** @example null */
+            fallbackAmount?: string | null;
+            /**
+             * @description Used when no line matches
+             * @example 30
+             */
+            fallbackPct?: string | null;
+            lines: components["schemas"]["SellMarginLineDto"][];
+            /** @example Q4 margins (fake) */
+            reason: string;
+        };
         CreateSemiDesignDto: {
             /**
              * Format: uuid
@@ -9517,6 +10654,194 @@ export interface components {
             /** @example eyJpZCI6IjEyMyJ9 */
             nextCursor: string | null;
         };
+        CustomerRateCardDto: {
+            /** @description The version in force now */
+            current: components["schemas"]["CustomerRateVersionSummaryDto"] | null;
+            /** @example D-013 customer shipping rate card (zone/postcode × weight/volume) */
+            description: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d401
+             */
+            id: string;
+            /** @example default */
+            key: string;
+            /** @description Drafts and versions in approval */
+            open: components["schemas"]["CustomerRateVersionSummaryDto"][];
+            /** @description The approved version scheduled next, if any */
+            scheduled: components["schemas"]["CustomerRateVersionSummaryDto"] | null;
+        };
+        CustomerRateDto: {
+            /**
+             * @description Charged per started kg above `weightMinG`, VAT-exclusive (THB)
+             * @example null
+             */
+            perExtraKg: string | null;
+            /**
+             * @description Postcode override inside the zone; null = the whole zone
+             * @example null
+             */
+            postcode: string | null;
+            /**
+             * @description Price, VAT-exclusive (THB)
+             * @example 120.00
+             */
+            priceAmount: string;
+            /**
+             * @description Volume to (exclusive); null bounds = any volume. Unit: cm³.
+             * @example null
+             */
+            volumeMaxCm3: number | null;
+            /**
+             * @description Volume from (inclusive). Unit: cm³.
+             * @example null
+             */
+            volumeMinCm3: number | null;
+            /**
+             * @description Weight to (exclusive); null = open. Unit: g.
+             * @example 5000
+             */
+            weightMaxG: number | null;
+            /**
+             * @description Weight from (inclusive). Unit: g.
+             * @example 0
+             */
+            weightMinG: number;
+            /** @example bkk */
+            zoneCode: string;
+            /**
+             * Format: uuid
+             * @description Zone of the version’s scheme (`customer_default`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d403
+             */
+            zoneId: string;
+        };
+        CustomerRateInputDto: {
+            /**
+             * @description Charged per started kg above `weightMinG`, VAT-exclusive (THB)
+             * @example null
+             */
+            perExtraKg: string | null;
+            /**
+             * @description Postcode override inside the zone; null = the whole zone
+             * @example null
+             */
+            postcode: string | null;
+            /**
+             * @description Price, VAT-exclusive (THB)
+             * @example 120.00
+             */
+            priceAmount: string;
+            /**
+             * @description Volume to (exclusive); null bounds = any volume. Unit: cm³.
+             * @example null
+             */
+            volumeMaxCm3: number | null;
+            /**
+             * @description Volume from (inclusive). Unit: cm³.
+             * @example null
+             */
+            volumeMinCm3: number | null;
+            /**
+             * @description Weight to (exclusive); null = open. Unit: g.
+             * @example 5000
+             */
+            weightMaxG: number | null;
+            /**
+             * @description Weight from (inclusive). Unit: g.
+             * @example 0
+             */
+            weightMinG: number;
+            /**
+             * Format: uuid
+             * @description Zone of the version’s scheme (`customer_default`)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d403
+             */
+            zoneId: string;
+        };
+        CustomerRateVersionDto: {
+            /**
+             * Format: uuid
+             * @description Open or decided C-Level approval request
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d404
+             */
+            approvalRequestId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-01T09:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-02T10:00:00+07:00
+             */
+            decidedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-15T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d402
+             */
+            id: string;
+            /** @example 12 */
+            rateCount: number;
+            rates: components["schemas"]["CustomerRateDto"][];
+            /** @example Q4 rates (fake) */
+            reason: string;
+            /**
+             * @description Zone scheme of every rate
+             * @example customer_default
+             */
+            schemeCode: string;
+            /** @example approved */
+            status: components["schemas"]["ConfigVersionStatus"];
+            /** @example 2 */
+            versionNo: number;
+        };
+        CustomerRateVersionSummaryDto: {
+            /**
+             * Format: uuid
+             * @description Open or decided C-Level approval request
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d404
+             */
+            approvalRequestId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-01T09:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-02T10:00:00+07:00
+             */
+            decidedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-15T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d402
+             */
+            id: string;
+            /** @example 12 */
+            rateCount: number;
+            /** @example Q4 rates (fake) */
+            reason: string;
+            /**
+             * @description Zone scheme of every rate
+             * @example customer_default
+             */
+            schemeCode: string;
+            /** @example approved */
+            status: components["schemas"]["ConfigVersionStatus"];
+            /** @example 2 */
+            versionNo: number;
+        };
         DecideLinesDto: {
             lines: components["schemas"]["LineDecisionInput"][];
         };
@@ -9602,6 +10927,18 @@ export interface components {
              * @example 2026-09-25T10:00:00+07:00
              */
             updatedAt: string;
+        };
+        DesignOptionsDto: {
+            /**
+             * @description Packio designs the artwork (graphic design fee)
+             * @example false
+             */
+            graphic: boolean;
+            /**
+             * @description Packio designs the structure (structure design fee)
+             * @example false
+             */
+            structure: boolean;
         };
         DevicePinDto: {
             /** @example tablet-line-2 */
@@ -9803,6 +11140,262 @@ export interface components {
              */
             vatRegisteredOn: string | null;
         };
+        FactoryQuoteDto: {
+            /** @example 1.0.0 */
+            calculatorVersion: string;
+            options: components["schemas"]["FactoryQuoteOptionDto"][];
+            /**
+             * Format: uuid
+             * @description Own price list in force
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            priceListVersionId: string | null;
+        };
+        FactoryQuoteOptionDto: {
+            /** @example null */
+            error: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a107
+             */
+            printTypeId: string;
+            steps: components["schemas"]["FactoryQuoteStepDto"][];
+        };
+        FactoryQuotePartDto: {
+            /**
+             * @description Buy price of the part (cost ÷ (1 − factory margin))
+             * @example 10123.45
+             */
+            buyPrice: string;
+            /** @example 10 */
+            layoutAmount: number;
+            /** @example false */
+            layoutStandard: boolean;
+            /** @example main */
+            partKey: string;
+            /** @example 225 */
+            sheets: number;
+            /**
+             * @description Cost before the factory margin
+             * @example 9111.11
+             */
+            totalCost: string;
+        };
+        FactoryQuoteStepDto: {
+            /** @example 10123.45 */
+            buyPrice: string | null;
+            /** @example 7 */
+            leadTimeDays: number | null;
+            parts: components["schemas"]["FactoryQuotePartDto"][];
+            /** @example 1000 */
+            productionRun: number | null;
+            /** @example 1000 */
+            quantity: number;
+        };
+        FactoryRateCardDto: {
+            /** @description The version in force now */
+            current: components["schemas"]["FactoryRateVersionSummaryDto"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a201
+             */
+            factoryId: string;
+            /**
+             * Format: uuid
+             * @description Null until a first draft
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d411
+             */
+            id: string | null;
+            /** @description The draft or the version awaiting the factory (a factory never sees Packio’s drafts) */
+            open: components["schemas"]["FactoryRateVersionSummaryDto"] | null;
+            /** @description Accepted, applying later */
+            scheduled: components["schemas"]["FactoryRateVersionSummaryDto"] | null;
+        };
+        FactoryRateDto: {
+            /** @example accepted */
+            acceptance: components["schemas"]["RateLineAcceptance"];
+            /**
+             * @description Factory counter (THB, VAT-exclusive)
+             * @example null
+             */
+            counterAmount: string | null;
+            /** @example null */
+            counterNote: string | null;
+            /** @example null */
+            counterPerExtraKg: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d413
+             */
+            id: string;
+            /**
+             * @description Payout, VAT-exclusive (THB)
+             * @example 95.00
+             */
+            payoutAmount: string;
+            /**
+             * @description Paid per started kg above `weightMinG`, VAT-exclusive (THB)
+             * @example null
+             */
+            perExtraKg: string | null;
+            /**
+             * @description Postcode override inside the zone; null = the whole zone
+             * @example null
+             */
+            postcode: string | null;
+            /**
+             * @description Volume to (exclusive). Unit: cm³.
+             * @example null
+             */
+            volumeMaxCm3: number | null;
+            /**
+             * @description Volume from (inclusive). Unit: cm³.
+             * @example null
+             */
+            volumeMinCm3: number | null;
+            /**
+             * @description Weight to (exclusive); null = open. Unit: g.
+             * @example 5000
+             */
+            weightMaxG: number | null;
+            /**
+             * @description Weight from (inclusive). Unit: g.
+             * @example 0
+             */
+            weightMinG: number;
+            /** @example bkk */
+            zoneCode: string;
+            /**
+             * Format: uuid
+             * @description Zone of the `customer_default` scheme
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d403
+             */
+            zoneId: string;
+        };
+        FactoryRateInputDto: {
+            /**
+             * @description Payout, VAT-exclusive (THB)
+             * @example 95.00
+             */
+            payoutAmount: string;
+            /**
+             * @description Paid per started kg above `weightMinG`, VAT-exclusive (THB)
+             * @example null
+             */
+            perExtraKg: string | null;
+            /**
+             * @description Postcode override inside the zone; null = the whole zone
+             * @example null
+             */
+            postcode: string | null;
+            /**
+             * @description Volume to (exclusive). Unit: cm³.
+             * @example null
+             */
+            volumeMaxCm3: number | null;
+            /**
+             * @description Volume from (inclusive). Unit: cm³.
+             * @example null
+             */
+            volumeMinCm3: number | null;
+            /**
+             * @description Weight to (exclusive); null = open. Unit: g.
+             * @example 5000
+             */
+            weightMaxG: number | null;
+            /**
+             * @description Weight from (inclusive). Unit: g.
+             * @example 0
+             */
+            weightMinG: number;
+            /**
+             * Format: uuid
+             * @description Zone of the `customer_default` scheme
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d403
+             */
+            zoneId: string;
+        };
+        FactoryRateVersionDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-03T11:00:00+07:00
+             */
+            decidedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-15T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-03T11:00:00+07:00
+             */
+            factoryAcceptedAt: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d412
+             */
+            id: string;
+            /**
+             * @description Lines not yet accepted (pending or countered)
+             * @example 0
+             */
+            openLines: number;
+            /** @example 3 */
+            rateCount: number;
+            rates: components["schemas"]["FactoryRateDto"][];
+            /** @example Initial payout card (fake) */
+            reason: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-02T09:00:00+07:00
+             */
+            sentAt: string | null;
+            /** @example approved */
+            status: components["schemas"]["ConfigVersionStatus"];
+            /** @example 1 */
+            versionNo: number;
+        };
+        FactoryRateVersionSummaryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-03T11:00:00+07:00
+             */
+            decidedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-15T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-03T11:00:00+07:00
+             */
+            factoryAcceptedAt: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d412
+             */
+            id: string;
+            /**
+             * @description Lines not yet accepted (pending or countered)
+             * @example 0
+             */
+            openLines: number;
+            /** @example 3 */
+            rateCount: number;
+            /** @example Initial payout card (fake) */
+            reason: string;
+            /**
+             * Format: date-time
+             * @example 2026-10-02T09:00:00+07:00
+             */
+            sentAt: string | null;
+            /** @example approved */
+            status: components["schemas"]["ConfigVersionStatus"];
+            /** @example 1 */
+            versionNo: number;
+        };
         /** @enum {string} */
         FactoryStatus: "applied" | "under_review" | "trial" | "active" | "suspended" | "offboarded";
         /** @enum {string} */
@@ -9948,6 +11541,33 @@ export interface components {
         FileScanStatus: "pending" | "clean" | "infected" | "failed" | "skipped";
         /** @enum {string} */
         FileUploadStatus: "pending" | "uploaded" | "failed";
+        Finish2Dto: {
+            /**
+             * @description Locations, when the finish counts them
+             * @example 1
+             */
+            amount?: number;
+            /**
+             * Format: uuid
+             * @description A foil, spot UV, emboss or deboss finish
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a105
+             */
+            finishId: string;
+            /**
+             * @description Length of each location, mm
+             * @example [
+             *       20
+             *     ]
+             */
+            l?: number[];
+            /**
+             * @description Width of each location, mm
+             * @example [
+             *       40
+             *     ]
+             */
+            w?: number[];
+        };
         FinishDto: {
             /** @example matt-lamination */
             code: string;
@@ -9988,6 +11608,8 @@ export interface components {
         };
         /** @enum {string} */
         FinishKind: "coating" | "lamination" | "foil" | "emboss" | "deboss" | "spot_uv" | "window" | "other";
+        /** @enum {string} */
+        FinishSlot: "finish1" | "finish2";
         FirebaseLoginDto: {
             /**
              * @description Firebase Auth ID token (Google or Apple)
@@ -10047,6 +11669,109 @@ export interface components {
              * @example 2026-09-25T10:00:00+07:00
              */
             updatedAt: string;
+        };
+        FoldingConfigurationDto: {
+            /**
+             * @description Overlap of the flat overlap patterns Unit: mm.
+             * @example 0
+             */
+            c?: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            catalogProductId?: string;
+            /**
+             * @description Box depth (height) Unit: mm.
+             * @example 120
+             */
+            d: number;
+            design?: components["schemas"]["DesignOptionsDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a103
+             */
+            difficultyLevelId: string;
+            /**
+             * @description Fixed grain along this blank side; omit for a free grain (port-map Q15)
+             * @example dl
+             */
+            grainParallel?: components["schemas"]["GrainParallel"];
+            /**
+             * @description Box length Unit: mm.
+             * @example 40
+             */
+            l: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a102
+             */
+            materialId: string;
+            /** @description One entry per part (one for single-part patterns) */
+            parts: components["schemas"]["FoldingPartDto"][];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            patternId: string;
+            /**
+             * @description Quantities to price, 1 to 10
+             * @example [
+             *       500,
+             *       1000,
+             *       3000
+             *     ]
+             */
+            quantities: number[];
+            /**
+             * @description Box width Unit: mm.
+             * @example 60
+             */
+            w: number;
+            /**
+             * @description Cells of an insert pattern (legacy default 3)
+             * @example 3
+             */
+            x?: number;
+        };
+        FoldingInputDataDto: {
+            assemblies: components["schemas"]["InputAssemblyDto"][];
+            diecutTypes: components["schemas"]["InputNamedDto"][];
+            difficultyLevels: components["schemas"]["InputNamedDto"][];
+            finishes: components["schemas"]["InputFinishDto"][];
+            inkColours: components["schemas"]["InputInkColourDto"][];
+            materials: components["schemas"]["InputMaterialDto"][];
+            patterns: components["schemas"]["InputPatternDto"][];
+        };
+        FoldingPartDto: {
+            assemblies?: components["schemas"]["AssemblyDto"][];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a106
+             */
+            diecutTypeId?: string;
+            /**
+             * Format: uuid
+             * @description Coating or lamination, back
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a105
+             */
+            finish1BackId?: string;
+            /**
+             * Format: uuid
+             * @description Coating or lamination, front
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a105
+             */
+            finish1FrontId?: string;
+            finish2?: components["schemas"]["Finish2Dto"][];
+            printBack?: components["schemas"]["PrintColourDto"][];
+            /** @description Colours printed on the front; a process set is its colour four times */
+            printFront?: components["schemas"]["PrintColourDto"][];
+            /**
+             * Format: uuid
+             * @description The part of a multi-part pattern
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            subPatternId?: string;
         };
         GeoDistrictDto: {
             /** @example 1001 */
@@ -10116,6 +11841,11 @@ export interface components {
              */
             updatedAt: string;
         };
+        /**
+         * @description Fixed grain along this blank side; omit for a free grain (port-map Q15)
+         * @enum {string}
+         */
+        GrainParallel: "dw" | "dl";
         GrantRoleDto: {
             /** @example Left the company */
             reason: string;
@@ -10445,6 +12175,118 @@ export interface components {
         };
         /** @enum {string} */
         InkColourKind: "process" | "spot" | "white" | "metallic";
+        InputAssemblyDto: {
+            /** @example standard */
+            code: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a106
+             */
+            id: string;
+            /** @example Standard die-cut */
+            nameEn: string;
+            /** @example ไดคัททั่วไป */
+            nameTh: string;
+            /** @example false */
+            requiresAmount: boolean;
+            /** @example false */
+            requiresLength: boolean;
+            /** @example false */
+            requiresWidth: boolean;
+        };
+        InputFinishDto: {
+            /** @example matt-lamination */
+            code: string;
+            /** @example lamination */
+            finishKind: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a105
+             */
+            id: string;
+            /** @example Matt lamination */
+            nameEn: string;
+            /** @example เคลือบด้าน */
+            nameTh: string;
+            /** @example false */
+            requiresAmount: boolean;
+            /** @example false */
+            requiresLength: boolean;
+            /** @example false */
+            requiresWidth: boolean;
+            /** @example finish1 */
+            slot: components["schemas"]["FinishSlot"];
+        };
+        InputInkColourDto: {
+            /** @example cmyk */
+            code: string;
+            /** @example process */
+            colourKind: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a104
+             */
+            id: string;
+            /** @example CMYK */
+            name: string;
+        };
+        InputMaterialDto: {
+            /** @example art-350 */
+            code: string;
+            /** @example 350 */
+            gsm: number | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a102
+             */
+            id: string;
+            /** @example Art card 350 gsm */
+            nameEn: string;
+            /** @example อาร์ตการ์ด 350 แกรม */
+            nameTh: string;
+        };
+        InputNamedDto: {
+            /** @example standard */
+            code: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a106
+             */
+            id: string;
+            /** @example Standard die-cut */
+            nameEn: string;
+            /** @example ไดคัททั่วไป */
+            nameTh: string;
+        };
+        InputPatternDto: {
+            /** @example RTE-01 */
+            code: string;
+            /**
+             * @description Blank formula (port-map §6)
+             * @example tuck_top
+             */
+            geometryFormula: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            id: string;
+            /** @example ฝาเสียบกลับด้าน */
+            name: string;
+            /** @description Parts to configure; empty = one part */
+            subPatterns: components["schemas"]["InputSubPatternDto"][];
+        };
+        InputSubPatternDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            id: string;
+            /** @example ถาด */
+            name: string;
+            /** @example 1 */
+            seq: number;
+        };
         /** @enum {string} */
         JobStatus: "queued" | "running" | "succeeded" | "failed";
         /** @enum {string} */
@@ -11665,6 +13507,18 @@ export interface components {
             /** @example 2 */
             versionNo: number;
         };
+        PrintColourDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a104
+             */
+            inkColourId: string;
+            /**
+             * @description Ink coverage in percent
+             * @example 100
+             */
+            percent: number;
+        };
         PrintTypeDto: {
             /**
              * @description May charge plate and die-cut block (legacy flag)
@@ -11897,11 +13751,87 @@ export interface components {
             /** @example ข้าพเจ้ายินยอมรับข่าวสาร… */
             textTh: string;
         };
+        QuoteCalculationDto: {
+            /**
+             * @description Semver of the calculator port
+             * @example 1.0.0
+             */
+            calculatorVersion: string;
+            steps: components["schemas"]["QuoteStepDto"][];
+        };
+        QuoteInternalDto: {
+            /**
+             * @description Below the margin floor (D-012)
+             * @example false
+             */
+            belowMarginFloor: boolean;
+            /**
+             * @description Needs `factory_cost.read` (D-141)
+             * @example 10123.45
+             */
+            buyPrice: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f001
+             */
+            factoryId: string;
+            /**
+             * @description Needs `margin.read` (D-141)
+             * @example 24.1234
+             */
+            marginPct: string | null;
+            parts: components["schemas"]["QuotePartInternalDto"][];
+            /**
+             * Format: uuid
+             * @description The price-list version used (snapshot, D-040)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            priceListVersionId: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a107
+             */
+            printTypeId: string;
+            /**
+             * @description Production run (the minimum for production when larger)
+             * @example 1000
+             */
+            productionRun: number;
+        };
         /**
          * @description How the type is quoted today (D-100); a given configuration may still route to RFQ (D-043)
          * @enum {string}
          */
         QuoteMode: "instant" | "rfq";
+        /**
+         * @description Why there is no instant price
+         * @enum {string}
+         */
+        QuoteNoPriceReason: "no_price_path" | "not_priceable" | "capacity_unavailable";
+        QuoteOptionDto: {
+            /**
+             * @description Why the option has no price
+             * @example null
+             */
+            error: string | null;
+            /** @example 0192f3a0-7c1e-7d2a-9b1f-00000000f001:0192f3a0-7c1e-7d2a-9b1f-00000000a107 */
+            optionKey: string;
+        };
+        QuotePartInternalDto: {
+            /**
+             * @description Needs `factory_cost.read` (D-141)
+             * @example 10123.45
+             */
+            buyPrice: string | null;
+            /** @example 10 */
+            layoutAmount: number;
+            /** @example false */
+            layoutStandard: boolean;
+            /** @example main */
+            partKey: string;
+            /** @example 225 */
+            sheets: number;
+        };
         QuotePathDto: {
             /**
              * @description `instant` = a price can be calculated now; otherwise the configurator routes to RFQ
@@ -11932,6 +13862,72 @@ export interface components {
             /** @example folding_carton */
             productTypeCode: string;
         };
+        QuoteStepDto: {
+            /** @example 0.00 */
+            designFeeAmount: string | null;
+            /**
+             * Format: date
+             * @description Asia/Bangkok date (D-101)
+             * @example 2026-10-09
+             */
+            earliestShipDate: string | null;
+            /**
+             * @description Total incl. VAT
+             * @example 13380.00
+             */
+            grossAmount: string | null;
+            /**
+             * @description false = no instant price; the configurator routes to RFQ (D-043)
+             * @example true
+             */
+            instant: boolean;
+            /** @example 7 */
+            leadTimeDays: number | null;
+            /**
+             * @description Pieces incl. VAT
+             * @example 13380.00
+             */
+            productAmount: string | null;
+            /** @example 1000 */
+            quantity: number;
+            /**
+             * @description Why there is no instant price
+             * @example null
+             */
+            reason: components["schemas"]["QuoteNoPriceReason"] | null;
+            /**
+             * @description Shipping incl. VAT (0 until B2.4)
+             * @example 0.00
+             */
+            shippingAmount: string | null;
+            /**
+             * @description Shipping is not priced yet (B2.4)
+             * @example true
+             */
+            shippingPending: boolean;
+            /** @example 0.00 */
+            structureDesignFeeAmount: string | null;
+            /**
+             * @description Quantity tolerance, overage % (D-021)
+             * @example 5.0000
+             */
+            toleranceOveragePct: string | null;
+            /**
+             * @description Quantity tolerance, shortage % (D-021)
+             * @example 5.0000
+             */
+            toleranceShortagePct: string | null;
+            /**
+             * @description Per piece incl. VAT and shipping
+             * @example 13.38
+             */
+            unitPrice: string | null;
+            /**
+             * @description VAT included in the amounts
+             * @example 875.33
+             */
+            vatAmount: string | null;
+        };
         RateCardLineResponse: {
             /** @example Our paper cost rose in September */
             comment?: string | null;
@@ -11952,6 +13948,36 @@ export interface components {
             /** @example counter */
             response: components["schemas"]["RateCardLineResponse"];
         };
+        RateImportPreviewDto: {
+            /**
+             * @description At least one row and no errors
+             * @example true
+             */
+            canConfirm: boolean;
+            /** @description First 200 row errors */
+            errors: components["schemas"]["ImportRowErrorDto"][];
+            /** @example false */
+            errorsTruncated: boolean;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000f001
+             */
+            fileId: string;
+            /**
+             * @description Rows with at least one error
+             * @example 0
+             */
+            invalid: number;
+            /**
+             * @description Send back to confirm exactly these rates
+             * @example a3f1c2d4e5b60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90
+             */
+            previewSha256: string;
+            /** @example 12 */
+            rows: number;
+        };
+        /** @enum {string} */
+        RateLineAcceptance: "pending" | "accepted" | "countered";
         RealtimeAuthDto: {
             /**
              * @example [
@@ -12097,8 +14123,16 @@ export interface components {
              */
             colours: string[];
         };
+        ReplaceCustomerRatesDto: {
+            /** @description The complete set, at most 5000 */
+            rates: components["schemas"]["CustomerRateInputDto"][];
+        };
         ReplaceDeliveryZonesDto: {
             zones: components["schemas"]["DeliveryZoneInput"][];
+        };
+        ReplaceFactoryRatesDto: {
+            /** @description The complete set, at most 5000 */
+            rates: components["schemas"]["FactoryRateInputDto"][];
         };
         ReplaceFluteTypesDto: {
             /**
@@ -12141,6 +14175,10 @@ export interface components {
         RespondToRateCardDto: {
             /** @description Omit to accept the whole rate card; otherwise answer lines (the rest stay open) */
             lines?: components["schemas"]["RateCardLineResponse"][];
+        };
+        RespondToShippingCardDto: {
+            /** @description Omit to accept every pending line (the whole card) */
+            lines?: components["schemas"]["ShippingCardAnswerDto"][];
         };
         ResultingVersionDto: {
             /**
@@ -12226,6 +14264,94 @@ export interface components {
         RoleScopeType: "platform" | "factory" | "company";
         /** @enum {string} */
         ScopedType: "factory" | "company";
+        /** @enum {string} */
+        SellMarginKind: "margin" | "design_fee" | "structure_design_fee" | "fix_cost" | "target_margin";
+        SellMarginLineDto: {
+            /** @example null */
+            colourCount: number | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a103
+             */
+            difficultyLevelId: string | null;
+            /** @example null */
+            minAmount: string | null;
+            /**
+             * @description Buy price to (exclusive)
+             * @example null
+             */
+            priceMax: string | null;
+            /**
+             * @description Buy price from (inclusive)
+             * @example 0
+             */
+            priceMin: string | null;
+            /**
+             * @description Run to (inclusive); null = open
+             * @example 999
+             */
+            qtyMax: number | null;
+            /**
+             * @description Run from (inclusive); null = open
+             * @example 1
+             */
+            qtyMin: number | null;
+            /** @example null */
+            valueAmount: string | null;
+            /**
+             * @description Margin % (below 100); or an amount
+             * @example 25
+             */
+            valuePct: string | null;
+        };
+        SellMarginTableDto: {
+            /** @description The version in force now */
+            current: components["schemas"]["SellMarginVersionDto"] | null;
+            /** @example Folding sell margin by run */
+            description: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b001
+             */
+            id: string;
+            /** @example margin */
+            kind: components["schemas"]["SellMarginKind"];
+            /**
+             * Format: uuid
+             * @example null
+             */
+            printTypeId: string | null;
+            /** @example folding_carton */
+            productTypeCode: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c002
+             */
+            productTypeId: string;
+        };
+        SellMarginVersionDto: {
+            /**
+             * Format: date-time
+             * @example 2026-10-01T00:00:00+07:00
+             */
+            effectiveFrom: string;
+            /** @example null */
+            fallbackAmount: string | null;
+            /** @example 30 */
+            fallbackPct: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b002
+             */
+            id: string;
+            lines: components["schemas"]["SellMarginLineDto"][];
+            /** @example Q4 margins (fake) */
+            reason: string;
+            /** @example approved */
+            status: components["schemas"]["ConfigVersionStatus"];
+            /** @example 2 */
+            versionNo: number;
+        };
         SemiDesignDto: {
             /**
              * Format: uuid
@@ -12656,6 +14782,132 @@ export interface components {
              */
             shortagePct: number;
         };
+        /** @enum {string} */
+        ShippingCardAnswer: "accept" | "counter";
+        ShippingCardAnswerDto: {
+            /** @example 105.00 */
+            counterAmount?: string | null;
+            /** @example null */
+            counterPerExtraKg?: string | null;
+            /** @example counter */
+            decision: components["schemas"]["ShippingCardAnswer"];
+            /** @example Fuel costs (fake) */
+            note?: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d413
+             */
+            rateId: string;
+        };
+        /**
+         * @description `accept_counter` takes the factory’s values; `keep` sends Packio’s value back for an answer
+         * @enum {string}
+         */
+        ShippingCounterAnswer: "accept_counter" | "keep";
+        ShippingCounterAnswerDto: {
+            /**
+             * @description `accept_counter` takes the factory’s values; `keep` sends Packio’s value back for an answer
+             * @example accept_counter
+             */
+            decision: components["schemas"]["ShippingCounterAnswer"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d413
+             */
+            rateId: string;
+        };
+        ShippingPayoutSuggestionDto: {
+            /** @example customer_rate_less_target_margin */
+            basis: components["schemas"]["ShippingSuggestionBasis"];
+            /**
+             * @description Customer rate for the band minimum
+             * @example 120.00
+             */
+            customerNetAmount: string | null;
+            /**
+             * @description (proposed − suggested) / suggested, %
+             * @example -1.04
+             */
+            deviationPct: string | null;
+            /**
+             * @description Proposed payout (THB)
+             * @example 95.00
+             */
+            payoutAmount: string;
+            /**
+             * @description Peers counted; the median needs the benchmark minimum (D-101)
+             * @example 1
+             */
+            peerCount: number;
+            /**
+             * @description Median payout of peers serving the zone
+             * @example 100.00
+             */
+            peerMedianAmount: string | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d413
+             */
+            rateId: string;
+            /**
+             * @description Customer rate × (1 − target margin)
+             * @example 96.00
+             */
+            suggestedAmount: string | null;
+        };
+        /**
+         * @description Why no rate applies
+         * @enum {string}
+         */
+        ShippingRateMissReason: "no_postcode" | "no_rate_card" | "zone_unknown" | "no_band";
+        ShippingRateQuoteDto: {
+            /**
+             * @description Always THB (one currency)
+             * @example THB
+             */
+            currency: components["schemas"]["Currency"];
+            /**
+             * @description VAT-exclusive (THB)
+             * @example 120.00
+             */
+            netAmount: string | null;
+            /** @example true */
+            priced: boolean;
+            /**
+             * @description Why no rate applies
+             * @example null
+             */
+            reason: components["schemas"]["ShippingRateMissReason"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d402
+             */
+            versionId: string | null;
+            /** @example bkk */
+            zoneCode: string | null;
+        };
+        ShippingRateQuoteRequestDto: {
+            /**
+             * Format: date-time
+             * @description Instant to resolve the card at; default now
+             * @example 2026-10-20T10:00:00+07:00
+             */
+            at?: string;
+            /** @example 10110 */
+            postcode: string;
+            /**
+             * @description Unit: cm³.
+             * @example 48000
+             */
+            volumeCm3?: number | null;
+            /**
+             * @description Unit: g.
+             * @example 3200
+             */
+            weightG: number;
+        };
+        /** @enum {string} */
+        ShippingSuggestionBasis: "customer_rate_less_target_margin" | "target_margin_not_set" | "no_customer_rate";
         ShowcaseCategoryDto: {
             /**
              * Format: uuid
@@ -14838,6 +17090,10 @@ export interface components {
         VideoProvider: "youtube" | "vimeo" | "file";
         /** @enum {string} */
         VideoSubject: "catalog_product" | "showcase_product" | "stock_product" | "article";
+        WebhookReceivedDto: {
+            /** @example true */
+            received: boolean;
+        };
         WebPushKeysDto: {
             /**
              * @description Stored encrypted
@@ -38803,6 +41059,284 @@ export interface operations {
             };
         };
     };
+    "admin.csFolding.calculate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoldingConfigurationDto"];
+            };
+        };
+        responses: {
+            /** @description Prices per quantity with the staff view */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculatorVersion": "1.0.0",
+                     *       "options": [
+                     *         {
+                     *           "error": null,
+                     *           "optionKey": "0192f3a0-7c1e-7d2a-9b1f-00000000f001:0192f3a0-7c1e-7d2a-9b1f-00000000a107"
+                     *         }
+                     *       ],
+                     *       "steps": [
+                     *         {
+                     *           "designFeeAmount": "0.00",
+                     *           "earliestShipDate": "2026-10-09",
+                     *           "grossAmount": "13380.00",
+                     *           "instant": true,
+                     *           "internal": {
+                     *             "belowMarginFloor": false,
+                     *             "buyPrice": "10123.45",
+                     *             "factoryId": "0192f3a0-7c1e-7d2a-9b1f-00000000f001",
+                     *             "marginPct": "24.1234",
+                     *             "parts": [
+                     *               {
+                     *                 "buyPrice": "10123.45",
+                     *                 "layoutAmount": 10,
+                     *                 "layoutStandard": false,
+                     *                 "partKey": "main",
+                     *                 "sheets": 225
+                     *               }
+                     *             ],
+                     *             "priceListVersionId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *             "printTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a107",
+                     *             "productionRun": 1000
+                     *           },
+                     *           "leadTimeDays": 7,
+                     *           "productAmount": "13380.00",
+                     *           "quantity": 1000,
+                     *           "reason": null,
+                     *           "shippingAmount": "0.00",
+                     *           "shippingPending": true,
+                     *           "structureDesignFeeAmount": "0.00",
+                     *           "toleranceOveragePct": "5.0000",
+                     *           "toleranceShortagePct": "5.0000",
+                     *           "unitPrice": "13.38",
+                     *           "vatAmount": "875.33"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminQuoteCalculationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.vat_rate_missing` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.csFolding.inputData": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Input data */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "assemblies": [],
+                     *       "diecutTypes": [
+                     *         {
+                     *           "code": "standard",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a106",
+                     *           "nameEn": "Standard die-cut",
+                     *           "nameTh": "ไดคัททั่วไป"
+                     *         }
+                     *       ],
+                     *       "difficultyLevels": [
+                     *         {
+                     *           "code": "normal",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "nameEn": "Normal",
+                     *           "nameTh": "ปกติ"
+                     *         }
+                     *       ],
+                     *       "finishes": [
+                     *         {
+                     *           "code": "matt-lamination",
+                     *           "finishKind": "lamination",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a105",
+                     *           "nameEn": "Matt lamination",
+                     *           "nameTh": "เคลือบด้าน",
+                     *           "requiresAmount": false,
+                     *           "requiresLength": false,
+                     *           "requiresWidth": false,
+                     *           "slot": "finish1"
+                     *         }
+                     *       ],
+                     *       "inkColours": [
+                     *         {
+                     *           "code": "cmyk",
+                     *           "colourKind": "process",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *           "name": "CMYK"
+                     *         }
+                     *       ],
+                     *       "materials": [
+                     *         {
+                     *           "code": "art-350",
+                     *           "gsm": 350,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *           "nameEn": "Art card 350 gsm",
+                     *           "nameTh": "อาร์ตการ์ด 350 แกรม"
+                     *         }
+                     *       ],
+                     *       "patterns": [
+                     *         {
+                     *           "code": "RTE-01",
+                     *           "geometryFormula": "tuck_top",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *           "name": "ฝาเสียบกลับด้าน",
+                     *           "subPatterns": []
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FoldingInputDataDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.factories.list": {
         parameters: {
             query?: {
@@ -43670,6 +46204,1269 @@ export interface operations {
                 };
             };
             /** @description Problem: `approval.no_matching_step`, `partners.backdated`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Card */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "current": {
+                     *         "decidedAt": "2026-10-03T11:00:00+07:00",
+                     *         "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *         "factoryAcceptedAt": "2026-10-03T11:00:00+07:00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *         "openLines": 0,
+                     *         "rateCount": 1,
+                     *         "reason": "Initial payout card (fake)",
+                     *         "sentAt": "2026-10-02T09:00:00+07:00",
+                     *         "status": "approved",
+                     *         "versionNo": 1
+                     *       },
+                     *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-00000000a201",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d411",
+                     *       "open": null,
+                     *       "scheduled": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateCardDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.listVersions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versions */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "decidedAt": "2026-10-03T11:00:00+07:00",
+                     *         "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *         "factoryAcceptedAt": "2026-10-03T11:00:00+07:00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *         "openLines": 0,
+                     *         "rateCount": 1,
+                     *         "reason": "Initial payout card (fake)",
+                     *         "sentAt": "2026-10-02T09:00:00+07:00",
+                     *         "status": "approved",
+                     *         "versionNo": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionSummaryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.createVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFactoryRateVersionDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 1,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "pending",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": null,
+                     *       "status": "draft",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_open` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `partners.backdated`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.getVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": "2026-10-03T11:00:00+07:00",
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": "2026-10-03T11:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 0,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "accepted",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": "2026-10-02T09:00:00+07:00",
+                     *       "status": "approved",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.deleteDraft": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.answerCounters": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerShippingCountersDto"];
+            };
+        };
+        responses: {
+            /** @description Version */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": "2026-10-03T11:00:00+07:00",
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": "2026-10-03T11:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 0,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "accepted",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": "2026-10-02T09:00:00+07:00",
+                     *       "status": "approved",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_awaiting` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.sendVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Awaiting the factory */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 1,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "pending",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": "2026-10-02T09:00:00+07:00",
+                     *       "status": "pending_acceptance",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.rates_empty`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.withdrawVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonBodyDto"];
+            };
+        };
+        responses: {
+            /** @description Withdrawn */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 1,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "pending",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": "2026-10-02T09:00:00+07:00",
+                     *       "status": "withdrawn",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_awaiting` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.replaceRates": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceFactoryRatesDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 1,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "pending",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": null,
+                     *       "status": "draft",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.factoryShippingRates.suggestions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suggestions */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "basis": "customer_rate_less_target_margin",
+                     *         "customerNetAmount": "120.00",
+                     *         "deviationPct": "-1.04",
+                     *         "payoutAmount": "95.00",
+                     *         "peerCount": 1,
+                     *         "peerMedianAmount": null,
+                     *         "rateId": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *         "suggestedAmount": "96.00"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ShippingPayoutSuggestionDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -50319,6 +54116,589 @@ export interface operations {
             };
         };
     };
+    "admin.sellMarginTables.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tables */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "current": {
+                     *           "effectiveFrom": "2026-10-01T00:00:00+07:00",
+                     *           "fallbackAmount": null,
+                     *           "fallbackPct": "30",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b002",
+                     *           "lines": [
+                     *             {
+                     *               "colourCount": null,
+                     *               "difficultyLevelId": null,
+                     *               "minAmount": null,
+                     *               "priceMax": null,
+                     *               "priceMin": "0",
+                     *               "qtyMax": 999,
+                     *               "qtyMin": 1,
+                     *               "valueAmount": null,
+                     *               "valuePct": "25"
+                     *             }
+                     *           ],
+                     *           "reason": "Q4 margins (fake)",
+                     *           "status": "approved",
+                     *           "versionNo": 1
+                     *         },
+                     *         "description": "Folding sell margin by run",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b001",
+                     *         "kind": "margin",
+                     *         "printTypeId": null,
+                     *         "productTypeCode": "folding_carton",
+                     *         "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["SellMarginTableDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.sellMarginTables.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSellMarginTableDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "current": null,
+                     *       "description": "Folding sell margin by run",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b001",
+                     *       "kind": "margin",
+                     *       "printTypeId": null,
+                     *       "productTypeCode": "folding_carton",
+                     *       "productTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000c002"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SellMarginTableDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.sellMarginTables.listVersions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versions */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "effectiveFrom": "2026-10-01T00:00:00+07:00",
+                     *         "fallbackAmount": null,
+                     *         "fallbackPct": "30",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b002",
+                     *         "lines": [
+                     *           {
+                     *             "colourCount": null,
+                     *             "difficultyLevelId": null,
+                     *             "minAmount": null,
+                     *             "priceMax": null,
+                     *             "priceMin": "0",
+                     *             "qtyMax": 999,
+                     *             "qtyMin": 1,
+                     *             "valueAmount": null,
+                     *             "valuePct": "25"
+                     *           }
+                     *         ],
+                     *         "reason": "Q4 margins (fake)",
+                     *         "status": "approved",
+                     *         "versionNo": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["SellMarginVersionDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.sellMarginTables.createVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                tableId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSellMarginVersionDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "effectiveFrom": "2026-10-01T00:00:00+07:00",
+                     *       "fallbackAmount": null,
+                     *       "fallbackPct": "30",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b002",
+                     *       "lines": [
+                     *         {
+                     *           "colourCount": null,
+                     *           "difficultyLevelId": null,
+                     *           "minAmount": null,
+                     *           "priceMax": null,
+                     *           "priceMin": "0",
+                     *           "qtyMax": 999,
+                     *           "qtyMin": 1,
+                     *           "valueAmount": null,
+                     *           "valuePct": "25"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 margins (fake)",
+                     *       "status": "draft",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SellMarginVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.sellMarginTables.approveVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Approved */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "effectiveFrom": "2026-10-01T00:00:00+07:00",
+                     *       "fallbackAmount": null,
+                     *       "fallbackPct": "30",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b002",
+                     *       "lines": [
+                     *         {
+                     *           "colourCount": null,
+                     *           "difficultyLevelId": null,
+                     *           "minAmount": null,
+                     *           "priceMax": null,
+                     *           "priceMin": "0",
+                     *           "qtyMax": 999,
+                     *           "qtyMin": 1,
+                     *           "valueAmount": null,
+                     *           "valuePct": "25"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 margins (fake)",
+                     *       "status": "approved",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SellMarginVersionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `partners.proposal_closed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.settings.list": {
         parameters: {
             query?: never;
@@ -50707,6 +55087,2121 @@ export interface operations {
                 };
             };
             /** @description Problem: `approval.no_matching_step`, `settings.backdated`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.carriers.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Carriers */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accounts": [
+                     *           {
+                     *             "active": true,
+                     *             "createdAt": "2026-10-01T09:00:00+07:00",
+                     *             "entityCode": "CGT",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d422",
+                     *             "label": "Packio Flash sandbox (fake)",
+                     *             "sandbox": true
+                     *           }
+                     *         ],
+                     *         "code": "flash_express",
+                     *         "enabled": false,
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d421",
+                     *         "name": "Flash Express",
+                     *         "supports": [
+                     *           "quote",
+                     *           "book",
+                     *           "label",
+                     *           "track",
+                     *           "cancel",
+                     *           "webhook"
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["CarrierDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.carriers.addAccount": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                code: components["schemas"]["CarrierCode"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddCarrierAccountDto"];
+            };
+        };
+        responses: {
+            /** @description Account */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active": true,
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "entityCode": "CGT",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d422",
+                     *       "label": "Packio Flash sandbox (fake)",
+                     *       "sandbox": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarrierAccountDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.carrier_fixed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.carriers.disable": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                code: components["schemas"]["CarrierCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Carrier */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accounts": [
+                     *         {
+                     *           "active": true,
+                     *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "entityCode": "CGT",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d422",
+                     *           "label": "Packio Flash sandbox (fake)",
+                     *           "sandbox": true
+                     *         }
+                     *       ],
+                     *       "code": "flash_express",
+                     *       "enabled": false,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d421",
+                     *       "name": "Flash Express",
+                     *       "supports": [
+                     *         "quote",
+                     *         "book",
+                     *         "label",
+                     *         "track",
+                     *         "cancel",
+                     *         "webhook"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarrierDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.carrier_fixed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.carriers.enable": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                code: components["schemas"]["CarrierCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Carrier */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accounts": [
+                     *         {
+                     *           "active": true,
+                     *           "createdAt": "2026-10-01T09:00:00+07:00",
+                     *           "entityCode": "CGT",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d422",
+                     *           "label": "Packio Flash sandbox (fake)",
+                     *           "sandbox": true
+                     *         }
+                     *       ],
+                     *       "code": "flash_express",
+                     *       "enabled": true,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d421",
+                     *       "name": "Flash Express",
+                     *       "supports": [
+                     *         "quote",
+                     *         "book",
+                     *         "label",
+                     *         "track",
+                     *         "cancel",
+                     *         "webhook"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarrierDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.carrier_account_missing`, `shipping.carrier_fixed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.carriers.testQuote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                code: components["schemas"]["CarrierCode"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CarrierTestQuoteDto"];
+            };
+        };
+        responses: {
+            /** @description Quote */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amount": "85.00",
+                     *       "currency": "THB",
+                     *       "transitDays": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarrierQuoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.carrier_account_missing` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.carrier_refused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `provider.unavailable` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.carriers.deactivateAccount": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active": false,
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "entityCode": "CGT",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d422",
+                     *       "label": "Packio Flash sandbox (fake)",
+                     *       "sandbox": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarrierAccountDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Card */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "current": {
+                     *         "approvalRequestId": "0192f3a0-7c1e-7d2a-9b1f-00000000d404",
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "decidedAt": "2026-10-02T10:00:00+07:00",
+                     *         "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *         "rateCount": 1,
+                     *         "reason": "Q4 rates (fake)",
+                     *         "schemeCode": "customer_default",
+                     *         "status": "approved",
+                     *         "versionNo": 2
+                     *       },
+                     *       "description": "D-013 customer shipping rate card (zone/postcode × weight/volume)",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d401",
+                     *       "key": "default",
+                     *       "open": [],
+                     *       "scheduled": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateCardDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.quote": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShippingRateQuoteRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Rate */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "currency": "THB",
+                     *       "netAmount": "120.00",
+                     *       "priced": true,
+                     *       "reason": null,
+                     *       "versionId": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "zoneCode": "bkk"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ShippingRateQuoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.listVersions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versions */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "approvalRequestId": "0192f3a0-7c1e-7d2a-9b1f-00000000d404",
+                     *         "createdAt": "2026-10-01T09:00:00+07:00",
+                     *         "decidedAt": "2026-10-02T10:00:00+07:00",
+                     *         "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *         "rateCount": 1,
+                     *         "reason": "Q4 rates (fake)",
+                     *         "schemeCode": "customer_default",
+                     *         "status": "approved",
+                     *         "versionNo": 2
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionSummaryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.createVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCustomerRateVersionDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalRequestId": null,
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "priceAmount": "120.00",
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 rates (fake)",
+                     *       "schemeCode": "customer_default",
+                     *       "status": "draft",
+                     *       "versionNo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `partners.backdated`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.getVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalRequestId": "0192f3a0-7c1e-7d2a-9b1f-00000000d404",
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "decidedAt": "2026-10-02T10:00:00+07:00",
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "priceAmount": "120.00",
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 rates (fake)",
+                     *       "schemeCode": "customer_default",
+                     *       "status": "approved",
+                     *       "versionNo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.deleteDraft": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.exportVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-10-01T10:05:00+07:00",
+                     *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000f002",
+                     *       "rows": 12,
+                     *       "url": "https://packio-files.s3.example.com/…&X-Amz-Expires=300"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CatalogExportDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.confirmImport": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmImportDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalRequestId": null,
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "priceAmount": "120.00",
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 rates (fake)",
+                     *       "schemeCode": "customer_default",
+                     *       "status": "draft",
+                     *       "versionNo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.import_stale`, `file.infected`, `file.not_ready`, `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.import_invalid`, `catalog.import_too_large`, `catalog.import_unreadable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.previewImport": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportFileDto"];
+            };
+        };
+        responses: {
+            /** @description Preview */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canConfirm": true,
+                     *       "errors": [],
+                     *       "errorsTruncated": false,
+                     *       "fileId": "0192f3a0-7c1e-7d2a-9b1f-00000000f001",
+                     *       "invalid": 0,
+                     *       "previewSha256": "a3f1c2d4e5b60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+                     *       "rows": 12
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RateImportPreviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `file.infected`, `file.not_ready`, `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.import_too_large`, `catalog.import_unreadable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.submitVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description In approval */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalRequestId": "0192f3a0-7c1e-7d2a-9b1f-00000000d404",
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "priceAmount": "120.00",
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 rates (fake)",
+                     *       "schemeCode": "customer_default",
+                     *       "status": "proposed",
+                     *       "versionNo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `partners.version_pending`, `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.rates_empty`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.withdrawVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonBodyDto"];
+            };
+        };
+        responses: {
+            /** @description Withdrawn */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalRequestId": "0192f3a0-7c1e-7d2a-9b1f-00000000d404",
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "decidedAt": "2026-10-02T10:00:00+07:00",
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "priceAmount": "120.00",
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 rates (fake)",
+                     *       "schemeCode": "customer_default",
+                     *       "status": "withdrawn",
+                     *       "versionNo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `approval.not_authorised`, `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_proposed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.customerShippingRates.replaceRates": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceCustomerRatesDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approvalRequestId": null,
+                     *       "createdAt": "2026-10-01T09:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "priceAmount": "120.00",
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Q4 rates (fake)",
+                     *       "schemeCode": "customer_default",
+                     *       "status": "draft",
+                     *       "versionNo": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CustomerRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `shipping.version_not_draft` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -58551,6 +65046,629 @@ export interface operations {
             };
         };
     };
+    "partner.pricingFolding.calculate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FoldingConfigurationDto"];
+            };
+        };
+        responses: {
+            /** @description Buy side per print type */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculatorVersion": "1.0.0",
+                     *       "options": [
+                     *         {
+                     *           "error": null,
+                     *           "printTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a107",
+                     *           "steps": [
+                     *             {
+                     *               "buyPrice": "10123.45",
+                     *               "leadTimeDays": 7,
+                     *               "parts": [
+                     *                 {
+                     *                   "buyPrice": "10123.45",
+                     *                   "layoutAmount": 10,
+                     *                   "layoutStandard": false,
+                     *                   "partKey": "main",
+                     *                   "sheets": 225,
+                     *                   "totalCost": "9111.11"
+                     *                 }
+                     *               ],
+                     *               "productionRun": 1000,
+                     *               "quantity": 1000
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "priceListVersionId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryQuoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.shippingRates.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Card */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "current": {
+                     *         "decidedAt": "2026-10-03T11:00:00+07:00",
+                     *         "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *         "factoryAcceptedAt": "2026-10-03T11:00:00+07:00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *         "openLines": 0,
+                     *         "rateCount": 1,
+                     *         "reason": "Initial payout card (fake)",
+                     *         "sentAt": "2026-10-02T09:00:00+07:00",
+                     *         "status": "approved",
+                     *         "versionNo": 1
+                     *       },
+                     *       "factoryId": "0192f3a0-7c1e-7d2a-9b1f-00000000a201",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d411",
+                     *       "open": null,
+                     *       "scheduled": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateCardDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.shippingRates.listVersions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versions */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "decidedAt": "2026-10-03T11:00:00+07:00",
+                     *         "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *         "factoryAcceptedAt": "2026-10-03T11:00:00+07:00",
+                     *         "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *         "openLines": 0,
+                     *         "rateCount": 1,
+                     *         "reason": "Initial payout card (fake)",
+                     *         "sentAt": "2026-10-02T09:00:00+07:00",
+                     *         "status": "approved",
+                     *         "versionNo": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionSummaryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.shippingRates.getVersion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Version */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 1,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "pending",
+                     *           "counterAmount": null,
+                     *           "counterNote": null,
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": "2026-10-02T09:00:00+07:00",
+                     *       "status": "pending_acceptance",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "partner.shippingRates.respond": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                factoryId: string;
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RespondToShippingCardDto"];
+            };
+        };
+        responses: {
+            /** @description Version */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "decidedAt": null,
+                     *       "effectiveFrom": "2026-10-15T00:00:00+07:00",
+                     *       "factoryAcceptedAt": null,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *       "openLines": 1,
+                     *       "rateCount": 1,
+                     *       "rates": [
+                     *         {
+                     *           "acceptance": "countered",
+                     *           "counterAmount": "105.00",
+                     *           "counterNote": "Fuel costs (fake)",
+                     *           "counterPerExtraKg": null,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d413",
+                     *           "payoutAmount": "95.00",
+                     *           "perExtraKg": null,
+                     *           "postcode": null,
+                     *           "volumeMaxCm3": null,
+                     *           "volumeMinCm3": null,
+                     *           "weightMaxG": 5000,
+                     *           "weightMinG": 0,
+                     *           "zoneCode": "bkk",
+                     *           "zoneId": "0192f3a0-7c1e-7d2a-9b1f-00000000d403"
+                     *         }
+                     *       ],
+                     *       "reason": "Initial payout card (fake)",
+                     *       "sentAt": "2026-10-02T09:00:00+07:00",
+                     *       "status": "pending_acceptance",
+                     *       "versionNo": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryRateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `shipping.version_not_awaiting` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.files.get": {
         parameters: {
             query?: never;
@@ -63258,6 +70376,112 @@ export interface operations {
             };
         };
     };
+    "store.quotes.calculate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalculateQuoteDto"];
+            };
+        };
+        responses: {
+            /** @description Prices per quantity */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculatorVersion": "1.0.0",
+                     *       "steps": [
+                     *         {
+                     *           "designFeeAmount": "0.00",
+                     *           "earliestShipDate": "2026-10-09",
+                     *           "grossAmount": "13380.00",
+                     *           "instant": true,
+                     *           "leadTimeDays": 7,
+                     *           "productAmount": "13380.00",
+                     *           "quantity": 1000,
+                     *           "reason": null,
+                     *           "shippingAmount": "0.00",
+                     *           "shippingPending": true,
+                     *           "structureDesignFeeAmount": "0.00",
+                     *           "toleranceOveragePct": "5.0000",
+                     *           "toleranceShortagePct": "5.0000",
+                     *           "unitPrice": "13.38",
+                     *           "vatAmount": "875.33"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuoteCalculationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.not_instant`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.vat_rate_missing` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "store.realtime.auth": {
         parameters: {
             query?: never;
@@ -63655,6 +70879,212 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "webhooks.carriers.deliveree": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    id?: number;
+                    status?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "received": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WebhookReceivedDto"];
+                };
+            };
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "webhooks.carriers.flashExpress": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    data?: {
+                        pno?: string;
+                        state?: number;
+                    };
+                    mchId?: string;
+                    nonceStr?: string;
+                    sign?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "errorCode": "1",
+                     *       "state": "success"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarrierWebhookAckDto"];
+                };
+            };
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

@@ -19,12 +19,12 @@ import { catalogueRows } from "../admin/catalogue";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, paginate, problem, sortBy } from "../support";
 
-type Row = ReturnType<typeof catalogueRows>[number];
+export type Row = ReturnType<typeof catalogueRows>[number];
 
 const ACTIVE = new Set(["active", "published"]);
-const live = (rows: Row[]) => rows.filter((row) => ACTIVE.has(String(row.status)));
-const byId = (rows: Row[], id: unknown) => rows.find((row) => row.id === id);
-const imageUrl = (fileId: unknown) => (typeof fileId === "string" ? `/v1/store/catalog/images/${fileId}` : null);
+export const live = (rows: Row[]) => rows.filter((row) => ACTIVE.has(String(row.status)));
+export const byId = (rows: Row[], id: unknown) => rows.find((row) => row.id === id);
+export const imageUrl = (fileId: unknown) => (typeof fileId === "string" ? `/v1/store/catalog/images/${fileId}` : null);
 const english = (request: Request) => request.headers.get("accept-language")?.startsWith("en") ?? false;
 const str = (value: unknown) => (typeof value === "string" ? value : null);
 
@@ -38,11 +38,11 @@ function productTypes(): Row[] {
   return sortBy(live(catalogueRows("productTypes")), "sort", "asc");
 }
 
-function typeCodeOf(product: Row): string {
+export function typeCodeOf(product: Row): string {
   return String(byId(catalogueRows("productTypes"), product.productTypeId)?.code ?? "");
 }
 
-function catalogProducts(): Row[] {
+export function catalogProducts(): Row[] {
   const types = new Set(productTypes().map((type) => type.id));
   return sortBy(
     live(catalogueRows("catalogProducts")).filter((row) => types.has(row.productTypeId as string)),
@@ -246,7 +246,52 @@ function placeholderSvg(fileId: string): string {
 
 const notFound = () => problem(404, "http.not_found", "ไม่พบรายการนี้");
 
+/**
+ * A postcode's areas. The admin geography mock holds almost no rows, so the postcodes the mock
+ * customers' addresses use are answered from this short list — public place names, nothing else.
+ */
+const POSTCODE_AREAS: Record<string, [province: [string, string, string], district: [string, string, string]]> = {
+  "10110": [
+    ["10", "กรุงเทพมหานคร", "Bangkok"],
+    ["1033", "คลองเตย", "Khlong Toei"],
+  ],
+  "10400": [
+    ["10", "กรุงเทพมหานคร", "Bangkok"],
+    ["1014", "พญาไท", "Phaya Thai"],
+  ],
+  "50200": [
+    ["50", "เชียงใหม่", "Chiang Mai"],
+    ["5001", "เมืองเชียงใหม่", "Mueang Chiang Mai"],
+  ],
+  "20000": [
+    ["20", "ชลบุรี", "Chon Buri"],
+    ["2001", "เมืองชลบุรี", "Mueang Chon Buri"],
+  ],
+  "90110": [
+    ["90", "สงขลา", "Songkhla"],
+    ["9011", "หาดใหญ่", "Hat Yai"],
+  ],
+  "40000": [
+    ["40", "ขอนแก่น", "Khon Kaen"],
+    ["4001", "เมืองขอนแก่น", "Mueang Khon Kaen"],
+  ],
+};
+
 export const storeCatalogHandlers: HttpHandler[] = [
+  http.get("*/v1/store/catalog/geo/postcodes/:postcode", ({ params }) => {
+    const known = POSTCODE_AREAS[String(params.postcode)];
+    const area = (code: string, nameTh: string, nameEn: string) => ({ code, nameTh, nameEn });
+    const body: Schemas["StorePostcodeAreaDto"][] = known
+      ? [
+          {
+            province: area(...known[0]),
+            district: area(...known[1]),
+            subdistrict: { ...area(`${known[1][0]}01`, known[1][1], known[1][2]), postcode: String(params.postcode) },
+          },
+        ]
+      : [];
+    return HttpResponse.json(body);
+  }),
   http.get("*/v1/store/catalog/product-types", () =>
     HttpResponse.json(
       productTypes().map((type): Schemas["StoreProductTypeDto"] => ({

@@ -87,3 +87,20 @@ zones share; the sign-in sheet and the search dialog load on demand and add noth
 next-intl ~11 KB, Lucide ~16 KB, app code. The next levers: a customer-only
 `ZoneProviders` that mounts the tooltip provider and toaster lazily, and next-intl's client
 provider carrying only the namespaces a page's client components use instead of the whole zone.
+
+## F3 3.2 — the configurator and the RFQ form
+
+Measured the same way. Both pages join the `customer-app` set (the app-page row: 200 KB target),
+because they are tools, not landing pages — `/configure/*` is `noindex`, and the product page
+that is indexed is unchanged.
+
+| Page | Initial JS | Note |
+|---|---|---|
+| `/configure/tuck-end-box` | 292 → 283 KB | steps after the first and the phone dock's sheet load on demand |
+| `/rfq/rigid-box` | 272 KB | the form is the page (Select, FileDropzone, Checkbox) |
+| marketing set | 254–256 KB | unchanged |
+
+The `customer-app` ratchet moves **280 → 290 KB** to cover the configurator, the heaviest page in
+the set; the marketing ratchet stays at 270 KB. The 3D preview costs nothing extra: it is CSS 3D
+transforms, not WebGL. The next lever is the same as 3.1's — the shared shell (~254 KB) is most of
+every page.
