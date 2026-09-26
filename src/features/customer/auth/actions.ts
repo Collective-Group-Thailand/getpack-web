@@ -121,3 +121,26 @@ function otpErrorFor(error: unknown): { errorKey: string; requestId?: string } {
   if (error.status === 422) return { errorKey: "errors.invalidPhone", requestId: error.requestId };
   return { errorKey: "errors.unavailable", requestId: error.requestId };
 }
+
+/**
+ * Link a LINE account to the signed-in customer (F3 3.4, D-151). B1.3's LINE sign-in links a new
+ * LINE identity to whoever the bearer token belongs to, so this is that call made with the
+ * customer's own session, which the response then renews.
+ */
+export async function linkLine(identity: {
+  idToken?: string;
+  liffAccessToken?: string;
+}): Promise<ProviderSignInResult> {
+  try {
+    const { serverApi } = await import("@/lib/api/server");
+    const api = await serverApi("customer");
+    const { data } = await api.POST("/v1/auth/customer/line", {
+      body: { idToken: identity.idToken, liffAccessToken: identity.liffAccessToken },
+    });
+    if (!data) return { errorKey: "errors.unavailable" };
+    await startSession(data);
+    return { ok: true };
+  } catch (error) {
+    return providerErrorFor(error);
+  }
+}

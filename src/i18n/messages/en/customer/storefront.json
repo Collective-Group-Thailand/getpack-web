@@ -59,6 +59,11 @@
     "contact": "Contact us",
     "samples": "Request a sample kit",
     "referral": "Invite a friend to Packio",
-    "order": "Order"
+    "order": "Order",
+    "order_artwork": "Upload artwork",
+    "order_proof": "Review the proof",
+    "order_receipt": "Confirm receipt",
+    "order_claim": "Report a problem",
+    "order_reorder": "Reorder"
   }
 }

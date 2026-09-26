@@ -59,6 +59,11 @@
     "contact": "ติดต่อเรา",
     "samples": "ขอชุดตัวอย่างวัสดุ",
     "referral": "ชวนเพื่อนมาใช้ Packio",
-    "order": "คำสั่งซื้อ"
+    "order": "คำสั่งซื้อ",
+    "order_artwork": "ส่งไฟล์งาน",
+    "order_proof": "ตรวจปรู๊ฟ",
+    "order_receipt": "ยืนยันรับสินค้า",
+    "order_claim": "แจ้งปัญหาสินค้า",
+    "order_reorder": "สั่งซ้ำ"
   }
 }
