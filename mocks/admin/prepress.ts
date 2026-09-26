@@ -280,7 +280,9 @@ function designService(order: Order, n: number, plan: Extract<Plan, { stage: "de
         ? "brief_pending"
         : rounds.at(-1)!.status === "awaiting_payment"
           ? "revision_requested"
-          : "in_progress",
+          : rounds.at(-1)!.status === "delivered"
+            ? "delivered"
+            : "in_progress",
     brief: [
       { label: "ชื่อแบรนด์", value: "แบรนด์ตัวอย่าง" },
       { label: "กลุ่มลูกค้า", value: "ผู้หญิงอายุ 25–40 ปี" },
@@ -742,6 +744,12 @@ export function customerAnnotate(
   };
   annotations.set(proofId, [...list, created]);
   return created;
+}
+
+/** An order's prepress row if it has one — without making one (a list must not create rows). */
+export function prepressIfAny(orderId: string): Detail | undefined {
+  const known = details.get(orderId);
+  return known ? refresh(known) : undefined;
 }
 
 export function refreshPrepress(detail: Detail): Detail {
