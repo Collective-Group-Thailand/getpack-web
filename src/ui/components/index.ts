@@ -38,6 +38,14 @@ export {
   type RowTone,
 } from "./DataTable";
 export { DescriptionList, type DescriptionItem, type DescriptionListProps } from "./DescriptionList";
+export {
+  DimensionInput,
+  fromMm,
+  toMm,
+  type DimensionAxis,
+  type DimensionInputProps,
+  type LengthUnit,
+} from "./DimensionInput";
 export { Dialog, DialogClose, type DialogProps } from "./Dialog";
 export { DisclosureList, type DisclosureItem, type DisclosureListProps } from "./DisclosureList";
 export { DropdownMenu, type DropdownMenuProps, type MenuItem } from "./DropdownMenu";
@@ -61,12 +69,22 @@ export {
 } from "./Input";
 export { JsonView, type JsonViewProps } from "./JsonView";
 export { isApplePlatform, Kbd, KEYCAP, type KbdProps } from "./Kbd";
+export { MaterialSwatch, type MaterialSwatchProps } from "./MaterialSwatch";
 export { Meter, type MeterProps } from "./Meter";
 export { PageHeader, Toolbar, type PageHeaderProps } from "./PageHeader";
 export { LinkPagination, pageWindow, type LinkPaginationProps } from "./LinkPagination";
 export { Pagination, type PaginationLabels, type PaginationProps } from "./Pagination";
 export { ProductCard, type ProductCardImage, type ProductCardProps } from "./ProductCard";
 export { Popover, type PopoverProps } from "./Popover";
+export {
+  PriceBreakTable,
+  PriceSummary,
+  type PriceBreakRow,
+  type PriceBreakTableProps,
+  type PriceRow,
+  type PriceSummaryProps,
+} from "./PriceSummary";
+export { QuoteDock, QuoteDockSpacer, type QuoteDockProps } from "./QuoteDock";
 export { RadioCards, type RadioCardOption, type RadioCardsProps } from "./RadioCards";
 export { RichTextView, safeHref, type RichTextNode, type RichTextViewProps } from "./RichTextView";
 export { SearchInput, type SearchInputProps } from "./SearchInput";
@@ -78,6 +96,7 @@ export { SlaTimer, type SlaState, type SlaTimerProps } from "./SlaTimer";
 export { Sheet, type SheetProps } from "./Sheet";
 export { Slider, type SliderProps } from "./Slider";
 export { Spinner, type SpinnerProps } from "./Spinner";
+export { Stepper, type StepperLabels, type StepperProps, type StepperStep, type StepStatus } from "./Stepper";
 export { Stat, type StatProps } from "./Stat";
 export { StatusBadge, type StatusBadgeProps } from "./StatusBadge";
 export { Switch, type SwitchProps } from "./Switch";
