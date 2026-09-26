@@ -29,6 +29,13 @@ function asPersona(persona: string) {
   return createRequestClient(REQUESTS, api as unknown as Client<never>);
 }
 
+/** Each surface's own audience: a superadmin for the back office, the mock customer for the store. */
+function asSurface(key: RequestKey) {
+  if (!key.includes(" /v1/store/")) return asPersona("superadmin");
+  const api = createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
+  return createRequestClient(REQUESTS, api as unknown as Client<never>);
+}
+
 /** A valid query for each GET that needs one. */
 const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/saved-views": { resource: "order" },
@@ -38,13 +45,14 @@ const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/analytics/unmet-demand": { range: "30d" },
   "GET /v1/admin/analytics/factories": { range: "30d" },
   "GET /v1/admin/analytics/campaigns": { range: "30d" },
+  "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
 };
 
 const gets = (Object.keys(REQUESTS) as RequestKey[]).filter((key) => key.startsWith("GET ") && !key.includes("{"));
 
 describe("the mock API answers every contract request in its requested shape", () => {
   it.each(gets)("%s", async (key) => {
-    const requests = asPersona("superadmin");
+    const requests = asSurface(key);
     try {
       await (requests.call as (k: string, init?: unknown) => Promise<unknown>)(key, { query: SAMPLE_QUERIES[key] });
     } catch (error) {
@@ -54,6 +62,15 @@ describe("the mock API answers every contract request in its requested shape", (
       if (!(isApiError(error) && error.status === 404)) throw error;
     }
     expect(errors.mock.calls.filter(([message]) => String(message).includes("[mock drift]"))).toEqual([]);
+  });
+
+  it("answers a public store read without a session, and refuses a private one", async () => {
+    const api = createApiClient({ baseUrl: "http://api.mock" });
+    const anonymous = createRequestClient(REQUESTS, api as unknown as Client<never>);
+    await expect(anonymous.call("GET /v1/store/catalog/product-categories")).resolves.not.toHaveLength(0);
+    await expect(
+      anonymous.call("GET /v1/store/orders/by-code/{orderCode}", { path: { orderCode: "PK-2569-00042" } }),
+    ).rejects.toMatchObject({ status: 401 });
   });
 
   it("refuses a staff request without a session, like the API", async () => {
