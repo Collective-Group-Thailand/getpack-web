@@ -1,0 +1,130 @@
+{
+  "title": "Checkout",
+  "backToCart": "Back to the cart",
+  "cartNotReady": "Something in the cart needs attention first — go back to the cart.",
+  "requiredMark": "required",
+  "failed": "We could not place the order. Your details are still here — please try again.",
+  "previewFailed": "We could not work out the price. Please try again.",
+  "blockedTitle": "To fix before ordering",
+  "place": "Confirm and pay {amount}",
+  "placeLoading": "Working out the price",
+  "terms": "By confirming you accept the terms of service. All documents are issued by Collective Group (Thailand).",
+  "contact": {
+    "title": "Contact",
+    "hint": "For order updates and documents",
+    "name": "Contact name",
+    "nameRequired": "Please give a name",
+    "phone": "Mobile number",
+    "email": "E-mail",
+    "emailHint": "Receipts and tax invoices are sent here",
+    "emailInvalid": "That e-mail address does not look right"
+  },
+  "delivery": {
+    "title": "Delivery",
+    "shared": "Everything to one address",
+    "sharedHint": "Choose from your address book",
+    "perItem": "As split in the cart",
+    "perItemHint": "Each item goes where you set it",
+    "address": "Delivery address",
+    "line": "{quantity} {unit} → {label}",
+    "newAddress": "New address"
+  },
+  "tax": {
+    "title": "Tax invoice",
+    "hint": "Who the full tax invoice is made out to",
+    "receipt": "No full tax invoice",
+    "receiptHint": "A receipt / abbreviated tax invoice in the contact's name",
+    "types": {
+      "individual": "Individual",
+      "juristic": "Company",
+      "government": "Government body"
+    },
+    "headOffice": "Head office",
+    "branch": "Branch {code}",
+    "withholds": "Withholds tax",
+    "new": "Add tax-invoice details"
+  },
+  "promotions": {
+    "title": "Promo codes",
+    "hint": "Up to 3 codes. Automatic promotions appear by themselves when they apply.",
+    "code": "Promo code",
+    "apply": "Apply",
+    "remove": "Remove code {code}",
+    "rejected": "{code}: {message}"
+  },
+  "points": {
+    "title": "Use your points",
+    "hint": "You have {balance} points (1 point = {value}); on this order you can use {min} to {max}.",
+    "redeem": "Points to use",
+    "unit": "pts",
+    "useMax": "Use the most",
+    "redeemed": "{points} points take off {amount}",
+    "toEarn": "You earn {points} points once this order is received and the claim window has passed"
+  },
+  "schedule": {
+    "title": "How to pay"
+  },
+  "method": {
+    "title": "Payment method"
+  },
+  "note": {
+    "title": "Notes",
+    "label": "Note for our team",
+    "hint": "Optional"
+  },
+  "summary": {
+    "title": "Order summary",
+    "items": "Items",
+    "discount": "Discounts",
+    "shipping": "Extra delivery",
+    "points": "Points",
+    "vat": "VAT",
+    "vatHint": "Included in the total",
+    "withholding": "Withholding tax",
+    "withholdingHint": "Deducted when you pay, with a 50 Tawi certificate",
+    "total": "Total",
+    "payNow": "Pay today {amount}",
+    "taxInvoice": "Tax invoice to {name} ({taxId}), {branch}",
+    "minus": "−{amount}"
+  },
+  "repriced": {
+    "title": "The price changed",
+    "body": "The total went from {before} to {after} because the items or prices changed since you checked. Please review it before confirming."
+  },
+  "confirm": {
+    "title": "Confirm your order",
+    "body": "Total {total}; pay {now} today by {method}. Confirming creates the order and takes you to payment.",
+    "yes": "Confirm and pay",
+    "no": "Go back"
+  },
+  "methods": {
+    "scb_qr": {
+      "label": "PromptPay QR",
+      "description": "Scan with your banking app, confirmed at once"
+    },
+    "scb_qr_cross_bank": {
+      "label": "Cross-bank QR",
+      "description": "Scan with any bank"
+    },
+    "card_2c2p": {
+      "label": "Credit or debit card",
+      "description": "Paid securely through 2C2P"
+    },
+    "online_banking_2c2p": {
+      "label": "Online banking",
+      "description": "Pay on your bank's website"
+    },
+    "bank_transfer_slip": {
+      "label": "Bank transfer and slip",
+      "description": "Checked automatically; otherwise Finance reviews it within 4 business hours"
+    },
+    "store_credit": {
+      "label": "Store credit",
+      "description": "Use the credit on your account"
+    },
+    "credit_term_transfer": {
+      "label": "Credit term",
+      "description": "Pay on your business account's terms"
+    }
+  }
+}
