@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "title": "{name} — configure and price"
+  },
+  "breadcrumb": "Configure and price",
+  "heading": "Configure your {name}",
+  "intro": "Choose the size, material and print. The price and delivery date update as you go.",
+  "sharedExpired": "This quotation link has expired. You can still configure and price it again.",
+  "sharedFrom": "Opened from shared quotation {code}. The price below is worked out again at today's prices.",
+  "stepsLabel": "Configuration steps",
+  "steps": {
+    "size": "Size and style",
+    "material": "Material",
+    "printing": "Printing",
+    "finishing": "Coating and finishes",
+    "assembly": "Die-cut and assembly",
+    "quantity": "Quantity",
+    "delivery": "Delivery",
+    "design": "Artwork and samples"
+  },
+  "stepper": {
+    "complete": "done",
+    "error": "needs attention",
+    "stepOf": "Step {index} of {total}"
+  },
+  "next": "Next: {step}",
+  "missing": {
+    "size": "a valid size",
+    "area": "the size of the {name}"
+  },
+  "lineMessage": "A question about {name}",
+  "size": {
+    "pattern": "Style",
+    "mode": "Size",
+    "standard": "Standard size",
+    "custom": "Custom size",
+    "standardSizes": "Standard sizes",
+    "standardHint": "Popular sizes, with templates ready to design on",
+    "customLegendBox": "Inside dimensions",
+    "customLegendFlat": "Flat size",
+    "unitToggle": "Units shown",
+    "units": {
+      "mm": "mm",
+      "cm": "cm",
+      "in": "in"
+    },
+    "axes": {
+      "l": "Length",
+      "w": "Width",
+      "d": "Height",
+      "gusset": "Gusset"
+    },
+    "range": "{min}–{max}",
+    "errors": {
+      "required": "Enter a size",
+      "min": "At least {limit}",
+      "max": "At most {limit}",
+      "step": "In steps of {step}",
+      "lengthExceedsWidth": "For this style the length must be greater than the width"
+    },
+    "insideNote": "Measured inside the box, a little larger than your product. Switch units freely — sizes are always kept in millimetres.",
+    "flatNote": "The item's flat size. Switch units freely — sizes are always kept in millimetres."
+  },
+  "choices": {
+    "areaAmount": "Places",
+    "areaAmountUnit": "pcs",
+    "areaWidth": "Width each",
+    "areaLength": "Length each",
+    "mm": "mm",
+    "required": "required",
+    "pickOne": "Choose a {name}",
+    "none": "None",
+    "noneHint": "You can skip this"
+  },
+  "quantity": {
+    "tiers": "Quantities to compare",
+    "tier": "{quantity} {unit}",
+    "remove": "Remove {quantity} {unit}",
+    "selectedHint": "Tap a quantity to order it. The more you order, the less each piece costs.",
+    "add": "Add a quantity",
+    "range": "Orders of {min}–{max} {unit}",
+    "addButton": "Add",
+    "presets": "Popular quantities",
+    "tooMany": "You can compare up to {count} quantities. Remove one first.",
+    "outOfRange": "Order between {min} and {max} {unit}",
+    "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}"
+  },
+  "delivery": {
+    "postcode": "Delivery postcode",
+    "postcodeHint": "Used to price delivery and work out when it arrives",
+    "postcodeInvalid": "A postcode has 5 digits",
+    "postcodeUnknown": "We could not find this postcode. Please check it.",
+    "area": "Delivering to {district}, {province}",
+    "note": "You give the full address at checkout, and can split the order across addresses."
+  },
+  "design": {
+    "option": "Artwork",
+    "options": {
+      "own_file": {
+        "label": "I have artwork",
+        "description": "Upload it after ordering; our team checks it before production"
+      },
+      "online_designer": {
+        "label": "Design online",
+        "description": "Design it yourself on a true-size template, free"
+      },
+      "hired_design": {
+        "label": "Hire a designer",
+        "description": "Send a brief and a Packio designer does it, with 3 free revisions"
+      },
+      "free_design": {
+        "label": "Free design",
+        "description": "Free design from a promotion that applies to this product"
+      }
+    },
+    "mockup": "Physical sample before production",
+    "mockupHint": "An add-on: see and hold the real thing before the whole run is made",
+    "mockups": {
+      "none": {
+        "label": "No sample",
+        "description": "Approve from a digital proof"
+      },
+      "with_print": {
+        "label": "Printed sample",
+        "description": "With the print and finishes"
+      },
+      "without_print": {
+        "label": "Blank sample",
+        "description": "To check the size and structure"
+      }
+    },
+    "promo": "Promo code",
+    "promoHint": "The discount is worked out on the quotation and at checkout",
+    "promoCheck": "Check",
+    "promoReasons": {
+      "not_found": "We could not find this code. Please check the spelling.",
+      "not_started": "This code is not active yet.",
+      "expired": "This code has expired.",
+      "not_applicable": "This code does not apply to this product.",
+      "used_up": "This code has been fully used.",
+      "min_not_met": "The order is below this code's minimum.",
+      "sign_in_required": "Sign in to use this code."
+    },
+    "promoTooMany": "Too many attempts. Please wait a moment and try again.",
+    "promoFailed": "We could not check the code. Please try again."
+  },
+  "preview": {
+    "boxLabel": "{name}, {l} × {w} × {h} mm, {material}",
+    "view": "Preview",
+    "view3d": "3D",
+    "viewFlat": "Flat",
+    "flatLabel": "{name}, unfolded",
+    "rotateLeft": "Turn left",
+    "rotateRight": "Turn right",
+    "tiltUp": "Tilt up",
+    "tiltDown": "Tilt down",
+    "reset": "Reset the view",
+    "caption": "Drawn to the proportions you chose. Drag to turn the box.",
+    "flatItemLabel": "{name}, {w} × {l} mm, {material}",
+    "caption2d": "Drawn to the proportions you chose."
+  },
+  "dock": {
+    "title": "Your price",
+    "notReady": "A few more choices to see a price",
+    "stillNeeded": "Still needed: {items}",
+    "failed": "We could not work out a price",
+    "retry": "Try again",
+    "calculating": "Working out the price",
+    "noInstantPrice": "No instant price for this quantity",
+    "reasons": {
+      "no_price_path": "Our team prices this spec by hand — send a quote request.",
+      "not_priceable": "This spec cannot be priced automatically — send a quote request.",
+      "capacity_unavailable": "Production is fully booked for now — try a smaller quantity, or send a quote request."
+    },
+    "product": "{quantity} {unit}",
+    "vatIncluded": "VAT included",
+    "designFee": "Design",
+    "oneOff": "Once per order",
+    "structureFee": "Structure design",
+    "shipping": "Delivery",
+    "shippingPending": "Enter a postcode",
+    "vat": "VAT",
+    "vatInTotal": "Included in the total",
+    "perPiece": "{price} / {unit}",
+    "total": "Total {total} · {quantity} {unit}",
+    "details": "Details",
+    "close": "Close",
+    "summary": "Price summary",
+    "grandTotal": "Total",
+    "leadTime": "Made in {days} business days",
+    "shipBy": "Ready to ship from {date}",
+    "receiveBy": "Arrives around {date}",
+    "tolerance": "You may receive up to {shortage} fewer or {overage} more, as is normal in production; any shortfall comes back as credit.",
+    "validity": "Save it as a quotation and this price holds for {days} days.",
+    "appliedOnQuote": "The sample and any promo code are applied on the quotation.",
+    "breaksCaption": "Price per quantity",
+    "breaksQuantity": "Quantity",
+    "breaksPerPiece": "Each",
+    "breaksTotal": "Total",
+    "breaksSelect": "{quantity} {unit}",
+    "breaksChoose": "Choose",
+    "breaksChosen": "Chosen",
+    "promoApplied": "Code {code} takes off {amount}",
+    "promoNotApplied": "Code {code} does not apply to this quotation",
+    "promoCapped": "The discount was capped at its limit."
+  },
+  "actions": {
+    "addToCart": "Add to cart",
+    "requestQuote": "Request a quote",
+    "designNow": "Design it now",
+    "save": "Save",
+    "share": "Share",
+    "pdf": "PDF",
+    "askCs": "Ask our team on LINE",
+    "addedToCart": "{name} added to your cart",
+    "viewCart": "View cart",
+    "saved": "Quotation {code} saved; the price holds until {date}",
+    "viewQuotes": "View quotations",
+    "linkCopied": "Quotation link copied",
+    "pdfReady": "Quotation {code} is ready",
+    "openPdf": "Open PDF",
+    "noInstantPrice": "This quantity no longer has an instant price. Choose another or request a quote.",
+    "failed": "That did not work. Please try again."
+  }
+}

@@ -101,6 +101,10 @@ export type BannerPosition = Schemas["BannerPosition"];
 export type SearchResult = Schemas["StoreSearchResultDto"];
 export type ShowcaseProduct = Schemas["StoreShowcaseProductDto"];
 export type Page<T> = { data: T[]; meta: Schemas["PageMeta"] };
+export type Configurator = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/configurator">;
+export type SharedQuote = ResponseOf<Requests, "GET /v1/store/shared-quotes/{token}">;
+export type SupportChannels = ResponseOf<Requests, "GET /v1/store/support-channels">;
+export type RfqForm = ResponseOf<Requests, "GET /v1/store/rfq-forms/{productTypeCode}">;
 
 /* ------------------------------------------------------------------------- catalogue */
 
@@ -200,6 +204,33 @@ export async function listShowcase(
 ): Promise<Page<ShowcaseProduct>> {
   const { data } = await (await publicApi("catalogue")).GET("/v1/store/catalog/showcase", { params: { query } });
   return data!;
+}
+
+/**
+ * What the configurator offers for a product, with the catalogue ids the calculator takes
+ * (CONTRACT-REQUEST store.configurator). `null` for a product that is quoted on request only.
+ */
+export async function getConfigurator(slug: string): Promise<Configurator | null> {
+  const requests = await publicRequests("catalogue");
+  return orNull(requests.call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug } }));
+}
+
+/** A quotation someone shared (CONTRACT-REQUEST store.quotes); `null` once the link has expired. */
+export async function getSharedQuote(token: string): Promise<SharedQuote | null> {
+  const requests = await publicRequests("prices");
+  return orNull(requests.call("GET /v1/store/shared-quotes/{token}", { path: { token } }));
+}
+
+/** Packio's CS channels (CONTRACT-REQUEST store.support-channels); `null` when unavailable. */
+export async function getSupportChannels(): Promise<SupportChannels | null> {
+  const requests = await publicRequests("content");
+  return orFallback(requests.call("GET /v1/store/support-channels"), null);
+}
+
+/** A category's RFQ form (CONTRACT-REQUEST store.rfq-forms); `null` for an unknown type. */
+export async function getRfqForm(productTypeCode: string): Promise<RfqForm | null> {
+  const requests = await publicRequests("catalogue");
+  return orNull(requests.call("GET /v1/store/rfq-forms/{productTypeCode}", { path: { productTypeCode } }));
 }
 
 /* --------------------------------------------------------------------------- content */

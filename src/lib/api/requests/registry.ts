@@ -18,7 +18,10 @@ import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
 import { adminSalesRequests } from "./admin-sales";
 import { storeAccountRequests } from "./store-account";
+import { storeCartRequests } from "./store-cart";
 import { storeCatalogRequests } from "./store-catalog";
+import { storeQuoteRequests } from "./store-quotes";
+import { storeRfqRequests } from "./store-rfq";
 
 export const REQUESTS = {
   ...adminConsoleRequests,
@@ -34,6 +37,9 @@ export const REQUESTS = {
   ...adminAnalyticsRequests,
   ...storeCatalogRequests,
   ...storeAccountRequests,
+  ...storeQuoteRequests,
+  ...storeRfqRequests,
+  ...storeCartRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

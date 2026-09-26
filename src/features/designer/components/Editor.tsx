@@ -9,10 +9,11 @@ import { nanoid } from "nanoid";
 
 import { buildDieline, PX_PER_MM } from "@packio/dieline";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
-import { getPaper, getStyle } from "@/features/designer/catalog";
+import { getPaper, getStyle, papersFor } from "@/features/designer/catalog";
 import { exportDielineSvg, exportPdf, exportPng, makeThumbnail } from "@/features/designer/export";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
+import type { BoxDims, BoxStyleId } from "@/features/designer/types";
 import { Link } from "@/i18n/navigation";
 import { formatNumber } from "@/i18n/format";
 import { AlertDialog } from "@/ui/components/AlertDialog";
@@ -50,7 +51,13 @@ function useSize<T extends HTMLElement>() {
   return [ref, size] as const;
 }
 
-export default function Editor({ id }: { id: string }) {
+/** A box to start a new design from — the configurator's style and inside size (F3 3.2). */
+export interface EditorSeed {
+  style: BoxStyleId;
+  dims: BoxDims;
+}
+
+export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) {
   const t = useTranslations("designer");
   const tCommon = useTranslations("common");
   const locale = useLocale() as "th" | "en";
@@ -388,7 +395,7 @@ export default function Editor({ id }: { id: string }) {
            * SetupModal resets itself from `initial` instead.
            */
           open={setupOpen}
-          initial={spec}
+          initial={spec ?? (seed ? { style: seed.style, dims: seed.dims, paperId: papersFor(seed.style)[0].id } : null)}
           hasContent={content.elements.length > 0}
           onClose={spec ? () => setSetupOpen(false) : leave}
           onConfirm={(nextSpec) => {
