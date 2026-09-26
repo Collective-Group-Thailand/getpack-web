@@ -10,6 +10,539 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-23 | **F1 Deliverable 1.1** — zones, proxy, root layouts, security headers | Env schema (zod, server/client split, boot-validated); `src/proxy.ts` resolving zone from `Host`, rewriting admin/partner hosts, refusing cross-zone paths, per-zone nonce CSP + security headers, session-refresh decision; three root layouts with zone providers (theme, next-intl, TanStack Query, toasts), per-zone `not-found`/`error` and `global-error`; admin/partner locale from `pk_locale`; ESLint zone boundaries with a fixture test; 31 e2e (3 hosts, cross-zone 404s, noindex, CSP) and 76 new unit tests | F1 1.2 (contract, API clients, BFF, auth) and 1.3 (shells, observability, SEO, push, analytics) | See the notes under the F1.1 heading |
 | 2026-09-23 | **F1 Deliverable 1.2** — contract, API clients, BFF, auth | `pnpm gen:api` + `contract.lock.json` + vendored contract + CI drift gate; adopted packio-api **B1.3**'s auth contract, retiring the seed F1.2 started against; `serverApi`/`browserApi`/`upstreamApi` on openapi-fetch with `ApiError` from problem details, `Idempotency-Key`, `If-Match`, query keys and real TanStack retry rules; `createBffHandler(zone)` on all three zones (allow-list, CSRF, refresh-once, streaming, body cap); `refreshSession` implemented; shared session-cookie module; `getActor(zone)` + route guards; staff, partner and customer OTP sign-in with sign-out; `FormField`, `OTPInput`, `PhoneInput`; shared `auth` messages; Firebase/LINE CSP origins; MSW + `pnpm dev:mock`; 378 unit and 45 e2e | F1 1.3 (shells, per-feature i18n split, status maps, observability, SEO, push, analytics). Firebase and LINE SDK wiring — UI, endpoints and CSP are in place, the SDKs load on click in F3 | See the notes under the F1.2 heading |
 | 2026-09-24 | **F1 Deliverable 1.3** — shells, i18n, domain presentation, observability, quality gates | Eleven status maps behind one `contract.ts` indirection + the `status` namespace + `nextActions` renderer; messages split per zone with `react/jsx-no-literals`, ICU gates and the packaging glossary; the three zone shells (admin sidebar from `/v1/admin/me` entitlements, ⌘K, `?`, notification centre, storefront header/footer/bottom nav, partner shop-floor frame) and four new `src/ui` primitives; Sentry on all three runtimes with trace headers through the BFF and Web Vitals RUM; robots/sitemap/canonical/hreflang/JSON-LD on the indexed zone only; SSE→cache invalidation, web push, PWA manifest; typed D-102 funnel events behind a PDPA consent gate; five Lighthouse URL sets and Storybook visual snapshots. 481 unit, 78 e2e, 4 visual | F2–F6. The storefront's initial-JS budget is breached on every route type (see below) | See the notes under the F1.3 heading |
+| 2026-09-25 | **F2 Deliverable 2.1** — admin foundation | Adopted packio-api B1.3's platform contract (users, roles, approvals, audit, settings, flags, notifications, web push, realtime, files); status layer realigned to the backend's approved schema-design §4 (44 vocabularies, 7 typed on contract enums); contract requests as code (zod registry → typed calls, schema-checked mocks, an OpenAPI handoff document, a self-retiring test); mock API with the 14 D-140 personas over the backend's own seed data; `src/ui` back-office set (DataTable on TanStack Table 9, Combobox, FileDropzone, SlaTimer…); console framework (URL-driven lists, saved views, export, upload → preview → confirm import, `defineResource`, typed confirmations); dashboard, approvals inbox + detail + delegations, users & role grants with SoD/escalation checks, roles matrix, audit log, effective-dated settings editor, feature flags, notification templates & routes, outbox; ⌘K search; grouped sidebar. 555 unit, 100 e2e | 2.2–2.8 | See the notes under the F2.1 heading |
+| 2026-09-25 | **F2 Deliverable 2.2** — orders & CS desk | Nine contract-request groups (orders, order notes and actions, customers, geo, CS calculators, quotations, discount memos, CS create-order) with stateful mocks; the six CS queues; the order screen (sticky header with the API's next action, ten tabs, slip review, manual start, cancel, notes with @mentions, unified timeline, order groups); the seven D-100 calculators with a factory × print × quantity comparison and the D-052 memo threshold from the API; quotations, discount memos, create-order with split delivery; `keys-used` and `server-imports` unit gates. 562 unit, 113 e2e | 2.3–2.8 | See the notes under the F2.2 heading |
+| 2026-09-25 | **F2 Deliverable 2.3** — RFQ workspace | Adopted packio-api B2.1 (catalogue, CMS, geography; committed HEAD only); six contract-request groups for the RFQ desk with a stateful mock; RFQ queues with the SLA per category; the RFQ screen (request, factory costs, quote versions, thread; SLA, owner, customer and activity rail); request factory cost from capable factories (D-043); quote composer from a factory's suggested price with API-priced amounts; send, record acceptance → quotation → CS create-order; decline with an unmet-demand reason (D-102); shared `NextActionBar`; mock `catalog.read` aligned with the backend. 564 unit, 127 e2e | 2.4–2.8 | See the notes under the F2.3 heading |
+| 2026-09-25 | **F2 Deliverable 2.4** — prepress & design services | Six contract-request groups (B4.1) with a mock on the commerce orders; the prepress desk by stage with SLA; the per-order workspace: preflight report by severity with accept/send back (D-070), proof versions with upload & send and decision evidence, annotation page map with reply/resolve, template sending and dieline drawing (501 engine-unavailable handled), hired-design rounds with free-round meter and next-round fee (D-071), mockup job (D-072); read-only `DesignViewer` in the shared designer + "working copy"; shared `AssignDialog`; submission & drawing status maps. 568 unit, 138 e2e | 2.5–2.8 | See the notes under the F2.4 heading |
+| 2026-09-26 | **F2 Deliverable 2.5** — catalogue & CMS | On the **published** B2.1 contract (no contract requests): a stateful table mock (ETag/If-Match, archive by status) seeded from the contract's own list examples, now emitted by `gen:api`; a typed table registry of ~40 catalogue, CMS and geography tables driving one CRUD screen; product types with the reasoned quote-mode action (D-100); Excel import with preview → confirm by hash (D-005, D-170); home-section ordering; articles with a TipTap `RichTextEditor` in `src/ui`; catalogue/CMS maps by section; `catalog.import`, `seo.manage`, `geography.manage` from `docs/rbac.md`. 576 unit, 154 e2e | 2.6–2.8 | See the notes under the F2.5 heading |
+| 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (adopted in 1aaa711 and 2880e4e) plus contract requests for the production board, inspections and scorecards: the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; Packio rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
+| 2026-09-26 | **F2 Deliverable 2.7** — marketing, B2B, customers | Eight contract-request groups for B3.3–B3.5 (campaigns, promotions, coupons, referrals, customer points and consents, companies, company credit) with stateful mocks; campaigns with the budget meter against the alert threshold (D-154); the promotion editor with typed D-053 conditions and benefit and its coupon codes; promotion priority; the referral review queue decided in approvals (D-136); loyalty and referral rules as setting versions; customers (profile, orders, points ledger, referrals, consents); companies (KYC review D-120, members, branches, credit via the `credit_limit` policy D-121, overdue block D-122, statements D-125, orders). Validation codes now read as words in every form; the approvals mock routes by step condition and notifies the subject. 584 unit, 184 e2e | 2.8 | See the notes under the F2.7 heading |
+| 2026-09-26 | **F2 Deliverable 2.8** — logistics, claims, analytics, hardening | Five contract-request groups (B4.3, B4.5, B6.1, B6.2) with stateful mocks: shipments (queues, split, fallback carrier quotes and booking, exceptions, labels, POD review with the tolerance result), claims (evidence, liability by rule with a permissioned override, idempotent resolutions), the demand dashboard on a new accessible `Chart` (Recharts, data-table fallback, loaded on demand) with suppressed small groups and the anonymised prospectus, and typed operational reports with the API's totals. Hardening: every role's menu opens cleanly (14 roles), axe on the new screens, chart visual baselines, and zod out of the browser — admin shell 490 → 363 KB, lists 501 → 390 KB — with the admin Lighthouse set split and re-ratcheted. 595 unit, 211 e2e, 8 visual | F3 onwards | See the notes under the F2.8 heading |
+
+---
+
+## F2 Deliverable 2.8 — 2026-09-26
+
+Logistics, claims, the demand dashboard, reports, and the hardening pass that closes F2. Same
+worktree and branch. Nothing of B4.3, B4.5 or B6 is published, so all of it is contract requests
+(`admin-logistics.ts`, `admin-analytics.ts`); the mocks build on the commerce mock's orders.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A delivery leaving while a before-shipping instalment is unpaid (B3.2) | the shipment says so, and the mock refuses the booking (`shipment.payment_required`) |
+| The tolerance outcome computed in the browser (D-021, D-080, D-165) | the POD carries the API's `ToleranceResultDto` (ordered, delivered, band, outcome, the auto-claim) |
+| A claim approved with nobody liable (D-083) | the API refuses (`claim.liability_undetermined`); an override needs `claims.override_liability` and a reason, and is shown as such next to the rule's answer |
+| A resolution executed twice | one idempotency key per "resolve" intent; the resolution names the document it made (CN, refund, re-production job, deduction) |
+| "Last 30 days" computed in the browser | analytics take a `range` preset the API resolves in Asia/Bangkok, and return the period |
+| A small group identifying a customer or factory (D-044) | the API withholds groups under its minimum and says how many; the screen and the prospectus toast repeat it |
+| A chart only sighted mouse users can read | `src/ui` `Chart`: the drawing is `aria-hidden` without focusable points, the same figures are a table screen readers read and anyone can show, colours are semantic tones, legend text is body colour |
+| Recharts on every admin page | `Chart` is not in the barrel and the dashboard loads it with `next/dynamic`; the `admin-lists` Lighthouse set includes `/analytics` to prove it |
+| A role's menu linking to a page that fails for that role | `e2e/admin-roles.spec.ts` signs in as each of the 14 roles, checks the sidebar is exactly its entitlement (from the same catalogue the mock serves), and opens every entry |
+| Initial JavaScript growing unseen | admin Lighthouse split into `admin` (shell, 365 KB), `admin-lists` (392 KB), `admin-crud` (492 KB), each pinned just above the measured figure (`docs/performance-budgets.md`) |
+
+### Decisions taken, with reasons
+
+- **zod does not run in the browser.** It was ~89 KB gz of every admin page (see the budget doc
+  for the three doors it came through). The server validates the public variables at boot with
+  the same schema; the browser only normalises them, and a unit test checks they agree.
+- **Reports are one typed table per report**, columns typed by the API (money, number, percent,
+  date, code) with the API's totals row; nothing is summed in the browser. Exports go through the
+  existing `admin.exports` with `resource: report:<key>`.
+- **Referral and credit approvals, and now claims, use existing mechanisms** — the approvals engine
+  and the finance documents — rather than new decision screens.
+- **The prospectus minimum group**: D-044 says k ≥ 3 factories per price breakdown, B6.1 k ≥ 5 per
+  group. The screen shows whatever `minGroupSize` the API returns; the mock uses 5. Flagged in the
+  contract request.
+
+### Proposed permission changes (for packio-api's rbac.md)
+
+- `claims.override_liability` (CS Lead) — D-083's "override by permission".
+- `analytics.prospectus` (Partner Manager, C-Level) — the prospectus is a recruiting document.
+- `settings.read` for Marketing (from 2.7).
+
+### Bugs found and fixed
+
+- Recharts' keyboard layer made points focusable inside the hidden drawing (axe
+  `aria-hidden-focus`); the small order link in a shipment row failed `target-size`.
+- The dashboard, lists and details carried all of zod (above).
+
+### Deliberately not done
+
+- Carrier webhooks and polling, label rendering, and the partner-side POD capture (F5).
+- Report scheduling by e-mail and the R2 reports (calculate/search/drawing logs, D-111).
+- Loading `CrudList` forms on demand — the next bundle lever (`admin-crud` still carries zod).
+
+### Open questions
+
+- **Backend**: B4.3, B4.5 and B6 routes and permission names; the prospectus threshold (above).
+- **This repo**: `docs/decisions.md` still stops at D-169; the customer Lighthouse sets should be
+  re-measured and lowered now that zod left the browser (F3).
+
+---
+
+## F2 Deliverable 2.7 — 2026-09-26
+
+Marketing, B2B companies and customers. Same worktree and branch. Nothing of B3.3–B3.5 is
+published yet, so every call is a contract request (`admin-marketing.ts`, `admin-companies.ts`,
+and the points and consents added to `admin-customers.ts`), shaped by schema-design's
+promotions, loyalty, companies and discount-memo tables. `admin.orders` gains `customerId` and
+`companyId` filters.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A campaign alert threshold hard-coded in the UI (D-154) | every campaign carries `alertThresholdPct` from the API (setting `campaigns.budget_alert_pct`); the meter marks it and says it in words |
+| A promotion editor writing free JSON (D-053) | conditions and benefit are typed objects with `schemaVersion: 1`; only the fields of the benefit's type are sent |
+| Changing what customers already redeemed | once a promotion has redemptions, the benefit fields are disabled, and the mock refuses the change (`promotion.benefit_locked`) |
+| Generating a coupon batch twice | one idempotency key per "generate" intent |
+| A referral reward decided outside the approvals engine (D-136) | a held referral carries its `referral_review` approval; Marketing decides it there, and the referral follows (the mock's new `onApprovalDecided`, standing in for `approval.decided`) |
+| Credit terms and limits as constants (D-121) | terms come from the setting `b2b.credit_terms`; the limit is routed by the seeded `credit_limit` policy, and the copy does not repeat its THB boundary |
+| An approval with every step regardless of amount | the approvals mock now evaluates step conditions: an ฿80,000 limit waits on Finance only |
+| An edit of a campaign, promotion or company overwriting another's | `RequestClient.read` returns the ETag; every change goes under `If-Match` |
+| A form showing the schema's code ("required") | `FormField` takes `formatError`; `FormFields` reads the codes from `console.validation` (this also fixes the 2.5/2.6 forms) |
+
+### Decisions taken, with reasons
+
+- **Loyalty and referral rules are settings, not a new API.** The backend seeds them
+  (`loyalty.*`, `referral.rules`, `campaigns.budget_alert_pct`), so the page writes new versions
+  through the published settings endpoint, field by field, keeping each field's type. Only the
+  setting's owner (Superadmin, `settings.change`) sees "new version".
+- **Customers are read-only here.** Profiles and consents belong to the customer; staff read them.
+  Points adjustments are not offered (they would need a policy and an approval).
+- **The company's own settings are shown, not edited**: the approval threshold (D-123) and PO
+  policy (D-125) are set by the company admin.
+- **The form dialog and section card moved to the console**, now that three features use them.
+- **Discount memos**: the list from 2.2 is unchanged; a company's discount links to its memo.
+
+### Proposed permission changes (for packio-api's rbac.md)
+
+- `settings.read` for **Marketing**: the loyalty and referral rules are Marketing's to reason about,
+  but the backend's matrix does not give Marketing `settings.read`, so the loyalty page is hidden
+  from them. Followed as is; proposed.
+- B3 has no permission keys yet; the mocks use `marketing.read|manage`, `customers.read`,
+  `companies.read|manage` from the web's menu catalogue.
+
+### Bugs found and fixed
+
+- Zod messages were shown as their codes in every CRUD form (above).
+- Rewriting the console messages "fresh" dropped keys added outside its source; restored from git
+  and merged. Shared namespaces are now always merged.
+- `PartnersNav` hid coverage behind `catalog.read` although the published endpoint needs
+  `partners.read`.
+
+### Deliberately not done
+
+- Payment-method and province conditions have fields in the request but no editor controls yet
+  (sent empty = any); the per-piece price override benefit (D-053) is not offered.
+- Evidence files on a credit-limit request (`evidenceFileIds` is sent empty); coupon batch
+  export (goes through `admin.exports` once that lands).
+- Promotion usage logs and reports: 2.8 (promotion usage report).
+
+### Open questions
+
+- **Backend**: B3.3–B3.5 route and permission names; the requests follow schema-design and
+  api-conventions and should adopt with renames at most.
+- **This repo**: `docs/decisions.md` still stops at D-169.
+
+---
+
+## F2 Deliverable 2.6 — 2026-09-26
+
+Partners and price governance, and the production floor (the board, QC, scorecards). Same
+worktree and branch. The factory resources are on the **published** B2.2 contract; what B2.2 has
+not published yet — suggestions, simulations, index series, coverage, the board, inspections,
+scorecards — is written as contract requests that follow the backend's work-in-progress routes
+(`src/lib/api/requests/admin-partners.ts`), so adopting them should rename nothing.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A factory edit or status change overwriting a colleague's | the workspace reads the factory's `ETag` right before `PATCH` and every status action, and sends `If-Match`; the mock answers `428`/`412` as the contract does |
+| A factory-specific tolerance or payout policy applying before a Superadmin approves it (D-173) | those dialogs say "send for approval"; the version comes back `proposed` with its approval link, and stays in the version table as scheduled until approved |
+| A bank account changed without the D-033 call-back | a proposed account is `pending approval` with its approval link; recording the call needs `vendor_bank_accounts.verify` (Finance), and the call-back form says to call a number on file |
+| Activating a factory without a passed site visit (D-041) | the visits tab warns while none has passed; the API's `409` is shown if activation is still requested |
+| Destructive status changes (suspend, offboard) | a reason plus the factory code retyped |
+| Cost and suggestions shown to roles that may not see them (D-141, D-044) | price-list lines load only with `factory_cost.read`, suggestions and simulations only with `price_suggestions.read`; otherwise the page says the role does not see them |
+| An inspection judged in the browser | the dialog sends the defects found; pass or fail is the API's answer (the mock applies the ISO 2859-1 accept numbers), recorded under an idempotency key |
+
+### Decisions taken, with reasons
+
+- **One workspace with tabs per factory**, not a page per sub-resource: onboarding, documents,
+  terms and prices are read together when deciding on a factory. The tab is in `?tab=` so a link
+  (a queue, the scorecard) opens the right one.
+- **Versioned terms share one table** (`VersionTable`): the version in force and those scheduled,
+  from when, why, and the approval a proposed one waits on (D-063, D-173).
+- **Line values render as `column value` pairs.** The price-component registry names the columns
+  but not their meaning; catalogue references show their last six characters, the full id on
+  hover. Components themselves get th/en names (all 40 of the enum).
+- **Product types render by name** everywhere in partners (`useProductTypes().labelOf`), falling
+  back to the code for a role without `catalog.read`.
+- **The production board's columns come from the API** (`step_1…6` with their names); the mock's
+  follow the one route the commerce mock's jobs use.
+- **Menu**: `partners` and `production` entries are gated on `partners.read` and
+  `production.read`; `partners.read` is added for admin, Finance, the Finance manager and the
+  auditor, as the backend's B2.2 role map has it.
+
+### Bugs found and fixed
+
+- A meter inside `PageHeader`'s description put a block inside a `<p>` → hydration error #418.
+  The description is text only; the meter sits under the header. (A `PageHeader` description must
+  never hold a block element.)
+- The production-board mock crashed on a released job with no milestones yet (made by another
+  test's manual production start); such a job now waits at the first step.
+- The rich-text editor's toolbar took focus from the text on pointer press, so typing straight
+  after choosing a heading could be lost (a flaky 2.5 test); the toolbar now keeps the caret.
+
+### Deliberately not done
+
+- Editing machines, capacity versions and agreements beyond what onboarding needs; the owner
+  invitation creates the account only (no resend or reset), as B2.2 publishes.
+- A proposal line editor that knows each column's reference table: values are typed as the
+  registry's column types, as a pricing specialist would enter them.
+- Charts on the index series (Recharts arrives with 2.8's analytics).
+
+### Open questions
+
+- **Backend**: publish the board, inspection and scorecard routes (B4.2), and give
+  `PriceSimulationDto.result` a named schema (`admin.price-simulation-result`).
+- **Adopted after the slice** (2880e4e): the backend published suggestions, simulations, index
+  series and coverage the same day. The first three matched the requests; coverage came out as
+  `GET /v1/admin/partners/coverage` with a `QuotePathReason` per type, and the page follows it.
+  The simulation window is the setting `partners.impact_simulation_window_days`, so the card
+  shows its dates instead of "90 days". The new public `POST /v1/store/catalog/quote-path` is
+  for the F3 configurator.
+- **This repo**: `docs/decisions.md` still stops at D-169; D-170–D-173 (from packio-api) are
+  cited in 2.5 and 2.6 copy. Sync it.
+
+---
+
+## F2 Deliverable 2.5 — 2026-09-26
+
+Catalogue and CMS. Same worktree and branch. Unlike 2.2–2.4 this deliverable runs on endpoints
+packio-api has **published** (B2.1, adopted in 2.3), so there are no contract requests: every
+call is the contract's, and the mocks stand in for it.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A catalogue screen inventing a field the API does not have | `define<RowDto, CreateDto, UpdateDto>()` in `catalogue/tables.ts` type-checks every column against the row DTO and every form field against the create DTO; fields missing from the update DTO are sent on create only |
+| A label missing for a field, table or enum value (looked up by template key, which the keys gate checks by prefix only) | `catalogue/tables.test.ts` walks the registry against both locales' messages |
+| An edit silently overwriting a colleague's | every update reads the row's `ETag` and `PATCH`es under `If-Match`; the mock answers `428` without it and `412` when stale, as the contract does |
+| `""` sent where the contract means "none" | the form model sends `null` for cleared optional text, references and nullable enums, omits empty non-nullable enums and numbers, and sends date-times with the Bangkok offset (unit-tested) |
+| Deleting catalogue rows | rows archive through `status`; only the tables the contract gives a `DELETE` (banners, sections, articles, FAQs, videos) show one |
+| An import applied other than as previewed | confirm sends the preview's `previewSha256` with one idempotency key per preview; a workbook with invalid rows has no confirm button, and the mock refuses a mismatched hash (`409`) |
+| Switching a type to instant before its calculator ships (D-100) | quote mode is its own action with a reason and the code retyped; the API's `409` is shown as is |
+| Mock rows drifting from the contract | `pnpm gen:api` now also writes `mocks/generated/examples.ts` (each list endpoint's example rows), under the same drift gate; the table mocks seed from it |
+
+### Decisions taken, with reasons
+
+- **One table engine, not forty screens.** A.2.1 counts about sixty legacy CRUD screens; B2.1
+  publishes ~40 tables with the same operations. The registry calls the contract client with
+  the path as data (`catalogue/api.ts`), typed at the registry instead of at each call.
+- **The editor is a `src/ui` primitive, loaded on demand.** `RichTextEditor` takes its labels as
+  props and is not in the `src/ui` barrel, so TipTap never reaches the storefront's bundle; the
+  article page imports it with `next/dynamic`.
+- **Articles get a page, not a side sheet** — a long rich-text body does not fit one — and
+  categories are saved as the contract's separate replaceable list, under the article's new ETag.
+- **References render as names** (a material's family, a finish's group) from one page of up to
+  100 rows per referenced table; a reference outside that page still renders, as its id.
+- **Catalogue and CMS images upload with purpose `document`.** The contract's `FilePurpose` has
+  no image/content purpose (see open questions).
+- **The mock's seven calculator types remain `instant`** (2.3's assumption), so the quote-mode
+  refusal is demonstrated on the RFQ-only categories.
+
+### Deliberately not done
+
+- Catalogue-product images and options (`…/catalog-products/{id}/images`, `…/options`,
+  `…/patterns`), stock-product images and attributes, pattern flute types: sub-resources with
+  their own shapes, left for the screen that needs them (the product detail in F3's preview work,
+  or a 2.8 follow-up). The rows themselves are editable here.
+- An imageset manager (A.2.4) and drag-to-sort; sort is a number, and home sections have
+  move up/down, as A.2.4 asks.
+- The 2.1 generic `ImportWizard` (`admin.imports` contract request) is now unused: the backend
+  chose per-module import endpoints, starting with the catalogue's.
+
+### Open questions
+
+- **Backend**: `FilePurpose` needs a purpose for CMS and catalogue images and design fonts
+  (`content`?); `document` is used meanwhile.
+- **Backend**: retire or keep the generic `admin.imports` / `admin.exports` requests, now that
+  the catalogue has its own import and export?
+- **This repo**: `docs/decisions.md` stops at D-169; packio-api's copy has D-170–D-173 (geography
+  entry, factory entry, suggestion band, override approvals), which 2.5 and 2.6 rely on. Sync it.
+
+---
+
+## F2 Deliverable 2.4 — 2026-09-25
+
+Prepress and design services. Same worktree and branch. packio-api has not built B4.1, so the
+endpoints are contract requests shaped by schema-design §3.7; the mock hangs prepress state off
+the commerce mock's own orders, so `/orders/{id}` and `/prepress/{id}` describe one order.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A file with a blocking preflight finding going to proof (D-070) | the submission's own `nextActions` carry `submission.accept` with a `disabledReason`; the button is disabled with the reason shown, and the mock answers `409 preflight.blocking_findings` if forced |
+| Warnings accepted silently | accepting a submission with warnings requires a note, kept with the review |
+| A proof sent twice on a retry | proof upload is idempotent, one key per opening of the dialog; the files go through the published presign flow (purpose `proof`) first |
+| The UI deciding what a paid design round costs (D-071) | rounds carry `chargeable` and `feeAmount`, and `nextRound` says what the next one would cost — the API's figures; the UI states them |
+| A drawing engine that is not deployed looking like a bug | `POST …/drawing-jobs` answers `501 drawing.engine_unavailable` (as B4.1 specifies until `@packio/dieline` ships server-side) and the screen shows that message and offers sending a template file instead |
+| Editing the customer's design from the back office | the design is shown read-only; prepress works on a copy (`admin.design-documents`), never the customer's document |
+
+### Decisions taken, with reasons
+
+- **A read-only viewer, not the editor.** The designer's `Editor` keeps designs in `localStorage`,
+  uses the storefront's locale routing and loads the customer-zone `designer` messages; mounting
+  it in the admin zone would mean rewiring all three, which is F4 Part B's job (designs move to
+  the API). The new `DesignViewer` lives in `src/features/designer` (shared) and draws the same
+  geometry from `@packio/dieline` in the same millimetre coordinates as the canvas, as SVG.
+  **Deferred:** opening a working copy in the designer from the back office, until F4 Part B.
+- **Annotations without a PDF renderer.** The page map places each thread's pin or area by its
+  page-relative geometry over a blank page, beside the threads. Rendering the proof PDF itself is
+  the customer proof viewer's job (F3), which this can adopt later.
+- **The SLA per stage comes from the API.** Preflight, proof, template and design have their own
+  deadlines; a proof with the customer is shown as "with the customer" and never tints the row,
+  because it is not prepress's time.
+- **Routine and exceptional actions never lead.** The mock orders the stage's own work first,
+  then assign and draw, and re-quote (destructive) last; the UI keeps the API's order.
+- **`AssignDialog` is shared** by the RFQ desk and prepress, offering only people who hold the
+  permission (`staff-directory?permission=`).
+
+### Deliberately not done
+
+- Proof decisions recorded by CS on the customer's behalf (`decision_channel = cs_on_behalf`):
+  the schema supports it, but it is a CS action on the order screen, not prepress's.
+- Version compare between proof versions (D-110): listed per version; a side-by-side compare
+  needs the PDF renderer above.
+
+### Open questions
+
+- **Backend**: `admin.prepress`, `admin.prepress-actions`, `admin.prepress-proofs`,
+  `admin.prepress-template`, `admin.design-services`, `admin.design-documents`.
+- **Backend**: which setting holds each prepress stage's SLA, and whether a proof with the
+  customer has one (assumed not).
+- **Backend**: does a design round wait for the customer's payment before `in_progress`
+  automatically (assumed yes, D-071 "pays before the extra round starts")?
+
+---
+
+## F2 Deliverable 2.3 — 2026-09-25
+
+The RFQ workspace (D-100). Same worktree and branch. The endpoints are packio-api's B2.5, not built
+yet, so they are contract requests shaped by schema-design §3.5; the product types they refer to
+come from B2.1's **published** catalogue, adopted at the start of this deliverable.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| CS pricing an RFQ from the factory's cost (D-141) | a consultation response carries `suggestedUnitPrice` (sell, from the sell-margin table); `buyUnitPrice` is optional and the mock leaves it out unless the actor holds `factory_cost.read` — e2e checks both sides |
+| The browser computing a quote's money | the composer copies the API's suggested price as text and checks only its shape (`^\d+(\.\d{1,6})?$`); net, VAT, total, margin and the margin-floor flag appear only after the API has priced the saved draft |
+| A quote sent below the margin floor | the API blocks `rfq.send_quote` with a `disabledReason`; the header and the quotes tab say why |
+| Asking a factory that cannot make the category | candidate factories carry `capable` and a reason from the API (D-043); an incapable one is shown disabled, and the mock answers `422 rfq.factory_not_capable` if forced |
+| A decline that analytics cannot group | decline needs a code from `GET /v1/admin/unmet-demand-reasons` (D-102) and the RFQ code retyped |
+| An accepted RFQ leaving the order pipeline | acceptance creates a quotation (`source = rfq`) and "create order" opens CS create-order on it — the same path as an instant quote |
+| Two action bars drifting apart | `NextActionBar` in the console renders `nextActions` for orders and RFQs alike |
+
+### Decisions taken, with reasons
+
+- **Adopted packio-api's committed B2.1 contract, not its working tree.** The backend checkout
+  holds uncommitted B2.2 factory endpoints that are still changing; adopting them would pin this
+  app to a contract that may never be published. Adoption came first because the RFQ category
+  filter and the RFQ's product type both come from `GET /v1/admin/catalog/product-types`.
+- **The spec arrives rendered** (`spec: [{ label, value }]`), rendered by the API from the
+  category's `rfqSpecSchema` at the RFQ's schema version. The UI does not interpret JSON Schema;
+  an old RFQ keeps the labels it was submitted with.
+- **SLA: the API computes the deadline, the UI shows the target.** Rows carry the category's
+  target in business hours and `slaDueAt`; the timer stops at `firstResponseAt`, and a
+  customer-visible message, a request for information or a sent quote all count as a first
+  response — **assumed**, to confirm with B2.5.
+- **One draft per RFQ.** Composing is disabled while a draft exists (`edit_quote` instead);
+  sending supersedes the previously sent version. Simpler to reason about than parallel drafts,
+  and it matches `rfq_quotes.version_no`.
+- **CS records acceptance** by phone or LINE with a note, because legacy CS work happens there;
+  the customer-side acceptance is F3's.
+- **`catalog.read` follows the backend now that it is defined** (packio-api `docs/rbac.md`,
+  B2.1): CS, CS Lead, Prepress, Marketing and Partner Manager gain it, executives lose it. The
+  product-type filter is omitted for a role without it, rather than failing.
+- **The staff directory takes `permission=`**, so "assign" offers only people who can take an
+  RFQ instead of everyone and a 422.
+
+### Deliberately not done
+
+- Attaching files to thread messages (the request accepts `fileIds`; the upload control waits for
+  2.4, which builds the proof-upload flow).
+- Customer-facing RFQ screens and the customer's own acceptance: F3.
+- The partner side of a consultation (answering with buy prices): F5.
+
+### Open questions
+
+- **Backend**: `admin.rfqs`, `admin.rfq-messages`, `admin.rfq-actions`, `admin.unmet-demand-reasons`,
+  `admin.rfq-consultations`, `admin.rfq-quotes`, plus the `source`/`rfq` fields on
+  `admin.quotations` and `permission=` on `admin.staff-directory`.
+- **Backend**: what counts as the first response for the RFQ SLA (assumed above), and whether the
+  SLA setting is per product type or per reporting category.
+- **Backend**: should declining a quoted RFQ supersede its sent version (the mock does)?
+
+---
+
+## F2 Deliverable 2.2 — 2026-09-25
+
+Orders and the CS desk. Same worktree and branch as 2.1. None of 2.2's endpoints exist in
+packio-api yet (its B3 is next on its side), so every screen runs on contract requests shaped by
+the approved schema design (§3.6 commerce, §3.7 fulfilment, §4 enums, §2.9 amounts as strings).
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A message key that does not exist, rendered as its own path | `src/i18n/keys-used.test.ts` resolves every literal key and every template key's prefix used in `src/app` and `src/features` |
+| A server page importing a constant or a resource definition from a `"use client"` module (compiles, fails at request time in production) | `src/app/server-imports.test.ts` — pages and layouts may import only components from client modules, following barrels one level |
+| The UI hard-coding the direct-discount limit (D-052) | the calculator input data carries `discountPolicy.directLimitPct`; above it the only path is a discount memo |
+| The UI comparing money to find the best price | calculation results come flagged `cheapest` / `fastest` by the API |
+| Margin or the factory shown to a role not allowed to see it (D-141) | optional in the schema, absent from the mock unless the actor holds `margin.read`; the UI renders the field only when present |
+| A slip action offered to CS | `nextActions` is per actor; slip review is Finance's (finance, finance_manager, superadmin) |
+
+### Bugs this session found and fixed
+
+1. **The settings editor's success toast rendered a raw key path** (`settings.saved` instead of
+   `settings.change.saved`), found by the new keys gate's first run.
+2. **Two server pages crashed in the production build only** ("includes is not a function"):
+   `ORDER_TABS` and `CALCULATORS` were imported from client modules and arrived as client
+   references. They now live in plain modules (`orders/tabs.ts`, `cs/calculators.ts`), and the
+   imports gate above catches the next one.
+3. **`text-warning` was used for text and icons** in six places; it is a fill colour and fails
+   contrast on white. Warning text is `text-warning-subtle-fg`.
+4. **A `1fr` column beside a fixed rail could not shrink below its table**, so the order screen's
+   rail spilled past the viewport. Every such grid in admin code is `minmax(0,1fr)` now.
+
+### Decisions taken, with reasons
+
+- **One page-shaped order aggregate** (`GET /v1/admin/orders/{orderId}`) carrying every tab,
+  rather than an endpoint per tab: the header restates statuses from all of them, and CS moves
+  between tabs constantly. The timeline and notes are separate because they page and change.
+- **One typed input per calculator** (a discriminated union on `calculator`, corrugate's combined
+  parts included) rather than a bag of keys, so a missing field is a 422 with a path, not a price.
+- **The calculator mock is illustrative, not the ported legacy maths.** The formulas belong to the
+  backend (B2.3, with golden tests against legacy); the UI only renders what comes back.
+- **The order tab lives in the URL without a server round trip** (local state plus
+  `history.replaceState`): a server navigation would refetch the aggregate on every tab change.
+- **Every irreversible order action needs the order code retyped**, restates the amount and sends
+  one idempotency key per intent. Manual production start (D-073) and cancellation also need a
+  reason.
+- **Mentions are notified only while the name is still in the note**: deleting "@name" before
+  sending un-mentions them.
+- **CS create-order starts from a saved quotation**, so the price locked for 15 days (D-051) is the
+  one ordered. The form keeps one idempotency key for its whole life.
+
+### Deliberately not done
+
+- Editing a placed order's lines or prices: not in 2.2's scope, and D-051's price lock makes it an
+  approval flow of its own.
+- The label calculator stays behind its feature flag, as legacy's `DISPLAY_MENU_LABEL` was.
+
+### Open questions
+
+- **Backend**: `admin.orders`, `admin.order-notes`, `admin.order-actions`, `admin.customers`,
+  `admin.geo`, `admin.cs-calculators`, `admin.quotations`, `admin.discount-memos`,
+  `admin.cs-create-order` (all in `docs/contract-requests.md` and the OpenAPI handoff document).
+- **Backend**: is the queue's SLA deadline computed server-side on the business calendar
+  (D-161), as assumed? The UI only renders `slaDueAt`.
+
+---
+
+## F2 Deliverable 2.1 — 2026-09-25
+
+The back-office foundation. Worked in its own git worktree (`../packio-web-f2`, branch
+`feat/f2-admin`), because two other sessions were editing the shared checkout — the master plan
+says F2–F6 run in separate worktrees for exactly that reason.
+
+### What is now enforced rather than advised
+
+| Rule | Mechanism |
+|---|---|
+| A response type written by hand for an endpoint that does not exist | every contract request is a zod definition in `src/lib/api/requests`; `requests.call(key, …)` is typed by it |
+| A mock that drifts from what the backend was asked for | `mockRequest` validates every response against the request's schema (`500 mock.drift`), and a test drives every requested GET through MSW |
+| A contract request nobody retires after the backend ships it | `registry.test.ts` fails as soon as its method and path are in `contract/openapi.json` |
+| A request the backend was never told about | the same test fails when an entry has no row in `docs/contract-requests.md`; `pnpm gen:api` renders the registry as `docs/contract-requests.openapi.json` under the drift gate |
+| An irreversible request sent without the caller's idempotency key | `CallInit` makes `idempotencyKey` a required property for `idempotent: true` entries (asserted with `@ts-expect-error`) |
+| A status the backend adds without presentation | seven maps typed on `Schemas[…]`; the other 37 copied verbatim from the approved schema design, one line to repoint each |
+| A page's own URL parameters reaching the API as filters | lists declare `filterKeys`; `mergeIntoUrl` keeps everything that is not the list's |
+| A grant certain to be refused | SoD role pairs (`admin.sod-rules`) and the anti-escalation rule (`RoleDto.permissions` vs the grantor's) are shown and block submit before the API's 409/403 |
+| A consequential action with no restated target or a fresh key per retry | `ConfirmAction`: restatement, optional typed phrase and reason, one key per opening, dialog stays open on failure |
+| An e2e click that lands before hydration | `<html data-hydrated>` from `HydrationMark`; `signInAsStaff` and `gotoHydrated` wait for it |
+
+### Bugs this session found and fixed
+
+1. **Every Web Vitals beacon and every funnel event was a 403** (F1 1.3). `sendBeacon` cannot set
+   a header and the BFF required `x-packio-csrf` on every POST, so field RUM and the D-102 funnel
+   never reached the API. The two beacon endpoints are exempt from the header only; the `Origin`
+   check still applies.
+2. **The realtime client could not have received anything.** The published stream sends named
+   SSE events, which `EventSource`'s `message` listener never sees, and authorises with a
+   60-second token `EventSource` would keep resending after it expired. Replaced with a `fetch`
+   reader: every frame, a fresh token per connection, jittered backoff, a refetch after gaps.
+3. **The command palette's listbox held a `<p>` and role-less `<li>`s** once it had grouped
+   results (critical `aria-required-children`) — F1's palette was always empty, so nothing had
+   tested it. Groups are `role="group"` now.
+4. **`/approvals?tab=all` sent `tab=all` to the API**, and changing a filter would have dropped
+   the tab. See `filterKeys` above.
+5. **`text-subtle` was used for real text** in the sidebar, the palette and the bell (contrast).
+6. **A wide or long table scrolled where no keyboard could reach** (`scrollable-region-focusable`).
+7. **Avatar initials took a parenthetical for a name** ("ผ(" for "ผู้อำนวยการ ตัวอย่าง (ข้อมูลจำลอง)").
+
+### Decisions taken, with reasons
+
+- **Adopted packio-api's newer B1.3 contract** (`pnpm gen:api --adopt`, still versioned 0.1.0 on
+  its `feat/b1.3-platform` branch). 2.1 is mostly screens for endpoints that contract publishes,
+  and building them against mocks while the real shapes existed would have meant writing them
+  twice. The lock's `source` still names the v0.1.0 release asset — **re-pin when packio-api tags
+  a release with this document.**
+- **The status vocabularies follow the backend's approved schema design (§4)**, replacing the
+  seven F1 had to propose. The design was approved on 2026-09-23 and says each enum becomes a named
+  OpenAPI component; copying it now means the day the components ship is a one-line change per
+  map. Other branches that render statuses (F3–F6) will see the new values when they merge.
+- **Contract requests are zod, not hand-written interfaces.** At F2's scale a per-call-site
+  interface is a hundred and fifty places to drift. One definition typing the call, checking the
+  mock and generating the handoff document is the same rule — nothing invented silently — made
+  mechanical.
+- **Mock reference data is the backend's own seed**, copied into `mocks/admin/fixtures` (settings,
+  approval policies, SoD rules, roles, permissions) rather than imported: CI has no sibling
+  checkout. The admin menu mirrors packio-api's `menu.catalog.ts` verbatim, which is how feature
+  flags, notification templates/routes and the outbox entered 2.1's scope.
+- **A staff directory is a contract request**, not a use of `GET /v1/admin/users`: that needs
+  `users.read`, which a Director delegating an approval does not hold.
+- **Money typed into a setting is normalised as text** (`"20000"` → `"20000.00"`) and never passes
+  through a float; percentages stay decimal strings, as the contract sends them.
+- **The SLA timer invents no "at risk" threshold.** It renders the distance to a deadline the API
+  computed, and trusts an API-sent state when there is one; a threshold would be a business rule.
+- **Verification runs on a production build.** In `pnpm dev:mock`, MSW intermittently stops
+  intercepting — it looks like Next's own `fetch` patch capturing the unpatched `fetch` depending
+  on start-up order. The e2e suite already builds for production, for its own reasons.
+
+### Deliberately not done
+
+- No bespoke DatePicker: date and time fields are native `date` / `datetime-local` inputs, labelled
+  as Bangkok time. A Buddhist-era calendar picker waits for a screen whose users need one.
+- Role grants pick a factory or company scope through `admin.search`; a dedicated picker comes
+  with the partner and company screens (2.6, 2.7).
+- Creating notification routes and templates from scratch: the backend seeds the D-143 matrix
+  (B4.6), and 2.1 edits, previews, test-sends and publishes what exists.
+- The sidebar lists every entry the API sends, so a persona sees F2.2–2.8 screens that answer 404
+  until those deliverables land.
+
+### Open questions
+
+- **Backend**: `admin.saved-views`, `admin.search`, `admin.dashboard`, `admin.sod-rules`,
+  `admin.staff-directory`, `admin.imports`, `admin.exports`, `admin.menu-entries`,
+  `admin.permissions`, and `notifications.unread-and-link` (the rest of `notifications.feed`).
+- **Backend**: re-publish the contract under a release tag so `contract.lock.json` can point at it.
 
 ---
 

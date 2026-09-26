@@ -120,6 +120,44 @@
   .skip-link:focus-visible {
     transform: translateY(0);
   }
+
+  /*
+   * Rich text: an article body, in the CMS editor and wherever the storefront renders one, so
+   * what an editor sees is what a reader gets. Typography only; colours are tokens.
+   */
+  .pk-richtext {
+    line-height: 1.75;
+  }
+  .pk-richtext > * + * {
+    margin-top: calc(var(--spacing) * 3);
+  }
+  .pk-richtext h2 {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-top: calc(var(--spacing) * 6);
+  }
+  .pk-richtext h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    margin-top: calc(var(--spacing) * 5);
+  }
+  .pk-richtext ul {
+    list-style: disc;
+    padding-inline-start: calc(var(--spacing) * 6);
+  }
+  .pk-richtext ol {
+    list-style: decimal;
+    padding-inline-start: calc(var(--spacing) * 6);
+  }
+  .pk-richtext blockquote {
+    border-inline-start: 3px solid var(--color-border);
+    padding-inline-start: calc(var(--spacing) * 4);
+    color: var(--color-muted);
+  }
+  .pk-richtext a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
 }
 
 /*

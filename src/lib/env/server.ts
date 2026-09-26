@@ -2,7 +2,8 @@ import "server-only";
 
 import { ZONES, type Zone, type ZoneHosts } from "@/lib/zones";
 
-import { parseEnv, serverEnvSchema, type ServerEnv } from "./schema";
+import { publicEnvSource } from "./public";
+import { clientEnvSchema, parseEnv, serverEnvSchema, type ServerEnv } from "./schema";
 
 /**
  * Server-side environment, validated once when this module is first loaded — at boot for
@@ -16,6 +17,10 @@ export const serverEnv: ServerEnv = parseEnv(
   process.env,
   "server",
 );
+
+// The public values the browser reads unchecked (`./client.ts`) are checked here, at boot:
+// the build inlined the same values into both.
+parseEnv(clientEnvSchema(), publicEnvSource(), "client");
 
 export const zoneHosts: ZoneHosts = {
   customer: serverEnv.PUBLIC_HOST,

@@ -1,0 +1,589 @@
+{
+  "breadcrumb": "Breadcrumb",
+  "search": "Search",
+  "create": "Add",
+  "createTitle": "Add to {table}",
+  "editTitle": "Edit {name}",
+  "empty": "Nothing here yet",
+  "importExport": "Excel import/export",
+  "yes": "Yes",
+  "no": "No",
+  "hasFile": "Has a file",
+  "none": "None",
+  "jsonHint": "A JSON object",
+  "jsonSet": "JSON",
+  "bangkokTime": "Bangkok time",
+  "units": {
+    "mm": "mm"
+  },
+  "fields": {
+    "answerEn": "Answer (English)",
+    "answerTh": "Answer",
+    "attribute": "Attribute",
+    "body": "Body",
+    "calcHeightMm": "Height for pricing",
+    "calcLengthMm": "Length for pricing",
+    "calcWidthMm": "Width for pricing",
+    "calculatorKey": "Calculator",
+    "canChargePlateAndDie": "Charges plate and die",
+    "canonicalUrl": "Canonical URL",
+    "capacityMl": "Capacity (ml)",
+    "catalogProductId": "Catalogue product",
+    "categoryId": "Category",
+    "categoryIds": "Categories",
+    "code": "Code",
+    "colA": "A factor",
+    "colC": "C factor",
+    "colDd": "DD factor",
+    "colFh": "FH factor",
+    "colG": "G factor",
+    "colourKind": "Colour kind",
+    "conditions": "Conditions",
+    "config": "Configuration",
+    "constraints": "Size constraints",
+    "coverFileId": "Cover image",
+    "description": "Description",
+    "descriptionEn": "Description (English)",
+    "descriptionTh": "Description",
+    "desktopFileId": "Desktop image",
+    "dh": "DH multiplier",
+    "dielineKey": "Dieline key",
+    "districtId": "District",
+    "dl": "DL multiplier",
+    "dw": "DW multiplier",
+    "excerptEn": "Excerpt (English)",
+    "excerptTh": "Excerpt",
+    "familyId": "Material family",
+    "fileId": "File",
+    "finishKind": "Finish kind",
+    "fluteTypeId": "Flute",
+    "groupId": "Group",
+    "gsm": "Grammage",
+    "h1": "H1",
+    "h2": "H2",
+    "heightMm": "Height",
+    "indexUnit": "Price index unit",
+    "insideColour": "Inside colour",
+    "isCombination": "Combination product",
+    "isDoubleItem": "Counts as two items",
+    "isFoodContactDefault": "Food contact by default",
+    "isFoodGrade": "Food grade",
+    "isSpecial": "Special finish",
+    "keywords": "Keywords",
+    "kind": "Kind",
+    "layers": "Layers",
+    "lengthMm": "Length",
+    "licenceNote": "Licence",
+    "micron": "Micron",
+    "minOrderQty": "Minimum order",
+    "mobileFileId": "Mobile image",
+    "name": "Name",
+    "nameEn": "Name (English)",
+    "nameTh": "Name",
+    "nh": "NH multiplier",
+    "nl": "NL multiplier",
+    "noindex": "No-index",
+    "nw": "NW multiplier",
+    "ogImageFileId": "Share image",
+    "outsideColour": "Outside colour",
+    "pageKey": "Page (path)",
+    "paperGroup": "Paper group",
+    "parentId": "Parent category",
+    "patternId": "Pattern",
+    "patternKind": "Pattern kind (legacy)",
+    "position": "Position",
+    "postcode": "Postcode",
+    "preset": "Preset",
+    "productTypeId": "Product type",
+    "provider": "Provider",
+    "provinceId": "Province",
+    "publishedAt": "Published",
+    "questionEn": "Question (English)",
+    "questionTh": "Question",
+    "quoteMode": "Quote mode",
+    "region": "Region",
+    "requiresAmount": "Needs an amount",
+    "requiresLength": "Needs a length",
+    "requiresWidth": "Needs a width",
+    "rfqSpecSchema": "RFQ spec form (JSON Schema)",
+    "semiDesignId": "Semi-design",
+    "seoPageId": "SEO page",
+    "seq": "Sequence",
+    "skipWaste": "Skip waste",
+    "sku": "SKU",
+    "slug": "Slug",
+    "sort": "Sort order",
+    "standardSizeId": "Standard size",
+    "status": "Status",
+    "strength": "Strength",
+    "subjectId": "Subject id",
+    "subjectType": "Attached to",
+    "targetUrl": "Target link",
+    "technicalName": "Technical name",
+    "templateAvailability": "Template for customers",
+    "thumbnailFileId": "Thumbnail",
+    "title": "Title",
+    "titleEn": "Title (English)",
+    "titleTh": "Title",
+    "unit": "Unit",
+    "url": "URL",
+    "validFrom": "Show from",
+    "validTo": "Show until",
+    "videoUrl": "Video link",
+    "weightG": "Weight (g)",
+    "widthMm": "Width",
+    "z": "Z factor"
+  },
+  "hints": {
+    "code": "The key used by Excel import; must be unique",
+    "slug": "Lower case, digits and hyphens, e.g. mailer-box",
+    "rfqSpecSchema": "The fields a customer fills in to ask for a quote",
+    "constraints": "The minimum and maximum sizes this pattern accepts",
+    "isSpecial": "Foil, emboss, window: +20 pp inspection (D-076)",
+    "targetUrl": "An https:// URL or a site path",
+    "pageKey": "The page's path, e.g. /th/products/mailer-box",
+    "status": "Archive instead of deleting; the history stays"
+  },
+  "enums": {
+    "CatalogStatus": {
+      "draft": "Draft",
+      "active": "Active",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    },
+    "ContentStatus": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "MaterialKind": {
+      "paper": "Paper",
+      "board": "Board",
+      "corrugated_board": "Corrugated board",
+      "film": "Film",
+      "foil": "Foil",
+      "label_stock": "Label stock",
+      "other": "Other"
+    },
+    "FinishKind": {
+      "coating": "Coating",
+      "lamination": "Lamination",
+      "foil": "Foil",
+      "emboss": "Emboss",
+      "deboss": "Deboss",
+      "spot_uv": "Spot UV",
+      "window": "Window",
+      "other": "Other"
+    },
+    "InkColourKind": {
+      "process": "Process",
+      "spot": "Spot",
+      "white": "White",
+      "metallic": "Metallic"
+    },
+    "VideoProvider": {
+      "youtube": "YouTube",
+      "vimeo": "Vimeo",
+      "file": "File"
+    },
+    "VideoSubject": {
+      "catalog_product": "Catalogue product",
+      "showcase_product": "Showcase product",
+      "stock_product": "Stock product",
+      "article": "Article"
+    },
+    "TemplateAvailability": {
+      "none": "None",
+      "online_template": "Online template",
+      "drawing": "Dieline drawing"
+    },
+    "CalculatorKey": {
+      "folding": "Folding carton",
+      "corrugate": "Corrugated",
+      "label": "Label",
+      "tag_sleeve": "Tag & sleeve",
+      "pouch": "Pouch",
+      "standard_product": "Standard product",
+      "service": "Service"
+    },
+    "StockAttribute": {
+      "material": "Material",
+      "type": "Type",
+      "sub_type": "Sub-type",
+      "shape": "Shape",
+      "shoulder": "Shoulder",
+      "neck": "Neck",
+      "colour": "Colour",
+      "size_text": "Size",
+      "cap_type": "Cap"
+    },
+    "ProductUnit": {
+      "piece": "Piece",
+      "box": "Box",
+      "pouch": "Pouch",
+      "tube": "Tube",
+      "set": "Set",
+      "job": "Job",
+      "round": "Round",
+      "trip": "Trip"
+    },
+    "HomeSectionKind": {
+      "product_types": "Product types",
+      "catalog_products": "Catalogue products",
+      "showcase": "Showcase",
+      "articles": "Articles",
+      "banner": "Banner",
+      "custom": "Custom"
+    },
+    "BannerPosition": {
+      "home_hero": "Home hero",
+      "home_strip": "Home strip",
+      "category": "Category page",
+      "popup": "Pop-up"
+    },
+    "QuoteMode": {
+      "instant": "Instant",
+      "rfq": "RFQ"
+    }
+  },
+  "tables": {
+    "product-types": {
+      "title": "Product types",
+      "description": "The 14 types of D-100 and how each is quoted"
+    },
+    "product-categories": {
+      "title": "Product categories",
+      "description": "Reporting categories (D-030)"
+    },
+    "patterns": {
+      "title": "Patterns",
+      "description": "Box patterns and their size limits"
+    },
+    "sub-patterns": {
+      "title": "Sub-patterns",
+      "description": "Each pattern's parts and area multipliers"
+    },
+    "print-types": {
+      "title": "Print types",
+      "description": "The print processes each product type offers"
+    },
+    "spec-titles": {
+      "title": "Spec titles",
+      "description": "The headings of a product's specification"
+    },
+    "materials": {
+      "title": "Materials",
+      "description": "What customers choose from; no prices — each factory prices its own (D-044)"
+    },
+    "material-families": {
+      "title": "Material families",
+      "description": "Groups of materials for the price index"
+    },
+    "flute-types": {
+      "title": "Flute types",
+      "description": "Corrugated flutes and their factors"
+    },
+    "finishes": {
+      "title": "Finishes",
+      "description": "Coatings, foils, embossing and special finishes"
+    },
+    "finish-groups": {
+      "title": "Finish groups",
+      "description": "How finishes are grouped"
+    },
+    "foil-types": {
+      "title": "Foil types",
+      "description": "The foils on offer"
+    },
+    "ink-colours": {
+      "title": "Ink colours",
+      "description": "Process and spot colours"
+    },
+    "ink-colour-groups": {
+      "title": "Ink colour groups",
+      "description": "How ink colours are grouped"
+    },
+    "diecut-types": {
+      "title": "Die-cuts",
+      "description": "Die-cut types"
+    },
+    "diecut-groups": {
+      "title": "Die-cut groups",
+      "description": "How die-cuts are grouped"
+    },
+    "assemblies": {
+      "title": "Assemblies",
+      "description": "Gluing and assembly"
+    },
+    "assembly-groups": {
+      "title": "Assembly groups",
+      "description": "How assemblies are grouped"
+    },
+    "difficulty-levels": {
+      "title": "Difficulty levels",
+      "description": "How hard a job is to make"
+    },
+    "difficulty-level-groups": {
+      "title": "Difficulty groups",
+      "description": "How difficulty levels are grouped"
+    },
+    "packing-types": {
+      "title": "Packing types",
+      "description": "How goods are packed for delivery"
+    },
+    "catalog-products": {
+      "title": "Catalogue products",
+      "description": "The products customers see on the site"
+    },
+    "standard-sizes": {
+      "title": "Standard sizes",
+      "description": "Each product's ready-made sizes"
+    },
+    "stock-products": {
+      "title": "Stock products",
+      "description": "Bottles, jars, bags and ready-made goods; importable from Excel"
+    },
+    "stock-attribute-values": {
+      "title": "Stock attributes",
+      "description": "The values stock products are filtered by"
+    },
+    "showcase-products": {
+      "title": "Showcase",
+      "description": "Example work shown on the site"
+    },
+    "showcase-categories": {
+      "title": "Showcase categories",
+      "description": "Showcase categories"
+    },
+    "semi-designs": {
+      "title": "Semi-designs",
+      "description": "Ready designs a customer can start from"
+    },
+    "semi-design-templates": {
+      "title": "Semi-design templates",
+      "description": "A semi-design in each standard size"
+    },
+    "design-fonts": {
+      "title": "Designer fonts",
+      "description": "Fonts the designer offers, with their licences"
+    },
+    "provinces": {
+      "title": "Provinces",
+      "description": "Admin-maintained, never imported from outside (D-161, D-170)"
+    },
+    "districts": {
+      "title": "Districts",
+      "description": "Each province's districts"
+    },
+    "subdistricts": {
+      "title": "Subdistricts",
+      "description": "Subdistricts and postcodes"
+    },
+    "banners": {
+      "title": "Banners",
+      "description": "Home and category banners, with when they show"
+    },
+    "home-sections": {
+      "title": "Home sections",
+      "description": "The home page's sections, in order"
+    },
+    "articles": {
+      "title": "Articles",
+      "description": "Articles, in Thai and English"
+    },
+    "article-categories": {
+      "title": "Article categories",
+      "description": "Article categories"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "description": "Questions and answers shown on the site"
+    },
+    "faq-categories": {
+      "title": "FAQ categories",
+      "description": "FAQ categories"
+    },
+    "videos": {
+      "title": "Videos",
+      "description": "Videos attached to products, showcase and articles"
+    },
+    "seo-pages": {
+      "title": "SEO per page",
+      "description": "Each page's title, description and indexing"
+    },
+    "import": {
+      "title": "Excel import & export",
+      "description": "Export as the template, edit, and import through a preview (D-005)"
+    }
+  },
+  "sectionTitles": {
+    "structure": "Product structure",
+    "materials": "Materials & finishes",
+    "products": "Products",
+    "designs": "Designs",
+    "geography": "Geography & import",
+    "content": "Content",
+    "seo": "SEO"
+  },
+  "home": {
+    "catalogueTitle": "Catalogue",
+    "catalogueDescription": "The platform's master data: types, materials, patterns, products and geography. No prices — those are each factory's (D-005, D-044).",
+    "cmsTitle": "Site content",
+    "cmsDescription": "Banners, the home page, articles, FAQs, videos and SEO"
+  },
+  "file": {
+    "remove": "Remove",
+    "uploaded": "Uploaded {name}",
+    "failed": "Upload failed",
+    "uploading": "Uploading…",
+    "drop": "Drop a file here, or",
+    "browse": "browse",
+    "tooLarge": "{name} is too large",
+    "wrongType": "{name} is not an accepted type"
+  },
+  "quoteMode": {
+    "title": "Instant or RFQ",
+    "body": "A type can quote instantly only once its calculator has shipped (D-100), and a given spec only when a factory's prices cover it (D-043); everything else goes to RFQ.",
+    "column": "Quote mode",
+    "toRfq": "Switch to RFQ",
+    "toInstant": "Switch to instant",
+    "confirmInstantTitle": "Switch to instant quotes",
+    "confirmRfqTitle": "Switch to RFQ",
+    "confirmInstantBody": "Customers see instant prices for {name} ({code}) wherever a factory's prices cover the spec.",
+    "confirmRfqBody": "Customers must ask for a quote for {name} ({code}) in every case.",
+    "modes": {
+      "instant": "Instant",
+      "rfq": "RFQ"
+    },
+    "confirm": "Change",
+    "reason": "Reason",
+    "reasonHint": "Kept with the audit history",
+    "done": "{code} is now {mode}",
+    "failed": "Could not change the quote mode"
+  },
+  "sections": {
+    "order": "Order",
+    "up": "Move {name} up",
+    "down": "Move {name} down",
+    "reordered": "Order saved",
+    "reorderFailed": "Could not save the order"
+  },
+  "import": {
+    "forbidden": "You cannot import or export the catalogue",
+    "chooseTitle": "What to import",
+    "kind": "Data set",
+    "chooseKind": "Choose a data set",
+    "export": "Export as the template",
+    "exported": "Exported {rows} rows",
+    "exportFailed": "Export failed",
+    "rules": "One workbook, one sheet per table, row 1 is the headers; references use codes, never internal ids.",
+    "sheetsTitle": "{label}: sheets",
+    "sheet": "Sheet {name}",
+    "key": "(key: {columns})",
+    "column": "Column",
+    "type": "Type",
+    "types": {
+      "text": "Text",
+      "int": "Integer",
+      "decimal": "Decimal",
+      "bool": "Yes/no",
+      "enum": "One of",
+      "json": "JSON",
+      "ref": "Reference"
+    },
+    "required": "Required",
+    "requiredYes": "Required",
+    "values": "Allowed values",
+    "uploadTitle": "Upload the workbook",
+    "checking": "Checking…",
+    "drop": "Drop an .xlsx file here, or",
+    "browse": "browse",
+    "tooLarge": "{name} is too large",
+    "wrongType": "{name} is not an .xlsx file",
+    "previewFailed": "Could not check the file",
+    "previewTitle": "Preview",
+    "counts": {
+      "create": "New",
+      "update": "Changed",
+      "unchanged": "Unchanged",
+      "invalid": "Invalid"
+    },
+    "perSheet": "By sheet",
+    "sheetColumn": "Sheet",
+    "errorsTitle": "{count} invalid rows",
+    "errorsBody": "Fix them in the workbook and upload again; nothing is imported while any row is invalid.",
+    "errorAt": "{sheet} row {row} · {column}",
+    "truncated": "Showing the first 200",
+    "nothingToDo": "This file changes nothing",
+    "confirm": "Import this preview",
+    "confirmTitle": "Confirm the import",
+    "confirmBody": "Adds {create} and changes {update} rows, exactly as previewed.",
+    "applied": "Imported",
+    "confirmFailed": "Import failed",
+    "appliedTitle": "Imported",
+    "appliedBody": "{create} added, {update} changed"
+  },
+  "articles": {
+    "list": "Articles",
+    "cms": "Site content",
+    "breadcrumb": "Breadcrumb",
+    "new": "New article",
+    "editTitle": "Edit article",
+    "untitled": "Untitled article",
+    "title": "Title",
+    "excerpt": "Excerpt",
+    "excerptHint": "Shown in lists and search results",
+    "body": "Body",
+    "bodyLabel": "{locale} body",
+    "locales": {
+      "th": "Thai",
+      "en": "English"
+    },
+    "localesLabel": "Language",
+    "publishing": "Publishing",
+    "status": "Status",
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "slug": "Slug",
+    "slugHint": "Lower case, digits and hyphens; the URL",
+    "cover": "Cover image",
+    "coverHint": "Optional",
+    "seoPage": "SEO page",
+    "seoPageHint": "Title and description for search engines",
+    "none": "None",
+    "categories": "Categories",
+    "publishedAt": "Published",
+    "updatedAt": "Updated",
+    "save": "Save",
+    "saved": "Article saved",
+    "saveFailed": "Could not save the article",
+    "delete": "Delete",
+    "deleteTitle": "Delete the article",
+    "deleteBody": "Removes {title} from the site and the system. This cannot be undone.",
+    "deleted": "Article deleted",
+    "deleteFailed": "Could not delete the article",
+    "search": "Search articles",
+    "emptyTitle": "No articles yet",
+    "emptyBody": "Write the first one",
+    "errors": {
+      "title": "A Thai title is required",
+      "slug": "Use lower case, digits and hyphens only",
+      "summary": "Not saved yet; check the marked fields"
+    },
+    "editor": {
+      "toolbar": "Formatting",
+      "bold": "Bold",
+      "italic": "Italic",
+      "heading2": "Heading",
+      "heading3": "Subheading",
+      "bulletList": "Bulleted list",
+      "orderedList": "Numbered list",
+      "quote": "Quote",
+      "undo": "Undo",
+      "redo": "Redo"
+    }
+  }
+}

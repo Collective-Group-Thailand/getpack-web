@@ -1,0 +1,155 @@
+{
+  "list": {
+    "title": "Customers",
+    "description": "Customers from every channel; personal data only as far as the work needs (PDPA)",
+    "search": "Search name, phone, e-mail or code",
+    "empty": "No customers",
+    "columns": {
+      "customer": "Customer",
+      "type": "Type",
+      "company": "Company",
+      "contact": "Contact",
+      "orders": "Orders",
+      "via": "Came via",
+      "since": "Since"
+    },
+    "types": {
+      "individual": "Individual",
+      "juristic": "Juristic person",
+      "government": "Government"
+    },
+    "channels": {
+      "self": "Self sign-up",
+      "cs": "Created by CS",
+      "line_liff": "Via LINE"
+    }
+  },
+  "detail": {
+    "title": "Customer",
+    "breadcrumb": "Breadcrumb",
+    "customers": "Customers",
+    "tabsLabel": "Customer sections",
+    "tabs": {
+      "profile": "Profile",
+      "orders": "Orders",
+      "points": "Points",
+      "referrals": "Referrals",
+      "consents": "Consents"
+    },
+    "types": {
+      "individual": "Individual",
+      "juristic": "Juristic person",
+      "government": "Government"
+    },
+    "tiers": {
+      "member": "Member",
+      "silver": "Silver",
+      "gold": "Gold"
+    },
+    "channels": {
+      "self": "Self sign-up",
+      "cs": "Created by CS",
+      "line_liff": "Via LINE"
+    },
+    "profile": "Profile",
+    "phone": "Phone",
+    "email": "E-mail",
+    "via": "Came via",
+    "since": "Customer since",
+    "lastOrder": "Last order",
+    "never": "Never",
+    "orders": "Orders",
+    "spend12m": "12-month spend",
+    "referralCode": "Referral code",
+    "addresses": "Addresses",
+    "noAddresses": "No addresses",
+    "addressKinds": {
+      "delivery": "Delivery",
+      "billing": "Billing"
+    },
+    "default": "Default",
+    "taxProfiles": "Tax profiles",
+    "noTaxProfiles": "No tax profiles",
+    "headOffice": "Head office",
+    "branch": "Branch {code}",
+    "withholds": "Withholds tax"
+  },
+  "points": {
+    "when": "When",
+    "entry": "Entry",
+    "order": "Order",
+    "points": "Points",
+    "value": "Value",
+    "status": "Status",
+    "dates": "Dates",
+    "types": {
+      "earn_order": "Earned on an order",
+      "earn_signup": "Sign-up",
+      "earn_line_link": "LINE linking",
+      "earn_review": "Review",
+      "earn_referral": "Referral",
+      "earn_bonus": "Bonus",
+      "redeem": "Redeemed",
+      "redeem_reversal": "Redemption reversed",
+      "reversal_claim_refund": "Reversed for a claim or refund",
+      "expire": "Expired",
+      "adjust": "Adjustment"
+    },
+    "availableOn": "available",
+    "expiresOn": "expires",
+    "available": "Available",
+    "worth": "Worth {value}",
+    "pending": "Pending",
+    "pendingNote": "After completion and the claim window (D-132)",
+    "expiringSoon": "Expiring soon",
+    "tier": "Tier",
+    "tiers": {
+      "member": "Member",
+      "silver": "Silver",
+      "gold": "Gold"
+    },
+    "spend": "12-month spend {value}",
+    "ledger": "Points ledger",
+    "empty": "No points yet"
+  },
+  "referrals": {
+    "title": "Friends referred with {code}",
+    "note": "Points once the friend's first order passes the claim window (D-136)",
+    "queue": "Referral review queue",
+    "referee": "Friend",
+    "when": "Referred",
+    "status": "Status",
+    "reward": "Reward",
+    "empty": "No referrals yet"
+  },
+  "consents": {
+    "title": "Consents",
+    "note": "The customer's latest decision per purpose; they change it in their account, staff only read it",
+    "purpose": "Purpose",
+    "purposes": {
+      "terms_of_service": "Terms of service",
+      "privacy_notice": "Privacy notice",
+      "marketing_email": "Marketing e-mail",
+      "marketing_line": "Marketing on LINE",
+      "marketing_sms": "Marketing SMS",
+      "analytics_cookies": "Analytics cookies",
+      "personalisation": "Personalisation"
+    },
+    "required": "Required",
+    "decision": "Decision",
+    "notAsked": "Never asked",
+    "granted": "Granted",
+    "declined": "Declined",
+    "version": "Text version",
+    "versionNo": "Version {no}",
+    "outdated": "Newer text exists",
+    "source": "Source",
+    "sources": {
+      "web": "Web",
+      "line_liff": "LINE",
+      "cs": "CS",
+      "partner_zone": "Partner zone"
+    },
+    "when": "Recorded"
+  }
+}

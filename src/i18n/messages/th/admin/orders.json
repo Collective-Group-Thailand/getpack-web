@@ -1,0 +1,427 @@
+{
+  "list": {
+    "title": "คำสั่งซื้อ",
+    "description": "คิวงานของฝ่ายบริการลูกค้า เริ่มจากงานที่ต้องทำก่อน",
+    "queuesLabel": "คิวงาน",
+    "queues": {
+      "all": "ทั้งหมด",
+      "waiting_payment": "รอชำระ",
+      "slip_review": "รอตรวจสลิป",
+      "awaiting_artwork": "รอไฟล์",
+      "ready_to_produce": "รอเริ่มผลิต",
+      "due_soon": "ใกล้ครบกำหนดส่ง",
+      "late": "ล่าช้า"
+    },
+    "search": "ค้นหาคำสั่งซื้อ",
+    "searchPlaceholder": "รหัสคำสั่งซื้อ ชื่อ หรือเบอร์โทร",
+    "columns": {
+      "order": "คำสั่งซื้อ",
+      "customer": "ลูกค้า",
+      "quantity": "จำนวน",
+      "amount": "ยอดรวม",
+      "status": "สถานะ",
+      "factory": "โรงงาน",
+      "ship": "กำหนดส่ง",
+      "sla": "SLA",
+      "created": "สร้างเมื่อ"
+    },
+    "slipWaiting": "มีสลิปรอตรวจ",
+    "noFactory": "ยังไม่มอบหมาย",
+    "urgency": {
+      "due_soon": "ใกล้ครบกำหนด",
+      "late": "เลยกำหนดแล้ว"
+    },
+    "channel": "ช่องทาง",
+    "channels": {
+      "web": "เว็บไซต์",
+      "cs": "CS สร้างให้",
+      "line": "LINE",
+      "b2b": "ลูกค้าองค์กร"
+    },
+    "createdFrom": "สร้างตั้งแต่",
+    "createdTo": "สร้างถึง",
+    "sendReminders": "ส่งข้อความเตือนชำระ",
+    "remindersSent": "ส่งข้อความเตือนแล้ว {count} รายการ",
+    "remindersSkipped": "ข้าม {count} รายการที่ไม่ได้รอชำระแล้ว",
+    "remindersFailed": "ส่งข้อความเตือนไม่สำเร็จ",
+    "create": "สร้างคำสั่งซื้อแทนลูกค้า",
+    "emptyTitle": "ไม่มีคำสั่งซื้อในคิวนี้",
+    "emptyBody": "งานใหม่จะขึ้นที่นี่ทันทีที่เข้าคิว"
+  },
+  "detail": {
+    "title": "คำสั่งซื้อ",
+    "breadcrumb": "เส้นทางหน้า",
+    "orders": "คำสั่งซื้อ",
+    "headline": "{customer} · {amount} · กลุ่ม {group}",
+    "urgency": {
+      "due_soon": "ใกล้ครบกำหนดส่ง",
+      "late": "ส่งล่าช้า"
+    },
+    "slipWaiting": "มีสลิปรอการเงินตรวจ ดูที่แท็บการชำระเงิน",
+    "belowFloor": "คำสั่งซื้อนี้กำไรต่ำกว่าเกณฑ์ขั้นต่ำ",
+    "tabsLabel": "ส่วนของคำสั่งซื้อ",
+    "tabs": {
+      "summary": "ภาพรวม",
+      "items": "รายการและราคา",
+      "payments": "การชำระเงิน",
+      "artwork": "ไฟล์งานและปรู๊ฟ",
+      "production": "การผลิต",
+      "shipments": "การจัดส่ง",
+      "documents": "เอกสาร",
+      "claims": "งานเคลม"
+    },
+    "channels": {
+      "web": "เว็บไซต์",
+      "cs": "CS สร้างให้",
+      "line": "LINE",
+      "b2b": "ลูกค้าองค์กร"
+    },
+    "designOptions": {
+      "own_file": "ลูกค้าส่งไฟล์เอง",
+      "online_designer": "ออกแบบออนไลน์",
+      "hired_design": "จ้างออกแบบ",
+      "free_design": "ออกแบบฟรี"
+    },
+    "mockupOptions": {
+      "none": "ไม่ทำม็อกอัป",
+      "with_print": "ม็อกอัปพร้อมพิมพ์",
+      "without_print": "ม็อกอัปไม่พิมพ์"
+    },
+    "startModes": {
+      "auto": "เริ่มอัตโนมัติ",
+      "manual_exception": "เริ่มด้วยมือ (กรณียกเว้น)"
+    },
+    "summary": {
+      "title": "ภาพรวม",
+      "customer": "ลูกค้า",
+      "customerCode": "รหัสลูกค้า",
+      "channel": "ช่องทาง",
+      "group": "กลุ่มคำสั่งซื้อ",
+      "productType": "ประเภทสินค้า",
+      "quantity": "จำนวน",
+      "leadTime": "ระยะเวลาผลิต",
+      "days": "{days} วันทำการ",
+      "promised": "กำหนดส่ง",
+      "tolerance": "ความคลาดเคลื่อนจำนวน",
+      "toleranceValue": "ขาด {shortage} / เกิน {overage}",
+      "design": "ไฟล์งาน",
+      "mockup": "ม็อกอัป",
+      "factory": "โรงงาน",
+      "po": "เลขที่ใบสั่งซื้อ (PO)",
+      "startMode": "การเริ่มผลิต",
+      "remarks": "หมายเหตุภายใน",
+      "cancelReason": "เหตุผลที่ยกเลิก",
+      "specs": "สเปกสินค้า",
+      "destinations": "ที่อยู่จัดส่ง",
+      "taxProfile": "ข้อมูลใบกำกับภาษี",
+      "taxName": "ชื่อ",
+      "taxId": "เลขประจำตัวผู้เสียภาษี",
+      "branch": "สาขา",
+      "withholds": "หักภาษี ณ ที่จ่าย",
+      "taxAddress": "ที่อยู่",
+      "yes": "ใช่",
+      "no": "ไม่ใช่"
+    },
+    "items": {
+      "parts": "ส่วนประกอบและราคา",
+      "partPrice": "ชิ้นละ {unit} · รวม {total}",
+      "lines": "รายการในใบกำกับ",
+      "lineNo": "ลำดับ",
+      "description": "รายการ",
+      "quantity": "จำนวน",
+      "unitPrice": "ราคาต่อหน่วย",
+      "net": "ก่อนภาษี",
+      "vat": "VAT",
+      "gross": "รวม",
+      "lineTypes": {
+        "product": "สินค้า",
+        "design_fee": "ค่าออกแบบ",
+        "structure_design_fee": "ค่าออกแบบโครงสร้าง",
+        "mockup": "ม็อกอัป",
+        "plate": "ค่าเพลต",
+        "die_block": "ค่าบล็อกไดคัท",
+        "shipping": "ค่าจัดส่ง",
+        "service": "ค่าบริการ",
+        "extra_revision": "ค่าแก้แบบเพิ่ม"
+      },
+      "totals": {
+        "net": "รวมก่อนภาษี",
+        "discount": "ส่วนลด",
+        "shipping": "ค่าจัดส่ง",
+        "vat": "ภาษีมูลค่าเพิ่ม",
+        "gross": "ยอดชำระทั้งสิ้น"
+      },
+      "margin": {
+        "title": "ต้นทุนและกำไร",
+        "hint": "แสดงเฉพาะบทบาทที่มีสิทธิ์ดูต้นทุนโรงงาน (D-141)",
+        "buyCost": "ราคาซื้อจากโรงงาน",
+        "amount": "กำไร",
+        "pct": "อัตรากำไร",
+        "belowFloor": "ต่ำกว่าเกณฑ์"
+      }
+    },
+    "payments": {
+      "schedule": "งวดการชำระเงิน",
+      "scheduleHint": "งวดที่ต้องชำระก่อนผลิตต้องครบก่อนจึงจะเริ่มผลิตได้ (D-020)",
+      "seq": "งวด",
+      "instalment": "งวด",
+      "trigger": "ครบกำหนดเมื่อ",
+      "requiredBefore": "ต้องชำระก่อน",
+      "dueAt": "วันครบกำหนด",
+      "gross": "ยอด",
+      "paid": "ชำระแล้ว",
+      "status": "สถานะ",
+      "triggers": {
+        "at_checkout": "ตอนสั่งซื้อ",
+        "before_production": "ก่อนเริ่มผลิต",
+        "before_shipping": "ก่อนจัดส่ง",
+        "on_delivery": "เมื่อส่งมอบ",
+        "days_after_delivery": "หลังส่งมอบ"
+      },
+      "requiredBeforeValues": {
+        "production": "การผลิต",
+        "shipping": "การจัดส่ง"
+      },
+      "payments": "การชำระเงิน",
+      "noPayments": "ยังไม่มีการชำระเงิน",
+      "methods": {
+        "scb_qr": "QR พร้อมเพย์ (SCB)",
+        "scb_qr_cross_bank": "QR ข้ามธนาคาร",
+        "card_2c2p": "บัตรเครดิต/เดบิต",
+        "online_banking_2c2p": "ธนาคารออนไลน์",
+        "bank_transfer_slip": "โอนเงินพร้อมสลิป",
+        "store_credit": "เครดิตร้านค้า",
+        "credit_term_transfer": "โอนตามเครดิตเทอม"
+      },
+      "reference": "อ้างอิง {ref}",
+      "declared": "แจ้งโอน {amount} เมื่อ {at}",
+      "checks": "ผลการตรวจสลิปอัตโนมัติ",
+      "receiver": "บัญชีผู้รับ",
+      "amount": "ยอดเงิน",
+      "date": "วันที่",
+      "notDuplicate": "ไม่ซ้ำ",
+      "checkPassed": "ผ่าน",
+      "checkFailed": "ไม่ผ่าน",
+      "notChecked": "ยังไม่ได้ตรวจอัตโนมัติ",
+      "reviewNote": "หมายเหตุ: {note} ({by})",
+      "approve": "อนุมัติสลิป",
+      "reject": "ไม่อนุมัติ"
+    },
+    "artwork": {
+      "title": "ไฟล์งาน",
+      "noSubmissions": "ยังไม่มีไฟล์งาน",
+      "noSubmissionsBody": "ลูกค้ายังไม่ได้ส่งไฟล์ หรือกำลังออกแบบอยู่",
+      "version": "ไฟล์ครั้งที่ {no}",
+      "sources": {
+        "upload": "อัปโหลด",
+        "designer": "ออกแบบออนไลน์",
+        "design_service": "งานจ้างออกแบบ"
+      },
+      "page": "หน้า {page}",
+      "checks": {
+        "size_mismatch": "ขนาดไม่ตรงกับไดคัท",
+        "missing_bleed": "ไม่มีระยะตัดตก",
+        "low_resolution": "ความละเอียดต่ำ",
+        "rgb_colour": "ใช้สี RGB",
+        "fonts_not_embedded": "ไม่ได้ฝังฟอนต์",
+        "safe_zone": "เนื้อหาเกินพื้นที่ปลอดภัย",
+        "thin_lines": "เส้นบางเกินไป",
+        "overprint": "ตั้งค่าพิมพ์ทับ",
+        "ink_coverage": "ปริมาณหมึกเกิน"
+      },
+      "proofs": "ปรู๊ฟ",
+      "openPrepress": "เปิดในงานก่อนพิมพ์",
+      "noProofs": "ยังไม่ได้ส่งปรู๊ฟ",
+      "proofVersion": "ปรู๊ฟ v{no}",
+      "openAnnotations": "{count} ความเห็นที่ยังไม่ปิด",
+      "channels": {
+        "web": "อนุมัติผ่านเว็บ",
+        "line_liff": "อนุมัติผ่าน LINE",
+        "cs_on_behalf": "CS อนุมัติแทน"
+      }
+    },
+    "production": {
+      "noJobs": "ยังไม่ได้เริ่มผลิต",
+      "noJobsBody": "งานผลิตจะเริ่มเองเมื่อไฟล์ได้รับอนุมัติและชำระงวดก่อนผลิตครบ (D-073)",
+      "job": "ใบงาน {jobNo}",
+      "atRisk": "เสี่ยงล่าช้า",
+      "kinds": {
+        "production": "งานผลิต",
+        "mockup": "ม็อกอัป",
+        "reproduction": "ผลิตซ้ำ"
+      },
+      "promised": "กำหนดส่ง {date}",
+      "awaitingAcceptance": "รอโรงงานรับงานภายใน {at}",
+      "noMilestones": "ยังไม่มีความคืบหน้า",
+      "doneAt": "เสร็จ {at}",
+      "dueAt": "กำหนด {at}",
+      "late": "ช้ากว่ากำหนด"
+    },
+    "shipments": {
+      "none": "ยังไม่มีการจัดส่ง",
+      "noneBody": "รอบจัดส่งจะสร้างเมื่อผลิตเสร็จ",
+      "carrier": "ผู้ขนส่ง",
+      "carriers": {
+        "factory_fleet": "รถของโรงงาน",
+        "flash_express": "Flash Express",
+        "deliveree": "Deliveree"
+      },
+      "tracking": "เลขพัสดุ",
+      "quantity": "จำนวน",
+      "cartons": "{count} กล่อง",
+      "destination": "ปลายทาง",
+      "deliveredAt": "ส่งถึงเมื่อ",
+      "pod": "ส่งมอบแล้ว: {name} รับ {quantity} ชิ้น",
+      "podMissing": "ส่งถึงแล้วแต่ยังไม่มีหลักฐานการส่งมอบ (POD)"
+    },
+    "documents": {
+      "title": "เอกสาร",
+      "issuer": "ออกในนาม Collective Group (Thailand) ภายใต้แบรนด์ Packio (D-010)",
+      "type": "ประเภท",
+      "number": "เลขที่",
+      "issuedAt": "ออกเมื่อ",
+      "amount": "ยอด",
+      "status": "สถานะ",
+      "none": "ยังไม่มีเอกสาร",
+      "types": {
+        "qt": "ใบเสนอราคา",
+        "iv": "ใบแจ้งหนี้",
+        "tr": "ใบกำกับภาษี",
+        "rc": "ใบเสร็จรับเงิน",
+        "cn": "ใบลดหนี้",
+        "dn": "ใบเพิ่มหนี้"
+      }
+    },
+    "claims": {
+      "title": "งานเคลม",
+      "none": "ไม่มีงานเคลม",
+      "noneBody": "ลูกค้าแจ้งเคลมได้ภายใน 7 วันหลังได้รับของ (D-082)",
+      "types": {
+        "damaged": "สินค้าเสียหาย",
+        "wrong_spec": "ผิดสเปก",
+        "print_defect": "งานพิมพ์ผิดพลาด",
+        "quantity_short": "จำนวนขาด",
+        "late": "ส่งล่าช้า",
+        "other": "อื่น ๆ"
+      }
+    }
+  },
+  "actions": {
+    "failed": "ทำรายการไม่สำเร็จ",
+    "restate": "คำสั่งซื้อ {code} ของ {customer} ยอด {amount}.",
+    "labels": {
+      "approve_slip": "อนุมัติสลิป",
+      "reject_slip": "ไม่อนุมัติสลิป",
+      "start_production": "เริ่มผลิต",
+      "cancel": "ยกเลิกคำสั่งซื้อ",
+      "send_payment_reminder": "ส่งข้อความเตือนชำระ",
+      "record_slip": "อัปโหลดสลิปแทนลูกค้า"
+    },
+    "approveSlip": {
+      "title": "อนุมัติสลิปนี้?",
+      "body": "ยืนยันรับชำระ {amount} สำหรับคำสั่งซื้อ {code} การอนุมัติจะบันทึกในบัญชีและยกเลิกไม่ได้",
+      "confirm": "อนุมัติสลิป",
+      "note": "หมายเหตุ",
+      "noteHint": "เช่น ตรวจยอดกับบัญชีธนาคารแล้ว",
+      "done": "อนุมัติสลิปแล้ว"
+    },
+    "rejectSlip": {
+      "title": "ไม่อนุมัติสลิปนี้?",
+      "body": "ลูกค้าคำสั่งซื้อ {code} จะได้รับแจ้งเหตุผลและอัปโหลดสลิปใหม่ได้",
+      "confirm": "ไม่อนุมัติ",
+      "reason": "เหตุผลที่ลูกค้าจะเห็น",
+      "reasonHint": "เช่น ยอดโอนไม่ตรงกับยอดที่ต้องชำระ",
+      "done": "บันทึกการไม่อนุมัติแล้ว"
+    },
+    "startProduction": {
+      "title": "เริ่มผลิตด้วยมือ?",
+      "body": "ปกติระบบเริ่มผลิตเองเมื่อไฟล์อนุมัติและชำระงวดก่อนผลิตครบ การเริ่มด้วยมือเป็นกรณียกเว้นที่ต้องมีเหตุผลและถูกบันทึกไว้ (D-073)",
+      "confirm": "เริ่มผลิต",
+      "reason": "เหตุผลของกรณียกเว้น",
+      "reasonHint": "บันทึกไว้ในประวัติการตรวจสอบ",
+      "done": "ส่งงานให้โรงงานแล้ว"
+    },
+    "cancel": {
+      "title": "ยกเลิกคำสั่งซื้อนี้?",
+      "body": "การยกเลิกทำคืนไม่ได้",
+      "paidBody": "มีการชำระเงินแล้ว ยอดที่ชำระจะเข้าสู่ขั้นตอนคืนเงินหรือใบลดหนี้ การยกเลิกทำคืนไม่ได้",
+      "confirm": "ยกเลิกคำสั่งซื้อ",
+      "reasonCode": "เหตุผล",
+      "chooseReason": "เลือกเหตุผลการยกเลิก",
+      "note": "รายละเอียดเพิ่มเติม",
+      "creditNote": "เหตุผลนี้ต้องออกใบลดหนี้",
+      "done": "ยกเลิกคำสั่งซื้อแล้ว"
+    },
+    "remind": {
+      "title": "ส่งข้อความเตือนชำระ?",
+      "body": "ส่งถึง {customer} สำหรับยอด {amount} ทางช่องทางที่ลูกค้าเลือกไว้",
+      "confirm": "ส่งข้อความ",
+      "done": "ส่งข้อความเตือนแล้ว"
+    },
+    "recordSlip": {
+      "title": "อัปโหลดสลิปแทนลูกค้า",
+      "body": "สลิปของคำสั่งซื้อ {code} จะผ่านการตรวจเหมือนสลิปที่ลูกค้าอัปโหลดเอง",
+      "confirm": "อัปโหลด",
+      "incomplete": "กรุณากรอกข้อมูลให้ครบ",
+      "done": "อัปโหลดสลิปแล้ว รอการเงินตรวจ",
+      "instalment": "งวดที่ชำระ",
+      "drop": "ลากไฟล์สลิปมาวาง หรือ",
+      "chosen": "เลือกแล้ว: {name}",
+      "browse": "เลือกไฟล์",
+      "tooLarge": "{name} ใหญ่เกิน 10 MB",
+      "wrongType": "{name} ต้องเป็นรูปภาพหรือ PDF",
+      "amount": "ยอดตามสลิป",
+      "amountHint": "ใส่ตามที่เห็นในสลิป",
+      "baht": "บาท",
+      "transferredAt": "วันและเวลาที่โอน",
+      "bangkokTime": "เวลาประเทศไทย"
+    }
+  },
+  "rail": {
+    "timeline": "ไทม์ไลน์",
+    "timelineFailed": "โหลดไทม์ไลน์ไม่สำเร็จ",
+    "internal": "ภายใน",
+    "more": "โหลดเพิ่ม",
+    "promisedOnTime": "ตามกำหนด ({at})",
+    "promisedLate": "ช้ากว่ากำหนด ({at})",
+    "notes": "บันทึกภายใน",
+    "newNote": "เพิ่มบันทึก",
+    "noteHint": "ลูกค้าและโรงงานไม่เห็นบันทึกนี้",
+    "mention": "แท็กเพื่อนร่วมงาน",
+    "mentionPlaceholder": "พิมพ์ชื่อเพื่อแท็ก",
+    "noPeople": "ไม่พบรายชื่อ",
+    "clearMention": "ล้าง",
+    "addNote": "บันทึก",
+    "noteFailed": "บันทึกไม่สำเร็จ"
+  },
+  "group": {
+    "title": "กลุ่มคำสั่งซื้อ",
+    "breadcrumb": "เส้นทางหน้า",
+    "orders": "คำสั่งซื้อ",
+    "headline": "{customer} · {amount}",
+    "placedBy": "สั่งโดย",
+    "placedAt": "สั่งเมื่อ",
+    "channel": "ช่องทาง",
+    "po": "เลขที่ PO",
+    "expiresAt": "หมดเวลาชำระ",
+    "total": "ยอดรวม",
+    "ordersTitle": "คำสั่งซื้อในกลุ่ม",
+    "order": "คำสั่งซื้อ",
+    "product": "สินค้า",
+    "amount": "ยอด",
+    "status": "สถานะ",
+    "schedule": "งวดการชำระเงิน",
+    "instalment": "งวด",
+    "paid": "ชำระแล้ว"
+  },
+  "party": {
+    "title": "คำสั่งซื้อ",
+    "order": "คำสั่งซื้อ",
+    "productType": "ประเภทสินค้า",
+    "status": "สถานะ",
+    "amount": "ยอดรวม",
+    "placedBy": "ผู้สั่ง",
+    "created": "สั่งเมื่อ",
+    "empty": "ยังไม่มีคำสั่งซื้อ"
+  }
+}

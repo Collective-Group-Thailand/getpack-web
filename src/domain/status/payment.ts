@@ -1,13 +1,15 @@
 import { defineStatusMap } from "./types";
 import type { PaymentStatus } from "./contract";
 
-/** A payment against an order (source: legacy `payment_status`, extended — see `./contract.ts`). */
+/** One payment attempt against an instalment (B3.2, D-061). */
 export const PAYMENT_STATUS = defineStatusMap<PaymentStatus>({
+  initiated: { tone: "neutral", icon: "clock", labelKey: "payment.initiated" },
   pending: { tone: "warning", icon: "clock", labelKey: "payment.pending" },
   awaiting_verification: { tone: "info", icon: "hourglass", labelKey: "payment.awaitingVerification" },
-  paid: { tone: "success", icon: "check", labelKey: "payment.paid" },
-  // Distinct from "pending": something was attempted and refused, so the next action is the
-  // customer's, not the clock's.
+  succeeded: { tone: "success", icon: "check", labelKey: "payment.succeeded" },
   failed: { tone: "danger", icon: "error", labelKey: "payment.failed" },
-  refunded: { tone: "neutral", icon: "refresh", labelKey: "payment.refunded" },
+  cancelled: { tone: "neutral", icon: "ban", labelKey: "payment.cancelled" },
+  expired: { tone: "neutral", icon: "hourglass", labelKey: "payment.expired" },
+  refunded: { tone: "neutral", icon: "reset", labelKey: "payment.refunded" },
+  partially_refunded: { tone: "warning", icon: "reset", labelKey: "payment.partiallyRefunded" },
 });

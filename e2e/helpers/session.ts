@@ -34,13 +34,38 @@ export async function openAccountMenu(page: Page): Promise<void> {
   }).toPass({ timeout: 15_000 });
 }
 
+/**
+ * The D-140 personas the mock API knows (`mocks/personas.ts`). The default, `cs`, is the
+ * somchai account the F1 tests were written against.
+ */
+export type Persona =
+  | "superadmin"
+  | "c_level"
+  | "vp"
+  | "director"
+  | "admin"
+  | "cs"
+  | "cs_lead"
+  | "prepress"
+  | "finance"
+  | "finance_manager"
+  | "logistics"
+  | "marketing"
+  | "partner_manager"
+  | "auditor";
+
+export function personaEmail(persona: Persona): string {
+  return persona === "cs" ? MOCK_STAFF.email : `${persona.replace(/_/g, ".")}.staff@packio.invalid`;
+}
+
 /** Signs in as staff and waits until the admin shell is actually rendering for them. */
-export async function signInAsStaff(page: Page): Promise<void> {
+export async function signInAsStaff(page: Page, persona: Persona = "cs"): Promise<void> {
   await page.goto(`${HOSTS.admin}/login`);
-  await page.getByLabel(/^อีเมล/).fill(MOCK_STAFF.email);
+  await page.getByLabel(/^อีเมล/).fill(personaEmail(persona));
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_STAFF.password);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
   await expect(accountButton(page)).toBeVisible();
+  await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }
 
 /** Signs in as a partner-factory user. */
@@ -50,4 +75,13 @@ export async function signInAsPartner(page: Page): Promise<void> {
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_PARTNER.password);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
   await expect(accountButton(page)).toBeVisible();
+}
+
+/**
+ * Navigates and waits until the page is interactive — `<html data-hydrated>`, stamped by
+ * `HydrationMark` once React has hydrated — so the next click is not dropped.
+ */
+export async function gotoHydrated(page: Page, url: string): Promise<void> {
+  await page.goto(url);
+  await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }

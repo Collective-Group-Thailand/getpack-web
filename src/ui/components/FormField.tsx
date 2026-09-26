@@ -18,6 +18,11 @@ export interface FormFieldProps<TValues extends FieldValues, TName extends Field
     onBlur: () => void;
     ref: (instance: unknown) => void;
   }) => React.ReactNode;
+  /**
+   * The words for a validation message: a schema says `"required"`, the person reads
+   * "กรุณากรอก". A message the API sent is already words and passes through.
+   */
+  formatError?: (message: string) => React.ReactNode;
 }
 
 /**
@@ -37,6 +42,7 @@ export function FormField<TValues extends FieldValues, TName extends FieldPath<T
   control,
   name,
   children,
+  formatError,
   ...fieldProps
 }: FormFieldProps<TValues, TName>) {
   return (
@@ -44,7 +50,12 @@ export function FormField<TValues extends FieldValues, TName extends FieldPath<T
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <Field {...fieldProps} error={fieldState.error?.message}>
+        <Field
+          {...fieldProps}
+          error={
+            fieldState.error?.message && formatError ? formatError(fieldState.error.message) : fieldState.error?.message
+          }
+        >
           {children(field as Parameters<typeof children>[0])}
         </Field>
       )}

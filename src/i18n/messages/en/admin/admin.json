@@ -1,14 +1,10 @@
 {
   "zone": "Back office",
-  "placeholder": {
-    "heading": "Admin zone",
-    "body": "The frame for this zone is ready; the working screens arrive next."
-  },
   "shell": {
     "nav": "Main navigation",
     "collapseNav": "Collapse navigation",
     "expandNav": "Expand navigation",
-    "searchPlaceholder": "Search orders, customers, factories",
+    "searchPlaceholder": "Search orders, customers, factories or screens",
     "shortcuts": "Keyboard shortcuts",
     "shortcutEscape": "Close the open overlay",
     "account": "Account",
@@ -20,7 +16,7 @@
     "palette": {
       "title": "Search and commands",
       "placeholder": "Type to search",
-      "empty": "There is nothing to search yet."
+      "empty": "Nothing found. Try an order code, a phone number or an e-mail."
     }
   },
   "menu": {
@@ -48,6 +44,64 @@
     "audit_logs": "Audit log",
     "analytics": "Analytics",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "cs_calculators": "CS calculators",
+    "discount_memos": "Discount memos",
+    "feature_flags": "Feature flags",
+    "notification_templates": "Notification templates",
+    "notification_routes": "Notification routes",
+    "outbox": "Event outbox",
+    "cms": "Site content"
+  },
+  "palette": {
+    "screens": "Screens",
+    "types": {
+      "order": "Orders",
+      "order_group": "Order groups",
+      "quote": "Quotations",
+      "rfq": "RFQs",
+      "customer": "Customers",
+      "company": "Companies",
+      "factory": "Factories",
+      "shipment": "Shipments",
+      "claim": "Claims",
+      "user": "Users"
+    }
+  },
+  "menuGroups": {
+    "overview": "Overview",
+    "sales": "Sales & CS",
+    "operations": "Operations",
+    "supply": "Supply",
+    "growth": "Customers & marketing",
+    "insights": "Insights",
+    "system": "System",
+    "other": "Other"
+  },
+  "roles": {
+    "superadmin": "Superadmin",
+    "c_level": "C-Level",
+    "vp": "VP",
+    "director": "Director",
+    "admin": "Admin",
+    "cs": "CS",
+    "cs_lead": "CS Lead",
+    "prepress": "Prepress",
+    "finance": "Finance",
+    "finance_manager": "Finance Manager",
+    "logistics": "Logistics",
+    "marketing": "Marketing",
+    "partner_manager": "Partner Manager",
+    "auditor": "Auditor (read-only)",
+    "factory_owner": "Factory Owner",
+    "factory_planner": "Planner",
+    "factory_operator": "Operator",
+    "factory_qc": "QC",
+    "factory_shipping": "Shipping",
+    "factory_accountant": "Factory Accountant",
+    "company_admin": "Company Admin",
+    "company_buyer": "Buyer",
+    "company_approver": "Approver",
+    "company_accountant": "Accountant"
   }
 }

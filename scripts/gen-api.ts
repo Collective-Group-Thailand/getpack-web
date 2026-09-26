@@ -5,9 +5,11 @@
  *   pnpm gen:api --check   fail if a committed output is stale or was hand-edited (CI)
  *   pnpm gen:api --adopt   pull a newer contract from API_CONTRACT_SOURCE, then regenerate
  *
- * Two files are written, both committed:
+ * Three files are written, all committed:
  *   src/lib/api/schema.d.ts      from contract/openapi.json — what packio-api has agreed to
  *   mocks/generated/handlers.ts  MSW handlers built from the contract's own examples
+ *   mocks/generated/examples.ts  the list endpoints' example rows, for stateful mocks to seed from
+ *   docs/contract-requests.openapi.json  the frontend's contract requests, for the backend
  *
  * Why a vendored copy of the contract rather than fetching it here: CI has no sibling
  * checkout of packio-api and no credentials for a private release asset, so the drift gate
@@ -23,12 +25,17 @@ import { fileURLToPath } from "node:url";
 
 import openapiTS, { astToString } from "openapi-typescript";
 
+import { buildRequestsDocument } from "./requests-openapi";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const LOCK = resolve(ROOT, "contract.lock.json");
 const VENDORED = resolve(ROOT, "contract/openapi.json");
 const OUT_SCHEMA = resolve(ROOT, "src/lib/api/schema.d.ts");
 const OUT_HANDLERS = resolve(ROOT, "mocks/generated/handlers.ts");
+const OUT_EXAMPLES = resolve(ROOT, "mocks/generated/examples.ts");
+/** The contract requests, as an OpenAPI document for the backend (`src/lib/api/requests`). */
+const OUT_REQUESTS = resolve(ROOT, "docs/contract-requests.openapi.json");
 
 interface ContractLock {
   version: string;
@@ -156,6 +163,32 @@ function buildHandlers(contract: OpenApiDocument, lock: ContractLock): string {
   ].join("\n");
 }
 
+/**
+ * The example rows of every list endpoint (`GET` whose example is `{ data: [...] }`), keyed by
+ * path. Stateful mocks seed from these so their rows are the contract's own examples — with the
+ * ids the examples use to point at each other — instead of shapes invented beside it.
+ */
+function buildExamples(contract: OpenApiDocument, lock: ContractLock): string {
+  const entries: string[] = [];
+  for (const [path, item] of Object.entries(contract.paths ?? {})) {
+    const operation = item.get;
+    if (!operation) continue;
+    const success = successResponse(contract, operation);
+    const example = success?.example as { data?: unknown } | null | undefined;
+    if (!example || !Array.isArray(example.data)) continue;
+    entries.push(`  ${JSON.stringify(path)}: ${JSON.stringify(example.data)},`);
+  }
+  return [
+    banner("contract/openapi.json"),
+    "",
+    `/** List-endpoint example rows from contract/openapi.json (packio-api ${lock.version}), keyed by path. */`,
+    "export const LIST_EXAMPLES: Record<string, readonly unknown[]> = {",
+    ...entries,
+    "};",
+    "",
+  ].join("\n");
+}
+
 async function typesFor(path: string, source: string): Promise<string> {
   const ast = await openapiTS(new URL(`file://${path}`), { alphabetize: true });
   return `${banner(source)}\n\n${astToString(ast)}`;
@@ -237,12 +270,17 @@ async function main(): Promise<void> {
   }
 
   const schema = await typesFor(VENDORED, `contract/openapi.json (packio-api ${lock.version})`);
-  const handlers = buildHandlers(readJson<OpenApiDocument>(VENDORED), lock);
+  const document = readJson<OpenApiDocument>(VENDORED);
+  const handlers = buildHandlers(document, lock);
+  const examples = buildExamples(document, lock);
+  const requests = buildRequestsDocument();
 
   if (check) {
     const ok = [
       compare(OUT_SCHEMA, schema, "src/lib/api/schema.d.ts"),
       compare(OUT_HANDLERS, handlers, "mocks/generated/handlers.ts"),
+      compare(OUT_EXAMPLES, examples, "mocks/generated/examples.ts"),
+      compare(OUT_REQUESTS, requests, "docs/contract-requests.openapi.json"),
     ].every(Boolean);
 
     if (!ok) process.exit(1);
@@ -252,6 +290,8 @@ async function main(): Promise<void> {
 
   write(OUT_SCHEMA, schema);
   write(OUT_HANDLERS, handlers);
+  write(OUT_EXAMPLES, examples);
+  write(OUT_REQUESTS, requests);
 }
 
 main().catch((error: unknown) => {

@@ -1,0 +1,329 @@
+{
+  "list": {
+    "title": "Prepress",
+    "description": "Artwork, proofs, templates and design work waiting on prepress; each stage has its own SLA.",
+    "queuesLabel": "Prepress stages",
+    "queues": {
+      "all": "All",
+      "preflight": "Preflight review",
+      "proof": "Proof to prepare",
+      "awaiting_customer": "Proof with customer",
+      "changes_requested": "Changes requested",
+      "template": "Template to send",
+      "design": "Design work",
+      "mockup": "Mockup"
+    },
+    "columns": {
+      "order": "Order",
+      "customer": "Customer",
+      "stage": "Stage",
+      "progress": "Progress",
+      "sla": "SLA",
+      "assignee": "Owner",
+      "updated": "Updated"
+    },
+    "fileVersion": "File v{version}",
+    "proofVersion": "Proof v{version}",
+    "designRound": "Round {round} ({free} free)",
+    "mockup": "Mockup",
+    "withCustomer": "With the customer",
+    "you": "You",
+    "unassigned": "Unassigned",
+    "search": "Search prepress",
+    "searchPlaceholder": "Order code or customer",
+    "artworkStatus": "Artwork status",
+    "productType": "Product type",
+    "emptyTitle": "Nothing at this stage",
+    "emptyBody": "Try another stage or clear the filters."
+  },
+  "actions": {
+    "labels": {
+      "upload_proof": "Upload and send proof",
+      "send_template": "Send template",
+      "deliver_round": "Deliver this round",
+      "requote_design": "Re-quote the design",
+      "draw_dieline": "Draw dieline",
+      "assign": "Assign"
+    },
+    "failed": "The action failed",
+    "files": {
+      "chosen": "Chosen: {names}",
+      "drop": "Drop files here, or",
+      "browse": "browse",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not an accepted type"
+    },
+    "assign": {
+      "title": "Assign prepress",
+      "body": "Choose who does prepress for {code}.",
+      "personHint": "Only people who can do prepress."
+    },
+    "proof": {
+      "title": "Send proof version {version}",
+      "body": "The proof goes to {customer} for {code}; an earlier version not yet approved is superseded.",
+      "confirm": "Upload and send",
+      "submission": "Made from",
+      "chooseSubmission": "Choose the submission",
+      "submissionOption": "File v{version} (accepted)",
+      "file": "Proof (PDF)",
+      "fileHint": "What the customer reviews and approves.",
+      "dieline": "Dieline (optional)",
+      "dielineHint": "Lets the customer see folds and cuts.",
+      "note": "Note to the customer",
+      "noteHint": "Optional",
+      "needSubmission": "Choose the submission",
+      "needFile": "Attach the proof",
+      "done": "Proof version {version} sent"
+    },
+    "template": {
+      "title": "Send the template",
+      "body": "Sends {code}'s template to {customer} to lay out their artwork.",
+      "confirm": "Send template",
+      "file": "Template file",
+      "fileHint": "PDF, SVG or DXF",
+      "message": "Message to the customer",
+      "messageHint": "Optional",
+      "needFile": "Attach the template",
+      "done": "Template sent"
+    },
+    "deliver": {
+      "title": "Deliver design round {round}",
+      "body": "Sends {code}'s design files to {customer} to approve or change.",
+      "confirm": "Send to customer",
+      "files": "Design files",
+      "note": "Message to the customer",
+      "noteHint": "Optional",
+      "needFiles": "Attach the design files",
+      "done": "Design round delivered"
+    },
+    "requote": {
+      "title": "Re-quote the design",
+      "body": "A change to the structure or concept is a new design, not a revision (D-071). {code}'s design (fee {fee}) stops and the customer is re-quoted.",
+      "confirm": "Re-quote",
+      "reason": "What the customer changed",
+      "reasonHint": "The customer sees this.",
+      "done": "Sent for re-quote"
+    },
+    "accept": {
+      "title": "Accept file v{version} for proofing",
+      "body": "{code}'s file passed preflight and goes to proofing.",
+      "bodyWarnings": "{code}'s file has {count} warnings; accepting it acknowledges them.",
+      "confirm": "Accept for proof",
+      "note": "Why it is acceptable",
+      "noteHint": "Kept with the review history.",
+      "done": "Accepted for proof"
+    },
+    "reject": {
+      "title": "Send file v{version} back",
+      "body": "{customer} is asked to upload {code}'s file again, with this reason.",
+      "confirm": "Send back",
+      "reason": "What needs fixing",
+      "reasonHint": "The customer sees this.",
+      "done": "Sent back to the customer"
+    }
+  },
+  "detail": {
+    "title": "Prepress workspace",
+    "breadcrumb": "Breadcrumb",
+    "desk": "Prepress",
+    "tabsLabel": "Prepress sections",
+    "tabs": {
+      "artwork": "Artwork",
+      "proofs": "Proofs",
+      "template": "Template",
+      "design": "Design service",
+      "mockup": "Mockup"
+    },
+    "stages": {
+      "preflight": "Preflight review",
+      "proof": "Proof to prepare",
+      "awaiting_customer": "Proof with customer",
+      "changes_requested": "Changes requested",
+      "template": "Template to send",
+      "design": "Design work",
+      "mockup": "Mockup"
+    },
+    "urgency": {
+      "due_soon": "SLA due soon",
+      "late": "Past SLA"
+    },
+    "headline": "{customer} · {type} · {quantity} {unit}",
+    "download": "Download",
+    "drawQueued": "Dieline drawing queued",
+    "drawFailed": "Could not draw the dieline",
+    "rail": {
+      "stage": "Current stage",
+      "noStage": "Nothing pending",
+      "withCustomer": "With the customer — not prepress's SLA",
+      "owner": "Owner",
+      "assign": "Assign",
+      "reassign": "Change",
+      "you": "You",
+      "unassigned": "Unassigned",
+      "order": "Order",
+      "orderCode": "Order",
+      "customer": "Customer",
+      "design": "Design",
+      "mockup": "Mockup",
+      "promised": "Promised ship date",
+      "specs": "Specification",
+      "designOptions": {
+        "own_file": "Customer's own file",
+        "online_designer": "Online designer",
+        "hired_design": "Hired design",
+        "free_design": "Free design"
+      },
+      "mockupOptions": {
+        "none": "No mockup",
+        "with_print": "Printed mockup",
+        "without_print": "Blank mockup"
+      }
+    },
+    "artwork": {
+      "version": "File version {version}",
+      "sources": {
+        "upload": "Uploaded by the customer",
+        "designer": "From the online designer",
+        "design_service": "From the design service"
+      },
+      "accept": "Accept for proof",
+      "reject": "Send back",
+      "report": "Preflight report",
+      "clean": "No findings",
+      "severity": {
+        "block": "Must be fixed ({count})",
+        "warn": "Warnings ({count})",
+        "info": "Notes ({count})"
+      },
+      "checks": {
+        "size_mismatch": "Size mismatch",
+        "missing_bleed": "Missing bleed",
+        "low_resolution": "Low resolution",
+        "rgb_colour": "RGB colour",
+        "fonts_not_embedded": "Fonts not embedded",
+        "safe_zone": "Outside the safe zone",
+        "thin_lines": "Thin lines",
+        "overprint": "Overprint",
+        "ink_coverage": "Ink coverage"
+      },
+      "page": "Page {page}",
+      "files": "Files",
+      "roles": {
+        "artwork": "Artwork",
+        "font": "Font",
+        "link": "Linked file",
+        "reference": "Reference"
+      },
+      "none": "No artwork yet",
+      "noneBody": "Send the template, then wait for the customer's file."
+    },
+    "design": {
+      "documentTitle": "Online designer document",
+      "readOnly": "Read-only",
+      "documentMeta": "{title} · version {version} · by {owner}",
+      "viewerLabel": "Preview of {title}",
+      "unreadable": "This design cannot be shown here; it may come from a newer designer.",
+      "previewNote": "An indicative preview; the proof is what gets checked.",
+      "copy": "Make a working copy",
+      "copyTitle": "Prepress copy — {title}",
+      "copied": "Created {title}",
+      "copyFailed": "Could not make a copy",
+      "copyReady": "{title} is ready",
+      "copyNext": "The customer's design is untouched. Opening copies in the designer from the back office comes with server-side designs (F4).",
+      "none": "No design service on this order",
+      "title": "Hired design",
+      "target": "Target (5 business days)",
+      "max": "Maximum (10 business days)",
+      "freeRounds": "Free rounds used",
+      "freeUsed": "{used} of {free}",
+      "nextChargeable": "The next round ({round}) costs {fee}",
+      "nextChargeableBody": "The customer confirms and pays before it starts (D-071).",
+      "designer": "Designer",
+      "noDesigner": "Not assigned",
+      "fee": "Design fee (net)",
+      "rule": "Terms",
+      "ruleValue": "{free} free rounds, then charged",
+      "brief": "Design brief",
+      "rounds": "Design rounds",
+      "noRounds": "Not started — waiting for the brief or payment",
+      "round": "Round {round}",
+      "paidRound": "Paid round {fee}",
+      "freeRound": "Free round",
+      "requested": "Requested",
+      "delivered": "delivered"
+    },
+    "proofs": {
+      "none": "No proof yet",
+      "noneBody": "Make one from an accepted file and send it for approval.",
+      "upload": "Upload a proof",
+      "uploadNext": "Upload proof version {version}",
+      "version": "Proof version {version}",
+      "openCount": "{count} open",
+      "fromFile": "Made from",
+      "fileVersion": "File v{version}",
+      "preparedBy": "Prepared by",
+      "sentAt": "Sent",
+      "decidedAt": "Decided",
+      "channels": {
+        "web": "on the website",
+        "line_liff": "via LINE",
+        "cs_on_behalf": "recorded by CS"
+      },
+      "onBehalf": "Recorded on behalf because",
+      "locked": "Approved file (SHA-256)",
+      "note": "Note",
+      "annotations": "Customer annotations",
+      "noAnnotations": "No annotations",
+      "loadFailed": "Could not load the annotations",
+      "pageMap": "Where the {count} annotations sit on the proof",
+      "thread": "Page {page} · {kind}",
+      "kinds": {
+        "pin": "pin",
+        "rect": "area",
+        "draw": "drawing"
+      },
+      "isResolved": "Resolved",
+      "resolve": "Mark resolved ({number})",
+      "resolved": "Marked resolved",
+      "resolveFailed": "Could not resolve",
+      "replyLabel": "Reply to annotation {number}",
+      "replyPlaceholder": "Reply to the customer",
+      "reply": "Reply",
+      "replied": "Reply sent",
+      "replyFailed": "Could not reply"
+    },
+    "template": {
+      "dieline": "Dieline",
+      "draw": "Draw dieline",
+      "pattern": "Pattern",
+      "noPattern": "Not given",
+      "size": "Size (L × W × H)",
+      "sizeValue": "{length} × {width} × {height} mm",
+      "noSize": "Not given",
+      "deliveries": "Templates sent",
+      "send": "Send template",
+      "noDeliveries": "No template sent yet",
+      "triggers": {
+        "auto_after_payment": "Sent automatically after payment",
+        "manual": "Sent by staff"
+      }
+    },
+    "mockup": {
+      "none": "No mockup",
+      "noneBody": "The customer did not choose a mockup (D-072).",
+      "title": "Mockup job",
+      "jobNo": "Job",
+      "option": "Kind",
+      "options": {
+        "none": "No mockup",
+        "with_print": "Printed mockup",
+        "without_print": "Blank mockup"
+      },
+      "factory": "Factory",
+      "noFactory": "Not assigned",
+      "promised": "Promised",
+      "noPromise": "Not set",
+      "note": "A paid add-on the customer chose (D-072); follow it on the production board."
+    }
+  }
+}

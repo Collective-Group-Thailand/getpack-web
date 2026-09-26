@@ -1,0 +1,101 @@
+{
+  "title": "Demand analytics",
+  "description": "What customers ask for, what we cannot yet serve, and capacity — the case for recruiting factories (D-102); nightly rollups",
+  "range": "Period",
+  "ranges": {
+    "7d": "7 days",
+    "30d": "30 days",
+    "90d": "90 days",
+    "custom": "Custom"
+  },
+  "from": "From",
+  "to": "To",
+  "period": "{from} – {to}",
+  "previous": "Previous period {value}",
+  "showTable": "Show as table",
+  "hideTable": "Show as chart",
+  "kpis": {
+    "gmv": "GMV",
+    "paidOrders": "Paid orders",
+    "aov": "Average order",
+    "conversion": "Conversion",
+    "sessions": "Sessions",
+    "quotes": "Quotes",
+    "rfqs": "RFQs",
+    "repeatRate": "Repeat rate"
+  },
+  "funnel": {
+    "title": "Funnel",
+    "note": "Visit → configure → quote → cart → paid",
+    "step": "Step",
+    "count": "Count",
+    "steps": {
+      "visit": "Visit",
+      "configure": "Configure",
+      "quote": "Quote",
+      "cart": "Cart",
+      "checkout": "Checkout",
+      "paid": "Paid"
+    }
+  },
+  "trend": {
+    "title": "Daily trend",
+    "date": "Date",
+    "quotes": "Quotes",
+    "paidOrders": "Paid orders"
+  },
+  "demand": {
+    "title": "Demand",
+    "note": "Quoted but not bought shows price and lead-time sensitivity",
+    "dimension": "By",
+    "dimensions": {
+      "product_type": "Product type",
+      "spec_band": "Spec band",
+      "quantity_band": "Quantity band",
+      "province": "Province"
+    },
+    "chart": "Demand by {dimension}",
+    "table": "GMV and conversion",
+    "quotes": "Quotes",
+    "rfqs": "RFQs",
+    "paidOrders": "Paid orders",
+    "gmv": "GMV",
+    "conversion": "Conversion",
+    "abandoned": "Abandoned after price",
+    "suppressed": "{count} groups under {k} withheld so no one can be identified"
+  },
+  "unmet": {
+    "title": "Unmet demand",
+    "note": "Declined and expired RFQs, specs no factory makes, weeks at capacity",
+    "rfqs": "{declined} declined · {expired} expired",
+    "reasons": "Why we could not serve",
+    "reason": "Reason",
+    "count": "Count",
+    "specs": "Specs no factory makes",
+    "capacity": "Capacity-limited weeks",
+    "capacityItem": "{week} {type}: {count} requests",
+    "coverage": "See factory coverage"
+  },
+  "factories": {
+    "title": "Factory utilisation",
+    "note": "Capacity booked and on-time rate",
+    "factory": "Factory",
+    "utilisation": "Utilisation",
+    "onTime": "On time"
+  },
+  "campaigns": {
+    "title": "Campaign performance",
+    "campaign": "Campaign",
+    "redemptions": "Redemptions",
+    "orders": "Orders",
+    "discount": "Discount",
+    "revenue": "Revenue",
+    "newCustomers": "New customers"
+  },
+  "prospectus": {
+    "pdf": "Partner prospectus (PDF)",
+    "xlsx": "Partner prospectus (XLSX)",
+    "ready": "Prospectus ready: aggregated and anonymised; {suppressed} groups under {k} withheld",
+    "failed": "Could not create the prospectus"
+  }
+}

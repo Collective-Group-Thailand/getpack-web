@@ -148,3 +148,77 @@ export function formatIsoDate(input: DateInput): string {
     day: "2-digit",
   }).format(date);
 }
+
+/**
+ * "5 นาทีที่แล้ว" / "in 2 hours" — for the feed and the audit log, always shown next to (or
+ * with a tooltip of) the absolute time, never instead of it (design-system.md §4).
+ *
+ * Coarse on purpose: this is how long ago, not a timestamp. `now` is a parameter so a render
+ * and its test agree on what "now" was.
+ */
+export function formatRelativeTime(input: DateInput, locale: Locale = "th", now: number = Date.now()): string {
+  const date = toDate(input);
+  if (!date) return "—";
+
+  const seconds = Math.round((date.getTime() - now) / 1000);
+  const abs = Math.abs(seconds);
+  const format = new Intl.RelativeTimeFormat(localeTag(locale), { numeric: "auto" });
+
+  if (abs < 45) return format.format(0, "second");
+  if (abs < 45 * 60) return format.format(Math.round(seconds / 60), "minute");
+  if (abs < 22 * 3600) return format.format(Math.round(seconds / 3600), "hour");
+  if (abs < 26 * 86400) return format.format(Math.round(seconds / 86400), "day");
+  if (abs < 320 * 86400) return format.format(Math.round(seconds / (30 * 86400)), "month");
+  return format.format(Math.round(seconds / (365 * 86400)), "year");
+}
+
+/**
+ * A span of time, "2 ชม. 15 นาที" — for SLA timers. The deadline itself comes from the API,
+ * which owns the business calendar; this only renders the distance to it on the wall clock.
+ */
+export function formatDuration(milliseconds: number, locale: Locale = "th"): string {
+  const minutes = Math.max(0, Math.floor(Math.abs(milliseconds) / 60_000));
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const rest = minutes % 60;
+
+  const unit = (value: number, unitName: "day" | "hour" | "minute") =>
+    new Intl.NumberFormat(localeTag(locale), { style: "unit", unit: unitName, unitDisplay: "short" }).format(value);
+
+  if (days > 0) return hours > 0 ? `${unit(days, "day")} ${unit(hours, "hour")}` : unit(days, "day");
+  if (hours > 0) return rest > 0 ? `${unit(hours, "hour")} ${unit(rest, "minute")}` : unit(hours, "hour");
+  return unit(rest, "minute");
+}
+
+/**
+ * A percentage the API sent as a decimal string (`"12.5000"` → `12.5%`).
+ *
+ * Trimmed as text, like `formatTHB`: the string is the truth and nothing here does arithmetic
+ * on it. `maxDecimals` only shortens what is displayed.
+ */
+export function formatPercent(value: string | number, locale: Locale = "th", maxDecimals = 2): string {
+  const text = typeof value === "string" ? value.trim() : String(value);
+  if (!/^-?\d+(\.\d+)?$/.test(text)) return "—";
+
+  const [whole, fraction = ""] = text.replace("-", "").split(".");
+  const shown = fraction.slice(0, maxDecimals).replace(/0+$/, "");
+  const grouped = new Intl.NumberFormat(localeTag(locale)).format(BigInt(whole));
+  return `${text.startsWith("-") ? "-" : ""}${grouped}${shown ? `.${shown}` : ""}%`;
+}
+
+/** File sizes: 1.2 MB. Binary units, labelled as people expect to read them. */
+export function formatBytes(bytes: number, locale: Locale = "th"): string {
+  const units = ["byte", "kilobyte", "megabyte", "gigabyte"] as const;
+  let value = bytes;
+  let index = 0;
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+  return new Intl.NumberFormat(localeTag(locale), {
+    style: "unit",
+    unit: units[index],
+    unitDisplay: "short",
+    maximumFractionDigits: index === 0 ? 0 : 1,
+  }).format(value);
+}

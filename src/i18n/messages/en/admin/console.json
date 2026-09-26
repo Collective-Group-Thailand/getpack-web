@@ -1,0 +1,172 @@
+{
+  "errors": {
+    "forbiddenTitle": "You do not have access to this",
+    "forbiddenBody": "Ask an administrator if you need it.",
+    "notFoundTitle": "Not found",
+    "notFoundBody": "It may have been removed, or it is not visible to you.",
+    "loadFailedTitle": "Could not load this",
+    "loadFailedBody": "Try again. If it keeps failing, report it with the request id.",
+    "retry": "Try again"
+  },
+  "confirm": {
+    "typeToConfirm": "Type {phrase} to confirm",
+    "reasonRequired": "Enter a reason",
+    "reasonTooShort": "Enter a reason of at least {min} characters"
+  },
+  "filters": {
+    "any": "Any",
+    "clearSearch": "Clear search",
+    "from": "From",
+    "to": "To"
+  },
+  "list": {
+    "toolbar": "Filters and tools",
+    "clearFilters": "Clear filters",
+    "columns": "Columns",
+    "bulk": "Bulk actions",
+    "selected": "{count, plural, one {# selected} other {# selected}}",
+    "clearSelection": "Clear selection",
+    "selectAll": "Select all on this page",
+    "selectRow": "Select {name}",
+    "sortBy": "Sort by",
+    "emptyTitle": "Nothing here yet",
+    "emptyFiltered": "Nothing matches these filters. Try clearing them.",
+    "pagination": "Pagination",
+    "previous": "Previous page",
+    "next": "Next page",
+    "range": "Showing {from}–{to} of {total}",
+    "pageOf": "Page {page} of {pages}",
+    "perPage": "Rows per page"
+  },
+  "views": {
+    "label": "Saved views",
+    "saveCurrent": "Save this view",
+    "copyLink": "Copy link to this view",
+    "sharedBy": "Shared by {name}",
+    "delete": "Delete “{name}”",
+    "saveTitle": "Save view",
+    "saveDescription": "Keep the current filters and sort for next time.",
+    "name": "View name",
+    "share": "Share with the team",
+    "shareHint": "Everyone who can open this list will see it.",
+    "saved": "View saved",
+    "saveFailed": "Could not save the view",
+    "deleteFailed": "Could not delete the view",
+    "linkCopied": "Link copied",
+    "linkCopyFailed": "Could not copy — copy it from the address bar"
+  },
+  "export": {
+    "label": "Export",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "failed": "Export failed",
+    "truncated": "Only the first {rows} rows were exported. Narrow the filters."
+  },
+  "import": {
+    "open": "Import from Excel",
+    "title": "Import from Excel",
+    "description": "Upload, check the preview, then confirm. Nothing is saved until you confirm.",
+    "dropPrompt": "Drop an Excel file here, or",
+    "browse": "choose a file",
+    "dropHint": ".xlsx up to {size}",
+    "tooLarge": "{name} is larger than {size}",
+    "wrongType": "{name} is not an .xlsx file",
+    "template": "Download a blank template",
+    "checking": "Checking the file",
+    "uploadFailed": "Upload or check failed",
+    "row": "Row",
+    "action": "Result",
+    "problems": "Problems",
+    "invalid": "Invalid",
+    "actions": {
+      "create": "Create",
+      "update": "Update",
+      "skip": "Skip"
+    },
+    "totals": {
+      "rows": "Rows",
+      "create": "New",
+      "update": "Updated",
+      "invalid": "Invalid"
+    },
+    "invalidTitle": "Some rows are invalid",
+    "invalidBody": "Invalid rows will be skipped. Fix them in the file and import again.",
+    "previewCaption": "Preview of {file}",
+    "chooseAnother": "Choose another file",
+    "apply": "Import {count, plural, one {# row} other {# rows}}",
+    "applyFailed": "Import failed",
+    "appliedTitle": "Import complete",
+    "appliedBody": "{create} created, {update} updated"
+  },
+  "queues": {
+    "overdue": "{count} overdue"
+  },
+  "sla": {
+    "remaining": "{duration} left",
+    "overdue": "{duration} overdue",
+    "none": "No deadline"
+  },
+  "form": {
+    "baht": "THB",
+    "choose": "Choose",
+    "failed": "Could not save"
+  },
+  "crud": {
+    "actions": "Actions",
+    "create": "New",
+    "createTitle": "New entry",
+    "editTitle": "Edit",
+    "edit": "Edit {name}",
+    "delete": "Delete {name}",
+    "deleteTitle": "Delete {name}?",
+    "deleteDescription": "This cannot be undone.",
+    "deleteConfirm": "Delete",
+    "deleted": "Deleted",
+    "deleteFailed": "Could not delete",
+    "saved": "Saved",
+    "saveFailed": "Could not save",
+    "discardChanges": "You have unsaved changes. Close anyway?"
+  },
+  "common": {
+    "reason": "Reason",
+    "reasonHint": "Recorded in the audit log",
+    "back": "Back",
+    "details": "Details",
+    "history": "History",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "decisions": "Decisions",
+    "loading": "Loading",
+    "refresh": "Refresh",
+    "loadMore": "Load more",
+    "copy": "Copy",
+    "copied": "Copied",
+    "open": "Open"
+  },
+  "actions": {
+    "more": "More actions",
+    "unsupported": "Not available on this screen yet"
+  },
+  "assign": {
+    "person": "Staff member",
+    "placeholder": "Type a name",
+    "nobody": "Nobody found",
+    "clearPick": "Clear",
+    "clear": "Unassign",
+    "me": "Take it myself",
+    "confirm": "Assign",
+    "current": "Currently: {name}",
+    "done": "Assigned",
+    "cleared": "Unassigned",
+    "failed": "Could not assign"
+  },
+  "validation": {
+    "required": "This is required",
+    "taxId": "A 13-digit tax ID",
+    "branchCode": "A 5-digit branch code",
+    "code": "3+ capitals, digits, - or _",
+    "amount": "An amount, e.g. 150000 or 150000.50",
+    "json": "Invalid JSON"
+  }
+}

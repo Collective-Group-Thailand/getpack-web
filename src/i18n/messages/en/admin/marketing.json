@@ -1,0 +1,437 @@
+{
+  "nav": {
+    "label": "Marketing sections",
+    "campaigns": "Campaigns",
+    "promotions": "Promotions",
+    "referrals": "Referrals",
+    "loyalty": "Loyalty"
+  },
+  "budget": {
+    "label": "Budget of {code}",
+    "text": "{spent} of {budget} spent ({pct}); alert at {threshold}",
+    "compact": "{spent} · {pct}"
+  },
+  "campaigns": {
+    "title": "Campaigns",
+    "description": "A THB budget per campaign; the API alerts at the threshold and stops at the budget (D-154)",
+    "statusesLabel": "Campaign statuses",
+    "all": "All",
+    "search": "Search campaigns",
+    "create": "New campaign",
+    "createTitle": "New campaign",
+    "empty": "No campaigns",
+    "alerted": "Alerted",
+    "columns": {
+      "campaign": "Campaign",
+      "status": "Status",
+      "budget": "Budget used",
+      "window": "Window",
+      "promotions": "Promotions",
+      "alert": "Budget alert"
+    },
+    "fields": {
+      "name": "Name",
+      "code": "Code",
+      "budget": "Budget (THB)",
+      "startsOn": "Starts",
+      "endsOn": "Ends",
+      "goals": "Goals"
+    },
+    "hints": {
+      "code": "Capitals, e.g. YEAR-END-2026; fixed once created",
+      "budget": "All its promotions' discounts together stay within it"
+    }
+  },
+  "campaign": {
+    "pageTitle": "Campaign",
+    "breadcrumb": "Breadcrumb",
+    "campaigns": "Campaigns",
+    "window": "{from} – {to}",
+    "edit": "Edit",
+    "actions": {
+      "activate": {
+        "label": "Activate",
+        "title": "Activate the campaign",
+        "body": "{code} starts on its date; its {count} promotions spend this budget."
+      },
+      "pause": {
+        "label": "Pause",
+        "title": "Pause the campaign",
+        "body": "{code} stops discounting for now; {spent} spent so far."
+      },
+      "resume": {
+        "label": "Resume",
+        "title": "Resume the campaign",
+        "body": "{code} discounts again within its remaining budget."
+      },
+      "end": {
+        "label": "End",
+        "title": "End the campaign",
+        "body": "{code} and its {count} promotions end. This cannot be undone."
+      }
+    },
+    "exhausted": "Budget exhausted — the API stopped the campaign; raise the budget to resume",
+    "alerted": "{threshold} of the budget used",
+    "budget": "Budget",
+    "budgetNote": "The API's figures; the tick is the alert threshold (setting campaigns.budget_alert_pct)",
+    "performance": "Performance",
+    "metrics": {
+      "redemptions": "Redemptions",
+      "orders": "Orders",
+      "discount": "Discount given",
+      "revenue": "Revenue",
+      "newCustomers": "New customers"
+    },
+    "goals": "Goals",
+    "promotions": "Promotions",
+    "addPromotion": "Add a promotion",
+    "noPromotions": "No promotions yet",
+    "promotion": "Promotion",
+    "kind": "Kind",
+    "kinds": {
+      "coupon": "Coupon code",
+      "automatic": "Automatic",
+      "referral": "Referral"
+    },
+    "benefit": "Benefit",
+    "status": "Status",
+    "used": "Used",
+    "reason": "Reason",
+    "changed": "Status changed",
+    "failed": "The action failed",
+    "editTitle": "Edit the campaign",
+    "editBody": "{code}; saved under its ETag, so a concurrent edit is refused.",
+    "save": "Save",
+    "saved": "Saved",
+    "fields": {
+      "name": "Name",
+      "budget": "Budget (THB)",
+      "budgetHint": "Not below the {spent} already spent",
+      "startsOn": "Starts",
+      "endsOn": "Ends",
+      "goals": "Goals"
+    }
+  },
+  "promotions": {
+    "title": "Promotions",
+    "description": "Coupons, automatic promotions and the referral discount, in the order the engine applies them; the margin guard always holds (D-053)",
+    "kindsLabel": "Promotion kinds",
+    "all": "All",
+    "kinds": {
+      "coupon": "Coupon code",
+      "automatic": "Automatic",
+      "referral": "Referral"
+    },
+    "reorder": "Reorder",
+    "create": "New promotion",
+    "empty": "No promotions",
+    "usage": "{count} uses · {amount}",
+    "capped": "{amount} capped by the margin guard",
+    "noEnd": "open",
+    "columns": {
+      "priority": "Priority",
+      "promotion": "Promotion",
+      "kind": "Kind",
+      "status": "Status",
+      "campaign": "Campaign",
+      "stacking": "Stacking",
+      "usage": "Usage",
+      "window": "Window"
+    },
+    "stacking": {
+      "exclusive": "Exclusive",
+      "stackable": "Stackable",
+      "best_of": "Best of"
+    },
+    "priority": {
+      "title": "Promotion order",
+      "body": "The engine tries them top to bottom",
+      "save": "Save order",
+      "saved": "Order saved",
+      "failed": "Could not save the order",
+      "up": "Move {name} up",
+      "down": "Move {name} down"
+    }
+  },
+  "promotion": {
+    "pageTitle": "Promotion",
+    "breadcrumb": "Breadcrumb",
+    "promotions": "Promotions",
+    "new": "New",
+    "newTitle": "New promotion",
+    "save": "Save",
+    "create": "Create",
+    "created": "Created as a draft; activate it when ready",
+    "saved": "Saved",
+    "failed": "Could not save",
+    "required": "Enter a name and a start date",
+    "changed": "Status changed",
+    "reason": "Reason",
+    "basics": "Basics",
+    "conditions": "Conditions",
+    "conditionsNote": "Nothing chosen means any; the API checks them all on the cart",
+    "benefit": "Benefit",
+    "benefitNote": "What the customer gets; only the fields of its type are used",
+    "benefitLocked": "Already redeemed: the benefit is fixed — create a new promotion instead",
+    "limits": "Limits",
+    "marginGuard": "The API never lets discounts take an order below the margin floor; the excess is capped and reported (D-053)",
+    "noCampaign": "No campaign",
+    "addTier": "Add a tier",
+    "removeTier": "Remove tier {no}",
+    "usage": {
+      "redemptions": "Redemptions",
+      "discount": "Discount given",
+      "capped": "Capped by the margin guard"
+    },
+    "fields": {
+      "name": "Name",
+      "kind": "Kind",
+      "campaign": "Campaign",
+      "startsOn": "Starts",
+      "endsOn": "Ends",
+      "stacking": "Stacking",
+      "stackGroup": "Stack group",
+      "channels": "Channels",
+      "segments": "Customer segments",
+      "productTypes": "Product types",
+      "minOrderValue": "Minimum order value",
+      "minQuantity": "Minimum quantity",
+      "firstOrderOnly": "First order only",
+      "benefitType": "Benefit type",
+      "pct": "Discount",
+      "amount": "Discount (THB)",
+      "maxAmount": "Maximum (THB)",
+      "rounds": "Free revision rounds",
+      "multiplier": "Points multiplier",
+      "points": "Bonus points",
+      "tiers": "Tiers",
+      "tierFrom": "Tier {no}: from (THB)",
+      "tierPct": "Tier {no}: discount",
+      "usageLimitTotal": "Total uses",
+      "usageLimitPerCustomer": "Per customer",
+      "budgetAmount": "Promotion budget (THB)"
+    },
+    "hints": {
+      "kindFixed": "Fixed once created",
+      "endsOn": "Empty = no end",
+      "stackGroup": "Promotions of one group never combine",
+      "baht": "THB",
+      "cap": "Empty = no cap",
+      "unlimited": "Empty = unlimited",
+      "budget": "Empty = the campaign's budget"
+    },
+    "kindHints": {
+      "coupon": "Customers type a code; generate codes after saving",
+      "automatic": "Applies by itself when its conditions match",
+      "referral": "The referee's first-order discount (D-136)"
+    },
+    "kinds": {
+      "coupon": "Coupon code",
+      "automatic": "Automatic",
+      "referral": "Referral"
+    },
+    "stacking": {
+      "exclusive": "Exclusive",
+      "stackable": "Stackable",
+      "best_of": "Best of"
+    },
+    "stackingHints": {
+      "exclusive": "Never combined",
+      "stackable": "Combines with other stackable ones",
+      "best_of": "The API picks the best for the customer"
+    },
+    "channels": {
+      "web": "Web",
+      "cs": "CS",
+      "line": "LINE",
+      "b2b": "B2B"
+    },
+    "segments": {
+      "new": "New",
+      "returning": "Returning",
+      "b2b_company": "B2B company"
+    },
+    "benefits": {
+      "percent": "Percentage off",
+      "fixed": "Fixed amount off",
+      "tiered_percent": "Tiered by order value",
+      "free_shipping": "Free shipping",
+      "free_design_rounds": "Free revision rounds",
+      "free_mockup": "Free mockup",
+      "points_multiplier": "Points multiplier",
+      "bonus_points": "Bonus points"
+    },
+    "actions": {
+      "activate": {
+        "label": "Activate",
+        "title": "Activate the promotion",
+        "body": "{name} applies within its conditions and window."
+      },
+      "pause": {
+        "label": "Pause",
+        "title": "Pause the promotion",
+        "body": "{name} stops for now; open carts are re-priced."
+      },
+      "resume": {
+        "label": "Resume",
+        "title": "Resume the promotion",
+        "body": "{name} applies again."
+      },
+      "end": {
+        "label": "End",
+        "title": "End the promotion",
+        "body": "{name} can no longer be used. This cannot be undone."
+      }
+    }
+  },
+  "coupons": {
+    "title": "Coupon codes",
+    "note": "One code customers type, or a batch of unique codes to hand out",
+    "generate": "Generate codes",
+    "generateTitle": "Generate codes",
+    "generateBody": "For {name}; one batch per click, even if retried",
+    "generateSubmit": "Generate",
+    "generated": "Codes generated",
+    "failed": "The action failed",
+    "needCode": "Enter the code",
+    "kind": "Kind",
+    "kinds": {
+      "single": "One code",
+      "bulk_unique": "Unique batch"
+    },
+    "code": "Code",
+    "codeHint": "4–30 capitals, digits or -",
+    "count": "How many",
+    "countHint": "Up to 10,000; each usable once",
+    "prefix": "Prefix",
+    "prefixHint": "Optional, up to 10",
+    "batch": {
+      "single": "One code",
+      "bulk_unique": "{count} codes {prefix}",
+      "per_customer": "{count} per-customer codes"
+    },
+    "empty": "No codes yet",
+    "emptyBody": "A coupon promotion needs codes before it can be activated",
+    "more": "{shown} of {total} codes shown",
+    "columns": {
+      "code": "Code",
+      "status": "Status",
+      "used": "Used"
+    },
+    "usedOf": "{used}/{limit}",
+    "disable": "Disable",
+    "disableCode": "Disable {code}",
+    "disableTitle": "Disable {code}",
+    "disableBody": "{code} can no longer be used; its {used} past uses stay",
+    "disabled": "Code disabled",
+    "reason": "Reason"
+  },
+  "referrals": {
+    "title": "Referrals",
+    "description": "The referrer earns points once the referee's first order passes the claim window; matches with the referrer are held for Marketing's review in approvals (D-136)",
+    "statusesLabel": "Referral statuses",
+    "all": "All",
+    "empty": "No referrals",
+    "columns": {
+      "referrer": "Referrer",
+      "referee": "Referee",
+      "status": "Status",
+      "flags": "Matches",
+      "firstOrder": "First order",
+      "reward": "Reward",
+      "attributed": "Referred"
+    },
+    "flags": {
+      "phone_match": "Same phone",
+      "address_match": "Same address",
+      "card_match": "Same card",
+      "device_match": "Same device",
+      "monthly_cap_reached": "Monthly cap reached"
+    },
+    "claimWindow": "claim window ends",
+    "noOrder": "No order yet",
+    "points": "{points} pts",
+    "review": "Review",
+    "reviewFor": "Review {code}"
+  },
+  "loyalty": {
+    "title": "Loyalty and referral rules",
+    "description": "The values the API earns and rewards by; each change is a new dated version (D-063) by the setting's owner",
+    "none": "No settings found",
+    "history": "History",
+    "change": "New version",
+    "notSet": "Not set",
+    "inForce": "Version {no} in force since",
+    "scheduled": "{count} scheduled",
+    "pending": "Pending approval",
+    "changeTitle": "New version: {name}",
+    "changeBody": "The value in force stays until the new one applies; the API validates it",
+    "save": "Save version",
+    "saved": "Version saved",
+    "failed": "Could not save",
+    "needReason": "Give a reason of at least 3 characters",
+    "needDate": "Choose the effective date",
+    "when": "Applies",
+    "now": "Now",
+    "later": "From a date",
+    "effectiveFrom": "Effective from",
+    "reason": "Reason",
+    "row": "Row {no}",
+    "settings": {
+      "loyalty_earn_rate": {
+        "title": "Earn rate",
+        "note": "One point per this much paid, before VAT, excluding shipping",
+        "bahtPerPoint": "THB per point",
+        "basis": "Basis"
+      },
+      "loyalty_point_value": {
+        "title": "Point value (THB per point)",
+        "note": "Converts baht rewards into points; used in posting"
+      },
+      "loyalty_tiers": {
+        "title": "Tiers",
+        "note": "By 12-month spend, re-evaluated nightly",
+        "tier": "Tier",
+        "minSpend12m": "12-month spend from (THB)",
+        "multiplier": "Multiplier"
+      },
+      "loyalty_activity_rewards": {
+        "title": "Activity rewards",
+        "note": "In baht, converted at the point value (rounded down)",
+        "signupBaht": "Sign-up (THB)",
+        "lineLinkingBaht": "LINE linking (THB)",
+        "reviewBaht": "Review (THB)"
+      },
+      "loyalty_redemption_limits": {
+        "title": "Redemption limits",
+        "note": "Minimum and maximum share of the order; never below the margin floor",
+        "minimumBaht": "Minimum (THB)",
+        "maxPctOfOrder": "Maximum (% of order)"
+      },
+      "loyalty_points_expiry": {
+        "title": "Points expiry",
+        "note": "Counted per earning",
+        "monthsPerEarning": "Months",
+        "reminderDaysBefore": "Reminder (days before)"
+      },
+      "referral_rules": {
+        "title": "Referral rewards",
+        "note": "Referee: first-order discount; referrer: points after the claim window",
+        "refereeDiscountPct": "Referee discount (%)",
+        "refereeDiscountMaxBaht": "Maximum (THB)",
+        "referrerRewardBaht": "Referrer reward (THB)",
+        "maxRewardedReferralsPerMonth": "Rewarded per month (max)"
+      },
+      "campaigns_budget_alert_pct": {
+        "title": "Campaign budget alert (%)",
+        "note": "Marketing is alerted at this share of the budget"
+      },
+      "values": {
+        "paid_before_vat_excluding_shipping": "Paid before VAT, excl. shipping",
+        "member": "Member",
+        "silver": "Silver",
+        "gold": "Gold"
+      }
+    }
+  }
+}

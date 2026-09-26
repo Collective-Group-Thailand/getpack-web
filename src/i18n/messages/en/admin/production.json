@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "label": "Production sections",
+    "board": "Production board",
+    "inspections": "QC inspections",
+    "scorecards": "Scorecards"
+  },
+  "board": {
+    "title": "Production board",
+    "description": "Live jobs by current milestone; at-risk comes from the SLA engine's forecast (D-074, D-075)",
+    "all": "All",
+    "atRiskOnly": "At risk only",
+    "count": "{count} jobs",
+    "risky": "{count} at risk",
+    "inspection": "Packio inspection required",
+    "promised": "Promised",
+    "atRisk": "At risk",
+    "predicted": "forecast {date}",
+    "empty": "No jobs"
+  },
+  "inspections": {
+    "title": "QC inspections",
+    "description": "Packio's risk-based inspections, ISO 2859-1 level II (D-076)",
+    "columns": {
+      "job": "Job",
+      "reasons": "Why selected",
+      "sample": "Sample",
+      "found": "Defects found",
+      "status": "Status",
+      "when": "When"
+    },
+    "reasons": {
+      "value_100_pct": "Value ≥ THB 300,000: 100 %",
+      "value_band_sample": "Value-band sample",
+      "trial_factory": "Trial factory",
+      "high_defect_factory": "High-defect factory",
+      "special_finish_or_food": "Special finish or food"
+    },
+    "sample": "{sample} of {lot}",
+    "accept": "Accept at critical {critical} · major {major} · minor {minor}",
+    "foundValue": "Critical {critical} · major {major} · minor {minor}",
+    "record": "Record",
+    "recordFor": "Record {job}",
+    "recordTitle": "Record inspection {job}",
+    "recordBody": "{job} at {factory}, sample {sample}: accept at critical {critical}, major {major}, minor {minor}; the API judges pass or fail from these numbers.",
+    "grades": {
+      "critical": "Critical",
+      "major": "Major",
+      "minor": "Minor"
+    },
+    "notes": "Notes",
+    "passed": "Passed",
+    "failed": "Failed",
+    "recordFailed": "Could not record",
+    "empty": "No inspections"
+  },
+  "scorecards": {
+    "title": "Factory scorecards",
+    "description": "The monthly card the factory also sees; used in allocation (D-155, D-075)",
+    "month": "Month {month}",
+    "factory": "Factory",
+    "jobs": "Jobs",
+    "metrics": {
+      "onTimeAcceptancePct": "On-time acceptance",
+      "onTimeShippingPct": "On-time shipping",
+      "qcFirstPassPct": "QC first pass",
+      "onTimeUpdatesPct": "On-time updates",
+      "claimRatePct": "Claim rate"
+    }
+  }
+}

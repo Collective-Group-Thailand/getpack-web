@@ -11,7 +11,8 @@
  * So this module never returns data. It turns an event into a set of cache keys to drop, and
  * TanStack Query does the rest.
  *
- * CONTRACT-REQUEST `realtime.auth` and `realtime.stream`: neither endpoint exists yet.
+ * The frames are packio-api B1.3's `{ type, id?, channel }`. `channel` says which of this
+ * principal's channels it came from; it is not needed to decide what to refetch, so it is dropped.
  */
 
 import { queryKeys } from "@/lib/api/query-keys";

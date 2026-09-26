@@ -1,0 +1,427 @@
+{
+  "list": {
+    "title": "Orders",
+    "description": "The CS work queues, most urgent first.",
+    "queuesLabel": "Queues",
+    "queues": {
+      "all": "All",
+      "waiting_payment": "Awaiting payment",
+      "slip_review": "Slips to check",
+      "awaiting_artwork": "Awaiting artwork",
+      "ready_to_produce": "Ready to produce",
+      "due_soon": "Due soon",
+      "late": "Late"
+    },
+    "search": "Search orders",
+    "searchPlaceholder": "Order code, name or phone",
+    "columns": {
+      "order": "Order",
+      "customer": "Customer",
+      "quantity": "Quantity",
+      "amount": "Total",
+      "status": "Status",
+      "factory": "Factory",
+      "ship": "Ship by",
+      "sla": "SLA",
+      "created": "Created"
+    },
+    "slipWaiting": "Slip to check",
+    "noFactory": "Not assigned",
+    "urgency": {
+      "due_soon": "Due soon",
+      "late": "Late"
+    },
+    "channel": "Channel",
+    "channels": {
+      "web": "Web",
+      "cs": "CS",
+      "line": "LINE",
+      "b2b": "B2B"
+    },
+    "createdFrom": "Created from",
+    "createdTo": "Created to",
+    "sendReminders": "Send payment reminders",
+    "remindersSent": "{count} reminders sent",
+    "remindersSkipped": "{count} skipped — no longer awaiting payment",
+    "remindersFailed": "Could not send reminders",
+    "create": "Create order for a customer",
+    "emptyTitle": "No orders in this queue",
+    "emptyBody": "New work appears here as soon as it enters the queue."
+  },
+  "detail": {
+    "title": "Order",
+    "breadcrumb": "Breadcrumb",
+    "orders": "Orders",
+    "headline": "{customer} · {amount} · group {group}",
+    "urgency": {
+      "due_soon": "Due soon",
+      "late": "Late"
+    },
+    "slipWaiting": "A slip is waiting for Finance — see Payments.",
+    "belowFloor": "This order is below the margin floor.",
+    "tabsLabel": "Order sections",
+    "tabs": {
+      "summary": "Summary",
+      "items": "Items & prices",
+      "payments": "Payments",
+      "artwork": "Artwork & proofs",
+      "production": "Production",
+      "shipments": "Shipments",
+      "documents": "Documents",
+      "claims": "Claims"
+    },
+    "channels": {
+      "web": "Web",
+      "cs": "CS",
+      "line": "LINE",
+      "b2b": "B2B"
+    },
+    "designOptions": {
+      "own_file": "Customer's own file",
+      "online_designer": "Online designer",
+      "hired_design": "Hired design",
+      "free_design": "Free design"
+    },
+    "mockupOptions": {
+      "none": "No mockup",
+      "with_print": "Printed mockup",
+      "without_print": "Blank mockup"
+    },
+    "startModes": {
+      "auto": "Automatic",
+      "manual_exception": "Manual (exception)"
+    },
+    "summary": {
+      "title": "Summary",
+      "customer": "Customer",
+      "customerCode": "Customer code",
+      "channel": "Channel",
+      "group": "Order group",
+      "productType": "Product type",
+      "quantity": "Quantity",
+      "leadTime": "Lead time",
+      "days": "{days} working days",
+      "promised": "Promised ship date",
+      "tolerance": "Quantity tolerance",
+      "toleranceValue": "short {shortage} / over {overage}",
+      "design": "Artwork",
+      "mockup": "Mockup",
+      "factory": "Factory",
+      "po": "PO number",
+      "startMode": "Production start",
+      "remarks": "Internal remarks",
+      "cancelReason": "Cancellation reason",
+      "specs": "Specification",
+      "destinations": "Delivery",
+      "taxProfile": "Tax invoice details",
+      "taxName": "Name",
+      "taxId": "Tax id",
+      "branch": "Branch",
+      "withholds": "Withholds tax",
+      "taxAddress": "Address",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "items": {
+      "parts": "Parts and prices",
+      "partPrice": "{unit} each · {total}",
+      "lines": "Invoice lines",
+      "lineNo": "#",
+      "description": "Item",
+      "quantity": "Qty",
+      "unitPrice": "Unit price",
+      "net": "Net",
+      "vat": "VAT",
+      "gross": "Gross",
+      "lineTypes": {
+        "product": "Product",
+        "design_fee": "Design fee",
+        "structure_design_fee": "Structure design",
+        "mockup": "Mockup",
+        "plate": "Plate",
+        "die_block": "Die block",
+        "shipping": "Shipping",
+        "service": "Service",
+        "extra_revision": "Extra revision"
+      },
+      "totals": {
+        "net": "Net",
+        "discount": "Discount",
+        "shipping": "Shipping",
+        "vat": "VAT",
+        "gross": "Total"
+      },
+      "margin": {
+        "title": "Cost and margin",
+        "hint": "Shown only to roles that may see factory cost (D-141).",
+        "buyCost": "Factory buy price",
+        "amount": "Margin",
+        "pct": "Margin %",
+        "belowFloor": "below the floor"
+      }
+    },
+    "payments": {
+      "schedule": "Payment schedule",
+      "scheduleHint": "Instalments required before production must be paid before it starts (D-020).",
+      "seq": "#",
+      "instalment": "Instalment",
+      "trigger": "Due",
+      "requiredBefore": "Required before",
+      "dueAt": "Due date",
+      "gross": "Amount",
+      "paid": "Paid",
+      "status": "Status",
+      "triggers": {
+        "at_checkout": "At checkout",
+        "before_production": "Before production",
+        "before_shipping": "Before shipping",
+        "on_delivery": "On delivery",
+        "days_after_delivery": "After delivery"
+      },
+      "requiredBeforeValues": {
+        "production": "Production",
+        "shipping": "Shipping"
+      },
+      "payments": "Payments",
+      "noPayments": "No payments yet",
+      "methods": {
+        "scb_qr": "PromptPay QR (SCB)",
+        "scb_qr_cross_bank": "Cross-bank QR",
+        "card_2c2p": "Card",
+        "online_banking_2c2p": "Online banking",
+        "bank_transfer_slip": "Bank transfer with slip",
+        "store_credit": "Store credit",
+        "credit_term_transfer": "Credit-term transfer"
+      },
+      "reference": "Reference {ref}",
+      "declared": "Declared {amount} at {at}",
+      "checks": "Automatic slip checks",
+      "receiver": "Receiver",
+      "amount": "Amount",
+      "date": "Date",
+      "notDuplicate": "Not a duplicate",
+      "checkPassed": "passed",
+      "checkFailed": "failed",
+      "notChecked": "Not checked automatically yet",
+      "reviewNote": "Note: {note} ({by})",
+      "approve": "Approve slip",
+      "reject": "Reject"
+    },
+    "artwork": {
+      "title": "Artwork",
+      "noSubmissions": "No artwork yet",
+      "noSubmissionsBody": "The customer has not sent a file yet, or a design is in progress.",
+      "version": "Version {no}",
+      "sources": {
+        "upload": "Upload",
+        "designer": "Online designer",
+        "design_service": "Design service"
+      },
+      "page": "page {page}",
+      "checks": {
+        "size_mismatch": "Size does not match the dieline",
+        "missing_bleed": "Missing bleed",
+        "low_resolution": "Low resolution",
+        "rgb_colour": "RGB colour",
+        "fonts_not_embedded": "Fonts not embedded",
+        "safe_zone": "Content outside the safe zone",
+        "thin_lines": "Lines too thin",
+        "overprint": "Overprint set",
+        "ink_coverage": "Ink coverage too high"
+      },
+      "proofs": "Proofs",
+      "openPrepress": "Open in prepress",
+      "noProofs": "No proof sent yet",
+      "proofVersion": "Proof v{no}",
+      "openAnnotations": "{count} open comments",
+      "channels": {
+        "web": "via web",
+        "line_liff": "via LINE",
+        "cs_on_behalf": "by CS on behalf"
+      }
+    },
+    "production": {
+      "noJobs": "Not in production yet",
+      "noJobsBody": "Production starts by itself once artwork is approved and the pre-production instalments are paid (D-073).",
+      "job": "Job {jobNo}",
+      "atRisk": "At risk",
+      "kinds": {
+        "production": "Production",
+        "mockup": "Mockup",
+        "reproduction": "Reproduction"
+      },
+      "promised": "ship by {date}",
+      "awaitingAcceptance": "Waiting for the factory to accept by {at}",
+      "noMilestones": "No progress yet",
+      "doneAt": "done {at}",
+      "dueAt": "due {at}",
+      "late": "late"
+    },
+    "shipments": {
+      "none": "No shipments yet",
+      "noneBody": "Shipments are created once production is done.",
+      "carrier": "Carrier",
+      "carriers": {
+        "factory_fleet": "Factory fleet",
+        "flash_express": "Flash Express",
+        "deliveree": "Deliveree"
+      },
+      "tracking": "Tracking",
+      "quantity": "Quantity",
+      "cartons": "{count} cartons",
+      "destination": "Destination",
+      "deliveredAt": "Delivered",
+      "pod": "Delivered: {name} received {quantity}",
+      "podMissing": "Delivered, but there is no proof of delivery yet"
+    },
+    "documents": {
+      "title": "Documents",
+      "issuer": "Issued by Collective Group (Thailand) under the Packio brand (D-010).",
+      "type": "Type",
+      "number": "Number",
+      "issuedAt": "Issued",
+      "amount": "Amount",
+      "status": "Status",
+      "none": "No documents yet",
+      "types": {
+        "qt": "Quotation",
+        "iv": "Invoice",
+        "tr": "Tax invoice",
+        "rc": "Receipt",
+        "cn": "Credit note",
+        "dn": "Debit note"
+      }
+    },
+    "claims": {
+      "title": "Claims",
+      "none": "No claims",
+      "noneBody": "Customers can claim within 7 days of receipt (D-082).",
+      "types": {
+        "damaged": "Damaged",
+        "wrong_spec": "Wrong spec",
+        "print_defect": "Print defect",
+        "quantity_short": "Short quantity",
+        "late": "Late",
+        "other": "Other"
+      }
+    }
+  },
+  "actions": {
+    "failed": "That did not work",
+    "restate": "Order {code} for {customer}, {amount}.",
+    "labels": {
+      "approve_slip": "Approve slip",
+      "reject_slip": "Reject slip",
+      "start_production": "Start production",
+      "cancel": "Cancel order",
+      "send_payment_reminder": "Send payment reminder",
+      "record_slip": "Upload slip for customer"
+    },
+    "approveSlip": {
+      "title": "Approve this slip?",
+      "body": "Accept {amount} for order {code}. This is posted to the ledger and cannot be undone.",
+      "confirm": "Approve slip",
+      "note": "Note",
+      "noteHint": "e.g. matched against the bank statement",
+      "done": "Slip approved"
+    },
+    "rejectSlip": {
+      "title": "Reject this slip?",
+      "body": "The customer of order {code} is told why and can upload another.",
+      "confirm": "Reject",
+      "reason": "Reason the customer sees",
+      "reasonHint": "e.g. the amount does not match what is due",
+      "done": "Slip rejected"
+    },
+    "startProduction": {
+      "title": "Start production manually?",
+      "body": "Production normally starts by itself once artwork is approved and the pre-production instalments are paid; starting manually is an audited exception with a reason (D-073).",
+      "confirm": "Start production",
+      "reason": "Why this is an exception",
+      "reasonHint": "Recorded in the audit log",
+      "done": "Released to the factory"
+    },
+    "cancel": {
+      "title": "Cancel this order?",
+      "body": "Cancelling cannot be undone.",
+      "paidBody": "Payments have been made; they go to the refund or credit-note flow. Cancelling cannot be undone.",
+      "confirm": "Cancel order",
+      "reasonCode": "Reason",
+      "chooseReason": "Choose a reason",
+      "note": "Details",
+      "creditNote": "This reason needs a credit note",
+      "done": "Order cancelled"
+    },
+    "remind": {
+      "title": "Send a payment reminder?",
+      "body": "To {customer}, for {amount}, on the channels they chose.",
+      "confirm": "Send",
+      "done": "Reminder sent"
+    },
+    "recordSlip": {
+      "title": "Upload a slip for the customer",
+      "body": "The slip for order {code} goes through the same checks as one the customer uploads.",
+      "confirm": "Upload",
+      "incomplete": "Fill in every field",
+      "done": "Slip uploaded — waiting for Finance",
+      "instalment": "Instalment",
+      "drop": "Drop the slip here, or",
+      "chosen": "Chosen: {name}",
+      "browse": "choose a file",
+      "tooLarge": "{name} is larger than 10 MB",
+      "wrongType": "{name} must be an image or a PDF",
+      "amount": "Amount on the slip",
+      "amountHint": "As shown on the slip",
+      "baht": "THB",
+      "transferredAt": "Transferred at",
+      "bangkokTime": "Bangkok time"
+    }
+  },
+  "rail": {
+    "timeline": "Timeline",
+    "timelineFailed": "Could not load the timeline",
+    "internal": "internal",
+    "more": "Load more",
+    "promisedOnTime": "on time ({at})",
+    "promisedLate": "later than promised ({at})",
+    "notes": "Internal notes",
+    "newNote": "New note",
+    "noteHint": "Customers and factories never see these.",
+    "mention": "Mention a colleague",
+    "mentionPlaceholder": "Type a name to mention",
+    "noPeople": "No one found",
+    "clearMention": "Clear",
+    "addNote": "Add note",
+    "noteFailed": "Could not add the note"
+  },
+  "group": {
+    "title": "Order group",
+    "breadcrumb": "Breadcrumb",
+    "orders": "Orders",
+    "headline": "{customer} · {amount}",
+    "placedBy": "Placed by",
+    "placedAt": "Placed",
+    "channel": "Channel",
+    "po": "PO number",
+    "expiresAt": "Payment expires",
+    "total": "Total",
+    "ordersTitle": "Orders in this group",
+    "order": "Order",
+    "product": "Product",
+    "amount": "Amount",
+    "status": "Status",
+    "schedule": "Payment schedule",
+    "instalment": "Instalment",
+    "paid": "Paid"
+  },
+  "party": {
+    "title": "Orders",
+    "order": "Order",
+    "productType": "Product type",
+    "status": "Status",
+    "amount": "Total",
+    "placedBy": "Placed by",
+    "created": "Placed",
+    "empty": "No orders yet"
+  }
+}
