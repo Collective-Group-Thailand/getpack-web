@@ -20,6 +20,51 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-26 | **F2 Deliverable 2.8** — logistics, claims, analytics, hardening | Five contract-request groups (B4.3, B4.5, B6.1, B6.2) with stateful mocks: shipments (queues, split, fallback carrier quotes and booking, exceptions, labels, POD review with the tolerance result), claims (evidence, liability by rule with a permissioned override, idempotent resolutions), the demand dashboard on a new accessible `Chart` (Recharts, data-table fallback, loaded on demand) with suppressed small groups and the anonymised prospectus, and typed operational reports with the API's totals. Hardening: every role's menu opens cleanly (14 roles), axe on the new screens, chart visual baselines, and zod out of the browser — admin shell 490 → 363 KB, lists 501 → 390 KB — with the admin Lighthouse set split and re-ratcheted. 595 unit, 211 e2e, 8 visual | F3 onwards | See the notes under the F2.8 heading |
 | 2026-09-26 | **F3 Phase 3.1** — IA, content, auth, search | Seven storefront contract requests (price hints, product FAQs, public categories, profile, order by code; category filter and FAQ search hits as docs-only) with a storefront mock that reads the back office's own catalogue/CMS rows and two customer personas; every F3 route answers (later phases as `noindex` placeholders); a cached public catalogue read (Next data cache, no token, no per-request header); home from the API's sections and banners; `/products`, `/products/[key]` (category, product or stock product), articles, `/faq`; Product/BreadcrumbList/FAQPage JSON-LD; global search (GET page + instant dialog); Google/Apple/LINE sign-in with SDKs on click, PDPA consent after sign-in, progressive profiling; `/account` guarded; four `src/ui` components; storefront JS 341 → 256 KB. 639 unit (+31), 236 e2e (+25) | ISR/CDN for storefront HTML; the consent preferences centre (3.4); legal page content; LINE `link_phone`; cookie-banner choice synced to the account; the last 106 KB to the 150 KB budget | Caching at the data level because the CSP nonce makes every page dynamic; `/products/[key]` resolves category → product → stock; FAQ search client-side until `store.search-faq-hits`; consent asked after the session exists (texts need a customer token); `pnpm dev:mock` does not intercept server fetches (found, pre-existing, open) |
 | 2026-09-27 | **F3 Phase 3.2** — configurator, 3D/2D preview, instant quote, RFQ | Adopted packio-api's committed B2.3/B2.4 contract (`store.quotes.calculate` for folding); nine store contract-request groups with mocks (configurator, the six other calculators' configuration, saved quotes with share/PDF, promo check, support channels, RFQ forms, RFQs, cart) whose RFQs are the RFQ desk's own rows; `/configure/[slug]` for the seven instant types — adaptive stepper, pattern size rules explained as typed, display-only units, choices with swatches and explainers, quantity tiers, postcode, design option, D-072 mockup, promo code — beside a live CSS 3D box / 2D mockup and the quote dock (debounced, cancelled, price breaks, tolerance, validity, route to RFQ with the API's reason; add to cart / save / share / PDF behind a sign-in gate, design now, ask CS on LINE); `/rfq/[category]`, `/account/rfqs` and the status page with messages and a confirmed acceptance into the cart; six `src/ui` components. 660 unit (+21), 247 e2e (+11) | Cart page, checkout (3.3); `/account/quotes` (3.4, the save toast links to it); estimated receive date in the dock (not on committed HEAD); the other six calculators' own DTOs | Live price from the published endpoint, quotation kept only on an action; one cast for the non-folding bodies and the duplicate `AssemblyDto`; saving/sharing needs sign-in; mockup and promo applied on the quotation, not in the live price |
+| 2026-09-27 | **F3 Phase 3.3** — cart, checkout, instalments, payments, promotions, points | Four contract-request groups with mocks (address book, checkout preview/placement, payments, instalments) whose orders are the back office's own rows; `/cart` with per-line design option, split delivery across addresses (D-110) and confirmed re-pricing (D-051); `/checkout` on one page — contact, delivery, tax invoice (checksum-checked profiles, withholding), codes with automatic and capped promotions (D-053), points within the API's limits (D-133), the API's schedules (D-020), method — priced by the API's preview and re-priced on placement with old/new totals confirmed; `/checkout/pay/[paymentId]` (QR with countdown and live status, 2C2P redirect and `/checkout/return`, bank transfer with the slip, D-061) and `/account/instalments`; shared address and tax-profile forms. 668 unit (+8), 252 e2e (+5) | Account orders, documents (3.4) — the success page links to `/account/orders`; B2B credit-term checkout and PO numbers (3.7); realtime payment updates (polling covers it until the channel exists) | The schedule belongs to the order group, each order carrying its share; sign-in required for a cart; a slip that fails the automatic check joins the CS slip queue and Finance's decision flows back; the mock settles QR payments through a mock-only webhook endpoint and 2C2P through a mock gateway page |
+
+---
+
+## F3 Phase 3.3 — 2026-09-27
+
+Cart, checkout, payment schedules, payments and the instalment centre, on `feat/f3.3-checkout` (from `1f3e09d`, 3.2 merged). packio-api has published nothing of carts, checkout or payments, so all of it is contract requests, mocked; the mock creates the back office's own order rows, so a web order appears in the CS queues and a slip that fails the automatic check appears in Finance's slip review. Six commits: contract requests and mocks → mock fixes → cart/checkout/payments UI → e2e → this log.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| Every checkout figure is the API's | `CheckoutView` asks `store.checkout` preview again after each change (debounced); promotions, points, schedules, methods, withholding and "pay today" are rendered as returned |
+| A price never changes silently | placement carries the `previewToken`; `409 checkout.repriced` / `preview_expired` re-previews and shows the old and new totals for the customer to confirm again (e2e: another tab removes a line) |
+| An expired quotation is not checked out at its old price | the cart line says what changed and blocks checkout until "ยืนยันราคาใหม่" |
+| A split delivery adds up | the destinations editor shows "รวม x จาก y" and saves only when it matches; the API checks again (`cart.split_mismatch`) |
+| Placing and paying happen once per intent | one `Idempotency-Key` per placement (renewed after a refusal), a derived key for its first payment, one per slip |
+| The placement restates what is agreed | an `AlertDialog` with the total, what is due today and the method |
+| A tax id is plausible before it is sent | `isValidThaiTaxId` (13-digit checksum), unit-tested; the API validates again |
+| The QR page cannot lie about a payment | it shows the payment's status from the API, polled every 3 s until final; what the gateway puts in the return URL is not trusted |
+
+### Decisions taken, with reasons
+- **The payment schedule belongs to the order group** (one checkout), each order carrying its share of each instalment; paying a group instalment pays that share on every order in it, so the admin order screen and the customer's instalment centre agree.
+- **One page, not a wizard.** Contact → delivery → tax invoice → promotions → points → schedule → method → review is one scrolling page with the summary beside it: nothing is asked twice (WCAG 3.3.7) and the price stays in view while every choice is made.
+- **The cart's split is the default delivery** when any line is split; otherwise one address for everything. New addresses and tax profiles are added in a sheet without leaving the page.
+- **2C2P is left and come back to**; the return page reads the payment from the API. In the mock, the redirect passes through a mock-only gateway page that approves it and meta-refreshes back (the BFF would follow a real redirect itself).
+- **The QR's settlement arrives by webhook**; the page polls the payment (the realtime channel should announce `payment.updated`, noted in the request). E2E settles it through a mock-only `POST /v1/store/mock-gateway/payments/{id}/settle`.
+- **A slip whose amount does not match** waits for Finance with the D-061 deadline shown; in the mock it joins the CS slip queue, and Finance's approval in the back office flows back to the customer's payment (e2e walks it).
+- **Tests that own a cart sign in as their own customer**: a third mock persona, `buyer` (the second fake commerce customer), because parallel specs share the mock process and one test's add-to-cart re-priced another's checkout.
+
+### Contract requests raised (docs/contract-requests.md)
+`store.address-book`, `store.checkout`, `store.payments`, `store.instalments`.
+
+### Bugs found and fixed
+- The offline file-upload mock answered the back office only; storefront slips and RFQ files went to the contract's example S3 URL. It now serves every surface.
+- Cart images used the API's own image path, which a browser cannot reach; they go through the BFF like the catalogue's.
+- The mock's returning customer had 0 points, so the points step never showed; the storefront persona now holds 1,250, spent at checkout.
+
+### Deliberately not done
+- `/account/orders` and order detail (3.4) — the payment success page links there.
+- B2B credit-term checkout, PO numbers required per company, approver waits (3.7).
+- Card instalments (R2, D-111).
+
+### Open questions
+- **Backend**: the four requests; `payment.updated` on the realtime channel; whether withholding applies per line type (the mock uses a flat 1 %, obviously fake); the receipt per instalment as a signed URL on the instalment.
+- **Finance/legal**: the wording of the abbreviated tax invoice option at checkout.
 
 ---
 
