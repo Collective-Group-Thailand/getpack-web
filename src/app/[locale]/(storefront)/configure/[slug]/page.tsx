@@ -12,6 +12,7 @@ import {
 } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { productHref, rfqHref } from "@/features/customer/catalog/paths";
+import { getMyQuote } from "@/features/customer/configurator/api.server";
 import { seedFromConfiguration } from "@/features/customer/configurator/build";
 import { Configurator } from "@/features/customer/configurator/Configurator";
 import { getPathname, redirect } from "@/i18n/navigation";
@@ -22,7 +23,7 @@ import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Callout } from "@/ui/components/Callout";
 
 type Params = { slug: string };
-type Search = { share?: string };
+type Search = { share?: string; quote?: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
@@ -45,7 +46,7 @@ export default async function Page({
   params: Promise<Params>;
   searchParams: Promise<Search>;
 }) {
-  const [{ slug }, { share }] = await Promise.all([params, searchParams]);
+  const [{ slug }, { share, quote: quoteId }] = await Promise.all([params, searchParams]);
   const [t, tCatalog, locale, product, configurator, types, support, jar, origin] = await Promise.all([
     getTranslations("configurator"),
     getTranslations("catalog"),
@@ -63,8 +64,12 @@ export default async function Page({
   // Quoted on request only (D-043, D-100): the RFQ form is this product's configurator.
   if (!configurator) return redirect({ href: `${rfqPath}?from=${encodeURIComponent(slug)}`, locale });
 
+  const signedIn = Boolean(readAccessToken(jar));
   const shared = share ? await getSharedQuote(share) : null;
-  const seed = shared ? seedFromConfiguration(configurator, shared.configuration, shared.quantity) : undefined;
+  // One of the customer's own saved quotations, reopened from the account (F3 3.4).
+  const saved = quoteId && signedIn ? await getMyQuote(quoteId) : null;
+  const source = saved ?? shared;
+  const seed = source ? seedFromConfiguration(configurator, source.configuration, source.quantity) : undefined;
   const name = pick(locale, product.nameTh, product.nameEn);
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
 
@@ -91,11 +96,16 @@ export default async function Page({
           {t("sharedFrom", { code: shared.quoteCode })}
         </Callout>
       ) : null}
+      {saved ? (
+        <Callout tone="info" className="mt-4 max-w-2xl">
+          {t("savedFrom", { code: saved.quoteCode })}
+        </Callout>
+      ) : null}
       <div className="mt-6">
         <Configurator
           configurator={configurator}
           productName={{ th: product.nameTh, en: product.nameEn }}
-          signedIn={Boolean(readAccessToken(jar))}
+          signedIn={signedIn}
           lineOaId={support?.lineOaId ?? null}
           seed={seed}
           rfqPath={rfqPath}

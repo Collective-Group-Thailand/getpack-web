@@ -383,7 +383,11 @@
     "deliverRound": "Deliver design",
     "drawDieline": "Draw dieline",
     "requoteDesign": "Re-quote design",
-    "unknown": "Take action"
+    "unknown": "Take action",
+    "payInstalment": "Pay the next instalment",
+    "uploadArtwork": "Upload artwork",
+    "reviewProof": "Review the proof",
+    "openClaim": "Report a problem"
   },
   "points": {
     "pending": "Pending",

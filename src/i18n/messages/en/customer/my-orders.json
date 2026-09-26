@@ -1,0 +1,108 @@
+{
+  "title": "My orders",
+  "placed": "Order {code} placed",
+  "viewsLabel": "Filter orders",
+  "views": {
+    "active": "In progress",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "empty": {
+    "active": "No orders in progress",
+    "completed": "No completed orders yet",
+    "cancelled": "No cancelled orders"
+  },
+  "emptyBody": "No orders yet — start with your first box.",
+  "browse": "Browse products",
+  "row": "{quantity} {unit} · ordered {date}",
+  "shipBy": "Leaves the factory by {date}",
+  "payDue": "An instalment is due — pay it",
+  "documents": {
+    "download": "Get the download link",
+    "open": "Open the document",
+    "failed": "We could not get the link. Please try again.",
+    "types": {
+      "qt": "Quotation",
+      "iv": "Invoice / tax invoice",
+      "tr": "Tax invoice / receipt",
+      "rc": "Receipt",
+      "cn": "Credit note",
+      "dn": "Debit note"
+    },
+    "final": "final tax invoice",
+    "forInstalment": "instalment {seq}"
+  },
+  "detail": {
+    "title": "Order {code}",
+    "back": "All orders",
+    "placed": "Ordered {date} · group {group}",
+    "expires": "Please pay by {date}, or the order is cancelled automatically.",
+    "cancelled": "Cancelled on {date}",
+    "autoComplete": "Receipt is confirmed automatically on {date}; you can report a problem until {claim}.",
+    "timeline": "Progress",
+    "promised": "due {date}",
+    "photo": "Photo {name}",
+    "instalments": "Instalments",
+    "dueBy": "Due {date}",
+    "trigger": {
+      "none": "After delivery",
+      "production": "Before production",
+      "shipping": "Before delivery"
+    },
+    "continuePay": "Continue paying",
+    "pay": "Pay this instalment",
+    "groupShare": "Amounts are this order's share of a group of {count}; one payment covers the group.",
+    "documents": "Documents",
+    "noDocuments": "Documents are issued once a payment is made.",
+    "shipments": "Delivery",
+    "shipmentTo": "{quantity} {unit} to {name} ({province})",
+    "carrier": {
+      "factory_fleet": "Packio delivery",
+      "flash_express": "Flash Express",
+      "deliveree": "Deliveree"
+    },
+    "pod": "{name} received {quantity} pieces on {date}",
+    "publicTracking": "A tracking link to share",
+    "tolerance": "Quantity received",
+    "claims": "Problems reported",
+    "what": "What you ordered",
+    "quantity": "Quantity",
+    "design": "Artwork",
+    "designOptions": {
+      "own_file": "Your own file",
+      "online_designer": "Designed online",
+      "hired_design": "Packio designer",
+      "free_design": "Free design"
+    },
+    "toleranceTerms": "Accepted quantity variance",
+    "toleranceValue": "up to {shortage} fewer, {overage} more",
+    "price": "Price",
+    "discount": "Discount",
+    "minus": "−{amount}",
+    "vat": "VAT (included)",
+    "total": "Total",
+    "deliveryTo": "Delivery",
+    "taxInvoice": "Tax invoice to {name} ({taxId}), {branch}",
+    "po": "PO {po}",
+    "help": "A question about this order? Contact our team",
+    "documentMeta": "{number} · {date} · {amount}",
+    "shipmentMeta": "{shipment} · {carrier}",
+    "shipmentMetaTracking": "{shipment} · {carrier} · {tracking}",
+    "claimLine": "{claim} · {type} · {date}",
+    "destinationLine": "{name} · {quantity} {unit}"
+  },
+  "tolerance": {
+    "exact": "All {delivered} of {ordered} received",
+    "shortage_within": "{delivered} of {ordered} received, within the accepted variance; the shortfall comes back as {credit} credit",
+    "overage_within": "{delivered} of {ordered} received; the extra is free",
+    "outside_claim_opened": "{delivered} of {ordered} received, outside the accepted variance — a claim was opened for you"
+  },
+  "claimTypes": {
+    "damaged": "Damaged",
+    "wrong_spec": "Wrong spec",
+    "print_defect": "Print defect",
+    "quantity_short": "Short quantity",
+    "late": "Late",
+    "other": "Other"
+  }
+}
