@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getCatalogueTree } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
+import { HeaderSearch } from "@/features/customer/search/HeaderSearch";
 import { categoryHref } from "@/features/customer/catalog/paths";
 
 import { LocaleLink } from "./LocaleLink";
@@ -77,9 +78,7 @@ export async function SiteHeader() {
         </nav>
 
         <div className="ms-auto flex items-center gap-1">
-          <IconButton asChild name="search" variant="ghost" size="sm" label={tCommon("actions.search")}>
-            <Link href="/search" />
-          </IconButton>
+          <HeaderSearch label={tCommon("actions.search")} />
 
           {/*
             LINE is how a Thai customer expects to reach a supplier (D-143, D-151). It is a

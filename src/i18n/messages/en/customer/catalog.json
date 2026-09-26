@@ -132,5 +132,30 @@
     "contact": "Contact our team",
     "emptyTitle": "No questions yet",
     "emptyBody": "Ask our team directly"
+  },
+  "search": {
+    "title": "Search",
+    "metaDescription": "Search Packio's products, articles and FAQs",
+    "open": "Search",
+    "placeholder": "Search products, articles or an order code",
+    "label": "Search",
+    "submit": "Search",
+    "loading": "Searching",
+    "empty": "No results",
+    "tooShort": "Type at least 2 characters",
+    "heading": "Search",
+    "resultsFor": "Results for “{q}”",
+    "none": "No results for “{q}”",
+    "noneBody": "Try other words, or browse the products by category",
+    "recent": "Recent searches",
+    "clearRecent": "Clear search history",
+    "seeAll": "See all results",
+    "groups": {
+      "order": "Your orders",
+      "catalog_product": "Products",
+      "stock_product": "Stock products",
+      "article": "Articles",
+      "faq": "FAQs"
+    }
   }
 }
