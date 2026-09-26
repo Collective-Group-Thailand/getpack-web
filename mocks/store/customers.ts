@@ -6,6 +6,8 @@
  *              consent purpose answered, a handful of orders. Signing in lands straight home.
  *   newcomer   0898765432 — a first sign-in: no consents recorded, no e-mail. Reset on every
  *              sign-in, so the consent and profile steps can be walked again and again.
+ *   buyer      0823456789 — another complete account (the second fake customer), so a flow
+ *              that owns a cart end to end (checkout) does not share it with parallel tests.
  *
  * The consent purposes are packio-api's seeded identities (`prisma/seed/data/reference.ts`),
  * with obviously fake texts.
@@ -15,11 +17,12 @@ import type { Schemas } from "@/lib/api/types";
 
 import { principalOf } from "../support";
 
-export type CustomerPersona = "returning" | "newcomer";
+export type CustomerPersona = "returning" | "newcomer" | "buyer";
 
 export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0812345678": "returning",
   "0898765432": "newcomer",
+  "0823456789": "buyer",
 };
 
 export const CONSENT_PURPOSES = [
@@ -43,6 +46,13 @@ export interface MockCustomer {
   customerType: "individual" | "juristic" | "government" | null;
   identities: Schemas["LinkedIdentityDto"][];
   consents: Map<string, Consent>;
+  /** Available loyalty points (D-130–D-133); the storefront's own ledger in the mock. */
+  points: number;
+  /**
+   * Which fake commerce customer (`../admin/commerce` `customers[n]`) this persona is — whose
+   * orders, RFQs and address book it owns. `null`: a customer the back office has not seen yet.
+   */
+  ownerIndex: number | null;
 }
 
 function fresh(persona: CustomerPersona): MockCustomer {
@@ -56,16 +66,21 @@ function fresh(persona: CustomerPersona): MockCustomer {
       customerType: null,
       identities: [{ provider: "phone_otp", linkedAt: new Date().toISOString() }],
       consents: new Map(),
+      points: 0,
+      ownerIndex: null,
     };
   }
+  const buyer = persona === "buyer";
   return {
     persona,
-    id: "00000000-0000-4000-8000-000000000001",
-    displayName: "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
-    email: "seed.customer@packio.invalid",
-    phone: "0812345678",
+    id: buyer ? "00000000-0000-4000-8000-000000000003" : "00000000-0000-4000-8000-000000000001",
+    displayName: buyer ? "ลูกค้าผู้ซื้อ (ข้อมูลจำลอง)" : "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
+    email: buyer ? "seed.buyer@packio.invalid" : "seed.customer@packio.invalid",
+    phone: buyer ? "0823456789" : "0812345678",
+    ownerIndex: buyer ? 1 : 0,
     customerType: "individual",
     identities: [{ provider: "phone_otp", linkedAt: "2026-09-23T10:00:00+07:00" }],
+    points: 1250,
     consents: new Map(
       CONSENT_PURPOSES.map(({ purpose, required }) => [
         purpose,
@@ -78,6 +93,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
 const customers: Record<CustomerPersona, MockCustomer> = {
   returning: fresh("returning"),
   newcomer: fresh("newcomer"),
+  buyer: fresh("buyer"),
 };
 
 /** A first sign-in starts from nothing, every time. */
@@ -89,7 +105,8 @@ export function resetCustomer(persona: CustomerPersona): void {
 export function customerOf(request: Request): MockCustomer | null {
   const principal = principalOf(request);
   if (principal?.audience !== "customer") return null;
-  return customers[principal.persona === "newcomer" ? "newcomer" : "returning"];
+  const persona = principal.persona as CustomerPersona | undefined;
+  return customers[persona && persona in customers ? persona : "returning"];
 }
 
 export function customerMe(customer: MockCustomer): Schemas["StoreMeDto"] {

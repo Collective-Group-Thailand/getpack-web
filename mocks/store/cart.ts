@@ -12,9 +12,10 @@ import type { z } from "zod";
 
 import type { cartItem, storeCart } from "@/lib/api/requests/store-cart";
 
-import { baht, customers as fakeCustomers, satang } from "../admin/commerce";
+import { baht, satang } from "../admin/commerce";
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
+import { bookOf } from "./book";
 import { customerOf, type MockCustomer } from "./customers";
 import { quotesOf, type StoreQuote } from "./quotes";
 
@@ -38,7 +39,7 @@ const linesOf = (customer: MockCustomer) => {
 };
 
 export function addressesOf(customer: MockCustomer) {
-  return customer.persona === "returning" ? (fakeCustomers[0]?.addresses ?? []) : [];
+  return bookOf(customer).addresses;
 }
 
 let lineSeq = 0;
@@ -123,7 +124,7 @@ export function cartOf(customer: MockCustomer): Cart {
     return found;
   });
   return {
-    id: mockId("crt", customer.persona === "returning" ? 1 : 2),
+    id: mockId("crt", customer.id.length + (customer.ownerIndex ?? 9)),
     items,
     itemCount: items.length,
     subtotalAmount: baht(gross),

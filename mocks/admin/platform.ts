@@ -1100,8 +1100,11 @@ export const platformHandlers = [
     return HttpResponse.json(message);
   }),
 
-  /* files — the upload URL points back through the BFF, so the whole flow runs offline */
-  http.post("*/v1/admin/files/presign", async ({ request }) => {
+  /*
+   * files — every surface (the storefront's slips and RFQ files, the back office's imports).
+   * The upload URL points back through the zone's BFF, so the whole flow runs offline.
+   */
+  http.post("*/v1/:surface/files/presign", async ({ request, params }) => {
     const body = (await request.json()) as Schemas["PresignFileDto"];
     const id = mockId("file", fileSeq++);
     files.set(id, {
@@ -1122,7 +1125,7 @@ export const platformHandlers = [
     return HttpResponse.json(
       {
         fileId: id,
-        uploadUrl: `/bff/v1/admin/files/${id}/mock-upload`,
+        uploadUrl: `/bff/v1/${String(params.surface)}/files/${id}/mock-upload`,
         // The BFF refuses a non-GET without its CSRF header, and a real S3 URL would not want it.
         headers: { "content-type": body.mimeType, "x-packio-csrf": "1" },
         expiresAt: bangkokIso(15),
@@ -1131,19 +1134,19 @@ export const platformHandlers = [
       { status: 201 },
     );
   }),
-  http.put("*/v1/admin/files/:fileId/mock-upload", ({ params }) => {
+  http.put("*/v1/:surface/files/:fileId/mock-upload", ({ params }) => {
     const file = files.get(params.fileId as string);
     if (!file) return notFound();
     file.uploadStatus = "uploaded";
     return new HttpResponse(null, { status: 200 });
   }),
-  http.post("*/v1/admin/files/:fileId/actions/complete", ({ params }) => {
+  http.post("*/v1/:surface/files/:fileId/actions/complete", ({ params }) => {
     const file = files.get(params.fileId as string);
     if (!file) return notFound();
     Object.assign(file, { uploadStatus: "uploaded", scanStatus: "clean", sha256: "0".repeat(64) });
     return HttpResponse.json(file);
   }),
-  http.get("*/v1/admin/files/:fileId", ({ params }) => {
+  http.get("*/v1/:surface/files/:fileId", ({ params }) => {
     const file = files.get(params.fileId as string);
     return file ? HttpResponse.json(file) : notFound();
   }),
