@@ -528,3 +528,96 @@ export const companyHandlers = [
     return ok instanceof Response ? ok : ok.store.statements;
   }),
 ];
+
+/* ------------------------------------------------------------------ the storefront's side */
+
+export type CompanyStore = (typeof stores)[number];
+
+/** The company rows, as the storefront's business mock (F3 3.7) reads and changes them. */
+export const companyStores: CompanyStore[] = stores;
+
+/** The company with the API's figures (credit, eligibility, the D-122 block), for the storefront. */
+export const presentCompany = (store: CompanyStore): Company => present(store, null);
+
+let registered = 0;
+
+/** A company that signed up on the storefront: waiting for Finance's KYC review (D-120). */
+export function registerCompany(input: {
+  legalName: string;
+  taxId: string;
+  isVatRegistered: boolean;
+  address: string;
+  applicant: { id: string; displayName: string; email: string | null; phone: string | null };
+  documents: { docType: Kyc["docType"]; file: Kyc["file"]; issuedOn: string | null }[];
+}): CompanyStore {
+  registered += 1;
+  const index = stores.length;
+  const id = mockId("cmy", 100 + registered);
+  const store: CompanyStore = {
+    company: {
+      id,
+      companyCode: `B${String(2700 + registered)}`,
+      legalName: input.legalName,
+      taxId: input.taxId,
+      status: "kyc_review",
+      creditStatus: "prepaid",
+      membersCount: 1,
+      paidOrdersCount: 0,
+      receivables: {
+        openAmount: "0.00",
+        overdueAmount: "0.00",
+        oldestOverdueDays: 0,
+        nextDueAt: null,
+        creditOrdersBlocked: false,
+      },
+      createdAt: bangkokIso(),
+      isVatRegistered: input.isVatRegistered,
+      poNumberPolicy: "optional",
+      orderApprovalThreshold: null,
+      kycApprovedAt: null,
+      credit: {
+        limitAmount: "0.00",
+        termDays: null,
+        availableAmount: "0.00",
+        eligible: false,
+        eligibleReason: "not_yet",
+        versions: [],
+      },
+      discount: null,
+      allowedActions: [],
+      updatedAt: bangkokIso(),
+    },
+    members: [
+      {
+        id: mockId("cmm", 1000 + registered),
+        user: input.applicant,
+        roles: ["company_admin", "company_approver", "company_buyer"],
+        status: "active",
+        joinedAt: bangkokIso(),
+      },
+    ],
+    branches: [
+      {
+        id: mockId("cbr", 1000 + registered),
+        branchType: "head_office",
+        branchCode: "00000",
+        name: "สำนักงานใหญ่",
+        address: input.address,
+      },
+    ],
+    kyc: input.documents.map((document, at) => ({
+      id: mockId("ckd", 1000 + registered * 10 + at),
+      docType: document.docType,
+      status: "pending",
+      file: document.file,
+      issuedOn: document.issuedOn,
+      note: null,
+      reviewedBy: null,
+      reviewedAt: null,
+      uploadedAt: bangkokIso(),
+    })),
+    statements: [],
+  };
+  stores.splice(index, 0, store);
+  return store;
+}

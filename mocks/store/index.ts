@@ -6,12 +6,14 @@
 import { storeAccountHandlers } from "./account";
 import { storeArtworkHandlers } from "./artwork";
 import { storeBookHandlers } from "./book";
+import { storeBusinessHandlers } from "./business";
 import { storeCartHandlers } from "./cart";
 import { storeCheckoutHandlers } from "./checkout";
 import { storeFulfilmentHandlers } from "./fulfilment";
 import { storeOrderHandlers } from "./orders";
 import { storeCatalogHandlers } from "./catalog";
 import { storeQuoteHandlers } from "./quotes";
+import { storeSupportHandlers } from "./support";
 import { storeRfqHandlers } from "./rfq";
 
 export const storeHandlers = [
@@ -24,5 +26,7 @@ export const storeHandlers = [
   ...storeOrderHandlers,
   ...storeArtworkHandlers,
   ...storeFulfilmentHandlers,
+  ...storeSupportHandlers,
+  ...storeBusinessHandlers,
   ...storeCatalogHandlers,
 ];
