@@ -69,7 +69,7 @@ test.describe("the configurator", () => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
     const breaks = dock(page).getByRole("table", { name: "ราคาต่อจำนวน" });
     await breaks.getByRole("button", { name: "เลือก 2,000 ชิ้น" }).click();
-    await expect(breaks.getByRole("button", { name: "เลือก 2,000 ชิ้น" })).toHaveAttribute("aria-pressed", "true");
+    await expect(breaks.getByRole("button", { name: "เลือกอยู่ 2,000 ชิ้น" })).toHaveAttribute("aria-pressed", "true");
     await expect(dock(page)).toContainText("2,000 ชิ้น");
   });
 
@@ -93,7 +93,8 @@ test.describe("the configurator", () => {
     await page.getByRole("textbox", { name: "กว้าง" }).fill("40");
     await page.getByRole("textbox", { name: "ยาว" }).fill("90");
     await expect(page.getByRole("img", { name: /ขนาด 40 × 90 มม./ })).toBeVisible();
-    await expect(dock(page).getByText(/\/ ดวง$/)).toBeVisible();
+    // The price follows a debounce and a round trip; the full suite runs many of these at once.
+    await expect(dock(page).getByText(/\/ ดวง$/)).toBeVisible({ timeout: 15_000 });
   });
 
   test("a promotion code is checked for this product", async ({ page }) => {
@@ -201,7 +202,7 @@ test.describe("requests for quotation", () => {
     // Back on the storefront: accept 1,000 pieces, confirmed with the code and the amount.
     await gotoHydrated(customer, rfqUrl);
     await expect(customer.getByRole("heading", { name: "ใบเสนอราคาฉบับที่ 1" })).toBeVisible();
-    await customer.getByRole("button", { name: "ยอมรับราคา 1,000 ชิ้น" }).click();
+    await customer.getByRole("button", { name: "ยอมรับราคานี้ (1,000 ชิ้น)" }).click();
     const confirm = customer.getByRole("alertdialog", { name: "ยืนยันการยอมรับใบเสนอราคา" });
     await expect(confirm).toContainText(code);
     await expect(confirm).toContainText("฿");

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import { cn } from "../lib/cn";
 import { Button } from "./Button";
-import { Sheet } from "./Sheet";
+
+// The phone sheet (Radix Dialog) loads on the first "details" tap, not with the page.
+const Sheet = lazy(() => import("./Sheet").then((module) => ({ default: module.Sheet })));
 
 export interface QuoteDockProps {
   /** "ราคาของคุณ" — the dock's heading, and the mobile sheet's title. */
@@ -58,6 +60,7 @@ export function QuoteDock({
   className,
 }: QuoteDockProps) {
   const [open, setOpen] = useState(false);
+  const [opened, setOpened] = useState(false);
   const figure = (
     <div aria-live={live ? "polite" : undefined} aria-atomic="true">
       {status ?? (
@@ -102,31 +105,42 @@ export function QuoteDock({
               </>
             )}
           </div>
-          <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setOpened(true);
+              setOpen(true);
+            }}
+          >
             {detailsLabel}
           </Button>
           <div className="shrink-0">{primaryAction}</div>
         </div>
       </div>
 
-      <Sheet
-        side="bottom"
-        open={open}
-        onOpenChange={setOpen}
-        title={title}
-        closeLabel={closeLabel}
-        footer={
-          <div className="flex w-full flex-col gap-2">
-            {primaryAction}
-            {secondaryActions}
-          </div>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          {figure}
-          {children}
-        </div>
-      </Sheet>
+      {opened ? (
+        <Suspense fallback={null}>
+          <Sheet
+            side="bottom"
+            open={open}
+            onOpenChange={setOpen}
+            title={title}
+            closeLabel={closeLabel}
+            footer={
+              <div className="flex w-full flex-col gap-2">
+                {primaryAction}
+                {secondaryActions}
+              </div>
+            }
+          >
+            <div className="flex flex-col gap-4">
+              {figure}
+              {children}
+            </div>
+          </Sheet>
+        </Suspense>
+      ) : null}
     </>
   );
 }

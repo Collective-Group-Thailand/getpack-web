@@ -197,7 +197,7 @@
     "breaksQuantity": "Quantity",
     "breaksPerPiece": "Each",
     "breaksTotal": "Total",
-    "breaksSelect": "Choose {quantity} {unit}",
+    "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "Choose",
     "breaksChosen": "Chosen",
     "promoApplied": "Code {code} takes off {amount}",

@@ -9,18 +9,15 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { QuoteDockSpacer } from "@/ui/components/QuoteDock";
+import { Skeleton } from "@/ui/components/Skeleton";
 import { Stepper, type StepStatus } from "@/ui/components/Stepper";
 
 import { quantityBand } from "../analytics/bands";
 import { buildCalculateBody } from "./build";
-import { ChoicesStep } from "./ChoicesStep";
 import { ConfiguratorDock } from "./ConfiguratorDock";
 import { boxStyleOf, ConfiguratorPreview } from "./ConfiguratorPreview";
-import { DeliveryStep } from "./DeliveryStep";
-import { DesignStep } from "./DesignStep";
 import { configurationSummary, lineChatUrl } from "./line";
 import { useLivePrice } from "./pricing";
-import { QuantityStep } from "./QuantityStep";
 import { SizeStep } from "./SizeStep";
 import {
   groupsIn,
@@ -37,6 +34,25 @@ import {
   type StepKey,
 } from "./state";
 import { useQuoteActions } from "./useQuoteActions";
+
+/*
+ * Only the first step is in the initial load; the others arrive when first opened (they are a
+ * click away, and the configurator is an app-type page with a 200 KB budget,
+ * docs/performance-budgets.md).
+ */
+const stepLoading = () => <Skeleton className="h-24 w-full" />;
+const ChoicesStep = dynamic(() => import("./ChoicesStep").then((module) => module.ChoicesStep), {
+  loading: stepLoading,
+});
+const QuantityStep = dynamic(() => import("./QuantityStep").then((module) => module.QuantityStep), {
+  loading: stepLoading,
+});
+const DeliveryStep = dynamic(() => import("./DeliveryStep").then((module) => module.DeliveryStep), {
+  loading: stepLoading,
+});
+const DesignStep = dynamic(() => import("./DesignStep").then((module) => module.DesignStep), {
+  loading: stepLoading,
+});
 
 const SignInSheet = dynamic(() => import("@/features/customer/auth/SignInSheet").then((module) => module.SignInSheet), {
   ssr: false,
@@ -259,6 +275,7 @@ export function Configurator({
         <ConfiguratorPreview configurator={configurator} state={state} productName={name} />
         <Stepper
           aria-label={t("stepsLabel")}
+          headingLevel={2}
           current={current}
           onSelect={(id) => {
             setCurrent(id as StepKey);

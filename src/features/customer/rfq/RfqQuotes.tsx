@@ -150,12 +150,12 @@ export function RfqQuotes({ rfq }: { rfq: Rfq }) {
                       </td>
                       {current ? (
                         <td className="py-2 ps-3 text-end">
-                          <Button
-                            size="sm"
-                            onClick={() => setChoice({ quoteId: quote.id, line })}
-                            aria-label={t("acceptLine", { quantity: format.number(line.quantity) })}
-                          >
+                          <Button size="sm" onClick={() => setChoice({ quoteId: quote.id, line })}>
                             {t("accept")}
+                            <span className="sr-only">
+                              {" "}
+                              {t("acceptLine", { quantity: format.number(line.quantity) })}
+                            </span>
                           </Button>
                         </td>
                       ) : null}

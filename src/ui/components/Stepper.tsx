@@ -34,6 +34,8 @@ export interface StepperProps {
   labels: StepperLabels;
   /** Accessible name of the list. */
   "aria-label": string;
+  /** The steps' heading level under the page's own headings (default 3). */
+  headingLevel?: 2 | 3;
   className?: string;
 }
 
@@ -47,7 +49,8 @@ export interface StepperProps {
  * is a button with `aria-expanded`, and the open step is `aria-current="step"`; status is an
  * icon **and** words, never colour alone.
  */
-export function Stepper({ steps, current, onSelect, labels, className, ...props }: StepperProps) {
+export function Stepper({ steps, current, onSelect, labels, headingLevel = 3, className, ...props }: StepperProps) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const baseId = useId();
 
   return (
@@ -82,7 +85,7 @@ export function Stepper({ steps, current, onSelect, labels, className, ...props 
             </span>
 
             <div className={cn("min-w-0 flex-1", !last && "pb-4")}>
-              <h3 className="m-0">
+              <Heading className="m-0">
                 <button
                   type="button"
                   id={headerId}
@@ -101,7 +104,7 @@ export function Stepper({ steps, current, onSelect, labels, className, ...props 
                     <span className="text-muted mt-0.5 line-clamp-2 text-sm">{step.summary}</span>
                   ) : null}
                 </button>
-              </h3>
+              </Heading>
               <div id={panelId} role="region" aria-labelledby={headerId} hidden={!open} className="px-2 pt-2 pb-2">
                 {open ? step.content : null}
               </div>

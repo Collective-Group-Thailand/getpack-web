@@ -102,7 +102,7 @@
     "days": "{days} business days",
     "choose": "Choose",
     "accept": "Accept this price",
-    "acceptLine": "Accept the price for {quantity} pieces",
+    "acceptLine": "({quantity} pieces)",
     "confirmTitle": "Accept the quotation",
     "confirmBody": "Accept the price for request {code}: {quantity} pieces, {amount} in total incl. VAT. The quantity cannot be changed afterwards, but nothing is paid until you order.",
     "confirm": "Accept",

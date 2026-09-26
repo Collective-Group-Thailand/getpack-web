@@ -127,7 +127,7 @@ export const Dock: Story = {
             { key: "300000", quantity: "300,000", perPiece: "", total: "", unavailable: "กำลังผลิตเต็ม" },
           ]}
           onSelect={() => undefined}
-          selectLabel={(row) => `เลือก ${String(row.quantity)}`}
+          selectLabel={(row) => `${String(row.quantity)} ชิ้น`}
           selectText="เลือก"
           selectedText="เลือกอยู่"
         />
