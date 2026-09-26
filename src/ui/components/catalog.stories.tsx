@@ -66,11 +66,11 @@ export const Gallery: Story = {
     <ImageGallery
       className="max-w-md"
       images={[
-        { src: picture(30), alt: "ด้านหน้า" },
-        { src: picture(120), alt: "ด้านข้าง" },
-        { src: picture(210), alt: "แผ่นคลี่" },
+        { src: picture(30), alt: "ด้านหน้า", thumbnailLabel: "รูปที่ 1 จาก 3" },
+        { src: picture(120), alt: "ด้านข้าง", thumbnailLabel: "รูปที่ 2 จาก 3" },
+        { src: picture(210), alt: "แผ่นคลี่", thumbnailLabel: "รูปที่ 3 จาก 3" },
       ]}
-      labels={{ thumbnails: "รูปสินค้า", show: (i, n) => `รูปที่ ${i} จาก ${n}`, empty: "ยังไม่มีรูปสินค้า" }}
+      labels={{ thumbnails: "รูปสินค้า", empty: "ยังไม่มีรูปสินค้า" }}
     />
   ),
 };

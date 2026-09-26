@@ -44,10 +44,10 @@ describe("ProductCard", () => {
 });
 
 describe("ImageGallery", () => {
-  const labels = { thumbnails: "รูปสินค้า", show: (i: number, n: number) => `รูปที่ ${i} จาก ${n}`, empty: "ไม่มีรูป" };
+  const labels = { thumbnails: "รูปสินค้า", empty: "ไม่มีรูป" };
   const images = [
-    { src: "/1.svg", alt: "ด้านหน้า" },
-    { src: "/2.svg", alt: "ด้านข้าง" },
+    { src: "/1.svg", alt: "ด้านหน้า", thumbnailLabel: "รูปที่ 1 จาก 2" },
+    { src: "/2.svg", alt: "ด้านข้าง", thumbnailLabel: "รูปที่ 2 จาก 2" },
   ];
 
   it("swaps the large image from a thumbnail, and says which one is shown", async () => {

@@ -8,6 +8,8 @@ import { cn } from "../lib/cn";
 export interface GalleryImage {
   src: string;
   alt: string;
+  /** The thumbnail button's name, e.g. "รูปที่ 2 จาก 5" — text, because a server page passes it. */
+  thumbnailLabel: string;
 }
 
 export interface ImageGalleryProps {
@@ -15,8 +17,6 @@ export interface ImageGalleryProps {
   labels: {
     /** Accessible name of the thumbnail group, e.g. "รูปสินค้า". */
     thumbnails: string;
-    /** "รูปที่ 2 จาก 5". */
-    show: (index: number, count: number) => string;
     /** Shown when there are no images at all. */
     empty: string;
   };
@@ -70,7 +70,7 @@ export function ImageGallery({ images, labels, className }: ImageGalleryProps) {
               <button
                 type="button"
                 aria-pressed={position === index}
-                aria-label={labels.show(position + 1, images.length)}
+                aria-label={image.thumbnailLabel}
                 onClick={() => setIndex(position)}
                 className={cn(
                   "focus-visible:ring-focus-ring block size-16 overflow-hidden rounded-lg border-2 outline-none focus-visible:ring-2",

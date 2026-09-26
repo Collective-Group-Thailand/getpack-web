@@ -24,6 +24,7 @@ const NAMESPACES = [
   "home",
   "designs",
   "designer",
+  "catalog",
   "admin",
   "console",
   "approvals",
@@ -59,7 +60,7 @@ export type Namespace = (typeof NAMESPACES)[number];
  * than three near-identical namespaces that drift.
  */
 export const ZONE_NAMESPACES = {
-  customer: ["common", "auth", "status", "storefront", "home", "designs", "designer"],
+  customer: ["common", "auth", "status", "storefront", "home", "designs", "designer", "catalog"],
   admin: [
     "common",
     "auth",
@@ -76,7 +77,14 @@ export const ZONE_NAMESPACES = {
     "prepress",
     "catalogue",
     "partners",
-    "production", "marketing", "customers", "companies", "logistics", "analytics", "reports"],
+    "production",
+    "marketing",
+    "customers",
+    "companies",
+    "logistics",
+    "analytics",
+    "reports",
+  ],
   partner: ["common", "auth", "status", "partner"],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
@@ -91,6 +99,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     home: () => import("./th/customer/home.json"),
     designs: () => import("./th/customer/designs.json"),
     designer: () => import("./th/customer/designer.json"),
+    catalog: () => import("./th/customer/catalog.json"),
     admin: () => import("./th/admin/admin.json"),
     reports: () => import("./th/admin/reports.json"),
     analytics: () => import("./th/admin/analytics.json"),
@@ -120,6 +129,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     home: () => import("./en/customer/home.json"),
     designs: () => import("./en/customer/designs.json"),
     designer: () => import("./en/customer/designer.json"),
+    catalog: () => import("./en/customer/catalog.json"),
     admin: () => import("./en/admin/admin.json"),
     reports: () => import("./en/admin/reports.json"),
     analytics: () => import("./en/admin/analytics.json"),

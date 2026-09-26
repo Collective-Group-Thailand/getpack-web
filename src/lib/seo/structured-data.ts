@@ -31,3 +31,87 @@ export function organizationSchema(origin: string): OrganizationSchema {
     logo: `${origin}/icon.svg`,
   };
 }
+
+/* ------------------------------------------------------------------------------------ *
+ * Page-level structured data (F3 3.1): Product, BreadcrumbList, FAQPage.
+ *
+ * The same rule as the Organization: nothing is claimed that the API did not say. A product
+ * carries an offer only when the API returned a "starting from" price for it, and never a
+ * rating or a review count.
+ * ------------------------------------------------------------------------------------ */
+
+export interface Crumb {
+  name: string;
+  /** Absolute URL; the last crumb (the page itself) may omit it. */
+  url?: string;
+}
+
+export function breadcrumbSchema(crumbs: readonly Crumb[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((crumb, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: crumb.name,
+      ...(crumb.url ? { item: crumb.url } : {}),
+    })),
+  } as const;
+}
+
+export interface ProductSchemaInput {
+  name: string;
+  description?: string | null;
+  url: string;
+  images: readonly string[];
+  sku?: string;
+  category?: string;
+  /** The API's "starting from" price per piece, as the decimal string it returned. */
+  lowPrice?: string | null;
+  currency?: string;
+}
+
+export function productSchema(input: ProductSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: input.name,
+    ...(input.description ? { description: input.description } : {}),
+    url: input.url,
+    ...(input.images.length > 0 ? { image: input.images } : {}),
+    ...(input.sku ? { sku: input.sku } : {}),
+    ...(input.category ? { category: input.category } : {}),
+    brand: { "@type": "Brand", name: BRAND_NAME },
+    ...(input.lowPrice
+      ? {
+          offers: {
+            "@type": "AggregateOffer",
+            lowPrice: input.lowPrice,
+            priceCurrency: input.currency ?? "THB",
+            seller: { "@type": "Organization", name: BRAND_NAME, legalName: BRAND_COMPANY },
+          },
+        }
+      : {}),
+  } as const;
+}
+
+export function faqPageSchema(entries: readonly { question: string; answer: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: entries.map((entry) => ({
+      "@type": "Question",
+      name: entry.question,
+      acceptedAnswer: { "@type": "Answer", text: entry.answer },
+    })),
+  } as const;
+}
+
+/**
+ * JSON for inside a `<script>`. `JSON.stringify` leaves `<` alone, so a product name holding
+ * `</script>` would end the block and whatever follows would be parsed as HTML. Page-level
+ * data comes from the API — content an admin typed — so every `<` is escaped.
+ */
+export function jsonLdText(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
