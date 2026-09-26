@@ -387,7 +387,9 @@
     "payInstalment": "Pay the next instalment",
     "uploadArtwork": "Upload artwork",
     "reviewProof": "Review the proof",
-    "openClaim": "Report a problem"
+    "openClaim": "Report a problem",
+    "designBrief": "Send the design brief",
+    "reviewDesign": "Review the design"
   },
   "points": {
     "pending": "Pending",

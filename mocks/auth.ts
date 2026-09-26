@@ -28,6 +28,7 @@ const CHALLENGES: Record<CustomerPersona, string> = {
   returning: MOCK_OTP.challengeId,
   newcomer: "00000000-0000-4000-8000-0000000000c2",
   buyer: "00000000-0000-4000-8000-0000000000c3",
+  artist: "00000000-0000-4000-8000-0000000000c4",
 };
 /** Firebase and LINE tokens the mock accepts (the SDKs never run against the mock). */
 export const MOCK_ID_TOKENS = { google: "mock.firebase.google", apple: "mock.firebase.apple", line: "mock.line" };
@@ -55,7 +56,7 @@ function subject(audience: Audience, persona?: StaffPersona) {
 
 function session(audience: Audience, persona?: StaffPersona, customer?: CustomerPersona) {
   // The returning customer's token carries no persona, as it did before the newcomer existed.
-  const key = persona?.key ?? (customer === "newcomer" || customer === "buyer" ? customer : undefined);
+  const key = persona?.key ?? (customer && customer !== "returning" ? customer : undefined);
   return HttpResponse.json({
     accessToken: accessToken(audience, key),
     accessTokenExpiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),

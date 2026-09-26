@@ -20,6 +20,7 @@ import { baht, customers as fakeCustomers, orders, satang, type MockOrder } from
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { catalogProducts, imageUrl } from "./catalog";
+import { prepressIfAny } from "../admin/prepress";
 import { groupForOrder, paymentsOfInstalment } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
@@ -65,8 +66,17 @@ export function customerActions(order: MockOrder): Summary["nextActions"] {
   const balanceDue = group.instalments.find((entry) => !entry.paid && entry.dueTrigger === "before_shipping");
   if (balanceDue && ["in_production", "artwork_approved"].includes(order.status))
     actions.push({ key: "order.pay_instalment" });
-  if (order.status !== "cancelled" && ["awaiting_upload", "changes_requested"].includes(order.artworkStatus))
+  const prepress = prepressIfAny(order.id);
+  const service = prepress?.designService;
+  const blocked = prepress?.submissions[0]?.preflightStatus === "blocked";
+  if (
+    order.status !== "cancelled" &&
+    order.designOption !== "hired_design" &&
+    (["awaiting_upload", "changes_requested"].includes(order.artworkStatus) || blocked)
+  )
     actions.push({ key: "order.upload_artwork" });
+  if (service?.status === "brief_pending") actions.push({ key: "order.design_brief" });
+  if (service?.status === "delivered") actions.push({ key: "order.review_design" });
   if (order.artworkStatus === "proof_sent") actions.push({ key: "order.approve_proof" });
   const delivered = order.shipments.some((shipment) => shipment.status === "delivered");
   if (delivered && !receipts.has(order.id) && order.status !== "completed")
