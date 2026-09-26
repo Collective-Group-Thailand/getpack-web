@@ -10097,6 +10097,433 @@
         }
       }
     },
+    "/v1/store/checkout": {
+      "post": {
+        "operationId": "store.checkout.create",
+        "summary": "Place the order group from a preview; 409 checkout.repriced with a fresh preview if anything moved since",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.checkout",
+        "x-decisions": [
+          "D-020",
+          "D-050",
+          "D-060",
+          "D-110"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contact": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "phone": {
+                        "type": "string",
+                        "pattern": "^0\\d{8,9}$"
+                      },
+                      "email": {
+                        "type": "string",
+                        "maxLength": 254,
+                        "format": "email",
+                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "phone",
+                      "email"
+                    ]
+                  },
+                  "delivery": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "const": "shared"
+                          },
+                          "addressId": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "mode",
+                          "addressId"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "const": "per_item"
+                          }
+                        },
+                        "required": [
+                          "mode"
+                        ]
+                      }
+                    ]
+                  },
+                  "taxProfileId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "couponCodes": {
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    }
+                  },
+                  "pointsToRedeem": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "scheduleKey": {
+                    "type": "string"
+                  },
+                  "paymentMethod": {
+                    "$ref": "#/components/schemas/PaymentMethod"
+                  },
+                  "poNumber": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "previewToken": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "contact",
+                  "delivery",
+                  "taxProfileId",
+                  "couponCodes",
+                  "pointsToRedeem",
+                  "previewToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Place the order group from a preview; 409 checkout.repriced with a fresh preview if anything moved since",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlacedOrderDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/checkout/actions/preview": {
+      "post": {
+        "operationId": "store.checkout.preview",
+        "summary": "Price the checkout: promotions and their capped effect, points, payment schedules, methods, what is due now",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.checkout",
+        "x-decisions": [
+          "D-020",
+          "D-053",
+          "D-110",
+          "D-131",
+          "D-133"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Price the checkout: promotions and their capped effect, points, payment schedules, methods, what is due now",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutPreviewDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/instalments": {
+      "get": {
+        "operationId": "store.instalments.list",
+        "summary": "The customer's instalments across orders: what is due, what is paid, receipts",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.instalments",
+        "x-decisions": [
+          "D-020"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/InstalmentStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer's instalments across orders: what is due, what is paid, receipts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreInstalmentDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "perPage": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "perPage",
+                        "total"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/instalments/{instalmentId}/payments": {
+      "post": {
+        "operationId": "store.instalments.payments.create",
+        "summary": "Start paying an instalment with a method: a QR, a gateway redirect, or bank-transfer details",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.payments",
+        "x-decisions": [
+          "D-061"
+        ],
+        "parameters": [
+          {
+            "name": "instalmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "$ref": "#/components/schemas/PaymentMethod"
+                  },
+                  "returnUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": [
+                  "method"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Start paying an instalment with a method: a QR, a gateway redirect, or bank-transfer details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/me": {
       "patch": {
         "operationId": "store.me.update",
@@ -10142,6 +10569,432 @@
         }
       }
     },
+    "/v1/store/me/addresses": {
+      "get": {
+        "operationId": "store.me.addresses.list",
+        "summary": "The customer's saved addresses",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "responses": {
+          "200": {
+            "description": "The customer's saved addresses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CustomerAddressDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.me.addresses.create",
+        "summary": "Save an address; the first one becomes the default",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAddressInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Save an address; the first one becomes the default",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/addresses/{addressId}": {
+      "delete": {
+        "operationId": "store.me.addresses.delete",
+        "summary": "Remove a saved address (orders keep their snapshot)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "parameters": [
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Remove a saved address (orders keep their snapshot)"
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "store.me.addresses.update",
+        "summary": "Change a saved address or make it the default",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "parameters": [
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "recipientName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^0\\d{8,9}$"
+                  },
+                  "line1": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "line2": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "subdistrict": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "district": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "province": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "postcode": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  },
+                  "isDefault": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Change a saved address or make it the default",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddressDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/tax-profiles": {
+      "get": {
+        "operationId": "store.me.taxProfiles.list",
+        "summary": "The customer's tax-invoice profiles (individual, juristic, government; head office or branch)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "x-decisions": [
+          "D-125"
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer's tax-invoice profiles (individual, juristic, government; head office or branch)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TaxProfileDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.me.taxProfiles.create",
+        "summary": "Save a tax-invoice profile; the API validates the tax id",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreTaxProfileInputDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Save a tax-invoice profile; the API validates the tax id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxProfileDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/tax-profiles/{profileId}": {
+      "delete": {
+        "operationId": "store.me.taxProfiles.delete",
+        "summary": "Remove a tax-invoice profile",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Remove a tax-invoice profile"
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "store.me.taxProfiles.update",
+        "summary": "Change a tax-invoice profile",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.address-book",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "taxType": {
+                    "$ref": "#/components/schemas/CustomerType"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "taxId": {
+                    "type": "string",
+                    "pattern": "^\\d{13}$"
+                  },
+                  "branchType": {
+                    "type": "string",
+                    "enum": [
+                      "head_office",
+                      "branch"
+                    ]
+                  },
+                  "branchCode": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
+                  "withholdsTax": {
+                    "type": "boolean"
+                  },
+                  "isDefault": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Change a tax-invoice profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxProfileDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/orders/by-code/{orderCode}": {
       "get": {
         "operationId": "store.orders.byCode.get",
@@ -10167,6 +11020,135 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreOrderLookupDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/payments/{paymentId}": {
+      "get": {
+        "operationId": "store.payments.get",
+        "summary": "A payment's live status — polled, and refreshed by the realtime channel",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.payments",
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A payment's live status — polled, and refreshed by the realtime channel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/payments/{paymentId}/slips": {
+      "post": {
+        "operationId": "store.payments.slips.create",
+        "summary": "Attach a transfer slip; verified at once, or reviewed by Finance within 4 business hours (D-061)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.payments",
+        "x-decisions": [
+          "D-061"
+        ],
+        "parameters": [
+          {
+            "name": "paymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fileId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "declaredAmount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  "declaredTransferredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "fileId",
+                  "declaredAmount",
+                  "declaredTransferredAt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Attach a transfer slip; verified at once, or reviewed by Finance within 4 business hours (D-061)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorePaymentDto"
                 }
               }
             }
@@ -11989,6 +12971,46 @@
           "draw"
         ]
       },
+      "AppliedPromotionDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/PromotionKind"
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "discountAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "capped": {
+            "type": "boolean"
+          },
+          "cappedNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "code",
+          "title",
+          "discountAmount",
+          "capped",
+          "cappedNote"
+        ],
+        "additionalProperties": false
+      },
       "ArtworkFileRole": {
         "type": "string",
         "enum": [
@@ -12955,6 +13977,414 @@
           "quote_expired",
           "configuration_changed"
         ]
+      },
+      "CheckoutInputDto": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "phone": {
+                "type": "string",
+                "pattern": "^0\\d{8,9}$"
+              },
+              "email": {
+                "type": "string",
+                "maxLength": 254,
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              }
+            },
+            "required": [
+              "name",
+              "phone",
+              "email"
+            ]
+          },
+          "delivery": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "shared"
+                  },
+                  "addressId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "addressId"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "const": "per_item"
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              }
+            ]
+          },
+          "taxProfileId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "couponCodes": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            }
+          },
+          "pointsToRedeem": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "scheduleKey": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "poNumber": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "contact",
+          "delivery",
+          "taxProfileId",
+          "couponCodes",
+          "pointsToRedeem"
+        ]
+      },
+      "CheckoutPreviewDto": {
+        "type": "object",
+        "properties": {
+          "previewToken": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "cartItemId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "grossAmount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                },
+                "destinations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string"
+                      },
+                      "quantity": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "label",
+                      "quantity"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "cartItemId",
+                "name",
+                "quantity",
+                "unit",
+                "grossAmount",
+                "destinations"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "promotions": {
+            "type": "object",
+            "properties": {
+              "applied": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/AppliedPromotionDto"
+                }
+              },
+              "rejected": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/RejectedPromotionCodeDto"
+                }
+              }
+            },
+            "required": [
+              "applied",
+              "rejected"
+            ],
+            "additionalProperties": false
+          },
+          "points": {
+            "type": "object",
+            "properties": {
+              "balance": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "min": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "max": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "pointValue": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "redeemed": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "redeemedAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "toEarn": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "balance",
+              "min",
+              "max",
+              "pointValue",
+              "redeemed",
+              "redeemedAmount",
+              "toEarn"
+            ],
+            "additionalProperties": false
+          },
+          "schedule": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ScheduleOptionDto"
+                }
+              },
+              "selectedKey": {
+                "type": "string"
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "options",
+              "selectedKey",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "paymentMethods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentMethodOptionDto"
+            }
+          },
+          "taxInvoice": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "taxId": {
+                    "type": "string"
+                  },
+                  "branch": {
+                    "type": "string"
+                  },
+                  "withholdsTax": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "name",
+                  "taxId",
+                  "branch",
+                  "withholdsTax"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "itemsAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "discountAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "shippingAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "pointsAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "vatAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "grossAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "withholdingAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "payableNowAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "currency": {
+                "type": "string",
+                "const": "THB"
+              }
+            },
+            "required": [
+              "itemsAmount",
+              "discountAmount",
+              "shippingAmount",
+              "pointsAmount",
+              "vatAmount",
+              "grossAmount",
+              "withholdingAmount",
+              "payableNowAmount",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "previewToken",
+          "expiresAt",
+          "items",
+          "promotions",
+          "points",
+          "schedule",
+          "paymentMethods",
+          "taxInvoice",
+          "totals",
+          "blockers"
+        ],
+        "additionalProperties": false
       },
       "ClaimActionKey": {
         "type": "string",
@@ -19555,6 +20985,42 @@
           "credit_term_transfer"
         ]
       },
+      "PaymentMethodOptionDto": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "feeAmount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "method",
+          "available",
+          "unavailableReason",
+          "feeAmount"
+        ],
+        "additionalProperties": false
+      },
       "PaymentStatus": {
         "type": "string",
         "enum": [
@@ -19568,6 +21034,107 @@
           "refunded",
           "partially_refunded"
         ]
+      },
+      "PlacedOrderDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "groupCode": {
+            "type": "string"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "orderCode": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "orderCode"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "firstInstalment": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "grossAmount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  "dueAt": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "grossAmount",
+                  "dueAt"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "groupId",
+          "groupCode",
+          "orders",
+          "grossAmount",
+          "firstInstalment",
+          "expiresAt"
+        ],
+        "additionalProperties": false
       },
       "PodReviewStatus": {
         "type": "string",
@@ -22472,6 +24039,34 @@
           "under_review"
         ]
       },
+      "RejectedPromotionCodeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "not_found",
+              "expired",
+              "not_applicable",
+              "used_up",
+              "min_not_met",
+              "not_combinable"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "reason",
+          "message"
+        ],
+        "additionalProperties": false
+      },
       "ReportColumnType": {
         "type": "string",
         "enum": [
@@ -24128,6 +25723,91 @@
         ],
         "additionalProperties": false
       },
+      "ScheduleInstalmentDto": {
+        "type": "object",
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "label": {
+            "type": "string"
+          },
+          "dueTrigger": {
+            "$ref": "#/components/schemas/DueTrigger"
+          },
+          "requiredBefore": {
+            "$ref": "#/components/schemas/RequiredBefore"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          }
+        },
+        "required": [
+          "seq",
+          "label",
+          "dueTrigger",
+          "requiredBefore",
+          "grossAmount"
+        ],
+        "additionalProperties": false
+      },
+      "ScheduleKind": {
+        "type": "string",
+        "enum": [
+          "full",
+          "deposit",
+          "template",
+          "credit_term"
+        ]
+      },
+      "ScheduleOptionDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ScheduleKind"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "instalments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleInstalmentDto"
+            }
+          },
+          "creditDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "label",
+          "description",
+          "instalments",
+          "creditDays"
+        ],
+        "additionalProperties": false
+      },
       "SearchResultDto": {
         "type": "object",
         "properties": {
@@ -25276,6 +26956,62 @@
         ],
         "additionalProperties": false
       },
+      "StoreAddressInputDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "recipientName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^0\\d{8,9}$"
+          },
+          "line1": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "line2": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "subdistrict": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "district": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "province": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "postcode": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "recipientName",
+          "phone",
+          "line1",
+          "province",
+          "postcode"
+        ]
+      },
       "StoreCartDto": {
         "type": "object",
         "properties": {
@@ -25528,6 +27264,158 @@
         ],
         "additionalProperties": false
       },
+      "StoreInstalmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "order": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "orderCode": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "orderCode"
+            ],
+            "additionalProperties": false
+          },
+          "groupCode": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "label": {
+            "type": "string"
+          },
+          "dueTrigger": {
+            "$ref": "#/components/schemas/DueTrigger"
+          },
+          "requiredBefore": {
+            "$ref": "#/components/schemas/RequiredBefore"
+          },
+          "dueAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "paidAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InstalmentStatus"
+          },
+          "receipt": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "originalName": {
+                    "type": "string"
+                  },
+                  "mimeType": {
+                    "type": "string"
+                  },
+                  "sizeBytes": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "thumbnailUrl": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "url": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "originalName",
+                  "mimeType",
+                  "sizeBytes",
+                  "thumbnailUrl",
+                  "url"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "activePaymentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "payable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "order",
+          "groupCode",
+          "seq",
+          "label",
+          "dueTrigger",
+          "requiredBefore",
+          "dueAt",
+          "grossAmount",
+          "paidAmount",
+          "currency",
+          "status",
+          "receipt",
+          "activePaymentId",
+          "payable"
+        ],
+        "additionalProperties": false
+      },
       "StoreOrderLookupDto": {
         "type": "object",
         "properties": {
@@ -25552,6 +27440,186 @@
           "orderCode",
           "status",
           "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "StorePaymentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "instalmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderGroupCode": {
+            "type": "string"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "qr": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "payload": {
+                    "type": "string"
+                  },
+                  "imageUrl": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "payload",
+                  "imageUrl"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "redirectUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bankAccount": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "bank": {
+                    "type": "string"
+                  },
+                  "accountName": {
+                    "type": "string"
+                  },
+                  "accountNo": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bank",
+                  "accountName",
+                  "accountNo"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slips": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "status": {
+                  "$ref": "#/components/schemas/SlipStatus"
+                },
+                "message": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reviewDueAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "uploadedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "message",
+                "reviewDueAt",
+                "uploadedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "paidAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "failureReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "instalmentId",
+          "orderGroupCode",
+          "method",
+          "status",
+          "amount",
+          "currency",
+          "expiresAt",
+          "qr",
+          "redirectUrl",
+          "bankAccount",
+          "slips",
+          "paidAt",
+          "failureReason"
         ],
         "additionalProperties": false
       },
@@ -26922,6 +28990,54 @@
           "hours"
         ],
         "additionalProperties": false
+      },
+      "StoreTaxProfileInputDto": {
+        "type": "object",
+        "properties": {
+          "taxType": {
+            "$ref": "#/components/schemas/CustomerType"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "taxId": {
+            "type": "string",
+            "pattern": "^\\d{13}$"
+          },
+          "branchType": {
+            "type": "string",
+            "enum": [
+              "head_office",
+              "branch"
+            ]
+          },
+          "branchCode": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "withholdsTax": {
+            "type": "boolean"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "taxType",
+          "name",
+          "taxId",
+          "branchType",
+          "branchCode",
+          "address",
+          "withholdsTax"
+        ]
       },
       "SubmissionStatus": {
         "type": "string",

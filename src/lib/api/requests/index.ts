@@ -30,5 +30,6 @@ export * from "./admin-sales";
 export * from "./store-account";
 export * from "./store-cart";
 export * from "./store-catalog";
+export * from "./store-checkout";
 export * from "./store-quotes";
 export * from "./store-rfq";
