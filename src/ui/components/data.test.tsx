@@ -11,6 +11,7 @@ import { FileDropzone } from "./FileDropzone";
 import { Meter } from "./Meter";
 import { Pagination } from "./Pagination";
 import { SlaTimer } from "./SlaTimer";
+import { ProgressTracker } from "./ProgressTracker";
 import { Timeline } from "./Timeline";
 import { TooltipProvider } from "./Tooltip";
 
@@ -261,6 +262,31 @@ describe("DescriptionList, Timeline, Meter", () => {
       "aria-valuetext",
       "ใช้ไป ฿82,000 จาก ฿100,000",
     );
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe("ProgressTracker", () => {
+  it("marks the current stage and says every state in words", async () => {
+    const { container } = render(
+      <ProgressTracker
+        label="สถานะคำสั่งซื้อ"
+        stateLabels={{
+          done: " · เสร็จแล้ว",
+          current: " · ขั้นตอนปัจจุบัน",
+          upcoming: " · ยังไม่ถึง",
+          skipped: " · ข้าม",
+        }}
+        stages={[
+          { key: "ordered", title: "สั่งซื้อ", state: "done", time: "1 ก.ย." },
+          { key: "production", title: "ผลิต", state: "current", detail: "กำหนดเสร็จ 9 ก.ย." },
+          { key: "shipping", title: "จัดส่ง", state: "upcoming" },
+        ]}
+      />,
+    );
+    const list = screen.getByRole("list", { name: "สถานะคำสั่งซื้อ" });
+    expect(list.querySelector("[aria-current=step]")).toHaveTextContent("ผลิต · ขั้นตอนปัจจุบัน");
+    expect(screen.getByText("สั่งซื้อ")).toHaveTextContent("สั่งซื้อ · เสร็จแล้ว");
     await expectNoA11yViolations(container);
   });
 });
