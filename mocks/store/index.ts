@@ -7,6 +7,7 @@ import { storeAccountHandlers } from "./account";
 import { storeBookHandlers } from "./book";
 import { storeCartHandlers } from "./cart";
 import { storeCheckoutHandlers } from "./checkout";
+import { storeOrderHandlers } from "./orders";
 import { storeCatalogHandlers } from "./catalog";
 import { storeQuoteHandlers } from "./quotes";
 import { storeRfqHandlers } from "./rfq";
@@ -18,5 +19,6 @@ export const storeHandlers = [
   ...storeCartHandlers,
   ...storeBookHandlers,
   ...storeCheckoutHandlers,
+  ...storeOrderHandlers,
   ...storeCatalogHandlers,
 ];

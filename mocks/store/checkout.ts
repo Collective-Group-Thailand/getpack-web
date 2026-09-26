@@ -25,6 +25,7 @@ import { bangkokIso, mockId, paginate, problem } from "../support";
 import { bookOf } from "./book";
 import { cartLines, cartOf, clearCart } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
+import { ownerIdOf } from "./owner";
 import { checkCode, PROMOTIONS, quotesOf, type StoreQuote } from "./quotes";
 
 type Input = z.output<typeof checkoutInput>;
@@ -534,9 +535,53 @@ export function settleInstalment(group: Group, instalmentId: string): void {
   }
 }
 
+/**
+ * The payment schedule of an order's group. A web order's group was made at checkout; a seeded
+ * order (placed by CS, or before this mock existed) gets one built from its own instalments the
+ * first time it is asked for, keeping their ids, so it can be paid from the account as well.
+ */
+export function groupForOrder(order: MockOrder): Group {
+  const known = groups.get(order.groupId);
+  if (known) return known;
+  const group: Group = {
+    id: order.groupId,
+    code: order.groupCode,
+    persona: "",
+    orderIds: [order.id],
+    instalments: order.instalments.map((entry) => ({
+      id: entry.id,
+      seq: entry.seq,
+      label: entry.label,
+      dueTrigger: entry.dueTrigger,
+      requiredBefore: entry.requiredBefore,
+      gross: satang(entry.grossAmount),
+      paid: entry.status === "paid",
+      dueAt: entry.dueAt,
+    })),
+  };
+  groups.set(group.id, group);
+  return group;
+}
+
+/** Payments started for one group instalment, newest first. */
+export function paymentsOfInstalment(instalmentId: string): Payment[] {
+  return [...payments.values()]
+    .filter((payment) => payment.instalmentId === instalmentId)
+    .reverse()
+    .map(view);
+}
+
 function groupOfInstalment(instalmentId: string): Group | undefined {
   for (const group of groups.values()) if (group.instalments.some((entry) => entry.id === instalmentId)) return group;
-  return undefined;
+  // A seeded order's instalment: its group is built on first use.
+  const order = orders.find((candidate) => candidate.instalments.some((entry) => entry.id === instalmentId));
+  return order ? groupForOrder(order) : undefined;
+}
+
+/** Whether the customer owns the group's orders. */
+function owns(customer: MockCustomer, group: Group): boolean {
+  const owner = ownerIdOf(customer);
+  return group.orderIds.some((id) => orders.find((order) => order.id === id)?.customer.id === owner);
 }
 
 /** A payment's view, synced from the order payment Finance may have decided in the back office. */
@@ -647,7 +692,7 @@ export const storeCheckoutHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const group = groupOfInstalment(params.instalmentId);
-    if (!group || group.persona !== customer.persona) return problem(404, "http.not_found", "ไม่พบงวดชำระนี้");
+    if (!group || !owns(customer, group)) return problem(404, "http.not_found", "ไม่พบงวดชำระนี้");
     const instalment = group.instalments.find((entry) => entry.id === params.instalmentId)!;
     if (instalment.paid) return problem(409, "instalment.already_paid", "งวดนี้ชำระแล้ว");
     if (
@@ -774,8 +819,10 @@ export const storeCheckoutHandlers = [
   mockRequest("GET /v1/store/instalments", ({ query, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const owner = ownerIdOf(customer);
+    for (const order of orders.filter((candidate) => candidate.customer.id === owner)) groupForOrder(order);
     const rows: Instalment[] = [...groups.values()]
-      .filter((group) => group.persona === customer.persona)
+      .filter((group) => owns(customer, group))
       .flatMap((group) => {
         const first = orders.find((order) => order.id === group.orderIds[0]);
         return group.instalments.map((entry) => {
