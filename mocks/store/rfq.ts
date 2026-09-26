@@ -181,7 +181,7 @@ function formOf(code: string): Form | null {
 
 /** Which fake commerce customer a store persona is (the same mapping as their orders). */
 function ownerOf(customer: MockCustomer) {
-  const owner = customer.persona === "returning" ? fakeCustomers[0] : undefined;
+  const owner = customer.ownerIndex === null ? undefined : fakeCustomers[customer.ownerIndex];
   return owner
     ? { id: owner.id, customerCode: owner.customerCode, displayName: owner.displayName, companyName: owner.companyName }
     : { id: customer.id, customerCode: "C-NEW", displayName: customer.displayName, companyName: null };

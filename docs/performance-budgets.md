@@ -104,3 +104,10 @@ The `customer-app` ratchet moves **280 → 290 KB** to cover the configurator, t
 the set; the marketing ratchet stays at 270 KB. The 3D preview costs nothing extra: it is CSS 3D
 transforms, not WebGL. The next lever is the same as 3.1's — the shared shell (~254 KB) is most of
 every page.
+
+## F3 3.3 — cart and checkout
+
+Measured signed out (the set's convention), so `/cart` measures the sign-in page it redirects to
+(268 KB); the cart, checkout and payment pages themselves need a customer session, which the
+Lighthouse runs do not carry. The configurator moved 283 → 284 KB with 3.3's changes to modules it
+shares, just over the 290,000-byte ceiling pinned in 3.2; the ratchet moves to **293,000** bytes.

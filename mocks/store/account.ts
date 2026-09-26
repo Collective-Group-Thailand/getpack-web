@@ -58,7 +58,7 @@ export const storeAccountHandlers: HttpHandler[] = [
   mockRequest("GET /v1/store/orders/by-code/{orderCode}", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const owner = customer.persona === "returning" ? fakeCustomers[0]?.id : undefined;
+    const owner = customer.ownerIndex === null ? undefined : fakeCustomers[customer.ownerIndex]?.id;
     const order = orders.find(
       (candidate) => candidate.orderCode === params.orderCode && candidate.customer.id === owner,
     );

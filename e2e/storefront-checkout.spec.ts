@@ -2,14 +2,15 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { signInAsCustomer } from "./helpers/customer";
+import { MOCK_BUYER_PHONE, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
 /**
  * F3 3.3 end to end: two items in the cart, one split across two addresses; a coupon and points;
  * the 50/50 schedule; the QR deposit settled by the (mocked) gateway webhook; a slip Finance
  * approves in the back office; the 2C2P return; re-pricing confirmed; the instalment centre.
- * Against the mock API, whose orders are the back office's own rows.
+ * Against the mock API, whose orders are the back office's own rows. Signed in as the mock's
+ * `buyer`, so no parallel test shares this cart.
  */
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -62,7 +63,7 @@ test.describe("cart and checkout", () => {
     page,
   }) => {
     test.slow();
-    await signInAsCustomer(page, "/cart");
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "1,000");
     await addBox(page, "2,000");
@@ -148,7 +149,7 @@ test.describe("cart and checkout", () => {
     browser,
   }) => {
     test.slow();
-    await signInAsCustomer(page, "/cart");
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
     await gotoHydrated(page, `${HOSTS.customer}/checkout`);
@@ -195,7 +196,7 @@ test.describe("cart and checkout", () => {
   });
 
   test("a card payment goes to the gateway and back", async ({ page }) => {
-    await signInAsCustomer(page, "/cart");
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
     await gotoHydrated(page, `${HOSTS.customer}/checkout`);
@@ -211,7 +212,7 @@ test.describe("cart and checkout", () => {
   });
 
   test("a price that moved after review is shown old and new, and confirmed again", async ({ page }) => {
-    await signInAsCustomer(page, "/cart");
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
     await addBox(page, "1,000");
@@ -238,7 +239,7 @@ test.describe("cart and checkout", () => {
   });
 
   test("a tax invoice profile needs a valid tax id", async ({ page }) => {
-    await signInAsCustomer(page, "/cart");
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
     await gotoHydrated(page, `${HOSTS.customer}/checkout`);
