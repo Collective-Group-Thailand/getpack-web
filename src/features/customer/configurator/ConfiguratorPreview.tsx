@@ -1,0 +1,134 @@
+"use client";
+
+import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
+
+import { pick } from "@/features/customer/catalog/localize";
+import { BoxPreview } from "@/features/designer/components/BoxPreview";
+import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
+import { ProductMockup2D, type MockupKind } from "@/features/designer/components/ProductMockup2D";
+import type { BoxStyleId } from "@/features/designer/types";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
+
+import { patternOf, type Configurator, type ConfiguratorState } from "./state";
+
+const BOX_STYLES = new Set<BoxStyleId>(["rsc", "tuck-end", "tray"]);
+
+/** The `@packio/dieline` style of the chosen pattern, when it draws one. */
+export function boxStyleOf(configurator: Configurator, state: ConfiguratorState): BoxStyleId | null {
+  const key = patternOf(configurator, state)?.dielineKey;
+  return key && BOX_STYLES.has(key as BoxStyleId) ? (key as BoxStyleId) : null;
+}
+
+const MOCKUP_OF: Partial<Record<Configurator["calculator"], MockupKind>> = {
+  label: "label",
+  tag_sleeve: "tag",
+  pouch: "pouch",
+};
+
+/**
+ * "Show the box" (design-system.md §1.2, D-152): the 3D box for box styles, turning live as the
+ * size and material change, with the flat dieline one tap away; a 2D mockup for labels, tags,
+ * sleeves and pouches. Nothing is shown for a product with no shape (a service).
+ */
+export function ConfiguratorPreview({
+  configurator,
+  state,
+  productName,
+}: {
+  configurator: Configurator;
+  state: ConfiguratorState;
+  productName: string;
+}) {
+  const t = useTranslations("configurator.preview");
+  const locale = useLocale();
+  const [view, setView] = useState<"3d" | "flat">("3d");
+
+  const byId = new Map(configurator.groups.flatMap((group) => group.options.map((option) => [option.id, option])));
+  const chosen = Object.values(state.choices)
+    .flat()
+    .flatMap((id) => (id && byId.has(id) ? [byId.get(id)!] : []));
+  const material = chosen.find((option) => option.swatchHex);
+  const colour = material?.swatchHex ?? "#e8e2d6";
+  const print = chosen.find((option) => option.print);
+  const printed = print ? (print.print?.front.length ?? 0) > 0 : false;
+  const codes = new Set(chosen.map((option) => option.code));
+  const materialName = material ? pick(locale, material.nameTh, material.nameEn) : "";
+
+  const { l, w, d, gusset } = state.dims;
+  const style = boxStyleOf(configurator, state);
+  const kind = configurator.size.kind;
+
+  if (kind === "none") return null;
+
+  if (kind === "box") {
+    const dims = { length: l ?? 100, width: w ?? 100, height: d ?? 50 };
+    const label = t("boxLabel", {
+      name: productName,
+      l: dims.length,
+      w: dims.width,
+      h: dims.height,
+      material: materialName,
+    });
+    return (
+      <figure className="border-border bg-bg-subtle flex flex-col gap-3 rounded-2xl border p-4">
+        {style ? (
+          <SegmentedControl
+            label={t("view")}
+            size="sm"
+            value={view}
+            onValueChange={setView}
+            options={[
+              { value: "3d", label: t("view3d") },
+              { value: "flat", label: t("viewFlat") },
+            ]}
+            className="self-center"
+          />
+        ) : null}
+        {view === "flat" && style ? (
+          <div className="h-64">
+            <BoxPreview style={style} dims={dims} paper="ivory-350" label={t("flatLabel", { name: productName })} />
+          </div>
+        ) : (
+          <BoxPreview3D
+            style={style ?? "rsc"}
+            dims={dims}
+            colour={colour}
+            printed={printed}
+            label={label}
+            labels={{
+              rotateLeft: t("rotateLeft"),
+              rotateRight: t("rotateRight"),
+              tiltUp: t("tiltUp"),
+              tiltDown: t("tiltDown"),
+              reset: t("reset"),
+            }}
+          />
+        )}
+        <figcaption className="text-muted text-center text-xs">{t("caption")}</figcaption>
+      </figure>
+    );
+  }
+
+  const mockup = MOCKUP_OF[configurator.calculator] ?? "label";
+  const shape = chosen.find((option) => ["rect", "circle", "oval", "custom"].includes(option.code))?.code;
+  return (
+    <figure className="border-border bg-bg-subtle flex flex-col gap-3 rounded-2xl border p-4">
+      <ProductMockup2D
+        kind={mockup}
+        widthMm={w ?? 50}
+        lengthMm={l ?? 50}
+        gussetMm={gusset ?? 0}
+        shape={shape}
+        colour={colour}
+        printed={printed}
+        zip={codes.has("zip")}
+        window={codes.has("window")}
+        hole={codes.has("hole") || codes.has("hole-string")}
+        string={codes.has("hole-string")}
+        label={t("flatItemLabel", { name: productName, w: w ?? 0, l: l ?? 0, material: materialName })}
+      />
+      <figcaption className="text-muted text-center text-xs">{t("caption2d")}</figcaption>
+    </figure>
+  );
+}
