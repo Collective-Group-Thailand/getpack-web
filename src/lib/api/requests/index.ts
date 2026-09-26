@@ -28,6 +28,7 @@ export * from "./admin-prepress";
 export * from "./admin-rfq";
 export * from "./admin-sales";
 export * from "./store-account";
+export * from "./store-artwork";
 export * from "./store-cart";
 export * from "./store-catalog";
 export * from "./store-checkout";
