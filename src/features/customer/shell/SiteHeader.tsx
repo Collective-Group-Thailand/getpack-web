@@ -1,4 +1,8 @@
+import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
+
+import { AccountButton } from "@/features/customer/auth/AccountButton";
+import { readAccessToken } from "@/lib/auth/session";
 
 import { getCatalogueTree } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
@@ -26,13 +30,17 @@ import { Brand } from "@/ui/brand";
  * data, `catalog/api.server.ts`); only its open/close is a client component.
  */
 export async function SiteHeader() {
-  const [t, tCommon, tCatalog, locale, tree] = await Promise.all([
+  const [t, tCommon, tCatalog, locale, tree, jar] = await Promise.all([
     getTranslations("storefront"),
     getTranslations("common"),
     getTranslations("catalog"),
     getLocale(),
     getCatalogueTree(),
+    cookies(),
   ]);
+  // Whether there is a session at all — which control to show, not who it is. The proxy has
+  // already refreshed an expired access token before this renders.
+  const signedIn = Boolean(readAccessToken(jar));
 
   return (
     <header className="z-sticky border-border bg-surface/90 sticky top-0 border-b backdrop-blur">
@@ -93,9 +101,7 @@ export async function SiteHeader() {
             <Link href="/cart" />
           </IconButton>
 
-          <IconButton asChild name="user" variant="ghost" size="sm" label={t("nav.account")}>
-            <Link href="/account" />
-          </IconButton>
+          <AccountButton signedIn={signedIn} label={t("nav.account")} />
 
           <NotificationBell zone="customer" />
           <LocaleLink />

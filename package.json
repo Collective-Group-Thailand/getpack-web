@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@line/liff": "^2.31.0",
     "@packio/dieline": "workspace:*",
     "@sentry/nextjs": "^11.0.0",
     "@tanstack/react-query": "^5.103.2",
@@ -48,6 +49,7 @@
     "@tiptap/starter-kit": "^3.31.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "firebase": "^12.19.0",
     "jspdf": "^4.2.1",
     "konva": "^10.5.0",
     "lucide-react": "^1.47.0",
