@@ -43,6 +43,8 @@ export interface MockCustomer {
   customerType: "individual" | "juristic" | "government" | null;
   identities: Schemas["LinkedIdentityDto"][];
   consents: Map<string, Consent>;
+  /** Available loyalty points (D-130–D-133); the storefront's own ledger in the mock. */
+  points: number;
 }
 
 function fresh(persona: CustomerPersona): MockCustomer {
@@ -56,6 +58,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
       customerType: null,
       identities: [{ provider: "phone_otp", linkedAt: new Date().toISOString() }],
       consents: new Map(),
+      points: 0,
     };
   }
   return {
@@ -66,6 +69,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
     phone: "0812345678",
     customerType: "individual",
     identities: [{ provider: "phone_otp", linkedAt: "2026-09-23T10:00:00+07:00" }],
+    points: 1250,
     consents: new Map(
       CONSENT_PURPOSES.map(({ purpose, required }) => [
         purpose,
