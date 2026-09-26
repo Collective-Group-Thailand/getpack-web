@@ -75,7 +75,10 @@ export interface PriceBreakTableProps {
   caption: React.ReactNode;
   headers: { quantity: React.ReactNode; perPiece: React.ReactNode; total: React.ReactNode; leadTime?: React.ReactNode };
   rows: PriceBreakRow[];
-  /** Makes each row choosable; the button's accessible name comes from `selectLabel`. */
+  /**
+   * Makes each row choosable. `selectLabel` is appended to the button's visible text for screen
+   * readers ("เลือก" + " 1,000 ชิ้น"), so the name still starts with what is on screen (WCAG 2.5.3).
+   */
   onSelect?: (key: string) => void;
   selectLabel?: (row: PriceBreakRow) => string;
   /** "เลือกอยู่" — the text of the chosen row's button. */
@@ -159,7 +162,6 @@ export function PriceBreakTable({
                     <button
                       type="button"
                       aria-pressed={Boolean(row.selected)}
-                      aria-label={selectLabel?.(row)}
                       onClick={() => onSelect(row.key)}
                       className={cn(
                         "min-h-8 rounded-md border px-2.5 text-xs font-medium whitespace-nowrap",
@@ -169,6 +171,7 @@ export function PriceBreakTable({
                       )}
                     >
                       {row.selected ? selectedText : selectText}
+                      {selectLabel ? <span className="sr-only"> {selectLabel(row)}</span> : null}
                     </button>
                   )}
                 </td>

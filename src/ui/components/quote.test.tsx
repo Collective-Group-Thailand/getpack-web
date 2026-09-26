@@ -73,15 +73,15 @@ describe("PriceSummary and PriceBreakTable", () => {
             { key: "300000", quantity: "300,000", perPiece: "", total: "", unavailable: "กำลังผลิตเต็ม" },
           ]}
           onSelect={onSelect}
-          selectLabel={(row) => `เลือก ${String(row.quantity)} ชิ้น`}
+          selectLabel={(row) => `${String(row.quantity)} ชิ้น`}
           selectText="เลือก"
           selectedText="เลือกอยู่"
         />
       </>,
     );
     expect(screen.getByText("฿11,516.10")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "เลือก 1,000 ชิ้น" })).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(screen.getByRole("button", { name: "เลือก 500 ชิ้น" }));
+    expect(screen.getByRole("button", { name: /เลือกอยู่\s*1,000 ชิ้น/ })).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(screen.getByRole("button", { name: /เลือก\s*500 ชิ้น/ }));
     expect(onSelect).toHaveBeenCalledWith("500");
     // A quantity without a price stays in the table, explained, and cannot be chosen.
     const row = screen.getByRole("row", { name: /300,000/ });

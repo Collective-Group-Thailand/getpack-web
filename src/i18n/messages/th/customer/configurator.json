@@ -197,7 +197,7 @@
     "breaksQuantity": "จำนวน",
     "breaksPerPiece": "ต่อชิ้น",
     "breaksTotal": "รวม",
-    "breaksSelect": "เลือก {quantity} {unit}",
+    "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "เลือก",
     "breaksChosen": "เลือกอยู่",
     "promoApplied": "ใช้โค้ด {code} ลด {amount}",
