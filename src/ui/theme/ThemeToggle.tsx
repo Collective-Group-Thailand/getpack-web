@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { DropdownMenu } from "../components/DropdownMenu";
 import { IconButton } from "../components/IconButton";
 import type { IconName } from "../icons";
@@ -18,6 +20,10 @@ export interface ThemeToggleProps {
   label: string;
   /** One label per choice this zone offers, from `src/i18n`. */
   choiceLabels: Record<ThemeChoice, string>;
+  /** Open on mount — for a menu loaded by the click that should open it. */
+  defaultOpen?: boolean;
+  /** Focus the trigger on mount — for a menu swapped in under a focused placeholder. */
+  autoFocus?: boolean;
 }
 
 /**
@@ -26,13 +32,16 @@ export interface ThemeToggleProps {
  *
  * Which choices appear depends on the zone: only the partner PWA offers high contrast.
  */
-export function ThemeToggle({ label, choiceLabels }: ThemeToggleProps) {
+export function ThemeToggle({ label, choiceLabels, defaultOpen = false, autoFocus }: ThemeToggleProps) {
   const { choice, choices, setChoice } = useTheme();
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <DropdownMenu
       label={label}
-      trigger={<IconButton name={CHOICE_ICON[choice]} label={label} size="sm" />}
+      open={open}
+      onOpenChange={setOpen}
+      trigger={<IconButton name={CHOICE_ICON[choice]} label={label} size="sm" autoFocus={autoFocus} />}
       items={choices.map((option) => ({
         id: option,
         label: choiceLabels[option],

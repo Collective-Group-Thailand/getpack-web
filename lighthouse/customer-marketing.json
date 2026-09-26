@@ -2,7 +2,13 @@
   "extends": "./shared.json",
   "ci": {
     "collect": {
-      "url": ["http://localhost:3200/", "http://localhost:3200/products", "http://localhost:3200/help/faq"],
+      "url": [
+        "http://localhost:3200/",
+        "http://localhost:3200/products",
+        "http://localhost:3200/products/tuck-end-box",
+        "http://localhost:3200/articles/choosing-box-paper",
+        "http://localhost:3200/faq"
+      ],
       "numberOfRuns": 3,
       "settings": {
         "preset": "desktop",
@@ -17,7 +23,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 390000
+            "maxNumericValue": 270000
           }
         ],
         "categories:seo": [
@@ -41,5 +47,5 @@
       }
     }
   },
-  "$comment": "Marketing, catalogue and product pages: LCP <= 2.0s, initial JS <= 150 KB (docs/performance-budgets.md). RATCHET: the target in docs/performance-budgets.md is 150 KB of initial JS; this build measures 374 KB, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down \u2014 it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
+  "$comment": "Marketing, catalogue and product pages: LCP <= 2.0s, initial JS <= 150 KB (docs/performance-budgets.md). RATCHET: the target in docs/performance-budgets.md is 150 KB of initial JS; this build measures 256–257 KB (F3 3.1; 374 KB in F1.3), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
 }
