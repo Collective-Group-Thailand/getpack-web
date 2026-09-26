@@ -20,6 +20,7 @@ import { adminSalesRequests } from "./admin-sales";
 import { storeAccountRequests } from "./store-account";
 import { storeCartRequests } from "./store-cart";
 import { storeCatalogRequests } from "./store-catalog";
+import { storeCheckoutRequests } from "./store-checkout";
 import { storeQuoteRequests } from "./store-quotes";
 import { storeRfqRequests } from "./store-rfq";
 
@@ -40,6 +41,7 @@ export const REQUESTS = {
   ...storeQuoteRequests,
   ...storeRfqRequests,
   ...storeCartRequests,
+  ...storeCheckoutRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

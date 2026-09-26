@@ -27,11 +27,17 @@ export async function completeSignIn(page: Page, phone = MOCK_OTP.phone, where: 
   await scope.getByLabel("รหัส OTP").fill(MOCK_OTP.code);
 }
 
-/** Signs the returning customer in and lands on `path`. */
-export async function signInAsCustomer(page: Page, path = "/"): Promise<void> {
+/**
+ * A second complete account (the mock's `buyer` persona), for a flow that owns a cart or an order
+ * end to end and must not share it with tests running in parallel as the returning customer.
+ */
+export const MOCK_BUYER_PHONE = "0823456789";
+
+/** Signs a customer in (the returning one unless `phone` says otherwise) and lands on `path`. */
+export async function signInAsCustomer(page: Page, path = "/", phone = MOCK_OTP.phone): Promise<void> {
   await acceptCookies(page);
   await gotoHydrated(page, `${HOSTS.customer}/sign-in?returnTo=${encodeURIComponent(path)}`);
-  await completeSignIn(page, MOCK_OTP.phone, "page");
+  await completeSignIn(page, phone, "page");
   await expect(page).toHaveURL(new RegExp(`${HOSTS.customer}${path.replace(/[?]/g, "\\?")}$`));
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }
