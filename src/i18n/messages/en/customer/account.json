@@ -53,5 +53,224 @@
     "save": "Save",
     "cancel": "Cancel",
     "newTitle": "New tax-invoice details"
+  },
+  "nav": {
+    "label": "My account",
+    "overview": "Overview",
+    "orders": "Orders",
+    "instalments": "Instalments",
+    "quotes": "Quotations",
+    "rfqs": "Quote requests",
+    "designs": "Designs",
+    "points": "Points",
+    "referral": "Invite friends",
+    "wallet": "Codes and credit",
+    "addresses": "Addresses and tax invoices",
+    "notifications": "Notifications",
+    "privacy": "Privacy"
+  },
+  "home": {
+    "title": "My account",
+    "greeting": "Hello, {name}",
+    "intro": "Follow your orders, pay instalments and manage your account here.",
+    "todo": "To do",
+    "nothingToDo": "Nothing waiting on you — every order is on track.",
+    "payDue": "An instalment is due — pay it",
+    "points": "{points} points",
+    "pointsValue": "Worth {amount}",
+    "tierProgress": "From {current} to {next}",
+    "tierProgressValue": "12-month spend {spend} of {threshold}",
+    "tiers": {
+      "member": "Member",
+      "silver": "Silver",
+      "gold": "Gold"
+    },
+    "seePoints": "See your points",
+    "shortcuts": "Shortcuts"
+  },
+  "quotes": {
+    "title": "Saved quotations",
+    "intro": "The price holds until the date shown. Reopen one to change it or order.",
+    "emptyTitle": "No quotations yet",
+    "emptyBody": "Save a quotation from a product's configurator.",
+    "browse": "Browse products",
+    "validUntil": "Price holds until {date}",
+    "reopen": "Reopen",
+    "row": "{code} · {quantity} {unit} · {amount}"
+  },
+  "book": {
+    "title": "Addresses and tax invoices",
+    "intro": "Saved addresses are used at checkout and for split deliveries; tax-invoice details are who documents are made out to.",
+    "addresses": "Delivery addresses",
+    "addAddress": "Add an address",
+    "noAddresses": "No addresses yet",
+    "noAddressesBody": "Add one to use at checkout.",
+    "default": "Main",
+    "edit": "Edit",
+    "remove": "Remove",
+    "taxProfiles": "Tax-invoice details",
+    "addTax": "Add tax-invoice details",
+    "noTax": "No tax-invoice details yet",
+    "headOffice": "Head office",
+    "branch": "Branch {code}",
+    "withholds": "Withholds tax",
+    "removeTitle": "Remove this?",
+    "removeBody": "Remove {name} from your account. Orders that used it do not change.",
+    "cancel": "Cancel",
+    "saved": "Saved",
+    "failed": "That did not work. Please try again."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "intro": "Choose where news and offers reach you. Order and payment messages are always sent.",
+    "matrix": "Notification channels",
+    "category": "Type",
+    "channels": {
+      "email": "E-mail",
+      "sms": "SMS",
+      "line": "LINE",
+      "web_push": "Browser notifications"
+    },
+    "categories": {
+      "transactional": {
+        "label": "Orders and payments",
+        "hint": "Status, instalments, delivery"
+      },
+      "marketing": {
+        "label": "News and offers",
+        "hint": "Only between 09:00 and 20:00"
+      }
+    },
+    "switchLabel": "{category} by {channel}",
+    "noteTransactional": "Order e-mails cannot be switched off, so you always receive documents and key updates.",
+    "noteSms": "SMS is only for what matters: OTP codes, instalments due, delivery.",
+    "noteHours": "Marketing messages are only sent between 09:00 and 20:00.",
+    "noteConsent": "Offers by LINE also need your consent on the privacy page.",
+    "linked": "Linked accounts",
+    "providers": {
+      "phone_otp": "Mobile number",
+      "line": "LINE",
+      "google": "Google",
+      "apple": "Apple"
+    },
+    "linkedAt": "Linked on {date}",
+    "notLinked": "Not linked",
+    "unlink": "Unlink",
+    "linkLine": "Link LINE",
+    "lineUnavailable": "LINE linking is not enabled here yet.",
+    "lineLinked": "LINE linked",
+    "lineFailed": "We could not link LINE. Please try again.",
+    "failed": "We could not save it. Please try again."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "intro": "Manage your consents and your rights over your personal data.",
+    "notice": "Read the privacy notice",
+    "consents": "Consents",
+    "required": "Needed to use Packio",
+    "outdated": "The text has changed — please review it.",
+    "readText": "Read the full text",
+    "requiredNote": "Required consents cannot be withdrawn while you use the account. If you no longer want the service, ask for deletion below.",
+    "granted": "Consent recorded",
+    "withdrawn": "Consent withdrawn",
+    "failed": "That did not work. Please try again.",
+    "rights": "Your rights",
+    "rightsIntro": "Ask for a copy of your data, or for its deletion. Our privacy team answers by the deadline.",
+    "export": "Get a copy of my data",
+    "delete": "Delete my data",
+    "kinds": {
+      "export": "Copy of my data",
+      "delete": "Deletion"
+    },
+    "statuses": {
+      "received": "Received",
+      "in_progress": "In progress",
+      "completed": "Done",
+      "rejected": "Could not be done"
+    },
+    "requestedAt": "Requested {date} · answer by {due}",
+    "downloadExport": "Download the copy",
+    "deleteTitle": "Delete my personal data",
+    "deleteBody": "We delete your data once open orders are finished; tax documents are kept as the law requires.",
+    "deleteConfirm": "Send the deletion request",
+    "exportTitle": "Get a copy of my data",
+    "exportBody": "When it is ready, a download link appears here and is sent by e-mail.",
+    "exportConfirm": "Send the request",
+    "cancel": "Cancel",
+    "reason": "Reason (optional)",
+    "reasonHint": "It helps us improve",
+    "requestSent": "Request sent"
+  },
+  "points": {
+    "title": "Points",
+    "intro": "1 point for every ฿500 paid (before VAT, excluding delivery) · 1 point = {value}",
+    "available": "Available",
+    "pending": "On the way",
+    "pendingHint": "Added once the order is received and the claim window has passed",
+    "tier": "Tier",
+    "multiplier": "Points ×{multiplier}",
+    "expiring": "{points} points expire on {date}",
+    "nextTier": "On the way to {tier}",
+    "history": "Points history",
+    "when": "Date",
+    "what": "What",
+    "points": "Points",
+    "status": "Status",
+    "types": {
+      "earn_order": "From an order",
+      "earn_signup": "Welcome gift",
+      "earn_line_link": "Linking LINE",
+      "earn_review": "A review",
+      "earn_referral": "Inviting a friend",
+      "earn_bonus": "Bonus",
+      "redeem": "Used",
+      "redeem_reversal": "Returned",
+      "reversal_claim_refund": "Taken back after a claim or refund",
+      "expire": "Expired",
+      "adjust": "Adjustment"
+    },
+    "expiresAt": "Expires {date}",
+    "gain": "+{points}",
+    "loss": "{points}"
+  },
+  "referral": {
+    "title": "Invite friends",
+    "intro": "Share your code: your friend gets a discount, you get points.",
+    "yourCode": "Your code",
+    "copyCode": "Copy the code",
+    "shareLink": "Share the link",
+    "shareTitle": "Get your packaging made with Packio",
+    "limit": "Up to {limit} rewarded friends a month ({used} this month)",
+    "friends": "Friends you invited",
+    "noFriends": "No friends invited yet",
+    "noFriendsBody": "Share your code with friends who need packaging.",
+    "joined": "Joined {date}",
+    "reward": "+{points} points"
+  },
+  "wallet": {
+    "title": "Codes and credit",
+    "intro": "The promo codes you hold, and credit you can pay with.",
+    "codes": "Promo codes",
+    "statuses": {
+      "available": "Available",
+      "used": "Used",
+      "expired": "Expired"
+    },
+    "validUntil": "Valid until {date}",
+    "copy": "Copy",
+    "codesNote": "Enter a code at checkout and the discount is worked out for you.",
+    "credit": "Store credit",
+    "balance": "Credit balance",
+    "creditHint": "Use it as a payment method next time",
+    "kinds": {
+      "shortage_credit": "Credit for a shortfall within tolerance",
+      "refund": "Refund as credit",
+      "goodwill": "Goodwill credit",
+      "spent": "Credit used",
+      "expired": "Credit expired"
+    }
+  },
+  "copy": {
+    "copied": "Copied"
   }
 }

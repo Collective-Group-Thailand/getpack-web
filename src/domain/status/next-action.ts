@@ -78,6 +78,11 @@ const ACTION_META: Record<string, NextActionMeta> = {
   deliver_round: { tone: "primary", icon: "send", labelKey: "action.deliverRound" },
   draw_dieline: { tone: "neutral", icon: "ruler", labelKey: "action.drawDieline" },
   requote_design: { tone: "warning", icon: "refresh", labelKey: "action.requoteDesign" },
+  // The customer's own order actions (F3 3.4–3.6).
+  "order.pay_instalment": { tone: "primary", icon: "credit-card", labelKey: "action.payInstalment" },
+  "order.upload_artwork": { tone: "primary", icon: "upload", labelKey: "action.uploadArtwork" },
+  "order.approve_proof": { tone: "primary", icon: "file-check", labelKey: "action.reviewProof" },
+  "order.open_claim": { tone: "warning", icon: "flag", labelKey: "action.openClaim" },
 };
 
 /** Falls back to something visible and pressable rather than dropping the action. */

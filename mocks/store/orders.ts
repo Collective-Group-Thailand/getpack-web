@@ -131,7 +131,7 @@ function timelineOf(order: MockOrder): Detail["timeline"] {
       at: payment.paidAt!,
       kind: "payment.received",
       title: "รับชำระเงินแล้ว",
-      detail: baht(satang(payment.amount)),
+      detail: null,
       promisedAt: null,
       photos: [],
     });
