@@ -45,5 +45,17 @@
     "accept": "Accept",
     "reject": "Reject",
     "learnMore": "Read the cookie policy"
+  },
+  "pages": {
+    "configure": "Configure and price",
+    "rfq": "Request a quote",
+    "templates": "Box templates",
+    "checkout": "Checkout",
+    "business": "Packio for business",
+    "track": "Track an order",
+    "liff": "Packio on LINE",
+    "contact": "Contact us",
+    "samples": "Request a sample kit",
+    "referral": "Invite a friend to Packio"
   }
 }
