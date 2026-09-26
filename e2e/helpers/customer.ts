@@ -33,6 +33,9 @@ export async function completeSignIn(page: Page, phone = MOCK_OTP.phone, where: 
  */
 export const MOCK_BUYER_PHONE = "0823456789";
 
+/** The mock's `artist` persona: owns an unpaid order waiting for artwork (F3 3.5). */
+export const MOCK_ARTIST_PHONE = "0834567890";
+
 /** Signs a customer in (the returning one unless `phone` says otherwise) and lands on `path`. */
 export async function signInAsCustomer(page: Page, path = "/", phone = MOCK_OTP.phone): Promise<void> {
   await acceptCookies(page);
