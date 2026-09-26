@@ -20,6 +20,7 @@ import { baht, customers as fakeCustomers, orders, satang, type MockOrder } from
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { catalogProducts, imageUrl } from "./catalog";
+import { claimRow } from "../admin/logistics";
 import { prepressIfAny } from "../admin/prepress";
 import { groupForOrder, paymentsOfInstalment } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
@@ -47,11 +48,11 @@ export const receipts = new Map<string, { confirmedAt: string }>();
 
 export const trackingTokenOf = (order: MockOrder) => `trk${order.id.replace(/-/g, "").slice(-16)}`;
 
-function deliveredAt(order: MockOrder): string | null {
+export function deliveredAt(order: MockOrder): string | null {
   return order.shipments.map((shipment) => shipment.deliveredAt).find(Boolean) ?? null;
 }
 
-function claimWindowEnd(order: MockOrder): string | null {
+export function claimWindowEnd(order: MockOrder): string | null {
   const confirmed = receipts.get(order.id)?.confirmedAt;
   const base = confirmed ?? deliveredAt(order);
   return base ? new Date(Date.parse(base) + 7 * 86_400_000).toISOString().replace("Z", "+00:00") : null;
@@ -232,6 +233,97 @@ function timelineOf(order: MockOrder): Detail["timeline"] {
   return entries.sort((a, b) => b.at.localeCompare(a.at));
 }
 
+/** D-021 / D-080: what the delivered quantity meant — the API decides; the mock works it out in satang. */
+function toleranceOf(order: MockOrder): NonNullable<Detail["toleranceOutcome"]> {
+  const delivered = order.shipments.reduce((sum, shipment) => sum + (shipment.pod?.deliveredQuantity ?? 0), 0);
+  const ratio = (delivered - order.quantity) / order.quantity;
+  const within =
+    ratio < 0 ? -ratio * 100 <= Number(order.tolerance.shortagePct) : ratio * 100 <= Number(order.tolerance.overagePct);
+  const product = order.lines.find((line) => line.lineType === "product");
+  const credit =
+    ratio < 0 && within && product
+      ? baht(Math.round((satang(product.grossAmount) / order.quantity) * (order.quantity - delivered)))
+      : null;
+  return {
+    orderedQuantity: order.quantity,
+    deliveredQuantity: delivered,
+    shortagePct: order.tolerance.shortagePct,
+    overagePct: order.tolerance.overagePct,
+    outcome:
+      ratio === 0 ? "exact" : !within ? "outside_claim_opened" : ratio < 0 ? "shortage_within" : "overage_within",
+    creditAmount: credit,
+    claimId: null,
+  };
+}
+
+const STAGE_TITLES = {
+  ordered: "สั่งซื้อ",
+  paid: "ชำระเงิน",
+  artwork: "ไฟล์งานและปรู๊ฟ",
+  production: "ผลิต",
+  shipping: "จัดส่ง",
+  completed: "รับสินค้า",
+} as const;
+
+/** Where an order stands, stage by stage — the API's list; the mock reads it off the order's row. */
+export function stagesOf(order: MockOrder): Detail["stages"] {
+  const paid =
+    !["waiting_payment", "cancelled"].includes(order.status) ||
+    order.payments.some((entry) => entry.status === "succeeded");
+  const approved = order.artworkStatus === "approved";
+  const produced = ["shipping", "completed"].includes(order.status);
+  const shipments = order.shipments;
+  const deliveredCount = shipments.filter((shipment) => shipment.status === "delivered").length;
+  const allDelivered = shipments.length > 0 && deliveredCount === shipments.length;
+  const completed = order.status === "completed" || receipts.has(order.id);
+  const firstPaid = order.payments.find((entry) => entry.status === "succeeded" && entry.paidAt)?.paidAt ?? null;
+  const done: Record<keyof typeof STAGE_TITLES, boolean> = {
+    ordered: true,
+    paid,
+    artwork: approved,
+    production: produced,
+    shipping: allDelivered,
+    completed,
+  };
+  const keys = Object.keys(STAGE_TITLES) as (keyof typeof STAGE_TITLES)[];
+  const current = order.status === "cancelled" ? null : (keys.find((key) => !done[key]) ?? null);
+  const detail: Partial<Record<keyof typeof STAGE_TITLES, string>> = {
+    paid: paid ? undefined : "รอชำระงวดแรก",
+    artwork: approved
+      ? undefined
+      : order.artworkStatus === "proof_sent"
+        ? "รอคุณตรวจปรู๊ฟ"
+        : order.artworkStatus === "awaiting_upload" || order.artworkStatus === "changes_requested"
+          ? "รอไฟล์งาน"
+          : "ทีมกำลังตรวจไฟล์",
+    shipping:
+      shipments.length > 1
+        ? `ส่งถึงแล้ว ${deliveredCount} จาก ${shipments.length} จุด`
+        : shipments.length === 1
+          ? "กำลังนำส่ง"
+          : undefined,
+    completed: allDelivered ? "ยืนยันรับสินค้า หรือระบบจะปิดงานให้ 7 วันหลังส่งถึง" : undefined,
+  };
+  const at: Partial<Record<keyof typeof STAGE_TITLES, string | null>> = {
+    ordered: order.createdAt,
+    paid: firstPaid ?? (paid ? order.createdAt : null),
+    production: produced ? (shipments[0] ? bangkokIso(-DAY * 9) : null) : null,
+    shipping: allDelivered ? deliveredAt(order) : null,
+    completed: receipts.get(order.id)?.confirmedAt ?? (order.status === "completed" ? deliveredAt(order) : null),
+  };
+  const promised: Partial<Record<keyof typeof STAGE_TITLES, string | null>> = {
+    production: order.promisedShipDate ? `${order.promisedShipDate}T18:00:00+07:00` : null,
+  };
+  return keys.map((key) => ({
+    key,
+    title: STAGE_TITLES[key],
+    state: done[key] ? "done" : key === current ? "current" : order.status === "cancelled" ? "skipped" : "upcoming",
+    at: done[key] ? (at[key] ?? null) : null,
+    promisedAt: promised[key] ?? null,
+    detail: done[key] ? null : (detail[key] ?? null),
+  }));
+}
+
 export function toDetail(order: MockOrder): Detail {
   const group = groupForOrder(order);
   const share = (seq: number) => order.instalments.find((entry) => entry.seq === seq);
@@ -340,19 +432,11 @@ export function toDetail(order: MockOrder): Detail {
       ],
       pod: shipment.pod,
     })),
-    toleranceOutcome: delivered
-      ? {
-          orderedQuantity: order.quantity,
-          deliveredQuantity: order.shipments.reduce((sum, shipment) => sum + (shipment.pod?.deliveredQuantity ?? 0), 0),
-          shortagePct: order.tolerance.shortagePct,
-          overagePct: order.tolerance.overagePct,
-          outcome: "exact",
-          creditAmount: null,
-          claimId: null,
-        }
-      : null,
-    claims: order.claims,
+    toleranceOutcome: delivered ? toleranceOf(order) : null,
+    // The desk's row is the truth once it exists (F2 2.8 moves it).
+    claims: order.claims.map((claim) => ({ ...claim, status: claimRow(claim.id)?.status ?? claim.status })),
     timeline: timelineOf(order),
+    stages: stagesOf(order),
     trackingToken: order.status === "cancelled" ? null : trackingTokenOf(order),
     receipt: delivered
       ? {

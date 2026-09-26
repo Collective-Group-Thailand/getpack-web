@@ -196,7 +196,12 @@ const delivered = (
 const shipments: Shipment[] = [
   ...shipped.map(({ order, index }, at) =>
     order.shipments[0]!.status === "delivered"
-      ? delivered(index + 1, order, order.quantity, at % 2 === 0 ? "accepted" : "pending")
+      ? delivered(
+          index + 1,
+          order,
+          order.shipments[0]!.pod?.deliveredQuantity ?? order.quantity,
+          at % 2 === 0 ? "accepted" : "pending",
+        )
       : build(index + 1, order, {
           status: at === 0 ? "failed" : "in_transit",
           exception: at === 0 ? "ไม่มีผู้รับสินค้า โทรไม่ติด" : null,
@@ -382,6 +387,90 @@ registerQueue("claims.read", () => {
         .sort()[0] ?? null,
   };
 });
+
+/* ------------------------------------------------------------------ the storefront's side */
+
+export type LogisticsClaim = Claim;
+type FileRef = Claim["evidence"]["productPhotos"][number];
+
+/** One claim row, as the storefront's claims mock (F3 3.6) reads it. */
+export function claimRow(claimId: string): Claim | undefined {
+  return claims.find((candidate) => candidate.id === claimId);
+}
+
+/** A claim the commerce seed lists on an order but the desk never built — built on first read. */
+export function adoptClaim(
+  order: (typeof orders)[number],
+  summary: { id: string; claimNo: string; type: Claim["type"]; status: Claim["status"]; submittedAt: string },
+): Claim {
+  const existing = claimRow(summary.id);
+  if (existing) return existing;
+  const row = claim(40 + claims.length, order, summary.type, summary.status, "customer", {
+    id: summary.id,
+    claimNo: summary.claimNo,
+    submittedAt: summary.submittedAt,
+  });
+  claims.push(row);
+  return row;
+}
+
+let filed = 0;
+
+/** A claim filed from the storefront: submitted, liability by rule (D-083), on the desk's queue. */
+export function fileCustomerClaim(
+  order: (typeof orders)[number],
+  input: {
+    type: Claim["type"];
+    shipmentId: string | null;
+    affectedQuantity: number | null;
+    description: string;
+    requestedResolution: Claim["requestedResolution"];
+    productPhotos: FileRef[];
+    cartonPhotos: FileRef[];
+    receivedAt: string;
+    windowEndsAt: string;
+  },
+): Claim {
+  filed += 1;
+  const shipment = order.shipments.find((candidate) => candidate.id === input.shipmentId) ?? order.shipments[0];
+  const row = claim(100 + filed, order, input.type, "submitted", "customer", {
+    id: mockId("clm", 700 + filed),
+    claimNo: `CL-2569-W${String(filed).padStart(4, "0")}`,
+    requestedResolution: input.requestedResolution,
+    claimedAmount: null,
+    submittedAt: bangkokIso(),
+    slaDueAt: bangkokIso(DAY),
+    shipment: shipment ? { id: shipment.id, shipmentNo: shipment.shipmentNo } : null,
+    description: input.description,
+    receivedAt: input.receivedAt,
+    windowEndsAt: input.windowEndsAt,
+    claimedQuantity: input.affectedQuantity,
+    evidence: { productPhotos: input.productPhotos, cartonPhotos: input.cartonPhotos },
+    approvedProof: null,
+    messages: [{ at: bangkokIso(), author: order.customer.displayName, audience: "customer", body: input.description }],
+    updatedAt: bangkokIso(),
+  });
+  claims.push(row);
+  order.claims.push({
+    id: row.id,
+    claimNo: row.claimNo,
+    type: row.type,
+    status: row.status,
+    submittedAt: row.submittedAt,
+  });
+  return row;
+}
+
+/** The customer answers in the thread; a claim waiting for information goes back to review. */
+export function customerClaimReply(item: Claim, author: string, body: string): Claim {
+  item.messages.push({ at: bangkokIso(), author, audience: "customer", body });
+  if (item.status === "need_info") {
+    item.status = "under_review";
+    item.slaDueAt = bangkokIso(DAY);
+  }
+  item.updatedAt = bangkokIso();
+  return item;
+}
 
 /* --------------------------------------------------------------------------------- handlers */
 

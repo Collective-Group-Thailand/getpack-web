@@ -102,6 +102,7 @@ export { StatusBadge, type StatusBadgeProps } from "./StatusBadge";
 export { Switch, type SwitchProps } from "./Switch";
 export { Tabs, type TabItem, type TabsProps } from "./Tabs";
 export { TimeText, type TimeTextProps } from "./TimeText";
+export { ProgressTracker, type ProgressStage, type ProgressState, type ProgressTrackerProps } from "./ProgressTracker";
 export { Timeline, type TimelineItem, type TimelineProps } from "./Timeline";
 export { toast, Toaster } from "./Toast";
 export { Tooltip, TooltipProvider, type TooltipProps } from "./Tooltip";

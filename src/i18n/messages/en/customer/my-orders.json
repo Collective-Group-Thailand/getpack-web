@@ -89,7 +89,8 @@
     "shipmentMeta": "{shipment} · {carrier}",
     "shipmentMetaTracking": "{shipment} · {carrier} · {tracking}",
     "claimLine": "{claim} · {type} · {date}",
-    "destinationLine": "{name} · {quantity} {unit}"
+    "destinationLine": "{name} · {quantity} {unit}",
+    "stages": "Stage by stage"
   },
   "tolerance": {
     "exact": "All {delivered} of {ordered} received",
