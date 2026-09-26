@@ -54,7 +54,7 @@ interface Priced {
 }
 
 function pointsBalanceOf(customer: MockCustomer): number {
-  return customer.persona === "returning" ? (fakeCustomers[0]?.loyalty.availablePoints ?? 0) : 0;
+  return customer.points;
 }
 
 function scheduleOptions(gross: number) {
@@ -631,6 +631,7 @@ export const storeCheckoutHandlers = [
       );
     previews.delete(previewToken);
     const group = placeOrders(customer, input, priced);
+    customer.points -= priced.preview.points.redeemed;
     const first = group.instalments[0]!;
     return {
       groupId: group.id,
@@ -672,9 +673,11 @@ export const storeCheckoutHandlers = [
       qr: body.method.startsWith("scb_qr")
         ? { payload: `00020101021230mock${id.slice(-8)}`, imageUrl: fakeQr(id) }
         : null,
-      // The gateway sends the customer back here; the mock approves on their return.
+      // A mock-only "gateway" page approves it and sends the customer back, as 2C2P would.
       redirectUrl: body.method.includes("2c2p")
-        ? `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}payment=${id}`
+        ? `/bff/v1/store/mock-gateway/payments/${id}/checkout?return=${encodeURIComponent(
+            `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}payment=${id}`,
+          )}`
         : null,
       bankAccount:
         body.method === "bank_transfer_slip"
@@ -701,9 +704,6 @@ export const storeCheckoutHandlers = [
     const payment = payments.get(params.paymentId);
     if (!payment || payment.persona !== customer.persona)
       return problem(404, "http.not_found", "ไม่พบรายการชำระเงินนี้");
-    // 2C2P: the only read of a card or banking payment is from the return page, after the
-    // gateway sent the customer back — the mock's gateway always approves.
-    if (payment.method.includes("2c2p") && payment.status === "pending") succeed(payment);
     return view(payment);
   }),
 
@@ -823,6 +823,18 @@ export const storeCheckoutHandlers = [
       })
       .filter((row) => !query.status || row.status === query.status);
     return paginate(rows, query);
+  }),
+
+  // Mock only: the 2C2P page. It approves the payment and sends the customer back to the store's
+  // return page — a meta refresh, not a redirect, because the BFF would follow a redirect itself.
+  http.get("*/v1/store/mock-gateway/payments/:paymentId/checkout", ({ params, request }) => {
+    const payment = payments.get(String(params.paymentId));
+    if (!payment) return problem(404, "http.not_found", "no such payment");
+    if (payment.status === "pending") succeed(payment);
+    const back = new URL(request.url).searchParams.get("return") ?? "/";
+    const safe = back.startsWith("http://") || back.startsWith("https://") || back.startsWith("/") ? back : "/";
+    const html = `<!doctype html><html lang="th"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=${safe.replace(/"/g, "&quot;")}"><title>Mock gateway</title></head><body><p>Mock 2C2P — approved.</p><p><a href="${safe.replace(/"/g, "&quot;")}">กลับไปที่ร้านค้า</a></p></body></html>`;
+    return new HttpResponse(html, { headers: { "content-type": "text/html; charset=utf-8" } });
   }),
 
   // Mock only: what the gateway's webhook does when a QR is paid. Tests call it through the BFF.

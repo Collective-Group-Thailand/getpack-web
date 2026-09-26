@@ -17,14 +17,7 @@
 import { z } from "zod";
 
 import { customerAddress, customerType, taxProfile } from "./admin-customers";
-import {
-  dueTrigger,
-  instalmentStatus,
-  paymentMethod,
-  paymentStatus,
-  requiredBefore,
-  slipStatus,
-} from "./admin-orders";
+import { dueTrigger, instalmentStatus, paymentMethod, paymentStatus, requiredBefore, slipStatus } from "./admin-orders";
 import { promotionKind } from "./admin-marketing";
 import { currency, dateTime, fileRef, listQuery, money, page, request, uuid } from "./define";
 
@@ -328,8 +321,7 @@ export const storeCheckoutRequests = {
   }),
   "POST /v1/store/checkout": request({
     request: "store.checkout",
-    summary:
-      "Place the order group from a preview; 409 checkout.repriced with a fresh preview if anything moved since",
+    summary: "Place the order group from a preview; 409 checkout.repriced with a fresh preview if anything moved since",
     decisions: ["D-020", "D-050", "D-060", "D-110"],
     body: checkoutInput.extend({ previewToken: z.string() }),
     response: placedOrder,
