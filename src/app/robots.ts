@@ -12,6 +12,26 @@ import { headers } from "next/headers";
  * misconfigured proxy should degrade to "disallow everything" rather than to a map of the
  * back office.
  */
+/** This app's own machinery, never pages. */
+const APP_PATHS = ["/api/", "/bff/", "/monitoring"];
+
+/**
+ * Pages that must never be indexed, in both languages (`/en` is a prefix, so each needs its
+ * English twin or `/en/account/` would be crawlable). `/configure/` and `/rfq/` are per-visitor
+ * tools for a product whose page is the one to index; `/referral/` carries a person's code.
+ */
+const PRIVATE_PAGES = [
+  "/account/",
+  "/cart",
+  "/checkout",
+  "/track/",
+  "/liff",
+  "/sign-in",
+  "/configure/",
+  "/rfq/",
+  "/referral/",
+];
+
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const zoneHeader = (await headers()).get(ZONE_HEADER);
   const zone = isZone(zoneHeader) ? zoneHeader : "customer";
@@ -34,7 +54,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
        * signed-out anyway; `/monitoring` is Sentry's tunnel; `/bff/` is this app's own API.
        * `/liff/` is the LINE in-app surface (D-151), which is not a web page.
        */
-      disallow: ["/api/", "/bff/", "/monitoring", "/account/", "/cart", "/checkout", "/track/", "/liff/", "/sign-in"],
+      disallow: [...APP_PATHS, ...PRIVATE_PAGES, ...PRIVATE_PAGES.map((path) => `/en${path}`)],
     },
     sitemap: `${origin}/sitemap.xml`,
     host: origin,

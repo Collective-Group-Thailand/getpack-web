@@ -71,8 +71,12 @@ export interface ApiClientOptions {
    * needs: it is memoised for the life of the page, and the locale can change under it.
    */
   locale?: string | (() => string | undefined);
-  /** Correlates this app's logs with the API's. Generated when absent. */
-  requestId?: string;
+  /**
+   * Correlates this app's logs with the API's. Generated when absent; `null` sends none — for
+   * a cached public read, where a per-request header would make every fetch its own cache
+   * entry (Next's data cache keys on headers).
+   */
+  requestId?: string | null;
   /** Sends the BFF's CSRF header on non-GET requests. Browser clients only. */
   csrf?: boolean;
   /**
@@ -99,7 +103,9 @@ function contextMiddleware({ accessToken, locale, requestId, csrf, surfaceZone }
       const language = typeof locale === "function" ? locale() : locale;
       if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
       if (language) headers.set("Accept-Language", language);
-      if (!headers.has(REQUEST_ID_HEADER)) headers.set(REQUEST_ID_HEADER, requestId ?? crypto.randomUUID());
+      if (!headers.has(REQUEST_ID_HEADER) && requestId !== null) {
+        headers.set(REQUEST_ID_HEADER, requestId ?? crypto.randomUUID());
+      }
 
       const mutating = MUTATING_METHODS.has(request.method.toUpperCase());
       if (csrf && mutating) headers.set(CSRF_HEADER, "1");

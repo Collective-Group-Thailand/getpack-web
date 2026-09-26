@@ -31,7 +31,7 @@ export async function SiteFooter() {
       links: [
         { key: "about", href: "/about" },
         { key: "partner", href: "/partner-with-us" },
-        { key: "contact", href: "/help/contact" },
+        { key: "contact", href: "/contact" },
       ],
     },
     {
