@@ -25,6 +25,41 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 
 ---
 
+## F3 Phase 3.5 — 2026-09-27
+
+Artwork, proofs and hired design from the customer's side, on `feat/f3.5-artwork` (from `31683f7`, 3.4 merged). packio-api has published nothing of this for the storefront, so it is all contract requests; the mock is a view over the back office's prepress rows (F2 2.4). A file the customer submits appears in the prepress desk, a proof prepress sends appears in the viewer, and a comment is one thread both sides answer. The e2e walks that loop across the two zones.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| Preflight blocks what D-070 blocks and only warns about the rest | findings are rendered by severity as the API returns them. Blocking ones (size, bleed) keep the file out, and the API offers `artwork.upload` again. Warnings (resolution, RGB) explain the risk without stopping the job |
+| The rules are the settings, in words | bleed, safe margin, dpi and colour mode come from `rules`; nothing is hard-coded |
+| An upload survives a flaky connection | `putWithRetry` retries each part up to 3 times with backoff, with progress per file; submission waits until every file is uploaded |
+| Approval is evidence and happens once | approve stays disabled until every checklist item (from settings) is ticked. An `AlertDialog` restates the order code and version, and one `Idempotency-Key` covers the approval. The API records who approved, when, the file hash and the checklist, and the viewer reads it back |
+| Commenting never requires pointing (WCAG 2.5.7) | "comment on the whole page" is always available; every pin or box is a button in the tab order and a numbered item in the thread list |
+| A charged design round is never a surprise (D-071) | the API's `nextRound` says whether the round is charged and what it costs. The customer ticks acceptance of that exact fee, which the request restates as `acceptedFee` (the API refuses a mismatch). The fee becomes an instalment that must be paid before work starts |
+
+### Decisions taken, with reasons
+- **The proof arrives as page images plus a separate dieline overlay** (the API rasterises the PDF). Zoom, pan, overlay toggle, compare (side by side or slider) and pinning are then plain HTML/CSS, with no PDF.js in the bundle. The 3D view reuses the designer's CSS `BoxPreview3D` when the order has a known `@packio/dieline` style.
+- **The free-round counter follows the back office**: it counts every round the API did not charge, first design included, so "round 4 is charged" and the counter agree. D-071 says "3 free revision rounds; from round 4". The admin mock and screens read "round 4" as the fourth round overall, so the customer screen matches them. The API's `nextRound` decides either way; the question is raised below.
+- **The upload step hides once the artwork is approved**; the file is fixed after approval (B4.1).
+- **A fourth mock persona, `artist`** (0834567890, the fourth fake commerce customer), owns an unpaid order waiting for artwork. The artwork e2e has its own order, apart from the admin prepress spec's seeded ones. Every non-returning persona now gets its own token from the auth mock.
+- **The returning customer's first order is now a hired-design order three rounds in** (prepress mock plan `0`). The account's "what needs doing" list therefore shows "send the brief" / "review the design" for it, mapped in `orders/actions.ts`.
+
+### Contract requests raised (docs/contract-requests.md)
+`store.artwork`, `store.proofs`, `store.design-service`.
+
+### Deliberately not done
+- Uploading a design round's reference files in the revision request; the contract accepts `fileIds`, but the UI sends the note only.
+- Multi-page proofs: the viewer shows page 1 (every mock proof has one page); the contract carries `pages[]`.
+- Submitting the online designer's document as artwork (`designDocumentId`): the link opens the designer seeded with the order's box, but the hand-back comes with the designer's save-to-order flow.
+
+### Open questions
+- **Business (D-071)**: are the three free rounds three *revisions* after the first design, or three rounds including it? Screens follow the back office (including it) until answered.
+- **Backend**: the three requests. Also whether annotation threads should arrive over the realtime channel (`proof.annotation_added`) rather than on reload.
+
+---
+
 ## F3 Phase 3.4 — 2026-09-27
 
 The customer's account, on `feat/f3.4-account` (from `e877160`, 3.3 merged). packio-api has published notification preferences and consents (B1.3) and LINE linking (a LINE sign-in made with a customer's bearer token links the identity); everything about orders, loyalty and the wallet is contract requests, mocked over the back office's own rows.
