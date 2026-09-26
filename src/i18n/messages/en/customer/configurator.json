@@ -221,5 +221,6 @@
     "openPdf": "Open PDF",
     "noInstantPrice": "This quantity no longer has an instant price. Choose another or request a quote.",
     "failed": "That did not work. Please try again."
-  }
+  },
+  "savedFrom": "Opened from your saved quotation {code}. The price below is worked out again at today's prices."
 }

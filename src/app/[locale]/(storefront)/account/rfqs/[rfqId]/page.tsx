@@ -38,7 +38,7 @@ export default async function Page({
   const { rfq, messages } = found;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div>
       <Link href="/account/rfqs" className="text-primary text-sm underline-offset-4 hover:underline">
         {t("back")}
       </Link>

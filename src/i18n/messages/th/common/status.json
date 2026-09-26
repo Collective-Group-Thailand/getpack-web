@@ -383,7 +383,11 @@
     "deliverRound": "ส่งงานออกแบบ",
     "drawDieline": "วาดแบบกล่อง",
     "requoteDesign": "เสนอราคาออกแบบใหม่",
-    "unknown": "ดำเนินการ"
+    "unknown": "ดำเนินการ",
+    "payInstalment": "ชำระงวดถัดไป",
+    "uploadArtwork": "ส่งไฟล์งาน",
+    "reviewProof": "ตรวจและอนุมัติปรู๊ฟ",
+    "openClaim": "แจ้งปัญหาสินค้า"
   },
   "points": {
     "pending": "รอเข้าบัญชี",

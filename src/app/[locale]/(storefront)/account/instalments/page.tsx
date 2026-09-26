@@ -18,7 +18,7 @@ export default async function Page() {
     (await serverRequests("customer")).call("GET /v1/store/instalments", { query: { perPage: 100 } }),
   ]);
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
       <InstalmentList instalments={instalments.data} />

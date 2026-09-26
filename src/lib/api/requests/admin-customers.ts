@@ -57,13 +57,16 @@ export const taxProfile = z
   })
   .meta({ id: "TaxProfileDto" });
 
+/** D-134 tiers by 12-month spend. */
+export const loyaltyTier = z.enum(["member", "silver", "gold"]).meta({ id: "LoyaltyTier" });
+
 export const customerDetail = customerSummary
   .extend({
     addresses: z.array(customerAddress),
     taxProfiles: z.array(taxProfile),
     referralCode: z.string(),
     loyalty: z.object({
-      tier: z.enum(["member", "silver", "gold"]).meta({ id: "LoyaltyTier" }),
+      tier: loyaltyTier,
       availablePoints: z.number().int(),
       spend12m: z.string(),
     }),

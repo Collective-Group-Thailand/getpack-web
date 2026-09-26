@@ -1,0 +1,108 @@
+{
+  "title": "คำสั่งซื้อของฉัน",
+  "placed": "สั่งซื้อ {code} แล้ว",
+  "viewsLabel": "กรองคำสั่งซื้อ",
+  "views": {
+    "active": "กำลังดำเนินการ",
+    "completed": "เสร็จสิ้น",
+    "cancelled": "ยกเลิก"
+  },
+  "empty": {
+    "active": "ไม่มีคำสั่งซื้อที่กำลังดำเนินการ",
+    "completed": "ยังไม่มีคำสั่งซื้อที่เสร็จสิ้น",
+    "cancelled": "ไม่มีคำสั่งซื้อที่ยกเลิก"
+  },
+  "emptyBody": "ยังไม่มีคำสั่งซื้อ — เริ่มออกแบบกล่องแรก",
+  "browse": "เลือกสินค้า",
+  "row": "{quantity} {unit} · สั่งเมื่อ {date}",
+  "shipBy": "กำหนดส่งจากโรงงาน {date}",
+  "payDue": "มีงวดที่ต้องชำระ — ไปชำระ",
+  "documents": {
+    "download": "ขอลิงก์ดาวน์โหลด",
+    "open": "เปิดเอกสาร",
+    "failed": "ขอลิงก์ไม่สำเร็จ กรุณาลองใหม่",
+    "types": {
+      "qt": "ใบเสนอราคา",
+      "iv": "ใบแจ้งหนี้/ใบกำกับภาษี",
+      "tr": "ใบกำกับภาษี/ใบเสร็จรับเงิน",
+      "rc": "ใบเสร็จรับเงิน",
+      "cn": "ใบลดหนี้",
+      "dn": "ใบเพิ่มหนี้"
+    },
+    "final": "ใบกำกับภาษีฉบับสุดท้าย",
+    "forInstalment": "งวดที่ {seq}"
+  },
+  "detail": {
+    "title": "คำสั่งซื้อ {code}",
+    "back": "คำสั่งซื้อทั้งหมด",
+    "placed": "สั่งเมื่อ {date} · กลุ่ม {group}",
+    "expires": "กรุณาชำระภายใน {date} มิฉะนั้นคำสั่งซื้อจะถูกยกเลิกอัตโนมัติ",
+    "cancelled": "ยกเลิกเมื่อ {date}",
+    "autoComplete": "ระบบจะยืนยันรับสินค้าอัตโนมัติวันที่ {date} แจ้งปัญหาสินค้าได้ถึง {claim}",
+    "timeline": "ความคืบหน้า",
+    "promised": "กำหนด {date}",
+    "photo": "ภาพ {name}",
+    "instalments": "งวดชำระ",
+    "dueBy": "ครบกำหนด {date}",
+    "trigger": {
+      "none": "หลังได้รับสินค้า",
+      "production": "ก่อนเริ่มผลิต",
+      "shipping": "ก่อนจัดส่ง"
+    },
+    "continuePay": "ชำระต่อ",
+    "pay": "ชำระงวดนี้",
+    "groupShare": "ยอดงวดเป็นส่วนของคำสั่งซื้อนี้ในกลุ่ม {count} รายการ ชำระครั้งเดียวสำหรับทั้งกลุ่ม",
+    "documents": "เอกสาร",
+    "noDocuments": "เอกสารจะออกเมื่อมีการชำระเงิน",
+    "shipments": "การจัดส่ง",
+    "shipmentTo": "{quantity} {unit} ถึง {name} ({province})",
+    "carrier": {
+      "factory_fleet": "รถขนส่งของ Packio",
+      "flash_express": "Flash Express",
+      "deliveree": "Deliveree"
+    },
+    "pod": "ผู้รับ {name} รับ {quantity} ชิ้น เมื่อ {date}",
+    "publicTracking": "ลิงก์ติดตามสถานะสำหรับแชร์",
+    "tolerance": "จำนวนที่ได้รับ",
+    "claims": "การแจ้งปัญหา",
+    "what": "รายละเอียดสินค้า",
+    "quantity": "จำนวน",
+    "design": "งานออกแบบ",
+    "designOptions": {
+      "own_file": "ลูกค้าส่งไฟล์",
+      "online_designer": "ออกแบบออนไลน์",
+      "hired_design": "จ้างนักออกแบบ",
+      "free_design": "ออกแบบฟรี"
+    },
+    "toleranceTerms": "จำนวนคลาดเคลื่อนที่ยอมรับ",
+    "toleranceValue": "ขาดได้ {shortage} เกินได้ {overage}",
+    "price": "ราคา",
+    "discount": "ส่วนลด",
+    "minus": "−{amount}",
+    "vat": "ภาษีมูลค่าเพิ่ม (รวมแล้ว)",
+    "total": "ยอดรวม",
+    "deliveryTo": "ที่อยู่จัดส่ง",
+    "taxInvoice": "ใบกำกับภาษีในนาม {name} ({taxId}) {branch}",
+    "po": "เลขที่ PO {po}",
+    "help": "มีคำถามเกี่ยวกับคำสั่งซื้อนี้? ติดต่อทีมงาน",
+    "documentMeta": "{number} · {date} · {amount}",
+    "shipmentMeta": "{shipment} · {carrier}",
+    "shipmentMetaTracking": "{shipment} · {carrier} · {tracking}",
+    "claimLine": "{claim} · {type} · {date}",
+    "destinationLine": "{name} · {quantity} {unit}"
+  },
+  "tolerance": {
+    "exact": "ได้รับครบ {delivered} จาก {ordered} ชิ้น",
+    "shortage_within": "ได้รับ {delivered} จาก {ordered} ชิ้น อยู่ในเกณฑ์ที่ยอมรับ ส่วนที่ขาดคืนเป็นเครดิต {credit}",
+    "overage_within": "ได้รับ {delivered} จาก {ordered} ชิ้น ส่วนที่เกินไม่มีค่าใช้จ่าย",
+    "outside_claim_opened": "ได้รับ {delivered} จาก {ordered} ชิ้น เกินเกณฑ์ที่ยอมรับ ระบบเปิดเคลมให้อัตโนมัติ"
+  },
+  "claimTypes": {
+    "damaged": "สินค้าเสียหาย",
+    "wrong_spec": "ผิดสเปก",
+    "print_defect": "งานพิมพ์ผิดพลาด",
+    "quantity_short": "จำนวนขาด",
+    "late": "ส่งล่าช้า",
+    "other": "อื่น ๆ"
+  }
+}
