@@ -25,6 +25,41 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 
 ---
 
+## F3 Phase 3.6 — 2026-09-27
+
+Tracking, delivery, receipt, claims and reorder, on `feat/f3.6-tracking` (from `1ddcc98`, 3.5 merged). packio-api has published none of this, so it is all contract requests. The mocks work over the back office's own rows: orders from commerce, claims from the logistics desk (F2 2.8). A claim the customer files is on the desk's queue, and the e2e opens it there.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| The public tracking page says nothing personal | `PublicTrackingDto` carries no name, street, phone, amount or delivery photo, only the province. The e2e reads the guest's page text for the recipient and the ฿ sign. The page is `noindex` |
+| Stages are the API's, promised against actual | `stages` on the order (and on the tracking page) is rendered as returned; a done stage shows its date and the promised one beside it. `ProgressTracker` (`src/ui`) says each state in words and marks the current one `aria-current="step"` |
+| What a short delivery means is the API's (D-021, D-080) | the tolerance outcome and the credit are shown as returned; the credit links to the wallet |
+| Confirming receipt restates what it means (D-081, D-082) | an `AlertDialog` names the order and says the 7-day claim window starts now; one `Idempotency-Key` |
+| A claim cannot go without both kinds of evidence (D-082) | product photos and carton photos are separate required groups (counts from the claim form). Errors are listed at the top and at each field; the API refuses it too (`claim.evidence_missing`), and refuses anything after the window (`claim.window_closed`) |
+| Liability never reaches the customer (D-083) | the store claim is a view without liability, factory or internal messages; staff appear as "ทีม Packio" |
+| A reorder is placed at the price shown (D-153) | the preview's `previewToken` goes with the reorder. A stale one is refused (`409 reorder.repriced`) and the preview reloads. Reusable plates and dies come back as waived lines with the reason; the proof is skipped when the approved artwork is reused |
+
+### Decisions taken, with reasons
+- **A reorder becomes a quotation in the cart**, and "reorder and check out" goes straight to `/checkout`. Checkout stays the only place an order is placed (schedules, promotions, payment), so a reorder is not a second checkout.
+- **Stages live on the order detail** (`stages`), not in a separate request: the order page is one aggregate (3.4), and the tracking page uses the same list.
+- **Six stages, receipt last**: ordered → paid → artwork & proof → production → shipping (done when every destination is delivered, with "x of y" while not) → received. "Delivered" and "received" are not two stages: D-081's auto-complete makes the second one a date, not a step.
+- **A fifth mock persona, `receiver`** (0845678901, the eighth fake customer), owns order 32. That order is now delivered yesterday at 970 of 1,000 (3 % short, within the D-163 default). The logistics mock builds its POD from that quantity, so the desk and the storefront agree.
+- **The store's claims list reads the desk's status** once the desk has the row, so a decision in the back office shows on the order page.
+
+### Contract requests raised (docs/contract-requests.md)
+`store.tracking` (plus `stages` on `StoreOrderDetailDto`), `store.receipt`, `store.claims`, `store.reorder`.
+
+### Deliberately not done
+- Photos in claim replies: the contract takes `fileIds`, but the UI sends text only.
+- The reorder quotation does not yet carry its source order (`StoreQuoteDto` has no field for it), so a mock checkout of a reorder does not reuse the artwork. This is raised in `store.reorder`.
+- Scanning the carton QR in-app: `/track` takes the code or a pasted link; the QR itself opens `/track/{token}`.
+
+### Open questions
+- **Backend**: the four requests; whether tracking should be pushed (`shipment.updated` on the realtime channel) rather than cached for a minute; carrier `trackingUrl` per carrier.
+
+---
+
 ## F3 Phase 3.5 — 2026-09-27
 
 Artwork, proofs and hired design from the customer's side, on `feat/f3.5-artwork` (from `31683f7`, 3.4 merged). packio-api has published nothing of this for the storefront, so it is all contract requests; the mock is a view over the back office's prepress rows (F2 2.4). A file the customer submits appears in the prepress desk, a proof prepress sends appears in the viewer, and a comment is one thread both sides answer. The e2e walks that loop across the two zones.
