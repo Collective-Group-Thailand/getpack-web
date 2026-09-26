@@ -1,10 +1,49 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { ComingSoon, comingSoonMetadata } from "@/features/customer/shell/ComingSoon";
+import { getClaimForm } from "@/features/customer/fulfilment/api.server";
+import { ClaimForm } from "@/features/customer/fulfilment/ClaimForm";
+import { getMyOrder } from "@/features/customer/orders/api.server";
+import { Link } from "@/i18n/navigation";
+import { Callout } from "@/ui/components/Callout";
 
-/** Linked from the order's next actions (F3 3.4); the screen itself arrives with 3.5 / 3.6. */
-export const generateMetadata = () => comingSoonMetadata("pages.order_claim");
+type Params = { orderId: string };
 
-export default async function Page() {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { orderId } = await params;
+  const [t, order] = await Promise.all([getTranslations("fulfilment.claim"), getMyOrder(orderId).catch(() => null)]);
+  return {
+    title: order ? t("titleFor", { code: order.orderCode }) : t("title"),
+    robots: { index: false, follow: false },
+  };
+}
+
+/** Reporting a problem with a delivered order (F3 3.6, D-082). */
+export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
-  return <ComingSoon titleKey="pages.order_claim" />;
+  const { orderId } = await params;
+  const [t, order, form] = await Promise.all([
+    getTranslations("fulfilment.claim"),
+    getMyOrder(orderId),
+    getClaimForm(orderId),
+  ]);
+  if (!order) notFound();
+
+  return (
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-3">
+        <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline-offset-4 hover:underline">
+          {t("back", { code: order.orderCode })}
+        </Link>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+      </header>
+      {form ? (
+        <ClaimForm orderId={order.id} orderCode={order.orderCode} form={form} />
+      ) : (
+        <Callout tone="info">{t("notYet")}</Callout>
+      )}
+    </div>
+  );
 }
