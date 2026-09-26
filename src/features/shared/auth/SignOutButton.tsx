@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/ui";
+import { Button } from "@/ui/components/Button";
 import type { Zone } from "@/lib/zones";
 
 import { signOut } from "./sign-out";

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { EmptyState } from "@/ui";
+import { EmptyState } from "@/ui/components/EmptyState";
 
 /** A real miss inside this zone. Cross-zone probes never get here — `src/proxy.ts` answers
  * those with a bare 404 before any app code runs. */

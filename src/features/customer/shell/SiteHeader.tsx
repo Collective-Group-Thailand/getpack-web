@@ -9,13 +9,12 @@ import { pick } from "@/features/customer/catalog/localize";
 import { HeaderSearch } from "@/features/customer/search/HeaderSearch";
 import { categoryHref } from "@/features/customer/catalog/paths";
 
-import { LocaleLink } from "./LocaleLink";
+import { CustomerBell } from "./CustomerBell";
+import { DeferredLocaleMenu, DeferredThemeMenu } from "./DeferredMenus";
 import { ProductsMenu } from "./ProductsMenu";
-import { NotificationBell } from "@/features/shared/shell";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
-import { ThemeToggle } from "@/ui/theme/ThemeToggle";
 import { Brand } from "@/ui/brand";
 
 /**
@@ -103,9 +102,10 @@ export async function SiteHeader() {
 
           <AccountButton signedIn={signedIn} label={t("nav.account")} />
 
-          <NotificationBell zone="customer" />
-          <LocaleLink />
-          <ThemeToggle
+          {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}
+          {signedIn ? <CustomerBell /> : null}
+          <DeferredLocaleMenu />
+          <DeferredThemeMenu
             label={tCommon("theme.label")}
             choiceLabels={{
               system: tCommon("theme.system"),
