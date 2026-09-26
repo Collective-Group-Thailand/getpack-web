@@ -127,7 +127,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
 }
 
-/** A banner's target is an admin-entered path; only a path inside the site becomes a link. */
+/**
+ * A banner's target is an admin-entered path; only a path inside the site becomes a link, and
+ * it is not prefetched — nothing guarantees the page exists, and a prefetch that 404s holds its
+ * socket open (see `ComingSoon`).
+ */
 function bannerTarget(url: string | null): string | null {
   if (!url || !url.startsWith("/") || url.startsWith("//")) return null;
   // Admins enter paths with a locale prefix ("/th/products/…"); the router adds the locale.
@@ -150,7 +154,11 @@ function HeroBanner({ banner }: { banner: Banner }) {
     />
   );
   return target ? (
-    <Link href={target} className="focus-visible:ring-focus-ring block rounded-2xl outline-none focus-visible:ring-2">
+    <Link
+      href={target}
+      prefetch={false}
+      className="focus-visible:ring-focus-ring block rounded-2xl outline-none focus-visible:ring-2"
+    >
       {image}
     </Link>
   ) : (
@@ -171,7 +179,11 @@ function StripBanner({ banner }: { banner: Banner }) {
     </span>
   );
   return target ? (
-    <Link href={target} className="focus-visible:ring-focus-ring block rounded-xl outline-none focus-visible:ring-2">
+    <Link
+      href={target}
+      prefetch={false}
+      className="focus-visible:ring-focus-ring block rounded-xl outline-none focus-visible:ring-2"
+    >
       {body}
     </Link>
   ) : (

@@ -110,5 +110,27 @@
   "menu": {
     "toggle": "Product categories",
     "all": "See all products"
+  },
+  "articles": {
+    "title": "Articles",
+    "description": "Packaging know-how from Packio: materials, design and ordering",
+    "heading": "Articles and guides",
+    "intro": "What is worth knowing before you order packaging",
+    "categories": "Article categories",
+    "all": "All",
+    "emptyTitle": "No articles in this category yet",
+    "emptyBody": "Try another category, or go back to all articles",
+    "published": "Published {date}",
+    "back": "All articles"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "description": "Answers about ordering, prices, production time, payment and delivery with Packio",
+    "heading": "Frequently asked questions",
+    "intro": "Can't find your answer? Ask our team on LINE",
+    "other": "Other questions",
+    "contact": "Contact our team",
+    "emptyTitle": "No questions yet",
+    "emptyBody": "Ask our team directly"
   }
 }

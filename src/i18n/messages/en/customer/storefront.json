@@ -9,7 +9,8 @@
     "lineChat": "Chat with us on LINE",
     "home": "Home",
     "design": "Design",
-    "orders": "Orders"
+    "orders": "Orders",
+    "articles": "Articles"
   },
   "footer": {
     "tagline": "Your Packaging Production Partner",
@@ -20,7 +21,8 @@
       "howItWorks": "How ordering works",
       "faq": "Frequently asked questions",
       "glossary": "Packaging glossary",
-      "track": "Track an order"
+      "track": "Track an order",
+      "articles": "Articles"
     },
     "company": {
       "heading": "Company",

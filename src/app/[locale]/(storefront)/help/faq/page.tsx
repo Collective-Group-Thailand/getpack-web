@@ -1,5 +1,8 @@
-import { ComingSoon } from "@/features/customer/shell/ComingSoon";
+import { getLocale } from "next-intl/server";
 
-export default function Page() {
-  return <ComingSoon titleKey="footer.help.faq" />;
+import { permanentRedirect } from "@/i18n/navigation";
+
+/** The FAQ moved to `/faq` (F3 3.1 information architecture). */
+export default async function Page() {
+  permanentRedirect({ href: "/faq", locale: await getLocale() });
 }
