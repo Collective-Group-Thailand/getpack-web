@@ -1,0 +1,173 @@
+{
+  "centre": {
+    "title": "Help centre",
+    "intro": "Answers on ordering, artwork, payment and delivery — or talk to the team.",
+    "search": "Search help",
+    "searchPlaceholder": "e.g. bleed, instalments, claims",
+    "searchButton": "Search",
+    "topics": "Common topics",
+    "topic": {
+      "howItWorks": {
+        "title": "How ordering works",
+        "body": "From choosing a box to delivery"
+      },
+      "track": {
+        "title": "Track an order",
+        "body": "By the code on the carton or a shared link"
+      },
+      "artwork": {
+        "title": "Artwork and proofs",
+        "body": "Size, bleed, colour mode and approving proofs"
+      },
+      "payment": {
+        "title": "Payment",
+        "body": "Deposits, instalments, PromptPay and tax invoices"
+      },
+      "samples": {
+        "title": "Sample kits",
+        "body": "Feel the materials before you order"
+      },
+      "business": {
+        "title": "For business",
+        "body": "Company accounts, approvals and credit terms"
+      }
+    },
+    "faq": "Frequently asked",
+    "allFaq": "All questions",
+    "person": "Didn't find it?",
+    "personBody": "Tell us what you're looking for and we'll suggest a box — or send the team a message.",
+    "chat": "Ask the assistant",
+    "contact": "Contact the team"
+  },
+  "contact": {
+    "title": "Contact us",
+    "intro": "Our customer service team helps with orders, quotations and artwork.",
+    "line": "LINE",
+    "phoneLabel": "Phone",
+    "emailLabel": "E-mail",
+    "hours": "Hours",
+    "formTitle": "Send the team a message",
+    "name": "Name",
+    "required": "(required)",
+    "phone": "Mobile number",
+    "email": "E-mail",
+    "reachHint": "A phone number or an e-mail, at least one",
+    "topic": "Topic",
+    "topics": {
+      "order": "An order",
+      "quote": "A quotation",
+      "artwork": "Artwork and proofs",
+      "payment": "Payment",
+      "delivery": "Delivery",
+      "business": "Business account",
+      "partnership": "Becoming a partner factory",
+      "other": "Something else"
+    },
+    "orderCode": "Order number",
+    "orderCodeHint": "If you have one, e.g. PK-2569-00100",
+    "message": "Message",
+    "submit": "Send message",
+    "sentTitle": "Message received — reference {ticket}",
+    "sent": "We'll get back to you by {date}",
+    "failed": "Couldn't send. Please try again.",
+    "rateLimited": "Too many messages — please wait about 10 minutes, or message us on LINE",
+    "errors": {
+      "name": "Please enter your name",
+      "reach": "Enter a phone number or an e-mail",
+      "phone": "That mobile number doesn't look right",
+      "email": "That e-mail doesn't look right",
+      "message": "Write at least 10 characters"
+    }
+  },
+  "samples": {
+    "title": "Sample kits",
+    "intro": "Feel the board, see real print and finishes before you decide.",
+    "noneTitle": "No sample kits available right now",
+    "noneBody": "Contact the team for samples for your job.",
+    "free": "Free",
+    "creditedShort": "credited on your first order",
+    "formTitle": "Where to send it",
+    "kit": "Kit",
+    "kitLabel": "{name} · {price}",
+    "credited": "Ships within {days} days; the kit is credited on your first order",
+    "lead": "Ships within {days} days",
+    "recipient": "Recipient",
+    "company": "Company / brand",
+    "phone": "Mobile number",
+    "email": "E-mail",
+    "line1": "Address",
+    "district": "District",
+    "province": "Province",
+    "postcode": "Postcode",
+    "interest": "What are you planning",
+    "interestHint": "e.g. 1,000 cosmetics boxes with a matte finish",
+    "required": "(required)",
+    "submit": "Request a kit",
+    "sentTitle": "Request {request} received",
+    "sent": "Ships by {date}",
+    "pay": "Pay for the kit",
+    "failed": "Couldn't send the request. Please try again.",
+    "rateLimited": "Too many requests — please wait a little",
+    "errors": {
+      "name": "Please enter the recipient",
+      "phone": "That mobile number doesn't look right",
+      "line1": "Please enter the address",
+      "province": "Please enter the province",
+      "postcode": "A 5-digit postcode"
+    }
+  },
+  "guided": {
+    "launcher": "Help me choose",
+    "title": "Box finder",
+    "intro": "Answer four questions and we'll suggest a style — or pass you to the team with what you've told us.",
+    "close": "Close",
+    "questions": {
+      "use": "What goes inside",
+      "size": "Roughly how big",
+      "quantity": "How many",
+      "priority": "What matters most"
+    },
+    "options": {
+      "use": {
+        "cosmetics": "Cosmetics",
+        "food": "Food / snacks",
+        "electronics": "Electronics",
+        "apparel": "Apparel",
+        "gifts": "Gifts",
+        "other": "Other"
+      },
+      "size": {
+        "small": "Small, palm-sized",
+        "medium": "Medium, shoebox",
+        "large": "Large, for shipping",
+        "unsure": "Not sure yet"
+      },
+      "quantity": {
+        "under_500": "Under 500",
+        "500_2000": "500–2,000",
+        "2000_10000": "2,000–10,000",
+        "over_10000": "Over 10,000"
+      },
+      "priority": {
+        "premium": "Looks premium",
+        "protection": "Protection",
+        "budget": "Low cost",
+        "eco": "Eco-friendly"
+      }
+    },
+    "recommend": "Show suggestions",
+    "resultTitle": "Suggested for {summary}",
+    "from": "From ฿{price} each",
+    "handoffTitle": "Talk to the team",
+    "handoffBody": "The team sees your answers and the suggestions already — no need to repeat them.",
+    "line": "Chat on LINE",
+    "phone": "Number to call back",
+    "callback": "Call me back",
+    "phoneNeeded": "Enter a mobile number for the call back",
+    "handedOff": "Passed to the team — reference {ticket}",
+    "openLine": "Open LINE to continue",
+    "callbackSoon": "We'll call back within an hour during business hours",
+    "failed": "That didn't work. Please try again.",
+    "rateLimited": "Too many requests — please wait a little"
+  }
+}
