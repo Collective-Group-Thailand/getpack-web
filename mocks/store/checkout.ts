@@ -341,7 +341,7 @@ function placeOrders(customer: MockCustomer, input: Input, priced: Priced): Grou
   const cart = cartOf(customer);
   const quotes = quotesOf(customer.persona);
   const book = bookOf(customer);
-  const owner = customer.persona === "returning" ? fakeCustomers[0]! : null;
+  const owner = customer.ownerIndex === null ? null : fakeCustomers[customer.ownerIndex]!;
   const groupId = mockId("wgr", groupSeq);
   const groupCode = `PG-2569-W${String(groupSeq).padStart(4, "0")}`;
   const now = bangkokIso();

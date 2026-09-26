@@ -22,7 +22,7 @@ type TaxProfile = z.output<typeof taxProfile>;
 const newcomer = { addresses: [] as Address[], taxProfiles: [] as TaxProfile[] };
 
 export function bookOf(customer: MockCustomer): { addresses: Address[]; taxProfiles: TaxProfile[] } {
-  if (customer.persona === "returning") return fakeCustomers[0]!;
+  if (customer.ownerIndex !== null) return fakeCustomers[customer.ownerIndex]!;
   return newcomer;
 }
 

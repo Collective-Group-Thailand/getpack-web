@@ -124,7 +124,7 @@ export function cartOf(customer: MockCustomer): Cart {
     return found;
   });
   return {
-    id: mockId("crt", customer.persona === "returning" ? 1 : 2),
+    id: mockId("crt", customer.id.length + (customer.ownerIndex ?? 9)),
     items,
     itemCount: items.length,
     subtotalAmount: baht(gross),
