@@ -25,6 +25,8 @@ const NAMESPACES = [
   "designs",
   "designer",
   "catalog",
+  "configurator",
+  "quoteRequests",
   "admin",
   "console",
   "approvals",
@@ -60,7 +62,18 @@ export type Namespace = (typeof NAMESPACES)[number];
  * than three near-identical namespaces that drift.
  */
 export const ZONE_NAMESPACES = {
-  customer: ["common", "auth", "status", "storefront", "home", "designs", "designer", "catalog"],
+  customer: [
+    "common",
+    "auth",
+    "status",
+    "storefront",
+    "home",
+    "designs",
+    "designer",
+    "catalog",
+    "configurator",
+    "quoteRequests",
+  ],
   admin: [
     "common",
     "auth",
@@ -100,6 +113,8 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     designs: () => import("./th/customer/designs.json"),
     designer: () => import("./th/customer/designer.json"),
     catalog: () => import("./th/customer/catalog.json"),
+    configurator: () => import("./th/customer/configurator.json"),
+    quoteRequests: () => import("./th/customer/quote-requests.json"),
     admin: () => import("./th/admin/admin.json"),
     reports: () => import("./th/admin/reports.json"),
     analytics: () => import("./th/admin/analytics.json"),
@@ -130,6 +145,8 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     designs: () => import("./en/customer/designs.json"),
     designer: () => import("./en/customer/designer.json"),
     catalog: () => import("./en/customer/catalog.json"),
+    configurator: () => import("./en/customer/configurator.json"),
+    quoteRequests: () => import("./en/customer/quote-requests.json"),
     admin: () => import("./en/admin/admin.json"),
     reports: () => import("./en/admin/reports.json"),
     analytics: () => import("./en/admin/analytics.json"),

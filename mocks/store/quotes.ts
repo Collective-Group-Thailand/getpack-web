@@ -97,7 +97,8 @@ const group = (
   required: true,
   options: options.map((entry, index) => ({
     ...entry,
-    isDefault: entry.isDefault || (index === 0 && !extra.selection),
+    // A single choice starts on the option marked default, else the first; a multiple one on none.
+    isDefault: entry.isDefault || (index === 0 && !extra.selection && !options.some((item) => item.isDefault)),
   })),
   ...extra,
 });
