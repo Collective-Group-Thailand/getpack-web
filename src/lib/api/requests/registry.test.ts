@@ -48,8 +48,10 @@ describe("the contract-request registry", () => {
   });
 
   it("makes only store reads public", () => {
+    // A read, or a side-effect-free store action like the published `store.quotes.calculate`
+    // and `store.catalog.quotePath` (a promotion check posts its code rather than put it in a URL).
     for (const [key, definition] of entries) {
-      if (definition.public) expect(key.startsWith("GET /v1/store/"), key).toBe(true);
+      if (definition.public) expect(/^(GET \/v1\/store\/|POST \/v1\/store\/.+\/actions\/)/.test(key), key).toBe(true);
     }
   });
 

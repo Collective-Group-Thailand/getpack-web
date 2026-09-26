@@ -19,12 +19,12 @@ import { catalogueRows } from "../admin/catalogue";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, paginate, problem, sortBy } from "../support";
 
-type Row = ReturnType<typeof catalogueRows>[number];
+export type Row = ReturnType<typeof catalogueRows>[number];
 
 const ACTIVE = new Set(["active", "published"]);
-const live = (rows: Row[]) => rows.filter((row) => ACTIVE.has(String(row.status)));
-const byId = (rows: Row[], id: unknown) => rows.find((row) => row.id === id);
-const imageUrl = (fileId: unknown) => (typeof fileId === "string" ? `/v1/store/catalog/images/${fileId}` : null);
+export const live = (rows: Row[]) => rows.filter((row) => ACTIVE.has(String(row.status)));
+export const byId = (rows: Row[], id: unknown) => rows.find((row) => row.id === id);
+export const imageUrl = (fileId: unknown) => (typeof fileId === "string" ? `/v1/store/catalog/images/${fileId}` : null);
 const english = (request: Request) => request.headers.get("accept-language")?.startsWith("en") ?? false;
 const str = (value: unknown) => (typeof value === "string" ? value : null);
 
@@ -38,11 +38,11 @@ function productTypes(): Row[] {
   return sortBy(live(catalogueRows("productTypes")), "sort", "asc");
 }
 
-function typeCodeOf(product: Row): string {
+export function typeCodeOf(product: Row): string {
   return String(byId(catalogueRows("productTypes"), product.productTypeId)?.code ?? "");
 }
 
-function catalogProducts(): Row[] {
+export function catalogProducts(): Row[] {
   const types = new Set(productTypes().map((type) => type.id));
   return sortBy(
     live(catalogueRows("catalogProducts")).filter((row) => types.has(row.productTypeId as string)),
