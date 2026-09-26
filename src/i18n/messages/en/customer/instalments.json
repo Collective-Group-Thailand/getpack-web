@@ -1,0 +1,29 @@
+{
+  "title": "Instalments",
+  "intro": "Every instalment of every order: pay the next one and download receipts here.",
+  "emptyTitle": "No instalments yet",
+  "emptyBody": "Once you order, your instalments appear here.",
+  "caption": "Your instalments",
+  "order": "Order",
+  "instalment": "Instalment",
+  "amount": "Amount",
+  "status": "Status",
+  "actions": "Actions",
+  "dueBy": "Due {date}",
+  "trigger": {
+    "at_checkout": "When ordering",
+    "before_production": "Before production",
+    "before_shipping": "Before delivery",
+    "on_delivery": "On delivery",
+    "days_after_delivery": "After delivery"
+  },
+  "continue": "Continue",
+  "pay": "Pay",
+  "receipt": "Receipt",
+  "payTitle": "Pay {code}: {amount}",
+  "close": "Close",
+  "continueBody": "A payment is already started — continue on the payment page.",
+  "method": "Payment method",
+  "payNow": "Go to payment",
+  "failed": "That did not work. Please try again."
+}
