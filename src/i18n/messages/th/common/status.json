@@ -1,68 +1,315 @@
 {
   "unknown": "ไม่ทราบสถานะ",
+  "approval": {
+    "pending": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนคำขอแล้ว",
+    "expired": "หมดอายุ"
+  },
+  "approvalStep": {
+    "pending": "รอพิจารณา",
+    "approved": "อนุมัติ",
+    "rejected": "ไม่อนุมัติ",
+    "skipped": "ข้ามขั้นนี้",
+    "expired": "เกินกำหนด"
+  },
+  "artwork": {
+    "awaitingTemplate": "รอแบบไดคัท",
+    "awaitingUpload": "รอไฟล์งาน",
+    "uploaded": "อัปโหลดไฟล์แล้ว",
+    "inReview": "กำลังตรวจไฟล์",
+    "proofSent": "ส่งปรู๊ฟให้ลูกค้าแล้ว",
+    "changesRequested": "ขอให้แก้ไขไฟล์",
+    "approved": "อนุมัติไฟล์แล้ว"
+  },
+  "auditOutcome": {
+    "success": "สำเร็จ",
+    "denied": "ถูกปฏิเสธสิทธิ์",
+    "failure": "ล้มเหลว"
+  },
+  "campaign": {
+    "draft": "ฉบับร่าง",
+    "scheduled": "ตั้งเวลาไว้",
+    "active": "กำลังใช้งาน",
+    "paused": "หยุดชั่วคราว",
+    "exhausted": "งบหมดแล้ว",
+    "ended": "สิ้นสุดแล้ว"
+  },
+  "catalog": {
+    "draft": "ฉบับร่าง",
+    "active": "ใช้งาน",
+    "inactive": "ปิดใช้งาน",
+    "archived": "เก็บถาวร"
+  },
+  "claim": {
+    "submitted": "แจ้งเคลมแล้ว",
+    "underReview": "กำลังพิจารณาเคลม",
+    "needInfo": "รอหลักฐานเพิ่มเติม",
+    "factoryReview": "รอโรงงานตรวจสอบ",
+    "approved": "อนุมัติเคลม",
+    "rejected": "ไม่อนุมัติเคลม",
+    "resolved": "ดำเนินการเรียบร้อย",
+    "closed": "ปิดเรื่องแล้ว"
+  },
+  "company": {
+    "applied": "สมัครแล้ว",
+    "kycReview": "กำลังตรวจเอกสาร",
+    "active": "ใช้งานได้",
+    "suspended": "ระงับชั่วคราว",
+    "closed": "ปิดบัญชีแล้ว"
+  },
+  "consultation": {
+    "requested": "ขอราคาจากโรงงานแล้ว",
+    "responded": "โรงงานตอบกลับแล้ว",
+    "declined": "โรงงานปฏิเสธ",
+    "expired": "เกินเวลาตอบกลับ"
+  },
+  "content": {
+    "draft": "ฉบับร่าง",
+    "published": "เผยแพร่แล้ว",
+    "archived": "เก็บถาวร"
+  },
+  "coupon": {
+    "active": "ใช้ได้",
+    "usedUp": "ใช้ครบแล้ว",
+    "disabled": "ปิดใช้งาน"
+  },
+  "credit": {
+    "prepaid": "ชำระล่วงหน้า",
+    "eligible": "มีสิทธิ์ขอเครดิต",
+    "credit": "ใช้เครดิตได้",
+    "blockedOverdue": "ระงับเครดิต (ค้างชำระ)"
+  },
+  "designRound": {
+    "awaitingPayment": "รอชำระค่าแก้ไขเพิ่ม",
+    "inProgress": "กำลังแก้ไข",
+    "delivered": "ส่งงานรอบนี้แล้ว",
+    "approved": "อนุมัติแล้ว",
+    "changesRequested": "ขอแก้ไขเพิ่ม"
+  },
+  "designService": {
+    "briefPending": "รอบรีฟงานออกแบบ",
+    "inProgress": "กำลังออกแบบ",
+    "delivered": "ส่งแบบแล้ว",
+    "revisionRequested": "ขอแก้แบบ",
+    "approved": "อนุมัติแบบแล้ว",
+    "cancelled": "ยกเลิกงานออกแบบ",
+    "requoted": "เสนอราคาใหม่"
+  },
+  "document": {
+    "issued": "ออกเอกสารแล้ว",
+    "void": "ยกเลิกเอกสาร"
+  },
+  "factory": {
+    "applied": "สมัครแล้ว",
+    "underReview": "กำลังพิจารณา",
+    "trial": "ทดลองผลิต",
+    "active": "พร้อมรับงาน",
+    "suspended": "ระงับชั่วคราว",
+    "offboarded": "ยุติความร่วมมือ"
+  },
+  "fileScan": {
+    "pending": "รอสแกนไฟล์",
+    "clean": "ปลอดภัย",
+    "infected": "พบมัลแวร์",
+    "failed": "สแกนไม่สำเร็จ",
+    "skipped": "ไม่ได้สแกน"
+  },
+  "inspection": {
+    "planned": "นัดตรวจแล้ว",
+    "inProgress": "กำลังตรวจ",
+    "passed": "ผ่าน",
+    "failed": "ไม่ผ่าน",
+    "waived": "ยกเว้นการตรวจ"
+  },
+  "instalment": {
+    "pending": "ยังไม่ถึงกำหนด",
+    "due": "ถึงกำหนดชำระ",
+    "partiallyPaid": "ชำระบางส่วน",
+    "paid": "ชำระแล้ว",
+    "overdue": "เกินกำหนดชำระ",
+    "cancelled": "ยกเลิกแล้ว",
+    "refunded": "คืนเงินแล้ว"
+  },
+  "job": {
+    "released": "รอโรงงานรับงาน",
+    "accepted": "โรงงานรับงานแล้ว",
+    "rejected": "โรงงานปฏิเสธงาน",
+    "inProgress": "กำลังผลิต",
+    "onHold": "พักงานไว้",
+    "completed": "ผลิตเสร็จแล้ว",
+    "cancelled": "ยกเลิกงาน"
+  },
+  "kyc": {
+    "pending": "รอตรวจ",
+    "verified": "ตรวจแล้ว",
+    "rejected": "ไม่ผ่าน",
+    "expired": "หมดอายุ"
+  },
+  "memo": {
+    "draft": "ฉบับร่าง",
+    "pendingApproval": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนคำขอแล้ว",
+    "expired": "หมดอายุ",
+    "applied": "ใช้ส่วนลดแล้ว"
+  },
+  "milestone": {
+    "pending": "ยังไม่เริ่ม",
+    "inProgress": "กำลังทำ",
+    "completed": "เสร็จแล้ว",
+    "skipped": "ข้ามขั้นนี้"
+  },
+  "onboardingStep": {
+    "pending": "ยังไม่เริ่ม",
+    "inProgress": "กำลังกรอก",
+    "submitted": "ส่งตรวจแล้ว",
+    "approved": "ผ่านแล้ว",
+    "rejected": "ไม่ผ่าน",
+    "waived": "ยกเว้น"
+  },
   "order": {
     "waitingPayment": "รอชำระเงิน",
-    "waitingPaymentReview": "รอตรวจสอบการชำระเงิน",
-    "paid": "ชำระเงินแล้ว",
+    "paidForProduction": "ชำระเงินแล้ว",
+    "artworkApproved": "อนุมัติไฟล์แล้ว",
     "inProduction": "กำลังผลิต",
     "shipping": "กำลังจัดส่ง",
     "completed": "สำเร็จ",
     "cancelled": "ยกเลิกแล้ว"
   },
-  "payment": {
-    "pending": "รอชำระเงิน",
-    "awaitingVerification": "รอตรวจสอบสลิป",
-    "paid": "ชำระเงินแล้ว",
-    "failed": "ชำระเงินไม่สำเร็จ",
-    "refunded": "คืนเงินแล้ว"
-  },
-  "instalment": {
-    "scheduled": "ตามกำหนดชำระ",
-    "due": "ถึงกำหนดชำระ",
-    "overdue": "เกินกำหนดชำระ",
-    "paid": "ชำระแล้ว",
-    "waived": "ยกเว้นการชำระ",
+  "orderGroup": {
+    "pendingCompanyApproval": "รอผู้อนุมัติของบริษัท",
+    "waitingPayment": "รอชำระเงิน",
+    "inProgress": "กำลังดำเนินการ",
+    "completed": "สำเร็จ",
     "cancelled": "ยกเลิกแล้ว"
   },
-  "artwork": {
-    "waitingArtwork": "รอไฟล์งานออกแบบ",
-    "uploaded": "อัปโหลดไฟล์แล้ว",
-    "inReview": "กำลังตรวจไฟล์",
-    "changesRequested": "ขอให้แก้ไขไฟล์",
-    "approved": "อนุมัติไฟล์แล้ว",
-    "productionConfirmed": "ยืนยันเข้าผลิตแล้ว"
+  "payable": {
+    "open": "ค้างจ่าย",
+    "eligible": "ถึงเกณฑ์จ่าย",
+    "inRun": "อยู่ในรอบจ่าย",
+    "paid": "จ่ายแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "payment": {
+    "initiated": "เริ่มชำระเงิน",
+    "pending": "รอชำระเงิน",
+    "awaitingVerification": "รอตรวจสอบการชำระเงิน",
+    "succeeded": "ชำระเงินสำเร็จ",
+    "failed": "ชำระเงินไม่สำเร็จ",
+    "cancelled": "ยกเลิกการชำระเงิน",
+    "expired": "หมดเวลาชำระเงิน",
+    "refunded": "คืนเงินแล้ว",
+    "partiallyRefunded": "คืนเงินบางส่วน"
+  },
+  "payout": {
+    "draft": "ฉบับร่าง",
+    "proposed": "เสนอรอบจ่ายแล้ว",
+    "pendingApproval": "รออนุมัติการจ่าย",
+    "approved": "อนุมัติการจ่ายแล้ว",
+    "fileGenerated": "สร้างไฟล์โอนแล้ว",
+    "sent": "ส่งไฟล์ให้ธนาคารแล้ว",
+    "confirmed": "ธนาคารยืนยันแล้ว",
+    "partiallyFailed": "โอนไม่สำเร็จบางรายการ",
+    "posted": "ลงบัญชีแล้ว",
+    "cancelled": "ยกเลิกรอบจ่าย"
+  },
+  "preflight": {
+    "pending": "รอตรวจไฟล์อัตโนมัติ",
+    "running": "กำลังตรวจไฟล์อัตโนมัติ",
+    "passed": "ผ่านการตรวจ",
+    "passedWithWarnings": "ผ่านแต่มีคำเตือน",
+    "blocked": "ไม่ผ่าน ต้องแก้ไฟล์",
+    "error": "ตรวจไม่สำเร็จ"
+  },
+  "promotion": {
+    "draft": "ฉบับร่าง",
+    "active": "กำลังใช้งาน",
+    "paused": "หยุดชั่วคราว",
+    "ended": "สิ้นสุดแล้ว"
   },
   "proof": {
-    "preparing": "กำลังจัดทำปรู๊ฟ",
-    "sent": "ส่งปรู๊ฟแล้ว",
-    "inReview": "ลูกค้ากำลังตรวจปรู๊ฟ",
-    "changesRequested": "ขอให้แก้ไขปรู๊ฟ",
+    "pendingCustomer": "รอลูกค้าตรวจปรู๊ฟ",
     "approved": "อนุมัติปรู๊ฟแล้ว",
-    "expired": "ปรู๊ฟหมดอายุ"
+    "changesRequested": "ขอให้แก้ไขปรู๊ฟ",
+    "superseded": "มีฉบับใหม่แทนแล้ว"
+  },
+  "proposal": {
+    "draft": "ฉบับร่าง",
+    "submitted": "ส่งแล้ว",
+    "underReview": "กำลังพิจารณา",
+    "countered": "เสนอราคากลับแล้ว",
+    "approved": "อนุมัติแล้ว",
+    "partiallyApproved": "อนุมัติบางรายการ",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนแล้ว",
+    "acceptedByFactory": "โรงงานยอมรับแล้ว"
+  },
+  "proposalLine": {
+    "pending": "รอพิจารณา",
+    "accepted": "ยอมรับ",
+    "rejected": "ไม่ยอมรับ",
+    "countered": "เสนอกลับ"
+  },
+  "quote": {
+    "calculated": "คำนวณแล้ว",
+    "saved": "บันทึกแล้ว",
+    "shared": "แชร์แล้ว",
+    "converted": "สั่งซื้อแล้ว",
+    "expired": "หมดอายุ",
+    "superseded": "มีฉบับใหม่แทนแล้ว"
+  },
+  "referral": {
+    "pending": "รอคำสั่งซื้อแรก",
+    "qualified": "ผ่านเงื่อนไข",
+    "rewarded": "ให้รางวัลแล้ว",
+    "rejectedFraud": "ไม่ผ่านการตรวจทุจริต",
+    "underReview": "รอการตลาดตรวจสอบ"
+  },
+  "refund": {
+    "requested": "ขอคืนเงินแล้ว",
+    "pendingApproval": "รออนุมัติคืนเงิน",
+    "approved": "อนุมัติคืนเงินแล้ว",
+    "processing": "กำลังคืนเงิน",
+    "succeeded": "คืนเงินสำเร็จ",
+    "failed": "คืนเงินไม่สำเร็จ",
+    "rejected": "ไม่อนุมัติคืนเงิน"
   },
   "rfq": {
-    "submitted": "ส่งคำขอใบเสนอราคาแล้ว",
+    "submitted": "ได้รับคำขอแล้ว",
     "inReview": "กำลังพิจารณาคำขอ",
+    "needInfo": "รอข้อมูลเพิ่มเติม",
     "quoted": "เสนอราคาแล้ว",
     "accepted": "ลูกค้ารับราคาแล้ว",
     "declined": "ปฏิเสธคำขอ",
     "expired": "คำขอหมดอายุ"
   },
-  "job": {
-    "pendingAcceptance": "รอโรงงานรับงาน",
-    "accepted": "โรงงานรับงานแล้ว",
-    "rejected": "โรงงานปฏิเสธงาน",
-    "inProduction": "กำลังผลิต",
-    "awaitingQc": "รอตรวจคุณภาพ",
-    "readyToShip": "พร้อมส่ง",
-    "shipped": "ส่งออกจากโรงงานแล้ว",
-    "completed": "ปิดงานแล้ว",
-    "onHold": "พักงานไว้",
-    "cancelled": "ยกเลิกงาน"
+  "rfqQuote": {
+    "draft": "ร่างใบเสนอราคา",
+    "sent": "ส่งใบเสนอราคาแล้ว",
+    "accepted": "ลูกค้ายอมรับ",
+    "superseded": "มีฉบับใหม่แทนแล้ว",
+    "expired": "หมดอายุ"
+  },
+  "settingConfirmation": {
+    "confirmed": "ยืนยันแล้ว",
+    "proposed": "ค่าที่เสนอ รอยืนยัน",
+    "pendingCpa": "รอผู้สอบบัญชียืนยัน",
+    "pendingBusiness": "รอฝ่ายธุรกิจยืนยัน"
+  },
+  "settingVersion": {
+    "draft": "ฉบับร่าง",
+    "proposed": "เสนอแล้ว",
+    "pendingAcceptance": "รอการยอมรับ",
+    "approved": "อนุมัติแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนแล้ว"
   },
   "shipment": {
-    "pending": "รอจัดส่ง",
-    "booked": "จองรอบส่งแล้ว",
+    "draft": "ร่างรอบส่ง",
+    "ready": "พร้อมส่ง",
     "pickedUp": "รับของแล้ว",
     "inTransit": "อยู่ระหว่างขนส่ง",
     "outForDelivery": "กำลังนำส่ง",
@@ -71,31 +318,43 @@
     "returned": "ตีกลับ",
     "cancelled": "ยกเลิกการส่ง"
   },
-  "claim": {
-    "submitted": "แจ้งเคลมแล้ว",
-    "inReview": "กำลังพิจารณาเคลม",
-    "awaitingEvidence": "รอหลักฐานเพิ่มเติม",
-    "approved": "อนุมัติเคลม",
-    "rejected": "ไม่อนุมัติเคลม",
-    "resolved": "ดำเนินการเรียบร้อย",
-    "withdrawn": "ยกเลิกคำขอเคลม"
+  "slip": {
+    "pending": "รอตรวจสลิป",
+    "passed": "สลิปถูกต้อง",
+    "failed": "สลิปไม่ผ่าน",
+    "manualReview": "รอการเงินตรวจสอบ",
+    "manualApproved": "การเงินอนุมัติ",
+    "manualRejected": "การเงินไม่อนุมัติ"
   },
-  "payout": {
-    "scheduled": "ตามกำหนดจ่าย",
-    "pendingApproval": "รออนุมัติการจ่าย",
-    "approved": "อนุมัติการจ่ายแล้ว",
-    "processing": "กำลังโอน",
-    "paid": "จ่ายแล้ว",
-    "failed": "โอนไม่สำเร็จ",
-    "onHold": "ระงับการจ่าย",
-    "cancelled": "ยกเลิกการจ่าย"
+  "user": {
+    "pendingVerification": "รอยืนยันตัวตน",
+    "active": "ใช้งาน",
+    "suspended": "ระงับชั่วคราว",
+    "inactive": "ปิดใช้งาน"
   },
-  "document": {
-    "draft": "ฉบับร่าง",
-    "issued": "ออกเอกสารแล้ว",
-    "sent": "ส่งเอกสารแล้ว",
-    "void": "ยกเลิกเอกสาร",
-    "replaced": "ออกฉบับแทนแล้ว"
+  "submission": {
+    "submitted": "ส่งไฟล์แล้ว",
+    "superseded": "มีไฟล์ใหม่แทนแล้ว",
+    "acceptedForProof": "ผ่านการตรวจ พร้อมทำปรู๊ฟ",
+    "rejected": "ส่งคืนให้แก้ไข"
+  },
+  "drawing": {
+    "queued": "รอวาดแบบ",
+    "running": "กำลังวาดแบบ",
+    "succeeded": "วาดแบบเสร็จแล้ว",
+    "failed": "วาดแบบไม่สำเร็จ",
+    "engineUnavailable": "ระบบวาดแบบยังไม่พร้อม"
+  },
+  "bankAccount": {
+    "pendingApproval": "รออนุมัติ",
+    "active": "ใช้งาน",
+    "superseded": "มีบัญชีใหม่แทนแล้ว",
+    "rejected": "ไม่อนุมัติ"
+  },
+  "siteVisit": {
+    "pass": "ผ่าน",
+    "conditional": "ผ่านแบบมีเงื่อนไข",
+    "fail": "ไม่ผ่าน"
   },
   "action": {
     "approve": "อนุมัติ",
@@ -110,6 +369,41 @@
     "confirmReceipt": "ยืนยันรับของ",
     "reorder": "สั่งซ้ำ",
     "claim": "แจ้งเคลม",
+    "startReview": "เริ่มพิจารณา",
+    "assign": "มอบหมาย",
+    "requestInfo": "ขอข้อมูลเพิ่ม",
+    "decline": "ปฏิเสธ",
+    "createOrder": "สร้างคำสั่งซื้อ",
+    "requestFactoryCost": "ขอราคาจากโรงงาน",
+    "composeQuote": "จัดทำใบเสนอราคา",
+    "editQuote": "แก้ไขฉบับร่าง",
+    "sendQuote": "ส่งใบเสนอราคา",
+    "recordAcceptance": "บันทึกการตอบรับ",
+    "sendTemplate": "ส่งแบบกล่อง",
+    "deliverRound": "ส่งงานออกแบบ",
+    "drawDieline": "วาดแบบกล่อง",
+    "requoteDesign": "เสนอราคาออกแบบใหม่",
     "unknown": "ดำเนินการ"
+  },
+  "points": {
+    "pending": "รอเข้าบัญชี",
+    "available": "ใช้ได้",
+    "expired": "หมดอายุ",
+    "reversed": "ถูกยกเลิก"
+  },
+  "member": {
+    "invited": "เชิญแล้ว",
+    "active": "ใช้งาน",
+    "removed": "นำออกแล้ว"
+  },
+  "statement": {
+    "open": "รอชำระ",
+    "paid": "ชำระแล้ว",
+    "overdue": "เกินกำหนด"
+  },
+  "podReview": {
+    "pending": "รอตรวจหลักฐาน",
+    "accepted": "รับหลักฐานแล้ว",
+    "rejected": "ไม่รับหลักฐาน"
   }
 }

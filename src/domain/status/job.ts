@@ -1,16 +1,13 @@
 import { defineStatusMap } from "./types";
 import type { JobStatus } from "./contract";
 
-/** A production job at a partner factory (proposed — see `./contract.ts`; D-074, D-075, D-076). */
+/** A production job at a partner factory: accept within 1 business day (D-074). Lateness is a property the API reports beside the status, not a status. */
 export const JOB_STATUS = defineStatusMap<JobStatus>({
-  pending_acceptance: { tone: "warning", icon: "clock", labelKey: "job.pendingAcceptance" },
+  released: { tone: "warning", icon: "hourglass", labelKey: "job.released" },
   accepted: { tone: "info", icon: "check", labelKey: "job.accepted" },
   rejected: { tone: "danger", icon: "ban", labelKey: "job.rejected" },
-  in_production: { tone: "primary", icon: "factory", labelKey: "job.inProduction" },
-  awaiting_qc: { tone: "info", icon: "clipboard-check", labelKey: "job.awaitingQc" },
-  ready_to_ship: { tone: "primary", icon: "package", labelKey: "job.readyToShip" },
-  shipped: { tone: "primary", icon: "truck", labelKey: "job.shipped" },
-  completed: { tone: "success", icon: "success", labelKey: "job.completed" },
+  in_progress: { tone: "primary", icon: "factory", labelKey: "job.inProgress" },
   on_hold: { tone: "warning", icon: "pause", labelKey: "job.onHold" },
-  cancelled: { tone: "neutral", icon: "ban", labelKey: "job.cancelled" },
+  completed: { tone: "success", icon: "package-check", labelKey: "job.completed" },
+  cancelled: { tone: "neutral", icon: "close", labelKey: "job.cancelled" },
 });

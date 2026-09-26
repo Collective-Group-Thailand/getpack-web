@@ -4,11 +4,11 @@
 |---|---|---|---|---|---|
 | Marketing / catalogue / product (customer zone) | ≤ 2.0 s | ≤ 200 ms | ≤ 0.05 | ≤ 150 KB | `customer-marketing` |
 | Checkout / account (customer zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 200 KB | `customer-app` |
-| Admin list/detail (admin zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 250 KB | `admin` |
+| Admin list/detail (admin zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 250 KB | `admin` (shell), `admin-lists`, `admin-crud` |
 | Designer / 3D (`/design/[id]`) | ≤ 3.0 s to interactive shell | ≤ 200 ms | ≤ 0.1 | ≤ 350 KB, heavy modules lazy | `designer` |
 | Partner zone (installable PWA) | ≤ 2.5 s on 4G mid-range | ≤ 200 ms | ≤ 0.1 | ≤ 180 KB | `partner` (mobile preset) |
 
-`lighthouse/shared.json` holds the assertions every set inherits; `lighthouse/<set>.json` is one file per row above. `pnpm lhci` (`scripts/lhci.ts`) starts one `next start` in mock mode (MSW) that answers all three hosts and runs each set against it; `pnpm lhci admin` runs one. Admin and partner URLs carry the mock's fixed access token as a cookie, so the real shell is measured rather than a redirect to `/login`. Because zones have separate root layouts, admin/partner providers must never appear in customer bundles — the budget per URL set catches regressions. Web Vitals RUM is posted through the zone BFF to the API.
+`lighthouse/shared.json` holds the assertions every set inherits; `lighthouse/<set>.json` is one file per row above (the admin row has three: its shell, its lists and details, and a list with a create form — one ceiling cannot ratchet all three). `pnpm lhci` (`scripts/lhci.ts`) starts one `next start` in mock mode (MSW) that answers all three hosts and runs each set against it; `pnpm lhci admin` runs one. Admin and partner URLs carry the mock's fixed access token as a cookie, so the real shell is measured rather than a redirect to `/login`. Because zones have separate root layouts, admin/partner providers must never appear in customer bundles — the budget per URL set catches regressions. Web Vitals RUM is posted through the zone BFF to the API.
 
 ## Where we actually are (measured 2026-09-24, F1 1.3)
 
@@ -21,7 +21,9 @@ headroom is won is the job.
 |---|---|---|---|
 | `customer-marketing` | 150 KB | 374 KB | 2.5× |
 | `customer-app` | 200 KB | 381 KB | 1.9× |
-| `admin` | 250 KB | 363 KB | 1.5× |
+| `admin` (shell) | 250 KB | 363 KB | 1.5× |
+| `admin-lists` | 250 KB | 390 KB | 1.6× |
+| `admin-crud` | 250 KB | 489 KB | 2.0× |
 | `designer` | 350 KB | 518 KB | 1.5× |
 | `partner` | 180 KB | 361 KB | 2.0× |
 
@@ -35,3 +37,20 @@ What the weight is, on the storefront: React 73 KB, Radix ~85 KB across six chun
 The largest single lever is Radix: the storefront header mounts `DropdownMenu` (theme,
 language), `Popover` (notifications) and `Tooltip` on every page. Deferring those three until
 interaction is F3's storefront-performance work, and is worth roughly half the gap on its own.
+
+## F2 2.8 — what the admin weight was, and what came out
+
+Measured on the production build in mock mode (F2 2.8), before and after:
+
+| Page | Before | After | What changed |
+|---|---|---|---|
+| `/` (dashboard) | 490 KB | 363 KB | zod left the browser: `clientEnv` no longer parses with zod (the server checks the same public values at boot), the `@/lib/env` barrel exports no schema, `browserRequests` imports the request registry as a type, and the dashboard imports the console by path |
+| `/orders`, a detail | 501 KB | 390 KB | the same |
+| `/partners` | 509 KB | 489 KB | still carries zod: its create form's schema is defined at module level |
+
+**Next levers.** (1) Load a `CrudList` form — and the zod schema it validates with — only when its
+sheet opens; every CRUD list then drops to the `admin-lists` figure. (2) The console barrel is
+not tree-shaken across the `"use client"` boundary: importing one hook from `../console` pulls
+the whole console (forms, import wizard, saved views). Importing by path is what fixed the
+dashboard. (3) The storefront reads `clientEnv` too, so the customer sets should have shed zod as
+well; re-measure them and lower their ratchets (F3).

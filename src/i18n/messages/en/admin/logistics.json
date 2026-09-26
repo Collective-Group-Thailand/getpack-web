@@ -1,0 +1,261 @@
+{
+  "shipments": {
+    "title": "Shipments",
+    "description": "The factory delivers; a fallback carrier where it cannot; POD always (D-013, D-114)",
+    "queuesLabel": "Logistics queues",
+    "all": "All",
+    "queues": {
+      "awaiting_pickup": "Awaiting pick-up",
+      "in_transit": "In transit",
+      "exceptions": "Exceptions",
+      "pod_review": "POD to review"
+    },
+    "search": "Search shipment, order or tracking number",
+    "empty": "No shipments",
+    "columns": {
+      "shipment": "Shipment",
+      "status": "Status",
+      "carrier": "Carrier",
+      "destination": "Destination",
+      "factory": "Factory",
+      "quantity": "Quantity",
+      "lastEvent": "Latest"
+    },
+    "quantity": "{quantity} · {cartons} cartons",
+    "carriers": {
+      "factory_fleet": "Factory fleet",
+      "flash_express": "Flash Express",
+      "deliveree": "Deliveree"
+    }
+  },
+  "shipment": {
+    "pageTitle": "Shipment",
+    "breadcrumb": "Breadcrumb",
+    "shipments": "Shipments",
+    "summary": "Order {order} · factory {factory} · {quantity} pcs in {cartons} cartons",
+    "packingList": "Packing list",
+    "labels": "Carton labels",
+    "split": "Split",
+    "book": "Book a fallback carrier",
+    "resolve": "Resolve",
+    "blockedByPayment": "A before-shipping instalment is unpaid: the API holds the shipment",
+    "pod": "Proof of delivery",
+    "podNote": "An accepted factory POD makes the payout eligible (D-013)",
+    "acceptPod": "Accept POD",
+    "rejectPod": "Reject POD",
+    "receiver": "Receiver",
+    "deliveredQuantity": "Delivered",
+    "capturedAt": "Captured",
+    "podKind": "Kind",
+    "podKinds": {
+      "factory_photo_signature": "Photo and signature",
+      "carrier_pod": "Carrier POD"
+    },
+    "reviewedBy": "Reviewed by",
+    "reviewNote": "Review note",
+    "tolerance": "Delivered against tolerance",
+    "toleranceNote": "The API's result against the tolerance fixed at quote time (D-021, D-080)",
+    "outcomes": {
+      "exact": "{delivered} of {ordered}: exact",
+      "short_within": "{delivered} of {ordered}: short within tolerance — pro-rata credit",
+      "over_within": "{delivered} of {ordered}: over within tolerance — not charged",
+      "short_outside": "{delivered} of {ordered}: short outside tolerance — claim opened",
+      "over_outside": "{delivered} of {ordered}: over outside tolerance — claim opened"
+    },
+    "toleranceBand": "Shortage {shortage}, overage {overage}",
+    "openClaim": "Open the claim",
+    "events": "Events",
+    "sources": {
+      "factory": "Factory",
+      "carrier_webhook": "Carrier",
+      "carrier_poll": "Carrier (polled)",
+      "staff": "Staff"
+    },
+    "destination": "Destination",
+    "contents": "Contents",
+    "cartons": "{count} cartons · about {weight} kg",
+    "economics": "Shipping economics",
+    "economicsNote": "Customer charge against the factory payout or fallback cost (D-013)",
+    "customerCharge": "Customer charge",
+    "factoryPayout": "Factory payout",
+    "carrierCost": "Carrier cost",
+    "splitTitle": "Split the shipment",
+    "splitBody": "{no} holds {quantity}; the part split off becomes a new shipment",
+    "splitQuantity": "Quantity to split off",
+    "splitHint": "Less than {quantity}",
+    "splitDone": "Split into {no}",
+    "bookTitle": "Book a fallback carrier",
+    "bookBody": "{no} to {province}: choose a carrier quote",
+    "quoting": "Getting carrier quotes…",
+    "quotes": "Carrier quotes",
+    "quote": "{amount} · {days} days",
+    "bookHint": "e.g. the factory does not serve this area",
+    "booked": "Booked — tracking {tracking}",
+    "resolveTitle": "Resolve the exception",
+    "resolveBody": "{no}",
+    "resolution": "Resolution",
+    "resolutions": {
+      "retry": "Retry delivery",
+      "return": "Return to factory",
+      "cancel": "Cancel"
+    },
+    "resolved": "Exception resolved",
+    "acceptTitle": "Accept the POD",
+    "acceptBody": "{no}: once accepted, {factory}'s payout becomes eligible",
+    "rejectTitle": "Reject the POD",
+    "rejectBody": "{no}: {factory} must send a new POD",
+    "rejectHint": "Required; the factory sees it",
+    "optional": "Optional",
+    "podAccepted": "POD accepted",
+    "podRejected": "POD returned to the factory",
+    "reason": "Reason",
+    "needReason": "Give a reason of at least 3 characters",
+    "needQuantity": "Enter the quantity",
+    "needQuote": "Choose a quote",
+    "failed": "The action failed"
+  },
+  "claims": {
+    "title": "Claims",
+    "description": "Within 7 days of receipt, with product and carton photos; liability by the D-083 rules",
+    "statusesLabel": "Claim statuses",
+    "all": "Open",
+    "search": "Search claim, order or customer",
+    "empty": "No claims",
+    "origin": "Origin",
+    "columns": {
+      "claim": "Claim",
+      "type": "Type",
+      "status": "Status",
+      "liability": "Liability",
+      "requested": "Requested",
+      "sla": "Due",
+      "submitted": "Submitted"
+    },
+    "types": {
+      "damaged": "Damaged",
+      "wrong_spec": "Wrong spec",
+      "print_defect": "Print defect",
+      "quantity_short": "Quantity short",
+      "late": "Late",
+      "other": "Other"
+    },
+    "origins": {
+      "customer": "From the customer",
+      "tolerance_auto": "Automatic (tolerance)",
+      "staff": "Opened by staff"
+    },
+    "liabilities": {
+      "factory": "Factory",
+      "customer": "Customer",
+      "carrier": "Carrier",
+      "packio": "Packio",
+      "undetermined": "Undetermined"
+    },
+    "resolutions": {
+      "reprint": "Reprint",
+      "partial_refund": "Partial refund",
+      "full_refund": "Full refund",
+      "credit": "Credit"
+    }
+  },
+  "claim": {
+    "pageTitle": "Claim",
+    "breadcrumb": "Breadcrumb",
+    "claims": "Claims",
+    "summary": "Order {order} · {customer}",
+    "resolve": "Resolve",
+    "actions": {
+      "start-review": {
+        "label": "Start review",
+        "title": "Start the review",
+        "body": "{no}, order {order}",
+        "reason": "Note"
+      },
+      "request-info": {
+        "label": "Request information",
+        "title": "Ask the customer",
+        "body": "This message goes to the customer of {order}",
+        "reason": "What is needed"
+      },
+      "send-to-factory": {
+        "label": "Send to the factory",
+        "title": "Send to the factory",
+        "body": "The factory sees the evidence and this message, not the customer's details",
+        "reason": "Message to the factory"
+      },
+      "approve": {
+        "label": "Approve",
+        "title": "Approve the claim",
+        "body": "{no} is approved; resolve it next",
+        "reason": "Reason"
+      },
+      "reject": {
+        "label": "Reject",
+        "title": "Reject the claim",
+        "body": "{no}; the reason is sent to the customer",
+        "reason": "Reason"
+      },
+      "close": {
+        "label": "Close",
+        "title": "Close the claim",
+        "body": "{no} is closed for good",
+        "reason": "Note"
+      }
+    },
+    "claim": "Claim",
+    "requested": "Requested",
+    "claimedAmount": "Amount claimed",
+    "claimedQuantity": "Quantity claimed",
+    "received": "Received",
+    "window": "Window ends",
+    "shipment": "Shipment",
+    "evidence": "Evidence",
+    "evidenceNote": "Product photos and shipping-carton photos are required (D-082)",
+    "productPhotos": "Product photos",
+    "cartonPhotos": "Carton photos",
+    "noPhotos": "No photos",
+    "thread": "Thread",
+    "audiences": {
+      "customer": "customer sees it",
+      "factory": "factory sees it",
+      "internal": "internal only"
+    },
+    "liability": "Liability",
+    "override": "Override",
+    "byRule": "By rule: {liability}",
+    "overridden": "Overridden by {by}",
+    "approvedProof": "Customer approved proof version {no} on",
+    "factoryResponse": "Factory response",
+    "responses": {
+      "accepted": "Accepted",
+      "disputed": "Disputed"
+    },
+    "decision": "Decision",
+    "resolutions": "Resolutions",
+    "resolutionActions": {
+      "reproduction_job": "Re-production",
+      "refund": "Refund",
+      "credit_note": "Credit note",
+      "store_credit": "Store credit",
+      "factory_deduction": "Factory deduction",
+      "carrier_recovery": "Carrier recovery"
+    },
+    "overrideTitle": "Override liability",
+    "overrideBody": "{no}: the rule says {rule}; the override is recorded with its reason",
+    "resolveTitle": "Resolve the claim",
+    "resolveBody": "{no}, liability {liability}; runs the existing document and finance flow",
+    "resolutionAction": "Resolution",
+    "amount": "Amount",
+    "note": "Note",
+    "execute": "Execute",
+    "executed": "Resolution executed",
+    "changed": "Status changed",
+    "saved": "Saved",
+    "save": "Save",
+    "reason": "Reason",
+    "needReason": "Give a reason of at least 3 characters",
+    "needResolution": "Choose a resolution",
+    "needAmount": "Enter the amount",
+    "failed": "The action failed"
+  }
+}

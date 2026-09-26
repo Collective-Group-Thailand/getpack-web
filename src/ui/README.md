@@ -41,9 +41,16 @@ separately, because build scripts and root layouts import those rather than scre
 4. Export it from `components/index.ts`.
 
 `design-system.md` §3 lists the full intended set. F0.2 built the foundation plus what the
-designer and customer shell use today; the rest — DataTable, Combobox, DatePicker, PhoneInput,
-AddressForm, FileDropzone, Timeline, PriceSummary, ProofViewer, charts, the partner shop-floor
-components — is built when F1–F5 first needs it, so nothing is designed against a guess.
+designer and customer shell use today; F1 added OTPInput, PhoneInput, the command palette and
+shortcuts overlay; F2 2.1 added the back-office set — DataTable (TanStack Table 9, server-driven),
+Pagination, ColumnToggle, SearchInput, Combobox, FileDropzone, SlaTimer, Stat, Timeline,
+DescriptionList, Meter, TimeText, JsonView, PageHeader and Toolbar. The rest — DatePicker,
+AddressForm, PriceSummary, ProofViewer, charts, the partner shop-floor components — is built when
+a screen first needs it, so nothing is designed against a guess.
+
+Time and money are formatted by the caller: components take strings (or a `format` callback, as
+`SlaTimer` does) and never import `src/i18n`. `useFormat()` in `src/features/shared/format` is the
+seam that binds the formatters to the locale.
 
 ## Commands
 

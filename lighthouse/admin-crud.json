@@ -1,0 +1,27 @@
+{
+  "extends": "./shared.json",
+  "ci": {
+    "collect": {
+      "url": ["http://admin.localhost:3200/partners"],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "extraHeaders": {
+          "Cookie": "pk_at=seed.access.token.staff"
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 492000
+          }
+        ]
+      }
+    }
+  },
+  "$comment": "Admin lists with a create form (CrudList): initial JS target 250 KB. RATCHET pinned just above the measured 489 KB (F2 2.8): the form's zod schema is defined at module level, so the whole of zod (~89 KB gz) loads with the list. Loading the form (and its schema) only when the sheet opens is the lever; lower this when it lands."
+}

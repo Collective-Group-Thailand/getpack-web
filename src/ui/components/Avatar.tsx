@@ -25,8 +25,12 @@ export interface AvatarProps {
  * not a label, and Thai glyphs with tone marks are tall enough that two already fill the
  * circle.
  */
-function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+export function initialsOf(name: string): string {
+  // Only words that start with a letter: "สมชาย ใจดี (ฝ่ายขาย)" is สมชาย ใจดี, not สม(.
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter((part) => /^\p{L}/u.test(part));
   if (parts.length === 0) return "";
   // `[...part]` rather than `part[0]`: a surrogate pair or a Thai character with a combining
   // mark would otherwise be sliced in half and render as a replacement glyph.

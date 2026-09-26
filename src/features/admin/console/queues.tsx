@@ -1,0 +1,87 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+
+import { useFormat } from "@/features/shared/format";
+import { queryKeys } from "@/lib/api/query-keys";
+import { browserRequests } from "@/lib/api/requests/browser";
+import { STALE_TIME } from "@/lib/query/defaults";
+import { cn } from "@/ui/lib/cn";
+
+/** The dashboard's queue summaries (CONTRACT-REQUEST `admin.dashboard`), shared by every queue tab. */
+export function useQueues() {
+  return useQuery({
+    queryKey: queryKeys.list("admin", "dashboard"),
+    queryFn: () => browserRequests().call("GET /v1/admin/dashboard"),
+    staleTime: STALE_TIME.live,
+    refetchInterval: 60_000,
+  });
+}
+
+export interface QueueTab {
+  /** The `?queue=` value, or `null` for "everything". */
+  value: string | null;
+  label: string;
+  /** The dashboard key whose count this tab shows, e.g. `orders.waiting_payment`. */
+  countKey?: string;
+}
+
+/**
+ * Work queues first (F2 A.3): a list opens on actionable queues with counts and SLA state.
+ * Links, not tabs — each queue is a URL someone can bookmark or send, and the back button works.
+ */
+export function QueueTabs({
+  tabs,
+  param = "queue",
+  label,
+}: {
+  tabs: readonly QueueTab[];
+  param?: string;
+  label: string;
+}) {
+  const t = useTranslations("console.queues");
+  const format = useFormat();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const current = params.get(param);
+  const queues = useQueues().data?.queues ?? [];
+
+  return (
+    <nav aria-label={label} className="border-border -mb-px flex gap-1 overflow-x-auto border-b">
+      {tabs.map((tab) => {
+        const summary = tab.countKey ? queues.find((queue) => queue.key === tab.countKey) : undefined;
+        const href = tab.value ? `${pathname}?${param}=${encodeURIComponent(tab.value)}` : pathname;
+        const active = current === tab.value || (!current && tab.value === null);
+        return (
+          <Link
+            key={tab.value ?? "all"}
+            href={href}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "flex shrink-0 items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap",
+              active ? "border-primary text-fg" : "text-muted hover:text-fg border-transparent",
+            )}
+          >
+            {tab.label}
+            {summary ? (
+              <span
+                className={cn(
+                  "rounded-full px-1.5 text-xs tabular-nums",
+                  summary.overdueCount > 0 ? "bg-danger-subtle text-danger-subtle-fg" : "bg-surface-subtle text-muted",
+                )}
+              >
+                {format.number(summary.count)}
+                {summary.overdueCount > 0 ? (
+                  <span className="sr-only">{t("overdue", { count: summary.overdueCount })}</span>
+                ) : null}
+              </span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { browserPath, isCurrent, menuLabel, sidebarItems } from "./menu";
+import { browserPath, groupSidebar, isCurrent, menuLabel, sidebarItems } from "./menu";
 
 describe("admin menu entitlements", () => {
   describe("browserPath", () => {
@@ -81,5 +81,26 @@ describe("admin menu entitlements", () => {
       // untranslated.
       expect(menuLabel("audit_logs", translate)).toBe("audit_logs");
     });
+  });
+});
+
+describe("groupSidebar", () => {
+  it("groups entries without adding, dropping or reordering them within a group", () => {
+    const items = sidebarItems([
+      { key: "users", path: "/admin/users" },
+      { key: "dashboard", path: "/admin" },
+      { key: "orders", path: "/admin/orders" },
+      { key: "approvals", path: "/admin/approvals" },
+      { key: "some_future_screen", path: "/admin/future" },
+    ]);
+    const groups = groupSidebar(items);
+
+    expect(groups.map((group) => [group.key, group.items.map((item) => item.key)])).toEqual([
+      ["overview", ["dashboard", "approvals"]],
+      ["sales", ["orders"]],
+      ["system", ["users"]],
+      ["other", ["some_future_screen"]],
+    ]);
+    expect(groups.flatMap((group) => group.items)).toHaveLength(items.length);
   });
 });

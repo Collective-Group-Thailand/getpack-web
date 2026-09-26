@@ -1,0 +1,589 @@
+{
+  "breadcrumb": "เส้นทางหน้า",
+  "search": "ค้นหา",
+  "create": "เพิ่ม",
+  "createTitle": "เพิ่มใน{table}",
+  "editTitle": "แก้ไข {name}",
+  "empty": "ยังไม่มีรายการ",
+  "importExport": "นำเข้า/ส่งออก Excel",
+  "yes": "ใช่",
+  "no": "ไม่",
+  "hasFile": "มีไฟล์",
+  "none": "ไม่ระบุ",
+  "jsonHint": "รูปแบบ JSON object",
+  "jsonSet": "JSON",
+  "bangkokTime": "เวลาประเทศไทย",
+  "units": {
+    "mm": "มม."
+  },
+  "fields": {
+    "answerEn": "คำตอบ (อังกฤษ)",
+    "answerTh": "คำตอบ",
+    "attribute": "คุณสมบัติ",
+    "body": "เนื้อหา",
+    "calcHeightMm": "สูงสำหรับคำนวณ",
+    "calcLengthMm": "ยาวสำหรับคำนวณ",
+    "calcWidthMm": "กว้างสำหรับคำนวณ",
+    "calculatorKey": "เครื่องคำนวณราคา",
+    "canChargePlateAndDie": "คิดค่าเพลตและบล็อก",
+    "canonicalUrl": "Canonical URL",
+    "capacityMl": "ความจุ (มล.)",
+    "catalogProductId": "สินค้าในแคตตาล็อก",
+    "categoryId": "หมวดหมู่",
+    "categoryIds": "หมวดหมู่",
+    "code": "รหัส",
+    "colA": "ค่า A",
+    "colC": "ค่า C",
+    "colDd": "ค่า DD",
+    "colFh": "ค่า FH",
+    "colG": "ค่า G",
+    "colourKind": "ชนิดสี",
+    "conditions": "เงื่อนไข",
+    "config": "การตั้งค่า",
+    "constraints": "ข้อจำกัดขนาด",
+    "coverFileId": "ภาพปก",
+    "description": "รายละเอียด",
+    "descriptionEn": "รายละเอียด (อังกฤษ)",
+    "descriptionTh": "รายละเอียด",
+    "desktopFileId": "ภาพสำหรับเดสก์ท็อป",
+    "dh": "ตัวคูณ DH",
+    "dielineKey": "คีย์แบบกล่อง",
+    "districtId": "อำเภอ/เขต",
+    "dl": "ตัวคูณ DL",
+    "dw": "ตัวคูณ DW",
+    "excerptEn": "คำโปรย (อังกฤษ)",
+    "excerptTh": "คำโปรย",
+    "familyId": "ตระกูลวัสดุ",
+    "fileId": "ไฟล์",
+    "finishKind": "ชนิดงานตกแต่ง",
+    "fluteTypeId": "ลอน",
+    "groupId": "กลุ่ม",
+    "gsm": "แกรม",
+    "h1": "หัวข้อ H1",
+    "h2": "หัวข้อ H2",
+    "heightMm": "สูง",
+    "indexUnit": "หน่วยดัชนีราคา",
+    "insideColour": "สีด้านใน",
+    "isCombination": "สินค้าชุด",
+    "isDoubleItem": "นับเป็นสองชิ้น",
+    "isFoodContactDefault": "สัมผัสอาหารเป็นค่าเริ่มต้น",
+    "isFoodGrade": "ฟู้ดเกรด",
+    "isSpecial": "งานพิเศษ",
+    "keywords": "คีย์เวิร์ด",
+    "kind": "ชนิด",
+    "layers": "จำนวนชั้น",
+    "lengthMm": "ยาว",
+    "licenceNote": "สัญญาอนุญาต",
+    "micron": "ไมครอน",
+    "minOrderQty": "สั่งขั้นต่ำ",
+    "mobileFileId": "ภาพสำหรับมือถือ",
+    "name": "ชื่อ",
+    "nameEn": "ชื่อ (อังกฤษ)",
+    "nameTh": "ชื่อ",
+    "nh": "ตัวคูณ NH",
+    "nl": "ตัวคูณ NL",
+    "noindex": "ไม่ให้เครื่องมือค้นหาจัดทำดัชนี",
+    "nw": "ตัวคูณ NW",
+    "ogImageFileId": "ภาพสำหรับแชร์",
+    "outsideColour": "สีด้านนอก",
+    "pageKey": "หน้า (path)",
+    "paperGroup": "กลุ่มกระดาษ",
+    "parentId": "หมวดหลัก",
+    "patternId": "รูปแบบกล่อง",
+    "patternKind": "ชนิดรูปแบบ (เดิม)",
+    "position": "ตำแหน่ง",
+    "postcode": "รหัสไปรษณีย์",
+    "preset": "ค่าตั้งต้น",
+    "productTypeId": "ประเภทสินค้า",
+    "provider": "ผู้ให้บริการ",
+    "provinceId": "จังหวัด",
+    "publishedAt": "เผยแพร่เมื่อ",
+    "questionEn": "คำถาม (อังกฤษ)",
+    "questionTh": "คำถาม",
+    "quoteMode": "การเสนอราคา",
+    "region": "ภาค",
+    "requiresAmount": "ต้องระบุจำนวน",
+    "requiresLength": "ต้องระบุความยาว",
+    "requiresWidth": "ต้องระบุความกว้าง",
+    "rfqSpecSchema": "แบบฟอร์มสเปก RFQ (JSON Schema)",
+    "semiDesignId": "แบบกึ่งสำเร็จ",
+    "seoPageId": "หน้า SEO",
+    "seq": "ลำดับ",
+    "skipWaste": "ไม่คิดของเสีย",
+    "sku": "SKU",
+    "slug": "Slug",
+    "sort": "ลำดับการแสดง",
+    "standardSizeId": "ขนาดมาตรฐาน",
+    "status": "สถานะ",
+    "strength": "ความแข็งแรง",
+    "subjectId": "รหัสสิ่งที่แนบ",
+    "subjectType": "แนบกับ",
+    "targetUrl": "ลิงก์ปลายทาง",
+    "technicalName": "ชื่อทางเทคนิค",
+    "templateAvailability": "แบบกล่องสำหรับลูกค้า",
+    "thumbnailFileId": "ภาพตัวอย่าง",
+    "title": "ชื่อเรื่อง",
+    "titleEn": "ชื่อเรื่อง (อังกฤษ)",
+    "titleTh": "ชื่อเรื่อง",
+    "unit": "หน่วย",
+    "url": "ลิงก์",
+    "validFrom": "เริ่มแสดง",
+    "validTo": "สิ้นสุด",
+    "videoUrl": "ลิงก์วิดีโอ",
+    "weightG": "น้ำหนัก (กรัม)",
+    "widthMm": "กว้าง",
+    "z": "ค่า Z"
+  },
+  "hints": {
+    "code": "ใช้เป็นคีย์ในไฟล์ Excel ห้ามซ้ำ",
+    "slug": "ตัวพิมพ์เล็ก ตัวเลข และขีดกลาง เช่น mailer-box",
+    "rfqSpecSchema": "ฟิลด์ที่ลูกค้ากรอกเมื่อขอราคาประเภทนี้",
+    "constraints": "ขนาดต่ำสุด/สูงสุดที่รูปแบบนี้รับได้",
+    "isSpecial": "ฟอยล์ ปั๊มนูน หน้าต่าง: เพิ่มอัตราการสุ่มตรวจ 20 จุด (D-076)",
+    "targetUrl": "https:// หรือ path ในเว็บไซต์",
+    "pageKey": "path ของหน้า เช่น /th/products/mailer-box",
+    "status": "เก็บถาวรแทนการลบ รายการจะไม่แสดงแต่ประวัติยังอยู่"
+  },
+  "enums": {
+    "CatalogStatus": {
+      "draft": "ร่าง",
+      "active": "ใช้งาน",
+      "inactive": "ปิดชั่วคราว",
+      "archived": "เก็บถาวร"
+    },
+    "ContentStatus": {
+      "draft": "ร่าง",
+      "published": "เผยแพร่",
+      "archived": "เก็บถาวร"
+    },
+    "MaterialKind": {
+      "paper": "กระดาษ",
+      "board": "กระดาษแข็ง",
+      "corrugated_board": "กระดาษลูกฟูก",
+      "film": "ฟิล์ม",
+      "foil": "ฟอยล์",
+      "label_stock": "วัสดุฉลาก",
+      "other": "อื่น ๆ"
+    },
+    "FinishKind": {
+      "coating": "เคลือบ",
+      "lamination": "ลามิเนต",
+      "foil": "ฟอยล์",
+      "emboss": "ปั๊มนูน",
+      "deboss": "ปั๊มจม",
+      "spot_uv": "สปอตยูวี",
+      "window": "หน้าต่าง",
+      "other": "อื่น ๆ"
+    },
+    "InkColourKind": {
+      "process": "สีมาตรฐาน CMYK",
+      "spot": "สีพิเศษ",
+      "white": "สีขาว",
+      "metallic": "สีเมทัลลิก"
+    },
+    "VideoProvider": {
+      "youtube": "YouTube",
+      "vimeo": "Vimeo",
+      "file": "ไฟล์"
+    },
+    "VideoSubject": {
+      "catalog_product": "สินค้าในแคตตาล็อก",
+      "showcase_product": "ผลงานลูกค้า",
+      "stock_product": "สินค้าสต็อก",
+      "article": "บทความ"
+    },
+    "TemplateAvailability": {
+      "none": "ไม่มี",
+      "online_template": "แบบออนไลน์",
+      "drawing": "ไฟล์แบบกล่อง"
+    },
+    "CalculatorKey": {
+      "folding": "กล่องกระดาษพับ",
+      "corrugate": "กล่องลูกฟูก",
+      "label": "ฉลาก",
+      "tag_sleeve": "ป้ายแขวนและปลอก",
+      "pouch": "ซอง",
+      "standard_product": "สินค้ามาตรฐาน",
+      "service": "บริการ"
+    },
+    "StockAttribute": {
+      "material": "วัสดุ",
+      "type": "ชนิด",
+      "sub_type": "ชนิดย่อย",
+      "shape": "รูปทรง",
+      "shoulder": "บ่า",
+      "neck": "คอ",
+      "colour": "สี",
+      "size_text": "ขนาด",
+      "cap_type": "ฝา"
+    },
+    "ProductUnit": {
+      "piece": "ชิ้น",
+      "box": "กล่อง",
+      "pouch": "ซอง",
+      "tube": "หลอด",
+      "set": "ชุด",
+      "job": "งาน",
+      "round": "รอบ",
+      "trip": "เที่ยว"
+    },
+    "HomeSectionKind": {
+      "product_types": "ประเภทสินค้า",
+      "catalog_products": "สินค้าในแคตตาล็อก",
+      "showcase": "ผลงานลูกค้า",
+      "articles": "บทความ",
+      "banner": "แบนเนอร์",
+      "custom": "กำหนดเอง"
+    },
+    "BannerPosition": {
+      "home_hero": "หน้าแรก ส่วนบน",
+      "home_strip": "หน้าแรก แถบ",
+      "category": "หน้าหมวดหมู่",
+      "popup": "ป๊อปอัป"
+    },
+    "QuoteMode": {
+      "instant": "ราคาทันที",
+      "rfq": "ขอใบเสนอราคา"
+    }
+  },
+  "tables": {
+    "product-types": {
+      "title": "ประเภทสินค้า",
+      "description": "14 ประเภทของ D-100 และวิธีเสนอราคาของแต่ละประเภท"
+    },
+    "product-categories": {
+      "title": "หมวดหมู่สินค้า",
+      "description": "หมวดสำหรับรายงาน (D-030)"
+    },
+    "patterns": {
+      "title": "รูปแบบกล่อง",
+      "description": "รูปแบบกล่องและข้อจำกัดขนาด"
+    },
+    "sub-patterns": {
+      "title": "ชิ้นส่วนของรูปแบบ",
+      "description": "ชิ้นส่วนและตัวคูณพื้นที่ของแต่ละรูปแบบ"
+    },
+    "print-types": {
+      "title": "ระบบพิมพ์",
+      "description": "ระบบพิมพ์ที่แต่ละประเภทสินค้าใช้ได้"
+    },
+    "spec-titles": {
+      "title": "หัวข้อสเปก",
+      "description": "หัวข้อที่แสดงในสเปกของสินค้า"
+    },
+    "materials": {
+      "title": "วัสดุ",
+      "description": "กระดาษ กระดาษแข็ง ลูกฟูก ฟิล์ม ที่ลูกค้าเลือกได้ ไม่มีราคา แต่ละโรงงานตั้งราคาเอง (D-044)"
+    },
+    "material-families": {
+      "title": "ตระกูลวัสดุ",
+      "description": "กลุ่มวัสดุสำหรับดัชนีราคา"
+    },
+    "flute-types": {
+      "title": "ลอนกระดาษ",
+      "description": "ลอนและค่าคำนวณของกระดาษลูกฟูก"
+    },
+    "finishes": {
+      "title": "งานตกแต่ง",
+      "description": "เคลือบ ฟอยล์ ปั๊มนูน และงานพิเศษ"
+    },
+    "finish-groups": {
+      "title": "กลุ่มงานตกแต่ง",
+      "description": "การจัดกลุ่มงานตกแต่ง"
+    },
+    "foil-types": {
+      "title": "ชนิดฟอยล์",
+      "description": "สีฟอยล์ที่ใช้ได้"
+    },
+    "ink-colours": {
+      "title": "สีหมึก",
+      "description": "สีมาตรฐานและสีพิเศษ"
+    },
+    "ink-colour-groups": {
+      "title": "กลุ่มสีหมึก",
+      "description": "การจัดกลุ่มสีหมึก"
+    },
+    "diecut-types": {
+      "title": "ไดคัท",
+      "description": "ชนิดงานไดคัท"
+    },
+    "diecut-groups": {
+      "title": "กลุ่มไดคัท",
+      "description": "การจัดกลุ่มงานไดคัท"
+    },
+    "assemblies": {
+      "title": "การขึ้นรูป",
+      "description": "การปะกาวและการขึ้นรูป"
+    },
+    "assembly-groups": {
+      "title": "กลุ่มการขึ้นรูป",
+      "description": "การจัดกลุ่มการขึ้นรูป"
+    },
+    "difficulty-levels": {
+      "title": "ระดับความยาก",
+      "description": "ระดับความยากของงานผลิต"
+    },
+    "difficulty-level-groups": {
+      "title": "กลุ่มระดับความยาก",
+      "description": "การจัดกลุ่มระดับความยาก"
+    },
+    "packing-types": {
+      "title": "การบรรจุ",
+      "description": "วิธีบรรจุสินค้าส่งลูกค้า"
+    },
+    "catalog-products": {
+      "title": "สินค้าในแคตตาล็อก",
+      "description": "สินค้าที่ลูกค้าเห็นในเว็บไซต์"
+    },
+    "standard-sizes": {
+      "title": "ขนาดมาตรฐาน",
+      "description": "ขนาดสำเร็จของสินค้าแต่ละรายการ"
+    },
+    "stock-products": {
+      "title": "สินค้าสต็อก",
+      "description": "ขวด กระปุก ถุง และสินค้าสำเร็จรูป นำเข้าจาก Excel ได้"
+    },
+    "stock-attribute-values": {
+      "title": "คุณสมบัติสินค้าสต็อก",
+      "description": "ค่าที่ใช้กรองสินค้าสต็อก"
+    },
+    "showcase-products": {
+      "title": "ผลงานลูกค้า",
+      "description": "ผลงานตัวอย่างที่แสดงบนเว็บไซต์"
+    },
+    "showcase-categories": {
+      "title": "หมวดผลงาน",
+      "description": "หมวดของผลงานตัวอย่าง"
+    },
+    "semi-designs": {
+      "title": "แบบกึ่งสำเร็จ",
+      "description": "แบบสำเร็จที่ลูกค้าเริ่มจากได้"
+    },
+    "semi-design-templates": {
+      "title": "แม่แบบตามขนาด",
+      "description": "แม่แบบของแบบกึ่งสำเร็จในแต่ละขนาด"
+    },
+    "design-fonts": {
+      "title": "ฟอนต์สำหรับออกแบบ",
+      "description": "ฟอนต์ที่โปรแกรมออกแบบใช้ได้ พร้อมสัญญาอนุญาต"
+    },
+    "provinces": {
+      "title": "จังหวัด",
+      "description": "ดูแลโดยผู้ดูแลระบบ ไม่นำเข้าจากแหล่งภายนอก (D-161, D-170)"
+    },
+    "districts": {
+      "title": "อำเภอ/เขต",
+      "description": "อำเภอ/เขต ของแต่ละจังหวัด"
+    },
+    "subdistricts": {
+      "title": "ตำบล/แขวง",
+      "description": "ตำบล/แขวง และรหัสไปรษณีย์"
+    },
+    "banners": {
+      "title": "แบนเนอร์",
+      "description": "แบนเนอร์หน้าแรกและหน้าหมวดหมู่ พร้อมช่วงเวลาแสดง"
+    },
+    "home-sections": {
+      "title": "ส่วนของหน้าแรก",
+      "description": "ส่วนต่าง ๆ ของหน้าแรกและลำดับการแสดง"
+    },
+    "articles": {
+      "title": "บทความ",
+      "description": "บทความและเนื้อหาความรู้ ภาษาไทยและอังกฤษ"
+    },
+    "article-categories": {
+      "title": "หมวดบทความ",
+      "description": "หมวดหมู่ของบทความ"
+    },
+    "faqs": {
+      "title": "คำถามที่พบบ่อย",
+      "description": "คำถามและคำตอบที่แสดงบนเว็บไซต์"
+    },
+    "faq-categories": {
+      "title": "หมวดคำถาม",
+      "description": "หมวดของคำถามที่พบบ่อย"
+    },
+    "videos": {
+      "title": "วิดีโอ",
+      "description": "วิดีโอที่แนบกับสินค้า ผลงาน และบทความ"
+    },
+    "seo-pages": {
+      "title": "SEO รายหน้า",
+      "description": "ชื่อเรื่อง คำอธิบาย และการจัดทำดัชนีของแต่ละหน้า"
+    },
+    "import": {
+      "title": "นำเข้าและส่งออก Excel",
+      "description": "ส่งออกเป็นแม่แบบ แก้ไข แล้วนำเข้าผ่านการตรวจก่อนยืนยัน (D-005)"
+    }
+  },
+  "sectionTitles": {
+    "structure": "โครงสร้างสินค้า",
+    "materials": "วัสดุและงานตกแต่ง",
+    "products": "สินค้า",
+    "designs": "แบบสำเร็จ",
+    "geography": "พื้นที่และการนำเข้าข้อมูล",
+    "content": "เนื้อหา",
+    "seo": "SEO"
+  },
+  "home": {
+    "catalogueTitle": "แคตตาล็อก",
+    "catalogueDescription": "ข้อมูลกลางของแพลตฟอร์ม: ประเภทสินค้า วัสดุ รูปแบบกล่อง สินค้า และพื้นที่ ไม่มีราคา ราคาเป็นของแต่ละโรงงาน (D-005, D-044)",
+    "cmsTitle": "เนื้อหาเว็บไซต์",
+    "cmsDescription": "แบนเนอร์ หน้าแรก บทความ คำถามที่พบบ่อย วิดีโอ และ SEO"
+  },
+  "file": {
+    "remove": "นำออก",
+    "uploaded": "อัปโหลด {name} แล้ว",
+    "failed": "อัปโหลดไม่สำเร็จ",
+    "uploading": "กำลังอัปโหลด…",
+    "drop": "ลากไฟล์มาวาง หรือ",
+    "browse": "เลือกไฟล์",
+    "tooLarge": "{name} ใหญ่เกินไป",
+    "wrongType": "{name} ไม่ใช่ชนิดไฟล์ที่รับ"
+  },
+  "quoteMode": {
+    "title": "ราคาทันทีหรือขอใบเสนอราคา",
+    "body": "ประเภทหนึ่งเปิดราคาทันทีได้เมื่อเครื่องคำนวณของประเภทนั้นพร้อมแล้วเท่านั้น (D-100) และสเปกหนึ่ง ๆ จะได้ราคาทันทีก็ต่อเมื่อมีโรงงานที่ตั้งราคาครอบคลุม (D-043) นอกนั้นส่งเป็นคำขอราคา",
+    "column": "การเสนอราคา",
+    "toRfq": "เปลี่ยนเป็นขอใบเสนอราคา",
+    "toInstant": "เปิดราคาทันที",
+    "confirmInstantTitle": "เปิดราคาทันที",
+    "confirmRfqTitle": "เปลี่ยนเป็นขอใบเสนอราคา",
+    "confirmInstantBody": "ลูกค้าจะเห็นราคาทันทีสำหรับ {name} ({code}) เมื่อมีโรงงานที่ตั้งราคาครอบคลุม",
+    "confirmRfqBody": "ลูกค้าจะต้องขอใบเสนอราคาสำหรับ {name} ({code}) ทุกกรณี",
+    "modes": {
+      "instant": "ราคาทันที",
+      "rfq": "ขอใบเสนอราคา"
+    },
+    "confirm": "เปลี่ยน",
+    "reason": "เหตุผล",
+    "reasonHint": "บันทึกไว้กับประวัติการเปลี่ยนแปลง",
+    "done": "{code} เปลี่ยนเป็น{mode}แล้ว",
+    "failed": "เปลี่ยนการเสนอราคาไม่สำเร็จ"
+  },
+  "sections": {
+    "order": "ลำดับ",
+    "up": "เลื่อน {name} ขึ้น",
+    "down": "เลื่อน {name} ลง",
+    "reordered": "บันทึกลำดับแล้ว",
+    "reorderFailed": "บันทึกลำดับไม่สำเร็จ"
+  },
+  "import": {
+    "forbidden": "คุณไม่มีสิทธิ์นำเข้าหรือส่งออกแคตตาล็อก",
+    "chooseTitle": "ข้อมูลที่จะนำเข้า",
+    "kind": "ชุดข้อมูล",
+    "chooseKind": "เลือกชุดข้อมูล",
+    "export": "ส่งออกเป็นแม่แบบ",
+    "exported": "ส่งออก {rows} แถวแล้ว",
+    "exportFailed": "ส่งออกไม่สำเร็จ",
+    "rules": "หนึ่งไฟล์มีหลายชีต แถวแรกคือหัวคอลัมน์ อ้างอิงกันด้วยรหัส ไม่ใช้รหัสภายในระบบ",
+    "sheetsTitle": "ชีตของ{label}",
+    "sheet": "ชีต {name}",
+    "key": "(คีย์: {columns})",
+    "column": "คอลัมน์",
+    "type": "ชนิดข้อมูล",
+    "types": {
+      "text": "ข้อความ",
+      "int": "จำนวนเต็ม",
+      "decimal": "ทศนิยม",
+      "bool": "ใช่/ไม่",
+      "enum": "ค่าที่กำหนด",
+      "json": "JSON",
+      "ref": "รหัสอ้างอิง"
+    },
+    "required": "จำเป็น",
+    "requiredYes": "จำเป็น",
+    "values": "ค่าที่ใช้ได้",
+    "uploadTitle": "อัปโหลดไฟล์ Excel",
+    "checking": "กำลังตรวจไฟล์…",
+    "drop": "ลากไฟล์ .xlsx มาวาง หรือ",
+    "browse": "เลือกไฟล์",
+    "tooLarge": "{name} ใหญ่เกินไป",
+    "wrongType": "{name} ไม่ใช่ไฟล์ .xlsx",
+    "previewFailed": "ตรวจไฟล์ไม่สำเร็จ",
+    "previewTitle": "ผลการตรวจก่อนนำเข้า",
+    "counts": {
+      "create": "เพิ่มใหม่",
+      "update": "แก้ไข",
+      "unchanged": "ไม่เปลี่ยน",
+      "invalid": "ผิดพลาด"
+    },
+    "perSheet": "แยกตามชีต",
+    "sheetColumn": "ชีต",
+    "errorsTitle": "มี {count} แถวที่ผิดพลาด",
+    "errorsBody": "แก้ไขในไฟล์แล้วอัปโหลดใหม่ ระบบจะไม่นำเข้าเลยจนกว่าจะไม่มีแถวผิดพลาด",
+    "errorAt": "{sheet} แถว {row} · {column}",
+    "truncated": "แสดง 200 แถวแรก",
+    "nothingToDo": "ไฟล์นี้ไม่มีอะไรเปลี่ยน",
+    "confirm": "นำเข้าตามผลตรวจนี้",
+    "confirmTitle": "ยืนยันการนำเข้า",
+    "confirmBody": "จะเพิ่ม {create} แถวและแก้ไข {update} แถว ตรงตามผลตรวจที่แสดง",
+    "applied": "นำเข้าแล้ว",
+    "confirmFailed": "นำเข้าไม่สำเร็จ",
+    "appliedTitle": "นำเข้าเรียบร้อย",
+    "appliedBody": "เพิ่ม {create} แถว แก้ไข {update} แถว"
+  },
+  "articles": {
+    "list": "บทความ",
+    "cms": "เนื้อหาเว็บไซต์",
+    "breadcrumb": "เส้นทางหน้า",
+    "new": "เขียนบทความ",
+    "editTitle": "แก้ไขบทความ",
+    "untitled": "บทความไม่มีชื่อ",
+    "title": "ชื่อเรื่อง",
+    "excerpt": "คำโปรย",
+    "excerptHint": "แสดงในรายการบทความและผลการค้นหา",
+    "body": "เนื้อหา",
+    "bodyLabel": "เนื้อหา{locale}",
+    "locales": {
+      "th": "ภาษาไทย",
+      "en": "ภาษาอังกฤษ"
+    },
+    "localesLabel": "ภาษา",
+    "publishing": "การเผยแพร่",
+    "status": "สถานะ",
+    "statuses": {
+      "draft": "ร่าง",
+      "published": "เผยแพร่",
+      "archived": "เก็บถาวร"
+    },
+    "slug": "Slug",
+    "slugHint": "ตัวพิมพ์เล็ก ตัวเลข และขีดกลาง ใช้เป็น URL",
+    "cover": "ภาพปก",
+    "coverHint": "ไม่บังคับ",
+    "seoPage": "หน้า SEO",
+    "seoPageHint": "ชื่อเรื่องและคำอธิบายสำหรับเครื่องมือค้นหา",
+    "none": "ไม่ระบุ",
+    "categories": "หมวดหมู่",
+    "publishedAt": "เผยแพร่เมื่อ",
+    "updatedAt": "แก้ไขล่าสุด",
+    "save": "บันทึก",
+    "saved": "บันทึกบทความแล้ว",
+    "saveFailed": "บันทึกบทความไม่สำเร็จ",
+    "delete": "ลบบทความ",
+    "deleteTitle": "ลบบทความ",
+    "deleteBody": "ลบ {title} ออกจากเว็บไซต์และจากระบบ ย้อนกลับไม่ได้",
+    "deleted": "ลบบทความแล้ว",
+    "deleteFailed": "ลบบทความไม่สำเร็จ",
+    "search": "ค้นหาบทความ",
+    "emptyTitle": "ยังไม่มีบทความ",
+    "emptyBody": "เริ่มเขียนบทความแรก",
+    "errors": {
+      "title": "ต้องระบุชื่อเรื่องภาษาไทย",
+      "slug": "ใช้ตัวพิมพ์เล็ก ตัวเลข และขีดกลางเท่านั้น",
+      "summary": "ยังบันทึกไม่ได้ ตรวจสอบช่องที่ทำเครื่องหมายไว้"
+    },
+    "editor": {
+      "toolbar": "เครื่องมือจัดรูปแบบ",
+      "bold": "ตัวหนา",
+      "italic": "ตัวเอียง",
+      "heading2": "หัวข้อใหญ่",
+      "heading3": "หัวข้อย่อย",
+      "bulletList": "รายการแบบจุด",
+      "orderedList": "รายการแบบลำดับ",
+      "quote": "ข้อความอ้างอิง",
+      "undo": "เลิกทำ",
+      "redo": "ทำซ้ำ"
+    }
+  }
+}

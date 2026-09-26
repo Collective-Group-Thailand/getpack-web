@@ -1,0 +1,261 @@
+{
+  "shipments": {
+    "title": "การจัดส่ง",
+    "description": "โรงงานส่งเอง ขนส่งสำรองเมื่อโรงงานส่งไม่ได้ ต้องมีหลักฐานการส่งมอบทุกครั้ง (D-013, D-114)",
+    "queuesLabel": "คิวการจัดส่ง",
+    "all": "ทั้งหมด",
+    "queues": {
+      "awaiting_pickup": "รอรับของ",
+      "in_transit": "ระหว่างขนส่ง",
+      "exceptions": "มีปัญหา",
+      "pod_review": "รอตรวจหลักฐาน"
+    },
+    "search": "ค้นหาเลขจัดส่ง คำสั่งซื้อ หรือเลขพัสดุ",
+    "empty": "ไม่มีการจัดส่ง",
+    "columns": {
+      "shipment": "การจัดส่ง",
+      "status": "สถานะ",
+      "carrier": "ขนส่งโดย",
+      "destination": "ปลายทาง",
+      "factory": "โรงงาน",
+      "quantity": "จำนวน",
+      "lastEvent": "ล่าสุด"
+    },
+    "quantity": "{quantity} · {cartons} กล่อง",
+    "carriers": {
+      "factory_fleet": "รถของโรงงาน",
+      "flash_express": "Flash Express",
+      "deliveree": "Deliveree"
+    }
+  },
+  "shipment": {
+    "pageTitle": "การจัดส่ง",
+    "breadcrumb": "เส้นทางหน้า",
+    "shipments": "การจัดส่ง",
+    "summary": "คำสั่งซื้อ {order} · โรงงาน {factory} · {quantity} ชิ้น {cartons} กล่อง",
+    "packingList": "ใบรายการสินค้า",
+    "labels": "ป้ายกล่อง",
+    "split": "แยกการจัดส่ง",
+    "book": "จองขนส่งสำรอง",
+    "resolve": "แก้ปัญหาการจัดส่ง",
+    "blockedByPayment": "ยังมียอดที่ต้องชำระก่อนจัดส่ง ระบบไม่ให้ออกจากโรงงาน",
+    "pod": "หลักฐานการส่งมอบ (POD)",
+    "podNote": "POD ของโรงงานที่รับแล้วทำให้จ่ายเงินโรงงานได้ (D-013)",
+    "acceptPod": "รับหลักฐาน",
+    "rejectPod": "ไม่รับหลักฐาน",
+    "receiver": "ผู้รับ",
+    "deliveredQuantity": "จำนวนที่ส่งมอบ",
+    "capturedAt": "บันทึกเมื่อ",
+    "podKind": "ชนิดหลักฐาน",
+    "podKinds": {
+      "factory_photo_signature": "รูปถ่ายและลายเซ็น",
+      "carrier_pod": "หลักฐานจากขนส่ง"
+    },
+    "reviewedBy": "ตรวจโดย",
+    "reviewNote": "หมายเหตุการตรวจ",
+    "tolerance": "จำนวนที่ส่งเทียบค่าเผื่อ",
+    "toleranceNote": "ตัวเลขจากระบบตามค่าเผื่อที่ล็อกไว้ตอนเสนอราคา (D-021, D-080)",
+    "outcomes": {
+      "exact": "ส่งครบ {delivered} จาก {ordered}",
+      "short_within": "ส่ง {delivered} จาก {ordered} ขาดในค่าเผื่อ ลูกค้าได้เครดิตตามสัดส่วน",
+      "over_within": "ส่ง {delivered} จาก {ordered} เกินในค่าเผื่อ ไม่คิดเงินเพิ่ม",
+      "short_outside": "ส่ง {delivered} จาก {ordered} ขาดเกินค่าเผื่อ เปิดเคลมอัตโนมัติ",
+      "over_outside": "ส่ง {delivered} จาก {ordered} เกินค่าเผื่อ เปิดเคลมอัตโนมัติ"
+    },
+    "toleranceBand": "ขาดได้ {shortage} เกินได้ {overage}",
+    "openClaim": "เปิดเคลม",
+    "events": "เหตุการณ์",
+    "sources": {
+      "factory": "โรงงาน",
+      "carrier_webhook": "ขนส่ง",
+      "carrier_poll": "ขนส่ง (ตรวจสถานะ)",
+      "staff": "ฝ่ายงาน"
+    },
+    "destination": "ปลายทาง",
+    "contents": "สินค้าในการจัดส่ง",
+    "cartons": "{count} กล่อง · ประมาณ {weight} กก.",
+    "economics": "ค่าขนส่ง",
+    "economicsNote": "ลูกค้าจ่าย เทียบกับที่จ่ายโรงงานหรือขนส่งสำรอง (D-013)",
+    "customerCharge": "เก็บจากลูกค้า",
+    "factoryPayout": "จ่ายโรงงาน",
+    "carrierCost": "ค่าขนส่งสำรอง",
+    "splitTitle": "แยกการจัดส่ง",
+    "splitBody": "{no} มี {quantity} ชิ้น ส่วนที่แยกจะเป็นการจัดส่งใหม่",
+    "splitQuantity": "จำนวนที่แยก",
+    "splitHint": "น้อยกว่า {quantity}",
+    "splitDone": "แยกเป็น {no} แล้ว",
+    "bookTitle": "จองขนส่งสำรอง",
+    "bookBody": "{no} ไป {province} เลือกใบเสนอราคาขนส่ง",
+    "quoting": "กำลังขอราคาขนส่ง…",
+    "quotes": "ใบเสนอราคาขนส่ง",
+    "quote": "{amount} · ถึงใน {days} วัน",
+    "bookHint": "เช่น โรงงานไม่ส่งในพื้นที่นี้",
+    "booked": "จองขนส่งแล้ว เลขพัสดุ {tracking}",
+    "resolveTitle": "แก้ปัญหาการจัดส่ง",
+    "resolveBody": "{no}",
+    "resolution": "วิธีแก้",
+    "resolutions": {
+      "retry": "ส่งใหม่",
+      "return": "ส่งคืนโรงงาน",
+      "cancel": "ยกเลิกการจัดส่ง"
+    },
+    "resolved": "บันทึกการแก้ปัญหาแล้ว",
+    "acceptTitle": "รับหลักฐานการส่งมอบ",
+    "acceptBody": "{no} รับแล้วโรงงาน {factory} จะมีสิทธิ์รับเงิน",
+    "rejectTitle": "ไม่รับหลักฐานการส่งมอบ",
+    "rejectBody": "{no} โรงงาน {factory} ต้องส่งหลักฐานใหม่",
+    "rejectHint": "ต้องระบุ โรงงานจะเห็นข้อความนี้",
+    "optional": "ไม่บังคับ",
+    "podAccepted": "รับหลักฐานแล้ว",
+    "podRejected": "ส่งกลับให้โรงงานแล้ว",
+    "reason": "เหตุผล",
+    "needReason": "กรุณาระบุเหตุผลอย่างน้อย 3 ตัวอักษร",
+    "needQuantity": "กรุณาระบุจำนวน",
+    "needQuote": "กรุณาเลือกใบเสนอราคา",
+    "failed": "ทำรายการไม่สำเร็จ"
+  },
+  "claims": {
+    "title": "เคลม",
+    "description": "แจ้งเคลมได้ภายใน 7 วันหลังรับของ พร้อมรูปสินค้าและรูปกล่อง ผู้รับผิดชอบตามกฎ D-083",
+    "statusesLabel": "สถานะเคลม",
+    "all": "เปิดอยู่",
+    "search": "ค้นหาเลขเคลม คำสั่งซื้อ หรือลูกค้า",
+    "empty": "ไม่มีเคลม",
+    "origin": "ที่มา",
+    "columns": {
+      "claim": "เคลม",
+      "type": "ประเภท",
+      "status": "สถานะ",
+      "liability": "ผู้รับผิดชอบ",
+      "requested": "ลูกค้าขอ",
+      "sla": "กำหนดตอบ",
+      "submitted": "แจ้งเมื่อ"
+    },
+    "types": {
+      "damaged": "สินค้าชำรุด",
+      "wrong_spec": "ผิดสเปก",
+      "print_defect": "งานพิมพ์บกพร่อง",
+      "quantity_short": "จำนวนขาด",
+      "late": "ส่งล่าช้า",
+      "other": "อื่น ๆ"
+    },
+    "origins": {
+      "customer": "ลูกค้าแจ้ง",
+      "tolerance_auto": "อัตโนมัติจากค่าเผื่อจำนวน",
+      "staff": "ฝ่ายงานเปิด"
+    },
+    "liabilities": {
+      "factory": "โรงงาน",
+      "customer": "ลูกค้า",
+      "carrier": "บริษัทขนส่ง",
+      "packio": "Packio",
+      "undetermined": "ยังไม่ระบุ"
+    },
+    "resolutions": {
+      "reprint": "พิมพ์ใหม่",
+      "partial_refund": "คืนเงินบางส่วน",
+      "full_refund": "คืนเงินเต็ม",
+      "credit": "เครดิต"
+    }
+  },
+  "claim": {
+    "pageTitle": "เคลม",
+    "breadcrumb": "เส้นทางหน้า",
+    "claims": "เคลม",
+    "summary": "คำสั่งซื้อ {order} · {customer}",
+    "resolve": "ดำเนินการแก้ไข",
+    "actions": {
+      "start-review": {
+        "label": "เริ่มตรวจสอบ",
+        "title": "เริ่มตรวจสอบเคลม",
+        "body": "{no} ของคำสั่งซื้อ {order}",
+        "reason": "หมายเหตุ"
+      },
+      "request-info": {
+        "label": "ขอข้อมูลเพิ่ม",
+        "title": "ขอข้อมูลเพิ่มจากลูกค้า",
+        "body": "ข้อความนี้ส่งถึงลูกค้าของ {order}",
+        "reason": "สิ่งที่ต้องการ"
+      },
+      "send-to-factory": {
+        "label": "ส่งให้โรงงานตอบ",
+        "title": "ส่งเคลมให้โรงงาน",
+        "body": "โรงงานเห็นหลักฐานและข้อความนี้ ไม่เห็นข้อมูลลูกค้า",
+        "reason": "ข้อความถึงโรงงาน"
+      },
+      "approve": {
+        "label": "อนุมัติเคลม",
+        "title": "อนุมัติเคลม",
+        "body": "{no} อนุมัติแล้วจะดำเนินการแก้ไขตามวิธีที่เลือก",
+        "reason": "เหตุผล"
+      },
+      "reject": {
+        "label": "ไม่อนุมัติ",
+        "title": "ไม่อนุมัติเคลม",
+        "body": "{no} เหตุผลจะแจ้งให้ลูกค้าทราบ",
+        "reason": "เหตุผล"
+      },
+      "close": {
+        "label": "ปิดเคลม",
+        "title": "ปิดเคลม",
+        "body": "{no} จะปิด ไม่สามารถแก้ไขต่อได้",
+        "reason": "หมายเหตุ"
+      }
+    },
+    "claim": "รายละเอียดเคลม",
+    "requested": "ลูกค้าขอ",
+    "claimedAmount": "ยอดที่ขอ",
+    "claimedQuantity": "จำนวนที่แจ้ง",
+    "received": "รับของเมื่อ",
+    "window": "แจ้งได้ถึง",
+    "shipment": "การจัดส่ง",
+    "evidence": "หลักฐาน",
+    "evidenceNote": "ต้องมีรูปสินค้าและรูปกล่องขนส่ง (D-082)",
+    "productPhotos": "รูปสินค้า",
+    "cartonPhotos": "รูปกล่องขนส่ง",
+    "noPhotos": "ไม่มีรูป",
+    "thread": "ความคืบหน้า",
+    "audiences": {
+      "customer": "ลูกค้าเห็น",
+      "factory": "โรงงานเห็น",
+      "internal": "ภายในเท่านั้น"
+    },
+    "liability": "ผู้รับผิดชอบ",
+    "override": "เปลี่ยน",
+    "byRule": "ตามกฎ: {liability}",
+    "overridden": "เปลี่ยนโดย {by}",
+    "approvedProof": "ลูกค้าอนุมัติปรู๊ฟฉบับที่ {no} เมื่อ",
+    "factoryResponse": "คำตอบของโรงงาน",
+    "responses": {
+      "accepted": "รับผิดชอบ",
+      "disputed": "โต้แย้ง"
+    },
+    "decision": "การตัดสิน",
+    "resolutions": "การแก้ไขที่ทำแล้ว",
+    "resolutionActions": {
+      "reproduction_job": "ผลิตใหม่",
+      "refund": "คืนเงิน",
+      "credit_note": "ใบลดหนี้",
+      "store_credit": "เครดิตร้านค้า",
+      "factory_deduction": "หักเงินโรงงาน",
+      "carrier_recovery": "เรียกเก็บจากขนส่ง"
+    },
+    "overrideTitle": "เปลี่ยนผู้รับผิดชอบ",
+    "overrideBody": "{no} ตามกฎคือ {rule} การเปลี่ยนถูกบันทึกพร้อมเหตุผล",
+    "resolveTitle": "ดำเนินการแก้ไขเคลม",
+    "resolveBody": "{no} ผู้รับผิดชอบ: {liability} ระบบใช้ขั้นตอนเดิมของเอกสารและการเงิน",
+    "resolutionAction": "วิธีแก้ไข",
+    "amount": "จำนวนเงิน",
+    "note": "หมายเหตุ",
+    "execute": "ดำเนินการ",
+    "executed": "ดำเนินการแล้ว",
+    "changed": "เปลี่ยนสถานะแล้ว",
+    "saved": "บันทึกแล้ว",
+    "save": "บันทึก",
+    "reason": "เหตุผล",
+    "needReason": "กรุณาระบุเหตุผลอย่างน้อย 3 ตัวอักษร",
+    "needResolution": "กรุณาเลือกวิธีแก้ไข",
+    "needAmount": "กรุณาระบุจำนวนเงิน",
+    "failed": "ทำรายการไม่สำเร็จ"
+  }
+}

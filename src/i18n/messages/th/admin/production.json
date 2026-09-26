@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "label": "ส่วนงานผลิต",
+    "board": "บอร์ดงานผลิต",
+    "inspections": "ตรวจคุณภาพ",
+    "scorecards": "คะแนนโรงงาน"
+  },
+  "board": {
+    "title": "บอร์ดงานผลิต",
+    "description": "งานที่กำลังผลิตตามขั้นตอนปัจจุบัน งานเสี่ยงล่าช้ามาจากการคาดการณ์ของระบบ (D-074, D-075)",
+    "all": "ทั้งหมด",
+    "atRiskOnly": "เฉพาะงานเสี่ยงล่าช้า",
+    "count": "{count} งาน",
+    "risky": "เสี่ยง {count}",
+    "inspection": "ต้องตรวจคุณภาพโดย Packio",
+    "promised": "กำหนดส่ง",
+    "atRisk": "เสี่ยงล่าช้า",
+    "predicted": "คาดว่าเสร็จ {date}",
+    "empty": "ไม่มีงาน"
+  },
+  "inspections": {
+    "title": "งานตรวจคุณภาพ",
+    "description": "การสุ่มตรวจของ Packio ตามความเสี่ยง ISO 2859-1 ระดับ II (D-076)",
+    "columns": {
+      "job": "งาน",
+      "reasons": "เหตุที่ถูกเลือก",
+      "sample": "ตัวอย่าง",
+      "found": "พบข้อบกพร่อง",
+      "status": "สถานะ",
+      "when": "เมื่อ"
+    },
+    "reasons": {
+      "value_100_pct": "มูลค่า ≥ ฿300,000 ตรวจทั้งหมด",
+      "value_band_sample": "สุ่มตามมูลค่า",
+      "trial_factory": "โรงงานช่วงทดลอง",
+      "high_defect_factory": "โรงงานข้อบกพร่องสูง",
+      "special_finish_or_food": "งานพิเศษหรืองานอาหาร"
+    },
+    "sample": "{sample} จาก {lot}",
+    "accept": "รับได้ วิกฤต {critical} · หลัก {major} · รอง {minor}",
+    "foundValue": "วิกฤต {critical} · หลัก {major} · รอง {minor}",
+    "record": "บันทึกผล",
+    "recordFor": "บันทึกผล {job}",
+    "recordTitle": "บันทึกผลตรวจ {job}",
+    "recordBody": "{job} ของ {factory} ตัวอย่าง {sample} ชิ้น รับได้ไม่เกิน วิกฤต {critical} หลัก {major} รอง {minor} ระบบตัดสินผ่าน/ไม่ผ่านจากตัวเลขนี้",
+    "grades": {
+      "critical": "วิกฤต",
+      "major": "หลัก",
+      "minor": "รอง"
+    },
+    "notes": "หมายเหตุ",
+    "passed": "ผลตรวจ: ผ่าน",
+    "failed": "ผลตรวจ: ไม่ผ่าน",
+    "recordFailed": "บันทึกผลไม่สำเร็จ",
+    "empty": "ไม่มีงานตรวจ"
+  },
+  "scorecards": {
+    "title": "คะแนนโรงงาน",
+    "description": "คะแนนรายเดือนที่โรงงานเห็นเหมือนกัน ใช้จัดลำดับการจ่ายงาน (D-155, D-075)",
+    "month": "เดือน {month}",
+    "factory": "โรงงาน",
+    "jobs": "จำนวนงาน",
+    "metrics": {
+      "onTimeAcceptancePct": "รับงานตรงเวลา",
+      "onTimeShippingPct": "ส่งตรงเวลา",
+      "qcFirstPassPct": "QC ผ่านครั้งแรก",
+      "onTimeUpdatesPct": "อัปเดตตรงเวลา",
+      "claimRatePct": "อัตราเคลม"
+    }
+  }
+}

@@ -16,13 +16,28 @@ test.describe("admin shell", () => {
     await signInAsStaff(page);
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
-    // The mock's `/v1/admin/me` returns exactly two entries: dashboard and orders.
-    await expect(nav.getByRole("link")).toHaveCount(2);
-    await expect(nav.getByRole("link", { name: "ภาพรวม" })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "คำสั่งซื้อ" })).toBeVisible();
+    // The mock builds a CS agent's menu from their permissions, as packio-api's menu catalogue
+    // does: these twelve entries and nothing else (catalogue since packio-api B2.1 granted CS
+    // `catalog.read`).
+    const expected = [
+      "ภาพรวม",
+      "รายการรออนุมัติ",
+      "คำสั่งซื้อ",
+      "คำนวณราคา (CS)",
+      "ใบเสนอราคา",
+      "คำขอใบเสนอราคา",
+      "บันทึกขอส่วนลด",
+      "รอบจัดส่ง",
+      "งานเคลม",
+      "แคตตาล็อก",
+      "ลูกค้า",
+      "บริษัทคู่ค้า",
+    ];
+    await expect(nav.getByRole("link")).toHaveCount(expected.length);
+    for (const name of expected) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
 
     // Nothing this staff user was not entitled to.
-    await expect(nav.getByRole("link", { name: "การเงิน" })).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: "ผู้ใช้และสิทธิ์" })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "ตั้งค่าระบบ" })).toHaveCount(0);
   });
 
@@ -79,12 +94,16 @@ test.describe("admin shell", () => {
 
     // Opened by the button rather than ⌘K: the shortcut has its own test above, and going
     // through a real control removes the race with the effect that registers it.
-    await page
-      .getByRole("button", { name: /ค้นหาคำสั่งซื้อ/ })
-      .first()
-      .click();
+    // Retried: the button is in the server HTML before the JavaScript that opens anything has
+    // hydrated, and a click in that window is dropped (the same reason as `openAccountMenu`).
     const palette = page.getByRole("dialog", { name: "ค้นหาและสั่งงาน" });
-    await expect(palette).toBeVisible();
+    await expect(async () => {
+      await page
+        .getByRole("button", { name: /ค้นหาคำสั่งซื้อ/ })
+        .first()
+        .click();
+      await expect(palette).toBeVisible({ timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
     await palette.getByRole("combobox").fill("?");
     // `?` is a printable character: inside a text field it must type, not open a dialog.
     await expect(page.getByRole("dialog", { name: "ปุ่มลัด" })).toHaveCount(0);

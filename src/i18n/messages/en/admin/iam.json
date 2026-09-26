@@ -1,0 +1,136 @@
+{
+  "users": {
+    "title": "Users and roles",
+    "description": "Staff and factory accounts, and the roles each one holds.",
+    "rolesLink": "All roles and permissions",
+    "search": "Search users",
+    "searchPlaceholder": "Name or e-mail",
+    "columns": {
+      "name": "Name",
+      "email": "E-mail",
+      "roles": "Roles",
+      "status": "Status",
+      "lastLogin": "Last sign-in",
+      "kind": "Account type"
+    },
+    "kinds": {
+      "staff": "Packio staff",
+      "partner": "Factory user",
+      "customer": "Customer"
+    },
+    "create": {
+      "open": "Add user",
+      "title": "Add a user",
+      "description": "Customers sign up themselves. Add staff and factory users here; roles are granted next.",
+      "kind": "Account type",
+      "kinds": {
+        "staff": "Packio staff",
+        "partner": "Factory user"
+      },
+      "displayName": "Display name",
+      "email": "Sign-in e-mail",
+      "password": "Initial password",
+      "passwordHint": "At least {min} characters; they change it on first sign-in.",
+      "submit": "Add user",
+      "created": "User added",
+      "failed": "Could not add the user"
+    }
+  },
+  "user": {
+    "title": "User",
+    "users": "Users and roles",
+    "breadcrumb": "Breadcrumb",
+    "kinds": {
+      "staff": "Packio staff",
+      "partner": "Factory user",
+      "customer": "Customer"
+    },
+    "selfHint": "This is your own account; someone else must change your roles or status.",
+    "profile": "Account",
+    "email": "E-mail",
+    "phone": "Phone",
+    "createdAt": "Created",
+    "lastLogin": "Last sign-in",
+    "reason": "Reason",
+    "reasonHint": "Recorded in the audit log",
+    "failed": "That did not work",
+    "scopes": {
+      "platform": "Platform-wide",
+      "factory": "Factory",
+      "company": "Company"
+    },
+    "actions": {
+      "revokeSessions": "Sign out everywhere",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "revoke_sessionsTitle": "Sign out everywhere?",
+      "revoke_sessionsDescription": "{name} will have to sign in again on every device.",
+      "revoke_sessionsConfirm": "Sign out",
+      "revoke_sessionsDone": "Signed out everywhere",
+      "deactivateTitle": "Deactivate this account?",
+      "deactivateDescription": "{name} will not be able to sign in until reactivated. Assigned work is not moved automatically.",
+      "deactivateConfirm": "Deactivate",
+      "deactivateDone": "Account deactivated",
+      "reactivateTitle": "Reactivate this account?",
+      "reactivateDescription": "{name} will be able to sign in with the roles they hold.",
+      "reactivateConfirm": "Reactivate",
+      "reactivateDone": "Account reactivated"
+    },
+    "grants": {
+      "title": "Role grants",
+      "add": "Grant a role",
+      "empty": "No roles yet",
+      "role": "Role",
+      "scope": "Scope",
+      "validFrom": "From",
+      "validTo": "Until",
+      "noEnd": "Open-ended",
+      "reason": "Reason",
+      "actions": "Actions",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke {role}?",
+      "revokeDescription": "{name} loses this role's permissions immediately.",
+      "revoked": "Role revoked"
+    },
+    "grant": {
+      "title": "Grant a role to {name}",
+      "role": "Role",
+      "chooseRole": "Choose a role",
+      "sodTitle": "Conflicts with segregation of duties",
+      "sodBody": "{description} — this role cannot be held with the ones this person has.",
+      "escalationTitle": "You cannot grant this role",
+      "escalationBody": "Staff roles can only be granted by someone holding all their permissions. Missing: {permissions}",
+      "scope": {
+        "factory": "Factory",
+        "company": "Company"
+      },
+      "scopePlaceholder": "Type a name or code to search",
+      "noScope": "Nothing found",
+      "clearScope": "Clear",
+      "validTo": "Expires",
+      "validToHint": "Leave empty for open-ended. Auditor grants should be time-boxed (Bangkok time).",
+      "reason": "Reason",
+      "reasonHint": "Recorded in the audit log",
+      "submit": "Grant",
+      "granted": "Role granted",
+      "failed": "Could not grant the role"
+    }
+  },
+  "roles": {
+    "title": "Roles and permissions",
+    "breadcrumb": "Breadcrumb",
+    "description": "The D-140 roles and their permissions, as the backend defines them.",
+    "audience": "Audience",
+    "audiences": {
+      "staff": "Packio staff",
+      "partner": "Partner factories",
+      "customer": "B2B companies"
+    },
+    "caption": "Permissions of {audience} roles",
+    "permission": "Permission",
+    "granted": "granted",
+    "notGranted": "not granted",
+    "sensitive": " (sensitive)",
+    "sensitiveLegend": "Permissions marked with this icon expose factory buy prices or margins (D-141)."
+  }
+}

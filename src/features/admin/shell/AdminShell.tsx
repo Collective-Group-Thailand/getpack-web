@@ -9,9 +9,11 @@ import { CommandPalette, useCommandPaletteShortcut, useModKey } from "@/ui/compo
 import { KEYCAP } from "@/ui/components/Kbd";
 import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
 
+import { ActorProvider } from "../console/actor";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminTopbar } from "./AdminTopbar";
 import { sidebarItems } from "./menu";
+import { usePaletteItems } from "./palette";
 import { NAV_COOKIE, NAV_COOKIE_MAX_AGE, type NavState } from "./nav-cookie";
 
 export interface AdminShellProps {
@@ -42,6 +44,8 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
   const modKey = useModKey();
 
   const collapsed = nav === "collapsed";
+  const screens = sidebarItems(menu);
+  const palette = usePaletteItems(query, screens, () => setPaletteOpen(false));
 
   const toggleNav = useCallback(() => {
     setNav((current) => {
@@ -75,9 +79,9 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
             envBadge={envBadge}
           />
         }
-        sidebar={<AdminSidebar items={sidebarItems(menu)} collapsed={collapsed} />}
+        sidebar={<AdminSidebar items={screens} collapsed={collapsed} />}
       >
-        {children}
+        <ActorProvider actor={actor}>{children}</ActorProvider>
       </AppShell>
 
       <CommandPalette
@@ -86,12 +90,11 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
         title={t("palette.title")}
         placeholder={t("palette.placeholder")}
         loadingLabel={tCommon("state.loading")}
-        // F2.1 gives this something to search — orders by code, customers by phone, factories
-        // by name. The shell, its keyboard behaviour and its a11y are what F1 owes.
         emptyLabel={t("palette.empty")}
         value={query}
         onValueChange={setQuery}
-        items={[]}
+        items={palette.items}
+        loading={palette.loading}
       />
 
       <ShortcutsOverlay
