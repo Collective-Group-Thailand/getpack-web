@@ -4,20 +4,15 @@ import { getTranslations } from "next-intl/server";
 
 import { formatTaxId } from "@/features/customer/account/tax-id";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
+import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
 import { PayInstalmentButton } from "@/features/customer/checkout/PayInstalmentButton";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import {
-  ARTWORK_STATUS,
-  CLAIM_STATUS,
-  DOCUMENT_STATUS,
-  INSTALMENT_STATUS,
-  ORDER_STATUS,
-  SHIPMENT_STATUS,
-} from "@/domain/status";
+import { ARTWORK_STATUS, CLAIM_STATUS, DOCUMENT_STATUS, INSTALMENT_STATUS, ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -101,6 +96,15 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           </Callout>
         ) : null}
       </header>
+
+      {order.stages.length > 0 ? (
+        <section aria-labelledby="order-stages">
+          <h2 id="order-stages" className="sr-only">
+            {t("detail.stages")}
+          </h2>
+          <OrderStages stages={order.stages} />
+        </section>
+      ) : null}
 
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="flex min-w-0 flex-col gap-10">
@@ -227,39 +231,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               <h2 id="order-shipments" className="text-lg font-semibold">
                 {t("detail.shipments")}
               </h2>
-              <ul className="mt-4 flex flex-col gap-3">
+              <div className="mt-4 flex flex-col gap-3">
                 {order.shipments.map((shipment) => (
-                  <li key={shipment.id} className="border-border rounded-lg border p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-medium">
-                        {t("detail.shipmentTo", {
-                          quantity: format.number(shipment.quantity),
-                          unit: order.unit,
-                          name: shipment.destination.recipientName,
-                          province: shipment.destination.province,
-                        })}
-                      </p>
-                      <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
-                    </div>
-                    <p className="text-muted mt-1 text-xs">
-                      {t(shipment.trackingNo ? "detail.shipmentMetaTracking" : "detail.shipmentMeta", {
-                        shipment: shipment.shipmentNo,
-                        carrier: t(`detail.carrier.${shipment.carrier}`),
-                        tracking: shipment.trackingNo ?? "",
-                      })}
-                    </p>
-                    {shipment.pod ? (
-                      <p className="mt-2 text-sm">
-                        {t("detail.pod", {
-                          name: shipment.pod.receiverName,
-                          quantity: format.number(shipment.pod.deliveredQuantity),
-                          date: format.dateTime(shipment.pod.capturedAt),
-                        })}
-                      </p>
-                    ) : null}
-                  </li>
+                  <ShipmentCard key={shipment.id} shipment={shipment} unit={order.unit} />
                 ))}
-              </ul>
+              </div>
               {order.trackingToken ? (
                 <p className="mt-3 text-sm">
                   <Link
@@ -299,13 +275,16 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     key={claim.id}
                     className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3"
                   >
-                    <span>
+                    <Link
+                      href={`/account/orders/${order.id}/claims/${claim.id}`}
+                      className="text-primary underline underline-offset-4"
+                    >
                       {t("detail.claimLine", {
                         claim: claim.claimNo,
                         type: t(`claimTypes.${claim.type}`),
                         date: format.date(claim.submittedAt),
                       })}
-                    </span>
+                    </Link>
                     <StatusChip map={CLAIM_STATUS} value={claim.status} />
                   </li>
                 ))}

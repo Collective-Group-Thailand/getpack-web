@@ -8,6 +8,8 @@
  *              sign-in, so the consent and profile steps can be walked again and again.
  *   buyer      0823456789 — another complete account (the second fake customer), so a flow
  *              that owns a cart end to end (checkout) does not share it with parallel tests.
+ *   receiver   0845678901 — the eighth fake customer, whose order was delivered yesterday a little
+ *              short: receipt, tolerance credit, claims and reorder (F3 3.6) walk it.
  *   artist     0834567890 — the fourth fake customer, whose unpaid order waiting for artwork
  *              the artwork and proof flow (F3 3.5) walks end to end on its own.
  *
@@ -19,13 +21,14 @@ import type { Schemas } from "@/lib/api/types";
 
 import { principalOf } from "../support";
 
-export type CustomerPersona = "returning" | "newcomer" | "buyer" | "artist";
+export type CustomerPersona = "returning" | "newcomer" | "buyer" | "artist" | "receiver";
 
 export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0812345678": "returning",
   "0898765432": "newcomer",
   "0823456789": "buyer",
   "0834567890": "artist",
+  "0845678901": "receiver",
 };
 
 export const CONSENT_PURPOSES = [
@@ -82,6 +85,13 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: 0,
     },
     buyer: { n: 3, name: "ลูกค้าผู้ซื้อ (ข้อมูลจำลอง)", email: "seed.buyer", phone: "0823456789", ownerIndex: 1 },
+    receiver: {
+      n: 5,
+      name: "ลูกค้ารับสินค้า (ข้อมูลจำลอง)",
+      email: "seed.receiver",
+      phone: "0845678901",
+      ownerIndex: 7,
+    },
     artist: { n: 4, name: "ลูกค้าส่งไฟล์งาน (ข้อมูลจำลอง)", email: "seed.artist", phone: "0834567890", ownerIndex: 3 },
   }[persona];
   return {
@@ -108,6 +118,7 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   newcomer: fresh("newcomer"),
   buyer: fresh("buyer"),
   artist: fresh("artist"),
+  receiver: fresh("receiver"),
 };
 
 /** A first sign-in starts from nothing, every time. */

@@ -145,6 +145,26 @@ export function cartLines(customer: MockCustomer): readonly Line[] {
   return linesOf(customer);
 }
 
+/** Puts a saved quotation in the cart once (the reorder mock, F3 3.6, adds its quotation here too). */
+export function addToCart(customer: MockCustomer, quote: StoreQuote): string {
+  const lines = linesOf(customer);
+  const existing = lines.find((line) => line.quoteId === quote.id);
+  if (existing) return existing.id;
+  const address = addressesOf(customer).find((candidate) => candidate.isDefault) ?? null;
+  lineSeq += 1;
+  const id = mockId("cit", lineSeq);
+  lines.push({
+    id,
+    quoteId: quote.id,
+    designOption: quote.designOption,
+    destinations: [{ id: mockId("cds", lineSeq * 10), addressId: address?.id ?? null, quantity: quote.quantity }],
+    repricedFrom: null,
+    confirmedReprice: false,
+  });
+  if (quote.status === "saved" || quote.status === "shared") quote.status = "saved";
+  return id;
+}
+
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบรายการนี้ในตะกร้า");
 
@@ -159,20 +179,7 @@ export const storeCartHandlers = [
     if (!customer) return unauthenticated();
     const quote = quotesOf(customer.persona).find((candidate) => candidate.id === body.quoteId);
     if (!quote) return problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
-    const lines = linesOf(customer);
-    if (!lines.some((line) => line.quoteId === quote.id)) {
-      const address = addressesOf(customer).find((candidate) => candidate.isDefault) ?? null;
-      lineSeq += 1;
-      lines.push({
-        id: mockId("cit", lineSeq),
-        quoteId: quote.id,
-        designOption: quote.designOption,
-        destinations: [{ id: mockId("cds", lineSeq * 10), addressId: address?.id ?? null, quantity: quote.quantity }],
-        repricedFrom: null,
-        confirmedReprice: false,
-      });
-      if (quote.status === "saved" || quote.status === "shared") quote.status = "saved";
-    }
+    addToCart(customer, quote);
     return cartOf(customer);
   }),
 
