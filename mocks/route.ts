@@ -30,6 +30,11 @@ export interface MockContext<K extends RequestKey> {
 
 type MockResult<K extends RequestKey> = ResponseOf<Requests, K> | Response;
 
+/** The token audience a surface prefix accepts (api-conventions §2). */
+export function audienceOf(path: string): Principal["audience"] {
+  return path.startsWith("/v1/admin") ? "staff" : path.startsWith("/v1/partner") ? "partner" : "customer";
+}
+
 function toMswPath(template: string): string {
   return `*${template.replace(/\{([^}]+)\}/g, ":$1")}`;
 }
@@ -54,11 +59,11 @@ export function mockRequest<K extends RequestKey>(
 
   const resolver: HttpResponseResolver = async ({ request, params }) => {
     const principal = principalOf(request);
-    if (!principal) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
-    if (
-      principal.audience !==
-      (path.startsWith("/v1/admin") ? "staff" : path.startsWith("/v1/partner") ? "partner" : "customer")
-    ) {
+    // A `@Public()` read answers without a token; with one, the audience is still checked.
+    if (!principal && !definition.public) {
+      return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+    }
+    if (principal && principal.audience !== audienceOf(path)) {
       return problem(403, "auth.wrong_audience", "โทเคนนี้ใช้กับส่วนนี้ไม่ได้");
     }
 

@@ -147,13 +147,13 @@ test.describe("customer shell", () => {
   });
 
   test("switches language to the same page, not the home page", async ({ page }) => {
-    await page.goto(`${HOSTS.customer}/help/faq`);
+    await page.goto(`${HOSTS.customer}/faq`);
 
     await page.getByRole("button", { name: "ภาษา" }).click();
     await page.getByRole("menuitemradio", { name: "English" }).click();
 
-    // The other half of hreflang: /en/help/faq, not /en.
-    await expect(page).toHaveURL(`${HOSTS.customer}/en/help/faq`);
+    // The other half of hreflang: /en/faq, not /en.
+    await expect(page).toHaveURL(`${HOSTS.customer}/en/faq`);
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 

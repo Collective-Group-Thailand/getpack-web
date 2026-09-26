@@ -6,6 +6,8 @@
  * behaviour, all of it obviously fake:
  *
  *   ./auth.ts     sign-in, refresh and /me, with one staff persona per D-140 role
+ *   ./store/*     the storefront: the catalogue read from the back office's rows, and the
+ *                 signed-in customer's profile, consents and orders (two customer personas)
  *   ./admin/*     the back office: published endpoints with state, and contract requests
  *                 through `mockRequest`, which holds every response to its requested schema
  *
@@ -18,8 +20,9 @@ import { http, HttpResponse } from "msw";
 import { adminHandlers } from "./admin";
 import { authHandlers } from "./auth";
 import { generatedHandlers } from "./generated/handlers";
+import { storeHandlers } from "./store";
 
-export { MOCK_OTP, MOCK_PARTNER, MOCK_STAFF } from "./auth";
+export { MOCK_ID_TOKENS, MOCK_NEW_CUSTOMER_PHONE, MOCK_OTP, MOCK_PARTNER, MOCK_STAFF } from "./auth";
 
 /** The notification inbox every surface shares in the mock. Two items, one unread. */
 const inbox = [
@@ -43,6 +46,7 @@ const inbox = [
 
 export const handlers = [
   ...authHandlers,
+  ...storeHandlers,
   ...adminHandlers,
 
   // Notifications on the contract B1.3 published (InboxItemDto, cursor feed, per-item read).

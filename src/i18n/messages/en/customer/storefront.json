@@ -9,7 +9,8 @@
     "lineChat": "Chat with us on LINE",
     "home": "Home",
     "design": "Design",
-    "orders": "Orders"
+    "orders": "Orders",
+    "articles": "Articles"
   },
   "footer": {
     "tagline": "Your Packaging Production Partner",
@@ -20,7 +21,8 @@
       "howItWorks": "How ordering works",
       "faq": "Frequently asked questions",
       "glossary": "Packaging glossary",
-      "track": "Track an order"
+      "track": "Track an order",
+      "articles": "Articles"
     },
     "company": {
       "heading": "Company",
@@ -45,5 +47,18 @@
     "accept": "Accept",
     "reject": "Reject",
     "learnMore": "Read the cookie policy"
+  },
+  "pages": {
+    "configure": "Configure and price",
+    "rfq": "Request a quote",
+    "templates": "Box templates",
+    "checkout": "Checkout",
+    "business": "Packio for business",
+    "track": "Track an order",
+    "liff": "Packio on LINE",
+    "contact": "Contact us",
+    "samples": "Request a sample kit",
+    "referral": "Invite a friend to Packio",
+    "order": "Order"
   }
 }

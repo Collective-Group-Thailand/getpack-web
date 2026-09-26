@@ -21,7 +21,8 @@ export async function SiteFooter() {
       key: "help",
       links: [
         { key: "howItWorks", href: "/help/how-it-works" },
-        { key: "faq", href: "/help/faq" },
+        { key: "faq", href: "/faq" },
+        { key: "articles", href: "/articles" },
         { key: "glossary", href: "/help/glossary" },
         { key: "track", href: "/track" },
       ],
@@ -31,7 +32,7 @@ export async function SiteFooter() {
       links: [
         { key: "about", href: "/about" },
         { key: "partner", href: "/partner-with-us" },
-        { key: "contact", href: "/help/contact" },
+        { key: "contact", href: "/contact" },
       ],
     },
     {

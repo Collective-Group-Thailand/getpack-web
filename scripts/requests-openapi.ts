@@ -79,7 +79,8 @@ export function buildRequestsDocument(): string {
       name,
       in: "path",
       required: true,
-      schema: { type: "string", format: "uuid" },
+      // Public ids are uuids (api-conventions §3); a slug or a business key is plain text.
+      schema: name.endsWith("Id") ? { type: "string", format: "uuid" } : { type: "string" },
     }));
 
     if (definition.query) {
@@ -108,6 +109,8 @@ export function buildRequestsDocument(): string {
       tags: [path.split("/")[2]],
       "x-contract-request": definition.request,
       ...(definition.decisions ? { "x-decisions": definition.decisions } : {}),
+      // `@Public()`: anonymous, or the customer's own token (the contract's `[{}, {customer}]`).
+      ...(definition.public ? { security: [{}, { customer: [] }] } : {}),
       ...(parameters.length > 0 ? { parameters } : {}),
       ...(definition.body
         ? {

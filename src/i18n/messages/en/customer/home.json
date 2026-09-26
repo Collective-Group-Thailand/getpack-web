@@ -1,22 +1,30 @@
 {
   "meta": {
-    "description": "Design packaging at true size and get a print-ready dieline file."
+    "description": "Order packaging online with Packio: see starting prices and production times straight away, design boxes at true size, and follow every step of production"
   },
   "hero": {
-    "titleLine1": "Design your box",
-    "titleLine2": "at true size",
-    "body": "{tagline} — design on the real flat sheet and get a file your printer can produce straight away."
+    "titleLine1": "Your packaging,",
+    "titleLine2": "made in one place",
+    "body": "{tagline} — choose a product, see its price and production time, design online and follow every step",
+    "browse": "See all products",
+    "preview": "A tuck-end box dieline"
   },
-  "styles": {
-    "heading": "Box styles we support"
+  "sections": {
+    "productTypes": "Packaging types",
+    "featured": "Featured products",
+    "showcase": "Made for our customers",
+    "articles": "Articles",
+    "viewAll": "See all",
+    "viewAllOf": "See all in {name}",
+    "promotions": "News and offers"
   },
   "steps": {
-    "heading": "How it works",
-    "chooseTitle": "Choose a style and size",
-    "chooseBody": "Pick a standard size or enter your product's — we work out the flat sheet for you.",
-    "designTitle": "Design on the flat sheet",
-    "designBody": "Add text, logos, shapes and patterns, with cut lines, fold lines and safe zones in view.",
-    "exportTitle": "Export the files",
-    "exportBody": "A true-size PDF with 3 mm bleed, and an SVG dieline for the press."
+    "heading": "How ordering with Packio works",
+    "chooseTitle": "Choose a product and spec",
+    "chooseBody": "Pick the type, size, material and quantity and see the price and production date at once, or request a quote for something special",
+    "designTitle": "Design and approve",
+    "designBody": "Design on the real flat sheet or upload your file, then check the proof and approve it before production",
+    "produceTitle": "Made and delivered",
+    "produceBody": "Follow production and delivery at every step until it reaches you"
   }
 }

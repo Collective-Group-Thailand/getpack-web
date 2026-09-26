@@ -9,6 +9,8 @@ import { HOSTS } from "../../playwright.config";
 export const MOCK_STAFF = { email: "somchai.staff@packio.invalid", password: "mock-password" };
 export const MOCK_PARTNER = { email: "planner@factory.invalid", password: "mock-password", pin: "1234" };
 export const MOCK_OTP = { phone: "0812345678", code: "000000" };
+/** A first-time customer: the mock resets them on every sign-in, so consent and profile are asked. */
+export const MOCK_NEW_CUSTOMER_PHONE = "0898765432";
 
 /**
  * Who is signed in now lives behind the account menu in each zone's topbar (F1 1.3), not on

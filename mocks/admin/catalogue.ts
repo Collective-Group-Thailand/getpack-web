@@ -25,6 +25,8 @@ const GEO = "geography.manage";
 
 const group = (code: string, nameTh: string, nameEn: string, sort: number) => ({ code, nameTh, nameEn, sort });
 
+const typeId = (code: string) => PRODUCT_TYPES.find((type) => type.code === code)!.id;
+
 const TABLES: Record<string, TableConfig> = {
   productTypes: {
     path: "/v1/admin/catalog/product-types",
@@ -368,15 +370,90 @@ const TABLES: Record<string, TableConfig> = {
     search: ["slug", "nameTh", "nameEn"],
     filters: ["productTypeId"],
     unique: "slug",
+    // One product per D-100 type the storefront shows, so the catalogue has something to
+    // browse; the variants merge over the contract's tuck-end example, hence `images: []`.
     variants: [
       {
         slug: "mailer-box",
         nameTh: "กล่องไปรษณีย์",
         nameEn: "Mailer box",
         descriptionTh: "กล่องลูกฟูกพิมพ์ลาย",
+        productTypeId: typeId("corrugated"),
+        images: [],
         sort: 20,
       },
       { slug: "tray-box", nameTh: "กล่องถาด", nameEn: "Tray box", sort: 30, status: "draft" },
+      {
+        slug: "shipping-box",
+        nameTh: "กล่องลูกฟูกฝาชน",
+        nameEn: "Regular slotted carton",
+        descriptionTh: "กล่องขนส่งลอน B หรือ C สำหรับส่งสินค้าจำนวนมาก (ข้อมูลจำลอง)",
+        descriptionEn: "A B- or C-flute shipping carton (mock data)",
+        productTypeId: typeId("corrugated"),
+        templateAvailability: "online_template",
+        images: [],
+        sort: 40,
+      },
+      {
+        slug: "product-label",
+        nameTh: "สติ๊กเกอร์ฉลากสินค้า",
+        nameEn: "Product label",
+        descriptionTh: "ฉลากไดคัทตามรูปทรง กันน้ำ (ข้อมูลจำลอง)",
+        descriptionEn: "Die-cut waterproof labels (mock data)",
+        productTypeId: typeId("label_sticker"),
+        templateAvailability: "online_template",
+        images: [],
+        patterns: [],
+        sort: 50,
+      },
+      {
+        slug: "hang-tag",
+        nameTh: "ป้ายแท็กห้อยสินค้า",
+        nameEn: "Hang tag",
+        descriptionTh: "ป้ายแท็กกระดาษอาร์ตการ์ดเจาะรู (ข้อมูลจำลอง)",
+        descriptionEn: "Punched art-card hang tags (mock data)",
+        productTypeId: typeId("tag_sleeve"),
+        templateAvailability: "none",
+        images: [],
+        patterns: [],
+        sort: 60,
+      },
+      {
+        slug: "stand-up-pouch",
+        nameTh: "ซองตั้งได้ซิปล็อก",
+        nameEn: "Stand-up zip pouch",
+        descriptionTh: "ซองฟอยล์ก้นตั้ง ซิปล็อก สำหรับอาหารแห้ง (ข้อมูลจำลอง)",
+        descriptionEn: "Foil stand-up pouch with a zip, for dry food (mock data)",
+        productTypeId: typeId("flexible_pouch"),
+        templateAvailability: "none",
+        images: [],
+        patterns: [],
+        sort: 70,
+      },
+      {
+        slug: "magnetic-gift-box",
+        nameTh: "กล่องแข็งฝาแม่เหล็ก",
+        nameEn: "Magnetic gift box",
+        descriptionTh: "กล่องจั่วปังหุ้มกระดาษ ปิดด้วยแม่เหล็ก ขอใบเสนอราคา (ข้อมูลจำลอง)",
+        descriptionEn: "A wrapped rigid box with a magnetic flap; quoted on request (mock data)",
+        productTypeId: typeId("rigid_box"),
+        templateAvailability: "none",
+        images: [],
+        patterns: [],
+        sort: 80,
+      },
+      {
+        slug: "kraft-paper-bag",
+        nameTh: "ถุงกระดาษคราฟท์หูเกลียว",
+        nameEn: "Kraft paper bag",
+        descriptionTh: "ถุงกระดาษคราฟท์หูเกลียว พิมพ์โลโก้ ขอใบเสนอราคา (ข้อมูลจำลอง)",
+        descriptionEn: "A twisted-handle kraft bag with a printed logo; quoted on request (mock data)",
+        productTypeId: typeId("paper_bag"),
+        templateAvailability: "none",
+        images: [],
+        patterns: [],
+        sort: 90,
+      },
     ],
   },
   standardSizes: {
@@ -575,6 +652,62 @@ const TABLES: Record<string, TableConfig> = {
     deletable: true,
     variants: [
       {
+        slug: "choosing-box-paper",
+        titleTh: "เลือกกระดาษทำกล่องอย่างไรให้เหมาะกับสินค้า",
+        titleEn: "Choosing the right board for your box",
+        excerptTh: "อาร์ตการ์ด คราฟท์ หรือลูกฟูก — ต่างกันอย่างไร (ข้อมูลจำลอง)",
+        excerptEn: "Art card, kraft or corrugated: what differs (mock data)",
+        status: "published",
+        publishedAt: "2026-09-20T09:00:00+07:00",
+        body: {
+          th: {
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [
+                  { type: "text", text: "กระดาษแต่ละชนิดเหมาะกับงานต่างกัน " },
+                  { type: "text", marks: [{ type: "bold" }], text: "บทความนี้เป็นข้อมูลจำลอง" },
+                  { type: "text", text: " สำหรับทดสอบหน้าบทความ" },
+                ],
+              },
+              { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "อาร์ตการ์ด" }] },
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "ผิวเรียบ พิมพ์สีสด เหมาะกับกล่องเครื่องสำอางและอาหารเสริม" }],
+              },
+              { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "สิ่งที่ควรพิจารณา" }] },
+              {
+                type: "bulletList",
+                content: [
+                  {
+                    type: "listItem",
+                    content: [{ type: "paragraph", content: [{ type: "text", text: "น้ำหนักสินค้า" }] }],
+                  },
+                  { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "การขนส่ง" }] }] },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "ดู" },
+                          {
+                            type: "text",
+                            marks: [{ type: "link", attrs: { href: "/products" } }],
+                            text: "สินค้าทั้งหมด",
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      {
         slug: "food-safe-packaging",
         titleTh: "บรรจุภัณฑ์สัมผัสอาหารต้องรู้อะไรบ้าง",
         excerptTh: "วัสดุ การเคลือบ และมาตรฐานที่เกี่ยวข้อง",
@@ -656,6 +789,14 @@ const stores = Object.fromEntries(Object.entries(TABLES).map(([key, config]) => 
   keyof typeof TABLES,
   ReturnType<typeof table>
 >;
+
+/**
+ * The live rows of one table — the storefront mock (`mocks/store/catalog.ts`) reads the same
+ * state the back office edits, so publishing a product in admin shows it in the shop.
+ */
+export function catalogueRows(table: keyof typeof TABLES): Row[] {
+  return stores[table]!.rows;
+}
 
 /* ------------------------------------------------------------------------ not plain CRUD */
 

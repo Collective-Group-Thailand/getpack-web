@@ -1,0 +1,135 @@
+import type { Metadata } from "next";
+import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+
+import { listArticleCategories, listArticles } from "@/features/customer/catalog/api.server";
+import { storeImageSrc } from "@/features/customer/catalog/images";
+import { pick } from "@/features/customer/catalog/localize";
+import { articleHref } from "@/features/customer/catalog/paths";
+import { getFormat } from "@/features/shared/format/server";
+import { Link } from "@/i18n/navigation";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { LinkPagination } from "@/ui/components/LinkPagination";
+import { ProductCard } from "@/ui/components/ProductCard";
+import { cn } from "@/ui/lib/cn";
+
+const PER_PAGE = 12;
+
+type SearchParams = Promise<{ category?: string | string[]; page?: string | string[] }>;
+const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) || undefined;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("catalog");
+  return { title: t("articles.title"), description: t("articles.description") };
+}
+
+/** Articles (F2.5's CMS): newest first, filtered by category through links. */
+export default async function ArticlesPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: SearchParams;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const query = await searchParams;
+  const category = one(query.category);
+  const page = Math.max(1, Number(one(query.page)) || 1);
+
+  const [t, currentLocale, format, categories, articles] = await Promise.all([
+    getTranslations("catalog"),
+    getLocale(),
+    getFormat(),
+    listArticleCategories(),
+    listArticles({ category, page, perPage: PER_PAGE }),
+  ]);
+  const pages = Math.max(1, Math.ceil(articles.meta.total / articles.meta.perPage));
+  const href = (target: { category?: string; page?: number }) => {
+    const search = new URLSearchParams();
+    if (target.category) search.set("category", target.category);
+    if (target.page && target.page > 1) search.set("page", String(target.page));
+    const text = search.toString();
+    return text ? `/articles?${text}` : "/articles";
+  };
+  const chip = (active: boolean) =>
+    cn(
+      "inline-flex h-9 items-center rounded-full border px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-focus-ring",
+      active
+        ? "border-primary bg-primary-subtle text-primary-subtle-fg font-medium"
+        : "border-border hover:bg-bg-subtle",
+    );
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+      <header className="max-w-2xl">
+        <h1 className="text-3xl font-bold md:text-4xl">{t("articles.heading")}</h1>
+        <p className="text-muted mt-2">{t("articles.intro")}</p>
+      </header>
+
+      {categories.length > 0 ? (
+        <nav aria-label={t("articles.categories")} className="mt-6">
+          <ul className="flex flex-wrap gap-2">
+            <li>
+              <Link href={href({})} aria-current={!category ? "page" : undefined} className={chip(!category)}>
+                {t("articles.all")}
+              </Link>
+            </li>
+            {categories.map((entry) => (
+              <li key={entry.slug}>
+                <Link
+                  href={href({ category: entry.slug })}
+                  aria-current={category === entry.slug ? "page" : undefined}
+                  className={chip(category === entry.slug)}
+                >
+                  {pick(currentLocale, entry.nameTh, entry.nameEn)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ) : null}
+
+      {articles.data.length === 0 ? (
+        <EmptyState
+          className="mt-8"
+          icon="article"
+          title={t("articles.emptyTitle")}
+          description={t("articles.emptyBody")}
+        />
+      ) : (
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {articles.data.map((article, index) => {
+            const name = pick(currentLocale, article.titleTh, article.titleEn);
+            const src = storeImageSrc(article.coverUrl);
+            return (
+              <ProductCard
+                key={article.slug}
+                as="li"
+                headingLevel="h2"
+                priority={index < 2}
+                title={<Link href={articleHref(article.slug)}>{name}</Link>}
+                image={src ? { src, alt: "" } : null}
+                eyebrow={format.date(article.publishedAt)}
+                meta={article.excerptTh}
+              />
+            );
+          })}
+        </ul>
+      )}
+
+      <LinkPagination
+        className="mt-8"
+        page={page}
+        pages={pages}
+        hrefFor={(target) => href({ category, page: target })}
+        linkAs={Link}
+        labels={{
+          nav: t("pagination.nav"),
+          previous: t("pagination.previous"),
+          next: t("pagination.next"),
+          page: (n) => t("pagination.page", { page: n }),
+        }}
+      />
+    </div>
+  );
+}
