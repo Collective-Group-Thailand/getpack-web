@@ -11548,6 +11548,387 @@
         }
       }
     },
+    "/v1/store/orders/{orderId}/artwork": {
+      "get": {
+        "operationId": "store.orders.artwork.list",
+        "summary": "An order's artwork: the rules, the template, submissions with their preflight, proofs, design service",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.artwork",
+        "x-decisions": [
+          "D-070",
+          "D-071",
+          "D-072"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An order's artwork: the rules, the template, submissions with their preflight, proofs, design service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/artwork/submissions": {
+      "post": {
+        "operationId": "store.orders.artwork.submissions.create",
+        "summary": "Submit uploaded files (or the online design) as a new artwork version; preflight runs on it (D-070)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.artwork",
+        "x-decisions": [
+          "D-070"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "fileId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "role": {
+                          "$ref": "#/components/schemas/ArtworkFileRole"
+                        }
+                      },
+                      "required": [
+                        "fileId",
+                        "role"
+                      ]
+                    }
+                  },
+                  "designDocumentId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "files"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Submit uploaded files (or the online design) as a new artwork version; preflight runs on it (D-070)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/design-service/actions/approve": {
+      "post": {
+        "operationId": "store.orders.designService.approve",
+        "summary": "Approve the delivered design; it becomes the artwork that goes to preflight and proof",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.design-service",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approve the delivered design; it becomes the artwork that goes to preflight and proof",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/design-service/brief": {
+      "put": {
+        "operationId": "store.orders.designService.brief.update",
+        "summary": "Answer the hired-design brief (D-071); the designer starts once it is in",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.design-service",
+        "x-decisions": [
+          "D-071"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "fileIds": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                "required": [
+                  "answers",
+                  "fileIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Answer the hired-design brief (D-071); the designer starts once it is in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/design-service/rounds": {
+      "post": {
+        "operationId": "store.orders.designService.rounds.create",
+        "summary": "Ask for a revision round; from round 4 it is charged (D-071) and the customer accepts the fee, then pays it before work starts",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.design-service",
+        "x-decisions": [
+          "D-071"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 2000
+                  },
+                  "fileIds": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "acceptedFee": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  }
+                },
+                "required": [
+                  "note"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ask for a revision round; from round 4 it is charged (D-071) and the customer accepts the fee, then pays it before work starts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/orders/{orderId}/documents/{documentId}/actions/download": {
       "post": {
         "operationId": "store.orders.documents.download",
@@ -11587,6 +11968,409 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SignedUrlDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/proofs/{proofId}/actions/approve": {
+      "post": {
+        "operationId": "store.orders.proofs.approve",
+        "summary": "Approve a proof for production; the API records the evidence (who, when, file hash, checklist) and may start production (D-073)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.proofs",
+        "x-decisions": [
+          "D-073"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proofId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "checklist": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "checklist"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Approve a proof for production; the API records the evidence (who, when, file hash, checklist) and may start production (D-073)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/proofs/{proofId}/actions/request-changes": {
+      "post": {
+        "operationId": "store.orders.proofs.requestChanges",
+        "summary": "Ask for changes to a proof, with what to change; open comment threads go with it",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.proofs",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proofId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "note"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ask for changes to a proof, with what to change; open comment threads go with it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreArtworkDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/proofs/{proofId}/annotations": {
+      "get": {
+        "operationId": "store.orders.proofs.annotations.list",
+        "summary": "The comment threads on one proof, oldest first",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.proofs",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proofId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The comment threads on one proof, oldest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreAnnotationThreadDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.orders.proofs.annotations.create",
+        "summary": "Pin or box a spot on a proof page with a comment; prepress answers in the same thread",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.proofs",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proofId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "pin",
+                      "rect"
+                    ]
+                  },
+                  "geometry": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "page",
+                  "kind",
+                  "geometry",
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pin or box a spot on a proof page with a comment; prepress answers in the same thread",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreAnnotationThreadDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/{orderId}/proofs/{proofId}/annotations/{annotationId}/messages": {
+      "post": {
+        "operationId": "store.orders.proofs.annotations.messages.create",
+        "summary": "Reply in a comment thread",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.proofs",
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "proofId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "annotationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reply in a comment thread",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreAnnotationThreadDto"
                 }
               }
             }
@@ -13620,6 +14404,13 @@
         ],
         "additionalProperties": false
       },
+      "ArtworkColourMode": {
+        "type": "string",
+        "enum": [
+          "cmyk",
+          "any"
+        ]
+      },
       "ArtworkFileRole": {
         "type": "string",
         "enum": [
@@ -13628,6 +14419,48 @@
           "link",
           "reference"
         ]
+      },
+      "ArtworkRulesDto": {
+        "type": "object",
+        "properties": {
+          "accept": {
+            "type": "string"
+          },
+          "maxBytes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "maxFiles": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "bleedMm": {
+            "type": "number"
+          },
+          "safeMarginMm": {
+            "type": "number"
+          },
+          "minDpi": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "colourMode": {
+            "$ref": "#/components/schemas/ArtworkColourMode"
+          }
+        },
+        "required": [
+          "accept",
+          "maxBytes",
+          "maxFiles",
+          "bleedMm",
+          "safeMarginMm",
+          "minDpi",
+          "colourMode"
+        ],
+        "additionalProperties": false
       },
       "ArtworkSource": {
         "type": "string",
@@ -23709,6 +24542,13 @@
         ],
         "additionalProperties": false
       },
+      "ProofDecisionOutcome": {
+        "type": "string",
+        "enum": [
+          "approved",
+          "changes_requested"
+        ]
+      },
       "ProofDetailDto": {
         "type": "object",
         "properties": {
@@ -23941,6 +24781,43 @@
           "onBehalfReason",
           "approvedFileSha256",
           "annotations"
+        ],
+        "additionalProperties": false
+      },
+      "ProofPageDto": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "widthPx": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "heightPx": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "dielineOverlayUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "index",
+          "imageUrl",
+          "widthPx",
+          "heightPx",
+          "dielineOverlayUrl"
         ],
         "additionalProperties": false
       },
@@ -27688,6 +28565,248 @@
           "postcode"
         ]
       },
+      "StoreAnnotationThreadDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "proofId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AnnotationKind"
+          },
+          "geometry": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "authorKind": {
+                  "type": "string",
+                  "enum": [
+                    "customer",
+                    "staff"
+                  ]
+                },
+                "authorName": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "id",
+                "authorKind",
+                "authorName",
+                "body",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "proofId",
+          "page",
+          "kind",
+          "geometry",
+          "resolved",
+          "messages"
+        ],
+        "additionalProperties": false
+      },
+      "StoreArtworkDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "artworkStatus": {
+            "$ref": "#/components/schemas/ArtworkStatus"
+          },
+          "designOption": {
+            "$ref": "#/components/schemas/DesignOption"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/ArtworkRulesDto"
+          },
+          "dieline": {
+            "type": "object",
+            "properties": {
+              "dielineKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lengthMm": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "widthMm": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "heightMm": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "templateUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "dielineKey",
+              "lengthMm",
+              "widthMm",
+              "heightMm",
+              "templateUrl"
+            ],
+            "additionalProperties": false
+          },
+          "submissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreSubmissionDto"
+            }
+          },
+          "proofs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreProofDto"
+            }
+          },
+          "checklist": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "designService": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreDesignServiceDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nextActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "irreversible": {
+                  "type": "boolean"
+                },
+                "disabledReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "orderId",
+          "orderCode",
+          "artworkStatus",
+          "designOption",
+          "rules",
+          "dieline",
+          "submissions",
+          "proofs",
+          "checklist",
+          "designService",
+          "nextActions"
+        ],
+        "additionalProperties": false
+      },
       "StoreCartDto": {
         "type": "object",
         "properties": {
@@ -27949,6 +29068,270 @@
           "spent",
           "expired"
         ]
+      },
+      "StoreDesignServiceDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/DesignServiceStatus"
+          },
+          "briefFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RfqFieldDto"
+            }
+          },
+          "brief": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "briefSubmitted": {
+            "type": "boolean"
+          },
+          "targetDueAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxDueAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "freeRounds": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "rounds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "roundNo": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "kind": {
+                  "$ref": "#/components/schemas/DesignRoundKind"
+                },
+                "chargeable": {
+                  "type": "boolean"
+                },
+                "feeAmount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+\\.\\d{2}$",
+                      "description": "Money (THB, 2 decimals)"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "status": {
+                  "$ref": "#/components/schemas/DesignRoundStatus"
+                },
+                "requestedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "deliveredAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "originalName": {
+                        "type": "string"
+                      },
+                      "mimeType": {
+                        "type": "string"
+                      },
+                      "sizeBytes": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "thumbnailUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "originalName",
+                      "mimeType",
+                      "sizeBytes",
+                      "thumbnailUrl",
+                      "url"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "roundNo",
+                "kind",
+                "chargeable",
+                "feeAmount",
+                "status",
+                "requestedAt",
+                "deliveredAt",
+                "files",
+                "note"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextRound": {
+            "type": "object",
+            "properties": {
+              "roundNo": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "chargeable": {
+                "type": "boolean"
+              },
+              "feeAmount": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "roundNo",
+              "chargeable",
+              "feeAmount"
+            ],
+            "additionalProperties": false
+          },
+          "pendingFeeInstalment": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "grossAmount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  "activePaymentId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "grossAmount",
+                  "activePaymentId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "briefFields",
+          "brief",
+          "briefSubmitted",
+          "targetDueAt",
+          "maxDueAt",
+          "freeRounds",
+          "rounds",
+          "nextRound",
+          "pendingFeeInstalment"
+        ],
+        "additionalProperties": false
       },
       "StoreInstalmentDto": {
         "type": "object",
@@ -29522,6 +30905,176 @@
         ],
         "additionalProperties": false
       },
+      "StoreProofDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProofStatus"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "file": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "originalName": {
+                "type": "string"
+              },
+              "mimeType": {
+                "type": "string"
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "thumbnailUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "originalName",
+              "mimeType",
+              "sizeBytes",
+              "thumbnailUrl",
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProofPageDto"
+            }
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "decidedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "outcome": {
+                    "$ref": "#/components/schemas/ProofDecisionOutcome"
+                  },
+                  "byName": {
+                    "type": "string"
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "fileSha256": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "checklist": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "outcome",
+                  "byName",
+                  "at",
+                  "note",
+                  "fileSha256",
+                  "checklist"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "annotations": {
+            "type": "object",
+            "properties": {
+              "open": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "resolved": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "open",
+              "resolved"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "versionNo",
+          "status",
+          "note",
+          "file",
+          "pages",
+          "sentAt",
+          "decidedAt",
+          "decision",
+          "annotations"
+        ],
+        "additionalProperties": false
+      },
       "StoreQuoteDto": {
         "type": "object",
         "properties": {
@@ -31016,6 +32569,118 @@
           "deliveredAt",
           "events",
           "pod"
+        ],
+        "additionalProperties": false
+      },
+      "StoreSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubmissionStatus"
+          },
+          "preflightStatus": {
+            "$ref": "#/components/schemas/PreflightStatus"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PreflightFindingDto"
+            }
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "$ref": "#/components/schemas/ArtworkFileRole"
+                },
+                "file": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "originalName": {
+                      "type": "string"
+                    },
+                    "mimeType": {
+                      "type": "string"
+                    },
+                    "sizeBytes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "thumbnailUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "url": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "originalName",
+                    "mimeType",
+                    "sizeBytes",
+                    "thumbnailUrl",
+                    "url"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "role",
+                "file"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rejectionReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "versionNo",
+          "status",
+          "preflightStatus",
+          "findings",
+          "files",
+          "note",
+          "rejectionReason",
+          "submittedAt"
         ],
         "additionalProperties": false
       },
