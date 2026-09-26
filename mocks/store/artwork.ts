@@ -197,9 +197,13 @@ function toArtwork(detail: PrepressDetail): Artwork {
   }
   const current = detail.proofs[0];
   const actions: Artwork["nextActions"] = [];
+  const latest = detail.submissions[0];
   if (
-    ["awaiting_upload", "changes_requested", "awaiting_template", "uploaded"].includes(detail.artworkStatus) &&
-    detail.designOption !== "hired_design"
+    (["awaiting_upload", "changes_requested", "awaiting_template", "uploaded"].includes(detail.artworkStatus) ||
+      latest?.preflightStatus === "blocked" ||
+      latest?.status === "rejected") &&
+    detail.designOption !== "hired_design" &&
+    current?.status !== "pending_customer"
   )
     actions.push({ key: "artwork.upload" });
   if (current?.status === "pending_customer")
@@ -388,7 +392,13 @@ export const storeArtworkHandlers = [
       if (!thread) return notFound();
       customerAnnotate(
         params.proofId,
-        { page: thread.page + 1, kind: thread.kind === "rect" ? "rect" : "pin", geometry: thread.geometry, body: body.body, parentId: thread.id },
+        {
+          page: thread.page + 1,
+          kind: thread.kind === "rect" ? "rect" : "pin",
+          geometry: thread.geometry,
+          body: body.body,
+          parentId: thread.id,
+        },
         whoOf(found.customer, found.order.customer.displayName),
       );
       return threadsOf(params.proofId).find((candidate) => candidate.id === thread.id)!;

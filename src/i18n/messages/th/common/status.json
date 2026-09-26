@@ -387,7 +387,9 @@
     "payInstalment": "ชำระงวดถัดไป",
     "uploadArtwork": "ส่งไฟล์งาน",
     "reviewProof": "ตรวจและอนุมัติปรู๊ฟ",
-    "openClaim": "แจ้งปัญหาสินค้า"
+    "openClaim": "แจ้งปัญหาสินค้า",
+    "designBrief": "ส่งบรีฟงานออกแบบ",
+    "reviewDesign": "ตรวจงานออกแบบ"
   },
   "points": {
     "pending": "รอเข้าบัญชี",

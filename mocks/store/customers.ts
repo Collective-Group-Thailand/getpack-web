@@ -8,6 +8,8 @@
  *              sign-in, so the consent and profile steps can be walked again and again.
  *   buyer      0823456789 — another complete account (the second fake customer), so a flow
  *              that owns a cart end to end (checkout) does not share it with parallel tests.
+ *   artist     0834567890 — the fourth fake customer, whose unpaid order waiting for artwork
+ *              the artwork and proof flow (F3 3.5) walks end to end on its own.
  *
  * The consent purposes are packio-api's seeded identities (`prisma/seed/data/reference.ts`),
  * with obviously fake texts.
@@ -17,12 +19,13 @@ import type { Schemas } from "@/lib/api/types";
 
 import { principalOf } from "../support";
 
-export type CustomerPersona = "returning" | "newcomer" | "buyer";
+export type CustomerPersona = "returning" | "newcomer" | "buyer" | "artist";
 
 export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0812345678": "returning",
   "0898765432": "newcomer",
   "0823456789": "buyer",
+  "0834567890": "artist",
 };
 
 export const CONSENT_PURPOSES = [
@@ -70,14 +73,24 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: null,
     };
   }
-  const buyer = persona === "buyer";
+  const account = {
+    returning: {
+      n: 1,
+      name: "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
+      email: "seed.customer",
+      phone: "0812345678",
+      ownerIndex: 0,
+    },
+    buyer: { n: 3, name: "ลูกค้าผู้ซื้อ (ข้อมูลจำลอง)", email: "seed.buyer", phone: "0823456789", ownerIndex: 1 },
+    artist: { n: 4, name: "ลูกค้าส่งไฟล์งาน (ข้อมูลจำลอง)", email: "seed.artist", phone: "0834567890", ownerIndex: 3 },
+  }[persona];
   return {
     persona,
-    id: buyer ? "00000000-0000-4000-8000-000000000003" : "00000000-0000-4000-8000-000000000001",
-    displayName: buyer ? "ลูกค้าผู้ซื้อ (ข้อมูลจำลอง)" : "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
-    email: buyer ? "seed.buyer@packio.invalid" : "seed.customer@packio.invalid",
-    phone: buyer ? "0823456789" : "0812345678",
-    ownerIndex: buyer ? 1 : 0,
+    id: `00000000-0000-4000-8000-00000000000${account.n}`,
+    displayName: account.name,
+    email: `${account.email}@packio.invalid`,
+    phone: account.phone,
+    ownerIndex: account.ownerIndex,
     customerType: "individual",
     identities: [{ provider: "phone_otp", linkedAt: "2026-09-23T10:00:00+07:00" }],
     points: 1250,
@@ -94,6 +107,7 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   returning: fresh("returning"),
   newcomer: fresh("newcomer"),
   buyer: fresh("buyer"),
+  artist: fresh("artist"),
 };
 
 /** A first sign-in starts from nothing, every time. */

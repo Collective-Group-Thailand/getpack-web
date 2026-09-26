@@ -83,6 +83,8 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "order.upload_artwork": { tone: "primary", icon: "upload", labelKey: "action.uploadArtwork" },
   "order.approve_proof": { tone: "primary", icon: "file-check", labelKey: "action.reviewProof" },
   "order.open_claim": { tone: "warning", icon: "flag", labelKey: "action.openClaim" },
+  "order.design_brief": { tone: "primary", icon: "edit", labelKey: "action.designBrief" },
+  "order.review_design": { tone: "primary", icon: "palette", labelKey: "action.reviewDesign" },
 };
 
 /** Falls back to something visible and pressable rather than dropping the action. */

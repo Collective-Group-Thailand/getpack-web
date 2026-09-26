@@ -6,6 +6,8 @@
 export function actionHref(orderId: string, key: string): string | null {
   switch (key) {
     case "order.upload_artwork":
+    case "order.design_brief":
+    case "order.review_design":
       return `/account/orders/${orderId}/artwork`;
     case "order.approve_proof":
       return `/account/orders/${orderId}/proof`;
