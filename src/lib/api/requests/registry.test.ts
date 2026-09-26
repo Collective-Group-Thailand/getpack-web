@@ -47,6 +47,12 @@ describe("the contract-request registry", () => {
     expect(missing).toEqual([]);
   });
 
+  it("makes only store reads public", () => {
+    for (const [key, definition] of entries) {
+      if (definition.public) expect(key.startsWith("GET /v1/store/"), key).toBe(true);
+    }
+  });
+
   it("marks only mutations idempotent", () => {
     for (const [key, definition] of entries) {
       if (definition.idempotent) expect(key.startsWith("GET "), key).toBe(false);
