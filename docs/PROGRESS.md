@@ -18,6 +18,64 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-26 | **F2 Deliverable 2.6** — partners & price governance, production floor | On the **published** B2.2 contract (adopted in 1aaa711 and 2880e4e) plus contract requests for the production board, inspections and scorecards: the factory pipeline and a seven-tab workspace (onboarding, profile, KYC, bank accounts behind D-033, capabilities/capacity/zones, versioned terms with D-173 approvals, site visits and D-041 activation, prices); proposal review with suggestions, line decisions and the 90-day simulation; Packio rate cards drafted line by line; coverage (D-043); index months; production board with at-risk, QC recording (D-076), scorecards; `SectionNav`; price-component names. 581 unit, 169 e2e | 2.7–2.8 | See the notes under the F2.6 heading |
 | 2026-09-26 | **F2 Deliverable 2.7** — marketing, B2B, customers | Eight contract-request groups for B3.3–B3.5 (campaigns, promotions, coupons, referrals, customer points and consents, companies, company credit) with stateful mocks; campaigns with the budget meter against the alert threshold (D-154); the promotion editor with typed D-053 conditions and benefit and its coupon codes; promotion priority; the referral review queue decided in approvals (D-136); loyalty and referral rules as setting versions; customers (profile, orders, points ledger, referrals, consents); companies (KYC review D-120, members, branches, credit via the `credit_limit` policy D-121, overdue block D-122, statements D-125, orders). Validation codes now read as words in every form; the approvals mock routes by step condition and notifies the subject. 584 unit, 184 e2e | 2.8 | See the notes under the F2.7 heading |
 | 2026-09-26 | **F2 Deliverable 2.8** — logistics, claims, analytics, hardening | Five contract-request groups (B4.3, B4.5, B6.1, B6.2) with stateful mocks: shipments (queues, split, fallback carrier quotes and booking, exceptions, labels, POD review with the tolerance result), claims (evidence, liability by rule with a permissioned override, idempotent resolutions), the demand dashboard on a new accessible `Chart` (Recharts, data-table fallback, loaded on demand) with suppressed small groups and the anonymised prospectus, and typed operational reports with the API's totals. Hardening: every role's menu opens cleanly (14 roles), axe on the new screens, chart visual baselines, and zod out of the browser — admin shell 490 → 363 KB, lists 501 → 390 KB — with the admin Lighthouse set split and re-ratcheted. 595 unit, 211 e2e, 8 visual | F3 onwards | See the notes under the F2.8 heading |
+| 2026-09-26 | **F3 Phase 3.1** — IA, content, auth, search | Seven storefront contract requests (price hints, product FAQs, public categories, profile, order by code; category filter and FAQ search hits as docs-only) with a storefront mock that reads the back office's own catalogue/CMS rows and two customer personas; every F3 route answers (later phases as `noindex` placeholders); a cached public catalogue read (Next data cache, no token, no per-request header); home from the API's sections and banners; `/products`, `/products/[key]` (category, product or stock product), articles, `/faq`; Product/BreadcrumbList/FAQPage JSON-LD; global search (GET page + instant dialog); Google/Apple/LINE sign-in with SDKs on click, PDPA consent after sign-in, progressive profiling; `/account` guarded; four `src/ui` components; storefront JS 341 → 256 KB. 639 unit (+31), 236 e2e (+25) | ISR/CDN for storefront HTML; the consent preferences centre (3.4); legal page content; LINE `link_phone`; cookie-banner choice synced to the account; the last 106 KB to the 150 KB budget | Caching at the data level because the CSP nonce makes every page dynamic; `/products/[key]` resolves category → product → stock; FAQ search client-side until `store.search-faq-hits`; consent asked after the session exists (texts need a customer token); `pnpm dev:mock` does not intercept server fetches (found, pre-existing, open) |
+
+---
+
+## F3 Phase 3.1 — 2026-09-26
+
+The customer zone's information architecture, catalogue and content pages, global search and the complete sign-in, in the `../packio-web-f2` worktree on `feat/f3-storefront` (from `7dd1d0d`, F2 merged). packio-api has published B2.1's public catalogue (`/v1/store/catalog/*`) and B1.3's customer auth, and nothing of quotes, carts or orders — so everything that needs a price, a lead time or an order is a contract request, mocked. Ten commits, each with lint, typecheck, unit tests and build green: contract requests and mocks → IA and the cached read → `src/ui` → home, catalogue and product pages → articles and FAQ → search → auth → performance → e2e → this log.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| A cached catalogue read is never one customer's data | `catalog/api.server.ts` builds its client with no token and `requestId: null`; signed-in reads (`/me`, order lookup) go through `serverApi("customer")` / `serverRequests` and are never cached |
+| A price is never shown without what it assumes (design-system §1.3) | `priceHintText` renders `basis` (quantity, VAT, delivery) with every "เริ่มต้น" figure; `null` renders "ราคาตามสเปก" |
+| Structured data claims only what the API said | `productSchema` adds an `AggregateOffer` only for an API price and has no rating field; unit-tested |
+| Admin-typed text cannot close a JSON-LD block | `jsonLdText` escapes every `<`; unit-tested with `</script>` |
+| Stored rich text cannot inject markup or a `javascript:` link | `RichTextView` renders nodes as React elements; `safeHref` allows http(s), mailto, tel and paths |
+| Consent is opt-in and every shown purpose gets an answer | `ConsentStep` starts optional purposes unticked, gates on the required ones, and records all of them; unit- and e2e-tested |
+| Analytics and RUM carry route patterns, never values | `routePattern(segments, params)` maps dynamic values back to `[name]`; used by `FunnelPageView` and `WebVitals` |
+| A contract request may be public only as a store read | `define.ts` `public`, `registry.test.ts`, `security: [{}, {customer}]` in the handoff document |
+| Private pages stay out of the index in both languages | `robots.ts` lists each private path with its `/en` twin |
+| No client component on every route imports the `@/ui` barrel | all three zones' `error.tsx`/`not-found.tsx` import by path |
+
+### Decisions taken, with reasons
+- **Caching is at the data level, not ISR.** The nonce CSP makes every page dynamic (F1.1), and `cacheComponents` would change all three zones. Public reads use `fetch` with `revalidate` + tags: catalogue 5 min, articles/FAQs 15, price hints 1. Under the mock the data cache is bypassed — Next serves a cached `fetch` through the `fetch` it captured before MSW installed itself, which reached the (absent) backend. ISR/CDN for storefront HTML is deferred.
+- **`/products/[key]` serves a category, a catalogue product or a stock product**, resolved in that order (`catalog/paths.ts`, `resolve.server.ts`), because Next cannot have `/products/[category]` and `/products/[slug]` side by side. Category codes are kebab-cased in URLs (`folding_carton` → `/products/folding-carton`).
+- **A category page reads each of its product types and pages the merged list here** — correct against today's API; `store.catalog-category-filter` asks for one call.
+- **FAQs are matched in the browser** from the list the API returned (a selection, not a computation) until `store.search-faq-hits`; order codes are looked up only for a query shaped like one, only when signed in, and the API's 404 means "not yours".
+- **Consent is asked right after the session exists**, from `GET /v1/store/me/consents` — the purposes and their texts need a customer token, so they cannot be shown before sign-in. The sheet says what the number is for and links the privacy notice before it is collected. Cookie analytics starts from the banner's choice; nothing else is pre-ticked.
+- **Progressive profiling asks only when there is no e-mail**, once, skippably: name, e-mail, customer type (D-020). `store.profile` also asks for `customerType` on `StoreMeDto`.
+- **LINE Login uses the LIFF SDK on the web as well as inside LINE**; the redirect returns to `/sign-in?provider=line`, which finishes the flow. `link_phone` is not used: B1.3 creates a customer for a new LINE identity, and linking belongs to the account (3.4).
+- **Google/Apple keep no Firebase session**: the ID token goes to the API and Firebase is signed out.
+- **The header decides signed-in from the cookie's presence** (the proxy has already refreshed), not a `/me` call per page. The bell renders only with a session.
+- **Banner links are not prefetched**: their targets are admin-typed paths; the mock's `/th/promotions` did not exist and its 404 prefetch held a socket open.
+- **Stock products have no category in their DTO**, so their breadcrumb stops at "สินค้า".
+
+### Contract requests raised (docs/contract-requests.md)
+`store.price-hints`, `store.product-faqs`, `store.product-categories`, `store.order-by-code`, `store.profile` (code + mock); `store.catalog-category-filter`, `store.search-faq-hits` (docs-only, the UI works without them).
+
+### Bugs found and fixed
+- **RUM sent route values, not patterns.** `useSelectedLayoutSegments()` returns a dynamic segment's *value* (Next's `getSegmentValue`), so the F1.3 comment was wrong and `/track/[token]` would have sent the tracking token. Fixed with `routePattern`.
+- **`/en/account/`, `/en/cart`… were crawlable**: `robots.ts` listed Thai paths only.
+- **Every page of every zone carried the whole `@/ui` library** through `error.tsx`'s barrel import.
+- **The deferred header menus closed on the click that opened them** (found by the full e2e run): mounting Radix on hover let the rest of the click read as a press outside. Hover/focus now only preload.
+- The contract-request handoff rendered every path parameter as a uuid (`{slug}`, `{orderCode}`, `{period}`).
+
+### Performance (docs/performance-budgets.md)
+Storefront initial JS 341 → 255–256 KB on the marketing set (now `/`, `/products`, a product, an article, `/faq`) and 256–268 KB on account/checkout (374/381 at F1.3); LCP 0.73–0.90 s, CLS 0, accessibility 1, SEO 1. Ratchets 390 → 270 KB and 400 → 280 KB. Still over 150/200 KB; the next levers are named there.
+
+### Deliberately not done
+- The legal pages (terms, privacy, cookies) stay placeholders: their text is legal content this repo must not write. The sign-in sheet links the privacy notice anyway.
+- The consent preferences centre, linked LINE and notification preferences are 3.4; the cookie banner's choice is not posted to the account (a guest has no account, and a signed-in check in the banner would cost every page a request).
+- Visual snapshots for the new stories (the visual suite pins a fixed list).
+- A showcase page: search hits of kind `showcase_product` are not shown, having nowhere to link.
+
+### Open questions
+- **Backend**: the seven requests above; a product ↔ FAQ link in the CMS for `store.product-faqs`; consent texts readable before sign-in if the privacy team wants them on the sheet.
+- **This repo**: `pnpm dev:mock` does not intercept server-side fetches under `next dev` (the admin dashboard fails the same way — pre-existing); `pnpm build && pnpm start` with `API_MOCKS=1`, which e2e and Lighthouse use, works. Needs a look at how Turbopack dev loads `instrumentation.ts` versus the request workers.
+- **Legal counsel**: first-party funnel events are still not gated on consent (F1.3 note stands), and the privacy-notice wording on the sheet.
 
 ---
 
