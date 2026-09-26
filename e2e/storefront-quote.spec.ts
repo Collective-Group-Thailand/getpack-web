@@ -84,17 +84,23 @@ test.describe("the configurator", () => {
     await expect(page.getByText(/ส่งต่อจากกล่องฝาเสียบ/)).toBeVisible();
   });
 
-  test("a label shows a 2D mockup and its own steps", async ({ page }) => {
-    await gotoHydrated(page, `${HOSTS.customer}/configure/product-label`);
-    await expect(page.getByRole("img", { name: /สติ๊กเกอร์ฉลากสินค้า ขนาด/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /ไดคัทและการขึ้นรูป/ })).toHaveCount(0);
+  test("a flat item shows a 2D mockup; a product has only the steps it needs", async ({ page }) => {
+    // Hang tags, not labels: the back-office e2e switches label_sticker to RFQ during the run.
+    await gotoHydrated(page, `${HOSTS.customer}/configure/hang-tag`);
+    await expect(page.getByRole("img", { name: /ป้ายแท็กห้อยสินค้า ขนาด/ })).toBeVisible();
     // No standard sizes: the customer types one, and the drawing takes its proportions.
     await expect(dock(page)).toContainText("ขนาดที่ถูกต้อง");
     await page.getByRole("textbox", { name: "กว้าง" }).fill("40");
     await page.getByRole("textbox", { name: "ยาว" }).fill("90");
     await expect(page.getByRole("img", { name: /ขนาด 40 × 90 มม./ })).toBeVisible();
     // The price follows a debounce and a round trip; the full suite runs many of these at once.
-    await expect(dock(page).getByText(/\/ ดวง$/)).toBeVisible({ timeout: 15_000 });
+    await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible({ timeout: 15_000 });
+
+    // A shipping carton has no coatings or die-cut to choose.
+    await gotoHydrated(page, `${HOSTS.customer}/configure/shipping-box`);
+    await expect(page.getByRole("button", { name: /ลอนกระดาษ|วัสดุ/ }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /งานเคลือบและตกแต่ง/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /ไดคัทและการขึ้นรูป/ })).toHaveCount(0);
   });
 
   test("a promotion code is checked for this product", async ({ page }) => {
