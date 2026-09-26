@@ -25,6 +25,44 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 
 ---
 
+## F3 Phase 3.7 — 2026-09-27
+
+Packio for business, LINE LIFF and help, on `feat/f3.7-b2b` (from `274632d`, 3.6 merged). This is the last phase of F3. packio-api has published none of it for the storefront, so it is all contract requests. The mocks work over the back office's company rows (F2 2.7): a company signed up here waits on the KYC desk, and its members, branches and statements are the desk's.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| KYC before a company is active (D-120) | sign-up asks for the certificate's issue date and refuses one older than 6 months (`company.certificate_too_old`). It requires ภ.พ.20 when VAT-registered and the signatory's ID (`company.kyc_missing`). The company then shows "under review", and ordering prepaid still works |
+| Orders over the company threshold wait for the approver (D-123) | the checkout preview says so (`company.needsApproval`). The buyer's button becomes "send to approver" and posts the checkout with its preview token to `approvals`. `POST /v1/store/checkout` refuses such a checkout (`company.approval_required`). Approving places the orders as checked out; a moved cart expires the approval (`approval.repriced`) |
+| PO numbers follow the company's policy (D-125) | a `po_required` blocker until one is typed; the field is hidden under `none` |
+| Credit is the API's (D-121, D-122) | a `credit_term` schedule option appears only while credit is available and not blocked. Nothing is due today on it (`firstInstalment: null`), and the order adds to what is owed. Overdue over 7 days hides it, and the dashboard and credit page say why |
+| Roles decide what a member sees | `can` on the company (manage members/settings, approve, finance, order) drives the nav and every action; the API refuses the rest (403 `company.forbidden`); the last admin cannot be demoted |
+| Bulk reorder never adds an unchecked row (D-153) | the CSV is parsed in the browser (`parseReorderCsv`, unit-tested: header, BOM, separators, bad lines), each row is re-priced or refused by the API, and only the checked rows go to the cart, under a preview token |
+| Help asks for a person only once | the guided help hand-off carries the page, the answers and the recommended styles; the LINE link carries only the ticket number. Contact, hand-off and sample kits are rate-limited, and a 429 says how long to wait |
+| The guided help costs one button | only the launcher ships with each storefront page; the sheet and questions load on first click. `pnpm lhci customer-app` still meets every budget |
+
+### Decisions taken, with reasons
+- **Approval is a separate request, not a variant of placement.** A pending approval is not an order, and making `PlacedOrderDto` sometimes orderless would have blurred both. The preview token holds the price, and the approver places the orders under the requester's checkout.
+- **LIFF is its own frame, `/[locale]/liff/*`, outside the storefront group.** It has a slim bar and four tabs (home, orders, points, chat), and no site header, footer or marketing tags. It reuses the site's components: stages, `OrderActions`, `ProofViewer`, `ReorderView`, `PaymentPanel` (slip upload). `OrderActions` and `PayInstalmentButton` take `surface: "liff"`, so proof, reorder and pay stay inside LIFF; everything else opens the site. LIFF pages never redirect: without a session they show `LiffSignIn`. That signs in with LINE through the LIFF SDK when a LIFF id is configured, and offers the phone sign-in otherwise (the e2e has no LIFF id).
+- **Three more mock personas**: `companyadmin` (0867890123, admin and approver of B2601) and `companybuyer` (0878901234, buyer) belong to the first fake company. `founder` (0889012345) has none and signs one up. Mock tokens only allow letters in a persona name, hence no digits.
+- **The guided help launcher hides where a page has its own dock or one job**: configure, cart, checkout, account, tracking, LIFF and the chat page itself. It is icon-only on a phone.
+- **Spend and aging are shown as tables of the API's figures.** Charts would have meant drawing bars sized from money, which the UI does not compute.
+
+### Contract requests raised (docs/contract-requests.md)
+`store.support`, `store.guided-help`, `store.sample-kits`, `store.companies`, `store.company-members`, `store.company-branches`, `store.company-assets`, `store.company-approvals` (plus `company` on `CheckoutPreviewDto`), `store.company-credit`, `store.company-spend`, `store.company-reorder`.
+
+### Deliberately not done
+- Shared *designs* between members: designs still live in the browser (F0/F4). Shared brand assets are done.
+- A credit application is recorded against the company on the storefront side only; the admin desk's `credit_limit` approval is opened by Finance there (F2 2.7), not by the customer's request.
+- Branch selection at checkout: the tax invoice comes from the chosen tax profile as before; tax profiles per branch are the company's to add.
+- LIFF's LINE sign-in against a real LIFF id; the SDK path is wired (`lineIdentity` → `signInWithLine`) but not exercised by the e2e.
+
+### Open questions
+- **Backend**: the eleven requests, the `company` field on the checkout preview, and whether an approval should notify the requester over the realtime channel (`company.approval_decided`).
+- **Business**: should an approver's own order over the threshold skip approval (the mock lets it), or need a second approver?
+
+---
+
 ## F3 Phase 3.6 — 2026-09-27
 
 Tracking, delivery, receipt, claims and reorder, on `feat/f3.6-tracking` (from `1ddcc98`, 3.5 merged). packio-api has published none of this, so it is all contract requests. The mocks work over the back office's own rows: orders from commerce, claims from the logistics desk (F2 2.8). A claim the customer files is on the desk's queue, and the e2e opens it there.

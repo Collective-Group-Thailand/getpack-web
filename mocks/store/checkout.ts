@@ -100,6 +100,27 @@ function split(total: number, shares: number[]): number[] {
   return parts;
 }
 
+/** A buyer's company, as the business mock (F3 3.7) reports it to checkout. */
+export interface CheckoutCompany {
+  companyCode: string;
+  legalName: string;
+  poNumberPolicy: "required" | "optional" | "none";
+  /** Satang; `null` = no approval step (D-123). */
+  threshold: number | null;
+  canApprove: boolean;
+  creditActive: boolean;
+  creditAvailable: number;
+  creditBlocked: boolean;
+  termDays: number | null;
+}
+let companyLookup: (customer: MockCustomer) => CheckoutCompany | null = () => null;
+let creditOrderPlaced: (customer: MockCustomer, gross: number) => void = () => {};
+/** Wired by `./business` so checkout knows a member's company without importing it back. */
+export function setCheckoutCompany(lookup: typeof companyLookup, onCreditOrder: typeof creditOrderPlaced): void {
+  companyLookup = lookup;
+  creditOrderPlaced = onCreditOrder;
+}
+
 export function price(customer: MockCustomer, input: Input): Priced | Response {
   const cart = cartOf(customer);
   const book = bookOf(customer);
@@ -217,7 +238,24 @@ export function price(customer: MockCustomer, input: Input): Priced | Response {
 
   const gross = Math.max(0, afterDiscount - pointsAmount);
   const withholding = profile?.withholdsTax ? Math.round((gross - vatIn(gross)) * 0.01) : 0;
+  const company = companyLookup(customer);
   const options = scheduleOptions(gross);
+  // D-121: a company with credit may pay on its term, within what is left; blocked when overdue (D-122).
+  if (company?.creditActive && company.termDays && !company.creditBlocked && gross <= company.creditAvailable)
+    options.push({
+      key: `credit_${company.termDays}`,
+      kind: "credit_term" as never,
+      label: `เครดิต ${company.termDays} วัน`,
+      description: `วางบิลตามรอบ ชำระภายใน ${company.termDays} วันหลังได้รับสินค้า`,
+      parts: [
+        {
+          label: `ชำระตามเครดิต ${company.termDays} วัน`,
+          share: 1,
+          dueTrigger: "days_after_delivery",
+          requiredBefore: "none",
+        },
+      ],
+    });
   const selected = options.find((option) => option.key === input.scheduleKey) ?? options[0]!;
   const parts = split(
     gross,
@@ -236,11 +274,18 @@ export function price(customer: MockCustomer, input: Input): Priced | Response {
     { method: "bank_transfer_slip", available: true, unavailableReason: null, feeAmount: null },
     {
       method: "credit_term_transfer",
-      available: false,
-      unavailableReason: "สำหรับบัญชีธุรกิจที่ได้รับวงเงินเครดิต",
+      available: selected.kind === ("credit_term" as never),
+      unavailableReason:
+        selected.kind === ("credit_term" as never)
+          ? null
+          : company?.creditBlocked
+            ? "เครดิตถูกระงับเพราะมียอดค้างชำระเกินกำหนด (D-122)"
+            : "สำหรับบัญชีธุรกิจที่ได้รับวงเงินเครดิต",
       feeAmount: null,
     },
   ];
+  if (company?.poNumberPolicy === "required" && !input.poNumber?.trim())
+    blockers.push({ code: "po_required", message: "กรุณาใส่เลขที่ใบสั่งซื้อ (PO) ของบริษัท" });
   if (input.paymentMethod && !methods.find((method) => method.method === input.paymentMethod)?.available)
     blockers.push({ code: "method_unavailable", message: "วิธีชำระเงินนี้ใช้กับคำสั่งซื้อนี้ไม่ได้" });
 
@@ -281,7 +326,7 @@ export function price(customer: MockCustomer, input: Input): Priced | Response {
             )[index]!,
           ),
         })),
-        creditDays: null,
+        creditDays: option.kind === ("credit_term" as never) ? (company?.termDays ?? null) : null,
       })),
       selectedKey: selected.key,
       note:
@@ -308,6 +353,17 @@ export function price(customer: MockCustomer, input: Input): Priced | Response {
       currency: "THB",
     },
     blockers,
+    company: company
+      ? {
+          companyCode: company.companyCode,
+          legalName: company.legalName,
+          poNumberPolicy: company.poNumberPolicy,
+          approvalThreshold: company.threshold === null ? null : baht(company.threshold),
+          needsApproval: company.threshold !== null && gross > company.threshold && !company.canApprove,
+          creditAvailableAmount: baht(company.creditAvailable),
+          creditBlocked: company.creditBlocked,
+        }
+      : null,
   };
   return { preview, fingerprint, gross, schedule: selected };
 }
@@ -641,6 +697,42 @@ function fakeQr(seed: string): string {
   return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 240"><rect width="220" height="240" fill="#fff"/><g fill="#111">${rects}</g><text x="110" y="232" font-size="14" text-anchor="middle" font-family="sans-serif">mock QR</text></svg>`)}`;
 }
 
+/** The placement's checks: the preview is this customer's, still valid, unblocked and unchanged. */
+export function checkPreview(customer: MockCustomer, previewToken: string, input: Input): Priced | Response {
+  const known = previews.get(previewToken);
+  if (!known || known.persona !== customer.persona || known.expiresAt < Date.now())
+    return problem(409, "checkout.preview_expired", "ราคาที่แสดงหมดเวลาแล้ว กรุณาตรวจสอบราคาอีกครั้ง");
+  const priced = price(customer, input);
+  if (priced instanceof Response) return priced;
+  if (priced.preview.blockers.length > 0)
+    return problem(422, "checkout.blocked", priced.preview.blockers.map((blocker) => blocker.message).join(" · "));
+  if (priced.fingerprint !== known.fingerprint || priced.gross !== known.gross)
+    return problem(409, "checkout.repriced", "ราคาหรือรายการในตะกร้าเปลี่ยนไปตั้งแต่ที่คุณตรวจสอบ กรุณายืนยันราคาใหม่");
+  return priced;
+}
+
+export const forgetPreview = (previewToken: string) => previews.delete(previewToken);
+
+/** Places a checked checkout — directly, or when the company's approver approves it (F3 3.7). */
+export function placeChecked(customer: MockCustomer, input: Input, priced: Priced) {
+  const group = placeOrders(customer, input, priced);
+  customer.points -= priced.preview.points.redeemed;
+  const credit = priced.schedule.kind === ("credit_term" as never);
+  if (credit) creditOrderPlaced(customer, priced.gross);
+  const first = group.instalments[0]!;
+  return {
+    groupId: group.id,
+    groupCode: group.code,
+    orders: group.orderIds.map((id) => ({ id, orderCode: orders.find((order) => order.id === id)!.orderCode })),
+    grossAmount: baht(priced.gross),
+    // D-121: nothing to pay today on a credit term.
+    firstInstalment: credit
+      ? null
+      : { id: first.id, label: first.label, grossAmount: baht(first.gross), dueAt: first.dueAt },
+    expiresAt: credit ? null : bangkokIso(7 * DAY),
+  };
+}
+
 export const storeCheckoutHandlers = [
   mockRequest("POST /v1/store/checkout/actions/preview", ({ body, request }) => {
     const customer = customerOf(request);
@@ -661,31 +753,12 @@ export const storeCheckoutHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const { previewToken, ...input } = body;
-    const known = previews.get(previewToken);
-    if (!known || known.persona !== customer.persona || known.expiresAt < Date.now())
-      return problem(409, "checkout.preview_expired", "ราคาที่แสดงหมดเวลาแล้ว กรุณาตรวจสอบราคาอีกครั้ง");
-    const priced = price(customer, input);
+    const priced = checkPreview(customer, previewToken, input);
     if (priced instanceof Response) return priced;
-    if (priced.preview.blockers.length > 0)
-      return problem(422, "checkout.blocked", priced.preview.blockers.map((blocker) => blocker.message).join(" · "));
-    if (priced.fingerprint !== known.fingerprint || priced.gross !== known.gross)
-      return problem(
-        409,
-        "checkout.repriced",
-        "ราคาหรือรายการในตะกร้าเปลี่ยนไปตั้งแต่ที่คุณตรวจสอบ กรุณายืนยันราคาใหม่",
-      );
+    if (priced.preview.company?.needsApproval)
+      return problem(409, "company.approval_required", "ยอดนี้เกินเกณฑ์ของบริษัท ต้องส่งให้ผู้อนุมัติก่อน (D-123)");
     previews.delete(previewToken);
-    const group = placeOrders(customer, input, priced);
-    customer.points -= priced.preview.points.redeemed;
-    const first = group.instalments[0]!;
-    return {
-      groupId: group.id,
-      groupCode: group.code,
-      orders: group.orderIds.map((id) => ({ id, orderCode: orders.find((order) => order.id === id)!.orderCode })),
-      grossAmount: baht(priced.gross),
-      firstInstalment: { id: first.id, label: first.label, grossAmount: baht(first.gross), dueAt: first.dueAt },
-      expiresAt: bangkokIso(7 * DAY),
-    };
+    return placeChecked(customer, input, priced);
   }),
 
   mockRequest("POST /v1/store/instalments/{instalmentId}/payments", ({ params, body, request }) => {

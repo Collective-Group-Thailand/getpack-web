@@ -188,6 +188,21 @@ export const checkoutPreview = z
       currency: currency(),
     }),
     blockers: z.array(z.object({ code: z.string(), message: z.string() })),
+    /**
+     * The buyer's company, when they check out as a member (F3 3.7): its PO rule (D-125), whether
+     * this order goes to the approver first (D-123), and what credit is left (D-121, D-122).
+     */
+    company: z
+      .object({
+        companyCode: z.string(),
+        legalName: z.string(),
+        poNumberPolicy: z.enum(["required", "optional", "none"]),
+        approvalThreshold: money().nullable(),
+        needsApproval: z.boolean(),
+        creditAvailableAmount: money(),
+        creditBlocked: z.boolean(),
+      })
+      .nullable(),
   })
   .meta({ id: "CheckoutPreviewDto" });
 

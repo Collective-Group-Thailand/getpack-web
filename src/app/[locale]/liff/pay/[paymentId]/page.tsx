@@ -1,0 +1,27 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+
+import { getMyPayment } from "@/features/customer/checkout/api.server";
+import { PaymentPanel } from "@/features/customer/checkout/PaymentPanel";
+import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
+import { liffCustomer } from "@/features/customer/liff/liff.server";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("payment");
+  return { title: t("title") };
+}
+
+/** Paying — a QR, or a bank-transfer slip uploaded from the phone — in LINE (D-151). */
+export default async function Page({ params }: { params: Promise<{ paymentId: string }> }) {
+  if (!(await liffCustomer())) return <LiffSignIn />;
+  const { paymentId } = await params;
+  const [t, payment] = await Promise.all([getTranslations("payment"), getMyPayment(paymentId)]);
+  if (!payment) notFound();
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-xl font-bold">{t("title")}</h1>
+      <PaymentPanel initial={payment} />
+    </div>
+  );
+}

@@ -88,6 +88,7 @@ export function CheckoutView({
   const [scheduleKey, setScheduleKey] = useState<string | undefined>(undefined);
   const [method, setMethod] = useState<PaymentMethod>("scb_qr");
   const [note, setNote] = useState("");
+  const [poNumber, setPoNumber] = useState("");
   const [sheet, setSheet] = useState<"address" | "tax" | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [placing, setPlacing] = useState(false);
@@ -104,6 +105,7 @@ export function CheckoutView({
     ...(scheduleKey ? { scheduleKey } : {}),
     paymentMethod: method,
     ...(note.trim() ? { note: note.trim() } : {}),
+    ...(poNumber.trim() ? { poNumber: poNumber.trim() } : {}),
   };
   const key = JSON.stringify(input);
   const settled = useDebounced(key, 400);
@@ -126,6 +128,16 @@ export function CheckoutView({
     setPlacing(true);
     setFailure(null);
     try {
+      if (data.company?.needsApproval) {
+        // D-123: over the company threshold — the approver places it, not the buyer.
+        const approval = await browserRequests().call("POST /v1/store/me/company/approvals", {
+          body: { ...input, previewToken: data.previewToken },
+          idempotencyKey: idempotencyKey.current,
+        });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
+        router.push(`/business/approvals?sent=${encodeURIComponent(approval.requestNo)}`);
+        return;
+      }
       const placed = await browserRequests().call("POST /v1/store/checkout", {
         body: { ...input, previewToken: data.previewToken },
         idempotencyKey: idempotencyKey.current,
@@ -441,13 +453,52 @@ export function CheckoutView({
           </FormSection>
         ) : null}
 
+        {data?.company ? (
+          <FormSection
+            title={t("company.title")}
+            description={t("company.intro", { name: data.company.legalName, code: data.company.companyCode })}
+          >
+            {data.company.poNumberPolicy !== "none" ? (
+              <Field
+                label={t("company.po")}
+                hint={data.company.poNumberPolicy === "required" ? t("company.poRequired") : t("company.poOptional")}
+                required={data.company.poNumberPolicy === "required"}
+                requiredLabel={t("company.required")}
+              >
+                <Input
+                  value={poNumber}
+                  maxLength={60}
+                  onChange={(event) => setPoNumber(event.target.value)}
+                  className="max-w-64"
+                />
+              </Field>
+            ) : null}
+            {data.company.needsApproval && data.company.approvalThreshold ? (
+              <Callout tone="info" title={t("company.approvalTitle")}>
+                {t("company.approval", { threshold: format.thb(data.company.approvalThreshold) })}
+              </Callout>
+            ) : null}
+            {data.company.creditBlocked ? (
+              <Callout tone="warning" title={t("company.creditBlockedTitle")}>
+                {t("company.creditBlocked")}
+              </Callout>
+            ) : null}
+          </FormSection>
+        ) : null}
+
         <FormSection title={t("schedule.title")} description={data?.schedule.note ?? undefined}>
           {data ? (
             <RadioCards
               aria-label={t("schedule.title")}
               columns={2}
               value={data.schedule.selectedKey}
-              onValueChange={setScheduleKey}
+              onValueChange={(key) => {
+                setScheduleKey(key);
+                // A credit term (D-121) is paid by transfer against the statement; nothing else is.
+                const credit = data.schedule.options.find((option) => option.key === key)?.kind === "credit_term";
+                if (credit) setMethod("credit_term_transfer");
+                else if (method === "credit_term_transfer") setMethod("scb_qr");
+              }}
               options={data.schedule.options.map((option) => ({
                 value: option.key,
                 label: option.label,
@@ -562,7 +613,11 @@ export function CheckoutView({
           loading={placing}
           onClick={() => setConfirming(true)}
         >
-          {data ? t("place", { amount: format.thb(data.totals.payableNowAmount) }) : t("placeLoading")}
+          {data
+            ? data.company?.needsApproval
+              ? t("company.send")
+              : t("place", { amount: format.thb(data.totals.payableNowAmount) })
+            : t("placeLoading")}
         </Button>
         <p className="text-muted mt-3 text-xs">{t("terms")}</p>
       </aside>
@@ -570,17 +625,19 @@ export function CheckoutView({
       <AlertDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title={t("confirm.title")}
+        title={data?.company?.needsApproval ? t("company.confirmTitle") : t("confirm.title")}
         description={
-          data
-            ? t("confirm.body", {
-                total: format.thb(data.totals.grossAmount),
-                now: format.thb(data.totals.payableNowAmount),
-                method: tMethods(`${method}.label`),
-              })
-            : ""
+          data?.company?.needsApproval
+            ? t("company.confirmBody", { total: format.thb(data.totals.grossAmount), name: data.company.legalName })
+            : data
+              ? t("confirm.body", {
+                  total: format.thb(data.totals.grossAmount),
+                  now: format.thb(data.totals.payableNowAmount),
+                  method: tMethods(`${method}.label`),
+                })
+              : ""
         }
-        confirmLabel={t("confirm.yes")}
+        confirmLabel={data?.company?.needsApproval ? t("company.send") : t("confirm.yes")}
         cancelLabel={t("confirm.no")}
         loading={placing}
         onConfirm={() => void place()}

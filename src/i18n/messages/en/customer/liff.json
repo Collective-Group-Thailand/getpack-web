@@ -1,0 +1,57 @@
+{
+  "skip": "Skip to content",
+  "tagline": "in LINE",
+  "nav": {
+    "label": "Packio in LINE",
+    "home": "Home",
+    "orders": "Orders",
+    "points": "Points",
+    "chat": "Chat"
+  },
+  "signIn": {
+    "working": "Signing in with LINE…",
+    "title": "Sign in to Packio",
+    "intro": "Sign in to see your orders, approve proofs and collect points.",
+    "failed": "Couldn't sign in with LINE — sign in with your mobile number instead.",
+    "phone": "Sign in with mobile number"
+  },
+  "home": {
+    "title": "Packio in LINE",
+    "hello": "Hello {name}",
+    "points": "Points",
+    "todo": "To do",
+    "nothing": "Nothing waiting",
+    "allOrders": "All orders",
+    "chat": "Talk to us"
+  },
+  "orders": {
+    "title": "Orders",
+    "empty": "No orders yet",
+    "row": "{code} · {quantity} {unit}"
+  },
+  "order": {
+    "title": "Order",
+    "back": "Back to orders",
+    "stages": "Progress",
+    "quantity": "Quantity",
+    "total": "Total",
+    "eta": "Expected by",
+    "full": "See everything on the website"
+  },
+  "points": {
+    "tier": "Tier",
+    "tiers": {
+      "member": "Member",
+      "silver": "Silver",
+      "gold": "Gold"
+    },
+    "latest": "Latest",
+    "more": "Full history on the website"
+  },
+  "chat": {
+    "title": "Talk to us",
+    "intro": "Message our customer service team in LINE, or answer a few quick questions so they know what you need.",
+    "open": "Open the Packio chat",
+    "hours": "Hours: {hours}"
+  }
+}
