@@ -15,27 +15,35 @@ import type { ThemeChoice } from "@/ui/theme/themes";
  * the largest share of the storefront's initial JavaScript over its 150 KB budget
  * (docs/performance-budgets.md, PROGRESS F1.3). Until someone reaches for one, the header shows
  * a plain button with the same icon and name; pointing at it or focusing it fetches the real
- * menu, a click opens it as it arrives, and a focused placeholder hands focus to the real
- * trigger — so the swap is invisible to a mouse, a keyboard and a screen reader alike.
+ * menu's code, and a click (or Enter / Space) mounts it open with focus on its trigger — so the
+ * swap is invisible to a mouse, a keyboard and a screen reader alike.
+ *
+ * The open state lives here, not in the menu, so the click that loads a menu is the one that
+ * opens it.
  */
 
-type Intent = "idle" | "warm" | "open";
+const loadLocaleLink = () => import("./LocaleLink").then((module) => ({ default: module.LocaleLink }));
+const loadThemeToggle = () => import("@/ui/theme/ThemeToggle").then((module) => ({ default: module.ThemeToggle }));
+const LocaleLink = lazy(loadLocaleLink);
+const ThemeToggle = lazy(loadThemeToggle);
 
-const LocaleLink = lazy(() => import("./LocaleLink").then((module) => ({ default: module.LocaleLink })));
-const ThemeToggle = lazy(() => import("@/ui/theme/ThemeToggle").then((module) => ({ default: module.ThemeToggle })));
-
-function useIntent() {
-  const [intent, setIntent] = useState<Intent>("idle");
-  const [focused, setFocused] = useState(false);
+/**
+ * Pointing at or focusing the button only *fetches* the menu's code; the menu itself mounts on
+ * the click, already open. Mounting it earlier — mid-click — let Radix read the rest of that
+ * click as a press outside the menu and close it again.
+ */
+function useIntent(preload: () => Promise<unknown>) {
+  const [loaded, setLoaded] = useState(false);
+  const [open, setOpen] = useState(false);
   const handlers = {
-    onPointerEnter: () => setIntent((current) => (current === "idle" ? "warm" : current)),
-    onFocus: () => {
-      setFocused(true);
-      setIntent((current) => (current === "idle" ? "warm" : current));
+    onPointerEnter: () => void preload(),
+    onFocus: () => void preload(),
+    onClick: () => {
+      setLoaded(true);
+      setOpen(true);
     },
-    onClick: () => setIntent("open"),
   };
-  return { intent, focused, handlers };
+  return { loaded, open, setOpen, handlers };
 }
 
 function Placeholder({ icon, label, handlers }: { icon: IconName; label: string; handlers: object }) {
@@ -44,12 +52,12 @@ function Placeholder({ icon, label, handlers }: { icon: IconName; label: string;
 
 export function DeferredLocaleMenu() {
   const t = useTranslations("common.locale");
-  const { intent, focused, handlers } = useIntent();
+  const { loaded, open, setOpen, handlers } = useIntent(loadLocaleLink);
   const placeholder = <Placeholder icon="language" label={t("label")} handlers={handlers} />;
-  if (intent === "idle") return placeholder;
+  if (!loaded) return placeholder;
   return (
     <Suspense fallback={placeholder}>
-      <LocaleLink defaultOpen={intent === "open"} autoFocus={focused} />
+      <LocaleLink open={open} onOpenChange={setOpen} autoFocus />
     </Suspense>
   );
 }
@@ -69,12 +77,12 @@ export function DeferredThemeMenu({
   choiceLabels: Record<ThemeChoice, string>;
 }) {
   const { choice } = useTheme();
-  const { intent, focused, handlers } = useIntent();
+  const { loaded, open, setOpen, handlers } = useIntent(loadThemeToggle);
   const placeholder = <Placeholder icon={CHOICE_ICON[choice]} label={label} handlers={handlers} />;
-  if (intent === "idle") return placeholder;
+  if (!loaded) return placeholder;
   return (
     <Suspense fallback={placeholder}>
-      <ThemeToggle label={label} choiceLabels={choiceLabels} defaultOpen={intent === "open"} autoFocus={focused} />
+      <ThemeToggle label={label} choiceLabels={choiceLabels} open={open} onOpenChange={setOpen} autoFocus />
     </Suspense>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams, usePathname } from "next/navigation";
-import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
@@ -20,20 +19,28 @@ import { IconButton } from "@/ui/components/IconButton";
  * `next-intl`'s `Link` does the rewriting, given the current pathname without its locale
  * prefix, which `usePathname` from `@/i18n/navigation` already returns.
  */
-export function LocaleLink({ defaultOpen = false, autoFocus }: { defaultOpen?: boolean; autoFocus?: boolean } = {}) {
+export function LocaleLink({
+  open,
+  onOpenChange,
+  autoFocus,
+}: {
+  /** Controlled open state — for a menu loaded lazily by the click that should open it. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  autoFocus?: boolean;
+} = {}) {
   const t = useTranslations("common.locale");
   const current = useLocale();
   const pathname = usePathname();
   // Dynamic segments have to be handed back to `Link` or it cannot rebuild the href.
   const params = useParams();
-  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <DropdownMenu
       align="end"
       label={t("label")}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
       trigger={<IconButton name="language" variant="ghost" size="sm" label={t("label")} autoFocus={autoFocus} />}
       items={routing.locales.map((locale) => ({
         id: locale,
