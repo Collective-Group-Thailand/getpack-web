@@ -22,7 +22,7 @@ import { files } from "../admin/platform";
 import { mockRequest } from "../route";
 import { bangkokIso, problem } from "../support";
 import { addToCart } from "./cart";
-import { customerOf } from "./customers";
+import { customerOf, type MockCustomer } from "./customers";
 import {
   claimWindowEnd,
   deliveredAt,
@@ -140,7 +140,7 @@ const REPRICE = 1.03;
 // Plates and dies are kept for a reorder (D-153); design, mockup and shipping are not carried over.
 const WAIVABLE = new Set(["plate", "die_block"]);
 
-function reorderOf(order: MockOrder, quantity: number) {
+export function reorderOf(order: MockOrder, quantity: number) {
   const product = order.lines.find((line) => line.lineType === "product");
   const unitNet = product ? (satang(product.netAmount) / order.quantity) * REPRICE : 0;
   const productNet = Math.round(unitNet * quantity);
@@ -184,6 +184,50 @@ function reorderOf(order: MockOrder, quantity: number) {
 }
 
 const tokenOf = (order: MockOrder, quantity: number) => `rop.${order.id.slice(-6)}.${quantity}`;
+
+/** A reorder as a quotation in the customer's cart (D-153); bulk reorders (F3 3.7) add theirs here too. */
+export function addReorderToCart(customer: MockCustomer, order: MockOrder, quantity: number) {
+  const priced = reorderOf(order, quantity);
+  const summary = toSummary(order);
+  const { id, quoteCode } = nextQuoteId();
+  const quote: StoreQuote = {
+    id,
+    quoteCode,
+    status: "saved",
+    productType: order.productType,
+    product: {
+      slug: summary.product.slug ?? "reorder",
+      name: summary.product.name,
+      imageUrl: summary.product.imageUrl,
+    },
+    specs: [...order.specs, { label: "สั่งซ้ำจาก", value: order.orderCode }],
+    quantity: quantity,
+    unit: order.unit,
+    lines: priced.lines,
+    unitPrice: priced.unitPrice.toFixed(6),
+    netAmount: baht(priced.net),
+    discountAmount: "0.00",
+    shippingAmount: "0.00",
+    vatAmount: baht(priced.vatAmount),
+    grossAmount: baht(priced.net + priced.vatAmount),
+    currency: "THB",
+    promotion: null,
+    designOption: order.artworkStatus === "approved" ? "own_file" : order.designOption,
+    mockupOption: "none",
+    leadTimeDays: order.leadTimeDays,
+    earliestShipDate: bangkokIso(DAY * order.leadTimeDays).slice(0, 10),
+    estimatedDeliveryDate: null,
+    deliveryPostcode: null,
+    tolerance: order.tolerance,
+    validUntil: `${bangkokIso(15 * DAY).slice(0, 10)}T23:59:59+07:00`,
+    configuration: { reorderOf: order.id },
+    source: "instant",
+    nextActions: [],
+    createdAt: bangkokIso(),
+  };
+  quotesOf(customer.persona).unshift(quote);
+  return { quoteId: quote.id, cartItemId: addToCart(customer, quote) };
+}
 
 /* --------------------------------------------------------------------------------- handlers */
 
@@ -353,45 +397,6 @@ export const storeFulfilmentHandlers = [
     const { customer, order } = found;
     if (body.previewToken !== tokenOf(order, body.quantity))
       return problem(409, "reorder.repriced", "ราคาเปลี่ยนไปแล้ว กรุณาตรวจราคาใหม่อีกครั้ง");
-    const priced = reorderOf(order, body.quantity);
-    const summary = toSummary(order);
-    const { id, quoteCode } = nextQuoteId();
-    const quote: StoreQuote = {
-      id,
-      quoteCode,
-      status: "saved",
-      productType: order.productType,
-      product: {
-        slug: summary.product.slug ?? "reorder",
-        name: summary.product.name,
-        imageUrl: summary.product.imageUrl,
-      },
-      specs: [...order.specs, { label: "สั่งซ้ำจาก", value: order.orderCode }],
-      quantity: body.quantity,
-      unit: order.unit,
-      lines: priced.lines,
-      unitPrice: priced.unitPrice.toFixed(6),
-      netAmount: baht(priced.net),
-      discountAmount: "0.00",
-      shippingAmount: "0.00",
-      vatAmount: baht(priced.vatAmount),
-      grossAmount: baht(priced.net + priced.vatAmount),
-      currency: "THB",
-      promotion: null,
-      designOption: order.artworkStatus === "approved" ? "own_file" : order.designOption,
-      mockupOption: "none",
-      leadTimeDays: order.leadTimeDays,
-      earliestShipDate: bangkokIso(DAY * order.leadTimeDays).slice(0, 10),
-      estimatedDeliveryDate: null,
-      deliveryPostcode: null,
-      tolerance: order.tolerance,
-      validUntil: `${bangkokIso(15 * DAY).slice(0, 10)}T23:59:59+07:00`,
-      configuration: { reorderOf: order.id },
-      source: "instant",
-      nextActions: [],
-      createdAt: bangkokIso(),
-    };
-    quotesOf(customer.persona).unshift(quote);
-    return { quoteId: quote.id, cartItemId: addToCart(customer, quote) };
+    return addReorderToCart(customer, order, body.quantity);
   }),
 ];

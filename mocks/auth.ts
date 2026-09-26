@@ -30,6 +30,9 @@ const CHALLENGES: Record<CustomerPersona, string> = {
   buyer: "00000000-0000-4000-8000-0000000000c3",
   artist: "00000000-0000-4000-8000-0000000000c4",
   receiver: "00000000-0000-4000-8000-0000000000c5",
+  companyadmin: "00000000-0000-4000-8000-0000000000c6",
+  companybuyer: "00000000-0000-4000-8000-0000000000c7",
+  founder: "00000000-0000-4000-8000-0000000000c8",
 };
 /** Firebase and LINE tokens the mock accepts (the SDKs never run against the mock). */
 export const MOCK_ID_TOKENS = { google: "mock.firebase.google", apple: "mock.firebase.apple", line: "mock.line" };
