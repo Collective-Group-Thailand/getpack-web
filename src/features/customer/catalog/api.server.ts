@@ -283,3 +283,14 @@ export async function getTracking(token: string): Promise<Tracking | null> {
   const requests = await publicRequests("prices");
   return orNull(requests.call("GET /v1/store/tracking/{token}", { path: { token } }));
 }
+
+export type SampleKit = ResponseOf<Requests, "GET /v1/store/sample-kits">["data"][number];
+
+/** The sample kits on offer (CONTRACT-REQUEST store.sample-kits); empty when unavailable. */
+export async function getSampleKits(): Promise<SampleKit[]> {
+  const requests = await publicRequests("content");
+  return orFallback(
+    requests.call("GET /v1/store/sample-kits").then((result) => result.data),
+    [],
+  );
+}

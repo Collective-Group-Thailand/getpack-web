@@ -22,13 +22,21 @@ export interface PayInstalmentButtonProps extends Omit<ButtonProps, "onClick" | 
   instalment: { id: string; label: string; grossAmount: string; activePaymentId: string | null };
   orderCode: string;
   children: React.ReactNode;
+  /** Inside LINE's LIFF (D-151) the payment page is LIFF's too. */
+  surface?: "account" | "liff";
 }
 
 /**
  * Pays one instalment (D-020) from anywhere in the account: choose a method, then the payment
  * page. A payment already started is continued rather than duplicated.
  */
-export function PayInstalmentButton({ instalment, orderCode, children, ...button }: PayInstalmentButtonProps) {
+export function PayInstalmentButton({
+  instalment,
+  orderCode,
+  children,
+  surface = "account",
+  ...button
+}: PayInstalmentButtonProps) {
   const t = useTranslations("instalments");
   const tMethods = useTranslations("checkout.methods");
   const format = useFormat();
@@ -41,16 +49,16 @@ export function PayInstalmentButton({ instalment, orderCode, children, ...button
     setBusy(true);
     try {
       if (instalment.activePaymentId) {
-        router.push(`/checkout/pay/${instalment.activePaymentId}`);
+        router.push(`${surface === "liff" ? "/liff/pay" : "/checkout/pay"}/${instalment.activePaymentId}`);
         return;
       }
-      const base = window.location.pathname.replace(/\/(account|checkout).*$/, "");
+      const base = window.location.pathname.replace(/\/(account|checkout|liff).*$/, "");
       const payment = await browserRequests().call("POST /v1/store/instalments/{instalmentId}/payments", {
         path: { instalmentId: instalment.id },
         body: { method, returnUrl: `${window.location.origin}${base}/checkout/return` },
         idempotencyKey: newKey(),
       });
-      router.push(`/checkout/pay/${payment.id}`);
+      router.push(`${surface === "liff" ? "/liff/pay" : "/checkout/pay"}/${payment.id}`);
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));
       setBusy(false);

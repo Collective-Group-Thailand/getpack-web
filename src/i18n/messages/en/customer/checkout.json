@@ -126,5 +126,20 @@
       "label": "Credit term",
       "description": "Pay on your business account's terms"
     }
+  },
+  "company": {
+    "title": "Ordering for your company",
+    "intro": "{name} ({code})",
+    "po": "PO number",
+    "poRequired": "Your company requires a PO number on every order",
+    "poOptional": "If you have one — it's printed on the tax invoice",
+    "required": "(required)",
+    "approvalTitle": "Your company's approver approves this first",
+    "approval": "It's over your company's {threshold} threshold, so it goes to the approver and is produced once approved (the price shown is held)",
+    "creditBlockedTitle": "Credit terms are on hold",
+    "creditBlocked": "Your company has a balance more than 7 days overdue; prepaid orders still work (D-122)",
+    "send": "Send to approver",
+    "confirmTitle": "Send this order to your approver?",
+    "confirmBody": "The {total} order for {name} waits for your company's approver. We'll tell you when it's approved."
   }
 }

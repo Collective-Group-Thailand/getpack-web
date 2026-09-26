@@ -1,0 +1,25 @@
+import { cookies } from "next/headers";
+
+import { getMyCompany } from "@/features/customer/business/api.server";
+import { BusinessNav } from "@/features/customer/business/BusinessNav";
+import { readAccessToken } from "@/lib/auth/session";
+
+/**
+ * Packio for business's frame (F3 3.7): the company's sections beside each page once the visitor
+ * is a member; the landing and sign-up otherwise. Pages guard themselves.
+ */
+export default async function BusinessLayout({ children }: { children: React.ReactNode }) {
+  const company = readAccessToken(await cookies()) ? await getMyCompany() : null;
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+      {company ? (
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
+          <BusinessNav can={company.can} />
+          <div className="min-w-0">{children}</div>
+        </div>
+      ) : (
+        children
+      )}
+    </div>
+  );
+}
