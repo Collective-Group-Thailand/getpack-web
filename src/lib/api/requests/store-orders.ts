@@ -114,7 +114,12 @@ export const storeShipment = z
     shippedAt: dateTime().nullable(),
     deliveredAt: dateTime().nullable(),
     events: z.array(
-      z.object({ at: dateTime(), status: shipmentStatus, location: z.string().nullable(), note: z.string().nullable() }),
+      z.object({
+        at: dateTime(),
+        status: shipmentStatus,
+        location: z.string().nullable(),
+        note: z.string().nullable(),
+      }),
     ),
     pod: z
       .object({
@@ -158,6 +163,23 @@ export const storeTimelineEntry = z
   })
   .meta({ id: "StoreOrderTimelineEntryDto" });
 
+/* ---------------------------------------------------------------------------------- progress */
+
+export const orderStage = z
+  .object({
+    /** ordered · paid · artwork · production · shipping · delivered · completed — the API's list. */
+    key: z.string(),
+    title: z.string(),
+    state: z.enum(["done", "current", "upcoming", "skipped"]).meta({ id: "OrderStageState" }),
+    /** When it happened, for a done stage. */
+    at: dateTime().nullable(),
+    /** What was promised, on the business calendar (design-system.md §1.4, promised vs actual). */
+    promisedAt: dateTime().nullable(),
+    /** A short line under the stage: "ส่ง 2 จาก 3 จุด", "รอชำระงวดที่ 2". */
+    detail: z.string().nullable(),
+  })
+  .meta({ id: "OrderStageDto" });
+
 export const storeOrderDetail = storeOrderSummary
   .extend({
     group: z.object({ id: uuid(), groupCode: z.string(), orderCount: z.number().int() }),
@@ -194,7 +216,9 @@ export const storeOrderDetail = storeOrderSummary
       latestSubmission: z
         .object({ id: uuid(), versionNo: z.number().int(), preflightStatus, submittedAt: dateTime() })
         .nullable(),
-      latestProof: z.object({ id: uuid(), versionNo: z.number().int(), status: proofStatus, sentAt: dateTime() }).nullable(),
+      latestProof: z
+        .object({ id: uuid(), versionNo: z.number().int(), status: proofStatus, sentAt: dateTime() })
+        .nullable(),
       designService: z
         .object({ status: designServiceStatus, roundNo: z.number().int(), freeRounds: z.number().int() })
         .nullable(),
@@ -205,6 +229,8 @@ export const storeOrderDetail = storeOrderSummary
       z.object({ id: uuid(), claimNo: z.string(), type: claimType, status: claimStatus, submittedAt: dateTime() }),
     ),
     timeline: z.array(storeTimelineEntry),
+    /** Where it stands, stage by stage (F3 3.6) — the same list the public tracking page shows. */
+    stages: z.array(orderStage),
     /** The public tracking page's token (`/track/{token}`, no PII). */
     trackingToken: z.string().nullable(),
     /** D-081 / D-082: receipt confirmed or auto-completed, and until when a claim may be opened. */
