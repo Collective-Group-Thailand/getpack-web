@@ -69,6 +69,9 @@ export async function SiteHeader() {
             <Link href="/design/new">{tCommon("nav.startDesigning")}</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">
+            <Link href="/articles">{t("nav.articles")}</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
             <Link href="/help">{t("nav.help")}</Link>
           </Button>
         </nav>
