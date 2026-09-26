@@ -1,10 +1,11 @@
 "use client";
 
 import { useReportWebVitals } from "next/web-vitals";
-import { useSelectedLayoutSegments } from "next/navigation";
+import { useParams, useSelectedLayoutSegments } from "next/navigation";
 
 import { browserBffUrl, type Zone } from "@/lib/zones";
 
+import { routePattern } from "./route-pattern";
 import { sendReport, shouldReport } from "./web-vitals";
 
 /**
@@ -14,10 +15,10 @@ import { sendReport, shouldReport } from "./web-vitals";
  * the tree whose performance it measures.
  */
 export function WebVitals({ zone }: { zone: Zone }) {
-  // Segments, not `usePathname`: this gives `["orders", "[orderId]"]` — the route pattern —
-  // where `usePathname` would give the real order code. See `WebVitalReport.route`.
-  const segments = useSelectedLayoutSegments();
-  const route = `/${segments.filter((segment) => !segment.startsWith("(")).join("/")}`;
+  // The route pattern (`/orders/[orderId]`), never the URL: segments alone are the values —
+  // the real order code or tracking token — so the parameters are mapped back to their names.
+  // See `WebVitalReport.route` and `./route-pattern.ts`.
+  const route = routePattern(useSelectedLayoutSegments(), useParams());
 
   useReportWebVitals((metric) => {
     if (!shouldReport(metric.name)) return;

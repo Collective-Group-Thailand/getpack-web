@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { FunnelPageView } from "@/features/customer/analytics/FunnelPageView";
 import { MobileBottomNav, SiteFooter, SiteHeader } from "@/features/customer/shell";
 import { ConsentBanner } from "@/features/customer/shell/ConsentBanner";
 import { GoogleTagManager } from "@/features/customer/shell/GoogleTagManager";
@@ -31,6 +32,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
       reserveBottomNavSpace
     >
       <GoogleTagManager />
+      <FunnelPageView />
       <OrganizationJsonLd origin={origin} />
       {children}
       <ConsentBanner />

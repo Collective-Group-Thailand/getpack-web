@@ -33,6 +33,15 @@ import { apiInternalUrl } from "@/lib/env/lazy-server";
 const LIFETIME = { catalogue: 300, content: 900, prices: 60 } as const;
 type Lifetime = keyof typeof LIFETIME;
 
+/**
+ * The mock API (`API_MOCKS=1`: `pnpm dev:mock` and the e2e suite) cannot sit behind the data
+ * cache: Next serves a cached `fetch` through the original, unpatched `fetch` it captured at
+ * start-up, before MSW installed itself, so a cached read would go to a backend that is not
+ * running. Under the mock every read is live — which also means a change made in the mock
+ * back office shows on the storefront at once, as a test expects.
+ */
+const DATA_CACHE = process.env.API_MOCKS !== "1";
+
 async function publicApi(lifetime: Lifetime): Promise<Client<ApiPaths>> {
   const [baseUrl, locale] = await Promise.all([apiInternalUrl(), getLocale()]);
   return createApiClient({
@@ -40,8 +49,15 @@ async function publicApi(lifetime: Lifetime): Promise<Client<ApiPaths>> {
     locale,
     requestId: null,
     surfaceZone: "customer",
-    fetch: (input, init) =>
-      fetch(input, { ...init, next: { revalidate: LIFETIME[lifetime], tags: [`store:${lifetime}`] } }),
+    ...(DATA_CACHE
+      ? {
+          fetch: ((input: RequestInfo | URL, init?: RequestInit) =>
+            fetch(input, {
+              ...init,
+              next: { revalidate: LIFETIME[lifetime], tags: [`store:${lifetime}`] },
+            })) as typeof fetch,
+        }
+      : {}),
   });
 }
 

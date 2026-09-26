@@ -39,6 +39,7 @@ export {
 } from "./DataTable";
 export { DescriptionList, type DescriptionItem, type DescriptionListProps } from "./DescriptionList";
 export { Dialog, DialogClose, type DialogProps } from "./Dialog";
+export { DisclosureList, type DisclosureItem, type DisclosureListProps } from "./DisclosureList";
 export { DropdownMenu, type DropdownMenuProps, type MenuItem } from "./DropdownMenu";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";

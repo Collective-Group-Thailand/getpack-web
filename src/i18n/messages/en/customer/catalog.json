@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "productsTitle": "Products and packaging",
+    "productsDescription": "Choose your packaging, see starting prices and production times, and order online with Packio",
+    "categoryDescription": "{name}: products, starting prices and production times. Order online with Packio"
+  },
+  "breadcrumbs": {
+    "label": "Breadcrumb",
+    "home": "Home",
+    "products": "Products"
+  },
+  "list": {
+    "heading": "Products and packaging",
+    "intro": "Pick a packaging type and see its starting price and production time straight away",
+    "categories": "Categories",
+    "allCategories": "All products",
+    "types": "Product types",
+    "allTypes": "All types",
+    "searchLabel": "Search products",
+    "searchPlaceholder": "e.g. mailer box",
+    "searchSubmit": "Search",
+    "results": "{count, plural, one {# product} other {# products}}",
+    "resultsFor": "Results for “{q}”",
+    "clear": "Clear search",
+    "emptyTitle": "No products match",
+    "emptyBody": "Try another search or category. For a special specification, request a quote",
+    "productsHeading": "Made to order",
+    "stockHeading": "Stock products"
+  },
+  "pagination": {
+    "nav": "Pages",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
+  },
+  "card": {
+    "instant": "Instant price",
+    "rfq": "Quote on request",
+    "stock": "Stock product"
+  },
+  "price": {
+    "from": "From {price} / piece",
+    "basisQuantity": "at {quantity} pieces",
+    "vatIncluded": "incl. VAT",
+    "vatExcluded": "excl. VAT",
+    "deliveryIncluded": "incl. delivery",
+    "deliveryExcluded": "excl. delivery",
+    "leadTime": "Made in {min}–{max} business days",
+    "leadTimeExact": "Made in {days} business days",
+    "onRequest": "Priced to your spec",
+    "seePrice": "See the price on the product page"
+  },
+  "product": {
+    "gallery": "Product images",
+    "galleryShow": "Image {index} of {count}",
+    "galleryEmpty": "No product images yet",
+    "configure": "Configure and price",
+    "requestQuote": "Request a quote",
+    "designOnline": "Design online",
+    "downloadTemplate": "Download the template",
+    "askCs": "Ask our team",
+    "specs": "Options",
+    "sizes": "Standard sizes",
+    "sizesCaption": "Standard sizes of {name} (millimetres)",
+    "sizeCode": "Code",
+    "sizeName": "Size",
+    "sizeDimensions": "L × W × H (mm)",
+    "patterns": "Box styles",
+    "videos": "Videos",
+    "faqs": "Frequently asked questions",
+    "rfqNote": "This product is priced to your specification. Send us the details and our team will quote",
+    "priceNote": "The starting price is for a standard specification; the real price depends on the size, material and quantity you choose",
+    "optionKinds": {
+      "material": "Material",
+      "finish": "Finish",
+      "coating": "Coating",
+      "ink_colour": "Ink colours",
+      "diecut": "Die-cut",
+      "assembly": "Assembly",
+      "print_type": "Printing",
+      "pattern": "Style"
+    }
+  },
+  "stock": {
+    "minOrder": "Minimum order {quantity} {unit}",
+    "inStock": "In stock",
+    "outOfStock": "Temporarily out of stock",
+    "foodGrade": "Food contact safe",
+    "capacity": "{ml} ml",
+    "dimensions": "Dimensions",
+    "details": "Product details",
+    "attributes": "Attributes",
+    "order": "Order this product",
+    "units": {
+      "piece": "pieces",
+      "box": "boxes",
+      "pouch": "pouches",
+      "tube": "tubes",
+      "set": "sets",
+      "job": "jobs",
+      "round": "rounds",
+      "trip": "trips"
+    }
+  },
+  "category": {
+    "rfqTitle": "Need a specification that is not listed?",
+    "rfqBody": "Tell us the size, material and quantity and our team will quote within a business day",
+    "rfqCta": "Request a quote"
+  },
+  "menu": {
+    "toggle": "Product categories",
+    "all": "See all products"
+  }
+}
