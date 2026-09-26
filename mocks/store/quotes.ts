@@ -637,7 +637,10 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
 
 /* ------------------------------------------------------------------------------ saved quotes */
 
-const PROMOTIONS: Record<string, { title: string; titleEn: string; pct: number; types?: string[]; cap?: number }> = {
+export const PROMOTIONS: Record<
+  string,
+  { title: string; titleEn: string; pct: number; types?: string[]; cap?: number }
+> = {
   PACKIO10: { title: "ลด 10% ค่าสินค้า", titleEn: "10% off the product", pct: 10 },
   FIRSTBOX: {
     title: "ลูกค้าใหม่ ลด 15% (สูงสุด ฿500)",
@@ -649,7 +652,7 @@ const PROMOTIONS: Record<string, { title: string; titleEn: string; pct: number; 
 };
 const EXPIRED_CODES = new Set(["SUMMER2025"]);
 
-function checkCode(code: string, productTypeCode: string) {
+export function checkCode(code: string, productTypeCode: string) {
   const key = code.trim().toUpperCase();
   if (EXPIRED_CODES.has(key)) return { key, promotion: null, reason: "expired" as const };
   const promotion = PROMOTIONS[key];

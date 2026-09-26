@@ -61,6 +61,9 @@ const FAKE_CUSTOMERS: [string, "individual" | "juristic", string | null][] = [
   ["คุณนภา ตัวอย่าง", "individual", null],
 ];
 
+export type MockOrder = Order;
+export type MockCommerceCustomer = Customer;
+
 export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], index) => {
   const id = mockId("cus", index + 1);
   const postcode = ["10110", "10400", "50200", "20000", "90110", "40000"][index % 6]!;
@@ -608,7 +611,7 @@ function buildOrder(seed: Seed, index: number): Order {
 }
 
 /** What the API would offer on an order in this state (entity.next-actions). */
-function nextActionsOf(order: Order): Order["nextActions"] {
+export function nextActionsOf(order: Order): Order["nextActions"] {
   const actions: Order["nextActions"] = [];
   if (order.hasSlipToReview) {
     actions.push({ key: "order.approve_slip", irreversible: true }, { key: "order.reject_slip" });
@@ -844,6 +847,8 @@ function forActor(order: Order, persona: ReturnType<typeof staffPersonaOf>): Ord
 /* ---------------------------------------------------------------------------------- handlers */
 
 const find = (orderId: string | undefined) => orders.find((order) => order.id === orderId);
+/** Recomputes the derived columns after the storefront mock changed an order (mocks/store). */
+export const refreshOrder = (order: Order) => refresh(order);
 const refresh = (order: Order) => {
   order.nextActions = nextActionsOf(order);
   order.nextInstalment = order.instalments.find((item) => item.status !== "paid") ?? null;
