@@ -19,7 +19,16 @@ import { IconButton } from "@/ui/components/IconButton";
  * `next-intl`'s `Link` does the rewriting, given the current pathname without its locale
  * prefix, which `usePathname` from `@/i18n/navigation` already returns.
  */
-export function LocaleLink() {
+export function LocaleLink({
+  open,
+  onOpenChange,
+  autoFocus,
+}: {
+  /** Controlled open state — for a menu loaded lazily by the click that should open it. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  autoFocus?: boolean;
+} = {}) {
   const t = useTranslations("common.locale");
   const current = useLocale();
   const pathname = usePathname();
@@ -30,7 +39,9 @@ export function LocaleLink() {
     <DropdownMenu
       align="end"
       label={t("label")}
-      trigger={<IconButton name="language" variant="ghost" size="sm" label={t("label")} />}
+      open={open}
+      onOpenChange={onOpenChange}
+      trigger={<IconButton name="language" variant="ghost" size="sm" label={t("label")} autoFocus={autoFocus} />}
       items={routing.locales.map((locale) => ({
         id: locale,
         selected: locale === current,

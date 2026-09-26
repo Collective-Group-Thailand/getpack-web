@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 import { reportError } from "@/lib/observability/report";
-import { Button, ErrorState } from "@/ui";
+import { Button } from "@/ui/components/Button";
+import { ErrorState } from "@/ui/components/ErrorState";
 
 /**
  * Segment error boundary. `digest` is the id Next puts in the server log for this failure, so

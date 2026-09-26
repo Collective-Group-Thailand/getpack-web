@@ -13,13 +13,23 @@ import { SignInSheet } from "./SignInSheet";
  * someone here with a `returnTo`, a link in an SMS or LINE message, and the LIFF entry point
  * F3 adds.
  */
-export function SignInPanel({ returnTo }: { returnTo: string }) {
+export function SignInPanel({
+  returnTo,
+  resume,
+  lineReturnUrl,
+}: {
+  returnTo: string;
+  resume?: "line";
+  lineReturnUrl?: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
 
   return (
     <SignInSheet
       open={open}
+      resume={resume}
+      lineReturnUrl={lineReturnUrl}
       onOpenChange={(next) => {
         setOpen(next);
         // Closing is a cancel. Going back is the kind thing to do when there is somewhere to

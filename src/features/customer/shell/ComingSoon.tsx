@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
@@ -36,4 +37,13 @@ export async function ComingSoon({ titleKey }: { titleKey: string }) {
       />
     </div>
   );
+}
+
+/**
+ * A placeholder names itself in the tab but is kept out of search results: an indexed "coming
+ * soon" is a page a search engine will show and then have to forget.
+ */
+export async function comingSoonMetadata(titleKey: string): Promise<Metadata> {
+  const t = await getTranslations("storefront");
+  return { title: t(titleKey), robots: { index: false, follow: true } };
 }

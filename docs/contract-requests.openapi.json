@@ -775,8 +775,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           },
           {
@@ -1050,8 +1049,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           },
           {
@@ -1494,8 +1492,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           },
           {
@@ -2037,8 +2034,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -2122,8 +2118,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -3104,8 +3099,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -6185,8 +6179,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           },
           {
@@ -7120,8 +7113,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           },
           {
@@ -9325,8 +9317,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
@@ -9535,6 +9526,272 @@
                     "data"
                   ],
                   "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/catalog/price-hints": {
+      "get": {
+        "operationId": "store.catalog.priceHints.list",
+        "summary": "The \"starting from\" price and lead-time range for catalogue and stock products",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.price-hints",
+        "x-decisions": [
+          "D-043",
+          "D-050",
+          "D-101",
+          "D-161"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "productType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slugs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+(,[A-Za-z0-9_-]+)*$"
+            }
+          },
+          {
+            "name": "skus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+(,[A-Za-z0-9_-]+)*$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The \"starting from\" price and lead-time range for catalogue and stock products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PriceHintDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/catalog/product-categories": {
+      "get": {
+        "operationId": "store.catalog.productCategories.list",
+        "summary": "The active product categories the catalogue is browsed by",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.product-categories",
+        "x-decisions": [
+          "D-100"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The active product categories the catalogue is browsed by",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StoreProductCategoryDto"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/catalog/products/{slug}/faqs": {
+      "get": {
+        "operationId": "store.catalog.products.faqs.list",
+        "summary": "The questions shown on one product's page",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.product-faqs",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The questions shown on one product's page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StoreProductFaqDto"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me": {
+      "patch": {
+        "operationId": "store.me.update",
+        "summary": "The customer completes their own profile — name, e-mail, customer type",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.profile",
+        "x-decisions": [
+          "D-020"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStoreProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The customer completes their own profile — name, e-mail, customer type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreProfileDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/orders/by-code/{orderCode}": {
+      "get": {
+        "operationId": "store.orders.byCode.get",
+        "summary": "One of the signed-in customer's orders, found by its code; 404 when it is not theirs",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.order-by-code",
+        "parameters": [
+          {
+            "name": "orderCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One of the signed-in customer's orders, found by its code; 404 when it is not theirs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreOrderLookupDto"
                 }
               }
             }
@@ -10611,6 +10868,26 @@
           "head_office",
           "branch"
         ]
+      },
+      "BusinessDayRangeDto": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "max": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "min",
+          "max"
+        ],
+        "additionalProperties": false
       },
       "CalculatorKey": {
         "type": "string",
@@ -18039,6 +18316,108 @@
           "mockup"
         ]
       },
+      "PriceHintBasisDto": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "sizeCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "includesVat": {
+            "type": "boolean"
+          },
+          "includesDelivery": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "quantity",
+          "sizeCode",
+          "includesVat",
+          "includesDelivery"
+        ],
+        "additionalProperties": false
+      },
+      "PriceHintDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PriceHintKind"
+          },
+          "productTypeCode": {
+            "type": "string"
+          },
+          "startingFromPerPiece": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "basis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceHintBasisDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "leadTimeBusinessDays": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessDayRangeDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "key",
+          "kind",
+          "productTypeCode",
+          "startingFromPerPiece",
+          "currency",
+          "basis",
+          "leadTimeBusinessDays",
+          "computedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PriceHintKind": {
+        "type": "string",
+        "enum": [
+          "catalog_product",
+          "stock_product"
+        ]
+      },
       "ProblemDetails": {
         "description": "As defined in contract/openapi.json (api-conventions §3)."
       },
@@ -22534,6 +22913,138 @@
         ],
         "additionalProperties": false
       },
+      "StoreOrderLookupDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "orderId",
+          "orderCode",
+          "status",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreProductCategoryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "nameTh": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "parentCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sort": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "code",
+          "nameTh",
+          "nameEn",
+          "parentCode",
+          "sort"
+        ],
+        "additionalProperties": false
+      },
+      "StoreProductFaqDto": {
+        "type": "object",
+        "properties": {
+          "questionTh": {
+            "type": "string"
+          },
+          "questionEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "answerTh": {
+            "type": "string"
+          },
+          "answerEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "questionTh",
+          "questionEn",
+          "answerTh",
+          "answerEn"
+        ],
+        "additionalProperties": false
+      },
+      "StoreProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "customerType": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CustomerType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "email",
+          "phone",
+          "customerType"
+        ],
+        "additionalProperties": false
+      },
       "SubmissionStatus": {
         "type": "string",
         "enum": [
@@ -22654,6 +23165,25 @@
           "name"
         ],
         "additionalProperties": false
+      },
+      "UpdateStoreProfileDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "customerType": {
+            "$ref": "#/components/schemas/CustomerType"
+          }
+        }
       }
     }
   }

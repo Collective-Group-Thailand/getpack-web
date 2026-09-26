@@ -27,3 +27,5 @@ export * from "./admin-partners";
 export * from "./admin-prepress";
 export * from "./admin-rfq";
 export * from "./admin-sales";
+export * from "./store-account";
+export * from "./store-catalog";

@@ -19,8 +19,8 @@ headroom is won is the job.
 
 | URL set | Target (initial JS, gz) | Measured | Over by |
 |---|---|---|---|
-| `customer-marketing` | 150 KB | 374 KB | 2.5× |
-| `customer-app` | 200 KB | 381 KB | 1.9× |
+| `customer-marketing` | 150 KB | ~~374 KB~~ 257 KB (F3 3.1) | 1.7× |
+| `customer-app` | 200 KB | ~~381 KB~~ 268 KB (F3 3.1) | 1.3× |
 | `admin` (shell) | 250 KB | 363 KB | 1.5× |
 | `admin-lists` | 250 KB | 390 KB | 1.6× |
 | `admin-crud` | 250 KB | 489 KB | 2.0× |
@@ -54,3 +54,36 @@ not tree-shaken across the `"use client"` boundary: importing one hook from `../
 the whole console (forms, import wizard, saved views). Importing by path is what fixed the
 dashboard. (3) The storefront reads `clientEnv` too, so the customer sets should have shed zod as
 well; re-measure them and lower their ratchets (F3).
+
+## F3 3.1 — the storefront, before and after
+
+Measured on the production build in mock mode, same method (desktop preset, `pk_consent=a1m1`).
+The marketing set now covers what 3.1 built: `/`, `/products`, a product page, an article, `/faq`.
+
+| Set | Start of 3.1 | End of 3.1 | Ratchet |
+|---|---|---|---|
+| `customer-marketing` | 341 KB (zod already gone, F2.8) | 256–257 KB | 390 → 270 KB |
+| `customer-app` | — | 256–268 KB | 400 → 280 KB |
+
+What came out, in order of weight:
+
+1. **The header's menus load on intent.** Language and theme are plain buttons until pointed at,
+   focused or clicked (`DeferredMenus.tsx`); the Radix menu, its positioning engine and their
+   dependencies arrive then. A click opens the menu as it arrives; a focused placeholder hands
+   focus to the real trigger.
+2. **No bell for a guest.** The notification bell (a Popover and a query) renders only with a
+   session, and is imported dynamically: Next ships every client module a server component
+   *imports*, rendered or not, so the import itself had to move behind `dynamic()`.
+3. **`error.tsx` imported the `@/ui` barrel.** A client component on every customer route, so the
+   whole component library — galleries, tables, editors' neighbours — was in every page. All
+   three zones' `error.tsx`/`not-found.tsx` now import by path.
+
+LCP 0.76–0.85 s, CLS 0, accessibility 1 and SEO 1 on every marketing URL (the app set's SEO is
+0.66 by design: those pages are `noindex`).
+
+**What is left** (≈256 KB): React + react-dom ~73 KB, Next's router runtime ~43 KB, Radix still in
+the shell ~40 KB (`TooltipProvider` and sonner's `Toaster` in `ZoneProviders`, which all three
+zones share; the sign-in sheet and the search dialog load on demand and add nothing up front),
+next-intl ~11 KB, Lucide ~16 KB, app code. The next levers: a customer-only
+`ZoneProviders` that mounts the tooltip provider and toaster lazily, and next-intl's client
+provider carrying only the namespaces a page's client components use instead of the whole zone.

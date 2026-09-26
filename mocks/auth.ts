@@ -9,6 +9,7 @@
 import { http, HttpResponse } from "msw";
 
 import { DEFAULT_PERSONA, MOCK_PASSWORD, menuFor, personaByEmail, personaByKey, type StaffPersona } from "./personas";
+import { MOCK_CUSTOMER_PHONES, resetCustomer, type CustomerPersona } from "./store/customers";
 import { accessToken, principalOf, principalOfRefresh, problem, refreshToken, type Audience } from "./support";
 
 /** The default staff credentials the F1 tests use: a CS agent. */
@@ -19,6 +20,16 @@ export const MOCK_OTP = {
   code: "000000",
   challengeId: "00000000-0000-4000-8000-0000000000c1",
 };
+/** A first-time customer: signing in with this number walks the consent and profile steps. */
+export const MOCK_NEW_CUSTOMER_PHONE = "0898765432";
+
+/** One challenge id per customer persona, so verify knows who asked. */
+const CHALLENGES: Record<CustomerPersona, string> = {
+  returning: MOCK_OTP.challengeId,
+  newcomer: "00000000-0000-4000-8000-0000000000c2",
+};
+/** Firebase and LINE tokens the mock accepts (the SDKs never run against the mock). */
+export const MOCK_ID_TOKENS = { google: "mock.firebase.google", apple: "mock.firebase.apple", line: "mock.line" };
 
 const CUSTOMER = {
   id: "00000000-0000-4000-8000-000000000001",
@@ -41,11 +52,13 @@ function subject(audience: Audience, persona?: StaffPersona) {
   return { ...base, type: audience };
 }
 
-function session(audience: Audience, persona?: StaffPersona) {
+function session(audience: Audience, persona?: StaffPersona, customer?: CustomerPersona) {
+  // The returning customer's token carries no persona, as it did before the newcomer existed.
+  const key = persona?.key ?? (customer === "newcomer" ? "newcomer" : undefined);
   return HttpResponse.json({
-    accessToken: accessToken(audience, persona?.key),
+    accessToken: accessToken(audience, key),
     accessTokenExpiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
-    refreshToken: refreshToken(audience, persona?.key),
+    refreshToken: refreshToken(audience, key),
     refreshTokenExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60_000).toISOString(),
     subject: subject(audience, persona),
   });
@@ -93,7 +106,7 @@ export const authHandlers = [
       return problem(422, "auth.invalid_phone", "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง");
     }
     return HttpResponse.json({
-      challengeId: MOCK_OTP.challengeId,
+      challengeId: CHALLENGES[MOCK_CUSTOMER_PHONES[body.phone] ?? "returning"],
       expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
       // Seconds, not minutes: a test should not be made to wait out a real cooldown.
       resendAvailableAt: new Date(Date.now() + 3_000).toISOString(),
@@ -102,8 +115,27 @@ export const authHandlers = [
 
   http.post("*/v1/auth/customer/otp/verify", async ({ request }) => {
     const body = (await request.json()) as { challengeId?: string; code?: string };
-    if (body.challengeId !== MOCK_OTP.challengeId || body.code !== MOCK_OTP.code) {
+    const persona = (Object.keys(CHALLENGES) as CustomerPersona[]).find((key) => CHALLENGES[key] === body.challengeId);
+    if (!persona || body.code !== MOCK_OTP.code) {
       return problem(401, "auth.invalid_otp", "รหัส OTP ไม่ถูกต้อง");
+    }
+    if (persona === "newcomer") resetCustomer("newcomer");
+    return session("customer", undefined, persona);
+  }),
+
+  // Google / Apple through Firebase, and LINE (B1.3). The mock accepts its own fake tokens only;
+  // a real SDK's token is refused, so nothing pretends a real provider was reached.
+  http.post("*/v1/auth/customer/firebase", async ({ request }) => {
+    const body = (await request.json()) as { idToken?: string };
+    if (body.idToken !== MOCK_ID_TOKENS.google && body.idToken !== MOCK_ID_TOKENS.apple) {
+      return problem(401, "auth.invalid_id_token", "ยืนยันตัวตนกับผู้ให้บริการไม่สำเร็จ");
+    }
+    return session("customer");
+  }),
+  http.post("*/v1/auth/customer/line", async ({ request }) => {
+    const body = (await request.json()) as { idToken?: string; liffAccessToken?: string };
+    if (body.idToken !== MOCK_ID_TOKENS.line && body.liffAccessToken !== MOCK_ID_TOKENS.line) {
+      return problem(401, "auth.invalid_id_token", "ยืนยันตัวตนกับ LINE ไม่สำเร็จ");
     }
     return session("customer");
   }),
@@ -112,20 +144,13 @@ export const authHandlers = [
     const body = (await request.json()) as { refreshToken?: string };
     const principal = principalOfRefresh(body.refreshToken);
     if (!principal) return problem(401, "auth.invalid_refresh_token", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง");
-    return session(principal.audience, principal.audience === "staff" ? personaByKey(principal.persona) : undefined);
+    return session(
+      principal.audience,
+      principal.audience === "staff" ? personaByKey(principal.persona) : undefined,
+      principal.audience === "customer" && principal.persona === "newcomer" ? "newcomer" : undefined,
+    );
   }),
 
-  meHandler("/v1/store/me", "customer", () => ({
-    id: CUSTOMER.id,
-    displayName: "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
-    email: "seed.customer@packio.invalid",
-    phone: MOCK_OTP.phone,
-    locale: "th",
-    roles: CUSTOMER.roles,
-    permissions: CUSTOMER.permissions,
-    scopes: CUSTOMER.scopes,
-    identities: [{ provider: "phone_otp", linkedAt: "2026-09-23T10:00:00+07:00" }],
-  })),
   meHandler("/v1/admin/me", "staff", (request) => {
     const persona = staffPersonaOf(request)!;
     return {

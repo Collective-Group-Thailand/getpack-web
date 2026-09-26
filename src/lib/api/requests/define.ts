@@ -49,6 +49,8 @@ export interface RequestDefinition<
   idempotent?: TIdempotent;
   /** Editable aggregate: the caller sends `If-Match`. */
   concurrency?: boolean;
+  /** `@Public()`: answered without a token, as well as with the surface's own. */
+  public?: boolean;
 }
 
 /** Declares one request; the identity function exists for inference. */
