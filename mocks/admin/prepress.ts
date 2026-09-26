@@ -117,6 +117,8 @@ type Plan =
 
 /** Order index (0-based, the commerce seed) → what is on the prepress desk for it. */
 const PLANS: Record<number, Plan> = {
+  // The storefront's returning customer's hired-design order, three rounds in (F3 3.5).
+  0: { stage: "design", rounds: ["changes_requested", "changes_requested", "delivered"] },
   7: { stage: "design", rounds: ["in_progress"] },
   11: { stage: "template" },
   12: { stage: "preflight", blocked: true },
@@ -562,7 +564,7 @@ function manage(
 ): Response | { detail: Detail; who: StaffPersona } {
   const who = staffPersonaOf(request);
   if (!who || !can(who, "prepress.manage")) return forbidden();
-  const detail = orderId ? details.get(orderId) : undefined;
+  const detail = orderId ? prepressOf(orderId) : undefined;
   if (!detail) return notFound();
   if (action && !refresh(detail).nextActions.some((item) => item.key === action && !item.disabledReason)) {
     return conflict("ทำรายการนี้ในขั้นตอนนี้ไม่ได้");
@@ -597,6 +599,155 @@ function uploaded(fileId: string, name: string): FileRef {
   };
 }
 
+/* ------------------------------------------------------------ the customer's side (mocks/store) */
+
+export { annotations as proofAnnotations };
+export type PrepressDetail = Detail;
+export type PrepressAnnotation = Annotation;
+
+/** The prepress row of an order, made on first use for one no seed plan covers. */
+export function prepressOf(orderId: string): Detail | undefined {
+  const known = details.get(orderId);
+  if (known) return refresh(known);
+  const index = orders.findIndex((order) => order.id === orderId);
+  const order = orders[index];
+  if (!order) return undefined;
+  const detail = build(order, index, { stage: "template" });
+  detail.artworkStatus = order.artworkStatus;
+  detail.designOption = order.designOption;
+  detail.mockupOption = order.mockupOption;
+  if (order.designOption === "hired_design")
+    detail.designService = designService(order, index + 1, { stage: "design", rounds: [] });
+  details.set(orderId, detail);
+  return refresh(detail);
+}
+
+/**
+ * Preflight, mocked by file name (D-070): `size` or `nobleed` blocks, `lowres` or `rgb` warns,
+ * anything else passes — so a test can ask for each outcome.
+ */
+function preflightOf(names: string[]): Pick<Detail["submissions"][number], "preflightStatus" | "findings"> {
+  const findings: Detail["submissions"][number]["findings"] = [];
+  const joined = names.join(" ").toLowerCase();
+  if (joined.includes("size"))
+    findings.push({
+      check: "size_mismatch",
+      severity: "block",
+      page: 1,
+      message: "ขนาดไฟล์ไม่ตรงกับแบบกล่อง กรุณาใช้แม่แบบที่ดาวน์โหลดจากหน้านี้",
+      thumbnailUrl: null,
+    });
+  if (joined.includes("nobleed"))
+    findings.push({
+      check: "missing_bleed",
+      severity: "block",
+      page: 1,
+      message: "ไม่มีระยะตัดตก 3 มม. รอบแบบ",
+      thumbnailUrl: null,
+    });
+  if (joined.includes("lowres"))
+    findings.push({
+      check: "low_resolution",
+      severity: "warn",
+      page: 1,
+      message: "ภาพความละเอียด 180 ppi ต่ำกว่า 300 ppi อาจไม่คมชัด",
+      thumbnailUrl: null,
+    });
+  if (joined.includes("rgb"))
+    findings.push({
+      check: "rgb_colour",
+      severity: "warn",
+      page: 1,
+      message: "ไฟล์เป็นโหมดสี RGB สีที่พิมพ์ออกมาอาจต่างจากหน้าจอ",
+      thumbnailUrl: null,
+    });
+  const status = findings.some((finding) => finding.severity === "block")
+    ? "blocked"
+    : findings.length > 0
+      ? "passed_with_warnings"
+      : "passed";
+  return { preflightStatus: status, findings };
+}
+
+export function customerSubmit(
+  detail: Detail,
+  files: { fileId: string; role: Detail["submissions"][number]["files"][number]["role"]; name: string }[],
+  who: { id: string; displayName: string },
+  designDocumentId: string | null,
+): Detail {
+  for (const item of detail.submissions) if (item.status === "submitted") item.status = "superseded";
+  const versionNo = (detail.submissions[0]?.versionNo ?? 0) + 1;
+  const result = preflightOf(files.map((entry) => entry.name));
+  detail.submissions.unshift({
+    id: mockId("sub", 7000 + versionNo + Math.floor(Math.random() * 900)),
+    versionNo,
+    source: designDocumentId ? "designer" : "upload",
+    status: result.preflightStatus === "blocked" ? "rejected" : "submitted",
+    ...result,
+    preflightCompletedAt: bangkokIso(),
+    files: files.map((entry) => ({ role: entry.role, file: uploaded(entry.fileId, entry.name) })),
+    designDocumentId,
+    submittedBy: who,
+    submittedAt: bangkokIso(),
+    nextActions: [],
+  });
+  detail.artworkStatus = result.preflightStatus === "blocked" ? "awaiting_upload" : "uploaded";
+  detail.slaDueAt = bangkokIso(4 * HOUR);
+  return refresh(detail);
+}
+
+export function customerDecide(
+  detail: Detail,
+  proofId: string,
+  outcome: "approved" | "changes_requested",
+  who: { id: string; displayName: string },
+): Detail | Response {
+  const current = detail.proofs.find((item) => item.id === proofId);
+  if (!current || current.status !== "pending_customer") return conflict("ปรู๊ฟฉบับนี้ไม่ได้รอการตรวจแล้ว");
+  current.status = outcome;
+  current.decidedAt = bangkokIso();
+  current.decidedBy = who;
+  current.decisionChannel = "web";
+  if (outcome === "approved") {
+    current.approvedFileSha256 = "a3f5".padEnd(64, "0");
+    detail.artworkStatus = "approved";
+    const order = orders.find((candidate) => candidate.id === detail.orderId);
+    // D-073: production starts once artwork is approved and the before-production instalments are paid.
+    if (order && order.status === "paid_for_production") order.status = "artwork_approved";
+  } else {
+    detail.artworkStatus = "changes_requested";
+  }
+  return refresh(detail);
+}
+
+export function customerAnnotate(
+  proofId: string,
+  input: { page: number; kind: "pin" | "rect"; geometry: Record<string, number>; body: string; parentId?: string },
+  who: { id: string; displayName: string },
+): Annotation {
+  const list = annotations.get(proofId) ?? [];
+  const parent = input.parentId ? list.find((item) => item.id === input.parentId) : undefined;
+  const created: Annotation = {
+    id: mockId("ann", 6000 + list.length + Math.floor(Math.random() * 900)),
+    parentId: parent?.id ?? null,
+    page: parent?.page ?? input.page,
+    kind: parent?.kind ?? input.kind,
+    geometry: parent?.geometry ?? input.geometry,
+    comment: input.body,
+    author: who,
+    authorKind: "customer",
+    createdAt: bangkokIso(),
+    resolvedAt: null,
+    resolvedBy: null,
+  };
+  annotations.set(proofId, [...list, created]);
+  return created;
+}
+
+export function refreshPrepress(detail: Detail): Detail {
+  return refresh(detail);
+}
+
 export const prepressHandlers = [
   mockRequest("GET /v1/admin/prepress", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
@@ -613,8 +764,9 @@ export const prepressHandlers = [
   }),
   mockRequest("GET /v1/admin/prepress/{orderId}", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
-    const detail = details.get(params.orderId!);
-    return detail ? refresh(detail) : notFound();
+    // Any order has a prepress row once asked for — a web order the customer uploaded to, say.
+    const detail = prepressOf(params.orderId!);
+    return detail ?? notFound();
   }),
   mockRequest("POST /v1/admin/prepress/{orderId}/actions/assign", ({ params, body, request }) => {
     const found = manage(request, params.orderId, "prepress.assign");
