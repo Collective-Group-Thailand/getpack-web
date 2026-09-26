@@ -1,0 +1,233 @@
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test, type Page } from "@playwright/test";
+
+import { HOSTS } from "../playwright.config";
+import { acceptCookies, signInAsCustomer } from "./helpers/customer";
+import { gotoHydrated } from "./helpers/session";
+
+/**
+ * F3 3.7 end to end: Packio for business, LINE LIFF and help.
+ *
+ * A founder signs a company up with its KYC documents; a company buyer's order over the
+ * threshold waits for the approver, who places it (D-123); the admin invites a member and
+ * reorders in bulk from CSV lines; LIFF shows orders and points in LINE's frame; the contact
+ * form, the sample kit and the guided help hand-off each come back with a reference. The B2B
+ * personas (`companyadmin`, `companybuyer`, `founder`) are this spec's alone.
+ */
+
+const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+const PHONES = { admin: "0867890123", buyer: "0878901234", founder: "0889012345" };
+const PDF = (name: string) => ({ name, mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4\n% mock\n") });
+
+async function expectNoViolations(page: Page) {
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
+  expect(
+    violations,
+    violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`).join("\n"),
+  ).toEqual([]);
+}
+
+const dock = (page: Page) => page.getByRole("complementary", { name: "ราคาของคุณ" });
+
+test.describe.configure({ mode: "serial" });
+
+test.describe("Packio for business", () => {
+  test("a visitor reads what a company account adds", async ({ page }) => {
+    await acceptCookies(page);
+    await gotoHydrated(page, `${HOSTS.customer}/business`);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("ในนามบริษัท");
+    await expect(page.getByRole("link", { name: "เปิดบัญชีบริษัท" })).toHaveAttribute(
+      "href",
+      /sign-in\?returnTo=%2Fbusiness%2Fapply/,
+    );
+    await expectNoViolations(page);
+  });
+
+  test("a company signs up with its KYC documents and waits for review (D-120)", async ({ page }) => {
+    await signInAsCustomer(page, "/business/apply", PHONES.founder);
+    await expect(page.getByRole("heading", { level: 1, name: "เปิดบัญชีบริษัท" })).toBeVisible();
+    await page.getByRole("button", { name: "ส่งใบสมัคร" }).click();
+    await expect(page.getByRole("alert").filter({ hasText: "กรุณาแก้" })).toContainText("กรุณาแนบหนังสือรับรองบริษัท");
+
+    await page.getByLabel(/^ชื่อนิติบุคคล/).fill("บริษัท ทดสอบอีทูอี จำกัด");
+    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
+    await page.getByLabel(/^ที่อยู่สำนักงานใหญ่/).fill("1 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพมหานคร 10110");
+    await page.getByLabel(/^ชื่อ-นามสกุล/).fill("สมใจ ทดสอบ");
+    await page.getByLabel(/^ตำแหน่ง/).fill("กรรมการผู้จัดการ");
+    await page.getByLabel(/^วันที่ออกหนังสือรับรอง/).fill(new Date().toISOString().slice(0, 10));
+    const files = page.locator('input[type="file"]');
+    await files.nth(0).setInputFiles(PDF("certificate.pdf"));
+    await files.nth(1).setInputFiles(PDF("pp20.pdf"));
+    await files.nth(2).setInputFiles(PDF("signatory-id.pdf"));
+    await expect(page.getByText(/^อัปโหลด .+ แล้ว$/)).toHaveCount(3);
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "ส่งใบสมัคร" }).click();
+
+    await expect(page).toHaveURL(/\/business\?applied=1$/);
+    await expect(page.getByRole("heading", { level: 1, name: "บริษัท ทดสอบอีทูอี จำกัด" })).toBeVisible();
+    await expect(page.getByText("กำลังตรวจเอกสาร", { exact: true })).toBeVisible();
+    await expect(page.getByText("ส่งใบสมัครแล้ว")).toBeVisible();
+  });
+
+  test("a buyer's order over the threshold waits for the approver, who places it (D-123)", async ({
+    page,
+    browser,
+  }) => {
+    test.slow();
+    await signInAsCustomer(page, "/configure/tuck-end-box", PHONES.buyer);
+    // Two lines of 3,000 go over the company's THB 50,000 threshold.
+    for (let line = 0; line < 2; line += 1) {
+      await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
+      await dock(page)
+        .getByRole("table", { name: "ราคาต่อจำนวน" })
+        .getByRole("button", { name: /เลือก\S*\s*3,000 ชิ้น/ })
+        .click();
+      await expect(dock(page)).toContainText("3,000 ชิ้น");
+      await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
+      await expect(page.getByText("เพิ่มกล่องฝาเสียบลงตะกร้าแล้ว").first()).toBeVisible();
+    }
+
+    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
+    await expect(page.getByText("ต้องให้ผู้อนุมัติของบริษัทอนุมัติก่อน")).toBeVisible();
+    await expect(summary).toContainText("กรุณาใส่เลขที่ใบสั่งซื้อ (PO) ของบริษัท");
+    await page.getByLabel(/^เลขที่ใบสั่งซื้อ \(PO\)/).fill("PO-E2E-01");
+    const send = summary.getByRole("button", { name: "ส่งให้ผู้อนุมัติ" });
+    await expect(send).toBeEnabled();
+    await send.click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "ส่งให้ผู้อนุมัติ" }).click();
+    await expect(page).toHaveURL(/\/business\/approvals\?sent=AP-/);
+    const requestNo = new URL(page.url()).searchParams.get("sent")!;
+    await expect(page.getByRole("status").filter({ hasText: requestNo })).toBeVisible();
+    await expect(page.getByRole("heading", { name: new RegExp(requestNo) })).toBeVisible();
+
+    const other = await browser.newContext();
+    const approver = await other.newPage();
+    await signInAsCustomer(approver, "/business/approvals", PHONES.admin);
+    const card = approver.getByRole("article").filter({ hasText: requestNo });
+    await expect(card).toContainText("PO PO-E2E-01");
+    await expectNoViolations(approver);
+    await card.getByRole("button", { name: `อนุมัติ ${requestNo}`, exact: true }).click();
+    const dialog = approver.getByRole("alertdialog", { name: `อนุมัติ ${requestNo}?` });
+    await expect(dialog).toContainText("฿");
+    await dialog.getByRole("button", { name: "อนุมัติ", exact: true }).click();
+    await expect(approver.getByText(`อนุมัติ ${requestNo} แล้ว`)).toBeVisible();
+    await gotoHydrated(approver, `${HOSTS.customer}/business/approvals?view=decided`);
+    const decided = approver.getByRole("article").filter({ hasText: requestNo });
+    await expect(decided).toContainText("อนุมัติแล้ว");
+    await expect(decided.getByRole("link", { name: /^PK-2569-/ })).toHaveCount(2);
+    await other.close();
+  });
+
+  test("the admin sees credit and statements, invites a member, and reorders in bulk (D-121, D-153)", async ({
+    page,
+  }) => {
+    await signInAsCustomer(page, "/business", PHONES.admin);
+    await expect(
+      page.getByRole("region", { name: "เครดิตคงเหลือ" }).or(page.locator("section[aria-labelledby=dash-credit]")),
+    ).toContainText("฿");
+    await expectNoViolations(page);
+
+    await gotoHydrated(page, `${HOSTS.customer}/business/credit`);
+    await expect(page.getByText("ยังไม่ถึงกำหนด")).toBeVisible();
+    await page
+      .getByRole("button", { name: /^ขอลิงก์ดาวน์โหลด/ })
+      .first()
+      .click();
+    await expect(page.getByRole("link", { name: /^เปิดไฟล์/ }).first()).toBeVisible();
+
+    await gotoHydrated(page, `${HOSTS.customer}/business/members`);
+    await page.getByLabel(/^ชื่อ$/).fill("ฝ่ายบัญชีใหม่ (ทดสอบ)");
+    await page.getByLabel(/^เบอร์มือถือ/).fill("0891112222");
+    await page.getByRole("checkbox", { name: /^ฝ่ายบัญชี/ }).click();
+    await page.getByRole("button", { name: "ส่งคำเชิญ" }).click();
+    const invited = page.locator("main li").filter({ has: page.getByText("ฝ่ายบัญชีใหม่ (ทดสอบ)", { exact: true }) });
+    await expect(invited).toContainText("รอตอบรับ");
+
+    await gotoHydrated(page, `${HOSTS.customer}/business/reorder`);
+    await page.getByLabel(/^หรือวางรายการ/).fill("order,quantity\nPK-2569-00113,2000\nPK-0000-99999,1000\nnot a line!");
+    await page.getByRole("button", { name: "ตรวจรายการ" }).click();
+    await expect(page.getByText("อ่านไม่ได้ 1 บรรทัด")).toBeVisible();
+    const table = page.getByRole("table", { name: "ผลการตรวจรายการสั่งซ้ำ" });
+    await expect(table).toContainText("พร้อม");
+    await expect(table).toContainText("ไม่พบคำสั่งซื้อนี้ในบริษัท");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "ใส่ตะกร้า 1 รายการ" }).click();
+    await expect(page).toHaveURL(/\/cart$/);
+    await expect(page.getByRole("list", { name: "รายการในตะกร้า" }).locator(":scope > li")).toHaveCount(1);
+  });
+});
+
+test.describe("LINE LIFF (D-151)", () => {
+  test("orders, an order's stages and points in LINE's frame", async ({ page }) => {
+    await signInAsCustomer(page, "/liff");
+    await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toBeVisible();
+    const tabs = page.getByRole("navigation", { name: "เมนู Packio ใน LINE" });
+    await expect(tabs.getByRole("link", { name: "หน้าแรก" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("contentinfo")).toHaveCount(0);
+    await expectNoViolations(page);
+
+    await tabs.getByRole("link", { name: "คำสั่งซื้อ" }).click();
+    await page.getByRole("link", { name: /PK-2569-00136/ }).click();
+    await expect(page.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^สั่งซ้ำ/ })).toHaveAttribute("href", /\/liff\/orders\/.+\/reorder$/);
+
+    await tabs.getByRole("link", { name: "คะแนน" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "คะแนนสะสม" })).toBeVisible();
+    await tabs.getByRole("link", { name: "แชท" }).click();
+    await expect(page.getByRole("link", { name: "เปิดแชทกับ Packio" })).toHaveAttribute(
+      "href",
+      /line\.me\/R\/oaMessage/,
+    );
+  });
+});
+
+test.describe("help", () => {
+  test("the contact form comes back with a ticket", async ({ page }) => {
+    await acceptCookies(page);
+    await gotoHydrated(page, `${HOSTS.customer}/contact`);
+    await page.getByRole("button", { name: "ส่งข้อความ" }).click();
+    await expect(page.getByText("ใส่เบอร์โทรหรืออีเมลอย่างน้อยหนึ่งช่องทาง").first()).toBeVisible();
+    await page.getByLabel(/^ชื่อ/).fill("ผู้ติดต่อทดสอบ");
+    await page.getByLabel(/^อีเมล/).fill("contact.e2e@example.invalid");
+    await page.getByLabel(/^ข้อความ/).fill("อยากทราบระยะเวลาผลิตกล่อง 3,000 ใบครับ");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "ส่งข้อความ" }).click();
+    await expect(page.getByRole("status").filter({ hasText: /เลขเรื่อง CS-2569-/ })).toBeVisible();
+  });
+
+  test("a sample kit is requested to an address", async ({ page }) => {
+    await acceptCookies(page);
+    await gotoHydrated(page, `${HOSTS.customer}/samples`);
+    await page.getByRole("radio", { name: /ชุดตัวอย่างกระดาษ/ }).click();
+    await page.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับทดสอบ");
+    await page.getByLabel(/^เบอร์มือถือ/).fill("0801234567");
+    await page.getByLabel(/^ที่อยู่/).fill("9 ถนนทดสอบ");
+    await page.getByLabel(/^จังหวัด/).fill("กรุงเทพมหานคร");
+    await page.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "ขอชุดตัวอย่าง" }).click();
+    await expect(page.getByRole("status").filter({ hasText: /SK-2569-/ })).toBeVisible();
+  });
+
+  test("the guided help recommends styles and hands off to CS with the context", async ({ page }) => {
+    await acceptCookies(page);
+    await gotoHydrated(page, `${HOSTS.customer}/products`);
+    await page.getByRole("button", { name: "ให้ช่วยเลือกกล่อง" }).click();
+    const sheet = page.getByRole("dialog", { name: "ผู้ช่วยเลือกกล่อง" });
+    await sheet.getByRole("radio", { name: "เครื่องสำอาง" }).click();
+    await sheet.getByRole("radio", { name: /^เล็ก/ }).click();
+    await sheet.getByRole("radio", { name: "500–2,000" }).click();
+    await sheet.getByRole("radio", { name: "ดูพรีเมียม" }).click();
+    await sheet.getByRole("button", { name: "ดูคำแนะนำ" }).click();
+    await expect(sheet.getByRole("heading", { name: /^แนะนำสำหรับ/ })).toBeVisible();
+    await expect(sheet.getByRole("link").first()).toHaveAttribute("href", /\/configure\//);
+    await expectNoViolations(page);
+
+    await sheet.getByLabel(/^เบอร์ให้โทรกลับ/).fill("0801234567");
+    await sheet.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
+    await expect(sheet.getByRole("status").filter({ hasText: /ส่งต่อให้ทีมแล้ว เลขเรื่อง CS-2569-/ })).toBeVisible();
+  });
+});

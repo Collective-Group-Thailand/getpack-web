@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 
 import { PayInstalmentButton } from "../checkout/PayInstalmentButton";
-import { actionHref } from "./actions";
+import { actionHref, type Surface } from "./actions";
 
 export interface OrderActionsProps {
   orderId: string;
@@ -16,13 +16,22 @@ export interface OrderActionsProps {
   /** The instalment "pay" pays, when the order has one due. */
   payable?: { id: string; label: string; grossAmount: string; activePaymentId: string | null } | null;
   size?: "sm" | "md";
+  /** Where the order is shown: the account, or LINE's LIFF (D-151). */
+  surface?: Surface;
 }
 
 /**
  * The actions the API offers on an order, the first one leading (design-system.md §4: the single
  * next best action), each named with the order code for a screen reader.
  */
-export function OrderActions({ orderId, orderCode, actions, payable, size = "md" }: OrderActionsProps) {
+export function OrderActions({
+  orderId,
+  orderCode,
+  actions,
+  payable,
+  size = "md",
+  surface = "account",
+}: OrderActionsProps) {
   const t = useTranslations("status");
   const seen = new Set<string>();
   const unique = actions.filter((action) => (seen.has(action.key) ? false : (seen.add(action.key), true)));
@@ -46,12 +55,13 @@ export function OrderActions({ orderId, orderCode, actions, payable, size = "md"
               iconStart={meta.icon}
               instalment={payable}
               orderCode={orderCode}
+              surface={surface}
             >
               {label}
             </PayInstalmentButton>
           ) : null;
         }
-        const href = actionHref(orderId, action.key);
+        const href = actionHref(orderId, action.key, surface);
         return (
           <Button
             key={action.key}

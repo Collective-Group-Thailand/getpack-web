@@ -10,6 +10,10 @@
  *              that owns a cart end to end (checkout) does not share it with parallel tests.
  *   receiver   0845678901 — the eighth fake customer, whose order was delivered yesterday a little
  *              short: receipt, tolerance credit, claims and reorder (F3 3.6) walk it.
+ *   companyadmin   0867890123 — the admin and approver of the first fake company (B2601: credit,
+ *              a THB 50,000 approval threshold, PO numbers required), F3 3.7.
+ *   companybuyer   0878901234 — a buyer in the same company, whose large orders wait for approval.
+ *   founder    0889012345 — no company yet: signs one up (F3 3.7).
  *   artist     0834567890 — the fourth fake customer, whose unpaid order waiting for artwork
  *              the artwork and proof flow (F3 3.5) walks end to end on its own.
  *
@@ -21,7 +25,8 @@ import type { Schemas } from "@/lib/api/types";
 
 import { principalOf } from "../support";
 
-export type CustomerPersona = "returning" | "newcomer" | "buyer" | "artist" | "receiver";
+export type CustomerPersona =
+  "returning" | "newcomer" | "buyer" | "artist" | "receiver" | "companyadmin" | "companybuyer" | "founder";
 
 export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0812345678": "returning",
@@ -29,6 +34,9 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0823456789": "buyer",
   "0834567890": "artist",
   "0845678901": "receiver",
+  "0867890123": "companyadmin",
+  "0878901234": "companybuyer",
+  "0889012345": "founder",
 };
 
 export const CONSENT_PURPOSES = [
@@ -76,7 +84,31 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: null,
     };
   }
-  const account = {
+  const accounts: Record<
+    Exclude<CustomerPersona, "newcomer">,
+    { n: number; name: string; email: string; phone: string; ownerIndex: number | null }
+  > = {
+    companyadmin: {
+      n: 6,
+      name: "ผู้ดูแลบัญชีบริษัท (ข้อมูลจำลอง)",
+      email: "seed.companyadmin",
+      phone: "0867890123",
+      ownerIndex: 1,
+    },
+    companybuyer: {
+      n: 7,
+      name: "ฝ่ายจัดซื้อบริษัท (ข้อมูลจำลอง)",
+      email: "seed.companybuyer",
+      phone: "0878901234",
+      ownerIndex: 1,
+    },
+    founder: {
+      n: 8,
+      name: "ผู้ก่อตั้งบริษัท (ข้อมูลจำลอง)",
+      email: "seed.founder",
+      phone: "0889012345",
+      ownerIndex: null,
+    },
     returning: {
       n: 1,
       name: "ลูกค้าตัวอย่าง (ข้อมูลจำลอง)",
@@ -93,7 +125,8 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: 7,
     },
     artist: { n: 4, name: "ลูกค้าส่งไฟล์งาน (ข้อมูลจำลอง)", email: "seed.artist", phone: "0834567890", ownerIndex: 3 },
-  }[persona];
+  };
+  const account = accounts[persona as Exclude<CustomerPersona, "newcomer">];
   return {
     persona,
     id: `00000000-0000-4000-8000-00000000000${account.n}`,
@@ -119,7 +152,15 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   buyer: fresh("buyer"),
   artist: fresh("artist"),
   receiver: fresh("receiver"),
+  companyadmin: fresh("companyadmin"),
+  companybuyer: fresh("companybuyer"),
+  founder: fresh("founder"),
 };
+
+/** A persona's customer, for a mock acting on someone else's behalf (a company approver placing a buyer's order). */
+export function customerByPersona(persona: CustomerPersona): MockCustomer {
+  return customers[persona];
+}
 
 /** A first sign-in starts from nothing, every time. */
 export function resetCustomer(persona: CustomerPersona): void {

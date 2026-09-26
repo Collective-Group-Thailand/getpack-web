@@ -20,6 +20,8 @@ import { adminSalesRequests } from "./admin-sales";
 import { storeAccountRequests } from "./store-account";
 import { storeArtworkRequests } from "./store-artwork";
 import { storeFulfilmentRequests } from "./store-fulfilment";
+import { storeSupportRequests } from "./store-support";
+import { storeBusinessRequests } from "./store-business";
 import { storeCartRequests } from "./store-cart";
 import { storeCatalogRequests } from "./store-catalog";
 import { storeCheckoutRequests } from "./store-checkout";
@@ -48,6 +50,8 @@ export const REQUESTS = {
   ...storeOrderRequests,
   ...storeArtworkRequests,
   ...storeFulfilmentRequests,
+  ...storeSupportRequests,
+  ...storeBusinessRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

@@ -3,7 +3,14 @@
  * (`nextActions`); this only maps a key to its page. An unknown key still renders — on the order
  * page — rather than disappearing (`src/domain/status/next-action.ts`).
  */
-export function actionHref(orderId: string, key: string): string | null {
+export type Surface = "account" | "liff";
+
+/** Inside LINE (D-151) the proof and reorder have LIFF screens; everything else opens the site. */
+export function actionHref(orderId: string, key: string, surface: Surface = "account"): string | null {
+  if (surface === "liff") {
+    if (key === "order.approve_proof") return `/liff/orders/${orderId}/proof`;
+    if (key === "order.reorder") return `/liff/orders/${orderId}/reorder`;
+  }
   switch (key) {
     case "order.upload_artwork":
     case "order.design_brief":

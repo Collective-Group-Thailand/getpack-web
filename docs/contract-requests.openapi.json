@@ -10315,6 +10315,194 @@
         }
       }
     },
+    "/v1/store/companies": {
+      "post": {
+        "operationId": "store.companies.create",
+        "summary": "Sign a company up with its KYC documents (D-120); it waits for Finance's review, and the applicant becomes its admin",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.companies",
+        "x-decisions": [
+          "D-120"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "legalName": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 200
+                  },
+                  "taxId": {
+                    "type": "string",
+                    "pattern": "^\\d{13}$"
+                  },
+                  "isVatRegistered": {
+                    "type": "boolean"
+                  },
+                  "headOffice": {
+                    "type": "object",
+                    "properties": {
+                      "address": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 500
+                      }
+                    },
+                    "required": [
+                      "address"
+                    ]
+                  },
+                  "signatory": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "position": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "position"
+                    ]
+                  },
+                  "contactPhone": {
+                    "type": "string",
+                    "pattern": "^0\\d{8,9}$"
+                  },
+                  "documents": {
+                    "minItems": 2,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "docType": {
+                          "$ref": "#/components/schemas/CompanyKycDocType"
+                        },
+                        "fileId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "issuedOn": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        }
+                      },
+                      "required": [
+                        "docType",
+                        "fileId"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "legalName",
+                  "taxId",
+                  "isVatRegistered",
+                  "headOffice",
+                  "signatory",
+                  "contactPhone",
+                  "documents"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sign a company up with its KYC documents (D-120); it waits for Finance's review, and the applicant becomes its admin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCompanyDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/guided-help/actions/recommend": {
+      "post": {
+        "operationId": "store.guidedHelp.recommend",
+        "summary": "Recommend box styles from four answers — use, size, quantity, what matters most",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.guided-help",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuidedAnswersDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recommend box styles from four answers — use, size, quantity, what matters most",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuidedRecommendationDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/instalments": {
       "get": {
         "operationId": "store.instalments.list",
@@ -10768,6 +10956,1492 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CustomerAddressDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company": {
+      "get": {
+        "operationId": "store.me.company.list",
+        "summary": "The signed-in member's company: roles, credit, what is owed, notices (404 when not a member)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.companies",
+        "x-decisions": [
+          "D-121",
+          "D-122",
+          "D-123"
+        ],
+        "responses": {
+          "200": {
+            "description": "The signed-in member's company: roles, credit, what is owed, notices (404 when not a member)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCompanyDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "store.me.company.update",
+        "summary": "Company settings its admin sets: the approval threshold (D-123) and the PO number policy (D-125)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.companies",
+        "x-decisions": [
+          "D-123",
+          "D-125"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "orderApprovalThreshold": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^-?\\d+\\.\\d{2}$",
+                        "description": "Money (THB, 2 decimals)"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "poNumberPolicy": {
+                    "$ref": "#/components/schemas/PoNumberPolicy"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Company settings its admin sets: the approval threshold (D-123) and the PO number policy (D-125)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCompanyDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/approvals": {
+      "get": {
+        "operationId": "store.me.company.approvals.list",
+        "summary": "What waits for approval, or what was decided",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-approvals",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "decided"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What waits for approval, or what was decided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyApprovalDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "perPage": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "perPage",
+                        "total"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.me.company.approvals.create",
+        "summary": "Send a checkout over the company threshold to its approver instead of placing it (D-123); the preview token holds the price",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-approvals",
+        "x-decisions": [
+          "D-123"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contact": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "phone": {
+                        "type": "string",
+                        "pattern": "^0\\d{8,9}$"
+                      },
+                      "email": {
+                        "type": "string",
+                        "maxLength": 254,
+                        "format": "email",
+                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "phone",
+                      "email"
+                    ]
+                  },
+                  "delivery": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "const": "shared"
+                          },
+                          "addressId": {
+                            "type": "string",
+                            "format": "uuid"
+                          }
+                        },
+                        "required": [
+                          "mode",
+                          "addressId"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "mode": {
+                            "type": "string",
+                            "const": "per_item"
+                          }
+                        },
+                        "required": [
+                          "mode"
+                        ]
+                      }
+                    ]
+                  },
+                  "taxProfileId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "couponCodes": {
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 40
+                    }
+                  },
+                  "pointsToRedeem": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "scheduleKey": {
+                    "type": "string"
+                  },
+                  "paymentMethod": {
+                    "$ref": "#/components/schemas/PaymentMethod"
+                  },
+                  "poNumber": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "previewToken": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "contact",
+                  "delivery",
+                  "taxProfileId",
+                  "couponCodes",
+                  "pointsToRedeem",
+                  "previewToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Send a checkout over the company threshold to its approver instead of placing it (D-123); the preview token holds the price",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyApprovalDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/approvals/{approvalId}/actions/approve": {
+      "post": {
+        "operationId": "store.me.company.approvals.approve",
+        "summary": "Approve: the orders are placed as the requester checked them out, and they are told to pay",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-approvals",
+        "x-decisions": [
+          "D-123"
+        ],
+        "parameters": [
+          {
+            "name": "approvalId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Approve: the orders are placed as the requester checked them out, and they are told to pay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyApprovalDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/approvals/{approvalId}/actions/reject": {
+      "post": {
+        "operationId": "store.me.company.approvals.reject",
+        "summary": "Reject with a reason the requester sees; the cart stays theirs",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-approvals",
+        "parameters": [
+          {
+            "name": "approvalId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "reason"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reject with a reason the requester sees; the cart stays theirs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyApprovalDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/branches": {
+      "get": {
+        "operationId": "store.me.company.branches.list",
+        "summary": "Head office and branches — a tax invoice per branch (D-125)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-branches",
+        "x-decisions": [
+          "D-125"
+        ],
+        "responses": {
+          "200": {
+            "description": "Head office and branches — a tax invoice per branch (D-125)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyBranchDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.me.company.branches.create",
+        "summary": "Add a branch with its 5-digit branch code",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-branches",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "branchCode": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500
+                  }
+                },
+                "required": [
+                  "branchCode",
+                  "name",
+                  "address"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Add a branch with its 5-digit branch code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyBranchDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/branches/{branchId}": {
+      "delete": {
+        "operationId": "store.me.company.branches.delete",
+        "summary": "Remove a branch (never the head office)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-branches",
+        "parameters": [
+          {
+            "name": "branchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove a branch (never the head office)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/brand-assets": {
+      "get": {
+        "operationId": "store.me.company.brandAssets.list",
+        "summary": "The company's shared brand assets — logos, guidelines, fonts, approved artwork",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-assets",
+        "responses": {
+          "200": {
+            "description": "The company's shared brand assets — logos, guidelines, fonts, approved artwork",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BrandAssetDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.me.company.brandAssets.create",
+        "summary": "Share an uploaded file with every member as a brand asset",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-assets",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fileId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "kind": {
+                    "$ref": "#/components/schemas/BrandAssetKind"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "fileId",
+                  "kind",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Share an uploaded file with every member as a brand asset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandAssetDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/brand-assets/{assetId}": {
+      "delete": {
+        "operationId": "store.me.company.brandAssets.delete",
+        "summary": "Stop sharing a brand asset",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-assets",
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stop sharing a brand asset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/bulk-reorders": {
+      "post": {
+        "operationId": "store.me.company.bulkReorders.create",
+        "summary": "Add the checked rows to the cart as reorder quotations",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-reorder",
+        "x-decisions": [
+          "D-153"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "previewToken": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "previewToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Add the checked rows to the cart as reorder quotations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cartItemIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    }
+                  },
+                  "required": [
+                    "cartItemIds"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/bulk-reorders/actions/preview": {
+      "post": {
+        "operationId": "store.me.company.bulkReorders.preview",
+        "summary": "Check CSV rows (order number, quantity) for a bulk reorder: each row re-priced or refused with why",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-reorder",
+        "x-decisions": [
+          "D-153"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rows": {
+                    "minItems": 1,
+                    "maxItems": 200,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "line": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "orderCode": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "quantity": {
+                          "anyOf": [
+                            {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "line",
+                        "orderCode",
+                        "quantity"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "rows"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check CSV rows (order number, quantity) for a bulk reorder: each row re-priced or refused with why",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkReorderPreviewDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/credit-applications": {
+      "post": {
+        "operationId": "store.me.company.creditApplications.create",
+        "summary": "Apply for a credit limit and term (D-121); Finance or C-Level decides by amount",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-credit",
+        "x-decisions": [
+          "D-121"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "requestedLimit": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  "termDays": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "basis": {
+                    "$ref": "#/components/schemas/CreditApplicationBasis"
+                  },
+                  "financialStatementFileIds": {
+                    "maxItems": 5,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                "required": [
+                  "requestedLimit",
+                  "termDays",
+                  "basis"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Apply for a credit limit and term (D-121); Finance or C-Level decides by amount",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCompanyDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/members": {
+      "get": {
+        "operationId": "store.me.company.members.list",
+        "summary": "The company's members and their roles",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-members",
+        "responses": {
+          "200": {
+            "description": "The company's members and their roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyMemberDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.me.company.members.create",
+        "summary": "Invite a member by phone with their roles; they join on their next sign-in",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-members",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^0\\d{8,9}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "roles": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CompanyRole"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "phone",
+                  "roles"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invite a member by phone with their roles; they join on their next sign-in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyMemberDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/members/{memberId}": {
+      "delete": {
+        "operationId": "store.me.company.members.delete",
+        "summary": "Remove a member; their orders stay the company's",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-members",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove a member; their orders stay the company's",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "removed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "store.me.company.members.update",
+        "summary": "Change a member's roles; the last admin cannot be demoted (409 company.last_admin)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-members",
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "roles": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CompanyRole"
+                    }
+                  }
+                },
+                "required": [
+                  "roles"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Change a member's roles; the last admin cannot be demoted (409 company.last_admin)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyMemberDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/spend": {
+      "get": {
+        "operationId": "store.me.company.spend.list",
+        "summary": "What the company spent: by month, member, branch and product type",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-spend",
+        "parameters": [
+          {
+            "name": "months",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 24
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What the company spent: by month, member, branch and product type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanySpendDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/statements": {
+      "get": {
+        "operationId": "store.me.company.statements.list",
+        "summary": "Monthly statements with aging (D-125) — what is open, due and overdue",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-credit",
+        "x-decisions": [
+          "D-122",
+          "D-125"
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly statements with aging (D-125) — what is open, due and overdue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyStatementDto"
+                      }
+                    },
+                    "aging": {
+                      "type": "object",
+                      "properties": {
+                        "current": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        },
+                        "days1to30": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        },
+                        "days31to60": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        },
+                        "days61to90": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        },
+                        "over90": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        }
+                      },
+                      "required": [
+                        "current",
+                        "days1to30",
+                        "days31to60",
+                        "days61to90",
+                        "over90"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "receivables": {
+                      "type": "object",
+                      "properties": {
+                        "openAmount": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        },
+                        "overdueAmount": {
+                          "type": "string",
+                          "pattern": "^-?\\d+\\.\\d{2}$",
+                          "description": "Money (THB, 2 decimals)"
+                        },
+                        "oldestOverdueDays": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "nextDueAt": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "creditOrdersBlocked": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "openAmount",
+                        "overdueAmount",
+                        "oldestOverdueDays",
+                        "nextDueAt",
+                        "creditOrdersBlocked"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "aging",
+                    "receivables"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/me/company/statements/{statementId}/actions/download": {
+      "post": {
+        "operationId": "store.me.company.statements.download",
+        "summary": "A statement's PDF as a signed URL",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-credit",
+        "parameters": [
+          {
+            "name": "statementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A statement's PDF as a signed URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlDto"
                 }
               }
             }
@@ -14096,6 +15770,207 @@
         }
       }
     },
+    "/v1/store/sample-kits": {
+      "get": {
+        "operationId": "store.sampleKits.list",
+        "summary": "The sample kits a customer can order to feel materials and finishes before buying",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.sample-kits",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The sample kits a customer can order to feel materials and finishes before buying",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SampleKitDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/sample-kits/actions/request": {
+      "post": {
+        "operationId": "store.sampleKits.request",
+        "summary": "Order a sample kit to an address; a paid kit comes back with a payment link",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.sample-kits",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "kitCode": {
+                    "type": "string"
+                  },
+                  "company": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "interest": {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "recipientName": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 120
+                      },
+                      "phone": {
+                        "type": "string",
+                        "pattern": "^0\\d{8,9}$"
+                      },
+                      "line1": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "subdistrict": {
+                        "type": "string",
+                        "maxLength": 80
+                      },
+                      "district": {
+                        "type": "string",
+                        "maxLength": 80
+                      },
+                      "province": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                      },
+                      "postcode": {
+                        "type": "string",
+                        "pattern": "^\\d{5}$"
+                      }
+                    },
+                    "required": [
+                      "recipientName",
+                      "phone",
+                      "line1",
+                      "province",
+                      "postcode"
+                    ]
+                  }
+                },
+                "required": [
+                  "kitCode",
+                  "address"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order a sample kit to an address; a paid kit comes back with a payment link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "requestNo": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/SampleKitRequestStatus"
+                    },
+                    "payUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "shipsBy": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    }
+                  },
+                  "required": [
+                    "requestNo",
+                    "status",
+                    "payUrl",
+                    "shipsBy"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/shared-quotes/{token}": {
       "get": {
         "operationId": "store.sharedQuotes.get",
@@ -14168,6 +16043,201 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreSupportChannelsDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/support/actions/contact": {
+      "post": {
+        "operationId": "store.support.contact",
+        "summary": "Send the team a message from the contact page; a CS ticket comes back with when to expect a reply",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.support",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^0\\d{8,9}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "topic": {
+                    "$ref": "#/components/schemas/ContactTopic"
+                  },
+                  "orderCode": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "message": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 3000
+                  }
+                },
+                "required": [
+                  "name",
+                  "topic",
+                  "message"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Send the team a message from the contact page; a CS ticket comes back with when to expect a reply",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportTicketDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/support/actions/handoff": {
+      "post": {
+        "operationId": "store.support.handoff",
+        "summary": "Hand the guided help conversation to CS with its context (page, answers, recommendations)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.support",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "$ref": "#/components/schemas/HandoffChannel"
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^0\\d{8,9}$"
+                  },
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "page": {
+                        "type": "string",
+                        "maxLength": 300
+                      },
+                      "answers": {
+                        "$ref": "#/components/schemas/GuidedAnswersDto"
+                      },
+                      "recommended": {
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "note": {
+                        "type": "string",
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": [
+                      "page"
+                    ]
+                  }
+                },
+                "required": [
+                  "channel",
+                  "context"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Hand the guided help conversation to CS with its context (page, answers, recommendations)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportTicketDto"
                 }
               }
             }
@@ -15385,6 +17455,192 @@
           "branch"
         ]
       },
+      "BrandAssetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/BrandAssetKind"
+          },
+          "name": {
+            "type": "string"
+          },
+          "file": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "originalName": {
+                "type": "string"
+              },
+              "mimeType": {
+                "type": "string"
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "thumbnailUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "originalName",
+              "mimeType",
+              "sizeBytes",
+              "thumbnailUrl",
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "uploadedBy": {
+            "type": "string"
+          },
+          "uploadedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "file",
+          "uploadedBy",
+          "uploadedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BrandAssetKind": {
+        "type": "string",
+        "enum": [
+          "logo",
+          "guideline",
+          "font",
+          "artwork",
+          "other"
+        ]
+      },
+      "BulkReorderPreviewDto": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "line": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "orderCode": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "status": {
+                  "$ref": "#/components/schemas/BulkReorderRowStatus"
+                },
+                "message": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "product": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "grossAmount": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^-?\\d+\\.\\d{2}$",
+                      "description": "Money (THB, 2 decimals)"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "line",
+                "orderCode",
+                "quantity",
+                "status",
+                "message",
+                "product",
+                "grossAmount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "okCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "errorCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "previewToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rows",
+          "okCount",
+          "errorCount",
+          "grossAmount",
+          "previewToken"
+        ],
+        "additionalProperties": false
+      },
+      "BulkReorderRowStatus": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "error"
+        ]
+      },
       "BusinessDayRangeDto": {
         "type": "object",
         "properties": {
@@ -16371,6 +18627,65 @@
               ],
               "additionalProperties": false
             }
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "companyCode": {
+                    "type": "string"
+                  },
+                  "legalName": {
+                    "type": "string"
+                  },
+                  "poNumberPolicy": {
+                    "type": "string",
+                    "enum": [
+                      "required",
+                      "optional",
+                      "none"
+                    ]
+                  },
+                  "approvalThreshold": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^-?\\d+\\.\\d{2}$",
+                        "description": "Money (THB, 2 decimals)"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "needsApproval": {
+                    "type": "boolean"
+                  },
+                  "creditAvailableAmount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  "creditBlocked": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "companyCode",
+                  "legalName",
+                  "poNumberPolicy",
+                  "approvalThreshold",
+                  "needsApproval",
+                  "creditAvailableAmount",
+                  "creditBlocked"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -16383,7 +18698,8 @@
           "paymentMethods",
           "taxInvoice",
           "totals",
-          "blockers"
+          "blockers",
+          "company"
         ],
         "additionalProperties": false
       },
@@ -17147,6 +19463,201 @@
           "close"
         ]
       },
+      "CompanyApprovalDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requestNo": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CompanyApprovalStatus"
+          },
+          "requestedBy": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "displayName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "displayName"
+            ],
+            "additionalProperties": false
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "threshold": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "poNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "branch": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "grossAmount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                }
+              },
+              "required": [
+                "name",
+                "quantity",
+                "unit",
+                "grossAmount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "scheduleLabel": {
+            "type": "string"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "decidedBy": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decidedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "orderCode": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "orderCode"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "requestNo",
+          "status",
+          "requestedBy",
+          "requestedAt",
+          "grossAmount",
+          "threshold",
+          "poNumber",
+          "branch",
+          "items",
+          "scheduleLabel",
+          "note",
+          "decidedBy",
+          "decidedAt",
+          "reason",
+          "orders",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "CompanyApprovalStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected",
+          "expired"
+        ]
+      },
       "CompanyBranchDto": {
         "type": "object",
         "properties": {
@@ -17718,6 +20229,71 @@
         ],
         "additionalProperties": false
       },
+      "CompanyNoticeDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/CompanyNoticeKind"
+          },
+          "statementId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "period": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "dueAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "daysOverdue": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "kind",
+          "statementId",
+          "period",
+          "amount",
+          "dueAt",
+          "daysOverdue"
+        ],
+        "additionalProperties": false
+      },
+      "CompanyNoticeKind": {
+        "type": "string",
+        "enum": [
+          "due_soon",
+          "due_today",
+          "overdue",
+          "credit_blocked"
+        ]
+      },
       "CompanyRole": {
         "type": "string",
         "enum": [
@@ -17726,6 +20302,126 @@
           "company_approver",
           "company_accountant"
         ]
+      },
+      "CompanySpendDto": {
+        "type": "object",
+        "properties": {
+          "months": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "total": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "ordersCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "byMonth": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "month": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                }
+              },
+              "required": [
+                "month",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byMember": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                },
+                "orders": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name",
+                "amount",
+                "orders"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byBranch": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                }
+              },
+              "required": [
+                "name",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "byProductType": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                }
+              },
+              "required": [
+                "name",
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "months",
+          "total",
+          "ordersCount",
+          "byMonth",
+          "byMember",
+          "byBranch",
+          "byProductType"
+        ],
+        "additionalProperties": false
       },
       "CompanyStatementDto": {
         "type": "object",
@@ -18392,6 +21088,19 @@
           "expired"
         ]
       },
+      "ContactTopic": {
+        "type": "string",
+        "enum": [
+          "order",
+          "quote",
+          "artwork",
+          "payment",
+          "delivery",
+          "business",
+          "partnership",
+          "other"
+        ]
+      },
       "CouponBatchDto": {
         "type": "object",
         "properties": {
@@ -18780,6 +21489,93 @@
           "self",
           "cs",
           "line_liff"
+        ]
+      },
+      "CreditApplicationBasis": {
+        "type": "string",
+        "enum": [
+          "paid_orders",
+          "financial_review"
+        ]
+      },
+      "CreditApplicationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CreditApplicationStatus"
+          },
+          "requestedLimit": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "termDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "basis": {
+            "$ref": "#/components/schemas/CreditApplicationBasis"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "decidedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "approvedLimit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "requestedLimit",
+          "termDays",
+          "basis",
+          "submittedAt",
+          "decidedAt",
+          "note",
+          "approvedLimit"
+        ],
+        "additionalProperties": false
+      },
+      "CreditApplicationStatus": {
+        "type": "string",
+        "enum": [
+          "submitted",
+          "approved",
+          "rejected"
         ]
       },
       "CreditStatus": {
@@ -21076,6 +23872,114 @@
           "cart",
           "checkout",
           "paid"
+        ]
+      },
+      "GuidedAnswersDto": {
+        "type": "object",
+        "properties": {
+          "use": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "size": {
+            "$ref": "#/components/schemas/GuidedSize"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/GuidedQuantity"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/GuidedPriority"
+          }
+        },
+        "required": [
+          "use",
+          "size",
+          "quantity",
+          "priority"
+        ]
+      },
+      "GuidedPriority": {
+        "type": "string",
+        "enum": [
+          "premium",
+          "protection",
+          "budget",
+          "eco"
+        ]
+      },
+      "GuidedQuantity": {
+        "type": "string",
+        "enum": [
+          "under_500",
+          "500_2000",
+          "2000_10000",
+          "over_10000"
+        ]
+      },
+      "GuidedRecommendationDto": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "styles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "why": {
+                  "type": "string"
+                },
+                "imageUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fromUnitPrice": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "why",
+                "imageUrl",
+                "fromUnitPrice"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "summary",
+          "styles"
+        ],
+        "additionalProperties": false
+      },
+      "GuidedSize": {
+        "type": "string",
+        "enum": [
+          "small",
+          "medium",
+          "large",
+          "unsure"
+        ]
+      },
+      "HandoffChannel": {
+        "type": "string",
+        "enum": [
+          "line",
+          "callback"
         ]
       },
       "ImportJobDto": {
@@ -28002,6 +30906,67 @@
           "b2b"
         ]
       },
+      "SampleKitDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "creditedOnFirstOrder": {
+            "type": "boolean"
+          },
+          "leadDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "description",
+          "contents",
+          "imageUrl",
+          "price",
+          "creditedOnFirstOrder",
+          "leadDays",
+          "available"
+        ],
+        "additionalProperties": false
+      },
+      "SampleKitRequestStatus": {
+        "type": "string",
+        "enum": [
+          "received",
+          "awaiting_payment"
+        ]
+      },
       "SavedViewDto": {
         "type": "object",
         "properties": {
@@ -30162,6 +33127,270 @@
           "resolutions",
           "shipments",
           "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "StoreCompanyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "companyCode": {
+            "type": "string"
+          },
+          "legalName": {
+            "type": "string"
+          },
+          "taxId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CompanyStatus"
+          },
+          "isVatRegistered": {
+            "type": "boolean"
+          },
+          "myRoles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyRole"
+            }
+          },
+          "can": {
+            "type": "object",
+            "properties": {
+              "manageMembers": {
+                "type": "boolean"
+              },
+              "manageSettings": {
+                "type": "boolean"
+              },
+              "approveOrders": {
+                "type": "boolean"
+              },
+              "viewFinance": {
+                "type": "boolean"
+              },
+              "order": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "manageMembers",
+              "manageSettings",
+              "approveOrders",
+              "viewFinance",
+              "order"
+            ],
+            "additionalProperties": false
+          },
+          "poNumberPolicy": {
+            "$ref": "#/components/schemas/PoNumberPolicy"
+          },
+          "orderApprovalThreshold": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discountPct": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "Percent as a decimal string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "credit": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "$ref": "#/components/schemas/CreditStatus"
+              },
+              "limitAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "availableAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "termDays": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "eligible": {
+                "type": "boolean"
+              },
+              "paidOrdersCount": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "paidOrdersNeeded": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "allowedTerms": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "application": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/CreditApplicationDto"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "limitAmount",
+              "availableAmount",
+              "termDays",
+              "eligible",
+              "paidOrdersCount",
+              "paidOrdersNeeded",
+              "allowedTerms",
+              "application"
+            ],
+            "additionalProperties": false
+          },
+          "receivables": {
+            "type": "object",
+            "properties": {
+              "openAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "overdueAmount": {
+                "type": "string",
+                "pattern": "^-?\\d+\\.\\d{2}$",
+                "description": "Money (THB, 2 decimals)"
+              },
+              "oldestOverdueDays": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "nextDueAt": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "creditOrdersBlocked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "openAmount",
+              "overdueAmount",
+              "oldestOverdueDays",
+              "nextDueAt",
+              "creditOrdersBlocked"
+            ],
+            "additionalProperties": false
+          },
+          "notices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompanyNoticeDto"
+            }
+          },
+          "kyc": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "docType": {
+                  "$ref": "#/components/schemas/CompanyKycDocType"
+                },
+                "status": {
+                  "$ref": "#/components/schemas/CompanyKycStatus"
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "uploadedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "docType",
+                "status",
+                "note",
+                "uploadedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "statusNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "companyCode",
+          "legalName",
+          "taxId",
+          "status",
+          "isVatRegistered",
+          "myRoles",
+          "can",
+          "poNumberPolicy",
+          "orderApprovalThreshold",
+          "discountPct",
+          "credit",
+          "receivables",
+          "notices",
+          "kyc",
+          "statusNote"
         ],
         "additionalProperties": false
       },
@@ -34415,6 +37644,31 @@
           "accepted_for_proof",
           "rejected"
         ]
+      },
+      "SupportTicketDto": {
+        "type": "object",
+        "properties": {
+          "ticketNo": {
+            "type": "string"
+          },
+          "respondBy": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "lineUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ticketNo",
+          "respondBy",
+          "lineUrl"
+        ],
+        "additionalProperties": false
       },
       "TaxProfileDto": {
         "type": "object",
