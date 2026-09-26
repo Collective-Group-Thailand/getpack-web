@@ -65,9 +65,7 @@ export const shipmentRow = z
   })
   .meta({ id: "ShipmentRowDto" });
 
-export const shipmentAction = z
-  .enum(["split", "book-carrier", "resolve-exception"])
-  .meta({ id: "ShipmentAction" });
+export const shipmentAction = z.enum(["split", "book-carrier", "resolve-exception"]).meta({ id: "ShipmentAction" });
 
 export const shipmentDetail = shipmentRow
   .extend({

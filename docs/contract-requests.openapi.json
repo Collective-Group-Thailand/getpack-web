@@ -9543,6 +9543,327 @@
         }
       }
     },
+    "/v1/store/cart": {
+      "get": {
+        "operationId": "store.cart.list",
+        "summary": "The signed-in customer's cart, with expired quotations re-priced and the difference stated",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.cart",
+        "x-decisions": [
+          "D-051",
+          "D-110"
+        ],
+        "responses": {
+          "200": {
+            "description": "The signed-in customer's cart, with expired quotations re-priced and the difference stated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/cart/items": {
+      "post": {
+        "operationId": "store.cart.items.create",
+        "summary": "Put a quotation in the cart (instant or an accepted RFQ); one line per quotation",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.cart",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quoteId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "quoteId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Put a quotation in the cart (instant or an accepted RFQ); one line per quotation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/cart/items/{itemId}": {
+      "delete": {
+        "operationId": "store.cart.items.delete",
+        "summary": "Remove a line",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.cart",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove a line",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "store.cart.items.update",
+        "summary": "Change a line's design option or quantity; the API re-prices it",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.cart",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "designOption": {
+                    "$ref": "#/components/schemas/DesignOption"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Change a line's design option or quantity; the API re-prices it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/cart/items/{itemId}/actions/accept-reprice": {
+      "post": {
+        "operationId": "store.cart.items.acceptReprice",
+        "summary": "Confirm a re-priced line's new price (design-system §1.3: a price never changes silently)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.cart",
+        "x-decisions": [
+          "D-051"
+        ],
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirm a re-priced line's new price (design-system §1.3: a price never changes silently)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/cart/items/{itemId}/destinations": {
+      "put": {
+        "operationId": "store.cart.items.destinations.update",
+        "summary": "Split a line's quantity across saved addresses (D-110); the parts must add up to the quantity",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.cart",
+        "x-decisions": [
+          "D-110"
+        ],
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "destinations": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "addressId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "addressId",
+                        "quantity"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "destinations"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Split a line's quantity across saved addresses (D-110); the parts must add up to the quantity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCartDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/catalog/price-hints": {
       "get": {
         "operationId": "store.catalog.priceHints.list",
@@ -9654,6 +9975,60 @@
                   "items": {
                     "$ref": "#/components/schemas/StoreProductCategoryDto"
                   }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/catalog/products/{slug}/configurator": {
+      "get": {
+        "operationId": "store.catalog.products.configurator.list",
+        "summary": "Everything the configurator offers for one product, with the catalogue ids the calculator takes and typed size rules",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.configurator",
+        "x-decisions": [
+          "D-100",
+          "D-043",
+          "D-051",
+          "D-072"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Everything the configurator offers for one product, with the catalogue ids the calculator takes and typed size rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreConfiguratorDto"
                 }
               }
             }
@@ -9792,6 +10167,1124 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StoreOrderLookupDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/promotions/actions/check": {
+      "post": {
+        "operationId": "store.promotions.check",
+        "summary": "Is this code valid for this product, and what does it give — the amount is applied on the quote and at checkout",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.promo-check",
+        "x-decisions": [
+          "D-053"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  },
+                  "productTypeCode": {
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "code",
+                  "productTypeCode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Is this code valid for this product, and what does it give — the amount is applied on the quote and at checkout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromotionCheckDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/quotes": {
+      "get": {
+        "operationId": "store.quotes.list",
+        "summary": "The customer's saved quotations, newest first",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/QuoteStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer's saved quotations, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreQuoteSummaryDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "perPage": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "perPage",
+                        "total"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.quotes.create",
+        "summary": "Keep a priced configuration as a quotation (D-051): lines incl. one-off costs and the mockup, the promotion's effect, validity",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes",
+        "x-decisions": [
+          "D-051",
+          "D-021",
+          "D-050",
+          "D-053",
+          "D-072"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productTypeCode": {
+                    "type": "string"
+                  },
+                  "catalogProductSlug": {
+                    "type": "string"
+                  },
+                  "configuration": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "deliveryPostcode": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  },
+                  "designOption": {
+                    "$ref": "#/components/schemas/DesignOption"
+                  },
+                  "mockupOption": {
+                    "$ref": "#/components/schemas/MockupOption"
+                  },
+                  "promoCode": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 40
+                  }
+                },
+                "required": [
+                  "productTypeCode",
+                  "catalogProductSlug",
+                  "configuration",
+                  "quantity",
+                  "designOption",
+                  "mockupOption"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Keep a priced configuration as a quotation (D-051): lines incl. one-off costs and the mockup, the promotion's effect, validity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreQuoteDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/quotes/{quoteId}": {
+      "get": {
+        "operationId": "store.quotes.get",
+        "summary": "One of the customer's quotations; 404 when it is not theirs",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One of the customer's quotations; 404 when it is not theirs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreQuoteDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/quotes/{quoteId}/actions/export-pdf": {
+      "post": {
+        "operationId": "store.quotes.exportPdf",
+        "summary": "The quotation PDF, issued by Collective Group (Thailand) under the Packio brand, as a short-lived URL",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes",
+        "x-decisions": [
+          "D-010",
+          "D-092"
+        ],
+        "parameters": [
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The quotation PDF, issued by Collective Group (Thailand) under the Packio brand, as a short-lived URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/quotes/{quoteId}/actions/share": {
+      "post": {
+        "operationId": "store.quotes.share",
+        "summary": "A read-only share token for the quotation, valid while the quote is",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes",
+        "parameters": [
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A read-only share token for the quotation, valid while the quote is",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteShareDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/rfq-forms/{productTypeCode}": {
+      "get": {
+        "operationId": "store.rfqForms.get",
+        "summary": "The request-for-quotation form of one product type: typed fields from its rfqSpecSchema, files, SLA",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfq-forms",
+        "x-decisions": [
+          "D-100"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "productTypeCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request-for-quotation form of one product type: typed fields from its rfqSpecSchema, files, SLA",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreRfqFormDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/rfqs": {
+      "get": {
+        "operationId": "store.rfqs.list",
+        "summary": "The customer's requests for quotation, newest first",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfqs",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/RfqStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The customer's requests for quotation, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreRfqSummaryDto"
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "perPage": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "total": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "perPage",
+                        "total"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.rfqs.create",
+        "summary": "Submit a request for quotation; CS answers within the category's SLA",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfqs",
+        "x-decisions": [
+          "D-100",
+          "D-043",
+          "D-102"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "productTypeCode": {
+                    "type": "string"
+                  },
+                  "specSchemaVersion": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "spec": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "dimensions": {
+                    "type": "object",
+                    "properties": {
+                      "lengthMm": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "widthMm": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "heightMm": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "lengthMm",
+                      "widthMm"
+                    ]
+                  },
+                  "quantities": {
+                    "minItems": 1,
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "targetDate": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "deliveryPostcode": {
+                    "type": "string",
+                    "pattern": "^\\d{5}$"
+                  },
+                  "fileIds": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "notes": {
+                    "type": "string",
+                    "maxLength": 4000
+                  },
+                  "routedFrom": {
+                    "type": "object",
+                    "properties": {
+                      "catalogProductSlug": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      },
+                      "configuration": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {}
+                      }
+                    },
+                    "required": [
+                      "catalogProductSlug",
+                      "reason",
+                      "configuration"
+                    ]
+                  }
+                },
+                "required": [
+                  "productTypeCode",
+                  "specSchemaVersion",
+                  "spec",
+                  "quantities",
+                  "deliveryPostcode",
+                  "fileIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Submit a request for quotation; CS answers within the category's SLA",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreRfqDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/rfqs/{rfqId}": {
+      "get": {
+        "operationId": "store.rfqs.get",
+        "summary": "One of the customer's RFQs with the quotes sent to them; 404 when it is not theirs",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfqs",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One of the customer's RFQs with the quotes sent to them; 404 when it is not theirs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreRfqDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/rfqs/{rfqId}/messages": {
+      "get": {
+        "operationId": "store.rfqs.messages.list",
+        "summary": "The thread with CS, oldest first — internal notes never appear",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfqs",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The thread with CS, oldest first — internal notes never appear",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreRfqMessageDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "store.rfqs.messages.create",
+        "summary": "Write to CS, e.g. to answer a request for information (need_info → in_review)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfqs",
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4000
+                  },
+                  "fileIds": {
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                },
+                "required": [
+                  "body"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Write to CS, e.g. to answer a request for information (need_info → in_review)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreRfqMessageDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/rfqs/{rfqId}/quotes/{quoteId}/actions/accept": {
+      "post": {
+        "operationId": "store.rfqs.quotes.accept",
+        "summary": "Accept one quantity of a sent quote; creates the quotation (source rfq) it is ordered from",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.rfqs",
+        "x-decisions": [
+          "D-051"
+        ],
+        "parameters": [
+          {
+            "name": "rfqId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quoteId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quantity": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "quantity"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accept one quantity of a sent quote; creates the quotation (source rfq) it is ordered from",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfqAcceptanceDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/shared-quotes/{token}": {
+      "get": {
+        "operationId": "store.sharedQuotes.get",
+        "summary": "A shared quotation, without the customer or their promotion; 404 once expired",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A shared quotation, without the customer or their promotion; 404 once expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreSharedQuoteDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/support-channels": {
+      "get": {
+        "operationId": "store.supportChannels.list",
+        "summary": "How a customer reaches CS: the LINE Official Account, phone, e-mail and opening hours",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.support-channels",
+        "x-decisions": [
+          "D-143"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "How a customer reaches CS: the LINE Official Account, phone, e-mail and opening hours",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreSupportChannelsDto"
                 }
               }
             }
@@ -11227,6 +12720,241 @@
           "validUntil"
         ],
         "additionalProperties": false
+      },
+      "CartDestinationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "addressId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "address": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddressSnapshotDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "addressId",
+          "address",
+          "quantity"
+        ],
+        "additionalProperties": false
+      },
+      "CartItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quote": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "quoteCode": {
+                "type": "string"
+              },
+              "validUntil": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "source": {
+                "$ref": "#/components/schemas/QuoteSource"
+              }
+            },
+            "required": [
+              "id",
+              "quoteCode",
+              "validUntil",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "imageUrl"
+            ],
+            "additionalProperties": false
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Decimal, up to 6 places"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "designOption": {
+            "$ref": "#/components/schemas/DesignOption"
+          },
+          "mockupOption": {
+            "$ref": "#/components/schemas/MockupOption"
+          },
+          "designOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DesignOption"
+            }
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartDestinationDto"
+            }
+          },
+          "state": {
+            "$ref": "#/components/schemas/CartItemState"
+          },
+          "repricing": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "previousUnitPrice": {
+                    "type": "string"
+                  },
+                  "previousGrossAmount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+\\.\\d{2}$",
+                    "description": "Money (THB, 2 decimals)"
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/CartRepriceReason"
+                  }
+                },
+                "required": [
+                  "previousUnitPrice",
+                  "previousGrossAmount",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unavailableReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "quote",
+          "product",
+          "productType",
+          "specs",
+          "quantity",
+          "unit",
+          "unitPrice",
+          "grossAmount",
+          "currency",
+          "designOption",
+          "mockupOption",
+          "designOptions",
+          "destinations",
+          "state",
+          "repricing",
+          "unavailableReason"
+        ],
+        "additionalProperties": false
+      },
+      "CartItemState": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "repriced",
+          "unavailable"
+        ]
+      },
+      "CartRepriceReason": {
+        "type": "string",
+        "enum": [
+          "quote_expired",
+          "configuration_changed"
+        ]
       },
       "ClaimActionKey": {
         "type": "string",
@@ -12777,6 +14505,438 @@
           "createdAt"
         ],
         "additionalProperties": false
+      },
+      "ConfiguratorGroupDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ConfiguratorGroupKind"
+          },
+          "step": {
+            "$ref": "#/components/schemas/ConfiguratorStep"
+          },
+          "nameTh": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "helpTh": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "helpEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "selection": {
+            "$ref": "#/components/schemas/ConfiguratorSelection"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfiguratorOptionDto"
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "step",
+          "nameTh",
+          "nameEn",
+          "helpTh",
+          "helpEn",
+          "selection",
+          "required",
+          "options"
+        ],
+        "additionalProperties": false
+      },
+      "ConfiguratorGroupKind": {
+        "type": "string",
+        "enum": [
+          "material",
+          "print",
+          "coating_front",
+          "coating_back",
+          "finish",
+          "diecut",
+          "assembly",
+          "shape",
+          "pouch_type",
+          "closure",
+          "window",
+          "product",
+          "service"
+        ]
+      },
+      "ConfiguratorOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "nameTh": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "descriptionTh": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "descriptionEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "swatchHex": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "print": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "front": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "inkColourId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "percent": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        }
+                      },
+                      "required": [
+                        "inkColourId",
+                        "percent"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "back": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "inkColourId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "percent": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        }
+                      },
+                      "required": [
+                        "inkColourId",
+                        "percent"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "front",
+                  "back"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "requiresAmount": {
+                    "type": "boolean"
+                  },
+                  "requiresWidth": {
+                    "type": "boolean"
+                  },
+                  "requiresLength": {
+                    "type": "boolean"
+                  },
+                  "maxAmount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "requiresAmount",
+                  "requiresWidth",
+                  "requiresLength",
+                  "maxAmount"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "nameTh",
+          "nameEn",
+          "descriptionTh",
+          "descriptionEn",
+          "imageUrl",
+          "swatchHex",
+          "isDefault",
+          "print",
+          "area"
+        ],
+        "additionalProperties": false
+      },
+      "ConfiguratorPatternDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dielineKey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "subPatternId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "subPatternId",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "rules": {
+            "$ref": "#/components/schemas/ConfiguratorSizeRulesDto"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "dielineKey",
+          "imageUrl",
+          "parts",
+          "rules"
+        ],
+        "additionalProperties": false
+      },
+      "ConfiguratorSelection": {
+        "type": "string",
+        "enum": [
+          "single",
+          "multiple"
+        ]
+      },
+      "ConfiguratorSizeKind": {
+        "type": "string",
+        "enum": [
+          "box",
+          "flat",
+          "pouch",
+          "none"
+        ]
+      },
+      "ConfiguratorSizeRulesDto": {
+        "type": "object",
+        "properties": {
+          "minLengthMm": {
+            "type": "number"
+          },
+          "maxLengthMm": {
+            "type": "number"
+          },
+          "minWidthMm": {
+            "type": "number"
+          },
+          "maxWidthMm": {
+            "type": "number"
+          },
+          "minHeightMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "maxHeightMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minGussetMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "maxGussetMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lengthMustExceedWidth": {
+            "type": "boolean"
+          },
+          "stepMm": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "minLengthMm",
+          "maxLengthMm",
+          "minWidthMm",
+          "maxWidthMm",
+          "minHeightMm",
+          "maxHeightMm",
+          "minGussetMm",
+          "maxGussetMm",
+          "lengthMustExceedWidth",
+          "stepMm"
+        ],
+        "additionalProperties": false
+      },
+      "ConfiguratorStandardSizeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "patternId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lengthMm": {
+            "type": "number"
+          },
+          "widthMm": {
+            "type": "number"
+          },
+          "heightMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "gussetMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "patternId",
+          "lengthMm",
+          "widthMm",
+          "heightMm",
+          "gussetMm"
+        ],
+        "additionalProperties": false
+      },
+      "ConfiguratorStep": {
+        "type": "string",
+        "enum": [
+          "material",
+          "printing",
+          "finishing",
+          "assembly"
+        ]
       },
       "ConsultationStatus": {
         "type": "string",
@@ -18743,6 +20903,59 @@
         ],
         "additionalProperties": false
       },
+      "PromotionCheckDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PromotionCheckReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "benefit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "valid",
+          "reason",
+          "title",
+          "benefit"
+        ],
+        "additionalProperties": false
+      },
+      "PromotionCheckReason": {
+        "type": "string",
+        "enum": [
+          "not_found",
+          "not_started",
+          "expired",
+          "not_applicable",
+          "used_up",
+          "min_not_met",
+          "sign_in_required"
+        ]
+      },
       "PromotionConditionsDto": {
         "type": "object",
         "properties": {
@@ -20092,6 +22305,24 @@
         ],
         "additionalProperties": false
       },
+      "QuoteShareDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "token",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
       "QuoteSource": {
         "type": "string",
         "enum": [
@@ -20444,6 +22675,22 @@
           "production",
           "shipping"
         ]
+      },
+      "RfqAcceptanceDto": {
+        "type": "object",
+        "properties": {
+          "rfq": {
+            "$ref": "#/components/schemas/StoreRfqDto"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/StoreQuoteDto"
+          }
+        },
+        "required": [
+          "rfq",
+          "quote"
+        ],
+        "additionalProperties": false
       },
       "RfqCandidateFactoryDto": {
         "type": "object",
@@ -21175,6 +23422,104 @@
           "actor"
         ],
         "additionalProperties": false
+      },
+      "RfqFieldDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/RfqFieldType"
+          },
+          "labelTh": {
+            "type": "string"
+          },
+          "labelEn": {
+            "type": "string"
+          },
+          "helpTh": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "helpEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "min": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "labelTh": {
+                  "type": "string"
+                },
+                "labelEn": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value",
+                "labelTh",
+                "labelEn"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "key",
+          "type",
+          "labelTh",
+          "labelEn",
+          "helpTh",
+          "helpEn",
+          "unit",
+          "required",
+          "min",
+          "max",
+          "options"
+        ],
+        "additionalProperties": false
+      },
+      "RfqFieldType": {
+        "type": "string",
+        "enum": [
+          "text",
+          "textarea",
+          "number",
+          "select",
+          "multiselect",
+          "boolean"
+        ]
       },
       "RfqMessageAuthor": {
         "type": "string",
@@ -22662,6 +25007,24 @@
         ],
         "additionalProperties": false
       },
+      "SignedUrlDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "url",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
       "SlipDto": {
         "type": "object",
         "properties": {
@@ -22913,6 +25276,258 @@
         ],
         "additionalProperties": false
       },
+      "StoreCartDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItemDto"
+            }
+          },
+          "itemCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "subtotalAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "vatAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "readyForCheckout": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "reprice_unconfirmed",
+                    "item_unavailable",
+                    "destination_missing",
+                    "split_mismatch"
+                  ]
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "itemId",
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "items",
+          "itemCount",
+          "subtotalAmount",
+          "vatAmount",
+          "currency",
+          "readyForCheckout",
+          "blockers",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreConfiguratorDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "catalogProductId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productTypeCode": {
+            "type": "string"
+          },
+          "calculator": {
+            "$ref": "#/components/schemas/CalculatorKey"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "size": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "$ref": "#/components/schemas/ConfiguratorSizeKind"
+              },
+              "patterns": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ConfiguratorPatternDto"
+                }
+              },
+              "standardSizes": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ConfiguratorStandardSizeDto"
+                }
+              },
+              "customAllowed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "kind",
+              "patterns",
+              "standardSizes",
+              "customAllowed"
+            ],
+            "additionalProperties": false
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfiguratorGroupDto"
+            }
+          },
+          "quantity": {
+            "type": "object",
+            "properties": {
+              "presets": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "min": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "max": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "default": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "maxTiers": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10
+              }
+            },
+            "required": [
+              "presets",
+              "min",
+              "max",
+              "default",
+              "maxTiers"
+            ],
+            "additionalProperties": false
+          },
+          "design": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DesignOption"
+                }
+              },
+              "default": {
+                "$ref": "#/components/schemas/DesignOption"
+              }
+            },
+            "required": [
+              "options",
+              "default"
+            ],
+            "additionalProperties": false
+          },
+          "mockup": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MockupOption"
+                }
+              }
+            },
+            "required": [
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "fixedInputs": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "quoteValidityDays": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "slug",
+          "catalogProductId",
+          "productTypeCode",
+          "calculator",
+          "unit",
+          "size",
+          "groups",
+          "quantity",
+          "design",
+          "mockup",
+          "fixedInputs",
+          "quoteValidityDays"
+        ],
+        "additionalProperties": false
+      },
       "StoreOrderLookupDto": {
         "type": "object",
         "properties": {
@@ -23042,6 +25657,1269 @@
           "email",
           "phone",
           "customerType"
+        ],
+        "additionalProperties": false
+      },
+      "StoreQuoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quoteCode": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "imageUrl"
+            ],
+            "additionalProperties": false
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreQuoteLineDto"
+            }
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Decimal, up to 6 places"
+          },
+          "netAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "discountAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "shippingAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "vatAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoreQuotePromotionDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "designOption": {
+            "$ref": "#/components/schemas/DesignOption"
+          },
+          "mockupOption": {
+            "$ref": "#/components/schemas/MockupOption"
+          },
+          "leadTimeDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "earliestShipDate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "estimatedDeliveryDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deliveryPostcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tolerance": {
+            "type": "object",
+            "properties": {
+              "shortagePct": {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "Percent as a decimal string"
+              },
+              "overagePct": {
+                "type": "string",
+                "pattern": "^-?\\d+(\\.\\d+)?$",
+                "description": "Percent as a decimal string"
+              }
+            },
+            "required": [
+              "shortagePct",
+              "overagePct"
+            ],
+            "additionalProperties": false
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "configuration": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "source": {
+            "$ref": "#/components/schemas/QuoteSource"
+          },
+          "nextActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "irreversible": {
+                  "type": "boolean"
+                },
+                "disabledReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "quoteCode",
+          "status",
+          "productType",
+          "product",
+          "specs",
+          "quantity",
+          "unit",
+          "lines",
+          "unitPrice",
+          "netAmount",
+          "discountAmount",
+          "shippingAmount",
+          "vatAmount",
+          "grossAmount",
+          "currency",
+          "promotion",
+          "designOption",
+          "mockupOption",
+          "leadTimeDays",
+          "earliestShipDate",
+          "estimatedDeliveryDate",
+          "deliveryPostcode",
+          "tolerance",
+          "validUntil",
+          "configuration",
+          "source",
+          "nextActions",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreQuoteLineDto": {
+        "type": "object",
+        "properties": {
+          "lineType": {
+            "$ref": "#/components/schemas/OrderLineType"
+          },
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "description": "Decimal quantity"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Decimal, up to 6 places"
+          },
+          "netAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "vatAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "oneOff": {
+            "type": "boolean"
+          },
+          "waivedReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "lineType",
+          "description",
+          "quantity",
+          "unit",
+          "unitPrice",
+          "netAmount",
+          "vatAmount",
+          "grossAmount",
+          "oneOff",
+          "waivedReason"
+        ],
+        "additionalProperties": false
+      },
+      "StoreQuotePromotionDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "applied": {
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PromotionCheckReason"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "discountAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "capped": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "applied",
+          "reason",
+          "title",
+          "discountAmount",
+          "capped"
+        ],
+        "additionalProperties": false
+      },
+      "StoreQuoteSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quoteCode": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/QuoteStatus"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "imageUrl"
+            ],
+            "additionalProperties": false
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "source": {
+            "$ref": "#/components/schemas/QuoteSource"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "quoteCode",
+          "status",
+          "productType",
+          "product",
+          "quantity",
+          "unit",
+          "grossAmount",
+          "currency",
+          "validUntil",
+          "source",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreRfqDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rfqCode": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqStatus"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "targetDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "respondBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latestQuote": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "versionNo": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/RfqQuoteStatus"
+                  },
+                  "validUntil": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "versionNo",
+                  "status",
+                  "validUntil"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "spec": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "dimensions": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "lengthMm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "widthMm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "heightMm": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "lengthMm",
+                  "widthMm",
+                  "heightMm"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deliveryPostcode": {
+            "type": "string"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "originalName": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "thumbnailUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "originalName",
+                "mimeType",
+                "sizeBytes",
+                "thumbnailUrl",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quotes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreRfqQuoteDto"
+            }
+          },
+          "acceptedQuote": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "quoteCode": {
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "id",
+                  "quoteCode",
+                  "quantity"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "declineReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nextActions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "irreversible": {
+                  "type": "boolean"
+                },
+                "disabledReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "key"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "rfqCode",
+          "status",
+          "productType",
+          "quantities",
+          "targetDate",
+          "respondBy",
+          "latestQuote",
+          "submittedAt",
+          "spec",
+          "dimensions",
+          "deliveryPostcode",
+          "notes",
+          "files",
+          "quotes",
+          "acceptedQuote",
+          "declineReason",
+          "nextActions"
+        ],
+        "additionalProperties": false
+      },
+      "StoreRfqFormDto": {
+        "type": "object",
+        "properties": {
+          "productTypeCode": {
+            "type": "string"
+          },
+          "nameTh": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "specSchemaVersion": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RfqFieldDto"
+            }
+          },
+          "dimensions": {
+            "type": "object",
+            "properties": {
+              "asked": {
+                "type": "boolean"
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "height": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "asked",
+              "required",
+              "height"
+            ],
+            "additionalProperties": false
+          },
+          "quantity": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "maxTiers": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 6
+              }
+            },
+            "required": [
+              "min",
+              "maxTiers"
+            ],
+            "additionalProperties": false
+          },
+          "files": {
+            "type": "object",
+            "properties": {
+              "accept": {
+                "type": "string"
+              },
+              "maxBytes": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "maxFiles": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "accept",
+              "maxBytes",
+              "maxFiles"
+            ],
+            "additionalProperties": false
+          },
+          "slaTargetHours": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "productTypeCode",
+          "nameTh",
+          "nameEn",
+          "specSchemaVersion",
+          "fields",
+          "dimensions",
+          "quantity",
+          "files",
+          "slaTargetHours"
+        ],
+        "additionalProperties": false
+      },
+      "StoreRfqMessageDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "authorKind": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "staff"
+            ]
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "originalName": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "thumbnailUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "originalName",
+                "mimeType",
+                "sizeBytes",
+                "thumbnailUrl",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "authorKind",
+          "authorName",
+          "body",
+          "files",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreRfqQuoteDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionNo": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqQuoteStatus"
+          },
+          "validUntil": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "customerNote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "quantity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "unitPrice": {
+                  "type": "string",
+                  "description": "Decimal, up to 6 places"
+                },
+                "netAmount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                },
+                "vatAmount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                },
+                "grossAmount": {
+                  "type": "string",
+                  "pattern": "^-?\\d+\\.\\d{2}$",
+                  "description": "Money (THB, 2 decimals)"
+                },
+                "leadTimeDays": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "quantity",
+                "unitPrice",
+                "netAmount",
+                "vatAmount",
+                "grossAmount",
+                "leadTimeDays"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sentAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "versionNo",
+          "status",
+          "validUntil",
+          "customerNote",
+          "lines",
+          "sentAt",
+          "acceptedAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreRfqSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rfqCode": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RfqStatus"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "targetDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "respondBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "latestQuote": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "versionNo": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/RfqQuoteStatus"
+                  },
+                  "validUntil": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  }
+                },
+                "required": [
+                  "versionNo",
+                  "status",
+                  "validUntil"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "rfqCode",
+          "status",
+          "productType",
+          "quantities",
+          "targetDate",
+          "respondBy",
+          "latestQuote",
+          "submittedAt"
+        ],
+        "additionalProperties": false
+      },
+      "StoreSharedQuoteDto": {
+        "type": "object",
+        "properties": {
+          "quoteCode": {
+            "type": "string"
+          },
+          "productType": {
+            "$ref": "#/components/schemas/ProductTypeRefDto"
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "imageUrl"
+            ],
+            "additionalProperties": false
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unit": {
+            "type": "string"
+          },
+          "unitPrice": {
+            "type": "string",
+            "description": "Decimal, up to 6 places"
+          },
+          "grossAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+\\.\\d{2}$",
+            "description": "Money (THB, 2 decimals)"
+          },
+          "currency": {
+            "type": "string",
+            "const": "THB"
+          },
+          "leadTimeDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "configuration": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "quoteCode",
+          "productType",
+          "product",
+          "specs",
+          "quantity",
+          "unit",
+          "unitPrice",
+          "grossAmount",
+          "currency",
+          "leadTimeDays",
+          "validUntil",
+          "configuration"
+        ],
+        "additionalProperties": false
+      },
+      "StoreSupportChannelsDto": {
+        "type": "object",
+        "properties": {
+          "lineOaId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hours": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "lineOaId",
+          "phone",
+          "email",
+          "hours"
         ],
         "additionalProperties": false
       },

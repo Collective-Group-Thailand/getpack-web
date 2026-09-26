@@ -808,6 +808,45 @@ function draftLines(
   return body.lines.map((line) => priceLine(line, rfq));
 }
 
+/* ------------------------------------------------------------ the customer's side (mocks/store) */
+
+/** The thread, shared with the storefront's view of the same RFQ. */
+export const rfqMessages = messages;
+
+/** A request a customer submitted on the storefront joins the desk's queues. */
+export function addCustomerRfq(rfq: Rfq): Rfq {
+  rfqs.unshift(refresh(rfq));
+  log(rfq, "rfq.submitted", "ลูกค้าส่งคำขอราคาทางเว็บไซต์", null);
+  return rfq;
+}
+
+/**
+ * The customer accepts one quantity of a sent quote on the storefront — what `record-acceptance`
+ * does for CS, without a staff actor. Answers the quotation it creates, or the problem.
+ */
+export function customerAcceptQuote(
+  rfq: Rfq,
+  quoteId: string,
+  quantity: number,
+): Response | { id: string; quoteCode: string; quantity: number; line: QuoteLine } {
+  const quote = rfq.quotes.find((candidate) => candidate.id === quoteId);
+  if (!quote || quote.status !== "sent" || rfq.status !== "quoted")
+    return conflict("ตอบรับได้เฉพาะใบเสนอราคาฉบับล่าสุดที่ส่งให้แล้ว");
+  if (quote.validUntil < day(0)) return problem(409, "rfq.quote_expired", "ใบเสนอราคาฉบับนี้หมดอายุแล้ว");
+  const line = quote.lines.find((item) => item.quantity === quantity);
+  if (!line)
+    return problem(422, "validation.failed", "จำนวนนี้ไม่มีในใบเสนอราคา", [
+      { path: "quantity", code: "enum", message: "เลือกจำนวนจากใบเสนอราคา" },
+    ]);
+  quote.status = "accepted";
+  quote.acceptedAt = bangkokIso();
+  rfq.status = "accepted";
+  rfq.acceptedQuotation = toQuotation(rfq, quote, quantity, CS);
+  log(rfq, "rfq.accepted", `ลูกค้าตอบรับฉบับที่ ${quote.versionNo} ทางเว็บไซต์`, null);
+  refresh(rfq);
+  return { ...rfq.acceptedQuotation, line };
+}
+
 export const rfqHandlers = [
   mockRequest("GET /v1/admin/rfqs", ({ query, request }) => {
     const who = staffPersonaOf(request);
