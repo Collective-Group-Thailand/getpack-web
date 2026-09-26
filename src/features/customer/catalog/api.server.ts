@@ -275,3 +275,11 @@ export async function searchCatalogue(q: string): Promise<SearchResult> {
   const { data } = await (await publicApi("prices")).GET("/v1/store/catalog/search", { params: { query: { q } } });
   return data!;
 }
+
+export type Tracking = ResponseOf<Requests, "GET /v1/store/tracking/{token}">;
+
+/** The public tracking page's data (CONTRACT-REQUEST store.tracking); `null` for an unknown token. */
+export async function getTracking(token: string): Promise<Tracking | null> {
+  const requests = await publicRequests("prices");
+  return orNull(requests.call("GET /v1/store/tracking/{token}", { path: { token } }));
+}
