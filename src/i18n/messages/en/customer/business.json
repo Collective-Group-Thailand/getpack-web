@@ -1,0 +1,423 @@
+{
+  "nav": {
+    "label": "Business account",
+    "overview": "Overview",
+    "approvals": "Approvals",
+    "reorder": "Bulk reorder",
+    "credit": "Credit & statements",
+    "members": "Members",
+    "branches": "Branches",
+    "assets": "Brand assets",
+    "settings": "Settings"
+  },
+  "landing": {
+    "metaTitle": "Packio for business",
+    "eyebrow": "Packio for business",
+    "title": "Order packaging as a company — the whole team, every branch",
+    "intro": "One company account for your team: set an approver, add PO numbers, tax invoices per branch, and apply for credit terms.",
+    "apply": "Open a company account",
+    "talk": "Talk to sales",
+    "benefits": "What a company account adds",
+    "benefit": {
+      "team": {
+        "title": "The whole team, one account",
+        "body": "Invite members with roles: admin, buyer, approver, accountant"
+      },
+      "approval": {
+        "title": "Approval before ordering",
+        "body": "Orders over your threshold wait for your approver"
+      },
+      "credit": {
+        "title": "Credit terms",
+        "body": "Start prepaid; apply for 15–60 day terms after 3 paid orders or with financial statements"
+      },
+      "invoices": {
+        "title": "Tax invoices and statements",
+        "body": "A tax invoice per order and a monthly statement to pay in one go"
+      },
+      "branches": {
+        "title": "Multiple branches",
+        "body": "Delivery addresses and tax invoices per branch"
+      },
+      "reorder": {
+        "title": "Reorder in bulk",
+        "body": "Upload a CSV of order numbers and quantities, re-priced instantly"
+      }
+    },
+    "stepsTitle": "Open an account in 3 steps",
+    "steps": {
+      "one": {
+        "title": "Company details",
+        "body": "Legal name, tax ID, authorised signatory"
+      },
+      "two": {
+        "title": "Documents",
+        "body": "Company certificate (within 6 months), ภ.พ.20 and the signatory's ID"
+      },
+      "three": {
+        "title": "We review",
+        "body": "1–2 business days; order prepaid meanwhile"
+      }
+    }
+  },
+  "dashboard": {
+    "status": {
+      "applied": "Documents needed",
+      "kyc_review": "Under review",
+      "active": "Active",
+      "suspended": "Suspended",
+      "closed": "Closed"
+    },
+    "meta": "Company {code} · your roles: {roles}",
+    "appliedTitle": "Application sent",
+    "applied": "Finance will review the documents and let you know by e-mail and LINE.",
+    "notices": {
+      "due_soon": {
+        "title": "Payment due soon",
+        "body": "Statement {period}: {amount} due {date}"
+      },
+      "due_today": {
+        "title": "Payment due today",
+        "body": "Statement {period}: {amount} is due today"
+      },
+      "overdue": {
+        "title": "Payment overdue",
+        "body": "Statement {period}: {amount}, {days} days overdue"
+      },
+      "credit_blocked": {
+        "title": "Credit orders on hold",
+        "body": "{amount} is {days} days overdue. Prepaid orders still work; no late fee (D-122)"
+      }
+    },
+    "seeStatements": "See statements",
+    "credit": "Available credit",
+    "creditStatus": {
+      "prepaid": "Prepaid",
+      "eligible": "Eligible for credit",
+      "credit": "On credit",
+      "blocked_overdue": "On hold"
+    },
+    "creditMeta": "Limit {limit} · {days}-day terms",
+    "prepaid": "No credit limit yet",
+    "owed": "Outstanding",
+    "overdue": "{amount} overdue ({days} days)",
+    "nextDue": "Next due {date}",
+    "nothingDue": "Nothing due",
+    "approvals": "Waiting for approval",
+    "threshold": "Approval above {amount}",
+    "noThreshold": "No approval threshold set",
+    "seeApprovals": "See approvals",
+    "spendTitle": "Spend, last {months} months",
+    "spendTotal": "Total",
+    "spendOrders": "Orders",
+    "spend": {
+      "byMonth": "By month",
+      "byMember": "By buyer",
+      "byProductType": "By product type"
+    },
+    "spendNone": "No data yet"
+  },
+  "apply": {
+    "title": "Open a company account",
+    "intro": "Enter your company's details and attach the KYC documents. Finance reviews them within 1–2 business days, and you'll be the company's admin.",
+    "alreadyTitle": "You're already in {name}",
+    "already": "Go to the company account",
+    "company": "Company",
+    "legalName": "Legal name",
+    "legalNameHint": "As on the company certificate",
+    "taxId": "Tax ID",
+    "taxIdHint": "13 digits",
+    "vat": "VAT-registered",
+    "address": "Head office address",
+    "signatoryTitle": "Authorised signatory",
+    "signatoryIntro": "Someone named on the company certificate",
+    "signatory": "Full name",
+    "position": "Position",
+    "phone": "Contact mobile",
+    "kyc": "Documents (KYC)",
+    "kycIntro": "PDF or images, up to 20 MB each",
+    "documents": {
+      "company_certificate": "Company certificate",
+      "vat_registration_pp20": "ภ.พ.20 (VAT registration)",
+      "signatory_id": "Signatory's ID card",
+      "financial_statement": "Financial statements"
+    },
+    "documentHints": {
+      "company_certificate": "Issued within the last 6 months",
+      "vat_registration_pp20": "For VAT-registered companies",
+      "signatory_id": "A signed, certified copy",
+      "financial_statement": "Latest year, to apply for credit straight away"
+    },
+    "issuedOn": "Certificate issue date",
+    "issuedOnHint": "Within the last 6 months",
+    "drop": "Drop the file here",
+    "browse": "or choose a file",
+    "fileHint": "PDF, JPG or PNG",
+    "tooLarge": "{name} is over 20 MB",
+    "wrongType": "{name} isn't a PDF or an image",
+    "uploading": "Uploading {name}",
+    "uploaded": "{name} uploaded",
+    "uploadFailed": "Couldn't upload {name} — try again",
+    "required": "(required)",
+    "submit": "Send application",
+    "failed": "Couldn't send the application. Please try again.",
+    "errors": {
+      "title": "Please fix {count, plural, one {# thing} other {# things}} before sending",
+      "legalName": "Please enter the legal name",
+      "taxId": "That tax ID isn't valid",
+      "address": "Please enter the head office address",
+      "signatory": "Please enter the signatory's name",
+      "position": "Please enter the position",
+      "phone": "That mobile number doesn't look right",
+      "issuedOn": "Please enter the certificate's issue date",
+      "document": "Please attach the {name}"
+    }
+  },
+  "members": {
+    "title": "Members",
+    "intro": "Everyone here orders for the company within their roles.",
+    "roles": {
+      "company_admin": "Company admin",
+      "company_buyer": "Buyer",
+      "company_approver": "Approver",
+      "company_accountant": "Accountant"
+    },
+    "roleHints": {
+      "company_admin": "Manages members, branches and settings",
+      "company_buyer": "Orders for the company",
+      "company_approver": "Approves orders over the threshold",
+      "company_accountant": "Sees statements and applies for credit"
+    },
+    "you": "(you)",
+    "invitedBadge": "Invited",
+    "joined": "Joined {date}",
+    "editRoles": "Edit roles",
+    "remove": "Remove",
+    "rolesOf": "Roles of {name}",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saved": "Roles saved",
+    "inviteTitle": "Invite a member",
+    "name": "Name",
+    "phone": "Mobile number",
+    "phoneHint": "They join when they sign in with this number",
+    "rolesLegend": "Roles",
+    "invite": "Send invitation",
+    "invited": "{name} invited",
+    "removeTitle": "Remove {name} from the company?",
+    "removeBody": "Their past orders stay the company's, but they can't order for it any more.",
+    "removed": "{name} removed",
+    "failed": "That didn't work. Please try again.",
+    "errors": {
+      "name": "Please enter a name",
+      "phone": "That mobile number doesn't look right",
+      "roles": "Choose at least one role"
+    }
+  },
+  "branches": {
+    "title": "Branches",
+    "intro": "Tax invoices are issued to the branch chosen at checkout.",
+    "headOffice": "Head office",
+    "code": "Branch {code}",
+    "remove": "Remove branch",
+    "addTitle": "Add a branch",
+    "branchCode": "Branch code",
+    "name": "Branch name",
+    "address": "Address",
+    "add": "Add branch",
+    "added": "{name} added",
+    "removed": "{name} removed",
+    "failed": "That didn't work. Please try again.",
+    "errors": {
+      "code": "A 5-digit branch code, e.g. 00001",
+      "name": "Please enter the branch name",
+      "address": "Please enter the address"
+    }
+  },
+  "assets": {
+    "title": "Brand assets",
+    "intro": "Logos, brand guidelines and approved artwork, shared with everyone in the company.",
+    "empty": "No brand assets yet.",
+    "kinds": {
+      "logo": "Logo",
+      "guideline": "Brand guideline",
+      "font": "Font",
+      "artwork": "Artwork",
+      "other": "Other"
+    },
+    "meta": "{file} · by {by} · {date}",
+    "download": "Download",
+    "remove": "Remove",
+    "addTitle": "Add a file",
+    "kind": "Type",
+    "name": "Display name",
+    "nameHint": "Leave empty to use the file name",
+    "drop": "Drop a file here",
+    "browse": "or choose a file",
+    "hint": "Up to 100 MB each",
+    "tooLarge": "{name} is too large",
+    "wrongType": "{name} isn't a supported file",
+    "added": "{name} added",
+    "removed": "{name} removed",
+    "failed": "That didn't work. Please try again."
+  },
+  "approvals": {
+    "pageTitle": "Order approvals",
+    "introApprover": "Orders over your company's threshold wait for you. Approving places them as the buyer checked them out.",
+    "introBuyer": "Your orders waiting for the company's approver.",
+    "views": "Views",
+    "pending": "Waiting",
+    "decided": "Decided",
+    "sentTitle": "Sent to your approver ({request})",
+    "sent": "We'll let you know once it's decided.",
+    "empty": "Nothing here.",
+    "title": "{request} · {amount}",
+    "meta": "By {name} on {date} · threshold {threshold}",
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "item": "{name}, {quantity} {unit}",
+    "details": "PO {po} · {schedule}",
+    "noPo": "none",
+    "reasonShown": "Reason: {reason}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approveTitle": "Approve {request}?",
+    "approveBody": "The {amount} order is placed as {name} checked it out, and they are asked to pay.",
+    "rejectTitle": "Reject {request}",
+    "reason": "Reason",
+    "reasonHint": "The buyer sees this",
+    "cancel": "Cancel",
+    "approved": "{request} approved",
+    "rejected": "{request} rejected",
+    "failed": "That didn't work. Please try again."
+  },
+  "credit": {
+    "title": "Credit & statements",
+    "intro": "Your limit, terms, what's outstanding and the monthly statements.",
+    "noAccess": "Statements are for the company admin and accountants.",
+    "summary": "Credit",
+    "statusLabel": "Status",
+    "statuses": {
+      "prepaid": "Prepaid (no limit yet)",
+      "eligible": "Eligible for credit",
+      "credit": "On credit",
+      "blocked_overdue": "On hold — balance overdue"
+    },
+    "limitLabel": "Limit",
+    "available": "Available",
+    "termLabel": "Terms",
+    "days": "{days} days",
+    "blockedTitle": "Credit orders on hold",
+    "blocked": "{amount} is {days} days overdue. Pay it and credit is back straight away; order prepaid meanwhile.",
+    "applyTitle": "Apply for credit",
+    "eligible": "Your company has {count} paid orders — you can apply.",
+    "notEligible": "{count} of {needed} paid orders — or attach financial statements to be considered.",
+    "limit": "Limit wanted (THB)",
+    "limitHint": "Up to THB 100,000 is decided by Finance; above it, by C-Level",
+    "term": "Terms",
+    "basis": "Based on",
+    "bases": {
+      "paid_orders": "Order history",
+      "financial_review": "Financial statements"
+    },
+    "basisHints": {
+      "paid_orders": "3 or more paid orders",
+      "financial_review": "Attach the latest year's statements"
+    },
+    "statementDrop": "Drop the financial statements here",
+    "browse": "or choose a file",
+    "statementHint": "PDF, up to 30 MB",
+    "tooLarge": "{name} is too large",
+    "wrongType": "{name} isn't a PDF",
+    "uploading": "Uploading {name}",
+    "uploaded": "{name} uploaded",
+    "uploadFailed": "Upload failed",
+    "apply": "Send application",
+    "sent": "Credit application sent",
+    "pendingTitle": "Credit application under review",
+    "pending": "{limit} on {days}-day terms, applied on {date}",
+    "failed": "That didn't work. Please try again.",
+    "errors": {
+      "limit": "Enter the limit in whole baht, at least 1,000",
+      "statement": "Please attach the financial statements"
+    },
+    "statements": "Monthly statements",
+    "aging": {
+      "current": "Not yet due",
+      "days1to30": "1–30 days overdue",
+      "days31to60": "31–60 days overdue",
+      "days61to90": "61–90 days overdue",
+      "over90": "Over 90 days overdue"
+    },
+    "noStatements": "No statements yet.",
+    "period": "Period {period}",
+    "statementMeta": "Invoiced {invoiced} · paid {paid} · balance {balance} · due {due}",
+    "statementStatus": {
+      "open": "Open",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "download": "Get download link",
+    "open": "Open file"
+  },
+  "reorder": {
+    "title": "Bulk reorder",
+    "intro": "Upload a CSV or paste lines of order number and quantity. We check and re-price each one, then add them to the cart.",
+    "drop": "Drop a CSV here",
+    "browse": "or choose a file",
+    "hint": "e.g. PK-2569-00113,2000 (no quantity = same as last time)",
+    "tooLarge": "{name} is too large",
+    "wrongType": "{name} isn't a CSV",
+    "paste": "Or paste the lines",
+    "pasteHint": "One per line: order number,quantity",
+    "check": "Check lines",
+    "noRows": "No readable lines found",
+    "unreadable": "{count, plural, one {# line} other {# lines}} couldn't be read",
+    "lineValue": "Line {line}: {value}",
+    "result": "{ok} ready · {error} with problems",
+    "tableCaption": "Bulk reorder check",
+    "columns": {
+      "line": "Line",
+      "order": "Order",
+      "product": "Product",
+      "quantity": "Quantity",
+      "amount": "Today's price",
+      "status": "Check"
+    },
+    "ok": "Ready",
+    "total": "Total {amount}",
+    "add": "Add {count} to the cart",
+    "failed": "That didn't work. Please try again."
+  },
+  "settings": {
+    "title": "Company settings",
+    "intro": "Order approvals and PO numbers.",
+    "adminOnly": "Only the company admin can change these.",
+    "approvalTitle": "Order approval",
+    "approvalOn": "Orders over an amount need approval",
+    "approvalHint": "Your approver is told every time an order goes over it (D-123)",
+    "threshold": "Approval amount (THB)",
+    "thresholdHint": "VAT included, e.g. 50000",
+    "poTitle": "PO numbers",
+    "po": {
+      "required": "Required on every order",
+      "optional": "Optional",
+      "none": "Not used"
+    },
+    "poHints": {
+      "required": "An order can't be placed without one",
+      "optional": "A field is shown at checkout",
+      "none": "No PO field"
+    },
+    "save": "Save",
+    "saved": "Settings saved",
+    "failed": "Couldn't save. Please try again.",
+    "errors": {
+      "amount": "Enter the amount in whole baht"
+    }
+  }
+}
