@@ -169,6 +169,8 @@ export const designDocumentView = z
     document: z.object({ spec: z.record(z.string(), z.unknown()), content: z.record(z.string(), z.unknown()) }),
     thumbnailUrl: z.string().nullable(),
     owner: z.object({ displayName: z.string() }),
+    /** True only for a copy this staff member owns; a customer's document is read-only (F4 C.2). */
+    editable: z.boolean(),
     updatedAt: dateTime(),
   })
   .meta({ id: "DesignDocumentViewDto" });
@@ -360,6 +362,26 @@ export const adminPrepressRequests = {
     body: z.object({ reason: z.string().min(3).max(1000) }),
     response: prepressDetail,
     idempotent: true,
+  }),
+  "GET /v1/admin/design-documents/{documentId}": request({
+    request: "admin.design-documents",
+    summary:
+      "Open a design in the designer: a customer's read-only, a staff member's own copy editable; the ETag is its version",
+    response: designDocumentView,
+  }),
+  "PUT /v1/admin/design-documents/{documentId}": request({
+    request: "admin.design-documents",
+    summary: "Save a staff member's own copy under If-Match; a customer's document answers 403 design.read_only",
+    body: z.object({
+      title: z.string().min(1).max(200),
+      document: z.object({
+        schemaVersion: z.number().int().min(1),
+        spec: z.record(z.string(), z.unknown()),
+        content: z.record(z.string(), z.unknown()),
+      }),
+    }),
+    response: designDocumentView,
+    concurrency: true,
   }),
   "POST /v1/admin/design-documents/{documentId}/actions/copy": request({
     request: "admin.design-documents",

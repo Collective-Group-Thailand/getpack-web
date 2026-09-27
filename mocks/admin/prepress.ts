@@ -10,15 +10,17 @@
  * dieline answers 501 `drawing.engine_unavailable`, exactly as B4.1 does until the engine ships.
  */
 
+import { HttpResponse } from "msw";
 import type { z } from "zod";
 
 import type { designRound, prepressDetail, proofAnnotation, proofDetail } from "@/lib/api/requests/admin-prepress";
-import { prepressItem } from "@/lib/api/requests/admin-prepress";
+import { designDocumentView, prepressItem } from "@/lib/api/requests/admin-prepress";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { storeDesignForStaff } from "../store/designs";
 import { baht, orders, satang } from "./commerce";
 import { registerQueue } from "./console";
 
@@ -356,6 +358,7 @@ function build(order: Order, index: number, plan: Plan): Detail {
           document: SAMPLE_DESIGN,
           thumbnailUrl: null,
           owner: { displayName: order.customer.displayName },
+          editable: false,
           updatedAt: bangkokIso(-7 * HOUR),
         };
       }
@@ -756,6 +759,46 @@ export function refreshPrepress(detail: Detail): Detail {
   return refresh(detail);
 }
 
+type DesignDocumentView = z.output<typeof designDocumentView>;
+
+/** Copies prepress made to work on (F2 2.4, F4 C.2): editable by the staff member who made them. */
+const staffCopies = new Map<string, { ownerId: string; view: DesignDocumentView }>();
+let copyCounter = 0;
+
+/** A document by id: a staff copy, a customer's document on an order, or a customer's saved design. */
+function documentFor(id: string, staffId: string): DesignDocumentView | null {
+  const copy = staffCopies.get(id);
+  if (copy) return { ...copy.view, editable: copy.ownerId === staffId };
+  const onOrder = [...details.values()].find((detail) => detail.designDocument?.id === id)?.designDocument;
+  if (onOrder) return { ...onOrder, editable: false };
+  const saved = storeDesignForStaff(id);
+  if (!saved) return null;
+  return {
+    id: saved.id,
+    title: saved.name,
+    versionNo: saved.versionNo,
+    schemaVersion: saved.document.schemaVersion,
+    document: { spec: saved.document.spec, content: saved.document.content },
+    thumbnailUrl: saved.thumbnailUrl,
+    owner: { displayName: "ลูกค้า" },
+    editable: false,
+    updatedAt: saved.updatedAt,
+  };
+}
+
+/** The view with its ETag, checked against its request like `mockRequest` checks a plain return. */
+function documentResponse(
+  key: "GET /v1/admin/design-documents/{documentId}" | "PUT /v1/admin/design-documents/{documentId}",
+  view: DesignDocumentView,
+) {
+  const checked = designDocumentView.safeParse(view);
+  if (!checked.success) {
+    console.error(`[mock drift] ${key}`, checked.error.issues.slice(0, 5));
+    return problem(500, "mock.drift", `The mock for ${key} returned a shape its request does not describe.`);
+  }
+  return HttpResponse.json(view, { headers: { ETag: `"v${view.versionNo}"` } });
+}
+
 export const prepressHandlers = [
   mockRequest("GET /v1/admin/prepress", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
@@ -925,20 +968,53 @@ export const prepressHandlers = [
     found.detail.designService!.status = "requoted";
     return refresh(found.detail);
   }),
+  mockRequest("GET /v1/admin/design-documents/{documentId}", ({ params, request }) => {
+    const who = staffPersonaOf(request);
+    if (!who || !can(who, "prepress.read")) return forbidden();
+    const found = documentFor(params.documentId, who.id);
+    if (!found) return problem(404, "design.not_found", "ไม่พบแบบนี้");
+    return documentResponse("GET /v1/admin/design-documents/{documentId}", found);
+  }),
+  mockRequest("PUT /v1/admin/design-documents/{documentId}", ({ params, body, request }) => {
+    const who = staffPersonaOf(request);
+    if (!who || !can(who, "prepress.manage")) return forbidden();
+    const copy = staffCopies.get(params.documentId);
+    if (!copy) {
+      return documentFor(params.documentId, who.id)
+        ? problem(403, "design.read_only", "แบบของลูกค้าเปิดได้อย่างเดียว ทำสำเนาเพื่อแก้ไข")
+        : problem(404, "design.not_found", "ไม่พบแบบนี้");
+    }
+    if (copy.ownerId !== who.id) return problem(403, "design.read_only", "สำเนานี้เป็นของเจ้าหน้าที่คนอื่น");
+    const match = request.headers.get("if-match");
+    if (!match) return problem(428, "http.precondition_required", "ต้องส่ง If-Match");
+    if (match !== `"v${copy.view.versionNo}"`)
+      return problem(412, "concurrency.stale", "สำเนานี้ถูกบันทึกจากที่อื่นหลังจากที่คุณเปิด");
+    copy.view = {
+      ...copy.view,
+      title: body.title,
+      document: body.document,
+      schemaVersion: body.document.schemaVersion,
+      versionNo: copy.view.versionNo + 1,
+      updatedAt: bangkokIso(),
+    };
+    return documentResponse("PUT /v1/admin/design-documents/{documentId}", { ...copy.view, editable: true });
+  }),
   mockRequest("POST /v1/admin/design-documents/{documentId}/actions/copy", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "prepress.manage")) return forbidden();
-    const source = [...details.values()].find(
-      (detail) => detail.designDocument?.id === params.documentId,
-    )?.designDocument;
+    const source = documentFor(params.documentId, who.id);
     if (!source) return problem(404, "design.not_found", "ไม่พบแบบนี้");
-    return {
+    copyCounter += 1;
+    const view: DesignDocumentView = {
       ...source,
-      id: mockId("ddc", 5000 + Math.floor(Math.random() * 4000)),
+      id: mockId("ddc", 5000 + copyCounter),
       title: body.title,
       versionNo: 1,
       owner: { displayName: who.displayName },
+      editable: true,
       updatedAt: bangkokIso(),
     };
+    staffCopies.set(view.id, { ownerId: who.id, view });
+    return view;
   }),
 ];

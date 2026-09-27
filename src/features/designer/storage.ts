@@ -83,3 +83,24 @@ export const designRepo = {
     return writeAll([...readAll(), copy]) ? copy : undefined;
   },
 };
+
+const IMPORTED_KEY = "packio.designs.imported";
+
+/** Local design ids already imported into the signed-in account (F4 C.1), so the offer shows once. */
+export function importedLocalIds(): string[] {
+  try {
+    const raw = localStorage.getItem(IMPORTED_KEY);
+    const list = raw ? (JSON.parse(raw) as unknown) : [];
+    return Array.isArray(list) ? list.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markImported(ids: string[]): void {
+  try {
+    localStorage.setItem(IMPORTED_KEY, JSON.stringify([...new Set([...importedLocalIds(), ...ids])]));
+  } catch {
+    // Storage blocked: the offer may show again; importing twice is a no-op (replays by localId).
+  }
+}

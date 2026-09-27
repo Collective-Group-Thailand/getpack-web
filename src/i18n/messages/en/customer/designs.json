@@ -16,12 +16,23 @@
   "card": {
     "noThumbnail": "No preview",
     "updated": "Edited {date}",
-    "spec": "{style} · {size} mm · {paper}"
+    "spec": "{style} · {size} mm · {paper}",
+    "linked": "Order {order}"
   },
   "delete": {
     "title": "Delete this design?",
     "body": "“{name}” will be removed from this browser and cannot be recovered.",
     "confirm": "Delete design"
   },
-  "duplicateFailed": "Could not duplicate — storage is full"
+  "duplicateFailed": "Could not duplicate — storage is full",
+  "subtitleAccount": "Every design is kept in your account, autosaved, with its versions",
+  "copyName": "{name} (copy)",
+  "deleteFailed": "Could not delete",
+  "import": {
+    "title": "{count, plural, one {# design} other {# designs}} saved in this browser",
+    "body": "Import them to open them on any device and keep their history. The copies in this browser stay.",
+    "action": "Import to my account",
+    "done": "{count, plural, one {# design} other {# designs}} imported",
+    "failed": "Could not import — try again"
+  }
 }

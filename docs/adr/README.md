@@ -9,3 +9,4 @@
 | 0006 | Contract consumption & mocks | F0.1 |
 | 0007 | `@packio/dieline` ownership & publishing | F0.1 |
 | 0008 | `@packio/dieline` geometry model v2 (edges with roles, pieces, style registry) | Accepted (F4 A) |
+| 0009 | The designer's print file is made in the browser, on the engine's PDF writer | Accepted (F4 C) |
