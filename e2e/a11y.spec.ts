@@ -59,6 +59,39 @@ test.describe("axe, in a real browser", () => {
     expect(shell.violations, report(shell.violations)).toEqual([]);
   });
 
+  test("every designer panel is clean: each rail tool, a selection, the checks and the 3D view", async ({ page }) => {
+    await page.goto("/design/new");
+    const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
+    await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
+    await expect(page.locator("canvas").first()).toBeVisible();
+
+    const rail = page.getByRole("navigation", { name: "เครื่องมือออกแบบ" });
+    for (const tool of ["กล่อง", "แม่แบบ", "องค์ประกอบ", "ข้อความ", "อัปโหลด", "แบรนด์", "พื้นหลัง", "ชั้น"]) {
+      const button = rail.getByRole("button", { name: tool, exact: true });
+      if ((await button.getAttribute("aria-pressed")) !== "true") await button.click();
+      await expect(page.getByRole("region", { name: tool, exact: true })).toBeVisible();
+      const { violations } = await scan(page);
+      expect(violations, `${tool}\n${report(violations)}`).toEqual([]);
+    }
+
+    await rail.getByRole("button", { name: "ข้อความ", exact: true }).click();
+    await page.getByRole("button", { name: "เพิ่มหัวข้อ", exact: true }).click();
+    await expect(
+      page.getByRole("tabpanel", { name: "คุณสมบัติ" }).getByRole("heading", { name: "ข้อความ", exact: true }),
+    ).toBeVisible();
+    const selected = await scan(page);
+    expect(selected.violations, report(selected.violations)).toEqual([]);
+
+    await page.getByRole("tab", { name: /^ตรวจงาน/ }).click();
+    const checks = await scan(page);
+    expect(checks.violations, report(checks.violations)).toEqual([]);
+
+    await page.getByRole("tab", { name: "3 มิติ" }).click();
+    await expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
+    const preview = await scan(page);
+    expect(preview.violations, report(preview.violations)).toEqual([]);
+  });
+
   test("the admin and partner zones are clean, including a zone 404", async ({ page }) => {
     for (const url of [HOSTS.admin, HOSTS.partner, `${HOSTS.admin}/nope`]) {
       await page.goto(url);
@@ -164,12 +197,19 @@ test.describe("keyboard paths", () => {
     await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
     await expect(page.locator("canvas").first()).toBeVisible();
 
-    const addText = page.getByRole("button", { name: "ข้อความ" });
-    await addText.focus();
+    const textTool = page
+      .getByRole("navigation", { name: "เครื่องมือออกแบบ" })
+      .getByRole("button", { name: "ข้อความ", exact: true });
+    await textTool.focus();
+    await page.keyboard.press("Enter");
+    const addHeading = page.getByRole("button", { name: "เพิ่มหัวข้อ", exact: true });
+    await addHeading.focus();
     await page.keyboard.press("Enter");
 
     // The new element selects itself, so its properties panel appears.
-    await expect(page.getByRole("heading", { name: "ข้อความ" })).toBeVisible();
+    await expect(
+      page.getByRole("tabpanel", { name: "คุณสมบัติ" }).getByRole("heading", { name: "ข้อความ", exact: true }),
+    ).toBeVisible();
   });
 
   test("the theme toggle switches theme and persists it", async ({ page }) => {

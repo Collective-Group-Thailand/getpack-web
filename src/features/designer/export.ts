@@ -1,6 +1,7 @@
 "use client";
 import type Konva from "konva";
 import { dielineToDxf, dielineToPdf, dielineToSvg, PX_PER_MM } from "@packio/dieline";
+import { withFlatWorld } from "./lib/capture";
 import type { Dieline } from "./types";
 
 const MAX_CANVAS_PX = 12000;
@@ -32,14 +33,16 @@ export function renderDieline(
   const scale = stage.scaleX();
   const pxPerMm = Math.min(opts.pxPerMm, MAX_CANVAS_PX / (Math.max(d.width, d.height) + margin * 2));
   try {
-    return stage.toDataURL({
-      x: stage.x() - margin * scale,
-      y: stage.y() - margin * scale,
-      width: (d.width + margin * 2) * scale,
-      height: (d.height + margin * 2) * scale,
-      pixelRatio: pxPerMm / scale,
-      mimeType: "image/png",
-    });
+    return withFlatWorld(stage, () =>
+      stage.toDataURL({
+        x: stage.x() - margin * scale,
+        y: stage.y() - margin * scale,
+        width: (d.width + margin * 2) * scale,
+        height: (d.height + margin * 2) * scale,
+        pixelRatio: pxPerMm / scale,
+        mimeType: "image/png",
+      }),
+    );
   } finally {
     guides.forEach((g, i) => g.visible(prev[i]));
     stage.find("Transformer").forEach((t) => t.visible(true));
