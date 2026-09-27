@@ -32,7 +32,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "fixtures": "vitest run src/styles.test.ts --update"
+    "fixtures": "vitest run src/styles.test.ts src/fixtures.test.ts --update"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
