@@ -38,7 +38,8 @@ describe("partner sign-in", () => {
       await createApiClient({ baseUrl: "http://api.mock", accessToken: data!.accessToken }).GET("/v1/partner/me")
     ).data!;
     expect(me.roles).toEqual(["factory_operator"]);
-    expect(me.permissions).toEqual(["factory_profile.read"]);
+    // rbac.md's key plus the floor keys proposed in docs/contract-requests.md (partner.permissions).
+    expect(me.permissions).toEqual(["factory_profile.read", "factory_jobs.read", "factory_jobs.update"]);
     expect(me.factories).toEqual([{ factoryId: F001, roles: ["factory_operator"] }]);
   });
 });
