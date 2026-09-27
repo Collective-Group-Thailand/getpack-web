@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
@@ -39,10 +40,13 @@ export default async function LabelsPage({ params }: Props) {
     );
   const shipment = found.data;
   const { destination } = shipment;
+  // The label stock this device prints on (settings), 100 × 150 mm unless set otherwise.
+  const size = (await cookies()).get("pk_label")?.value === "4x6" ? "4x6" : "100x150";
 
   return (
     <PartnerPage title={t("title")} back={back} description={t("body")} actions={<PrintButton label={t("print")} />}>
       <LabelSheet
+        size={size}
         label={t("sheet", { no: shipment.shipmentNo })}
         labels={shipment.cartonList.map((carton) => (
           <div key={carton.seq} className="flex h-full flex-col gap-[2mm] text-[11pt] leading-snug">

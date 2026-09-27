@@ -48,6 +48,24 @@ export default async function PartnerHomePage() {
         )
       : null,
   ]);
+  const [statements, claims] = await Promise.all([
+    canAt(context, "factory_billing.confirm")
+      ? attempt(() =>
+          requests.call("GET /v1/partner/factories/{factoryId}/billing-statements", {
+            path: { factoryId: context.factoryId },
+            query: { status: "sent" },
+          }),
+        )
+      : null,
+    canAt(context, "factory_claims.respond")
+      ? attempt(() =>
+          requests.call("GET /v1/partner/factories/{factoryId}/claims", {
+            path: { factoryId: context.factoryId },
+            query: { status: "factory_review" },
+          }),
+        )
+      : null,
+  ]);
   const tFloor = await getTranslations("partnerToday.floor");
 
   const tasks: { key: string; href: string; icon: IconName; title: string; body: string }[] = [];
@@ -78,6 +96,22 @@ export default async function PartnerHomePage() {
         body: t("tasks.counteredBody", { count: item.lineCounts.countered }),
       });
   }
+  for (const statement of statements?.data?.data ?? [])
+    tasks.push({
+      key: statement.id,
+      href: `/billing/${statement.id}`,
+      icon: "receipt",
+      title: t("tasks.statement", { no: statement.bsNumber }),
+      body: t("tasks.statementBody"),
+    });
+  for (const claim of (claims?.data?.data ?? []).filter((item) => item.responseDueAt))
+    tasks.push({
+      key: claim.id,
+      href: `/claims/${claim.id}`,
+      icon: "shield-alert",
+      title: t("tasks.claim", { no: claim.claimNo }),
+      body: t("tasks.claimBody"),
+    });
   for (const list of prices?.lists.data ?? [])
     for (const version of list.upcoming)
       if (version.origin === "assisted_entry" && !version.factorySignedOffAt)
