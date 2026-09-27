@@ -67,3 +67,8 @@ export const allFaces = (d: Dieline): Face[] => d.pieces.flatMap((p) => p.faces)
 export function findFace(d: Dieline, id: string): Face | undefined {
   return allFaces(d).find((f) => f.id === id);
 }
+
+/** The same faces with ids prefixed — two copies of a construction in one dieline (a lid and a base). */
+export function prefixFaces(faces: Face[], prefix: string): Face[] {
+  return faces.map((f) => ({ ...f, id: `${prefix}${f.id}` }));
+}
