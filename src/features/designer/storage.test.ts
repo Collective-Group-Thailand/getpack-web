@@ -5,11 +5,29 @@ import type { SavedDesign } from "./types";
 const KEY = "packio.designs.v1";
 const LEGACY_KEY = "boxstudio.designs.v1";
 
+const content = { elements: [], pattern: { kind: "none" as const, color: "#000000", background: "#ffffff", size: 12 } };
+
 const design = (id: string, name: string, updatedAt: number): SavedDesign => ({
   id,
   name,
+  spec: {
+    specVersion: 2,
+    styleId: "rsc",
+    values: { length: 150, width: 100, height: 80 },
+    material: { caliperMm: 1.6, kind: "corrugated", flute: "E" },
+    materialId: "e-white",
+  },
+  content,
+  createdAt: updatedAt,
+  updatedAt,
+});
+
+/** A design as BoxStudio stored it: `{ style, dims, paperId }`, no spec version. */
+const boxStudioDesign = (id: string, name: string, updatedAt: number) => ({
+  id,
+  name,
   spec: { style: "rsc", dims: { length: 150, width: 100, height: 80 }, paperId: "e-white" },
-  content: { elements: [], pattern: { kind: "none", color: "#000000", background: "#ffffff", size: 12 } },
+  content,
   createdAt: updatedAt,
   updatedAt,
 });
@@ -39,9 +57,19 @@ describe("designRepo", () => {
   });
 });
 
-describe("migration from the BoxStudio key", () => {
+describe("migration from BoxStudio", () => {
+  it("reads a BoxStudio-era spec as an engine v2 spec", () => {
+    localStorage.setItem(KEY, JSON.stringify([boxStudioDesign("old", "แบบเดิม", 1)]));
+    expect(designRepo.get("old")?.spec).toMatchObject({
+      specVersion: 2,
+      styleId: "rsc",
+      values: { length: 150, width: 100, height: 80 },
+      materialId: "e-white",
+    });
+  });
+
   it("adopts designs saved before the rebrand", () => {
-    localStorage.setItem(LEGACY_KEY, JSON.stringify([design("old", "แบบเดิม", 1)]));
+    localStorage.setItem(LEGACY_KEY, JSON.stringify([boxStudioDesign("old", "แบบเดิม", 1)]));
 
     expect(designRepo.list().map((d) => d.id)).toEqual(["old"]);
     // copied under the new key, and the old entry is left intact
@@ -50,7 +78,7 @@ describe("migration from the BoxStudio key", () => {
   });
 
   it("does not resurrect old designs once the new key exists", () => {
-    localStorage.setItem(LEGACY_KEY, JSON.stringify([design("old", "แบบเดิม", 1)]));
+    localStorage.setItem(LEGACY_KEY, JSON.stringify([boxStudioDesign("old", "แบบเดิม", 1)]));
     designRepo.save(design("new", "แบบใหม่", 2));
     designRepo.remove("old");
     designRepo.remove("new");

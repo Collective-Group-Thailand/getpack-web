@@ -29,7 +29,11 @@
     "pngGuides": "PNG พรีวิว",
     "pngGuidesHint": "พร้อมเส้นตัด/พับ",
     "svg": "SVG ไดคัท",
-    "svgHint": "เส้นตัด/พับ แยกเลเยอร์"
+    "svgHint": "เส้นตัด/พับ แยกเลเยอร์",
+    "dxf": "DXF ไดคัท",
+    "dxfHint": "สำหรับโปรแกรม CAD ของช่างทำบล็อก",
+    "dielinePdf": "PDF ไดคัท",
+    "dielinePdfHint": "เวกเตอร์ แยกสีพิเศษ CutContour / Crease"
   },
   "toolbar": {
     "label": "เครื่องมือออกแบบ",

@@ -78,9 +78,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             <Card elevation="raised" padding="lg" className="aspect-[4/3] rounded-2xl">
               {/* The product, not a stock photo: a real dieline from @packio/dieline. */}
               <BoxPreview
-                style="tuck-end"
-                dims={{ length: 70, width: 40, height: 110 }}
-                paper="ivory-350"
+                styleId="tuck-end"
+                values={{ length: 70, width: 40, height: 110 }}
                 label={t("hero.preview")}
               />
             </Card>
