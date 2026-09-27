@@ -20,7 +20,7 @@ import { shipments, type Shipment } from "../admin/logistics";
 import { fileDataUrl, files } from "../admin/platform";
 import { mockRequest, type MockContext } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
-import { destinationsOf, extraOf, factoryJobs, jobDone, setShippedCounter } from "./jobs";
+import { destinationsOf, extraOf, factoryJobs, jobDone, setShippedCounter, titleOf } from "./jobs";
 import { own } from "./support";
 
 type Row = z.output<typeof partnerShipment>;
@@ -94,7 +94,7 @@ function rowOf(shipment: Shipment): Row | null {
     job: {
       id: job.id,
       jobNo: job.jobNo,
-      title: `${order.productType.name} ${order.specs[0]?.value ?? ""}`.trim(),
+      title: titleOf(order),
       productType: order.productType,
     },
     destination: recipient,
@@ -193,7 +193,7 @@ export const shipmentRequestHandlers = [
         return {
           id: job.id,
           jobNo: job.jobNo,
-          title: `${order.productType.name} ${order.specs[0]?.value ?? ""}`.trim(),
+          title: titleOf(order),
           productType: order.productType,
           quantityGood: last ?? order.quantity,
           promisedShipDate: job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso().slice(0, 10),

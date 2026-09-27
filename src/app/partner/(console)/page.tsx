@@ -126,6 +126,7 @@ export default async function PartnerHomePage() {
             ).map(([key, href, icon, value]) => (
               <li key={key}>
                 <Stat
+                  as={Link}
                   href={href}
                   label={tFloor(`counters.${key}`)}
                   value={value}

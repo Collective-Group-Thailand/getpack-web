@@ -139,6 +139,8 @@ export const ZONE_NAMESPACES = {
     "partnerOnboarding",
     "partnerPrices",
     "partnerRequests",
+    "partnerJobs",
+    "partnerShip",
   ],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 

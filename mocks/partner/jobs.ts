@@ -178,6 +178,12 @@ seed();
 
 /* ------------------------------------------------------------------------------- views */
 
+/** "กล่องฝาเสียบ (RSC)" — the product type, and the first spec line where it adds something. */
+export const titleOf = (order: MockOrder) => {
+  const first = order.specs[0]?.value;
+  return first && first !== order.productType.name ? `${order.productType.name} ${first}` : order.productType.name;
+};
+
 const fileRefOf = (id: string) => {
   const file = files.get(id);
   return {
@@ -265,7 +271,7 @@ export function summaryOf(order: MockOrder, job: Job): Summary {
     kind: job.kind,
     status: job.status,
     productType: order.productType,
-    title: `${order.productType.name} ${order.specs[0]?.value ?? ""}`.trim(),
+    title: titleOf(order),
     quantity: order.quantity,
     acceptDueAt: job.status === "released" ? job.acceptDueAt : null,
     promisedShipDate: job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso(DAY * 10).slice(0, 10),

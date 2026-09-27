@@ -4,7 +4,12 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 
 import { RequestIdNote } from "@/features/shared/auth/RequestIdNote";
-import { Button, Callout, Field, Input } from "@/ui";
+// Direct paths, not the `@/ui` barrel: a client bundle cannot shake the barrel's other
+// client components out, and this is the partner zone's first page (180 KB budget).
+import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
+import { Field } from "@/ui/components/Field";
+import { Input } from "@/ui/components/Input";
 
 import { signInPartner, type PartnerLoginState } from "./actions";
 

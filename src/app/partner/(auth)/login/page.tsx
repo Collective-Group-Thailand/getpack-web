@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { PartnerLoginForm } from "@/features/partner/auth/PartnerLoginForm";
 import { safeReturnTo } from "@/features/shared/auth/return-to";
 import { getActor } from "@/lib/auth/actor";
-import { Card } from "@/ui";
+import { Card } from "@/ui/components/Card";
 import { BRAND_NAME } from "@/ui/brand";
 
 export async function generateMetadata(): Promise<Metadata> {
