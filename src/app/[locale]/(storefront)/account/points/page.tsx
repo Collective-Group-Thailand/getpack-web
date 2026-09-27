@@ -110,7 +110,9 @@ export default async function Page() {
                     ) : null}
                     {entry.note ? <span className="text-muted block text-xs">{entry.note}</span> : null}
                   </td>
-                  <td className="px-4 py-2 text-end tabular-nums">{t(entry.points > 0 ? "gain" : "loss", { points: format.number(entry.points) })}</td>
+                  <td className="px-4 py-2 text-end tabular-nums">
+                    {t(entry.points > 0 ? "gain" : "loss", { points: format.number(entry.points) })}
+                  </td>
                   <td className="px-4 py-2">
                     <StatusChip map={POINTS_STATUS} value={entry.status} />
                     {entry.expiresAt && entry.status === "available" ? (
