@@ -26,6 +26,52 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-27 | **F4 Part B** — style library mapped to the legacy pattern catalogue | 30 styles in the registry: tuck end, reverse tuck end, snap-lock and crash-lock bottoms, seal end, hang tab (euro slot/round hole), sleeve, sleeve + drawer (two pieces), gable with handle, hexagonal; RSC, HSC, FOL, CSSC (hand holes), roll-end mailer, wrap-around; four-corner, six-corner and double-wall trays, two-piece telescope (full/partial); pillow (true arcs); rectangle, rounded rectangle, circle, oval, custom SVG path, hang tag, cup sleeve (unrolled frustum), band, pouch templates (3-side, 4-side, centre seal, gusset, stand-up). Catalogue aliases incl. every legacy drawing-service name. `docs/design-tool/style-mapping.md` (every legacy pattern → style, the meaning of `b`, `s`, `cs`, `dl`, `dw` and the rest, constraints, patterns not drawn, assumptions) with thumbnails from `pnpm style:thumbnails`. The setup dialog picks by category with dieline previews, sizes and options from each style's schema. 700 app unit, 1,411 engine, 44 designer-related e2e | Parts C–E | The legacy repo has no pattern rows with limits and no drawing files; every construction read from a formula alone is marked ⚠ in the mapping |
 | 2026-09-27 | **F4 Part C** — designer on the Packio API | Contract requests `store.designs` (CRUD, autosave under `If-Match`, versions + restore, duplicate, one-time import), `store.design-assets`, `store.designer-catalog` (patterns with dieline keys and limits, materials with caliper and flute allowances, templates, colours, fonts, artwork rules) and `GET`/`PUT` on `admin.design-documents`, with stateful mocks; persistence layer (guest in the browser, account designs autosaved with a conflict choice, IndexedDB drafts, version history, image assets); materials and pattern limits from the catalogue (placeholder boards deleted); entry points from the configurator, the order's artwork page (design linked to the order) and prepress (read-only or an editable copy, same editor); live price from the published calculation; send to print with a client-side print PDF (ADR-0009) submitted as the order's artwork; configurator seeded from a design. 707 app unit, 1,411 engine, designer e2e + 5 new account flows | Parts D–E | Templates are listed but applying one to an open design is Part D's panel; `design_asset` is requested as a file purpose (artwork until then) |
 | 2026-09-27 | **F4 Part D** — editor v2 | Left rail (box & faces, templates applied to the open design, shapes library, QR/EAN-13 with quiet zones, text styles, uploads, brand kit, background, layers); right panel (properties incl. crop/replace, clip to face, lock, name, CMYK warning; arrange: align/distribute/group/lock; live print checks; WebGL 3D preview folded by the engine with fold slider/play, lighting presets, PNG — ADR-0010); multi-select (Shift, marquee), groups, locks, copy/paste, snapping with guides, rulers, grid, face focus turned upright with Escape back; status bar with face under pointer and issue count; `?` shortcuts overlay; phone bottom bar with inline panels; view-only share links (`store.design-share`) and the public `/design/shared/[token]` page; the read-only viewer draws every new element type. Captures (thumbnail, PNG, print PDF) lay a focused sheet flat first. 723 app unit, 1,411 engine, 287 e2e (4 new editor flows, the share flow, axe over every panel); designer route 456 KB initial JS (ratchet lowered from 540 to 460 KB), Lighthouse accessibility 100 | Part E; comments on shared designs | Upright rule for lids (reads from the front) and the CMYK warning heuristic need prepress confirmation; brand kit kept in the browser until an account endpoint exists |
+| 2026-09-27 | **F4 Part E** — quality gates, docs, final summary | `patternFixtures()` + 92 per-legacy-pattern SVG snapshots (`fixtures/patterns`) for packio-api's golden comparison, beside the style × preset × material matrix and SVG/DXF fixtures; designer panel stories and 9 visual baselines of editor states; panel component tests (store, words, axe); e2e product page → designer → live price following quantity and artwork (with Part C's order → send to print → preflight); face names that tell repeated faces apart; product page and configurator open the designer with their product; `docs/design-tool/` architecture, style authoring guide (worked example verified against the engine), print-PDF spec for factories, index. 737 app unit, 1,504 engine, 288 e2e, 17 visual; designer route 456 KB, Lighthouse a11y 100 | — | See "Assumptions needing prepress confirmation" below |
+
+---
+
+## F4 Part E — 2026-09-27
+
+Quality gates and documentation, on `feat/f4e-quality` (from the Part D merge). This closes F4.
+
+### What is now enforced rather than advised
+| Gate | Mechanism |
+|---|---|
+| Every style folds, closes, validates and draws the same | `styles.test.ts`: every style × preset × reference material — closed cut loops ≤ 0.01 mm, no overlaps, no dangling cuts, anchored at the origin, labelled in both languages, `validate()` accepts presets and rejects out-of-range sizes, folded bounding box = nominal size within the caliper allowance ± 1 mm; SVG and DXF snapshots per style × preset |
+| packio-api can compare with the legacy drawings | `patternFixtures()` (exported, published): each mapped legacy pattern key with the values, material, SVG and DXF; `fixtures/patterns/<key>.svg` snapshots ship in the package; a test asserts every mapped key is covered once |
+| The editor looks the way it did | 9 Storybook stories of designer panels in fixed states (text, image with crop, shape with an out-of-gamut colour, a locked code, arrange, print checks, layers, box, elements) under `e2e/visual.spec.ts` |
+| The designer stays within its budget | `lighthouse/designer.json`: 456 KB measured, ceiling 460 KB (Part D) |
+
+### Decisions taken, with reasons
+- **Visual regression runs on Storybook, not the app**, as the existing suite argues: a story is a fixed store and context, so a diff is a UI change, not a mock or a clock. Storybook now also reads `src/features/designer/**/*.stories.tsx`.
+- **Repeated face names are qualified by position** (`lib/faceNames.ts`): "ปีกกันฝุ่น (ด้านขวา · บน)" instead of four identical "ปีกกันฝุ่น" in the Box panel, the focus chip, the status bar and the clip menu — found in the Box panel baseline.
+- **The product page's "design online" and the configurator pass the product** (`?product=`), so the designer loads that product's patterns and materials and shows its live price; before, the product page opened a blank designer with no price.
+- **The style authoring guide's example is not in the registry.** A table tent is not a legacy pattern; it was compiled and run through the same checks (`checkDieline`, `validate`, fold bounds = `closedSize`) and then removed.
+
+### Final summary (F4)
+
+**Styles implemented: 30**, all in the registry with presets, bilingual parameters, validation, 3D hinge maps (flat pieces excepted) and SVG/DXF/PDF export — folding carton: tuck end, reverse tuck end, snap-lock bottom, crash-lock bottom, seal end, hang-tab tuck, sleeve, sleeve + drawer, gable, hexagonal, pillow; corrugated: RSC, HSC, FOL, CSSC, mailer, wrap-around; trays and lids: four-corner, six-corner, double-wall, telescope; flat: rectangle, rounded rectangle, circle, oval, custom SVG path, hang tag, cup sleeve, band, pouch.
+
+**Mapped to the legacy catalogue** (`docs/design-tool/style-mapping.md`): 26 legacy patterns drawn exactly (✅), 18 by the nearest style with the construction to confirm (≈), 92 legacy keys (incl. drawing-service names) covered by fixtures.
+
+**Still on the `DRAWING_URL` fallback** (prepress uploads the die through the drawing job; the catalogue leaves `dielineKey` empty, so no 3D and no designer):
+- pid 5 insert / cushion with `x` cells — depends on the product it holds; needs a sample and a partition model.
+- pid 11 Japanese-sweet box with double lid — the construction cannot be read from the formula alone.
+- pid 12, 13 snack boxes — trays with side tucks of unknown shape.
+- pid 45–48 fixed-size food boxes — each size had its own SVG in S3, not in the repository; fixed stock dies are best uploaded as files.
+- mapping 30's presale parameters `G`, `SLT`, `TFC`, `BFC`, `DC` — meaning not recoverable; the RSC is drawn without them.
+
+**Assumptions needing prepress confirmation**
+- Caliper compensation (`constants.ts`): panels + 1 t, depth + 2 t (+ 1 t for trays), meeting flaps + t/2, glue-side panel − 1 t, hexagon panels + t·tan 30° — reproduces legacy folding's fixed ±0.5 / ±1 mm within 0.1 mm on ~0.45 mm board.
+- Snap-lock and crash-lock bottoms are simplified lock shapes; compare with a die sample before launch.
+- Style equivalences: pop-up (pid 7, 8) = crash-lock; handle boxes (pid 27, 28) = gable (the rim of pid 28 not drawn); single/double-flap corrugated (pid 20–23, 25) = mailer (elephant-ear locks of pid 21 not drawn); pid 10 = six-corner box or mailer; pid 2 tray may be double-walled.
+- Windows keep ≥ 6 mm of board to every cut and crease; hand holes 90 × 30 mm, 30 mm below the top; corrugated slot width = 2 × caliper, ≥ 3 mm.
+- Pillow crease bow = a third of the thickness; cup-sleeve presets indicative; dust flap reach = min(0.45 L, 0.9 W); tuck shoulder 1.5 mm, tuck corner radius 6 mm.
+- The print file: 300 dpi RGB artwork with text rasterised (ADR-0009) — enough for small text on board?
+- The designer's checks: minimum text 2.1 mm, minimum stroke 0.25 pt, the CMYK warning's thresholds, and "lids read from the front" for face focus (Part D).
+
+### Deliberately not done
+Comments on shared designs (Part D); ICC-accurate CMYK soft-proofing; Linux visual baselines: the committed set is macOS, like the existing suite's, and CI's `visual` job stays non-blocking until someone generates the Linux set on the runner (`pnpm e2e:visual:update`, see `.github/workflows/ci.yml`).
 
 ---
 
