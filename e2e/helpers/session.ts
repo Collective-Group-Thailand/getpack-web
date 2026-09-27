@@ -70,13 +70,33 @@ export async function signInAsStaff(page: Page, persona: Persona = "cs"): Promis
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }
 
-/** Signs in as a partner-factory user. */
-export async function signInAsPartner(page: Page): Promise<void> {
+/**
+ * The factory personas the mock API knows (`mocks/partner/personas.ts`): one per D-140 factory
+ * role at F001, the applicant owner of F005 and the assisted owner of F006. The default,
+ * `planner`, is the account the F1 tests were written against.
+ */
+export type PartnerPersona =
+  "planner" | "owner" | "operator" | "qc" | "shipping" | "accountant" | "applicant" | "assisted";
+
+const PARTNER_EMAILS: Record<PartnerPersona, string> = {
+  planner: MOCK_PARTNER.email,
+  owner: "owner@factory.invalid",
+  operator: "operator@factory.invalid",
+  qc: "qc@factory.invalid",
+  shipping: "shipping@factory.invalid",
+  accountant: "accountant@factory.invalid",
+  applicant: "owner@corrugated.invalid",
+  assisted: "owner@labels.invalid",
+};
+
+/** Signs in as a partner-factory user and waits until the shop-floor shell is interactive. */
+export async function signInAsPartner(page: Page, persona: PartnerPersona = "planner"): Promise<void> {
   await page.goto(`${HOSTS.partner}/login`);
-  await page.getByLabel(/^อีเมล/).fill(MOCK_PARTNER.email);
+  await page.getByLabel(/^อีเมล/).fill(PARTNER_EMAILS[persona]);
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_PARTNER.password);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
   await expect(accountButton(page)).toBeVisible();
+  await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }
 
 /**
