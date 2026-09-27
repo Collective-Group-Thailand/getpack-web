@@ -145,7 +145,10 @@ export async function ProductView({
             )}
             {product.templateAvailability === "online_template" ? (
               <Button asChild size="lg" variant="secondary">
-                <Link href="/design/new">{t("product.designOnline")}</Link>
+                {/* With the product, so the designer offers its patterns and materials and prices it. */}
+                <Link href={`/design/new?product=${encodeURIComponent(product.slug)}`}>
+                  {t("product.designOnline")}
+                </Link>
               </Button>
             ) : null}
             {product.templateAvailability === "drawing" ? (

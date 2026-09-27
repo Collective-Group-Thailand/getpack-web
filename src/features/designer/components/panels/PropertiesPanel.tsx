@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { allFaces, faceLabel } from "@packio/dieline";
+import { allFaces } from "@packio/dieline";
 
 import { formatNumber } from "@/i18n/format";
 import { Callout } from "@/ui/components/Callout";
@@ -20,6 +20,7 @@ import { MIN_TEXT_MM } from "../../lib/checks";
 import { isValidEan13, qrMatrix } from "../../lib/codes";
 import { outOfPrintGamut } from "../../lib/colour";
 import { newImage } from "../../lib/create";
+import { useFaceNames } from "../../lib/useFaceNames";
 import { useEditor } from "../../store/editor";
 import type { DesignElement, ImageElement } from "../../types";
 import { useDesigner } from "../DesignerContext";
@@ -50,6 +51,7 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
   const locked = el.locked === true;
   const fonts = [...new Set([...(catalog?.fonts.map((f) => f.family) ?? []), ...FONT_FAMILIES])];
   const faces = dieline ? allFaces(dieline) : [];
+  const names = useFaceNames(dieline);
   const dull = coloursOf(el).some(outOfPrintGamut);
 
   const colour = (label: string, value: string, onValueChange: (hex: string) => void) => (
@@ -382,7 +384,7 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
             onValueChange={(value) => set({ clipFaceId: value === WHOLE_SHEET ? undefined : value })}
             options={[
               { value: WHOLE_SHEET, label: t("clipSheet") },
-              ...faces.map((f) => ({ value: f.id, label: faceLabel(f.label)[locale] })),
+              ...faces.map((f) => ({ value: f.id, label: names.get(f.id) ?? f.label })),
             ]}
           />
         </Field>
