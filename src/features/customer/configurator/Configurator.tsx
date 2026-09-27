@@ -253,7 +253,7 @@ export function Configurator({
   const style = boxStyleOf(configurator, state);
   const designHref =
     style && configurator.design.options.includes("online_designer") && state.dims.l && state.dims.w && state.dims.d
-      ? `/design/new?style=${style}&l=${state.dims.l}&w=${state.dims.w}&h=${state.dims.d}`
+      ? `/design/new?style=${style}&l=${state.dims.l}&w=${state.dims.w}&h=${state.dims.d}&product=${encodeURIComponent(configurator.slug)}`
       : null;
   const facts = [
     ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),

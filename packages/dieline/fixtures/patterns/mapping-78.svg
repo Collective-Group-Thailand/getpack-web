@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="130mm" height="370mm" viewBox="0 0 130 370" data-style="pouch">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M5 5 L125 5"/><path d="M125 5 L125 185"/><path d="M5 185 L5 5"/><path d="M125 185 L125 365"/><path d="M125 365 L5 365"/><path d="M5 365 L5 185"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M125 185 L5 185"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M5.5 5.5 L13.5 5.5"/><path d="M13.5 5.5 L13.5 184.5"/><path d="M13.5 184.5 L5.5 184.5"/><path d="M5.5 184.5 L5.5 5.5"/><path d="M116.5 5.5 L124.5 5.5"/><path d="M124.5 5.5 L124.5 184.5"/><path d="M124.5 184.5 L116.5 184.5"/><path d="M116.5 184.5 L116.5 5.5"/><path d="M13.5 5.5 L116.5 5.5"/><path d="M116.5 5.5 L116.5 13.5"/><path d="M116.5 13.5 L13.5 13.5"/><path d="M13.5 13.5 L13.5 5.5"/><path d="M5.5 185.5 L13.5 185.5"/><path d="M13.5 185.5 L13.5 364.5"/><path d="M13.5 364.5 L5.5 364.5"/><path d="M5.5 364.5 L5.5 185.5"/><path d="M116.5 185.5 L124.5 185.5"/><path d="M124.5 185.5 L124.5 364.5"/><path d="M124.5 364.5 L116.5 364.5"/><path d="M116.5 364.5 L116.5 185.5"/><path d="M13.5 356.5 L116.5 356.5"/><path d="M116.5 356.5 L116.5 364.5"/><path d="M116.5 364.5 L13.5 364.5"/><path d="M13.5 364.5 L13.5 356.5"/></g>
+</svg>

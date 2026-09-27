@@ -1,0 +1,93 @@
+# Design tool — architecture
+
+How the online box designer is put together: the geometry engine, the editor, where designs are
+kept, and the files it makes. Decisions are in ADR-0007 (engine ownership), ADR-0008 (geometry
+model), ADR-0009 (print file) and ADR-0010 (3D preview).
+
+```
+@packio/dieline  (packages/dieline — framework-free, browser + Node, published for packio-api)
+  styles/*        30 BoxStyleDef: params, presets, validate, build → Dieline, faces3d → HingeMap
+  construct/*     tube, closures, tray: the shared constructions styles are made of
+  faces, lines    Face / Piece / Dieline; shared edges; dielineLines (each line once, with role)
+  offset          Clipper2: safe zone, bleed outline, piece outline, triangulation (isolated)
+  fold            foldDieline → 4×4 matrix per face at a fold progress; foldedBounds
+  checks          checkDieline: closed loops, overlaps, dangling cuts
+  export/*        SVG (true arcs), DXF R12, PDF 1.6 with spot layers
+  migrate, compat BoxStudio (v1) specs → v2, artwork remapped face by face
+        │
+        ▼
+src/features/designer  (shared by the customer and admin zones)
+  document.ts     DesignSpec + DesignContent, schema v2; dielineOf, hingesOf, readDesign
+  store/editor.ts zustand: content, history (100), selection, groups, locks, clipboard, focus, view
+  store/status.ts fast canvas facts (face under pointer, rulers) kept out of the editor store
+  lib/*           pure: geometry, snapping, align, codes (QR/EAN-13), shapes, colour, checks, upright
+  components/
+    Editor.tsx       the shell: top bar, left rail, canvas, right panel, status bar, dialogs
+    DesignCanvas.tsx Konva: world group (rotated upright when a face is focused), per-face clips,
+                     transformer, marquee, snapping guides, rulers, grid, print mode
+    panels/*         box, templates, elements, text, uploads, brand, background, layers,
+                     properties, arrange, checks
+    Preview3D.tsx    WebGL (three / @react-three/fiber), loaded on demand
+    DesignViewer.tsx read-only SVG of a design (prepress, shared links)
+  data/*          persistence (local / store / admin), IndexedDB drafts, API calls
+  print.ts        the print PDF (ADR-0009)
+        │
+        ▼
+Zones: src/features/customer/designer (price widget, order action, shared page)
+       src/features/admin/prepress/AdminDesigner.tsx (read-only or a staff copy)
+```
+
+## Units and frames
+
+Everything is **millimetres** in a **y-down** sheet frame with the origin at the dieline's top-left,
+the printed side facing the viewer. The canvas scales mm to CSS pixels (`PX_PER_MM` × zoom); the
+3D frame is x = sheet x, y = −sheet y, z towards the viewer, and folds turn faces away from the
+printed side. Artwork elements are stored in sheet mm and never in pixels, so a design survives
+any zoom, device or export resolution.
+
+## The document
+
+`{ schemaVersion: 2, spec, content }` — the spec is the engine's (`styleId`, `values`, `material`)
+plus the catalogue ids and names it was chosen with; the content is `elements` (text, image,
+rect, circle, shape, code; each with position, rotation, scale, opacity, optional lock, group,
+name and face clip) and the background pattern. Older documents are migrated on read
+(`readDesign`), and a viewer shows "cannot display" rather than throwing on a document from a
+newer build.
+
+## Persistence
+
+| Mode | Where | Saving |
+|---|---|---|
+| `local` | a guest's browser (localStorage) | on demand; imported to the account after sign-in |
+| `store` | `store.designs` | autosave 2.5 s after the last change under `If-Match`; 412 → conflict choice; IndexedDB draft meanwhile; version history and restore |
+| `admin` | `admin.design-documents` | a customer's document is read-only; staff edit their own copy |
+
+## Checks, live
+
+`lib/checks.ts` takes the elements' corners (text measured with Konva), the engine's safe zones,
+fold segments, glue flaps and piece outlines (`lib/useIssues.ts`, computed once per box) and the
+catalogue's artwork rules. It runs on every change and is pure, so it is unit-tested without a
+browser.
+
+## Face focus
+
+Double-click a face (or pick it in the Box panel): the canvas zooms to it and turns it so it reads
+as it will on the box. `uprightAngles` folds the dieline and compares each face's flat "up" with
+world up (walls) or with "away from the viewer" (lids and bases), snapped to 90°. Only the world
+group rotates; every capture (`withFlatWorld`) lays it flat again first.
+
+## Exports
+
+| Export | Made by | Contents |
+|---|---|---|
+| Print PDF | `print.ts` → `dielineToPdf` | 300 dpi artwork tiles + vector die on spot layers ([print-pdf-spec.md](print-pdf-spec.md)) |
+| Dieline SVG / DXF / PDF | the engine | die lines only, layered by role |
+| PNG | the canvas | the sheet with or without guides |
+| 3D PNG | the WebGL renderer | the folded box as shown |
+
+## Performance
+
+Konva and the editor are one lazy chunk on `/design/*`; three.js loads only when the 3D tab opens
+(ADR-0010); Clipper2 stays out of the storefront (the configurator uses the pure
+`polygonInsideWithMargin`). The designer route has its own Lighthouse budget
+(`lighthouse/designer.json`).

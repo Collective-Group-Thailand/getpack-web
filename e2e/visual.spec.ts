@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Visual snapshots of the design system's shell furniture (design-system.md §9).
+ * Visual snapshots of the design system's shell furniture (design-system.md §9) and of the
+ * designer's editor states (F4 Part E).
  *
  * Against **Storybook**, not the app: a story is a fixed tree with no session, no API and no
  * clock, so a diff means someone changed how a component looks. The same shot of a real page
@@ -29,6 +30,17 @@ const STORIES = [
   "data-display-charts--horizontal-grouped",
   "data-display-charts--lines",
   "data-display-charts--meter-with-threshold",
+  // The designer's editor states (F4 Part E): properties per element kind, a locked element,
+  // arranging a multi-selection, the live print checks, layers, the box's faces, the elements.
+  "designer-panels--text-properties",
+  "designer-panels--image-properties",
+  "designer-panels--shape-properties",
+  "designer-panels--locked-code",
+  "designer-panels--arrange",
+  "designer-panels--print-checks",
+  "designer-panels--layers",
+  "designer-panels--box",
+  "designer-panels--elements",
 ];
 
 for (const id of STORIES) {

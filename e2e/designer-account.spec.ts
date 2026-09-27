@@ -122,6 +122,29 @@ test("a design for an order is sent to print and preflight answers", async ({ pa
   await expect(page).toHaveURL(new RegExp(`/account/orders/${DESIGN_ORDER}/artwork$`));
 });
 
+test("from a product page: design online with its live price, which follows quantity and artwork", async ({ page }) => {
+  await signInAsCustomer(page, "/products/shipping-box", MOCK_DESIGNER_PHONE);
+  await page.getByRole("link", { name: "ออกแบบออนไลน์" }).click();
+  await expect(page).toHaveURL(/\/design\/new\?product=shipping-box$/);
+  await startFromSetup(page);
+
+  // The top bar prices this box at the product's default quantity, from the API.
+  const header = page.locator("header").first();
+  const price = header.locator("b").filter({ hasText: "฿" });
+  await expect(price).toBeVisible({ timeout: 15_000 });
+  const blank = await price.textContent();
+
+  await header.getByRole("combobox", { name: "จำนวน" }).click();
+  const options = page.getByRole("option");
+  await options.last().click();
+  await expect(price).not.toHaveText(blank!, { timeout: 15_000 });
+  const larger = await price.textContent();
+
+  // Printing something changes what is priced: the blank box becomes a printed one.
+  await addHeading(page);
+  await expect(price).not.toHaveText(larger!, { timeout: 15_000 });
+});
+
 test("prepress opens a customer's design read-only and works on its own copy", async ({ page }) => {
   await signInAsStaff(page, "prepress");
   await gotoHydrated(page, `${HOSTS.admin}/prepress/${PREPRESS_ORDER}`);

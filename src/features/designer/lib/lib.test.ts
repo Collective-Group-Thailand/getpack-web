@@ -211,3 +211,27 @@ describe("the checks' view of the sheet", () => {
     expect(sheet.safeZones.length).toBeGreaterThan(4);
   });
 });
+
+describe("face names", () => {
+  const words = { top: "บน", bottom: "ล่าง", left: "ซ้าย", right: "ขวา" };
+  it.each(["tuck-end", "rsc", "tray", "sleeve-drawer", "crash-lock-bottom"])(
+    "tells every face of %s apart",
+    async (id) => {
+      const { faceNames } = await import("./faceNames");
+      const style = getStyle(id);
+      const d = style.build(resolveValues(style, style.presets[0]!.values), REFERENCE_MATERIALS["board-350"]);
+      const names = faceNames(d, "th", words);
+      expect(new Set(names.values()).size).toBe(names.size);
+    },
+  );
+
+  it("qualifies a tuck end's dust flap by its panel and end, and leaves unique faces alone", async () => {
+    const { faceNames } = await import("./faceNames");
+    const style = getStyle("tuck-end");
+    const d = style.build(resolveValues(style, style.presets[0]!.values), REFERENCE_MATERIALS["board-350"]);
+    const names = faceNames(d, "th", words);
+    expect(names.get("front")).toBe("ด้านหน้า");
+    expect(names.get("dust-right-top")).toBe("ปีกกันฝุ่น (ด้านขวา · บน)");
+    expect(names.get("lid-bottom")).toMatch(/\(ล่าง\)$/);
+  });
+});
