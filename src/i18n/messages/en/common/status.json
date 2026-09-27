@@ -411,5 +411,16 @@
     "pending": "POD to review",
     "accepted": "POD accepted",
     "rejected": "POD rejected"
+  },
+  "changeRequest": {
+    "open": "Waiting for the Partner team",
+    "inProgress": "In progress",
+    "done": "Done",
+    "declined": "Declined"
+  },
+  "rateLine": {
+    "pending": "Awaiting answer",
+    "accepted": "Accepted",
+    "countered": "Counter asked"
   }
 }

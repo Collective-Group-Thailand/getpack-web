@@ -1,0 +1,381 @@
+{
+  "title": "Getting started with Packio",
+  "assistedIntro": "The Packio Partner team has entered some of this for you. Please check it and sign it off.",
+  "selfIntro": "Fill in each step; the Packio Partner team reviews it and gets back to you.",
+  "inactive": "The factory is not taking jobs. Contact the Partner team with any questions.",
+  "stagesLabel": "Path to activation",
+  "stageState": {
+    "done": "Done",
+    "current": "Current",
+    "upcoming": "Next",
+    "skipped": "Skipped"
+  },
+  "stages": {
+    "applied": {
+      "title": "Applied",
+      "body": "Application and documents"
+    },
+    "under_review": {
+      "title": "In review",
+      "body": "The Partner team reviews and visits"
+    },
+    "trial": {
+      "title": "Trial",
+      "body": "First jobs, all inspected"
+    },
+    "active": {
+      "title": "Active",
+      "body": "Taking Packio jobs"
+    }
+  },
+  "progressLabel": "Onboarding progress",
+  "progress": "{done} of {total} steps done",
+  "signOffCallout": {
+    "title": "{count, plural, one {# step waits} other {# steps wait}} for your sign-off",
+    "body": "Packio entered these for you. Open each one and sign it off when it is right."
+  },
+  "stepsTitle": "All steps",
+  "steps": {
+    "application": {
+      "title": "Application and company",
+      "body": "Company name, tax id, addresses and contacts"
+    },
+    "kyc": {
+      "title": "Company documents (KYC)",
+      "body": "Company certificate, ภ.พ.20, director ID and other documents"
+    },
+    "bank_account": {
+      "title": "Payout bank account",
+      "body": "The account Packio pays you into — changed only with two approvals"
+    },
+    "capability": {
+      "title": "Production capability",
+      "body": "Product types, maximum sheet sizes and order quantities you take"
+    },
+    "capacity": {
+      "title": "Weekly capacity",
+      "body": "Capacity per product type, used to promise delivery dates"
+    },
+    "delivery_zones": {
+      "title": "Delivery zones",
+      "body": "Where your own fleet delivers, and what Packio pays for it"
+    },
+    "pricing_arrangement": {
+      "title": "Pricing arrangement",
+      "body": "Who owns the price table, and your tier for each product type"
+    },
+    "tolerance": {
+      "title": "Quantity tolerance",
+      "body": "How far short or over a delivery may be without a claim"
+    },
+    "payout_policy": {
+      "title": "Payout policy",
+      "body": "Advance, balance and retention"
+    },
+    "agreement": {
+      "title": "Partner agreement",
+      "body": "Read and accept the agreements in force"
+    },
+    "site_visit": {
+      "title": "Site visit",
+      "body": "Packio visits the factory at least once before activation"
+    },
+    "trial": {
+      "title": "Trial production",
+      "body": "Your first jobs, each one inspected by Packio"
+    },
+    "activation": {
+      "title": "Activation",
+      "body": "Taking Packio jobs as usual"
+    }
+  },
+  "awaitingSignOff": "Awaiting your sign-off",
+  "enteredByPackio": "Entered by Packio",
+  "back": "Back to all steps",
+  "packioNote": "Note from Packio",
+  "recordedByPackio": "The Packio Partner team records this. If it is wrong or has changed, send a request below.",
+  "signOff": {
+    "ownerOnly": "The factory owner signs this off.",
+    "action": "Checked and correct — sign off",
+    "title": "Sign off “{step}”",
+    "body": "You confirm that the “{step}” data Packio entered for your factory is correct. The sign-off is recorded in your name.",
+    "confirm": "Sign off",
+    "done": "“{step}” signed off",
+    "failed": "Could not sign off",
+    "calloutTitle": "This step waits for your sign-off",
+    "calloutBody": "Packio entered the data below for your factory. Check all of it and sign off when it is right; if it is not, send a change request instead.",
+    "signedAt": "Your factory signed this off on {date}"
+  },
+  "company": {
+    "title": "Company",
+    "editable": "Editable while you apply",
+    "locked": "Locked. To change it, send the Partner team a request.",
+    "legalName": "Legal name",
+    "legalNameRequired": "Enter the legal name",
+    "tradeName": "Trade name",
+    "tradeNameHint": "The name Packio staff know you by",
+    "juristicType": "Business type",
+    "juristic": {
+      "company": "Company",
+      "partnership": "Partnership",
+      "individual": "Individual"
+    },
+    "taxId": "Tax id",
+    "taxIdHint": "13 digits",
+    "taxIdInvalid": "This tax id is not valid; check the digits",
+    "branchCode": "Branch code",
+    "branchCodeHint": "00000 is the head office",
+    "branchCodeInvalid": "A branch code is 5 digits",
+    "vatRegistered": "VAT registered",
+    "vatRegisteredHint": "This decides the tax invoices you issue to Packio",
+    "vatRegisteredOn": "VAT registration date",
+    "vatDateRequired": "Enter the registration date",
+    "save": "Save company details",
+    "saved": "Company details saved",
+    "stale": "Someone changed this first; the latest is loaded — check it again",
+    "failed": "Could not save",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "addresses": {
+    "title": "Addresses",
+    "empty": "No addresses yet",
+    "kinds": {
+      "registered": "Registered address",
+      "plant": "Plant",
+      "pickup": "Pickup point"
+    },
+    "kind": "Address type",
+    "line1": "Address",
+    "line1Required": "Enter the address",
+    "line2": "Address (continued)",
+    "postcode": "Postcode",
+    "postcodeInvalid": "A postcode is 5 digits",
+    "add": "Add address",
+    "added": "Address added",
+    "failed": "Could not add the address"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "empty": "No contacts yet",
+    "primaryBadge": "Primary",
+    "name": "Full name",
+    "nameRequired": "Enter a name",
+    "roleTitle": "Position",
+    "phone": "Phone",
+    "phoneInvalid": "A phone number starts with 0 and has 9–10 digits",
+    "email": "Email",
+    "emailInvalid": "This email address is not valid",
+    "primary": "Primary contact",
+    "add": "Add contact",
+    "added": "Contact added",
+    "failed": "Could not add the contact"
+  },
+  "submit": {
+    "sectionTitle": "Submit the application",
+    "sectionBody": "Once the company, addresses, contacts and documents are in, send the application to the Partner team.",
+    "action": "Submit application",
+    "title": "Send the application to Packio",
+    "body": "Send {name}'s application to the Partner team. You can still edit the company details until the review ends.",
+    "confirm": "Submit",
+    "reason": "Submitted by the factory in the partner zone",
+    "done": "Application sent — the Partner team will be in touch",
+    "failed": "Could not submit the application"
+  },
+  "kyc": {
+    "title": "Documents sent",
+    "body": "Packio checks every document; an expired one must be sent again.",
+    "types": {
+      "company_certificate": "Company certificate",
+      "vat_registration_pp20": "VAT registration (ภ.พ.20)",
+      "director_id": "Director ID",
+      "signatory_id": "Signatory ID",
+      "bank_book": "Bank book page",
+      "factory_licence": "Factory licence",
+      "financial_statement": "Financial statement",
+      "other": "Other document"
+    },
+    "dates": "Issued {issued} · expires {expires}",
+    "empty": "No documents yet",
+    "emptyBody": "Start with a company certificate issued in the last 6 months",
+    "addTitle": "Send a document",
+    "docType": "Document type",
+    "file": "File",
+    "fileHint": "A PDF or a clear photo",
+    "fileRequired": "Choose a file",
+    "drop": "Drop a file here, or",
+    "browse": "Choose a file",
+    "rules": "PDF, JPG or PNG, up to 20 MB",
+    "tooLarge": "{name} is larger than 20 MB",
+    "wrongType": "{name} is not a PDF, JPG or PNG",
+    "chosen": "{name} chosen",
+    "issuedOn": "Issued on",
+    "expiresOn": "Expires on (if any)",
+    "upload": "Send document",
+    "uploading": "Uploading {pct}%",
+    "added": "Document sent — waiting for Packio to check it",
+    "failed": "Could not send the document"
+  },
+  "bank": {
+    "title": "Payout accounts",
+    "body": "For your security only the last 4 digits are shown.",
+    "masked": "Bank {bank} · xxx-x-x{last4}",
+    "effective": "In use since {date}",
+    "proposedOn": "Requested on {date}",
+    "empty": "No payout account yet",
+    "changeTitle": "Add or change the payout account",
+    "changeBody": "A new account is confirmed by phone and approved twice by Packio Finance; until then Packio pays the current one.",
+    "pendingTitle": "A new account is awaiting approval",
+    "pendingBody": "Packio Finance will call your primary contact before approving it.",
+    "bankCode": "Bank code",
+    "bankCodeHint": "3 digits, e.g. 014",
+    "bankCodeInvalid": "A bank code is 3 digits",
+    "accountNo": "Account number",
+    "accountNoInvalid": "An account number is 10–15 digits",
+    "accountName": "Account name",
+    "accountNameHint": "Must match the factory's legal name",
+    "accountNameRequired": "Enter the account name",
+    "branchName": "Branch",
+    "propose": "Request the change",
+    "confirmTitle": "Confirm the new payout account",
+    "confirmBody": "Ask Packio to pay into the bank {bank} account ending {last4} once approved. Type the last 4 digits to confirm.",
+    "confirm": "Send request",
+    "proposed": "Change requested — waiting for Finance to approve it",
+    "failed": "Could not send the request"
+  },
+  "capability": {
+    "title": "What you make",
+    "orderQty": "Order quantity",
+    "qtyRange": "{min} – {max} pieces",
+    "maxSheet": "Maximum sheet",
+    "sheetMm": "{width} × {length} mm",
+    "askTitle": "Ask to change your capability",
+    "askBody": "A new product type, a new machine, a larger size…",
+    "askPlaceholder": "Tell us what changed, e.g. a new 5-colour 28×40\" press"
+  },
+  "capacity": {
+    "weekly": "{amount} {unit} a week",
+    "units": {
+      "pieces": "pieces",
+      "sheets": "sheets",
+      "sqm": "m²",
+      "jobs": "jobs"
+    },
+    "none": "No capacity set yet",
+    "upcoming": "{amount} {unit} a week from {date}",
+    "weeksCaption": "Booked and free capacity in the coming weeks",
+    "week": "Week of",
+    "booked": "Booked",
+    "free": "Free",
+    "askTitle": "Ask to change capacity",
+    "askBody": "Capacity sets the dates promised to customers; the Partner team adjusts it after checking.",
+    "askPlaceholder": "E.g. a press is down next week, or a night shift starts"
+  },
+  "zones": {
+    "title": "Where your fleet delivers",
+    "body": "Some zones take longer; Packio adds that to the date it gives the customer.",
+    "servesExtra": "Delivers, +{days} days",
+    "serves": "Delivers",
+    "notServed": "Not served",
+    "shippingRates": "See what Packio pays for delivery",
+    "askTitle": "Ask to change delivery zones",
+    "askPlaceholder": "E.g. we now deliver to the East"
+  },
+  "pricing": {
+    "modeTitle": "Who owns the price table",
+    "modes": {
+      "platform_rate_card": {
+        "title": "Packio's rate card",
+        "body": "Packio sets the buy-price table; you accept it whole or line by line and can ask for other rates on some lines."
+      },
+      "factory_price_list": {
+        "title": "Your own price list",
+        "body": "You keep your own price table and propose changes; Packio reviews and approves them before they apply."
+      }
+    },
+    "modeNone": "No pricing arrangement agreed yet",
+    "modeUpcoming": "Changing to “{mode}” from {date}",
+    "tiersTitle": "Your tier for each product type",
+    "tiersBody": "The tier decides whether customers get an instant price or ask for a quote.",
+    "tierBadge": "Tier {tier}",
+    "tiers": {
+      "A": "Full price list — instant quotes and automatic job allocation",
+      "B": "Prices for some specs, such as standard sizes — instant quotes there, quote requests outside",
+      "C": "Quote on request — no price table; Packio asks you for a price job by job"
+    },
+    "envelope": "Covers: {note}",
+    "openPrices": "Open your prices",
+    "askTitle": "Ask for another tier",
+    "askBody": "Tier A gives customers instant prices and brings you more jobs.",
+    "askPlaceholder": "E.g. we are ready to price every size"
+  },
+  "tolerance": {
+    "title": "Delivery quantity tolerance",
+    "body": "Customers see this tolerance when they are quoted; each job keeps it.",
+    "default": "Factory default",
+    "band": "Short by up to {shortage} · over by up to {overage}",
+    "platformDefault": "Packio's default applies",
+    "upcoming": "Short {shortage} · over {overage} from {date}",
+    "rule": "Short within tolerance: paid for what was delivered. Over within tolerance: not paid extra. Outside it: a claim opens automatically.",
+    "askTitle": "Ask for a different tolerance",
+    "askBody": "A factory-specific tolerance needs Packio's approval.",
+    "askPlaceholder": "E.g. rigid boxes lose more in forming — we ask for 8% short"
+  },
+  "payout": {
+    "title": "How Packio pays you",
+    "body": "As agreed in your contract. Contact the Partner team to change it.",
+    "advance": "Advance",
+    "advanceValue": "{pct} when {trigger}",
+    "triggers": {
+      "job_accepted": "you accept the job",
+      "immediate": "immediately",
+      "none": "never",
+      "after_pod": "delivery is proved",
+      "after_pod_and_claim_window": "delivery is proved and the claim window has passed"
+    },
+    "balance": "Balance",
+    "claimWindow": "Claim window",
+    "days": "{days, plural, one {# day} other {# days}}",
+    "retention": "Retention",
+    "retentionValue": "{pct}, released {days} days after the claim window",
+    "terms": "Payment terms",
+    "since": "In force since",
+    "platformDefaults": "Packio's standard terms apply"
+  },
+  "agreement": {
+    "notPublished": "No version in force yet",
+    "version": "Version {version} · in force since {date}",
+    "textLabel": "Text of {name}",
+    "acceptedSigned": "Accepted with a signed copy on {date}",
+    "acceptedOnline": "Accepted online on {date}",
+    "ownerOnly": "The factory owner accepts the agreement.",
+    "haveRead": "I have read {name}, version {version}",
+    "accept": "Accept",
+    "confirmTitle": "Accept {name}",
+    "confirmBody": "Accepting {name}, version {version}, binds the factory. Packio keeps your name, the time and the text as evidence.",
+    "accepted": "{name} accepted",
+    "failed": "Could not accept"
+  },
+  "visit": {
+    "title": "Visit results",
+    "body": "At least one visit must pass before activation.",
+    "empty": "No visits yet",
+    "requestsTitle": "Dates you offered",
+    "preferred": "Offered: {dates}",
+    "askTitle": "Book a visit",
+    "askBody": "Pick days the factory can host Packio; the team confirms one.",
+    "askPlaceholder": "E.g. ask for Somchai at gate 2 from 9 am",
+    "askSubmit": "Send the dates"
+  },
+  "trial": {
+    "title": "Trial jobs",
+    "body": "During the trial Packio inspects every job; once they pass, the Partner team activates you.",
+    "completed": "{count, plural, one {# trial job} other {# trial jobs}} completed"
+  },
+  "activation": {
+    "title": "Activation",
+    "body": "The Partner team activates you after the site visit and the trial.",
+    "activeSince": "Active since {date}",
+    "notYet": "Not active yet"
+  }
+}

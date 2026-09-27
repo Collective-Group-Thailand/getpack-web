@@ -1,0 +1,24 @@
+{
+  "title": "Today",
+  "greeting": "Hello, {name}",
+  "stage": {
+    "applied": "Finish your application to start with Packio",
+    "under_review": "The Partner team is reviewing your factory",
+    "trial": "Trial — your first jobs are all inspected"
+  },
+  "progressLabel": "Onboarding progress",
+  "progress": "{done} of {total} steps done",
+  "continue": "Continue",
+  "tasks": {
+    "title": "Waiting for you",
+    "signOff": "Sign off {count, plural, one {# step} other {# steps}}",
+    "signOffBody": "Data Packio entered for you",
+    "rateCard": "Answer Packio's {type} rate card",
+    "rateCardBody": "{count, plural, one {# line} other {# lines}} to answer",
+    "countered": "Packio countered — {type}",
+    "counteredBody": "{count, plural, one {# line} other {# lines}} to answer",
+    "pricesToSignOff": "Sign off the {type} prices Packio entered",
+    "pricesToSignOffBody": "{lines} lines",
+    "none": "Nothing is waiting for you right now"
+  }
+}

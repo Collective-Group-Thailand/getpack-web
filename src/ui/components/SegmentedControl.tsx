@@ -20,7 +20,8 @@ export interface SegmentedControlProps<T extends string = string> {
   onValueChange: (value: T) => void;
   /** Accessible name for the group. Required — a bare row of toggles names nothing. */
   label: string;
-  size?: "sm" | "md";
+  /** `xl`: shop-floor targets of 48 px and 18 px text (design-system.md §5 Partner). */
+  size?: "sm" | "md" | "xl";
   className?: string;
 }
 
@@ -61,10 +62,10 @@ export function SegmentedControl<T extends string = string>({
             "text-muted duration-fast ease-standard transition-colors",
             "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-sm",
             "disabled:pointer-events-none disabled:opacity-50",
-            size === "sm" ? "h-7 px-2 text-xs" : "h-9 px-3 text-sm",
+            size === "sm" ? "h-7 px-2 text-xs" : size === "xl" ? "h-12 px-4 text-lg" : "h-9 px-3 text-sm",
           )}
         >
-          {option.icon ? <Icon name={option.icon} size={16} /> : null}
+          {option.icon ? <Icon name={option.icon} size={size === "xl" ? 20 : 16} /> : null}
           {option.label}
         </ToggleGroup.Item>
       ))}
