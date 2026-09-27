@@ -400,8 +400,9 @@ function build(seed: Seed, index: number): Store {
           balanceTrigger: "after_pod_and_claim_window" as const,
           claimWindowDays: 7,
           paymentTermsDays: 30,
-          retentionPct: "0.0000",
-          retentionReleaseDays: 0,
+          // D-022: 5 % retention; D-164: released 30 days after the claim window closes.
+          retentionPct: "5.0000",
+          retentionReleaseDays: 30,
         }),
         upcoming: [],
       },

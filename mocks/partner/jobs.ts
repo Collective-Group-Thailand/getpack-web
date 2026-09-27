@@ -178,6 +178,9 @@ seed();
 
 /* ------------------------------------------------------------------------------- views */
 
+/** The buy side of an order (the factory's own price, D-042) — never Packio's sell price. */
+export const buyAmountOf = (order: MockOrder) => (Math.round(Number(order.netAmount) * 70) / 100).toFixed(2);
+
 /** "กล่องฝาเสียบ (RSC)" — the product type, and the first spec line where it adds something. */
 export const titleOf = (order: MockOrder) => {
   const first = order.specs[0]?.value;
@@ -312,8 +315,7 @@ export function detailOf(order: MockOrder, job: Job): JobDto {
     purchaseOrder: {
       poNumber: `PO-F-${job.jobNo.slice(2)}`,
       issuedAt: extra.releasedAt,
-      // The buy side of the order (the factory's own price, D-042) — never Packio's sell price.
-      buyAmount: (Math.round(Number(order.netAmount) * 70) / 100).toFixed(2),
+      buyAmount: buyAmountOf(order),
       currency: "THB",
     },
     tolerance: order.tolerance,
