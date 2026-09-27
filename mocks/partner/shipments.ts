@@ -65,7 +65,9 @@ const blockedByPayment = (order: MockOrder) =>
   order.instalments.some((item) => item.requiredBefore === "shipping" && item.status !== "paid");
 
 function inspectionHold(jobId: string) {
-  return inspections.some((item) => item.job.id === jobId && ["planned", "in_progress", "failed"].includes(item.status));
+  return inspections.some(
+    (item) => item.job.id === jobId && ["planned", "in_progress", "failed"].includes(item.status),
+  );
 }
 
 function rowOf(shipment: Shipment): Row | null {
@@ -74,7 +76,14 @@ function rowOf(shipment: Shipment): Row | null {
   if (!order || !job) return null;
   const destination = destinationOf(order, shipment);
   const shaped = destinationsOf(order).find((item) => item.id === destination.id)!;
-  const { quantity: _quantity, shippedQuantity: _shipped, ...recipient } = shaped;
+  const recipient = {
+    id: shaped.id,
+    recipientName: shaped.recipientName,
+    phone: shaped.phone,
+    address: shaped.address,
+    province: shaped.province,
+    postcode: shaped.postcode,
+  };
   return {
     id: shipment.id,
     shipmentNo: shipment.shipmentNo,
@@ -118,7 +127,10 @@ function detailOf(shipment: Shipment): Detail | null {
       // What the carton label's QR encodes: the public tracking page (B4.4), never PII.
       trackingUrl: `https://packio.invalid/track/${carton.labelCode}`,
     })),
-    packingList: shipment.items.map((item) => ({ label: `${row.job.title} · ${item.destinationLabel}`, quantity: item.quantity })),
+    packingList: shipment.items.map((item) => ({
+      label: `${row.job.title} · ${item.destinationLabel}`,
+      quantity: item.quantity,
+    })),
     events: shipment.events.map((event) => ({ occurredAt: event.occurredAt, status: event.status, note: event.note })),
     pod: shipment.pod
       ? {
@@ -143,7 +155,9 @@ type Ctx = Pick<MockContext<RequestKey>, "request" | "params">;
 function shipmentFor(context: Ctx, permission: string) {
   const ok = own(context.request, context.params.factoryId, permission);
   if (ok instanceof Response) return ok;
-  const shipment = shipments.find((item) => item.id === context.params.shipmentId && item.factory.id === ok.store.factory.id);
+  const shipment = shipments.find(
+    (item) => item.id === context.params.shipmentId && item.factory.id === ok.store.factory.id,
+  );
   if (!shipment) return problem(404, "shipments.not_found", "ไม่พบการจัดส่งนี้");
   return { ...ok, shipment };
 }
@@ -172,7 +186,10 @@ export const shipmentRequestHandlers = [
     return factoryJobs(ok.store.factory.id)
       .filter(({ job }) => jobDone(job) && job.status !== "rejected")
       .map(({ order, job }): PlanJob => {
-        const last = [...extraOf(job).steps.values()].map((step) => step.quantityOut).filter((q) => q !== null).at(-1);
+        const last = [...extraOf(job).steps.values()]
+          .map((step) => step.quantityOut)
+          .filter((q) => q !== null)
+          .at(-1);
         return {
           id: job.id,
           jobNo: job.jobNo,
@@ -181,7 +198,11 @@ export const shipmentRequestHandlers = [
           quantityGood: last ?? order.quantity,
           promisedShipDate: job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso().slice(0, 10),
           destinations: destinationsOf(order),
-          blockedReason: inspectionHold(job.id) ? "inspection_pending" : blockedByPayment(order) ? "payment_pending" : null,
+          blockedReason: inspectionHold(job.id)
+            ? "inspection_pending"
+            : blockedByPayment(order)
+              ? "payment_pending"
+              : null,
         };
       })
       .filter((job) => job.destinations.some((destination) => destination.shippedQuantity < destination.quantity));
@@ -218,7 +239,10 @@ export const shipmentRequestHandlers = [
     if (!jobDone(job)) return problem(409, "shipments.job_not_finished", "งานยังผลิตไม่เสร็จ");
     if (inspectionHold(job.id)) return problem(409, "shipments.inspection_pending", "รอ Packio ตรวจคุณภาพก่อนส่ง");
     const destination = destinationsOf(order).find((item) => item.id === body.destinationId);
-    if (!destination) return problem(422, "validation.failed", "ไม่พบที่อยู่ปลายทางนี้", [{ path: "destinationId", code: "ref", message: "ไม่พบ" }]);
+    if (!destination)
+      return problem(422, "validation.failed", "ไม่พบที่อยู่ปลายทางนี้", [
+        { path: "destinationId", code: "ref", message: "ไม่พบ" },
+      ]);
     const left = destination.quantity - destination.shippedQuantity;
     if (body.quantity > left)
       return problem(422, "validation.failed", "จำนวนเกินที่ปลายทางนี้ยังต้องการ", [
@@ -266,7 +290,9 @@ export const shipmentRequestHandlers = [
         weightG: body.weightG ? Math.round(body.weightG / body.cartons) : null,
       })),
       weightG: body.weightG ?? null,
-      events: [{ occurredAt: now(), status: "ready", source: "factory", location: null, note: "โรงงานเตรียมของพร้อมส่ง" }],
+      events: [
+        { occurredAt: now(), status: "ready", source: "factory", location: null, note: "โรงงานเตรียมของพร้อมส่ง" },
+      ],
       pod: null,
       tolerance: null,
       blockedByPayment: blockedByPayment(order),
@@ -281,7 +307,11 @@ export const shipmentRequestHandlers = [
       carrierRequested: false,
       clientRefs: new Set([body.clientRef]),
     });
-    extraOf(job).history.push({ at: now(), text: `สร้างการจัดส่ง ${shipmentNo}`, actor: { id: ok.who.id, displayName: ok.who.displayName } });
+    extraOf(job).history.push({
+      at: now(),
+      text: `สร้างการจัดส่ง ${shipmentNo}`,
+      actor: { id: ok.who.id, displayName: ok.who.displayName },
+    });
     return answer(created);
   }),
 
@@ -341,7 +371,9 @@ export const shipmentRequestHandlers = [
       return problem(409, "shipments.not_in_transit", "บันทึกการส่งมอบได้เมื่อของออกจากโรงงานแล้ว");
     const missing = [...body.photoFileIds, body.signatureFileId].filter((id) => !files.has(id));
     if (missing.length)
-      return problem(422, "validation.failed", "ไม่พบไฟล์ที่อัปโหลด", [{ path: "photoFileIds", code: "ref", message: "ไม่พบ" }]);
+      return problem(422, "validation.failed", "ไม่พบไฟล์ที่อัปโหลด", [
+        { path: "photoFileIds", code: "ref", message: "ไม่พบ" },
+      ]);
     const order = orders.find((item) => item.id === shipment.order.id)!;
     const ratio = (body.deliveredQuantity - shipment.quantity) / shipment.quantity;
     const shortage = Number(order.tolerance.shortagePct);
@@ -376,7 +408,13 @@ export const shipmentRequestHandlers = [
       claimId: null,
     };
     shipment.status = "delivered";
-    shipment.events.push({ occurredAt: body.capturedAt, status: "delivered", source: "factory", location: null, note: `ผู้รับ: ${body.receiverName}` });
+    shipment.events.push({
+      occurredAt: body.capturedAt,
+      status: "delivered",
+      source: "factory",
+      location: null,
+      note: `ผู้รับ: ${body.receiverName}`,
+    });
     shipment.lastEvent = { status: "delivered", occurredAt: body.capturedAt, location: null };
     remember(shipment, body.clientRef);
     touch(shipment);

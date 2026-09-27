@@ -1,0 +1,205 @@
+{
+  "title": "งานผลิต",
+  "viewsLabel": "กรองงาน",
+  "views": {
+    "to_accept": "รอรับงาน",
+    "in_production": "กำลังผลิต",
+    "awaiting_qc": "รอ QC",
+    "ready_to_ship": "พร้อมส่ง",
+    "late": "ล่าช้า",
+    "all": "ทั้งหมด"
+  },
+  "search": "ค้นหางาน",
+  "searchPlaceholder": "เลขงานหรือชื่อสินค้า",
+  "searchAction": "ค้นหา",
+  "empty": {
+    "to_accept": "ไม่มีงานรอรับ",
+    "in_production": "ไม่มีงานกำลังผลิต",
+    "awaiting_qc": "ไม่มีงานรอตรวจคุณภาพ",
+    "ready_to_ship": "ไม่มีงานพร้อมส่ง",
+    "late": "ไม่มีงานล่าช้า",
+    "all": "ยังไม่มีงาน"
+  },
+  "floor": {
+    "conflict": "มีการอัปเดตจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด",
+    "invalid": "ตรวจข้อมูลอีกครั้ง",
+    "failed": "บันทึกไม่สำเร็จ ลองอีกครั้ง"
+  },
+  "camera": {
+    "take": "ถ่ายรูป",
+    "more": "ถ่ายเพิ่ม",
+    "photo": "รูปที่ {n}",
+    "remove": "ลบรูปที่ {n}",
+    "count": "{count} รูป",
+    "processing": "กำลังเตรียมรูป…"
+  },
+  "accept": {
+    "plannerOnly": "ผู้วางแผนหรือเจ้าของโรงงานเป็นผู้รับงาน",
+    "action": "รับงาน",
+    "hint": "รับภายใน {due}",
+    "title": "รับงาน {jobNo}",
+    "body": "โรงงานรับผลิต {jobNo} จำนวน {quantity} ชิ้น ส่งภายใน {date} ในราคาตามใบสั่งซื้อ {amount}",
+    "confirm": "รับงาน",
+    "done": "รับงาน {jobNo} แล้ว"
+  },
+  "reject": {
+    "action": "ปฏิเสธงาน",
+    "title": "ปฏิเสธงาน {jobNo}",
+    "body": "Packio จะย้ายงาน {jobNo} ไปโรงงานอื่นหรือติดต่อกลับ การปฏิเสธนับในผลงานของโรงงาน",
+    "confirm": "ปฏิเสธงาน",
+    "note": "รายละเอียด",
+    "noteHint": "เช่น เครื่องพิมพ์ซ่อมถึงวันศุกร์",
+    "done": "ปฏิเสธงาน {jobNo} แล้ว",
+    "reason": "เหตุผล",
+    "reasons": {
+      "capacity": "กำลังผลิตไม่พอ",
+      "material": "ไม่มีวัสดุตามสเปก",
+      "machine": "เครื่องจักรไม่พร้อม",
+      "spec_not_feasible": "ผลิตตามสเปกนี้ไม่ได้",
+      "price": "ราคาไม่ตรงกับที่ตกลง",
+      "other": "เหตุผลอื่น"
+    }
+  },
+  "milestone": {
+    "noPermission": "บทบาทของคุณอัปเดตขั้นตอนไม่ได้",
+    "start": "เริ่ม{name}",
+    "started": "เริ่ม{name}แล้ว",
+    "photoRequired": "ขั้นตอนนี้ต้องแนบรูปอย่างน้อยหนึ่งรูป",
+    "uploadFailed": "อัปโหลดรูปไม่สำเร็จ ลองอีกครั้ง",
+    "completed": "จบ{name}แล้ว",
+    "qcFirst": "บันทึกผลตรวจคุณภาพที่ผ่านก่อน แล้วจึงจบขั้นตอนนี้",
+    "in": "รับเข้า",
+    "good": "ดี",
+    "overflow": "ดีรวมเสียเกินจำนวนรับเข้า",
+    "scrap": "เสีย",
+    "fromBefore": "ขั้นก่อนหน้าส่งต่อมา {quantity} ชิ้น",
+    "photos": "รูปถ่าย",
+    "photosHint": "ถ่ายงานจริงในขั้นตอนนี้ ระบบเก็บเวลาที่ถ่ายไว้",
+    "note": "หมายเหตุ",
+    "complete": "จบ{name}",
+    "completeHint": "ดี {good} · เสีย {scrap}"
+  },
+  "qc": {
+    "qcOnly": "ฝ่ายตรวจคุณภาพเป็นผู้บันทึกผล",
+    "answerAll": "ตอบให้ครบทุกข้อ",
+    "photoRequired": "แนบรูปอย่างน้อยหนึ่งรูป",
+    "uploadFailed": "อัปโหลดรูปไม่สำเร็จ ลองอีกครั้ง",
+    "recorded": "บันทึกผลตรวจคุณภาพแล้ว",
+    "answerFor": "ผลของ {item}",
+    "pass": "ผ่าน",
+    "fail": "ไม่ผ่าน",
+    "result": "ผลรวม",
+    "results": {
+      "pass": "ผ่าน",
+      "conditional": "ผ่านแบบมีเงื่อนไข",
+      "fail": "ไม่ผ่าน"
+    },
+    "defects": "ข้อบกพร่องที่พบ",
+    "defectLabel": "ข้อบกพร่องที่ {n}",
+    "defectCount": "จำนวนของข้อบกพร่องที่ {n}",
+    "addDefect": "เพิ่มข้อบกพร่อง",
+    "photos": "รูปถ่ายงานที่ตรวจ",
+    "photosHint": "อย่างน้อยหนึ่งรูป (D-076)",
+    "notes": "หมายเหตุ",
+    "submit": "บันทึกผลตรวจคุณภาพ"
+  },
+  "issue": {
+    "tooShort": "เล่าปัญหาอย่างน้อย 3 ตัวอักษร",
+    "raised": "แจ้งปัญหาแล้ว Packio เห็นในบอร์ดการผลิต",
+    "kind": "ประเภทปัญหา",
+    "kinds": {
+      "material": "วัสดุ",
+      "machine": "เครื่องจักร",
+      "artwork": "ไฟล์งาน",
+      "quantity": "จำนวน",
+      "quality": "คุณภาพ",
+      "delay": "ล่าช้า",
+      "other": "อื่นๆ"
+    },
+    "description": "รายละเอียด",
+    "submit": "แจ้งปัญหา",
+    "resolved": "แก้ปัญหาแล้ว",
+    "resolve": "แก้แล้ว"
+  },
+  "scan": {
+    "open": "สแกน QR",
+    "title": "สแกนรหัสงาน",
+    "aim": "เล็งกล้องไปที่ QR บนป้ายงานหรือฉลากกล่อง",
+    "noCamera": "อุปกรณ์นี้สแกนไม่ได้ พิมพ์รหัสแทนได้เลย",
+    "manual": "รหัสงานหรือรหัสกล่อง",
+    "manualHint": "เช่น J-2569-00304",
+    "submit": "เปิดงาน",
+    "close": "ปิด",
+    "notFound": "ไม่พบงานจากรหัส {code}"
+  },
+  "countdown": {
+    "left": "รับงานภายใน {duration}",
+    "overdue": "เลยเวลารับงาน {duration}"
+  },
+  "card": {
+    "late": "ล่าช้า",
+    "inspection": "Packio ตรวจ",
+    "quantity": "{quantity} ชิ้น",
+    "ship": "ส่ง {date}",
+    "step": "ขั้น: {name}"
+  },
+  "stages": {
+    "done": "เสร็จแล้ว",
+    "current": "ขั้นปัจจุบัน",
+    "upcoming": "ถัดไป",
+    "skipped": "ข้าม"
+  },
+  "detail": {
+    "metaTitle": "งานผลิต",
+    "back": "กลับไปที่งานผลิต",
+    "summary": "{title} · {quantity} ชิ้น · ส่งภายใน {date}",
+    "acceptTitle": "งานใหม่รอคุณรับ",
+    "rejectedTitle": "โรงงานปฏิเสธงานนี้แล้ว",
+    "rejectReasons": {
+      "capacity": "กำลังผลิตไม่พอ",
+      "material": "ไม่มีวัสดุตามสเปก",
+      "machine": "เครื่องจักรไม่พร้อม",
+      "spec_not_feasible": "ผลิตตามสเปกนี้ไม่ได้",
+      "price": "ราคาไม่ตรงกับที่ตกลง",
+      "other": "เหตุผลอื่น"
+    },
+    "atRisk": "งานนี้เสี่ยงส่งไม่ทัน",
+    "milestones": "ขั้นตอนการผลิต",
+    "stepDone": "ดี {good} · เสีย {scrap}",
+    "stepDoneNoQty": "เสร็จแล้ว",
+    "photos": "{count} รูป",
+    "due": "ครบกำหนด {date}",
+    "toShip": "ผลิตเสร็จ — ไปจัดส่ง",
+    "spec": "สเปก",
+    "artwork": "ไฟล์งานที่อนุมัติ",
+    "proofAlt": "ปรู๊ฟที่อนุมัติ ฉบับที่ {version}",
+    "watermark": "APPROVED v{version}",
+    "approvedOn": "ฉบับที่ {version} อนุมัติเมื่อ {date} — ผลิตตามฉบับนี้เท่านั้น",
+    "openProof": "เปิดปรู๊ฟ",
+    "openDieline": "เปิดแบบไดคัท",
+    "noArtwork": "ยังไม่มีไฟล์งานที่อนุมัติ",
+    "po": "ใบสั่งซื้อ",
+    "poNumber": "เลขที่",
+    "poIssued": "ออกเมื่อ",
+    "poAmount": "ยอดตามใบสั่งซื้อ (ไม่รวม VAT)",
+    "tolerance": "ค่าเผื่อจำนวน",
+    "toleranceValue": "ขาดได้ {shortage} · เกินได้ {overage}",
+    "destinations": "ส่งถึง",
+    "destinationsNote": "ชื่อ ที่อยู่ และเบอร์โทรผู้รับเท่านั้น",
+    "destinationQty": "{quantity} ชิ้น · ส่งแล้ว {shipped}",
+    "quality": "คุณภาพ",
+    "qcBy": "ตรวจโดย {name}",
+    "inspection": "Packio ตรวจคุณภาพงานนี้",
+    "inspectionOn": "นัดวันที่ {date}",
+    "issues": "ปัญหา",
+    "history": "ประวัติ"
+  },
+  "capacity": {
+    "title": "กำลังผลิตรายสัปดาห์",
+    "body": "กำลังผลิตเทียบกับงานที่รับแล้ว หากต้องปรับ ส่งคำขอถึงทีมพาร์ตเนอร์",
+    "closures": "วันหยุด",
+    "closure": "{date} · {name}",
+    "week": "สัปดาห์ที่เริ่ม {date}",
+    "load": "จองแล้ว {booked} จาก {capacity} {unit}"
+  }
+}

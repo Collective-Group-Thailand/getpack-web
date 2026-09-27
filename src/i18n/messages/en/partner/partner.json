@@ -40,6 +40,10 @@
       "requests": {
         "title": "Requests to Packio",
         "body": "Ask to change what Packio records; see answers"
+      },
+      "capacity": {
+        "title": "Weekly capacity",
+        "body": "Booked load against capacity, and closures"
       }
     }
   }

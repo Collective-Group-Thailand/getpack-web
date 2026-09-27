@@ -23,7 +23,8 @@ export function exifDateTimeOriginal(bytes: Uint8Array): string | null {
 
 function ascii(bytes: Uint8Array, start: number, length: number): string {
   let text = "";
-  for (let index = start; index < start + length && index < bytes.length; index += 1) text += String.fromCharCode(bytes[index]!);
+  for (let index = start; index < start + length && index < bytes.length; index += 1)
+    text += String.fromCharCode(bytes[index]!);
   return text;
 }
 

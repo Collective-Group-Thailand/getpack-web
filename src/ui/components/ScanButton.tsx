@@ -103,7 +103,12 @@ export function ScanButton({ onCode, labels, className }: ScanButtonProps) {
             <p className="text-muted">{labels.noCamera}</p>
           ) : (
             <>
-              <video ref={video} muted playsInline className="bg-neutral aspect-square w-full rounded-lg object-cover" />
+              <video
+                ref={video}
+                muted
+                playsInline
+                className="bg-neutral aspect-square w-full rounded-lg object-cover"
+              />
               <p className="text-muted text-sm">{labels.aim}</p>
             </>
           )}

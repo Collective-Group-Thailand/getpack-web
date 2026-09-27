@@ -4,11 +4,14 @@ import { getTranslations } from "next-intl/server";
 import { FACTORY_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PartnerPage, PartnerSection } from "@/features/partner/frame";
+import { JobCard } from "@/features/partner/jobs/JobCard";
 import { awaitsSignOff } from "@/features/partner/onboarding/steps";
 import { loadPrices } from "@/features/partner/prices/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { Meter } from "@/ui/components/Meter";
+import { Stat } from "@/ui/components/Stat";
 import { Icon, type IconName } from "@/ui/icons";
 
 /**
@@ -16,15 +19,18 @@ import { Icon, type IconName } from "@/ui/icons";
  *
  * While the factory is onboarding that is its progress and the steps Packio entered for it to
  * sign off; for every factory, the price items waiting for an answer (a rate card, prices to sign
- * off, counters). Production counters join when the jobs surface exists (F5 5.2).
+ * off, counters). From trial on, the floor comes first: counters (to accept, due today, at risk, on
+ * hold), alerts and the queue in the order to work it (contract request `partner.today`).
  */
 export default async function PartnerHomePage() {
   const t = await getTranslations("partnerToday");
   const context = await factoryContext();
   const factory = context.factory;
   const onboarding = factory && ["applied", "under_review", "trial"].includes(factory.status);
-  const { contract } = await partnerServerApis();
-  const [steps, prices] = await Promise.all([
+  const { contract, requests } = await partnerServerApis();
+  const producing =
+    factory && ["trial", "active", "suspended"].includes(factory.status) && canAt(context, "factory_jobs.read");
+  const [steps, prices, floor] = await Promise.all([
     onboarding
       ? attempt(
           async () =>
@@ -36,7 +42,13 @@ export default async function PartnerHomePage() {
         )
       : null,
     canAt(context, "factory_prices.read") ? loadPrices(context.factoryId) : null,
+    producing
+      ? attempt(() =>
+          requests.call("GET /v1/partner/factories/{factoryId}/today", { path: { factoryId: context.factoryId } }),
+        )
+      : null,
   ]);
+  const tFloor = await getTranslations("partnerToday.floor");
 
   const tasks: { key: string; href: string; icon: IconName; title: string; body: string }[] = [];
   const toSignOff = (steps?.data ?? []).filter(awaitsSignOff).length;
@@ -99,6 +111,70 @@ export default async function PartnerHomePage() {
             <Icon name="arrow-right" size={20} />
           </Link>
         </Card>
+      ) : null}
+
+      {floor?.data ? (
+        <>
+          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label={tFloor("countersLabel")}>
+            {(
+              [
+                ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.toAccept],
+                ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.dueToday],
+                ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
+                ["onHold", "/jobs?view=all", "pause", floor.data.counters.onHold],
+              ] as const
+            ).map(([key, href, icon, value]) => (
+              <li key={key}>
+                <Stat
+                  href={href}
+                  label={tFloor(`counters.${key}`)}
+                  value={value}
+                  icon={icon}
+                  tone={
+                    key === "atRisk" && value > 0 ? "danger" : key === "toAccept" && value > 0 ? "warning" : "neutral"
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+          {floor.data.alerts.length ? (
+            <ul className="flex flex-col gap-2">
+              {floor.data.alerts.map((alert) => (
+                <li key={`${alert.kind}-${alert.jobId}`}>
+                  <Link href={`/jobs/${alert.jobId}`} className="block">
+                    <Callout
+                      tone={alert.kind === "accept_overdue" ? "danger" : "warning"}
+                      icon="warning"
+                      title={alert.jobNo}
+                    >
+                      {alert.text}
+                    </Callout>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <PartnerSection
+            title={tFloor("queue")}
+            actions={
+              <Link href="/jobs" className="text-primary inline-flex min-h-12 items-center underline">
+                {tFloor("allJobs")}
+              </Link>
+            }
+          >
+            {floor.data.queue.length ? (
+              <ul className="grid gap-2 md:grid-cols-2">
+                {floor.data.queue.map((job) => (
+                  <li key={job.id}>
+                    <JobCard job={job} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted">{tFloor("queueEmpty")}</p>
+            )}
+          </PartnerSection>
+        </>
       ) : null}
 
       <PartnerSection title={t("tasks.title")}>

@@ -129,8 +129,9 @@ test.describe("partner shell", () => {
     await signInAsPartner(page);
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
-    // Today, jobs, ship, billing and "more" for a producing factory (F5 `partnerNav`).
-    await expect(nav.getByRole("link")).toHaveCount(5);
+    // Today, jobs, ship and "more" for the planner of a producing factory: billing is not a
+    // planner's (F5 `partnerNav` leaves out what the role cannot open).
+    await expect(nav.getByRole("link")).toHaveCount(4);
 
     // design-system.md §5: 48 px is the floor for the partner app; these are 64.
     const box = await nav.getByRole("link", { name: "งานผลิต" }).boundingBox();

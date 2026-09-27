@@ -54,7 +54,12 @@ export function StageStepper({ stages, label, stateLabels, className }: StageSte
               )}
             </div>
             <div className={cn("min-w-0 flex-1", last ? "pb-0" : "pb-5")}>
-              <p className={cn("flex min-h-10 flex-wrap items-center gap-x-2 font-medium", stage.state === "upcoming" && "text-muted")}>
+              <p
+                className={cn(
+                  "flex min-h-10 flex-wrap items-center gap-x-2 font-medium",
+                  stage.state === "upcoming" && "text-muted",
+                )}
+              >
                 <span className={current ? "text-lg" : undefined}>{stage.title}</span>
                 <span className="sr-only">{stateLabels[stage.state]}</span>
               </p>

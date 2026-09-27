@@ -220,3 +220,177 @@ describe("a factory price-list proposal (F001)", () => {
     ).rejects.toMatchObject({ status: 409 });
   });
 });
+
+describe("the production floor and shipping (F001, F5 5.2)", () => {
+  const stamp = (clientRef: string) => ({ clientRef, clientReportedAt: "2026-09-27T10:00:00+07:00" });
+  const uuid = (n: number) => `00000000-0000-4000-8000-${n.toString(16).padStart(12, "0")}`;
+  const path = { factoryId: F001 };
+
+  async function photo(api: ReturnType<typeof partner>) {
+    const { data } = await api.POST("/v1/partner/files/presign", {
+      body: { fileName: "step.jpg", mimeType: "image/jpeg", sizeBytes: 10, purpose: "evidence" },
+    });
+    return data!.fileId;
+  }
+
+  it("accepts a released job, reports every step with the rules B4.2 states, and ships it split", async () => {
+    const api = partner("owner");
+    const floor = requestsAs("owner");
+    const today = await floor.call("GET /v1/partner/factories/{factoryId}/today", { path });
+    expect(today.counters.toAccept).toBeGreaterThanOrEqual(2);
+    const { data: toAccept } = await floor.call("GET /v1/partner/factories/{factoryId}/jobs", {
+      path,
+      query: { view: "to_accept" },
+    });
+    // The one split across two addresses (D-110).
+    const released = toAccept.find(
+      (job) => job.acceptDueAt && Date.parse(job.acceptDueAt) - Date.now() < 6 * 3_600_000,
+    )!;
+    const jobPath = { ...path, jobId: released.id };
+    let job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
+      path: jobPath,
+      body: stamp(uuid(1)),
+      idempotencyKey: uuid(1),
+    });
+    expect(job.status).toBe("accepted");
+    expect(job.destinations).toHaveLength(2);
+
+    for (const milestone of job.milestones.filter((item) => item.status !== "completed")) {
+      const seq = String(milestone.seq);
+      job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/start", {
+        path: { ...jobPath, seq },
+        body: stamp(uuid(100 + milestone.seq)),
+        idempotencyKey: uuid(100 + milestone.seq),
+      });
+      if (milestone.requiresQc) {
+        job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/qc-checks", {
+          path: jobPath,
+          body: {
+            ...stamp(uuid(300)),
+            checklist: job.qcChecklist.map((item) => ({ key: item.key, pass: true })),
+            result: "pass",
+            defects: [],
+            photoFileIds: [await photo(api)],
+          },
+          idempotencyKey: uuid(300),
+        });
+        expect(job.qcChecks[0]).toMatchObject({ result: "pass", isFirstPass: true });
+      }
+      const complete = (quantityOut: number, ref: number, photos: string[]) =>
+        floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", {
+          path: { ...jobPath, seq },
+          body: {
+            ...stamp(uuid(ref)),
+            quantityIn: released.quantity,
+            quantityOut,
+            quantityScrap: 0,
+            photoFileIds: photos,
+          },
+          idempotencyKey: uuid(ref),
+        });
+      if (milestone.requiresPhoto) {
+        // No photo where the route asks for one: a 422 the form shows beside the field.
+        await expect(complete(released.quantity, 200 + milestone.seq, [])).rejects.toMatchObject({ status: 422 });
+      }
+      // Good plus scrap above what went in is refused by the API, not only by the form.
+      await expect(complete(released.quantity + 1, 250 + milestone.seq, [await photo(api)])).rejects.toMatchObject({
+        status: 422,
+      });
+      job = await complete(released.quantity, 200 + milestone.seq, milestone.requiresPhoto ? [await photo(api)] : []);
+    }
+    expect(job.status).toBe("completed");
+    expect(job.nextActions).toContain("ship");
+
+    // Another device completing the last step again with its own report: the server's state stands.
+    const last = String(job.milestones.at(-1)!.seq);
+    await expect(
+      floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", {
+        path: { ...jobPath, seq: last },
+        body: {
+          ...stamp(uuid(999)),
+          quantityIn: 1,
+          quantityOut: 1,
+          quantityScrap: 0,
+          photoFileIds: [await photo(api)],
+        },
+        idempotencyKey: uuid(999),
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+
+    const plan = await floor.call("GET /v1/partner/factories/{factoryId}/ship-plan", { path });
+    const ready = plan.find((item) => item.id === released.id)!;
+    expect(ready.destinations).toHaveLength(2);
+    const shipmentIds: string[] = [];
+    for (const [index, destination] of ready.destinations.entries()) {
+      const created = await floor.call("POST /v1/partner/factories/{factoryId}/shipments", {
+        path,
+        body: {
+          ...stamp(uuid(400 + index)),
+          jobId: ready.id,
+          destinationId: destination.id,
+          quantity: destination.quantity,
+          cartons: 2,
+        },
+        idempotencyKey: uuid(400 + index),
+      });
+      expect(created.cartonList).toHaveLength(2);
+      shipmentIds.push(created.id);
+    }
+    // A replay of the first create is the same shipment, not a third one.
+    const replay = await floor.call("POST /v1/partner/factories/{factoryId}/shipments", {
+      path,
+      body: { ...stamp(uuid(400)), jobId: ready.id, destinationId: ready.destinations[0]!.id, quantity: 1, cartons: 1 },
+      idempotencyKey: uuid(400),
+    });
+    expect(replay.id).toBe(shipmentIds[0]);
+
+    for (const [index, shipmentId] of shipmentIds.entries()) {
+      const shipment = await floor.call(
+        "POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/dispatch",
+        {
+          path: { ...path, shipmentId },
+          body: stamp(uuid(500 + index)),
+          idempotencyKey: uuid(500 + index),
+        },
+      );
+      const delivered = await floor.call("POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/pod", {
+        path: { ...path, shipmentId },
+        body: {
+          ...stamp(uuid(600 + index)),
+          receiverName: "คุณผู้รับ ทดสอบ",
+          deliveredQuantity: shipment.quantity,
+          capturedAt: "2026-09-27T15:00:00+07:00",
+          photoFileIds: [await photo(api)],
+          signatureFileId: await photo(api),
+        },
+        idempotencyKey: uuid(600 + index),
+      });
+      expect(delivered.status).toBe("delivered");
+      expect(delivered.tolerance?.outcome).toBe("exact");
+    }
+    // The logistics desk has both PODs to review (D-013).
+    const queue = await createRequestClient(REQUESTS, staff("logistics") as unknown as Client<never>).call(
+      "GET /v1/admin/shipments",
+      { query: { queue: "pod_review", perPage: 100 } },
+    );
+    const numbers = queue.data.map((row) => row.id);
+    expect(shipmentIds.every((id) => numbers.includes(id))).toBe(true);
+  });
+
+  it("keeps an operator from accepting jobs, and another factory's job is not found", async () => {
+    const floor = requestsAs("operator");
+    const { data } = await floor.call("GET /v1/partner/factories/{factoryId}/jobs", { path, query: { view: "all" } });
+    await expect(
+      floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
+        path: { ...path, jobId: data[0]!.id },
+        body: stamp(uuid(700)),
+        idempotencyKey: uuid(700),
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+    await expect(
+      requestsAs("assisted").call("GET /v1/partner/factories/{factoryId}/jobs/{jobId}", {
+        path: { factoryId: F006, jobId: data[0]!.id },
+      }),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+});

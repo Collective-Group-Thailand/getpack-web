@@ -102,7 +102,14 @@ export function factoryJobs(factoryId: string): { order: MockOrder; job: Job }[]
 export function extraOf(job: Job): Extra {
   let extra = extras.get(job.id);
   if (!extra) {
-    extra = { steps: new Map(), qcChecks: [], issues: [], history: [], rejectedReason: null, releasedAt: bangkokIso(-DAY) };
+    extra = {
+      steps: new Map(),
+      qcChecks: [],
+      issues: [],
+      history: [],
+      rejectedReason: null,
+      releasedAt: bangkokIso(-DAY),
+    };
     extras.set(job.id, extra);
   }
   return extra;
@@ -128,35 +135,44 @@ function seed() {
       extra.steps.set(milestone.seq, step);
     });
   }
-  // Two jobs wait for acceptance (D-074): taken from the calm end of the in-production seeds.
-  const calm = jobs.filter(({ order, job }) => job.status === "in_progress" && order.urgency === "normal").slice(-2);
-  calm.forEach(({ order, job }, index) => {
-    Object.assign(job, {
-      status: "released",
-      acceptDueAt: bangkokIso(index === 0 ? HOUR * 20 : HOUR * 3),
-      atRisk: false,
-      milestones: [],
+  // Two jobs wait for acceptance (D-074): one due tomorrow from the calm end of the seeds, and
+  // one due within hours whose order is paid up and not held for an inspection — the one a flow
+  // can take all the way to delivery, split across two addresses.
+  const open = (jobId: string) =>
+    inspections.some((item) => item.job.id === jobId && ["planned", "in_progress", "failed"].includes(item.status));
+  const paidUp = (order: MockOrder) =>
+    !order.instalments.some((item) => item.requiredBefore === "shipping" && item.status !== "paid");
+  const calm = jobs.filter(({ order, job }) => job.status === "in_progress" && order.urgency === "normal").at(-1);
+  const shippable = jobs.find(({ order, job }) => job.status === "in_progress" && paidUp(order) && !open(job.id));
+  [calm, shippable]
+    .filter((item): item is NonNullable<typeof item> => !!item)
+    .forEach(({ order, job }, index) => {
+      Object.assign(job, {
+        status: "released",
+        acceptDueAt: bangkokIso(index === 0 ? HOUR * 20 : HOUR * 3),
+        atRisk: false,
+        milestones: [],
+      });
+      const extra = extraOf(job);
+      extra.steps.clear();
+      extra.releasedAt = bangkokIso(index === 0 ? -HOUR * 4 : -HOUR * 21);
+      extra.history = [{ at: extra.releasedAt, text: "Packio ส่งงานให้โรงงาน", actor: null }];
+      if (index === 1 && order.destinations.length === 1) {
+        // Split across two addresses (D-110): head office and a branch.
+        const [first] = order.destinations;
+        const half = Math.floor(first!.quantity / 2);
+        order.destinations = [
+          { ...first!, quantity: first!.quantity - half },
+          {
+            ...first!,
+            id: mockId("dst", 700),
+            recipientName: `${first!.recipientName} (สาขา)`,
+            line1: "88 ถนนสาขาตัวอย่าง (ข้อมูลจำลอง)",
+            quantity: half,
+          },
+        ];
+      }
     });
-    const extra = extraOf(job);
-    extra.steps.clear();
-    extra.releasedAt = bangkokIso(index === 0 ? -HOUR * 4 : -HOUR * 21);
-    extra.history = [{ at: extra.releasedAt, text: "Packio ส่งงานให้โรงงาน", actor: null }];
-    if (index === 1 && order.destinations.length === 1) {
-      // Split across two addresses (D-110): head office and a branch.
-      const [first] = order.destinations;
-      const half = Math.floor(first!.quantity / 2);
-      order.destinations = [
-        { ...first!, quantity: first!.quantity - half },
-        {
-          ...first!,
-          id: mockId("dst", 700),
-          recipientName: `${first!.recipientName} (สาขา)`,
-          line1: "88 ถนนสาขาตัวอย่าง (ข้อมูลจำลอง)",
-          quantity: half,
-        },
-      ];
-    }
-  });
 }
 seed();
 
@@ -212,7 +228,9 @@ export function destinationsOf(order: MockOrder): JobDto["destinations"] {
     id: destination.id,
     recipientName: destination.recipientName,
     phone: destination.phone,
-    address: [destination.line1, destination.line2, destination.subdistrict, destination.district].filter(Boolean).join(" "),
+    address: [destination.line1, destination.line2, destination.subdistrict, destination.district]
+      .filter(Boolean)
+      .join(" "),
     province: destination.province,
     postcode: destination.postcode,
     quantity: destination.quantity,
@@ -350,7 +368,9 @@ function log(extra: Extra, text: string, actor: { id: string; displayName: strin
 
 /** Spreads a route's due dates from now to the promised ship date. */
 function routeFor(job: Job, order: MockOrder): Job["milestones"] {
-  const end = Date.parse(`${job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso(DAY * 10).slice(0, 10)}T17:00:00+07:00`);
+  const end = Date.parse(
+    `${job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso(DAY * 10).slice(0, 10)}T17:00:00+07:00`,
+  );
   const start = Date.now();
   const span = Math.max(end - start, DAY * 60_000);
   return ROUTE.map((step, index) => ({
@@ -366,7 +386,12 @@ function routeFor(job: Job, order: MockOrder): Job["milestones"] {
 
 /* -------------------------------------------------------------------------------- handlers */
 
-const perm = { read: "factory_jobs.read", update: "factory_jobs.update", accept: "factory_jobs.accept", qc: "factory_qc.record" };
+const perm = {
+  read: "factory_jobs.read",
+  update: "factory_jobs.update",
+  accept: "factory_jobs.accept",
+  qc: "factory_qc.record",
+};
 
 export const jobRequestHandlers = [
   mockRequest("GET /v1/partner/factories/{factoryId}/today", (context) => {
@@ -376,14 +401,15 @@ export const jobRequestHandlers = [
     const summaries = all.map(({ order, job }) => summaryOf(order, job));
     const today = bangkokIso().slice(0, 10);
     const dueToday = summaries.filter(
-      (item) => item.current?.dueAt?.slice(0, 10) === today || (item.acceptDueAt?.slice(0, 10) === today),
+      (item) => item.current?.dueAt?.slice(0, 10) === today || item.acceptDueAt?.slice(0, 10) === today,
     );
     const queue = summaries
       .filter((item) => item.views.some((view) => view !== "ready_to_ship") || item.views.includes("ready_to_ship"))
       .filter((item) => item.views.length > 0)
       .sort((a, b) => {
         const rank = (item: Summary) => (item.views.includes("to_accept") ? 0 : item.views.includes("late") ? 1 : 2);
-        const due = (item: Summary) => item.acceptDueAt ?? item.current?.dueAt ?? `${item.promisedShipDate}T23:59:59+07:00`;
+        const due = (item: Summary) =>
+          item.acceptDueAt ?? item.current?.dueAt ?? `${item.promisedShipDate}T23:59:59+07:00`;
         return rank(a) - rank(b) || due(a).localeCompare(due(b));
       })
       .slice(0, 10);
@@ -436,7 +462,11 @@ export const jobRequestHandlers = [
       .map(({ order, job }) => summaryOf(order, job))
       .filter((item) => view === "all" || item.views.includes(view))
       .filter((item) => matchesQuery(context.query.q, item.jobNo, item.title, item.productType.name))
-      .sort((a, b) => (a.acceptDueAt ?? a.current?.dueAt ?? a.promisedShipDate).localeCompare(b.acceptDueAt ?? b.current?.dueAt ?? b.promisedShipDate));
+      .sort((a, b) =>
+        (a.acceptDueAt ?? a.current?.dueAt ?? a.promisedShipDate).localeCompare(
+          b.acceptDueAt ?? b.current?.dueAt ?? b.promisedShipDate,
+        ),
+      );
     return paginate(rows, context.query);
   }),
 
@@ -445,9 +475,14 @@ export const jobRequestHandlers = [
     if (ok instanceof Response) return ok;
     const code = context.query.code.trim().toUpperCase();
     const found = factoryJobs(ok.store.factory.id).find(
-      ({ job }) => job.jobNo.toUpperCase() === code || code.endsWith(job.jobNo.toUpperCase()) || code.includes(job.id.toUpperCase()),
+      ({ job }) =>
+        job.jobNo.toUpperCase() === code ||
+        code.endsWith(job.jobNo.toUpperCase()) ||
+        code.includes(job.id.toUpperCase()),
     );
-    return found ? { jobId: found.job.id, jobNo: found.job.jobNo } : problem(404, "jobs.not_found", "ไม่พบงานของโรงงานจากรหัสนี้");
+    return found
+      ? { jobId: found.job.id, jobNo: found.job.jobNo }
+      : problem(404, "jobs.not_found", "ไม่พบงานของโรงงานจากรหัสนี้");
   }),
 
   mockRequest("GET /v1/partner/factories/{factoryId}/jobs/{jobId}", (context) => {
@@ -523,13 +558,21 @@ export const jobRequestHandlers = [
     if (milestone.status !== "in_progress") return conflict("ต้องเริ่มขั้นตอนนี้ก่อน");
     const { quantityIn, quantityOut, quantityScrap, photoFileIds } = context.body;
     const route = ROUTE[seq - 1]!;
-    const before = [...extra.steps.entries()].filter(([at]) => at < seq).map(([, value]) => value.quantityOut).filter((value) => value !== null).at(-1);
+    const before = [...extra.steps.entries()]
+      .filter(([at]) => at < seq)
+      .map(([, value]) => value.quantityOut)
+      .filter((value) => value !== null)
+      .at(-1);
     const ceiling = before ?? Math.ceil(order.quantity * (1 + Number(order.tolerance.overagePct) / 100) * 1.1);
     const errors: { path: string; code: string; message: string }[] = [];
     if (quantityOut + quantityScrap > quantityIn)
       errors.push({ path: "quantityOut", code: "max", message: "จำนวนดีรวมของเสียต้องไม่เกินจำนวนที่รับเข้า" });
     if (quantityIn > ceiling)
-      errors.push({ path: "quantityIn", code: "max", message: `รับเข้าได้ไม่เกิน ${ceiling.toLocaleString("th-TH")} ชิ้น` });
+      errors.push({
+        path: "quantityIn",
+        code: "max",
+        message: `รับเข้าได้ไม่เกิน ${ceiling.toLocaleString("th-TH")} ชิ้น`,
+      });
     if (route.photo && photoFileIds.length === 0)
       errors.push({ path: "photoFileIds", code: "required", message: "ขั้นตอนนี้ต้องแนบรูปถ่ายอย่างน้อยหนึ่งรูป" });
     if (!photosExist(photoFileIds)) errors.push({ path: "photoFileIds", code: "ref", message: "ไม่พบไฟล์รูป" });
@@ -551,7 +594,11 @@ export const jobRequestHandlers = [
       completedAt: now(),
       onTime: !milestone.dueAt || Date.parse(milestone.dueAt) >= Date.now(),
     });
-    log(extra, `จบ${milestone.name}: ดี ${quantityOut.toLocaleString("th-TH")} เสีย ${quantityScrap.toLocaleString("th-TH")}`, who(actor));
+    log(
+      extra,
+      `จบ${milestone.name}: ดี ${quantityOut.toLocaleString("th-TH")} เสีย ${quantityScrap.toLocaleString("th-TH")}`,
+      who(actor),
+    );
     if (job.milestones.every((item) => item.status === "completed")) {
       job.status = "completed";
       job.atRisk = false;
@@ -567,7 +614,8 @@ export const jobRequestHandlers = [
     const current = job.milestones.find((item) => item.status !== "completed");
     if (!current || !ROUTE[current.seq - 1]?.qc || current.status !== "in_progress")
       return conflict("บันทึกผลตรวจได้ระหว่างขั้นตอนตรวจคุณภาพ");
-    if (extra.qcChecks.some((check) => check.id === mockId("qcc", hash(context.body.clientRef)))) return detailOf(order, job);
+    if (extra.qcChecks.some((check) => check.id === mockId("qcc", hash(context.body.clientRef))))
+      return detailOf(order, job);
     if (!photosExist(context.body.photoFileIds)) return invalid("photoFileIds", "ไม่พบไฟล์รูป");
     const labels = new Map(QC_CHECKLIST.map((item) => [item.key, item.label]));
     extra.qcChecks.push({
@@ -586,7 +634,11 @@ export const jobRequestHandlers = [
       performedBy: who(actor),
       performedAt: now(),
     });
-    log(extra, `บันทึกผลตรวจคุณภาพ: ${context.body.result === "pass" ? "ผ่าน" : context.body.result === "fail" ? "ไม่ผ่าน" : "ผ่านแบบมีเงื่อนไข"}`, who(actor));
+    log(
+      extra,
+      `บันทึกผลตรวจคุณภาพ: ${context.body.result === "pass" ? "ผ่าน" : context.body.result === "fail" ? "ไม่ผ่าน" : "ผ่านแบบมีเงื่อนไข"}`,
+      who(actor),
+    );
     return detailOf(order, job);
   }),
 
@@ -655,7 +707,11 @@ export const jobRequestHandlers = [
         };
       }),
       closures: [
-        { date: bangkokIso(DAY * 9).slice(0, 10), name: "วันหยุดประจำปีของโรงงาน (ข้อมูลจำลอง)", kind: "factory" as const },
+        {
+          date: bangkokIso(DAY * 9).slice(0, 10),
+          name: "วันหยุดประจำปีของโรงงาน (ข้อมูลจำลอง)",
+          kind: "factory" as const,
+        },
         { date: bangkokIso(DAY * 16).slice(0, 10), name: "วันหยุดนักขัตฤกษ์ (ข้อมูลจำลอง)", kind: "national" as const },
       ],
     };

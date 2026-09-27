@@ -422,5 +422,14 @@
     "pending": "Awaiting answer",
     "accepted": "Accepted",
     "countered": "Counter asked"
+  },
+  "qcResult": {
+    "pass": "Pass",
+    "conditional": "Conditional pass",
+    "fail": "Fail"
+  },
+  "jobIssue": {
+    "open": "Open",
+    "resolved": "Resolved"
   }
 }

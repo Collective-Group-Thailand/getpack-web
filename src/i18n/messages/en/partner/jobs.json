@@ -1,0 +1,205 @@
+{
+  "title": "Jobs",
+  "viewsLabel": "Filter jobs",
+  "views": {
+    "to_accept": "To accept",
+    "in_production": "In production",
+    "awaiting_qc": "Awaiting QC",
+    "ready_to_ship": "Ready to ship",
+    "late": "Late",
+    "all": "All"
+  },
+  "search": "Search jobs",
+  "searchPlaceholder": "Job number or product",
+  "searchAction": "Search",
+  "empty": {
+    "to_accept": "Nothing to accept",
+    "in_production": "Nothing in production",
+    "awaiting_qc": "Nothing awaiting QC",
+    "ready_to_ship": "Nothing ready to ship",
+    "late": "Nothing late",
+    "all": "No jobs yet"
+  },
+  "floor": {
+    "conflict": "Someone else updated this first — showing the latest",
+    "invalid": "Check the details",
+    "failed": "Could not save — try again"
+  },
+  "camera": {
+    "take": "Take a photo",
+    "more": "Add a photo",
+    "photo": "Photo {n}",
+    "remove": "Remove photo {n}",
+    "count": "{count, plural, one {# photo} other {# photos}}",
+    "processing": "Preparing photos…"
+  },
+  "accept": {
+    "plannerOnly": "The planner or owner accepts jobs.",
+    "action": "Accept the job",
+    "hint": "Accept by {due}",
+    "title": "Accept {jobNo}",
+    "body": "You take {jobNo}: {quantity} pieces, ready to ship by {date}, at the PO's {amount}.",
+    "confirm": "Accept",
+    "done": "{jobNo} accepted"
+  },
+  "reject": {
+    "action": "Reject the job",
+    "title": "Reject {jobNo}",
+    "body": "Packio will move {jobNo} or contact you; rejections count in your scorecard.",
+    "confirm": "Reject",
+    "note": "Details",
+    "noteHint": "E.g. the press is under repair until Friday",
+    "done": "{jobNo} rejected",
+    "reason": "Reason",
+    "reasons": {
+      "capacity": "Not enough capacity",
+      "material": "Material not available",
+      "machine": "Machine unavailable",
+      "spec_not_feasible": "Spec cannot be made",
+      "price": "Price does not match",
+      "other": "Other reason"
+    }
+  },
+  "milestone": {
+    "noPermission": "Your role cannot update steps.",
+    "start": "Start {name}",
+    "started": "{name} started",
+    "photoRequired": "This step needs at least one photo",
+    "uploadFailed": "Could not upload the photos — try again",
+    "completed": "{name} completed",
+    "qcFirst": "Record a passing QC first, then complete this step.",
+    "in": "In",
+    "good": "Good",
+    "overflow": "Good plus scrap is more than went in",
+    "scrap": "Scrap",
+    "fromBefore": "The previous step passed on {quantity}",
+    "photos": "Photos",
+    "photosHint": "Photograph the work at this step; the time taken is kept",
+    "note": "Note",
+    "complete": "Complete {name}",
+    "completeHint": "Good {good} · scrap {scrap}"
+  },
+  "qc": {
+    "qcOnly": "QC records the result.",
+    "answerAll": "Answer every item",
+    "photoRequired": "Add at least one photo",
+    "uploadFailed": "Could not upload the photos — try again",
+    "recorded": "QC recorded",
+    "answerFor": "Result for {item}",
+    "pass": "Pass",
+    "fail": "Fail",
+    "result": "Overall result",
+    "results": {
+      "pass": "Pass",
+      "conditional": "Conditional",
+      "fail": "Fail"
+    },
+    "defects": "Defects found",
+    "defectLabel": "Defect {n}",
+    "defectCount": "Count for defect {n}",
+    "addDefect": "Add a defect",
+    "photos": "Photos of the checked work",
+    "photosHint": "At least one (D-076)",
+    "notes": "Notes",
+    "submit": "Record QC"
+  },
+  "issue": {
+    "tooShort": "Describe the issue in at least 3 characters",
+    "raised": "Issue raised — Packio sees it on the board",
+    "kind": "Kind",
+    "kinds": {
+      "material": "Material",
+      "machine": "Machine",
+      "artwork": "Artwork",
+      "quantity": "Quantity",
+      "quality": "Quality",
+      "delay": "Delay",
+      "other": "Other"
+    },
+    "description": "Details",
+    "submit": "Raise the issue",
+    "resolved": "Resolved",
+    "resolve": "Mark resolved"
+  },
+  "scan": {
+    "open": "Scan",
+    "title": "Scan a job",
+    "aim": "Point the camera at the QR on a job tag or carton label",
+    "noCamera": "This device cannot scan — type the code instead",
+    "manual": "Job or carton code",
+    "manualHint": "E.g. J-2569-00304",
+    "submit": "Open the job",
+    "close": "Close",
+    "notFound": "No job found for {code}"
+  },
+  "countdown": {
+    "left": "Accept within {duration}",
+    "overdue": "Acceptance overdue by {duration}"
+  },
+  "card": {
+    "late": "Late",
+    "inspection": "Packio inspects",
+    "quantity": "{quantity} pcs",
+    "ship": "Ship {date}",
+    "step": "Step: {name}"
+  },
+  "stages": {
+    "done": "Done",
+    "current": "Current",
+    "upcoming": "Next",
+    "skipped": "Skipped"
+  },
+  "detail": {
+    "metaTitle": "Job",
+    "back": "Back to jobs",
+    "summary": "{title} · {quantity} pcs · ship by {date}",
+    "acceptTitle": "A new job waits for you",
+    "rejectedTitle": "You rejected this job",
+    "rejectReasons": {
+      "capacity": "Not enough capacity",
+      "material": "Material not available",
+      "machine": "Machine unavailable",
+      "spec_not_feasible": "Spec cannot be made",
+      "price": "Price does not match",
+      "other": "Other reason"
+    },
+    "atRisk": "This job may be late",
+    "milestones": "Production steps",
+    "stepDone": "Good {good} · scrap {scrap}",
+    "stepDoneNoQty": "Done",
+    "photos": "{count, plural, one {# photo} other {# photos}}",
+    "due": "Due {date}",
+    "toShip": "Finished — go to shipping",
+    "spec": "Spec",
+    "artwork": "Approved artwork",
+    "proofAlt": "Approved proof, version {version}",
+    "watermark": "APPROVED v{version}",
+    "approvedOn": "Version {version}, approved {date} — produce this version only",
+    "openProof": "Open the proof",
+    "openDieline": "Open the dieline",
+    "noArtwork": "No approved artwork yet",
+    "po": "Purchase order",
+    "poNumber": "Number",
+    "poIssued": "Issued",
+    "poAmount": "PO amount (excl. VAT)",
+    "tolerance": "Tolerance",
+    "toleranceValue": "Short {shortage} · over {overage}",
+    "destinations": "Deliver to",
+    "destinationsNote": "Recipient name, address and phone only",
+    "destinationQty": "{quantity} pcs · {shipped} shipped",
+    "quality": "Quality",
+    "qcBy": "Checked by {name}",
+    "inspection": "Packio inspects this job",
+    "inspectionOn": "On {date}",
+    "issues": "Issues",
+    "history": "History"
+  },
+  "capacity": {
+    "title": "Weekly capacity",
+    "body": "Capacity against the jobs you took; send the Partner team a request to change it.",
+    "closures": "Closures",
+    "closure": "{date} · {name}",
+    "week": "Week of {date}",
+    "load": "{booked} of {capacity} {unit} booked"
+  }
+}
