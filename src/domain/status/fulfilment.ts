@@ -1,5 +1,7 @@
 import { defineStatusMap } from "./types";
 import type {
+  JobIssueStatus,
+  QcResult,
   DesignRoundStatus,
   DesignServiceStatus,
   DrawingStatus,
@@ -71,4 +73,17 @@ export const INSPECTION_STATUS = defineStatusMap<InspectionStatus>({
   passed: { tone: "success", icon: "check", labelKey: "inspection.passed" },
   failed: { tone: "danger", icon: "error", labelKey: "inspection.failed" },
   waived: { tone: "neutral", icon: "minus", labelKey: "inspection.waived" },
+});
+
+/** The factory's own QC of a job, with photos (D-076). */
+export const QC_RESULT = defineStatusMap<QcResult>({
+  pass: { tone: "success", icon: "check", labelKey: "qcResult.pass" },
+  conditional: { tone: "warning", icon: "warning", labelKey: "qcResult.conditional" },
+  fail: { tone: "danger", icon: "ban", labelKey: "qcResult.fail" },
+});
+
+/** An issue a factory raised on a job; Packio sees it on the production board. */
+export const JOB_ISSUE_STATUS = defineStatusMap<JobIssueStatus>({
+  open: { tone: "warning", icon: "flag", labelKey: "jobIssue.open" },
+  resolved: { tone: "success", icon: "check", labelKey: "jobIssue.resolved" },
 });

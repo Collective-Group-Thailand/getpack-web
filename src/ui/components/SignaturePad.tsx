@@ -79,7 +79,10 @@ export function SignaturePad({ onChange, labels, className }: SignaturePadProps)
 
   const point = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
-    return [((event.clientX - box.left) / box.width) * WIDTH, ((event.clientY - box.top) / box.height) * HEIGHT] as const;
+    return [
+      ((event.clientX - box.left) / box.width) * WIDTH,
+      ((event.clientY - box.top) / box.height) * HEIGHT,
+    ] as const;
   };
 
   return (

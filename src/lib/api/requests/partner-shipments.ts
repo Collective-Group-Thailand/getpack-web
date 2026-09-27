@@ -44,7 +44,14 @@ export const partnerShipment = z
 export const partnerShipmentDetail = partnerShipment
   .extend({
     /** One label per carton (100 × 150 mm): the code is what its QR encodes — the public tracking link. */
-    cartonList: z.array(z.object({ seq: z.number().int(), labelCode: z.string(), trackingUrl: z.string(), weightG: z.number().int().nullable() })),
+    cartonList: z.array(
+      z.object({
+        seq: z.number().int(),
+        labelCode: z.string(),
+        trackingUrl: z.string(),
+        weightG: z.number().int().nullable(),
+      }),
+    ),
     packingList: z.array(z.object({ label: z.string(), quantity: z.number().int() })),
     events: z.array(z.object({ occurredAt: dateTime(), status: shipmentStatus, note: z.string().nullable() })),
     pod: z

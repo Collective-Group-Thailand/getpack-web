@@ -123,7 +123,11 @@ export function CameraCapture({
           {photos.map((photo, index) => (
             <li key={photo.id} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element -- a local object URL, not an optimisable asset */}
-              <img src={photo.previewUrl} alt={labels.photo(index + 1)} className="aspect-square w-full rounded-lg object-cover" />
+              <img
+                src={photo.previewUrl}
+                alt={labels.photo(index + 1)}
+                className="aspect-square w-full rounded-lg object-cover"
+              />
               <button
                 type="button"
                 aria-label={labels.remove(index + 1)}

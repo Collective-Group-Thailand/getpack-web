@@ -61,6 +61,8 @@ export type {
   UserStatus,
   ChangeRequestStatus,
   RateLineAcceptance,
+  QcResult,
+  JobIssueStatus,
 } from "./contract";
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
@@ -85,8 +87,10 @@ import {
   DESIGN_SERVICE_STATUS,
   DRAWING_STATUS,
   INSPECTION_STATUS,
+  JOB_ISSUE_STATUS,
   MILESTONE_STATUS,
   PREFLIGHT_STATUS,
+  QC_RESULT,
   SUBMISSION_STATUS,
 } from "./fulfilment";
 import { INSTALMENT_STATUS } from "./instalment";
@@ -120,6 +124,8 @@ import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 
 export {
+  JOB_ISSUE_STATUS,
+  QC_RESULT,
   RATE_LINE_ACCEPTANCE,
   CHANGE_REQUEST_STATUS,
   APPROVAL_STATUS,
@@ -238,4 +244,6 @@ export const STATUS_MAPS = {
   user: USER_STATUS,
   changeRequest: CHANGE_REQUEST_STATUS,
   rateLine: RATE_LINE_ACCEPTANCE,
+  qcResult: QC_RESULT,
+  jobIssue: JOB_ISSUE_STATUS,
 } as const;

@@ -12,11 +12,17 @@ describe("partnerNav", () => {
   });
 
   it("gives a producing factory the shop floor, never more than five destinations", () => {
+    const all = ["factory_jobs.read", "factory_shipments.read", "factory_billing.read"];
     for (const status of ["trial", "active", "suspended"]) {
-      const items = keys(status, ["factory_prices.read"]);
+      const items = keys(status, all);
       expect(items).toEqual(["today", "jobs", "ship", "billing", "more"]);
       expect(items.length).toBeLessThanOrEqual(5);
     }
+  });
+
+  it("leaves out what the role cannot open", () => {
+    expect(keys("active", ["factory_jobs.read"])).toEqual(["today", "jobs", "more"]);
+    expect(keys("active", [])).toEqual(["today", "more"]);
   });
 
   it("marks the home item current only on the home page", () => {

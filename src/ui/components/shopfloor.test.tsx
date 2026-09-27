@@ -140,7 +140,10 @@ describe("CameraCapture", () => {
       photos = next;
     });
     const { rerender } = render(<CameraCapture photos={photos} onChange={onChange} labels={labels} />);
-    const file = new File(["not really a jpeg"], "shot.jpg", { type: "image/jpeg", lastModified: Date.UTC(2026, 8, 27, 7, 5) });
+    const file = new File(["not really a jpeg"], "shot.jpg", {
+      type: "image/jpeg",
+      lastModified: Date.UTC(2026, 8, 27, 7, 5),
+    });
     fireEvent.change(screen.getByLabelText("ถ่ายรูป"), { target: { files: [file] } });
     await waitFor(() => expect(onChange).toHaveBeenCalled());
     expect(photos[0]!.capturedAt).toBe("2026-09-27T14:05:00+07:00");

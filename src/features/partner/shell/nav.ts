@@ -18,6 +18,13 @@ const ITEMS: Record<PartnerNavKey, PartnerNavItem> = {
   more: { key: "more", href: "/more", icon: "menu" },
 };
 
+/** What a destination needs; hidden without it (the API refuses the screen anyway). */
+const PERMISSION: Partial<Record<PartnerNavKey, string>> = {
+  jobs: "factory_jobs.read",
+  ship: "factory_shipments.read",
+  billing: "factory_billing.read",
+};
+
 /**
  * The shop-floor destinations for this factory and this user — at most five, so each keeps a
  * 64 px target on a 6" phone.
@@ -32,7 +39,7 @@ export function partnerNav(status: string | undefined, can: (permission: string)
   const keys: PartnerNavKey[] = onboarding
     ? ["today", "onboarding", ...(can("factory_prices.read") ? (["prices"] as const) : []), "more"]
     : ["today", "jobs", "ship", "billing", "more"];
-  return keys.map((key) => ITEMS[key]);
+  return keys.filter((key) => !PERMISSION[key] || can(PERMISSION[key])).map((key) => ITEMS[key]);
 }
 
 /** Whether `href` is the current section for `pathname` (the home item matches only itself). */

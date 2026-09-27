@@ -103,7 +103,9 @@ export const qcCheck = z
     id: uuid(),
     result: qcResult,
     isFirstPass: z.boolean(),
-    checklist: z.array(z.object({ key: z.string(), label: z.string(), pass: z.boolean(), note: z.string().nullable() })),
+    checklist: z.array(
+      z.object({ key: z.string(), label: z.string(), pass: z.boolean(), note: z.string().nullable() }),
+    ),
     defects: z.array(z.object({ label: z.string(), count: z.number().int() })),
     photos: z.array(fileRef()),
     notes: z.string().nullable(),
@@ -133,7 +135,12 @@ export const partnerJob = partnerJobSummary
     artwork: z
       .object({ versionNo: z.number().int(), approvedAt: dateTime(), proof: fileRef(), dieline: fileRef().nullable() })
       .nullable(),
-    purchaseOrder: z.object({ poNumber: z.string(), issuedAt: dateTime(), buyAmount: money(), currency: z.literal("THB") }),
+    purchaseOrder: z.object({
+      poNumber: z.string(),
+      issuedAt: dateTime(),
+      buyAmount: money(),
+      currency: z.literal("THB"),
+    }),
     tolerance: z.object({ shortagePct: pct(), overagePct: pct() }),
     destinations: z.array(partnerDestination),
     milestones: z.array(partnerMilestone),
