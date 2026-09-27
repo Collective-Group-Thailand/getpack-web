@@ -10,6 +10,8 @@
  *                 signed-in customer's profile, consents and orders (two customer personas)
  *   ./admin/*     the back office: published endpoints with state, and contract requests
  *                 through `mockRequest`, which holds every response to its requested schema
+ *   ./partner/*   the partner-factory zone: the factory's own rows (the back office's), one
+ *                 persona per factory role
  *
  * Order matters: MSW uses the first handler that matches, so overrides come before the
  * generated fallbacks.
@@ -20,6 +22,7 @@ import { http, HttpResponse } from "msw";
 import { adminHandlers } from "./admin";
 import { authHandlers } from "./auth";
 import { generatedHandlers } from "./generated/handlers";
+import { partnerZoneHandlers } from "./partner";
 import { storeHandlers } from "./store";
 
 export { MOCK_ID_TOKENS, MOCK_NEW_CUSTOMER_PHONE, MOCK_OTP, MOCK_PARTNER, MOCK_STAFF } from "./auth";
@@ -48,6 +51,7 @@ export const handlers = [
   ...authHandlers,
   ...storeHandlers,
   ...adminHandlers,
+  ...partnerZoneHandlers,
 
   // Notifications on the contract B1.3 published (InboxItemDto, cursor feed, per-item read).
   // Stateful, so "mark read" visibly does something; obviously fake.
