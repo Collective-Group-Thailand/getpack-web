@@ -52,14 +52,25 @@ export interface ClosureContext {
   end: "top" | "bottom";
 }
 
-/** Faces hinged on the panels, faces hinged on those (a tuck on its lid), and notches in free panel edges. */
-export type Closure = (ctx: ClosureContext) => { attachments: Attachment[]; faces?: Face[]; notches?: Notch[] };
+/**
+ * What a closure adds: faces hinged on the panels, faces hinged on those (a tuck on its lid),
+ * notches in free panel edges, and **profiles** — a free panel edge that is not straight (a
+ * gable end rising to its apex), as the points between the panel's two corners.
+ */
+export type Closure = (ctx: ClosureContext) => {
+  attachments: Attachment[];
+  faces?: Face[];
+  notches?: Notch[];
+  profiles?: Record<number, Pt[]>;
+};
 
 export interface TubeSpec {
   panels: TubePanel[];
   depth: number;
   /** Glue flap width; 0 or absent for none. It sits left of the first panel before any mirroring. */
   glue?: number;
+  /** The glue flap's face id (default `glue`) — unique when a dieline has two tubes. */
+  glueId?: string;
   /** Put the glue flap on the right: the whole blank is mirrored (the box is the same, seam at the other corner). */
   glueRight?: boolean;
   top?: Closure;
@@ -76,7 +87,13 @@ function edgeRun(
   spans: { span: [number, number]; role: EdgeRole }[],
   notches: Notch[],
   notchInto: 1 | -1,
+  profile?: Pt[],
 ): Edge[] {
+  if (profile && profile.length) {
+    // A shaped free edge: straight cuts through the profile points.
+    const pts: Pt[] = [[x0, y], ...profile, [x1, y]];
+    return pts.slice(1).map((p, i) => line(pts[i], p, "cut"));
+  }
   const out: Edge[] = [];
   let cursor = x0;
   const sorted = [...spans].sort((a, b) => a.span[0] - b.span[0]);
@@ -175,9 +192,12 @@ export function buildTube(spec: TubeSpec): Face[] {
     attachments: bottomLocal.attachments.map((a) => ({ ...a, face: down(a.face) })),
     faces: (bottomLocal.faces ?? []).map(down),
     notches: bottomLocal.notches ?? [],
+    profiles: Object.fromEntries(
+      Object.entries(bottomLocal.profiles ?? {}).map(([k, pts]) => [k, pts.map(flipDown)]),
+    ) as Record<number, Pt[]>,
   };
 
-  if (glue > 0) faces.push(glueFlap("glue", glue, glue, depth, "left"));
+  if (glue > 0) faces.push(glueFlap(spec.glueId ?? "glue", glue, glue, depth, "left"));
 
   for (const s of spans) {
     const within = (a: Attachment) => a.span[0] >= s.x0 - 1e-9 && a.span[1] <= s.x1 + 1e-9;
@@ -193,6 +213,7 @@ export function buildTube(spec: TubeSpec): Face[] {
         topSpans,
         (top.notches ?? []).filter((n) => n.panel === s.index),
         1,
+        top.profiles?.[s.index],
       ),
       line([s.x1, 0], [s.x1, depth], hasRight ? "crease" : "cut"),
       ...reversed(
@@ -203,6 +224,7 @@ export function buildTube(spec: TubeSpec): Face[] {
           bottomSpans,
           bottom.notches.filter((n) => n.panel === s.index),
           -1,
+          bottom.profiles[s.index],
         ),
       ),
       line([s.x0, depth], [s.x0, 0], hasLeft ? "crease" : "cut"),

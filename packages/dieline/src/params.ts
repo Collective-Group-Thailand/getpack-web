@@ -65,7 +65,7 @@ export function schemaIssues(params: ParamSchema[], v: ParamValues): Issue[] {
       }
       continue;
     }
-    if (p.kind === "boolean") continue;
+    if (p.kind === "boolean" || p.kind === "text") continue;
     if (raw === undefined) continue;
     const value = typeof raw === "number" ? raw : Number(raw);
     if (!Number.isFinite(value)) {
