@@ -426,7 +426,13 @@
     "facesHint": "Pick a face to edit it up close, the right way up as it reads on the box (or double-click it)",
     "grid": "Show grid",
     "rulers": "Show rulers",
-    "snapping": "Snap to guides"
+    "snapping": "Snap to guides",
+    "position": {
+      "top": "top",
+      "bottom": "bottom",
+      "left": "left",
+      "right": "right"
+    }
   },
   "preview3d": {
     "canvas": "3D view of {name}; drag to rotate",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { findFace, faceLabel, type Dieline } from "@packio/dieline";
+import { findFace, type Dieline } from "@packio/dieline";
 
 import { formatNumber } from "@/i18n/format";
 import { Button } from "@/ui/components/Button";
@@ -12,6 +12,7 @@ import { Icon } from "@/ui/icons";
 
 import { CANVAS_COLORS } from "../../canvas-colors";
 import type { DesignIssue } from "../../lib/checks";
+import { useFaceNames } from "../../lib/useFaceNames";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "../../store/editor";
 import { useCanvasStatus } from "../../store/status";
 
@@ -38,6 +39,7 @@ export function StatusBar({
   const setZoom = useEditor((s) => s.setZoom);
   const materialName = useEditor((s) => s.spec?.materialName);
   const faceId = useCanvasStatus((s) => s.faceId);
+  const names = useFaceNames(dieline);
   const face = dieline && faceId ? findFace(dieline, faceId) : undefined;
   const zoomPercent = Math.round(zoom * 100);
   const errors = issues.filter((i) => i.severity === "error").length;
@@ -55,7 +57,7 @@ export function StatusBar({
         ) : null}
         {face ? (
           <span className="hidden whitespace-nowrap sm:inline">
-            {t("status.face", { name: faceLabel(face.label)[locale] })}
+            {t("status.face", { name: names.get(face.id) ?? face.label })}
           </span>
         ) : null}
         <span className="hidden items-center gap-1 xl:flex">

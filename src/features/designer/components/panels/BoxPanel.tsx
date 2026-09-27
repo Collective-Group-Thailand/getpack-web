@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { allFaces, faceLabel, getStyle } from "@packio/dieline";
+import { allFaces, getStyle } from "@packio/dieline";
 import { useShallow } from "zustand/react/shallow";
 
 import { formatNumber } from "@/i18n/format";
@@ -10,6 +10,7 @@ import { Switch } from "@/ui/components/Switch";
 import { cn } from "@/ui/lib/cn";
 
 import { insideSize, sizeOf } from "../../document";
+import { useFaceNames } from "../../lib/useFaceNames";
 import { useEditor } from "../../store/editor";
 import { useDesigner } from "../DesignerContext";
 
@@ -35,6 +36,7 @@ export function BoxPanel({ onOpenSetup, onOpenRules }: { onOpenSetup: () => void
     })),
   );
   const { toggle, focusFace } = useEditor.getState();
+  const names = useFaceNames(dieline);
   if (!spec || !dieline) return null;
 
   const size = sizeOf(spec);
@@ -79,7 +81,7 @@ export function BoxPanel({ onOpenSetup, onOpenRules }: { onOpenSetup: () => void
                   : "border-border hover:bg-surface-subtle",
               )}
             >
-              {faceLabel(face.label)[locale]}
+              {names.get(face.id)}
             </button>
           ))}
         </div>
