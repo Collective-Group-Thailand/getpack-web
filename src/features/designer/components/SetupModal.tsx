@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { getStyle, SPEC_VERSION, STYLES } from "@packio/dieline";
+import {
+  getStyle,
+  SPEC_VERSION,
+  STYLES,
+  stylesByCategory,
+  type BoxCategory,
+  type BoxStyleDef,
+  type ParamValues,
+} from "@packio/dieline";
 
 import { boardColour, dimsFromProduct, getPaper, papersFor } from "@/features/designer/catalog";
 import { insideSize } from "@/features/designer/document";
@@ -19,6 +27,7 @@ import { Select } from "@/ui/components/Select";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 
 import { BoxPreview } from "./BoxPreview";
+import { StyleParams } from "./StyleParams";
 
 type SizeMode = "preset" | "custom";
 
@@ -55,33 +64,57 @@ export function SetupModal({ open, initial, onConfirm, onClose, hasContent }: Se
   );
 }
 
+const sizeKeys = (style: BoxStyleDef) => style.params.filter((p) => p.group === "size").map((p) => p.key);
+/** A box sized by length × width × height, which can also be sized from the product it holds. */
+const isBox = (style: BoxStyleDef) => ["length", "width", "height"].every((k) => sizeKeys(style).includes(k));
+const pick = (values: ParamValues, keys: string[], keep: boolean) =>
+  Object.fromEntries(Object.entries(values).filter(([k]) => keys.includes(k) === keep));
+
 function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
   const t = useTranslations("designer.setup");
   const tCommon = useTranslations("common");
   const locale = useLocale() as "th" | "en";
 
-  const [style, setStyle] = useState<BoxStyleId>(initial?.styleId ?? "rsc");
+  const initialStyle = initial?.styleId ?? "rsc";
+  const [category, setCategory] = useState<BoxCategory>(getStyle(initialStyle).category);
+  const [style, setStyle] = useState<BoxStyleId>(initialStyle);
   const [mode, setMode] = useState<SizeMode>(initial ? "custom" : "preset");
   const [presetIndex, setPresetIndex] = useState(0);
   const [product, setProduct] = useState<BoxDims>(
-    initial?.productDims ?? (initial ? insideSize(initial) : null) ?? { length: 200, width: 150, height: 100 },
+    initial?.productDims ??
+      (initial && isBox(getStyle(initialStyle)) ? insideSize(initial) : { length: 200, width: 150, height: 100 }),
   );
-  const [paperId, setPaperId] = useState(initial?.materialId ?? papersFor(initial?.styleId ?? "rsc")[0].id);
+  const [sizeValues, setSizeValues] = useState<ParamValues>(
+    initial ? pick(initial.values, sizeKeys(getStyle(initialStyle)), true) : {},
+  );
+  const [options, setOptions] = useState<ParamValues>(
+    initial ? pick(initial.values, sizeKeys(getStyle(initialStyle)), false) : {},
+  );
+  const [paperId, setPaperId] = useState(initial?.materialId ?? papersFor(initialStyle)[0].id);
   const [resizeWarningOpen, setResizeWarningOpen] = useState(false);
 
   const styleDef = getStyle(style);
+  const box = isBox(styleDef);
   const papers = papersFor(style);
   const paper = papers.find((candidate) => candidate.id === paperId) ?? papers[0];
-
   const preset = styleDef.presets[presetIndex] ?? styleDef.presets[0];
-  const dims: BoxDims =
+
+  const size: ParamValues =
     mode === "preset"
-      ? {
-          length: Number(preset.values.length),
-          width: Number(preset.values.width),
-          height: Number(preset.values.height),
-        }
-      : dimsFromProduct(product);
+      ? pick(preset.values, sizeKeys(styleDef), true)
+      : box
+        ? { ...dimsFromProduct(product) }
+        : sizeValues;
+  // Presets may also set a construction choice (a full-depth lid, a pouch type).
+  const values: ParamValues = {
+    ...(mode === "preset" ? pick(preset.values, sizeKeys(styleDef), false) : {}),
+    ...options,
+    ...size,
+  };
+  // The engine's rules, in the customer's language — the same ones the drawing service applies.
+  const issues = styleDef.validate(values, paper.material);
+  const blocking = issues.filter((issue) => issue.severity === "error");
+  const errors = blocking.map((issue) => issue.message[locale]);
 
   const DIM_FIELDS: { key: keyof BoxDims; label: string }[] = [
     { key: "length", label: t("productLength") },
@@ -89,19 +122,20 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
     { key: "height", label: t("productHeight") },
   ];
 
-  // Keep the construction choices (tuck depth, window…) when only the size changes.
-  const values = { ...(initial?.styleId === style ? initial.values : {}), ...dims };
-  // The engine's rules, in the customer's language — the same ones the drawing service applies.
-  const errors = styleDef
-    .validate(values, paper.material)
-    .filter((issue) => issue.severity === "error")
-    .map((issue) => issue.message[locale]);
-
   const changeStyle = (next: BoxStyleId) => {
+    const nextDef = getStyle(next);
     setStyle(next);
     setPresetIndex(0);
+    setOptions({});
+    setSizeValues(pick(nextDef.presets[0].values, sizeKeys(nextDef), true));
     const nextPapers = papersFor(next);
     if (!nextPapers.some((candidate) => candidate.id === paperId)) setPaperId(nextPapers[0].id);
+  };
+
+  const changeCategory = (next: BoxCategory) => {
+    setCategory(next);
+    const first = STYLES.find((candidate) => candidate.category === next);
+    if (first && getStyle(style).category !== next) changeStyle(first.id);
   };
 
   const commit = () => {
@@ -111,7 +145,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
       values,
       material: paper.material,
       materialId: paper.id,
-      productDims: mode === "custom" ? product : undefined,
+      productDims: mode === "custom" && box ? product : undefined,
     });
   };
 
@@ -126,20 +160,43 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
     commit();
   };
 
+  const sizeText = sizeKeys(styleDef)
+    .map((k) => values[k])
+    .filter((v) => typeof v === "number")
+    .join(" × ");
+
   return (
     <>
       <div className="grid gap-6 md:grid-cols-[1fr_260px]">
         <div className="space-y-5">
           <Field label={t("styleHeading")}>
-            <RadioCards
-              value={style}
-              onValueChange={(next) => changeStyle(next as BoxStyleId)}
-              options={STYLES.map((option) => ({
-                value: option.id,
-                label: option.name[locale],
-                description: option.description[locale],
-              }))}
-            />
+            <div className="space-y-3">
+              <SegmentedControl
+                label={t("categoryLabel")}
+                size="sm"
+                value={category}
+                onValueChange={(next) => changeCategory(next as BoxCategory)}
+                options={stylesByCategory().map((group) => ({
+                  value: group.category,
+                  label: t(`categories.${group.category}`),
+                }))}
+              />
+              <RadioCards
+                value={style}
+                columns={2}
+                onValueChange={(next) => changeStyle(next as BoxStyleId)}
+                options={STYLES.filter((option) => option.category === category).map((option) => ({
+                  value: option.id,
+                  label: option.name[locale],
+                  description: option.description[locale],
+                  visual: (
+                    <span className="block h-16 w-16 shrink-0" aria-hidden="true">
+                      <BoxPreview styleId={option.id} values={option.presets[0].values} />
+                    </span>
+                  ),
+                }))}
+              />
+            </div>
           </Field>
 
           <Field label={t("sizeHeading")}>
@@ -150,7 +207,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
                 onValueChange={(next) => setMode(next as SizeMode)}
                 options={[
                   { value: "preset", label: t("modePreset") },
-                  { value: "custom", label: t("modeCustom") },
+                  { value: "custom", label: box ? t("modeCustom") : t("modeCustomDirect") },
                 ]}
               />
 
@@ -165,7 +222,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
                     }))}
                   />
                 </Field>
-              ) : (
+              ) : box ? (
                 <>
                   <div className="grid grid-cols-3 gap-2">
                     {DIM_FIELDS.map(({ key, label }) => (
@@ -173,7 +230,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
                         <NumberInput
                           min={1}
                           step={0.5}
-                          unit="มม."
+                          unit={t("unitMm")}
                           inputSize="sm"
                           value={product[key]}
                           onChange={(event) => setProduct({ ...product, [key]: Number(event.target.value) || 0 })}
@@ -181,14 +238,20 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
                       </Field>
                     ))}
                   </div>
-                  <p className="text-muted text-xs">
-                    {t("allowanceNote", { length: dims.length, width: dims.width, height: dims.height })}
-                  </p>
-                  {errors.map((error) => (
-                    <Callout key={error} tone="danger" title={error} live />
-                  ))}
+                  <p className="text-muted text-xs">{t("allowanceNote", { ...dimsFromProduct(product) })}</p>
                 </>
+              ) : (
+                <StyleParams
+                  style={styleDef}
+                  values={sizeValues}
+                  onChange={setSizeValues}
+                  issues={issues}
+                  groups={["size"]}
+                />
               )}
+              {errors.map((error) => (
+                <Callout key={error} tone="danger" title={error} live />
+              ))}
             </div>
           </Field>
 
@@ -205,6 +268,23 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
             />
             {!getPaper(paper.id)?.printable ? <Callout tone="warning" title={t("flexoOnly")} className="mt-2" /> : null}
           </Field>
+
+          {styleDef.params.some((p) => p.group !== "size") ? (
+            <details className="border-border rounded-xl border">
+              <summary className="focus-visible:ring-focus-ring cursor-pointer rounded-xl px-4 py-3 font-medium outline-none focus-visible:ring-2">
+                {t("moreOptions")}
+              </summary>
+              <div className="px-4 pb-4">
+                <StyleParams
+                  style={styleDef}
+                  values={options}
+                  onChange={setOptions}
+                  issues={issues}
+                  groups={["construction", "closure", "options", "window"]}
+                />
+              </div>
+            </details>
+          ) : null}
         </div>
 
         <aside className="bg-surface-subtle flex flex-col rounded-xl p-3">
@@ -223,10 +303,8 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
                 this; jsdom could not, because the component tests render fragments. */}
           <dl className="text-muted mt-3 text-xs">
             <div className="flex justify-between gap-2">
-              <dt>{t("innerSize")}</dt>
-              <dd className="tabular-nums">
-                {dims.length} × {dims.width} × {dims.height}
-              </dd>
+              <dt>{box ? t("innerSize") : t("size")}</dt>
+              <dd className="tabular-nums">{sizeText}</dd>
             </div>
           </dl>
           <p className="text-muted mt-2 flex gap-3 text-xs">

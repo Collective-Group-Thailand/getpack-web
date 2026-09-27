@@ -97,8 +97,10 @@ export {
   resolveValues,
   STYLE_ALIASES,
   STYLES,
+  stylesByCategory,
   validateStyle,
 } from "./styles";
+export { parseSvgPath } from "./svgpath";
 export {
   isDielineSpec,
   isV1Spec,

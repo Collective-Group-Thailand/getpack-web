@@ -58,6 +58,27 @@ export const PAPERS: Paper[] = [
     material: { caliperMm: 6.5, kind: "corrugated", flute: "BC" },
     printable: false,
   },
+  {
+    id: "rigid-grey",
+    name: "กระดาษจั่วหุ้ม 2 มม.",
+    color: "#f1ede6",
+    material: { caliperMm: 2, kind: "rigid" },
+    printable: true,
+  },
+  {
+    id: "label-pp",
+    name: "สติกเกอร์ PP ขาว",
+    color: "#ffffff",
+    material: { caliperMm: 0.08, kind: "label" },
+    printable: true,
+  },
+  {
+    id: "pouch-film",
+    name: "ฟิล์มลามิเนต PET/PE",
+    color: "#f2f4f6",
+    material: { caliperMm: 0.1, kind: "flexible" },
+    printable: true,
+  },
 ];
 
 /** Board colour by material kind, for a design whose material is not in the list above. */
