@@ -38,6 +38,8 @@ export const MOCK_ARTIST_PHONE = "0834567890";
 
 /** The mock's `receiver` persona: owns an order delivered yesterday, 3 % short (F3 3.6). */
 export const MOCK_RECEIVER_PHONE = "0845678901";
+/** The tenth fake customer, whose orders use the online designer (F4 Part C). */
+export const MOCK_DESIGNER_PHONE = "0856789012";
 
 /** Signs a customer in (the returning one unless `phone` says otherwise) and lands on `path`. */
 export async function signInAsCustomer(page: Page, path = "/", phone = MOCK_OTP.phone): Promise<void> {

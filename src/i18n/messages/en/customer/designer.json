@@ -151,7 +151,9 @@
     "moreOptions": "More options",
     "recommended": "Recommended",
     "unitMm": "mm",
-    "size": "Size"
+    "size": "Size",
+    "materialFallback": "Standard board ({thickness} mm) for the preview",
+    "patternRange": "{label} must be {min}–{max} mm for this pattern"
   },
   "printRules": {
     "title": "Print requirements",
@@ -169,5 +171,78 @@
     "corrugatedTitle": "Corrugated board",
     "corrugatedBody": "A brown liner darkens everything printed on it — choose darker, higher-contrast colours."
   },
-  "summaryOther": "Size {size} mm"
+  "summaryOther": "Size {size} mm",
+  "saveState": {
+    "savedAt": "Saved {time}",
+    "saving": "Saving…",
+    "offline": "Offline — kept on this device, saves when back online",
+    "conflict": "Saved elsewhere",
+    "error": "Could not save — retrying",
+    "readonly": "View only"
+  },
+  "history": {
+    "open": "Version history",
+    "title": "Version history",
+    "body": "Every save is kept as a version; restoring an old one does not erase the history",
+    "failed": "Could not load the history",
+    "version": "Version {version}",
+    "current": "Current",
+    "restore": "Restore",
+    "restored": "Version {version} restored",
+    "kind": {
+      "autosave": "Autosave",
+      "manual": "Saved",
+      "restore": "Restored",
+      "import": "Imported"
+    }
+  },
+  "conflict": {
+    "title": "Saved somewhere else",
+    "body": "This design was saved from another tab or device after you opened it. Choose which version to keep — the other stays in the history.",
+    "keepMine": "Keep mine",
+    "takeTheirs": "Use the latest",
+    "saveCopy": "Save mine as a new design"
+  },
+  "draft": {
+    "title": "Unsaved changes are waiting on this device",
+    "restore": "Restore changes",
+    "discard": "Discard"
+  },
+  "readOnly": {
+    "title": "View only",
+    "body": "A customer's design cannot be changed; make a copy to edit"
+  },
+  "price": {
+    "loading": "Loading the price",
+    "quantity": "Quantity",
+    "pieces": "{count, number} pcs",
+    "perPiece": "({price}/pc)",
+    "onRequest": "Price on request",
+    "failed": "Could not price this",
+    "updating": "Updating the price"
+  },
+  "order": {
+    "orderThis": "Order this",
+    "sendToPrint": "Send to print",
+    "failed": "Could not send the file — try again",
+    "busy": {
+      "saving": "Saving…",
+      "rendering": "Making the print file…",
+      "uploading": "Uploading…",
+      "submitting": "Sending…"
+    },
+    "confirm": {
+      "title": "Send this design as the artwork for order {order}?",
+      "body": "A print PDF is made (die lines on their own layers, artwork at 300 dpi with bleed) and checked at once. The team sends a proof before production."
+    },
+    "result": {
+      "sentTitle": "Artwork for order {order} sent",
+      "blockedTitle": "The file did not pass the check",
+      "blockedBody": "Fix the items below and send again",
+      "warnBody": "The file passed, with the notes below. The team will send a proof.",
+      "okBody": "The file passed. The team will send a proof before production.",
+      "toArtwork": "Go to artwork and proofs",
+      "version": "File version {version}"
+    }
+  }
 }

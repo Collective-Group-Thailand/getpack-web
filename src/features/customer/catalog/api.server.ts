@@ -294,3 +294,20 @@ export async function getSampleKits(): Promise<SampleKit[]> {
     [],
   );
 }
+
+/* ------------------------------------------------------------------------- designer */
+
+export type DesignerCatalog = ResponseOf<Requests, "GET /v1/store/designer/catalog">;
+
+/**
+ * The designer's catalogue slice (`store.designer-catalog`): patterns with dieline keys and
+ * limits, materials with caliper, templates, colours, fonts and artwork rules — for one product
+ * or for all. Public and cached like the catalogue; `null` when the API cannot answer, and the
+ * designer then draws on the engine's typical boards (never priced).
+ */
+export async function getDesignerCatalog(product?: string): Promise<DesignerCatalog | null> {
+  return orFallback(
+    (await publicRequests("catalogue")).call("GET /v1/store/designer/catalog", { query: product ? { product } : {} }),
+    null,
+  );
+}

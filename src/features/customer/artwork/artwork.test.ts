@@ -45,12 +45,16 @@ const BLOCKED_ORDER = mockId("ord", 13);
 
 describe("the designer link", () => {
   const base = {
+    orderId: "0192f3a0-7c1e-7d2a-9b1f-000000000001",
+    orderCode: "PK2609-0001",
     designOption: "online_designer",
     dieline: { dielineKey: "tuck-end", lengthMm: 80, widthMm: 50, heightMm: 120, templateUrl: null },
   } as unknown as Artwork;
 
-  it("opens the designer on the order's box only when it was set up for one", () => {
-    expect(designerHrefOf(base)).toBe("/design/new?style=tuck-end&l=80&w=50&h=120");
+  it("opens the designer on the order's box, linked to the order, only when it was set up for one", () => {
+    expect(designerHrefOf(base)).toBe(
+      "/design/new?style=tuck-end&l=80&w=50&h=120&order=0192f3a0-7c1e-7d2a-9b1f-000000000001&item=0192f3a0-7c1e-7d2a-9b1f-000000000001&orderCode=PK2609-0001",
+    );
     expect(designerHrefOf({ ...base, designOption: "own_file" } as Artwork)).toBeNull();
     expect(designerHrefOf({ ...base, dieline: { ...base.dieline, dielineKey: "custom" } } as Artwork)).toBeNull();
   });

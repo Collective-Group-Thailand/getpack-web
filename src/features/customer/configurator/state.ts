@@ -217,3 +217,34 @@ export function withTier(configurator: Configurator, tiers: number[], quantity: 
   if (tiers.length >= maxTiers) return null;
   return [...tiers, quantity].sort((a, b) => a - b);
 }
+
+/**
+ * A configuration started from a design (F4 C.2, the designer's "order this"): its catalogue
+ * pattern, inside size and material where this product offers them, and the online-designer
+ * option. Anything this product does not offer is left at its defaults.
+ */
+export function seedFromDesign(
+  configurator: Configurator,
+  query: { pattern?: string; material?: string; l?: string; w?: string; d?: string },
+): Partial<ConfiguratorState> | undefined {
+  const mm = (value: string | undefined) => (value && /^\d{1,4}(\.\d)?$/.test(value) ? Number(value) : null);
+  const [l, w, d] = [mm(query.l), mm(query.w), mm(query.d)];
+  const pattern = configurator.size.patterns.find((candidate) => candidate.id === query.pattern);
+  const material = configurator.groups
+    .find((group) => group.kind === "material")
+    ?.options.find((option) => option.id === query.material);
+  if (!pattern && !material && !(l && w)) return undefined;
+  const seed: Partial<ConfiguratorState> = {};
+  if (pattern) seed.patternId = pattern.id;
+  if (l && w && configurator.size.customAllowed) {
+    seed.sizeMode = "custom";
+    seed.standardSizeCode = null;
+    seed.dims = { l, w, d, gusset: null };
+  }
+  if (material) {
+    const base = initialState(configurator);
+    seed.choices = { ...base.choices, material: [material.id] };
+  }
+  if (configurator.design.options.includes("online_designer")) seed.designOption = "online_designer";
+  return seed;
+}

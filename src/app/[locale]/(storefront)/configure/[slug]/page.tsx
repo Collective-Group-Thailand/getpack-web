@@ -14,6 +14,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { productHref, rfqHref } from "@/features/customer/catalog/paths";
 import { getMyQuote } from "@/features/customer/configurator/api.server";
 import { seedFromConfiguration } from "@/features/customer/configurator/build";
+import { seedFromDesign } from "@/features/customer/configurator/state";
 import { Configurator } from "@/features/customer/configurator/Configurator";
 import { getPathname, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -23,7 +24,15 @@ import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Callout } from "@/ui/components/Callout";
 
 type Params = { slug: string };
-type Search = { share?: string; quote?: string };
+type Search = {
+  share?: string;
+  quote?: string;
+  pattern?: string;
+  material?: string;
+  l?: string;
+  w?: string;
+  d?: string;
+};
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
@@ -46,7 +55,8 @@ export default async function Page({
   params: Promise<Params>;
   searchParams: Promise<Search>;
 }) {
-  const [{ slug }, { share, quote: quoteId }] = await Promise.all([params, searchParams]);
+  const [{ slug }, search] = await Promise.all([params, searchParams]);
+  const { share, quote: quoteId } = search;
   const [t, tCatalog, locale, product, configurator, types, support, jar, origin] = await Promise.all([
     getTranslations("configurator"),
     getTranslations("catalog"),
@@ -69,7 +79,10 @@ export default async function Page({
   // One of the customer's own saved quotations, reopened from the account (F3 3.4).
   const saved = quoteId && signedIn ? await getMyQuote(quoteId) : null;
   const source = saved ?? shared;
-  const seed = source ? seedFromConfiguration(configurator, source.configuration, source.quantity) : undefined;
+  // A saved or shared quote wins; otherwise a design's "order this" may have filled the size in.
+  const seed = source
+    ? seedFromConfiguration(configurator, source.configuration, source.quantity)
+    : seedFromDesign(configurator, search);
   const name = pick(locale, product.nameTh, product.nameEn);
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
 

@@ -6,6 +6,7 @@ import { Ellipse, Group, Image as KImage, Layer, Line, Path, Rect, Stage, Text, 
 import { useEditor } from "@/features/designer/store/editor";
 import {
   allFaces,
+  bleedOutline,
   dielineLines,
   faceBounds,
   faceLabel,
@@ -60,10 +61,21 @@ interface Props {
   width: number;
   height: number;
   fitSignal: number;
+  /** Viewing only (a customer's design opened by prepress): nothing moves, nothing selects. */
+  readOnly?: boolean;
 }
 
-export default function DesignCanvas({ dieline, paperColor, stageRef, width, height, fitSignal }: Props) {
-  const { content, selectedId, select, updateElement, zoom, setZoom, showLabels, showSafeZone } = useEditor();
+export default function DesignCanvas({
+  dieline,
+  paperColor,
+  stageRef,
+  width,
+  height,
+  fitSignal,
+  readOnly = false,
+}: Props) {
+  const { content, selectedId, select, updateElement, zoom, setZoom, showLabels, showSafeZone, printMode, bleedMm } =
+    useEditor();
   const locale = useLocale() as "th" | "en";
   const trRef = useRef<Konva.Transformer>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -78,6 +90,8 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
     () => faces.flatMap((f) => [f.outline, ...f.holes].map((c) => flattenContour(c))),
     [faces],
   );
+  // The print file's clip: every piece grown by the bleed, so artwork runs past the cut (D-070).
+  const bleedContours = useMemo(() => dieline.pieces.flatMap((p) => bleedOutline(p, bleedMm)), [dieline, bleedMm]);
 
   /*
    * Fit to view whenever asked, or when the sheet or the viewport changes size. This reacts to
@@ -111,7 +125,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
 
   const clipFaces = (ctx: Konva.Context) => {
     ctx.beginPath();
-    for (const contour of clipContours) {
+    for (const contour of printMode ? bleedContours : clipContours) {
       contour.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
       ctx.closePath();
     }
@@ -140,7 +154,8 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
     scaleX: el.scaleX,
     scaleY: el.scaleY,
     opacity: el.opacity,
-    draggable: true,
+    draggable: !readOnly,
+    listening: !readOnly,
     onMouseDown: (e: Konva.KonvaEventObject<MouseEvent>) => {
       e.cancelBubble = true;
       select(el.id);
@@ -176,8 +191,19 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
       }}
     >
       <Layer>
+        {/* The print file is ink on white: no board colour, no shadow (the substrate is not printed). */}
+        {printMode ? (
+          <Rect
+            x={-bleedMm - 1}
+            y={-bleedMm - 1}
+            width={dieline.width + 2 * bleedMm + 2}
+            height={dieline.height + 2 * bleedMm + 2}
+            fill="#ffffff"
+            listening={false}
+          />
+        ) : null}
         {/* Paper */}
-        <Group name="paper">
+        <Group name="paper" visible={!printMode}>
           {faces.map((f) => (
             <Path
               key={f.id}
@@ -196,12 +222,21 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
         {/* Artwork, clipped to the dieline */}
         <Group clipFunc={clipFaces}>
           {content.pattern.kind === "solid" && (
-            <Rect width={dieline.width} height={dieline.height} fill={content.pattern.color} listening={false} />
+            <Rect
+              x={-bleedMm}
+              y={-bleedMm}
+              width={dieline.width + 2 * bleedMm}
+              height={dieline.height + 2 * bleedMm}
+              fill={content.pattern.color}
+              listening={false}
+            />
           )}
           {tile && (
             <Rect
-              width={dieline.width}
-              height={dieline.height}
+              x={-bleedMm}
+              y={-bleedMm}
+              width={dieline.width + 2 * bleedMm}
+              height={dieline.height + 2 * bleedMm}
               fillPatternImage={tile as unknown as HTMLImageElement}
               fillPatternScaleX={1 / TILE_PX_PER_MM}
               fillPatternScaleY={1 / TILE_PX_PER_MM}
@@ -258,7 +293,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
         </Group>
 
         {/* Guides */}
-        <Group name="guide" listening={false}>
+        <Group name="guide" listening={false} visible={!printMode}>
           {showSafeZone &&
             safe.map((pts, i) => (
               <Line
@@ -306,6 +341,7 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
 
         <Transformer
           ref={trRef}
+          visible={!printMode && !readOnly}
           name="guide"
           rotateEnabled
           ignoreStroke

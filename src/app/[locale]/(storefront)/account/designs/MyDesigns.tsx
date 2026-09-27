@@ -1,62 +1,141 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { nanoid } from "nanoid";
 
-import { getStyle } from "@packio/dieline";
-import { getPaper } from "@/features/designer/catalog";
+import { getStyle, isStyleId } from "@packio/dieline";
+import { storeDesigns, type StoreDesignSummary } from "@/features/designer/data/api";
 import { sizeOf } from "@/features/designer/document";
-import { designRepo } from "@/features/designer/storage";
+import { designRepo, importedLocalIds, markImported } from "@/features/designer/storage";
 import type { SavedDesign } from "@/features/designer/types";
 import { Link } from "@/i18n/navigation";
 import { formatDateTime } from "@/i18n/format";
+import { isApiError } from "@/lib/api/problem";
 import { AlertDialog } from "@/ui/components/AlertDialog";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
-export default function MyDesigns() {
+/** One card's worth, whichever store the design lives in. */
+interface Row {
+  id: string;
+  name: string;
+  thumbnail: string | null;
+  spec: string | null;
+  updatedAt: string | number;
+  orderCode: string | null;
+}
+
+export default function MyDesigns({ account }: { account: StoreDesignSummary[] | null }) {
   const t = useTranslations("designs");
   const tCommon = useTranslations("common");
   const locale = useLocale() as "th" | "en";
+  const router = useRouter();
+  const signedIn = account !== null;
 
-  // Reading localStorage during render would break SSR, so the list starts unknown and the
-  // first effect fills it. `null` renders nothing rather than a wrong empty state.
-  const [items, setItems] = useState<SavedDesign[] | null>(null);
+  // Reading localStorage during render would break SSR, so the browser's list starts unknown and
+  // the first effect fills it. `null` renders nothing rather than a wrong empty state.
+  const [local, setLocal] = useState<SavedDesign[] | null>(null);
   const [query, setQuery] = useState("");
-  const [pendingDelete, setPendingDelete] = useState<SavedDesign | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Row | null>(null);
+  const [importing, setImporting] = useState(false);
 
-  const refresh = useCallback(() => setItems(designRepo.list()), []);
-
+  const refreshLocal = useCallback(() => setLocal(designRepo.list()), []);
   useEffect(() => {
-    /*
-     * Reading localStorage on mount is a one-off pull from an external store — the case this
-     * rule cannot express. Doing it during render would break SSR, and designs move to the
-     * API in F4 Part B, which removes the effect entirely.
-     */
+    // A one-off pull from an external store (localStorage) — the case this rule cannot express.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    refresh();
-  }, [refresh]);
+    refreshLocal();
+  }, [refreshLocal]);
 
-  const filtered = (items ?? []).filter((design) => design.name.toLowerCase().includes(query.toLowerCase()));
+  const localRow = (design: SavedDesign): Row => ({
+    id: design.id,
+    name: design.name,
+    thumbnail: design.thumbnail ?? null,
+    spec: t("card.spec", {
+      style: getStyle(design.spec.styleId).name[locale],
+      size: sizeOf(design.spec).text,
+      paper: design.spec.materialName ?? `${design.spec.material.caliperMm}`,
+    }),
+    updatedAt: design.updatedAt,
+    orderCode: null,
+  });
+  const accountRow = (design: StoreDesignSummary): Row => ({
+    id: design.id,
+    name: design.name,
+    thumbnail: design.thumbnailUrl,
+    spec: design.styleId && isStyleId(design.styleId) ? getStyle(design.styleId).name[locale] : null,
+    updatedAt: design.updatedAt,
+    orderCode: design.link?.orderCode ?? null,
+  });
 
-  const duplicate = (design: SavedDesign) => {
-    if (!designRepo.duplicate(design.id, nanoid(10))) {
-      toast.error(t("duplicateFailed"));
-      return;
+  // Designs kept in this browser that the account does not have yet.
+  const imported = new Set(signedIn ? importedLocalIds() : []);
+  const waiting = signedIn ? (local ?? []).filter((design) => !imported.has(design.id)) : [];
+  const rows = signedIn ? (account ?? []).map(accountRow) : (local ?? []).map(localRow);
+  const filtered = rows.filter((row) => row.name.toLowerCase().includes(query.toLowerCase()));
+  const ready = signedIn || local !== null;
+
+  const importLocal = async () => {
+    setImporting(true);
+    try {
+      const result = await storeDesigns.importLocal(
+        waiting.map((design) => ({
+          localId: design.id,
+          name: design.name,
+          spec: design.spec,
+          content: design.content,
+          createdAt: design.createdAt,
+          updatedAt: design.updatedAt,
+        })),
+        crypto.randomUUID(),
+      );
+      markImported(result.imported.map((item) => item.localId));
+      toast.success(t("import.done", { count: result.imported.length }));
+      router.refresh();
+      refreshLocal();
+    } catch (error) {
+      toast.error(isApiError(error) ? error.detail : t("import.failed"));
+    } finally {
+      setImporting(false);
     }
-    refresh();
   };
 
-  const confirmDelete = () => {
+  const duplicate = async (row: Row) => {
+    if (!signedIn) {
+      if (!designRepo.duplicate(row.id, nanoid(10))) toast.error(t("duplicateFailed"));
+      refreshLocal();
+      return;
+    }
+    try {
+      await storeDesigns.duplicate(row.id, t("copyName", { name: row.name }), crypto.randomUUID());
+      router.refresh();
+    } catch (error) {
+      toast.error(isApiError(error) ? error.detail : t("duplicateFailed"));
+    }
+  };
+
+  const confirmDelete = async () => {
     if (!pendingDelete) return;
-    designRepo.remove(pendingDelete.id);
+    const row = pendingDelete;
     setPendingDelete(null);
-    refresh();
+    if (!signedIn) {
+      designRepo.remove(row.id);
+      refreshLocal();
+      return;
+    }
+    try {
+      await storeDesigns.remove(row.id);
+      router.refresh();
+    } catch (error) {
+      toast.error(isApiError(error) ? error.detail : t("deleteFailed"));
+    }
   };
 
   return (
@@ -64,7 +143,7 @@ export default function MyDesigns() {
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
-          <p className="text-muted text-sm">{t("subtitle")}</p>
+          <p className="text-muted text-sm">{signedIn ? t("subtitleAccount") : t("subtitle")}</p>
         </div>
         <div className="flex items-end gap-2">
           <Field label={t("searchLabel")} labelHidden className="w-56">
@@ -82,13 +161,22 @@ export default function MyDesigns() {
         </div>
       </div>
 
-      {items === null ? null : filtered.length === 0 ? (
+      {waiting.length > 0 ? (
+        <Callout tone="info" title={t("import.title", { count: waiting.length })} className="mb-6">
+          <p className="text-sm">{t("import.body")}</p>
+          <Button size="sm" className="mt-3" loading={importing} onClick={() => void importLocal()}>
+            {t("import.action")}
+          </Button>
+        </Callout>
+      ) : null}
+
+      {!ready ? null : filtered.length === 0 ? (
         <EmptyState
           icon="box"
-          title={items.length ? t("noResults.title") : t("empty.title")}
-          description={items.length ? t("noResults.body") : t("empty.body")}
+          title={rows.length ? t("noResults.title") : t("empty.title")}
+          description={rows.length ? t("noResults.body") : t("empty.body")}
           action={
-            items.length ? null : (
+            rows.length ? null : (
               <Button asChild>
                 <Link href="/design/new">{t("empty.action")}</Link>
               </Button>
@@ -97,19 +185,19 @@ export default function MyDesigns() {
         />
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((design) => (
-            <Card as="li" key={design.id} padding="none" className="overflow-hidden transition hover:shadow-lg">
+          {filtered.map((row) => (
+            <Card as="li" key={row.id} padding="none" className="overflow-hidden transition hover:shadow-lg">
               <Link
-                href={`/design/${design.id}`}
+                href={`/design/${row.id}`}
                 className="bg-surface-subtle block aspect-[4/3] p-4"
                 tabIndex={-1}
-                aria-hidden={Boolean(design.thumbnail)}
+                aria-hidden={Boolean(row.thumbnail)}
               >
-                {design.thumbnail ? (
-                  // The thumbnail is a data URL generated from the canvas, so next/image
-                  // cannot optimise it and the name below is the accessible label.
+                {row.thumbnail ? (
+                  // A data URL from the canvas or a signed URL: next/image cannot optimise either,
+                  // and the name below is the accessible label.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={design.thumbnail} alt="" className="h-full w-full object-contain" />
+                  <img src={row.thumbnail} alt="" className="h-full w-full object-contain" />
                 ) : (
                   <span className="text-subtle flex h-full items-center justify-center text-sm">
                     {t("card.noThumbnail")}
@@ -117,25 +205,28 @@ export default function MyDesigns() {
                 )}
               </Link>
               <div className="p-4">
-                <Link href={`/design/${design.id}`} className="hover:text-primary font-medium">
-                  {design.name}
-                </Link>
-                <p className="text-muted mt-1 text-xs">
-                  {t("card.spec", {
-                    style: getStyle(design.spec.styleId).name[locale],
-                    size: sizeOf(design.spec).text,
-                    paper: getPaper(design.spec.materialId)?.name ?? `${design.spec.material.caliperMm}`,
-                  })}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                  <Link href={`/design/${row.id}`} className="hover:text-primary font-medium">
+                    {row.name}
+                  </Link>
+                  {row.orderCode ? <Badge tone="info">{t("card.linked", { order: row.orderCode })}</Badge> : null}
+                </div>
+                {row.spec ? <p className="text-muted mt-1 text-xs">{row.spec}</p> : null}
                 <div className="mt-3 flex items-center justify-between gap-2">
                   <span className="text-subtle text-xs">
-                    {t("card.updated", { date: formatDateTime(design.updatedAt, locale) })}
+                    {t("card.updated", { date: formatDateTime(row.updatedAt, locale) })}
                   </span>
                   <div className="flex gap-1">
-                    <Button size="sm" variant="ghost" onClick={() => duplicate(design)}>
+                    <Button size="sm" variant="ghost" onClick={() => void duplicate(row)}>
                       {tCommon("actions.duplicate")}
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-danger" onClick={() => setPendingDelete(design)}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-danger"
+                      disabled={row.orderCode !== null}
+                      onClick={() => setPendingDelete(row)}
+                    >
                       {tCommon("actions.delete")}
                     </Button>
                   </div>
@@ -158,7 +249,7 @@ export default function MyDesigns() {
         description={t("delete.body", { name: pendingDelete?.name ?? "" })}
         confirmLabel={t("delete.confirm")}
         cancelLabel={tCommon("actions.cancel")}
-        onConfirm={confirmDelete}
+        onConfirm={() => void confirmDelete()}
       />
     </div>
   );

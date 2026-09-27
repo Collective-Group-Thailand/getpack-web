@@ -250,7 +250,9 @@
       "paidRound": "Paid round {fee}",
       "freeRound": "Free round",
       "requested": "Requested",
-      "delivered": "delivered"
+      "delivered": "delivered",
+      "openInDesigner": "Open in the designer",
+      "openCopy": "Open the copy in the designer"
     },
     "proofs": {
       "none": "No proof yet",
