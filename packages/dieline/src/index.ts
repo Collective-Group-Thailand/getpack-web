@@ -100,6 +100,7 @@ export {
   stylesByCategory,
   validateStyle,
 } from "./styles";
+export { fixtureFileKey, patternFixtures, type PatternFixture } from "./fixtures";
 export { parseSvgPath } from "./svgpath";
 export {
   isDielineSpec,

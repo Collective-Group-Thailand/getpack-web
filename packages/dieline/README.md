@@ -93,6 +93,23 @@ guide with a worked example is `docs/design-tool/style-authoring.md` in packio-w
 `FACE_LABELS` / `PIECE_LABELS` hold the Thai and English name for every label key.
 `REFERENCE_MATERIALS` are typical boards for tests and previews only — never a catalogue.
 
+## Golden fixtures for packio-api
+
+`patternFixtures()` draws every legacy Locopack pattern key the registry maps (`legacy.patternKeys`)
+with its style's first preset on the style's first reference material, and returns the key, the
+style, the full parameter values, the material, and the SVG and DXF. packio-api feeds the same
+values to the legacy drawing service and compares. The snapshots of that output ship in the
+package as `fixtures/patterns/<key>.svg` (plus every style × preset in `fixtures/svg` and
+`fixtures/dxf`); regenerate them with `pnpm --filter @packio/dieline fixtures` and review the diff.
+
+```ts
+import { patternFixtures } from "@packio/dieline";
+
+for (const f of patternFixtures()) {
+  // f.patternKey "pid:3" · f.styleId "sleeve" · f.values { length, width, height, … } · f.svg
+}
+```
+
 ## Migrating from 0.x
 
 | 0.x                                          | 1.x                                                                      |
