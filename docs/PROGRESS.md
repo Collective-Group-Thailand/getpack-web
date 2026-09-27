@@ -29,6 +29,50 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-27 | **F4 Part E** — quality gates, docs, final summary | `patternFixtures()` + 92 per-legacy-pattern SVG snapshots (`fixtures/patterns`) for packio-api's golden comparison, beside the style × preset × material matrix and SVG/DXF fixtures; designer panel stories and 9 visual baselines of editor states; panel component tests (store, words, axe); e2e product page → designer → live price following quantity and artwork (with Part C's order → send to print → preflight); face names that tell repeated faces apart; product page and configurator open the designer with their product; `docs/design-tool/` architecture, style authoring guide (worked example verified against the engine), print-PDF spec for factories, index. 737 app unit, 1,504 engine, 288 e2e, 17 visual; designer route 456 KB, Lighthouse a11y 100 | — | See "Assumptions needing prepress confirmation" below |
 | 2026-09-27 | **F5 Session 5.1** — partner onboarding & price tables | On the **published** B2.2 partner surface plus four contract requests (`partner.references`, `partner.change-requests`, `partner.site-visits`, `partner.proposal-evidence`) and one contract defect logged; a stateful partner mock over the back office's own factory rows with one persona per factory role (rbac.md) plus an applicant and an assisted owner, other factories' ids → 404 (D-044), idempotent replays; factory context (`/me` + `pk_factory`), status- and role-aware nav (phone bar, tablet side list), factory name in the shell; Today with what waits for the factory; the 13-step onboarding tracker and one screen per step (company, addresses, contacts, submit under `If-Match`; KYC upload; bank-account change with typed confirmation; capability, capacity, zones, tier, tolerance, payout policy read-only with a change request; agreement e-acceptance; site-visit dates) with **review & sign off** of staff-entered steps; price tables by mode and tier: price list read one component at a time, draft proposals line by line or from an Excel/CSV sheet (parsed in the browser, no dependency) with a future effective date, reason and evidence, submit/withdraw, counter answers, rate-card acceptance whole or per line with counters, assisted-entry sign-off, shipping payout card. 761 unit (+24), 6 new e2e on a phone | 5.2 jobs/QC/ship, 5.3 billing/payouts/settings; a back-office queue for change requests | See the notes under the F5 5.1 heading |
 | 2026-09-27 | **F5 Session 5.2** — jobs, milestones, QC, ship & POD | Seven contract requests (`partner.today`, `partner.jobs`, `partner.job-milestones`, `partner.job-qc`, `partner.job-issues`, `partner.capacity-calendar`, `partner.shipments`) and proposed factory-floor permission keys, mocked over the commerce mock's own jobs and the logistics desk's own shipment rows; the shop-floor set in `src/ui` (BigActionButton, StageStepper, CameraCapture with in-browser compression and the EXIF shutter time, ScanButton, SignaturePad with a typed-name alternative, QRCode, LabelSheet); Today with counters, alerts and the queue; jobs by the floor's tabs with search and scan; the job screen (accept/reject within the window with the PO restated, milestones with quantities and photos, QC before the QC step, approved artwork only with its watermark, PO, recipients by D-142, inspection notices, issues, history); ship (per-destination split, carton labels with a tracking QR, own-fleet dispatch or a carrier request, POD with photos, receiver, signature and delivered quantity, the tolerance result); capacity calendar; every report with `clientRef`, `clientReportedAt` and an `Idempotency-Key`, a 409 showing the server's state. 783 unit (+22), 4 new e2e; partner login 326 → 251 KB | 5.3 billing, payouts, claims, performance, settings | See the notes under the F5 5.2 heading |
+| 2026-09-27 | **F5 Session 5.3** — billing, payouts, performance, settings | Six contract requests (`partner.billing-statements`, `partner.payouts`, `partner.claims`, `partner.scorecard`, `partner.users`, `partner.notification-preferences`) mocked over the factory's own jobs, the logistics desk's delivered shipments and claims, and its payout-policy version; billing statements with production (min(delivered, shipped)), shipping, deductions and the advance already paid, confirm with the BS number typed, dispute, and the factory's own tax invoice (PDF or e-Tax) with the input-VAT status; the payout schedule per job (30 % on acceptance, balance after POD + 7-day window, 5 % retention released 30 days later), payouts with remittance advice and 50 ทวิ, the statement of account; claims answered back to the claims desk; the monthly scorecard; users and roles (Owner), notification channels with device push, label size, language, high contrast; the manifest no longer locks tablets to portrait. 796 unit (+13), 4 new e2e; partner JS 251–292 KB | Partner offline sync (R2, D-111); the 180 KB budget | See the notes under the F5 5.3 heading |
+
+---
+
+## F5 Session 5.3 — 2026-09-27
+
+Billing, payouts, claims, performance and settings, on `feat/f5.3-billing` (from the 5.2 merge). This closes F5. packio-api has published none of B5.3's partner surface, so it is contract requests with mocks derived from what the other mocks already hold.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| The zone never computes money | statements, schedules, payouts and the statement of account arrive as decimal strings; the zone formats them (`formatTHB`) and nothing else — the arithmetic is the mock's, in satang, standing in for the API |
+| Confirming a statement is a financial act | the BS number is typed to confirm and the amount restated (00-master-plan §8), with one `Idempotency-Key` per intent; a replay answers with the confirmed statement |
+| The tax invoice is the factory's own (D-090, accounting-design §2) | only against a confirmed statement (409 otherwise), with the factory's own tax id (422 otherwise), a PDF or an e-Tax reference; input VAT stays `pending_document` until Finance validates it |
+| Payouts follow the payout-policy version (D-022, D-164) | the schedule shows each job's advance, balance and retention with their date or what they wait for (acceptance, POD, the claim window, the retention period); the seeded policy now carries the decided 5 % / 30 days (it had 0 %) |
+| A factory answers claims, Packio decides them (D-083) | the answer goes back to the claims desk's own row (`under_review`, the factory's note in its messages); the customer is never named (D-142) |
+| An operator cannot manage users or see billing | no billing in the nav or "more", `/billing` answers "no access", and settings shows only the operator's own notifications and device |
+| A factory keeps an owner | the owner cannot remove their own owner role or deactivate themselves (409 `users.last_owner`) |
+
+### Decisions taken, with reasons
+- **This period's statement follows the PODs until it is confirmed**, then freezes: it is what the factory checks, and a POD recorded today belongs in it. Last period's is confirmed with a validated invoice, so the input-VAT status has both states to show.
+- **WHT is shown as the API gives it** (the mock uses 3 %, hire of work) — ⚖ the auditor confirms whether factory jobs are hire of work (D-022); the zone does not know the rate.
+- **Remittance advice and the 50 ทวิ are signed downloads**; the mock hands out a small PDF so the links work offline.
+- **Label size is a device setting** (cookie `pk_label`: 100 × 150 mm or 4 × 6 in) read by the labels page; language and theme reuse the shell's own controls, so the high-contrast theme is one tap from settings as well as from the top bar.
+- **Device push is asked for only from its button** (`usePushSubscription`'s rule); the notification matrix keeps locked rows on (a job to accept, account security).
+- **The manifest leaves orientation to the device** (was portrait): design-system §5 names landscape tablets, and a portrait lock turned the installed app sideways on them.
+- `formatDate` gains a `month` style ("ก.ย. 2569") for the scorecard.
+
+### Performance
+Lighthouse partner set, eight URLs (adds /settings): accessibility 100 on each; initial JS 251 KB (/login) to 292 KB (/settings), under the 300 KB ratchet. LCP ~3.4–4.1 s simulated on 4G (warning level, target 2.5 s).
+
+### Contract requests raised
+`partner.billing-statements`, `partner.payouts`, `partner.claims`, `partner.scorecard`, `partner.users`, `partner.notification-preferences`, with the money and account permission keys (`factory_billing.read·confirm`, `factory_payouts.read`, `factory_claims.read·respond`, `factory_scorecard.read`).
+
+### Final summary (F5)
+**The partner zone, end to end on a phone**: onboarding (13 steps, sign-off of staff-entered data), prices by mode and tier (proposals line by line or from a sheet, rate cards, shipping payout cards), the floor (Today, jobs, milestones with photos, QC, issues, capacity), shipping (split per destination, labels, dispatch, POD), money (statements, tax invoices, payouts, statement of account), claims, performance and settings. Published contract: B2.2's partner surface. Contract requests: 17 groups, every one with a stateful mock over the same rows the back office reads, so a factory's action shows on the admin side.
+
+**Gates run**: 796 unit, 12 partner e2e flows on a 390 × 844 viewport (with axe on every screen they open, high contrast included), the full e2e suite, Lighthouse partner set (8 URLs, accessibility 100).
+
+**Still open**
+- The 180 KB initial-JS target (251–292 KB now; the shared zone runtime is most of it) and a 2.5 s LCP on simulated 4G.
+- Offline sync (R2, D-111): the floor needs a connection; a report that fails keeps its key for the retry.
+- Everything in `docs/contract-requests.md` marked `partner.*`, the proposed permission keys, and the `RateCardLineResponse` contract defect.
+- A back-office queue for change requests; adopting packio-api's newer committed contract (its own PR, ADR-0006).
 
 ---
 
