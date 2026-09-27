@@ -138,7 +138,20 @@
       "title": "Change the box size?",
       "body": "Existing artwork may end up out of position when the size or style changes. Check the layout after updating.",
       "confirm": "Update box"
-    }
+    },
+    "categoryLabel": "Category",
+    "categories": {
+      "folding_carton": "Folding cartons",
+      "corrugated": "Corrugated",
+      "tray_lid": "Trays and lids",
+      "specialty": "Specialty",
+      "flat": "Labels, tags, pouches"
+    },
+    "modeCustomDirect": "Custom size",
+    "moreOptions": "More options",
+    "recommended": "Recommended",
+    "unitMm": "mm",
+    "size": "Size"
   },
   "printRules": {
     "title": "Print requirements",
@@ -155,5 +168,6 @@
     "colourBody": "Screen colour differs from print (RGB → CMYK), especially for vivid and neon colours.",
     "corrugatedTitle": "Corrugated board",
     "corrugatedBody": "A brown liner darkens everything printed on it — choose darker, higher-contrast colours."
-  }
+  },
+  "summaryOther": "Size {size} mm"
 }

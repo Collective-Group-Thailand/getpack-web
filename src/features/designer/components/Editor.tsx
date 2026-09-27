@@ -10,7 +10,7 @@ import { nanoid } from "nanoid";
 import { getStyle, PX_PER_MM, SPEC_VERSION } from "@packio/dieline";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { boardColour, getPaper, papersFor } from "@/features/designer/catalog";
-import { dielineOf, insideSize } from "@/features/designer/document";
+import { dielineOf, insideSize, sizeOf } from "@/features/designer/document";
 import {
   exportDielineDxf,
   exportDielinePdf,
@@ -242,7 +242,11 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
           <p className="ml-auto hidden text-xs md:block">
             {spec && dieline ? (
               <>
-                {getStyle(spec.styleId).name[locale]} · {t("summary", { ...insideSize(spec) })} ·{" "}
+                {getStyle(spec.styleId).name[locale]} ·{" "}
+                {sizeOf(spec).box
+                  ? t("summary", { ...insideSize(spec) })
+                  : t("summaryOther", { size: sizeOf(spec).text })}{" "}
+                ·{" "}
                 <b className="font-semibold">
                   {t("flatSheet", { width: dieline.width.toFixed(0), height: dieline.height.toFixed(0) })}
                 </b>

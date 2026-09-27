@@ -16,7 +16,7 @@
   "card": {
     "noThumbnail": "ไม่มีภาพตัวอย่าง",
     "updated": "แก้ไข {date}",
-    "spec": "{style} · {length}×{width}×{height} มม. · {paper}"
+    "spec": "{style} · {size} มม. · {paper}"
   },
   "delete": {
     "title": "ลบแบบนี้?",

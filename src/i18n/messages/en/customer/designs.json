@@ -16,7 +16,7 @@
   "card": {
     "noThumbnail": "No preview",
     "updated": "Edited {date}",
-    "spec": "{style} · {length}×{width}×{height} mm · {paper}"
+    "spec": "{style} · {size} mm · {paper}"
   },
   "delete": {
     "title": "Delete this design?",
