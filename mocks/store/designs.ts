@@ -45,6 +45,9 @@ interface Row {
 const designs = new Map<string, Row>();
 const byIdempotencyKey = new Map<string, string>();
 const importedLocalIds = new Map<string, string>();
+/** View links: token → design id, and each design's live token. // CONTRACT-REQUEST store.design-share */
+const shares = new Map<string, { designId: string; createdAt: string; expiresAt: string | null }>();
+const shareOf = new Map<string, string>();
 let counter = 0;
 
 const etagOf = (design: StoreDesign) => `"v${design.versionNo}"`;
@@ -324,6 +327,47 @@ const TEMPLATES = [
 /* ------------------------------------------------------------------------------- handlers */
 
 export const storeDesignHandlers = [
+  // CONTRACT-REQUEST store.design-share
+  mockRequest("POST /v1/store/designs/{designId}/actions/share", ({ params, body, request }) => {
+    const row = rowOf(request, params.designId);
+    if (row instanceof Response) return row;
+    const live = shareOf.get(row.design.id);
+    const current = live ? shares.get(live) : undefined;
+    if (live && current && (!current.expiresAt || current.expiresAt > new Date().toISOString())) {
+      return { token: live, createdAt: current.createdAt, expiresAt: current.expiresAt };
+    }
+    const token = crypto.randomUUID().replace(/-/g, "");
+    const createdAt = new Date().toISOString();
+    const expiresAt = body.expiresInDays ? new Date(Date.now() + body.expiresInDays * 86_400_000).toISOString() : null;
+    shares.set(token, { designId: row.design.id, createdAt, expiresAt });
+    shareOf.set(row.design.id, token);
+    return { token, createdAt, expiresAt };
+  }),
+
+  mockRequest("DELETE /v1/store/designs/{designId}/share", ({ params, request }) => {
+    const row = rowOf(request, params.designId);
+    if (row instanceof Response) return row;
+    const token = shareOf.get(row.design.id);
+    if (token) shares.delete(token);
+    shareOf.delete(row.design.id);
+    return undefined as never;
+  }),
+
+  mockRequest("GET /v1/store/shared-designs/{token}", ({ params }) => {
+    const share = shares.get(params.token);
+    const row = share ? designs.get(share.designId) : undefined;
+    if (!share || !row || (share.expiresAt && share.expiresAt < new Date().toISOString())) {
+      return problem(404, "design.share_not_found", "ลิงก์นี้ไม่มีอยู่หรือหมดอายุแล้ว");
+    }
+    return {
+      name: row.design.name,
+      styleId: row.design.styleId,
+      document: row.design.document,
+      assets: row.design.assets.map((a) => ({ id: a.id, url: a.url })),
+      sharedAt: share.createdAt,
+    };
+  }),
+
   mockRequest("GET /v1/store/designs", ({ query, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();

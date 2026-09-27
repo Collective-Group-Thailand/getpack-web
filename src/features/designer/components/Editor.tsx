@@ -7,12 +7,11 @@ import { useLocale, useTranslations } from "next-intl";
 import type Konva from "konva";
 import { nanoid } from "nanoid";
 
-import { getStyle, PX_PER_MM, SPEC_VERSION } from "@packio/dieline";
-import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
+import { allFaces, DEFAULT_SAFE_MM, faceBounds, getStyle, PX_PER_MM, SPEC_VERSION } from "@packio/dieline";
 import { boardColour, fallbackMaterial, materialsFor, withMaterial } from "@/features/designer/catalog";
 import { storeDesigns, type DesignerCatalog } from "@/features/designer/data/api";
 import { usePersistence, type PersistenceConfig, type PersistenceMode } from "@/features/designer/data/persistence";
-import { dielineOf, insideSize, readDesign, sizeOf } from "@/features/designer/document";
+import { dielineOf, hingesOf, insideSize, readDesign, sizeOf } from "@/features/designer/document";
 import {
   exportDielineDxf,
   exportDielinePdf,
@@ -20,31 +19,82 @@ import {
   exportPng,
   exportPrintPdf,
   makeThumbnail,
+  renderDieline,
 } from "@/features/designer/export";
+import { uprightAngles } from "@/features/designer/lib/upright";
+import { useDesignIssues } from "@/features/designer/lib/useIssues";
 import { designRepo } from "@/features/designer/storage";
-import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
+import { useEditor } from "@/features/designer/store/editor";
 import type { BoxDims, BoxStyleId, DesignContent, DesignSpec, ImageElement } from "@/features/designer/types";
-import { formatDateTime, formatNumber } from "@/i18n/format";
+import { formatDateTime } from "@/i18n/format";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Dialog } from "@/ui/components/Dialog";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { IconButton } from "@/ui/components/IconButton";
-import { NumberInput } from "@/ui/components/Input";
-import { Slider } from "@/ui/components/Slider";
+import { useModKey } from "@/ui/components/CommandPalette";
+import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
+import { Skeleton } from "@/ui/components/Skeleton";
+import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
-import { TooltipProvider } from "@/ui/components/Tooltip";
+import { Tooltip, TooltipProvider } from "@/ui/components/Tooltip";
 import { BrandMark } from "@/ui/brand";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 import { PrintRulesModal } from "./PrintRulesModal";
 import { SetupModal } from "./SetupModal";
-import { PatternPanel, PropertiesPanel, ViewPanel } from "./SidePanel";
-import { Toolbar } from "./Toolbar";
 import { DesignerContext, type DesignerHandle } from "./DesignerContext";
+import { ChecksPanel } from "./panels/ChecksPanel";
+import { ShareDialog } from "./ShareDialog";
+import { FocusChip } from "./shell/FocusChip";
+import { RAIL, RailPanel, SelectionPanel, type RailId } from "./shell/panels";
+import { shortcutList, useEditorShortcuts } from "./shell/shortcuts";
+import { StatusBar } from "./shell/StatusBar";
 import { VersionHistory } from "./VersionHistory";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
+// three.js loads only when the 3D tab opens.
+const Preview3D = dynamic(() => import("./Preview3D"), {
+  ssr: false,
+  loading: () => <Skeleton className="aspect-square w-full rounded-lg" />,
+});
+
+type SideTab = "properties" | "checks" | "preview";
+type MobilePanel = RailId | SideTab;
+
+/** The artwork sheet as an image for the 3D preview: redrawn a moment after each change while shown. */
+function useArtwork(active: boolean, stage: () => Konva.Stage | null, dieline: DesignerHandle["dieline"]) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!active || !dieline) return;
+    const draw = () => {
+      const s = stage();
+      if (s)
+        setUrl(
+          renderDieline(s, dieline, {
+            pxPerMm: 2048 / Math.max(dieline.width, dieline.height),
+            withGuides: false,
+            marginMm: 0,
+          }),
+        );
+    };
+    const first = setTimeout(draw, 50);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe = useEditor.subscribe((next, prev) => {
+      if (next.content === prev.content && next.spec === prev.spec) return;
+      clearTimeout(timer);
+      timer = setTimeout(draw, 700);
+    });
+    return () => {
+      clearTimeout(first);
+      clearTimeout(timer);
+      unsubscribe();
+    };
+  }, [active, stage, dieline]);
+  return url;
+}
 
 type ExportKind = "pdf" | "png" | "png-guides" | "svg" | "dxf" | "dieline-pdf";
 
@@ -148,10 +198,17 @@ export default function Editor({
 }: EditorProps) {
   const t = useTranslations("designer");
   const tCommon = useTranslations("common");
+  const tShortcuts = useTranslations("designer.shortcuts");
   const locale = useLocale() as "th" | "en";
+  const mod = useModKey();
 
-  const state = useEditor();
-  const { spec, content, selectedId, zoom, setZoom, name, dirty } = state;
+  const spec = useEditor((s) => s.spec);
+  const name = useEditor((s) => s.name);
+  const dirty = useEditor((s) => s.dirty);
+  const hasContent = useEditor((s) => s.content.elements.length > 0 || s.content.pattern.kind !== "none");
+  const elementCount = useEditor((s) => s.content.elements.length);
+  const canUndo = useEditor((s) => s.past.length > 0);
+  const canRedo = useEditor((s) => s.future.length > 0);
   const editable = session.editable;
 
   const stageRef = useRef<Konva.Stage | null>(null);
@@ -159,12 +216,20 @@ export default function Editor({
   const [loaded, setLoaded] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
-  const [patternOpen, setPatternOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [fitSignal, setFitSignal] = useState(0);
+  const [rail, setRail] = useState<RailId | null>("box");
+  const [sideTab, setSideTab] = useState<SideTab>("properties");
+  const [mobilePanel, setMobilePanel] = useState<MobilePanel | null>(null);
 
   const dieline = useMemo(() => (spec ? dielineOf(spec) : null), [spec]);
+  const hinges = useMemo(() => (spec ? hingesOf(spec) : null), [spec]);
+  const upright = useMemo(() => (dieline && hinges ? uprightAngles(dieline, hinges) : {}), [dieline, hinges]);
+  const issues = useDesignIssues(dieline, catalog);
 
   const persistence = usePersistence({
     mode: session.mode,
@@ -253,50 +318,24 @@ export default function Editor({
     else if (session.mode === "local") toast.error(t("saveFailedStorageFull"));
   }, [editable, persistence, session.mode, t, tCommon]);
 
-  // Keyboard shortcuts. Deliberately skipped while a form control has focus, so typing "d"
-  // in the name field does not duplicate an element.
-  useEffect(() => {
-    if (!editable) return;
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement;
-      if (target.closest("input, textarea, select, [contenteditable]")) return;
+  useEditorShortcuts({ editable, save: () => void save() });
+  useShortcutsOverlayShortcut(() => setShortcutsOpen(true));
 
-      const current = useEditor.getState();
-      const mod = event.ctrlKey || event.metaKey;
-      const key = event.key.toLowerCase();
-
-      if (mod && key === "z") {
-        event.preventDefault();
-        if (event.shiftKey) current.redo();
-        else current.undo();
-      } else if (mod && key === "y") {
-        event.preventDefault();
-        current.redo();
-      } else if (mod && key === "s") {
-        event.preventDefault();
-        void save();
-      } else if (mod && key === "d" && current.selectedId) {
-        event.preventDefault();
-        current.duplicateElement(current.selectedId);
-      } else if ((event.key === "Delete" || event.key === "Backspace") && current.selectedId) {
-        event.preventDefault();
-        current.removeElement(current.selectedId);
-      } else if (event.key === "Escape") {
-        current.select(null);
-      } else if (event.key.startsWith("Arrow") && current.selectedId) {
-        event.preventDefault();
-        const element = current.content.elements.find((candidate) => candidate.id === current.selectedId);
-        if (!element) return;
-        const step = event.shiftKey ? 10 : 1;
-        const dx = event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0;
-        const dy = event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0;
-        current.updateElement(element.id, { x: element.x + dx, y: element.y + dy });
-      }
-    };
-
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [save, editable]);
+  // A new selection brings its properties forward (on phones, the panel opens).
+  useEffect(
+    () =>
+      useEditor.subscribe((next, prev) => {
+        if (next.selectedId && next.selectedId !== prev.selectedId) {
+          setSideTab("properties");
+          // Phones only: on a wide screen the side panel shows it, and the hidden phone panel
+          // would mount a second copy of the properties.
+          if (!window.matchMedia("(min-width: 64rem)").matches) {
+            setMobilePanel((open) => (open === null || open === "properties" ? "properties" : open));
+          }
+        }
+      }),
+    [],
+  );
 
   // The browser's own unsaved-changes prompt, for a tab close we cannot intercept with a
   // dialog of our own. An account design's draft is in IndexedDB by then, but say so anyway.
@@ -308,9 +347,23 @@ export default function Editor({
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
 
+  /** Where a new element goes: the middle of the focused face, or of the view. */
   const viewCenter = useCallback(() => {
     const stage = stageRef.current;
     if (!stage || !dieline) return { x: 0, y: 0 };
+    const focused = useEditor.getState().focusedFaceId;
+    const face = focused ? allFaces(dieline).find((f) => f.id === focused) : undefined;
+    if (face) {
+      const b = faceBounds(face);
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+    }
+    const world = stage.findOne(".world");
+    if (world)
+      return world
+        .getAbsoluteTransform()
+        .copy()
+        .invert()
+        .point({ x: size.width / 2, y: size.height / 2 });
     const scale = stage.scaleX();
     return { x: (size.width / 2 - stage.x()) / scale, y: (size.height / 2 - stage.y()) / scale };
   }, [dieline, size]);
@@ -320,7 +373,7 @@ export default function Editor({
     if (!stage || !dieline) return;
 
     // Deselect first: the transformer handles would otherwise be baked into the bitmap.
-    state.select(null);
+    useEditor.getState().select(null);
     setTimeout(() => {
       if (kind === "svg") exportDielineSvg(dieline, name);
       else if (kind === "dxf") exportDielineDxf(dieline, name);
@@ -346,18 +399,22 @@ export default function Editor({
     };
   };
 
+  const stage = useCallback(() => stageRef.current, []);
+  const artwork = useArtwork(sideTab === "preview" || mobilePanel === "preview", stage, dieline);
+
   const handle: DesignerHandle = {
-    stage: () => stageRef.current,
+    stage,
     dieline,
     save: persistence.save,
     serverId: persistence.serverId,
+    center: viewCenter,
+    catalog,
+    mode: session.mode,
   };
 
   if (!loaded) return null;
 
-  const zoomPercent = Math.round(zoom * 100);
   const paperColour = spec ? boardColour(spec) : null;
-  const selected = editable ? content.elements.find((element) => element.id === selectedId) : undefined;
   const saveLabel = {
     saved: persistence.lastSavedAt
       ? t("saveState.savedAt", { time: formatDateTime(persistence.lastSavedAt, locale) })
@@ -370,26 +427,103 @@ export default function Editor({
     readonly: t("saveState.readonly"),
   }[session.mode === "local" ? (dirty ? "dirty" : "saved") : persistence.state];
 
+  const openSetup = () => setSetupOpen(true);
+  const openRules = () => setRulesOpen(true);
+  const showChecks = () => {
+    setSideTab("checks");
+    if (!window.matchMedia("(min-width: 64rem)").matches) setMobilePanel("checks");
+  };
+  const errors = issues.filter((i) => i.severity === "error").length;
+
+  const preview =
+    dieline && paperColour ? (
+      <Preview3D
+        dieline={dieline}
+        hinges={hinges}
+        artwork={artwork}
+        boardColour={paperColour}
+        name={name}
+        labels={{
+          canvas: t("preview3d.canvas", { name }),
+          fold: t("preview3d.fold"),
+          play: t("preview3d.play"),
+          rotateLeft: t("preview3d.rotateLeft"),
+          rotateRight: t("preview3d.rotateRight"),
+          tiltUp: t("preview3d.tiltUp"),
+          tiltDown: t("preview3d.tiltDown"),
+          reset: t("preview3d.reset"),
+          lighting: t("preview3d.lighting"),
+          lightingPreset: {
+            studio: t("preview3d.preset.studio"),
+            daylight: t("preview3d.preset.daylight"),
+            warm: t("preview3d.preset.warm"),
+          },
+          exportPng: t("preview3d.exportPng"),
+          flat: t("preview3d.flat"),
+        }}
+      />
+    ) : null;
+
+  const selectionEmpty = <p className="text-muted text-sm">{t("selection.empty")}</p>;
+  const checksLabel = issues.length ? t("side.checksCount", { count: issues.length }) : t("side.checks");
+  const sidePanel = (tab: SideTab) =>
+    tab === "properties" ? (
+      <SelectionPanel empty={selectionEmpty} />
+    ) : tab === "checks" ? (
+      <ChecksPanel issues={issues} />
+    ) : (
+      preview
+    );
+
   return (
     <DesignerContext.Provider value={handle}>
       <TooltipProvider>
         <div className="bg-canvas text-fg flex h-dvh flex-col">
-          <header className="bg-neutral text-neutral-fg flex h-14 shrink-0 items-center gap-3 px-3">
-            <NextLink href={nav.home} aria-label={tCommon("nav.home")} className="flex items-center gap-2">
+          <header className="bg-neutral text-neutral-fg flex h-14 shrink-0 items-center gap-2 px-3">
+            <NextLink href={nav.home} aria-label={tCommon("nav.home")} className="flex shrink-0 items-center gap-2">
               <BrandMark size={30} />
             </NextLink>
 
             <input
               value={name}
               readOnly={!editable}
-              onChange={(event) => state.setName(event.target.value)}
+              onChange={(event) => useEditor.getState().setName(event.target.value)}
               aria-label={t("nameLabel")}
-              className="w-40 rounded-md bg-transparent px-2 py-1 text-sm font-medium hover:bg-current/10 focus:bg-current/10 sm:w-64"
+              className="w-32 min-w-0 rounded-md bg-transparent px-2 py-1 text-sm font-medium hover:bg-current/10 focus:bg-current/10 sm:w-56"
             />
             {saveLabel ? (
-              <span role="status" className="hidden text-xs sm:inline">
+              <span role="status" className="hidden text-xs whitespace-nowrap sm:inline">
                 {saveLabel}
               </span>
+            ) : null}
+
+            {editable ? (
+              <div className="ms-2 hidden items-center gap-0.5 md:flex" role="group" aria-label={t("toolbar.label")}>
+                <IconButton
+                  name="undo"
+                  label={t("toolbar.undo")}
+                  size="sm"
+                  variant="ghost"
+                  disabled={!canUndo}
+                  onClick={() => useEditor.getState().undo()}
+                />
+                <IconButton
+                  name="redo"
+                  label={t("toolbar.redo")}
+                  size="sm"
+                  variant="ghost"
+                  disabled={!canRedo}
+                  onClick={() => useEditor.getState().redo()}
+                />
+                <IconButton
+                  name="reset"
+                  label={t("toolbar.resetAll")}
+                  size="sm"
+                  variant="ghost"
+                  disabled={!hasContent}
+                  onClick={() => setResetOpen(true)}
+                />
+              </div>
             ) : null}
 
             {/*
@@ -397,22 +531,18 @@ export default function Editor({
              * the whole subtree — a child cannot undo a parent's `opacity-80` — so it silently
              * turns a gated 7.25:1 token pair into 4.46:1. axe in the browser caught exactly that.
              */}
-            <p className="ml-auto hidden text-xs md:block">
-              {spec && dieline ? (
+            <p className="ms-auto hidden truncate text-xs xl:block">
+              {spec ? (
                 <>
                   {getStyle(spec.styleId).name[locale]} ·{" "}
                   {sizeOf(spec).box
                     ? t("summary", { ...insideSize(spec) })
-                    : t("summaryOther", { size: sizeOf(spec).text })}{" "}
-                  ·{" "}
-                  <b className="font-semibold">
-                    {t("flatSheet", { width: dieline.width.toFixed(0), height: dieline.height.toFixed(0) })}
-                  </b>
+                    : t("summaryOther", { size: sizeOf(spec).text })}
                 </>
               ) : null}
             </p>
 
-            <div className="ml-auto flex items-center gap-1 md:ml-4">
+            <div className="ms-auto flex items-center gap-1 xl:ms-4">
               {topBarExtra}
               {editable ? (
                 <Button size="sm" onClick={() => void save()} disabled={!spec} iconStart="save">
@@ -420,14 +550,17 @@ export default function Editor({
                 </Button>
               ) : null}
               {session.mode === "store" && persistence.serverId() ? (
-                <IconButton name="history" label={t("history.open")} size="sm" onClick={() => setHistoryOpen(true)} />
+                <>
+                  <IconButton name="history" label={t("history.open")} size="sm" onClick={() => setHistoryOpen(true)} />
+                  <IconButton name="link" label={t("share.open")} size="sm" onClick={() => setShareOpen(true)} />
+                </>
               ) : null}
 
               <DropdownMenu
                 label={t("exportMenu.label")}
                 trigger={
                   <Button size="sm" variant="ghost" disabled={!spec} iconStart="download">
-                    {tCommon("actions.export")}
+                    <span className="hidden sm:inline">{tCommon("actions.export")}</span>
                   </Button>
                 }
                 items={[
@@ -480,19 +613,11 @@ export default function Editor({
             </div>
           </header>
 
-          {editable ? (
-            <Toolbar
-              center={viewCenter}
-              onOpenSetup={() => setSetupOpen(true)}
-              onOpenRules={() => setRulesOpen(true)}
-              patternOpen={patternOpen}
-              onTogglePattern={() => setPatternOpen((open) => !open)}
-            />
-          ) : (
+          {!editable ? (
             <Callout tone="info" title={t("readOnly.title")} className="rounded-none border-x-0 border-t-0">
               {t("readOnly.body")}
             </Callout>
-          )}
+          ) : null}
 
           {persistence.draftOffer ? (
             <Callout tone="warning" title={t("draft.title")} className="rounded-none border-x-0 border-t-0">
@@ -508,6 +633,45 @@ export default function Editor({
           ) : null}
 
           <div className="flex min-h-0 flex-1">
+            {spec && editable ? (
+              <>
+                <nav
+                  aria-label={t("rail.label")}
+                  className="border-border bg-surface hidden w-20 shrink-0 flex-col gap-1 overflow-y-auto border-e p-1.5 lg:flex"
+                >
+                  {RAIL.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-pressed={rail === item.id}
+                      aria-controls="designer-rail-panel"
+                      onClick={() => setRail((open) => (open === item.id ? null : item.id))}
+                      className={cn(
+                        "focus-visible:ring-focus-ring flex flex-col items-center gap-0.5 rounded-lg px-1 py-2 text-[11px] outline-none focus-visible:ring-2",
+                        "duration-fast ease-standard transition-colors",
+                        rail === item.id
+                          ? "bg-primary-subtle text-primary-subtle-fg"
+                          : "text-fg hover:bg-surface-subtle",
+                      )}
+                    >
+                      <Icon name={item.icon} size={20} aria-hidden="true" />
+                      <span className="text-center leading-tight">{t(`rail.${item.id}`)}</span>
+                    </button>
+                  ))}
+                </nav>
+                {rail ? (
+                  <section
+                    id="designer-rail-panel"
+                    aria-label={t(`rail.${rail}`)}
+                    className="border-border bg-surface hidden w-72 shrink-0 overflow-y-auto border-e p-4 lg:block"
+                  >
+                    <h2 className="mb-3 font-semibold">{t(`rail.${rail}`)}</h2>
+                    <RailPanel id={rail} onOpenSetup={openSetup} onOpenRules={openRules} />
+                  </section>
+                ) : null}
+              </>
+            ) : null}
+
             <div
               ref={wrapRef}
               className="relative min-w-0 flex-1 overflow-hidden"
@@ -525,78 +689,121 @@ export default function Editor({
                   height={size.height}
                   fitSignal={fitSignal}
                   readOnly={!editable}
+                  upright={upright}
+                  safeMm={catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM}
                 />
               ) : null}
+              {dieline ? <FocusChip dieline={dieline} /> : null}
 
               {!spec && !setupOpen && editable ? (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Button size="lg" onClick={() => setSetupOpen(true)}>
+                  <Button size="lg" onClick={openSetup}>
                     {t("chooseBoxFirst")}
                   </Button>
                 </div>
               ) : null}
             </div>
 
-            {spec && editable ? (
+            {spec ? (
               <aside
-                aria-label={t("view.heading")}
-                className="border-border bg-surface hidden w-72 shrink-0 overflow-y-auto border-s p-4 lg:block"
+                aria-label={t("side.label")}
+                className="border-border bg-surface hidden w-80 shrink-0 overflow-y-auto border-s px-4 pb-4 lg:block"
               >
-                {selected ? <PropertiesPanel el={selected} /> : patternOpen ? <PatternPanel /> : <ViewPanel />}
-                {selected && patternOpen ? (
-                  <div className="border-border mt-6 border-t pt-4">
-                    <PatternPanel />
-                  </div>
-                ) : null}
+                <Tabs
+                  label={t("side.label")}
+                  value={sideTab}
+                  onValueChange={(value) => setSideTab(value as SideTab)}
+                  items={[
+                    ...(editable
+                      ? [{ value: "properties", label: t("side.properties"), content: sidePanel("properties") }]
+                      : []),
+                    { value: "checks", label: checksLabel, content: sidePanel("checks") },
+                    { value: "preview", label: t("side.preview"), content: sideTab === "preview" ? preview : null },
+                  ]}
+                />
               </aside>
             ) : null}
           </div>
 
-          {/* Properties as a bottom sheet on phones: the canvas keeps the top of the screen. */}
-          {spec && editable && (selected || patternOpen) ? (
-            <div className="border-border bg-surface max-h-[40vh] overflow-y-auto border-t p-4 lg:hidden">
-              {selected ? <PropertiesPanel el={selected} /> : <PatternPanel />}
-            </div>
+          {/* Phones: the tools as a bottom bar; a tool's panel opens above it, the canvas stays in view. */}
+          {spec && mobilePanel ? (
+            <section
+              aria-label={
+                mobilePanel in RAIL_LABELS
+                  ? t(`rail.${mobilePanel}`)
+                  : t(`side.${mobilePanel === "checks" ? "checks" : mobilePanel}`)
+              }
+              className="border-border bg-surface max-h-[45dvh] overflow-y-auto border-t p-4 lg:hidden"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-semibold">
+                  {mobilePanel in RAIL_LABELS
+                    ? t(`rail.${mobilePanel}`)
+                    : mobilePanel === "checks"
+                      ? checksLabel
+                      : t(`side.${mobilePanel}`)}
+                </h2>
+                <IconButton
+                  name="close"
+                  label={tCommon("actions.close")}
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setMobilePanel(null)}
+                />
+              </div>
+              {mobilePanel in RAIL_LABELS ? (
+                <RailPanel id={mobilePanel as RailId} onOpenSetup={openSetup} onOpenRules={openRules} />
+              ) : (
+                sidePanel(mobilePanel as SideTab)
+              )}
+            </section>
+          ) : null}
+          {spec ? (
+            <nav
+              aria-label={t("rail.label")}
+              className="border-border bg-surface flex shrink-0 gap-1 overflow-x-auto border-t px-1 py-1 lg:hidden"
+            >
+              {[
+                ...(editable
+                  ? RAIL.map((item) => ({ id: item.id as MobilePanel, icon: item.icon, label: t(`rail.${item.id}`) }))
+                  : []),
+                ...(editable
+                  ? [{ id: "properties" as MobilePanel, icon: "edit" as const, label: t("side.properties") }]
+                  : []),
+                {
+                  id: "checks" as MobilePanel,
+                  icon: (errors ? "error" : issues.length ? "warning" : "check") as "check",
+                  label: checksLabel,
+                },
+                { id: "preview" as MobilePanel, icon: "box" as const, label: t("side.preview") },
+              ].map((item) => (
+                <Tooltip key={item.id} content={item.label}>
+                  <button
+                    type="button"
+                    aria-pressed={mobilePanel === item.id}
+                    onClick={() => setMobilePanel((open) => (open === item.id ? null : item.id))}
+                    className={cn(
+                      "flex min-w-16 flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-[11px]",
+                      mobilePanel === item.id
+                        ? "bg-primary-subtle text-primary-subtle-fg"
+                        : "text-fg hover:bg-surface-subtle",
+                    )}
+                  >
+                    <Icon name={item.icon} size={20} aria-hidden="true" />
+                    <span className="whitespace-nowrap">{item.label}</span>
+                  </button>
+                </Tooltip>
+              ))}
+            </nav>
           ) : null}
 
-          <footer className="border-border bg-surface flex h-11 shrink-0 items-center justify-end gap-3 border-t px-3 text-sm">
-            <div className="text-muted mr-auto hidden items-center gap-3 text-xs sm:flex">
-              {spec?.materialName ? <span>{t("material", { name: spec.materialName })}</span> : null}
-              <span className="flex items-center gap-1">
-                <i className="inline-block h-0.5 w-4" style={{ backgroundColor: CANVAS_COLORS.cut }} />
-                {t("legend.cut")}
-              </span>
-              <span className="flex items-center gap-1">
-                <i className="inline-block w-4 border-t-2 border-dashed" style={{ borderColor: CANVAS_COLORS.fold }} />
-                {t("legend.fold")}
-              </span>
-            </div>
-
-            <Button size="sm" variant="ghost" iconStart="fit" onClick={() => setFitSignal((signal) => signal + 1)}>
-              {t("zoom.fit")}
-            </Button>
-
-            <Slider
-              aria-label={t("zoom.label")}
-              className="w-32 sm:w-48"
-              min={ZOOM_MIN * 100}
-              max={ZOOM_MAX * 100}
-              value={[zoomPercent]}
-              onValueChange={([percent]) => setZoom(percent / 100)}
-              valueText={`${formatNumber(zoomPercent, locale)} %`}
-            />
-
-            <NumberInput
-              aria-label={t("zoom.percentLabel")}
-              unit="%"
-              inputSize="sm"
-              className="w-24"
-              min={ZOOM_MIN * 100}
-              max={ZOOM_MAX * 100}
-              value={zoomPercent}
-              onChange={(event) => setZoom(Number(event.target.value) / 100)}
-            />
-          </footer>
+          <StatusBar
+            dieline={dieline}
+            issues={issues}
+            onShowChecks={showChecks}
+            onFit={() => setFitSignal((signal) => signal + 1)}
+            onShortcuts={() => setShortcutsOpen(true)}
+          />
 
           {editable ? (
             <SetupModal
@@ -609,11 +816,11 @@ export default function Editor({
               open={setupOpen}
               initial={spec ?? seedSpec()}
               catalog={catalog}
-              hasContent={content.elements.length > 0}
+              hasContent={elementCount > 0}
               isNew={!spec}
               onClose={spec ? () => setSetupOpen(false) : leave}
               onConfirm={(nextSpec) => {
-                state.setSpec(nextSpec);
+                useEditor.getState().setSpec(nextSpec);
                 setSetupOpen(false);
                 setFitSignal((signal) => signal + 1);
               }}
@@ -621,6 +828,14 @@ export default function Editor({
           ) : null}
 
           <PrintRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+
+          <ShortcutsOverlay
+            open={shortcutsOpen}
+            onOpenChange={setShortcutsOpen}
+            title={tShortcuts("title")}
+            closeLabel={tCommon("actions.close")}
+            shortcuts={shortcutList((key) => tShortcuts(key), mod)}
+          />
 
           {historyOpen && persistence.serverId() ? (
             <VersionHistory
@@ -635,6 +850,10 @@ export default function Editor({
                 }
               }}
             />
+          ) : null}
+
+          {shareOpen && persistence.serverId() ? (
+            <ShareDialog designId={persistence.serverId()!} open={shareOpen} onClose={() => setShareOpen(false)} />
           ) : null}
 
           <Dialog
@@ -658,6 +877,20 @@ export default function Editor({
           </Dialog>
 
           <AlertDialog
+            open={resetOpen}
+            onOpenChange={setResetOpen}
+            tone="destructive"
+            title={t("resetAllConfirm.title")}
+            description={t("resetAllConfirm.body")}
+            confirmLabel={t("resetAllConfirm.confirm")}
+            cancelLabel={tCommon("actions.cancel")}
+            onConfirm={() => {
+              useEditor.getState().resetAll();
+              setResetOpen(false);
+            }}
+          />
+
+          <AlertDialog
             open={leaveOpen}
             onOpenChange={setLeaveOpen}
             tone="destructive"
@@ -672,5 +905,7 @@ export default function Editor({
     </DesignerContext.Provider>
   );
 }
+
+const RAIL_LABELS = Object.fromEntries(RAIL.map((item) => [item.id, true]));
 
 export { PX_PER_MM };

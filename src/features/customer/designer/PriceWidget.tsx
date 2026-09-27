@@ -27,7 +27,10 @@ export function inferPrint(content: DesignContent): { printed: boolean; colours:
   for (const el of content.elements) {
     if (el.type === "image") photo = true;
     else if (el.type === "text") colours.add(el.fill.toLowerCase());
-    else {
+    else if (el.type === "code") {
+      colours.add(el.fill.toLowerCase());
+      colours.add(el.background.toLowerCase());
+    } else {
       colours.add(el.fill.toLowerCase());
       if (el.strokeWidth > 0) colours.add(el.stroke.toLowerCase());
     }

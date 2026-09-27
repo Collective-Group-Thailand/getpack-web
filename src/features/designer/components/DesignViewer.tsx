@@ -3,6 +3,7 @@ import { allFaces, dielineLines, svgPathData } from "@packio/dieline";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { boardColour } from "@/features/designer/catalog";
 import { dielineOf, readDesign } from "@/features/designer/document";
+import { barsPath, ean13Modules, qrMatrix, qrPath } from "@/features/designer/lib/codes";
 import type { DesignContent, DesignElement, DesignSpec } from "@/features/designer/types";
 
 /**
@@ -22,7 +23,7 @@ function transform(element: DesignElement): string {
   return `translate(${element.x} ${element.y}) rotate(${element.rotation}) scale(${element.scaleX} ${element.scaleY})`;
 }
 
-function Element({ element }: { element: DesignElement }) {
+function Element({ element, idPrefix }: { element: DesignElement; idPrefix: string }) {
   switch (element.type) {
     case "text": {
       const anchor = element.align === "center" ? "middle" : element.align === "right" ? "end" : "start";
@@ -46,17 +47,88 @@ function Element({ element }: { element: DesignElement }) {
         </text>
       );
     }
-    case "image":
+    case "image": {
+      const crop = element.crop;
+      if (!crop) {
+        return (
+          <image
+            transform={transform(element)}
+            opacity={element.opacity}
+            href={element.src}
+            width={element.width}
+            height={element.height}
+            preserveAspectRatio="none"
+          />
+        );
+      }
+      // The shown part of the image stretched to the element's box, the rest clipped away.
+      const w = element.width / crop.width;
+      const h = element.height / crop.height;
+      const clip = `${idPrefix}-crop-${element.id}`;
       return (
-        <image
-          transform={transform(element)}
+        <g transform={transform(element)} opacity={element.opacity}>
+          <clipPath id={clip}>
+            <rect width={element.width} height={element.height} />
+          </clipPath>
+          <image
+            clipPath={`url(#${clip})`}
+            href={element.src}
+            x={-crop.x * w}
+            y={-crop.y * h}
+            width={w}
+            height={h}
+            preserveAspectRatio="none"
+          />
+        </g>
+      );
+    }
+    case "shape":
+      return (
+        <path
+          transform={`${transform(element)} scale(${element.width / 100} ${element.height / 100})`}
           opacity={element.opacity}
-          href={element.src}
-          width={element.width}
-          height={element.height}
-          preserveAspectRatio="none"
+          d={element.path}
+          fill={element.fill}
+          stroke={element.strokeWidth ? element.stroke : undefined}
+          strokeWidth={element.strokeWidth ? (element.strokeWidth * 100) / element.width : undefined}
         />
       );
+    case "code": {
+      const qr = element.kind === "qr" ? qrMatrix(element.value) : null;
+      const modules = element.kind === "ean13" ? ean13Modules(element.value) : null;
+      return (
+        <g transform={transform(element)} opacity={element.opacity}>
+          <rect width={element.width} height={element.height} fill={element.background} />
+          {qr ? (
+            <path
+              d={qrPath(qr)}
+              transform={`scale(${element.width / qr.size} ${element.height / qr.size})`}
+              fill={element.fill}
+            />
+          ) : null}
+          {modules ? (
+            <>
+              <path
+                d={barsPath(modules)}
+                transform={`scale(${element.width / modules.length} ${element.height * 0.82})`}
+                fill={element.fill}
+              />
+              <text
+                x={element.width / 2}
+                y={element.height * 0.83}
+                fontSize={element.height * 0.15}
+                fontFamily="JetBrains Mono, monospace"
+                textAnchor="middle"
+                dominantBaseline="hanging"
+                fill={element.fill}
+              >
+                {element.value}
+              </text>
+            </>
+          ) : null}
+        </g>
+      );
+    }
     case "rect":
       return (
         <rect
@@ -130,15 +202,26 @@ export function DesignViewer({ spec, content, label, idPrefix }: DesignViewerPro
             <path key={face.id} d={facePath(face)} clipRule="evenodd" />
           ))}
         </clipPath>
+        {faces.map((face) => (
+          <clipPath key={face.id} id={`${clipId}-${face.id}`}>
+            <path d={facePath(face)} clipRule="evenodd" />
+          </clipPath>
+        ))}
       </defs>
       {faces.map((face) => (
         <path key={face.id} d={facePath(face)} fillRule="evenodd" fill={board} />
       ))}
       <g clipPath={`url(#${clipId})`}>
         {fill ? <rect width={dieline.width} height={dieline.height} fill={fill} /> : null}
-        {content.elements.map((element) => (
-          <Element key={element.id} element={element} />
-        ))}
+        {content.elements.map((element) =>
+          element.clipFaceId && faces.some((f) => f.id === element.clipFaceId) ? (
+            <g key={element.id} clipPath={`url(#${clipId}-${element.clipFaceId})`}>
+              <Element element={element} idPrefix={idPrefix} />
+            </g>
+          ) : (
+            <Element key={element.id} element={element} idPrefix={idPrefix} />
+          ),
+        )}
       </g>
       {lines.map((line, index) => (
         <path
