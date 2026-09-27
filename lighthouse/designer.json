@@ -17,7 +17,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 540000
+            "maxNumericValue": 460000
           }
         ],
         "largest-contentful-paint": [
@@ -29,5 +29,5 @@
       }
     }
   },
-  "$comment": "Designer: <= 3.0s to an interactive shell, <= 350 KB with the heavy modules lazy. Konva and the 3D preview are the reason this budget is its own. RATCHET: the target in docs/performance-budgets.md is 350 KB of initial JS; this build measures 518 KB, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down \u2014 it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
+  "$comment": "Designer: <= 3.0s to an interactive shell, <= 350 KB with the heavy modules lazy. Konva and the 3D preview are the reason this budget is its own. RATCHET: the target in docs/performance-budgets.md is 350 KB of initial JS; F4 Part D measures 456 KB (518 KB before jsPDF was removed in F4 Part C; three.js loads only with the 3D tab, ADR-0010), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down \u2014 it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
 }

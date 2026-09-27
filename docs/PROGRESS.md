@@ -25,6 +25,42 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-27 | **F4 Part A** — `@packio/dieline` engine v2 | Geometry model with line/arc/Bézier edges carrying roles (cut, crease, perforation, half-cut, glue area, bleed), non-convex faces with holes, multi-piece dielines; `BoxStyleDef` registry with aliases (`rte`), parameter schemas, bilingual `validate()`, caliper compensation from `MaterialSpec` (catalogue allowances win); tube and tray constructions; tuck end, reverse tuck end, RSC, four-corner tray with window, thumb notch, rounded tucks, glue side, grain arrow; Clipper2 offsetting isolated from the registry; `checkDieline`; 3D fold transforms; SVG (true arcs), R12 DXF, vector PDF with spot-colour layers; BoxStudio spec migration with artwork remapped face by face; app moved onto it; major changeset and release workflow; ADR-0008. 700 app unit, 275 engine, 69 box-related e2e | Parts B–E (style library, API integration, editor v2, quality gates) | Compensation constants marked ⚠ in `constants.ts` need prepress confirmation |
 | 2026-09-27 | **F4 Part B** — style library mapped to the legacy pattern catalogue | 30 styles in the registry: tuck end, reverse tuck end, snap-lock and crash-lock bottoms, seal end, hang tab (euro slot/round hole), sleeve, sleeve + drawer (two pieces), gable with handle, hexagonal; RSC, HSC, FOL, CSSC (hand holes), roll-end mailer, wrap-around; four-corner, six-corner and double-wall trays, two-piece telescope (full/partial); pillow (true arcs); rectangle, rounded rectangle, circle, oval, custom SVG path, hang tag, cup sleeve (unrolled frustum), band, pouch templates (3-side, 4-side, centre seal, gusset, stand-up). Catalogue aliases incl. every legacy drawing-service name. `docs/design-tool/style-mapping.md` (every legacy pattern → style, the meaning of `b`, `s`, `cs`, `dl`, `dw` and the rest, constraints, patterns not drawn, assumptions) with thumbnails from `pnpm style:thumbnails`. The setup dialog picks by category with dieline previews, sizes and options from each style's schema. 700 app unit, 1,411 engine, 44 designer-related e2e | Parts C–E | The legacy repo has no pattern rows with limits and no drawing files; every construction read from a formula alone is marked ⚠ in the mapping |
 | 2026-09-27 | **F4 Part C** — designer on the Packio API | Contract requests `store.designs` (CRUD, autosave under `If-Match`, versions + restore, duplicate, one-time import), `store.design-assets`, `store.designer-catalog` (patterns with dieline keys and limits, materials with caliper and flute allowances, templates, colours, fonts, artwork rules) and `GET`/`PUT` on `admin.design-documents`, with stateful mocks; persistence layer (guest in the browser, account designs autosaved with a conflict choice, IndexedDB drafts, version history, image assets); materials and pattern limits from the catalogue (placeholder boards deleted); entry points from the configurator, the order's artwork page (design linked to the order) and prepress (read-only or an editable copy, same editor); live price from the published calculation; send to print with a client-side print PDF (ADR-0009) submitted as the order's artwork; configurator seeded from a design. 707 app unit, 1,411 engine, designer e2e + 5 new account flows | Parts D–E | Templates are listed but applying one to an open design is Part D's panel; `design_asset` is requested as a file purpose (artwork until then) |
+| 2026-09-27 | **F4 Part D** — editor v2 | Left rail (box & faces, templates applied to the open design, shapes library, QR/EAN-13 with quiet zones, text styles, uploads, brand kit, background, layers); right panel (properties incl. crop/replace, clip to face, lock, name, CMYK warning; arrange: align/distribute/group/lock; live print checks; WebGL 3D preview folded by the engine with fold slider/play, lighting presets, PNG — ADR-0010); multi-select (Shift, marquee), groups, locks, copy/paste, snapping with guides, rulers, grid, face focus turned upright with Escape back; status bar with face under pointer and issue count; `?` shortcuts overlay; phone bottom bar with inline panels; view-only share links (`store.design-share`) and the public `/design/shared/[token]` page; the read-only viewer draws every new element type. Captures (thumbnail, PNG, print PDF) lay a focused sheet flat first. 723 app unit, 1,411 engine, 287 e2e (4 new editor flows, the share flow, axe over every panel); designer route 456 KB initial JS (ratchet lowered from 540 to 460 KB), Lighthouse accessibility 100 | Part E; comments on shared designs | Upright rule for lids (reads from the front) and the CMYK warning heuristic need prepress confirmation; brand kit kept in the browser until an account endpoint exists |
+
+---
+
+## F4 Part D — 2026-09-27
+
+Editor v2 UX, on `feat/f4d-editor` (from the Part C merge). One contract request (`store.design-share`); everything else is the app.
+
+### What is now enforced rather than advised
+| Rule | Mechanism |
+|---|---|
+| Print problems are seen while designing, not at preflight | `lib/checks.ts` runs on every change against the engine's geometry: text/codes outside the safe zone (settings' `safeMarginMm`), text or codes across a crease/perforation/half-cut, artwork on the glue flap, text under 2.1 mm (~6 pt), strokes under 0.25 pt, images under the settings' `minDpi` (error under half), artwork stopping short of the bleed, off-sheet elements, invalid or undersized codes. Each issue selects its element |
+| Every canvas gesture has a non-drag path (WCAG 2.5.7) | layers list (select, lock, reorder), arrange buttons, properties as numbers, face chips for focus, 3D rotate/tilt buttons, keyboard nudges |
+| Codes scan | QR (qrcode-generator, error level M, 4-module quiet zone) and EAN-13 (check digit computed, 11/7-module quiet zones, 29.83 mm minimum at 80 %) are drawn as vectors by the designer, never images |
+| A focused face never skews an export | `withFlatWorld` sets the world group's rotation to 0 for the synchronous capture; thumbnails, PNG, print PDF and the 3D texture all use it |
+| Copy stays in i18n | 223 new th/en keys under `designer.*`; `keys-used.test.ts` passes |
+
+### Decisions taken, with reasons
+- **Face focus turns the face the way it reads on the box.** `uprightAngles` folds the dieline and compares each face's flat "up" with world up (walls) or with "away from the viewer" (a face lying flat: lids, bases), snapped to 90°. A tuck-end's top lid reads 180°; walls 0°. **Assumption for prepress**: lids read from the front of the box.
+- **Escape steps back one level** — the selection first, then the focused face.
+- **Templates are applied proportionally** from the template's sheet to this box (face bounds of both sheets), replacing the elements after a confirmation; undo restores the design.
+- **Brand kit in the browser** (`packio.brandkit`): colours and a logo, plus the catalogue's colours on every colour field. No account endpoint exists; a business account's shared brand assets are F3 3.7's.
+- **CMYK warning is a heuristic** (`lib/colour.ts`: very saturated, very bright, outside the hues process inks reach) — no ICC profile in the browser; the proof is the authority.
+- **Share links are view-only, one per design**, revocable, no account needed to open, never indexed. **Comments are deferred** to after launch: they need a thread model, notifications and moderation on the API side, and nothing in the order flow depends on them.
+- **Phones get the same panels inline above a bottom bar**, not in a modal sheet, so the canvas stays usable while a panel is open.
+- `Stat`'s polymorphic `as` is narrowed because `@react-three/fiber`'s JSX elements made the bare `React.ElementType` union reject children (ADR-0010).
+
+### Contract requests raised
+`store.design-share` (create/return the live link, revoke, public read).
+
+### Deliberately not done here
+Comments on shared designs; ICC-accurate CMYK soft-proofing; per-glyph text-to-outline in the print file (ADR-0009 stands).
+
+### Open questions
+- **Prepress**: the lid "reads from the front" rule; the CMYK heuristic's thresholds; whether 2.1 mm is the right minimum text height for board (vs 1.8 mm on coated paper).
+- **Backend**: `store.design-share`; a customer brand-kit endpoint (colours, logo asset) so the kit follows the account.
 
 ---
 
