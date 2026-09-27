@@ -41,7 +41,13 @@
     "genericBody": "Try again. If it keeps happening, contact us with the code below.",
     "notFoundTitle": "Page not found",
     "notFoundBody": "The link may have expired, moved, or been mistyped.",
-    "requestId": "Request ID"
+    "requestId": "Request ID",
+    "forbiddenTitle": "You do not have access to this",
+    "forbiddenBody": "Ask an administrator if you need it.",
+    "itemNotFoundTitle": "Not found",
+    "itemNotFoundBody": "It may have been removed, or it is not visible to you.",
+    "loadFailedTitle": "Could not load this",
+    "loadFailedBody": "Try again. If it keeps failing, report it with the request id."
   },
   "notifications": {
     "label": "Notifications",
@@ -61,5 +67,10 @@
     "label": "Language",
     "th": "ไทย",
     "en": "English"
+  },
+  "confirm": {
+    "typeToConfirm": "Type {phrase} to confirm",
+    "reasonRequired": "Enter a reason",
+    "reasonTooShort": "Enter a reason of at least {min} characters"
   }
 }

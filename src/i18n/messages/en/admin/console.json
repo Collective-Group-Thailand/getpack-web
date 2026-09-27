@@ -1,18 +1,4 @@
 {
-  "errors": {
-    "forbiddenTitle": "You do not have access to this",
-    "forbiddenBody": "Ask an administrator if you need it.",
-    "notFoundTitle": "Not found",
-    "notFoundBody": "It may have been removed, or it is not visible to you.",
-    "loadFailedTitle": "Could not load this",
-    "loadFailedBody": "Try again. If it keeps failing, report it with the request id.",
-    "retry": "Try again"
-  },
-  "confirm": {
-    "typeToConfirm": "Type {phrase} to confirm",
-    "reasonRequired": "Enter a reason",
-    "reasonTooShort": "Enter a reason of at least {min} characters"
-  },
   "filters": {
     "any": "Any",
     "clearSearch": "Clear search",
