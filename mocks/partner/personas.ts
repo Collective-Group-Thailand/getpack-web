@@ -58,6 +58,34 @@ const FLOOR: Record<PartnerRole, readonly string[]> = {
   factory_shipping: ["factory_jobs.read", "factory_shipments.read", "factory_shipments.manage"],
   factory_accountant: ["factory_jobs.read", "factory_shipments.read"],
 };
+/**
+ * Money and account keys, proposed with `partner.billing-statements`, `partner.payouts`,
+ * `partner.claims`, `partner.scorecard` (rbac.md has none): the accountant keeps the books, the
+ * owner answers claims and manages users, the planner sees the scorecard.
+ */
+const ACCOUNT: Record<PartnerRole, readonly string[]> = {
+  factory_owner: [
+    "factory_billing.read",
+    "factory_billing.confirm",
+    "factory_payouts.read",
+    "factory_claims.read",
+    "factory_claims.respond",
+    "factory_scorecard.read",
+  ],
+  factory_planner: ["factory_claims.read", "factory_scorecard.read"],
+  factory_operator: [],
+  factory_qc: ["factory_claims.read"],
+  factory_shipping: [],
+  factory_accountant: [
+    "factory_billing.read",
+    "factory_billing.confirm",
+    "factory_payouts.read",
+    "factory_claims.read",
+  ],
+};
+for (const role of Object.keys(FLOOR) as PartnerRole[]) {
+  ROLE_PERMISSIONS[role] = [...ROLE_PERMISSIONS[role], ...ACCOUNT[role]];
+}
 for (const role of Object.keys(FLOOR) as PartnerRole[]) {
   ROLE_PERMISSIONS[role] = [...ROLE_PERMISSIONS[role], ...FLOOR[role]];
 }

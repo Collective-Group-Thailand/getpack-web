@@ -21,7 +21,7 @@ import { registerQueue } from "./console";
 import { etagOf } from "./tables";
 
 export type Shipment = z.output<typeof shipmentDetail> & { updatedAt: string };
-type Claim = z.output<typeof claimDetail> & { updatedAt: string };
+export type Claim = z.output<typeof claimDetail> & { updatedAt: string };
 type Quote = z.output<typeof carrierQuote>;
 
 const DAY = 24 * 60;
@@ -328,7 +328,8 @@ function claim(
 }
 
 const completed = orders.filter((order) => order.status === "completed");
-const claims: Claim[] = [
+/** Every claim; the partner zone shows a factory the ones that name it (`mocks/partner/billing.ts`). */
+export const claims: Claim[] = [
   claim(1, completed[0] ?? orderOf(0), "damaged", "under_review"),
   claim(2, completed[1] ?? orderOf(1), "print_defect", "submitted"),
   claim(3, completed[2] ?? orderOf(2), "quantity_short", "under_review", "tolerance_auto"),
