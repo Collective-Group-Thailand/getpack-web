@@ -13,7 +13,12 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
  */
 const config: StorybookConfig = {
   framework: "@storybook/react-vite",
-  stories: ["../src/ui/**/*.stories.@(ts|tsx)", "../src/ui/docs/**/*.mdx"],
+  stories: [
+    "../src/ui/**/*.stories.@(ts|tsx)",
+    "../src/ui/docs/**/*.mdx",
+    // The designer's panels in fixed states, for the editor's visual baseline (F4 Part E).
+    "../src/features/designer/**/*.stories.@(ts|tsx)",
+  ],
   addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
   // `next/font` cannot run under Vite, so the same five woff2 files are declared by hand in
   // .storybook/fonts.css and served from here.
