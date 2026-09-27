@@ -123,6 +123,8 @@ function seed() {
   // Completed steps of a seeded job carry quantities, so a report on the next step is checked.
   for (const { order, job } of jobs) {
     const extra = extraOf(job);
+    // Released (and accepted) a while back, so their advances have been paid (D-022).
+    extra.releasedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7));
     let quantity = Math.round(order.quantity * 1.04);
     job.milestones.forEach((milestone) => {
       const step = blankStep();

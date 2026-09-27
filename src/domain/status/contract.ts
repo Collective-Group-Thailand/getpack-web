@@ -227,3 +227,18 @@ export type QcResult = "pass" | "fail" | "conditional";
 
 /** An issue raised on a job. **Source: schema** (`issue_status`); proposed in contract request `partner.job-issues`. */
 export type JobIssueStatus = "open" | "resolved";
+
+/** A factory billing statement (D-090). **Source: schema** (`billing_statement_status`); proposed in contract request `partner.billing-statements`. */
+export type BillingStatementStatus = "generated" | "sent" | "confirmed" | "disputed" | "superseded";
+
+/** The factory's own tax invoice against a statement. **Proposed** in contract request `partner.billing-statements`. */
+export type VendorInvoiceStatus = "submitted" | "validated" | "rejected";
+
+/** Whether Packio can claim the input VAT of a factory bill. **Source: schema** (`input_vat_status`). */
+export type InputVatStatus = "claimable" | "pending_document" | "not_claimable";
+
+/** One payout to a factory in a payout run. **Source: schema** (`payout_item_status`). */
+export type PayoutItemStatus = "included" | "paid" | "failed" | "excluded";
+
+/** A person who acts for a factory. **Proposed** in contract request `partner.users`. */
+export type FactoryUserStatus = "invited" | "active" | "deactivated";

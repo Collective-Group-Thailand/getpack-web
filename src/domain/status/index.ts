@@ -63,6 +63,11 @@ export type {
   RateLineAcceptance,
   QcResult,
   JobIssueStatus,
+  BillingStatementStatus,
+  VendorInvoiceStatus,
+  InputVatStatus,
+  PayoutItemStatus,
+  FactoryUserStatus,
 } from "./contract";
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
@@ -109,7 +114,15 @@ import {
   SITE_VISIT_RESULT,
 } from "./partners";
 import { PAYMENT_STATUS } from "./payment";
-import { PAYABLE_STATUS, PAYOUT_STATUS } from "./payout";
+import {
+  BILLING_STATEMENT_STATUS,
+  FACTORY_USER_STATUS,
+  INPUT_VAT_STATUS,
+  PAYABLE_STATUS,
+  PAYOUT_ITEM_STATUS,
+  PAYOUT_STATUS,
+  VENDOR_INVOICE_STATUS,
+} from "./payout";
 import {
   APPROVAL_STATUS,
   APPROVAL_STEP_STATUS,
@@ -124,6 +137,11 @@ import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 
 export {
+  FACTORY_USER_STATUS,
+  PAYOUT_ITEM_STATUS,
+  INPUT_VAT_STATUS,
+  VENDOR_INVOICE_STATUS,
+  BILLING_STATEMENT_STATUS,
   JOB_ISSUE_STATUS,
   QC_RESULT,
   RATE_LINE_ACCEPTANCE,
@@ -246,4 +264,9 @@ export const STATUS_MAPS = {
   rateLine: RATE_LINE_ACCEPTANCE,
   qcResult: QC_RESULT,
   jobIssue: JOB_ISSUE_STATUS,
+  billingStatement: BILLING_STATEMENT_STATUS,
+  vendorInvoice: VENDOR_INVOICE_STATUS,
+  inputVat: INPUT_VAT_STATUS,
+  payoutItem: PAYOUT_ITEM_STATUS,
+  factoryUser: FACTORY_USER_STATUS,
 } as const;
