@@ -16,6 +16,8 @@
  *   founder    0889012345 — no company yet: signs one up (F3 3.7).
  *   artist     0834567890 — the fourth fake customer, whose unpaid order waiting for artwork
  *              the artwork and proof flow (F3 3.5) walks end to end on its own.
+ *   designer   0856789012 — the tenth fake customer, whose orders were set up for the online
+ *              designer: the account designs and send-to-print flow (F4 Part C) walks them.
  *
  * The consent purposes are packio-api's seeded identities (`prisma/seed/data/reference.ts`),
  * with obviously fake texts.
@@ -26,7 +28,7 @@ import type { Schemas } from "@/lib/api/types";
 import { principalOf } from "../support";
 
 export type CustomerPersona =
-  "returning" | "newcomer" | "buyer" | "artist" | "receiver" | "companyadmin" | "companybuyer" | "founder";
+  "returning" | "newcomer" | "buyer" | "artist" | "receiver" | "companyadmin" | "companybuyer" | "founder" | "designer";
 
 export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0812345678": "returning",
@@ -37,6 +39,7 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0867890123": "companyadmin",
   "0878901234": "companybuyer",
   "0889012345": "founder",
+  "0856789012": "designer",
 };
 
 export const CONSENT_PURPOSES = [
@@ -125,6 +128,13 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: 7,
     },
     artist: { n: 4, name: "ลูกค้าส่งไฟล์งาน (ข้อมูลจำลอง)", email: "seed.artist", phone: "0834567890", ownerIndex: 3 },
+    designer: {
+      n: 9,
+      name: "ลูกค้าออกแบบออนไลน์ (ข้อมูลจำลอง)",
+      email: "seed.designer",
+      phone: "0856789012",
+      ownerIndex: 9,
+    },
   };
   const account = accounts[persona as Exclude<CustomerPersona, "newcomer">];
   return {
@@ -155,6 +165,7 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   companyadmin: fresh("companyadmin"),
   companybuyer: fresh("companybuyer"),
   founder: fresh("founder"),
+  designer: fresh("designer"),
 };
 
 /** A persona's customer, for a mock acting on someone else's behalf (a company approver placing a buyer's order). */

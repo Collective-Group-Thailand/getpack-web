@@ -45,7 +45,13 @@ export interface TextElement extends BaseElement {
 
 export interface ImageElement extends BaseElement {
   type: "image";
-  src: string; // data URL
+  /** A data URL until uploaded; then the asset's signed URL, refreshed from `assetId` on open. */
+  src: string;
+  /** The design asset (`store.design-assets`) once uploaded. */
+  assetId?: string;
+  /** The image's own pixel size, for the effective-resolution check. */
+  naturalWidth?: number;
+  naturalHeight?: number;
   width: number;
   height: number;
 }
@@ -71,6 +77,11 @@ export type NewElement = DistributiveOmit<DesignElement, "id">;
  */
 export interface DesignSpec extends DielineSpec {
   productDims?: BoxDims;
+  /** The catalogue pattern the design is for, when it came from a product. */
+  patternId?: string | null;
+  /** The material's name and board colour as chosen, so a design draws without the catalogue. */
+  materialName?: string;
+  boardColour?: string;
 }
 
 export interface DesignContent {

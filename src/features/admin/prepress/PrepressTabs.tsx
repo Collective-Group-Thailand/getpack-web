@@ -1,5 +1,6 @@
 "use client";
 
+import NextLink from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -186,7 +187,13 @@ function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submis
   );
 }
 
-function DesignDocumentCard({ document }: { document: NonNullable<PrepressDetail["designDocument"]> }) {
+function DesignDocumentCard({
+  document,
+  orderId,
+}: {
+  document: NonNullable<PrepressDetail["designDocument"]>;
+  orderId: string;
+}) {
   const t = useTranslations("prepress.detail.design");
   const canManage = useCan("prepress.manage");
   const [copy, setCopy] = useState<{ id: string; title: string } | null>(null);
@@ -216,17 +223,24 @@ function DesignDocumentCard({ document }: { document: NonNullable<PrepressDetail
         </>
       }
       actions={
-        canManage ? (
-          <Button
-            size="sm"
-            variant="secondary"
-            iconStart="copy"
-            loading={makeCopy.isPending}
-            onClick={() => makeCopy.mutate()}
-          >
-            {t("copy")}
+        <>
+          <Button asChild size="sm" variant="ghost" iconStart="eye">
+            <NextLink href={`/designs/${document.id}?from=${encodeURIComponent(`/prepress/${orderId}`)}`}>
+              {t("openInDesigner")}
+            </NextLink>
           </Button>
-        ) : null
+          {canManage ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              iconStart="copy"
+              loading={makeCopy.isPending}
+              onClick={() => makeCopy.mutate()}
+            >
+              {t("copy")}
+            </Button>
+          ) : null}
+        </>
       }
     >
       <p className="text-muted mb-3 text-xs">
@@ -248,6 +262,11 @@ function DesignDocumentCard({ document }: { document: NonNullable<PrepressDetail
       {copy ? (
         <Callout tone="success" title={t("copyReady", { title: copy.title })} className="mt-3">
           {t("copyNext")}
+          <Button asChild size="sm" className="mt-2">
+            <NextLink href={`/designs/${copy.id}?from=${encodeURIComponent(`/prepress/${orderId}`)}`}>
+              {t("openCopy")}
+            </NextLink>
+          </Button>
         </Callout>
       ) : null}
     </Section>
@@ -258,7 +277,7 @@ export function ArtworkTab({ detail }: { detail: PrepressDetail }) {
   const t = useTranslations("prepress.detail.artwork");
   return (
     <div className="flex flex-col gap-4">
-      {detail.designDocument ? <DesignDocumentCard document={detail.designDocument} /> : null}
+      {detail.designDocument ? <DesignDocumentCard document={detail.designDocument} orderId={detail.orderId} /> : null}
       {detail.submissions.length === 0 ? (
         <EmptyState icon="upload" title={t("none")} description={t("noneBody")} />
       ) : (

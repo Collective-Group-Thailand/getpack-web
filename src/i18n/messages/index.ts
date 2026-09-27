@@ -121,6 +121,8 @@ export const ZONE_NAMESPACES = {
     "logistics",
     "analytics",
     "reports",
+    // The designer, for prepress opening a design read-only or as a copy (F4 C.2).
+    "designer",
   ],
   partner: ["common", "auth", "status", "partner"],
 } as const satisfies Record<Zone, readonly Namespace[]>;

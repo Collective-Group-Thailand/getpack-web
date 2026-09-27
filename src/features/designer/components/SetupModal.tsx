@@ -9,10 +9,19 @@ import {
   stylesByCategory,
   type BoxCategory,
   type BoxStyleDef,
+  type Issue,
   type ParamValues,
 } from "@packio/dieline";
 
-import { boardColour, dimsFromProduct, getPaper, papersFor } from "@/features/designer/catalog";
+import {
+  boardColour,
+  dimsFromProduct,
+  fallbackMaterial,
+  materialSpecOf,
+  materialsFor,
+  withMaterial,
+} from "@/features/designer/catalog";
+import type { DesignerCatalog } from "@/features/designer/data/api";
 import { insideSize } from "@/features/designer/document";
 import type { BoxDims, BoxStyleId, DesignSpec } from "@/features/designer/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
@@ -34,9 +43,13 @@ type SizeMode = "preset" | "custom";
 interface SetupProps {
   open: boolean;
   initial: DesignSpec | null;
+  /** The API's designer catalogue: materials and pattern limits. `null` offers only the current material. */
+  catalog: DesignerCatalog | null;
   onConfirm: (spec: DesignSpec) => void;
   onClose?: () => void;
   hasContent: boolean;
+  /** No box yet: the dialog starts a design (a seed may still fill it in). */
+  isNew?: boolean;
 }
 
 /**
@@ -47,7 +60,7 @@ interface SetupProps {
  * remount with a `key` instead, which unmounted Radix's focus scope and meant focus never
  * returned to the button that opened the dialog.
  */
-export function SetupModal({ open, initial, onConfirm, onClose, hasContent }: SetupProps) {
+export function SetupModal({ open, initial, catalog, onConfirm, onClose, hasContent, isNew = false }: SetupProps) {
   const t = useTranslations("designer.setup");
   const tCommon = useTranslations("common");
 
@@ -59,7 +72,15 @@ export function SetupModal({ open, initial, onConfirm, onClose, hasContent }: Se
       size="lg"
       closeLabel={onClose ? tCommon("actions.close") : undefined}
     >
-      <SetupForm open={open} initial={initial} onConfirm={onConfirm} onClose={onClose} hasContent={hasContent} />
+      <SetupForm
+        open={open}
+        initial={initial}
+        catalog={catalog}
+        onConfirm={onConfirm}
+        onClose={onClose}
+        hasContent={hasContent}
+        isNew={isNew}
+      />
     </Dialog>
   );
 }
@@ -70,7 +91,7 @@ const isBox = (style: BoxStyleDef) => ["length", "width", "height"].every((k) =>
 const pick = (values: ParamValues, keys: string[], keep: boolean) =>
   Object.fromEntries(Object.entries(values).filter(([k]) => keys.includes(k) === keep));
 
-function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
+function SetupForm({ initial, catalog, onConfirm, onClose, hasContent, isNew = false }: SetupProps) {
   const t = useTranslations("designer.setup");
   const tCommon = useTranslations("common");
   const locale = useLocale() as "th" | "en";
@@ -90,13 +111,28 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
   const [options, setOptions] = useState<ParamValues>(
     initial ? pick(initial.values, sizeKeys(getStyle(initialStyle)), false) : {},
   );
-  const [paperId, setPaperId] = useState(initial?.materialId ?? papersFor(initialStyle)[0].id);
+  const patternId = initial?.patternId ?? null;
+  const [paperId, setPaperId] = useState<string | null>(
+    initial?.materialId ?? materialsFor(catalog, initialStyle, patternId)[0]?.id ?? null,
+  );
   const [resizeWarningOpen, setResizeWarningOpen] = useState(false);
 
   const styleDef = getStyle(style);
   const box = isBox(styleDef);
-  const papers = papersFor(style);
-  const paper = papers.find((candidate) => candidate.id === paperId) ?? papers[0];
+  const papers = materialsFor(catalog, style, patternId);
+  const paper = papers.find((candidate) => candidate.id === paperId) ?? papers[0] ?? null;
+  // Without a catalogue material: the current one (same style), else the engine's typical board.
+  const materialPart = paper
+    ? withMaterial(paper, locale)
+    : initial?.styleId === style
+      ? {
+          material: initial.material,
+          materialId: initial.materialId,
+          materialName: initial.materialName,
+          boardColour: initial.boardColour,
+        }
+      : fallbackMaterial(style);
+  const material = paper ? materialSpecOf(paper) : materialPart.material;
   const preset = styleDef.presets[presetIndex] ?? styleDef.presets[0];
 
   const size: ParamValues =
@@ -112,7 +148,8 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
     ...size,
   };
   // The engine's rules, in the customer's language — the same ones the drawing service applies.
-  const issues = styleDef.validate(values, paper.material);
+  const pattern = patternId ? catalog?.patterns.find((candidate) => candidate.id === patternId) : undefined;
+  const issues = [...styleDef.validate(values, material), ...patternIssues(pattern, values, styleDef, locale, t)];
   const blocking = issues.filter((issue) => issue.severity === "error");
   const errors = blocking.map((issue) => issue.message[locale]);
 
@@ -128,8 +165,8 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
     setPresetIndex(0);
     setOptions({});
     setSizeValues(pick(nextDef.presets[0].values, sizeKeys(nextDef), true));
-    const nextPapers = papersFor(next);
-    if (!nextPapers.some((candidate) => candidate.id === paperId)) setPaperId(nextPapers[0].id);
+    const nextPapers = materialsFor(catalog, next, patternId);
+    if (!nextPapers.some((candidate) => candidate.id === paperId)) setPaperId(nextPapers[0]?.id ?? null);
   };
 
   const changeCategory = (next: BoxCategory) => {
@@ -143,8 +180,8 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
       specVersion: SPEC_VERSION,
       styleId: style,
       values,
-      material: paper.material,
-      materialId: paper.id,
+      ...materialPart,
+      patternId: style === initialStyle ? patternId : null,
       productDims: mode === "custom" && box ? product : undefined,
     });
   };
@@ -153,7 +190,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
     if (errors.length) return;
     // Changing the box under existing artwork moves every element relative to the sheet, so
     // it is a decision, not a side effect (design-system.md §4).
-    if (hasContent && initial) {
+    if (hasContent && initial && !isNew) {
       setResizeWarningOpen(true);
       return;
     }
@@ -256,17 +293,28 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
           </Field>
 
           <Field label={t("materialHeading")}>
-            <Select
-              value={paper.id}
-              onValueChange={setPaperId}
-              options={papers.map((option) => ({
-                value: option.id,
-                label: option.printable
-                  ? t("materialOption", { name: option.name, thickness: option.material.caliperMm })
-                  : t("materialOptionNoPrint", { name: option.name, thickness: option.material.caliperMm }),
-              }))}
-            />
-            {!getPaper(paper.id)?.printable ? <Callout tone="warning" title={t("flexoOnly")} className="mt-2" /> : null}
+            {papers.length > 0 && paper ? (
+              <>
+                <Select
+                  value={paper.id}
+                  onValueChange={setPaperId}
+                  options={papers.map((option) => ({
+                    value: option.id,
+                    label: t(option.printable ? "materialOption" : "materialOptionNoPrint", {
+                      name: (locale === "en" ? option.nameEn : null) ?? option.nameTh,
+                      thickness: option.caliperMm,
+                    }),
+                  }))}
+                />
+                {!paper.printable ? <Callout tone="warning" title={t("flexoOnly")} className="mt-2" /> : null}
+              </>
+            ) : (
+              <p className="text-muted text-sm">
+                {materialPart.materialName
+                  ? t("materialOption", { name: materialPart.materialName, thickness: material.caliperMm })
+                  : t("materialFallback", { thickness: material.caliperMm })}
+              </p>
+            )}
           </Field>
 
           {styleDef.params.some((p) => p.group !== "size") ? (
@@ -290,12 +338,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
         <aside className="bg-surface-subtle flex flex-col rounded-xl p-3">
           <div className="aspect-square w-full">
             {errors.length === 0 ? (
-              <BoxPreview
-                styleId={style}
-                values={values}
-                material={paper.material}
-                colour={boardColour({ materialId: paper.id, material: paper.material })}
-              />
+              <BoxPreview styleId={style} values={values} material={material} colour={boardColour(materialPart)} />
             ) : null}
           </div>
           {/* A <dl> may only hold dt/dd pairs (wrapped in a div at most) — the line legend
@@ -329,7 +372,7 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
           </Button>
         ) : null}
         <Button onClick={submit} disabled={errors.length > 0}>
-          {initial ? t("submitUpdate") : t("submitNew")}
+          {initial && !isNew ? t("submitUpdate") : t("submitNew")}
         </Button>
       </div>
 
@@ -347,4 +390,32 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
       />
     </>
   );
+}
+
+/** The catalogue pattern's own size limits (`pattern.min_* / max_*`), on top of the engine's. */
+function patternIssues(
+  pattern: DesignerCatalog["patterns"][number] | undefined,
+  values: ParamValues,
+  style: BoxStyleDef,
+  locale: "th" | "en",
+  t: (key: "patternRange", values: { label: string; min: number; max: number }) => string,
+): Issue[] {
+  if (!pattern) return [];
+  const r = pattern.rules;
+  const checks: [string, number | null, number | null][] = [
+    ["length", r.minLengthMm, r.maxLengthMm],
+    ["width", r.minWidthMm, r.maxWidthMm],
+    ["height", r.minHeightMm, r.maxHeightMm],
+  ];
+  const out: Issue[] = [];
+  for (const [key, min, max] of checks) {
+    const value = values[key];
+    if (typeof value !== "number" || (min === null && max === null)) continue;
+    if ((min !== null && value < min) || (max !== null && value > max)) {
+      const label = style.params.find((p) => p.key === key)?.label[locale] ?? key;
+      const message = t("patternRange", { label, min: min ?? 0, max: max ?? 9999 });
+      out.push({ code: "pattern.out_of_range", severity: "error", param: key, message: { th: message, en: message } });
+    }
+  }
+  return out;
 }
