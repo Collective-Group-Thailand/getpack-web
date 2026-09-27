@@ -32,7 +32,7 @@ type PriceList = Schemas["PriceListDto"];
 type Row = Schemas["PriceRowDto"];
 
 const DAY = 24 * 60;
-const typeId = (code: string) => PRODUCT_TYPES.find((type) => type.code === code)!.id;
+export const typeId = (code: string) => PRODUCT_TYPES.find((type) => type.code === code)!.id;
 const now = () => bangkokIso();
 
 const STEPS: Schemas["OnboardingStep"][] = [
@@ -147,7 +147,7 @@ export const PARTICIPATION: Record<string, Record<string, Schemas["Participation
 
 /* --------------------------------------------------------------------------------- stores */
 
-type Store = {
+export type Store = {
   factory: Factory;
   steps: Step[];
   addresses: Schemas["FactoryAddressDto"][];
@@ -164,9 +164,10 @@ type Store = {
   overrides: Map<string, number>;
 };
 
-const stores = new Map<string, Store>();
+/** Every factory by id. The partner surface (`mocks/partner`) reads and writes the same rows. */
+export const stores = new Map<string, Store>();
 let seq = 100;
-const nextId = (ns: string) => mockId(ns, seq++);
+export const nextId = (ns: string) => mockId(ns, seq++);
 
 const ZONES = [
   ["BKK", "กรุงเทพฯ และปริมณฑล"],
@@ -186,9 +187,17 @@ const version = <T extends object>(values: T, reason = "ตกลงกับโ
   ...values,
 });
 
+/** Twelve digits plus the Thai tax id check digit, so the partner zone's checksum accepts them. */
+function withCheckDigit(twelve: string): string {
+  const sum = [...twelve].reduce((total, digit, index) => total + Number(digit) * (13 - index), 0);
+  return `${twelve}${(11 - (sum % 11)) % 10}`;
+}
+
 function stepsFor(seed: Seed): Step[] {
+  // An applicant has not submitted its application yet (D-171: the Partner team created the
+  // factory and invited its owner, who fills it in), so nothing is complete.
   const progress: Record<Factory["status"], number> = {
-    applied: 1,
+    applied: 0,
     under_review: 5,
     trial: 11,
     active: 13,
@@ -198,11 +207,15 @@ function stepsFor(seed: Seed): Step[] {
   const done = progress[seed.status];
   return STEPS.map((step, index) => ({
     step,
-    status:
-      index < done ? "approved" : index === done ? (seed.status === "applied" ? "pending" : "in_progress") : "pending",
+    status: index < done ? "approved" : index === done ? "in_progress" : "pending",
     completedAt: index < done ? bangkokIso(-DAY * (40 - index)) : null,
     enteredByStaff: seed.mode === "assisted" && index < done && index > 0,
-    factorySignedOffAt: seed.mode === "assisted" && index < done && index > 0 ? bangkokIso(-DAY * (39 - index)) : null,
+    // Under review, the capability and capacity Packio entered still wait for the factory's
+    // sign-off (the D-100 note) — what the partner zone's "review & sign off" is for.
+    factorySignedOffAt:
+      seed.mode === "assisted" && index < done && index > 0 && !(seed.status === "under_review" && index >= 3)
+        ? bangkokIso(-DAY * (39 - index))
+        : null,
     notes: null,
   }));
 }
@@ -215,7 +228,7 @@ function build(seed: Seed, index: number): Store {
     code: seed.code,
     legalName: seed.legalName,
     tradeName: seed.tradeName,
-    taxId: `010555${String(1000000 + index * 7919).slice(0, 7)}`,
+    taxId: withCheckDigit(`010555${String(100000 + index * 7919).slice(0, 6)}`),
     branchCode: "00000",
     juristicType: seed.legalName.startsWith("ห้างหุ้นส่วน") ? "partnership" : "company",
     isVatRegistered: true,
@@ -443,12 +456,16 @@ function build(seed: Seed, index: number): Store {
       : [],
     priceLists: types.map((code, at): PriceList => {
       const listId = nextId("prl");
+      // Under review with assisted onboarding: the tier-B list Packio entered waits for the
+      // factory's sign-off before it applies (D-100 note); the tier-A type waits for the rate
+      // card Packio sent (proposal 4, D-042 a).
+      const pendingEntry = seed.status === "under_review" && seed.mode === "assisted";
       return {
         id: listId,
         productTypeId: typeId(code),
         productTypeCode: code,
         current:
-          seed.status === "applied"
+          seed.status === "applied" || pendingEntry
             ? null
             : {
                 id: mockId("plv", index * 10 + at + 1),
@@ -470,7 +487,26 @@ function build(seed: Seed, index: number): Store {
                 factorySignedOffAt: seed.mode === "assisted" ? bangkokIso(-DAY * 61) : null,
                 createdAt: bangkokIso(-DAY * 62),
               },
-        upcoming: [],
+        upcoming:
+          pendingEntry && seed.tiers[code] === "B"
+            ? [
+                {
+                  id: mockId("plv", index * 10 + at + 1),
+                  versionNo: 1,
+                  status: "pending_acceptance",
+                  origin: "assisted_entry",
+                  effectiveFrom: bangkokIso(DAY * 3),
+                  reason: "ราคาที่ทีมพาร์ตเนอร์กรอกแทนโรงงานจากใบราคาที่ได้รับ",
+                  basedOnVersionNo: null,
+                  proposalId: null,
+                  contentSha256: "b".repeat(64),
+                  lineCount: 6,
+                  factoryAcceptedAt: null,
+                  factorySignedOffAt: null,
+                  createdAt: bangkokIso(-DAY * 2),
+                },
+              ]
+            : [],
       };
     }),
     overrides: new Map(),
@@ -481,7 +517,7 @@ SEEDS.forEach((seed, index) => stores.set(seed.id, build(seed, index)));
 
 /* ------------------------------------------------------------------------------ proposals */
 
-const COMPONENTS: Schemas["PriceComponentDto"][] = [
+export const COMPONENTS: Schemas["PriceComponentDto"][] = [
   {
     component: "material_prices",
     group: "materials",
@@ -528,7 +564,7 @@ const COMPONENTS: Schemas["PriceComponentDto"][] = [
 ];
 
 const ART = "0192f3a0-7c1e-7d2a-9b1f-00000000d003";
-const line = (
+export const line = (
   id: number,
   component: Schemas["PriceComponent"],
   action: ProposalLine["action"],
@@ -547,7 +583,7 @@ const line = (
   comment: null,
 });
 
-const counts = (lines: ProposalLine[]) => ({
+export const counts = (lines: ProposalLine[]) => ({
   total: lines.length,
   pending: lines.filter((item) => item.decision === "pending").length,
   accepted: lines.filter((item) => item.decision === "accepted").length,
@@ -555,7 +591,7 @@ const counts = (lines: ProposalLine[]) => ({
   countered: lines.filter((item) => item.decision === "countered").length,
 });
 
-function proposal(
+export function proposal(
   n: number,
   factoryId: string,
   code: string,
@@ -657,6 +693,43 @@ export const proposals: Proposal[] = [
     ],
     "ลดของเสียจากเครื่องใหม่",
   ),
+  // The rate card Packio sent F006 for its tier-A type during onboarding (D-042 a): the factory
+  // accepts it whole, or line by line with counters, in the partner zone.
+  {
+    ...proposal(
+      4,
+      mockId("fac", 6),
+      "label_sticker",
+      "packio_to_factory",
+      "submitted",
+      [
+        line(7, "material_prices", "add", null, {
+          materialId: "0192f3a0-7c1e-7d2a-9b1f-00000000d003",
+          qtyFrom: 1000,
+          qtyTo: 9999,
+          rate: "9.400000",
+        }),
+        line(8, "print_prices", "add", null, {
+          printTypeId: "0192f3a0-7c1e-7d2a-9b1f-00000000c003",
+          colours: 4,
+          setup: "900.00",
+          perSheet: "0.620000",
+        }),
+        line(9, "finish_prices", "add", null, {
+          finishId: "0192f3a0-7c1e-7d2a-9b1f-00000000d005",
+          perSqm: "5.200000",
+          minimum: "300.00",
+        }),
+        line(10, "factory_margins", "add", null, {
+          printTypeId: "0192f3a0-7c1e-7d2a-9b1f-00000000c003",
+          pct: "15.0000",
+        }),
+      ],
+      "อัตราตั้งต้นสำหรับสติกเกอร์ฉลาก",
+    ),
+    baseVersionNo: null,
+    proposedEffectiveFrom: bangkokIso(DAY * 10),
+  },
 ];
 
 /** The factories as the coverage map and the RFQ desk read them: tier per type, and status. */
@@ -775,7 +848,7 @@ function access(
   return store ? { who, store } : notFound();
 }
 
-const touch = (store: Store) => {
+export const touch = (store: Store) => {
   store.factory.updatedAt = new Date(Math.max(Date.now(), Date.parse(store.factory.updatedAt) + 1000) + 7 * 3_600_000)
     .toISOString()
     .slice(0, 19)
@@ -806,7 +879,7 @@ const TRANSITIONS: Record<Schemas["FactoryStatusAction"], [Factory["status"][], 
 };
 
 /** Writes a new version of a versioned term: approved at once, or proposed with an approval. */
-function writeVersion<T extends { current: unknown; upcoming: unknown[] }>(
+export function writeVersion<T extends { current: unknown; upcoming: unknown[] }>(
   holder: T,
   values: Record<string, unknown>,
   body: { effectiveFrom?: string; reason: string },
