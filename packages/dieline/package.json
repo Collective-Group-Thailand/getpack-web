@@ -1,12 +1,14 @@
 {
   "name": "@packio/dieline",
   "version": "0.1.0",
-  "description": "Framework-free box dieline geometry engine for Packio: flat-sheet layout, cut/crease segments and true-size SVG output.",
+  "description": "Framework-free box dieline engine for Packio: parametric box styles, caliper compensation, cut/crease/perforation geometry, 3D folding, and SVG / DXF / PDF output.",
   "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "fixtures",
+    "README.md"
   ],
   "main": "./src/index.ts",
   "types": "./src/index.ts",
@@ -29,10 +31,14 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fixtures": "vitest run src/styles.test.ts --update"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
     "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "clipper2-ts": "2.0.1"
   }
 }

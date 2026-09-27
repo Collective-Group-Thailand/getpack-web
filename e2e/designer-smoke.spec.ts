@@ -58,10 +58,11 @@ test("designs a box, saves it, finds it again and exports the dieline", async ({
 test("keeps the dieline in step with the box dimensions chosen in setup", async ({ page }) => {
   await startNewDesign(page);
 
-  // Default style is RSC with its first preset, 150 x 100 x 80 mm.
+  // Default style is RSC with its first preset, 150 x 100 x 80 mm inside, on E-flute (t = 1.6).
   await expect(page.getByText("ภายใน 150×100×80 มม.")).toBeVisible();
-  // RSC flat sheet: (glue 25 + 2L + 2W) x (H + W) = 525 x 180 mm.
-  await expect(page.getByText("แผ่นคลี่ 525 × 180 มม.")).toBeVisible();
+  // Engine v2 scores from the inside size: glue 35 + (L+t) + (W+t) + (L+t) + W = 539.8 wide;
+  // flaps (W+t)/2 + t/2 twice + H + 2t = 186.4 tall.
+  await expect(page.getByText("แผ่นคลี่ 540 × 186 มม.")).toBeVisible();
 });
 
 test("keeps the old BoxStudio path working", async ({ page }) => {

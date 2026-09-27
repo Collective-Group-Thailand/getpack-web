@@ -29,8 +29,25 @@ const document = {
 };
 
 describe("readDesignDocument", () => {
-  it("reads a document the designer saved", () => {
-    expect(readDesignDocument(document)?.spec.style).toBe("tuck-end");
+  it("reads a BoxStudio-era document into an engine v2 spec, artwork moved with its face", () => {
+    const read = readDesignDocument(document)!;
+    expect(read.spec).toMatchObject({
+      specVersion: 2,
+      styleId: "tuck-end",
+      values: { length: 80, width: 50, height: 120 },
+      materialId: "ivory-350",
+    });
+    expect(read.content.elements[0].x).not.toBe(27);
+  });
+
+  it("reads a current document as it is", () => {
+    const read = readDesignDocument(document)!;
+    const again = readDesignDocument({
+      spec: { ...read.spec },
+      content: read.content as unknown as Record<string, unknown>,
+    })!;
+    expect(again.spec.styleId).toBe("tuck-end");
+    expect(again.content.elements[0].x).toBe(read.content.elements[0].x);
   });
 
   it("refuses one this build cannot draw, instead of throwing", () => {
@@ -48,6 +65,6 @@ describe("DesignViewer", () => {
     // Each line of a multi-line text element is its own tspan, as the editor lays them out.
     expect(picture.querySelectorAll("tspan")).toHaveLength(2);
     expect(picture.querySelector("clipPath#t1-clip")).not.toBeNull();
-    expect(picture.querySelectorAll("line").length).toBeGreaterThan(4);
+    expect(picture.querySelectorAll("path[stroke]").length).toBeGreaterThan(4);
   });
 });

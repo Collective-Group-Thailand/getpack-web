@@ -1,7 +1,7 @@
 "use client";
 import type Konva from "konva";
 import { jsPDF } from "jspdf";
-import { dielineToSvg, PX_PER_MM } from "@packio/dieline";
+import { dielineToDxf, dielineToPdf, dielineToSvg, PX_PER_MM } from "@packio/dieline";
 import type { Dieline } from "./types";
 
 const MAX_CANVAS_PX = 12000;
@@ -69,11 +69,29 @@ export function exportPdf(stage: Konva.Stage, d: Dieline, name: string) {
   pdf.save(`${safeName(name)}.pdf`);
 }
 
-export function exportDielineSvg(d: Dieline, name: string) {
-  const blob = new Blob([dielineToSvg(d, 3)], { type: "image/svg+xml" });
+function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
-  download(url, `${safeName(name)}-dieline.svg`);
+  download(url, filename);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/** The die as a true-size SVG with CUT / CREASE / PERF / HALFCUT / GLUE layers. */
+export function exportDielineSvg(d: Dieline, name: string) {
+  downloadBlob(
+    new Blob([dielineToSvg(d, { margin: 3, annotations: true })], { type: "image/svg+xml" }),
+    `${safeName(name)}-dieline.svg`,
+  );
+}
+
+/** The die as DXF (R12, millimetres, same layers) for the die-maker's CAD. */
+export function exportDielineDxf(d: Dieline, name: string) {
+  downloadBlob(new Blob([dielineToDxf(d)], { type: "application/dxf" }), `${safeName(name)}-dieline.dxf`);
+}
+
+/** The die as a vector PDF, each layer a spot colour (CutContour, Crease…). */
+export function exportDielinePdf(d: Dieline, name: string) {
+  const bytes = dielineToPdf(d, { title: name });
+  downloadBlob(new Blob([bytes.buffer as ArrayBuffer], { type: "application/pdf" }), `${safeName(name)}-dieline.pdf`);
 }
 
 export function makeThumbnail(stage: Konva.Stage, d: Dieline): string {

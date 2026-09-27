@@ -35,8 +35,14 @@ repository**, and this repository owns it (D-002).
   so a geometry fix reaches production in one place. A breaking geometry change is a major
   version and a coordinated bump, not a silent behaviour difference between quote and
   production file.
-- Face `name` values are still Thai strings inherited from BoxStudio. They become i18n keys
-  in F4 Part A; until then no new code should render them as final copy.
-- `insetConvex` does not detect an inset larger than half the smallest span: it returns a
-  mirrored polygon instead of `null`. The behaviour is pinned by a test so it cannot change
-  silently, and F4 Part A decides whether to fix it.
+- ~~Face `name` values are still Thai strings~~ — F4 Part A: faces carry a label **key**;
+  `FACE_LABELS` holds the Thai and English words, so the drawing service and the app say the
+  same thing.
+- ~~`insetConvex` returns a mirrored polygon for a too-large inset~~ — F4 Part A removed it:
+  offsetting goes through Clipper2 (`safeZone`, `bleedOutline`), which returns nothing when a
+  face is too small and is correct for concave faces, holes and curves. That is the engine's
+  only runtime dependency (`clipper2-ts`, pure TypeScript, BSL-1.0), reached only by the
+  offsetting and export modules so that drawing a box on a storefront page does not load it.
+- F4 Part A is a **major** release (1.0.0): the geometry model changed shape
+  (ADR-0008). The 0.x tests were rewritten against it rather than kept, and a release
+  workflow publishes from `main` (`.github/workflows/release-dieline.yml`).

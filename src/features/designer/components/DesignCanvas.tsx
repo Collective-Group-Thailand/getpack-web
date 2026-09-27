@@ -1,15 +1,38 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
-import { Ellipse, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Transformer } from "react-konva";
+import { useLocale } from "next-intl";
+import { Ellipse, Group, Image as KImage, Layer, Line, Path, Rect, Stage, Text, Transformer } from "react-konva";
 import { useEditor } from "@/features/designer/store/editor";
-import { dielineSegments, faceCentroid, flat, insetConvex, PX_PER_MM } from "@packio/dieline";
+import {
+  allFaces,
+  dielineLines,
+  faceBounds,
+  faceLabel,
+  flattenContour,
+  PX_PER_MM,
+  safeZone,
+  svgPathData,
+  type EdgeRole,
+} from "@packio/dieline";
 import { buildPatternTile } from "@/features/designer/patterns";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import type { Dieline, DesignElement } from "@/features/designer/types";
 
 export const SAFE_ZONE_MM = 3;
 const TILE_PX_PER_MM = 8;
+
+const flat = (pts: [number, number][]) => pts.flatMap((p) => p);
+
+/** How each kind of die line looks on the canvas. Print marks: not themed (see canvas-colors). */
+const LINE_LOOK: Record<EdgeRole, { stroke: string; dash?: number[] }> = {
+  cut: { stroke: CANVAS_COLORS.cut },
+  crease: { stroke: CANVAS_COLORS.fold, dash: [6, 4] },
+  perforation: { stroke: CANVAS_COLORS.fold, dash: [2, 2] },
+  half_cut: { stroke: CANVAS_COLORS.cut, dash: [6, 2, 2, 2] },
+  glue_area: { stroke: CANVAS_COLORS.panelLabel, dash: [3, 2] },
+  bleed: { stroke: CANVAS_COLORS.safeZone, dash: [1, 3] },
+};
 
 function useHtmlImage(src: string) {
   const [img, setImg] = useState<HTMLImageElement | null>(null);
@@ -41,15 +64,19 @@ interface Props {
 
 export default function DesignCanvas({ dieline, paperColor, stageRef, width, height, fitSignal }: Props) {
   const { content, selectedId, select, updateElement, zoom, setZoom, showLabels, showSafeZone } = useEditor();
+  const locale = useLocale() as "th" | "en";
   const trRef = useRef<Konva.Transformer>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const scale = zoom * PX_PER_MM;
 
-  const segments = useMemo(() => dielineSegments(dieline), [dieline]);
+  const faces = useMemo(() => allFaces(dieline), [dieline]);
+  const lines = useMemo(() => dielineLines(dieline).filter((l) => l.role !== "bleed"), [dieline]);
   const tile = useMemo(() => buildPatternTile(content.pattern, TILE_PX_PER_MM), [content.pattern]);
-  const safe = useMemo(
-    () => dieline.faces.map((f) => insetConvex(f.points, SAFE_ZONE_MM)).filter((p): p is NonNullable<typeof p> => !!p),
-    [dieline],
+  const safe = useMemo(() => faces.flatMap((f) => safeZone(f, SAFE_ZONE_MM)), [faces]);
+  // Flattened face outlines and holes, for clipping the artwork (holes stay clear).
+  const clipContours = useMemo(
+    () => faces.flatMap((f) => [f.outline, ...f.holes].map((c) => flattenContour(c))),
+    [faces],
   );
 
   /*
@@ -84,10 +111,12 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
 
   const clipFaces = (ctx: Konva.Context) => {
     ctx.beginPath();
-    for (const f of dieline.faces) {
-      f.points.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
+    for (const contour of clipContours) {
+      contour.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
       ctx.closePath();
     }
+    // Even-odd, so a window cut into a panel is a hole in the artwork too.
+    return ["evenodd"] as [CanvasFillRule];
   };
 
   const onWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -149,11 +178,11 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
       <Layer>
         {/* Paper */}
         <Group name="paper">
-          {dieline.faces.map((f) => (
-            <Line
+          {faces.map((f) => (
+            <Path
               key={f.id}
-              points={flat(f.points)}
-              closed
+              data={[f.outline, ...f.holes].map((c) => svgPathData(c)).join(" ")}
+              fillRule="evenodd"
               fill={paperColor}
               shadowColor={CANVAS_COLORS.paperShadow}
               shadowOpacity={0.12}
@@ -243,24 +272,26 @@ export default function DesignCanvas({ dieline, paperColor, stageRef, width, hei
                 opacity={0.7}
               />
             ))}
-          {segments.map((s, i) => (
-            <Line
+          {lines.map((l, i) => (
+            <Path
               key={i}
-              points={[...s.a, ...s.b]}
-              stroke={s.kind === "cut" ? CANVAS_COLORS.cut : CANVAS_COLORS.fold}
+              data={svgPathData([l.edge], false)}
+              stroke={LINE_LOOK[l.role].stroke}
               strokeWidth={1.3}
-              dash={s.kind === "fold" ? [6, 4] : undefined}
+              dash={LINE_LOOK[l.role].dash}
               strokeScaleEnabled={false}
             />
           ))}
           {showLabels &&
-            dieline.faces.map((f) => {
-              const [cx, cy] = faceCentroid(f);
+            faces.map((f) => {
+              const b = faceBounds(f);
+              const cx = b.x + b.width / 2;
+              const cy = b.y + b.height / 2;
               const size = Math.max(2, Math.min(14, 12 / (zoom * PX_PER_MM)));
               return (
                 <Text
                   key={f.id}
-                  text={f.name}
+                  text={faceLabel(f.label)[locale]}
                   x={cx - 50}
                   y={cy - size / 2}
                   width={100}
