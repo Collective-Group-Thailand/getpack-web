@@ -201,6 +201,16 @@ type RateVersion = Schemas["FactoryRateVersionDto"];
 
 const shippingCards = new Map<string, RateVersion[]>();
 
+/**
+ * Factories still onboarding when the mock started get a card awaiting their answer; taken at
+ * seed time, so a back-office test moving a factory on does not change what the partner sees.
+ */
+const ONBOARDING_AT_SEED = new Set(
+  [...stores.values()]
+    .filter((store) => ["applied", "under_review"].includes(store.factory.status))
+    .map((store) => store.factory.id),
+);
+
 function rates(
   store: Store,
   acceptance: Schemas["RateLineAcceptance"],
@@ -237,7 +247,7 @@ function rates(
 function cardOf(store: Store): RateVersion[] {
   let versions = shippingCards.get(store.factory.id);
   if (!versions) {
-    const onboarding = ["applied", "under_review"].includes(store.factory.status);
+    const onboarding = ONBOARDING_AT_SEED.has(store.factory.id);
     const accepted: RateVersion = {
       id: mockId("frv", Number.parseInt(store.factory.code.slice(1), 10) * 10 + 1),
       versionNo: 1,
@@ -252,7 +262,7 @@ function cardOf(store: Store): RateVersion[] {
       openLines: 0,
     };
     accepted.rates = rates(store, onboarding ? "pending" : "accepted", 1);
-    versions = store.factory.status === "applied" ? [] : [accepted];
+    versions = [accepted];
     versions.forEach(recount);
     shippingCards.set(store.factory.id, versions);
   }

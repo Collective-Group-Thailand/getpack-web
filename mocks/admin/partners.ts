@@ -187,6 +187,12 @@ const version = <T extends object>(values: T, reason = "ตกลงกับโ
   ...values,
 });
 
+/** Twelve digits plus the Thai tax id check digit, so the partner zone's checksum accepts them. */
+function withCheckDigit(twelve: string): string {
+  const sum = [...twelve].reduce((total, digit, index) => total + Number(digit) * (13 - index), 0);
+  return `${twelve}${(11 - (sum % 11)) % 10}`;
+}
+
 function stepsFor(seed: Seed): Step[] {
   // An applicant has not submitted its application yet (D-171: the Partner team created the
   // factory and invited its owner, who fills it in), so nothing is complete.
@@ -222,7 +228,7 @@ function build(seed: Seed, index: number): Store {
     code: seed.code,
     legalName: seed.legalName,
     tradeName: seed.tradeName,
-    taxId: `010555${String(1000000 + index * 7919).slice(0, 7)}`,
+    taxId: withCheckDigit(`010555${String(100000 + index * 7919).slice(0, 6)}`),
     branchCode: "00000",
     juristicType: seed.legalName.startsWith("ห้างหุ้นส่วน") ? "partnership" : "company",
     isVatRegistered: true,
