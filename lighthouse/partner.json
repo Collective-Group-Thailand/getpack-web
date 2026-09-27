@@ -9,7 +9,8 @@
         "http://partner.localhost:3200/onboarding/capability",
         "http://partner.localhost:3200/requests",
         "http://partner.localhost:3200/jobs",
-        "http://partner.localhost:3200/ship"
+        "http://partner.localhost:3200/ship",
+        "http://partner.localhost:3200/settings"
       ],
       "numberOfRuns": 3,
       "settings": {

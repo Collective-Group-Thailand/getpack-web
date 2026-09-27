@@ -44,6 +44,22 @@
       "capacity": {
         "title": "Weekly capacity",
         "body": "Booked load against capacity, and closures"
+      },
+      "payouts": {
+        "title": "Payouts",
+        "body": "Schedule, history and documents"
+      },
+      "claims": {
+        "title": "Claims",
+        "body": "Claims on your jobs"
+      },
+      "performance": {
+        "title": "Performance",
+        "body": "Your monthly scorecard"
+      },
+      "settings": {
+        "title": "Settings",
+        "body": "Users, notifications, this device"
       }
     }
   }

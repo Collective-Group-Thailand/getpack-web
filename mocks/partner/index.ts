@@ -5,6 +5,7 @@
  * `./support.ts` for the rules every handler applies (own factory only, roles from rbac.md).
  */
 
+import { billingRequestHandlers } from "./billing";
 import { factoryHandlers } from "./factories";
 import { jobRequestHandlers } from "./jobs";
 import { onboardingRequestHandlers } from "./onboarding";
@@ -14,5 +15,6 @@ export const partnerZoneHandlers = [
   ...onboardingRequestHandlers,
   ...jobRequestHandlers,
   ...shipmentRequestHandlers,
+  ...billingRequestHandlers,
   ...factoryHandlers,
 ];
