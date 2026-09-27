@@ -1,17 +1,46 @@
 {
   "zone": "Partner factory",
-  "placeholder": {
-    "heading": "Partner zone",
-    "body": "The zone shell is in place. Working screens arrive here as they are built."
-  },
   "shell": {
-    "account": "Account"
+    "account": "Account",
+    "roles": {
+      "factory_owner": "Factory Owner",
+      "factory_planner": "Planner",
+      "factory_operator": "Operator",
+      "factory_qc": "QC",
+      "factory_shipping": "Shipping",
+      "factory_accountant": "Factory Accountant"
+    },
+    "switchFactory": "Switch factory"
   },
   "nav": {
     "label": "Main navigation",
     "today": "Today",
     "jobs": "Jobs",
     "ship": "Ship",
-    "billing": "Billing"
+    "billing": "Billing",
+    "onboarding": "Onboarding",
+    "prices": "Prices",
+    "more": "More"
+  },
+  "more": {
+    "title": "More",
+    "items": {
+      "onboarding": {
+        "title": "Getting started",
+        "body": "Application, documents, agreements, visits"
+      },
+      "prices": {
+        "title": "Your prices",
+        "body": "Price lists, proposals and rate cards"
+      },
+      "shipping": {
+        "title": "Delivery rates",
+        "body": "What Packio pays when you deliver"
+      },
+      "requests": {
+        "title": "Requests to Packio",
+        "body": "Ask to change what Packio records; see answers"
+      }
+    }
   }
 }

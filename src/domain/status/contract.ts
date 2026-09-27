@@ -215,3 +215,9 @@ export type BankAccountStatus = Schemas["BankAccountStatus"];
 
 /** The outcome of a site visit, required before activation (D-041). **Source: contract** (B2.2). */
 export type SiteVisitResult = Schemas["SiteVisitResult"];
+
+/** A factory's request to the Partner team. **Proposed** in contract request `partner.change-requests`. */
+export type ChangeRequestStatus = "open" | "in_progress" | "done" | "declined";
+
+/** A factory's answer to one line of a shipping payout card (D-013, D-042). **Source: contract** (B2.2). */
+export type RateLineAcceptance = Schemas["RateLineAcceptance"];

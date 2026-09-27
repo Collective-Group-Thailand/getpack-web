@@ -59,6 +59,10 @@ const NAMESPACES = [
   "analytics",
   "reports",
   "partner",
+  "partnerToday",
+  "partnerOnboarding",
+  "partnerPrices",
+  "partnerRequests",
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];
@@ -124,7 +128,16 @@ export const ZONE_NAMESPACES = {
     // The designer, for prepress opening a design read-only or as a copy (F4 C.2).
     "designer",
   ],
-  partner: ["common", "auth", "status", "partner"],
+  partner: [
+    "common",
+    "auth",
+    "status",
+    "partner",
+    "partnerToday",
+    "partnerOnboarding",
+    "partnerPrices",
+    "partnerRequests",
+  ],
 } as const satisfies Record<Zone, readonly Namespace[]>;
 
 type Loader = () => Promise<{ default: Record<string, unknown> }>;
@@ -173,6 +186,10 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     iam: () => import("./th/admin/iam.json"),
     approvals: () => import("./th/admin/approvals.json"),
     partner: () => import("./th/partner/partner.json"),
+    partnerToday: () => import("./th/partner/today.json"),
+    partnerOnboarding: () => import("./th/partner/onboarding.json"),
+    partnerPrices: () => import("./th/partner/prices.json"),
+    partnerRequests: () => import("./th/partner/requests.json"),
   },
   en: {
     common: () => import("./en/common/common.json"),
@@ -217,6 +234,10 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     iam: () => import("./en/admin/iam.json"),
     approvals: () => import("./en/admin/approvals.json"),
     partner: () => import("./en/partner/partner.json"),
+    partnerToday: () => import("./en/partner/today.json"),
+    partnerOnboarding: () => import("./en/partner/onboarding.json"),
+    partnerPrices: () => import("./en/partner/prices.json"),
+    partnerRequests: () => import("./en/partner/requests.json"),
   },
 };
 

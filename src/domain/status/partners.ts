@@ -1,5 +1,7 @@
 import { defineStatusMap } from "./types";
 import type {
+  RateLineAcceptance,
+  ChangeRequestStatus,
   BankAccountStatus,
   FactoryStatus,
   KycStatus,
@@ -71,4 +73,19 @@ export const SITE_VISIT_RESULT = defineStatusMap<SiteVisitResult>({
   pass: { tone: "success", icon: "check", labelKey: "siteVisit.pass" },
   conditional: { tone: "warning", icon: "warning", labelKey: "siteVisit.conditional" },
   fail: { tone: "danger", icon: "ban", labelKey: "siteVisit.fail" },
+});
+
+/** A factory's request to the Partner team (D-011): the team answers, nothing changes until it does. */
+export const CHANGE_REQUEST_STATUS = defineStatusMap<ChangeRequestStatus>({
+  open: { tone: "info", icon: "inbox", labelKey: "changeRequest.open" },
+  in_progress: { tone: "primary", icon: "refresh", labelKey: "changeRequest.inProgress" },
+  done: { tone: "success", icon: "check", labelKey: "changeRequest.done" },
+  declined: { tone: "neutral", icon: "ban", labelKey: "changeRequest.declined" },
+});
+
+/** A factory's answer to one line of a shipping payout card (D-013, D-042). */
+export const RATE_LINE_ACCEPTANCE = defineStatusMap<RateLineAcceptance>({
+  pending: { tone: "neutral", icon: "clock", labelKey: "rateLine.pending" },
+  accepted: { tone: "success", icon: "check", labelKey: "rateLine.accepted" },
+  countered: { tone: "warning", icon: "scale", labelKey: "rateLine.countered" },
 });
