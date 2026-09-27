@@ -47,7 +47,14 @@ export default async function StatementOfAccountPage({ searchParams }: Props) {
         </Button>
       </form>
       {account.data ? (
-        <Card padding="none" className="overflow-x-auto">
+        <Card
+          padding="none"
+          className="overflow-x-auto"
+          // Scrolls sideways on a phone: focusable, so a keyboard can scroll it too.
+          tabIndex={0}
+          role="region"
+          aria-label={t("caption", { from: format.date(account.data.from), to: format.date(account.data.to) })}
+        >
           <table className="w-full text-sm tabular-nums">
             <caption className="sr-only">
               {t("caption", { from: format.date(account.data.from), to: format.date(account.data.to) })}
