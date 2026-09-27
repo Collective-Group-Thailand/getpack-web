@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { getStyle, SPEC_VERSION, STYLES } from "@packio/dieline";
 
-import { BOX_STYLES, dimsFromProduct, getPaper, getStyle, papersFor } from "@/features/designer/catalog";
+import { boardColour, dimsFromProduct, getPaper, papersFor } from "@/features/designer/catalog";
+import { insideSize } from "@/features/designer/document";
 import type { BoxDims, BoxStyleId, DesignSpec } from "@/features/designer/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
@@ -56,30 +58,30 @@ export function SetupModal({ open, initial, onConfirm, onClose, hasContent }: Se
 function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
   const t = useTranslations("designer.setup");
   const tCommon = useTranslations("common");
+  const locale = useLocale() as "th" | "en";
 
-  const [style, setStyle] = useState<BoxStyleId>(initial?.style ?? "rsc");
+  const [style, setStyle] = useState<BoxStyleId>(initial?.styleId ?? "rsc");
   const [mode, setMode] = useState<SizeMode>(initial ? "custom" : "preset");
   const [presetIndex, setPresetIndex] = useState(0);
   const [product, setProduct] = useState<BoxDims>(
-    initial?.productDims ?? initial?.dims ?? { length: 200, width: 150, height: 100 },
+    initial?.productDims ?? (initial ? insideSize(initial) : null) ?? { length: 200, width: 150, height: 100 },
   );
-  const [paperId, setPaperId] = useState(initial?.paperId ?? papersFor("rsc")[0].id);
+  const [paperId, setPaperId] = useState(initial?.materialId ?? papersFor(initial?.styleId ?? "rsc")[0].id);
   const [resizeWarningOpen, setResizeWarningOpen] = useState(false);
 
   const styleDef = getStyle(style);
   const papers = papersFor(style);
   const paper = papers.find((candidate) => candidate.id === paperId) ?? papers[0];
 
-  /*
-   * Computed straight, with no useMemo. It is a lookup and three additions, and the React
-   * Compiler could not preserve the hand-written memoisation that used to be here — which
-   * made it skip optimising this component altogether (the warning F0.1 recorded for F0.2).
-   * The compiler now memoises it correctly on its own.
-   */
+  const preset = styleDef.presets[presetIndex] ?? styleDef.presets[0];
   const dims: BoxDims =
     mode === "preset"
-      ? (styleDef.presets[presetIndex]?.dims ?? styleDef.presets[0].dims)
-      : dimsFromProduct(product, paper.thickness);
+      ? {
+          length: Number(preset.values.length),
+          width: Number(preset.values.width),
+          height: Number(preset.values.height),
+        }
+      : dimsFromProduct(product);
 
   const DIM_FIELDS: { key: keyof BoxDims; label: string }[] = [
     { key: "length", label: t("productLength") },
@@ -87,12 +89,13 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
     { key: "height", label: t("productHeight") },
   ];
 
-  const errors =
-    mode === "custom"
-      ? DIM_FIELDS.filter(({ key }) => !(dims[key] >= styleDef.limits.min && dims[key] <= styleDef.limits.max)).map(
-          ({ label }) => t("outOfRange", { label, min: styleDef.limits.min, max: styleDef.limits.max }),
-        )
-      : [];
+  // Keep the construction choices (tuck depth, window…) when only the size changes.
+  const values = { ...(initial?.styleId === style ? initial.values : {}), ...dims };
+  // The engine's rules, in the customer's language — the same ones the drawing service applies.
+  const errors = styleDef
+    .validate(values, paper.material)
+    .filter((issue) => issue.severity === "error")
+    .map((issue) => issue.message[locale]);
 
   const changeStyle = (next: BoxStyleId) => {
     setStyle(next);
@@ -102,7 +105,14 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
   };
 
   const commit = () => {
-    onConfirm({ style, dims, paperId: paper.id, productDims: mode === "custom" ? product : undefined });
+    onConfirm({
+      specVersion: SPEC_VERSION,
+      styleId: style,
+      values,
+      material: paper.material,
+      materialId: paper.id,
+      productDims: mode === "custom" ? product : undefined,
+    });
   };
 
   const submit = () => {
@@ -124,10 +134,10 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
             <RadioCards
               value={style}
               onValueChange={(next) => changeStyle(next as BoxStyleId)}
-              options={BOX_STYLES.map((option) => ({
+              options={STYLES.map((option) => ({
                 value: option.id,
-                label: option.name,
-                description: option.description,
+                label: option.name[locale],
+                description: option.description[locale],
               }))}
             />
           </Field>
@@ -149,9 +159,9 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
                   <Select
                     value={String(presetIndex)}
                     onValueChange={(value) => setPresetIndex(Number(value))}
-                    options={styleDef.presets.map((preset, index) => ({
+                    options={styleDef.presets.map((option, index) => ({
                       value: String(index),
-                      label: t("presetOption", { label: preset.label }),
+                      label: t("presetOption", { label: option.label[locale] }),
                     }))}
                   />
                 </Field>
@@ -189,17 +199,24 @@ function SetupForm({ initial, onConfirm, onClose, hasContent }: SetupProps) {
               options={papers.map((option) => ({
                 value: option.id,
                 label: option.printable
-                  ? t("materialOption", { name: option.name, thickness: option.thickness })
-                  : t("materialOptionNoPrint", { name: option.name, thickness: option.thickness }),
+                  ? t("materialOption", { name: option.name, thickness: option.material.caliperMm })
+                  : t("materialOptionNoPrint", { name: option.name, thickness: option.material.caliperMm }),
               }))}
             />
-            {!getPaper(paper.id).printable ? <Callout tone="warning" title={t("flexoOnly")} className="mt-2" /> : null}
+            {!getPaper(paper.id)?.printable ? <Callout tone="warning" title={t("flexoOnly")} className="mt-2" /> : null}
           </Field>
         </div>
 
         <aside className="bg-surface-subtle flex flex-col rounded-xl p-3">
           <div className="aspect-square w-full">
-            <BoxPreview style={style} dims={dims} paper={paper.id} />
+            {errors.length === 0 ? (
+              <BoxPreview
+                styleId={style}
+                values={values}
+                material={paper.material}
+                colour={boardColour({ materialId: paper.id, material: paper.material })}
+              />
+            ) : null}
           </div>
           {/* A <dl> may only hold dt/dd pairs (wrapped in a div at most) — the line legend
                 below is not a definition, so it sits outside. axe in a real browser caught

@@ -15,6 +15,7 @@
  * calculator and must never be read as a price.
  */
 
+import { resolveStyleId } from "@packio/dieline";
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type { z } from "zod";
 
@@ -53,9 +54,6 @@ const CALCULATOR_OF: Record<string, Configurator["calculator"]> = {
   standard_product: "standard_product",
   service: "service",
 };
-
-/** The catalogue's pattern keys that `@packio/dieline` draws, by the key the store sends. */
-const DIELINE_KEYS: Record<string, string> = { rte: "tuck-end", rsc: "rsc", tray: "tray", "tuck-end": "tuck-end" };
 
 const option = (
   row: { id: string; code: string; nameTh: string; nameEn: string },
@@ -209,7 +207,8 @@ function patternsOf(product: Row, kind: Configurator["size"]["kind"]): Configura
         id: String(pattern.id),
         code: String(pattern.code),
         name: String(pattern.name),
-        dielineKey: DIELINE_KEYS[String(pattern.dielineKey)] ?? null,
+        // The catalogue's key resolved to a style `@packio/dieline` draws (`rte` → reverse tuck end).
+        dielineKey: resolveStyleId(String(pattern.dielineKey ?? "")),
         imageUrl: null,
         // A single-part box prices its body only; multi-part patterns list their parts.
         parts: subs.length > 0 ? [{ subPatternId: String(subs[0]!.id), name: String(subs[0]!.name) }] : [],

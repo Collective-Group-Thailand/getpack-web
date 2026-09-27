@@ -1,3 +1,4 @@
+import { readDesign } from "./document";
 import type { SavedDesign } from "./types";
 
 const KEY = "packio.designs.v1";
@@ -22,10 +23,19 @@ function adoptLegacyDesigns(): SavedDesign[] {
   return [];
 }
 
+/**
+ * Every stored design in the current shape. BoxStudio-era designs (no `specVersion`) are
+ * migrated on read — box onto engine v2, artwork moved with its face — and written back in the
+ * new shape on their next save. One the build cannot read is left out, not thrown on.
+ */
 function readAll(): SavedDesign[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as SavedDesign[]) : adoptLegacyDesigns();
+    const list = raw ? (JSON.parse(raw) as SavedDesign[]) : adoptLegacyDesigns();
+    return list.flatMap((design) => {
+      const read = readDesign(design.spec, design.content);
+      return read ? [{ ...design, spec: read.spec, content: read.content }] : [];
+    });
   } catch {
     return [];
   }

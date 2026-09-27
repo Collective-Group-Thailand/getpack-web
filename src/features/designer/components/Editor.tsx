@@ -7,10 +7,18 @@ import { useLocale, useTranslations } from "next-intl";
 import type Konva from "konva";
 import { nanoid } from "nanoid";
 
-import { buildDieline, PX_PER_MM } from "@packio/dieline";
+import { getStyle, PX_PER_MM, SPEC_VERSION } from "@packio/dieline";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
-import { getPaper, getStyle, papersFor } from "@/features/designer/catalog";
-import { exportDielineSvg, exportPdf, exportPng, makeThumbnail } from "@/features/designer/export";
+import { boardColour, getPaper, papersFor } from "@/features/designer/catalog";
+import { dielineOf, insideSize } from "@/features/designer/document";
+import {
+  exportDielineDxf,
+  exportDielinePdf,
+  exportDielineSvg,
+  exportPdf,
+  exportPng,
+  makeThumbnail,
+} from "@/features/designer/export";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
 import type { BoxDims, BoxStyleId } from "@/features/designer/types";
@@ -33,7 +41,7 @@ import { Toolbar } from "./Toolbar";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
 
-type ExportKind = "pdf" | "png" | "png-guides" | "svg";
+type ExportKind = "pdf" | "png" | "png-guides" | "svg" | "dxf" | "dieline-pdf";
 
 function useSize<T extends HTMLElement>() {
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -97,8 +105,9 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
     setLoaded(true);
   }, [id, t]);
 
-  const dieline = useMemo(() => (spec ? buildDieline(spec.style, spec.dims) : null), [spec]);
-  const paper = spec ? getPaper(spec.paperId) : null;
+  const dieline = useMemo(() => (spec ? dielineOf(spec) : null), [spec]);
+  const paperColour = spec ? boardColour(spec) : null;
+  const paperName = spec ? (getPaper(spec.materialId)?.name ?? null) : null;
   const selected = content.elements.find((element) => element.id === selectedId);
 
   const save = useCallback(() => {
@@ -196,6 +205,8 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
     state.select(null);
     setTimeout(() => {
       if (kind === "svg") exportDielineSvg(dieline, name);
+      else if (kind === "dxf") exportDielineDxf(dieline, name);
+      else if (kind === "dieline-pdf") exportDielinePdf(dieline, name);
       else if (kind === "pdf") exportPdf(stage, dieline, name);
       else exportPng(stage, dieline, name, kind === "png-guides");
     }, 50);
@@ -231,8 +242,7 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
           <p className="ml-auto hidden text-xs md:block">
             {spec && dieline ? (
               <>
-                {getStyle(spec.style).name} ·{" "}
-                {t("summary", { length: spec.dims.length, width: spec.dims.width, height: spec.dims.height })} ·{" "}
+                {getStyle(spec.styleId).name[locale]} · {t("summary", { ...insideSize(spec) })} ·{" "}
                 <b className="font-semibold">
                   {t("flatSheet", { width: dieline.width.toFixed(0), height: dieline.height.toFixed(0) })}
                 </b>
@@ -277,6 +287,18 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
                   description: t("exportMenu.svgHint"),
                   onSelect: () => doExport("svg"),
                 },
+                {
+                  id: "dxf",
+                  label: t("exportMenu.dxf"),
+                  description: t("exportMenu.dxfHint"),
+                  onSelect: () => doExport("dxf"),
+                },
+                {
+                  id: "dieline-pdf",
+                  label: t("exportMenu.dielinePdf"),
+                  description: t("exportMenu.dielinePdfHint"),
+                  onSelect: () => doExport("dieline-pdf"),
+                },
               ]}
             />
 
@@ -306,10 +328,10 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
               backgroundSize: "18px 18px",
             }}
           >
-            {dieline && paper && size.width > 0 ? (
+            {dieline && paperColour && size.width > 0 ? (
               <DesignCanvas
                 dieline={dieline}
-                paperColor={paper.color}
+                paperColor={paperColour}
                 stageRef={stageRef}
                 width={size.width}
                 height={size.height}
@@ -350,7 +372,7 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
 
         <footer className="border-border bg-surface flex h-11 shrink-0 items-center justify-end gap-3 border-t px-3 text-sm">
           <div className="text-muted mr-auto hidden items-center gap-3 text-xs sm:flex">
-            {paper ? <span>{t("material", { name: paper.name })}</span> : null}
+            {paperName ? <span>{t("material", { name: paperName })}</span> : null}
             <span className="flex items-center gap-1">
               <i className="inline-block h-0.5 w-4" style={{ backgroundColor: CANVAS_COLORS.cut }} />
               {t("legend.cut")}
@@ -395,7 +417,18 @@ export default function Editor({ id, seed }: { id: string; seed?: EditorSeed }) 
            * SetupModal resets itself from `initial` instead.
            */
           open={setupOpen}
-          initial={spec ?? (seed ? { style: seed.style, dims: seed.dims, paperId: papersFor(seed.style)[0].id } : null)}
+          initial={
+            spec ??
+            (seed
+              ? {
+                  specVersion: SPEC_VERSION,
+                  styleId: seed.style,
+                  values: { ...seed.dims },
+                  material: papersFor(seed.style)[0].material,
+                  materialId: papersFor(seed.style)[0].id,
+                }
+              : null)
+          }
           hasContent={content.elements.length > 0}
           onClose={spec ? () => setSetupOpen(false) : leave}
           onConfirm={(nextSpec) => {

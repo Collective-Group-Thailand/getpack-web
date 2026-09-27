@@ -7,17 +7,16 @@ import { pick } from "@/features/customer/catalog/localize";
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
 import { ProductMockup2D, type MockupKind } from "@/features/designer/components/ProductMockup2D";
+import { resolveStyleId } from "@packio/dieline";
+
 import type { BoxStyleId } from "@/features/designer/types";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
 import { patternOf, type Configurator, type ConfiguratorState } from "./state";
 
-const BOX_STYLES = new Set<BoxStyleId>(["rsc", "tuck-end", "tray"]);
-
-/** The `@packio/dieline` style of the chosen pattern, when it draws one. */
+/** The `@packio/dieline` style of the chosen pattern, when it draws one (aliases like `rte` resolved). */
 export function boxStyleOf(configurator: Configurator, state: ConfiguratorState): BoxStyleId | null {
-  const key = patternOf(configurator, state)?.dielineKey;
-  return key && BOX_STYLES.has(key as BoxStyleId) ? (key as BoxStyleId) : null;
+  return resolveStyleId(patternOf(configurator, state)?.dielineKey);
 }
 
 const MOCKUP_OF: Partial<Record<Configurator["calculator"], MockupKind>> = {
@@ -87,7 +86,7 @@ export function ConfiguratorPreview({
         ) : null}
         {view === "flat" && style ? (
           <div className="h-64">
-            <BoxPreview style={style} dims={dims} paper="ivory-350" label={t("flatLabel", { name: productName })} />
+            <BoxPreview styleId={style} values={dims} colour={colour} label={t("flatLabel", { name: productName })} />
           </div>
         ) : (
           <BoxPreview3D

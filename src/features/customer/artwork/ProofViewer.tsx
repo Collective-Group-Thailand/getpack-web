@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
-import type { BoxStyleId } from "@/features/designer/types";
+import { resolveStyleId } from "@packio/dieline";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { PROOF_STATUS } from "@/domain/status";
@@ -37,7 +37,6 @@ type Tool = "view" | "pin" | "rect";
 type Draft = { kind: "pin" | "rect"; geometry: Record<string, number> };
 
 const ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3];
-const BOX_STYLES = new Set<BoxStyleId>(["rsc", "tuck-end", "tray"]);
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -341,10 +340,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
     }
   }
 
-  const style =
-    artwork.dieline.dielineKey && BOX_STYLES.has(artwork.dieline.dielineKey as BoxStyleId)
-      ? (artwork.dieline.dielineKey as BoxStyleId)
-      : null;
+  const style = resolveStyleId(artwork.dieline.dielineKey);
   const other = proofs.find((candidate) => candidate.versionNo === against) ?? proof;
 
   return (

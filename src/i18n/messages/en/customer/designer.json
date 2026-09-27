@@ -29,7 +29,11 @@
     "pngGuides": "Preview PNG",
     "pngGuidesHint": "With cut and fold lines",
     "svg": "Dieline SVG",
-    "svgHint": "Cut and fold on separate layers"
+    "svgHint": "Cut and fold on separate layers",
+    "dxf": "Dieline DXF",
+    "dxfHint": "For the die-maker's CAD",
+    "dielinePdf": "Dieline PDF",
+    "dielinePdfHint": "Vector, CutContour / Crease spot colours"
   },
   "toolbar": {
     "label": "Design tools",

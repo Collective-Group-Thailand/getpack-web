@@ -9,7 +9,15 @@
  * something true-to-shape to zoom, overlay and annotate.
  */
 
-import { buildDieline, dielineSegments, dielineToSvg, type BoxStyleId } from "@packio/dieline";
+import {
+  allFaces,
+  buildStyle,
+  dielineLines,
+  dielineToSvg,
+  faceBounds,
+  REFERENCE_MATERIALS,
+  svgPathData,
+} from "@packio/dieline";
 import type { z } from "zod";
 
 import type { storeAnnotationThread, storeArtwork } from "@/lib/api/requests/store-artwork";
@@ -36,7 +44,8 @@ import { ownerIdOf } from "./owner";
 type Artwork = z.output<typeof storeArtwork>;
 type Thread = z.output<typeof storeAnnotationThread>;
 
-const DIELINE_KEYS: Record<string, BoxStyleId> = { "RTE-01": "tuck-end", "RSC-01": "rsc", "TRAY-01": "tray" };
+const DIELINE_KEYS: Record<string, string> = { "RTE-01": "reverse-tuck-end", "RSC-01": "rsc", "TRAY-01": "tray" };
+const BOARD = REFERENCE_MATERIALS["board-350"];
 const PALETTE = ["#1f6f5c", "#b4532a", "#3b5ba5", "#8a3f8f"];
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
@@ -62,25 +71,22 @@ const svgUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 /** A proof page: the dieline filled with obviously fake artwork, one colour per version. */
 function proofPage(detail: PrepressDetail, versionNo: number) {
   const style = DIELINE_KEYS[detail.dieline.patternCode ?? ""] ?? "tuck-end";
-  const dieline = buildDieline(style, dimsOf(detail));
+  const dieline = buildStyle(style, dimsOf(detail), BOARD);
   const scale = 1200 / Math.max(dieline.width, dieline.height);
   const width = Math.round(dieline.width * scale);
   const height = Math.round(dieline.height * scale);
   const colour = PALETTE[(versionNo - 1) % PALETTE.length]!;
-  const faces = dieline.faces
+  const faces = `<g transform="scale(${scale})">${allFaces(dieline)
     .map(
       (face) =>
-        `<polygon points="${face.points.map(([x, y]) => `${x * scale},${y * scale}`).join(" ")}" fill="${colour}" fill-opacity="0.18"/>`,
+        `<path d="${[face.outline, ...face.holes].map((c) => svgPathData(c)).join(" ")}" fill-rule="evenodd" fill="${colour}" fill-opacity="0.18"/>`,
     )
-    .join("");
-  const main = dieline.faces.reduce(
+    .join("")}</g>`;
+  const main = allFaces(dieline).reduce(
     (best, face) => {
-      const xs = face.points.map((point) => point[0]);
-      const ys = face.points.map((point) => point[1]);
-      const area = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
-      return area > best.area
-        ? { area, x: (Math.max(...xs) + Math.min(...xs)) / 2, y: (Math.max(...ys) + Math.min(...ys)) / 2 }
-        : best;
+      const b = faceBounds(face);
+      const area = b.width * b.height;
+      return area > best.area ? { area, x: b.x + b.width / 2, y: b.y + b.height / 2 } : best;
     },
     { area: 0, x: dieline.width / 2, y: dieline.height / 2 },
   );
@@ -88,12 +94,13 @@ function proofPage(detail: PrepressDetail, versionNo: number) {
   const cy = main.y * scale;
   const art = `<circle cx="${cx}" cy="${cy - 60}" r="${versionNo === 1 ? 46 : 64}" fill="${colour}"/><rect x="${cx - 110}" y="${cy + 30}" width="220" height="22" rx="6" fill="#222" fill-opacity="0.6"/><text x="${cx}" y="${cy + 100}" text-anchor="middle" font-family="sans-serif" font-size="26" fill="#222">PROOF v${versionNo} · mock</text>`;
   const page = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="#fff"/>${faces}${art}</svg>`;
-  const lines = dielineSegments(dieline)
+  const lines = `<g transform="scale(${scale})" fill="none" stroke-width="${2 / scale}">${dielineLines(dieline)
+    .filter((l) => l.role === "cut" || l.role === "crease")
     .map(
-      (segment) =>
-        `<line x1="${segment.a[0] * scale}" y1="${segment.a[1] * scale}" x2="${segment.b[0] * scale}" y2="${segment.b[1] * scale}" stroke="${segment.kind === "cut" ? "#d62d20" : "#1e6fd9"}" stroke-width="2" ${segment.kind === "fold" ? 'stroke-dasharray="10 6"' : ""}/>`,
+      (l) =>
+        `<path d="${svgPathData([l.edge], false)}" stroke="${l.role === "cut" ? "#d62d20" : "#1e6fd9"}" ${l.role === "crease" ? `stroke-dasharray="${10 / scale} ${6 / scale}"` : ""}/>`,
     )
-    .join("");
+    .join("")}</g>`;
   const overlay = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">${lines}</svg>`;
   return { index: 0, imageUrl: svgUrl(page), widthPx: width, heightPx: height, dielineOverlayUrl: svgUrl(overlay) };
 }
@@ -183,7 +190,7 @@ const feeLabel = (roundNo: number) => `ค่าแก้ไขแบบรอ�
 function toArtwork(detail: PrepressDetail): Artwork {
   const order = orders.find((candidate) => candidate.id === detail.orderId)!;
   const style = DIELINE_KEYS[detail.dieline.patternCode ?? ""] ?? null;
-  const template = style ? dielineToSvg(buildDieline(style, dimsOf(detail)), 5) : null;
+  const template = style ? dielineToSvg(buildStyle(style, dimsOf(detail), BOARD), { margin: 5 }) : null;
   const group = groupForOrder(order);
   const service = detail.designService;
   const pendingRound = service?.rounds.find((round) => round.status === "awaiting_payment");
