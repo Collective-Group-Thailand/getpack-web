@@ -1,6 +1,5 @@
 "use client";
 import type Konva from "konva";
-import { jsPDF } from "jspdf";
 import { dielineToDxf, dielineToPdf, dielineToSvg, PX_PER_MM } from "@packio/dieline";
 import type { Dieline } from "./types";
 
@@ -53,20 +52,13 @@ export function exportPng(stage: Konva.Stage, d: Dieline, name: string, withGuid
   download(url, `${safeName(name)}${withGuides ? "-preview" : ""}.png`);
 }
 
-/** Print-ready PDF at true size (mm): artwork page + dieline page. */
-export function exportPdf(stage: Konva.Stage, d: Dieline, name: string) {
-  const margin = 3;
-  const w = d.width + margin * 2;
-  const h = d.height + margin * 2;
-  const pdf = new jsPDF({ unit: "mm", format: [w, h], orientation: w > h ? "landscape" : "portrait" });
-  const art = renderDieline(stage, d, { pxPerMm: 200 / 25.4, withGuides: false, marginMm: margin });
-  pdf.addImage(art, "PNG", 0, 0, w, h);
-  pdf.setProperties({ title: `${name} — artwork` });
-
-  const withLines = renderDieline(stage, d, { pxPerMm: 150 / 25.4, withGuides: true, marginMm: margin });
-  pdf.addPage([w, h], w > h ? "landscape" : "portrait");
-  pdf.addImage(withLines, "PNG", 0, 0, w, h);
-  pdf.save(`${safeName(name)}.pdf`);
+/** The print file (vector die on spot layers, artwork at 300 dpi with bleed), downloaded. */
+export async function exportPrintPdf(stage: Konva.Stage, d: Dieline, name: string, bleedMm: number) {
+  const { buildPrintPdf } = await import("./print");
+  const blob = await buildPrintPdf(stage, d, { name, bleedMm });
+  const url = URL.createObjectURL(blob);
+  download(url, `${safeName(name)}-print.pdf`);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function downloadBlob(blob: Blob, filename: string) {

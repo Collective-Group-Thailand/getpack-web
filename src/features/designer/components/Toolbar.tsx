@@ -120,7 +120,17 @@ export function Toolbar({
         const c = center();
         const width = 80;
         const height = (img.height / img.width) * width;
-        addElement({ ...base, type: "image", src, x: c.x - width / 2, y: c.y - height / 2, width, height });
+        addElement({
+          ...base,
+          type: "image",
+          src,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
+          x: c.x - width / 2,
+          y: c.y - height / 2,
+          width,
+          height,
+        });
       };
       img.src = src;
     };

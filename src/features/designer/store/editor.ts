@@ -1,6 +1,7 @@
 "use client";
 import { create } from "zustand";
 import { nanoid } from "nanoid";
+import { DEFAULT_BLEED_MM } from "@packio/dieline";
 import { DEFAULT_PATTERN } from "@/features/designer/catalog";
 import type { DesignContent, DesignElement, DesignSpec, NewElement, PatternSettings } from "@/features/designer/types";
 
@@ -18,6 +19,11 @@ interface EditorState {
   showLabels: boolean;
   showSafeZone: boolean;
   dirty: boolean;
+  /** Rendering the print file: artwork clipped to the bleed, on white, with no guides or chrome. */
+  printMode: boolean;
+  /** Bleed for the print file, from the catalogue's artwork rules (settings, D-070). */
+  bleedMm: number;
+  setBleed: (mm: number) => void;
 
   load: (p: { id: string; name: string; spec: DesignSpec | null; content?: DesignContent }) => void;
   setSpec: (spec: DesignSpec) => void;
@@ -37,6 +43,7 @@ interface EditorState {
   setZoom: (z: number) => void;
   toggle: (k: "showLabels" | "showSafeZone") => void;
   markSaved: () => void;
+  setPrintMode: (on: boolean) => void;
 }
 
 const emptyContent = (): DesignContent => ({ elements: [], pattern: { ...DEFAULT_PATTERN } });
@@ -56,6 +63,9 @@ export const useEditor = create<EditorState>((set, get) => ({
   showLabels: true,
   showSafeZone: true,
   dirty: false,
+  printMode: false,
+  bleedMm: DEFAULT_BLEED_MM,
+  setBleed: (bleedMm) => set({ bleedMm }),
 
   load: ({ id, name, spec, content }) =>
     set({
@@ -153,4 +163,5 @@ export const useEditor = create<EditorState>((set, get) => ({
   setZoom: (z) => set({ zoom: Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) }),
   toggle: (k) => set((s) => ({ [k]: !s[k] }) as Partial<EditorState>),
   markSaved: () => set({ dirty: false }),
+  setPrintMode: (printMode) => set({ printMode }),
 }));

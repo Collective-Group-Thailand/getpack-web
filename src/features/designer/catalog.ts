@@ -1,87 +1,20 @@
-import { getStyle, type MaterialSpec } from "@packio/dieline";
+import { getStyle, REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS, type MaterialSpec } from "@packio/dieline";
 
-import type { BoxDims, BoxStyleId, PatternSettings } from "./types";
+import type { DesignerCatalog, DesignerMaterial, DesignerPattern } from "./data/api";
+import type { BoxDims, BoxStyleId, DesignSpec, PatternSettings } from "./types";
+
+/*
+ * The designer's view of the catalogue. Materials, patterns, templates, colours and fonts come
+ * from the API (`GET /v1/store/designer/catalog`, F4 C.3) — nothing here is a material list.
+ * What stays is how to read them: a catalogue material as an engine `MaterialSpec`, which boards
+ * a style is made from, and the colour to draw a board in.
+ */
 
 /**
- * Placeholder boards until the designer reads materials from the catalogue API (F4 Part C
- * deletes this list). Board colours are literal on purpose: they describe how real kraft and art
- * card look, so they must not follow the app theme or the brand. Paper is paper.
+ * Board colour by material kind, for a design whose material carries no swatch. Literal on
+ * purpose: they describe how real kraft and art card look, so they must not follow the app theme
+ * or the brand. Paper is paper.
  */
-export interface Paper {
-  id: string;
-  name: string;
-  color: string;
-  material: MaterialSpec;
-  printable: boolean;
-}
-
-export const PAPERS: Paper[] = [
-  {
-    id: "ivory-350",
-    name: "Art Card ขาว 350 แกรม",
-    color: "#fbfaf6",
-    material: { caliperMm: 0.45, kind: "paperboard" },
-    printable: true,
-  },
-  {
-    id: "kraft-350",
-    name: "กระดาษคราฟท์ 350 แกรม",
-    color: "#c8a47e",
-    material: { caliperMm: 0.5, kind: "paperboard" },
-    printable: true,
-  },
-  {
-    id: "e-white",
-    name: "ลูกฟูก E-flute ผิวขาว",
-    color: "#f4f2ec",
-    material: { caliperMm: 1.6, kind: "corrugated", flute: "E" },
-    printable: true,
-  },
-  {
-    id: "e-kraft",
-    name: "ลูกฟูก E-flute ผิวน้ำตาล",
-    color: "#b98f62",
-    material: { caliperMm: 1.6, kind: "corrugated", flute: "E" },
-    printable: true,
-  },
-  {
-    id: "b-kraft",
-    name: "ลูกฟูก B-flute ผิวน้ำตาล",
-    color: "#a97f53",
-    material: { caliperMm: 3, kind: "corrugated", flute: "B" },
-    printable: true,
-  },
-  {
-    id: "bc-kraft",
-    name: "ลูกฟูก BC 2 ชั้น ผิวน้ำตาล",
-    color: "#9c7349",
-    material: { caliperMm: 6.5, kind: "corrugated", flute: "BC" },
-    printable: false,
-  },
-  {
-    id: "rigid-grey",
-    name: "กระดาษจั่วหุ้ม 2 มม.",
-    color: "#f1ede6",
-    material: { caliperMm: 2, kind: "rigid" },
-    printable: true,
-  },
-  {
-    id: "label-pp",
-    name: "สติกเกอร์ PP ขาว",
-    color: "#ffffff",
-    material: { caliperMm: 0.08, kind: "label" },
-    printable: true,
-  },
-  {
-    id: "pouch-film",
-    name: "ฟิล์มลามิเนต PET/PE",
-    color: "#f2f4f6",
-    material: { caliperMm: 0.1, kind: "flexible" },
-    printable: true,
-  },
-];
-
-/** Board colour by material kind, for a design whose material is not in the list above. */
 const KIND_COLOUR: Record<MaterialSpec["kind"], string> = {
   paperboard: "#fbfaf6",
   corrugated: "#c9a57a",
@@ -90,18 +23,70 @@ const KIND_COLOUR: Record<MaterialSpec["kind"], string> = {
   flexible: "#f2f4f6",
 };
 
-export const getPaper = (id: string | null | undefined) => PAPERS.find((p) => p.id === id);
+/** A catalogue material as the engine needs it: caliper, kind, flute and make-up allowances. */
+export function materialSpecOf(m: DesignerMaterial): MaterialSpec {
+  const allowances = m.allowances
+    ? {
+        ...(m.allowances.panel !== null ? { panel: m.allowances.panel } : {}),
+        ...(m.allowances.flap !== null ? { flap: m.allowances.flap } : {}),
+        ...(m.allowances.depth !== null ? { depth: m.allowances.depth } : {}),
+      }
+    : null;
+  return { caliperMm: m.caliperMm, kind: m.kind, flute: m.flute, allowances };
+}
 
-/** Boards a style is made from. */
-export function papersFor(style: BoxStyleId): Paper[] {
+/** The spec fields that remember a chosen material, so a design draws without the catalogue. */
+export function withMaterial(
+  m: DesignerMaterial,
+  locale: "th" | "en",
+): Pick<DesignSpec, "material" | "materialId" | "materialName" | "boardColour"> {
+  return {
+    material: materialSpecOf(m),
+    materialId: m.id,
+    materialName: (locale === "en" ? m.nameEn : null) ?? m.nameTh,
+    boardColour: m.swatchHex ?? KIND_COLOUR[m.kind],
+  };
+}
+
+export type { DesignerMaterial, DesignerPattern };
+
+/**
+ * Materials a style can be made from (and, for a catalogue pattern, the ones it lists), thinnest
+ * first — the lightest board that makes the style is the sensible default.
+ */
+export function materialsFor(
+  catalog: DesignerCatalog | null,
+  style: BoxStyleId,
+  patternId?: string | null,
+): DesignerMaterial[] {
+  if (!catalog) return [];
   const kinds = getStyle(style).materials;
-  const fits = PAPERS.filter((p) => kinds.includes(p.material.kind));
-  return fits.length ? fits : PAPERS;
+  const pattern = patternId ? catalog.patterns.find((p) => p.id === patternId) : undefined;
+  const allowed = pattern && pattern.materialIds.length ? new Set(pattern.materialIds) : null;
+  const fits = catalog.materials.filter((m) => kinds.includes(m.kind) && (!allowed || allowed.has(m.id)));
+  const list = fits.length ? fits : catalog.materials.filter((m) => kinds.includes(m.kind));
+  return [...list].sort((a, b) => a.caliperMm - b.caliperMm);
+}
+
+/**
+ * A board for a style when the catalogue offers none that fits (or none was loaded): the
+ * engine's typical board for its category, so the dieline can still be drawn. It is flagged by
+ * `materialId: null` and never reaches a quote.
+ */
+export function fallbackMaterial(
+  style: BoxStyleId,
+): Pick<DesignSpec, "material" | "materialId" | "materialName" | "boardColour"> {
+  return {
+    material: REFERENCE_MATERIALS[REFERENCE_BY_CATEGORY[getStyle(style).category][0]],
+    materialId: null,
+    materialName: undefined,
+    boardColour: undefined,
+  };
 }
 
 /** The board colour to draw a design on. */
-export function boardColour(spec: { materialId?: string | null; material: MaterialSpec }): string {
-  return getPaper(spec.materialId)?.color ?? KIND_COLOUR[spec.material.kind];
+export function boardColour(spec: Pick<DesignSpec, "material" | "boardColour">): string {
+  return spec.boardColour ?? KIND_COLOUR[spec.material.kind];
 }
 
 /** Clearance added on each side when sizing a box from product dimensions. */
@@ -124,4 +109,5 @@ export const DEFAULT_PATTERN: PatternSettings = {
   size: 12,
 };
 
+/** Fonts offered when the catalogue lists none (self-hosted families, ADR-0001). */
 export const FONT_FAMILIES = ["Noto Sans Thai", "Sarabun", "Prompt", "Kanit", "Arial", "Georgia", "Courier New"];

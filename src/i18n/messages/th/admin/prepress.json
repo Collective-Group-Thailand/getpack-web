@@ -250,7 +250,9 @@
       "paidRound": "รอบมีค่าใช้จ่าย {fee}",
       "freeRound": "รอบฟรี",
       "requested": "เริ่ม",
-      "delivered": "ส่งงาน"
+      "delivered": "ส่งงาน",
+      "openInDesigner": "เปิดในเครื่องมือออกแบบ",
+      "openCopy": "เปิดสำเนาในเครื่องมือออกแบบ"
     },
     "proofs": {
       "none": "ยังไม่มีปรู๊ฟ",
