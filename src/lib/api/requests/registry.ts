@@ -25,6 +25,7 @@ import { storeBusinessRequests } from "./store-business";
 import { storeCartRequests } from "./store-cart";
 import { storeCatalogRequests } from "./store-catalog";
 import { storeCheckoutRequests } from "./store-checkout";
+import { storeDesignRequests } from "./store-designs";
 import { storeOrderRequests } from "./store-orders";
 import { storeQuoteRequests } from "./store-quotes";
 import { storeRfqRequests } from "./store-rfq";
@@ -52,6 +53,7 @@ export const REQUESTS = {
   ...storeFulfilmentRequests,
   ...storeSupportRequests,
   ...storeBusinessRequests,
+  ...storeDesignRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

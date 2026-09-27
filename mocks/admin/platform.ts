@@ -1134,10 +1134,16 @@ export const platformHandlers = [
       { status: 201 },
     );
   }),
-  http.put("*/v1/:surface/files/:fileId/mock-upload", ({ params }) => {
+  http.put("*/v1/:surface/files/:fileId/mock-upload", async ({ params, request }) => {
     const file = files.get(params.fileId as string);
     if (!file) return notFound();
     file.uploadStatus = "uploaded";
+    // Kept (up to 8 MB) so a mock can hand the upload back as a working "signed URL" — the
+    // designer's images must still show after a reload.
+    const bytes = new Uint8Array(await request.arrayBuffer().catch(() => new ArrayBuffer(0)));
+    if (bytes.length > 0 && bytes.length <= 8 * 1024 * 1024) {
+      fileContents.set(file.id, `data:${file.mimeType};base64,${Buffer.from(bytes).toString("base64")}`);
+    }
     return new HttpResponse(null, { status: 200 });
   }),
   http.post("*/v1/:surface/files/:fileId/actions/complete", ({ params }) => {
@@ -1158,5 +1164,9 @@ export function settingValue<T = unknown>(key: string): T {
   if (!setting?.current) throw new Error(`mock setting ${key} is not seeded`);
   return setting.current.value as T;
 }
+
+/** Uploaded bytes as data URLs, by file id — what a mock returns where the API returns a signed URL. */
+const fileContents = new Map<string, string>();
+export const fileDataUrl = (id: string): string | null => fileContents.get(id) ?? null;
 
 export { approvals, files, settings, users };

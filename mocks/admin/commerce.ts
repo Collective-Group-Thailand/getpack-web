@@ -448,7 +448,8 @@ function buildOrder(seed: Seed, index: number): Order {
       },
     ],
     tolerance: { shortagePct: "5", overagePct: "5" },
-    designOption: designFee ? "hired_design" : "own_file",
+    // The tenth customer (the storefront's `designer` persona) ordered with the online designer.
+    designOption: designFee ? "hired_design" : index % customers.length === 9 ? "online_designer" : "own_file",
     mockupOption: "none",
     leadTimeDays: 12,
     confirmedProductionDate: inProduction ? bangkokIso(-60 * 24 * 3).slice(0, 10) : null,
