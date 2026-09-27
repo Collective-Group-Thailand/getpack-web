@@ -1,33 +1,21 @@
-import { buildDieline, dielineSegments } from "@packio/dieline";
+import { allFaces, dielineLines, svgPathData } from "@packio/dieline";
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
-import { BOX_STYLES, getPaper } from "@/features/designer/catalog";
+import { boardColour } from "@/features/designer/catalog";
+import { dielineOf, readDesign } from "@/features/designer/document";
 import type { DesignContent, DesignElement, DesignSpec } from "@/features/designer/types";
 
 /**
  * Reads a stored design document (`design_documents` → its current version's `document`) into
- * the designer's own types, or `null` when it is not one this build understands. A viewer must
- * not throw on a document written by a newer designer; it says it cannot show it instead.
+ * the designer's own types — migrating a BoxStudio-era one — or `null` when it is not one this
+ * build understands. A viewer must not throw on a document written by a newer designer; it
+ * says it cannot show it instead.
  */
 export function readDesignDocument(document: {
   spec: Record<string, unknown>;
   content: Record<string, unknown>;
 }): { spec: DesignSpec; content: DesignContent } | null {
-  const spec = document.spec as Partial<DesignSpec>;
-  const content = document.content as Partial<DesignContent>;
-  const dims = spec.dims;
-  if (
-    !spec.style ||
-    !BOX_STYLES.some((style) => style.id === spec.style) ||
-    !dims ||
-    ![dims.length, dims.width, dims.height].every((value) => typeof value === "number" && value > 0) ||
-    typeof spec.paperId !== "string" ||
-    !Array.isArray(content.elements) ||
-    !content.pattern
-  ) {
-    return null;
-  }
-  return { spec: spec as DesignSpec, content: content as DesignContent };
+  return readDesign(document.spec, document.content);
 }
 
 function transform(element: DesignElement): string {
@@ -115,9 +103,11 @@ export interface DesignViewerProps {
  * than a solid fill show their background colour only, so this is a preview, not the proof.
  */
 export function DesignViewer({ spec, content, label, idPrefix }: DesignViewerProps) {
-  const dieline = buildDieline(spec.style, spec.dims);
-  const segments = dielineSegments(dieline);
-  const board = getPaper(spec.paperId);
+  const dieline = dielineOf(spec);
+  const faces = allFaces(dieline);
+  const lines = dielineLines(dieline).filter((l) => l.role === "cut" || l.role === "crease");
+  const board = boardColour(spec);
+  const facePath = (face: (typeof faces)[number]) => [face.outline, ...face.holes].map((c) => svgPathData(c)).join(" ");
   const pad = Math.max(dieline.width, dieline.height) * 0.04;
   const clipId = `${idPrefix}-clip`;
   const fill =
@@ -136,13 +126,13 @@ export function DesignViewer({ spec, content, label, idPrefix }: DesignViewerPro
     >
       <defs>
         <clipPath id={clipId}>
-          {dieline.faces.map((face) => (
-            <polygon key={face.id} points={face.points.map((point) => point.join(",")).join(" ")} />
+          {faces.map((face) => (
+            <path key={face.id} d={facePath(face)} clipRule="evenodd" />
           ))}
         </clipPath>
       </defs>
-      {dieline.faces.map((face) => (
-        <polygon key={face.id} points={face.points.map((point) => point.join(",")).join(" ")} fill={board.color} />
+      {faces.map((face) => (
+        <path key={face.id} d={facePath(face)} fillRule="evenodd" fill={board} />
       ))}
       <g clipPath={`url(#${clipId})`}>
         {fill ? <rect width={dieline.width} height={dieline.height} fill={fill} /> : null}
@@ -150,17 +140,15 @@ export function DesignViewer({ spec, content, label, idPrefix }: DesignViewerPro
           <Element key={element.id} element={element} />
         ))}
       </g>
-      {segments.map((segment, index) => (
-        <line
+      {lines.map((line, index) => (
+        <path
           key={index}
-          x1={segment.a[0]}
-          y1={segment.a[1]}
-          x2={segment.b[0]}
-          y2={segment.b[1]}
-          stroke={segment.kind === "cut" ? CANVAS_COLORS.cut : CANVAS_COLORS.fold}
+          d={svgPathData([line.edge], false)}
+          fill="none"
+          stroke={line.role === "cut" ? CANVAS_COLORS.cut : CANVAS_COLORS.fold}
           strokeWidth={1.2}
           vectorEffect="non-scaling-stroke"
-          strokeDasharray={segment.kind === "fold" ? "4 3" : undefined}
+          strokeDasharray={line.role === "crease" ? "4 3" : undefined}
         />
       ))}
     </svg>

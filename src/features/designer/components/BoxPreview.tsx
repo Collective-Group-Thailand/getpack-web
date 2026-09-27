@@ -1,17 +1,24 @@
-import { buildDieline, dielineSegments } from "@packio/dieline";
+import {
+  allFaces,
+  dielineLines,
+  getStyle,
+  REFERENCE_MATERIALS,
+  svgPathData,
+  type MaterialSpec,
+  type ParamValues,
+} from "@packio/dieline";
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
-import { getPaper } from "@/features/designer/catalog";
-import type { BoxDims, BoxStyleId } from "@/features/designer/types";
 
 export interface BoxPreviewProps {
-  style: BoxStyleId;
-  dims: BoxDims;
-  /**
-   * Board id from the paper catalogue. The preview looks the colour up itself, so a caller
-   * never handles a hex — the board colours describe real material, not theme.
-   */
-  paper: string;
+  /** A `@packio/dieline` style id. */
+  styleId: string;
+  /** The style's parameters (at least length, width, height in mm); defaults fill the rest. */
+  values: ParamValues;
+  /** The board, for caliper compensation. Defaults to a typical 350 g carton board. */
+  material?: MaterialSpec;
+  /** Board colour — describes real material, so it is literal, not a theme token. */
+  colour?: string;
   /** Accessible description; omit only where a caption already names the same thing. */
   label?: string;
 }
@@ -19,13 +26,19 @@ export interface BoxPreviewProps {
 /**
  * The dieline as a small SVG — the setup dialog, the home page, and any card that should
  * "show the box" (design-system.md §1.2). Geometry comes from `@packio/dieline`, so this
- * preview and the canvas can never disagree about the shape.
+ * preview and the canvas can never disagree about the shape. Outlines are drawn from their
+ * path data (true arcs), which keeps the offsetting engine out of the page.
  */
-export function BoxPreview({ style, dims, paper, label }: BoxPreviewProps) {
-  const dieline = buildDieline(style, dims);
-  const segments = dielineSegments(dieline);
-  const board = getPaper(paper);
+export function BoxPreview({
+  styleId,
+  values,
+  material = REFERENCE_MATERIALS["board-350"],
+  colour = "#fbfaf6",
+  label,
+}: BoxPreviewProps) {
+  const dieline = getStyle(styleId).build(values, material);
   const pad = Math.max(dieline.width, dieline.height) * 0.04;
+  const lines = dielineLines(dieline).filter((l) => l.role === "cut" || l.role === "crease");
 
   return (
     <svg
@@ -34,20 +47,23 @@ export function BoxPreview({ style, dims, paper, label }: BoxPreviewProps) {
       role={label ? "img" : "presentation"}
       aria-label={label}
     >
-      {dieline.faces.map((face) => (
-        <polygon key={face.id} points={face.points.map((point) => point.join(",")).join(" ")} fill={board.color} />
+      {allFaces(dieline).map((face) => (
+        <path
+          key={face.id}
+          d={[face.outline, ...face.holes].map((contour) => svgPathData(contour)).join(" ")}
+          fillRule="evenodd"
+          fill={colour}
+        />
       ))}
-      {segments.map((segment, index) => (
-        <line
+      {lines.map((line, index) => (
+        <path
           key={index}
-          x1={segment.a[0]}
-          y1={segment.a[1]}
-          x2={segment.b[0]}
-          y2={segment.b[1]}
-          stroke={segment.kind === "cut" ? CANVAS_COLORS.cut : CANVAS_COLORS.fold}
+          d={svgPathData([line.edge], false)}
+          fill="none"
+          stroke={line.role === "cut" ? CANVAS_COLORS.cut : CANVAS_COLORS.fold}
           strokeWidth={1.2}
           vectorEffect="non-scaling-stroke"
-          strokeDasharray={segment.kind === "fold" ? "4 3" : undefined}
+          strokeDasharray={line.role === "crease" ? "4 3" : undefined}
         />
       ))}
     </svg>

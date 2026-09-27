@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { nanoid } from "nanoid";
 
-import { getPaper, getStyle } from "@/features/designer/catalog";
+import { getStyle } from "@packio/dieline";
+import { getPaper } from "@/features/designer/catalog";
+import { insideSize } from "@/features/designer/document";
 import { designRepo } from "@/features/designer/storage";
 import type { SavedDesign } from "@/features/designer/types";
 import { Link } from "@/i18n/navigation";
@@ -120,11 +122,9 @@ export default function MyDesigns() {
                 </Link>
                 <p className="text-muted mt-1 text-xs">
                   {t("card.spec", {
-                    style: getStyle(design.spec.style).name,
-                    length: design.spec.dims.length,
-                    width: design.spec.dims.width,
-                    height: design.spec.dims.height,
-                    paper: getPaper(design.spec.paperId).name,
+                    style: getStyle(design.spec.styleId).name[locale],
+                    ...insideSize(design.spec),
+                    paper: getPaper(design.spec.materialId)?.name ?? `${design.spec.material.caliperMm}`,
                   })}
                 </p>
                 <div className="mt-3 flex items-center justify-between gap-2">

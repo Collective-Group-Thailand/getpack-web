@@ -1,0 +1,47 @@
+name: Release @packio/dieline
+
+# Changesets on main: while changesets are pending, keep a "Version packages" pull request up to
+# date; when that pull request is merged, build the engine and publish it to GitHub Packages.
+# packio-api pins the version it consumes (ADR-0007), so nothing downstream moves by itself.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/dieline/**"
+      - ".changeset/**"
+
+concurrency:
+  group: release-dieline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://npm.pkg.github.com
+          scope: "@packio"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @packio/dieline typecheck
+      - run: pnpm test:dieline
+      - uses: changesets/action@v1
+        with:
+          version: pnpm changeset:version
+          publish: pnpm changeset:publish
+          title: "chore(release): version @packio/dieline"
+          commit: "chore(release): version @packio/dieline"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
