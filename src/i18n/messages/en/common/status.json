@@ -431,5 +431,33 @@
   "jobIssue": {
     "open": "Open",
     "resolved": "Resolved"
+  },
+  "billingStatement": {
+    "generated": "Generated",
+    "sent": "Awaiting your check",
+    "confirmed": "Confirmed",
+    "disputed": "Disputed",
+    "superseded": "Superseded"
+  },
+  "vendorInvoice": {
+    "submitted": "Waiting for Finance",
+    "validated": "Validated",
+    "rejected": "Rejected"
+  },
+  "inputVat": {
+    "claimable": "Tax invoice in",
+    "pendingDocument": "Tax invoice pending",
+    "notClaimable": "No VAT"
+  },
+  "payoutItem": {
+    "included": "In a payout run",
+    "paid": "Paid",
+    "failed": "Failed",
+    "excluded": "Excluded"
+  },
+  "factoryUser": {
+    "invited": "Invited",
+    "active": "Active",
+    "deactivated": "Deactivated"
   }
 }

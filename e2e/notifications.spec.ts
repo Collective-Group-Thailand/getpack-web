@@ -54,8 +54,11 @@ test.describe("service worker and manifest", () => {
   test("the partner zone is installable and the storefront is not", async ({ request }) => {
     const partner = await (await request.get(`${HOSTS.partner}/manifest.webmanifest`)).json();
     expect(partner.display).toBe("standalone");
-    expect(partner.orientation).toBe("portrait");
+    // Phones in portrait, office tablets in landscape (design-system.md §5): not locked.
+    expect(partner.orientation).toBe("any");
     expect(partner.name).toContain("Partner");
+    expect(partner.start_url).toBe("/");
+    expect(partner.icons.length).toBeGreaterThan(0);
 
     const customer = await (await request.get(`${HOSTS.customer}/manifest.webmanifest`)).json();
     // Installing a shortcut to the shop is not the point; the storefront is a website.

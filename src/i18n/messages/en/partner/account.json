@@ -1,0 +1,182 @@
+{
+  "claims": {
+    "title": "Claims",
+    "body": "Claims on your jobs; answer when Packio asks you to.",
+    "awaitingYou": "Awaiting your answer",
+    "types": {
+      "damaged": "Damaged",
+      "wrong_spec": "Wrong spec",
+      "print_defect": "Print defect",
+      "quantity_short": "Quantity short",
+      "late": "Late",
+      "other": "Other"
+    },
+    "deduction": "Deducted {amount}",
+    "empty": "No claims",
+    "metaTitle": "Claim",
+    "back": "Back to claims",
+    "answerBy": "Answer by {date}",
+    "answerBody": "Accept it, or explain with evidence; Packio decides once you answer.",
+    "reported": "Reported",
+    "resolution": "Asked for",
+    "resolutions": {
+      "reprint": "Reprint",
+      "partial_refund": "Partial refund",
+      "full_refund": "Full refund",
+      "credit": "Credit"
+    },
+    "quantity": "Quantity claimed",
+    "reference": "Reference",
+    "liability": "Liable by rule",
+    "liabilities": {
+      "factory": "Factory",
+      "customer": "Customer",
+      "carrier": "Carrier",
+      "packio": "Packio",
+      "undetermined": "Not decided"
+    },
+    "submitted": "Submitted",
+    "evidence": "Evidence",
+    "photoAlt": "{role}, photo {n}",
+    "roles": {
+      "product": "Product",
+      "carton": "Shipping carton",
+      "factory": "From your factory"
+    },
+    "yourAnswer": "Your answer",
+    "answers": {
+      "accepted": "You accepted the claim",
+      "disputed": "You disputed the claim"
+    },
+    "decision": "Packio's decision",
+    "deductions": "Deductions",
+    "appliedOn": "Deducted {date}",
+    "pending": "Pending",
+    "respondTitle": "Answer the claim",
+    "respond": {
+      "ownerOnly": "The factory owner answers claims.",
+      "response": "Answer",
+      "accept": "Accept",
+      "dispute": "Dispute",
+      "note": "Details",
+      "disputeHint": "Explain what happened, e.g. produced to the approved proof",
+      "acceptHint": "E.g. we will reprint by…",
+      "photos": "Your evidence",
+      "noteRequired": "Please explain in at least 3 characters",
+      "send": "Send answer",
+      "acceptTitle": "Accept claim {no}",
+      "disputeTitle": "Dispute claim {no}",
+      "acceptBody": "You accept {no} is your factory's; Packio may deduct it or ask for a reprint.",
+      "disputeBody": "Send your side of {no} for Packio to decide.",
+      "done": "Answer to {no} sent",
+      "failed": "Could not send the answer"
+    }
+  },
+  "performance": {
+    "title": "Your performance",
+    "body": "The monthly numbers Packio allocates jobs by",
+    "chartTitle": "The last 6 months",
+    "month": "Month",
+    "pct": "{value}%",
+    "metrics": {
+      "acceptance": "On-time acceptance",
+      "shipping": "On-time shipping",
+      "firstPass": "QC first pass",
+      "claims": "Claim rate",
+      "updates": "On-time updates"
+    },
+    "showTable": "Show as a table",
+    "hideTable": "Hide the table",
+    "monthTitle": "{month}",
+    "jobs": "{count, plural, one {# job} other {# jobs}}",
+    "hints": {
+      "acceptance": "Accepted within 1 business day",
+      "shipping": "Shipped by the promised date",
+      "firstPass": "Passed QC the first time",
+      "claims": "Lower is better",
+      "updates": "Steps reported on time"
+    },
+    "currentNote": "{month} is still running; its numbers settle at month end",
+    "trend": "Trend"
+  },
+  "users": {
+    "title": "Users and roles",
+    "body": "Who acts for your factory, and what each can do",
+    "emailInvalid": "This email is not valid",
+    "nameRequired": "Enter a name",
+    "roleRequired": "Pick at least one role",
+    "invited": "Invitation sent",
+    "failed": "Could not save",
+    "name": "Name",
+    "email": "Email",
+    "roles": "Roles",
+    "roleHints": {
+      "factory_owner": "Everything, including users, prices and agreements",
+      "factory_planner": "Accepts and plans jobs; sees the scorecard",
+      "factory_operator": "Reports production steps",
+      "factory_qc": "Records QC",
+      "factory_shipping": "Ships and records delivery",
+      "factory_accountant": "Billing, tax invoices and payouts"
+    },
+    "invite": "Send invitation",
+    "self": "This is you",
+    "roleFor": "Role of {name}",
+    "rolesSaved": "{name}'s role changed",
+    "reactivate": "Reactivate",
+    "deactivate": "Deactivate",
+    "deactivateTitle": "Deactivate {name}",
+    "reactivateTitle": "Reactivate {name}",
+    "deactivateBody": "{name} can no longer sign in for your factory until reactivated.",
+    "reactivateBody": "{name} can sign in for your factory again.",
+    "statusSaved": "{name} updated",
+    "lastSeen": "Last seen {date}",
+    "inviteTitle": "Invite someone"
+  },
+  "notifications": {
+    "saved": "Saved",
+    "failed": "Could not save",
+    "lineNotLinked": "LINE is not linked — LINE notices turn on once it is.",
+    "categories": {
+      "jobs": "Jobs",
+      "shipping": "Shipping",
+      "prices": "Prices",
+      "billing": "Billing and payouts",
+      "claims": "Claims",
+      "account": "Account and security"
+    },
+    "channels": {
+      "web_push": "On this device",
+      "line": "LINE",
+      "email": "Email"
+    },
+    "locked": "Cannot be turned off",
+    "push": {
+      "on": "This device receives notices",
+      "unsupported": "This browser cannot show notices",
+      "unconfigured": "Device notices are not set up here",
+      "denied": "Notices are blocked in the browser's settings",
+      "enabled": "Notices turned on",
+      "failed": "Could not turn notices on",
+      "enable": "Get notices on this device"
+    }
+  },
+  "device": {
+    "labelSize": "Label size",
+    "labelSaved": "Label size saved",
+    "sizes": {
+      "100x150": "100 × 150 mm",
+      "4x6": "4 × 6 in"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "notifications": "Notifications",
+    "notificationsBody": "Yours only; others keep their own",
+    "device": "This device",
+    "deviceBody": "Applies to this device only",
+    "labelSize": "Label printer",
+    "language": "Language",
+    "theme": "Theme",
+    "themeHint": "Use high contrast where the floor is bright"
+  }
+}

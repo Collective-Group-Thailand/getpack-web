@@ -27,8 +27,9 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     start_url: "/",
     scope: "/",
     display: isPartner ? "standalone" : "browser",
-    // Portrait on a 6" phone is the shop-floor case; the storefront leaves it to the device.
-    orientation: isPartner ? "portrait" : "any",
+    // Left to the device in both zones: the partner app is used in portrait on a 6" phone and in
+    // landscape on an office tablet (design-system.md §5), and a lock would break the tablet.
+    orientation: "any",
     background_color: "#ffffff",
     theme_color: "#ffffff",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }],

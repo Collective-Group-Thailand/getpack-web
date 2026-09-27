@@ -46,6 +46,11 @@ describe("formatDate", () => {
   // 2026-09-17T18:00:00Z is 2026-09-18 01:00 in Bangkok: the day differs from UTC.
   const lateEvening = "2026-09-17T18:00:00Z";
 
+  it("renders a month on its own for scorecards and statements", () => {
+    expect(formatDate("2026-09-15T12:00:00+07:00", "th", { style: "month" })).toBe("ก.ย. 2569");
+    expect(formatDate("2026-09-15T12:00:00+07:00", "en", { style: "month" })).toMatch(/^Sept? 2026$/);
+  });
+
   it("renders Thai dates in the Buddhist era by default", () => {
     expect(formatDate("2026-09-17T04:00:00Z", "th")).toContain("2569");
   });

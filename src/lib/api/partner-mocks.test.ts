@@ -394,3 +394,114 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
     ).rejects.toMatchObject({ status: 404 });
   });
 });
+
+describe("the factory's money and account (F001, F5 5.3)", () => {
+  const path = { factoryId: F001 };
+
+  it("confirms a statement once, then takes the factory's own tax invoice", async () => {
+    const floor = requestsAs("accountant");
+    const { data } = await floor.call("GET /v1/partner/factories/{factoryId}/billing-statements", { path });
+    const open = data.find((item) => item.status === "sent")!;
+    expect(open).toBeDefined();
+    const confirm = () =>
+      floor.call("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm", {
+        path: { ...path, statementId: open.id },
+        body: {},
+        idempotencyKey: "k-bs-confirm",
+      });
+    const confirmed = await confirm();
+    expect(confirmed.status).toBe("confirmed");
+    expect((await confirm()).confirmedAt).toBe(confirmed.confirmedAt);
+    expect(confirmed.nextActions).toEqual(["submit_tax_invoice"]);
+
+    const invoice = (sellerTaxId: string, key: string) =>
+      floor.call("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices", {
+        path: { ...path, statementId: open.id },
+        body: {
+          invoiceNo: "INV-TEST-1",
+          invoiceDate: "2026-09-27",
+          sellerTaxId,
+          sellerBranchCode: "00000",
+          source: "e_tax",
+          eTaxReference: "ETAX-0001",
+        },
+        idempotencyKey: key,
+      });
+    await expect(invoice("0105555555554", "k-inv-bad")).rejects.toMatchObject({ status: 422 });
+    const factory = (await partner("accountant").GET("/v1/partner/factories/{factoryId}", { params: { path } })).data!;
+    const withInvoice = await invoice(factory.taxId, "k-inv-good");
+    expect(withInvoice.taxInvoiceStatus).toBe("submitted");
+    expect(withInvoice.inputVatStatus).toBe("pending_document");
+
+    const account = await floor.call("GET /v1/partner/factories/{factoryId}/statement-of-account", { path, query: {} });
+    expect(account.entries.some((entry) => entry.reference === open.bsNumber)).toBe(true);
+  });
+
+  it("schedules each job's payouts by the payout policy (D-022, D-164) and documents paid ones", async () => {
+    const floor = requestsAs("owner");
+    const schedule = await floor.call("GET /v1/partner/factories/{factoryId}/payout-schedule", { path });
+    const job = schedule[0]!;
+    expect(job.items.map((item) => [item.kind, item.pct])).toEqual([
+      ["advance", "30.0000"],
+      ["balance", "65.0000"],
+      ["retention", "5.0000"],
+    ]);
+    const { data: paid } = await floor.call("GET /v1/partner/factories/{factoryId}/payouts", { path });
+    expect(paid.length).toBeGreaterThan(0);
+    const detail = await floor.call("GET /v1/partner/factories/{factoryId}/payouts/{payoutId}", {
+      path: { ...path, payoutId: paid[0]!.id },
+    });
+    expect(detail.whtCertificate?.url).toMatch(/^data:application\/pdf/);
+  });
+
+  it("answers a claim back to the claims desk, and keeps users and prices to their roles", async () => {
+    const owner = requestsAs("owner");
+    const { data } = await owner.call("GET /v1/partner/factories/{factoryId}/claims", { path });
+    const waiting = data.find((item) => item.responseDueAt)!;
+    const answered = await owner.call("POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond", {
+      path: { ...path, claimId: waiting.id },
+      body: { response: "disputed", note: "ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ" },
+      idempotencyKey: "k-claim-1",
+    });
+    expect(answered.factoryResponse).toBe("disputed");
+    expect(answered.status).toBe("under_review");
+
+    await expect(
+      requestsAs("operator").call("GET /v1/partner/factories/{factoryId}/users", { path }),
+    ).rejects.toMatchObject({
+      status: 403,
+    });
+    await expect(
+      requestsAs("operator").call("GET /v1/partner/factories/{factoryId}/billing-statements", { path }),
+    ).rejects.toMatchObject({ status: 403 });
+    const users = await owner.call("GET /v1/partner/factories/{factoryId}/users", { path });
+    const self = users.find((user) => user.isSelf)!;
+    await expect(
+      owner.call("PATCH /v1/partner/factories/{factoryId}/users/{userId}", {
+        path: { ...path, userId: self.id },
+        body: { roles: ["factory_planner"] },
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    const invited = await owner.call("POST /v1/partner/factories/{factoryId}/users", {
+      path,
+      body: { email: "new.qc@factory.invalid", displayName: "ฝ่าย QC ใหม่", roles: ["factory_qc"] },
+    });
+    expect(invited.status).toBe("invited");
+  });
+
+  it("keeps a locked notification on", async () => {
+    const me = requestsAs("owner");
+    const saved = await me.call("PUT /v1/partner/me/notification-preferences", {
+      body: {
+        preferences: [
+          { category: "jobs", channel: "email", enabled: false },
+          { category: "prices", channel: "email", enabled: false },
+        ],
+      },
+    });
+    const row = (category: string) =>
+      saved.preferences.find((item) => item.category === category && item.channel === "email")!;
+    expect(row("jobs").enabled).toBe(true);
+    expect(row("prices").enabled).toBe(false);
+  });
+});

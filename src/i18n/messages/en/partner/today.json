@@ -19,7 +19,11 @@
     "counteredBody": "{count, plural, one {# line} other {# lines}} to answer",
     "pricesToSignOff": "Sign off the {type} prices Packio entered",
     "pricesToSignOffBody": "{lines} lines",
-    "none": "Nothing is waiting for you right now"
+    "none": "Nothing is waiting for you right now",
+    "statement": "Check statement {no}",
+    "statementBody": "Confirm or dispute it",
+    "claim": "Answer claim {no}",
+    "claimBody": "Packio is waiting for your side"
   },
   "floor": {
     "countersLabel": "Today at a glance",

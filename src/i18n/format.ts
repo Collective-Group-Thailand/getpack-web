@@ -87,8 +87,8 @@ export interface DateFormatOptions {
    * the legacy system showed customers; English defaults to `ce`.
    */
   era?: "be" | "ce";
-  /** `short` → 17 ก.ย. 2569 · `long` → 17 กันยายน 2569 · `numeric` → 17/09/2569 */
-  style?: "short" | "long" | "numeric";
+  /** `short` → 17 ก.ย. 2569 · `long` → 17 กันยายน 2569 · `numeric` → 17/09/2569 · `month` → ก.ย. 2569 */
+  style?: "short" | "long" | "numeric" | "month";
 }
 
 /**
@@ -104,7 +104,7 @@ export function formatDate(input: DateInput, locale: Locale = "th", options: Dat
 
   const parts = new Intl.DateTimeFormat(dateTag(locale), {
     timeZone: TIME_ZONE,
-    day: "numeric",
+    ...(style === "month" ? {} : { day: "numeric" as const }),
     month: style === "numeric" ? "2-digit" : style === "long" ? "long" : "short",
     year: "numeric",
   }).formatToParts(date);

@@ -431,5 +431,33 @@
   "jobIssue": {
     "open": "ยังไม่แก้",
     "resolved": "แก้แล้ว"
+  },
+  "billingStatement": {
+    "generated": "สร้างแล้ว",
+    "sent": "รอโรงงานตรวจ",
+    "confirmed": "ยืนยันแล้ว",
+    "disputed": "โต้แย้งแล้ว",
+    "superseded": "มีฉบับใหม่แทน"
+  },
+  "vendorInvoice": {
+    "submitted": "รอฝ่ายการเงินตรวจ",
+    "validated": "ตรวจแล้ว",
+    "rejected": "ไม่ผ่าน"
+  },
+  "inputVat": {
+    "claimable": "มีใบกำกับภาษีครบ",
+    "pendingDocument": "รอใบกำกับภาษี",
+    "notClaimable": "ไม่มี VAT"
+  },
+  "payoutItem": {
+    "included": "อยู่ในรอบจ่าย",
+    "paid": "จ่ายแล้ว",
+    "failed": "โอนไม่สำเร็จ",
+    "excluded": "ไม่รวมในรอบนี้"
+  },
+  "factoryUser": {
+    "invited": "รอตอบรับคำเชิญ",
+    "active": "ใช้งาน",
+    "deactivated": "ปิดการใช้งาน"
   }
 }

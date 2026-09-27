@@ -123,6 +123,8 @@ function seed() {
   // Completed steps of a seeded job carry quantities, so a report on the next step is checked.
   for (const { order, job } of jobs) {
     const extra = extraOf(job);
+    // Released (and accepted) a while back, so their advances have been paid (D-022).
+    extra.releasedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7));
     let quantity = Math.round(order.quantity * 1.04);
     job.milestones.forEach((milestone) => {
       const step = blankStep();
@@ -177,6 +179,9 @@ function seed() {
 seed();
 
 /* ------------------------------------------------------------------------------- views */
+
+/** The buy side of an order (the factory's own price, D-042) — never Packio's sell price. */
+export const buyAmountOf = (order: MockOrder) => (Math.round(Number(order.netAmount) * 70) / 100).toFixed(2);
 
 /** "กล่องฝาเสียบ (RSC)" — the product type, and the first spec line where it adds something. */
 export const titleOf = (order: MockOrder) => {
@@ -312,8 +317,7 @@ export function detailOf(order: MockOrder, job: Job): JobDto {
     purchaseOrder: {
       poNumber: `PO-F-${job.jobNo.slice(2)}`,
       issuedAt: extra.releasedAt,
-      // The buy side of the order (the factory's own price, D-042) — never Packio's sell price.
-      buyAmount: (Math.round(Number(order.netAmount) * 70) / 100).toFixed(2),
+      buyAmount: buyAmountOf(order),
       currency: "THB",
     },
     tolerance: order.tolerance,

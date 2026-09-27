@@ -19,7 +19,11 @@
     "counteredBody": "{count} บรรทัดรอคำตอบ",
     "pricesToSignOff": "รับรองราคา {type} ที่ Packio กรอกให้",
     "pricesToSignOffBody": "{lines} บรรทัด",
-    "none": "ตอนนี้ไม่มีอะไรรอคุณ"
+    "none": "ตอนนี้ไม่มีอะไรรอคุณ",
+    "statement": "ตรวจใบวางบิล {no}",
+    "statementBody": "ยืนยันหรือโต้แย้ง",
+    "claim": "ตอบเคลม {no}",
+    "claimBody": "Packio รอคำชี้แจงจากโรงงาน"
   },
   "floor": {
     "countersLabel": "ภาพรวมวันนี้",
