@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, MOCK_DESIGNER_PHONE, signInAsCustomer } from "./helpers/customer";
+import { addHeading } from "./helpers/designer";
 import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
 /**
@@ -51,6 +52,20 @@ test("a signed-in design is saved in the account, autosaved, and keeps its versi
   await expect(history.getByText("เวอร์ชัน 2")).toBeVisible();
   await history.getByRole("button", { name: "คืนค่า" }).first().click();
   await expect(page.getByText(/คืนค่าเวอร์ชัน \d+ แล้ว/)).toBeVisible();
+
+  // A view-only link opens the design for anyone, without the editor.
+  await page.getByRole("button", { name: "แชร์ลิงก์ดูแบบ" }).click();
+  const share = page.getByRole("dialog", { name: "แชร์ลิงก์ดูแบบ" });
+  const link = share.getByRole("textbox", { name: "ลิงก์" });
+  await expect(link).toHaveValue(/\/design\/shared\/[0-9a-f]{32}$/);
+  const url = await link.inputValue();
+  await page.keyboard.press("Escape");
+  const viewer = await page.context().browser()!.newPage();
+  await viewer.goto(url);
+  await expect(viewer.getByRole("heading", { name: "กล่องในบัญชี E2E" })).toBeVisible();
+  await expect(viewer.getByText("ดูได้อย่างเดียว")).toBeVisible();
+  await expect(viewer.getByRole("img", { name: "กล่องในบัญชี E2E" })).toBeVisible();
+  await viewer.close();
 });
 
 test("two tabs saving the same design meet the conflict choice instead of overwriting", async ({ page, context }) => {
@@ -112,11 +127,13 @@ test("prepress opens a customer's design read-only and works on its own copy", a
   await gotoHydrated(page, `${HOSTS.admin}/prepress/${PREPRESS_ORDER}`);
   await page.getByRole("link", { name: "เปิดในเครื่องมือออกแบบ" }).click();
   await expect(page.getByText("เปิดดูอย่างเดียว").first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "ข้อความ" })).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name: "ข้อความ", exact: true }),
+  ).toHaveCount(0);
 
   await page.getByRole("button", { name: "ทำสำเนาเพื่อแก้ไข" }).click();
   await expect(page).toHaveURL(/\/designs\/[0-9a-f-]{36}\?from=/);
-  await page.getByRole("button", { name: "ข้อความ" }).click();
+  await addHeading(page);
   await page.getByRole("button", { name: "บันทึก", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
 });
