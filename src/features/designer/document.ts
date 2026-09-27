@@ -13,6 +13,22 @@ export function insideSize(spec: Pick<DesignSpec, "values">): BoxDims {
   return { length: Number(spec.values.length), width: Number(spec.values.width), height: Number(spec.values.height) };
 }
 
+/**
+ * The size a spec asks for, as the style's size parameters in order ("150 × 100 × 80"), and
+ * whether it is a box's inside L × W × H.
+ */
+export function sizeOf(spec: Pick<DesignSpec, "styleId" | "values">): { box: boolean; text: string } {
+  const keys = getStyle(spec.styleId)
+    .params.filter((p) => p.group === "size" && p.kind === "length")
+    .map((p) => p.key);
+  const box = ["length", "width", "height"].every((k) => keys.includes(k));
+  const text = (box ? ["length", "width", "height"] : keys)
+    .map((k) => spec.values[k])
+    .filter((v) => typeof v === "number")
+    .join(" × ");
+  return { box, text };
+}
+
 /** The box a design sits on. */
 export function dielineOf(spec: DesignSpec): Dieline {
   return getStyle(spec.styleId).build(spec.values, spec.material);
