@@ -3,6 +3,7 @@
 import type Konva from "konva";
 import { dielineToPdf, type Dieline, type PdfImage } from "@packio/dieline";
 
+import { withFlatWorld } from "./lib/capture";
 import { useEditor } from "./store/editor";
 
 /**
@@ -58,15 +59,17 @@ export async function buildPrintPdf(stage: Konva.Stage, d: Dieline, opts: PrintO
       for (let tx = 0; tx < w; tx += tileMm) {
         const tw = Math.min(tileMm, w - tx);
         const th = Math.min(tileMm, h - ty);
-        const url = stage.toDataURL({
-          x: stage.x() + (x0 + tx) * scale,
-          y: stage.y() + (y0 + ty) * scale,
-          width: tw * scale,
-          height: th * scale,
-          pixelRatio: pxPerMm / scale,
-          mimeType: "image/jpeg",
-          quality: 0.92,
-        });
+        const url = withFlatWorld(stage, () =>
+          stage.toDataURL({
+            x: stage.x() + (x0 + tx) * scale,
+            y: stage.y() + (y0 + ty) * scale,
+            width: tw * scale,
+            height: th * scale,
+            pixelRatio: pxPerMm / scale,
+            mimeType: "image/jpeg",
+            quality: 0.92,
+          }),
+        );
         images.push({
           jpeg: dataUrlBytes(url),
           widthPx: Math.round(tw * pxPerMm),

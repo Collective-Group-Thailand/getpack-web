@@ -31,6 +31,14 @@ interface BaseElement {
   scaleX: number;
   scaleY: number;
   opacity: number;
+  /** Cannot be moved, resized or deleted on the canvas until unlocked (layers panel). */
+  locked?: boolean;
+  /** Elements sharing a group id select and move together. */
+  groupId?: string;
+  /** The customer's own name for it in the layers panel. */
+  name?: string;
+  /** Clipped to this face's outline instead of the whole sheet. */
+  clipFaceId?: string;
 }
 
 export interface TextElement extends BaseElement {
@@ -54,19 +62,35 @@ export interface ImageElement extends BaseElement {
   naturalHeight?: number;
   width: number;
   height: number;
+  /** The part of the image shown, as fractions of its natural size (0–1). */
+  crop?: { x: number; y: number; width: number; height: number };
 }
 
 export interface ShapeElement extends BaseElement {
-  type: "rect" | "circle";
+  /** `shape` draws `path` from the shape library, scaled into its width × height. */
+  type: "rect" | "circle" | "shape";
   width: number;
   height: number;
   fill: string;
   stroke: string;
   strokeWidth: number;
   cornerRadius: number;
+  /** SVG path data in a 100 × 100 box, for `shape`. */
+  path?: string;
 }
 
-export type DesignElement = TextElement | ImageElement | ShapeElement;
+/** A QR code or an EAN-13 barcode, generated from its value; the quiet zone is part of its size. */
+export interface CodeElement extends BaseElement {
+  type: "code";
+  kind: "qr" | "ean13";
+  value: string;
+  width: number;
+  height: number;
+  fill: string;
+  background: string;
+}
+
+export type DesignElement = TextElement | ImageElement | ShapeElement | CodeElement;
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 export type NewElement = DistributiveOmit<DesignElement, "id">;

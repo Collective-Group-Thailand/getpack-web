@@ -1,0 +1,93 @@
+import { beforeEach, describe, expect, it } from "vitest";
+
+import { newShape, newText } from "../lib/create";
+import { useEditor } from "./editor";
+
+const s = () => useEditor.getState();
+
+describe("editor store (F4 Part D)", () => {
+  beforeEach(() => {
+    s().load({ id: "d", name: "test", spec: null });
+    s().addElement(newShape({ x: 50, y: 50 }, "rect"));
+    s().addElement(newText({ x: 80, y: 80 }, "A"));
+    s().addElement(newShape({ x: 120, y: 50 }, "circle"));
+  });
+
+  const ids = () => s().content.elements.map((e) => e.id);
+
+  it("selects additively and selects a whole group", () => {
+    const [a, b, c] = ids();
+    s().select(a!);
+    s().select(b!, true);
+    expect(s().selectedIds).toEqual([a, b]);
+    s().group();
+    s().select(null);
+    s().select(b!);
+    expect(new Set(s().selectedIds)).toEqual(new Set([a, b]));
+    s().select(c!, true);
+    expect(s().selectedIds).toHaveLength(3);
+    s().select(c!, true);
+    expect(s().selectedIds).not.toContain(c);
+  });
+
+  it("moves several elements as one undo step, never a locked one", () => {
+    const [a, b] = ids();
+    s().setLocked([b!], true);
+    const before = s().content.elements.map((e) => [e.x, e.y]);
+    s().moveElements([
+      { id: a!, dx: 5, dy: 0 },
+      { id: b!, dx: 5, dy: 0 },
+    ]);
+    const after = s().content.elements;
+    expect(after[0]!.x).toBe(before[0]![0]! + 5);
+    expect(after[1]!.x).toBe(before[1]![0]);
+    s().undo();
+    expect(s().content.elements[0]!.x).toBe(before[0]![0]);
+  });
+
+  it("does not delete locked elements, and select-all skips them", () => {
+    const [a] = ids();
+    s().setLocked([a!], true);
+    s().selectAll();
+    expect(s().selectedIds).not.toContain(a);
+    s().selectMany(ids());
+    s().removeSelected();
+    expect(ids()).toEqual([a]);
+  });
+
+  it("copies and pastes with new ids, offset, unlocked", () => {
+    const [a] = ids();
+    s().setLocked([a!], true);
+    s().select(a!);
+    s().copySelected();
+    s().paste();
+    const pasted = s().content.elements.at(-1)!;
+    expect(pasted.id).not.toBe(a);
+    expect(pasted.locked).toBe(false);
+    expect(pasted.x).toBe(s().content.elements[0]!.x + 10);
+    expect(s().selectedIds).toEqual([pasted.id]);
+  });
+
+  it("duplicates a group into a new group of its own", () => {
+    const [a, b] = ids();
+    s().selectMany([a!, b!]);
+    s().group();
+    s().duplicateSelected();
+    const copies = s().content.elements.slice(-2);
+    expect(copies[0]!.groupId).toBeDefined();
+    expect(copies[0]!.groupId).toBe(copies[1]!.groupId);
+    expect(copies[0]!.groupId).not.toBe(s().content.elements[0]!.groupId);
+  });
+
+  it("clears the focused face when the box changes", () => {
+    s().focusFace("front");
+    expect(s().focusedFaceId).toBe("front");
+    s().setSpec({
+      specVersion: 2,
+      styleId: "tuck-end",
+      values: {},
+      material: { caliperMm: 0.4, kind: "paperboard" },
+    } as never);
+    expect(s().focusedFaceId).toBeNull();
+  });
+});
