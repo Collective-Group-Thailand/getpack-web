@@ -11138,6 +11138,82 @@
         }
       }
     },
+    "/v1/store/designs/{designId}/actions/share": {
+      "post": {
+        "operationId": "store.designs.share",
+        "summary": "Create (or return the live) view-only link to the design's current version; the viewer needs no account and cannot edit",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.design-share",
+        "parameters": [
+          {
+            "name": "designId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expiresInDays": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 365
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Create (or return the live) view-only link to the design's current version; the viewer needs no account and cannot edit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesignShareDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/designs/{designId}/assets": {
       "post": {
         "operationId": "store.designs.assets.create",
@@ -11196,6 +11272,42 @@
                 }
               }
             }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/designs/{designId}/share": {
+      "delete": {
+        "operationId": "store.designs.share.delete",
+        "summary": "Revoke the design's view link; the old link answers 404 from then on",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.design-share",
+        "parameters": [
+          {
+            "name": "designId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoke the design's view link; the old link answers 404 from then on"
           },
           "4XX": {
             "description": "Problem details (api-conventions §3)",
@@ -17045,6 +17157,54 @@
                     "shipsBy"
                   ],
                   "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/shared-designs/{token}": {
+      "get": {
+        "operationId": "store.sharedDesigns.get",
+        "summary": "A shared design, read-only, for anyone with the link (the version current when it is opened)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.design-share",
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A shared design, read-only, for anyone with the link (the version current when it is opened)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharedDesignDto"
                 }
               }
             }
@@ -24244,7 +24404,8 @@
           "schemaVersion",
           "spec",
           "content"
-        ]
+        ],
+        "additionalProperties": false
       },
       "DesignDocumentViewDto": {
         "type": "object",
@@ -25206,6 +25367,37 @@
           "cancelled",
           "requoted"
         ]
+      },
+      "DesignShareDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "createdAt",
+          "expiresAt"
+        ],
+        "additionalProperties": false
       },
       "DesignSource": {
         "type": "string",
@@ -33016,6 +33208,56 @@
           "claim",
           "user"
         ]
+      },
+      "SharedDesignDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "styleId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "document": {
+            "$ref": "#/components/schemas/DesignDocumentDto"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sharedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "name",
+          "styleId",
+          "document",
+          "assets",
+          "sharedAt"
+        ],
+        "additionalProperties": false
       },
       "ShipmentAction": {
         "type": "string",

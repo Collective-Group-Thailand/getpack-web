@@ -23,3 +23,15 @@ export async function listMyDesigns(): Promise<MyDesignSummary[]> {
   const page = await (await serverRequests("customer")).call("GET /v1/store/designs", { query: { perPage: 100 } });
   return page.data;
 }
+
+export type SharedDesignData = ResponseOf<Requests, "GET /v1/store/shared-designs/{token}">;
+
+/** A design shared by link, or `null` when the link is revoked, expired or unknown. Never cached. */
+export async function getSharedDesign(token: string): Promise<SharedDesignData | null> {
+  try {
+    return await (await serverRequests("customer")).call("GET /v1/store/shared-designs/{token}", { path: { token } });
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) return null;
+    throw error;
+  }
+}

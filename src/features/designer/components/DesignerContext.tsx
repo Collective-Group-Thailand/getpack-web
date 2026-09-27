@@ -5,6 +5,7 @@ import type Konva from "konva";
 
 import type { Dieline } from "@packio/dieline";
 
+import type { DesignerCatalog } from "../data/api";
 import type { Persistence } from "../data/persistence";
 
 /**
@@ -17,6 +18,10 @@ export interface DesignerHandle {
   dieline: Dieline | null;
   save: Persistence["save"];
   serverId: () => string | null;
+  /** The sheet point new elements are centred on: the middle of the view, or of the focused face. */
+  center: () => { x: number; y: number };
+  catalog: DesignerCatalog | null;
+  mode: "local" | "store" | "admin";
 }
 
 export const DesignerContext = createContext<DesignerHandle | null>(null);

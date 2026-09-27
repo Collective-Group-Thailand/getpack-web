@@ -1,4 +1,13 @@
-import { getStyle, isStyleId, isV1Spec, migrateSpec, remapV1Point, type Dieline, type Pt } from "@packio/dieline";
+import {
+  getStyle,
+  hingeMapOf,
+  isStyleId,
+  isV1Spec,
+  migrateSpec,
+  remapV1Point,
+  type Dieline,
+  type Pt,
+} from "@packio/dieline";
 
 import type { BoxDims, DesignContent, DesignElement, DesignSpec } from "./types";
 
@@ -32,6 +41,11 @@ export function sizeOf(spec: Pick<DesignSpec, "styleId" | "values">): { box: boo
 /** The box a design sits on. */
 export function dielineOf(spec: DesignSpec): Dieline {
   return getStyle(spec.styleId).build(spec.values, spec.material);
+}
+
+/** How the box folds (the style's hinges), or `null` for a flat piece that does not fold. */
+export function hingesOf(spec: DesignSpec) {
+  return hingeMapOf(getStyle(spec.styleId), spec.values, spec.material);
 }
 
 /** The point an element is anchored by when it moves with its face: its middle where it has a size. */

@@ -211,6 +211,29 @@ export const designerTemplateDetail = designerTemplate
   .extend({ document: designDocument })
   .meta({ id: "DesignerTemplateDetailDto" });
 
+/* ------------------------------------------------------------------------------------ sharing */
+
+export const designShare = z
+  .object({
+    /** Opaque, unguessable; the public page is `/design/shared/{token}`. */
+    token: z.string(),
+    createdAt: dateTime(),
+    /** Null when the link does not expire. */
+    expiresAt: dateTime().nullable(),
+  })
+  .meta({ id: "DesignShareDto" });
+
+export const sharedDesign = z
+  .object({
+    name: z.string(),
+    styleId: z.string().nullable(),
+    document: designDocument,
+    /** Signed URLs for the document's image assets, as on `storeDesign.assets`. */
+    assets: z.array(z.object({ id: uuid(), url: z.string() })),
+    sharedAt: dateTime(),
+  })
+  .meta({ id: "SharedDesignDto" });
+
 /* ---------------------------------------------------------------------------------- requests */
 
 export const storeDesignRequests = {
@@ -315,6 +338,25 @@ export const storeDesignRequests = {
       })
       .meta({ id: "DesignImportResultDto" }),
     idempotent: true,
+  }),
+  "POST /v1/store/designs/{designId}/actions/share": request({
+    request: "store.design-share",
+    summary:
+      "Create (or return the live) view-only link to the design's current version; the viewer needs no account and cannot edit",
+    body: z.object({ expiresInDays: z.number().int().min(1).max(365).nullable().optional() }),
+    response: designShare,
+    idempotent: true,
+  }),
+  "DELETE /v1/store/designs/{designId}/share": request({
+    request: "store.design-share",
+    summary: "Revoke the design's view link; the old link answers 404 from then on",
+    status: 204,
+  }),
+  "GET /v1/store/shared-designs/{token}": request({
+    request: "store.design-share",
+    summary: "A shared design, read-only, for anyone with the link (the version current when it is opened)",
+    response: sharedDesign,
+    public: true,
   }),
   "GET /v1/store/designer/catalog": request({
     request: "store.designer-catalog",

@@ -20,22 +20,17 @@ export interface StatProps {
  * A KPI or queue card (design-system.md §3 "Stat/KPI card", the dashboard's queues). When it
  * links somewhere the whole card is the target — one tab stop, 24 px+ tall (WCAG 2.5.8).
  */
-export function Stat({
-  label,
-  value,
-  hint,
-  icon,
-  tone = "neutral",
-  as: Component = "div",
-  href,
-  className,
-}: StatProps) {
+export function Stat({ label, value, hint, icon, tone = "neutral", as = "div", href, className }: StatProps) {
   const toneClass = {
     neutral: "text-muted",
     success: "text-success",
     warning: "text-warning-subtle-fg",
     danger: "text-danger",
   }[tone];
+
+  // Narrowed to the props passed below: with three.js elements in the JSX namespace (the designer's
+  // 3D preview), the union of every intrinsic element no longer accepts children.
+  const Component = as as React.ElementType<{ href?: string; className?: string; children?: React.ReactNode }>;
 
   return (
     <Component

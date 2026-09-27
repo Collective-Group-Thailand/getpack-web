@@ -108,7 +108,46 @@
     "layerTop": "To front",
     "layerUp": "Forward",
     "layerDown": "Backward",
-    "layerBottom": "To back"
+    "layerBottom": "To back",
+    "title": {
+      "text": "Text",
+      "image": "Image",
+      "rect": "Rectangle",
+      "circle": "Circle",
+      "shape": "Shape",
+      "qr": "QR code",
+      "ean13": "EAN-13 barcode"
+    },
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "lockedHint": "Locked — unlock it to move or edit",
+    "name": "Name in layers",
+    "namePlaceholder": "Name it (optional)",
+    "mm": "mm",
+    "imageTooLarge": "The file is larger than 8 MB",
+    "imageUnreadable": "This image could not be opened",
+    "qrValue": "Link or text",
+    "eanValue": "13 digits",
+    "codeInvalid": "A code cannot be made from this value",
+    "codeColour": "Code colour",
+    "codeBackground": "Code background",
+    "codeHint": "Dark codes on a light background scan best. Test-scan the proof before ordering.",
+    "replaceImage": "Replace image",
+    "resetCrop": "Remove crop",
+    "crop": "Crop",
+    "cropSide": {
+      "left": "Left",
+      "right": "Right",
+      "top": "Top",
+      "bottom": "Bottom"
+    },
+    "outOfGamut": "This colour may print duller than on screen",
+    "outOfGamutBody": "Some vivid screen colours are outside four-colour (CMYK) ink — judge colour from the proof",
+    "width": "Width (mm)",
+    "height": "Height (mm)",
+    "clip": "Clip to",
+    "clipHint": "Shows only the part inside the chosen face",
+    "clipSheet": "Whole sheet"
   },
   "setup": {
     "title": "Box setup",
@@ -244,5 +283,247 @@
       "toArtwork": "Go to artwork and proofs",
       "version": "File version {version}"
     }
+  },
+  "textPanel": {
+    "preset": {
+      "heading": "Add a heading",
+      "subheading": "Add a subheading",
+      "body": "Add body text"
+    },
+    "sample": {
+      "heading": "Heading",
+      "subheading": "Subheading",
+      "body": "Your text"
+    }
+  },
+  "elements": {
+    "shapes": "Shapes",
+    "shape": {
+      "rect": "Rectangle",
+      "circle": "Circle",
+      "star": "Star",
+      "burst": "Burst",
+      "triangle": "Triangle",
+      "hexagon": "Hexagon",
+      "heart": "Heart",
+      "arrow": "Arrow",
+      "speech": "Speech bubble",
+      "badge": "Badge",
+      "leaf": "Leaf",
+      "drop": "Drop",
+      "check": "Check mark",
+      "ribbon": "Ribbon"
+    },
+    "codes": "QR codes and barcodes",
+    "codeKind": "Code type",
+    "qr": "QR code",
+    "ean13": "EAN-13 barcode",
+    "qrValue": "Link or text",
+    "eanValue": "12 or 13 digits",
+    "qrHint": "E.g. your shop's link — 25 mm by default, with its quiet zone",
+    "eanHint": "Type 12 digits and the check digit is added",
+    "invalid": "A code cannot be made from this value",
+    "addCode": "Add code"
+  },
+  "uploads": {
+    "upload": "Upload images",
+    "hint": "PNG, JPG, WEBP or SVG up to 8 MB — use high-resolution images (300 dpi at print size) for a sharp print",
+    "placeAgain": "Place this image again",
+    "tooLarge": "The file is larger than 8 MB",
+    "unreadable": "This image could not be opened"
+  },
+  "brand": {
+    "myColours": "My brand colours",
+    "addColour": "Add a colour",
+    "add": "Add",
+    "catalogColours": "Suggested colours",
+    "logo": "Logo",
+    "placeLogo": "Place the logo",
+    "replaceLogo": "Replace logo",
+    "uploadLogo": "Upload a logo",
+    "logoFailed": "The logo could not be opened",
+    "selectFirst": "Select something first, then pick a colour to apply",
+    "apply": "Apply {colour} to the selection",
+    "remove": "Remove {colour}"
+  },
+  "layers": {
+    "empty": "No elements yet",
+    "label": "Element layers, topmost first",
+    "type": {
+      "text": "Text",
+      "image": "Image",
+      "rect": "Rectangle",
+      "circle": "Circle",
+      "shape": "Shape",
+      "code": "Code"
+    },
+    "grouped": "Group",
+    "lock": "Lock {name}",
+    "unlock": "Unlock {name}"
+  },
+  "templates": {
+    "applied": "Template {name} applied",
+    "failed": "The template could not be loaded",
+    "none": "No templates for this product yet",
+    "replaceTitle": "Replace the current design?",
+    "replaceBody": "The template replaces every element on this box. You can undo it afterwards.",
+    "replace": "Use template"
+  },
+  "arrange": {
+    "heading": "Arrange ({count} selected)",
+    "align": "Align",
+    "mode": {
+      "left": "Align left",
+      "center": "Centre horizontally",
+      "right": "Align right",
+      "top": "Align top",
+      "middle": "Centre vertically",
+      "bottom": "Align bottom"
+    },
+    "toFace": "Aligns to the face being edited",
+    "toSelection": "Aligns the selected items to each other",
+    "toSheet": "Aligns to the flat sheet",
+    "distributeX": "Distribute horizontally",
+    "distributeY": "Distribute vertically",
+    "group": "Group",
+    "ungroup": "Ungroup",
+    "lock": "Lock",
+    "unlock": "Unlock"
+  },
+  "checks": {
+    "empty": "Add some artwork and its print checks appear here",
+    "allClear": "No print issues found",
+    "summary": "{errors, plural, =0 {} one {# to fix · } other {# to fix · }}{warnings} to review",
+    "element": {
+      "text": "Text",
+      "image": "Image",
+      "rect": "Rectangle",
+      "circle": "Circle",
+      "shape": "Shape",
+      "code": "Code"
+    },
+    "severity": {
+      "error": "Must fix",
+      "warning": "Review"
+    },
+    "issue": {
+      "text_in_danger_zone": "Too close to a cut or fold — move it inside the safe zone",
+      "small_text": "Text {mm} mm tall is below 6 pt and may not print clearly",
+      "thin_stroke": "The line is too thin and may break up in print",
+      "low_resolution": "The image is {dpi} dpi, below {min} dpi — it may print soft",
+      "crosses_fold": "Crosses a fold — the text will bend at the box's edge",
+      "on_glue_area": "On the glue flap — it will be covered when the box is glued",
+      "missing_bleed": "Near a cut — extend it {mm} mm past the edge (bleed)",
+      "off_sheet": "Outside the sheet — it will not be printed",
+      "code_invalid": "The code's value is not valid",
+      "code_too_small": "The code is too small — make it at least {mm} mm wide"
+    }
+  },
+  "box": {
+    "change": "Box setup",
+    "printRules": "Print requirements",
+    "faces": "Faces of the box",
+    "facesHint": "Pick a face to edit it up close, the right way up as it reads on the box (or double-click it)",
+    "grid": "Show grid",
+    "rulers": "Show rulers",
+    "snapping": "Snap to guides"
+  },
+  "preview3d": {
+    "canvas": "3D view of {name}; drag to rotate",
+    "fold": "Folding",
+    "play": "Play the fold",
+    "rotateLeft": "Rotate left",
+    "rotateRight": "Rotate right",
+    "tiltUp": "Tilt up",
+    "tiltDown": "Tilt down",
+    "reset": "Reset view",
+    "lighting": "Lighting",
+    "preset": {
+      "studio": "Studio",
+      "daylight": "Daylight",
+      "warm": "Warm"
+    },
+    "exportPng": "Save as PNG",
+    "flat": "A flat piece — nothing to fold"
+  },
+  "status": {
+    "face": "Face: {name}",
+    "issues": "{count} to review",
+    "noIssues": "Print-ready"
+  },
+  "shortcuts": {
+    "open": "Keyboard shortcuts",
+    "title": "Keyboard shortcuts",
+    "group": "Group",
+    "undo": "Undo",
+    "redo": "Redo",
+    "save": "Save",
+    "copy": "Copy",
+    "cut": "Cut",
+    "paste": "Paste",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "selectAll": "Select all",
+    "click": "Click",
+    "addToSelection": "Add to or remove from the selection",
+    "drag": "Drag",
+    "marquee": "Drag a box to select several",
+    "ungroup": "Ungroup",
+    "lock": "Lock or unlock",
+    "nudge": "Nudge 1 mm (Shift = 10 mm)",
+    "doubleClick": "Double-click",
+    "focusFace": "Edit that face up close",
+    "escape": "Clear the selection, then leave the face",
+    "overlay": "Show this list"
+  },
+  "focus": {
+    "editing": "Editing: {name}",
+    "escape": "to leave",
+    "exit": "Back to the whole sheet"
+  },
+  "rail": {
+    "label": "Design tools",
+    "box": "Box",
+    "templates": "Templates",
+    "elements": "Elements",
+    "text": "Text",
+    "uploads": "Uploads",
+    "brand": "Brand",
+    "background": "Background",
+    "layers": "Layers"
+  },
+  "side": {
+    "label": "Details",
+    "properties": "Properties",
+    "checks": "Checks",
+    "checksCount": "Checks ({count})",
+    "preview": "3D"
+  },
+  "selection": {
+    "empty": "Select something on the box to edit it, or add from the tools on the left"
+  },
+  "share": {
+    "open": "Share a view link",
+    "title": "Share a view link",
+    "body": "Anyone with this link can see the design without signing in, but cannot edit it",
+    "link": "Link",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy — select the link and copy it",
+    "revoke": "Revoke link",
+    "revoked": "Link revoked; the old link no longer opens",
+    "revokeFailed": "The link could not be revoked",
+    "failed": "The link could not be created. Try again."
+  },
+  "shared": {
+    "metaTitle": "A shared box design",
+    "home": "Packio home",
+    "badge": "Shared design · view only",
+    "mm": "mm",
+    "sharedAt": "Shared {time}",
+    "unreadable": "This design cannot be shown by this version",
+    "viewOnly": "View only",
+    "viewOnlyBody": "Someone shared this design with you. To make a box of your own, start designing for free.",
+    "start": "Design your own box"
   }
 }
