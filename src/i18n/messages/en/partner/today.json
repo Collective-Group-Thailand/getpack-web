@@ -20,5 +20,17 @@
     "pricesToSignOff": "Sign off the {type} prices Packio entered",
     "pricesToSignOffBody": "{lines} lines",
     "none": "Nothing is waiting for you right now"
+  },
+  "floor": {
+    "countersLabel": "Today at a glance",
+    "counters": {
+      "toAccept": "To accept",
+      "dueToday": "Due today",
+      "atRisk": "At risk",
+      "onHold": "On hold"
+    },
+    "queue": "Your queue",
+    "allJobs": "All jobs",
+    "queueEmpty": "Nothing in the queue"
   }
 }

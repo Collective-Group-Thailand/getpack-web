@@ -107,3 +107,11 @@ export { Timeline, type TimelineItem, type TimelineProps } from "./Timeline";
 export { toast, Toaster } from "./Toast";
 export { Tooltip, TooltipProvider, type TooltipProps } from "./Tooltip";
 export { VisuallyHidden, type VisuallyHiddenProps } from "./VisuallyHidden";
+// The shop-floor set (design-system.md §3 "Partner/shop-floor"), built for F5 5.2.
+export { BigActionButton, type BigActionButtonProps } from "./BigActionButton";
+export { CameraCapture, type CameraCaptureLabels, type CameraCaptureProps, type CapturedPhoto } from "./CameraCapture";
+export { LabelSheet, type LabelSheetProps } from "./LabelSheet";
+export { QRCode, type QRCodeProps } from "./QRCode";
+export { ScanButton, type ScanButtonLabels, type ScanButtonProps } from "./ScanButton";
+export { SignaturePad, type SignaturePadLabels, type SignaturePadProps } from "./SignaturePad";
+export { StageStepper, type Stage, type StageState, type StageStepperProps } from "./StageStepper";

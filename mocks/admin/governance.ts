@@ -247,7 +247,8 @@ function boardJobs(): Job[] {
 }
 
 const INSPECTOR = PERSONAS.find((persona) => persona.key === "partner_manager")!;
-const inspections: Inspection[] = boardJobs()
+/** Packio's inspections; the partner zone shows a factory the notices on its own jobs. */
+export const inspections: Inspection[] = boardJobs()
   .slice(0, 4)
   .map((job, index): Inspection => {
     const status = (["planned", "in_progress", "passed", "failed"] as const)[index]!;

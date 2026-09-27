@@ -38,6 +38,30 @@ export const ROLE_PERMISSIONS: Record<PartnerRole, readonly string[]> = {
   factory_accountant: ["factory_profile.read", "factory_prices.read", "factory_bank_account.propose"],
 };
 
+/**
+ * Proposed in docs/contract-requests.md (`partner.jobs`, `partner.shipments`) — rbac.md has no
+ * production or shipping keys yet. The shop floor splits the way B4.2 describes it: the planner
+ * accepts and plans, operators report milestones, QC records checks, shipping ships.
+ */
+const FLOOR: Record<PartnerRole, readonly string[]> = {
+  factory_owner: [
+    "factory_jobs.read",
+    "factory_jobs.accept",
+    "factory_jobs.update",
+    "factory_qc.record",
+    "factory_shipments.read",
+    "factory_shipments.manage",
+  ],
+  factory_planner: ["factory_jobs.read", "factory_jobs.accept", "factory_jobs.update", "factory_shipments.read"],
+  factory_operator: ["factory_jobs.read", "factory_jobs.update"],
+  factory_qc: ["factory_jobs.read", "factory_jobs.update", "factory_qc.record"],
+  factory_shipping: ["factory_jobs.read", "factory_shipments.read", "factory_shipments.manage"],
+  factory_accountant: ["factory_jobs.read", "factory_shipments.read"],
+};
+for (const role of Object.keys(FLOOR) as PartnerRole[]) {
+  ROLE_PERMISSIONS[role] = [...ROLE_PERMISSIONS[role], ...FLOOR[role]];
+}
+
 export interface PartnerPersona {
   key: string;
   id: string;

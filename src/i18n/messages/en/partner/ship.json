@@ -1,0 +1,122 @@
+{
+  "title": "Shipping",
+  "plan": {
+    "title": "Ready to ship",
+    "body": "Create a shipment per destination; split it across several if needed.",
+    "meta": "{good} good · ship by {date}",
+    "blocked": {
+      "inspection_pending": "Waiting for Packio's inspection before shipping",
+      "payment_pending": "The customer has not paid the before-shipping instalment: you can prepare, not dispatch"
+    },
+    "left": "{left} of {total} still to ship",
+    "empty": "No finished jobs waiting to ship"
+  },
+  "list": {
+    "title": "Your shipments",
+    "viewsLabel": "Filter shipments",
+    "views": {
+      "open": "To dispatch",
+      "in_transit": "On the road",
+      "delivered": "Delivered",
+      "all": "All"
+    },
+    "meta": "{jobNo} · {quantity} pcs · {cartons} cartons",
+    "podMissing": "Proof of delivery still to capture",
+    "empty": {
+      "open": "Nothing to dispatch",
+      "in_transit": "Nothing on the road",
+      "delivered": "Nothing delivered yet",
+      "all": "No shipments yet"
+    }
+  },
+  "create": {
+    "quantityRange": "Between 1 and {max}",
+    "cartonsRange": "At least one carton",
+    "created": "Shipment {no} created",
+    "failed": "Could not create the shipment",
+    "quantity": "Quantity",
+    "cartons": "Cartons",
+    "weight": "Weight",
+    "kg": "kg",
+    "action": "Ship to {name}"
+  },
+  "dispatch": {
+    "action": "Dispatch",
+    "hint": "Your fleet takes {no} out",
+    "done": "{no} dispatched"
+  },
+  "carrier": {
+    "action": "Ask Packio for a carrier",
+    "title": "Request the fallback carrier",
+    "body": "Your fleet cannot reach this address for {no}; Packio books a carrier and tells you.",
+    "confirm": "Send",
+    "reason": "Why",
+    "reasonHint": "E.g. outside the zones you deliver to",
+    "done": "Carrier requested"
+  },
+  "pod": {
+    "receiverRequired": "Enter the receiver's name",
+    "quantityInvalid": "Enter the delivered quantity",
+    "photoRequired": "Take at least one photo of the delivery",
+    "signatureRequired": "Get the receiver's signature or typed name",
+    "uploadFailed": "Upload failed — try again",
+    "done": "Delivery recorded — waiting for Packio's review",
+    "photos": "Delivery photos",
+    "photosHint": "Photograph the goods where they were left",
+    "receiver": "Received by",
+    "delivered": "Delivered quantity",
+    "deliveredHint": "This shipment: {quantity}",
+    "signature": "Receiver's signature",
+    "signatureHint": "Have the receiver sign in the box, or type their name",
+    "clear": "Clear",
+    "draw": "Sign",
+    "typeName": "Type the name",
+    "typedName": "Receiver's name",
+    "signatureMode": "How to sign",
+    "submit": "Record the delivery",
+    "submitHint": "Evidence of delivery; the tolerance is judged on it"
+  },
+  "detail": {
+    "metaTitle": "Shipment",
+    "back": "Back to shipping",
+    "summary": "{jobNo} · {quantity} pcs · {cartons} cartons",
+    "blockedTitle": "Cannot dispatch yet",
+    "blockedBody": "The customer has not paid the before-shipping instalment; Packio tells you when it can go.",
+    "carrierRequestedTitle": "Carrier requested",
+    "carrierRequestedBody": "Packio is booking the carrier and will confirm the pickup.",
+    "printLabels": "Print carton labels ({count})",
+    "podTitle": "Proof of delivery",
+    "podBody": "Required for every delivery by your own fleet",
+    "podDone": "Proof of delivery",
+    "receiver": "Received by",
+    "delivered": "Delivered",
+    "at": "At",
+    "review": "Packio's review",
+    "photoAlt": "Delivery photo {n}",
+    "recipient": "Recipient",
+    "recipientNote": "Recipient name, address and phone only",
+    "packing": "Packing list",
+    "events": "Tracking"
+  },
+  "tolerance": {
+    "exact": "Delivered in full",
+    "short_within": "Short, within tolerance",
+    "over_within": "Over, within tolerance",
+    "short_outside": "Short beyond tolerance — Packio opens a claim",
+    "over_outside": "Over beyond tolerance",
+    "detail": "Ordered {ordered} · delivered {delivered} · tolerance short {shortage}, over {overage}"
+  },
+  "labels": {
+    "title": "Carton labels",
+    "back": "Back to the shipment",
+    "body": "100 × 150 mm, one per carton; set the label printer to this size first.",
+    "print": "Print",
+    "sheet": "Labels for {no}",
+    "carton": "Carton {n} of {total}",
+    "job": "{jobNo} · {title}",
+    "to": "To",
+    "weight": "{kg} kg",
+    "scan": "Scan to track",
+    "qr": "Tracking QR, carton {n}"
+  }
+}
