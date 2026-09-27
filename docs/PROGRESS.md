@@ -66,7 +66,7 @@ Lighthouse partner set, eight URLs (adds /settings): accessibility 100 on each; 
 ### Final summary (F5)
 **The partner zone, end to end on a phone**: onboarding (13 steps, sign-off of staff-entered data), prices by mode and tier (proposals line by line or from a sheet, rate cards, shipping payout cards), the floor (Today, jobs, milestones with photos, QC, issues, capacity), shipping (split per destination, labels, dispatch, POD), money (statements, tax invoices, payouts, statement of account), claims, performance and settings. Published contract: B2.2's partner surface. Contract requests: 17 groups, every one with a stateful mock over the same rows the back office reads, so a factory's action shows on the admin side.
 
-**Gates run**: 796 unit, 12 partner e2e flows on a 390 × 844 viewport (with axe on every screen they open, high contrast included), the full e2e suite, Lighthouse partner set (8 URLs, accessibility 100).
+**Gates run**: 796 unit, 14 partner e2e flows on a 390 × 844 viewport (with axe on every screen they open, high contrast included), the full e2e suite, Lighthouse partner set (8 URLs, accessibility 100).
 
 **Still open**
 - The 180 KB initial-JS target (251–292 KB now; the shared zone runtime is most of it) and a 2.5 s LCP on simulated 4G.
