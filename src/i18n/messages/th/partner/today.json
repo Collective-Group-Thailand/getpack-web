@@ -20,5 +20,17 @@
     "pricesToSignOff": "รับรองราคา {type} ที่ Packio กรอกให้",
     "pricesToSignOffBody": "{lines} บรรทัด",
     "none": "ตอนนี้ไม่มีอะไรรอคุณ"
+  },
+  "floor": {
+    "countersLabel": "ภาพรวมวันนี้",
+    "counters": {
+      "toAccept": "รอรับงาน",
+      "dueToday": "ครบกำหนดวันนี้",
+      "atRisk": "เสี่ยงล่าช้า",
+      "onHold": "พักงาน"
+    },
+    "queue": "คิวงาน",
+    "allJobs": "งานทั้งหมด",
+    "queueEmpty": "ไม่มีงานในคิว"
   }
 }

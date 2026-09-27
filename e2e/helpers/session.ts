@@ -91,6 +91,8 @@ const PARTNER_EMAILS: Record<PartnerPersona, string> = {
 
 /** Signs in as a partner-factory user and waits until the shop-floor shell is interactive. */
 export async function signInAsPartner(page: Page, persona: PartnerPersona = "planner"): Promise<void> {
+  // A signed-in user opening /login is sent home; switching factory user starts from no session.
+  await page.context().clearCookies();
   await page.goto(`${HOSTS.partner}/login`);
   await page.getByLabel(/^อีเมล/).fill(PARTNER_EMAILS[persona]);
   await page.getByLabel(/^รหัสผ่าน/).fill(MOCK_PARTNER.password);

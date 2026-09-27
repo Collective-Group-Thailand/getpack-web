@@ -20,7 +20,7 @@ import { baht, FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
 import { etagOf } from "./tables";
 
-type Shipment = z.output<typeof shipmentDetail> & { updatedAt: string };
+export type Shipment = z.output<typeof shipmentDetail> & { updatedAt: string };
 type Claim = z.output<typeof claimDetail> & { updatedAt: string };
 type Quote = z.output<typeof carrierQuote>;
 
@@ -193,7 +193,8 @@ const delivered = (
   return shipment;
 };
 
-const shipments: Shipment[] = [
+/** Every shipment; the partner zone (`mocks/partner/shipments.ts`) adds the ones a factory creates. */
+export const shipments: Shipment[] = [
   ...shipped.map(({ order, index }, at) =>
     order.shipments[0]!.status === "delivered"
       ? delivered(

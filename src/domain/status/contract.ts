@@ -221,3 +221,9 @@ export type ChangeRequestStatus = "open" | "in_progress" | "done" | "declined";
 
 /** A factory's answer to one line of a shipping payout card (D-013, D-042). **Source: contract** (B2.2). */
 export type RateLineAcceptance = Schemas["RateLineAcceptance"];
+
+/** The factory's QC result (D-076). **Source: schema** (`qc_result`); proposed in contract request `partner.job-qc`. */
+export type QcResult = "pass" | "fail" | "conditional";
+
+/** An issue raised on a job. **Source: schema** (`issue_status`); proposed in contract request `partner.job-issues`. */
+export type JobIssueStatus = "open" | "resolved";

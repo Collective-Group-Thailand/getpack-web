@@ -422,5 +422,14 @@
     "pending": "รอคำตอบ",
     "accepted": "ยอมรับแล้ว",
     "countered": "ขออัตราอื่น"
+  },
+  "qcResult": {
+    "pass": "ผ่าน",
+    "conditional": "ผ่านแบบมีเงื่อนไข",
+    "fail": "ไม่ผ่าน"
+  },
+  "jobIssue": {
+    "open": "ยังไม่แก้",
+    "resolved": "แก้แล้ว"
   }
 }
