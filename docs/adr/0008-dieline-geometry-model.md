@@ -51,5 +51,5 @@ geometry the customer designed on.
   SVG/DXF snapshots, closed fold).
 - BoxStudio-era designs still open: `migrateSpec` maps the spec and `remapV1Point` moves each
   element to the same place on the same face of the new layout (the v1 builders are frozen in
-  `legacy/v1.ts` for exactly that).
+  `compat/v1.ts` for exactly that).
 - Compensation values marked ⚠ in `constants.ts` need prepress confirmation before launch.

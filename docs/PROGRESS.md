@@ -36,7 +36,7 @@ Engine v2 of `@packio/dieline`, on `feat/f4a-engine` (from `47c5307`, F3 merged)
 | A dieline can be cut and folded | `checkDieline()`: unique face ids, outlines and holes closed within 0.01 mm, every free edge a cut, every fold shared by two faces, no overlapping faces, no cut ending mid-board, each piece connected. The style suite runs it for every style × preset × reference material |
 | Customers give inside sizes; the engine scores the board | caliper compensation in `constants.ts` (panel + t, depth + 2t, flaps meeting at the centre + t/2, the glue-side panel t narrower), catalogue flute allowances (`col_a`, `col_c`, `col_dd`) win when present; the folded model closes to L × W × H within the allowance |
 | A window keeps board round it | `window.outside_panel` unless it sits 6 mm inside its panel (pure polygon test, no Clipper) |
-| Old designs still open | `migrateSpec` + `remapV1Point`: a BoxStudio design keeps its box and every element moves to the same place on the same face of the v2 layout (v1 builders frozen in `legacy/v1.ts`) |
+| Old designs still open | `migrateSpec` + `remapV1Point`: a BoxStudio design keeps its box and every element moves to the same place on the same face of the v2 layout (v1 builders frozen in `compat/v1.ts`) |
 | The storefront does not pay for offsetting | the style registry never imports Clipper2; only `offset.ts` and the exports do |
 
 ### Decisions taken, with reasons
