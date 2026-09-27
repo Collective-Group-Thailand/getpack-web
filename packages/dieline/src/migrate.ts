@@ -1,7 +1,7 @@
 import { faceBounds, findFace } from "./faces";
 import { pointInPolygon } from "./geom";
 import { boundsOf } from "./path";
-import { buildDielineV1, type V1Dims, type V1StyleId } from "./legacy/v1";
+import { buildDielineV1, type V1Dims, type V1StyleId } from "./compat/v1";
 import type { Dieline, MaterialSpec, ParamValues, Pt } from "./types";
 
 /** The version of the dieline part of a design document this engine writes. */

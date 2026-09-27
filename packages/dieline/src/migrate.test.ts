@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { findFace, faceBounds } from "./faces";
-import { buildDielineV1 } from "./legacy/v1";
+import { buildDielineV1 } from "./compat/v1";
 import { migrateSpec, remapV1Point, SPEC_VERSION, v1FaceId, type V1Spec } from "./migrate";
 import { getStyle } from "./styles";
 
