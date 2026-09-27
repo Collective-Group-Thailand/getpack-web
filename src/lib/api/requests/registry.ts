@@ -17,6 +17,7 @@ import { adminPartnerRequests } from "./admin-partners";
 import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
 import { adminSalesRequests } from "./admin-sales";
+import { partnerOnboardingRequests } from "./partner-onboarding";
 import { storeAccountRequests } from "./store-account";
 import { storeArtworkRequests } from "./store-artwork";
 import { storeFulfilmentRequests } from "./store-fulfilment";
@@ -54,6 +55,7 @@ export const REQUESTS = {
   ...storeSupportRequests,
   ...storeBusinessRequests,
   ...storeDesignRequests,
+  ...partnerOnboardingRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

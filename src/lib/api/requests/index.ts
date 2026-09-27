@@ -27,6 +27,7 @@ export * from "./admin-partners";
 export * from "./admin-prepress";
 export * from "./admin-rfq";
 export * from "./admin-sales";
+export * from "./partner-onboarding";
 export * from "./store-account";
 export * from "./store-artwork";
 export * from "./store-cart";

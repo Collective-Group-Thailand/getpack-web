@@ -29,8 +29,12 @@ function asPersona(persona: string) {
   return createRequestClient(REQUESTS, api as unknown as Client<never>);
 }
 
-/** Each surface's own audience: a superadmin for the back office, the mock customer for the store. */
+/** Each surface's own audience: a superadmin for the back office, the mock customer for the store, F001's owner for the partner zone. */
 function asSurface(key: RequestKey) {
+  if (key.includes(" /v1/partner/")) {
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("partner", "owner") });
+    return createRequestClient(REQUESTS, api as unknown as Client<never>);
+  }
   if (!key.includes(" /v1/store/")) return asPersona("superadmin");
   const api = createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
   return createRequestClient(REQUESTS, api as unknown as Client<never>);
@@ -48,13 +52,22 @@ const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
 };
 
-const gets = (Object.keys(REQUESTS) as RequestKey[]).filter((key) => key.startsWith("GET ") && !key.includes("{"));
+/** The partner zone's own factory: every partner read is under `/factories/{factoryId}`. */
+const F001 = "00000000-0000-4000-8000-0000000000f1";
+const ownFactoryOnly = (key: string) => /^GET \/v1\/partner\/factories\/\{factoryId\}(\/[a-z-]+)+$/.test(key);
+
+const gets = (Object.keys(REQUESTS) as RequestKey[]).filter(
+  (key) => key.startsWith("GET ") && (!key.includes("{") || ownFactoryOnly(key)),
+);
 
 describe("the mock API answers every contract request in its requested shape", () => {
   it.each(gets)("%s", async (key) => {
     const requests = asSurface(key);
     try {
-      await (requests.call as (k: string, init?: unknown) => Promise<unknown>)(key, { query: SAMPLE_QUERIES[key] });
+      await (requests.call as (k: string, init?: unknown) => Promise<unknown>)(key, {
+        query: SAMPLE_QUERIES[key],
+        ...(ownFactoryOnly(key) ? { path: { factoryId: F001 } } : {}),
+      });
     } catch (error) {
       // A 404 means "not mocked yet" and is fine for an entry whose screen is not built; a 500
       // `mock.drift` is exactly what this test exists to catch.
