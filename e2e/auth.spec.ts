@@ -156,9 +156,9 @@ test.describe("partner sign-in", () => {
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
 
     await expect(page).toHaveURL(`${HOSTS.partner}/`);
-    // `FactoryAccessDto` carries the factory id and the roles held at it, not a name.
+    // The roles held at the factory, by name (`FactoryAccessDto` gives the keys).
     await openAccountMenu(page);
-    await expect(page.getByTestId("actor-factories")).toContainText("planner");
+    await expect(page.getByTestId("actor-factories")).toContainText("ผู้วางแผนการผลิต");
   });
 
   test("signs in with a device PIN instead of a password, on a shared device", async ({ page }) => {

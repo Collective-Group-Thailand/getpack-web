@@ -1,0 +1,24 @@
+{
+  "title": "งานวันนี้",
+  "greeting": "สวัสดี {name}",
+  "stage": {
+    "applied": "กรอกใบสมัครให้ครบเพื่อเริ่มงานกับ Packio",
+    "under_review": "ทีมพาร์ตเนอร์กำลังตรวจข้อมูลของโรงงาน",
+    "trial": "ช่วงทดลองผลิต — งานแรกตรวจคุณภาพทุกงาน"
+  },
+  "progressLabel": "ความคืบหน้าการเริ่มงาน",
+  "progress": "เสร็จ {done} จาก {total} ขั้นตอน",
+  "continue": "ทำขั้นตอนต่อ",
+  "tasks": {
+    "title": "รอคุณดำเนินการ",
+    "signOff": "รับรองข้อมูล {count} ขั้นตอน",
+    "signOffBody": "ข้อมูลที่ทีม Packio กรอกแทนโรงงาน",
+    "rateCard": "ตอบอัตรา {type} ที่ Packio ส่งมา",
+    "rateCardBody": "{count} บรรทัดรอคำตอบ",
+    "countered": "Packio เสนอราคากลับ — {type}",
+    "counteredBody": "{count} บรรทัดรอคำตอบ",
+    "pricesToSignOff": "รับรองราคา {type} ที่ Packio กรอกให้",
+    "pricesToSignOffBody": "{lines} บรรทัด",
+    "none": "ตอนนี้ไม่มีอะไรรอคุณ"
+  }
+}

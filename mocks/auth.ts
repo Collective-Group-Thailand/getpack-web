@@ -9,6 +9,7 @@
 import { http, HttpResponse } from "msw";
 
 import { DEFAULT_PERSONA, MOCK_PASSWORD, menuFor, personaByEmail, personaByKey, type StaffPersona } from "./personas";
+import { partnerPersonaByEmail, partnerPersonaByKey, permissionsOf, type PartnerPersona } from "./partner/personas";
 import { MOCK_CUSTOMER_PHONES, resetCustomer, type CustomerPersona } from "./store/customers";
 import { accessToken, principalOf, principalOfRefresh, problem, refreshToken, type Audience } from "./support";
 
@@ -44,30 +45,36 @@ const CUSTOMER = {
   permissions: [] as string[],
   scopes: [] as string[],
 };
-const PARTNER = {
-  id: "00000000-0000-4000-8000-000000000003",
-  roles: ["factory_planner"],
-  permissions: ["factory_profile.read"],
-  scopes: ["factory:00000000-0000-4000-8000-0000000000f1"],
-};
-
-function subject(audience: Audience, persona?: StaffPersona) {
+function subject(audience: Audience, persona?: StaffPersona, partner?: PartnerPersona) {
   if (audience === "staff" && persona) {
     return { id: persona.id, type: "staff", roles: persona.roles, permissions: persona.permissions, scopes: [] };
   }
-  const base = audience === "customer" ? CUSTOMER : PARTNER;
-  return { ...base, type: audience };
+  if (audience === "partner") {
+    const who = partner ?? partnerPersonaByKey(undefined)!;
+    return {
+      id: who.id,
+      type: "partner",
+      roles: who.roles,
+      permissions: permissionsOf(who),
+      scopes: [`factory:${who.factoryId}`],
+    };
+  }
+  return { ...CUSTOMER, type: audience };
 }
 
-function session(audience: Audience, persona?: StaffPersona, customer?: CustomerPersona) {
-  // The returning customer's token carries no persona, as it did before the newcomer existed.
-  const key = persona?.key ?? (customer && customer !== "returning" ? customer : undefined);
+function session(audience: Audience, persona?: StaffPersona, customer?: CustomerPersona, partner?: PartnerPersona) {
+  // The returning customer's token carries no persona, as it did before the newcomer existed;
+  // likewise the F1 planner's partner token.
+  const key =
+    persona?.key ??
+    (customer && customer !== "returning" ? customer : undefined) ??
+    (partner && partner.key !== "planner" ? partner.key : undefined);
   return HttpResponse.json({
     accessToken: accessToken(audience, key),
     accessTokenExpiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
     refreshToken: refreshToken(audience, key),
     refreshTokenExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60_000).toISOString(),
-    subject: subject(audience, persona),
+    subject: subject(audience, persona, partner),
   });
 }
 
@@ -75,6 +82,12 @@ function session(audience: Audience, persona?: StaffPersona, customer?: Customer
 export function staffPersonaOf(request: Request): StaffPersona | undefined {
   const principal = principalOf(request);
   return principal?.audience === "staff" ? personaByKey(principal.persona ?? DEFAULT_PERSONA) : undefined;
+}
+
+/** The factory user behind a partner request, for the partner mocks (`./partner`). */
+export function partnerPersonaOf(request: Request): PartnerPersona | undefined {
+  const principal = principalOf(request);
+  return principal?.audience === "partner" ? partnerPersonaByKey(principal.persona) : undefined;
 }
 
 function meHandler(path: string, audience: Audience, body: (request: Request) => Record<string, unknown>) {
@@ -99,12 +112,14 @@ export const authHandlers = [
   http.post("*/v1/auth/partner/login", async ({ request }) => {
     const body = (await request.json()) as { email?: string; password?: string; pin?: string };
     // `PartnerLoginDto` requires only the email: a shared shop-floor device may be enrolled
-    // with a PIN instead of a password, so either one signs in.
+    // with a PIN instead of a password, so either one signs in. Every factory persona
+    // (`./partner/personas.ts`) shares the one mock password and PIN.
     const credentialOk = body.password === MOCK_PARTNER.password || body.pin === MOCK_PARTNER.pin;
-    if (body.email !== MOCK_PARTNER.email || !credentialOk) {
+    const persona = partnerPersonaByEmail(body.email);
+    if (!persona || !credentialOk) {
       return problem(401, "auth.invalid_credentials", "อีเมล รหัสผ่าน หรือรหัส PIN ไม่ถูกต้อง");
     }
-    return session("partner");
+    return session("partner", undefined, undefined, persona);
   }),
 
   http.post("*/v1/auth/customer/otp/request", async ({ request }) => {
@@ -157,6 +172,7 @@ export const authHandlers = [
       principal.audience === "customer" && (principal.persona === "newcomer" || principal.persona === "buyer")
         ? principal.persona
         : undefined,
+      principal.audience === "partner" ? partnerPersonaByKey(principal.persona) : undefined,
     );
   }),
 
@@ -173,13 +189,16 @@ export const authHandlers = [
       featureFlags: ["labelCalculator"],
     };
   }),
-  meHandler("/v1/partner/me", "partner", () => ({
-    id: PARTNER.id,
-    displayName: "ช่างวางแผน ตัวอย่าง (ข้อมูลจำลอง)",
-    email: MOCK_PARTNER.email,
-    locale: "th",
-    roles: PARTNER.roles,
-    permissions: PARTNER.permissions,
-    factories: [{ factoryId: "00000000-0000-4000-8000-0000000000f1", roles: PARTNER.roles }],
-  })),
+  meHandler("/v1/partner/me", "partner", (request) => {
+    const persona = partnerPersonaOf(request)!;
+    return {
+      id: persona.id,
+      displayName: persona.displayName,
+      email: persona.email,
+      locale: "th",
+      roles: persona.roles,
+      permissions: permissionsOf(persona),
+      factories: [{ factoryId: persona.factoryId, roles: persona.roles }],
+    };
+  }),
 ];

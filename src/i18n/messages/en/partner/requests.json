@@ -1,0 +1,35 @@
+{
+  "title": "Requests to the Partner team",
+  "body": "What Packio records for you changes through a request; the Partner team answers here.",
+  "newTitle": "New request",
+  "listTitle": "Your requests",
+  "dates": "Offered dates: {dates}",
+  "response": "Packio's answer: {response}",
+  "meta": "Sent by {by} on {date}",
+  "empty": "No requests yet",
+  "form": {
+    "topic": "About",
+    "topics": {
+      "capability": "Capability",
+      "capacity": "Capacity",
+      "delivery_zones": "Delivery zones",
+      "tolerance": "Tolerance",
+      "participation_tier": "Tier",
+      "pricing_arrangement": "Pricing arrangement",
+      "payout_policy": "Payout policy",
+      "site_visit": "Site visit",
+      "profile": "Company details",
+      "other": "Something else"
+    },
+    "productType": "Product type",
+    "dates": "Days that suit you",
+    "datesHint": "Up to 3 days",
+    "date": "Day {n}",
+    "message": "Details",
+    "messageTooShort": "Please give at least 3 characters of detail",
+    "dateRequired": "Pick at least one day",
+    "send": "Send request",
+    "sent": "Request sent — the Partner team will answer",
+    "failed": "Could not send the request"
+  }
+}

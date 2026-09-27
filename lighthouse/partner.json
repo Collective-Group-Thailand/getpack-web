@@ -2,7 +2,13 @@
   "extends": "./shared.json",
   "ci": {
     "collect": {
-      "url": ["http://partner.localhost:3200/", "http://partner.localhost:3200/login"],
+      "url": [
+        "http://partner.localhost:3200/",
+        "http://partner.localhost:3200/login",
+        "http://partner.localhost:3200/onboarding",
+        "http://partner.localhost:3200/onboarding/capability",
+        "http://partner.localhost:3200/requests"
+      ],
       "numberOfRuns": 3,
       "settings": {
         "throttlingMethod": "simulate",
@@ -16,11 +22,11 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 380000
+            "maxNumericValue": 330000
           }
         ]
       }
     }
   },
-  "$comment": "Partner PWA on the mobile preset: <= 2.5s on 4G mid-range, initial JS <= 180 KB. Mobile, because a desktop run would not measure the device the shop floor actually uses. RATCHET: the target in docs/performance-budgets.md is 180 KB of initial JS; this build measures 361 KB, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down \u2014 it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
+  "$comment": "Partner PWA on the mobile preset: <= 2.5s on 4G mid-range, initial JS <= 180 KB. Mobile, because a desktop run would not measure the device the shop floor actually uses. RATCHET: the target in docs/performance-budgets.md is 180 KB of initial JS; F5 5.1 measures 264 KB on the zone's screens and 316 KB on /login (361 KB before F5), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
 }

@@ -59,6 +59,8 @@ export type {
   SlipStatus,
   StatementStatus,
   UserStatus,
+  ChangeRequestStatus,
+  RateLineAcceptance,
 } from "./contract";
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
@@ -93,11 +95,13 @@ import { CAMPAIGN_STATUS, COUPON_STATUS, POINTS_STATUS, PROMOTION_STATUS, REFERR
 import { ORDER_STATUS } from "./order";
 import {
   BANK_ACCOUNT_STATUS,
+  CHANGE_REQUEST_STATUS,
   FACTORY_STATUS,
   KYC_STATUS,
   ONBOARDING_STEP_STATUS,
   PROPOSAL_LINE_STATUS,
   PROPOSAL_STATUS,
+  RATE_LINE_ACCEPTANCE,
   SITE_VISIT_RESULT,
 } from "./partners";
 import { PAYMENT_STATUS } from "./payment";
@@ -116,6 +120,8 @@ import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 
 export {
+  RATE_LINE_ACCEPTANCE,
+  CHANGE_REQUEST_STATUS,
   APPROVAL_STATUS,
   APPROVAL_STEP_STATUS,
   ARTWORK_STATUS,
@@ -230,4 +236,6 @@ export const STATUS_MAPS = {
   statement: STATEMENT_STATUS,
   submission: SUBMISSION_STATUS,
   user: USER_STATUS,
+  changeRequest: CHANGE_REQUEST_STATUS,
+  rateLine: RATE_LINE_ACCEPTANCE,
 } as const;
