@@ -87,11 +87,16 @@ describe.each(cases)("$style.id · $preset.id · $materialId", ({ style, preset,
   it.runIf(hinges)("folds into a closed box: bounding box = inside L × W × H within caliper allowances ± 1 mm", () => {
     const b = foldedBounds(d, hinges!);
     const size = [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]].sort((p, q) => p - q);
-    const inside = [values.length, values.width, values.height].map(Number).sort((p, q) => p - q);
+    const nominal = style.closedSize?.(values, material) ?? {
+      length: values.length,
+      width: values.width,
+      height: values.height,
+    };
+    const expected = [nominal.length, nominal.width, nominal.height].map(Number).sort((p, q) => p - q);
     const allowance = 2 * material.caliperMm + 1;
     size.forEach((s, i) => {
-      expect(s, `axis ${i}`).toBeGreaterThanOrEqual(inside[i] - 1);
-      expect(s, `axis ${i}`).toBeLessThanOrEqual(inside[i] + allowance + (style.fold3dSlack ?? 0));
+      expect(s, `axis ${i}`).toBeGreaterThanOrEqual(expected[i] - 1);
+      expect(s, `axis ${i}`).toBeLessThanOrEqual(expected[i] + allowance);
     });
   });
 });

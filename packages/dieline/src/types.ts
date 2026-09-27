@@ -138,7 +138,7 @@ export interface MaterialSpec {
   allowances?: { panel?: number; flap?: number; depth?: number } | null;
 }
 
-export type ParamKind = "length" | "number" | "angle" | "enum" | "boolean";
+export type ParamKind = "length" | "number" | "angle" | "enum" | "boolean" | "text";
 export type ParamGroup = "size" | "construction" | "closure" | "options" | "window";
 export type ParamValue = number | string | boolean;
 export type ParamValues = Record<string, ParamValue>;
@@ -181,6 +181,8 @@ export interface PiecePlacement {
   inside?: string;
   /** Turned upside down first (a lid's open side faces down). */
   flip?: boolean;
+  /** Rotated first about its own centre, degrees about X, Y, Z (a sleeve laid on its side). */
+  rotate?: [number, number, number];
   /** How far it sinks over the piece below when closed (a lid's depth). */
   sink?: number;
   /** How far it hovers above while open, for the animation. */
@@ -230,10 +232,11 @@ export interface BoxStyleDef {
   /** Builds the dieline, caliper compensation applied. */
   build(v: ParamValues, material: MaterialSpec): Dieline;
   /**
-   * How much the folded model may exceed the inside size (mm) beyond the caliper allowance — for
-   * styles whose closed shape is not a plain box (pillow, gable, hexagon). Tests use it.
+   * The closed shape's nominal extent when it is not the inside L × W × H — a gable's roof, a
+   * telescope lid over its base, a hexagon across its corners. Tests compare the folded model
+   * with it (± caliper allowance); the designer shows it as the outside size.
    */
-  fold3dSlack?: number;
+  closedSize?: (v: ParamValues, material: MaterialSpec) => { length: number; width: number; height: number };
   /** How the pieces fold; a function when it depends on the size (a lid's depth). */
   faces3d?: HingeMap | ((v: ParamValues, material: MaterialSpec) => HingeMap);
   /** Mapping hints to legacy Locopack `pattern` / `sub_patterns`. */

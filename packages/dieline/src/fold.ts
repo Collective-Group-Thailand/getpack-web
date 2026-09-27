@@ -115,7 +115,8 @@ export function hingesOf(piece: Piece, map: HingeMap): { root: string; hinges: H
   const byKey = new Map<string, { face: Face; from: Pt; to: Pt }[]>();
   for (const f of piece.faces) {
     for (const e of f.outline) {
-      if (!FOLD_ROLES.has(e.role) || e.kind !== "line") continue;
+      // Curved creases (a pillow box's ends) hinge about their chord.
+      if (!FOLD_ROLES.has(e.role) || e.kind === "bezier") continue;
       const key = edgeKey(e);
       byKey.set(key, [...(byKey.get(key) ?? []), { face: f, from: e.from, to: e.to }]);
     }
@@ -219,6 +220,14 @@ export function foldDieline(d: Dieline, map: HingeMap, progress = 1): Map<string
     transforms = new Map([...transforms].map(([id, m]) => [id, multiply(upright, m)]));
     const rule = map.placement?.[p.id];
     if (rule) {
+      if (rule.rotate) {
+        const b = boundsOfTransformed(p.faces, transforms);
+        const c: Vec3 = [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, (b.min[2] + b.max[2]) / 2];
+        const [rx, ry, rz] = rule.rotate.map((deg) => (deg * Math.PI) / 180);
+        const r = multiply(rotation([0, 0, 1], rz), multiply(rotation([0, 1, 0], ry), rotation([1, 0, 0], rx)));
+        const turn = multiply(translation(c[0], c[1], c[2]), multiply(r, translation(-c[0], -c[1], -c[2])));
+        transforms = new Map([...transforms].map(([id, m]) => [id, multiply(turn, m)]));
+      }
       if (rule.flip) {
         const b = boundsOfTransformed(p.faces, transforms);
         const cy = (b.min[1] + b.max[1]) / 2;

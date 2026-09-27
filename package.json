@@ -35,7 +35,8 @@
     "changeset:version": "changeset version",
     "changeset:publish": "pnpm build:packages && changeset publish",
     "e2e:visual": "playwright test --project=visual",
-    "e2e:visual:update": "playwright test --project=visual --update-snapshots"
+    "e2e:visual:update": "playwright test --project=visual --update-snapshots",
+    "style:thumbnails": "tsx scripts/style-thumbnails.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
