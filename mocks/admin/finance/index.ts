@@ -6,6 +6,7 @@
 
 import { assetHandlers } from "./assets";
 import { bankingHandlers } from "./banking";
+import { closeHandlers } from "./close";
 import { ledgerHandlers } from "./ledger";
 import { payableHandlers } from "./payables";
 import { payoutHandlers } from "./payouts";
@@ -20,4 +21,5 @@ export const financeHandlers = [
   ...bankingHandlers,
   ...taxHandlers,
   ...assetHandlers,
+  ...closeHandlers,
 ];

@@ -22,6 +22,10 @@
  *   imported one waiting for its bank line cannot be found.
  * - `admin.depreciation-preview` (F6.3) — `POST /v1/admin/depreciation-runs` posts the month's
  *   FA02 at once; F6.3 asks for "monthly depreciation preview → post" (D-150).
+ * - `admin.account-roll-forward` (F6.4) — the points-liability and retention roll-forwards in
+ *   money (2330, 2130); the published `points_liability` report counts points, not the GL.
+ * - `admin.subledger-reconciliation` (F6.4) — the §7 step 8 comparison as a report; today it
+ *   exists only as a close task's check result, which needs `close.manage` to run.
  */
 
 import { z } from "zod";
@@ -150,6 +154,45 @@ export const depreciationPreview = z
   })
   .meta({ id: "DepreciationPreviewDto" });
 
+export const accountRollForward = z
+  .object({
+    accountCode: z.string(),
+    nameTh: z.string(),
+    nameEn: z.string(),
+    from: z.string(),
+    to: z.string(),
+    months: z.array(
+      z.object({
+        month: z.string(),
+        /** In the account's normal direction. */
+        opening: money(),
+        increases: money(),
+        decreases: money(),
+        closing: money(),
+        /** What moved it, by posting rule (or journal kind for manual entries). */
+        byRule: z.array(z.object({ rule: z.string(), increases: money(), decreases: money() })),
+      }),
+    ),
+  })
+  .meta({ id: "AccountRollForwardDto" });
+
+export const subledgerReconciliation = z
+  .object({
+    asOf: dateTime(),
+    rows: z.array(
+      z.object({
+        /** receivables, factory_payables, vendor_payables, retention, store_credit, fixed_assets_<code> */
+        key: z.string(),
+        accounts: z.string(),
+        subledger: money(),
+        gl: money(),
+        /** Must be 0 (§7 step 8). */
+        difference: money(),
+      }),
+    ),
+  })
+  .meta({ id: "SubledgerReconciliationDto" });
+
 export const adminFinanceRequests = {
   "GET /v1/admin/slips/{slipId}/file": request({
     request: "admin.slip-file",
@@ -226,6 +269,29 @@ export const adminFinanceRequests = {
     decisions: ["D-150"],
     query: z.object({ period: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) }),
     response: depreciationPreview,
+  }),
+  "GET /v1/admin/financial-reports/roll-forward": request({
+    request: "admin.account-roll-forward",
+    summary: "A control account month by month: opening, increases, decreases, closing, by rule (2330, 2130)",
+    decisions: ["D-131", "D-164"],
+    query: z.object({
+      accountCode: z.enum(["2330", "2130"]),
+      from: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+      to: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+    }),
+    response: accountRollForward,
+  }),
+  "GET /v1/admin/financial-reports/subledger-reconciliation": request({
+    request: "admin.subledger-reconciliation",
+    summary: "Each sub-ledger's open amount against its control account in the GL (§7 step 8)",
+    decisions: ["D-033"],
+    query: z.object({
+      period: z
+        .string()
+        .regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+        .optional(),
+    }),
+    response: subledgerReconciliation,
   }),
   "GET /v1/admin/credit-note-reasons": request({
     request: "admin.credit-note-reasons",

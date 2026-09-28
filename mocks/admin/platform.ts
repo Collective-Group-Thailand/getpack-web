@@ -1168,5 +1168,7 @@ export function settingValue<T = unknown>(key: string): T {
 /** Uploaded bytes as data URLs, by file id — what a mock returns where the API returns a signed URL. */
 const fileContents = new Map<string, string>();
 export const fileDataUrl = (id: string): string | null => fileContents.get(id) ?? null;
+/** An uploaded file's own name, for a record that shows it (close evidence). */
+export const fileNameOf = (id: string): string | null => files.get(id)?.originalName ?? null;
 
 export { approvals, files, settings, users };
