@@ -253,22 +253,22 @@ function lastDay(month: string): string {
 }
 
 /**
- * One fiscal year, the calendar year of "now". Months before last month are closed (the new
- * business had nothing in them, D-092); last month is still open while its close runs; this month
- * is open.
+ * One fiscal year, the calendar year of "now". Months before last month are closed and locked
+ * (the new business had nothing in them, D-092); last month is still open while its close runs;
+ * this month is open.
  */
 function buildYear(): FiscalYear {
   const year = Number(currentMonth().slice(0, 4));
   const periods: Period[] = Array.from({ length: 12 }, (_, index) => {
     const month = `${year}-${String(index + 1).padStart(2, "0")}`;
-    const status: Period["status"] = month < previousMonth() ? "closed" : "open";
+    const status: Period["status"] = month < previousMonth() ? "locked" : "open";
     return {
       id: mockId("prd", year * 100 + index + 1),
       periodNo: index + 1,
       startDate: `${month}-01`,
       endDate: lastDay(month),
       status,
-      statusChangedAt: status === "closed" ? `${lastDay(month)}T18:00:00+07:00` : null,
+      statusChangedAt: status === "locked" ? `${lastDay(month)}T18:00:00+07:00` : null,
     };
   });
   return {

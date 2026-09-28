@@ -97,7 +97,7 @@ export function templateCsv(
     ...columns.map((key) => String(row.values[key] ?? "")),
   ]);
   const empty = [[component, "add", "", ...columns.map(() => "")]];
-  return `﻿${[header, ...body, ...empty].map((cells) => cells.map(csvField).join(",")).join("\r\n")}\r\n`;
+  return `\uFEFF${[header, ...body, ...empty].map((cells) => cells.map(csvField).join(",")).join("\r\n")}\r\n`;
 }
 
 /** A line already on a draft, as the input that replaces the draft's lines again. */

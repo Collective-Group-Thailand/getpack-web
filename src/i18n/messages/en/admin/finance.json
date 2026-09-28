@@ -22,7 +22,10 @@
       "banking": "Banking",
       "ledger": "General ledger",
       "tax": "Tax",
-      "assets": "Fixed assets"
+      "assets": "Fixed assets",
+      "close": "Period close",
+      "reports": "Financial reports",
+      "audit": "Auditor"
     }
   },
   "common": {
@@ -2319,6 +2322,477 @@
       "gl": "GL",
       "difference": "Difference",
       "reconciled": "Agrees"
+    }
+  },
+  "close": {
+    "pages": {
+      "index": {
+        "title": "Period close",
+        "description": "Each month closes through its checklist: nine steps, then another person's review."
+      },
+      "checklist": {
+        "title": "Close checklist"
+      }
+    },
+    "index": {
+      "year": "Fiscal year {label}",
+      "description": "Open a month to work its close.",
+      "month": "Month",
+      "period": "Period",
+      "changedAt": "Changed"
+    },
+    "breadcrumb": "You are here",
+    "title": "Period close",
+    "checklistTitle": "Close of {month}",
+    "description": "Each step has an owner and a record; the automatic checks block a step until they pass. A Finance Manager other than the person who submits closes the month.",
+    "periodIs": "The month is",
+    "notStarted": "This month's close has not started",
+    "notStartedBody": "Starting it creates the nine steps. Nothing changes in the books.",
+    "failed": "That did not work",
+    "start": "Start the close",
+    "remainingTitle": "{count, plural, one {# step} other {# steps}} still open",
+    "remainingBody": "Submit for review once steps 1 to 8 are done or waived.",
+    "inReviewTitle": "Waiting for review",
+    "inReviewMine": "You submitted this close, so another Finance Manager must review it.",
+    "inReviewBody": "Submitted by {name} on {at}. The month is soft-closed while it is reviewed.",
+    "closedTitle": "Closed",
+    "closedBody": "Closed by {name} on {at}.",
+    "signedOff": "The auditor signed it off on {at}.",
+    "lockedTitle": "Locked",
+    "lockedBody": "Nothing can post into this month again. Late items go to the next open month with their document date kept.",
+    "submitTitle": "Submit the close of {month} for review?",
+    "submitBody": "The month is soft-closed: only people allowed to post into a soft-closed month can still post. A Finance Manager other than you reviews it.",
+    "submit": "Submit for review",
+    "approveTitle": "Close {month}?",
+    "approveBody": "Step 9 is recorded as your review and the month is closed. A closed month never reopens.",
+    "approve": "Approve and close",
+    "note": "Note (optional)",
+    "ownSubmission": "You submitted it, so you cannot approve it",
+    "returnTitle": "Send the close back?",
+    "returnBody": "The checklist opens again and the month reopens for postings.",
+    "return": "Send back",
+    "reason": "Reason",
+    "lockTitle": "Lock {month}?",
+    "lockBody": "Locking is final. At the year end the auditor must sign off first.",
+    "lock": "Lock the month",
+    "signOffTitle": "Sign off {month}?",
+    "signOffBody": "Your sign-off as the auditor is recorded; the year end can then be locked.",
+    "signOff": "Sign off as auditor",
+    "done": {
+      "submit": "Submitted for review",
+      "approve": "Month closed",
+      "return": "Sent back",
+      "lock": "Month locked",
+      "sign-off": "Signed off"
+    },
+    "steps": {
+      "statements_imported": {
+        "title": "Bank statements imported and matched",
+        "body": "Every company account has its statement to the month end, and unmatched lines and gateway settlements are within the allowed number."
+      },
+      "slips_and_unidentified": {
+        "title": "Slips reviewed, unidentified receipts explained",
+        "body": "No slip is still waiting for Finance; money nobody has claimed is listed."
+      },
+      "deliveries_received": {
+        "title": "Deliveries received into AP",
+        "body": "Every delivery with a proof of delivery has its goods receipt; factory tax invoices still missing are listed."
+      },
+      "receivables_reviewed": {
+        "title": "Receivables and the allowance reviewed",
+        "body": "Overdue items are reviewed and the allowance for doubtful accounts updated."
+      },
+      "rollforwards_reviewed": {
+        "title": "Points liability and retention reviewed",
+        "body": "The roll-forwards of the points liability and the factory retention are reviewed."
+      },
+      "accruals_recorded": {
+        "title": "Accruals and manual journals approved",
+        "body": "No manual journal of the month is still waiting for approval."
+      },
+      "tax_papers_reconciled": {
+        "title": "Tax papers final and reconciled",
+        "body": "Sales and purchase tax, PP 30, PND 3 and PND 53 are final at a GL difference of zero."
+      },
+      "subledgers_reconciled": {
+        "title": "Sub-ledgers agree with the GL",
+        "body": "Receivables, payables, retention, store credit and fixed assets equal their control accounts."
+      },
+      "review": {
+        "title": "Review and close",
+        "body": "A Finance Manager other than the person who submitted reviews the month and closes it."
+      }
+    },
+    "task": {
+      "failed": "That did not work",
+      "step": "Step {no}",
+      "automatic": "Checked automatically",
+      "owner": "Owner",
+      "noOwner": "No owner yet",
+      "completedBy": "done by {name} on {at}",
+      "goToWork": "Go to the work",
+      "takeIt": "Take this step",
+      "runCheck": "Run the check",
+      "addEvidence": "Add evidence",
+      "waive": "Waive",
+      "complete": "Mark done",
+      "checkPassed": "The check passes",
+      "checkFailed": "The check does not pass",
+      "checkedAt": "Checked {at}",
+      "items": "What step {step} found",
+      "itemType": "Item",
+      "itemDescription": "Detail",
+      "itemDate": "Date",
+      "itemAmount": "Amount",
+      "itemTypes": {
+        "statement_line": "Bank line",
+        "gateway_settlement": "Gateway settlement",
+        "payment": "Slip",
+        "journal_entry": "Journal",
+        "tax_report": "Tax paper",
+        "reconciliation": "Reconciliation",
+        "bank_account": "Bank account",
+        "purchase_order": "Purchase order"
+      },
+      "waivedBecause": "Waived because:",
+      "noteLabel": "Note",
+      "evidence": "Evidence",
+      "waiveTitle": "Waive “{step}”?",
+      "waiveBody": "A Finance Manager accepts the exception with a reason, which is kept with the close.",
+      "reason": "Reason",
+      "completeTitle": "Mark “{step}” done",
+      "completeAutomatic": "The check runs again now; the step is done only if it passes.",
+      "completeReview": "Record what you reviewed.",
+      "noteHint": "What you looked at and what you found",
+      "evidenceTitle": "Add evidence",
+      "evidenceBody": "A file that supports this step: a bank statement, a working paper, a sign-off.",
+      "attach": "Attach",
+      "pickFile": "Choose a file",
+      "describe": "Say what the file shows",
+      "chosen": "Chosen: {name}",
+      "drop": "Drop a file here or choose one",
+      "browse": "Choose file",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not an accepted file",
+      "whatItShows": "What it shows"
+    }
+  },
+  "reports": {
+    "nav": {
+      "label": "Financial reports",
+      "trialBalance": "Trial balance",
+      "glDetail": "GL detail",
+      "balanceSheet": "Balance sheet",
+      "profitAndLoss": "Profit and loss",
+      "cashFlow": "Cash flow",
+      "rollForwards": "Roll-forwards",
+      "reconciliation": "Sub-ledger reconciliation"
+    },
+    "pages": {
+      "trialBalance": {
+        "title": "Financial reports",
+        "description": "From the posted ledger. Each report carries its own check, and every figure opens the lines behind it."
+      },
+      "glDetail": {
+        "title": "GL detail",
+        "description": "An account's lines with the running balance; each opens its journal, document and system event."
+      },
+      "balanceSheet": {
+        "title": "Balance sheet",
+        "description": "Assets, liabilities and equity at a date, with the year's profit."
+      },
+      "profitAndLoss": {
+        "title": "Profit and loss",
+        "description": "Revenue, cost and margin, pivoted by factory, product type, channel, campaign or cost centre."
+      },
+      "cashFlow": {
+        "title": "Cash flow",
+        "description": "Net profit and each account's movement by its cash-flow class, against the cash accounts."
+      },
+      "rollForwards": {
+        "title": "Roll-forwards",
+        "description": "The points liability and the factory retention, month by month."
+      },
+      "reconciliation": {
+        "title": "Sub-ledger reconciliation",
+        "description": "Each sub-ledger's open amount against its control account in the GL."
+      }
+    },
+    "from": "From",
+    "to": "To",
+    "export": "Export CSV",
+    "trialBalance": {
+      "title": "Trial balance",
+      "description": "Opening balance, debits, credits and closing balance of every account with movement.",
+      "account": "Account",
+      "opening": "Opening",
+      "debit": "Debit",
+      "credit": "Credit",
+      "closing": "Closing",
+      "includeZero": "Show accounts without movement",
+      "balanced": "Balances: debits equal credits",
+      "unbalanced": "Does not balance",
+      "totalOpening": "Total opening",
+      "totalDebit": "Total debit",
+      "totalCredit": "Total credit",
+      "totalClosing": "Total closing"
+    },
+    "glDetail": {
+      "title": "GL detail",
+      "titleOf": "{code} · {name}",
+      "description": "Description",
+      "account": "Account",
+      "date": "Date",
+      "entry": "Entry",
+      "source": "Source",
+      "debit": "Debit",
+      "credit": "Credit",
+      "balance": "Balance",
+      "opening": "Opening",
+      "closing": "Closing",
+      "empty": "No lines in these months",
+      "pagination": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "range": "{from}–{to} of {total}",
+      "pageOf": "Page {page} of {pages}",
+      "perPage": "Per page"
+    },
+    "balanceSheet": {
+      "title": "Balance sheet at {date}",
+      "description": "The profit of the year is part of equity until it is closed to retained earnings.",
+      "asOf": "As of",
+      "account": "Account",
+      "balance": "Balance",
+      "balanced": "Assets equal liabilities and equity",
+      "differs": "Differs by {amount}",
+      "assets": "Assets",
+      "liabilities": "Liabilities",
+      "equity": "Equity",
+      "priorYears": "Profit of earlier years",
+      "currentYear": "Profit of this year",
+      "totalAssets": "Total assets",
+      "totalLiabilities": "Total liabilities",
+      "totalEquity": "Total equity"
+    },
+    "profitAndLoss": {
+      "title": "Profit and loss",
+      "description": "Dimensions, not extra accounts: the same lines, grouped by what they carry.",
+      "by": "Group by",
+      "dimensions": {
+        "none": "Whole company",
+        "factory": "Factory",
+        "product_type": "Product type",
+        "channel": "Sales channel",
+        "campaign": "Campaign",
+        "cost_centre": "Cost centre"
+      },
+      "none": "Not tagged",
+      "revenue": "Revenue",
+      "costOfSales": "Cost of sales",
+      "grossMargin": "Gross margin",
+      "grossMarginPct": "Margin %",
+      "expenses": "Expenses",
+      "netProfit": "Net profit",
+      "empty": "No revenue or cost in these months"
+    },
+    "cashFlow": {
+      "title": "Cash flow (indirect)",
+      "description": "The net change must equal the movement of the bank and clearing accounts.",
+      "agrees": "Agrees with the cash accounts",
+      "differs": "Differs by {amount}",
+      "netProfit": "Net profit",
+      "netChange": "Net change in cash",
+      "cashMovement": "Cash accounts' movement",
+      "operating": "Operating activities",
+      "investing": "Investing activities",
+      "financing": "Financing activities",
+      "account": "Account",
+      "amount": "Cash effect",
+      "nothing": "Nothing in this section",
+      "sectionTotal": "Total {amount}"
+    },
+    "rollForwards": {
+      "points": "Points liability (2330)",
+      "pointsNote": "Points earned increase it; points redeemed and expired decrease it, at the point value of each entry.",
+      "retention": "Factory retention (2130)",
+      "retentionNote": "Held from factory balances, released after the retention period.",
+      "month": "Month",
+      "opening": "Opening",
+      "increases": "Increases",
+      "decreases": "Decreases",
+      "closing": "Closing",
+      "byRule": "By rule",
+      "ruleLine": "{rule} +{up} −{down}",
+      "openGl": "Open the lines of {code}"
+    },
+    "reconciliation": {
+      "title": "Sub-ledger reconciliation",
+      "description": "Every difference must be zero before a month can close.",
+      "assetsMonth": "Fixed assets at the end of",
+      "subledger": "Sub-ledger",
+      "account": "Account",
+      "subledgerAmount": "Sub-ledger",
+      "gl": "GL",
+      "difference": "Difference",
+      "agrees": "Agrees",
+      "keys": {
+        "receivables": "Customer receivables",
+        "factory_payables": "Factory payables",
+        "vendor_payables": "Other vendors' bills",
+        "retention": "Factory retention",
+        "store_credit": "Customer store credit",
+        "fixed_assets": "Fixed assets ({code})"
+      }
+    }
+  },
+  "audit": {
+    "nav": {
+      "label": "Auditor",
+      "home": "Overview",
+      "exceptions": "Exception reports",
+      "samples": "Samples",
+      "pbc": "PBC pack"
+    },
+    "pages": {
+      "home": {
+        "title": "Auditor",
+        "description": "Read-only access to the books, the registers and the audit trail for the period granted."
+      },
+      "exceptions": {
+        "title": "Exception reports",
+        "description": "What an auditor looks at first, month by month."
+      },
+      "samples": {
+        "title": "Samples",
+        "description": "Random or value-stratified samples of a month's records, reproducible from their seed."
+      },
+      "pbc": {
+        "title": "PBC pack",
+        "description": "The prepared-by-client pack of a month, with its hash."
+      }
+    },
+    "home": {
+      "accessTitle": "Your access",
+      "accessUntil": "Granted from {from} until {to}. It ends by itself.",
+      "accessOpen": "This auditor access has no end date. Ask the administrator to set one.",
+      "readOnlyTitle": "Read-only",
+      "readOnlyBody": "Nothing here changes the books. Your sign-off on a closed month is the only thing you record.",
+      "registers": "Registers and reports",
+      "registersNote": "Every document, journal and paper, each drilling down to its source.",
+      "items": {
+        "documents": {
+          "title": "Customer documents",
+          "body": "Tax invoices, receipts, credit and debit notes."
+        },
+        "vendorBills": {
+          "title": "Vendor tax invoices and bills",
+          "body": "Factory tax invoices and other vendors' bills."
+        },
+        "journals": {
+          "title": "Journals",
+          "body": "Every entry with its rule, maker and checker."
+        },
+        "whtIssued": {
+          "title": "Tax papers and 50 Tawi issued",
+          "body": "VAT reports, PP 30, PND 3 / 53 and the WHT register."
+        },
+        "whtReceived": {
+          "title": "50 Tawi received",
+          "body": "Tax customers withheld, and their certificates."
+        },
+        "assets": {
+          "title": "Fixed-asset register",
+          "body": "Assets, depreciation and the roll-forward."
+        },
+        "trialBalance": {
+          "title": "Financial reports",
+          "body": "Trial balance, GL detail, balance sheet, profit and loss, cash flow."
+        },
+        "close": {
+          "title": "Period close",
+          "body": "Each month's checklist and its evidence; sign off here."
+        },
+        "auditTrail": {
+          "title": "Audit trail",
+          "body": "Who did what and when, with its export."
+        }
+      }
+    },
+    "exceptions": {
+      "month": "Month",
+      "keys": {
+        "series_gaps": "Gaps in gapless series",
+        "outside_business_hours": "Manual journals outside business hours",
+        "back_dated_documents": "Back-dated documents and journals",
+        "manual_journals_by_user": "Manual journals by maker",
+        "reversals": "Reversing entries",
+        "duplicate_vendor_bank_accounts": "Vendors sharing a bank account",
+        "duplicate_slip_references": "Duplicate slip references",
+        "credit_notes_after_period_end": "Credit notes after the period end",
+        "payouts_without_valid_tax_invoice": "Payouts without a valid tax invoice"
+      },
+      "notes": {
+        "series_gaps": "Numbers missing inside a series that must have no gaps.",
+        "outside_business_hours": "Manual entries posted outside the business hours set for the auditor's review.",
+        "back_dated_documents": "Entries dated before the day they were made.",
+        "manual_journals_by_user": "How many manual entries each maker posted, and their total.",
+        "reversals": "Every reversing entry posted in the month.",
+        "duplicate_vendor_bank_accounts": "The same bank account number on more than one vendor (last 4 digits only).",
+        "duplicate_slip_references": "Slips whose bank reference has been seen before.",
+        "credit_notes_after_period_end": "Credit notes dated in the following month against this month's documents.",
+        "payouts_without_valid_tax_invoice": "VAT paid to a factory before its valid tax invoice arrived (input VAT pending)."
+      },
+      "count": "{count, plural, one {# item} other {# items}}",
+      "reference": "Reference",
+      "date": "Date",
+      "amount": "Amount",
+      "detail": "Detail",
+      "none": "Nothing found this month."
+    },
+    "samples": {
+      "draw": "Draw a sample",
+      "drawNote": "Stratified divides the records into three bands of equal value and samples each in proportion. Keep the seed to draw the same sample again.",
+      "month": "Month",
+      "population": "Records",
+      "method": "Method",
+      "size": "Size",
+      "seed": "Seed (optional)",
+      "seedHint": "Leave empty for a new random sample",
+      "populations": {
+        "customer_documents": "Customer documents",
+        "vendor_invoices": "Vendor tax invoices",
+        "journal_entries": "Journal entries",
+        "payout_items": "Factory payments",
+        "wht_certificates": "50 Tawi issued"
+      },
+      "methods": {
+        "random": "Random",
+        "stratified": "Stratified by value"
+      },
+      "drawButton": "Draw",
+      "drawn": "Sample drawn",
+      "failed": "That did not work",
+      "empty": "No samples yet",
+      "sampleTitle": "{population} · {month}",
+      "sampleNote": "{method}: {selected} of {size}, seed {seed}",
+      "selected": "Selected records",
+      "number": "Number",
+      "date": "Date",
+      "amount": "Amount"
+    },
+    "pbc": {
+      "title": "PBC packs",
+      "description": "One file per month: trial balance, GL detail, registers, tax papers, fixed assets, the close checklist and the exceptions. Its SHA-256 is kept.",
+      "month": "Month",
+      "generate": "Prepare the pack",
+      "generated": "Pack prepared",
+      "failed": "That did not work",
+      "empty": "No packs yet",
+      "generatedAt": "Prepared",
+      "sha256": "SHA-256",
+      "file": "File",
+      "download": "Download"
     }
   }
 }

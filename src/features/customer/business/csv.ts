@@ -14,7 +14,7 @@ export function parseReorderCsv(text: string): { rows: ReorderCsvRow[]; errors: 
   const rows: ReorderCsvRow[] = [];
   const errors: { line: number; value: string }[] = [];
   text
-    .replace(/^﻿/, "")
+    .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .forEach((raw, index) => {
       const value = raw.trim();

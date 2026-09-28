@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`finance exports > write the trial balance as the API returned it, with its total row 1`] = `
+"﻿accountCode,nameTh,nameEn,accountType,opening,debit,credit,closing
+1121,เงินฝากธนาคาร — ไทยพาณิชย์ กระแสรายวัน,Bank — SCB current,asset,0.00,1512345.67,250000.00,1262345.67
+2210,ภาษีขาย,Output VAT,liability,0.00,0.00,12345.67,-12345.67
+4110,"รายได้ขาย, งานสั่งผลิต","Sales — ""made to order""",revenue,0.00,250000.00,1500000.00,-1250000.00
+TOTAL,,,asset,0.00,1762345.67,1762345.67,0.00
+"
+`;
+
+exports[`finance exports > write the ภ.ง.ด.53 attachment in the stored layout 1`] = `
+"﻿seq,wtNumber,form,taxId,branch,name,address,paidOn,incomeType,ratePct,paidAmount,whtAmount,condition,status
+1,WT2569-00001,pnd53,0105561234567,00000,บริษัท โรงพิมพ์ตัวอย่าง จำกัด,,2026-09-12,hire_of_work,3.00,45000.00,1350.00,1,issued
+2,WT2569-00002,pnd53,0105569876543,00001,"ขนส่ง ""ด่วน"" จำกัด","12/3 ถนนตัวอย่าง, กรุงเทพฯ",2026-09-20,transport,1.00,3200.00,32.00,1,issued
+"
+`;

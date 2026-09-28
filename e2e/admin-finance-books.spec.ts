@@ -48,8 +48,14 @@ async function approveAs(page: Page, href: string) {
 
 async function pickAccount(page: Page, label: string, code: string) {
   const box = page.getByRole("combobox", { name: label });
-  await box.fill(code);
-  await page.getByRole("option", { name: new RegExp(`^${code} `) }).click();
+  const option = page.getByRole("option", { name: new RegExp(`^${code} `) });
+  // The chart of accounts may still be loading when the code is typed: type it again until it is offered.
+  await expect(async () => {
+    await box.fill("");
+    await box.fill(code);
+    await expect(option).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+  await option.click();
 }
 
 async function choose(page: Page, label: string | RegExp, option: string | RegExp) {
@@ -218,9 +224,9 @@ test.describe("tax (§6, D-033)", () => {
     const download = finance.waitForEvent("download");
     await finance.getByRole("button", { name: "ส่งออกใบแนบ" }).click();
     const csv = await readFile((await (await download).path())!, "utf8");
-    expect(csv.startsWith("﻿")).toBe(true);
+    expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv.split("\r\n")[0]).toBe(
-      "﻿seq,wtNumber,form,taxId,branch,name,address,paidOn,incomeType,ratePct,paidAmount,whtAmount,condition,status",
+      "\uFEFFseq,wtNumber,form,taxId,branch,name,address,paidOn,incomeType,ratePct,paidAmount,whtAmount,condition,status",
     );
 
     await finance.getByRole("button", { name: "บันทึกการยื่นแบบ" }).click();

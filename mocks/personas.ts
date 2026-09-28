@@ -165,7 +165,16 @@ export const MENU_CATALOGUE: readonly {
   {
     key: "finance",
     path: "/admin/finance",
-    permission: [P.slipsVerify, P.receivablesManage, P.ledgerRead, P.payablesRead, P.bankingRead, P.taxRead],
+    permission: [
+      P.slipsVerify,
+      P.receivablesManage,
+      P.ledgerRead,
+      P.payablesRead,
+      P.bankingRead,
+      P.taxRead,
+      P.closeRead,
+      P.auditSupportRead,
+    ],
   },
 ];
 
