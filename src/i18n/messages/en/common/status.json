@@ -519,5 +519,39 @@
     "open": "Payer unknown",
     "matched": "Identified",
     "refunded": "Refunded"
+  },
+  "journal": {
+    "draft": "Draft",
+    "pendingApproval": "Awaiting approval",
+    "posted": "Posted",
+    "rejected": "Rejected"
+  },
+  "period": {
+    "open": "Open",
+    "softClosed": "Soft-closed",
+    "closed": "Closed",
+    "locked": "Locked"
+  },
+  "recurringJournal": {
+    "pendingApproval": "Awaiting approval",
+    "active": "Active",
+    "paused": "Paused",
+    "ended": "Ended",
+    "rejected": "Rejected"
+  },
+  "taxReport": {
+    "draft": "Draft",
+    "final": "Final",
+    "filed": "Filed"
+  },
+  "taxCalendar": {
+    "open": "Due",
+    "done": "Filed"
+  },
+  "asset": {
+    "active": "In use",
+    "fullyDepreciated": "Fully depreciated",
+    "disposed": "Sold",
+    "writtenOff": "Written off"
   }
 }

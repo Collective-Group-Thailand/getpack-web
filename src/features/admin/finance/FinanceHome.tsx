@@ -27,6 +27,7 @@ export const FINANCE_POLICIES = new Set([
   "write_off",
   "payout_run",
   "manual_journal",
+  "recurring_journal",
   "vendor_bank_account_change",
   "company_bank_account_change",
   "posting_rule_change",

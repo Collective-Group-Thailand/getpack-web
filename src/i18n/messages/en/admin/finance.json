@@ -19,7 +19,10 @@
       "receivables": "Receivables",
       "payables": "Payables",
       "payouts": "Factory payouts",
-      "banking": "Banking"
+      "banking": "Banking",
+      "ledger": "General ledger",
+      "tax": "Tax",
+      "assets": "Fixed assets"
     }
   },
   "common": {
@@ -57,6 +60,7 @@
       "credit_note": "Credit note",
       "write_off": "Bad-debt write-off",
       "payout_run": "Factory payout run",
+      "recurring_journal": "Recurring journal",
       "manual_journal": "Manual journal",
       "vendor_bank_account_change": "Vendor bank account change",
       "company_bank_account_change": "Company bank account change",
@@ -709,7 +713,16 @@
       "payment": "Payment",
       "refund": "Refund",
       "receivable_item": "Receivable",
-      "allowance": "Allowance for doubtful accounts"
+      "allowance": "Allowance for doubtful accounts",
+      "goods_receipt": "Goods receipt",
+      "payout_item": "Factory payout",
+      "vendor_invoice": "Vendor bill",
+      "bank_statement_line": "Bank statement line",
+      "unidentified_receipt": "Unidentified receipt",
+      "gateway_settlement": "Gateway settlement",
+      "tax_report": "Tax return",
+      "fixed_asset": "Fixed asset",
+      "depreciation_run": "Depreciation run"
     },
     "dimensionNames": {
       "campaign": "Campaign",
@@ -735,7 +748,15 @@
     },
     "detail": {
       "title": "Journal entry"
-    }
+    },
+    "newManual": "New manual journal",
+    "waitingTitle": "Waiting for a Finance Manager",
+    "waitingMaker": "You made this entry, so another Finance Manager must approve it. It posts when they do.",
+    "waitingBody": "It posts only when a Finance Manager other than its maker approves it.",
+    "rejectedTitle": "Not approved",
+    "rejectedBody": "The checker did not approve this entry. Nothing was posted.",
+    "autoReverseTitle": "Reverses itself",
+    "autoReverseBody": "A reversing entry posts automatically on {date}."
   },
   "payables": {
     "nav": {
@@ -1465,6 +1486,839 @@
         "send": "Send request",
         "sent": "Requested — waiting for approval"
       }
+    }
+  },
+  "ledger": {
+    "nav": {
+      "label": "General ledger",
+      "journals": "Journals",
+      "accounts": "Chart of accounts",
+      "rules": "Posting rules",
+      "recurring": "Recurring journals",
+      "periods": "Periods",
+      "dimensions": "Dimensions"
+    },
+    "pages": {
+      "accounts": {
+        "title": "Chart of accounts",
+        "description": "Every account, its type and normal side, whether it is a control account for a sub-ledger, and the dimensions its lines must carry."
+      },
+      "newJournal": {
+        "title": "New manual journal"
+      },
+      "editJournal": {
+        "title": "Edit manual journal"
+      },
+      "rules": {
+        "title": "Posting rules",
+        "description": "What each business event posts. A rule changes only by a dated version that another person approves; every posting keeps the version it used."
+      },
+      "rule": {
+        "title": "Posting rule"
+      },
+      "recurring": {
+        "title": "Recurring journals",
+        "description": "Monthly accruals and allocations: approved once, then posted every month on their day."
+      },
+      "periods": {
+        "title": "Fiscal periods",
+        "description": "Open, soft-closed, closed and locked months. A posting dated in a month that no longer takes postings goes to the next open month and keeps its document date."
+      },
+      "dimensions": {
+        "title": "Dimensions",
+        "description": "What each journal line can be analysed by, and the cost centres Finance keeps."
+      }
+    },
+    "periodNotice": {
+      "noneTitle": "No open month to post into",
+      "noneBody": "{what} cannot be posted: no month on or after its date is open. A Finance Manager must open the next month first.",
+      "movedTitle": "This month is {status}",
+      "movedBody": "{what} will post into {month}. Its document date stays {date} for tax.",
+      "statuses": {
+        "open": "open",
+        "soft_closed": "soft-closed",
+        "closed": "closed",
+        "locked": "locked",
+        "missing": "not set up"
+      }
+    },
+    "accountPicker": {
+      "placeholder": "Search by code or name",
+      "loading": "Loading accounts…",
+      "empty": "No account matches",
+      "clear": "Clear"
+    },
+    "lines": {
+      "line": "Line {no}",
+      "account": "Account",
+      "accountOf": "Account of line {no}",
+      "side": "Side",
+      "sideOf": "Side of line {no}",
+      "debit": "Debit",
+      "credit": "Credit",
+      "amount": "Amount (THB)",
+      "amountOf": "Amount of line {no}",
+      "description": "Line description",
+      "remove": "Remove line {no}",
+      "costCentre": "Cost centre",
+      "costCentreRequired": "This account needs a cost centre",
+      "costCentreOf": "Cost centre of line {no}",
+      "noCostCentre": "None",
+      "controlAccount": "A control account takes only postings from its sub-ledger. Choose another account.",
+      "amountPlaceholder": "0.00",
+      "add": "Add a line",
+      "unbalancedTitle": "The entry does not balance"
+    },
+    "editor": {
+      "title": "New manual journal",
+      "editTitle": "Edit manual journal",
+      "description": "Manual entries are the exception. Save a draft and the system checks the accounts, dimensions and balance. Then submit it: a Finance Manager other than you approves, and only then is it posted with a JV number.",
+      "save": "Save draft",
+      "saved": "Draft saved",
+      "failed": "The draft was not saved",
+      "notEditable": "This entry can no longer be edited",
+      "notEditableBody": "Only a draft its maker has not submitted can be changed.",
+      "header": "Entry",
+      "documentDate": "Document date",
+      "descriptionLabel": "Description",
+      "autoReverse": "Reverse automatically",
+      "autoReverseHint": "For accruals: a reversing entry posts on the date you choose.",
+      "autoReverseOn": "Reverse on",
+      "thisEntry": "This entry",
+      "linesTitle": "Lines",
+      "linesNote": "At least two lines. The system totals debits and credits when you save; an entry that does not balance is not saved."
+    },
+    "actions": {
+      "thisDraft": "this draft",
+      "discard": "Discard draft",
+      "edit": "Edit",
+      "submit": "Submit for approval",
+      "reverse": "Reverse",
+      "submitTitle": "Submit this entry for approval?",
+      "submitBody": "A Finance Manager other than you must approve it, and it posts {amount} on each side. You cannot edit it after this.",
+      "submitted": "Submitted for approval",
+      "failed": "That did not work",
+      "thisEntry": "This entry",
+      "discardTitle": "Discard this draft?",
+      "discardBody": "The draft has never been submitted, so nothing is kept.",
+      "discarded": "Draft discarded",
+      "reverseTitle": "Reverse {entry}?",
+      "reverseBody": "A reversing entry of {entry} ({amount}) is drafted for approval. When a Finance Manager approves it, it posts the opposite lines and both entries link to each other.",
+      "reason": "Reason",
+      "reversalRequested": "Reversal sent for approval",
+      "reverseOn": "Date of the reversal",
+      "theReversal": "The reversal"
+    },
+    "accounts": {
+      "title": "Chart of accounts",
+      "description": "Headings group accounts; only postable accounts take lines. Click an account to see its journals.",
+      "search": "Find an account",
+      "new": "Propose an account",
+      "code": "Code",
+      "name": "Name",
+      "type": "Type",
+      "normalSide": "Normal side",
+      "cashFlow": "Cash-flow class",
+      "flags": "Rules",
+      "actions": "Change",
+      "heading": "Heading",
+      "control": "Control account",
+      "inactive": "Inactive",
+      "requires": "Needs {dimension}",
+      "change": "Propose change",
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate",
+      "types": {
+        "asset": "Asset",
+        "liability": "Liability",
+        "equity": "Equity",
+        "revenue": "Revenue",
+        "cost_of_sales": "Cost of sales",
+        "expense": "Expense"
+      },
+      "sides": {
+        "debit": "Debit",
+        "credit": "Credit"
+      },
+      "cashFlows": {
+        "cash": "Cash",
+        "operating": "Operating",
+        "investing": "Investing",
+        "financing": "Financing",
+        "non_cash": "Non-cash"
+      },
+      "dimensions": {
+        "order": "Order",
+        "order_group": "Order group",
+        "customer": "Customer",
+        "company": "Company",
+        "factory": "Factory",
+        "vendor": "Vendor",
+        "product_type": "Product type",
+        "channel": "Channel",
+        "campaign": "Campaign",
+        "promotion": "Promotion",
+        "cost_centre": "Cost centre"
+      },
+      "changes": "Proposed changes",
+      "changesNote": "Each change applies only when a Finance Manager other than the proposer approves it.",
+      "noChanges": "No changes proposed",
+      "kind": "Change",
+      "kinds": {
+        "create": "New account",
+        "update": "Change",
+        "deactivate": "Deactivate",
+        "reactivate": "Reactivate"
+      },
+      "reason": "Reason",
+      "proposedAt": "Proposed",
+      "status": "Status",
+      "openApproval": "Open the approval",
+      "proposeTitles": {
+        "create": "Propose a new account",
+        "update": "Propose a change to {code}",
+        "deactivate": "Propose deactivating {code}",
+        "reactivate": "Propose reactivating {code}"
+      },
+      "proposeNote": "The change is applied only after a Finance Manager other than you approves it.",
+      "propose": "Send for approval",
+      "reasonShort": "Give a reason of at least 3 characters",
+      "proposed": "Change sent for approval",
+      "parent": "Heading",
+      "pickParent": "Choose a heading",
+      "nameTh": "Name (Thai)",
+      "nameEn": "Name (English)",
+      "requiredDimensions": "Dimensions every line must carry",
+      "deactivateTitle": "Only an account with a zero balance",
+      "deactivateBody": "An account that still has a balance cannot be deactivated. Move the balance with a journal first."
+    },
+    "rules": {
+      "title": "Posting rules",
+      "description": "One rule per business event. Click a rule to see its template and try it on a sample event.",
+      "key": "Rule",
+      "name": "Name",
+      "event": "Event",
+      "version": "Version",
+      "versionNo": "v{no}",
+      "pending": "Change",
+      "decisions": "Decisions",
+      "badJson": "That is not valid JSON",
+      "failed": "That did not work",
+      "detailTitle": "{key} · {name}",
+      "proposeVersion": "Propose a new version",
+      "versions": "Versions",
+      "effectiveFrom": "Effective from",
+      "reason": "Reason",
+      "status": "Status",
+      "openApproval": "Open the approval",
+      "template": "Template in force",
+      "templateNote": "Accounts, sides, amounts and tax tags, read from the event's payload.",
+      "conditions": "Conditions",
+      "preview": "Try it",
+      "previewNote": "Runs the rule on a sample event without posting anything.",
+      "payload": "Sample event payload (JSON)",
+      "runPreview": "Run",
+      "balanced": "Balanced",
+      "unbalanced": "Does not balance",
+      "notApplies": "The rule's conditions do not match this payload.",
+      "previewLines": "Lines it would post",
+      "account": "Account",
+      "tax": "Tax",
+      "debit": "Debit",
+      "credit": "Credit",
+      "previewTotals": "Debit {debit} · Credit {credit}",
+      "proposeTitle": "New version of {key}",
+      "proposeNote": "The version applies from its date once a Finance Manager other than you approves it. Postings already made keep their version.",
+      "propose": "Send for approval",
+      "reasonShort": "Give a reason of at least 3 characters",
+      "proposed": "Version sent for approval",
+      "effectiveHint": "Today or later; a rule is never changed back-dated."
+    },
+    "recurring": {
+      "title": "Recurring journals",
+      "description": "Each definition is approved once by a Finance Manager, then posts every month on its day.",
+      "new": "New recurring journal",
+      "empty": "No recurring journals",
+      "name": "Name",
+      "day": "Day of month",
+      "dayOf": "Day {day}",
+      "nextRun": "Next posting",
+      "autoReverse": "Reverses next month",
+      "yes": "Yes",
+      "no": "No",
+      "lines": "Lines",
+      "sides": {
+        "debit": "Dr",
+        "credit": "Cr"
+      },
+      "status": "Status",
+      "openApproval": "Open the approval",
+      "actions": "Actions",
+      "pause": "Pause",
+      "resume": "Resume",
+      "end": "End",
+      "pauseTitle": "Pause {name}?",
+      "resumeTitle": "Resume {name}?",
+      "endTitle": "End {name}?",
+      "pauseBody": "It stops posting until it is resumed.",
+      "resumeBody": "It posts again from its next day of the month.",
+      "endBody": "It never posts again. Entries already posted stay.",
+      "updated": "Updated",
+      "failed": "That did not work",
+      "created": "Sent for approval",
+      "newTitle": "New recurring journal",
+      "newNote": "A Finance Manager other than you approves the definition once; after that it posts every month.",
+      "submit": "Send for approval",
+      "descriptionLabel": "Description",
+      "dayHint": "1 to 28, so every month has it",
+      "startOn": "Starts",
+      "endOn": "Ends (optional)",
+      "autoReverseHint": "Each posting is reversed on the first day of the next month (accruals)."
+    },
+    "periods": {
+      "year": "Fiscal year {label}",
+      "description": "Periods close in order. Only a Finance Manager moves them, and closing or locking also waits for the month's close checklist.",
+      "no": "No.",
+      "month": "Month",
+      "status": "Status",
+      "changedAt": "Changed",
+      "checklist": "Close",
+      "openChecklist": "Close checklist",
+      "actions": "Actions",
+      "actionNames": {
+        "soft-close": "Soft-close",
+        "reopen": "Reopen",
+        "close": "Close",
+        "lock": "Lock"
+      },
+      "confirmTitle": "{action} {month}?",
+      "actionBodies": {
+        "soft-close": "Only people allowed to post into a soft-closed month can still post. Everything else goes to the next open month.",
+        "reopen": "The month takes postings again. A month cannot be reopened once a later month is closed.",
+        "close": "Nothing posts into this month any more. Earlier months must be closed first. A closed month never reopens.",
+        "lock": "Locking is final. At the year end the auditor must have signed off first."
+      },
+      "reason": "Reason",
+      "changed": "Period updated",
+      "failed": "The period did not change"
+    },
+    "dimensionsView": {
+      "title": "Dimensions",
+      "description": "Every journal line can carry these. An account can require some of them.",
+      "dimension": "Dimension",
+      "requiredBy": "Required by accounts",
+      "costCentres": "Cost centres",
+      "costCentresNote": "Used on expense lines to show where the money went.",
+      "newCostCentre": "New cost centre",
+      "code": "Code",
+      "name": "Name",
+      "status": "Status",
+      "statuses": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "journals": "Journals",
+      "openJournals": "Find journals",
+      "create": "Create",
+      "created": "Cost centre created",
+      "codeHint": "Capital letters and digits, e.g. OPS"
+    }
+  },
+  "tax": {
+    "nav": {
+      "label": "Tax",
+      "reports": "Monthly reports",
+      "calendar": "Tax calendar",
+      "settings": "Rates & settings",
+      "series": "Document numbering"
+    },
+    "pages": {
+      "reports": {
+        "title": "Tax reports",
+        "description": "Built from the posted journals and certificates, and reconciled to the GL. A report is finalised only when the difference is zero."
+      },
+      "report": {
+        "title": "Tax report"
+      },
+      "calendar": {
+        "title": "Tax calendar",
+        "description": "When each return is due, and whether it has been filed."
+      },
+      "settings": {
+        "title": "Tax rates & settings",
+        "description": "Rates change by dated versions that another person approves. The settings are read by every report."
+      },
+      "series": {
+        "title": "Document numbering",
+        "description": "One number series per document type. Tax documents are numbered without gaps."
+      }
+    },
+    "reconciled": "Agrees with the GL",
+    "differs": "Differs by {amount}",
+    "kinds": {
+      "sales_tax": "Sales tax report",
+      "purchase_tax": "Purchase tax report",
+      "pp30": "PP 30 working paper (VAT)",
+      "pnd3": "PND 3 (individuals)",
+      "pnd53": "PND 53 (companies)",
+      "wht_issued_register": "WHT certificates issued (50 Tawi)",
+      "wht_received_register": "WHT certificates received from customers"
+    },
+    "reports": {
+      "title": "{month}",
+      "description": "Each paper is rebuilt from the books until it is finalised; after that its figures never change.",
+      "month": "Month",
+      "caption": "Tax papers of the month",
+      "buildAll": "Build all drafts",
+      "build": "Build",
+      "rebuild": "Rebuild",
+      "notBuilt": "Not built yet",
+      "generated": "Built from the books",
+      "failed": "That did not work",
+      "columns": {
+        "report": "Report",
+        "status": "Status",
+        "lines": "Lines",
+        "report_amount": "Report",
+        "gl": "GL",
+        "difference": "Reconciliation",
+        "generatedAt": "Built",
+        "action": "Action"
+      }
+    },
+    "detail": {
+      "title": "{kind} · {month}",
+      "breadcrumb": "You are here",
+      "reports": "Tax reports",
+      "descriptions": {
+        "sales_tax": "Output VAT by tax invoice, credit and debit note. Documents dated in an earlier month are marked late.",
+        "purchase_tax": "Input VAT claimed with a valid tax invoice, by document.",
+        "pp30": "Output VAT less input VAT for the month. Finalising closes the month's VAT into VAT payable.",
+        "pnd3": "Tax withheld from individuals, by 50 Tawi certificate. The export is the attachment for filing.",
+        "pnd53": "Tax withheld from companies, by 50 Tawi certificate. The export is the attachment for filing.",
+        "wht_issued_register": "Every 50 Tawi issued in the month, both forms.",
+        "wht_received_register": "Tax customers withheld from us, and whether their certificate has arrived."
+      },
+      "rebuild": "Rebuild",
+      "rebuilt": "Rebuilt from the books",
+      "failed": "That did not work",
+      "finalise": "Finalise",
+      "export": "Export CSV",
+      "exportAttachment": "Export attachment",
+      "file": "Record filing",
+      "pay": "Record payment",
+      "differenceTitle": "The report does not agree with the GL",
+      "differenceBody": "The GL differs from the report by {difference}. Find the entry that was not tagged, or the document posted to the wrong account, then rebuild. It cannot be finalised until the difference is zero.",
+      "reconciledTitle": "Agrees with the GL",
+      "reconciledBody": "The difference is zero, so it can be finalised.",
+      "reconciliation": "Reconciliation",
+      "reconciliationNote": "What the report says against the movement of its control accounts in the GL.",
+      "reportAmount": "Report",
+      "glAmount": "GL accounts",
+      "difference": "Difference",
+      "generatedAt": "Built",
+      "finalisedAt": "Finalised",
+      "filed": "Filed",
+      "filedAs": "Reference {ref} · {at}",
+      "paid": "Paid",
+      "paidAs": "{amount} on {date}",
+      "lines": "Lines ({count})",
+      "noLines": "Nothing this month",
+      "late": "Late",
+      "journal": "Journal",
+      "finaliseTitle": "Finalise {report}?",
+      "finaliseBody": "It is rebuilt once more and must still agree with the GL. Its figures ({amount}) and its CSV are then fixed for good.",
+      "finalised": "Finalised",
+      "fileTitle": "Record the filing",
+      "fileBody": "The Revenue Department's reference for the return you filed. The calendar item is then done.",
+      "filingRef": "Filing reference",
+      "filingRefHint": "As shown on the e-filing receipt",
+      "refRequired": "Enter the filing reference",
+      "filedDone": "Filing recorded",
+      "payTitle": "Record payment of {report}?",
+      "payBody": "{amount} paid to the Revenue Department from a company account. This posts the payment and can be done once.",
+      "paidOn": "Paid on",
+      "fromAccount": "From account",
+      "paidDone": "Payment recorded"
+    },
+    "columns": {
+      "seq": "No.",
+      "documentDate": "Document date",
+      "documentNo": "Document",
+      "partyName": "Name",
+      "partyTaxId": "Tax ID",
+      "partyBranch": "Branch",
+      "base": "Base",
+      "vat": "VAT",
+      "late": "Late",
+      "label": "Item",
+      "gl": "GL",
+      "documents": "Documents",
+      "name": "Name",
+      "taxId": "Tax ID",
+      "whtAmount": "Tax withheld",
+      "status": "Status",
+      "certificateNo": "Certificate no.",
+      "wtNumber": "50 Tawi no.",
+      "form": "Form",
+      "branch": "Branch",
+      "paidOn": "Paid on",
+      "incomeType": "Income type",
+      "ratePct": "Rate %",
+      "paidAmount": "Amount paid"
+    },
+    "totals": {
+      "base": "Total base",
+      "vat": "Total VAT",
+      "outputBase": "Sales base",
+      "outputVat": "Output VAT",
+      "inputBase": "Purchase base",
+      "inputVat": "Input VAT",
+      "netPayable": "VAT payable",
+      "creditCarriedForward": "Credit carried forward",
+      "whtBase": "Total paid",
+      "whtAmount": "Total withheld",
+      "pendingAmount": "Certificates still to come"
+    },
+    "values": {
+      "pending": "Waiting",
+      "received": "Received",
+      "waived": "Waived",
+      "issued": "Issued",
+      "void": "Void",
+      "pnd3": "PND 3",
+      "pnd53": "PND 53",
+      "hire_of_work": "Hire of work",
+      "transport": "Transport",
+      "service": "Service"
+    },
+    "calendar": {
+      "title": "Tax calendar",
+      "description": "Due dates come from the tax calendar setting. An item is done when its return is filed.",
+      "empty": "Nothing due",
+      "return": "Return",
+      "period": "For",
+      "dueOn": "Due",
+      "overdue": "Overdue",
+      "status": "Status",
+      "report": "Report",
+      "openReport": "Open the report",
+      "prepare": "Prepare"
+    },
+    "settings": {
+      "rates": "Tax rates",
+      "ratesNote": "A rate changes only by a new version from a date, approved by a Finance Manager other than the person proposing it.",
+      "rate": "Rate",
+      "current": "In force",
+      "since": "Since",
+      "pending": "Proposed",
+      "pendingRate": "{rate} from {date}",
+      "about": "About",
+      "change": "Change",
+      "propose": "Propose a new rate",
+      "nature": "Nature of sale by product type",
+      "natureNote": "Whether a product is a hire of work or a sale of goods decides when VAT is due and which withholding applies. Snapshotted on every order.",
+      "natureDefault": "Every other product type",
+      "natures": {
+        "sale_of_goods": "Sale of goods",
+        "hire_of_work": "Hire of work"
+      },
+      "notReadable": "You cannot read these settings",
+      "settings": "Settings the tax papers read",
+      "settingsNote": "Changed in Settings by their owner, never here.",
+      "setting": "Setting",
+      "value": "Value",
+      "owner": "Owner",
+      "eTax": "e-Tax invoice & e-Receipt",
+      "eTaxNote": "Sending documents to the Revenue Department electronically.",
+      "eTaxR2": "Available in release 2",
+      "eTaxBody": "The XML and PDF of every document are generated now. Sending them is switched on after registration with the Revenue Department, in release 2.",
+      "eTaxSend": "Send e-Tax invoices",
+      "eTaxSendHint": "Off until release 2",
+      "eTaxReceipts": "Send e-Receipts",
+      "proposeTitle": "New rate for {name}",
+      "proposeNote": "It applies from its date once a Finance Manager other than you approves it. It is never back-dated.",
+      "sendForApproval": "Send for approval",
+      "reasonShort": "Give a reason of at least 3 characters",
+      "proposed": "Rate sent for approval",
+      "newRate": "New rate (%)",
+      "newRateHint": "For example 7 or 1.5",
+      "effectiveFrom": "Effective from",
+      "effectiveHint": "Today or later",
+      "reason": "Reason"
+    },
+    "series": {
+      "title": "Document numbering",
+      "description": "Each series is created once for the entity. Statutory documents must be numbered without gaps.",
+      "new": "New series",
+      "newNote": "A document that needs a number is refused until its series exists.",
+      "create": "Create",
+      "created": "Series created",
+      "type": "Document",
+      "types": {
+        "iv": "Invoice / tax invoice (IV)",
+        "tr": "Receipt / tax invoice (TR)",
+        "rc": "Receipt (RC)",
+        "cn": "Credit note (CN)",
+        "dn": "Debit note (DN)",
+        "po": "Factory purchase order (PO)",
+        "gr": "Goods receipt (GR)",
+        "bs": "Factory billing statement (BS)",
+        "pv": "Payment voucher (PV)",
+        "wt": "WHT certificate 50 Tawi (WT)",
+        "jv": "Journal voucher (JV)"
+      },
+      "prefix": "Prefix",
+      "format": "Format",
+      "formatHint": "'{prefix}', '{yyyy}', '{yy}', '{mm}', '{seq:N}' — Bangkok dates",
+      "reset": "Restarts",
+      "resets": {
+        "never": "Never",
+        "yearly": "Every year",
+        "monthly": "Every month"
+      },
+      "gapless": "Gapless",
+      "gaplessYes": "Gapless",
+      "gaplessNo": "May skip",
+      "gaplessLabel": "Gapless",
+      "gaplessHint": "Required for tax invoices, receipts, notes and vouchers",
+      "about": "Description",
+      "missingTitle": "Series still missing",
+      "missingBody": "Documents of these types cannot be numbered yet: {types}.",
+      "pickType": "Choose a document type"
+    }
+  },
+  "assets": {
+    "nav": {
+      "label": "Fixed assets",
+      "register": "Register",
+      "depreciation": "Depreciation",
+      "categories": "Categories",
+      "rollForward": "Roll-forward"
+    },
+    "pages": {
+      "register": {
+        "title": "Fixed-asset register",
+        "description": "Every asset with its cost, accumulated depreciation and net book value. No barcode tagging."
+      },
+      "asset": {
+        "title": "Fixed asset"
+      },
+      "depreciation": {
+        "title": "Monthly depreciation",
+        "description": "Straight line by month. Check what the month would post, then post it once."
+      },
+      "categories": {
+        "title": "Asset categories",
+        "description": "Each category sets the accounts and the useful life copied onto the assets registered in it."
+      },
+      "rollForward": {
+        "title": "Fixed-asset roll-forward",
+        "description": "Cost and depreciation moving through the period, and the register against the GL."
+      }
+    },
+    "register": {
+      "title": "Fixed-asset register",
+      "search": "Search by asset number or name",
+      "new": "Register an asset",
+      "empty": "No assets registered",
+      "months": "{count, plural, one {# month} other {# months}}",
+      "statuses": {
+        "active": "In use",
+        "fully_depreciated": "Fully depreciated",
+        "disposed": "Sold",
+        "written_off": "Written off"
+      },
+      "columns": {
+        "asset": "Asset",
+        "category": "Category",
+        "acquiredOn": "Acquired",
+        "life": "Useful life",
+        "cost": "Cost",
+        "accumulated": "Accumulated depreciation",
+        "nbv": "Net book value",
+        "status": "Status"
+      }
+    },
+    "new": {
+      "title": "Register an asset",
+      "description": "Its category's accounts and useful life are copied onto it and never change afterwards.",
+      "register": "Register",
+      "registered": "{asset} registered",
+      "pickCategory": "Choose a category",
+      "source": "Acquired through",
+      "sources": {
+        "manual": "Another way",
+        "vendor_bill": "A vendor bill"
+      },
+      "sourceNotes": {
+        "manual": "The cost is posted against the account you choose (for example capital contributed or another asset).",
+        "vendor_bill": "The bill already capitalised the cost; this only adds it to the register."
+      },
+      "category": "Category",
+      "categoryOption": "{name} · {months} months",
+      "name": "Name",
+      "acquiredOn": "Acquired on",
+      "cost": "Cost (THB)",
+      "costHint": "Excluding recoverable VAT",
+      "residual": "Residual value (THB)",
+      "creditAccount": "Account credited",
+      "creditAccountHint": "Not a control account",
+      "bill": "Vendor bill",
+      "billHint": "A recorded bill with a line on the asset account",
+      "pickBill": "Choose a bill",
+      "noBills": "No bill has an asset line",
+      "costCentre": "Cost centre",
+      "noCostCentre": "None",
+      "location": "Location",
+      "thePosting": "The registration"
+    },
+    "detail": {
+      "breadcrumb": "You are here",
+      "title": "{asset} · {name}",
+      "dispose": "Sell or write off",
+      "values": "Values",
+      "cost": "Cost",
+      "residual": "Residual value",
+      "accumulated": "Accumulated depreciation",
+      "nbv": "Net book value",
+      "category": "Category",
+      "acquiredOn": "Acquired",
+      "depreciationStart": "Depreciated from",
+      "life": "Useful life",
+      "method": "Method",
+      "straightLine": "Straight line",
+      "source": "Acquired through",
+      "sources": {
+        "manual": "Registered manually",
+        "vendor_bill": "Vendor bill"
+      },
+      "accounts": "Asset / credited account",
+      "costCentre": "Cost centre",
+      "location": "Location",
+      "disposedOn": "Disposed on",
+      "proceeds": "Proceeds",
+      "schedule": "Depreciation posted",
+      "scheduleNote": "One line per monthly run.",
+      "noDepreciation": "No depreciation posted yet",
+      "period": "Month",
+      "amount": "Depreciation",
+      "accumulatedAfter": "Accumulated after"
+    },
+    "dispose": {
+      "title": "Sell or write off {asset}?",
+      "body": "Its cost {cost} and accumulated depreciation {accumulated} leave the books; any proceeds are recorded and the rest is a gain or loss. Depreciation must be posted up to the month before.",
+      "sell": "Record the sale",
+      "writeOff": "Write it off",
+      "reason": "Reason",
+      "done": "Asset disposed",
+      "failed": "That did not work",
+      "kind": "What happened",
+      "kinds": {
+        "sold": "Sold",
+        "written_off": "Written off"
+      },
+      "disposedOn": "Date",
+      "disposedOnHint": "No depreciation is charged in the month of disposal",
+      "proceeds": "Proceeds, excluding VAT (THB)",
+      "proceedsHint": "Leave empty if nothing was received",
+      "proceedsAccount": "Where the money went",
+      "thePosting": "The disposal"
+    },
+    "depreciation": {
+      "title": "Depreciation for {month}",
+      "description": "What the month's run would post for each asset. Missed months are caught up; the last month takes the rounding.",
+      "month": "Month",
+      "post": "Post depreciation",
+      "periodIs": "This month is",
+      "blockedTitle": "This month no longer takes postings",
+      "blockedBody": "Depreciation posts only into an open month. Ask a Finance Manager to reopen it, or choose an open month.",
+      "doneTitle": "Already posted",
+      "doneBody": "The run for this month has been posted. Each month is run once.",
+      "preview": "What it would post",
+      "nothing": "Nothing to depreciate this month",
+      "nothingLeft": "Nothing left to post for this month",
+      "asset": "Asset",
+      "category": "Category",
+      "amount": "Depreciation",
+      "accumulatedAfter": "Accumulated after",
+      "nbvAfter": "Net book value after",
+      "last": "Note",
+      "fully": "Last month",
+      "total": "{count, plural, one {# asset} other {# assets}} · {amount}",
+      "runs": "Runs posted",
+      "noRuns": "No runs yet",
+      "runOn": "Run on",
+      "assets": "Assets",
+      "journal": "Journal",
+      "openJournal": "Open the journal",
+      "confirmTitle": "Post depreciation for {month}?",
+      "confirmBody": "One journal of {amount} for {count, plural, one {# asset} other {# assets}}. A month is run once.",
+      "posted": "Depreciation posted",
+      "failed": "That did not work"
+    },
+    "categories": {
+      "title": "Asset categories",
+      "description": "Changing a useful life applies to assets registered afterwards; registered assets keep theirs.",
+      "new": "New category",
+      "newNote": "The accounts are fixed once the category is created.",
+      "name": "Category",
+      "life": "Useful life",
+      "months": "{count, plural, one {# month} other {# months}}",
+      "method": "Method",
+      "straightLine": "Straight line",
+      "accounts": "Accounts",
+      "accountsValue": "Asset {asset} · Accumulated {accumulated} · Expense {expense} · Gain/loss {gainLoss}",
+      "status": "Status",
+      "statuses": {
+        "active": "In use",
+        "inactive": "Not in use"
+      },
+      "edit": "Edit",
+      "editTitle": "Edit {name}",
+      "editNote": "Names, useful life for new assets, and whether it is in use.",
+      "save": "Save",
+      "create": "Create",
+      "saved": "Category saved",
+      "fields": {
+        "code": "Code",
+        "nameTh": "Name (Thai)",
+        "nameEn": "Name (English)",
+        "usefulLifeMonths": "Useful life (months)",
+        "assetAccountCode": "Asset account",
+        "accumulatedAccountCode": "Accumulated depreciation account",
+        "expenseAccountCode": "Depreciation expense account",
+        "gainLossAccountCode": "Gain / loss on disposal account"
+      },
+      "codeHint": "Lower-case letters, digits, - and _",
+      "lifeHint": "Set by Finance with the auditor",
+      "lifeHintEdit": "Assets already registered keep their useful life"
+    },
+    "rollForward": {
+      "title": "Roll-forward by category",
+      "description": "Opening, additions, depreciation, disposals and closing, for the months chosen.",
+      "from": "From",
+      "to": "To",
+      "empty": "No assets in these months",
+      "columns": {
+        "category": "Category",
+        "openingCost": "Opening cost",
+        "additions": "Additions",
+        "disposalsCost": "Disposals (cost)",
+        "closingCost": "Closing cost",
+        "openingAccumulated": "Opening depreciation",
+        "depreciation": "Depreciation",
+        "disposalsAccumulated": "Disposals (depreciation)",
+        "closingAccumulated": "Closing depreciation",
+        "netBookValue": "Net book value"
+      },
+      "reconciliation": "Register against the GL",
+      "reconciliationNote": "The register's cost and accumulated depreciation against the balances of their accounts at the end of the period. The difference must be zero.",
+      "account": "Account",
+      "register": "Register",
+      "gl": "GL",
+      "difference": "Difference",
+      "reconciled": "Agrees"
     }
   }
 }

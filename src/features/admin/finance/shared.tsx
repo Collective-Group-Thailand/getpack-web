@@ -33,6 +33,18 @@ export function sourceHref(source: { type: string; id: string } | null | undefin
       return `/finance/refunds?refund=${source.id}`;
     case "receivable_item":
       return `/finance/receivables?item=${source.id}`;
+    case "vendor_invoice":
+      return `/finance/payables/invoices/${source.id}`;
+    case "bank_statement_line":
+      return `/finance/banking/lines?line=${source.id}`;
+    case "unidentified_receipt":
+      return `/finance/banking/unidentified`;
+    case "tax_report":
+      return `/finance/tax/${source.id}`;
+    case "fixed_asset":
+      return `/finance/assets/${source.id}`;
+    case "depreciation_run":
+      return `/finance/assets/depreciation`;
     default:
       return null;
   }

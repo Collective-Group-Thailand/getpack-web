@@ -264,3 +264,14 @@ export const settlementsList = defineList<SettlementSummary>({
   getRowId: (row) => row.id,
   defaults: { filterKeys: ["status", "provider"], sort: "settlementDate", order: "desc" },
 });
+
+export type FixedAsset = Schemas["FixedAssetDto"];
+
+export const fixedAssetsList = defineList<FixedAsset>({
+  key: "fixed-asset",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/fixed-assets", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.id,
+  getRowName: (row) => row.assetNo,
+  defaults: { filterKeys: ["status", "categoryId"], sort: "acquiredOn", order: "desc" },
+});
