@@ -34,27 +34,17 @@ export type OrderStatus =
 export type OrderGroupStatus =
   "pending_company_approval" | "waiting_payment" | "in_progress" | "completed" | "cancelled";
 
-/** One payment attempt against an instalment (B3.2, D-061). **Source: schema** (`payment_status`). */
-export type PaymentStatus =
-  | "initiated"
-  | "pending"
-  | "awaiting_verification"
-  | "succeeded"
-  | "failed"
-  | "cancelled"
-  | "expired"
-  | "refunded"
-  | "partially_refunded";
+/** One payment attempt against an instalment (B3.2, D-061). **Source: contract** (B5.2). */
+export type PaymentStatus = Schemas["PaymentStatus"];
 
 /** One instalment of an order group's payment schedule (D-020, D-122). **Source: schema** (`instalment_status`). */
 export type InstalmentStatus = "pending" | "due" | "partially_paid" | "paid" | "overdue" | "cancelled" | "refunded";
 
-/** A bank-transfer slip: verified automatically, only failures reach Finance (D-061). **Source: schema** (`slip_status`). */
-export type SlipStatus = "pending" | "passed" | "failed" | "manual_review" | "manual_approved" | "manual_rejected";
+/** A bank-transfer slip: verified automatically, only failures reach Finance (D-061). **Source: contract** (B5.2). */
+export type SlipStatus = Schemas["SlipStatus"];
 
-/** A refund, which needs approval (B3.2, D-169). **Source: schema** (`refund_status`). */
-export type RefundStatus =
-  "requested" | "pending_approval" | "approved" | "processing" | "succeeded" | "failed" | "rejected";
+/** A refund, which needs approval (B3.2, D-169). **Source: contract** (B5.2). */
+export type RefundStatus = Schemas["RefundStatus"];
 
 /** A saved instant or CS quote, valid 15 days with the price locked (D-051). **Source: schema** (`quote_status`). */
 export type QuoteStatus = "calculated" | "saved" | "shared" | "converted" | "expired" | "superseded";
@@ -165,8 +155,8 @@ export type PayoutStatus =
 /** Money owed to a factory, before it joins a run (D-022). **Source: schema** (`payable_status`). */
 export type PayableStatus = "open" | "eligible" | "in_run" | "paid" | "cancelled";
 
-/** A customer document — tax invoice, receipt, credit note. A voided document keeps its number (accounting-design §5). **Source: schema** (`customer_document_status`). */
-export type DocumentStatus = "issued" | "void";
+/** A customer document — tax invoice, receipt, credit note. A voided document keeps its number (accounting-design §4). **Source: contract** (B5.2). */
+export type DocumentStatus = Schemas["CustomerDocumentStatus"];
 
 /** A partner factory: at least one site visit before trial → active (D-011, D-041). **Source: contract** (B2.2). */
 export type FactoryStatus = Schemas["FactoryStatus"];
@@ -242,3 +232,15 @@ export type PayoutItemStatus = "included" | "paid" | "failed" | "excluded";
 
 /** A person who acts for a factory. **Proposed** in contract request `partner.users`. */
 export type FactoryUserStatus = "invited" | "active" | "deactivated";
+
+/** An open item of customer AR: one invoice or final tax invoice still owed (accounting-design §6). **Source: contract** (B5.2). */
+export type ReceivableStatus = Schemas["ArItemStatus"];
+
+/** A customer's 50 ทวิ, chased until it arrives (accounting-design §2). **Source: contract** (B5.2). */
+export type WhtCertificateStatus = Schemas["WhtCertStatus"];
+
+/** A credit note asked for, issued only once a Finance Manager approves (D-169). **Source: contract** (B5.2). */
+export type CreditNoteRequestStatus = Schemas["CreditNoteRequestStatus"];
+
+/** A payment reminder (D-122). **Proposed** in contract request `admin.dunning-log`. */
+export type DunningStatus = "sent" | "failed";

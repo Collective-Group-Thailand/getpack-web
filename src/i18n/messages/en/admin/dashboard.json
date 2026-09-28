@@ -68,6 +68,18 @@
     "logistics": {
       "exceptions": "Shipment exceptions",
       "pod_review": "PODs to review"
+    },
+    "finance": {
+      "slips": "Slips to review",
+      "unmatched_bank_lines": "Unmatched bank lines",
+      "unidentified_receipts": "Unidentified receipts",
+      "payout_runs_awaiting_approval": "Payout runs awaiting approval",
+      "deliveries_without_gr": "Deliveries without a goods receipt",
+      "bills_missing_tax_invoice": "Factory bills without a tax invoice",
+      "wht_certificates_missing": "Customer 50 Tawi missing",
+      "overdue_b2b_invoices": "Overdue B2B invoices",
+      "refunds_to_pay": "Refunds to transfer",
+      "close_tasks": "Open close tasks"
     }
   },
   "policies": {
