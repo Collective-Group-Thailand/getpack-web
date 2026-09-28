@@ -16,7 +16,10 @@
       "refunds": "Refunds",
       "documents": "Customer documents",
       "creditNotes": "Credit notes",
-      "receivables": "Receivables"
+      "receivables": "Receivables",
+      "payables": "Payables",
+      "payouts": "Factory payouts",
+      "banking": "Banking"
     }
   },
   "common": {
@@ -29,7 +32,11 @@
       "unreadable": "Slip could not be read",
       "provider_error": "Slip checker unavailable",
       "none": "Not checked automatically"
-    }
+    },
+    "accountWithBank": "{bank} · xxx{last4}",
+    "accountLast4": "xxx{last4}",
+    "accountGl": "(account {gl})",
+    "accountOption": "{bank} · xxx{last4} ({gl})"
   },
   "home": {
     "title": "Finance overview",
@@ -728,6 +735,736 @@
     },
     "detail": {
       "title": "Journal entry"
+    }
+  },
+  "payables": {
+    "nav": {
+      "label": "Payables",
+      "open": "Open payables",
+      "purchaseOrders": "Purchase orders",
+      "goodsReceipts": "Goods receipts",
+      "statements": "Billing statements",
+      "invoices": "Tax invoices & bills",
+      "vendors": "Vendors"
+    },
+    "open": {
+      "title": "Open payables",
+      "description": "What Packio owes, net and VAT separately, with the date each becomes payable under the payout policy frozen on its PO (D-022, D-164).",
+      "search": "Search by vendor, PO or order",
+      "empty": "No open payables",
+      "waiting": "Waiting for an event",
+      "columns": {
+        "vendor": "Vendor",
+        "po": "PO",
+        "eligibleAt": "Payable from",
+        "net": "Net",
+        "vat": "VAT",
+        "retention": "Retention",
+        "status": "Status",
+        "source": "Source"
+      },
+      "sources": {
+        "advance": "Advance on acceptance",
+        "goods_receipt": "Balance after delivery",
+        "vendor_invoice": "Vendor bill",
+        "retention": "Retention release"
+      }
+    },
+    "purchaseOrders": {
+      "title": "Factory purchase orders",
+      "description": "One per production job released to a factory, at the price and payout policy frozen at release.",
+      "search": "Search by PO, job or order",
+      "empty": "No purchase orders",
+      "breadcrumb": "You are here",
+      "detailTitle": "Purchase order {number}",
+      "detailDescription": "Job {job} · order {order}",
+      "summary": "Summary",
+      "kind": "Job kind",
+      "kinds": {
+        "production": "Production",
+        "mockup": "Mockup",
+        "reproduction": "Re-production"
+      },
+      "vat": "VAT",
+      "lines": "Lines",
+      "receipts": "Goods receipts",
+      "noReceipts": "Nothing received yet",
+      "grNumber": "Number",
+      "receivedOn": "Received",
+      "payableQuantity": "Payable quantity",
+      "columns": {
+        "number": "Number",
+        "factory": "Factory",
+        "order": "Order",
+        "issuedAt": "Issued",
+        "net": "Net",
+        "gross": "Incl. VAT",
+        "status": "Status"
+      }
+    },
+    "lines": {
+      "caption": "Lines",
+      "description": "Description",
+      "type": "Type",
+      "wht": "Withholding",
+      "quantity": "Quantity",
+      "net": "Net",
+      "vat": "VAT",
+      "gross": "Total",
+      "types": {
+        "production": "Production",
+        "shipping": "Shipping",
+        "mockup": "Mockup",
+        "design": "Design",
+        "reproduction": "Re-production"
+      },
+      "whtCategories": {
+        "hire_of_work": "Hire of work 3%",
+        "transport": "Transport 1%",
+        "service": "Service 3%",
+        "none": "None"
+      }
+    },
+    "goodsReceipts": {
+      "title": "Goods receipts",
+      "description": "Recorded from the POD and the reconciled quantity; the factory is paid for the lower of delivered and ordered (D-165, P15).",
+      "search": "Search by GR or PO number",
+      "empty": "Nothing received yet",
+      "received": "{quantity} delivered",
+      "columns": {
+        "number": "Number",
+        "receivedOn": "Received",
+        "quantity": "Payable quantity",
+        "net": "Net",
+        "vat": "VAT",
+        "gross": "Total"
+      }
+    },
+    "statements": {
+      "title": "Factory billing statements",
+      "description": "Packio generates the statement from PO and delivery for the factory to confirm; the factory then issues its own tax invoice (D-090).",
+      "search": "Search by statement number",
+      "empty": "No billing statements",
+      "breadcrumb": "You are here",
+      "detailTitle": "Billing statement {number}",
+      "period": "{from} – {to}",
+      "summary": "Summary",
+      "vat": "VAT",
+      "lines": "Lines",
+      "noLines": "Nothing in this period",
+      "lineDescription": "Description",
+      "taxInvoices": "The factory's tax invoices",
+      "capture": "Record a tax invoice for the factory",
+      "disputed": "The factory disputes this statement",
+      "missingInvoice": "No validated tax invoice yet",
+      "missingInvoiceBody": "Input VAT on this statement cannot be claimed until the factory's valid tax invoice is recorded.",
+      "columns": {
+        "number": "Number",
+        "factory": "Factory",
+        "period": "Period",
+        "status": "Status",
+        "net": "Net",
+        "gross": "Incl. VAT",
+        "confirmedAt": "Confirmed"
+      }
+    },
+    "capture": {
+      "title": "Record the tax invoice for {number}",
+      "description": "For a tax invoice the factory sent by other means. It is the factory's own (its number and its name) and is validated separately.",
+      "number": "The factory's tax invoice number",
+      "date": "Tax invoice date",
+      "taxId": "Seller tax id",
+      "branch": "Seller branch",
+      "net": "Net (THB)",
+      "vat": "VAT (THB)",
+      "fromStatement": "Filled from the statement; make it match the invoice itself.",
+      "source": "Source",
+      "sources": {
+        "pdf_upload": "PDF file",
+        "e_tax": "e-Tax invoice"
+      },
+      "file": "Tax invoice file",
+      "needNumber": "Enter the tax invoice number and date",
+      "badAmount": "Enter the amounts as numbers",
+      "needFile": "Attach the tax invoice PDF",
+      "save": "Save",
+      "saved": "Tax invoice recorded — waiting to be checked",
+      "drop": "Drop a file here or choose one",
+      "browse": "Choose file",
+      "chosen": "Chosen: {name}",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not an accepted file"
+    },
+    "invoices": {
+      "title": "Tax invoices and vendor bills",
+      "description": "Factories' tax invoices against their statements, and other vendors' bills. Input VAT is claimable only with a valid tax invoice.",
+      "search": "Search by number, vendor or statement",
+      "empty": "No tax invoices or bills",
+      "none": "No tax invoice yet",
+      "taxInvoice": "Tax invoice",
+      "notTaxInvoice": "Not a tax invoice",
+      "breadcrumb": "You are here",
+      "detailTitle": "Tax invoice {number}",
+      "checks": "Checks",
+      "checksNote": "The seller must be the factory (tax id and branch) and the amounts the statement's.",
+      "checkNames": {
+        "taxId": "Tax id",
+        "branch": "Branch",
+        "net": "Net",
+        "vat": "VAT"
+      },
+      "expected": "should be {value}",
+      "summary": "Details",
+      "statement": "Billing statement",
+      "sellerTaxId": "Seller tax id",
+      "sellerBranch": "Seller branch",
+      "source": "Source",
+      "sources": {
+        "e_tax": "e-Tax invoice",
+        "pdf_upload": "PDF file",
+        "manual": "Recorded by Finance"
+      },
+      "vat": "VAT",
+      "lines": "Lines",
+      "lineDescription": "Description",
+      "account": "Account",
+      "wht": "Withholding",
+      "whtCategories": {
+        "hire_of_work": "Hire of work 3%",
+        "transport": "Transport 1%",
+        "service": "Service 3%",
+        "none": "None"
+      },
+      "journals": "Journals",
+      "validate": "Validate",
+      "reject": "Reject",
+      "validateTitle": "Validate the tax invoice",
+      "validateBody": "Validate {number}. Its input VAT of {vat} becomes claimable, and VAT paid while it was missing moves out of the pending account (P17V).",
+      "rejectTitle": "Reject the tax invoice",
+      "rejectBody": "Reject {number}. The factory sees the reason and sends a correct one.",
+      "rejectReason": "Reason (the factory sees it)",
+      "rejectedTitle": "This tax invoice was rejected",
+      "validated": "Tax invoice validated",
+      "rejectedToast": "Tax invoice rejected",
+      "failed": "Could not record the check",
+      "columns": {
+        "number": "Number",
+        "vendor": "Vendor",
+        "date": "Date",
+        "status": "Status",
+        "inputVat": "Input VAT",
+        "net": "Net",
+        "gross": "Total"
+      }
+    },
+    "vendorsPage": {
+      "title": "Vendors",
+      "description": "Factories from partner onboarding, and the others — carriers, freelance designers, service vendors."
+    },
+    "vendors": {
+      "title": "Vendor master",
+      "description": "The withholding form follows the juristic type (individuals PND 3, others PND 53).",
+      "empty": "No vendors yet",
+      "new": "Add vendor",
+      "breadcrumb": "You are here",
+      "branch": "Branch {code}",
+      "record": "Vendor record",
+      "recordBill": "Record a bill",
+      "bills": "Tax invoices and bills",
+      "vatYes": "VAT registered",
+      "vatNo": "Not VAT registered",
+      "days": "{days} days",
+      "kinds": {
+        "factory": "Factory",
+        "carrier": "Carrier",
+        "freelancer": "Freelancer",
+        "service": "Service vendor",
+        "other": "Other"
+      },
+      "whtCategories": {
+        "hire_of_work": "Hire of work 3%",
+        "transport": "Transport 1%",
+        "service": "Service 3%",
+        "none": "None"
+      },
+      "outcomes": {
+        "confirmed": "Confirmed by phone",
+        "mismatch": "Details did not match",
+        "unreachable": "Could not be reached"
+      },
+      "columns": {
+        "name": "Vendor",
+        "kind": "Kind",
+        "vat": "VAT",
+        "wht": "Withholding",
+        "terms": "Terms"
+      },
+      "banks": {
+        "title": "Payout bank accounts",
+        "note": "A change is never an edit: the new account waits for two approvers (Finance, then Finance Manager) and a call-back on the number already on record before it is paid into.",
+        "factoryNote": "Factories propose changes in their portal or through the Partner team; Finance approves and calls back here.",
+        "account": "Account",
+        "status": "Status",
+        "verification": "Call-back",
+        "notCalled": "Not called yet",
+        "flags": "Flags",
+        "duplicate": "Same account as another vendor",
+        "approval": "Approval",
+        "openApproval": "Open the approval request",
+        "actions": "Actions",
+        "recordCall": "Record the call-back",
+        "propose": "Change the account",
+        "none": "No payout account yet"
+      },
+      "create": {
+        "title": "Add a vendor",
+        "description": "A vendor that is not a factory — a carrier, a designer, a service. Factories come from partner onboarding.",
+        "name": "Registered name",
+        "taxId": "Tax id",
+        "branch": "Branch",
+        "kind": "Kind",
+        "juristic": "Taxpayer type",
+        "juristicHint": "Individuals file PND 3; companies and partnerships PND 53.",
+        "juristicTypes": {
+          "company": "Company",
+          "partnership": "Partnership",
+          "individual": "Individual"
+        },
+        "wht": "Default withholding",
+        "terms": "Terms (days)",
+        "vatRegistered": "VAT registered",
+        "save": "Save",
+        "saved": "Vendor added"
+      },
+      "propose": {
+        "title": "Change the payout account of {vendor}",
+        "description": "The new account is used after two approvers and a call-back. The number is stored encrypted and only its last 4 digits are shown.",
+        "bank": "Bank",
+        "banks": {
+          "002": "Bangkok Bank (002)",
+          "004": "Kasikornbank (004)",
+          "006": "Krungthai Bank (006)",
+          "011": "TMBThanachart (011)",
+          "014": "Siam Commercial Bank (014)",
+          "025": "Bank of Ayudhya (025)",
+          "069": "Kiatnakin Phatra (069)"
+        },
+        "number": "Account number",
+        "numberHint": "10–15 digits",
+        "name": "Account name",
+        "branchName": "Branch",
+        "review": "Review",
+        "badNumber": "Enter a valid account number and name",
+        "confirmTitle": "Send the account change",
+        "confirmBody": "Change the payout account of {vendor} to the one ending {last4}. Two approvers and a call-back are needed before it is used.",
+        "send": "Send request",
+        "sent": "Account change requested",
+        "failed": "Could not send the request"
+      },
+      "call": {
+        "title": "Record the call-back for the account ending {last4}",
+        "description": "Who called, which number, when, and what came of it.",
+        "rule": "Call the number already on record — never one given in the change request.",
+        "number": "Number called",
+        "at": "Called at",
+        "outcome": "Outcome",
+        "note": "Note",
+        "needCall": "Enter the number and the time of the call",
+        "save": "Save",
+        "saved": "Call-back recorded"
+      }
+    },
+    "bill": {
+      "title": "Record a bill from {vendor}",
+      "description": "As an expense, cost or asset; input VAT only on a valid tax invoice. Whoever records this vendor's bills cannot change its bank account.",
+      "number": "Bill number",
+      "date": "Bill date",
+      "taxInvoice": "A valid tax invoice",
+      "taxInvoiceHint": "It carries the vendor's tax id and branch",
+      "line": "Line {no}",
+      "account": "Account",
+      "pickAccount": "Choose an account",
+      "wht": "Withholding",
+      "lineDescription": "Description",
+      "net": "Net (THB)",
+      "vat": "VAT (THB)",
+      "vatHint": "As on the tax invoice",
+      "noVat": "Not a tax invoice: no input VAT",
+      "addLine": "Add a line",
+      "needHeader": "Enter the bill number and date",
+      "needLines": "Give every line an account, a description and amounts",
+      "save": "Record bill",
+      "saved": "Bill recorded"
+    }
+  },
+  "payouts": {
+    "title": "Factory and vendor payout runs",
+    "description": "Finance builds a run from what is payable and proposes it; a C-Level other than the proposer approves; then the bank file goes out and the bank's result is recorded (D-022, D-166).",
+    "search": "Search by run number",
+    "empty": "No payout runs yet",
+    "new": "New payout run",
+    "exceptions": "Exceptions",
+    "columns": {
+      "run": "Run",
+      "payOn": "Pay on",
+      "status": "Status",
+      "items": "Items",
+      "cash": "Transfer",
+      "wht": "Withholding",
+      "retention": "Retention",
+      "bank": "Paid from"
+    },
+    "create": {
+      "title": "New payout run",
+      "description": "Collects the payables due by the pay date, per vendor and kind. The run stays a draft until it is proposed.",
+      "payOn": "Pay on",
+      "account": "Pay from",
+      "pickAccount": "Choose a company account",
+      "format": "Bank file format",
+      "formatAccount": "The account's own",
+      "formatDefault": "Account default: {format}",
+      "formats": {
+        "scb_bulk_csv": "SCB bulk (CSV)",
+        "kbank_bulk_csv": "KBank bulk (CSV)",
+        "generic_csv": "Generic CSV"
+      },
+      "rules": "Worked out for you",
+      "rulesBody": "Withholding per line type (hire of work, transport, services), retention held on balances, and vendors without a verified account left out.",
+      "eligible": "What the run will include",
+      "nothing": "Nothing is payable by this date",
+      "create": "Create run",
+      "created": "Run {run} created",
+      "failed": "Could not create the run"
+    },
+    "detail": {
+      "title": "Payout run {run}",
+      "breadcrumb": "You are here",
+      "description": "Pay on {payOn} · file {format}",
+      "propose": "Propose for approval",
+      "cancel": "Cancel run",
+      "generate": "Generate bank file",
+      "download": "Download bank file",
+      "importConfirmation": "Record the bank's result",
+      "waitingTitle": "Waiting for a C-Level approval",
+      "waitingBody": "A C-Level other than the proposer approves it.",
+      "waitingProposer": "You proposed this run, so you cannot approve it.",
+      "openApproval": "Open the approval request",
+      "rejectedTitle": "This run was not approved",
+      "rejectedBody": "Its payables wait for the next run.",
+      "excludedTitle": "Some items were left out",
+      "excludedBody": "Their vendors have no verified payout account yet; they stay in the exceptions until one is ready.",
+      "totals": "Run totals",
+      "apNet": "Payables net",
+      "vat": "VAT",
+      "wht": "Withholding",
+      "retention": "Retention held",
+      "cash": "Transfer",
+      "account": "Paid from",
+      "format": "File format",
+      "approval": "Approval",
+      "approvalBy": "Proposed by {name}",
+      "items": "Items",
+      "noAccount": "No verified account",
+      "vatPending": "Input VAT awaits the invoice",
+      "documents": "Remittance advice and 50 Tawi",
+      "kinds": {
+        "advance": "Advance",
+        "balance": "Balance",
+        "retention_release": "Retention release",
+        "vendor_bill": "Vendor bill"
+      },
+      "forms": {
+        "pnd3": "PND 3",
+        "pnd53": "PND 53"
+      },
+      "columns": {
+        "vendor": "Vendor",
+        "status": "Status",
+        "net": "Net",
+        "vat": "VAT",
+        "wht": "Withholding",
+        "retention": "Retention",
+        "cash": "Transfer",
+        "bank": "Account",
+        "result": "Result"
+      },
+      "proposeTitle": "Propose the payout run",
+      "proposeBody": "Propose run {run}, transferring {cash} in total, for a C-Level's approval.",
+      "generateTitle": "Generate the bank file",
+      "generateBody": "Generate the {format} file of run {run}, transferring {cash} in total. The file is kept as a financial record.",
+      "cancelTitle": "Cancel the payout run",
+      "cancelBody": "Cancel run {run}; its payables go back to wait for the next run.",
+      "cancelReason": "Reason",
+      "proposed": "Run proposed — waiting for a C-Level",
+      "fileReady": "Bank file generated",
+      "cancelled": "Run cancelled",
+      "failed": "Could not complete that"
+    },
+    "confirm": {
+      "title": "Record the bank's result for {run}",
+      "description": "Enter the bank's result per item, or attach the bank's result file. Paid items get a payment voucher number and are posted.",
+      "mode": "How",
+      "modes": {
+        "lines": "Item by item",
+        "file": "Bank's file"
+      },
+      "outcome": "Result for {vendor}",
+      "paid": "Paid",
+      "failedOption": "Failed",
+      "bankRef": "Bank reference",
+      "reason": "Why it failed",
+      "review": "Review",
+      "confirmTitle": "Record the bank's result",
+      "confirmLines": "Record the result of {run}: {paid} paid, {failed} failed. The postings and 50 Tawi certificates are made straight away.",
+      "confirmFile": "Record the result of {run} from {name}. The postings and 50 Tawi certificates are made straight away.",
+      "post": "Record result",
+      "posted": "Bank result recorded",
+      "failed": "Could not record the result",
+      "drop": "Drop a file here or choose one",
+      "browse": "Choose file",
+      "chosen": "Chosen: {name}",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not an accepted file"
+    },
+    "itemDocuments": {
+      "title": "Documents of {pv}",
+      "remittance": "Remittance advice",
+      "certificate": "Withholding tax certificate {number} ({form})",
+      "certificateAmounts": "Base {base} · tax {amount}",
+      "forms": {
+        "pnd3": "PND 3",
+        "pnd53": "PND 53"
+      },
+      "noWht": "Nothing was withheld on this item"
+    },
+    "exceptionsPage": {
+      "title": "Payout exceptions",
+      "description": "Failed transfers, and items left out for a missing verified bank account.",
+      "empty": "No exceptions",
+      "run": "Run",
+      "vendor": "Vendor",
+      "status": "Status",
+      "cash": "Amount",
+      "reason": "Reason"
+    }
+  },
+  "banking": {
+    "nav": {
+      "label": "Banking",
+      "cash": "Daily cash position",
+      "lines": "Bank matching",
+      "import": "Import",
+      "unidentified": "Unidentified receipts",
+      "accounts": "Company accounts"
+    },
+    "cashPage": {
+      "title": "Bank and cash",
+      "description": "The books against the bank statements, the matching work, and money whose payer is not known yet."
+    },
+    "cash": {
+      "title": "Daily cash position",
+      "description": "Each bank account's balance in the books beside the last statement balance and what is still unmatched.",
+      "asOf": "As of",
+      "banks": "Bank accounts",
+      "account": "Account",
+      "glBalance": "Book balance",
+      "statementBalance": "Statement balance",
+      "unmatched": "Unmatched",
+      "clearing": "Clearing and unidentified receipts",
+      "clearingNote": "Gateway and slip money waiting for its bank line (1131–1133), and receipts whose payer is not known (1140).",
+      "balance": "Balance"
+    },
+    "lines": {
+      "title": "Bank matching",
+      "description": "Statement lines not yet explained. Automatic matching uses amount, reference and a date window; the rest needs a person.",
+      "search": "Search by description, reference or amount",
+      "statusesLabel": "Status",
+      "unmatched": "Unmatched",
+      "matched": "Matched",
+      "unidentified": "Parked",
+      "ignored": "Nothing to post",
+      "empty": "Nothing here",
+      "auto": "Matched automatically",
+      "targets": {
+        "payment": "Payment",
+        "gateway_settlement": "Gateway settlement",
+        "payout_run": "Payout run",
+        "refund": "Refund",
+        "unidentified_receipt": "Unidentified receipt",
+        "tax_payment": "Tax payment"
+      },
+      "columns": {
+        "date": "Date",
+        "description": "Line",
+        "amount": "Amount",
+        "balance": "Balance",
+        "account": "Account",
+        "status": "Status",
+        "matches": "Matched to"
+      },
+      "sheet": {
+        "title": "Bank line",
+        "description": "{date} · {amount}",
+        "amount": "Amount",
+        "reference": "Reference",
+        "account": "Account",
+        "status": "Status",
+        "matches": "Matched to",
+        "suggestions": "It could be",
+        "suggestionsNote": "By amount, reference and date window. Pick several to split this line.",
+        "noSuggestions": "Nothing matches",
+        "noSuggestionsBody": "Money in from an unknown payer can be parked as an unidentified receipt.",
+        "reasons": {
+          "amount": "same amount",
+          "reference": "same reference",
+          "date_window": "close in date"
+        },
+        "pickForSplit": "Pick {label} for a split",
+        "match": "Match",
+        "splitMatch": "Match as a split ({count})",
+        "park": "Park as unidentified",
+        "ignore": "Nothing to post",
+        "failed": "Could not complete that",
+        "done": {
+          "match": "Matched",
+          "split": "Matched as a split",
+          "unidentified": "Parked as an unidentified receipt",
+          "ignore": "Marked as nothing to post"
+        },
+        "confirm": {
+          "matchTitle": "Match the bank line",
+          "match": "Match",
+          "matchBody": "Match the bank line of {line} to {target} ({amount}). The posting follows the kind of item.",
+          "splitTitle": "Match as a split",
+          "split": "Match",
+          "splitBody": "Split the bank line of {line} across {count} items; the parts must add up to the line.",
+          "unidentifiedTitle": "Park as an unidentified receipt",
+          "unidentified": "Park",
+          "unidentifiedBody": "Park {amount} in unidentified receipts (1140, P29) until the payer is known.",
+          "ignoreTitle": "Nothing to post for this line",
+          "ignore": "Confirm",
+          "ignoreBody": "The line of {amount} is not a transaction to post, e.g. a transfer between the company's own accounts already recorded.",
+          "ignoreReason": "Reason"
+        }
+      }
+    },
+    "import": {
+      "title": "Import bank and gateway files",
+      "description": "Bank statements, and the SCB / 2C2P settlement reports with their fees.",
+      "statementTitle": "Bank statement",
+      "statementNote": "A file already imported is refused; lines overlapping an earlier file are skipped. New lines are matched automatically at once.",
+      "account": "Bank account",
+      "file": "CSV file",
+      "fileHint": "Columns: date,description,reference,amount,balance (negative amounts are money out)",
+      "importStatement": "Import",
+      "imported": "{lines} lines imported, {matched} matched automatically",
+      "result": "Last import: {lines} lines, {matched} matched automatically",
+      "failed": "Could not import",
+      "settlementsTitle": "Gateway settlement reports",
+      "noSettlements": "No reports yet",
+      "providers": {
+        "scb": "SCB",
+        "twoc2p": "2C2P"
+      },
+      "settlements": {
+        "date": "Date",
+        "provider": "Provider",
+        "gross": "Gross",
+        "fee": "Fee",
+        "vat": "VAT on fee",
+        "net": "To the bank",
+        "lines": "Lines",
+        "unmatched": "{count} of {total} not found",
+        "status": "Status"
+      },
+      "settlement": {
+        "title": "Gateway settlement report",
+        "description": "Posted (P04) when its bank line is found: the net to the bank, the fee to expense, the VAT on the fee to input VAT with the gateway's tax invoice.",
+        "provider": "Provider",
+        "date": "Settlement date",
+        "account": "Paid into",
+        "vat": "VAT on fees (THB)",
+        "vatHint": "As on the fee tax invoice",
+        "feeInvoice": "Fee tax invoice number",
+        "rows": "Lines",
+        "rowsHint": "One line per payment: gateway reference,gross,fee",
+        "badRows": "Every line needs a reference, a gross amount and a fee",
+        "badVat": "Enter the VAT on fees as a number",
+        "import": "Import report",
+        "imported": "Imported; {net} THB to the bank, waiting for its bank line",
+        "failed": "Could not import the report"
+      },
+      "drop": "Drop a file here or choose one",
+      "browse": "Choose file",
+      "chosen": "Chosen: {name}",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not an accepted file"
+    },
+    "unidentifiedPage": {
+      "title": "Unidentified receipts",
+      "description": "Money in that no order claims yet, parked in 1140 until Finance finds the payer (P29)."
+    },
+    "unidentified": {
+      "title": "Unidentified receipts",
+      "statusesLabel": "Status",
+      "open": "Payer unknown",
+      "matched": "Identified",
+      "refunded": "Refunded",
+      "empty": "Nothing here",
+      "receivedOn": "Received",
+      "description": "Line",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions",
+      "identify": "Identify",
+      "identifyForm": {
+        "title": "Whose is {amount}?",
+        "description": "Choose the order group this money pays. It must match the instalment due; its tax invoice / receipt is issued.",
+        "search": "Find the order",
+        "searchHint": "Order or group code, customer name or phone",
+        "clear": "Clear the search",
+        "nothingDue": "Nothing due",
+        "confirmTitle": "Identify the receipt",
+        "confirmBody": "Record {amount} as a payment of {group} ({order}). Its tax invoice / receipt is issued and it leaves the clearing account.",
+        "identify": "Record",
+        "done": "Recorded as a payment of {group}",
+        "failed": "Could not record it"
+      }
+    },
+    "accountsPage": {
+      "title": "Company bank accounts",
+      "description": "Each tied to its own ledger account; only the last 4 digits are shown."
+    },
+    "accounts": {
+      "title": "Company bank accounts",
+      "description": "A new account is usable after two approvers (Finance, then Finance Manager — D-169).",
+      "propose": "Propose an account",
+      "account": "Account",
+      "purpose": "Used for",
+      "purposes": {
+        "collection": "Collections",
+        "payout": "Payouts",
+        "both": "Collections and payouts"
+      },
+      "gl": "Ledger account",
+      "format": "Payout file",
+      "status": "Status",
+      "approval": "Approval",
+      "openApproval": "Open the approval request",
+      "form": {
+        "title": "Propose a company bank account",
+        "description": "The number is stored encrypted and never shown again.",
+        "dual": "Finance and a Finance Manager (two different people) approve it before use.",
+        "bank": "Bank code",
+        "number": "Account number",
+        "name": "Account name",
+        "purpose": "Used for",
+        "gl": "Ledger account",
+        "glHint": "A bank account 112x not tied to another account",
+        "needFields": "Enter the account name and number",
+        "send": "Send request",
+        "sent": "Requested — waiting for approval"
+      }
     }
   }
 }

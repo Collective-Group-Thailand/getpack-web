@@ -481,5 +481,43 @@
   "dunning": {
     "sent": "ส่งแล้ว",
     "failed": "ส่งไม่สำเร็จ"
+  },
+  "purchaseOrder": {
+    "issued": "ส่งโรงงานแล้ว",
+    "accepted": "โรงงานรับงาน",
+    "received": "รับมอบครบ",
+    "closed": "ปิดแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "payoutRun": {
+    "draft": "ฉบับร่าง",
+    "proposed": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว",
+    "fileGenerated": "สร้างไฟล์ธนาคารแล้ว",
+    "confirmed": "จ่ายแล้ว",
+    "partiallyFailed": "จ่ายไม่สำเร็จบางรายการ",
+    "rejected": "ไม่อนุมัติ",
+    "cancelled": "ยกเลิก"
+  },
+  "vendorBill": {
+    "recorded": "รอตรวจ",
+    "validated": "ตรวจแล้ว",
+    "rejected": "ไม่รับ",
+    "void": "ยกเลิก"
+  },
+  "bankMatch": {
+    "unmatched": "ยังไม่จับคู่",
+    "matched": "จับคู่แล้ว",
+    "unidentified": "พักไว้ไม่ระบุผู้โอน",
+    "ignored": "ไม่ต้องบันทึก"
+  },
+  "settlement": {
+    "imported": "รอรายการธนาคาร",
+    "posted": "บันทึกบัญชีแล้ว"
+  },
+  "unidentifiedReceipt": {
+    "open": "รอระบุผู้โอน",
+    "matched": "ระบุแล้ว",
+    "refunded": "คืนเงินแล้ว"
   }
 }

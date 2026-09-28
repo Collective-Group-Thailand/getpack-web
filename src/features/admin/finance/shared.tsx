@@ -197,3 +197,23 @@ export function fieldErrorsOf(error: unknown): Record<string, string> {
   if (!isApiError(error)) return {};
   return Object.fromEntries(error.errors.map((item) => [item.path, item.message]));
 }
+
+/** A bank account as the API lets it out: bank code and the last four digits only (PDPA, D-093). */
+export function AccountNo({
+  bank,
+  last4,
+  gl,
+}: {
+  bank?: string | null;
+  last4: string | null | undefined;
+  gl?: string | null;
+}) {
+  const t = useTranslations("finance.common");
+  if (!last4) return <span className="text-muted">—</span>;
+  return (
+    <span className="font-mono text-sm whitespace-nowrap">
+      {bank ? t("accountWithBank", { bank, last4 }) : t("accountLast4", { last4 })}
+      {gl ? <span className="text-muted"> {t("accountGl", { gl })}</span> : null}
+    </span>
+  );
+}

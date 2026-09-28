@@ -72,6 +72,12 @@ export type {
   WhtCertificateStatus,
   CreditNoteRequestStatus,
   DunningStatus,
+  PurchaseOrderStatus,
+  PayoutRunStatus,
+  VendorBillStatus,
+  BankMatchStatus,
+  SettlementStatus,
+  UnidentifiedReceiptStatus,
 } from "./contract";
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
@@ -91,7 +97,18 @@ import {
   STATEMENT_STATUS,
 } from "./commerce";
 import { DOCUMENT_STATUS } from "./document";
-import { CREDIT_NOTE_REQUEST_STATUS, DUNNING_STATUS, RECEIVABLE_STATUS, WHT_CERTIFICATE_STATUS } from "./finance";
+import {
+  BANK_MATCH_STATUS,
+  CREDIT_NOTE_REQUEST_STATUS,
+  DUNNING_STATUS,
+  PAYOUT_RUN_STATUS,
+  PURCHASE_ORDER_STATUS,
+  RECEIVABLE_STATUS,
+  SETTLEMENT_STATUS,
+  UNIDENTIFIED_RECEIPT_STATUS,
+  VENDOR_BILL_STATUS,
+  WHT_CERTIFICATE_STATUS,
+} from "./finance";
 import {
   DESIGN_ROUND_STATUS,
   DESIGN_SERVICE_STATUS,
@@ -142,6 +159,12 @@ import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 
 export {
+  BANK_MATCH_STATUS,
+  PAYOUT_RUN_STATUS,
+  PURCHASE_ORDER_STATUS,
+  SETTLEMENT_STATUS,
+  UNIDENTIFIED_RECEIPT_STATUS,
+  VENDOR_BILL_STATUS,
   CREDIT_NOTE_REQUEST_STATUS,
   DUNNING_STATUS,
   RECEIVABLE_STATUS,
@@ -282,4 +305,10 @@ export const STATUS_MAPS = {
   whtCertificate: WHT_CERTIFICATE_STATUS,
   creditNoteRequest: CREDIT_NOTE_REQUEST_STATUS,
   dunning: DUNNING_STATUS,
+  purchaseOrder: PURCHASE_ORDER_STATUS,
+  payoutRun: PAYOUT_RUN_STATUS,
+  vendorBill: VENDOR_BILL_STATUS,
+  bankMatch: BANK_MATCH_STATUS,
+  settlement: SETTLEMENT_STATUS,
+  unidentifiedReceipt: UNIDENTIFIED_RECEIPT_STATUS,
 } as const;

@@ -42,6 +42,17 @@ export const FINANCE_NAV: readonly { group: string; items: readonly NavItem[] }[
       { key: "receivables", href: "/finance/receivables", icon: "coins", anyOf: ["receivables.read"] },
     ],
   },
+  {
+    group: "suppliers",
+    items: [
+      { key: "payables", href: "/finance/payables", icon: "factory", anyOf: ["payables.read"] },
+      { key: "payouts", href: "/finance/payouts", icon: "wallet", anyOf: ["payables.read"] },
+    ],
+  },
+  {
+    group: "banking",
+    items: [{ key: "banking", href: "/finance/banking", icon: "building", anyOf: ["banking.read"] }],
+  },
 ];
 
 /** Whether a person may open at least one desk — the finance menu entry's rule. */

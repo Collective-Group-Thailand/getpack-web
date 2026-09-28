@@ -4,6 +4,8 @@ import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { journals, movement, satangOf } from "../../../mocks/admin/finance/books";
+import { lines } from "../../../mocks/admin/finance/banking";
+import { payables } from "../../../mocks/admin/finance/payables";
 import { documents, receivables, taxedVat } from "../../../mocks/admin/finance/receivables";
 import { handlers } from "../../../mocks/handlers";
 import { accessToken } from "../../../mocks/support";
@@ -160,5 +162,108 @@ describe("the contract requests F6.1 raised", () => {
     expect(file.file.url).toMatch(/^data:image\//);
     const log = await requestsAs("finance").call("GET /v1/admin/dunning-log", { query: {} });
     expect(log.data.some((entry) => entry.kind === "overdue")).toBe(true);
+  });
+});
+
+const open = (kind: string) =>
+  payables
+    .filter((row) => row.kind === kind && ["open", "eligible", "in_run"].includes(row.dto.status))
+    .reduce(
+      (sum, row) =>
+        sum + satangOf(row.dto.openNetAmount) + (kind === "vendor_bill" ? satangOf(row.dto.openVatAmount) : 0),
+      0,
+    );
+
+describe("supplier AP (§6)", () => {
+  it("keeps the AP sub-ledger equal to its control accounts (2110, 2120, 2130)", () => {
+    expect(-movement("2110") + 0).toBe(open("balance"));
+    expect(-movement("2120") + 0).toBe(open("vendor_bill"));
+    expect(-movement("2130") + 0).toBe(open("retention_release"));
+  });
+
+  it("pays a run only after a C-Level other than the proposer approves it, then posts from the bank's confirmation", async () => {
+    const finance = staff("finance");
+    const { data: accounts } = await finance.GET("/v1/admin/company-bank-accounts", {});
+    const payout = accounts!.find((account) => account.purpose !== "collection")!;
+    // Two weeks out: the balances whose claim window will have closed by then.
+    const payOn = new Date(Date.now() + 7 * 3_600_000 + 14 * 86_400_000).toISOString().slice(0, 10);
+    const { data: run } = await finance.POST("/v1/admin/payout-runs", {
+      params: { header: key() },
+      body: { payOn, companyBankAccountId: payout.id },
+    });
+    expect(run!.status).toBe("draft");
+    expect(run!.items.some((item) => item.status === "excluded")).toBe(true); // a vendor with no verified account
+
+    const { data: proposed } = await finance.POST("/v1/admin/payout-runs/{runId}/actions/propose", {
+      params: { path: { runId: run!.id }, header: key() },
+    });
+    expect(proposed!.status).toBe("proposed");
+    // Finance cannot approve (not C-Level, and the proposer); a C-Level can.
+    await expect(
+      finance.POST("/v1/admin/approvals/{requestId}/actions/approve", {
+        params: { path: { requestId: proposed!.approvalRequestId! } },
+        body: {},
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+    await staff("c_level").POST("/v1/admin/approvals/{requestId}/actions/approve", {
+      params: { path: { requestId: proposed!.approvalRequestId! } },
+      body: { comment: "ตรวจยอดแล้ว" },
+    });
+
+    await finance.POST("/v1/admin/payout-runs/{runId}/actions/generate-bank-file", {
+      params: { path: { runId: run!.id }, header: key() },
+    });
+    const { data: file } = await finance.GET("/v1/admin/payout-runs/{runId}/bank-file", {
+      params: { path: { runId: run!.id } },
+    });
+    expect(decodeURIComponent(file!.url.split(",")[1]!)).toContain("reference,bank_code");
+
+    const included = run!.items.filter((item) => item.status === "included");
+    const { data: confirmed } = await finance.POST("/v1/admin/payout-runs/{runId}/actions/confirm", {
+      params: { path: { runId: run!.id }, header: key() },
+      body: {
+        confirmations: included.map((item, index) => ({
+          reference: item.id,
+          status: index === 0 && included.length > 1 ? ("failed" as const) : ("paid" as const),
+          bankRef: `T-${index}`,
+          reason: index === 0 && included.length > 1 ? "บัญชีปิดแล้ว" : undefined,
+        })),
+      },
+    });
+    expect(confirmed!.items.filter((item) => item.status === "paid").every((item) => item.pvNumber)).toBe(true);
+    if (included.length > 1) expect(confirmed!.status).toBe("partially_failed");
+
+    // The books still agree after the postings (P14 / P17 / P18 / bill payments).
+    expect(-movement("2110") + 0).toBe(open("balance"));
+    expect(-movement("2130") + 0).toBe(open("retention_release"));
+    const debit = journals.flatMap((j) => j.lines).reduce((sum, line) => sum + satangOf(line.debit), 0);
+    const credit = journals.flatMap((j) => j.lines).reduce((sum, line) => sum + satangOf(line.credit), 0);
+    expect(debit).toBe(credit);
+  });
+});
+
+describe("cash and bank (§6)", () => {
+  it("matches an unmatched line to what the workbench suggests, and parks unknown money as unidentified (P29)", async () => {
+    const finance = staff("finance");
+    const unmatched = lines.filter((line) => line.matchStatus === "unmatched");
+    const noReference = unmatched.find((line) => line.description.includes("ไม่มีเลขอ้างอิง"))!;
+    const suggestions = await requestsAs("finance").call("GET /v1/admin/bank-statement-lines/{lineId}/suggestions", {
+      path: { lineId: noReference.id },
+    });
+    const pick = suggestions.find((item) => item.reasons.includes("amount"))!;
+    const { data: matched } = await finance.POST("/v1/admin/bank-statement-lines/{lineId}/actions/match", {
+      params: { path: { lineId: noReference.id }, header: key() },
+      body: { targetType: pick.targetType, targetId: pick.targetId },
+    });
+    expect(matched!.matchStatus).toBe("matched");
+
+    const stranger = lines.find(
+      (line) => line.matchStatus === "unmatched" && line.description.includes("นาย ตัวอย่าง"),
+    )!;
+    const before = movement("1140");
+    await finance.POST("/v1/admin/bank-statement-lines/{lineId}/actions/mark-unidentified", {
+      params: { path: { lineId: stranger.id }, header: key() },
+    });
+    expect(movement("1140") - before).toBe(-satangOf(stranger.amount));
   });
 });

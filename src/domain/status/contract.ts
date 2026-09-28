@@ -152,8 +152,8 @@ export type PayoutStatus =
   | "posted"
   | "cancelled";
 
-/** Money owed to a factory, before it joins a run (D-022). **Source: schema** (`payable_status`). */
-export type PayableStatus = "open" | "eligible" | "in_run" | "paid" | "cancelled";
+/** Money owed to a factory, before it joins a run (D-022). **Source: contract** (B5.3). */
+export type PayableStatus = Schemas["PayableStatus"];
 
 /** A customer document — tax invoice, receipt, credit note. A voided document keeps its number (accounting-design §4). **Source: contract** (B5.2). */
 export type DocumentStatus = Schemas["CustomerDocumentStatus"];
@@ -219,16 +219,16 @@ export type QcResult = "pass" | "fail" | "conditional";
 export type JobIssueStatus = "open" | "resolved";
 
 /** A factory billing statement (D-090). **Source: schema** (`billing_statement_status`); proposed in contract request `partner.billing-statements`. */
-export type BillingStatementStatus = "generated" | "sent" | "confirmed" | "disputed" | "superseded";
+export type BillingStatementStatus = Schemas["BillingStatementStatus"];
 
 /** The factory's own tax invoice against a statement. **Proposed** in contract request `partner.billing-statements`. */
 export type VendorInvoiceStatus = "submitted" | "validated" | "rejected";
 
-/** Whether Packio can claim the input VAT of a factory bill. **Source: schema** (`input_vat_status`). */
-export type InputVatStatus = "claimable" | "pending_document" | "not_claimable";
+/** Whether Packio can claim the input VAT of a factory bill. **Source: contract** (B5.3). */
+export type InputVatStatus = Schemas["InputVatStatus"];
 
-/** One payout to a factory in a payout run. **Source: schema** (`payout_item_status`). */
-export type PayoutItemStatus = "included" | "paid" | "failed" | "excluded";
+/** One payout to a factory in a payout run. **Source: contract** (B5.3). */
+export type PayoutItemStatus = Schemas["PayoutItemStatus"];
 
 /** A person who acts for a factory. **Proposed** in contract request `partner.users`. */
 export type FactoryUserStatus = "invited" | "active" | "deactivated";
@@ -244,3 +244,21 @@ export type CreditNoteRequestStatus = Schemas["CreditNoteRequestStatus"];
 
 /** A payment reminder (D-122). **Proposed** in contract request `admin.dunning-log`. */
 export type DunningStatus = "sent" | "failed";
+
+/** A factory purchase order, one per released job (§6, D-022). **Source: contract** (B5.3). */
+export type PurchaseOrderStatus = Schemas["PoStatus"];
+
+/** A payout run as Finance works it: proposed, approved by C-Level, paid (D-022, D-166). **Source: contract** (B5.3). */
+export type PayoutRunStatus = Schemas["PayoutRunStatus"];
+
+/** A tax invoice or bill as Finance records it (§2). **Source: contract** (B5.3). */
+export type VendorBillStatus = Schemas["VendorInvoiceStatus"];
+
+/** A bank statement line and what became of it (§6). **Source: contract** (B5.3). */
+export type BankMatchStatus = Schemas["BankMatchStatus"];
+
+/** A gateway settlement, posted once it meets its bank line (P04). **Source: contract** (B5.3). */
+export type SettlementStatus = Schemas["SettlementStatus"];
+
+/** Money nobody has claimed yet, parked in 1140 (P29). **Source: contract** (B5.3). */
+export type UnidentifiedReceiptStatus = Schemas["UnidentifiedReceiptStatus"];
