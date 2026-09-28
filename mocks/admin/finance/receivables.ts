@@ -90,6 +90,9 @@ export const whtCertificates: Wht[] = [];
 export const refunds: Refund[] = [];
 export const creditRequests: CreditRequest[] = [];
 const storeCredit = new Map<string, StoreCreditEntry[]>();
+/** Every customer's store credit, satang — the sub-ledger of 2320. */
+export const storeCreditBalance = () =>
+  [...storeCredit.values()].flat().reduce((sum, entry) => sum + Math.round(Number(entry.amount) * 100), 0);
 /**
  * VAT each document adds to the tax point — what the sales tax report reads. A final TR adds only
  * what its instalments had not taxed; an IV on credit terms adds nothing until it is collected.
@@ -1104,7 +1107,7 @@ onPaymentSettled((order, payment) => {
 
 /* ---------------------------------------------------------------------------- queues */
 
-function pendingSlips(): SlipItem[] {
+export function pendingSlips(): SlipItem[] {
   syncPayments();
   return orders.flatMap((order) =>
     order.payments.flatMap((payment) =>

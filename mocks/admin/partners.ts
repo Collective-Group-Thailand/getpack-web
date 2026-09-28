@@ -929,6 +929,9 @@ export function activateIfReady(list: Schemas["BankAccountDto"][], account: Sche
   account.effectiveFrom = bangkokIso();
 }
 
+/** Proposal line ids are a plain sequence, so two lines never share one. */
+let proposalLineSeq = 0;
+
 export const partnerHandlers: HttpHandler[] = [
   http.get("*/v1/admin/factories", ({ request }) => {
     const ok = access(request, "partners.read");
@@ -1493,9 +1496,9 @@ export const partnerHandlers: HttpHandler[] = [
     if (item.status !== "draft" || item.direction !== "packio_to_factory")
       return problem(409, "price.proposal_not_editable", "แก้ไขรายการได้เฉพาะฉบับร่างของ Packio");
     const { lines } = (await request.json()) as Schemas["ReplaceProposalLinesDto"];
-    item.lines = lines.map((input, index) => ({
+    item.lines = lines.map((input) => ({
       ...line(
-        9000 + index + Math.floor(Math.random() * 900),
+        9000 + ++proposalLineSeq,
         input.component,
         input.action,
         input.action === "add" ? null : (input.values ?? null),

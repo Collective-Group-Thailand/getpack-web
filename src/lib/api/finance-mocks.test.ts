@@ -4,7 +4,14 @@ import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { assets } from "../../../mocks/admin/finance/assets";
-import { currentMonth, fiscalYears, journals, movement, satangOf } from "../../../mocks/admin/finance/books";
+import {
+  currentMonth,
+  fiscalYears,
+  journals,
+  movement,
+  previousMonth,
+  satangOf,
+} from "../../../mocks/admin/finance/books";
 import { lines } from "../../../mocks/admin/finance/banking";
 import { payables } from "../../../mocks/admin/finance/payables";
 import { documents, receivables, taxedVat } from "../../../mocks/admin/finance/receivables";
@@ -391,8 +398,19 @@ describe("tax (§6, §7 step 7)", () => {
   it("builds every paper of the month from the books with a GL difference of zero, and finalises ภ.พ.30 into VAT payable", async () => {
     const finance = staff("finance");
     const month = currentMonth();
-    for (const kind of ["sales_tax", "purchase_tax", "pp30", "pnd3", "pnd53", "wht_issued_register", "wht_received_register"] as const) {
-      const { data } = await finance.POST("/v1/admin/tax-reports", { params: { header: key() }, body: { kind, period: month } });
+    for (const kind of [
+      "sales_tax",
+      "purchase_tax",
+      "pp30",
+      "pnd3",
+      "pnd53",
+      "wht_issued_register",
+      "wht_received_register",
+    ] as const) {
+      const { data } = await finance.POST("/v1/admin/tax-reports", {
+        params: { header: key() },
+        body: { kind, period: month },
+      });
       expect(data!.glDifference, kind).toBe("0.00");
     }
     const { data: list } = await finance.GET("/v1/admin/tax-reports", { params: { query: { period: month } } });
@@ -432,7 +450,9 @@ describe("fixed assets (D-150)", () => {
   it("posts what the preview showed, once, and keeps the register equal to the GL", async () => {
     const finance = staff("finance");
     const month = currentMonth();
-    const preview = await requestsAs("finance").call("GET /v1/admin/depreciation-runs/preview", { query: { period: month } });
+    const preview = await requestsAs("finance").call("GET /v1/admin/depreciation-runs/preview", {
+      query: { period: month },
+    });
     expect(preview.assetCount).toBeGreaterThan(0);
     const { data: run } = await finance.POST("/v1/admin/depreciation-runs", {
       params: { header: key() },
@@ -451,3 +471,183 @@ describe("fixed assets (D-150)", () => {
   });
 });
 
+describe("the financial reports (§6, §1.7)", () => {
+  it("balance: Σ debit = Σ credit, assets = liabilities + equity, cash change = cash accounts, sub-ledgers = GL", async () => {
+    const auditor = staff("auditor");
+    const year = currentMonth().slice(0, 4);
+    const { data: tb } = await auditor.GET("/v1/admin/financial-reports/trial-balance", {
+      params: { query: { from: `${year}-01`, to: currentMonth() } },
+    });
+    expect(tb!.balanced).toBe(true);
+    expect(tb!.totals.debit).toBe(tb!.totals.credit);
+    const { data: bs } = await auditor.GET("/v1/admin/financial-reports/balance-sheet", {
+      params: { query: { asOf: new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10) } },
+    });
+    expect(bs!.difference).toBe("0.00");
+    expect(bs!.liabilities.some((line) => line.accountCode === "2330")).toBe(true);
+    const { data: cf } = await auditor.GET("/v1/admin/financial-reports/cash-flow", {
+      params: { query: { from: `${year}-01`, to: currentMonth() } },
+    });
+    expect(cf!.difference).toBe("0.00");
+    const { data: pl } = await auditor.GET("/v1/admin/financial-reports/profit-and-loss", {
+      params: { query: { from: `${year}-01`, to: currentMonth(), dimension: "cost_centre" } },
+    });
+    expect(pl!.lines.some((line) => line.dimension === "ADMIN")).toBe(true);
+    const recon = await requestsAs("auditor").call("GET /v1/admin/financial-reports/subledger-reconciliation", {
+      query: {},
+    });
+    for (const row of recon.rows) expect(row.difference, row.key).toBe("0.00");
+    const points = await requestsAs("auditor").call("GET /v1/admin/financial-reports/roll-forward", {
+      query: { accountCode: "2330", from: `${year}-01`, to: currentMonth() },
+    });
+    const last = points.months.at(-1)!;
+    expect(satangOf(last.closing)).toBe(-movement("2330"));
+  });
+});
+
+describe("the period close (§7, §8)", () => {
+  it("closes last month only through the checklist, never by its own submitter, and locks it against posting", async () => {
+    const finance = staff("finance");
+    const manager = staff("finance_manager");
+    const month = previousMonth();
+    const path = { period: month };
+    await expect(finance.GET("/v1/admin/close-checklists/{period}", { params: { path } })).rejects.toMatchObject({
+      status: 404,
+    });
+    await finance.POST("/v1/admin/close-checklists/{period}", { params: { path, header: key() } });
+    // The tax papers of the month, final at a difference of zero.
+    for (const kind of ["sales_tax", "purchase_tax", "pp30", "pnd3", "pnd53"] as const) {
+      const { data } = await finance.POST("/v1/admin/tax-reports", {
+        params: { header: key() },
+        body: { kind, period: month },
+      });
+      await finance.POST("/v1/admin/tax-reports/{reportId}/actions/finalise", {
+        params: { path: { reportId: data!.id }, header: key() },
+      });
+    }
+    let checklist = (await finance.GET("/v1/admin/close-checklists/{period}", { params: { path } })).data!;
+    for (const task of checklist.tasks.filter((item) => item.key !== "review")) {
+      const done = await finance
+        .POST("/v1/admin/close-checklists/{period}/tasks/{taskKey}/actions/complete", {
+          params: { path: { ...path, taskKey: task.key }, header: key() },
+          body: { note: "ตรวจแล้ว" },
+        })
+        .catch((error: { code?: string }) => error);
+      if ("code" in done && done.code === "close.check_failed")
+        await manager.POST("/v1/admin/close-checklists/{period}/tasks/{taskKey}/actions/waive", {
+          params: { path: { ...path, taskKey: task.key }, header: key() },
+          body: { reason: "รายการค้างอยู่ระหว่างตรวจสอบ มีคำอธิบายแนบ" },
+        });
+    }
+    // A closed month needs its checklist: the ledger refuses to close it directly.
+    const period = fiscalYears.flatMap((year) => year.periods).find((item) => item.startDate === `${month}-01`)!;
+    await manager.POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+      params: { path: { periodId: period.id, action: "soft-close" } },
+      body: {},
+    });
+    await expect(
+      manager.POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+        params: { path: { periodId: period.id, action: "close" } },
+        body: {},
+      }),
+    ).rejects.toMatchObject({ status: 409, code: "close.checklist_incomplete" });
+
+    // The Finance Manager who submits cannot approve (SoD); the one who approves is another person.
+    await manager.POST("/v1/admin/close-checklists/{period}/actions/submit", { params: { path, header: key() } });
+    await expect(
+      manager.POST("/v1/admin/close-checklists/{period}/actions/approve", {
+        params: { path, header: key() },
+        body: {},
+      }),
+    ).rejects.toMatchObject({ status: 409, code: "iam.sod_conflict" });
+    await manager.POST("/v1/admin/close-checklists/{period}/actions/return", {
+      params: { path, header: key() },
+      body: { reason: "ให้ฝ่ายการเงินส่งเอง" },
+    });
+    await finance.POST("/v1/admin/close-checklists/{period}/actions/submit", { params: { path, header: key() } });
+    await expect(
+      finance.POST("/v1/admin/close-checklists/{period}/actions/approve", {
+        params: { path, header: key() },
+        body: {},
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+    checklist = (
+      await manager.POST("/v1/admin/close-checklists/{period}/actions/approve", {
+        params: { path, header: key() },
+        body: { note: "ตรวจครบทุกขั้น" },
+      })
+    ).data!;
+    expect(checklist.status).toBe("closed");
+    expect(checklist.periodStatus).toBe("closed");
+    checklist = (
+      await manager.POST("/v1/admin/close-checklists/{period}/actions/lock", { params: { path, header: key() } })
+    ).data!;
+    expect(checklist.periodStatus).toBe("locked");
+
+    // A journal dated in the locked month posts into the next open one, its document date kept.
+    const { data: draft } = await finance.POST("/v1/admin/ledger/journals", {
+      body: {
+        documentDate: `${month}-25`,
+        description: "ค่าใช้จ่ายค้างจ่ายที่พบหลังปิดงวด (ทดสอบ)",
+        lines: [
+          { accountCode: "6900", side: "debit", amount: "300.00", dimensions: { costCentre: "ADMIN" } },
+          { accountCode: "2410", side: "credit", amount: "300.00" },
+        ],
+      },
+    });
+    const { data: submitted } = await finance.POST("/v1/admin/ledger/journals/{journalId}/actions/submit", {
+      params: { path: { journalId: draft!.id }, header: key() },
+    });
+    await manager.POST("/v1/admin/approvals/{requestId}/actions/approve", {
+      params: { path: { requestId: submitted!.approvalRequestId! } },
+      body: {},
+    });
+    const { data: late } = await finance.GET("/v1/admin/ledger/journals/{journalId}", {
+      params: { path: { journalId: draft!.id } },
+    });
+    expect(late!.documentDate).toBe(`${month}-25`);
+    expect(late!.entryDate.slice(0, 7)).toBe(currentMonth());
+    await expect(
+      finance.POST("/v1/admin/depreciation-runs", { params: { header: key() }, body: { period: month } }),
+    ).rejects.toMatchObject({ status: 409 });
+  }, 20_000);
+});
+
+describe("audit support (§8)", () => {
+  it("draws a sample the same way from the same seed, lists the exceptions and hands out a hashed PBC pack", async () => {
+    const auditor = staff("auditor");
+    const body = {
+      period: currentMonth(),
+      population: "customer_documents" as const,
+      method: "stratified" as const,
+      size: 5,
+      seed: "4242",
+    };
+    const { data: first } = await auditor.POST("/v1/admin/audit/samples", { params: { header: key() }, body });
+    const { data: again } = await auditor.POST("/v1/admin/audit/samples", { params: { header: key() }, body });
+    expect(first!.selected.length).toBe(5);
+    expect(again!.selected.map((item) => item.id)).toEqual(first!.selected.map((item) => item.id));
+    const { data: exceptions } = await auditor.GET("/v1/admin/audit/exceptions", {
+      params: { query: { period: currentMonth() } },
+    });
+    expect(exceptions!.map((item) => item.key)).toContain("payouts_without_valid_tax_invoice");
+    expect(exceptions!).toHaveLength(9);
+    const { data: pack } = await auditor.POST("/v1/admin/audit/pbc-exports", {
+      params: { header: key() },
+      body: { period: currentMonth() },
+    });
+    expect(pack!.sha256).toMatch(/^[0-9a-f]{64}$/);
+    const { data: file } = await auditor.GET("/v1/admin/audit/pbc-exports/{exportId}/file", {
+      params: { path: { exportId: pack!.id } },
+    });
+    const text = decodeURIComponent(file!.url.split(",")[1]!);
+    expect(text).toContain("## TrialBalance");
+    expect(text).toContain("## Exceptions");
+    // The auditor reads; it never posts.
+    await expect(
+      auditor.POST("/v1/admin/ledger/journals", {
+        body: { documentDate: `${currentMonth()}-01`, description: "x", lines: [] },
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+});
