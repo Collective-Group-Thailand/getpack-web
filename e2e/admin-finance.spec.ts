@@ -14,9 +14,14 @@ import { gotoHydrated, signInAsStaff } from "./helpers/session";
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function expectAxeClean(page: Page) {
-  // After a client-side navigation the page's <title> streams in with its metadata.
+  // After a client-side navigation the page's <title> streams in with its metadata, and an
+  // overlay that has just opened is still fading the page behind it: measure the settled page.
   await expect(page).toHaveTitle(/\S/);
-  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).analyze();
+  // A list refetching on load is dimmed until its data arrives.
+  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.waitForFunction(() => document.getAnimations().every((animation) => animation.playState !== "running"));
+  // A toast is measured mid fade-in (its opacity animates); the toast itself has its own axe story.
+  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_AA).exclude("[data-sonner-toaster]").analyze();
   const report = violations.map(
     (v) => `${v.id} (${v.impact}): ${v.help}\n    ${v.nodes.map((n) => n.target.join(" ")).join("\n    ")}`,
   );
