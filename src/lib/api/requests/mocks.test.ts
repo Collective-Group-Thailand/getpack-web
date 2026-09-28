@@ -51,6 +51,7 @@ const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/analytics/campaigns": { range: "30d" },
   "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
   "GET /v1/partner/factories/{factoryId}/jobs/lookup": { code: "J-2569-00300" },
+  "GET /v1/admin/depreciation-runs/preview": { period: new Date().toISOString().slice(0, 7) },
 };
 
 /** The partner zone's own factory: every partner read is under `/factories/{factoryId}`. */

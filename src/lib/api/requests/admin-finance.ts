@@ -20,6 +20,8 @@
  *   customer paying two order groups in one transfer); `ManualMatchDto` takes one target.
  * - `admin.gateway-settlements` (F6.2) — settlements can be imported but not listed, so an
  *   imported one waiting for its bank line cannot be found.
+ * - `admin.depreciation-preview` (F6.3) — `POST /v1/admin/depreciation-runs` posts the month's
+ *   FA02 at once; F6.3 asks for "monthly depreciation preview → post" (D-150).
  */
 
 import { z } from "zod";
@@ -125,6 +127,29 @@ export const settlementSummary = z
   })
   .meta({ id: "GatewaySettlementSummaryDto" });
 
+export const depreciationPreview = z
+  .object({
+    period: z.string(),
+    periodStatus: z.enum(["open", "soft_closed", "closed", "locked"]),
+    /** The month's run exists already (one per month). */
+    alreadyRun: z.boolean(),
+    assetCount: z.number().int(),
+    totalAmount: money(),
+    lines: z.array(
+      z.object({
+        assetId: uuid(),
+        assetNo: z.string(),
+        name: z.string(),
+        categoryCode: z.string(),
+        amount: money(),
+        accumulatedAfter: money(),
+        netBookValueAfter: money(),
+        fullyDepreciated: z.boolean(),
+      }),
+    ),
+  })
+  .meta({ id: "DepreciationPreviewDto" });
+
 export const adminFinanceRequests = {
   "GET /v1/admin/slips/{slipId}/file": request({
     request: "admin.slip-file",
@@ -194,6 +219,13 @@ export const adminFinanceRequests = {
       provider: z.enum(["scb", "twoc2p"]).optional(),
     }),
     response: page(settlementSummary),
+  }),
+  "GET /v1/admin/depreciation-runs/preview": request({
+    request: "admin.depreciation-preview",
+    summary: "What the month's depreciation run would post, per asset, without posting it (D-150)",
+    decisions: ["D-150"],
+    query: z.object({ period: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) }),
+    response: depreciationPreview,
   }),
   "GET /v1/admin/credit-note-reasons": request({
     request: "admin.credit-note-reasons",

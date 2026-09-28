@@ -377,5 +377,102 @@
     "value": 3,
     "description": "D-160 minimum factories per breakdown in anonymised exports and the partner prospectus",
     "decisions": ["D-160", "D-044"]
+  },
+  {
+    "key": "tax.nature_by_product_type",
+    "valueType": "json",
+    "value": {
+      "default": "hire_of_work",
+      "overrides": {
+        "standard_product": "sale_of_goods"
+      }
+    },
+    "description": "D-033 nature of the sale per product type code (⚖): hire of work for made-to-order packaging, sale of goods for standard products; snapshotted on every order",
+    "decisions": ["D-033"],
+    "confirmation": "pending_cpa",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "tax.rounding_mode",
+    "valueType": "enum",
+    "value": "line",
+    "description": "D-033 VAT and WHT rounding per line or per document (⚖); a document-level difference is an explicit rounding amount",
+    "decisions": ["D-033"],
+    "confirmation": "pending_cpa",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "tax.calendar",
+    "valueType": "json",
+    "value": {
+      "pp30": {
+        "dayOfNextMonth": 15
+      },
+      "pnd3": {
+        "dayOfNextMonth": 7
+      },
+      "pnd53": {
+        "dayOfNextMonth": 7
+      },
+      "reminderDaysBefore": 3
+    },
+    "description": "D-033 tax calendar: filing due day of the following month per form (paper-filing days; e-filing extensions are a Finance choice) and the reminder lead time",
+    "decisions": ["D-033"],
+    "confirmation": "proposed",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "tax.gl_accounts",
+    "valueType": "json",
+    "value": {
+      "output_vat": ["2210"],
+      "input_vat": ["1241"],
+      "wht_pnd3": ["2232"],
+      "wht_pnd53": ["2231"],
+      "wht_receivable": ["1230"]
+    },
+    "description": "D-033 GL control accounts each tax report and working paper reconciles to (the difference must be 0); follows the chart of accounts",
+    "decisions": ["D-033"],
+    "confirmation": "proposed",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "documents.retention_years",
+    "valueType": "integer",
+    "value": 10,
+    "description": "D-033 record retention of documents and ledgers (at least 10 years, above the 5-year statutory minimum)",
+    "decisions": ["D-033"],
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "fixed_assets.depreciation_start",
+    "valueType": "enum",
+    "value": "acquisition_month",
+    "description": "D-150 first month of straight-line depreciation: the month the asset is acquired (full month) or the month after (⚖ pro-rata by days is not used)",
+    "decisions": ["D-150"],
+    "confirmation": "pending_cpa",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "close.unmatched_items_threshold",
+    "valueType": "integer",
+    "value": 0,
+    "description": "D-033 unmatched bank / gateway items allowed at close before each must be explained (proposed: none)",
+    "decisions": ["D-033"],
+    "confirmation": "proposed",
+    "ownerRole": "finance_manager"
+  },
+  {
+    "key": "audit.business_hours",
+    "valueType": "json",
+    "value": {
+      "start": "08:00",
+      "end": "18:00",
+      "weekdays": [1, 2, 3, 4, 5]
+    },
+    "description": "D-033 exception report: manual journals posted outside these hours (Asia/Bangkok, ISO weekdays) are listed for the auditor",
+    "decisions": ["D-033"],
+    "confirmation": "proposed",
+    "ownerRole": "finance_manager"
   }
 ]

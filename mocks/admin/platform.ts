@@ -445,7 +445,7 @@ const settings: Setting[] = settingSeeds.map((seed, index) => {
     decisionRefs: seed.decisions ?? decisionsOf(seed.description),
     confirmationStatus: ((seed as { confirmation?: string }).confirmation ??
       "confirmed") as Schemas["SettingConfirmation"],
-    ownerRole: "superadmin",
+    ownerRole: (seed as { ownerRole?: string }).ownerRole ?? "superadmin",
     approvalPolicy: null,
     sensitive,
     masked: false,
