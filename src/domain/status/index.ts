@@ -68,6 +68,10 @@ export type {
   InputVatStatus,
   PayoutItemStatus,
   FactoryUserStatus,
+  ReceivableStatus,
+  WhtCertificateStatus,
+  CreditNoteRequestStatus,
+  DunningStatus,
 } from "./contract";
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
@@ -87,6 +91,7 @@ import {
   STATEMENT_STATUS,
 } from "./commerce";
 import { DOCUMENT_STATUS } from "./document";
+import { CREDIT_NOTE_REQUEST_STATUS, DUNNING_STATUS, RECEIVABLE_STATUS, WHT_CERTIFICATE_STATUS } from "./finance";
 import {
   DESIGN_ROUND_STATUS,
   DESIGN_SERVICE_STATUS,
@@ -137,6 +142,10 @@ import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
 
 export {
+  CREDIT_NOTE_REQUEST_STATUS,
+  DUNNING_STATUS,
+  RECEIVABLE_STATUS,
+  WHT_CERTIFICATE_STATUS,
   FACTORY_USER_STATUS,
   PAYOUT_ITEM_STATUS,
   INPUT_VAT_STATUS,
@@ -269,4 +278,8 @@ export const STATUS_MAPS = {
   inputVat: INPUT_VAT_STATUS,
   payoutItem: PAYOUT_ITEM_STATUS,
   factoryUser: FACTORY_USER_STATUS,
+  receivable: RECEIVABLE_STATUS,
+  whtCertificate: WHT_CERTIFICATE_STATUS,
+  creditNoteRequest: CREDIT_NOTE_REQUEST_STATUS,
+  dunning: DUNNING_STATUS,
 } as const;
