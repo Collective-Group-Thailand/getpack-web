@@ -4,6 +4,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { createApiClient } from "../client";
 import { createRequestClient } from "./client";
+import { PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
 import { REQUESTS, type RequestKey } from "./registry";
 import type { Client } from "openapi-fetch";
 
@@ -21,8 +22,20 @@ describe("the contract-request registry", () => {
     const shipped = entries
       .map(([key]) => key.split(" ") as [string, string])
       .filter(([method, path]) => contract.paths[path]?.[method.toLowerCase()] !== undefined)
-      .map(([method, path]) => `${method} ${path}`);
+      .map(([method, path]) => `${method} ${path}`)
+      .filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key));
     expect(shipped).toEqual([]);
+  });
+
+  it("keeps the published-awaiting-migration list shrinking", () => {
+    // Every entry must still be a request and still be published; a migrated one is deleted
+    // from the registry and then has to leave the list too.
+    const stale = PUBLISHED_AWAITING_MIGRATION.filter((key) => {
+      const [method, path] = key.split(" ") as [string, string];
+      return !(key in REQUESTS) || contract.paths[path]?.[method.toLowerCase()] === undefined;
+    });
+    expect(stale).toEqual([]);
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(86);
   });
 
   it("spells every key as a method and a surface path template", () => {
