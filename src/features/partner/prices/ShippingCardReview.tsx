@@ -12,6 +12,7 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { browserApi } from "@/lib/api/browser";
 import type { Schemas } from "@/lib/api/types";
+import { moneyText } from "@/domain/money";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { Field } from "@/ui/components/Field";
@@ -20,14 +21,6 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
 type Rate = Schemas["FactoryRateDto"];
-
-/** `"45"` or `"45.5"` → `"45.50"`: a money string with two decimals, by text, never by float. */
-export function moneyText(value: string): string | null {
-  const text = value.trim().replace(/,/g, "");
-  if (!/^\d+(\.\d{1,2})?$/.test(text)) return null;
-  const [whole, fraction = ""] = text.split(".");
-  return `${whole}.${fraction.padEnd(2, "0")}`;
-}
 
 /**
  * What Packio pays the factory for delivering with its own fleet (D-013), sent for acceptance

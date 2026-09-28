@@ -459,5 +459,27 @@
     "invited": "รอตอบรับคำเชิญ",
     "active": "ใช้งาน",
     "deactivated": "ปิดการใช้งาน"
+  },
+  "receivable": {
+    "open": "ค้างชำระ",
+    "partiallyPaid": "ชำระบางส่วน",
+    "paid": "ชำระครบแล้ว",
+    "writtenOff": "ตัดเป็นหนี้สูญ",
+    "cancelled": "ยกเลิก"
+  },
+  "whtCertificate": {
+    "pending": "รอหนังสือรับรอง",
+    "received": "ได้รับแล้ว",
+    "waived": "เลิกติดตาม"
+  },
+  "creditNoteRequest": {
+    "pendingApproval": "รออนุมัติ",
+    "issued": "ออกใบลดหนี้แล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "withdrawn": "ถอนคำขอ"
+  },
+  "dunning": {
+    "sent": "ส่งแล้ว",
+    "failed": "ส่งไม่สำเร็จ"
   }
 }
