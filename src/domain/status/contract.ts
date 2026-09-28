@@ -262,3 +262,21 @@ export type SettlementStatus = Schemas["SettlementStatus"];
 
 /** Money nobody has claimed yet, parked in 1140 (P29). **Source: contract** (B5.3). */
 export type UnidentifiedReceiptStatus = Schemas["UnidentifiedReceiptStatus"];
+
+/** A journal entry: drafted, checked by another person, posted (§1, §8). **Source: contract** (B5.1). */
+export type JournalStatus = Schemas["JournalStatus"];
+
+/** A fiscal period: `open ⇄ soft_closed → closed → locked` (§1.4). **Source: contract** (B5.1). */
+export type PeriodStatus = Schemas["PeriodStatus"];
+
+/** A recurring journal definition, approved once and posted monthly (§8). **Source: contract** (B5.1). */
+export type RecurringJournalStatus = Schemas["RecurringJournalStatus"];
+
+/** A tax report or working paper: final only at a GL difference of 0 (§7 step 7). **Source: contract** (B5.4). */
+export type TaxReportStatus = Schemas["TaxReportStatus"];
+
+/** A return on the tax calendar: open until it is filed (§6). **Source: contract** (B5.4). */
+export type TaxCalendarStatus = Schemas["TaxCalendarStatus"];
+
+/** A fixed asset in the register (D-150). **Source: contract** (B5.5). */
+export type AssetStatus = Schemas["AssetStatus"];

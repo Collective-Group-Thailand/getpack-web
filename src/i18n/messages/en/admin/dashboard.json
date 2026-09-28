@@ -100,6 +100,7 @@
     "tax_setting_change": "Tax setting change",
     "document_series_change": "Document series change",
     "company_order_approval": "Company order approval",
-    "referral_review": "Referral review"
+    "referral_review": "Referral review",
+    "recurring_journal": "Recurring journal"
   }
 }

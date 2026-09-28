@@ -4,31 +4,29 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
+import { JOURNAL_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { PageHeader } from "@/ui/components/PageHeader";
 
+import { useActor, useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
 import { Section } from "../console/FormDialog";
 import { QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
 import type { InitialPage } from "../console/resource";
+import { StatusChip } from "../console/StatusChip";
+import { JournalActions } from "./ledger";
 import { JOURNAL_KINDS, JOURNAL_STATUSES, journalsList } from "./resources";
 import { journalHref, sourceHref, StaffName, type Journal } from "./shared";
 
 type Line = Journal["lines"][number];
-
-const JOURNAL_TONE: Record<Journal["status"], "success" | "warning" | "neutral" | "danger"> = {
-  posted: "success",
-  pending_approval: "warning",
-  draft: "neutral",
-  rejected: "danger",
-};
 
 /**
  * One journal entry (accounting-design §1): immutable once posted, balanced, and carrying where it
@@ -38,6 +36,7 @@ const JOURNAL_TONE: Record<Journal["status"], "success" | "warning" | "neutral" 
 export function JournalDetail({ journalId }: { journalId: string }) {
   const t = useTranslations("finance.journals");
   const format = useFormat();
+  const actor = useActor();
   const query = useQuery({
     queryKey: queryKeys.detail("admin", "journal", journalId),
     queryFn: async () =>
@@ -129,12 +128,34 @@ export function JournalDetail({ journalId }: { journalId: string }) {
         title={t("title", { number: journal.entryNo ?? journal.jvNumber ?? t("draft") })}
         meta={
           <>
-            <Badge tone={JOURNAL_TONE[journal.status]}>{t(`statuses.${journal.status}`)}</Badge>
+            <StatusChip map={JOURNAL_STATUS} value={journal.status} size="md" />
             <span className="text-muted text-sm">{t(`kinds.${journal.kind}`)}</span>
           </>
         }
         description={journal.description}
+        actions={<JournalActions journal={journal} isMaker={journal.createdBy === actor.id} />}
       />
+
+      {journal.status === "pending_approval" ? (
+        <Callout tone="warning" title={t("waitingTitle")}>
+          {journal.createdBy === actor.id ? t("waitingMaker") : t("waitingBody")}{" "}
+          {journal.approvalRequestId ? (
+            <Link href={`/approvals/${journal.approvalRequestId}`} className="text-primary hover:underline">
+              {t("openApproval")}
+            </Link>
+          ) : null}
+        </Callout>
+      ) : null}
+      {journal.status === "rejected" ? (
+        <Callout tone="danger" title={t("rejectedTitle")}>
+          {journal.rejectionReason ?? t("rejectedBody")}
+        </Callout>
+      ) : null}
+      {journal.autoReverseOn && journal.status !== "rejected" ? (
+        <Callout tone="info" title={t("autoReverseTitle")}>
+          {t("autoReverseBody", { date: format.date(journal.autoReverseOn) })}
+        </Callout>
+      ) : null}
 
       {journal.reversedById ? (
         <Callout tone="warning" title={t("reversedTitle")}>
@@ -236,11 +257,12 @@ export function JournalDetail({ journalId }: { journalId: string }) {
 
 /**
  * Journals (accounting-design §1), filtered by account, kind, status or date through the URL —
- * where an account on a report or a line on a document lands. Manual entry is F6.3's.
+ * where an account on a report or a line on a document lands, and where a manual entry starts.
  */
 export function JournalsList({ initial }: { initial: InitialPage<Journal> | null }) {
   const t = useTranslations("finance.journals");
   const format = useFormat();
+  const canManage = useCan("ledger.journals.manage");
   const columns: DataTableColumn<Journal>[] = [
     {
       id: "entryNo",
@@ -282,7 +304,7 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
     {
       id: "status",
       header: t("status"),
-      cell: (row) => <Badge tone={JOURNAL_TONE[row.status]}>{t(`statuses.${row.status}`)}</Badge>,
+      cell: (row) => <StatusChip map={JOURNAL_STATUS} value={row.status} />,
     },
     { id: "totalDebit", header: t("amount"), numeric: true, cell: (row) => format.thb(row.totalDebit) },
   ];
@@ -294,6 +316,13 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
       initial={initial}
       searchLabel={t("search")}
       exportable
+      toolbarEnd={
+        canManage ? (
+          <Button asChild size="sm" iconStart="plus">
+            <Link href="/finance/ledger/journals/new">{t("newManual")}</Link>
+          </Button>
+        ) : null
+      }
       filters={[
         { id: "accountCode", label: t("account"), kind: "text", placeholder: "1210" },
         {

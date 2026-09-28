@@ -20,6 +20,7 @@ export const POLICY_ICONS: Record<string, IconName> = {
   vendor_bank_account_change: "building",
   company_bank_account_change: "building",
   manual_journal: "document",
+  recurring_journal: "calendar",
   credit_note: "receipt",
   refund: "reset",
   write_off: "trash",
@@ -58,6 +59,19 @@ export const PAYLOAD_KINDS: Record<string, "money" | "percent" | "number" | "tex
   vendorName: "text",
   bank: "text",
   reason: "text",
+  totalDebit: "money",
+  description: "text",
+  documentDate: "text",
+  reverses: "code",
+  rule: "code",
+  versionNo: "number",
+  effectiveFrom: "text",
+  accountCode: "code",
+  kind: "text",
+  dayOfMonth: "number",
+  name: "text",
+  ratePct: "percent",
+  code: "code",
 };
 
 /** Flags the engine sets that the decider must not miss, in the order they matter. */

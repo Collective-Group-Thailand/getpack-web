@@ -90,7 +90,8 @@
     "tax_setting_change": "Tax setting change",
     "document_series_change": "Document series change",
     "company_order_approval": "Company order approval",
-    "referral_review": "Referral review"
+    "referral_review": "Referral review",
+    "recurring_journal": "Recurring journal"
   },
   "fields": {
     "quoteCode": "Quotation",
@@ -114,7 +115,20 @@
     "maxDeviationPct": "Largest deviation from suggestion",
     "vendorName": "Vendor",
     "bank": "Bank",
-    "accountLast4": "Account (last 4)"
+    "accountLast4": "Account (last 4)",
+    "totalDebit": "Amount (each side)",
+    "description": "Description",
+    "documentDate": "Document date",
+    "reverses": "Reverses entry",
+    "rule": "Posting rule",
+    "versionNo": "Version",
+    "effectiveFrom": "Effective from",
+    "accountCode": "Account",
+    "kind": "Change",
+    "dayOfMonth": "Day of month",
+    "name": "Name",
+    "ratePct": "Rate",
+    "code": "Code"
   },
   "delegations": {
     "title": "Delegations",
