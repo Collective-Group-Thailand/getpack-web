@@ -47,6 +47,46 @@ const P = {
   zonesManage: "zones.manage",
   bankVerify: "vendor_bank_accounts.verify",
   indexSeries: "index_series.manage",
+  // docs/rbac.md (B5.1–B5.6) — the finance workspace (F6)
+  documentSeriesRead: "document_series.read",
+  documentSeriesManage: "document_series.manage",
+  paymentsRead: "payments.read",
+  slipsVerify: "payments.verify_slip",
+  paymentsAllocate: "payments.allocate",
+  refundsRequest: "refunds.request",
+  refundsComplete: "refunds.complete",
+  ledgerRead: "ledger.read",
+  journalsManage: "ledger.journals.manage",
+  periodsManage: "ledger.periods.manage",
+  postSoftClosed: "ledger.post_soft_closed",
+  ledgerConfig: "ledger.config.propose",
+  receivablesRead: "receivables.read",
+  receivablesManage: "receivables.manage",
+  creditNotesRequest: "credit_notes.request",
+  writeOffRequest: "receivables.write_off.request",
+  debitNotesIssue: "receivables.debit_notes.issue",
+  payablesRead: "payables.read",
+  payablesManage: "payables.manage",
+  vendorsManage: "payables.vendors.manage",
+  billsRecord: "payables.bills.record",
+  payoutsManage: "payouts.manage",
+  payoutsExecute: "payouts.execute",
+  bankingRead: "banking.read",
+  bankingManage: "banking.manage",
+  bankAccountsPropose: "banking.accounts.propose",
+  taxRead: "tax.read",
+  taxManage: "tax.manage",
+  taxPay: "tax.pay",
+  assetsRead: "fixed_assets.read",
+  assetsManage: "fixed_assets.manage",
+  assetsDispose: "fixed_assets.dispose",
+  closeRead: "close.read",
+  closeManage: "close.manage",
+  closeApprove: "close.approve",
+  auditSupportRead: "audit_support.read",
+  auditSample: "audit_support.sample",
+  auditPbc: "audit_support.export",
+  auditSignOff: "close.audit_sign_off",
   // proposed for F2 (admin.permissions)
   ordersRead: "orders.read",
   ordersManage: "orders.manage",
@@ -87,7 +127,12 @@ type Permission = (typeof P)[keyof typeof P];
  * The menu the mock API builds: an entry appears when the persona holds its permission. Paths
  * are host-absolute (`/admin/...`), as the contract's own `MenuEntryDto` example spells them.
  */
-export const MENU_CATALOGUE: readonly { key: string; path: string; permission: Permission | null }[] = [
+export const MENU_CATALOGUE: readonly {
+  key: string;
+  path: string;
+  /** One permission, or any of several (the finance workspace opens for each of its desks). */
+  permission: Permission | readonly Permission[] | null;
+}[] = [
   // packio-api src/modules/iam/menu.catalog.ts (B1.3), verbatim.
   { key: "dashboard", path: "/admin", permission: null },
   { key: "approvals", path: "/admin/approvals", permission: P.approvalsRead },
@@ -116,6 +161,12 @@ export const MENU_CATALOGUE: readonly { key: string; path: string; permission: P
   { key: "discount_memos", path: "/admin/discount-memos", permission: P.memosRead },
   { key: "analytics", path: "/admin/analytics", permission: P.analyticsRead },
   { key: "reports", path: "/admin/reports", permission: P.reportsRead },
+  // Proposed for F6 (admin.menu-entries): the finance workspace, for whoever works one of its desks.
+  {
+    key: "finance",
+    path: "/admin/finance",
+    permission: [P.slipsVerify, P.receivablesManage, P.ledgerRead, P.payablesRead, P.bankingRead, P.taxRead],
+  },
 ];
 
 export interface StaffPersona {
@@ -149,6 +200,42 @@ function persona(
 // `catalog.read` is not here: packio-api B2.1 grants it to superadmin, admin, cs, cs_lead, prepress,
 // marketing and partner_manager only (docs/rbac.md).
 const commercialRead: Permission[] = [P.ordersRead, P.rfqRead, P.customersRead, P.companiesRead];
+/** What C-Level reads of the books (docs/rbac.md, B5): everything, changing nothing. */
+const booksRead: Permission[] = [
+  P.paymentsRead,
+  P.ledgerRead,
+  P.receivablesRead,
+  P.payablesRead,
+  P.bankingRead,
+  P.taxRead,
+  P.assetsRead,
+  P.closeRead,
+  P.auditSupportRead,
+];
+/** Finance's desk (docs/rbac.md, B5): the day-to-day work, never the approvals it would check. */
+const financeDesk: Permission[] = [
+  ...booksRead,
+  P.documentSeriesRead,
+  P.slipsVerify,
+  P.paymentsAllocate,
+  P.refundsRequest,
+  P.refundsComplete,
+  P.journalsManage,
+  P.ledgerConfig,
+  P.receivablesManage,
+  P.creditNotesRequest,
+  P.writeOffRequest,
+  P.payablesManage,
+  P.vendorsManage,
+  P.billsRecord,
+  P.payoutsManage,
+  P.payoutsExecute,
+  P.bankingManage,
+  P.bankAccountsPropose,
+  P.taxManage,
+  P.assetsManage,
+  P.closeManage,
+];
 const executive: Permission[] = [
   ...commercialRead,
   P.approvalsAct,
@@ -173,14 +260,14 @@ export const PERSONAS: readonly StaffPersona[] = [
     2,
     "ผู้บริหาร ตัวอย่าง (ข้อมูลจำลอง)",
     ["c_level"],
-    [...executive, P.settingsReadSensitive, P.suggestionsRead, P.prospectus],
+    [...executive, ...booksRead, P.settingsReadSensitive, P.suggestionsRead, P.prospectus],
   ),
   persona(
     "vp",
     3,
     "รองประธาน ตัวอย่าง (ข้อมูลจำลอง)",
     ["vp"],
-    executive.filter((p) => p !== P.auditRead),
+    [...executive.filter((p) => p !== P.auditRead), P.ledgerRead],
   ),
   persona(
     "director",
@@ -207,6 +294,8 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.seoManage,
       P.geographyManage,
       P.partnersRead,
+      P.paymentsRead,
+      P.documentSeriesRead,
     ],
   ),
   persona(
@@ -230,6 +319,8 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.shipmentsRead,
       P.claimsRead,
       P.marginWhenDiscounting,
+      P.paymentsRead,
+      P.receivablesRead,
     ],
   ),
   persona(
@@ -256,6 +347,10 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.claimsOverride,
       P.marginWhenDiscounting,
       P.reportsRead,
+      P.paymentsRead,
+      P.receivablesRead,
+      P.refundsRequest,
+      P.creditNotesRequest,
     ],
   ),
   persona(
@@ -284,6 +379,7 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.memosRead,
       P.partnersRead,
       P.bankVerify,
+      ...financeDesk,
     ],
   ),
   persona(
@@ -306,6 +402,15 @@ export const PERSONAS: readonly StaffPersona[] = [
       P.reportsRead,
       P.memosRead,
       P.partnersRead,
+      ...financeDesk,
+      P.documentSeriesManage,
+      P.periodsManage,
+      P.postSoftClosed,
+      P.debitNotesIssue,
+      P.taxPay,
+      P.assetsDispose,
+      P.closeApprove,
+      P.auditPbc,
     ],
   ),
   persona(
@@ -363,7 +468,19 @@ export const PERSONAS: readonly StaffPersona[] = [
     14,
     "ผู้ตรวจสอบบัญชี ตัวอย่าง (ข้อมูลจำลอง)",
     ["auditor"],
-    [P.settingsRead, P.usersRead, P.auditRead, P.auditExport, P.reportsRead, P.partnersRead],
+    [
+      P.settingsRead,
+      P.usersRead,
+      P.auditRead,
+      P.auditExport,
+      P.reportsRead,
+      P.partnersRead,
+      ...booksRead,
+      P.documentSeriesRead,
+      P.auditSample,
+      P.auditPbc,
+      P.auditSignOff,
+    ],
   ),
 ];
 
@@ -379,9 +496,14 @@ export function personaByKey(key: string | undefined): StaffPersona | undefined 
 }
 
 export function menuFor(persona: StaffPersona): { key: string; path: string }[] {
-  return MENU_CATALOGUE.filter(
-    (entry) => entry.permission === null || persona.permissions.includes(entry.permission),
-  ).map(({ key, path }) => ({ key, path }));
+  return MENU_CATALOGUE.filter((entry) => entitled(persona, entry)).map(({ key, path }) => ({ key, path }));
+}
+
+/** Whether a menu entry is this persona's: no permission, the one it names, or any of several. */
+export function entitled(persona: StaffPersona, entry: (typeof MENU_CATALOGUE)[number]): boolean {
+  if (entry.permission === null) return true;
+  const needed: readonly Permission[] = typeof entry.permission === "string" ? [entry.permission] : entry.permission;
+  return needed.some((permission) => persona.permissions.includes(permission));
 }
 
 export function can(persona: StaffPersona | undefined, permission: string): boolean {

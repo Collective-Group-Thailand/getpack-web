@@ -15,7 +15,7 @@ import type { customerDetail, customerSummary } from "@/lib/api/requests/admin-c
 import type { orderDetail, orderNote, orderSummary, timelineEntry } from "@/lib/api/requests/admin-orders";
 
 import { staffPersonaOf } from "../auth";
-import { PERSONAS } from "../personas";
+import { PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
 import { productTypeRef } from "./catalog";
@@ -256,7 +256,8 @@ function buildOrder(seed: Seed, index: number): Order {
             thumbnailUrl: null,
             url: null,
           },
-          declaredAmount: firstDue.grossAmount,
+          // A slip whose amount check failed shows a different amount (D-061): short by ฿500.
+          declaredAmount: index % 2 === 0 ? firstDue.grossAmount : baht(satang(firstDue.grossAmount) - 50_000),
           declaredTransferredAt: bangkokIso(-50),
           verificationStatus: "manual_review",
           checks: { receiverMatched: true, amountMatched: index % 2 === 0, dateMatched: true, duplicate: false },
@@ -862,6 +863,66 @@ function forActor(order: Order, persona: ReturnType<typeof staffPersonaOf>): Ord
   };
 }
 
+/* ------------------------------------------------------------------------------- slips */
+
+type Payment = Order["payments"][number];
+type PaymentSettled = (
+  order: Order,
+  payment: Payment,
+  via: { slipId: string | null; bankTransRef: string | null },
+) => void;
+const settledHandlers: PaymentSettled[] = [];
+
+/** Slips CS uploaded for a customer, by who uploaded them: the uploader cannot review it (D-061). */
+export const slipUploadedBy = new Map<string, string>();
+
+/** What the books do when a payment succeeds — the backend's `payment.succeeded` (ledger P01 / P02). */
+export function onPaymentSettled(handler: PaymentSettled): void {
+  settledHandlers.push(handler);
+}
+
+/**
+ * Finance's decision on a slip that failed the automatic check (D-061), whichever screen it is
+ * made from — the order's actions or the finance slip queue. Approval pays the instalment, moves
+ * the order on and tells the books; rejection leaves the payment waiting for another slip.
+ */
+export function decideSlip(
+  order: Order,
+  slipId: string,
+  persona: StaffPersona,
+  decision: { approve: boolean; note: string | null; bankTransRef?: string | null; receivedAmount?: string | null },
+): Response | { order: Order; payment: Payment } {
+  const payment = order.payments.find((candidate) => candidate.slips.some((s) => s.id === slipId));
+  const slip = payment?.slips.find((s) => s.id === slipId);
+  if (!payment || !slip) return problem(404, "http.not_found", "ไม่พบสลิปนี้");
+  if (slip.verificationStatus !== "manual_review")
+    return problem(409, "payments.slip_not_in_review", "สลิปนี้ไม่ได้รอการตรวจแล้ว");
+  const reviewer = { id: persona.id, displayName: persona.displayName };
+  if (!decision.approve) {
+    Object.assign(slip, { verificationStatus: "manual_rejected", reviewedBy: reviewer, reviewNote: decision.note });
+    order.hasSlipToReview = false;
+    logEvent(order, "slip.rejected", "การเงินไม่อนุมัติสลิป", reviewer, decision.note);
+    return { order, payment };
+  }
+  Object.assign(slip, { verificationStatus: "manual_approved", reviewedBy: reviewer, reviewNote: decision.note });
+  Object.assign(payment, {
+    status: "succeeded",
+    paidAt: bangkokIso(),
+    providerRef: decision.bankTransRef ?? `SLIP-${slip.id.slice(-4)}`,
+  });
+  const instalment = order.instalments.find((item) => item.status !== "paid");
+  if (instalment) Object.assign(instalment, { status: "paid", paidAmount: instalment.grossAmount });
+  order.hasSlipToReview = false;
+  if (order.status === "waiting_payment") order.status = "paid_for_production";
+  order.factory = FACTORY;
+  order.slaDueAt = null;
+  logEvent(order, "slip.approved", "การเงินอนุมัติสลิป", reviewer, decision.note);
+  for (const handler of settledHandlers)
+    handler(order, payment, { slipId: slip.id, bankTransRef: decision.bankTransRef ?? null });
+  refresh(order);
+  return { order, payment };
+}
+
 /* ---------------------------------------------------------------------------------- handlers */
 
 const find = (orderId: string | undefined) => orders.find((order) => order.id === orderId);
@@ -941,52 +1002,18 @@ export const commerceHandlers = [
   mockRequest("POST /v1/admin/orders/{orderId}/actions/approve-slip", ({ params, body, request }) => {
     const order = find(params.orderId);
     if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const persona = staffPersonaOf(request)!;
-    const payment = order.payments.find((candidate) => candidate.slips.some((s) => s.id === body.slipId));
-    const slip = payment?.slips.find((s) => s.id === body.slipId);
-    if (!payment || !slip) return problem(404, "http.not_found", "ไม่พบสลิปนี้");
-    if (slip.verificationStatus !== "manual_review")
-      return problem(409, "slip.not_reviewable", "สลิปนี้ไม่ได้รอการตรวจแล้ว");
-    Object.assign(slip, {
-      verificationStatus: "manual_approved",
-      reviewedBy: { id: persona.id, displayName: persona.displayName },
-      reviewNote: body.note ?? null,
+    const outcome = decideSlip(order, body.slipId, staffPersonaOf(request)!, {
+      approve: true,
+      note: body.note ?? null,
     });
-    Object.assign(payment, { status: "succeeded", paidAt: bangkokIso(), providerRef: `SLIP-${slip.id.slice(-4)}` });
-    const instalment = order.instalments.find((item) => item.status !== "paid");
-    if (instalment) Object.assign(instalment, { status: "paid", paidAmount: instalment.grossAmount });
-    order.hasSlipToReview = false;
-    if (order.status === "waiting_payment") order.status = "paid_for_production";
-    order.factory = FACTORY;
-    order.slaDueAt = null;
-    logEvent(
-      order,
-      "slip.approved",
-      "การเงินอนุมัติสลิป",
-      { id: persona.id, displayName: persona.displayName },
-      body.note ?? null,
-    );
+    if (outcome instanceof Response) return outcome;
     return forActor(refresh(order), staffPersonaOf(request));
   }),
   mockRequest("POST /v1/admin/orders/{orderId}/actions/reject-slip", ({ params, body, request }) => {
     const order = find(params.orderId);
     if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const persona = staffPersonaOf(request)!;
-    const slip = order.payments.flatMap((p) => p.slips).find((s) => s.id === body.slipId);
-    if (!slip) return problem(404, "http.not_found", "ไม่พบสลิปนี้");
-    Object.assign(slip, {
-      verificationStatus: "manual_rejected",
-      reviewedBy: { id: persona.id, displayName: persona.displayName },
-      reviewNote: body.reason,
-    });
-    order.hasSlipToReview = false;
-    logEvent(
-      order,
-      "slip.rejected",
-      "การเงินไม่อนุมัติสลิป",
-      { id: persona.id, displayName: persona.displayName },
-      body.reason,
-    );
+    const outcome = decideSlip(order, body.slipId, staffPersonaOf(request)!, { approve: false, note: body.reason });
+    if (outcome instanceof Response) return outcome;
     return forActor(refresh(order), staffPersonaOf(request));
   }),
   mockRequest("POST /v1/admin/orders/{orderId}/actions/start-production", ({ params, body, request }) => {
@@ -1087,6 +1114,7 @@ export const commerceHandlers = [
     };
     if (!order.payments.includes(payment)) order.payments.push(payment);
     payment.slips.push(slipEntry);
+    slipUploadedBy.set(slipEntry.id, persona.id);
     order.hasSlipToReview = true;
     logEvent(order, "slip.uploaded_by_cs", "CS อัปโหลดสลิปแทนลูกค้า", {
       id: persona.id,

@@ -621,3 +621,8 @@ export function registerCompany(input: {
   stores.splice(index, 0, store);
   return store;
 }
+
+/** The company a customer belongs to (its member), for the finance mocks' B2B documents. */
+export function companyOfCustomer(customerId: string): Company | null {
+  return stores.find((store) => store.members.some((member) => member.user.id === customerId))?.company ?? null;
+}
