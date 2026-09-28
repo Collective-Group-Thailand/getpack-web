@@ -33,6 +33,18 @@ async function confirm(page: Page, button: string, phrase?: string) {
   await expect(page.getByRole("alertdialog")).toHaveCount(0);
 }
 
+/** Builds every paper not built yet — once the list has loaded (another test may have built some). */
+async function buildAllPapers(page: Page) {
+  const papers = page.getByRole("table", { name: "รายงานภาษีของเดือน" });
+  await expect(papers.getByRole("row").nth(7)).toBeVisible();
+  await expect(papers.getByText(/ยังไม่ได้สร้าง|ตรงกับบัญชีแยกประเภท|^ต่างกัน/).first()).toBeVisible();
+  await expect(async () => {
+    const buildAll = page.getByRole("button", { name: "สร้างฉบับร่างทั้งหมด" });
+    if ((await papers.getByText("ยังไม่ได้สร้าง").count()) > 0 && (await buildAll.isEnabled())) await buildAll.click();
+    await expect(papers.getByText("ยังไม่ได้สร้าง")).toHaveCount(0, { timeout: 3_000 });
+  }).toPass({ timeout: 20_000 });
+}
+
 const bangkok = () => new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
 const thisMonth = () => bangkok().slice(0, 7);
 const lastMonth = () => {
@@ -90,8 +102,7 @@ test.describe("the month in numbers (§6, §7)", () => {
     // The month's tax papers, built from the same books.
     await gotoHydrated(page, `${HOSTS.admin}/finance/tax?period=${thisMonth()}`);
     const papers = page.getByRole("table", { name: "รายงานภาษีของเดือน" });
-    const buildAll = page.getByRole("button", { name: "สร้างฉบับร่างทั้งหมด" });
-    if (await buildAll.count()) await buildAll.click();
+    await buildAllPapers(page);
     await expect(papers.getByText("ตรงกับบัญชีแยกประเภท")).toHaveCount(7);
     await expect(papers.getByText(/^ต่างกัน/)).toHaveCount(0);
   });
@@ -111,8 +122,7 @@ test.describe("the period close (§7, §8)", () => {
     // Step 7 needs the month's VAT and WHT papers final at a difference of zero.
     await gotoHydrated(finance, `${HOSTS.admin}/finance/tax?period=${month}`);
     const papers = finance.getByRole("table", { name: "รายงานภาษีของเดือน" });
-    const buildAll = finance.getByRole("button", { name: "สร้างฉบับร่างทั้งหมด" });
-    if (await buildAll.count()) await buildAll.click();
+    await buildAllPapers(finance);
     await expect(papers.getByText("ตรงกับบัญชีแยกประเภท")).toHaveCount(7);
     for (const name of [
       "รายงานภาษีขาย",
