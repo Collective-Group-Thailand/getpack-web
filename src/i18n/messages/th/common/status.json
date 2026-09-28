@@ -519,5 +519,39 @@
     "open": "รอระบุผู้โอน",
     "matched": "ระบุแล้ว",
     "refunded": "คืนเงินแล้ว"
+  },
+  "journal": {
+    "draft": "ฉบับร่าง",
+    "pendingApproval": "รออนุมัติ",
+    "posted": "บันทึกแล้ว",
+    "rejected": "ไม่อนุมัติ"
+  },
+  "period": {
+    "open": "เปิด",
+    "softClosed": "ปิดชั่วคราว",
+    "closed": "ปิดแล้ว",
+    "locked": "ล็อกแล้ว"
+  },
+  "recurringJournal": {
+    "pendingApproval": "รออนุมัติ",
+    "active": "ใช้งาน",
+    "paused": "หยุดชั่วคราว",
+    "ended": "สิ้นสุด",
+    "rejected": "ไม่อนุมัติ"
+  },
+  "taxReport": {
+    "draft": "ฉบับร่าง",
+    "final": "ปิดแล้ว",
+    "filed": "ยื่นแล้ว"
+  },
+  "taxCalendar": {
+    "open": "รอยื่น",
+    "done": "ยื่นแล้ว"
+  },
+  "asset": {
+    "active": "ใช้งาน",
+    "fullyDepreciated": "ตัดค่าเสื่อมครบแล้ว",
+    "disposed": "จำหน่ายแล้ว",
+    "writtenOff": "ตัดบัญชีแล้ว"
   }
 }

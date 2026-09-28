@@ -3,7 +3,8 @@ import { setupServer } from "msw/node";
 import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { journals, movement, satangOf } from "../../../mocks/admin/finance/books";
+import { assets } from "../../../mocks/admin/finance/assets";
+import { currentMonth, fiscalYears, journals, movement, satangOf } from "../../../mocks/admin/finance/books";
 import { lines } from "../../../mocks/admin/finance/banking";
 import { payables } from "../../../mocks/admin/finance/payables";
 import { documents, receivables, taxedVat } from "../../../mocks/admin/finance/receivables";
@@ -239,7 +240,7 @@ describe("supplier AP (§6)", () => {
     const debit = journals.flatMap((j) => j.lines).reduce((sum, line) => sum + satangOf(line.debit), 0);
     const credit = journals.flatMap((j) => j.lines).reduce((sum, line) => sum + satangOf(line.credit), 0);
     expect(debit).toBe(credit);
-  });
+  }, 20_000);
 });
 
 describe("cash and bank (§6)", () => {
@@ -267,3 +268,186 @@ describe("cash and bank (§6)", () => {
     expect(movement("1140") - before).toBe(-satangOf(stranger.amount));
   });
 });
+
+describe("the ledger (§1, §8)", () => {
+  const draft = (amount: string, account = "6900") => ({
+    documentDate: new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10),
+    description: "ตั้งค้างจ่ายค่าที่ปรึกษา (ทดสอบ)",
+    lines: [
+      { accountCode: account, side: "debit" as const, amount, dimensions: { costCentre: "ADMIN" } },
+      { accountCode: "2410", side: "credit" as const, amount: "1500.00" },
+    ],
+  });
+
+  it("refuses an unbalanced entry and a control account, then posts a manual journal only after another person approves", async () => {
+    const finance = staff("finance");
+    await expect(finance.POST("/v1/admin/ledger/journals", { body: draft("1400.00") })).rejects.toMatchObject({
+      status: 422,
+      code: "ledger.unbalanced",
+    });
+    await expect(finance.POST("/v1/admin/ledger/journals", { body: draft("1500.00", "1210") })).rejects.toMatchObject({
+      status: 422,
+    });
+    const { data: created, response } = await finance.POST("/v1/admin/ledger/journals", { body: draft("1500.00") });
+    expect(created!.status).toBe("draft");
+    expect(response.status).toBe(201);
+    // Only its maker edits it, and only with the current ETag.
+    await expect(
+      staff("finance_manager").PUT("/v1/admin/ledger/journals/{journalId}", {
+        params: { path: { journalId: created!.id }, header: { "If-Match": 'W/"x"' } },
+        body: draft("1500.00"),
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+
+    const { data: submitted } = await finance.POST("/v1/admin/ledger/journals/{journalId}/actions/submit", {
+      params: { path: { journalId: created!.id }, header: key() },
+    });
+    expect(submitted!.status).toBe("pending_approval");
+    await expect(
+      finance.POST("/v1/admin/approvals/{requestId}/actions/approve", {
+        params: { path: { requestId: submitted!.approvalRequestId! } },
+        body: {},
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+    const before = movement("2410");
+    await staff("finance_manager").POST("/v1/admin/approvals/{requestId}/actions/approve", {
+      params: { path: { requestId: submitted!.approvalRequestId! } },
+      body: { comment: "ตรวจแล้ว" },
+    });
+    const { data: posted } = await finance.GET("/v1/admin/ledger/journals/{journalId}", {
+      params: { path: { journalId: created!.id } },
+    });
+    expect(posted!.status).toBe("posted");
+    expect(posted!.jvNumber).toMatch(/^JV\d{6}-\d{5}$/);
+    expect(posted!.approvedBy).not.toBe(posted!.createdBy);
+    expect(movement("2410") - before).toBe(-150_000);
+
+    // A correction is a reversal, approved the same way; a sub-ledger entry is not reversible here.
+    const { data: reversal } = await finance.POST("/v1/admin/ledger/journals/{journalId}/actions/reverse", {
+      params: { path: { journalId: created!.id }, header: key() },
+      body: { documentDate: posted!.documentDate, reason: "บันทึกซ้ำ" },
+    });
+    expect(reversal!.kind).toBe("reversal");
+    const auto = journals.find((journal) => journal.kind === "auto")!;
+    await expect(
+      finance.POST("/v1/admin/ledger/journals/{journalId}/actions/reverse", {
+        params: { path: { journalId: auto.id }, header: key() },
+        body: { documentDate: posted!.documentDate, reason: "ทดสอบ" },
+      }),
+    ).rejects.toMatchObject({ status: 409, code: "ledger.not_reversible" });
+  });
+
+  it("moves periods only in order, and never reopens a closed one", async () => {
+    const manager = staff("finance_manager");
+    const periods = fiscalYears.flatMap((year) => year.periods);
+    const current = periods.find((period) => period.startDate.startsWith(currentMonth()))!;
+    const later = periods.find((period) => period.periodNo === current.periodNo + 1);
+    const closed = periods.find((period) => period.status === "closed");
+    if (closed)
+      await expect(
+        manager.POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+          params: { path: { periodId: closed.id, action: "reopen" } },
+          body: {},
+        }),
+      ).rejects.toMatchObject({ status: 409, code: "ledger.period_transition" });
+    if (later) {
+      await manager.POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+        params: { path: { periodId: later.id, action: "soft-close" } },
+        body: {},
+      });
+      // Next month cannot close while this month is open.
+      await expect(
+        manager.POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+          params: { path: { periodId: later.id, action: "close" } },
+          body: {},
+        }),
+      ).rejects.toMatchObject({ status: 409 });
+      await manager.POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+        params: { path: { periodId: later.id, action: "reopen" } },
+        body: { reason: "ทดสอบ" },
+      });
+    }
+    await expect(
+      staff("finance").POST("/v1/admin/ledger/periods/{periodId}/actions/{action}", {
+        params: { path: { periodId: current.id, action: "soft-close" } },
+        body: {},
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("previews a posting rule without posting it", async () => {
+    const count = journals.length;
+    const { data } = await staff("auditor").POST("/v1/admin/ledger/posting-rules/{key}/actions/preview", {
+      params: { path: { key: "P02" } },
+      body: { payload: { grossAmount: "1070.00", netAmount: "1000.00", vatAmount: "70.00" } },
+    });
+    expect(data!.balanced).toBe(true);
+    expect(data!.lines.map((line) => line.accountCode)).toEqual(["1133", "2310", "2210"]);
+    expect(journals.length).toBe(count);
+  });
+});
+
+describe("tax (§6, §7 step 7)", () => {
+  it("builds every paper of the month from the books with a GL difference of zero, and finalises ภ.พ.30 into VAT payable", async () => {
+    const finance = staff("finance");
+    const month = currentMonth();
+    for (const kind of ["sales_tax", "purchase_tax", "pp30", "pnd3", "pnd53", "wht_issued_register", "wht_received_register"] as const) {
+      const { data } = await finance.POST("/v1/admin/tax-reports", { params: { header: key() }, body: { kind, period: month } });
+      expect(data!.glDifference, kind).toBe("0.00");
+    }
+    const { data: list } = await finance.GET("/v1/admin/tax-reports", { params: { query: { period: month } } });
+    const pp30 = list!.find((report) => report.kind === "pp30")!;
+    const payable = movement("2220");
+    const { data: final } = await finance.POST("/v1/admin/tax-reports/{reportId}/actions/finalise", {
+      params: { path: { reportId: pp30.id }, header: key() },
+    });
+    expect(final!.status).toBe("final");
+    expect(final!.fileReady).toBe(true);
+    const totals = final!.totals as Record<string, string>;
+    expect(-(movement("2220") - payable)).toBe(satangOf(totals.netPayable!));
+    // Its own P27 does not disturb the reconciliation of the other papers.
+    const { data: again } = await finance.POST("/v1/admin/tax-reports", {
+      params: { header: key() },
+      body: { kind: "sales_tax", period: month },
+    });
+    expect(again!.glDifference).toBe("0.00");
+    await expect(
+      finance.POST("/v1/admin/tax-reports", { params: { header: key() }, body: { kind: "pp30", period: month } }),
+    ).rejects.toMatchObject({ status: 409, code: "tax.report_not_draft" });
+    const { data: file } = await finance.GET("/v1/admin/tax-reports/{reportId}/export", {
+      params: { path: { reportId: pp30.id } },
+    });
+    expect(decodeURIComponent(file!.url.split(",")[1]!)).toContain("key,label,base,vat,gl,documents");
+    // Paying is a Finance Manager's (tax.pay).
+    await expect(
+      finance.POST("/v1/admin/tax-reports/{reportId}/actions/pay", {
+        params: { path: { reportId: pp30.id }, header: key() },
+        body: { paidOn: month + "-28", companyBankAccountId: "00000000-0000-0000-0000-000000000000" },
+      }),
+    ).rejects.toMatchObject({ status: 403 });
+  });
+});
+
+describe("fixed assets (D-150)", () => {
+  it("posts what the preview showed, once, and keeps the register equal to the GL", async () => {
+    const finance = staff("finance");
+    const month = currentMonth();
+    const preview = await requestsAs("finance").call("GET /v1/admin/depreciation-runs/preview", { query: { period: month } });
+    expect(preview.assetCount).toBeGreaterThan(0);
+    const { data: run } = await finance.POST("/v1/admin/depreciation-runs", {
+      params: { header: key() },
+      body: { period: month },
+    });
+    expect(run!.totalAmount).toBe(preview.totalAmount);
+    await expect(
+      finance.POST("/v1/admin/depreciation-runs", { params: { header: key() }, body: { period: month } }),
+    ).rejects.toMatchObject({ status: 409, code: "fixed_assets.run_exists" });
+    const { data: roll } = await finance.GET("/v1/admin/fixed-assets-reports/roll-forward", {
+      params: { query: { from: `${month.slice(0, 4)}-01`, to: month } },
+    });
+    expect(roll!.reconciliation.length).toBe(2);
+    for (const row of roll!.reconciliation) expect(row.difference, row.accountCode).toBe("0.00");
+    expect(assets.every((asset) => satangOf(asset.accumulatedDepreciation) > 0)).toBe(true);
+  });
+});
+

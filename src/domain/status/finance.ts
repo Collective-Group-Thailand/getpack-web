@@ -1,12 +1,18 @@
 import { defineStatusMap } from "./types";
 import type {
+  AssetStatus,
   BankMatchStatus,
   CreditNoteRequestStatus,
   DunningStatus,
+  JournalStatus,
   PayoutRunStatus,
+  PeriodStatus,
   PurchaseOrderStatus,
   ReceivableStatus,
+  RecurringJournalStatus,
   SettlementStatus,
+  TaxCalendarStatus,
+  TaxReportStatus,
   UnidentifiedReceiptStatus,
   VendorBillStatus,
   WhtCertificateStatus,
@@ -90,4 +96,50 @@ export const UNIDENTIFIED_RECEIPT_STATUS = defineStatusMap<UnidentifiedReceiptSt
   open: { tone: "warning", icon: "help", labelKey: "unidentifiedReceipt.open" },
   matched: { tone: "success", icon: "link", labelKey: "unidentifiedReceipt.matched" },
   refunded: { tone: "neutral", icon: "reset", labelKey: "unidentifiedReceipt.refunded" },
+});
+
+/** A journal entry: a manual one is drafted, checked by another person, then posted (§8). */
+export const JOURNAL_STATUS = defineStatusMap<JournalStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "journal.draft" },
+  pending_approval: { tone: "warning", icon: "hourglass", labelKey: "journal.pendingApproval" },
+  posted: { tone: "success", icon: "check", labelKey: "journal.posted" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "journal.rejected" },
+});
+
+/** A fiscal period (§1.4): only an open one takes postings. */
+export const PERIOD_STATUS = defineStatusMap<PeriodStatus>({
+  open: { tone: "success", icon: "play", labelKey: "period.open" },
+  soft_closed: { tone: "warning", icon: "hourglass", labelKey: "period.softClosed" },
+  closed: { tone: "info", icon: "lock", labelKey: "period.closed" },
+  locked: { tone: "neutral", icon: "lock", labelKey: "period.locked" },
+});
+
+/** A recurring journal definition (§8: approved once, posted every month). */
+export const RECURRING_JOURNAL_STATUS = defineStatusMap<RecurringJournalStatus>({
+  pending_approval: { tone: "warning", icon: "hourglass", labelKey: "recurringJournal.pendingApproval" },
+  active: { tone: "success", icon: "calendar", labelKey: "recurringJournal.active" },
+  paused: { tone: "neutral", icon: "pause", labelKey: "recurringJournal.paused" },
+  ended: { tone: "neutral", icon: "archive", labelKey: "recurringJournal.ended" },
+  rejected: { tone: "danger", icon: "ban", labelKey: "recurringJournal.rejected" },
+});
+
+/** A tax report or working paper (§7 step 7). */
+export const TAX_REPORT_STATUS = defineStatusMap<TaxReportStatus>({
+  draft: { tone: "neutral", icon: "edit", labelKey: "taxReport.draft" },
+  final: { tone: "info", icon: "lock", labelKey: "taxReport.final" },
+  filed: { tone: "success", icon: "file-check", labelKey: "taxReport.filed" },
+});
+
+/** A return on the tax calendar (§6). */
+export const TAX_CALENDAR_STATUS = defineStatusMap<TaxCalendarStatus>({
+  open: { tone: "warning", icon: "calendar", labelKey: "taxCalendar.open" },
+  done: { tone: "success", icon: "check", labelKey: "taxCalendar.done" },
+});
+
+/** A fixed asset (D-150). */
+export const ASSET_STATUS = defineStatusMap<AssetStatus>({
+  active: { tone: "success", icon: "package-check", labelKey: "asset.active" },
+  fully_depreciated: { tone: "info", icon: "check", labelKey: "asset.fullyDepreciated" },
+  disposed: { tone: "neutral", icon: "archive", labelKey: "asset.disposed" },
+  written_off: { tone: "neutral", icon: "trash", labelKey: "asset.writtenOff" },
 });

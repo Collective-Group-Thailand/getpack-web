@@ -202,6 +202,19 @@
     ]
   },
   {
+    "key": "recurring_journal",
+    "subjectType": "recurring_journal",
+    "description": "Recurring journal definitions, approved once like a manual journal (accounting-design.md §8, B5.1)",
+    "decisions": ["D-033", "D-169"],
+    "reason": "Seed from D-169 — Finance Manager approves",
+    "steps": [
+      {
+        "name": "Finance Manager approval",
+        "role": "finance_manager"
+      }
+    ]
+  },
+  {
     "key": "credit_note",
     "subjectType": "customer_document",
     "description": "Credit notes (accounting-design.md §8)",
@@ -242,7 +255,7 @@
   },
   {
     "key": "posting_rule_change",
-    "subjectType": "posting_rule",
+    "subjectType": "posting_rule_version",
     "description": "Changes to posting rules (accounting-design.md §8)",
     "decisions": ["D-033", "D-169"],
     "reason": "Seed from D-169 — Finance Manager approves",
@@ -255,7 +268,7 @@
   },
   {
     "key": "coa_change",
-    "subjectType": "account",
+    "subjectType": "account_change",
     "description": "Changes to the chart of accounts (accounting-design.md §8)",
     "decisions": ["D-033", "D-169"],
     "reason": "Seed from D-169 — Finance Manager approves",
@@ -268,7 +281,7 @@
   },
   {
     "key": "tax_setting_change",
-    "subjectType": "tax_rate",
+    "subjectType": "tax_rate_version",
     "description": "Changes to tax settings (accounting-design.md §8)",
     "decisions": ["D-033", "D-169"],
     "reason": "Seed from D-169 — Finance Manager approves",
