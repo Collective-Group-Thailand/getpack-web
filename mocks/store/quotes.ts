@@ -600,9 +600,13 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     grossAmount: null,
     leadTimeDays: null,
     earliestShipDate: null,
+    earliestDeliveryDate: null,
     toleranceShortagePct: null,
     toleranceOveragePct: null,
+    shippingNetAmount: null,
+    shippingVatAmount: null,
     shippingPending: false,
+    shippingPendingReason: null,
   });
   // D-101: the one mock factory's weekly capacity. D-043: its machines stop at 450 mm.
   if (quantity > 200_000) return noPrice("capacity_unavailable");
@@ -628,9 +632,13 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     grossAmount: baht(productGross + designNet + vat(designNet) + structureNet + vat(structureNet) + shippingGross),
     leadTimeDays: lead,
     earliestShipDate: bangkokIso(Math.round(lead * 1.4) * DAY).slice(0, 10),
+    earliestDeliveryDate: postcode ? bangkokIso((Math.round(lead * 1.4) + 2) * DAY).slice(0, 10) : null,
     toleranceShortagePct: "5.0000",
     toleranceOveragePct: "5.0000",
+    shippingNetAmount: postcode ? baht(shippingNet) : null,
+    shippingVatAmount: postcode ? baht(vat(shippingNet)) : null,
     shippingPending: !postcode,
+    shippingPendingReason: postcode ? null : "no_postcode",
   };
 }
 
