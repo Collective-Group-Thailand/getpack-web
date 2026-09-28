@@ -88,7 +88,7 @@ describe("readSheet", () => {
   );
 
   it("parses CSV with quotes, commas, newlines and a BOM", () => {
-    expect(parseCsv('﻿a,"b, c","d ""e"""\r\n1,"two\nlines",3\n\n')).toEqual([
+    expect(parseCsv('\uFEFFa,"b, c","d ""e"""\r\n1,"two\nlines",3\n\n')).toEqual([
       ["a", "b, c", 'd "e"'],
       ["1", "two\nlines", "3"],
     ]);
@@ -137,7 +137,7 @@ describe("sheetToLines", () => {
     const csv = templateCsv("material_prices", DEFINITIONS, [
       { lineKey: "k1", values: { materialId: "m-1", qtyFrom: 1000, qtyTo: 4999, rate: "11.800000" } },
     ]);
-    expect(csv.startsWith("﻿")).toBe(true);
+    expect(csv.startsWith("\uFEFF")).toBe(true);
     const { lines, problems } = sheetToLines(parseCsv(csv).slice(0, 2), DEFINITIONS);
     expect(problems).toEqual([]);
     expect(lines[0]).toMatchObject({ action: "change", lineKey: "k1", values: { rate: "11.800000", qtyTo: 4999 } });
