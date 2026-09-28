@@ -21,7 +21,7 @@ import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../
 import { PRODUCT_TYPES } from "./catalog";
 import { FACTORY } from "./commerce";
 import { registerQueue } from "./console";
-import { openApproval } from "./platform";
+import { approvals, openApproval } from "./platform";
 import { etagOf } from "./tables";
 
 type Factory = Schemas["FactoryDto"];
@@ -911,6 +911,24 @@ export function writeVersion<T extends { current: unknown; upcoming: unknown[] }
   return { versionNo, status: opened ? "proposed" : "approved", approvalRequestId: opened?.id ?? null };
 }
 
+/**
+ * A bank-account change takes effect only once its approval is complete (Finance, then Finance
+ * Manager — D-169) **and** the call-back on the number already on record confirmed it (§8); it then
+ * supersedes the active account. Either can come last, so both call this.
+ */
+export function activateIfReady(list: Schemas["BankAccountDto"][], account: Schemas["BankAccountDto"]): void {
+  const approval = approvals.find((item) => item.id === account.approvalRequestId);
+  if (account.status !== "pending_approval") return;
+  if (approval?.status === "rejected" || account.verification?.outcome === "mismatch") {
+    account.status = "rejected";
+    return;
+  }
+  if (approval?.status !== "approved" || account.verification?.outcome !== "confirmed") return;
+  for (const other of list) if (other !== account && other.status === "active") other.status = "superseded";
+  account.status = "active";
+  account.effectiveFrom = bangkokIso();
+}
+
 export const partnerHandlers: HttpHandler[] = [
   http.get("*/v1/admin/factories", ({ request }) => {
     const ok = access(request, "partners.read");
@@ -1146,16 +1164,21 @@ export const partnerHandlers: HttpHandler[] = [
     return HttpResponse.json(created, { status: 201 });
   }),
   http.post("*/v1/admin/vendor-bank-accounts/:accountId/verification-calls", async ({ request, params }) => {
+    const store = [...stores.values()].find((candidate) =>
+      candidate.banks.some((bank) => bank.id === params.accountId),
+    );
+    // Another vendor's account (a carrier, a freelancer): the finance mock answers for those.
+    if (!store) return;
     const ok = access(request, "vendor_bank_accounts.verify");
     if (ok instanceof Response) return ok;
-    const account = [...stores.values()].flatMap((store) => store.banks).find((bank) => bank.id === params.accountId);
-    if (!account) return problem(404, "http.not_found", "ไม่พบบัญชีนี้");
+    const account = store.banks.find((bank) => bank.id === params.accountId)!;
     const body = (await request.json()) as Schemas["RecordVerificationCallDto"];
     account.verification = {
       calledAt: body.calledAt,
       calledNumberMasked: body.calledNumber.replace(/\d(?=\d{3})/g, "x"),
       outcome: body.outcome,
     };
+    activateIfReady(store.banks, account);
     return HttpResponse.json(account);
   }),
   http.get("*/v1/admin/factories/:factoryId/capabilities", ({ request, params }) => {

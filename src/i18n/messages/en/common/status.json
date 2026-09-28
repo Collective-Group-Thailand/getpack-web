@@ -481,5 +481,43 @@
   "dunning": {
     "sent": "Sent",
     "failed": "Failed"
+  },
+  "purchaseOrder": {
+    "issued": "Sent to the factory",
+    "accepted": "Accepted",
+    "received": "Received",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "payoutRun": {
+    "draft": "Draft",
+    "proposed": "Awaiting approval",
+    "approved": "Approved",
+    "fileGenerated": "Bank file ready",
+    "confirmed": "Paid",
+    "partiallyFailed": "Partly failed",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled"
+  },
+  "vendorBill": {
+    "recorded": "To check",
+    "validated": "Validated",
+    "rejected": "Rejected",
+    "void": "Void"
+  },
+  "bankMatch": {
+    "unmatched": "Unmatched",
+    "matched": "Matched",
+    "unidentified": "Parked as unidentified",
+    "ignored": "Nothing to post"
+  },
+  "settlement": {
+    "imported": "Waiting for its bank line",
+    "posted": "Posted"
+  },
+  "unidentifiedReceipt": {
+    "open": "Payer unknown",
+    "matched": "Identified",
+    "refunded": "Refunded"
   }
 }

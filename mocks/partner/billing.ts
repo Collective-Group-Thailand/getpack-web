@@ -83,14 +83,14 @@ const document = (id: string, name: string) => ({
 
 /* ------------------------------------------------------------------------ deliveries */
 
-interface Delivery {
+export interface Delivery {
   shipment: Shipment;
   order: MockOrder;
   deliveredOn: string;
   quantity: number;
 }
 
-function deliveries(factoryId: string): Delivery[] {
+export function deliveries(factoryId: string): Delivery[] {
   return shipments
     .filter((item) => item.factory.id === factoryId && item.status === "delivered")
     .flatMap((shipment) => {
@@ -103,11 +103,11 @@ function deliveries(factoryId: string): Delivery[] {
     });
 }
 
-const policyOf = (factoryId: string) => stores.get(factoryId)?.config.payoutPolicy.current ?? null;
+export const policyOf = (factoryId: string) => stores.get(factoryId)?.config.payoutPolicy.current ?? null;
 
 /* ------------------------------------------------------------------- payout schedule */
 
-function acceptedOn(jobId: string, fallback: string) {
+export function acceptedOn(jobId: string, fallback: string) {
   const job = orders.flatMap((order) => order.jobs).find((item) => item.id === jobId);
   const entry = job ? extraOf(job).history.find((item) => item.text.startsWith("โรงงานรับงาน")) : undefined;
   return (entry?.at ?? fallback).slice(0, 10);
@@ -215,7 +215,7 @@ function payouts(factoryId: string): Payout[] {
 
 /* ------------------------------------------------------------------ billing statements */
 
-interface StatementState {
+export interface StatementState {
   frozen: Statement | null;
   status: Statement["status"];
   confirmedBy: Statement["confirmedBy"];
@@ -225,7 +225,7 @@ interface StatementState {
   replays: Set<string>;
 }
 
-const statementStates = new Map<string, StatementState>();
+export const statementStates = new Map<string, StatementState>();
 
 function stateOf(id: string, seeded: Partial<StatementState> = {}): StatementState {
   let state = statementStates.get(id);
@@ -400,7 +400,7 @@ function derivedOf(state: StatementState): Pick<Statement, "taxInvoiceStatus" | 
   };
 }
 
-const statementsOf = (factoryId: string): Statement[] =>
+export const statementsOf = (factoryId: string): Statement[] =>
   deliveries(factoryId).length ? [buildStatement(factoryId, 1), buildStatement(factoryId, 0)] : [];
 
 /* ------------------------------------------------------------------------------- claims */

@@ -13,11 +13,18 @@
  *   but not published, so a person cannot pick one.
  * - `admin.document-payment-filter` — `GET /v1/admin/customer-documents` has no `paymentId`
  *   filter, so a payment cannot list the TR / RC it produced (drill-down).
+ * - `admin.payout-documents` (F6.2) — a paid payout item has a PV number and a 50 ทวิ, but the
+ *   remittance advice and the certificate cannot be downloaded.
+ * - `admin.bank-line-suggestions`, `admin.bank-line-split` (F6.2) — the matching workbench needs
+ *   the candidates the auto-match considered, and one line may settle several targets (a
+ *   customer paying two order groups in one transfer); `ManualMatchDto` takes one target.
+ * - `admin.gateway-settlements` (F6.2) — settlements can be imported but not listed, so an
+ *   imported one waiting for its bank line cannot be found.
  */
 
 import { z } from "zod";
 
-import { date, dateTime, fileRef, listQuery, page, request, uuid } from "./define";
+import { date, dateTime, fileRef, listQuery, money, page, request, uuid } from "./define";
 
 export const documentChannel = z.enum(["email", "line"]).meta({ id: "DocumentDeliveryChannel" });
 
@@ -67,6 +74,57 @@ export const creditNoteReason = z
   })
   .meta({ id: "CreditNoteReasonDto" });
 
+const downloadUrl = () => z.object({ url: z.string(), expiresAt: dateTime() });
+
+export const payoutDocuments = z
+  .object({
+    remittanceAdvice: downloadUrl(),
+    whtCertificates: z.array(
+      z.object({
+        wtNumber: z.string(),
+        whtForm: z.enum(["pnd3", "pnd53"]),
+        base: money(),
+        amount: money(),
+        url: z.string(),
+        expiresAt: dateTime(),
+      }),
+    ),
+  })
+  .meta({ id: "PayoutItemDocumentsDto" });
+
+export const bankMatchTarget = z
+  .enum(["payment", "gateway_settlement", "payout_run", "refund", "unidentified_receipt", "tax_payment"])
+  .meta({ id: "BankMatchTargetRequest" });
+
+export const bankLineSuggestion = z
+  .object({
+    targetType: bankMatchTarget,
+    targetId: uuid(),
+    /** What a person recognises it by: a payment reference, a run number, a settlement date. */
+    label: z.string(),
+    amount: money(),
+    date: date(),
+    /** Why it was suggested: the amount, the reference, the date window (`banking.auto_match`). */
+    reasons: z.array(z.enum(["amount", "reference", "date_window"])),
+  })
+  .meta({ id: "BankLineSuggestionDto" });
+
+export const settlementSummary = z
+  .object({
+    id: uuid(),
+    provider: z.enum(["scb", "twoc2p"]),
+    settlementDate: date(),
+    grossAmount: money(),
+    feeAmount: money(),
+    vatOnFee: money(),
+    netAmount: money(),
+    lineCount: z.number().int(),
+    unmatchedLines: z.number().int(),
+    status: z.enum(["imported", "posted"]),
+    companyBankAccountId: uuid(),
+  })
+  .meta({ id: "GatewaySettlementSummaryDto" });
+
 export const adminFinanceRequests = {
   "GET /v1/admin/slips/{slipId}/file": request({
     request: "admin.slip-file",
@@ -105,6 +163,37 @@ export const adminFinanceRequests = {
       from: date().optional(),
     }),
     response: page(dunningEntry),
+  }),
+  "GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents": request({
+    request: "admin.payout-documents",
+    summary: "A paid payout item's remittance advice and 50 ทวิ, as short-lived signed URLs (D-022)",
+    decisions: ["D-022", "D-033"],
+    response: payoutDocuments,
+  }),
+  "GET /v1/admin/bank-statement-lines/{lineId}/suggestions": request({
+    request: "admin.bank-line-suggestions",
+    summary: "What an unmatched bank line could be: candidates by amount, reference and date window",
+    decisions: ["D-061", "D-093"],
+    response: z.array(bankLineSuggestion),
+  }),
+  "POST /v1/admin/bank-statement-lines/{lineId}/actions/split": request({
+    request: "admin.bank-line-split",
+    summary: "Match one bank line to several targets; the parts must add up to the line (§6)",
+    decisions: ["D-093"],
+    body: z.object({
+      parts: z.array(z.object({ targetType: bankMatchTarget, targetId: uuid(), amount: money() })).min(2),
+    }),
+    response: z.object({ id: uuid(), matchStatus: z.enum(["unmatched", "matched", "unidentified", "ignored"]) }),
+    idempotent: true,
+  }),
+  "GET /v1/admin/gateway-settlements": request({
+    request: "admin.gateway-settlements",
+    summary: "Imported gateway settlements and whether each has met its bank line (P04)",
+    query: listQuery({
+      status: z.enum(["imported", "posted"]).optional(),
+      provider: z.enum(["scb", "twoc2p"]).optional(),
+    }),
+    response: page(settlementSummary),
   }),
   "GET /v1/admin/credit-note-reasons": request({
     request: "admin.credit-note-reasons",
