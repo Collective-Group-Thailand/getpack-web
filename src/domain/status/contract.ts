@@ -280,3 +280,9 @@ export type TaxCalendarStatus = Schemas["TaxCalendarStatus"];
 
 /** A fixed asset in the register (D-150). **Source: contract** (B5.5). */
 export type AssetStatus = Schemas["AssetStatus"];
+
+/** A month's close checklist: worked, reviewed by another person, closed, locked (§7). **Source: contract** (B5.6). */
+export type CloseStatus = Schemas["CloseStatus"];
+
+/** One step of the close: a blocking check fails, it is done, or a Finance Manager waives it (§7). **Source: contract** (B5.6). */
+export type CloseTaskStatus = Schemas["CloseTaskStatus"];

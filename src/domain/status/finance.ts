@@ -2,6 +2,8 @@ import { defineStatusMap } from "./types";
 import type {
   AssetStatus,
   BankMatchStatus,
+  CloseStatus,
+  CloseTaskStatus,
   CreditNoteRequestStatus,
   DunningStatus,
   JournalStatus,
@@ -142,4 +144,20 @@ export const ASSET_STATUS = defineStatusMap<AssetStatus>({
   fully_depreciated: { tone: "info", icon: "check", labelKey: "asset.fullyDepreciated" },
   disposed: { tone: "neutral", icon: "archive", labelKey: "asset.disposed" },
   written_off: { tone: "neutral", icon: "trash", labelKey: "asset.writtenOff" },
+});
+
+/** A month's close checklist (§7): its submitter never approves it (§8). */
+export const CLOSE_STATUS = defineStatusMap<CloseStatus>({
+  open: { tone: "info", icon: "checklist", labelKey: "close.open" },
+  in_review: { tone: "warning", icon: "hourglass", labelKey: "close.inReview" },
+  closed: { tone: "success", icon: "check", labelKey: "close.closed" },
+  locked: { tone: "neutral", icon: "lock", labelKey: "close.locked" },
+});
+
+/** One step of the close (§7). */
+export const CLOSE_TASK_STATUS = defineStatusMap<CloseTaskStatus>({
+  pending: { tone: "neutral", icon: "clock", labelKey: "closeTask.pending" },
+  blocked: { tone: "danger", icon: "ban", labelKey: "closeTask.blocked" },
+  done: { tone: "success", icon: "check", labelKey: "closeTask.done" },
+  waived: { tone: "warning", icon: "stamp", labelKey: "closeTask.waived" },
 });

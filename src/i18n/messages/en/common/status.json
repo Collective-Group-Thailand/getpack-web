@@ -553,5 +553,17 @@
     "fullyDepreciated": "Fully depreciated",
     "disposed": "Sold",
     "writtenOff": "Written off"
+  },
+  "close": {
+    "open": "In progress",
+    "inReview": "Awaiting review",
+    "closed": "Closed",
+    "locked": "Locked"
+  },
+  "closeTask": {
+    "pending": "To do",
+    "blocked": "Blocked",
+    "done": "Done",
+    "waived": "Waived"
   }
 }
