@@ -318,9 +318,9 @@ function syncPayments() {
 export const orderOfPayment = (payment: Payment) => orders.find((order) => order.groupId === payment.groupId) ?? null;
 
 /** P01 / P02: a paid instalment's tax invoice / receipt, with its journal. */
-function recordInstalment(
+export function recordInstalment(
   order: MockOrder,
-  input: { paymentId: string | null; method: string; gross: number; seq: number; paidAt: string },
+  input: { paymentId: string | null; method: string; gross: number; seq: number; paidAt: string; clearing?: string },
 ) {
   const orderVat = satangOf(order.vatAmount);
   const orderGross = satangOf(order.grossAmount);
@@ -348,13 +348,13 @@ function recordInstalment(
   });
   const dims = dimsOf(order, order.customer.id);
   post({
-    rule: input.method === "bank_transfer_slip" ? "P02" : "P01",
+    rule: input.clearing === "1140" ? "P29" : input.method === "bank_transfer_slip" ? "P02" : "P01",
     description: `รับชำระงวดที่ ${input.seq} ${order.orderCode}`,
     documentDate: date,
     postedAt: input.paidAt,
     source: sourceOf(doc),
     lines: [
-      { account: CLEARING[input.method] ?? "1132", debit: input.gross, dimensions: dims },
+      { account: input.clearing ?? CLEARING[input.method] ?? "1132", debit: input.gross, dimensions: dims },
       { account: "2310", credit: net, dimensions: dims },
       { account: "2210", credit: vat, dimensions: dims, taxCode: "output_vat", taxBase: net },
     ],
@@ -500,6 +500,29 @@ export function collect(
   const vat = satangOf(invoice.vatAmount);
   const wht = Math.round((net * input.whtPct) / 100);
   const date = input.at.slice(0, 10);
+  const paymentId = input.paymentId ?? mockId("pay", 900 + payments.length);
+  payments.push({
+    id: paymentId,
+    groupId: null,
+    method: "credit_term_transfer",
+    provider: "bank_transfer",
+    providerRef: `CT-${invoice.docNumber}`,
+    status: "succeeded",
+    amount: baht(gross),
+    cashAmount: baht(gross - wht),
+    whtAmount: baht(wht),
+    feeAmount: "0.00",
+    refundedAmount: "0.00",
+    currency: "THB",
+    referenceCode: invoice.docNumber,
+    qrPayload: null,
+    redirectUrl: null,
+    expiresAt: null,
+    failureReason: null,
+    paidAt: input.at,
+    createdAt: input.at,
+    slips: [],
+  });
   const receipt = issue({
     docType: "rc",
     docKind: "collection",
@@ -513,7 +536,7 @@ export function collect(
     whtAmount: wht,
     original: invoice,
     receiptVia: "bank",
-    paymentId: input.paymentId ?? null,
+    paymentId,
     // The tax point is the payment: the invoice's VAT becomes due now (P08).
     taxed: { vat, base: net },
   });
