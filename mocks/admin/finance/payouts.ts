@@ -98,6 +98,9 @@ function whtOf(rows: PayableRow[]) {
   };
 }
 
+/** Item ids are a plain sequence: the bank file's reference, so two items must never share one. */
+let itemSeq = 0;
+
 function buildItem(vendorId: string, kind: Item["kind"], rows: PayableRow[]): Item {
   const vendor = vendorOf(vendorId)!;
   const account = payoutAccountOf(vendorId);
@@ -106,7 +109,7 @@ function buildItem(vendorId: string, kind: Item["kind"], rows: PayableRow[]): It
   const retention = rows.reduce((sum, row) => sum + row.retentionNet, 0);
   const { base, total } = whtOf(rows);
   return {
-    id: mockId("pvi", 1000 + runs.length * 50 + rows.length + Math.floor(Math.random() * 40)),
+    id: mockId("pvi", 1000 + ++itemSeq),
     vendorId,
     vendorName: vendor.legalName,
     kind,
