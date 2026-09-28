@@ -553,5 +553,17 @@
     "fullyDepreciated": "ตัดค่าเสื่อมครบแล้ว",
     "disposed": "จำหน่ายแล้ว",
     "writtenOff": "ตัดบัญชีแล้ว"
+  },
+  "close": {
+    "open": "กำลังปิดงวด",
+    "inReview": "รอตรวจทาน",
+    "closed": "ปิดงวดแล้ว",
+    "locked": "ล็อกแล้ว"
+  },
+  "closeTask": {
+    "pending": "รอดำเนินการ",
+    "blocked": "ติดขัด",
+    "done": "เสร็จแล้ว",
+    "waived": "ยกเว้นแล้ว"
   }
 }
