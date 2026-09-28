@@ -218,9 +218,9 @@ test.describe("tax (§6, D-033)", () => {
     const download = finance.waitForEvent("download");
     await finance.getByRole("button", { name: "ส่งออกใบแนบ" }).click();
     const csv = await readFile((await (await download).path())!, "utf8");
-    expect(csv.startsWith("﻿")).toBe(true);
+    expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv.split("\r\n")[0]).toBe(
-      "﻿seq,wtNumber,form,taxId,branch,name,address,paidOn,incomeType,ratePct,paidAmount,whtAmount,condition,status",
+      "\uFEFFseq,wtNumber,form,taxId,branch,name,address,paidOn,incomeType,ratePct,paidAmount,whtAmount,condition,status",
     );
 
     await finance.getByRole("button", { name: "บันทึกการยื่นแบบ" }).click();

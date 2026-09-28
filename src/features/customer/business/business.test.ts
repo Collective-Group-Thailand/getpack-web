@@ -79,7 +79,7 @@ describe("the bulk reorder CSV", () => {
       { line: 4, orderCode: "PK-2569-00113", quantity: null },
     ]);
     expect(parsed.errors).toEqual([{ line: 5, value: "PK-2569-00125,abc" }]);
-    expect(parseReorderCsv("﻿PK-2569-00101;1000").rows).toEqual([
+    expect(parseReorderCsv("\uFEFFPK-2569-00101;1000").rows).toEqual([
       { line: 1, orderCode: "PK-2569-00101", quantity: 1000 },
     ]);
   });

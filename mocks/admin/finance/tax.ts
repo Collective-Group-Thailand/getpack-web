@@ -276,7 +276,7 @@ export function reportCsv(lines: Line[]): string {
     columns.join(","),
     ...lines.map((line) => columns.map((column) => csvField(line[column] ?? null)).join(",")),
   ];
-  return `﻿${body.join("\r\n")}\r\n`;
+  return `\uFEFF${body.join("\r\n")}\r\n`;
 }
 
 function apply(report: Report, built: Built) {
