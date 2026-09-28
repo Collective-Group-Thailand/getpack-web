@@ -459,5 +459,27 @@
     "invited": "Invited",
     "active": "Active",
     "deactivated": "Deactivated"
+  },
+  "receivable": {
+    "open": "Open",
+    "partiallyPaid": "Partly paid",
+    "paid": "Paid",
+    "writtenOff": "Written off",
+    "cancelled": "Cancelled"
+  },
+  "whtCertificate": {
+    "pending": "Awaiting certificate",
+    "received": "Received",
+    "waived": "No longer chased"
+  },
+  "creditNoteRequest": {
+    "pendingApproval": "Awaiting approval",
+    "issued": "Credit note issued",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn"
+  },
+  "dunning": {
+    "sent": "Sent",
+    "failed": "Failed"
   }
 }

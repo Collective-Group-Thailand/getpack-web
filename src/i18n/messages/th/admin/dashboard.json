@@ -68,6 +68,18 @@
     "logistics": {
       "exceptions": "การจัดส่งที่มีปัญหา",
       "pod_review": "หลักฐานการส่งมอบรอตรวจ"
+    },
+    "finance": {
+      "slips": "สลิปรอตรวจ",
+      "unmatched_bank_lines": "รายการธนาคารยังไม่จับคู่",
+      "unidentified_receipts": "เงินรับไม่ระบุผู้โอน",
+      "payout_runs_awaiting_approval": "รอบจ่ายโรงงานรออนุมัติ",
+      "deliveries_without_gr": "ส่งมอบแล้วยังไม่มีใบรับมอบงาน",
+      "bills_missing_tax_invoice": "บิลโรงงานยังไม่มีใบกำกับภาษี",
+      "wht_certificates_missing": "รอ 50 ทวิ จากลูกค้า",
+      "overdue_b2b_invoices": "ใบแจ้งหนี้ B2B เกินกำหนด",
+      "refunds_to_pay": "คืนเงินรอโอน",
+      "close_tasks": "งานปิดงวดค้าง"
     }
   },
   "policies": {

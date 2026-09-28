@@ -20,6 +20,7 @@ export * from "./admin-console";
 export * from "./admin-analytics";
 export * from "./admin-companies";
 export * from "./admin-customers";
+export * from "./admin-finance";
 export * from "./admin-logistics";
 export * from "./admin-marketing";
 export * from "./admin-orders";
