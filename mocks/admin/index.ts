@@ -8,6 +8,7 @@ import { catalogueHandlers } from "./catalogue";
 import { commerceHandlers } from "./commerce";
 import { companyHandlers } from "./companies";
 import { consoleHandlers } from "./console";
+import { financeHandlers } from "./finance";
 import { governanceHandlers } from "./governance";
 import { logisticsHandlers } from "./logistics";
 import { loyaltyHandlers } from "./loyalty";
@@ -29,6 +30,7 @@ export const adminHandlers = [
   ...partnerHandlers,
   ...marketingHandlers,
   ...companyHandlers,
+  ...financeHandlers,
   ...loyaltyHandlers,
   ...logisticsHandlers,
   ...analyticsHandlers,

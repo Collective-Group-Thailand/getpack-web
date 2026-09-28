@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { can, MENU_CATALOGUE, PERSONAS } from "../mocks/personas";
+import { entitled, MENU_CATALOGUE, PERSONAS } from "../mocks/personas";
 import { HOSTS } from "../playwright.config";
 import { gotoHydrated, signInAsStaff, type Persona } from "./helpers/session";
 
@@ -21,8 +21,8 @@ for (const persona of PERSONAS) {
     await gotoHydrated(page, `${HOSTS.admin}/`);
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
-    const entitled = MENU_CATALOGUE.filter((entry) => entry.permission === null || can(persona, entry.permission));
-    await expect(nav.getByRole("link")).toHaveCount(entitled.length);
+    const entries = MENU_CATALOGUE.filter((entry) => entitled(persona, entry));
+    await expect(nav.getByRole("link")).toHaveCount(entries.length);
 
     const hrefs = await nav.getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")!));
     for (const href of hrefs) {
