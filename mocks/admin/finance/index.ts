@@ -4,11 +4,13 @@
  * imports is the order the seeds run in: customer money, then suppliers, payouts and the bank.
  */
 
+import { assetHandlers } from "./assets";
 import { bankingHandlers } from "./banking";
 import { ledgerHandlers } from "./ledger";
 import { payableHandlers } from "./payables";
 import { payoutHandlers } from "./payouts";
 import { receivableHandlers } from "./receivables";
+import { taxHandlers } from "./tax";
 
 export const financeHandlers = [
   ...receivableHandlers,
@@ -16,4 +18,6 @@ export const financeHandlers = [
   ...payableHandlers,
   ...payoutHandlers,
   ...bankingHandlers,
+  ...taxHandlers,
+  ...assetHandlers,
 ];
