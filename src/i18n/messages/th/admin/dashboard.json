@@ -100,6 +100,7 @@
     "tax_setting_change": "เปลี่ยนค่าภาษี",
     "document_series_change": "เปลี่ยนเลขชุดเอกสาร",
     "company_order_approval": "อนุมัติคำสั่งซื้อของบริษัท",
-    "referral_review": "ตรวจสอบการแนะนำเพื่อน"
+    "referral_review": "ตรวจสอบการแนะนำเพื่อน",
+    "recurring_journal": "รายการบัญชีประจำ"
   }
 }

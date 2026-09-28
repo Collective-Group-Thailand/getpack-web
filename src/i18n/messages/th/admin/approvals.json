@@ -90,7 +90,8 @@
     "tax_setting_change": "เปลี่ยนค่าภาษี",
     "document_series_change": "เปลี่ยนเลขชุดเอกสาร",
     "company_order_approval": "อนุมัติคำสั่งซื้อของบริษัท",
-    "referral_review": "ตรวจสอบการแนะนำเพื่อน"
+    "referral_review": "ตรวจสอบการแนะนำเพื่อน",
+    "recurring_journal": "รายการบัญชีประจำ"
   },
   "fields": {
     "quoteCode": "ใบเสนอราคา",
@@ -114,7 +115,20 @@
     "maxDeviationPct": "ส่วนต่างสูงสุดจากราคาแนะนำ",
     "vendorName": "คู่ค้า",
     "bank": "ธนาคาร",
-    "accountLast4": "เลขบัญชี 4 หลักท้าย"
+    "accountLast4": "เลขบัญชี 4 หลักท้าย",
+    "totalDebit": "จำนวนเงิน (ด้านละ)",
+    "description": "คำอธิบาย",
+    "documentDate": "วันที่เอกสาร",
+    "reverses": "กลับรายการของ",
+    "rule": "กฎการบันทึกบัญชี",
+    "versionNo": "ฉบับ",
+    "effectiveFrom": "มีผลตั้งแต่",
+    "accountCode": "บัญชี",
+    "kind": "การเปลี่ยนแปลง",
+    "dayOfMonth": "วันที่ของเดือน",
+    "name": "ชื่อ",
+    "ratePct": "อัตรา",
+    "code": "รหัส"
   },
   "delegations": {
     "title": "การมอบหมายให้อนุมัติแทน",
