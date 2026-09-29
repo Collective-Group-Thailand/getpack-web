@@ -88,3 +88,35 @@ Techniques: RSC by default, client components only where interactive, route-leve
 5. Lighthouse CI config with the budgets above wired into CI with URL sets for the customer, admin and partner hosts.
 6. Migrate the designer shell, setup dialog and My designs onto `src/ui` without functional regressions (F0 Session 0.2; smoke e2e stays green).
 7. `docs/PROGRESS.md` update + ADRs (font choice, component base, theming approach).
+
+## Art direction — Packio (D-180)
+
+> ทิศทางนี้มาจากการวิเคราะห์เว็บอ้างอิงที่ผู้ใช้ให้มา (ร้านบรรจุภัณฑ์บน Shopify) — เรารับ **โครง เลย์เอาต์ และจังหวะการใช้งาน** มา แต่ **ห้ามลอกดีไซน์ ภาพ ฟอนต์ สี หรือข้อความ** ของเว็บนั้น (ธีมและภาพมีลิขสิทธิ์)
+
+### Palette (proposed tokens — replaced wholesale when a brand kit arrives, tokens only)
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--c-paper-50` | `#FBF8F3` | `#17140F` | page background |
+| `--c-paper-100` | `#F4EDE2` | `#1F1B15` | section background, alternating bands |
+| `--c-surface` | `#FFFFFF` | `#262119` | cards, product image plates |
+| `--c-kraft-200` | `#E7D8C0` | `#3A3126` | decorative fills, dieline illustration |
+| `--c-kraft-400` | `#C8A97B` | `#C8A97B` | accents on illustrations only, never text |
+| `--c-border` | `#E8DFD2` | `#3A3229` | hairline borders (1px / 0.5px on retina) |
+| `--c-ink-900` | `#1E1B18` | `#F7F3EC` | primary text |
+| `--c-ink-600` | `#5B534B` | `#C3BAAE` | secondary text |
+| `--c-primary-600` | `#0D7A66` | `#2AA88E` | primary actions, links, active nav |
+| `--c-primary-700` | `#0A5F50` | `#0D7A66` | hover/pressed |
+| `--c-primary-50` | `#E6F3EF` | `#123029` | tints, selected states |
+| `--c-accent-500` | `#E08A18` | `#F0A63A` | campaign badges, "ราคาพิเศษ", highlights |
+| `--c-success` `--c-warning` `--c-danger` `--c-info` | `#15803D` `#B45309` `#B42318` `#1D4ED8` | lighter equivalents | status only |
+Rules: **one primary accent** — teal is for actions, amber only for promotions; kraft tones are surfaces and illustration, never body text; every semantic pair passes WCAG 2.2 AA in light, dark and high-contrast (the contrast gate in `pnpm test` enforces it).
+
+### Type, shape, depth, motion
+- Type (ADR-0001): **Anuphan** display (h1–h3, hero, section titles), **Noto Sans Thai** UI/body, **JetBrains Mono** for codes and quantities in tables; tabular figures for all prices and quantities; Thai line-height ≥ 1.6; h1 clamp(2rem, 5vw, 3.25rem).
+- Shape: radius 12 px controls, 16 px cards/media, 999 px pills (nav pill, chips, primary CTA on storefront only — admin keeps 12 px).
+- Depth: two elevation levels only — `0 1px 2px rgba(30,27,24,.06)` for cards, `0 8px 24px rgba(30,27,24,.10)` for overlays/sticky quote dock. No neumorphism, no double borders.
+- Motion: 150–200 ms ease-out for hovers, 250 ms for sheets/drawers; carousels never auto-advance faster than 6 s and pause on hover/focus; respect `prefers-reduced-motion`.
+- Decorative section dividers (the reference uses wavy edges): allowed as a **flat SVG shape in `--c-paper-100`**, max one per two sections, `aria-hidden`, never text over it.
+
+### Imagery
+Real Packio product and factory photography in a Thai context; products on white or paper backgrounds with a soft contact shadow; flat-lay for material/finish comparisons; process shots for the production timeline. Dielines and structure diagrams are line art (ink) with kraft fills. **Never** stock photos that imply customers or staff we do not have, and never imagery lifted from another site. Every image: `next/image`, explicit dimensions, AVIF/WebP, descriptive Thai alt text.
