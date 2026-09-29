@@ -3,6 +3,7 @@ import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { ZoneProviders } from "@/features/shared/zone";
+import { SessionReplay } from "@/lib/observability/SessionReplay";
 import { BRAND_COMPANY, BRAND_NAME, BRAND_TAGLINE } from "@/ui/brand";
 import { fontClassNames } from "@/ui/fonts";
 import { readThemeChoice } from "@/ui/theme/server";
@@ -70,6 +71,7 @@ export default async function CustomerLayout({
       <body>
         <ZoneProviders zone="customer" themeChoice={themeChoice}>
           {children}
+          <SessionReplay />
         </ZoneProviders>
       </body>
     </html>

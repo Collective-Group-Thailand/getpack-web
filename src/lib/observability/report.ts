@@ -20,6 +20,12 @@
 export const browserSentryEnabled = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
 
 /**
+ * `true` when this build turned session replay on (`./replay.ts`). Kept here, beside the DSN
+ * flag, so the consent banner and the root layout can ask without importing replay's code.
+ */
+export const replayEnabled = browserSentryEnabled && process.env.NEXT_PUBLIC_REPLAY_ENABLED === "1";
+
+/**
  * Reports an error the browser caught — a render failure in an error boundary, mainly.
  *
  * Never throws and never rejects: an error while reporting an error must not replace the

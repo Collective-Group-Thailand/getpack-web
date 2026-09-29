@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 
 // Deliberately not 3000: `pnpm dev` is for humans, the suite gets its own port so a
 // dev server (ours or another project's) can never make the run pass or fail by accident.
@@ -54,7 +54,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]],
+  // The journey reporter only writes when step counters ran (`e2e/journeys/reporter.ts`).
+  reporter: [
+    ...((process.env.CI ? [["github"], ["html", { open: "never" }]] : [["list"]]) satisfies ReporterDescription[]),
+    ["./e2e/journeys/reporter.ts"],
+  ],
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -71,7 +75,17 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: /visual\.spec\.ts/,
+      testIgnore: [/visual\.spec\.ts/, /journeys\//],
+    },
+    /*
+     * Step counters for the scorecard's tasks T1–T12 (U5.0, `e2e/journeys/`). Registered always,
+     * like `visual`, and reached through `pnpm e2e:journeys`. They walk the same mock-backed build
+     * as the suite; mobile tasks (T7 in LINE, T11 on the floor) set their own phone viewport.
+     */
+    {
+      name: "journeys",
+      testMatch: /journeys\/.*\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
     },
     /*
      * Visual snapshots, against the built Storybook rather than the app — see

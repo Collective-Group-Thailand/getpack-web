@@ -19,6 +19,7 @@ import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
 import { download, problemMessage, QueryError, Section, useCan } from "../console";
+import { JourneyFunnels } from "./JourneyFunnels";
 
 // Recharts is heavy: it loads with this page only, after the figures it draws.
 const Chart = dynamic(() => import("@/ui/components/Chart").then((module) => module.Chart), {
@@ -212,6 +213,8 @@ export function AnalyticsDashboard() {
           ) : null}
         </Section>
       </div>
+
+      <JourneyFunnels query={query} enabled={ready} />
 
       <Section
         title={t("demand.title")}

@@ -184,6 +184,21 @@ test.describe("demand analytics (D-102)", () => {
     await expectAxeClean(page);
   });
 
+  test("a journey's funnel shows the week's drop the API flagged (U5.0)", async ({ page }) => {
+    await signInAsStaff(page, "marketing");
+    await gotoHydrated(page, `${HOSTS.admin}/analytics`);
+    await expect(page.getByRole("heading", { name: "เส้นทางผู้ใช้" })).toBeVisible();
+    // The threshold is the API's setting, shown as it comes.
+    await expect(page.getByText(/ลดลงเกิน 15\s?%/)).toBeVisible();
+
+    await page.getByRole("radio", { name: "แจ้งปัญหาสินค้า" }).click();
+    await expect(page.getByText("1 ขั้นลดลงเกินเกณฑ์ในสัปดาห์นี้")).toBeVisible();
+    const row = page.getByRole("row", { name: /ส่งเรื่อง/ });
+    await expect(row).toContainText("ลดลงผิดปกติ");
+    await expect(row).toContainText("52");
+    await expectAxeClean(page);
+  });
+
   test("the prospectus is for those who recruit factories", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/analytics`);

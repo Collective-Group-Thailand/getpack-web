@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { CONSENT_ALL, CONSENT_DENIED, consentModeSignals } from "@/lib/analytics/consent";
 import { useConsent } from "@/lib/analytics/useConsent";
+import { replayEnabled } from "@/lib/observability/report";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 
@@ -57,7 +58,7 @@ export function ConsentBanner() {
     >
       <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
         <p className="text-muted flex-1 text-sm">
-          {t("body")}{" "}
+          {t("body")} {replayEnabled ? `${t("replay")} ` : null}
           <Link href="/legal/cookies" className="underline underline-offset-2">
             {t("learnMore")}
           </Link>

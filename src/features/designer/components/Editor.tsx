@@ -144,6 +144,8 @@ export interface EditorSession {
   design: InitialDesign | null;
   /** How a new store design is created: its source, product, order line, template. */
   create?: PersistenceConfig["create"];
+  /** After each confirmed save — the zone's wrapper decides what, if anything, to record. */
+  onSaved?: () => void;
 }
 
 /**
@@ -242,6 +244,7 @@ export default function Editor({
     onCreated: (designId) => {
       if (id !== designId) nav.replace(designHref(designId));
     },
+    onSaved: session.onSaved,
     thumbnail: () => (stageRef.current && dieline ? makeThumbnail(stageRef.current, dieline) : null),
   });
 
