@@ -1,23 +1,22 @@
 import { clsx, type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
-import { FONT_SIZE, RADIUS, SHADOW } from "../tokens/scale";
-
 /**
- * tailwind-merge only knows t-shirt sizes out of the box. Our semantic scale names
- * (`rounded-control`, `shadow-overlay`, `text-display`) would otherwise be misread: the
- * worst case is `text-display` taken for a text *colour* and silently dropped next to
- * `text-fg`. Registering the keys straight from the tokens keeps the two in step.
+ * The scale names tailwind-merge cannot guess. It only knows t-shirt sizes, so without these
+ * `rounded-control` and `shadow-overlay` would never override each other, and `text-display`
+ * would be taken for a text *colour* and silently dropped next to `text-fg`.
+ *
+ * Listed here rather than imported from `src/ui/tokens/scale.ts`, because `cn` ships in every
+ * client bundle and the token module does not need to. `cn.test.ts` fails if a new radius,
+ * shadow or type size in the tokens is missing here.
  */
-const twMerge = extendTailwindMerge({
-  extend: {
-    theme: {
-      radius: Object.keys(RADIUS),
-      shadow: Object.keys(SHADOW),
-      text: Object.keys(FONT_SIZE),
-    },
-  },
-});
+export const SEMANTIC_SCALE_NAMES = {
+  radius: ["control", "card", "cta"],
+  shadow: ["card", "overlay"],
+  text: ["display"],
+};
+
+const twMerge = extendTailwindMerge({ extend: { theme: SEMANTIC_SCALE_NAMES } });
 
 /**
  * Joins class names and lets the *last* conflicting Tailwind utility win, so a caller can
