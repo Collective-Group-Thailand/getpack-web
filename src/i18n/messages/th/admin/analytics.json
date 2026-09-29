@@ -97,5 +97,46 @@
     "xlsx": "รายงานสำหรับโรงงาน (XLSX)",
     "ready": "สร้างรายงานแล้ว ข้อมูลรวมและไม่ระบุตัว กลุ่มต่ำกว่า {k} ถูกซ่อน {suppressed} กลุ่ม",
     "failed": "สร้างรายงานไม่สำเร็จ"
+  },
+  "journeys": {
+    "title": "เส้นทางผู้ใช้",
+    "note": "คนที่ไปถึงแต่ละขั้นในช่วงที่เลือก เทียบกับช่วงก่อนหน้า — แจ้งเตือนเมื่ออัตราไปต่อลดลงเกิน {threshold} ภายในหนึ่งสัปดาห์",
+    "journey": "เส้นทาง",
+    "journeys": {
+      "configurator": "ตั้งค่าและดูราคา",
+      "checkout": "ชำระเงิน",
+      "studio": "ออกแบบออนไลน์",
+      "claims": "แจ้งปัญหาสินค้า",
+      "reorder": "สั่งซ้ำ"
+    },
+    "chart": "จำนวนเซสชันในแต่ละขั้นของ{journey}",
+    "step": "ขั้น",
+    "sessions": "เซสชัน",
+    "conversion": "ไปต่อจากขั้นก่อน",
+    "previousConversion": "ช่วงก่อนหน้า",
+    "weekOverWeek": "เทียบสัปดาห์ก่อน",
+    "status": "สถานะ",
+    "first": "ขั้นแรก",
+    "ok": "ปกติ",
+    "drop": "ลดลงผิดปกติ",
+    "alertTitle": "{count, plural, other {# ขั้น}}ลดลงเกินเกณฑ์ในสัปดาห์นี้",
+    "alertBody": "{steps} — ดูการบันทึกหน้าจอและขั้นตอนของเส้นทางนี้เพื่อหาจุดที่ผู้ใช้ติด",
+    "computedAt": "คำนวณเมื่อ {time}",
+    "steps": {
+      "configurator_opened": "เปิดหน้าตั้งค่า",
+      "configuration_changed": "ปรับสเปก",
+      "quote_shown": "เห็นราคา",
+      "cart_item_added": "ใส่ตะกร้า",
+      "checkout_started": "เริ่มชำระเงิน",
+      "order_placed": "ยืนยันคำสั่งซื้อ",
+      "order_paid": "ชำระแล้ว",
+      "design_started": "เริ่มแบบใหม่",
+      "design_saved": "บันทึกแบบ",
+      "design_ordered": "สั่งผลิตจากแบบ",
+      "claim_started": "เปิดฟอร์มแจ้งปัญหา",
+      "claim_submitted": "ส่งเรื่อง",
+      "reorder_started": "เปิดหน้าสั่งซ้ำ",
+      "reorder_added_to_cart": "สั่งซ้ำลงตะกร้า"
+    }
   }
 }
