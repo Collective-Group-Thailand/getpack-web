@@ -1,6 +1,6 @@
 /**
  * Demand analytics, the partner prospectus and operational reports, mocked
- * (CONTRACT-REQUEST admin.analytics, admin.prospectus, admin.reports).
+ * (CONTRACT-REQUEST admin.analytics, admin.prospectus, admin.reports, admin.analytics-journeys).
  *
  * Figures are deterministic per period so a screen and its test agree. The minimum group size is
  * the API's to apply: D-044 says k ≥ 3 factories for price breakdowns, B6.1 k ≥ 5 for any group;
@@ -514,11 +514,81 @@ const REPORTS: {
   },
 ];
 
+/* ---------------------------------------------------------------- journey funnels (U5.0) */
+
+type Journey = "configurator" | "checkout" | "studio" | "claims" | "reorder";
+
+/**
+ * The steps of each journey (`docs/ux/funnels.md`), with a share reaching each step this week and
+ * last week. One step drops beyond the threshold — the claims form, submitted less often this
+ * week — so the alert has something to show.
+ */
+const JOURNEY_STEPS: Record<Journey, { event: string; now: number; before: number }[]> = {
+  configurator: [
+    { event: "configurator_opened", now: 1, before: 1 },
+    { event: "configuration_changed", now: 0.72, before: 0.7 },
+    { event: "quote_shown", now: 0.9, before: 0.88 },
+    { event: "cart_item_added", now: 0.21, before: 0.22 },
+  ],
+  checkout: [
+    { event: "checkout_started", now: 1, before: 1 },
+    { event: "order_placed", now: 0.64, before: 0.61 },
+    { event: "order_paid", now: 0.83, before: 0.85 },
+  ],
+  studio: [
+    { event: "design_started", now: 1, before: 1 },
+    { event: "design_saved", now: 0.58, before: 0.6 },
+    { event: "design_ordered", now: 0.19, before: 0.18 },
+  ],
+  claims: [
+    { event: "claim_started", now: 1, before: 1 },
+    { event: "claim_submitted", now: 0.52, before: 0.71 },
+  ],
+  reorder: [
+    { event: "reorder_started", now: 1, before: 1 },
+    { event: "reorder_added_to_cart", now: 0.77, before: 0.74 },
+    { event: "order_placed", now: 0.8, before: 0.79 },
+  ],
+};
+const JOURNEY_ENTRIES: Record<Journey, number> = { configurator: 42, checkout: 9, studio: 21, claims: 2, reorder: 3 };
+/** The mock's value for the setting; the UI shows it, never assumes it. */
+const ALERT_THRESHOLD = 15;
+
+function journeyFunnel(from: string, to: string, journey: Journey) {
+  const n = days(from, to);
+  let sessions = JOURNEY_ENTRIES[journey] * n;
+  const steps = JOURNEY_STEPS[journey].map((step, index) => {
+    if (index > 0) sessions = Math.round(sessions * step.now);
+    const change = index > 0 ? ((step.now - step.before) / step.before) * 100 : null;
+    return {
+      event: step.event as never,
+      sessions,
+      conversionPct: index > 0 ? (step.now * 100).toFixed(4) : null,
+      previousConversionPct: index > 0 ? (step.before * 100).toFixed(4) : null,
+      weekOverWeekPct: change === null ? null : change.toFixed(4),
+      alert: change !== null && change < -ALERT_THRESHOLD,
+    };
+  });
+  return {
+    journey,
+    period: period(from, to),
+    previousPeriod: period(addDays(from, -n), addDays(from, -1)),
+    steps,
+    alertThresholdPct: ALERT_THRESHOLD.toFixed(4),
+    computedAt: bangkokIso(-60 * 6),
+  };
+}
+
 export const analyticsHandlers = [
   mockRequest("GET /v1/admin/analytics/overview", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
     const range = resolve(query);
     return range instanceof Response ? range : overview(...range);
+  }),
+  mockRequest("GET /v1/admin/analytics/journeys", ({ query, request }) => {
+    if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
+    const range = resolve(query);
+    return range instanceof Response ? range : journeyFunnel(...range, query.journey);
   }),
   mockRequest("GET /v1/admin/analytics/demand", ({ query, request }) => {
     if (!can(staffPersonaOf(request), "analytics.read")) return forbidden();
