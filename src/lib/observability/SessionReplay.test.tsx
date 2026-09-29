@@ -18,6 +18,10 @@ vi.mock("@/lib/analytics/useConsent", () => ({
   useConsent: () => ({ consent: state.consent, asked: state.consent !== null, save: () => {} }),
 }));
 // A build with replay on, sampled in: only the route and the consent decide.
+vi.mock("./report", async (original) => ({
+  ...(await original<typeof import("./report")>()),
+  replayEnabled: true,
+}));
 vi.mock("./replay", async (original) => ({
   ...(await original<typeof import("./replay")>()),
   replayEnabled: true,
@@ -25,9 +29,9 @@ vi.mock("./replay", async (original) => ({
   setRecording,
 }));
 
-const { SessionReplay } = await import("./SessionReplay");
+const { default: SessionReplayGate } = await import("./SessionReplayGate");
 
-describe("<SessionReplay> in a build that has it on", () => {
+describe("session replay's gate, in a build that has it on", () => {
   beforeEach(() => {
     setRecording.mockClear();
     state.segments = ["configure", "mailer-box"];
@@ -36,26 +40,26 @@ describe("<SessionReplay> in a build that has it on", () => {
 
   it("records a key journey once analytics is consented to", () => {
     state.consent = CONSENT_ALL;
-    render(<SessionReplay />);
+    render(<SessionReplayGate />);
     expect(setRecording).toHaveBeenLastCalledWith(true);
   });
 
   it("does not record without consent", () => {
     state.consent = null;
-    const { rerender } = render(<SessionReplay />);
+    const { rerender } = render(<SessionReplayGate />);
     expect(setRecording).toHaveBeenLastCalledWith(false);
     state.consent = CONSENT_DENIED;
-    rerender(<SessionReplay />);
+    rerender(<SessionReplayGate />);
     expect(setRecording).toHaveBeenLastCalledWith(false);
   });
 
   it("stops on a page that is not a key journey", () => {
     state.consent = CONSENT_ALL;
-    const { rerender } = render(<SessionReplay />);
+    const { rerender } = render(<SessionReplayGate />);
     expect(setRecording).toHaveBeenLastCalledWith(true);
     state.segments = ["(storefront)", "account", "privacy"];
     state.params = {};
-    rerender(<SessionReplay />);
+    rerender(<SessionReplayGate />);
     expect(setRecording).toHaveBeenLastCalledWith(false);
   });
 });

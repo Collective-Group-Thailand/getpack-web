@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { CONSENT_ALL, CONSENT_DENIED, consentModeSignals } from "@/lib/analytics/consent";
 import { useConsent } from "@/lib/analytics/useConsent";
-import { replayEnabled } from "@/lib/observability/replay";
+import { replayEnabled } from "@/lib/observability/report";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 
