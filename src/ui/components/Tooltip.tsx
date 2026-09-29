@@ -35,7 +35,7 @@ export function Tooltip({ children, content, side = "top", align = "center", ...
           align={align}
           sideOffset={6}
           className={cn(
-            "z-modal bg-neutral text-neutral-fg max-w-64 rounded-md px-2 py-1 text-xs shadow-lg",
+            "z-modal bg-neutral text-neutral-fg shadow-overlay max-w-64 rounded-md px-2 py-1 text-xs",
             "data-[state=delayed-open]:animate-in data-[state=closed]:animate-out",
           )}
         >

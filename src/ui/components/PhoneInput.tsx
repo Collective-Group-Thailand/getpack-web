@@ -45,7 +45,7 @@ export function PhoneInput({ value, onChange, onBlur, disabled, placeholder, cla
       <span
         aria-hidden
         className={cn(
-          "border-border-strong bg-surface-subtle text-muted flex h-10 items-center rounded-md border px-3 text-sm",
+          "border-border-strong bg-surface-subtle text-muted rounded-control flex h-10 items-center border px-3 text-sm",
           isDisabled && "text-subtle",
         )}
       >

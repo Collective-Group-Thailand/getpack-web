@@ -14,7 +14,7 @@ import { useSlotChild } from "../lib/useSlotChild";
  */
 export const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-control font-medium whitespace-nowrap",
     "transition-colors duration-fast ease-standard",
     // Target size ≥ 24 px (WCAG 2.5.8); the partner zone raises this to 48 px with size="xl".
     "min-h-6",
@@ -25,7 +25,8 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-primary text-primary-fg hover:bg-primary-hover",
+        // `rounded-cta`: a pill on the storefront, 12 px in the admin and partner zones (D-180).
+        primary: "rounded-cta bg-primary text-primary-fg hover:bg-primary-hover",
         secondary: "border border-border-strong bg-surface text-fg hover:bg-surface-subtle",
         /*
          * Ghost inherits its colour instead of forcing `text-fg`, and tints its hover from

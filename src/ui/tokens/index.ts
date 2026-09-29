@@ -14,6 +14,7 @@
 export { contrastRatio, oklchCss, oklchToHex, relativeLuminance, type Oklch } from "./color";
 export { alpha, BLACK, PALETTES, PRINT, STEPS, WHITE, type PaletteName, type PrintMark, type Step } from "./primitives";
 export {
+  CUSTOMER_CTA_RADIUS,
   DURATION,
   EASING,
   FONT_FAMILY,

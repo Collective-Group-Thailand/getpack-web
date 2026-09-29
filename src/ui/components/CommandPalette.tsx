@@ -134,7 +134,7 @@ export function CommandPalette({
           aria-label={title}
           className={cn(
             "z-modal fixed top-[12vh] left-1/2 w-[calc(100vw-2rem)] max-w-xl -translate-x-1/2",
-            "border-border bg-surface-raised flex flex-col overflow-hidden rounded-2xl border shadow-xl",
+            "border-border bg-surface-raised shadow-overlay flex flex-col overflow-hidden rounded-2xl border",
           )}
         >
           <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>

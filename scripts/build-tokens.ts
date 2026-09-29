@@ -23,6 +23,7 @@ import { fileURLToPath } from "node:url";
 import { oklchCss } from "../src/ui/tokens/color";
 import { PALETTES, PRINT, STEPS } from "../src/ui/tokens/primitives";
 import {
+  CUSTOMER_CTA_RADIUS,
   DURATION,
   EASING,
   FONT_FAMILY,
@@ -112,6 +113,8 @@ export function buildTokensCss(): string {
     `@media (prefers-color-scheme: dark) {\n${indent(block(":root:not([data-theme])", semanticVars("dark")))}\n}`,
     block('[data-theme="dark"]', semanticVars("dark")),
     block('[data-theme="hc"]', semanticVars("hc")),
+    "/* Pill CTAs on the storefront only (D-180); the admin and partner zones keep 12 px. */",
+    block('[data-zone="customer"]', [`--radius-cta: ${CUSTOMER_CTA_RADIUS};`]),
     "",
   ].join("\n\n");
 }

@@ -64,7 +64,7 @@ export function AlertDialog({
           {...returnFocus}
           className={cn(
             "z-modal fixed top-1/2 left-1/2 w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2",
-            "border-border bg-surface-raised rounded-2xl border p-5 shadow-xl",
+            "border-border bg-surface-raised rounded-card shadow-overlay border p-5",
           )}
         >
           <AlertDialogPrimitive.Title className="text-lg font-semibold">{title}</AlertDialogPrimitive.Title>

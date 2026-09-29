@@ -125,7 +125,7 @@ export function BoxPreview3D({ style, dims, colour, printed = false, label, labe
         style={{ perspective: 900 }}
       >
         <div
-          className="relative motion-safe:transition-transform motion-safe:duration-200"
+          className="motion-safe:duration-base relative motion-safe:transition-transform"
           style={{
             width: L,
             height: H,

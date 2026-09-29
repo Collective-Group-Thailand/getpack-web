@@ -64,7 +64,7 @@ export function AppShell({
               "border-border hidden shrink-0 border-e md:block",
               // A width transition rather than a display swap, so the collapse reads as one
               // movement and nothing below it jumps.
-              "motion-safe:transition-[width] motion-safe:duration-200",
+              "motion-safe:duration-slow motion-safe:transition-[width]",
               sidebarCollapsed ? "w-16" : "w-60",
             )}
           >

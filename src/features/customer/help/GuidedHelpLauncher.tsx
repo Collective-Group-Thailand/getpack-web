@@ -37,7 +37,7 @@ export function GuidedHelpLauncher() {
       <Button
         iconStart="help"
         size="sm"
-        className="fixed end-4 bottom-20 z-30 rounded-full shadow-lg md:bottom-6"
+        className="shadow-overlay fixed end-4 bottom-20 z-30 rounded-full md:bottom-6"
         aria-haspopup="dialog"
         aria-label={t("launcher")}
         onClick={() => {

@@ -163,6 +163,7 @@
   --text-2xl: clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem);
   --text-3xl: clamp(1.875rem, 1.66rem + 0.98vw, 2.25rem);
   --text-4xl: clamp(2.25rem, 1.87rem + 1.7vw, 3rem);
+  --text-display: clamp(2rem, 5vw, 3.25rem);
   --leading-tight: 1.25;
   --leading-snug: 1.4;
   --leading-normal: 1.6;
@@ -180,17 +181,18 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+  --radius-cta: 0.75rem;
   --shadow-none: none;
-  --shadow-sm: 0 1px 2px 0 oklch(20% 0.02 255 / 0.06);
-  --shadow-md: 0 2px 4px -1px oklch(20% 0.02 255 / 0.08), 0 1px 2px -1px oklch(20% 0.02 255 / 0.06);
-  --shadow-lg: 0 8px 16px -4px oklch(20% 0.02 255 / 0.1), 0 2px 6px -2px oklch(20% 0.02 255 / 0.06);
-  --shadow-xl: 0 20px 32px -8px oklch(20% 0.02 255 / 0.14), 0 4px 10px -4px oklch(20% 0.02 255 / 0.08);
+  --shadow-card: 0 1px 2px rgb(30 27 24 / 0.06);
+  --shadow-overlay: 0 8px 24px rgb(30 27 24 / 0.1);
 
   /* Motion (respect prefers-reduced-motion — see src/ui/styles/base.css). */
-  --duration-fast: 120ms;
+  --duration-fast: 150ms;
   --duration-base: 200ms;
-  --duration-slow: 320ms;
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-slow: 250ms;
+  --ease-standard: cubic-bezier(0, 0, 0.2, 1);
   --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
 
@@ -407,5 +409,11 @@
   --sem-neutral-fg: oklch(100% 0 0);
   --sem-neutral-subtle: oklch(96.2% 0.0031 72);
   --sem-neutral-subtle-fg: oklch(0% 0 0);
+}
+
+/* Pill CTAs on the storefront only (D-180); the admin and partner zones keep 12 px. */
+
+[data-zone="customer"] {
+  --radius-cta: 9999px;
 }
 
