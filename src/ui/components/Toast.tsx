@@ -25,10 +25,10 @@ export function Toaster() {
       gap={8}
       toastOptions={{
         classNames: {
-          toast: "!rounded-lg !border !border-border !bg-surface-raised !text-fg !shadow-lg !font-sans",
+          toast: "!rounded-card !border !border-border !bg-surface-raised !text-fg !shadow-overlay !font-sans",
           description: "!text-muted",
-          actionButton: "!bg-primary !text-primary-fg !rounded-md",
-          cancelButton: "!bg-surface-subtle !text-fg !rounded-md",
+          actionButton: "!bg-primary !text-primary-fg !rounded-control",
+          cancelButton: "!bg-surface-subtle !text-fg !rounded-control",
           error: "!border-danger/30",
           success: "!border-success/30",
           warning: "!border-warning/40",

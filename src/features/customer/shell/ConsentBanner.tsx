@@ -53,7 +53,7 @@ export function ConsentBanner() {
       // privacy policy to decide has to be able to reach it.
       role="region"
       aria-label={t("title")}
-      className="border-border bg-surface-raised z-sticky fixed inset-x-0 bottom-0 border-t shadow-lg md:bottom-4 md:mx-auto md:max-w-2xl md:rounded-xl md:border"
+      className="border-border bg-surface-raised z-sticky shadow-overlay fixed inset-x-0 bottom-0 border-t md:bottom-4 md:mx-auto md:max-w-2xl md:rounded-xl md:border"
     >
       <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
         <p className="text-muted flex-1 text-sm">

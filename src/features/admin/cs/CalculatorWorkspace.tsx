@@ -383,7 +383,7 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
 
         {calculation && row ? (
           <div
-            className="border-border bg-surface-raised z-sticky sticky bottom-0 flex flex-col gap-3 rounded-lg border p-4 shadow-lg"
+            className="border-border bg-surface-raised z-sticky shadow-overlay sticky bottom-0 flex flex-col gap-3 rounded-lg border p-4"
             role="region"
             aria-label={t("actionBar")}
           >

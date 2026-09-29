@@ -8,7 +8,7 @@ import { useFieldProps } from "./Field";
 /** Shared shell for every text-like control, so Input, NumberInput and Textarea match. */
 export const controlVariants = cva(
   [
-    "w-full rounded-md border bg-surface text-fg",
+    "w-full rounded-control border bg-surface text-fg",
     "transition-colors duration-fast ease-standard",
     "aria-invalid:border-danger",
     "disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:text-subtle",

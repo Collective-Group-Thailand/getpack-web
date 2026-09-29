@@ -77,7 +77,7 @@ export function Select<T extends string = string>({
           sideOffset={4}
           className={cn(
             "z-modal max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width)",
-            "border-border bg-surface-raised overflow-y-auto rounded-lg border p-1 shadow-lg",
+            "border-border bg-surface-raised shadow-overlay overflow-y-auto rounded-lg border p-1",
           )}
         >
           <SelectPrimitive.Viewport>

@@ -36,17 +36,28 @@ export const PAIRS: Pair[] = [
   { fg: "muted", bg: "bg", min: 4.5, why: "secondary text on the page" },
   { fg: "muted", bg: "surface", min: 4.5, why: "secondary text on a card" },
   { fg: "muted", bg: "surface-subtle", min: 4.5, why: "secondary text on a quiet panel" },
+  // The paper band (D-180) alternates with the page, so everything that sits on the page
+  // must also sit on the band.
+  { fg: "muted", bg: "bg-subtle", min: 4.5, why: "secondary text on a section band" },
+  // Menus and popovers: in dark, surface-raised is its own step above a card.
+  { fg: "fg", bg: "surface-raised", min: 4.5, why: "menu item and popover text" },
+  { fg: "muted", bg: "surface-raised", min: 4.5, why: "secondary text in a menu or popover" },
   { fg: "subtle", bg: "bg", min: 3, why: "placeholder and disabled text" },
   { fg: "subtle", bg: "surface", min: 3, why: "placeholder and disabled text on a card" },
   { fg: "primary", bg: "bg", min: 4.5, why: "link and icon-only button on the page" },
   { fg: "primary", bg: "surface", min: 4.5, why: "link inside a card" },
+  { fg: "primary", bg: "bg-subtle", min: 4.5, why: "link on a section band" },
   { fg: "primary-hover", bg: "bg", min: 4.5, why: "hovered link stays legible" },
   { fg: "border-strong", bg: "bg", min: 3, why: "input outline, table rule (1.4.11)" },
   { fg: "border-strong", bg: "surface", min: 3, why: "input outline on a card" },
+  { fg: "border-strong", bg: "bg-subtle", min: 3, why: "input outline on a section band" },
   { fg: "focus-ring", bg: "bg", min: 3, why: "focus indicator on the page (2.4.11)" },
   { fg: "focus-ring", bg: "surface", min: 3, why: "focus indicator on a card" },
   { fg: "focus-ring", bg: "surface-subtle", min: 3, why: "focus indicator on a quiet panel" },
+  { fg: "focus-ring", bg: "bg-subtle", min: 3, why: "focus indicator on a section band" },
   { fg: "primary-fg", bg: "primary", min: 4.5, why: "label on a primary button" },
+  { fg: "primary-fg", bg: "primary-hover", min: 4.5, why: "label on a hovered primary button" },
+  { fg: "accent-fg", bg: "accent", min: 4.5, why: "label on a campaign badge (promotions only, D-180)" },
   { fg: "success-fg", bg: "success", min: 4.5, why: "label on a solid success fill" },
   { fg: "warning-fg", bg: "warning", min: 4.5, why: "label on a solid warning fill" },
   { fg: "danger-fg", bg: "danger", min: 4.5, why: "label on a destructive button" },
@@ -54,6 +65,7 @@ export const PAIRS: Pair[] = [
   { fg: "info-fg", bg: "info", min: 4.5, why: "label on a solid info fill" },
   { fg: "neutral-fg", bg: "neutral", min: 4.5, why: "label on a solid neutral fill" },
   { fg: "primary-subtle-fg", bg: "primary-subtle", min: 4.5, why: "primary badge / callout" },
+  { fg: "accent-subtle-fg", bg: "accent-subtle", min: 4.5, why: "quiet campaign badge" },
   { fg: "success-subtle-fg", bg: "success-subtle", min: 4.5, why: "success badge / callout" },
   { fg: "warning-subtle-fg", bg: "warning-subtle", min: 4.5, why: "warning badge / callout" },
   { fg: "danger-subtle-fg", bg: "danger-subtle", min: 4.5, why: "danger badge / callout" },
@@ -67,9 +79,15 @@ export const PAIRS: Pair[] = [
  * competing with the artwork on top of them (design-system.md §5 — neutral chrome). Both
  * ends are asserted, because a grid that vanishes is as wrong as one that shouts. The upper
  * bound has room for the high-contrast theme, where a firm grid is the point.
+ *
+ * Kraft (D-180) is decoration by definition — illustration fills and dieline art, never text —
+ * so it is held to a range, not a WCAG minimum. The fill must read as a shape on the page yet
+ * stay quiet behind content; the kraft-400 accent line must be clearly visible.
  */
 export const DECORATIVE: { fg: SemanticKey; bg: SemanticKey; min: number; max: number; why: string }[] = [
   { fg: "canvas-grid", bg: "canvas", min: 1.15, max: 4, why: "designer grid dots" },
+  { fg: "kraft", bg: "bg", min: 1.15, max: 2, why: "kraft illustration fill on the page" },
+  { fg: "kraft-strong", bg: "bg", min: 1.8, max: 10, why: "kraft accent line on an illustration" },
 ];
 
 export interface Result {
@@ -105,7 +123,7 @@ export function checkContrast(): Result[] {
 export function uncheckedKeys(): SemanticKey[] {
   const seen = new Set<SemanticKey>([...PAIRS, ...DECORATIVE].flatMap((p) => [p.fg, p.bg]));
   // Alpha scrims and the plain inverse text colour have no fixed partner to measure against.
-  const exempt = new Set<SemanticKey>(["overlay", "fg-inverse", "border", "surface-raised"]);
+  const exempt = new Set<SemanticKey>(["overlay", "fg-inverse", "border"]);
   return SEMANTIC_KEYS.filter((key) => !seen.has(key) && !exempt.has(key));
 }
 

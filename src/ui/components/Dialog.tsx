@@ -10,7 +10,7 @@ import { IconButton } from "./IconButton";
 const contentVariants = cva(
   [
     "fixed left-1/2 top-1/2 z-modal flex max-h-[min(90dvh,48rem)] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2",
-    "flex-col overflow-hidden rounded-2xl border border-border bg-surface-raised shadow-xl",
+    "flex-col overflow-hidden rounded-card border border-border bg-surface-raised shadow-overlay",
   ],
   {
     variants: {
