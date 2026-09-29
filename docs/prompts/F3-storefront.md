@@ -12,7 +12,33 @@ You are a senior product engineer and UX lead building the **customer zone** of 
 - Original Packio design (`design-system.md`); trust elements only from real data.
 - `th` at `/`, `en` at `/en`; canonical + hreflang; ISR / `use cache` for catalogue & content, dynamic for account & checkout; analytics events for every funnel step (D-102) with consent mode.
 
+## Page patterns (reference-informed, D-180, D-181)
+The layout patterns below come from analysing a packaging e-commerce site the business likes. Reuse the **structure and interaction**; the visual language is Packio's own (`design-system.md` §Art direction). Never copy that site's design, imagery or copy.
+
+### Header (all customer pages)
+Sticky, condensing on scroll: logo left · centred primary nav (หน้าแรก · สินค้า&บริการ (mega menu) · ออกแบบออนไลน์ · ราคา&ตัวอย่าง · บทความ · ติดต่อ) · right cluster (search, account, cart with count). Mega menu: 4–5 columns of packaging categories, each item showing a chip **"ราคาทันที"** or **"ขอใบเสนอราคา"** (D-043), plus a visual panel with one promoted category and a link to the full catalogue. Mobile: bottom nav + full-screen menu with the same chips. Announcement bar only when a real campaign is running (D-181).
+
+### Home (8 sections, in order — trim rather than add; below-fold sections lazy-load to hold the LCP budget)
+1. **Hero** — value proposition (ออกแบบเอง ได้ราคาทันที ผลิตกับโรงงานพันธมิตร), two CTAs (คำนวณราคา / ออกแบบกล่องออนไลน์) and a **quick-start strip**: ประเภท → ขนาดโดยประมาณ → จำนวน → ปุ่มดูราคา, which deep-links into the configurator with those values pre-filled. One static image (no auto-rotating carousel as the LCP element).
+2. **เลือกประเภทบรรจุภัณฑ์** — card grid (carousel on mobile) per product type: photo, name, "เริ่มต้น ฿x/ชิ้น" where available, MOQ, lead-time range, and the instant/RFQ chip.
+3. **ขั้นตอนการสั่งผลิต** — 4 steps (ออกแบบหรืออัปโหลดไฟล์ → ได้ราคาและวันส่งทันที → อนุมัติไฟล์ปรู๊ฟ → ติดตามการผลิตจนส่งถึง) with one line each and an illustration; links to the help centre.
+4. **สินค้าพร้อมส่ง** — real stock products (standard products) in an e-commerce card row: image on paper plate, name, price/unit, stock and delivery estimate, add-to-cart.
+5. **ทำไมต้อง Packio** — 6 benefits in two columns around one photo: ราคาทันทีไม่ต้องรอ, ออกแบบออนไลน์ + ไดไลน์ให้ฟรี, MOQ ต่ำ, ติดตามการผลิตทุกขั้นตอน, เอกสารภาษีครบถ้วน, เคลมได้ภายใน 7 วัน. Content must be verifiable — no claim the business cannot back.
+6. **ผลงานและเสียงจากลูกค้า** — case cards and testimonials **only from real, permitted customers** (name + business type + photo with consent); if none exist yet, render the section empty-state variant (portfolio of Packio's own sample work) instead of inventing quotes.
+7. **บทความ** — 3 latest articles (packaging selection guides, print knowledge) for SEO.
+8. **ปิดท้าย** — newsletter (PDPA consent checkbox, coupon only if a real campaign exists), contact strip (4 items: ฝ่ายบริการลูกค้า/เวลาทำการ · โทร · LINE · ที่อยู่), dark footer (about, customer service, policies, categories, payment badges, socials) with **Collective Group (Thailand)** as the operating company and tax id (D-092).
+
+### Catalogue / category page
+Left sidebar filters (desktop) / filter sheet (mobile): ประเภทบรรจุภัณฑ์ (accordion) · วัสดุและความหนา · การพิมพ์ (ไม่พิมพ์ / 1–4 สี / CMYK) · ช่วงขนาด · จำนวนขั้นต่ำ · ระยะเวลาผลิต · มีให้เลือก (instant / RFQ) · ราคาเริ่มต้น (range); "ล้างทั้งหมด" button; sticky applied-filter chips. Toolbar: result count, view toggle (grid / list / compact), sort (แนะนำ · ราคาเริ่มต้นต่ำ→สูง · ผลิตเร็วที่สุด · ใหม่ล่าสุด). Product/type cards as in home §2. URL-synced filters, server pagination, skeletons; one promotional card slot in the sidebar only when a real campaign is active.
+
+### Product / type page
+Gallery (imagesets that switch with material and print options) · key specs · "เริ่มต้น ฿x/ชิ้น" with the quantity band it assumes · MOQ · lead-time range · quantity tolerance note (D-021) · primary CTA **คำนวณราคาจริง** (→ configurator, values carried over) and secondary **ออกแบบออนไลน์** · standard sizes table · materials & finishes explainer · FAQs · related types · downloadable dieline template. For RFQ-only types the primary CTA is **ขอใบเสนอราคา** with the expected response SLA stated.
+
+### Product-card content rule (D-181)
+Made-to-order cards never show struck-through retail prices or countdowns. They show: starting price per piece, the quantity that price assumes, MOQ, lead-time range, and a campaign badge only when a real promotion applies (with its real end date).
+
 ## Phase 3.1 — Information architecture, content, auth, search
+Build the header, home, catalogue and product pages to the patterns above.
 Routes: `/` · `/products`, `/products/[category]`, `/products/[slug]` · `/configure/[slug]` · `/rfq/[category]` · `/design/[id]` · `/templates` · `/cart` · `/checkout/*` · `/account/*` · `/business/*` · `/track/[token]` · `/liff/*` · `/articles/*`, `/faq`, `/help/*`, `/contact`, `/samples`, `/referral/[code]`.
 Home, catalogue with filters, product pages (imagesets, specs, standard sizes, "starting from" price from the API, lead-time range, FAQs), articles, global search (products, articles, FAQs; order code when signed in), structured data (Organization, Product, BreadcrumbList, FAQPage). Sign-in sheet: phone OTP, Google/Apple, LINE Login; PDPA consent capture; progressive profiling.
 
