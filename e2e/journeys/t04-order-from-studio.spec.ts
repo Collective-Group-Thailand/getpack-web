@@ -30,6 +30,7 @@ test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey
   await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(setup).toBeHidden();
   await j.startHere();
+  j.expectEvents("design_ordered", "configurator_opened", "cart_item_added", "checkout_started", "order_placed");
 
   await j.screen(
     "configurator, filled in from the design",

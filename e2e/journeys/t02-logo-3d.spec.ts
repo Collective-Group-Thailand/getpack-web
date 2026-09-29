@@ -9,6 +9,7 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
   await acceptCookies(page);
   await openNewDesign(page);
   await j.startHere();
+  j.expectEvents("design_started");
 
   const focused = (face: string) => page.getByRole("status").filter({ hasText: `กำลังแก้: ${face}` });
   await tool(j, page, "กล่อง");

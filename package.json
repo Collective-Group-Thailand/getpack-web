@@ -27,7 +27,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lhci": "tsx scripts/lhci.ts",
-    "e2e:journeys": "playwright test --project=journeys",
+    "e2e:journeys": "playwright test --project=journeys --workers=2",
     "e2e:ui": "playwright test --ui",
     "test:app": "vitest run --passWithNoTests",
     "test:dieline": "pnpm --filter @packio/dieline test",

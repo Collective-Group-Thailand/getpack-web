@@ -8,6 +8,7 @@ test("T9 report off-colour goods", async ({ page, journey }) => {
   const j = journey("T9");
   await signInAsCustomer(page, "/account/orders", MOCK_RECEIVER_PHONE);
   await j.startHere();
+  j.expectEvents("claim_started", "claim_submitted");
 
   const row = page.getByRole("article").filter({ hasText: DELIVERED.code });
   await j.screen(
