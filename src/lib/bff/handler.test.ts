@@ -21,6 +21,8 @@ beforeAll(async () => {
   process.env.ADMIN_HOST = "admin.packio.test";
   process.env.PARTNER_HOST = "partner.packio.test";
   process.env.API_INTERNAL_URL = API;
+  // One load balancer in front of the app, as in production.
+  process.env.TRUSTED_PROXY_HOPS = "1";
 
   ({ createBffHandler, MAX_BODY_BYTES } = await import("./handler"));
   ({ refreshSession } = (await import("@/lib/auth/refresh")) as unknown as {
@@ -224,14 +226,31 @@ describe("token handling", () => {
     const [request, context] = bffRequest("/v1/admin/orders", { method: "POST", body: "{}" });
     request.headers.set("idempotency-key", "key-1");
     request.headers.set("if-match", 'W/"7"');
-    request.headers.set("x-forwarded-for", "10.0.0.1");
+    request.headers.set("x-packio-debug", "1");
 
     await createBffHandler("admin")(request, context);
 
     const headers = fetchMock.mock.calls[0]![1].headers as Headers;
     expect(headers.get("idempotency-key")).toBe("key-1");
     expect(headers.get("if-match")).toBe('W/"7"');
-    expect(headers.has("x-forwarded-for")).toBe(false);
+    expect(headers.has("x-packio-debug")).toBe(false);
+  });
+
+  it("forwards the visitor's address from the trusted hop, never the chain the browser sent", async () => {
+    // The first entry is whatever the client claimed; only the one our load balancer appended
+    // is the address that actually connected (packio-api B6.3: per-IP throttles).
+    const [request, context] = bffRequest("/v1/admin/orders");
+    request.headers.set("x-forwarded-for", "198.51.100.7, 203.0.113.9");
+
+    await createBffHandler("admin")(request, context);
+
+    expect((fetchMock.mock.calls[0]![1].headers as Headers).get("x-forwarded-for")).toBe("203.0.113.9");
+  });
+
+  it("sends no address when the request did not come through the load balancer", async () => {
+    await createBffHandler("admin")(...bffRequest("/v1/admin/orders"));
+
+    expect((fetchMock.mock.calls[0]![1].headers as Headers).has("x-forwarded-for")).toBe(false);
   });
 });
 

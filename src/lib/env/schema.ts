@@ -79,6 +79,20 @@ export function serverEnvSchema({ isProduction }: EnvMode) {
 
     ZONES: zoneList,
 
+    /**
+     * How many load balancers in front of this app append to `X-Forwarded-For` (0 = none, the
+     * default). The visitor's address is the entry that many places from the right, and it is
+     * what the BFF and server-side calls forward to packio-api (`src/lib/security/client-ip.ts`).
+     */
+    TRUSTED_PROXY_HOPS: z
+      .string()
+      .trim()
+      .regex(/^\d$/, "expected a whole number of proxy hops, 0–9")
+      .transform(Number)
+      .optional()
+      .or(z.literal("").transform(() => undefined))
+      .transform((value) => value ?? 0),
+
     SENTRY_DSN: optionalText,
     SENTRY_ENVIRONMENT: optionalText,
     SENTRY_RELEASE: optionalText,

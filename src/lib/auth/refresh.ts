@@ -52,10 +52,16 @@ export interface RefreshedSession {
  * The `zone` is not sent anywhere. `/v1/auth/*` issues tokens for every audience and the
  * refresh token itself carries which one; the parameter is here because every caller knows
  * its zone and a future per-zone upstream would otherwise change this signature.
+ * `forwardedFor` is the visitor's address (`src/lib/security/client-ip.ts`): the proxy and the
+ * BFF read it from the request they are handling, since neither can use `next/headers`.
  */
-export async function refreshSession(zone: Zone, refreshToken: string): Promise<RefreshedSession | null> {
+export async function refreshSession(
+  zone: Zone,
+  refreshToken: string,
+  forwardedFor: string | null = null,
+): Promise<RefreshedSession | null> {
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), forwardedFor });
     const { data } = await api.POST("/v1/auth/refresh", { body: { refreshToken } });
     if (!data) return null;
 

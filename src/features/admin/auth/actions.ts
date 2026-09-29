@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { upstreamApi } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
+import { visitorIp } from "@/lib/security/visitor.server";
 import { startSession } from "@/features/shared/auth/session-actions";
 
 import { safeReturnTo } from "@/features/shared/auth/return-to";
@@ -31,7 +32,7 @@ export async function signInStaff(_state: StaffLoginState, formData: FormData): 
   if (!email || !password) return { errorKey: "errors.invalidCredentials" };
 
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), forwardedFor: await visitorIp() });
     const { data } = await api.POST("/v1/auth/staff/login", { body: { email, password } });
     if (!data) return { errorKey: "errors.unavailable" };
 

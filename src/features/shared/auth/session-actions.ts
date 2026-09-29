@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/api/problem";
 import { clearedSessionCookieWrites, sessionCookieWrites } from "@/lib/auth/session";
 import { readRefreshToken } from "@/lib/auth/session";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
+import { visitorIp } from "@/lib/security/visitor.server";
 import { upstreamApi } from "@/lib/api/client";
 import type { Session } from "@/lib/api/types";
 
@@ -52,7 +53,7 @@ export async function endSession(): Promise<void> {
 
   if (refreshToken) {
     try {
-      const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+      const api = upstreamApi({ baseUrl: await apiInternalUrl(), forwardedFor: await visitorIp() });
       await api.POST("/v1/auth/logout", { body: { refreshToken } });
     } catch (error) {
       // Nothing to do about it and nothing to tell the user: the local session is going

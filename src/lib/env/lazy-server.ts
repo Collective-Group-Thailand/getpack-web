@@ -18,3 +18,9 @@ export async function apiInternalUrl(): Promise<string> {
   const { serverEnv } = await import("./server");
   return serverEnv.API_INTERNAL_URL;
 }
+
+/** Load balancers in front of this app that append to `X-Forwarded-For`; see `client-ip.ts`. */
+export async function trustedProxyHops(): Promise<number> {
+  const { serverEnv } = await import("./server");
+  return serverEnv.TRUSTED_PROXY_HOPS;
+}
