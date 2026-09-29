@@ -11,6 +11,7 @@
  *   mocks/generated/handlers.ts  MSW handlers built from the contract's own examples
  *   mocks/generated/examples.ts  the list endpoints' example rows, for stateful mocks to seed from
  *   mocks/generated/problems.ts  every operation's documented problem codes, for error-path mocks
+ *   src/lib/api/problem-codes.ts the problem codes each surface can return, for the th/en copy
  *   docs/contract-requests.openapi.json  the frontend's contract requests, for the backend
  *
  * Why a vendored copy of the contract rather than fetching it here: CI has no sibling
@@ -44,6 +45,7 @@ const OUT_SCHEMA = resolve(ROOT, "src/lib/api/schema.d.ts");
 const OUT_HANDLERS = resolve(ROOT, "mocks/generated/handlers.ts");
 const OUT_EXAMPLES = resolve(ROOT, "mocks/generated/examples.ts");
 const OUT_PROBLEMS = resolve(ROOT, "mocks/generated/problems.ts");
+const OUT_PROBLEM_CODES = resolve(ROOT, "src/lib/api/problem-codes.ts");
 /** The contract requests, as an OpenAPI document for the backend (`src/lib/api/requests`). */
 const OUT_REQUESTS = resolve(ROOT, "docs/contract-requests.openapi.json");
 
@@ -277,7 +279,7 @@ function buildProblems(contract: OpenApiDocument, lock: ContractLock): string {
     "  status: number;",
     "  code: string;",
     "  detail: string;",
-    "  errors?: unknown[];",
+    "  errors?: { path: string; code: string; message: string }[];",
     "}",
     "",
     "export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {",
@@ -288,6 +290,41 @@ function buildProblems(contract: OpenApiDocument, lock: ContractLock): string {
     "export const PROBLEM_EXAMPLES: Record<string, ProblemExample> = {",
     ...sortedExamples,
     "};",
+    "",
+  ].join("\n");
+}
+
+/**
+ * The problem codes each surface's operations document (`/v1/store`, `/v1/admin`, `/v1/partner`,
+ * `/v1/auth`). A zone loads th/en copy only for the codes its own surface can return
+ * (`src/i18n/messages/index.ts`), so the storefront does not carry the back office's.
+ */
+function buildProblemCodes(contract: OpenApiDocument, lock: ContractLock): string {
+  const surfaces: Record<string, Set<string>> = {
+    store: new Set(),
+    admin: new Set(),
+    partner: new Set(),
+    auth: new Set(),
+  };
+  for (const [path, item] of Object.entries(contract.paths ?? {})) {
+    const surface = /^\/v1\/(store|admin|partner|auth)\//.exec(path)?.[1];
+    if (!surface) continue;
+    for (const method of HTTP_METHODS) {
+      for (const [status, raw] of Object.entries(item[method as HttpMethod]?.responses ?? {})) {
+        if (!/^[45]\d\d$/.test(status)) continue;
+        for (const media of Object.values(resolveResponse(contract, raw).content ?? {})) {
+          for (const code of Object.keys(media.examples ?? {})) surfaces[surface]!.add(code);
+        }
+      }
+    }
+  }
+  return [
+    banner("contract/openapi.json"),
+    "",
+    `/** Problem codes each surface documents, from contract/openapi.json (packio-api ${lock.version}). */`,
+    "export const SURFACE_PROBLEM_CODES = {",
+    ...Object.entries(surfaces).map(([surface, codes]) => `  ${surface}: ${JSON.stringify([...codes].sort())},`),
+    "} as const satisfies Record<string, readonly string[]>;",
     "",
   ].join("\n");
 }
@@ -453,6 +490,7 @@ async function main(): Promise<void> {
   const handlers = buildHandlers(document, lock);
   const examples = buildExamples(document, lock);
   const problems = buildProblems(document, lock);
+  const problemCodes = buildProblemCodes(document, lock);
   const requests = buildRequestsDocument();
 
   if (check) {
@@ -461,6 +499,7 @@ async function main(): Promise<void> {
       compare(OUT_HANDLERS, handlers, "mocks/generated/handlers.ts"),
       compare(OUT_EXAMPLES, examples, "mocks/generated/examples.ts"),
       compare(OUT_PROBLEMS, problems, "mocks/generated/problems.ts"),
+      compare(OUT_PROBLEM_CODES, problemCodes, "src/lib/api/problem-codes.ts"),
       compare(OUT_REQUESTS, requests, "docs/contract-requests.openapi.json"),
     ].every(Boolean);
 
@@ -473,6 +512,7 @@ async function main(): Promise<void> {
   write(OUT_HANDLERS, handlers);
   write(OUT_EXAMPLES, examples);
   write(OUT_PROBLEMS, problems);
+  write(OUT_PROBLEM_CODES, problemCodes);
   write(OUT_REQUESTS, requests);
 }
 

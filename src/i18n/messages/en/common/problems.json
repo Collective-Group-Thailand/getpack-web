@@ -1,0 +1,388 @@
+{
+  "approval": {
+    "already_acted": "Already approved by you",
+    "already_pending": "Approval already pending",
+    "delegation_invalid": "Invalid delegation",
+    "expired": "Request expired",
+    "no_matching_step": "No approval step matches",
+    "not_authorised": "Not an approver for this step",
+    "not_pending": "Request not pending",
+    "self_approval": "Cannot approve own request"
+  },
+  "artwork": {
+    "file_not_usable": "File cannot be used",
+    "invalid_status": "Wrong submission status",
+    "not_accepting": "Artwork not accepted",
+    "preflight_blocked": "Preflight blocked",
+    "preflight_pending": "Preflight running"
+  },
+  "auth": {
+    "account_inactive": "Account inactive",
+    "account_locked": "Account temporarily locked",
+    "forbidden": "Forbidden",
+    "identity_linked_elsewhere": "Identity already linked",
+    "identity_token_invalid": "Identity token invalid",
+    "invalid_client": "Invalid client",
+    "invalid_credentials": "Invalid credentials",
+    "otp_expired": "OTP expired",
+    "otp_invalid": "Invalid OTP",
+    "otp_rate_limited": "Too many OTP requests",
+    "pin_invalid": "Invalid PIN",
+    "refresh_invalid": "Invalid refresh token",
+    "refresh_reused": "Refresh token reused",
+    "scope_unavailable": "Scope unavailable",
+    "session_revoked": "Session revoked",
+    "token_expired": "Token expired",
+    "unauthenticated": "Authentication required",
+    "wrong_audience": "Token not valid here"
+  },
+  "banking": {
+    "duplicate_import": "Already imported",
+    "gl_account_invalid": "GL account not usable",
+    "line_already_matched": "Line already matched",
+    "match_amount_mismatch": "Amounts differ",
+    "statement_invalid": "Statement not readable"
+  },
+  "cart": {
+    "design_option_unavailable": "Design option not available",
+    "item_exists": "Already in the cart",
+    "mockup_price_unavailable": "Mockup cannot be priced yet",
+    "no_pending_reprice": "Nothing to confirm",
+    "price_locked": "Price still locked",
+    "reprice_unavailable": "Cannot re-price"
+  },
+  "catalog": {
+    "calculator_required": "No calculator yet",
+    "code_taken": "Code already in use",
+    "import_invalid": "Import has errors",
+    "import_stale": "Import changed since preview",
+    "import_too_large": "Import too large",
+    "import_unreadable": "Import file unreadable",
+    "slug_taken": "Slug already in use"
+  },
+  "checkout": {
+    "cart_empty": "Cart is empty",
+    "destinations_incomplete": "Destinations incomplete",
+    "price_expired": "Price expired",
+    "rfq_destination_fixed": "Destination fixed by the quotation",
+    "shipping_unavailable": "Shipping unavailable",
+    "total_changed": "Total changed",
+    "wht_rate_missing": "Withholding rate missing"
+  },
+  "claims": {
+    "action_not_allowed": "Action not allowed",
+    "evidence_missing": "Photos required",
+    "invalid_status": "Wrong claim status",
+    "liability_undetermined": "Liability undetermined",
+    "not_delivered": "Not delivered yet",
+    "window_closed": "Claim window closed"
+  },
+  "close": {
+    "auditor_sign_off_required": "Auditor sign-off required",
+    "check_failed": "Check not passed",
+    "checklist_incomplete": "Close checklist incomplete",
+    "checklist_not_closed": "Month not closed",
+    "checklist_not_in_review": "Checklist not in review",
+    "checklist_not_open": "Checklist not open",
+    "review_by_approval": "Review is the approval",
+    "task_done": "Task already done",
+    "tasks_open": "Tasks still open"
+  },
+  "companies": {
+    "account_not_found": "Account not found",
+    "already_member": "Already a member",
+    "branch_exists": "Branch exists",
+    "cannot_remove_self": "Cannot remove yourself",
+    "certificate_too_old": "Certificate too old",
+    "credit_not_eligible": "Not eligible for credit",
+    "head_office_required": "Head office required",
+    "invalid_status": "Wrong company status",
+    "kyc_incomplete": "KYC incomplete",
+    "po_required": "PO number required",
+    "tax_id_taken": "Tax id already registered"
+  },
+  "concurrency": {
+    "precondition_required": "If-Match required",
+    "stale": "Stale data"
+  },
+  "consent": {
+    "purpose_unavailable": "Consent text not available"
+  },
+  "conversations": {
+    "closed": "Conversation closed",
+    "unreachable": "Customer unreachable"
+  },
+  "design_services": {
+    "fee_changed": "Revision fee changed",
+    "invalid_status": "Wrong design service status",
+    "no_extra_round": "No chargeable round"
+  },
+  "designs": {
+    "document_too_large": "Design too large",
+    "template_without_design": "Template has no design"
+  },
+  "discount_memos": {
+    "not_usable": "Memo cannot be used",
+    "within_cs_limit": "Within the CS limit"
+  },
+  "discounts": {
+    "cs_limit_exceeded": "Above the CS discount limit"
+  },
+  "drawing": {
+    "engine_unavailable": "Drawing engine unavailable",
+    "pattern_not_drawable": "Pattern not drawable"
+  },
+  "factory_users": {
+    "role_not_allowed": "Role not allowed"
+  },
+  "file": {
+    "infected": "File blocked",
+    "not_ready": "File not ready",
+    "too_large": "File too large",
+    "type_not_allowed": "File type not allowed",
+    "upload_incomplete": "Upload incomplete"
+  },
+  "fixed_assets": {
+    "account_invalid": "Account not allowed here",
+    "already_disposed": "Asset already disposed",
+    "category_exists": "Category already exists",
+    "cost_exceeds_bill": "Cost exceeds the bill",
+    "depreciation_pending": "Depreciation not up to date",
+    "run_exists": "Depreciation already run"
+  },
+  "http": {
+    "bad_request": "Bad request",
+    "conflict": "Conflict",
+    "malformed_json": "Malformed JSON",
+    "not_found": "Not found",
+    "too_many_requests": "Too many requests"
+  },
+  "iam": {
+    "role_escalation": "Cannot grant beyond own access",
+    "role_scope_mismatch": "Role scope mismatch",
+    "self_grant": "Cannot change own roles",
+    "sod_conflict": "Segregation-of-duties conflict",
+    "user_exists": "User already exists"
+  },
+  "idempotency": {
+    "in_progress": "Request in progress",
+    "key_invalid": "Invalid Idempotency-Key",
+    "key_required": "Idempotency-Key required",
+    "key_reused": "Idempotency-Key reused"
+  },
+  "internal": {
+    "unexpected": "Unexpected error"
+  },
+  "ledger": {
+    "account_exists": "Account code exists",
+    "account_invalid": "Account not usable",
+    "change_pending": "Change already pending",
+    "journal_not_editable": "Journal not editable",
+    "not_reversible": "Entry cannot be reversed",
+    "period_closed": "Period closed",
+    "period_transition": "Period status change not allowed",
+    "rule_invalid": "Posting rule invalid",
+    "unbalanced": "Journal does not balance"
+  },
+  "line": {
+    "signature_invalid": "Signature invalid"
+  },
+  "loyalty": {
+    "insufficient_points": "Not enough points"
+  },
+  "mockups": {
+    "exists": "Mockup exists"
+  },
+  "notification": {
+    "channel_unsupported": "Channel not testable"
+  },
+  "numbering": {
+    "series_exists": "Series exists",
+    "series_missing": "No numbering series"
+  },
+  "order": {
+    "cancel_not_allowed": "Cannot cancel",
+    "invalid_transition": "Invalid order transition",
+    "reprice_below_paid": "New total below the amount paid",
+    "reprice_has_discounts": "Cannot re-price"
+  },
+  "orders": {
+    "reorder_unavailable": "Reorder unavailable"
+  },
+  "outbox": {
+    "not_replayable": "Event not replayable"
+  },
+  "partners": {
+    "activation_needs_approval": "Activation needs approval",
+    "agreement_already_accepted": "Agreement already accepted",
+    "agreement_not_published": "Agreement not published",
+    "backdated": "Cannot take effect in the past",
+    "bank_account_not_pending": "Bank account not pending",
+    "bank_account_pending": "Bank account change pending",
+    "factory_exists": "Factory already registered",
+    "invalid_transition": "Invalid status change",
+    "line_not_decidable": "Line cannot be decided now",
+    "maker_checker": "Maker cannot check",
+    "no_price_list_tier": "Tier holds no price list",
+    "not_capable": "Factory not capable",
+    "nothing_to_sign_off": "Nothing to sign off",
+    "pricing_mode_missing": "No pricing mode yet",
+    "profile_locked": "Profile locked",
+    "proposal_closed": "Proposal not in the right state",
+    "proposal_empty": "Proposal has no lines",
+    "proposal_open": "A proposal is already open",
+    "proposal_other_side": "Proposal belongs to the other side",
+    "site_visit_required": "Site visit required",
+    "version_not_awaiting": "Version is not awaiting the factory",
+    "version_pending": "Version pending",
+    "wrong_pricing_mode": "Not possible in this pricing mode"
+  },
+  "payables": {
+    "invoice_duplicate": "Invoice already recorded",
+    "invoice_mismatch": "Invoice does not match",
+    "statement_not_confirmable": "Statement cannot change"
+  },
+  "payments": {
+    "group_not_payable": "Not payable",
+    "method_unavailable": "Payment method unavailable",
+    "no_schedule_template": "No payment schedule",
+    "not_a_slip_payment": "Not a transfer payment",
+    "not_awaiting_slip": "Slip not expected",
+    "not_unidentified": "Not an unidentified receipt",
+    "nothing_to_pay": "Nothing to pay",
+    "schedule_has_payments": "Schedule already paid",
+    "slip_duplicate": "Duplicate slip",
+    "slip_not_in_review": "Slip not in review",
+    "slip_not_scanned": "File not scanned yet"
+  },
+  "payouts": {
+    "bank_account_missing": "No company bank account",
+    "confirmation_mismatch": "Confirmation does not match",
+    "nothing_eligible": "Nothing to pay",
+    "run_invalid_status": "Payout run state"
+  },
+  "pricing": {
+    "not_instant": "Not quoted instantly",
+    "vat_rate_missing": "VAT rate not set"
+  },
+  "production": {
+    "already_released": "Already released",
+    "below_margin_floor": "Below the margin floor",
+    "evidence_missing": "Evidence missing",
+    "factory_unavailable": "Factory unavailable",
+    "gate_closed": "Production cannot start",
+    "invalid_status": "Wrong job status",
+    "milestone_out_of_order": "Out of order",
+    "no_price_path": "No price at that factory",
+    "quantity_invalid": "Quantity invalid"
+  },
+  "promotions": {
+    "budget_exhausted": "Campaign budget used up",
+    "code_invalid": "Code cannot be used",
+    "code_taken": "Code already used",
+    "ended": "Ended",
+    "invalid_transition": "Invalid transition",
+    "limit_reached": "Promotion limit reached",
+    "no_codes": "No coupon codes",
+    "not_a_coupon": "Not a coupon promotion",
+    "payment_method_required": "Payment method not allowed",
+    "too_many_attempts": "Too many code attempts"
+  },
+  "proofs": {
+    "annotation_closed": "Annotations closed",
+    "no_accepted_artwork": "No accepted artwork",
+    "not_pending": "Proof already decided"
+  },
+  "provider": {
+    "unavailable": "Provider unavailable"
+  },
+  "quotes": {
+    "not_live": "Quotation not valid",
+    "not_repriceable": "Cannot re-price",
+    "nothing_to_save": "Nothing to save",
+    "still_valid": "Price still locked"
+  },
+  "receivables": {
+    "allowance_rates_unset": "Allowance rates not set",
+    "certificate_invalid": "Certificate already settled",
+    "document_not_voidable": "Document cannot be voided",
+    "nothing_to_write_off": "Nothing to write off",
+    "reason_invalid": "Unknown reason"
+  },
+  "referrals": {
+    "already_attributed": "Already referred",
+    "code_invalid": "Unknown referral code",
+    "not_new_customer": "New customers only",
+    "self_referral": "Own referral code"
+  },
+  "refunds": {
+    "channel_unavailable": "Refund channel unavailable",
+    "not_approved": "Refund not approved",
+    "not_refundable": "Not refundable"
+  },
+  "reports": {
+    "recipient_not_allowed": "Recipient not allowed",
+    "schedule_state": "The schedule is already in that state"
+  },
+  "reviews": {
+    "exists": "Already reviewed",
+    "not_delivered": "Not delivered yet"
+  },
+  "rfq": {
+    "closed": "Request closed",
+    "consultation_closed": "Request closed",
+    "consultation_open": "Already asked",
+    "draft_open": "Draft exists",
+    "invalid_transition": "Not allowed now",
+    "quote_empty": "No lines",
+    "quote_not_draft": "Not a draft",
+    "quote_not_open": "Quotation not open"
+  },
+  "service": {
+    "unavailable": "Service unavailable"
+  },
+  "settings": {
+    "backdated": "Cannot take effect in the past",
+    "not_owner": "Not the owner of this setting",
+    "pending_exists": "Change already pending"
+  },
+  "shipments": {
+    "carrier_unavailable": "Carrier unavailable",
+    "delivered_quantity_invalid": "Delivered quantities invalid",
+    "destinations_differ": "Different addresses",
+    "inspection_pending": "Inspection pending",
+    "invalid_status": "Wrong shipment status",
+    "job_not_shippable": "Job not ready to ship",
+    "payment_pending": "Payment pending",
+    "pod_required": "Proof of delivery required",
+    "quantity_exceeds": "Too many pieces"
+  },
+  "shipping": {
+    "carrier_account_missing": "No carrier account",
+    "carrier_fixed": "Not a fallback carrier",
+    "carrier_refused": "Carrier refused",
+    "rates_empty": "No rates",
+    "version_not_awaiting": "Not awaiting the factory",
+    "version_not_draft": "Not a draft",
+    "version_not_proposed": "Not in approval",
+    "version_open": "Version already open"
+  },
+  "tax": {
+    "gl_difference": "Tax report does not agree with the GL",
+    "report_not_draft": "Tax report already final",
+    "report_not_final": "Tax report not final",
+    "report_not_payable": "Nothing to pay on this report"
+  },
+  "validation": {
+    "failed": "Validation failed"
+  },
+  "bff": {
+    "unknown_path": "This address is not available here",
+    "body_too_large": "What was sent is too large",
+    "csrf_header_missing": "Request refused for security",
+    "origin_missing": "Request refused for security",
+    "origin_invalid": "Request refused for security",
+    "origin_mismatch": "Request refused for security",
+    "upstream_unreachable": "The service could not be reached"
+  }
+}

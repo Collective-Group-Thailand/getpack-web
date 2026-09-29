@@ -19,7 +19,7 @@ export interface ProblemExample {
   status: number;
   code: string;
   detail: string;
-  errors?: unknown[];
+  errors?: { path: string; code: string; message: string }[];
 }
 
 export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {
