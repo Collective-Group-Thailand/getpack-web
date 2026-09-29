@@ -5,10 +5,15 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { createApiClient } from "../client";
 import { createRequestClient } from "./client";
 import { PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
+import { AWAITING_TRIAGE, isStillOpen } from "./awaiting-triage";
 import { REQUESTS, type RequestKey } from "./registry";
+import { OPERATION_TRIAGE, REQUEST_TRIAGE } from "./triage";
 import type { Client } from "openapi-fetch";
 
 const contract = JSON.parse(readFileSync(`${process.cwd()}/contract/openapi.json`, "utf8")) as {
+  paths: Record<string, Record<string, { operationId?: string }>>;
+};
+const requestsOpenApi = JSON.parse(readFileSync(`${process.cwd()}/docs/contract-requests.openapi.json`, "utf8")) as {
   paths: Record<string, Record<string, unknown>>;
 };
 const requestsDoc = readFileSync(`${process.cwd()}/docs/contract-requests.md`, "utf8");
@@ -72,6 +77,68 @@ describe("the contract-request registry", () => {
     for (const [key, definition] of entries) {
       if (definition.idempotent) expect(key.startsWith("GET "), key).toBe(false);
     }
+  });
+});
+
+describe("packio-api's triage (U1 U-F0.1)", () => {
+  it("has a verdict for every request, or lists it as awaiting triage", () => {
+    // A request written after the triage goes into awaiting-triage.ts; one nobody listed is a
+    // request packio-api was never asked about.
+    const unaccounted = entries
+      .map(([key]) => key)
+      .filter((key) => !OPERATION_TRIAGE[key] && !AWAITING_TRIAGE.includes(key));
+    expect(unaccounted).toEqual([]);
+  });
+
+  it("lets awaiting-triage.ts hold only untriaged requests", () => {
+    const stale = AWAITING_TRIAGE.filter((key) => !(key in REQUESTS) || OPERATION_TRIAGE[key] !== undefined);
+    expect(stale).toEqual([]);
+  });
+
+  it("names, for every published verdict, an operation the pinned contract has", () => {
+    // The mapping a screen follows when it migrates starts at this operationId; a verdict that
+    // points at nothing in contract/openapi.json means the triage and the lock disagree.
+    const dangling = Object.entries(OPERATION_TRIAGE)
+      .filter(([, triage]) => triage.verdict === "published" || triage.verdict === "published_differently")
+      .filter(([, triage]) => {
+        const [method, path] = (triage.publishedAs ?? " ").split(" ") as [string, string];
+        return contract.paths[path]?.[method.toLowerCase()]?.operationId !== triage.operationId;
+      })
+      .map(([key, triage]) => `${key} → ${triage.operationId} (${triage.publishedAs})`);
+    expect(dangling).toEqual([]);
+  });
+
+  it("keeps every open row's status in docs/contract-requests.md in line with it", () => {
+    // `pnpm gen:triage` writes these cells; a hand edit that contradicts the triage fails here.
+    const prefix: Record<string, string> = {
+      published: "Published as ",
+      published_differently: "Published differently (see mapping)",
+      implement: "Open — packio-api ",
+      mixed: "Mixed — ",
+      reject: "Rejected",
+    };
+    const open = requestsDoc.split("\n## Resolved")[0]!;
+    const wrong = [...open.matchAll(/^\| ([a-z][\w.-]+) \| \d{4}-\d{2}-\d{2} \|.*\| ([^|]+) \|$/gm)]
+      .map(([, id, status]) => [id!, status!.trim()] as const)
+      .filter(([id, status]) => {
+        const triage = REQUEST_TRIAGE[id];
+        const expected = triage
+          ? prefix[triage.verdict]! + (triage.verdict === "implement" ? triage.group : "")
+          : "Open — awaiting packio-api triage";
+        return !status.startsWith(expected);
+      })
+      .map(([id, status]) => `${id}: ${status.slice(0, 60)}`);
+    expect(wrong).toEqual([]);
+  });
+
+  it("hands packio-api only what it still has to build", () => {
+    const handedOver = Object.entries(requestsOpenApi.paths).flatMap(([path, item]) =>
+      Object.keys(item)
+        .filter((method) => ["get", "post", "put", "patch", "delete"].includes(method))
+        .map((method) => `${method.toUpperCase()} ${path}`),
+    );
+    const open = entries.map(([key]) => key).filter((key) => isStillOpen(key));
+    expect([...handedOver].sort()).toEqual([...open].sort());
   });
 });
 
