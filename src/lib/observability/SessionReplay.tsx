@@ -1,32 +1,16 @@
 "use client";
 
-import { useParams, useSelectedLayoutSegments } from "next/navigation";
-import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 
-import { useConsent } from "@/lib/analytics/useConsent";
+import { replayEnabled } from "./report";
 
-import { mayRecord, replayEnabled, sampleRate, setRecording } from "./replay";
-import { routePattern } from "./route-pattern";
+// Only a build with replay on ever fetches the gate; with the flag off this import is dead code.
+const SessionReplayGate = dynamic(() => import("./SessionReplayGate"), { ssr: false });
 
 /**
  * Turns session replay on and off as the customer moves between pages (`./replay.ts`). Mounted
- * once in the customer zone's root layout; renders nothing. With the build flag off — the
- * default — it returns before any of the replay code is reached.
+ * once in the customer zone's root layout; renders nothing.
  */
 export function SessionReplay() {
-  if (!replayEnabled) return null;
-  return <SessionReplayGate />;
-}
-
-function SessionReplayGate() {
-  const route = routePattern(useSelectedLayoutSegments(), useParams());
-  const { consent } = useConsent();
-  // Decided once per page load, so a visitor is either in the sample or not for the whole visit.
-  const [sampled] = useState(() => Math.random() < sampleRate());
-
-  useEffect(() => {
-    void setRecording(mayRecord({ enabled: replayEnabled, consent, route, sampled }));
-  }, [consent, route, sampled]);
-
-  return null;
+  return replayEnabled ? <SessionReplayGate /> : null;
 }

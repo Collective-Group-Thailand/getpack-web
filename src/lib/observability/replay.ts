@@ -20,10 +20,9 @@
 
 import type { ConsentState } from "@/lib/analytics/consent";
 
-import { browserSentryEnabled } from "./report";
+import { replayEnabled } from "./report";
 
-/** Statically known, like `browserSentryEnabled`: with the flag off, the replay path is dead code. */
-export const replayEnabled = browserSentryEnabled && process.env.NEXT_PUBLIC_REPLAY_ENABLED === "1";
+export { replayEnabled };
 
 /** The key journeys' route patterns (`routePattern`, customer zone, locale excluded). */
 export const REPLAY_ROUTES: readonly RegExp[] = [
