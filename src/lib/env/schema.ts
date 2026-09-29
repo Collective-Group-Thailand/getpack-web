@@ -116,6 +116,18 @@ export function clientEnvSchema() {
      */
     NEXT_PUBLIC_SENTRY_DSN: optionalText,
 
+    /**
+     * Session replay on the key journeys (U5.0, `src/lib/observability/replay.ts`). Off unless
+     * `1`, and only with a browser DSN and analytics consent. Do not turn on before counsel and
+     * the U2.0 data-terms answer, and a new consent version (PROGRESS, U5.0).
+     */
+    NEXT_PUBLIC_REPLAY_ENABLED: z.enum(["0", "1"]).optional(),
+    /** Share of consented visits recorded, 0–1 (default 0.1). */
+    NEXT_PUBLIC_REPLAY_SAMPLE_RATE: z
+      .string()
+      .regex(/^(0(\.\d+)?|1(\.0+)?)$/)
+      .optional(),
+
     /** Shown in the admin topbar so nobody mistakes UAT for production (F1 1.3). */
     NEXT_PUBLIC_ENV_BADGE: z.enum(["uat", "prod"]).optional(),
   });
