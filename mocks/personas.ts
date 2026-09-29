@@ -30,6 +30,7 @@ const P = {
   notificationTemplates: "notification_templates.manage",
   notificationRoutes: "notification_routes.manage",
   outbox: "outbox.manage",
+  opsRead: "ops.read",
   filesUpload: "files.upload",
   filesRead: "files.read",
   factoryCost: "factory_cost.read",
@@ -143,6 +144,7 @@ export const MENU_CATALOGUE: readonly {
   { key: "notification_routes", path: "/admin/notifications/routes", permission: P.notificationRoutes },
   { key: "audit_logs", path: "/admin/audit-logs", permission: P.auditRead },
   { key: "outbox", path: "/admin/outbox", permission: P.outbox },
+  { key: "ops", path: "/admin/ops", permission: P.opsRead },
   // Proposed for F2 (admin.menu-entries) — each business module adds its own on the backend.
   { key: "orders", path: "/admin/orders", permission: P.ordersRead },
   { key: "cs_calculators", path: "/admin/cs", permission: P.csCalculate },
@@ -291,6 +293,7 @@ export const PERSONAS: readonly StaffPersona[] = [
     "ผู้ดูแลระบบ ตัวอย่าง (ข้อมูลจำลอง)",
     ["admin"],
     [
+      P.opsRead,
       P.settingsRead,
       P.flagsRead,
       P.usersRead,

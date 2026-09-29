@@ -197,6 +197,9 @@ export type SettingConfirmation = Schemas["SettingConfirmation"];
 /** The outcome recorded for an audited action. **Source: contract** (`AuditOutcome`). */
 export type AuditOutcome = Schemas["AuditOutcome"];
 
+/** A launch-monitoring signal against its threshold (B6.3, D-113). **Source: contract** (`OpsSignalStatus`). */
+export type OpsSignalStatus = Schemas["OpsSignalStatus"];
+
 /** The malware scan of an uploaded file; only `clean` downloads. **Source: contract** (`FileScanStatus`). */
 export type FileScanStatus = Schemas["FileScanStatus"];
 

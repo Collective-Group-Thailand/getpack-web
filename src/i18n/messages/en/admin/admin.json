@@ -51,7 +51,8 @@
     "notification_templates": "Notification templates",
     "notification_routes": "Notification routes",
     "outbox": "Event outbox",
-    "cms": "Site content"
+    "cms": "Site content",
+    "ops": "Ops monitor"
   },
   "palette": {
     "screens": "Screens",
