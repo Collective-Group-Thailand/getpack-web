@@ -7,7 +7,7 @@
  * go through `semantic.ts`, or the gate cannot see what you did.
  */
 
-import type { Oklch } from "./color";
+import { hexToOklch, type Oklch } from "./color";
 
 export const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
 export type Step = (typeof STEPS)[number];
@@ -56,21 +56,97 @@ export const BLACK: Oklch = { l: 0, c: 0, h: 0 };
 /** Transparent black/white for scrims and hairlines, where a solid colour would hide content. */
 export const alpha = (colour: Oklch, a: number): Oklch => ({ ...colour, a });
 
+/**
+ * Ramps for every slot the art direction (D-180) does not name — placeholders, input outlines,
+ * the designer's canvas, badge tints, the dark and high-contrast steps. Each is tuned to the
+ * hue of the art-direction colour it sits beside, so a derived step never looks borrowed from
+ * another palette.
+ */
 export const PALETTES = {
-  /** Slightly cool grey — the chrome of every zone. */
-  neutral: palette(255, 0.022),
+  /** Warm grey on the hue of the ink (`#1E1B18` / `#5B534B`) — the chrome of every zone. */
+  neutral: palette(72, 0.022),
   /**
-   * Brand teal. PLACEHOLDER until the brand kit lands (docs/ui/brand.md); it is the hue
-   * BoxStudio shipped, kept so the rebrand is not also a visual redesign.
+   * Deep teal-green on the hue of `--c-primary-600` (`#0D7A66`). Replaced wholesale when the
+   * brand kit lands (docs/ui/brand.md).
    */
-  brand: palette(183, 0.1),
-  green: palette(152, 0.15),
-  amber: palette(74, 0.15),
-  red: palette(24, 0.2),
-  blue: palette(258, 0.17),
+  brand: palette(176, 0.1),
+  /** Status hues, each on the hue of its art-direction colour. */
+  green: palette(150, 0.15),
+  /** Warning (`#B45309`): burnt orange, kept visibly apart from the promotional amber. */
+  orange: palette(49, 0.16),
+  /** Promotions only (`#E08A18`, D-180). */
+  amber: palette(66, 0.16),
+  red: palette(29, 0.19),
+  blue: palette(264, 0.2),
 } as const satisfies Record<string, Palette>;
 
 export type PaletteName = keyof typeof PALETTES;
+
+/** One theme's art-direction colours, named as `design-system.md` §Art direction names them. */
+export interface ArtSet {
+  "paper-50": Oklch;
+  "paper-100": Oklch;
+  surface: Oklch;
+  "kraft-200": Oklch;
+  "kraft-400": Oklch;
+  border: Oklch;
+  "ink-900": Oklch;
+  "ink-600": Oklch;
+  "primary-600": Oklch;
+  "primary-700": Oklch;
+  "primary-50": Oklch;
+  "accent-500": Oklch;
+}
+
+const art = (values: Record<keyof ArtSet, string>): ArtSet =>
+  Object.fromEntries(Object.entries(values).map(([key, hex]) => [key, hexToOklch(hex)])) as unknown as ArtSet;
+
+/**
+ * The D-180 palette, verbatim from `design-system.md` §Art direction (values Proposed). Hex
+ * in, so a brand kit is pasted rather than translated; `semantic.ts` decides where each one
+ * goes and `scripts/check-contrast.ts` decides whether it may.
+ */
+export const ART = {
+  light: art({
+    "paper-50": "#FBF8F3",
+    "paper-100": "#F4EDE2",
+    surface: "#FFFFFF",
+    "kraft-200": "#E7D8C0",
+    "kraft-400": "#C8A97B",
+    border: "#E8DFD2",
+    "ink-900": "#1E1B18",
+    "ink-600": "#5B534B",
+    "primary-600": "#0D7A66",
+    "primary-700": "#0A5F50",
+    "primary-50": "#E6F3EF",
+    "accent-500": "#E08A18",
+  }),
+  dark: art({
+    "paper-50": "#17140F",
+    "paper-100": "#1F1B15",
+    surface: "#262119",
+    "kraft-200": "#3A3126",
+    "kraft-400": "#C8A97B",
+    border: "#3A3229",
+    "ink-900": "#F7F3EC",
+    "ink-600": "#C3BAAE",
+    "primary-600": "#2AA88E",
+    // The spec proposes #0D7A66 here; it fails the gate in dark (see semantic.ts), so the
+    // hover the dark theme actually uses is a lighter step, and this value is kept only as
+    // the record of what was proposed.
+    "primary-700": "#0D7A66",
+    "primary-50": "#123029",
+    "accent-500": "#F0A63A",
+  }),
+} as const;
+
+/** Status colours for the light theme (§Art direction); dark uses the lighter ramp steps. */
+export const STATUS = {
+  success: hexToOklch("#15803D"),
+  warning: hexToOklch("#B45309"),
+  danger: hexToOklch("#B42318"),
+  info: hexToOklch("#1D4ED8"),
+} as const satisfies Record<string, Oklch>;
 
 /**
  * Print marks, not UI colour: the dieline's cut / fold / safe-zone / bleed lines.
@@ -79,12 +155,15 @@ export type PaletteName = keyof typeof PALETTES;
  * and the same values go to Konva, the SVG export and the print PDF, where CSS variables
  * cannot reach. Kept here so `pnpm tokens` emits them as variables for the on-screen legend
  * as well.
+ *
+ * Literal values, not palette steps: a UI rebrand (D-180) must never move a line a factory
+ * cuts or folds along. These are the values the marks have had since F0.
  */
 export const PRINT = {
-  cut: PALETTES.red[600],
-  fold: PALETTES.blue[600],
-  safe: PALETTES.green[600],
-  bleed: PALETTES.amber[600],
+  cut: { l: 0.588, c: 0.2, h: 24 },
+  fold: { l: 0.588, c: 0.17, h: 258 },
+  safe: { l: 0.588, c: 0.15, h: 152 },
+  bleed: { l: 0.588, c: 0.15, h: 74 },
 } as const satisfies Record<string, Oklch>;
 
 export type PrintMark = keyof typeof PRINT;
