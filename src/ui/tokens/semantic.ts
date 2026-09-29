@@ -12,7 +12,7 @@
  */
 
 import type { Oklch } from "./color";
-import { alpha, BLACK, PALETTES as P, WHITE } from "./primitives";
+import { alpha, ART, BLACK, PALETTES as P, STATUS, WHITE } from "./primitives";
 
 interface BaseSlots {
   /** Page background, and the quieter band that separates sections. */
@@ -39,9 +39,20 @@ interface BaseSlots {
   /** The designer's work area: neutral chrome so artwork stands out (design-system.md §5). */
   canvas: Oklch;
   "canvas-grid": Oklch;
+  /**
+   * Kraft (D-180): decorative fills and dieline illustration only — never text, never a
+   * control. The contrast gate checks them as decoration, and ESLint bans `text-kraft*`.
+   */
+  kraft: Oklch;
+  "kraft-strong": Oklch;
 }
 
-const TONE_NAMES = ["primary", "success", "warning", "danger", "info", "neutral"] as const;
+/**
+ * `accent` is amber and exists for **promotions only** (D-180): campaign badges, "ราคาพิเศษ".
+ * Teal (`primary`) is for actions and links. A warning is `warning`, which is deliberately a
+ * different, burnt-orange hue so it can never be mistaken for a campaign.
+ */
+const TONE_NAMES = ["primary", "accent", "success", "warning", "danger", "info", "neutral"] as const;
 export type ToneName = (typeof TONE_NAMES)[number];
 
 /** One tone's four slots: the solid fill with its text, and the quiet variant badges use. */
@@ -69,35 +80,46 @@ function build(base: BaseSlots, tones: Record<ToneName, Tone>): SemanticTheme {
   return out;
 }
 
-/** Light — the customer default and the admin zone's working theme (00-master-plan.md §2). */
+const L = ART.light;
+const D = ART.dark;
+
+/**
+ * Light — the customer default and the admin zone's working theme (00-master-plan.md §2).
+ * Warm paper page, white cards, warm ink text, one teal for actions (D-180).
+ */
 const light = build(
   {
-    bg: WHITE,
-    "bg-subtle": P.neutral[50],
-    surface: WHITE,
-    "surface-subtle": P.neutral[50],
-    "surface-raised": WHITE,
+    bg: L["paper-50"],
+    "bg-subtle": L["paper-100"],
+    surface: L.surface,
+    "surface-subtle": L["paper-50"],
+    "surface-raised": L.surface,
     overlay: alpha(P.neutral[950], 0.55),
-    border: P.neutral[200],
+    border: L.border,
     "border-strong": P.neutral[600],
-    fg: P.neutral[900],
-    muted: P.neutral[700],
-    subtle: P.neutral[500],
+    fg: L["ink-900"],
+    muted: L["ink-600"],
+    // One notch darker than ramp step 500: on the warm paper page that step gives 2.97:1,
+    // just under the 3:1 placeholders need.
+    subtle: { ...P.neutral[500], l: 0.64 },
     "fg-inverse": WHITE,
-    "primary-hover": P.brand[800],
+    "primary-hover": L["primary-700"],
     "danger-hover": P.red[800],
-    "focus-ring": P.brand[600],
+    "focus-ring": L["primary-600"],
     canvas: P.neutral[100],
     "canvas-grid": P.neutral[300],
+    kraft: L["kraft-200"],
+    "kraft-strong": L["kraft-400"],
   },
   {
-    primary: { base: P.brand[700], fg: WHITE, subtle: P.brand[50], subtleFg: P.brand[900] },
-    success: { base: P.green[700], fg: WHITE, subtle: P.green[50], subtleFg: P.green[900] },
-    // Amber is the one hue that cannot carry white text at a legible lightness, so the solid
-    // warning tone flips: a bright fill with near-black text, the way road signage does it.
-    warning: { base: P.amber[400], fg: P.neutral[950], subtle: P.amber[50], subtleFg: P.amber[900] },
-    danger: { base: P.red[700], fg: WHITE, subtle: P.red[50], subtleFg: P.red[900] },
-    info: { base: P.blue[700], fg: WHITE, subtle: P.blue[50], subtleFg: P.blue[900] },
+    primary: { base: L["primary-600"], fg: WHITE, subtle: L["primary-50"], subtleFg: L["primary-700"] },
+    // Amber cannot carry white text at this lightness (2.69:1), so a campaign badge is amber
+    // with ink, the way road signage does it.
+    accent: { base: L["accent-500"], fg: L["ink-900"], subtle: P.amber[100], subtleFg: P.amber[900] },
+    success: { base: STATUS.success, fg: WHITE, subtle: P.green[50], subtleFg: P.green[900] },
+    warning: { base: STATUS.warning, fg: WHITE, subtle: P.orange[50], subtleFg: P.orange[900] },
+    danger: { base: STATUS.danger, fg: WHITE, subtle: P.red[50], subtleFg: P.red[900] },
+    info: { base: STATUS.info, fg: WHITE, subtle: P.blue[50], subtleFg: P.blue[900] },
     neutral: { base: P.neutral[700], fg: WHITE, subtle: P.neutral[100], subtleFg: P.neutral[800] },
   },
 );
@@ -105,44 +127,54 @@ const light = build(
 /** Dark — available in every zone; the customer zone follows the OS unless `pk_theme` says otherwise. */
 const dark = build(
   {
-    bg: P.neutral[950],
-    "bg-subtle": P.neutral[900],
-    surface: P.neutral[900],
-    "surface-subtle": P.neutral[800],
-    "surface-raised": P.neutral[800],
+    bg: D["paper-50"],
+    "bg-subtle": D["paper-100"],
+    surface: D.surface,
+    "surface-subtle": D["paper-100"],
+    // Not in the spec: menus and popovers need to sit one step above a dark card.
+    "surface-raised": { ...D.surface, l: D.surface.l + 0.04 },
     overlay: alpha(BLACK, 0.65),
-    border: P.neutral[800],
+    border: D.border,
     "border-strong": P.neutral[500],
-    fg: P.neutral[50],
-    muted: P.neutral[300],
+    fg: D["ink-900"],
+    muted: D["ink-600"],
     subtle: P.neutral[400],
-    "fg-inverse": P.neutral[950],
-    "primary-hover": P.brand[300],
+    "fg-inverse": D["paper-50"],
+    /*
+     * Adjusted from the proposal. The spec's dark primary-700 (#0D7A66) gives 3.26:1 under the
+     * dark button label and 3.49:1 as a hovered link, so hovering in dark goes one ramp step
+     * *lighter* instead of darker — the smallest change that keeps both pairs at AA.
+     */
+    "primary-hover": P.brand[400],
     "danger-hover": P.red[300],
-    "focus-ring": P.brand[400],
-    canvas: P.neutral[900],
-    "canvas-grid": P.neutral[700],
+    "focus-ring": D["primary-600"],
+    canvas: P.neutral[950],
+    "canvas-grid": P.neutral[800],
+    kraft: D["kraft-200"],
+    "kraft-strong": D["kraft-400"],
   },
   {
-    primary: { base: P.brand[400], fg: P.neutral[950], subtle: P.brand[950], subtleFg: P.brand[300] },
-    success: { base: P.green[400], fg: P.neutral[950], subtle: P.green[950], subtleFg: P.green[300] },
-    warning: { base: P.amber[400], fg: P.neutral[950], subtle: P.amber[950], subtleFg: P.amber[300] },
-    danger: { base: P.red[400], fg: P.neutral[950], subtle: P.red[950], subtleFg: P.red[300] },
-    info: { base: P.blue[400], fg: P.neutral[950], subtle: P.blue[950], subtleFg: P.blue[300] },
-    neutral: { base: P.neutral[400], fg: P.neutral[950], subtle: P.neutral[800], subtleFg: P.neutral[200] },
+    primary: { base: D["primary-600"], fg: D["paper-50"], subtle: D["primary-50"], subtleFg: P.brand[300] },
+    accent: { base: D["accent-500"], fg: D["paper-50"], subtle: P.amber[950], subtleFg: P.amber[300] },
+    success: { base: P.green[400], fg: D["paper-50"], subtle: P.green[950], subtleFg: P.green[300] },
+    warning: { base: P.orange[400], fg: D["paper-50"], subtle: P.orange[950], subtleFg: P.orange[300] },
+    danger: { base: P.red[400], fg: D["paper-50"], subtle: P.red[950], subtleFg: P.red[300] },
+    info: { base: P.blue[400], fg: D["paper-50"], subtle: P.blue[950], subtleFg: P.blue[300] },
+    neutral: { base: P.neutral[400], fg: D["paper-50"], subtle: P.neutral[800], subtleFg: P.neutral[200] },
   },
 );
 
 /**
  * High contrast — the partner PWA's shop-floor option (design-system.md §5): black on white,
  * heavy borders, every tone at its darkest step so a status reads across a factory floor.
+ * The hues are the art direction's; only the lightness is pushed.
  */
 const hc = build(
   {
     bg: WHITE,
     "bg-subtle": WHITE,
     surface: WHITE,
-    "surface-subtle": P.neutral[50],
+    "surface-subtle": L["paper-50"],
     "surface-raised": WHITE,
     overlay: alpha(BLACK, 0.7),
     border: P.neutral[700],
@@ -156,11 +188,14 @@ const hc = build(
     "focus-ring": BLACK,
     canvas: WHITE,
     "canvas-grid": P.neutral[500],
+    kraft: L["kraft-200"],
+    "kraft-strong": L["kraft-400"],
   },
   {
     primary: { base: P.brand[900], fg: WHITE, subtle: P.brand[50], subtleFg: P.brand[950] },
+    accent: { base: L["accent-500"], fg: BLACK, subtle: P.amber[50], subtleFg: P.amber[950] },
     success: { base: P.green[900], fg: WHITE, subtle: P.green[50], subtleFg: P.green[950] },
-    warning: { base: P.amber[300], fg: BLACK, subtle: P.amber[50], subtleFg: P.amber[950] },
+    warning: { base: P.orange[900], fg: WHITE, subtle: P.orange[50], subtleFg: P.orange[950] },
     danger: { base: P.red[900], fg: WHITE, subtle: P.red[50], subtleFg: P.red[950] },
     info: { base: P.blue[900], fg: WHITE, subtle: P.blue[50], subtleFg: P.blue[950] },
     neutral: { base: BLACK, fg: WHITE, subtle: P.neutral[100], subtleFg: BLACK },
