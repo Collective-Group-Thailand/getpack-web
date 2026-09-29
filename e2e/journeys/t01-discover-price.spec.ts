@@ -11,6 +11,7 @@ test("T1 find a mailer box and its price for 500 pcs", async ({ page, journey })
   const j = journey("T1");
   await acceptCookies(page);
   await j.start(HOSTS.customer);
+  j.expectEvents("configurator_opened", "quote_shown");
 
   const menu = page.getByRole("button", { name: "สินค้าและบรรจุภัณฑ์" });
   await j.screen(

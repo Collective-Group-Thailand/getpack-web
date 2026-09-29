@@ -1,4 +1,4 @@
-import { expect, type Page, type Request, test as base, type TestInfo } from "@playwright/test";
+import { type BrowserContext, expect, type Page, test as base, type TestInfo } from "@playwright/test";
 
 import { gotoHydrated } from "../helpers/session";
 import { budgetMax, type JourneyBudget, type JourneyId, JOURNEYS } from "./budgets";
@@ -58,7 +58,44 @@ export interface JourneyRecord {
 
 export const JOURNEY_ANNOTATION = "journey";
 const ENFORCE = process.env.STEP_BUDGETS === "enforce";
-const ANALYTICS_PATH = "/analytics/events";
+
+/**
+ * Records the funnel events the app sends, from inside the page.
+ *
+ * `track()` uses `sendBeacon` with a Blob body, which Playwright's request events do not expose,
+ * so the counter wraps the two ways an event can leave (`sendBeacon`, `fetch`) before any page
+ * script runs, and reads the name out of the body. The events still go to the mock API.
+ */
+async function captureEvents(context: BrowserContext, into: string[]): Promise<void> {
+  await context.exposeBinding("__journeyEvent", (_source, name: string) => {
+    into.push(name);
+  });
+  await context.addInitScript(() => {
+    const report = (window as unknown as { __journeyEvent: (name: string) => void }).__journeyEvent;
+    const read = async (url: string, body: unknown) => {
+      if (!url.includes("/analytics/events")) return;
+      try {
+        const text = typeof body === "string" ? body : body instanceof Blob ? await body.text() : "";
+        const parsed = JSON.parse(text) as { name?: string; events?: { name?: string }[] };
+        for (const name of parsed.events?.map((event) => event.name) ?? [parsed.name]) if (name) report(name);
+      } catch {
+        // Not an event body the counter can read; the journey is judged without it.
+      }
+    };
+    const beacon = navigator.sendBeacon?.bind(navigator);
+    if (beacon) {
+      navigator.sendBeacon = (url, data) => {
+        void read(String(url), data);
+        return beacon(url, data);
+      };
+    }
+    const send = window.fetch.bind(window);
+    window.fetch = (input, init) => {
+      void read(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, init?.body);
+      return send(input, init);
+    };
+  });
+}
 
 /** The pathname only: `/configure/x?size=…` is the same screen whatever its query says. */
 function pathOf(url: string): string {
@@ -74,28 +111,18 @@ export class Journey {
   private readonly detail: StepRecord[] = [];
   private readonly gaps: string[] = [];
   private readonly required = new Set<string>();
-  private readonly events: string[] = [];
   private expectedEvents: string[] = [];
   private path: string | null = null;
   private metric: number | null = null;
   private pendingInfo: JourneyRecord["pending"] = null;
   private completed = false;
-  private readonly onRequest = (request: Request) => {
-    if (!request.url().includes(ANALYTICS_PATH) || request.method() !== "POST") return;
-    try {
-      const body = JSON.parse(request.postData() ?? "{}") as { name?: string; events?: { name?: string }[] };
-      for (const name of body.events?.map((event) => event.name) ?? [body.name]) if (name) this.events.push(name);
-    } catch {
-      // A body the counter cannot read is not the journey's failure.
-    }
-  };
-
   constructor(
     readonly page: Page,
     id: JourneyId,
+    /** Funnel event names the page sent, in order — filled by `captureEvents`. */
+    private readonly events: string[],
   ) {
     this.def = JOURNEYS[id];
-    page.context().on("request", this.onRequest);
   }
 
   /** Where the task card says the person starts. Not counted (step-counting rule 1). */
@@ -218,10 +245,6 @@ export class Journey {
     };
   }
 
-  detach(): void {
-    this.page.context().off("request", this.onRequest);
-  }
-
   /** Nothing may change the route between two declared steps (step-counting guard 1). */
   private guard(next: string): void {
     if (this.path === null) throw new Error(`${this.def.id}: call j.start() before "${next}".`);
@@ -284,11 +307,16 @@ export class Journey {
           typeof (el as HTMLElement).checkVisibility === "function"
             ? (el as HTMLElement).checkVisibility()
             : (el as HTMLElement).offsetParent !== null;
-        return [...document.querySelectorAll("input, select, textarea, [role=radiogroup], [role=combobox]")]
-          .filter((el) => (el as HTMLInputElement).required || el.getAttribute("aria-required") === "true")
-          .filter((el) => (el as HTMLInputElement).type !== "hidden" && visible(el))
-          .map(nameOf)
-          .filter(Boolean);
+        return (
+          [...document.querySelectorAll("input, select, textarea, [role=radiogroup], [role=combobox]")]
+            .filter((el) => (el as HTMLInputElement).required || el.getAttribute("aria-required") === "true")
+            // Radix mirrors a radio group or select into an aria-hidden native input; the group is the field.
+            .filter(
+              (el) => (el as HTMLInputElement).type !== "hidden" && !el.closest("[aria-hidden=true]") && visible(el),
+            )
+            .map(nameOf)
+            .filter(Boolean)
+        );
       })
       .catch(() => [] as string[]);
     for (const name of names) this.required.add(name);
@@ -303,17 +331,15 @@ function annotate(info: TestInfo, journey: Journey): void {
 export const test = base.extend<{ journey: (id: JourneyId) => Journey }>({
   // Playwright calls the second argument `use`; named `provide` so the React hooks rule leaves it be.
   journey: async ({ page }, provide, info) => {
+    const events: string[] = [];
+    await captureEvents(page.context(), events);
     let current: Journey | null = null;
     await provide((id) => {
       if (current) throw new Error("One journey per test.");
-      current = new Journey(page, id);
+      current = new Journey(page, id, events);
       return current;
     });
-    if (current) {
-      const journey: Journey = current;
-      journey.detach();
-      annotate(info, journey);
-    }
+    if (current) annotate(info, current);
   },
 });
 

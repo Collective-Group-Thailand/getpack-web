@@ -8,7 +8,8 @@
  * `requiredFields` is the other half of scorecard §4 ("fail CI when … a required field is added
  * without a scorecard update"): every visible required field a walk meets, by its accessible
  * name. A field that is not listed is reported as new, and becomes a failure with the budgets
- * at U5.8 (`STEP_BUDGETS=enforce`).
+ * at U5.8 (`STEP_BUDGETS=enforce`). The lists are the fields the walks met on 2026-09-29 (the U5.0
+ * baseline); the checkout's contact fields arrive pre-filled from the account.
  */
 
 export type JourneyId = "T1" | "T2" | "T3" | "T4" | "T5" | "T6" | "T7" | "T8" | "T9" | "T10" | "T11" | "T12";
@@ -56,7 +57,7 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "order",
     budget: { unit: "steps", max: 5 },
     start: "the design open in the studio, signed in",
-    requiredFields: [],
+    requiredFields: ["ชื่อผู้ติดต่อ", "อีเมล", "เบอร์มือถือ"],
   },
   T5: {
     id: "T5",
@@ -84,14 +85,14 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "reorder",
     budget: { unit: "steps", max: 3 },
     start: "the order list, signed in, with a delivered order",
-    requiredFields: [],
+    requiredFields: ["ชื่อผู้ติดต่อ", "อีเมล", "เบอร์มือถือ"],
   },
   T9: {
     id: "T9",
     journey: "claim",
     budget: { unit: "steps", max: 5 },
     start: "the order list, signed in, with a delivered order",
-    requiredFields: [],
+    requiredFields: ["ปัญหาที่พบ", "รายละเอียด", "สิ่งที่ต้องการ"],
   },
   T10: {
     id: "T10",
@@ -105,7 +106,7 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "partner job",
     budget: { unit: "taps", max: 4 },
     start: "partner zone on a phone, signed in, one job waiting",
-    requiredFields: [],
+    requiredFields: ["รับเข้า", "รายละเอียด"],
   },
   T12: {
     id: "T12",

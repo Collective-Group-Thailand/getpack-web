@@ -8,6 +8,7 @@ test("T8 reorder the previous job, 2,000 pcs", async ({ page, journey }) => {
   const j = journey("T8");
   await signInAsCustomer(page, "/account/orders", MOCK_RECEIVER_PHONE);
   await j.startHere();
+  j.expectEvents("reorder_started", "reorder_added_to_cart");
 
   const row = page.getByRole("article").filter({ hasText: DELIVERED.code });
   await j.screen(

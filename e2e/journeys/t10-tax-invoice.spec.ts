@@ -1,5 +1,3 @@
-import type { Page } from "@playwright/test";
-
 import { signInAsCustomer } from "../helpers/customer";
 import { expect, test } from "./fixture";
 import { INVOICED } from "./seeds";
@@ -19,20 +17,21 @@ test("T10 get the tax invoice for an order", async ({ page, journey }) => {
   await j.screen(
     "order",
     () => page.getByRole("article").filter({ hasText: INVOICED.code }).getByRole("heading").getByRole("link").click(),
-    () => expect(page.getByText(INVOICED.code).first()).toBeVisible(),
+    () => expect(page).toHaveURL(new RegExp(`/account/orders/${INVOICED.id}$`)),
   );
   // A signed link is asked for, then opened by a second click (api-conventions §3).
   await j.decide("ask for the tax invoice's link", () =>
     page.getByRole("button", { name: /^ขอลิงก์ดาวน์โหลด TR-/ }).click(),
   );
+  // The mock signs a `data:` URL, which Chromium will not open in a new tab; the API's is https.
   const open = page.getByRole("link", { name: /^เปิดเอกสาร TR-/ });
-  let invoice: Page | null = null;
   await j.screen(
     "tax invoice",
+    () => open.click(),
     async () => {
-      [invoice] = await Promise.all([page.waitForEvent("popup"), open.click()]);
+      await expect(open).toHaveAttribute("href", /^(data|https?):/);
+      await expect(open).toHaveAttribute("target", "_blank");
     },
-    () => expect.poll(() => invoice?.url() ?? "").toMatch(/^(data|https?):/),
   );
 
   await j.done(() => expect(page.getByText("ใบกำกับภาษี/ใบเสร็จรับเงิน").first()).toBeVisible());
