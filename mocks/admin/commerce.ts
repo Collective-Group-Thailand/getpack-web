@@ -585,12 +585,14 @@ function buildOrder(seed: Seed, index: number): Order {
           },
         ]
       : [],
+    // A paid instalment is answered with a tax invoice/receipt (TR, accounting-design.md P01), not
+    // a bare receipt — which is also what a customer asking for "the tax invoice" looks for (T10).
     documents: paid
       ? [
           {
             id: mockId("doc", index + 1),
-            type: "rc",
-            number: `RC-2569-${String(800 + index).padStart(5, "0")}`,
+            type: "tr",
+            number: `TR-2569-${String(800 + index).padStart(5, "0")}`,
             status: "issued",
             issuedAt: bangkokIso(-60 * (5 + index * 8)),
             grossAmount: firstDue.grossAmount,

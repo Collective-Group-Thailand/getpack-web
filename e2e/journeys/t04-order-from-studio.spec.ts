@@ -1,0 +1,77 @@
+import type { Page } from "@playwright/test";
+
+import { HOSTS } from "../../playwright.config";
+import { MOCK_BUYER_PHONE, signInAsCustomer } from "../helpers/customer";
+import { gotoHydrated } from "../helpers/session";
+import { expect, test } from "./fixture";
+
+const dock = (page: Page) => page.getByRole("complementary", { name: "ราคาของคุณ" });
+
+/** Whatever the buyer's cart already holds is not part of this task. */
+async function emptyCart(page: Page) {
+  await gotoHydrated(page, `${HOSTS.customer}/cart`);
+  const remove = page.getByRole("button", { name: /^นำออก/ });
+  while ((await remove.count()) > 0) {
+    const before = await remove.count();
+    await remove.first().click();
+    await expect(remove).toHaveCount(before - 1);
+  }
+}
+
+/** T4 "สั่งผลิต 1,000 ใบ ส่งมาที่บริษัท" — from the studio to the payment page (nothing is paid). */
+test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey }) => {
+  test.slow();
+  const j = journey("T4");
+  await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
+  await emptyCart(page);
+  // The task card's start: a design of the box open in the studio.
+  await gotoHydrated(page, `${HOSTS.customer}/design/new?product=shipping-box`);
+  const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
+  await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
+  await expect(setup).toBeHidden();
+  await j.startHere();
+  j.expectEvents("design_ordered", "configurator_opened", "cart_item_added", "checkout_started", "order_placed");
+
+  await j.screen(
+    "configurator, filled in from the design",
+    () => page.getByRole("link", { name: "สั่งผลิต" }).click(),
+    () => expect(dock(page)).toBeVisible(),
+  );
+  j.gap("the design is attached to the order only after checkout, not carried into the cart (U4.6)");
+
+  const breaks = dock(page).getByRole("table", { name: "ราคาต่อจำนวน" });
+  // The breaks load with the price; only then can the walk tell whether 1,000 is already chosen.
+  await expect(breaks.getByRole("button", { name: /^เลือกอยู่/ })).toBeVisible();
+  if ((await breaks.getByRole("button", { name: "เลือกอยู่ 1,000 ชิ้น" }).count()) === 0) {
+    await j.decide("quantity", () => breaks.getByRole("button", { name: /เลือก\S*\s*1,000 ชิ้น/ }).click());
+  }
+  await j.decide("add to cart", async () => {
+    await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
+    await expect(page.getByText(/ลงตะกร้าแล้ว/)).toBeVisible();
+  });
+  await j.screen(
+    "cart",
+    () => page.getByRole("button", { name: "ดูตะกร้า" }).click(),
+    () => expect(page.getByRole("list", { name: "รายการในตะกร้า" })).toBeVisible(),
+  );
+  await j.screen(
+    "checkout",
+    () => page.getByRole("link", { name: "ดำเนินการชำระเงิน" }).click(),
+    () => expect(page.getByRole("heading", { level: 1, name: "ชำระเงิน" })).toBeVisible(),
+  );
+  await page.locator("html[data-hydrated]").waitFor();
+  // The company address and tax profile are the account's defaults: accepting them costs nothing.
+  const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
+  await j.screen(
+    "confirm",
+    () => summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click(),
+    () => expect(page.getByRole("alertdialog", { name: "ยืนยันคำสั่งซื้อ" })).toBeVisible(),
+  );
+  await j.screen(
+    "payment",
+    () => page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click(),
+    () => expect(page).toHaveURL(/\/checkout\/pay\//),
+  );
+
+  await j.done(() => expect(page.getByText("รอชำระเงิน", { exact: true })).toBeVisible());
+});

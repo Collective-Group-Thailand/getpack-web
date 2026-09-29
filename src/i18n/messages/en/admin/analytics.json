@@ -97,5 +97,46 @@
     "xlsx": "Partner prospectus (XLSX)",
     "ready": "Prospectus ready: aggregated and anonymised; {suppressed} groups under {k} withheld",
     "failed": "Could not create the prospectus"
+  },
+  "journeys": {
+    "title": "Journeys",
+    "note": "Sessions reaching each step in the period, against the one before — an alert when a step's conversion drops by more than {threshold} within a week",
+    "journey": "Journey",
+    "journeys": {
+      "configurator": "Configure and price",
+      "checkout": "Checkout",
+      "studio": "Online design",
+      "claims": "Report a problem",
+      "reorder": "Reorder"
+    },
+    "chart": "Sessions at each step of {journey}",
+    "step": "Step",
+    "sessions": "Sessions",
+    "conversion": "From the previous step",
+    "previousConversion": "Previous period",
+    "weekOverWeek": "Against last week",
+    "status": "Status",
+    "first": "First step",
+    "ok": "Normal",
+    "drop": "Unusual drop",
+    "alertTitle": "{count, plural, one {# step} other {# steps}} dropped beyond the threshold this week",
+    "alertBody": "{steps} — look at this journey's recordings and steps to find where people get stuck",
+    "computedAt": "Computed {time}",
+    "steps": {
+      "configurator_opened": "Opened the configurator",
+      "configuration_changed": "Changed the spec",
+      "quote_shown": "Saw a price",
+      "cart_item_added": "Added to cart",
+      "checkout_started": "Started checkout",
+      "order_placed": "Placed the order",
+      "order_paid": "Paid",
+      "design_started": "Started a design",
+      "design_saved": "Saved the design",
+      "design_ordered": "Ordered from the design",
+      "claim_started": "Opened the claim form",
+      "claim_submitted": "Submitted the claim",
+      "reorder_started": "Opened the reorder",
+      "reorder_added_to_cart": "Reorder in the cart"
+    }
   }
 }

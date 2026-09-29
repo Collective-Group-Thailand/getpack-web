@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale } from "next-intl";
 
 import type { DesignerCatalog } from "@/features/designer/data/api";
@@ -8,9 +8,12 @@ import Editor, { type EditorSeed, type EditorSession, type InitialDesign } from 
 import { designRepo } from "@/features/designer/storage";
 import { useRouter } from "@/i18n/navigation";
 import { useEditor } from "@/features/designer/store/editor";
+import { track } from "@/lib/analytics/track";
 
 import { OrderAction, type OrderLink } from "./OrderAction";
 import { PriceWidget } from "./PriceWidget";
+
+const DESIGN_ROUTE = "/design/[id]";
 
 export interface CustomerDesignerProps {
   id: string;
@@ -46,6 +49,17 @@ export function CustomerDesigner({ id, signedIn, design, catalog, seed, link, te
     if (catalog?.rules.bleedMm) useEditor.getState().setBleed(catalog.rules.bleedMm);
   }, [catalog]);
 
+  // The studio funnel (docs/ux/funnels.md): a new design opened, then its first confirmed save.
+  useEffect(() => {
+    if (id === "new") track("design_started", { route: DESIGN_ROUTE });
+  }, [id]);
+  const savedOnce = useRef(false);
+  const onSaved = () => {
+    if (savedOnce.current) return;
+    savedOnce.current = true;
+    track("design_saved", { route: DESIGN_ROUTE });
+  };
+
   const session: EditorSession = {
     mode,
     editable: true,
@@ -58,6 +72,7 @@ export function CustomerDesigner({ id, signedIn, design, catalog, seed, link, te
       ...(link ? { link: { orderId: link.orderId, itemId: link.itemId } } : {}),
       ...(templateId ? { templateId } : {}),
     },
+    onSaved,
   };
 
   return (
