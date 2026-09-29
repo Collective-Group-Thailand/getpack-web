@@ -39,7 +39,7 @@ export function ImageGallery({ images, labels, className }: ImageGalleryProps) {
     return (
       <div
         className={cn(
-          "bg-bg-subtle text-subtle flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-xl",
+          "bg-bg-subtle text-subtle rounded-card flex aspect-[4/3] flex-col items-center justify-center gap-2",
           className,
         )}
       >
@@ -51,7 +51,7 @@ export function ImageGallery({ images, labels, className }: ImageGalleryProps) {
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div className="bg-bg-subtle aspect-[4/3] overflow-hidden rounded-xl">
+      <div className="bg-bg-subtle rounded-card aspect-[4/3] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element -- API-origin image, see ProductCard */}
         <img
           src={current.src}

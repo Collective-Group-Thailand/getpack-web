@@ -42,7 +42,7 @@ export function LabelSheet({ labels, label, size = "100x150", className }: Label
         <div
           key={index}
           style={{ width: LABEL_SIZES[size].width, height: LABEL_SIZES[size].height }}
-          className="label-page border-border flex max-w-full flex-col overflow-hidden border bg-white p-[5mm] text-black shadow-sm"
+          className="label-page border-border shadow-card flex max-w-full flex-col overflow-hidden border bg-white p-[5mm] text-black"
         >
           {content}
         </div>

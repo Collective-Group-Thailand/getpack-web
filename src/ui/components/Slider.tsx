@@ -36,7 +36,7 @@ export function Slider({ className, valueText, "aria-label": ariaLabel, ...props
         aria-describedby={groupProps["aria-describedby"]}
         aria-valuetext={valueText}
         className={cn(
-          "border-primary bg-surface block size-5 rounded-full border-2 shadow-sm",
+          "border-primary bg-surface shadow-card block size-5 rounded-full border-2",
           "disabled:pointer-events-none disabled:opacity-50",
         )}
       />

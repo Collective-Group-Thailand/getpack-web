@@ -186,7 +186,7 @@ export default function MyDesigns({ account }: { account: StoreDesignSummary[] |
       ) : (
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((row) => (
-            <Card as="li" key={row.id} padding="none" className="overflow-hidden transition hover:shadow-lg">
+            <Card as="li" key={row.id} padding="none" className="hover:shadow-overlay overflow-hidden transition">
               <Link
                 href={`/design/${row.id}`}
                 className="bg-surface-subtle block aspect-[4/3] p-4"

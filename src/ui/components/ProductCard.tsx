@@ -55,7 +55,7 @@ export function ProductCard({
   return (
     <Component
       className={cn(
-        "group border-border bg-surface focus-within:ring-focus-ring relative flex flex-col overflow-hidden rounded-xl border transition-shadow focus-within:ring-2 hover:shadow-md",
+        "group border-border bg-surface focus-within:ring-focus-ring rounded-card hover:shadow-card relative flex flex-col overflow-hidden border transition-shadow focus-within:ring-2",
         className,
       )}
       {...props}
@@ -71,7 +71,7 @@ export function ProductCard({
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             decoding="async"
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="duration-base ease-standard h-full w-full object-cover transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         ) : (
           <div className="text-subtle flex h-full items-center justify-center" aria-hidden="true">

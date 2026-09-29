@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const themeChoice = await readThemeChoice("admin");
 
   return (
-    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} className={fontClassNames}>
+    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} data-zone="admin" className={fontClassNames}>
       <body>
         <ZoneProviders zone="admin" themeChoice={themeChoice}>
           {children}
