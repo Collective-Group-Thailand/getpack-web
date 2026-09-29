@@ -149,3 +149,32 @@ describe("crawler files", () => {
     }
   });
 });
+
+describe("mock scenarios (?mock=, U-F0.1)", () => {
+  const HEADER = "x-middleware-request-x-packio-mock-scenario";
+
+  it("do nothing off the mock — neither the query nor a header sent from outside gets through", async () => {
+    const response = await proxy(
+      request("admin.packio.co.th", "/ops?mock=admin.ops.signals:auth.forbidden", {
+        "x-packio-mock-scenario": "admin.ops.signals:auth.forbidden",
+      }),
+    );
+    expect(response.headers.get(HEADER)).toBeNull();
+    expect(response.headers.get("set-cookie") ?? "").not.toContain("pk_mock_scenario");
+  });
+
+  it("stamp the scenario and remember it under API_MOCKS=1, and forget it on ?mock=off", async () => {
+    process.env.API_MOCKS = "1";
+    try {
+      const set = await proxy(request("admin.packio.co.th", "/ops?mock=admin.ops.signals:auth.forbidden"));
+      expect(set.headers.get(HEADER)).toBe("admin.ops.signals:auth.forbidden");
+      expect(set.headers.get("set-cookie")).toContain("pk_mock_scenario=admin.ops.signals");
+
+      const off = await proxy(request("admin.packio.co.th", "/ops?mock=off", { cookie: "pk_mock_scenario=x.y:z" }));
+      expect(off.headers.get(HEADER)).toBeNull();
+      expect(off.headers.get("set-cookie")).toMatch(/pk_mock_scenario=;/);
+    } finally {
+      delete process.env.API_MOCKS;
+    }
+  });
+});

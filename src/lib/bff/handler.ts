@@ -12,6 +12,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { CSRF_HEADER, REQUEST_ID_HEADER } from "@/lib/api/client";
+import { MOCK_SCENARIO_HEADER, mockScenarioOf } from "@/lib/api/mock-scenario";
 import {
   clearedSessionCookieWrites,
   readSessionTokens,
@@ -209,6 +210,9 @@ async function forward(
   headers.set(REQUEST_ID_HEADER, requestId);
   // The visitor's address for the API's per-IP throttles (packio-api B6.3), one entry only.
   if (visitor) headers.set(FORWARDED_FOR_HEADER, visitor);
+  // `?mock=` scenarios, under `pnpm dev:mock` only (src/lib/api/mock-scenario.ts).
+  const scenario = mockScenarioOf(request.headers);
+  if (scenario) headers.set(MOCK_SCENARIO_HEADER, scenario);
   if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);
 
   try {

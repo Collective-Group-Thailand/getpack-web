@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { upstreamApi } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
-import { visitorIp } from "@/lib/security/visitor.server";
+import { serverCallContext } from "@/lib/api/call-context.server";
 import { safeReturnTo } from "@/features/shared/auth/return-to";
 import { startSession } from "@/features/shared/auth/session-actions";
 
@@ -35,7 +35,7 @@ export async function signInPartner(_state: PartnerLoginState, formData: FormDat
   if (!email || (!password && !pin)) return { errorKey: "errors.invalidPartnerCredentials" };
 
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl(), forwardedFor: await visitorIp() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
     const { data } = await api.POST("/v1/auth/partner/login", {
       body: {
         email,
