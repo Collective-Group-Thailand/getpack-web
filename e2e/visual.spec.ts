@@ -16,9 +16,24 @@ import { expect, test } from "@playwright/test";
  *     pnpm build-storybook && pnpm e2e --project=visual --update-snapshots
  */
 
-/** Storybook's iframe renders one story without its navigation chrome. */
-function storyUrl(id: string): string {
-  return `/iframe.html?id=${id}&viewMode=story`;
+/**
+ * Storybook's iframe renders one story without its navigation chrome. `globals` sets the
+ * toolbar values (theme, zone) the same way the toolbar does, so one story can be shot as the
+ * zone that actually renders it.
+ */
+function storyUrl(id: string, globals?: string): string {
+  return `/iframe.html?id=${id}&viewMode=story${globals ? `&globals=${globals}` : ""}`;
+}
+
+/** The instant the story fixtures are written around (`data.stories.tsx`). */
+const STORY_NOW = new Date("2026-09-25T10:00:00+07:00");
+
+interface Shot {
+  id: string;
+  /** Storybook globals, e.g. `theme:hc;zone:partner`. */
+  globals?: string;
+  /** Appended to the snapshot name when the same story is shot twice. */
+  suffix?: string;
 }
 
 const STORIES = [
@@ -43,9 +58,39 @@ const STORIES = [
   "designer-panels--elements",
 ];
 
-for (const id of STORIES) {
-  test(`${id} looks the way it did`, async ({ page }) => {
-    await page.goto(storyUrl(id));
+/**
+ * The art direction (D-180) as each zone wears it: the storefront's paper, pill CTA and
+ * product cards; the admin's dense back office on the same tokens; the partner's shop floor
+ * in high contrast, the theme most likely to be forgotten.
+ */
+const ZONE_SHOTS: Shot[] = [
+  { id: "storefront-art-direction--composition", globals: "zone:customer" },
+  { id: "storefront-art-direction--composition", globals: "theme:dark;zone:customer", suffix: "dark" },
+  { id: "storefront-art-direction--composition", globals: "zone:admin", suffix: "admin-radius" },
+  { id: "docs-tokens--art-direction" },
+  { id: "foundations-button--variants", globals: "zone:customer", suffix: "customer" },
+  { id: "foundations-button--variants", globals: "zone:admin", suffix: "admin" },
+  { id: "foundations-badge--tones" },
+  { id: "foundations-feedback-and-surfaces--surfaces" },
+  { id: "forms-field-and-controls--text-controls" },
+  { id: "commerce-catalogue--product-grid", globals: "zone:customer" },
+  { id: "commerce-catalogue--product-grid", globals: "theme:dark;zone:customer", suffix: "dark" },
+  { id: "commerce-configure-and-quote--dock", globals: "zone:customer" },
+  { id: "data-display-back-office--server-list", globals: "zone:admin" },
+  { id: "data-display-back-office--detail", globals: "zone:admin" },
+  { id: "partner-shop-floor--stages", globals: "theme:hc;zone:partner", suffix: "hc" },
+  { id: "partner-shop-floor--big-action", globals: "theme:hc;zone:partner", suffix: "hc" },
+];
+
+const SHOTS: Shot[] = [...STORIES.map((id) => ({ id })), ...ZONE_SHOTS];
+
+for (const { id, globals, suffix } of SHOTS) {
+  const name = suffix ? `${id}--${suffix}` : id;
+  test(`${name} looks the way it did`, async ({ page }) => {
+    // A fixed clock: the stories' fixtures are dated around this instant, and a component
+    // that reads the time (an SLA countdown) would otherwise change the shot every minute.
+    await page.clock.setFixedTime(STORY_NOW);
+    await page.goto(storyUrl(id, globals));
 
     // Storybook renders the story into `#storybook-root`; waiting for it avoids catching a
     // blank frame on a slow first paint.
@@ -62,10 +107,18 @@ for (const id of STORIES) {
      * tolerance. Shooting the component makes the change a large fraction of a small image.
      * (Verified by making that exact change and watching the test fail.)
      */
-    await expect(page.locator("#storybook-root")).toHaveScreenshot(`${id}.png`, {
+    await expect(page.locator("#storybook-root")).toHaveScreenshot(`${name}.png`, {
       // Antialiasing differs run to run even on one machine, but a colour or layout change is
       // orders of magnitude larger than 0.2% of a component-sized shot.
       maxDiffPixelRatio: 0.002,
+      /*
+       * Per-pixel colour tolerance. Playwright's default (0.2) forgives any shift smaller than
+       * that, which let the whole D-180 rebrand (white → #FBF8F3 page, cool → warm greys) pass
+       * against the old baselines unnoticed. Token changes are exactly what this suite is for,
+       * so a pixel counts as changed at a much smaller shift; antialiasing noise is still
+       * absorbed by `maxDiffPixelRatio`.
+       */
+      threshold: 0.02,
       animations: "disabled",
     });
   });
