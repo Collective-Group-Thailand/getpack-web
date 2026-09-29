@@ -25,6 +25,8 @@ type Story = StoryObj<typeof meta>;
 const TONES = [
   { tone: "neutral", icon: "document", label: "ร่าง" },
   { tone: "primary", icon: "box", label: "กำลังออกแบบ" },
+  // Promotions only (D-180): a real campaign from the promotions engine, never urgency (D-181).
+  { tone: "accent", icon: "tag", label: "ราคาพิเศษ" },
   { tone: "info", icon: "package", label: "กำลังผลิต" },
   { tone: "success", icon: "success", label: "ส่งมอบแล้ว" },
   { tone: "warning", icon: "clock", label: "รอชำระเงิน" },
