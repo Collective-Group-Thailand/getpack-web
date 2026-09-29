@@ -50,6 +50,42 @@ test.describe("the menu follows the entitlements", () => {
   });
 });
 
+test.describe("ops monitor (packio-api B6.3)", () => {
+  test("an admin opens the signals from the menu; a CS agent has no entry", async ({ page, browser }) => {
+    await signInAsStaff(page, "admin");
+    await page
+      .getByRole("navigation", { name: "เมนูหลัก" })
+      .getByRole("link", { name: "เฝ้าระวังระบบ", exact: true })
+      .click();
+    await expect(page.getByRole("heading", { level: 1, name: "เฝ้าระวังระบบ" })).toBeVisible();
+    // The contract's own example row: dead letters 0 against a threshold of 1.
+    const row = page.getByRole("row", { name: /dead letter/ });
+    await expect(row).toContainText("ปกติ");
+
+    const cs = await browser.newPage();
+    await signInAsStaff(cs, "cs");
+    await expect(
+      cs.getByRole("navigation", { name: "เมนูหลัก" }).getByRole("link", { name: "เฝ้าระวังระบบ" }),
+    ).toHaveCount(0);
+    await cs.close();
+  });
+});
+
+test.describe("?mock= scenarios (U-F0.1)", () => {
+  test("switch one operation to a documented problem, stick across pages, and end on ?mock=off", async ({ page }) => {
+    await signInAsStaff(page, "admin");
+    await gotoHydrated(page, `${HOSTS.admin}/ops?mock=admin.ops.signals:auth.forbidden`);
+    await expect(page.getByRole("alert").filter({ hasText: "โหลดสัญญาณไม่สำเร็จ" })).toBeVisible();
+
+    // Remembered for the pages that follow, until switched off.
+    await gotoHydrated(page, `${HOSTS.admin}/ops`);
+    await expect(page.getByRole("alert").filter({ hasText: "โหลดสัญญาณไม่สำเร็จ" })).toBeVisible();
+
+    await gotoHydrated(page, `${HOSTS.admin}/ops?mock=off`);
+    await expect(page.getByRole("row", { name: /dead letter/ })).toContainText("ปกติ");
+  });
+});
+
 test.describe("dashboard", () => {
   test("opens on the queues this person may work", async ({ page }) => {
     await signInAsStaff(page, "finance");
@@ -202,6 +238,7 @@ test.describe("every 2.1 screen is axe-clean", () => {
     ["/notifications/templates", "แม่แบบข้อความแจ้งเตือน"],
     ["/notifications/routes", "เส้นทางการแจ้งเตือน"],
     ["/outbox", "คิวเหตุการณ์ระบบ"],
+    ["/ops", "เฝ้าระวังระบบ"],
   ] as const) {
     test(path, async ({ page }) => {
       await signInAsStaff(page, "superadmin");

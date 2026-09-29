@@ -61,6 +61,7 @@ const MENU_ICONS: Record<string, IconName> = {
   notification_routes: "route",
   audit_logs: "history",
   outbox: "inbox",
+  ops: "activity",
 };
 
 /**
@@ -85,6 +86,7 @@ export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[]
       "notification_routes",
       "audit_logs",
       "outbox",
+      "ops",
     ],
   },
 ];

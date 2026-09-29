@@ -14,7 +14,7 @@
  *                 persona per factory role
  *
  * Order matters: MSW uses the first handler that matches, so overrides come before the
- * generated fallbacks.
+ * generated fallbacks — and `?mock=` scenarios (./scenario.ts) come before everything.
  */
 
 import { http, HttpResponse } from "msw";
@@ -23,6 +23,7 @@ import { adminHandlers } from "./admin";
 import { authHandlers } from "./auth";
 import { generatedHandlers } from "./generated/handlers";
 import { partnerZoneHandlers } from "./partner";
+import { scenarioHandlers } from "./scenario";
 import { storeHandlers } from "./store";
 
 export { MOCK_ID_TOKENS, MOCK_NEW_CUSTOMER_PHONE, MOCK_OTP, MOCK_PARTNER, MOCK_STAFF } from "./auth";
@@ -48,6 +49,7 @@ const inbox = [
 ];
 
 export const handlers = [
+  ...scenarioHandlers,
   ...authHandlers,
   ...storeHandlers,
   ...adminHandlers,

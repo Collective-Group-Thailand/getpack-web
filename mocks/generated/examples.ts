@@ -3,7 +3,7 @@
  * Source: contract/openapi.json · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
-/** List-endpoint example rows from contract/openapi.json (packio-api 0.1.0), keyed by path. */
+/** List-endpoint example rows from contract/openapi.json (packio-api 0.2.0), keyed by path. */
 export const LIST_EXAMPLES: Record<string, readonly unknown[]> = {
   "/v1/admin/approvals": [{"actions":[{"action":"approve","actor":{"displayName":"การเงิน ทดสอบ","id":"0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b"},"at":"2026-09-23T15:00:00+07:00","comment":"Verified by phone with the factory","onBehalfOf":null,"stepNo":1}],"amount":null,"createdAt":"2026-09-23T14:05:00+07:00","currency":"THB","currentStepNo":2,"decidedAt":null,"expiresAt":null,"flags":[],"id":"0192f3a0-7c1e-7d2a-9b1f-00000000a0a0","payload":{"bankLast4":"1234","vendor":"โรงงาน ทดสอบ"},"pct":null,"policy":"vendor_bank_account_change","requester":{"displayName":"ผู้ขอ ทดสอบ","id":"0192f3a0-7c1e-7d2a-9b1f-00000000c0c0"},"status":"pending","steps":[{"completedAt":"2026-09-23T15:00:00+07:00","dueAt":null,"quorum":1,"role":"finance","status":"approved","stepNo":1},{"completedAt":null,"dueAt":null,"quorum":1,"role":"finance_manager","status":"pending","stepNo":2}],"subjectId":"0192f3a0-7c1e-7d2a-9b1f-00000000b0b0","subjectType":"vendor_bank_account"}],
   "/v1/admin/audit-logs": [{"action":"iam.role_granted","actor":{"id":"0192f3a0-7c1e-7d2a-9b1f-3c4d5e6f7a8b","name":"แอดมิน ทดสอบ","type":"user"},"category":"iam","data":{"reason":"Joined the finance team","role":"finance"},"occurredAt":"2026-09-23T14:05:00+07:00","onBehalfOf":null,"outcome":"success","requestId":"req-3f2a9c1d","resourceId":"0192f3a0-7c1e-7d2a-9b1f-00000000c0c0","resourceType":"user"}],
