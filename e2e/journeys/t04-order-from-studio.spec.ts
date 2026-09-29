@@ -40,6 +40,8 @@ test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey
   j.gap("the design is attached to the order only after checkout, not carried into the cart (U4.6)");
 
   const breaks = dock(page).getByRole("table", { name: "ราคาต่อจำนวน" });
+  // The breaks load with the price; only then can the walk tell whether 1,000 is already chosen.
+  await expect(breaks.getByRole("button", { name: /^เลือกอยู่/ })).toBeVisible();
   if ((await breaks.getByRole("button", { name: "เลือกอยู่ 1,000 ชิ้น" }).count()) === 0) {
     await j.decide("quantity", () => breaks.getByRole("button", { name: /เลือก\S*\s*1,000 ชิ้น/ }).click());
   }
