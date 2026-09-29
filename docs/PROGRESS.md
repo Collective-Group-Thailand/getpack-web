@@ -34,6 +34,58 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-28 | **F6 Deliverable 6.2** — payables, payouts, banking | On the published B5.3 surface: AP open items with their payable dates, factory POs, GRs from POD (D-165), billing statements with tax-invoice capture, tax-invoice validation against the vendor record (P17V), the vendor master with bills (P25/P26) and bank-account changes under dual approval + call-back; payout runs from eligible payables → propose → C-Level approval (proposer ≠ approver) → bank file → confirmation import (P14/P16/P17/P18), PV numbers, 50 ทวิ, exceptions; banking: cash position, statement import with auto-match (P05/P04), the matching workbench with suggestions and split, unidentified receipts (P29) to identification, settlements, company accounts under dual approval | 6.3–6.4 | Four contract requests (payout item documents, bank-line suggestions, split, settlement list); the partner zone's statements and tax invoices are the same rows Finance validates |
 | 2026-09-29 | **F6 Deliverable 6.3** — ledger, tax, fixed assets | On the published B5.1 / B5.4 / B5.5 surface: the chart of accounts with changes under `coa_change`, cost centres and the dimension catalogue; journals with the manual-journal editor (draft under If-Match → submit → Finance Manager other than the maker approves → posted with a JV number), reversals through the same approval, auto-reversing and recurring journals (`recurring_journal`); posting rules with versions, the template in force, a dry-run preview and version proposals; fiscal periods open ⇄ soft-closed → closed → locked in order; tax: the seven monthly papers built from the books with their GL reconciliation, finalise at 0 (ภ.พ.30 posts P27), attachment export, filing, payment (P27P / P28), calendar, rates as approved versions, nature of sale and the tax settings read from Settings, document series, e-Tax off until R2; fixed assets: categories (If-Match), register (FA01), monthly depreciation preview → post (FA02), disposal / write-off (FA03), roll-forward with the register reconciled to the GL | 6.4 | One contract request (`admin.depreciation-preview`); the close checklist gates close / lock in 6.4 |
 | 2026-09-29 | **F6 Deliverable 6.4** — period close, reports, auditor | On the published B5.6 surface: the close index and each month's checklist (nine §7 steps with owners, automatic blocking checks, evidence, waivers by a Finance Manager, submit → review by a Finance Manager other than the submitter → closed → locked, the auditor's year-end sign-off), gating the ledger's close and lock; trial balance with CSV export, GL detail with drill-down and paging, balance sheet, profit and loss pivoted by factory / product type / channel / campaign / cost centre, indirect cash flow, points-liability and retention roll-forwards, sub-ledger ↔ GL reconciliation; the auditor's desk (access window from the role grant, registers, audit trail), exception reports, reproducible samples, hashed PBC pack. Month simulation e2e: trial balance, statements, sub-ledgers and the seven tax papers at zero; last month closed and locked through the checklist, then refused by the posting UI | — | Two contract requests (`admin.account-roll-forward`, `admin.subledger-reconciliation`); a 6.2 mock bug fixed (payout item ids could collide) |
+| 2026-09-29 | **U-F2** — art direction tokens (D-180) | D-180 palette in light/dark/high contrast (129 gated pairs pass); `accent` tone for promotions, `kraft` decorative slots; 12/16 px radii with pill CTA on the storefront only (`data-zone`); two elevation levels; 150/200/250 ms ease-out; `text-display` h1; `SectionDivider`; token-usage lint; Storybook art-direction docs; 33 visual baselines across all zones | Linux CI visual baselines (one-time `e2e:visual:update` on the runner); placing dividers and the hero is U-F3 | Dark primary-700 adjusted (below); secondary CTA stays 12 px — see §U-F2 |
+
+---
+
+## U-F2 — Art direction tokens (D-180) — 2026-09-29
+
+`docs/prompts/U1-update-2026-09-29.md` §U-F2, on `feat/u-f2-art-direction` (worktree `../packio-web-u1`, from `main` at `94aa968`). Gap table: `docs/update-2026-09-29-gap.md` §U-F2. No backend involved.
+
+### Decisions implemented
+D-180 (visual direction, values Proposed) and the D-181 card facts in the new storefront story. Token **values** changed; the semantic key set grew by the `accent` tone and `kraft` / `kraft-strong`, and no component names a palette.
+
+### Values that differ from the proposal, with the ratios
+| Token | Proposed | Shipped | Why |
+|---|---|---|---|
+| dark `primary-hover` (`--c-primary-700`) | `#0D7A66` | `brand-400` (one ramp step *lighter*) | the proposal gives 3.26:1 under the dark button label and 3.49:1 as a hovered link on the dark page; the shipped step gives 8.90:1 for both |
+| light `subtle` (placeholders; not in the spec) | — (ramp step 500) | ramp 500 at L 0.64 | step 500 gives 2.97:1 on paper-50; shipped 3.18:1 |
+| dark `surface-raised` (not in the spec) | — | surface + 0.04 L | menus need one step above a dark card; fg 12.74:1, muted 7.35:1 on it |
+The tightest pass is light `primary` on the paper band, 4.52:1. `pnpm contrast` prints all 129 pairs.
+
+### Also decided
+- **Warning ≠ promotion.** `warning` is the spec's `#B45309` with a white label (5.02:1), on its own burnt-orange ramp; amber is `accent` alone. A campaign badge is `<Badge tone="accent">`.
+- **Print marks and artwork defaults are frozen** to their pre-rebrand values (`PRINT` and `ARTWORK_DEFAULTS` are literals now): they are ink on board and must not move with a UI rebrand. Designer chrome (selection, panel labels) follows the new palette.
+- **Motion values supersede design-system.md §2** (120/200/320 → 150/200/250 ms, standard easing ease-out), as §Art direction specifies.
+- **Pill = the primary CTA only**, in the whole customer zone (checkout and account included), as the spec says; the secondary button stays at 12 px. This is the most literal reading; it is easy to widen if you prefer both storefront CTAs as pills.
+- **Dialogs 24 → 16 px** (cards), menus and popovers stay 12 px, callouts unchanged.
+- **`cn` now knows the semantic scale names.** Plain tailwind-merge took `text-display` for a text colour and silently dropped it beside `text-fg`; it registers the `RADIUS` / `SHADOW` / `FONT_SIZE` keys from the tokens (test in `cn.test.ts`).
+- **Visual suite tightened.** Playwright's default per-pixel `threshold` (0.2) let the whole rebrand (white → `#FBF8F3`, cool → warm greys) pass against the old baselines; it is 0.02 now, and the browser clock is fixed so the SLA countdown in the back-office story does not change the shot. Two consecutive runs were identical.
+
+### Lint rules (`eslint.config.mjs`)
+`text-kraft*` (and placeholder/caret/decoration) everywhere; raw palette steps (`bg-brand-600`…) in `src/app`, `src/features` and `src/ui` components; `*-accent*` / `*-kraft*` utilities in `src/app` and `src/features`. "Teal for actions only" cannot be linted — it is in Storybook (Docs/Tokens → Art direction) and `docs/ui/brand.md`.
+
+### Deferred
+- Linux CI visual baselines: the `visual` job needs its one-time `pnpm e2e:visual:update` on the runner (only darwin baselines exist, as before).
+- Using `SectionDivider`, the hero and the paper bands on real pages is U-F3.
+
+### Verification
+- `pnpm contrast` 129/129 · `pnpm tokens:check` · `pnpm lint` · `pnpm typecheck` · `pnpm test` (867 app, 1,504 dieline) · `pnpm build`.
+- `pnpm e2e:visual`: 33 shots, two identical runs after regenerating; before/after pairs were produced for the user's review.
+- `pnpm e2e` (mocks): 340 passed, 5 failed in the parallel run — the designer-panel axe walk (timeout), two admin-console flows and the `/audit-logs` axe case (staff sign-in timed out before the account button appeared), and the finance-close month (reconciliation table empty). None is a colour or axe finding; all five (14 cases) pass when re-run on one worker. Not compared against a parallel run on `main`.
+- `pnpm lhci`: every set passes except the script-size budget in `customer-app` and `partner` — and those three URLs **already fail on `main`** (measured on a clean `main` build, same machine, one after the other). U-F2 adds 0.3–1.1 KB of uncompressed script (the art palette and `hexToOklch` reach the designer bundle through `canvas-colors`, plus the tailwind-merge config):
+
+  | URL | budget | `main` | U-F2 |
+  |---|---|---|---|
+  | `/account/designs` | 293,000 | 303,913 | 304,208 |
+  | `/configure/tuck-end-box` | 293,000 | 318,043 | 319,161 |
+  | partner `/settings` | 300,000 | 300,522 | 300,823 |
+
+  `cn` keeps its scale names inline (not imported from the tokens) so the design-system change stays out of every client bundle. Bringing these three pages back under budget is not U-F2 work; flagged below.
+
+### Open questions
+- **Performance (pre-existing)**: the three pages above are over their script-size ratchet on `main`; who owns bringing them back (the ratchets were last lowered in F5 5.3)?
+- **Design**: pill on the storefront's primary CTA only (as specified), or on both storefront CTAs?
 
 ---
 
