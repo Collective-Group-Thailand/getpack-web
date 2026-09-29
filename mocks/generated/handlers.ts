@@ -12,7 +12,7 @@
 import { http, HttpResponse } from "msw";
 
 export const generatedHandlers = [
-  // contract/openapi.json (packio-api 0.1.0)
+  // contract/openapi.json (packio-api 0.2.0)
   http.get("*/health", () => HttpResponse.json({"details":{"database":{"status":"up"},"redis":{"status":"up"},"storage":{"status":"up"}},"error":{},"info":{"database":{"status":"up"},"redis":{"status":"up"},"storage":{"status":"up"}},"status":"ok"}, { status: 200 })),
   http.get("*/v1/admin/agreement-templates", () => HttpResponse.json([{"description":"D-011 partner agreement","key":"partner_agreement","name":"Partner agreement","versions":[]}], { status: 200 })),
   http.post("*/v1/admin/agreement-templates/:key/versions", () => HttpResponse.json({"description":"D-011 partner agreement","key":"partner_agreement","name":"Partner agreement","versions":[{"effectiveFrom":"2026-09-26T10:00:00+07:00","reason":"First publication by legal counsel","textEn":null,"textSha256":"4f1c…","textTh":"ข้อตกลงการเป็นพันธมิตร …","versionNo":1}]}, { status: 201 })),
