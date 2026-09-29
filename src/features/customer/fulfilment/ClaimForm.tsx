@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
+import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { browserRequests } from "@/lib/api/requests/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
@@ -20,6 +21,8 @@ import { toast } from "@/ui/components/Toast";
 import { PhotoPicker, type PickedPhoto } from "./PhotoPicker";
 
 type Form = ResponseOf<Requests, "GET /v1/store/orders/{orderId}/claim-form">;
+/** The claims funnel's route pattern — never the URL, which carries the order id (D-102). */
+const CLAIM_ROUTE = "/account/orders/[orderId]/claim";
 type ClaimType = Form["types"][number];
 type Resolution = Form["resolutions"][number];
 
@@ -81,6 +84,7 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
         },
         idempotencyKey: key.current,
       });
+      track("claim_submitted", { route: CLAIM_ROUTE, reason: type! });
       toast.success(t("sent", { claim: claim.claimNo }));
       router.push(`/account/orders/${orderId}/claims/${claim.id}`);
     } catch (error) {

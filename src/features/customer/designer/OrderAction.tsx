@@ -9,6 +9,7 @@ import { buildPrintPdf } from "@/features/designer/print";
 import { useEditor } from "@/features/designer/store/editor";
 import { uploadFile } from "@/features/shared/files/upload";
 import { Link } from "@/i18n/navigation";
+import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import { browserRequests } from "@/lib/api/requests/browser";
@@ -58,7 +59,12 @@ export function OrderAction({ link, productSlug }: { link: OrderLink | null; pro
     });
     return (
       <Button asChild size="sm">
-        <Link href={productSlug ? `/configure/${productSlug}?${query.toString()}` : "/products"}>{t("orderThis")}</Link>
+        <Link
+          href={productSlug ? `/configure/${productSlug}?${query.toString()}` : "/products"}
+          onClick={() => track("design_ordered", { route: "/design/[id]" })}
+        >
+          {t("orderThis")}
+        </Link>
       </Button>
     );
   }

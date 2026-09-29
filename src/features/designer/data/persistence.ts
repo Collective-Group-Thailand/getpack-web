@@ -38,6 +38,8 @@ export interface PersistenceConfig {
   create?: Omit<CreateInput, "name" | "spec" | "content">;
   /** Called once a new design has its server (or local) id — the page swaps `/design/new` for it. */
   onCreated?: (id: string) => void;
+  /** Called after every save the server (or browser) confirmed — the storefront measures the first. */
+  onSaved?: () => void;
   /** A PNG data URL of the sheet for the design's card, or `null` while the canvas is not ready. */
   thumbnail: () => string | null;
 }
@@ -143,6 +145,7 @@ export function usePersistence(config: PersistenceConfig) {
           if (now.content === content && now.spec === spec && now.name === name) now.markSaved();
           if (cfg.mode !== "local") await drafts.remove(draftKey());
           setState(useEditor.getState().dirty ? "dirty" : "saved");
+          cfg.onSaved?.();
           return true;
         } catch (error) {
           if (isApiError(error) && error.status === 412) setState("conflict");
