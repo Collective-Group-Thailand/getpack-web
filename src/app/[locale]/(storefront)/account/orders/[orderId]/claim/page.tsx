@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { TrackOnView } from "@/features/customer/analytics/TrackOnView";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getClaimForm } from "@/features/customer/fulfilment/api.server";
 import { ClaimForm } from "@/features/customer/fulfilment/ClaimForm";
@@ -40,7 +41,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <h1 className="text-2xl font-bold">{t("title")}</h1>
       </header>
       {form ? (
-        <ClaimForm orderId={order.id} orderCode={order.orderCode} form={form} />
+        <>
+          <TrackOnView name="claim_started" properties={{ route: "/account/orders/[orderId]/claim" }} />
+          <ClaimForm orderId={order.id} orderCode={order.orderCode} form={form} />
+        </>
       ) : (
         <Callout tone="info">{t("notYet")}</Callout>
       )}

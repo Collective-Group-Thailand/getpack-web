@@ -11,10 +11,14 @@
  * carry no advertising identifier and never leave Packio, so they are not gated on consent —
  * unlike GA4, which is. See `./consent.ts`.
  *
- * CONTRACT-REQUEST `analytics.events`.
+ * CONTRACT-REQUEST `analytics.events`, `analytics.journey-events`.
  */
 
-/** The D-102 funnel, in order, plus the steps that explain why someone left it. */
+/**
+ * The D-102 funnel, in order, plus the steps that explain why someone left it, and the journey
+ * funnels of the UX scorecard (U5.0) — studio, claims, reorder. Each journey's steps and where
+ * they are sent from are in `docs/ux/funnels.md`.
+ */
 export const FUNNEL_EVENTS = [
   "page_view",
   "product_viewed",
@@ -25,10 +29,15 @@ export const FUNNEL_EVENTS = [
   "rfq_submitted",
   "design_started",
   "design_saved",
+  "design_ordered",
   "cart_item_added",
   "checkout_started",
   "order_placed",
   "order_paid",
+  "claim_started",
+  "claim_submitted",
+  "reorder_started",
+  "reorder_added_to_cart",
 ] as const;
 
 export type FunnelEvent = (typeof FUNNEL_EVENTS)[number];

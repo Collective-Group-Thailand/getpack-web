@@ -4,9 +4,12 @@ import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-quer
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
+import { quantityBand } from "@/features/customer/analytics/bands";
+import { TrackOnView } from "@/features/customer/analytics/TrackOnView";
 import { useDebounced } from "@/features/customer/configurator/pricing";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
+import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserRequests } from "@/lib/api/requests/browser";
@@ -74,6 +77,8 @@ export function ReorderView({ initial }: { initial: Preview }) {
         idempotencyKey: key.current,
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
+      // The reorder funnel (docs/ux/funnels.md): the band, never the quantity; where it went next.
+      track("reorder_added_to_cart", { quantityBand: quantityBand(preview.quantity), reason: then });
       router.push(then === "checkout" ? "/checkout" : "/cart");
     } catch (failure) {
       key.current = newKey();
@@ -85,6 +90,7 @@ export function ReorderView({ initial }: { initial: Preview }) {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <TrackOnView name="reorder_started" properties={{ quantityBand: quantityBand(initial.quantity) }} />
       <div className="flex min-w-0 flex-col gap-6">
         <section aria-labelledby="reorder-what">
           <h2 id="reorder-what" className="text-lg font-semibold">
