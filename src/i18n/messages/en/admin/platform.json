@@ -299,5 +299,33 @@
     "replayFailed": "Replay failed",
     "empty": "No events in this state",
     "emptyBody": "Everything is being delivered."
+  },
+  "ops": {
+    "title": "Ops monitor",
+    "description": "The signals to watch after launch, each against its threshold in the ops.alert_thresholds setting. Admins are alerted when one is exceeded, at most once an hour per signal.",
+    "columns": {
+      "signal": "Signal",
+      "value": "Value",
+      "threshold": "Threshold",
+      "status": "Status"
+    },
+    "unread": "Not read",
+    "noThreshold": "Not set",
+    "loadFailed": "The signals did not load",
+    "loadFailedBody": "Reload the page. If it still fails, send the code below to the tech team.",
+    "empty": "No signals yet",
+    "signals": {
+      "outbox_dead_letters": "Events dead-lettered after every retry",
+      "outbox_backlog_minutes": "Oldest undelivered event (minutes)",
+      "queue_depth": "Jobs waiting in the worker queues",
+      "webhook_failures_24h": "Failed webhooks, last 24 hours",
+      "payout_item_failures_7d": "Failed factory payout items, last 7 days",
+      "ledger_posting_failures": "Failed ledger postings",
+      "acceptance_overdue": "Jobs a factory has not accepted in time",
+      "production_at_risk": "Production jobs at risk of missing their date",
+      "rfq_first_response_overdue": "RFQs past their first-response SLA",
+      "approvals_overdue": "Overdue approval requests",
+      "slip_verification_wait_hours": "Longest wait for slip verification (hours)"
+    }
   }
 }
