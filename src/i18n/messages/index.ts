@@ -1,5 +1,6 @@
 import type { Zone } from "@/lib/zones";
 
+import { pickProblems, problemCodesFor } from "../problems";
 import type { Locale } from "../routing";
 
 /**
@@ -20,6 +21,7 @@ const NAMESPACES = [
   "common",
   "auth",
   "status",
+  "problems",
   "storefront",
   "home",
   "designs",
@@ -87,6 +89,7 @@ export const ZONE_NAMESPACES = {
     "common",
     "auth",
     "status",
+    "problems",
     "storefront",
     "home",
     "designs",
@@ -111,6 +114,7 @@ export const ZONE_NAMESPACES = {
     "common",
     "auth",
     "status",
+    "problems",
     "admin",
     "console",
     "iam",
@@ -138,6 +142,7 @@ export const ZONE_NAMESPACES = {
     "common",
     "auth",
     "status",
+    "problems",
     "partner",
     "partnerToday",
     "partnerOnboarding",
@@ -157,6 +162,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     common: () => import("./th/common/common.json"),
     auth: () => import("./th/common/auth.json"),
     status: () => import("./th/common/status.json"),
+    problems: () => import("./th/common/problems.json"),
     storefront: () => import("./th/customer/storefront.json"),
     home: () => import("./th/customer/home.json"),
     designs: () => import("./th/customer/designs.json"),
@@ -210,6 +216,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     common: () => import("./en/common/common.json"),
     auth: () => import("./en/common/auth.json"),
     status: () => import("./en/common/status.json"),
+    problems: () => import("./en/common/problems.json"),
     storefront: () => import("./en/customer/storefront.json"),
     home: () => import("./en/customer/home.json"),
     designs: () => import("./en/customer/designs.json"),
@@ -261,16 +268,22 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
   },
 };
 
-async function load(locale: Locale, namespaces: readonly Namespace[]) {
+async function load(locale: Locale, namespaces: readonly Namespace[], zone?: Zone) {
   const entries = await Promise.all(
-    namespaces.map(async (namespace) => [namespace, (await LOADERS[locale][namespace]()).default] as const),
+    namespaces.map(async (namespace) => {
+      const messages = (await LOADERS[locale][namespace]()).default;
+      // Problem copy is cut to the codes this zone can receive (`src/i18n/problems.ts`).
+      if (namespace === "problems" && zone)
+        return [namespace, pickProblems(messages as never, problemCodesFor(zone))] as const;
+      return [namespace, messages] as const;
+    }),
   );
   return Object.fromEntries(entries) as Record<Namespace, Record<string, unknown>>;
 }
 
 /** Namespaced messages for one zone: `useTranslations("designer.setup")` and so on. */
 export function loadMessages(locale: Locale, zone: Zone = "customer") {
-  return load(locale, ZONE_NAMESPACES[zone]);
+  return load(locale, ZONE_NAMESPACES[zone], zone);
 }
 
 /** Every namespace, whatever zone owns it — for the th/en parity test. */

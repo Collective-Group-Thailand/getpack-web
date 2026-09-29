@@ -1,0 +1,388 @@
+{
+  "approval": {
+    "already_acted": "คุณอนุมัติคำขอนี้ไปแล้ว",
+    "already_pending": "มีคำขออนุมัติค้างอยู่แล้ว",
+    "delegation_invalid": "การมอบอำนาจไม่ถูกต้อง",
+    "expired": "คำขออนุมัติหมดอายุ",
+    "no_matching_step": "ไม่พบผู้อนุมัติที่ตรงเงื่อนไข",
+    "not_authorised": "ไม่มีสิทธิ์อนุมัติขั้นตอนนี้",
+    "not_pending": "คำขอไม่ได้อยู่ระหว่างรออนุมัติ",
+    "self_approval": "อนุมัติคำขอของตนเองไม่ได้"
+  },
+  "artwork": {
+    "file_not_usable": "ใช้ไฟล์นี้ไม่ได้",
+    "invalid_status": "สถานะไฟล์งานไม่ถูกต้อง",
+    "not_accepting": "คำสั่งซื้อนี้รับไฟล์งานไม่ได้",
+    "preflight_blocked": "ไฟล์ไม่ผ่านการตรวจ",
+    "preflight_pending": "กำลังตรวจไฟล์"
+  },
+  "auth": {
+    "account_inactive": "บัญชีไม่พร้อมใช้งาน",
+    "account_locked": "บัญชีถูกล็อกชั่วคราว",
+    "forbidden": "ไม่มีสิทธิ์",
+    "identity_linked_elsewhere": "บัญชีนี้ผูกกับผู้ใช้อื่นแล้ว",
+    "identity_token_invalid": "ยืนยันตัวตนไม่สำเร็จ",
+    "invalid_client": "ข้อมูลไคลเอนต์ไม่ถูกต้อง",
+    "invalid_credentials": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+    "otp_expired": "รหัส OTP หมดอายุ",
+    "otp_invalid": "รหัส OTP ไม่ถูกต้อง",
+    "otp_rate_limited": "ขอรหัส OTP บ่อยเกินไป",
+    "pin_invalid": "PIN ไม่ถูกต้อง",
+    "refresh_invalid": "refresh token ไม่ถูกต้อง",
+    "refresh_reused": "ตรวจพบการใช้ refresh token ซ้ำ",
+    "scope_unavailable": "ไม่พบขอบเขตการใช้งาน",
+    "session_revoked": "เซสชันถูกยกเลิก",
+    "token_expired": "โทเค็นหมดอายุ",
+    "unauthenticated": "ต้องเข้าสู่ระบบ",
+    "wrong_audience": "โทเค็นใช้กับส่วนนี้ไม่ได้"
+  },
+  "banking": {
+    "duplicate_import": "นำเข้าไฟล์ซ้ำ",
+    "gl_account_invalid": "บัญชีแยกประเภทไม่ถูกต้อง",
+    "line_already_matched": "รายการนี้จับคู่แล้ว",
+    "match_amount_mismatch": "ยอดเงินไม่ตรงกัน",
+    "statement_invalid": "อ่านรายการเดินบัญชีไม่ได้"
+  },
+  "cart": {
+    "design_option_unavailable": "ตัวเลือกงานออกแบบไม่ตรงกับใบเสนอราคา",
+    "item_exists": "มีรายการนี้ในตะกร้าแล้ว",
+    "mockup_price_unavailable": "ยังสั่งทำตัวอย่างจริงไม่ได้",
+    "no_pending_reprice": "ไม่มีราคาใหม่รอยืนยัน",
+    "price_locked": "ราคายังล็อกอยู่",
+    "reprice_unavailable": "คำนวณราคาใหม่ไม่ได้"
+  },
+  "catalog": {
+    "calculator_required": "ยังไม่มีเครื่องคำนวณราคา",
+    "code_taken": "รหัสนี้ถูกใช้แล้ว",
+    "import_invalid": "ไฟล์นำเข้ามีข้อผิดพลาด",
+    "import_stale": "ไฟล์นำเข้าเปลี่ยนไปจากที่ตรวจสอบ",
+    "import_too_large": "ไฟล์นำเข้ามีจำนวนแถวมากเกินไป",
+    "import_unreadable": "อ่านไฟล์นำเข้าไม่ได้",
+    "slug_taken": "slug นี้ถูกใช้แล้ว"
+  },
+  "checkout": {
+    "cart_empty": "ตะกร้าว่าง",
+    "destinations_incomplete": "ที่อยู่จัดส่งไม่ครบ",
+    "price_expired": "ราคาหมดอายุ",
+    "rfq_destination_fixed": "ที่อยู่จัดส่งต้องตรงกับใบเสนอราคา",
+    "shipping_unavailable": "คำนวณค่าจัดส่งไม่ได้",
+    "total_changed": "ยอดรวมเปลี่ยนแปลง",
+    "wht_rate_missing": "ไม่พบอัตราภาษีหัก ณ ที่จ่าย"
+  },
+  "claims": {
+    "action_not_allowed": "ดำเนินการไม่ได้",
+    "evidence_missing": "ต้องแนบรูปถ่าย",
+    "invalid_status": "สถานะเคลมไม่ถูกต้อง",
+    "liability_undetermined": "ยังไม่ระบุผู้รับผิดชอบ",
+    "not_delivered": "ยังไม่ได้รับสินค้า",
+    "window_closed": "หมดเวลาแจ้งเคลม"
+  },
+  "close": {
+    "auditor_sign_off_required": "ต้องให้ผู้สอบบัญชีลงนามก่อน",
+    "check_failed": "การตรวจสอบไม่ผ่าน",
+    "checklist_incomplete": "รายการปิดงวดยังไม่ครบ",
+    "checklist_not_closed": "งวดยังไม่ปิด",
+    "checklist_not_in_review": "รายการปิดงวดยังไม่ส่งตรวจ",
+    "checklist_not_open": "รายการปิดงวดไม่ได้เปิดอยู่",
+    "review_by_approval": "การตรวจทานคือการอนุมัติ",
+    "task_done": "งานเสร็จแล้ว",
+    "tasks_open": "ยังมีงานค้าง"
+  },
+  "companies": {
+    "account_not_found": "ไม่พบบัญชี",
+    "already_member": "เป็นสมาชิกอยู่แล้ว",
+    "branch_exists": "มีสาขานี้แล้ว",
+    "cannot_remove_self": "ลบตัวเองไม่ได้",
+    "certificate_too_old": "หนังสือรับรองเก่าเกินไป",
+    "credit_not_eligible": "ยังไม่มีสิทธิ์เครดิต",
+    "head_office_required": "ลบสำนักงานใหญ่ไม่ได้",
+    "invalid_status": "สถานะบริษัทไม่ถูกต้อง",
+    "kyc_incomplete": "เอกสารไม่ครบ",
+    "po_required": "ต้องระบุเลขที่ PO",
+    "tax_id_taken": "เลขผู้เสียภาษีนี้มีบริษัทแล้ว"
+  },
+  "concurrency": {
+    "precondition_required": "ต้องระบุ If-Match",
+    "stale": "ข้อมูลมีการเปลี่ยนแปลง"
+  },
+  "consent": {
+    "purpose_unavailable": "ยังไม่มีข้อความความยินยอม"
+  },
+  "conversations": {
+    "closed": "ปิดการสนทนาแล้ว",
+    "unreachable": "ติดต่อลูกค้าไม่ได้"
+  },
+  "design_services": {
+    "fee_changed": "ค่าแก้แบบเปลี่ยนไป",
+    "invalid_status": "สถานะงานออกแบบไม่ถูกต้อง",
+    "no_extra_round": "ไม่มีรอบแก้แบบที่ต้องชำระ"
+  },
+  "designs": {
+    "document_too_large": "ไฟล์ออกแบบใหญ่เกินไป",
+    "template_without_design": "เทมเพลตยังไม่มีแบบ"
+  },
+  "discount_memos": {
+    "not_usable": "ใช้บันทึกส่วนลดนี้ไม่ได้",
+    "within_cs_limit": "ไม่ต้องขออนุมัติ"
+  },
+  "discounts": {
+    "cs_limit_exceeded": "เกินสิทธิ์ส่วนลด"
+  },
+  "drawing": {
+    "engine_unavailable": "ยังสร้างแบบแปลนอัตโนมัติไม่ได้",
+    "pattern_not_drawable": "รูปทรงนี้สร้างแบบแปลนไม่ได้"
+  },
+  "factory_users": {
+    "role_not_allowed": "ให้บทบาทนี้ไม่ได้"
+  },
+  "file": {
+    "infected": "ไฟล์ไม่ปลอดภัย",
+    "not_ready": "ไฟล์ยังไม่พร้อม",
+    "too_large": "ไฟล์ใหญ่เกินไป",
+    "type_not_allowed": "ไม่รองรับไฟล์ประเภทนี้",
+    "upload_incomplete": "อัปโหลดไม่สมบูรณ์"
+  },
+  "fixed_assets": {
+    "account_invalid": "ใช้บัญชีนี้ไม่ได้",
+    "already_disposed": "จำหน่ายสินทรัพย์แล้ว",
+    "category_exists": "มีหมวดสินทรัพย์นี้แล้ว",
+    "cost_exceeds_bill": "ราคาทุนเกินใบแจ้งหนี้",
+    "depreciation_pending": "ค่าเสื่อมยังไม่ครบ",
+    "run_exists": "คำนวณค่าเสื่อมแล้ว"
+  },
+  "http": {
+    "bad_request": "คำขอไม่ถูกต้อง",
+    "conflict": "ข้อมูลขัดแย้ง",
+    "malformed_json": "รูปแบบข้อมูลไม่ถูกต้อง",
+    "not_found": "ไม่พบข้อมูล",
+    "too_many_requests": "คำขอมากเกินไป"
+  },
+  "iam": {
+    "role_escalation": "ให้สิทธิ์เกินสิทธิ์ของตนเองไม่ได้",
+    "role_scope_mismatch": "ขอบเขตบทบาทไม่ถูกต้อง",
+    "self_grant": "เปลี่ยนสิทธิ์ของตนเองไม่ได้",
+    "sod_conflict": "ขัดกับการแบ่งแยกหน้าที่",
+    "user_exists": "มีผู้ใช้นี้อยู่แล้ว"
+  },
+  "idempotency": {
+    "in_progress": "คำขอกำลังดำเนินการ",
+    "key_invalid": "Idempotency-Key ไม่ถูกต้อง",
+    "key_required": "ต้องระบุ Idempotency-Key",
+    "key_reused": "Idempotency-Key ถูกใช้แล้ว"
+  },
+  "internal": {
+    "unexpected": "เกิดข้อผิดพลาดในระบบ"
+  },
+  "ledger": {
+    "account_exists": "รหัสบัญชีซ้ำ",
+    "account_invalid": "ไม่สามารถใช้บัญชีนี้ได้",
+    "change_pending": "มีคำขอเปลี่ยนแปลงรออนุมัติอยู่แล้ว",
+    "journal_not_editable": "แก้ไขรายการบัญชีไม่ได้",
+    "not_reversible": "กลับรายการไม่ได้",
+    "period_closed": "งวดบัญชีปิดแล้ว",
+    "period_transition": "เปลี่ยนสถานะงวดไม่ได้",
+    "rule_invalid": "กฎการบันทึกบัญชีไม่ถูกต้อง",
+    "unbalanced": "รายการบัญชีไม่สมดุล"
+  },
+  "line": {
+    "signature_invalid": "ลายเซ็นไม่ถูกต้อง"
+  },
+  "loyalty": {
+    "insufficient_points": "คะแนนไม่พอ"
+  },
+  "mockups": {
+    "exists": "มีม็อกอัพแล้ว"
+  },
+  "notification": {
+    "channel_unsupported": "ช่องทางนี้ทดสอบส่งไม่ได้"
+  },
+  "numbering": {
+    "series_exists": "มีชุดเลขที่อยู่แล้ว",
+    "series_missing": "ยังไม่มีชุดเลขที่เอกสาร"
+  },
+  "order": {
+    "cancel_not_allowed": "ยกเลิกเองไม่ได้",
+    "invalid_transition": "เปลี่ยนสถานะคำสั่งซื้อไม่ได้",
+    "reprice_below_paid": "ยอดใหม่ต่ำกว่ายอดที่ชำระแล้ว",
+    "reprice_has_discounts": "คำนวณราคาใหม่ไม่ได้"
+  },
+  "orders": {
+    "reorder_unavailable": "สั่งซ้ำไม่ได้"
+  },
+  "outbox": {
+    "not_replayable": "ส่งเหตุการณ์ซ้ำไม่ได้"
+  },
+  "partners": {
+    "activation_needs_approval": "ต้องขออนุมัติการเปิดใช้งาน",
+    "agreement_already_accepted": "ยอมรับข้อตกลงฉบับนี้แล้ว",
+    "agreement_not_published": "ยังไม่มีข้อตกลงฉบับที่ใช้ได้",
+    "backdated": "ย้อนวันที่มีผลไม่ได้",
+    "bank_account_not_pending": "บัญชีนี้ไม่ได้รอการยืนยัน",
+    "bank_account_pending": "มีบัญชีธนาคารที่รออนุมัติอยู่แล้ว",
+    "factory_exists": "มีโรงงานนี้อยู่แล้ว",
+    "invalid_transition": "เปลี่ยนสถานะไม่ได้",
+    "line_not_decidable": "รายการนี้ตัดสินไม่ได้ในขณะนี้",
+    "maker_checker": "ผู้จัดทำไม่สามารถอนุมัติเองได้",
+    "no_price_list_tier": "ระดับการเข้าร่วมไม่มีรายการราคา",
+    "not_capable": "โรงงานยังไม่มีความสามารถสำหรับประเภทนี้",
+    "nothing_to_sign_off": "ไม่มีข้อมูลให้รับรอง",
+    "pricing_mode_missing": "ยังไม่ได้กำหนดรูปแบบการกำหนดราคา",
+    "profile_locked": "แก้ไขข้อมูลโรงงานไม่ได้แล้ว",
+    "proposal_closed": "ข้อเสนอราคาไม่อยู่ในสถานะที่ทำรายการนี้ได้",
+    "proposal_empty": "ข้อเสนอราคายังไม่มีรายการ",
+    "proposal_open": "มีข้อเสนอราคาที่ยังดำเนินการอยู่",
+    "proposal_other_side": "ข้อเสนอนี้เป็นของอีกฝ่าย",
+    "site_visit_required": "ยังไม่มีการตรวจเยี่ยมโรงงานที่ผ่าน",
+    "version_not_awaiting": "เวอร์ชันราคานี้ไม่ได้รอการยืนยัน",
+    "version_pending": "มีฉบับที่รออนุมัติอยู่แล้ว",
+    "wrong_pricing_mode": "รูปแบบการกำหนดราคาไม่รองรับการดำเนินการนี้"
+  },
+  "payables": {
+    "invoice_duplicate": "บันทึกใบแจ้งหนี้ซ้ำ",
+    "invoice_mismatch": "ใบกำกับภาษีไม่ตรงกัน",
+    "statement_not_confirmable": "ใบวางบิลเปลี่ยนสถานะไม่ได้"
+  },
+  "payments": {
+    "group_not_payable": "ชำระเงินไม่ได้",
+    "method_unavailable": "ช่องทางชำระเงินนี้ยังไม่เปิด",
+    "no_schedule_template": "ไม่พบรูปแบบการชำระเงิน",
+    "not_a_slip_payment": "ไม่ใช่การโอนเงิน",
+    "not_awaiting_slip": "ส่งสลิปไม่ได้",
+    "not_unidentified": "ไม่ใช่รายการรอระบุ",
+    "nothing_to_pay": "ไม่มียอดค้างชำระ",
+    "schedule_has_payments": "เปลี่ยนรูปแบบการชำระไม่ได้",
+    "slip_duplicate": "สลิปซ้ำ",
+    "slip_not_in_review": "สลิปไม่ได้รอตรวจ",
+    "slip_not_scanned": "ไฟล์ยังตรวจไม่เสร็จ"
+  },
+  "payouts": {
+    "bank_account_missing": "ไม่มีบัญชีธนาคารสำหรับจ่าย",
+    "confirmation_mismatch": "ผลการโอนไม่ตรงกับรอบจ่าย",
+    "nothing_eligible": "ไม่มีรายการที่ถึงกำหนดจ่าย",
+    "run_invalid_status": "สถานะรอบจ่ายไม่ถูกต้อง"
+  },
+  "pricing": {
+    "not_instant": "ยังไม่รองรับราคาทันที",
+    "vat_rate_missing": "ยังไม่ได้ตั้งอัตราภาษีมูลค่าเพิ่ม"
+  },
+  "production": {
+    "already_released": "เริ่มผลิตแล้ว",
+    "below_margin_floor": "กำไรต่ำกว่าขั้นต่ำ",
+    "evidence_missing": "ขาดหลักฐาน",
+    "factory_unavailable": "โรงงานรับงานไม่ได้",
+    "gate_closed": "ยังเริ่มผลิตไม่ได้",
+    "invalid_status": "สถานะงานผลิตไม่ถูกต้อง",
+    "milestone_out_of_order": "ข้ามขั้นตอนไม่ได้",
+    "no_price_path": "ไม่มีราคาของโรงงานนี้",
+    "quantity_invalid": "จำนวนไม่ถูกต้อง"
+  },
+  "promotions": {
+    "budget_exhausted": "งบแคมเปญหมดแล้ว",
+    "code_invalid": "ใช้รหัสนี้ไม่ได้",
+    "code_taken": "รหัสนี้ถูกใช้แล้ว",
+    "ended": "สิ้นสุดแล้ว",
+    "invalid_transition": "เปลี่ยนสถานะไม่ได้",
+    "limit_reached": "โปรโมชันถูกใช้ครบแล้ว",
+    "no_codes": "ยังไม่มีรหัสคูปอง",
+    "not_a_coupon": "ไม่ใช่โปรโมชันแบบคูปอง",
+    "payment_method_required": "ช่องทางชำระไม่ตรงเงื่อนไข",
+    "too_many_attempts": "ลองใส่รหัสบ่อยเกินไป"
+  },
+  "proofs": {
+    "annotation_closed": "ปิดรับความเห็นแล้ว",
+    "no_accepted_artwork": "ยังไม่มีไฟล์งานที่ผ่านการตรวจ",
+    "not_pending": "พรูฟนี้ตัดสินแล้ว"
+  },
+  "provider": {
+    "unavailable": "ผู้ให้บริการภายนอกไม่พร้อมใช้งาน"
+  },
+  "quotes": {
+    "not_live": "ใบเสนอราคาหมดอายุ",
+    "not_repriceable": "คำนวณราคาใหม่ไม่ได้",
+    "nothing_to_save": "ไม่มีราคาให้บันทึก",
+    "still_valid": "ราคายังล็อกอยู่"
+  },
+  "receivables": {
+    "allowance_rates_unset": "ยังไม่ได้กำหนดอัตราค่าเผื่อหนี้สงสัยจะสูญ",
+    "certificate_invalid": "หนังสือรับรองไม่อยู่ในสถานะที่แก้ไขได้",
+    "document_not_voidable": "ยกเลิกเอกสารไม่ได้",
+    "nothing_to_write_off": "ตัดหนี้สูญไม่ได้",
+    "reason_invalid": "เหตุผลไม่ถูกต้อง"
+  },
+  "referrals": {
+    "already_attributed": "ใช้รหัสแนะนำแล้ว",
+    "code_invalid": "รหัสแนะนำไม่ถูกต้อง",
+    "not_new_customer": "สำหรับลูกค้าใหม่เท่านั้น",
+    "self_referral": "ใช้รหัสของตัวเองไม่ได้"
+  },
+  "refunds": {
+    "channel_unavailable": "ช่องทางคืนเงินไม่พร้อม",
+    "not_approved": "ยังไม่อนุมัติ",
+    "not_refundable": "คืนเงินไม่ได้"
+  },
+  "reports": {
+    "recipient_not_allowed": "ผู้รับรายงานไม่มีสิทธิ์",
+    "schedule_state": "ตารางรายงานอยู่ในสถานะนั้นแล้ว"
+  },
+  "reviews": {
+    "exists": "รีวิวแล้ว",
+    "not_delivered": "ยังรีวิวไม่ได้"
+  },
+  "rfq": {
+    "closed": "คำขอปิดแล้ว",
+    "consultation_closed": "คำขอปิดแล้ว",
+    "consultation_open": "ส่งคำขอแล้ว",
+    "draft_open": "มีฉบับร่างอยู่แล้ว",
+    "invalid_transition": "ทำรายการนี้ไม่ได้",
+    "quote_empty": "ยังไม่มีรายการ",
+    "quote_not_draft": "ไม่ใช่ฉบับร่าง",
+    "quote_not_open": "ใบเสนอราคาไม่พร้อมให้ยืนยัน"
+  },
+  "service": {
+    "unavailable": "ระบบไม่พร้อมให้บริการ"
+  },
+  "settings": {
+    "backdated": "ย้อนวันที่มีผลไม่ได้",
+    "not_owner": "ไม่ใช่ผู้รับผิดชอบค่าตั้งนี้",
+    "pending_exists": "มีการขอเปลี่ยนที่รออนุมัติอยู่"
+  },
+  "shipments": {
+    "carrier_unavailable": "ไม่สามารถจองขนส่งได้",
+    "delivered_quantity_invalid": "จำนวนที่ส่งมอบไม่ถูกต้อง",
+    "destinations_differ": "ที่อยู่ต่างกัน",
+    "inspection_pending": "รอการตรวจสอบ",
+    "invalid_status": "สถานะการจัดส่งไม่ถูกต้อง",
+    "job_not_shippable": "งานยังไม่พร้อมจัดส่ง",
+    "payment_pending": "รอชำระเงิน",
+    "pod_required": "ต้องมีหลักฐานการส่งมอบ",
+    "quantity_exceeds": "จำนวนเกิน"
+  },
+  "shipping": {
+    "carrier_account_missing": "ยังไม่มีบัญชีขนส่ง",
+    "carrier_fixed": "ไม่ใช่ขนส่งสำรอง",
+    "carrier_refused": "ผู้ให้บริการขนส่งปฏิเสธ",
+    "rates_empty": "ยังไม่มีอัตรา",
+    "version_not_awaiting": "ไม่ได้รอโรงงานตอบรับ",
+    "version_not_draft": "ไม่ใช่ฉบับร่าง",
+    "version_not_proposed": "ไม่ได้อยู่ระหว่างอนุมัติ",
+    "version_open": "มีฉบับที่เปิดอยู่แล้ว"
+  },
+  "tax": {
+    "gl_difference": "รายงานภาษีไม่ตรงกับบัญชีแยกประเภท",
+    "report_not_draft": "รายงานภาษีปิดแล้ว",
+    "report_not_final": "รายงานภาษียังไม่สรุป",
+    "report_not_payable": "ชำระภาษีจากรายงานนี้ไม่ได้"
+  },
+  "validation": {
+    "failed": "ข้อมูลไม่ถูกต้อง"
+  },
+  "bff": {
+    "unknown_path": "ไม่พบปลายทางที่ร้องขอ",
+    "body_too_large": "ข้อมูลที่ส่งมีขนาดใหญ่เกินไป",
+    "csrf_header_missing": "คำขอถูกปฏิเสธเพื่อความปลอดภัย",
+    "origin_missing": "คำขอถูกปฏิเสธเพื่อความปลอดภัย",
+    "origin_invalid": "คำขอถูกปฏิเสธเพื่อความปลอดภัย",
+    "origin_mismatch": "คำขอถูกปฏิเสธเพื่อความปลอดภัย",
+    "upstream_unreachable": "ติดต่อระบบไม่ได้ชั่วคราว"
+  }
+}
