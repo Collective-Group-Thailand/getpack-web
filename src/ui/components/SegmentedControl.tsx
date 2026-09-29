@@ -49,7 +49,7 @@ export function SegmentedControl<T extends string = string>({
         if (next) onValueChange(next as T);
       }}
       aria-label={label}
-      className={cn("border-border bg-surface-subtle inline-flex gap-0.5 rounded-lg border p-0.5", className)}
+      className={cn("border-border bg-surface-subtle rounded-control inline-flex gap-0.5 border p-0.5", className)}
     >
       {options.map((option) => (
         <ToggleGroup.Item
@@ -60,7 +60,7 @@ export function SegmentedControl<T extends string = string>({
           className={cn(
             "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap",
             "text-muted duration-fast ease-standard transition-colors",
-            "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-sm",
+            "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-card",
             "disabled:pointer-events-none disabled:opacity-50",
             size === "sm" ? "h-7 px-2 text-xs" : size === "xl" ? "h-12 px-4 text-lg" : "h-9 px-3 text-sm",
           )}

@@ -134,7 +134,7 @@ export function Combobox({
         id={listId}
         role="listbox"
         hidden={!showList}
-        className="border-border bg-surface-raised z-modal absolute inset-x-0 top-full mt-1 max-h-64 overflow-y-auto rounded-lg border p-1 shadow-lg"
+        className="border-border bg-surface-raised z-modal shadow-overlay absolute inset-x-0 top-full mt-1 max-h-64 overflow-y-auto rounded-lg border p-1"
       >
         {loading ? (
           <li role="presentation" className="text-muted flex items-center gap-2 px-2 py-2 text-sm">

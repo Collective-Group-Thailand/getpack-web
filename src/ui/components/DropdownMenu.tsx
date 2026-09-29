@@ -68,7 +68,7 @@ export function DropdownMenu({
           collisionPadding={8}
           aria-label={label}
           className={cn(
-            "z-modal border-border bg-surface-raised min-w-56 overflow-hidden rounded-lg border p-1 shadow-lg",
+            "z-modal border-border bg-surface-raised shadow-overlay min-w-56 overflow-hidden rounded-lg border p-1",
             className,
           )}
         >

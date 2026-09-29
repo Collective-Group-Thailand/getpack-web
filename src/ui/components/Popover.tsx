@@ -46,7 +46,7 @@ export function Popover({
           aria-label={props["aria-label"]}
           className={cn(
             "z-modal border-border w-(--radix-popover-content-available-width) max-w-80 rounded-lg border",
-            "bg-surface-raised p-3 text-sm shadow-lg",
+            "bg-surface-raised shadow-overlay p-3 text-sm",
             className,
           )}
         >

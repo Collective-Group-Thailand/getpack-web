@@ -7,18 +7,21 @@ import { cn } from "../lib/cn";
 import { useReturnFocus } from "../lib/useReturnFocus";
 import { IconButton } from "./IconButton";
 
-const sheetVariants = cva(["fixed z-modal flex flex-col overflow-hidden border-border bg-surface-raised shadow-xl"], {
-  variants: {
-    side: {
-      /** Filters and detail panels on desktop. */
-      end: "inset-y-0 end-0 h-dvh w-[min(26rem,calc(100vw-2rem))] border-s",
-      start: "inset-y-0 start-0 h-dvh w-[min(26rem,calc(100vw-2rem))] border-e",
-      /** The mobile default: a bottom sheet keeps actions in the thumb zone. */
-      bottom: "inset-x-0 bottom-0 max-h-[85dvh] w-full rounded-t-2xl border-t",
+const sheetVariants = cva(
+  ["fixed z-modal flex flex-col overflow-hidden border-border bg-surface-raised shadow-overlay"],
+  {
+    variants: {
+      side: {
+        /** Filters and detail panels on desktop. */
+        end: "inset-y-0 end-0 h-dvh w-[min(26rem,calc(100vw-2rem))] border-s",
+        start: "inset-y-0 start-0 h-dvh w-[min(26rem,calc(100vw-2rem))] border-e",
+        /** The mobile default: a bottom sheet keeps actions in the thumb zone. */
+        bottom: "inset-x-0 bottom-0 max-h-[85dvh] w-full rounded-t-card border-t",
+      },
     },
+    defaultVariants: { side: "end" },
   },
-  defaultVariants: { side: "end" },
-});
+);
 
 export interface SheetProps extends VariantProps<typeof sheetVariants> {
   open: boolean;

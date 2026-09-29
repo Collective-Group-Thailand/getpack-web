@@ -62,7 +62,7 @@ export function RadioCards<T extends string = string>({
           value={option.value}
           disabled={option.disabled}
           className={cn(
-            "duration-fast ease-standard flex flex-col gap-1 rounded-xl border p-3 text-start transition-colors",
+            "duration-fast ease-standard rounded-card flex flex-col gap-1 border p-3 text-start transition-colors",
             "border-border hover:border-border-strong",
             // Selection is a border *and* a ring, so it survives greyscale and high contrast.
             "data-[state=checked]:border-primary data-[state=checked]:bg-primary-subtle",

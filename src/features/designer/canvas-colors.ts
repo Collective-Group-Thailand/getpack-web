@@ -38,10 +38,13 @@ export const CANVAS_COLORS = {
 /**
  * Starting colours for newly added artwork. These are the *customer's* design content, not
  * UI chrome: once placed, the customer changes them freely and they end up on printed board.
- * They start from the brand palette only so a first element looks deliberate.
+ *
+ * Literal values, not palette steps, for the same reason as the print marks: they are ink on
+ * board, so a UI rebrand (D-180) must not change what a new element prints as. These are the
+ * values they have had since F4.
  */
 export const ARTWORK_DEFAULTS = {
-  text: oklchToHex(PALETTES.neutral[950]),
-  shapeFill: oklchToHex(PALETTES.brand[500]),
-  shapeStroke: oklchToHex(PALETTES.neutral[950]),
+  text: oklchToHex({ l: 0.262, c: 0.011, h: 255 }),
+  shapeFill: oklchToHex({ l: 0.658, c: 0.094, h: 183 }),
+  shapeStroke: oklchToHex({ l: 0.262, c: 0.011, h: 255 }),
 } as const;

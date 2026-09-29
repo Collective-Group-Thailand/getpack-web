@@ -66,7 +66,7 @@ export default async function CustomerLayout({
   const themeChoice = await readThemeChoice("customer");
 
   return (
-    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} className={fontClassNames}>
+    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} data-zone="customer" className={fontClassNames}>
       <body>
         <ZoneProviders zone="customer" themeChoice={themeChoice}>
           {children}

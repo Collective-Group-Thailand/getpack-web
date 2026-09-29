@@ -68,7 +68,7 @@ export function ProductsMenu({ label, children }: { label: string; children: Rea
       <div
         id={panelId}
         hidden={!open}
-        className="border-border bg-surface absolute start-0 top-full mt-2 w-[min(40rem,calc(100vw-2rem))] rounded-xl border p-4 shadow-lg"
+        className="border-border bg-surface shadow-overlay absolute start-0 top-full mt-2 w-[min(40rem,calc(100vw-2rem))] rounded-xl border p-4"
       >
         {children}
       </div>

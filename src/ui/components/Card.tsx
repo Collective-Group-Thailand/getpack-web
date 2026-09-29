@@ -2,12 +2,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "../lib/cn";
 
-const cardVariants = cva("rounded-xl bg-surface", {
+const cardVariants = cva("rounded-card bg-surface", {
   variants: {
     elevation: {
       flat: "border border-border",
-      raised: "border border-border shadow-sm",
-      floating: "shadow-lg",
+      raised: "border border-border shadow-card",
+      floating: "shadow-overlay",
     },
     padding: {
       none: "",

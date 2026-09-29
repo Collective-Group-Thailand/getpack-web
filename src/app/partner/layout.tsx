@@ -32,7 +32,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   const themeChoice = await readThemeChoice("partner");
 
   return (
-    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} className={fontClassNames}>
+    <html lang={locale} data-theme={dataThemeAttribute(themeChoice)} data-zone="partner" className={fontClassNames}>
       <body>
         <ZoneProviders zone="partner" themeChoice={themeChoice}>
           {children}

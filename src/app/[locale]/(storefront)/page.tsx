@@ -57,7 +57,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       <section className="bg-bg-subtle">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:grid-cols-2 md:py-20">
           <div>
-            <h1 className="text-4xl leading-tight font-bold md:text-5xl">
+            <h1 className="text-display leading-tight font-bold">
               {t("hero.titleLine1")}
               <br />
               <span className="text-primary">{t("hero.titleLine2")}</span>

@@ -34,7 +34,7 @@ export function Switch({ label, description, labelPosition = "end", className, i
     >
       <SwitchPrimitive.Thumb
         className={cn(
-          "bg-surface duration-fast ease-standard block size-5 rounded-full shadow-sm transition-transform",
+          "bg-surface duration-fast ease-standard shadow-card block size-5 rounded-full transition-transform",
           "translate-x-0.5 data-[state=checked]:translate-x-5",
         )}
       />

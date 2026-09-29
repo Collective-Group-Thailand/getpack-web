@@ -112,7 +112,7 @@
     border-radius: var(--radius-md);
     background-color: var(--color-surface);
     color: var(--color-fg);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-overlay);
     padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4);
     transform: translateY(-200%);
   }
