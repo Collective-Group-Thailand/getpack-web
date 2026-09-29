@@ -60,6 +60,57 @@ function boundaryMessage(zone) {
   return `Zone boundary (00-master-plan.md §3): this file may not import features/${zone}. Move the shared part to src/features/shared, src/ui or src/domain.`;
 }
 
+/**
+ * Attributes that are read aloud or shown to a person.
+ *
+ * A screen reader user hears `aria-label`, so an untranslated one is an English-only
+ * screen for exactly the audience least able to work around it (design-system.md §6).
+ * `alt` is required by the component API already; this makes sure it is not a literal.
+ * An empty `alt=""` is exempt: that is the standard way to mark an image decorative, and
+ * it is the absence of copy rather than untranslated copy.
+ */
+const UNTRANSLATED_ATTRIBUTE = {
+  selector:
+    "JSXAttribute[name.name=/^(alt|title|placeholder|aria-label|aria-placeholder|aria-roledescription|aria-valuetext|aria-description)$/] > Literal[value!='']",
+  message:
+    "This attribute is read by a person or a screen reader, so its text belongs in src/i18n (design-system.md §8). Pass a translated string instead of a literal.",
+};
+
+/**
+ * Token-usage rules of the art direction (D-180), matched in class strings — plain literals
+ * and template-literal parts, which is where `className` and `cva` keep them. A utility starts
+ * the string or follows a space, a variant colon or `!`.
+ *
+ * What a linter cannot see — that teal is only ever on an action — is documented in Storybook
+ * (Docs/Tokens) and left to review.
+ */
+function classPattern(regex, message) {
+  return [
+    { selector: `Literal[value=${regex}]`, message },
+    { selector: `TemplateElement[value.raw=${regex}]`, message },
+  ];
+}
+
+const UTILITY_START = "(^|[\\s:!])";
+
+/** Kraft tones are surfaces and illustration, never text. */
+const KRAFT_AS_TEXT = classPattern(
+  `/${UTILITY_START}(text|placeholder|caret|decoration)-kraft/`,
+  "Kraft tones are for surfaces and illustration only, never text (D-180). Use text-fg or text-muted.",
+);
+
+/** Components name semantic tokens; a primitive step bypasses the themes and the contrast gate. */
+const PRIMITIVE_PALETTE = classPattern(
+  `/${UTILITY_START}(bg|text|border|ring|outline|fill|stroke|from|via|to|decoration|divide|shadow|placeholder|caret)-(neutral|brand|green|orange|amber|red|blue)-(50|[1-9]00|950)\\b/`,
+  "Raw palette steps skip the themes and the contrast gate (ADR-0003). Use a semantic token such as bg-surface, text-muted or bg-primary.",
+);
+
+/** Amber is for promotions and kraft for decoration; zones reach both through src/ui components. */
+const ACCENT_OR_KRAFT_OUTSIDE_UI = classPattern(
+  `/${UTILITY_START}(bg|text|border|ring|outline|fill|stroke|from|via|to|decoration|divide|shadow)-(accent|kraft)(-|\\b)/`,
+  'accent (amber) is for promotions only and kraft for decoration only (D-180). Use <Badge tone="accent"> for a campaign badge, or add the decorative piece to src/ui.',
+);
+
 const eslintConfig = [
   {
     ignores: [
@@ -157,25 +208,34 @@ const eslintConfig = [
         },
       ],
 
-      /**
-       * The other half: attributes that are read aloud or shown to a person.
-       *
-       * A screen reader user hears `aria-label`, so an untranslated one is an English-only
-       * screen for exactly the audience least able to work around it (design-system.md §6).
-       * `alt` is required by the component API already; this makes sure it is not a literal.
-       * An empty `alt=""` is exempt: that is the standard way to mark an image decorative, and
-       * it is the absence of copy rather than untranslated copy.
-       */
+      // The other half of the copy rule, plus the D-180 colour rules — see the constants at
+      // the top. One `no-restricted-syntax` list, because a later config object naming the
+      // same rule replaces this one's options rather than adding to them.
+      "no-restricted-syntax": ["error", UNTRANSLATED_ATTRIBUTE, ...KRAFT_AS_TEXT, ...PRIMITIVE_PALETTE],
+    },
+  },
+
+  {
+    // Zones may not reach for the promotional amber or the kraft tones directly: they get them
+    // through `src/ui` components (`<Badge tone="accent">`, `SectionDivider`), which is where
+    // "amber = promotions only" can be kept true (D-180).
+    files: ["src/app/**/*.tsx", "src/features/**/*.tsx"],
+    ignores: ["**/*.stories.tsx", "**/*.test.tsx"],
+    rules: {
       "no-restricted-syntax": [
         "error",
-        {
-          selector:
-            "JSXAttribute[name.name=/^(alt|title|placeholder|aria-label|aria-placeholder|aria-roledescription|aria-valuetext|aria-description)$/] > Literal[value!='']",
-          message:
-            "This attribute is read by a person or a screen reader, so its text belongs in src/i18n (design-system.md §8). Pass a translated string instead of a literal.",
-        },
+        UNTRANSLATED_ATTRIBUTE,
+        ...KRAFT_AS_TEXT,
+        ...PRIMITIVE_PALETTE,
+        ...ACCENT_OR_KRAFT_OUTSIDE_UI,
       ],
     },
+  },
+
+  {
+    // Stories may show anything, but kraft is still never text.
+    files: ["src/**/*.stories.tsx"],
+    rules: { "no-restricted-syntax": ["error", ...KRAFT_AS_TEXT] },
   },
 
   zoneBoundary("customer", ["admin", "partner"]),
