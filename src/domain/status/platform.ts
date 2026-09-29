@@ -4,6 +4,7 @@ import type {
   ApprovalStepStatus,
   AuditOutcome,
   ConfigVersionStatus,
+  OpsSignalStatus,
   FileScanStatus,
   SettingConfirmation,
   UserStatus,
@@ -67,4 +68,11 @@ export const FILE_SCAN_STATUS = defineStatusMap<FileScanStatus>({
   infected: { tone: "danger", icon: "shield-alert", labelKey: "fileScan.infected" },
   failed: { tone: "danger", icon: "error", labelKey: "fileScan.failed" },
   skipped: { tone: "neutral", icon: "minus", labelKey: "fileScan.skipped" },
+});
+
+/** A launch-monitoring signal (`admin.ops.signals`, B6.3): within, over or unread against its threshold. */
+export const OPS_SIGNAL_STATUS = defineStatusMap<OpsSignalStatus>({
+  ok: { tone: "success", icon: "check", labelKey: "opsSignal.ok" },
+  alert: { tone: "danger", icon: "shield-alert", labelKey: "opsSignal.alert" },
+  unknown: { tone: "warning", icon: "help", labelKey: "opsSignal.unknown" },
 });

@@ -81,7 +81,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Regenerates from the vendored contract/openapi.json — whose sha256 the script checks
       # against contract.lock.json — and fails if any committed output differs. Adopting a
-      # newer backend contract is `pnpm gen:api --adopt`, which rewrites the vendored copy and
+      # newer (tagged) backend contract is `pnpm gen:api --adopt --tag vX.Y.Z`, which rewrites the vendored copy and
       # the lock together, so it shows up in the diff of a PR rather than in a build.
       - name: Generated API surface is up to date
         run: pnpm gen:api:check

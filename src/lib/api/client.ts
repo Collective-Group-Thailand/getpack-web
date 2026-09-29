@@ -15,8 +15,10 @@
 
 import createClient, { type Client, type Middleware } from "openapi-fetch";
 
+import { FORWARDED_FOR_HEADER } from "@/lib/security/client-ip";
 import { isUpstreamPathAllowed, type Zone } from "@/lib/zones";
 
+import { MOCK_SCENARIO_HEADER } from "./mock-scenario";
 import { ApiError, toApiError } from "./problem";
 import type { ApiPaths } from "./types";
 
@@ -86,10 +88,25 @@ export interface ApiClientOptions {
    * through the BFF, which applies the same allow-list to what it will forward.
    */
   surfaceZone?: Zone;
+  /**
+   * The visitor's address, sent as `X-Forwarded-For` so the API throttles the visitor rather
+   * than this app (`src/lib/security/client-ip.ts`). Server clients only; `null` sends none.
+   */
+  forwardedFor?: string | null;
+  /** `?mock=` scenario for the mock API (`./mock-scenario.ts`); set only under `API_MOCKS=1`. */
+  mockScenario?: string | null;
   fetch?: typeof fetch;
 }
 
-function contextMiddleware({ accessToken, locale, requestId, csrf, surfaceZone }: ApiClientOptions): Middleware {
+function contextMiddleware({
+  accessToken,
+  locale,
+  requestId,
+  csrf,
+  surfaceZone,
+  forwardedFor,
+  mockScenario,
+}: ApiClientOptions): Middleware {
   return {
     onRequest({ request, schemaPath }) {
       if (surfaceZone && !isUpstreamPathAllowed(surfaceZone, schemaPath)) {
@@ -103,6 +120,8 @@ function contextMiddleware({ accessToken, locale, requestId, csrf, surfaceZone }
       const language = typeof locale === "function" ? locale() : locale;
       if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
       if (language) headers.set("Accept-Language", language);
+      if (forwardedFor) headers.set(FORWARDED_FOR_HEADER, forwardedFor);
+      if (mockScenario) headers.set(MOCK_SCENARIO_HEADER, mockScenario);
       if (!headers.has(REQUEST_ID_HEADER) && requestId !== null) {
         headers.set(REQUEST_ID_HEADER, requestId ?? crypto.randomUUID());
       }

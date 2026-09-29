@@ -18,6 +18,11 @@ never hand-writes a type the contract can produce.**
   in CI the release asset pinned in `contract.lock.json` with its sha256), runs
   `openapi-typescript` into `src/lib/api/schema.d.ts`, and regenerates the MSW base
   handlers in `mocks/generated/`. The generated file is **committed**.
+- *Amended 2026-09-29 (U1 U-F0.1):* only a **tagged** release is pinned.
+  `pnpm gen:api --adopt --tag vX.Y.Z` reads the document at that tag (the sibling checkout's
+  tagged blob, or the downloaded release asset) and refuses one whose `info.version` is not the
+  tag's; `contract.lock.json` records `tag`, `commit`, the release-asset `source` and the
+  sha256, and `--check` fails on a lock that names no tag.
 - CI fails if regenerating produces a diff. Upgrading the backend contract is therefore a
   PR that bumps `contract.lock.json`; the resulting type errors are the change list.
 - `src/domain/status/*` is typed `Record<Schemas["OrderStatus"], StatusMeta>` and friends,

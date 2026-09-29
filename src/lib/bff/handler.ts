@@ -12,6 +12,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { CSRF_HEADER, REQUEST_ID_HEADER } from "@/lib/api/client";
+import { MOCK_SCENARIO_HEADER, mockScenarioOf } from "@/lib/api/mock-scenario";
 import {
   clearedSessionCookieWrites,
   readSessionTokens,
@@ -19,7 +20,8 @@ import {
   type SessionCookieWrite,
 } from "@/lib/auth/session";
 import { refreshSession } from "@/lib/auth/refresh";
-import { apiInternalUrl } from "@/lib/env/lazy-server";
+import { apiInternalUrl, trustedProxyHops } from "@/lib/env/lazy-server";
+import { clientIp, FORWARDED_FOR_HEADER } from "@/lib/security/client-ip";
 import { isHttpsRequest } from "@/lib/security/headers";
 import { isUpstreamPathAllowed, type Zone } from "@/lib/zones";
 
@@ -111,15 +113,17 @@ export function createBffHandler(zone: Zone) {
       isHttpsRequest(request.headers, request.nextUrl.protocol),
     );
     const url = `${await apiInternalUrl()}${upstreamPath}${request.nextUrl.search}`;
+    // Derived from the hops our own load balancers appended — never the browser's chain as sent.
+    const visitor = clientIp(request.headers, await trustedProxyHops());
 
-    let upstream = await forward(request, url, accessToken, body, requestId);
+    let upstream = await forward(request, url, accessToken, body, requestId, visitor);
     let cookieWrites: SessionCookieWrite[] = [];
 
     if (upstream.status === 401 && refreshToken) {
-      const session = await refreshSession(zone, refreshToken);
+      const session = await refreshSession(zone, refreshToken, visitor);
       if (session) {
         cookieWrites = sessionCookieWrites(session, isHttpsRequest(request.headers, request.nextUrl.protocol));
-        upstream = await forward(request, url, session.accessToken, body, requestId);
+        upstream = await forward(request, url, session.accessToken, body, requestId, visitor);
       } else {
         // The refresh token is spent or rejected. Clearing now stops every subsequent request
         // paying for another doomed round trip, and stops the proxy trying the same token
@@ -196,6 +200,7 @@ async function forward(
   accessToken: string | undefined,
   body: ArrayBuffer | undefined,
   requestId: string,
+  visitor: string | null,
 ): Promise<Response> {
   const headers = new Headers();
   for (const name of FORWARDED_REQUEST_HEADERS) {
@@ -203,6 +208,11 @@ async function forward(
     if (value) headers.set(name, value);
   }
   headers.set(REQUEST_ID_HEADER, requestId);
+  // The visitor's address for the API's per-IP throttles (packio-api B6.3), one entry only.
+  if (visitor) headers.set(FORWARDED_FOR_HEADER, visitor);
+  // `?mock=` scenarios, under `pnpm dev:mock` only (src/lib/api/mock-scenario.ts).
+  const scenario = mockScenarioOf(request.headers);
+  if (scenario) headers.set(MOCK_SCENARIO_HEADER, scenario);
   if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);
 
   try {

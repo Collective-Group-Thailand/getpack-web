@@ -3,6 +3,7 @@
 import { upstreamApi } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
+import { serverCallContext } from "@/lib/api/call-context.server";
 import { startSession } from "@/features/shared/auth/session-actions";
 import type { OtpChallenge } from "./otp";
 
@@ -30,7 +31,7 @@ export interface OtpVerifyResult {
  */
 export async function requestOtp(phone: string): Promise<OtpRequestResult> {
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
     const { data } = await api.POST("/v1/auth/customer/otp/request", {
       body: { phone, purpose: "login" },
     });
@@ -48,7 +49,7 @@ export async function requestOtp(phone: string): Promise<OtpRequestResult> {
  */
 export async function verifyOtp(challengeId: string, code: string): Promise<OtpVerifyResult> {
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
     const { data } = await api.POST("/v1/auth/customer/otp/verify", { body: { challengeId, code } });
     if (!data) return { errorKey: "errors.unavailable" };
 
@@ -71,7 +72,7 @@ export interface ProviderSignInResult {
  */
 export async function signInWithFirebase(idToken: string): Promise<ProviderSignInResult> {
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
     const { data } = await api.POST("/v1/auth/customer/firebase", { body: { idToken } });
     if (!data) return { errorKey: "errors.unavailable" };
     await startSession(data);
@@ -87,7 +88,7 @@ export async function signInWithLine(identity: {
   liffAccessToken?: string;
 }): Promise<ProviderSignInResult> {
   try {
-    const api = upstreamApi({ baseUrl: await apiInternalUrl() });
+    const api = upstreamApi({ baseUrl: await apiInternalUrl(), ...(await serverCallContext()) });
     const { data } = await api.POST("/v1/auth/customer/line", {
       body: { idToken: identity.idToken, liffAccessToken: identity.liffAccessToken },
     });

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import type { ProblemDetails } from "@/lib/api/problem";
 
+import type { BffProblemCode } from "./codes";
+
 /**
  * A refusal from the BFF itself, in the same shape the API uses.
  *
@@ -10,7 +12,7 @@ import type { ProblemDetails } from "@/lib/api/problem";
  * deliberately terse: these are conditions a correct client never produces, so the text is
  * for whoever is debugging, not for a customer.
  */
-export function bffProblem(status: number, code: string, detail: string, requestId: string): NextResponse {
+export function bffProblem(status: number, code: BffProblemCode, detail: string, requestId: string): NextResponse {
   const problem: ProblemDetails = {
     type: `https://errors.packio/${code}`,
     title: code,

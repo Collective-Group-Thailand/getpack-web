@@ -9,6 +9,13 @@ import {
   refreshSession,
   sessionCookieWrites,
 } from "@/lib/auth";
+import {
+  MOCK_SCENARIO_COOKIE,
+  MOCK_SCENARIO_HEADER,
+  mocksEnabled,
+  resolveMockScenario,
+  type ScenarioCookie,
+} from "@/lib/api/mock-scenario";
 import { clientEnv } from "@/lib/env";
 import { enabledZones, serverEnv, zoneHosts } from "@/lib/env/server";
 import {
@@ -19,6 +26,7 @@ import {
   NONCE_HEADER,
   securityHeaders,
 } from "@/lib/security";
+import { clientIp } from "@/lib/security/client-ip";
 import { isInternalOnlyPath, PATH_HEADER, resolveZone, ZONE_CONFIG, ZONE_HEADER, type Zone } from "@/lib/zones";
 
 /**
@@ -98,15 +106,39 @@ export default async function proxy(request: NextRequest): Promise<NextResponse>
   // Stamped before the rewrite, so a layout guard can build a `returnTo` in the spelling the
   // browser used — by render time, the admin host's `/orders` is the internal `/admin/orders`.
   requestHeaders.set(PATH_HEADER, pathname);
+  const scenarioCookie = applyMockScenario(request, requestHeaders);
 
   const response = route(request, zone, requestHeaders);
   await applySessionRefresh(request, response, zone, isSecure);
+  if (scenarioCookie === "clear") response.cookies.delete(MOCK_SCENARIO_COOKIE);
+  else if (scenarioCookie !== "keep") {
+    response.cookies.set({
+      name: MOCK_SCENARIO_COOKIE,
+      value: scenarioCookie.set,
+      path: "/",
+      sameSite: "lax",
+      httpOnly: true,
+    });
+  }
 
   response.headers.set(CSP_HEADER, csp);
   for (const [name, value] of Object.entries(securityHeaders(zone, { isHttps: isSecure }))) {
     response.headers.set(name, value);
   }
   return response;
+}
+
+/**
+ * `?mock=<operationId>:<code>` under `pnpm dev:mock` (src/lib/api/mock-scenario.ts): stamps the
+ * scenario on the request the render and the BFF see, and says what to do with its cookie.
+ * Off the mock the header is removed, so a visitor cannot send one through to a real backend.
+ */
+function applyMockScenario(request: NextRequest, requestHeaders: Headers): ScenarioCookie {
+  requestHeaders.delete(MOCK_SCENARIO_HEADER);
+  if (!mocksEnabled()) return "keep";
+  const { scenario, cookie } = resolveMockScenario(request.nextUrl, request.cookies.get(MOCK_SCENARIO_COOKIE)?.value);
+  if (scenario) requestHeaders.set(MOCK_SCENARIO_HEADER, scenario);
+  return cookie;
 }
 
 /** Host path → internal route segment. */
@@ -168,7 +200,7 @@ async function applySessionRefresh(
 
   if (decision === "none" || !refreshToken) return;
 
-  const session = await refreshSession(zone, refreshToken);
+  const session = await refreshSession(zone, refreshToken, clientIp(request.headers, serverEnv.TRUSTED_PROXY_HOPS));
   const writes = session ? sessionCookieWrites(session, isSecure) : clearedSessionCookieWrites();
 
   for (const cookie of writes) response.cookies.set(cookie);
