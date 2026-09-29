@@ -35,6 +35,66 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-29 | **F6 Deliverable 6.3** — ledger, tax, fixed assets | On the published B5.1 / B5.4 / B5.5 surface: the chart of accounts with changes under `coa_change`, cost centres and the dimension catalogue; journals with the manual-journal editor (draft under If-Match → submit → Finance Manager other than the maker approves → posted with a JV number), reversals through the same approval, auto-reversing and recurring journals (`recurring_journal`); posting rules with versions, the template in force, a dry-run preview and version proposals; fiscal periods open ⇄ soft-closed → closed → locked in order; tax: the seven monthly papers built from the books with their GL reconciliation, finalise at 0 (ภ.พ.30 posts P27), attachment export, filing, payment (P27P / P28), calendar, rates as approved versions, nature of sale and the tax settings read from Settings, document series, e-Tax off until R2; fixed assets: categories (If-Match), register (FA01), monthly depreciation preview → post (FA02), disposal / write-off (FA03), roll-forward with the register reconciled to the GL | 6.4 | One contract request (`admin.depreciation-preview`); the close checklist gates close / lock in 6.4 |
 | 2026-09-29 | **F6 Deliverable 6.4** — period close, reports, auditor | On the published B5.6 surface: the close index and each month's checklist (nine §7 steps with owners, automatic blocking checks, evidence, waivers by a Finance Manager, submit → review by a Finance Manager other than the submitter → closed → locked, the auditor's year-end sign-off), gating the ledger's close and lock; trial balance with CSV export, GL detail with drill-down and paging, balance sheet, profit and loss pivoted by factory / product type / channel / campaign / cost centre, indirect cash flow, points-liability and retention roll-forwards, sub-ledger ↔ GL reconciliation; the auditor's desk (access window from the role grant, registers, audit trail), exception reports, reproducible samples, hashed PBC pack. Month simulation e2e: trial balance, statements, sub-ledgers and the seven tax papers at zero; last month closed and locked through the checklist, then refused by the posting UI | — | Two contract requests (`admin.account-roll-forward`, `admin.subledger-reconciliation`); a 6.2 mock bug fixed (payout item ids could collide) |
 | 2026-09-29 | **U-F2** — art direction tokens (D-180) | D-180 palette in light/dark/high contrast (129 gated pairs pass); `accent` tone for promotions, `kraft` decorative slots; 12/16 px radii with pill CTA on the storefront only (`data-zone`); two elevation levels; 150/200/250 ms ease-out; `text-display` h1; `SectionDivider`; token-usage lint; Storybook art-direction docs; 33 visual baselines across all zones | Linux CI visual baselines (one-time `e2e:visual:update` on the runner); placing dividers and the hero is U-F3 | Dark primary-700 adjusted (below); secondary CTA stays 12 px — see §U-F2 |
+| 2026-09-29 | **U5.0** — UX baseline and instrumentation | Moderator guide, PDPA consent (th/en), Thai task cards, step-counting rule, results template; step counters for T1–T12 (`e2e/journeys/`, budgets checked against the scorecard, non-blocking `step-counters` CI job); journey funnel events (studio, claims, reorder) and an admin Journeys dashboard with the API's drop alert; consent-gated Sentry Replay, off by default; step baseline: **8 of 12 journeys over budget** | Running the competitor baseline round (people, not code); turning replay on; T6 walk (U2.3) | Replay gated on analytics consent (not a new purpose); seeded paid orders now carry a TR — see §U5.0 |
+
+---
+
+## U5.0 — UX baseline and instrumentation — 2026-09-29
+
+`docs/prompts/U5-ux-excellence.md` §U5.0, on `feat/u5.0-baseline` (worktree `../packio-web-u1`, from `main` at `d9931b6`, after U-F2 was merged). Gap table: `docs/ux/u5.0-gap.md`. No UI change for customers; one new admin section. No backend involved.
+
+### Done
+- **Study materials** (`docs/ux/`): `moderator-guide.md` (roles, screener, the rules that are never bent on the competitor, the Thai session script, block-randomised task order, what to record, SEQ and our own Thai rendering of SUS), `consent-pdpa.md` (th/en, separate consents for recording, camera, assistive technology and clips; **draft for legal review**, placeholders for the registered name, DPO, retention), `task-cards.md` (participant cards in Thai, the moderator sheet with start state, stop point and "done when" per side, English reference), `step-counting.md` (one rule for moderators and the counters), `scorecard-results/` (README and a template carrying the §3 gates).
+- **Step counters** (`e2e/journeys/`): a `journey` fixture that counts screens, decisions and taps by `step-counting.md`, fails a walk on a navigation nobody declared, reports required fields not on the journey's allow-list, and asserts the funnel events the journey should send (captured in the page, since `sendBeacon` bodies are invisible to Playwright). Budgets live in `budgets.ts` and a Vitest test fails when they drift from `competitive-scorecard.md` §2. The reporter writes `test-results/journeys/step-counts.{json,md}` and the CI job summary. `pnpm e2e:journeys`; CI job `step-counters` is `continue-on-error` until U5.8, which sets `STEP_BUDGETS=enforce` (checked: T9 then fails "over its budget of 5").
+- **Funnel events**: `design_started` / `design_saved` (declared since F3, never sent) are sent now, plus `design_ordered`, `claim_started`, `claim_submitted`, `reorder_started`, `reorder_added_to_cart`. `docs/ux/funnels.md` defines the five funnels. The designer's persistence gained an optional `onSaved`; only the storefront's wrapper uses it.
+- **Journeys dashboard** (admin analytics): sessions per step, conversion from the step before, change against last week, status badge (icon + words) and callout where the **API** flags a drop; the threshold is shown as the API returns it. Mocked with a claims drop.
+- **Session replay**: Sentry Replay, loaded only when `NEXT_PUBLIC_REPLAY_ENABLED=1`, a browser DSN, analytics consent, a key-journey route pattern and the sample (`NEXT_PUBLIC_REPLAY_SAMPLE_RATE`, default 0.1) all hold; all text, inputs and media masked, no bodies. With the flag off the replay code is not in any bundle. The consent banner mentions replay only in a build that has it on.
+- **Output**: `docs/ux/step-baseline-2026-09-29.md` — the U5.1 input.
+
+### Step counts before U5 (shortest path today, mocks)
+| Task | Count | Budget | | Task | Count | Budget |
+|---|---|---|---|---|---|---|
+| T1 | 7 | ≤ 4 | | T7 | 2 (from LIFF home) | ≤ 2 |
+| T2 | 8 | ≤ 6 | | T8 | 3 | ≤ 3 |
+| T3 | 2 unexplained | 0 | | T9 | 7 | ≤ 5 |
+| T4 | 6 | ≤ 5 | | T10 | 4 | ≤ 2 |
+| T5 | 3 (mockup add-on, not a sample) | ≤ 4 | | T11 | 7 taps | ≤ 4 |
+| T6 | pending (U2.3) | lever | | T12 | 5 | ≤ 3 |
+Over budget: T1, T2, T3, T4, T9, T10, T11, T12. The walks and what owns each fix are in the baseline doc.
+
+### Decisions taken, with reasons
+- **Replay is gated on the existing analytics consent** (confirmed with the user), not a new purpose. The cookie-policy page is still a "coming soon" stub, so the disclosure is in the banner instead, and only when replay is on. **Before the flag is turned on**: counsel confirms, the U2.0 intake answers vendor data terms (Sentry stores recordings outside Thailand — PDPA s. 28), the cookie policy is written, and a **new consent version** re-asks everyone who consented before replay existed.
+- **Funnel events stay first-party and not consent-gated**, as `consent.ts` already reasons (legitimate interest; counsel to confirm, as noted in F1). They carry dimensions only: route pattern, quantity band, claim type.
+- **`track()` is not moved onto the published batch contract** — that is U-F0.2 (confirmed with the user). The mapping of our names onto the published `AnalyticsEventName` is in the `analytics.events` row.
+- **Seeded paid orders carry a tax invoice/receipt (TR)**, not a bare receipt (`mocks/admin/commerce.ts`): accounting-design P01 issues a TR on a paid instalment, and T10 needs one to be walkable. No test depended on the old type.
+- **A walk counts a tool that is already open as free**, and an accepted default as free (step-counting rule 4) — the counts are the shortest honest path, not the worst case.
+- **Required-field allow-lists are today's fields** (`budgets.ts`): a field added from now on is reported; the checkout's contact fields are pre-filled from the account.
+- **`e2e:journeys` runs on two workers**: twelve parallel walks plus a production server on a laptop made the sign-in helper miss its 5 s redirect window; CI uses one worker anyway.
+- **The SUS text is our own Thai rendering** (Brooke 1986, free to use). If the business prefers a published validated Thai SUS, swap it before the baseline round — scores compare only across rounds that used the same text.
+
+### Contract requests
+`analytics.journey-events` (add the journey names to `AnalyticsEventName`), `admin.analytics-journeys` (the journeys funnel with the weekly alert against setting `analytics.funnel_drop_alert_pct`, proposed 15), and `analytics.events` narrowed with the mapping onto the published batch.
+
+### Parity-matrix follow-ups
+#17 affiliate payouts: referral rewards are **points** (D-136), no cash payouts — covered as Adapt. #39 fast-ship promise: stock pages show stock and MOQ but **no dispatch or delivery estimate** — a gap for U-F3 (lead time on every card) and U5.1, needing the lead time from the API.
+
+### Verification
+- `pnpm lint` · `pnpm typecheck` · `pnpm test` (907 app, 1,504 dieline) · `pnpm gen:api:check` · `pnpm format:check` · `pnpm build`.
+- `pnpm e2e` (mocks): **346 passed**, one run, including the new Journeys dashboard case (axe clean).
+- `pnpm e2e:journeys`: 11 walks pass and T6 is skipped as pending, on fresh servers (T4 once counted 7: the walk checked the selected quantity before the price breaks loaded — fixed, one run since); every expected funnel event seen; no unlisted required field. `STEP_BUDGETS=enforce` fails the over-budget walks, as U5.8 needs.
+- `pnpm lhci`: the same three script-size ratchets fail as on `main` (U-F2's figures) and nothing else. U5.0 adds 388 B of uncompressed script on customer pages — the new event names and calls and the replay component's dynamic stub; **no replay code ships** with the flag off (the gate is a `next/dynamic` import behind a build-time `false`):
+
+  | URL | budget | `main` | U5.0 |
+  |---|---|---|---|
+  | `/account/designs` | 293,000 | 304,208 | 304,596 |
+  | `/configure/tuck-end-box` | 293,000 | 319,161 | 319,549 |
+  | partner `/settings` | 300,000 | 300,823 | 300,998 (build-to-build noise: U5.0 touches no partner code; an earlier U5.0 build measured 300,825) |
+- Replay with the flag on is covered by component tests (`SessionReplay.test.tsx`, the flag mocked on) and the rule table (`replay.test.ts`), not by a browser run: a real run needs a Sentry DSN, which this environment does not have.
+
+### Open questions (for the U2.0 intake)
+- **Baseline round**: moderator and note-taker; incentive; recording tool and where it stores data; and a **real small order on the competitor**, without which T7–T10 are "not possible" there and T7/T9 drop out of the time comparison.
+- **Replay**: vendor data terms (Sentry, outside Thailand) and whether replay is wanted at all before launch.
+- **Consent text**: registered name, DPO contact, retention period (placeholder 12 months), response time (placeholder 30 days).
 
 ---
 
