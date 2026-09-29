@@ -140,6 +140,40 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  step-counters:
+    name: step counters (scorecard T1–T12)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Not blocking until U5.8 (docs/prompts/U5-ux-excellence.md): a journey over its step budget
+    # or a new required field is reported in the job summary, not failed. U5.8 deletes this line
+    # and sets STEP_BUDGETS=enforce below, and the counters become a gate.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The reporter appends the step table to the job summary (e2e/journeys/reporter.ts).
+      - name: Step counters
+        run: pnpm e2e:journeys
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: step-counts
+          path: test-results/journeys/
+          retention-days: 30
+
   lighthouse:
     name: lighthouse (performance budgets)
     runs-on: ubuntu-latest
