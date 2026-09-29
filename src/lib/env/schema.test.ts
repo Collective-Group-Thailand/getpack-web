@@ -35,6 +35,14 @@ describe("serverEnvSchema", () => {
     expect(message).toContain("API_INTERNAL_URL");
   });
 
+  it("trusts no proxy hop unless told how many there are", () => {
+    expect(parseEnv(development, {}, "server").TRUSTED_PROXY_HOPS).toBe(0);
+    expect(parseEnv(production, { ...productionHosts(), TRUSTED_PROXY_HOPS: "1" }, "server").TRUSTED_PROXY_HOPS).toBe(
+      1,
+    );
+    expect(() => parseEnv(development, { TRUSTED_PROXY_HOPS: "one" }, "server")).toThrow(/TRUSTED_PROXY_HOPS/);
+  });
+
   it("rejects a URL where a Host header value belongs", () => {
     expect(() => parseEnv(development, { ADMIN_HOST: "https://admin.packio.co.th" }, "server")).toThrow(/ADMIN_HOST/);
   });
@@ -72,3 +80,12 @@ describe("clientEnvSchema", () => {
     expect(env.NEXT_PUBLIC_ASSET_BASE_URL).toBe("https://cdn.packio.co.th");
   });
 });
+
+function productionHosts() {
+  return {
+    PUBLIC_HOST: "packio.co.th",
+    ADMIN_HOST: "admin.packio.co.th",
+    PARTNER_HOST: "partner.packio.co.th",
+    API_INTERNAL_URL: "https://api.internal.packio.co.th",
+  };
+}

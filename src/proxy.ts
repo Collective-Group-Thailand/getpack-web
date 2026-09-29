@@ -19,6 +19,7 @@ import {
   NONCE_HEADER,
   securityHeaders,
 } from "@/lib/security";
+import { clientIp } from "@/lib/security/client-ip";
 import { isInternalOnlyPath, PATH_HEADER, resolveZone, ZONE_CONFIG, ZONE_HEADER, type Zone } from "@/lib/zones";
 
 /**
@@ -168,7 +169,7 @@ async function applySessionRefresh(
 
   if (decision === "none" || !refreshToken) return;
 
-  const session = await refreshSession(zone, refreshToken);
+  const session = await refreshSession(zone, refreshToken, clientIp(request.headers, serverEnv.TRUSTED_PROXY_HOPS));
   const writes = session ? sessionCookieWrites(session, isSecure) : clearedSessionCookieWrites();
 
   for (const cookie of writes) response.cookies.set(cookie);

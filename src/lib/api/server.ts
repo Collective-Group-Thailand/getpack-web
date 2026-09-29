@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 import { readAccessToken } from "@/lib/auth/session";
+import { visitorIp } from "@/lib/security/visitor.server";
 import type { Zone } from "@/lib/zones";
 
 import { createApiClient } from "./client";
@@ -23,7 +24,12 @@ import type { Client } from "openapi-fetch";
  * other name on a host where it cannot be set in the first place.
  */
 export async function serverApi(zone: Zone): Promise<Client<ApiPaths>> {
-  const [jar, locale, baseUrl] = await Promise.all([cookies(), getLocale(), apiInternalUrl()]);
+  const [jar, locale, baseUrl, forwardedFor] = await Promise.all([
+    cookies(),
+    getLocale(),
+    apiInternalUrl(),
+    visitorIp(),
+  ]);
   const accessToken = readAccessToken(jar);
 
   return createApiClient({
@@ -35,6 +41,8 @@ export async function serverApi(zone: Zone): Promise<Client<ApiPaths>> {
     // `/v1/store/...` fails loudly here instead of being refused by the API's audience guard
     // at runtime, in production, on someone's screen.
     surfaceZone: zone,
+    // The visitor, not this server, is who the API's per-IP throttles should count.
+    forwardedFor,
   });
 }
 
