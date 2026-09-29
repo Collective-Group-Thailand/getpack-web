@@ -10,6 +10,7 @@
  *   src/lib/api/schema.d.ts      from contract/openapi.json — what packio-api has agreed to
  *   mocks/generated/handlers.ts  MSW handlers built from the contract's own examples
  *   mocks/generated/examples.ts  the list endpoints' example rows, for stateful mocks to seed from
+ *   mocks/generated/problems.ts  every operation's documented problem codes, for error-path mocks
  *   docs/contract-requests.openapi.json  the frontend's contract requests, for the backend
  *
  * Why a vendored copy of the contract rather than fetching it here: CI has no sibling
@@ -42,6 +43,7 @@ const VENDORED = resolve(ROOT, "contract/openapi.json");
 const OUT_SCHEMA = resolve(ROOT, "src/lib/api/schema.d.ts");
 const OUT_HANDLERS = resolve(ROOT, "mocks/generated/handlers.ts");
 const OUT_EXAMPLES = resolve(ROOT, "mocks/generated/examples.ts");
+const OUT_PROBLEMS = resolve(ROOT, "mocks/generated/problems.ts");
 /** The contract requests, as an OpenAPI document for the backend (`src/lib/api/requests`). */
 const OUT_REQUESTS = resolve(ROOT, "docs/contract-requests.openapi.json");
 
@@ -72,7 +74,7 @@ interface OpenApiOperation {
 interface OpenApiResponse {
   $ref?: string;
   description?: string;
-  content?: Record<string, { example?: unknown }>;
+  content?: Record<string, { example?: unknown; examples?: Record<string, { $ref?: string; value?: unknown }> }>;
 }
 
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete"] as const;
@@ -197,6 +199,94 @@ function buildExamples(contract: OpenApiDocument, lock: ContractLock): string {
     `/** List-endpoint example rows from contract/openapi.json (packio-api ${lock.version}), keyed by path. */`,
     "export const LIST_EXAMPLES: Record<string, readonly unknown[]> = {",
     ...entries,
+    "};",
+    "",
+  ].join("\n");
+}
+
+/** The problem-details example the contract publishes for a code (`components.examples`). */
+interface ProblemExample {
+  type: string;
+  title: string;
+  status: number;
+  code: string;
+  detail: string;
+  errors?: unknown[];
+}
+
+/**
+ * Every operation's documented problem codes and the status each comes with, plus one example
+ * body per code. `mocks/scenario.ts` answers `?mock=<operationId>:<code>` from these, so an error
+ * state can be looked at in dev with the exact body the API documents for that operation.
+ */
+function buildProblems(contract: OpenApiDocument, lock: ContractLock): string {
+  const examples: Record<string, ProblemExample> = {};
+  const operations: string[] = [];
+
+  for (const [path, item] of Object.entries(contract.paths ?? {})) {
+    for (const method of HTTP_METHODS) {
+      const operation = item[method as HttpMethod];
+      if (!operation?.operationId) continue;
+      const problems: Record<string, number> = {};
+      for (const [status, raw] of Object.entries(operation.responses ?? {})) {
+        if (!/^[45]\d\d$/.test(status)) continue;
+        const response = resolveResponse(contract, raw);
+        for (const media of Object.values(response.content ?? {})) {
+          for (const [code, example] of Object.entries(media.examples ?? {})) {
+            problems[code] = Number(status);
+            if (examples[code]) continue;
+            const value = (
+              example.$ref
+                ? (resolveResponse(contract, { $ref: example.$ref }) as { value?: unknown }).value
+                : example.value
+            ) as (ProblemExample & { requestId?: string }) | undefined;
+            // The example's request id is one fixed uuid; a mock answer gets its own.
+            if (value)
+              examples[code] = Object.fromEntries(
+                Object.entries(value).filter(([key]) => key !== "requestId"),
+              ) as unknown as ProblemExample;
+          }
+        }
+      }
+      operations.push(
+        `  ${JSON.stringify(operation.operationId)}: ${JSON.stringify({ method: method.toUpperCase(), path, problems })},`,
+      );
+    }
+  }
+
+  const sortedExamples = Object.keys(examples)
+    .sort()
+    .map((code) => `  ${JSON.stringify(code)}: ${JSON.stringify(examples[code])},`);
+
+  return [
+    banner("contract/openapi.json"),
+    "",
+    `/** Documented problem codes per operation, from contract/openapi.json (packio-api ${lock.version}). */`,
+    "",
+    "export interface OperationProblems {",
+    "  method: string;",
+    "  /** The contract's path template, e.g. `/v1/store/orders/{orderId}`. */",
+    "  path: string;",
+    "  /** Problem `code` → the HTTP status the operation documents it with. */",
+    "  problems: Record<string, number>;",
+    "}",
+    "",
+    "export interface ProblemExample {",
+    "  type: string;",
+    "  title: string;",
+    "  status: number;",
+    "  code: string;",
+    "  detail: string;",
+    "  errors?: unknown[];",
+    "}",
+    "",
+    "export const OPERATION_PROBLEMS: Record<string, OperationProblems> = {",
+    ...operations,
+    "};",
+    "",
+    "/** One example body per code, as the contract publishes it (Thai `detail`), minus the request id. */",
+    "export const PROBLEM_EXAMPLES: Record<string, ProblemExample> = {",
+    ...sortedExamples,
     "};",
     "",
   ].join("\n");
@@ -362,6 +452,7 @@ async function main(): Promise<void> {
   const document = readJson<OpenApiDocument>(VENDORED);
   const handlers = buildHandlers(document, lock);
   const examples = buildExamples(document, lock);
+  const problems = buildProblems(document, lock);
   const requests = buildRequestsDocument();
 
   if (check) {
@@ -369,6 +460,7 @@ async function main(): Promise<void> {
       compare(OUT_SCHEMA, schema, "src/lib/api/schema.d.ts"),
       compare(OUT_HANDLERS, handlers, "mocks/generated/handlers.ts"),
       compare(OUT_EXAMPLES, examples, "mocks/generated/examples.ts"),
+      compare(OUT_PROBLEMS, problems, "mocks/generated/problems.ts"),
       compare(OUT_REQUESTS, requests, "docs/contract-requests.openapi.json"),
     ].every(Boolean);
 
@@ -380,6 +472,7 @@ async function main(): Promise<void> {
   write(OUT_SCHEMA, schema);
   write(OUT_HANDLERS, handlers);
   write(OUT_EXAMPLES, examples);
+  write(OUT_PROBLEMS, problems);
   write(OUT_REQUESTS, requests);
 }
 

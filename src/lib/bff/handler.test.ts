@@ -247,6 +247,25 @@ describe("token handling", () => {
     expect((fetchMock.mock.calls[0]![1].headers as Headers).get("x-forwarded-for")).toBe("203.0.113.9");
   });
 
+  it("passes a ?mock= scenario on only under API_MOCKS=1", async () => {
+    const [plain, plainContext] = bffRequest("/v1/admin/ops/signals");
+    plain.headers.set("x-packio-mock-scenario", "admin.ops.signals:auth.forbidden");
+    await createBffHandler("admin")(plain, plainContext);
+    expect((fetchMock.mock.calls[0]![1].headers as Headers).has("x-packio-mock-scenario")).toBe(false);
+
+    process.env.API_MOCKS = "1";
+    try {
+      const [mocked, mockedContext] = bffRequest("/v1/admin/ops/signals");
+      mocked.headers.set("x-packio-mock-scenario", "admin.ops.signals:auth.forbidden");
+      await createBffHandler("admin")(mocked, mockedContext);
+      expect((fetchMock.mock.calls[1]![1].headers as Headers).get("x-packio-mock-scenario")).toBe(
+        "admin.ops.signals:auth.forbidden",
+      );
+    } finally {
+      delete process.env.API_MOCKS;
+    }
+  });
+
   it("sends no address when the request did not come through the load balancer", async () => {
     await createBffHandler("admin")(...bffRequest("/v1/admin/orders"));
 
