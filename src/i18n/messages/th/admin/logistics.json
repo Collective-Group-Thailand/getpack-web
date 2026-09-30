@@ -2,14 +2,8 @@
   "shipments": {
     "title": "การจัดส่ง",
     "description": "โรงงานส่งเอง ขนส่งสำรองเมื่อโรงงานส่งไม่ได้ ต้องมีหลักฐานการส่งมอบทุกครั้ง (D-013, D-114)",
-    "queuesLabel": "คิวการจัดส่ง",
+    "statusesLabel": "สถานะการจัดส่ง",
     "all": "ทั้งหมด",
-    "queues": {
-      "awaiting_pickup": "รอรับของ",
-      "in_transit": "ระหว่างขนส่ง",
-      "exceptions": "มีปัญหา",
-      "pod_review": "รอตรวจหลักฐาน"
-    },
     "search": "ค้นหาเลขจัดส่ง คำสั่งซื้อ หรือเลขพัสดุ",
     "empty": "ไม่มีการจัดส่ง",
     "columns": {
@@ -38,7 +32,6 @@
     "split": "แยกการจัดส่ง",
     "book": "จองขนส่งสำรอง",
     "resolve": "แก้ปัญหาการจัดส่ง",
-    "blockedByPayment": "ยังมียอดที่ต้องชำระก่อนจัดส่ง ระบบไม่ให้ออกจากโรงงาน",
     "pod": "หลักฐานการส่งมอบ (POD)",
     "podNote": "POD ของโรงงานที่รับแล้วทำให้จ่ายเงินโรงงานได้ (D-013)",
     "acceptPod": "รับหลักฐาน",
@@ -51,19 +44,17 @@
       "factory_photo_signature": "รูปถ่ายและลายเซ็น",
       "carrier_pod": "หลักฐานจากขนส่ง"
     },
-    "reviewedBy": "ตรวจโดย",
     "reviewNote": "หมายเหตุการตรวจ",
     "tolerance": "จำนวนที่ส่งเทียบค่าเผื่อ",
-    "toleranceNote": "ตัวเลขจากระบบตามค่าเผื่อที่ล็อกไว้ตอนเสนอราคา (D-021, D-080)",
+    "toleranceNote": "ตัวเลขของคำสั่งซื้อจากระบบ ตามค่าเผื่อที่ล็อกไว้ตอนเสนอราคา (D-021, D-080)",
     "outcomes": {
       "exact": "ส่งครบ {delivered} จาก {ordered}",
-      "short_within": "ส่ง {delivered} จาก {ordered} ขาดในค่าเผื่อ ลูกค้าได้เครดิตตามสัดส่วน",
-      "over_within": "ส่ง {delivered} จาก {ordered} เกินในค่าเผื่อ ไม่คิดเงินเพิ่ม",
-      "short_outside": "ส่ง {delivered} จาก {ordered} ขาดเกินค่าเผื่อ เปิดเคลมอัตโนมัติ",
-      "over_outside": "ส่ง {delivered} จาก {ordered} เกินค่าเผื่อ เปิดเคลมอัตโนมัติ"
+      "shortage_within": "ส่ง {delivered} จาก {ordered} ขาดในค่าเผื่อ ลูกค้าได้เครดิตตามสัดส่วน",
+      "overage_within": "ส่ง {delivered} จาก {ordered} เกินในค่าเผื่อ ไม่คิดเงินเพิ่ม",
+      "shortage_outside": "ส่ง {delivered} จาก {ordered} ขาดเกินค่าเผื่อ เปิดเคลมอัตโนมัติ",
+      "overage_outside": "ส่ง {delivered} จาก {ordered} เกินค่าเผื่อ เปิดเคลมอัตโนมัติ"
     },
     "toleranceBand": "ขาดได้ {shortage} เกินได้ {overage}",
-    "openClaim": "เปิดเคลม",
     "events": "เหตุการณ์",
     "sources": {
       "factory": "โรงงาน",
@@ -75,8 +66,7 @@
     "contents": "สินค้าในการจัดส่ง",
     "cartons": "{count} กล่อง · ประมาณ {weight} กก.",
     "economics": "ค่าขนส่ง",
-    "economicsNote": "ลูกค้าจ่าย เทียบกับที่จ่ายโรงงานหรือขนส่งสำรอง (D-013)",
-    "customerCharge": "เก็บจากลูกค้า",
+    "economicsNote": "ต้นทุนที่ Packio จ่ายโรงงานหรือขนส่งสำรอง (D-013, D-141)",
     "factoryPayout": "จ่ายโรงงาน",
     "carrierCost": "ค่าขนส่งสำรอง",
     "splitTitle": "แยกการจัดส่ง",
@@ -85,11 +75,10 @@
     "splitHint": "น้อยกว่า {quantity}",
     "splitDone": "แยกเป็น {no} แล้ว",
     "bookTitle": "จองขนส่งสำรอง",
-    "bookBody": "{no} ไป {province} เลือกใบเสนอราคาขนส่ง",
+    "bookBody": "{no} เลือกขนส่งสำรอง ราคาขนส่งตอนจองเป็นต้นทุนของ Packio",
     "quoting": "กำลังขอราคาขนส่ง…",
-    "quotes": "ใบเสนอราคาขนส่ง",
+    "quotes": "ขนส่งสำรอง",
     "quote": "{amount} · ถึงใน {days} วัน",
-    "bookHint": "เช่น โรงงานไม่ส่งในพื้นที่นี้",
     "booked": "จองขนส่งแล้ว เลขพัสดุ {tracking}",
     "resolveTitle": "แก้ปัญหาการจัดส่ง",
     "resolveBody": "{no}",
@@ -111,24 +100,30 @@
     "reason": "เหตุผล",
     "needReason": "กรุณาระบุเหตุผลอย่างน้อย 3 ตัวอักษร",
     "needQuantity": "กรุณาระบุจำนวน",
-    "needQuote": "กรุณาเลือกใบเสนอราคา",
-    "failed": "ทำรายการไม่สำเร็จ"
+    "failed": "ทำรายการไม่สำเร็จ",
+    "carrierPodRef": "เลขอ้างอิงของขนส่ง",
+    "podPhotos": "รูปการส่งมอบ",
+    "podSignature": "ลายเซ็นผู้รับ",
+    "noSignature": "ไม่มีลายเซ็น",
+    "deliveredOf": "ส่งมอบ {quantity}",
+    "credit": "เครดิต {amount}",
+    "pricedAtBooking": "คิดราคาตอนจอง",
+    "needCarrier": "กรุณาเลือกขนส่ง"
   },
   "claims": {
     "title": "เคลม",
     "description": "แจ้งเคลมได้ภายใน 7 วันหลังรับของ พร้อมรูปสินค้าและรูปกล่อง ผู้รับผิดชอบตามกฎ D-083",
     "statusesLabel": "สถานะเคลม",
     "all": "เปิดอยู่",
-    "search": "ค้นหาเลขเคลม คำสั่งซื้อ หรือลูกค้า",
+    "search": "ค้นหาเลขเคลมหรือคำสั่งซื้อ",
     "empty": "ไม่มีเคลม",
-    "origin": "ที่มา",
     "columns": {
       "claim": "เคลม",
       "type": "ประเภท",
       "status": "สถานะ",
       "liability": "ผู้รับผิดชอบ",
       "requested": "ลูกค้าขอ",
-      "sla": "กำหนดตอบ",
+      "window": "แจ้งได้ถึง",
       "submitted": "แจ้งเมื่อ"
     },
     "types": {
@@ -162,26 +157,24 @@
     "pageTitle": "เคลม",
     "breadcrumb": "เส้นทางหน้า",
     "claims": "เคลม",
-    "summary": "คำสั่งซื้อ {order} · {customer}",
+    "summary": "คำสั่งซื้อ {order} · โรงงาน {factory}",
     "resolve": "ดำเนินการแก้ไข",
     "actions": {
-      "start-review": {
+      "review": {
         "label": "เริ่มตรวจสอบ",
         "title": "เริ่มตรวจสอบเคลม",
-        "body": "{no} ของคำสั่งซื้อ {order}",
-        "reason": "หมายเหตุ"
+        "body": "{no} ของคำสั่งซื้อ {order}"
       },
-      "request-info": {
+      "request_info": {
         "label": "ขอข้อมูลเพิ่ม",
         "title": "ขอข้อมูลเพิ่มจากลูกค้า",
         "body": "ข้อความนี้ส่งถึงลูกค้าของ {order}",
         "reason": "สิ่งที่ต้องการ"
       },
-      "send-to-factory": {
+      "send_to_factory": {
         "label": "ส่งให้โรงงานตอบ",
         "title": "ส่งเคลมให้โรงงาน",
-        "body": "โรงงานเห็นหลักฐานและข้อความนี้ ไม่เห็นข้อมูลลูกค้า",
-        "reason": "ข้อความถึงโรงงาน"
+        "body": "โรงงานเห็นหลักฐานของ {no} ไม่เห็นข้อมูลลูกค้า"
       },
       "approve": {
         "label": "อนุมัติเคลม",
@@ -198,8 +191,7 @@
       "close": {
         "label": "ปิดเคลม",
         "title": "ปิดเคลม",
-        "body": "{no} จะปิด ไม่สามารถแก้ไขต่อได้",
-        "reason": "หมายเหตุ"
+        "body": "{no} จะปิด ไม่สามารถแก้ไขต่อได้"
       }
     },
     "claim": "รายละเอียดเคลม",
@@ -214,17 +206,10 @@
     "productPhotos": "รูปสินค้า",
     "cartonPhotos": "รูปกล่องขนส่ง",
     "noPhotos": "ไม่มีรูป",
-    "thread": "ความคืบหน้า",
-    "audiences": {
-      "customer": "ลูกค้าเห็น",
-      "factory": "โรงงานเห็น",
-      "internal": "ภายในเท่านั้น"
-    },
     "liability": "ผู้รับผิดชอบ",
     "override": "เปลี่ยน",
     "byRule": "ตามกฎ: {liability}",
-    "overridden": "เปลี่ยนโดย {by}",
-    "approvedProof": "ลูกค้าอนุมัติปรู๊ฟฉบับที่ {no} เมื่อ",
+    "overridden": "เปลี่ยนจากที่กฎกำหนด",
     "factoryResponse": "คำตอบของโรงงาน",
     "responses": {
       "accepted": "รับผิดชอบ",
@@ -256,6 +241,24 @@
     "needReason": "กรุณาระบุเหตุผลอย่างน้อย 3 ตัวอักษร",
     "needResolution": "กรุณาเลือกวิธีแก้ไข",
     "needAmount": "กรุณาระบุจำนวนเงิน",
-    "failed": "ทำรายการไม่สำเร็จ"
+    "failed": "ทำรายการไม่สำเร็จ",
+    "order": "คำสั่งซื้อ",
+    "openShipment": "เปิดการจัดส่ง",
+    "job": "งานผลิต",
+    "info": "ข้อมูลเพิ่มเติม",
+    "infoRequest": "ทีมขอ",
+    "infoResponse": "ลูกค้าตอบ",
+    "noResponse": "ยังไม่ตอบ",
+    "pieces": "{quantity} ชิ้น",
+    "overrideHint": "อย่างน้อย 10 ตัวอักษร",
+    "needOverrideReason": "กรุณาระบุเหตุผลอย่างน้อย 10 ตัวอักษร",
+    "reproduceQuantity": "จำนวนที่ผลิตใหม่",
+    "optional": "ไม่บังคับ",
+    "needQuantity": "กรุณาระบุจำนวน"
+  },
+  "files": {
+    "none": "ไม่มีไฟล์",
+    "file": "{label} {no}",
+    "failed": "เปิดไฟล์ไม่สำเร็จ"
   }
 }
