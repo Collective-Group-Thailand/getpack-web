@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { PriceBreakTable, PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
 import { QuoteDock } from "@/ui/components/QuoteDock";
 import { Skeleton } from "@/ui/components/Skeleton";
@@ -13,7 +12,7 @@ import { Icon } from "@/ui/icons";
 
 import type { PriceStep } from "./pricing";
 import type { Configurator, ConfiguratorState } from "./state";
-import type { QuoteAction, SavedQuote } from "./useQuoteActions";
+import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 
 export interface ConfiguratorDockProps {
   configurator: Configurator;
@@ -28,7 +27,7 @@ export interface ConfiguratorDockProps {
   onRetry: () => void;
   onAction: (action: QuoteAction) => void;
   busy: QuoteAction | null;
-  lastQuote: SavedQuote | null;
+  lastQuote: KeptQuote | null;
   /** Where to ask for a quote instead, with the configuration carried along. */
   rfqHref: string;
   /** The online designer, seeded with this box — `null` where it cannot draw the product. */
@@ -43,8 +42,8 @@ export interface ConfiguratorDockProps {
  * quantity — and what to do next.
  *
  * Every figure is the API's (`store.quotes.calculate`). The mockup add-on and a promotion code
- * are not part of that calculation; the dock says they are applied on the quotation rather than
- * leaving them out silently, and shows the quotation's own figures once one is saved.
+ * are not part of that calculation — the mockup is priced on the cart line and a code is applied
+ * to the cart — and the dock says so rather than leaving them out silently.
  */
 export function ConfiguratorDock({
   configurator,
@@ -200,10 +199,10 @@ export function ConfiguratorDock({
               <Icon name="truck" size={16} aria-hidden="true" />
               {t("shipBy", { date: format.date(priced.earliestShipDate) })}
             </li>
-            {lastQuote?.estimatedDeliveryDate ? (
+            {lastQuote?.option.earliestDeliveryDate ? (
               <li className="flex items-center gap-2">
                 <Icon name="package-check" size={16} aria-hidden="true" />
-                {t("receiveBy", { date: format.date(lastQuote.estimatedDeliveryDate) })}
+                {t("receiveBy", { date: format.date(lastQuote.option.earliestDeliveryDate) })}
               </li>
             ) : null}
             {priced.toleranceShortagePct && priced.toleranceOveragePct ? (
@@ -244,18 +243,6 @@ export function ConfiguratorDock({
           selectText={t("breaksChoose")}
           selectedText={t("breaksChosen")}
         />
-      ) : null}
-
-      {lastQuote?.promotion ? (
-        <Callout tone={lastQuote.promotion.applied ? "success" : "warning"}>
-          {lastQuote.promotion.applied
-            ? t("promoApplied", {
-                code: lastQuote.promotion.code,
-                amount: format.thb(lastQuote.promotion.discountAmount),
-              })
-            : t("promoNotApplied", { code: lastQuote.promotion.code })}
-          {lastQuote.promotion.capped ? ` ${t("promoCapped")}` : null}
-        </Callout>
       ) : null}
     </QuoteDock>
   );

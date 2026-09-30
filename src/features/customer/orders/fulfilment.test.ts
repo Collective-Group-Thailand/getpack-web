@@ -16,6 +16,12 @@ afterAll(() => server.close());
 
 // Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
 const as = (persona?: string) => ({
+  /** The published contract, for the operations this zone has migrated (U-F0.2). */
+  api: () =>
+    createApiClient({
+      baseUrl: "http://api.mock",
+      accessToken: persona === "guest" ? undefined : accessToken("customer", persona),
+    }),
   call: ((...args: unknown[]) =>
     (
       createRequestClient(
@@ -149,23 +155,12 @@ describe("after production, against the mock", () => {
       expect(line.waivedReason).toMatch(/D-153/);
     }
 
-    const stale = await failure(
-      returning.call("POST /v1/store/orders/{orderId}/actions/reorder", {
-        path: { orderId: COMPLETED },
-        body: { quantity: 3000, previewToken: preview.previewToken },
-        idempotencyKey: uuid(),
-      }),
-    );
-    expect(stale?.status).toBe(409);
-
-    const placed = await returning.call("POST /v1/store/orders/{orderId}/actions/reorder", {
-      path: { orderId: COMPLETED },
-      body: { quantity: 2000, previewToken: preview.previewToken },
-      idempotencyKey: uuid(),
+    // `store.claims.reorder` adds the line and answers with the cart (no preview token to hold).
+    const { data: cart } = await returning.api().POST("/v1/store/orders/{orderId}/actions/reorder", {
+      params: { path: { orderId: COMPLETED }, header: { "Idempotency-Key": uuid() } },
+      body: { quantity: 2000, reuseArtwork: true },
     });
-    const cart = await returning.call("GET /v1/store/cart");
-    const item = cart.items.find((entry) => entry.id === placed.cartItemId);
-    expect(item?.quantity).toBe(2000);
-    expect(item?.grossAmount).toBe(preview.grossAmount);
+    const item = cart!.items.find((entry) => entry.quantity === 2000 && entry.reorderOf === null);
+    expect(item?.productGrossAmount).toBe(preview.grossAmount);
   });
 });

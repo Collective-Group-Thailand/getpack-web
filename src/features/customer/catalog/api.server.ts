@@ -102,7 +102,7 @@ export type SearchResult = Schemas["StoreSearchResultDto"];
 export type ShowcaseProduct = Schemas["StoreShowcaseProductDto"];
 export type Page<T> = { data: T[]; meta: Schemas["PageMeta"] };
 export type Configurator = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/configurator">;
-export type SharedQuote = ResponseOf<Requests, "GET /v1/store/shared-quotes/{token}">;
+export type SharedQuote = Schemas["SavedQuoteDto"];
 export type SupportChannels = ResponseOf<Requests, "GET /v1/store/support-channels">;
 export type RfqForm = ResponseOf<Requests, "GET /v1/store/rfq-forms/{productTypeCode}">;
 
@@ -215,10 +215,13 @@ export async function getConfigurator(slug: string): Promise<Configurator | null
   return orNull(requests.call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug } }));
 }
 
-/** A quotation someone shared (CONTRACT-REQUEST store.quotes); `null` once the link has expired. */
+/** A quotation someone shared (`store.quotes.getShared`); `null` once the link has expired. */
 export async function getSharedQuote(token: string): Promise<SharedQuote | null> {
-  const requests = await publicRequests("prices");
-  return orNull(requests.call("GET /v1/store/shared-quotes/{token}", { path: { token } }));
+  return orNull(
+    (await publicApi("prices"))
+      .GET("/v1/store/quotes/shared/{token}", { params: { path: { token } } })
+      .then(({ data }) => data!),
+  );
 }
 
 /** Packio's CS channels (CONTRACT-REQUEST store.support-channels); `null` when unavailable. */

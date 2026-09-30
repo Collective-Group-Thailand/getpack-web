@@ -11,13 +11,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /** The cart (F3 3.3). A cart is a customer's, so a guest signs in first. */
-export default async function Page() {
-  await requireCustomer();
-  const [t, { cart, addresses }] = await Promise.all([getTranslations("cart"), getCartAndBook()]);
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const [, { locale }] = await Promise.all([requireCustomer(), params]);
+  const [t, { cart, addresses, typeNames }] = await Promise.all([getTranslations("cart"), getCartAndBook(locale)]);
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold md:text-3xl">{t("title")}</h1>
-      <CartView initialCart={cart} initialAddresses={addresses} />
+      <CartView initialCart={cart} initialAddresses={addresses} typeNames={typeNames} />
     </div>
   );
 }

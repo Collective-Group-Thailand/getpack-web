@@ -27,7 +27,7 @@ import { z } from "zod";
 
 import { designOption, mockupOption, orderLineType, productTypeRef } from "./admin-orders";
 import { calculatorKey, quoteSource, quoteStatus } from "./admin-sales";
-import { currency, date, dateTime, listQuery, money, nextAction, page, pct, request, uuid } from "./define";
+import { currency, date, dateTime, money, nextAction, pct, request, uuid } from "./define";
 
 /* ------------------------------------------------------------------------------ configurator */
 
@@ -303,41 +303,6 @@ export const storeQuote = z
   })
   .meta({ id: "StoreQuoteDto" });
 
-export const storeQuoteSummary = storeQuote
-  .pick({
-    id: true,
-    quoteCode: true,
-    status: true,
-    productType: true,
-    product: true,
-    quantity: true,
-    unit: true,
-    grossAmount: true,
-    currency: true,
-    validUntil: true,
-    source: true,
-    createdAt: true,
-  })
-  .meta({ id: "StoreQuoteSummaryDto" });
-
-/** A quote as anyone with its share link sees it: no customer, no promotion. */
-export const sharedQuote = storeQuote
-  .pick({
-    quoteCode: true,
-    productType: true,
-    product: true,
-    specs: true,
-    quantity: true,
-    unit: true,
-    unitPrice: true,
-    grossAmount: true,
-    currency: true,
-    leadTimeDays: true,
-    validUntil: true,
-    configuration: true,
-  })
-  .meta({ id: "StoreSharedQuoteDto" });
-
 export const signedUrl = z.object({ url: z.string(), expiresAt: dateTime() }).meta({ id: "SignedUrlDto" });
 
 /* ---------------------------------------------------------------------- support channels */
@@ -363,56 +328,6 @@ export const storeQuoteRequests = {
     decisions: ["D-100", "D-043", "D-051", "D-072"],
     public: true,
     response: storeConfigurator,
-  }),
-  "POST /v1/store/quotes": request({
-    request: "store.quotes",
-    summary:
-      "Keep a priced configuration as a quotation (D-051): lines incl. one-off costs and the mockup, the promotion's effect, validity",
-    decisions: ["D-051", "D-021", "D-050", "D-053", "D-072"],
-    body: z.object({
-      productTypeCode: z.string(),
-      catalogProductSlug: z.string(),
-      /** The configuration exactly as sent to `store.quotes.calculate`. */
-      configuration: z.record(z.string(), z.unknown()),
-      quantity: z.number().int().positive(),
-      deliveryPostcode: z
-        .string()
-        .regex(/^\d{5}$/)
-        .optional(),
-      designOption,
-      mockupOption,
-      promoCode: z.string().trim().min(1).max(40).optional(),
-    }),
-    response: storeQuote,
-    status: 201,
-  }),
-  "GET /v1/store/quotes": request({
-    request: "store.quotes",
-    summary: "The customer's saved quotations, newest first",
-    query: listQuery({ status: quoteStatus.optional() }),
-    response: page(storeQuoteSummary),
-  }),
-  "GET /v1/store/quotes/{quoteId}": request({
-    request: "store.quotes",
-    summary: "One of the customer's quotations; 404 when it is not theirs",
-    response: storeQuote,
-  }),
-  "POST /v1/store/quotes/{quoteId}/actions/share": request({
-    request: "store.quotes",
-    summary: "A read-only share token for the quotation, valid while the quote is",
-    response: z.object({ token: z.string(), expiresAt: dateTime() }).meta({ id: "QuoteShareDto" }),
-  }),
-  "GET /v1/store/shared-quotes/{token}": request({
-    request: "store.quotes",
-    summary: "A shared quotation, without the customer or their promotion; 404 once expired",
-    public: true,
-    response: sharedQuote,
-  }),
-  "POST /v1/store/quotes/{quoteId}/actions/export-pdf": request({
-    request: "store.quotes",
-    summary: "The quotation PDF, issued by Collective Group (Thailand) under the Packio brand, as a short-lived URL",
-    decisions: ["D-010", "D-092"],
-    response: signedUrl,
   }),
   "POST /v1/store/promotions/actions/check": request({
     request: "store.promo-check",

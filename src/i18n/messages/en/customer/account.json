@@ -84,13 +84,13 @@
   },
   "quotes": {
     "title": "Saved quotations",
-    "intro": "The price holds until the date shown. Reopen one to change it or order.",
+    "intro": "Each price holds until the date shown",
     "emptyTitle": "No quotations yet",
     "emptyBody": "Save a quotation from a product's configurator.",
     "browse": "Browse products",
     "validUntil": "Price holds until {date}",
-    "reopen": "Reopen",
-    "row": "{code} · {quantity} {unit} · {amount}"
+    "row": "{code} · quantity {quantity} · {amount}",
+    "rowNoCode": "Quantity {quantity} · {amount}"
   },
   "book": {
     "title": "Addresses and tax invoices",

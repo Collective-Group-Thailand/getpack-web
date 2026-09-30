@@ -217,13 +217,4 @@ export const storeFulfilmentRequests = {
     query: z.object({ quantity: z.coerce.number().int().positive().optional() }),
     response: reorderPreview,
   }),
-  "POST /v1/store/orders/{orderId}/actions/reorder": request({
-    request: "store.reorder",
-    summary: "Put the re-priced reorder in the cart as a quotation; checkout places it like any other",
-    decisions: ["D-153"],
-    body: z.object({ quantity: z.number().int().positive(), previewToken: z.string() }),
-    response: z.object({ quoteId: uuid(), cartItemId: uuid() }),
-    status: 201,
-    idempotent: true,
-  }),
 } as const;

@@ -11,9 +11,7 @@ import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserApi } from "@/lib/api/browser";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -26,12 +24,15 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
 import { geoName, type Address } from "../account/address";
-import { storeImageSrc } from "../catalog/images";
+import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
 
 const AddressSheet = dynamic(() => import("./AddressSheet").then((module) => module.AddressSheet), { ssr: false });
 
-export type Cart = ResponseOf<Requests, "GET /v1/store/cart">;
-type Item = Cart["items"][number];
+export type { Cart };
+type Item = CartItem;
+
+/** Every design option the contract names (CONTRACT-GAP store.cart: the line does not say which it may switch to). */
+const DESIGN_OPTIONS: readonly Schemas["DesignOption"][] = ["own_file", "online_designer", "hired_design"];
 
 export const cartKey = [...queryKeys.resource("customer", "cart")];
 export const addressesKey = [...queryKeys.resource("customer", "addresses")];
@@ -72,9 +73,8 @@ function Destinations({
               <span>
                 {t("line", {
                   quantity: format.number(destination.quantity),
-                  unit: item.unit,
-                  name: destination.address?.recipientName ?? "",
-                  province: destination.address?.province ?? "",
+                  name: destination.address.recipientName,
+                  province: destination.address.provinceNameTh,
                 })}
               </span>
             </li>
@@ -89,9 +89,7 @@ function Destinations({
 
   return (
     <fieldset className="border-border flex flex-col gap-3 rounded-lg border p-3">
-      <legend className="px-1 text-sm font-medium">
-        {t("legend", { quantity: format.number(item.quantity), unit: item.unit })}
-      </legend>
+      <legend className="px-1 text-sm font-medium">{t("legend", { quantity: format.number(item.quantity) })}</legend>
       {addresses.length === 0 ? <p className="text-muted text-sm">{t("noAddresses")}</p> : null}
       {rows.map((row, index) => (
         <div key={index} className="flex flex-wrap items-end gap-2">
@@ -111,7 +109,6 @@ function Destinations({
           <Field label={t("quantity")} className="w-32">
             <NumberInput
               min={1}
-              unit={item.unit}
               value={row.quantity}
               onChange={(event) =>
                 setRows((current) =>
@@ -134,7 +131,7 @@ function Destinations({
         className={total === item.quantity ? "text-muted text-xs" : "text-danger text-xs font-medium"}
         aria-live="polite"
       >
-        {t("total", { total: format.number(total), quantity: format.number(item.quantity), unit: item.unit })}
+        {t("total", { total: format.number(total), quantity: format.number(item.quantity) })}
       </p>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -166,22 +163,31 @@ function Destinations({
 
 /**
  * The cart (F3 3.3, D-110): quotation lines, each with its design option and its quantity split
- * across saved addresses. A line whose quotation expired is re-priced by the API and says what
- * changed until the customer confirms the new price (D-051, design-system.md §1.3); checkout opens
- * once the API says nothing blocks it.
+ * across saved addresses. A line whose price lock ended is priced again on the customer's word
+ * (`store.cart.repriceItem`) and shows the difference until they confirm it (confirm-reprice,
+ * D-051, design-system.md §1.3). Every edit goes through `editCart`, under the cart's `ETag`.
+ *
+ * CONTRACT-GAP store.cart — a published line names its product type only: no product name, image,
+ * specs or unit, no list of the design options it may switch to, and the cart has no VAT split or
+ * `readyForCheckout`. The type's name comes from the catalogue; what else is missing is not shown.
  */
-export function CartView({ initialCart, initialAddresses }: { initialCart: Cart; initialAddresses: Address[] }) {
+export function CartView({
+  initialCart,
+  initialAddresses,
+  typeNames,
+}: {
+  initialCart: Cart;
+  initialAddresses: Address[];
+  /** Product type code → its name, from the public catalogue. */
+  typeNames: Record<string, string>;
+}) {
   const t = useTranslations("cart");
   const tDesign = useTranslations("configurator.design.options");
   const format = useFormat();
   const queryClient = useQueryClient();
   const [addressFor, setAddressFor] = useState<string | null>(null);
 
-  const cart = useQuery({
-    queryKey: cartKey,
-    queryFn: () => browserRequests().call("GET /v1/store/cart"),
-    initialData: initialCart,
-  }).data;
+  const cart = useQuery({ queryKey: cartKey, queryFn: readCart, initialData: initialCart }).data;
   const addresses = useQuery({
     queryKey: addressesKey,
     queryFn: async () =>
@@ -192,9 +198,14 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
   const mutate = useMutation({
     mutationFn: async (run: () => Promise<Cart>) => run(),
     onSuccess: (next) => queryClient.setQueryData(cartKey, next),
-    onError: (error) => toast.error(isApiError(error) ? error.detail : t("failed")),
+    onError: (error) => {
+      toast.error(isApiError(error) ? error.detail : t("failed"));
+      void queryClient.invalidateQueries({ queryKey: cartKey });
+    },
   });
-  const requests = browserRequests();
+  const api = browserApi();
+  const nameOf = (item: Item) => typeNames[item.productTypeCode] ?? item.productTypeCode;
+  const blocked = cart.items.flatMap((item) => lineBlockers(item).map((kind) => ({ item, kind })));
 
   if (cart.items.length === 0) {
     return (
@@ -220,50 +231,44 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
             <article aria-labelledby={`cart-item-${item.id}`} className="flex flex-col gap-4">
               <div className="flex items-start gap-4">
                 <div className="bg-bg-subtle flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-                  {storeImageSrc(item.product.imageUrl) ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- API image, decorative beside the name
-                    <img src={storeImageSrc(item.product.imageUrl)!} alt="" className="size-full object-cover" />
-                  ) : (
-                    <Icon name="box" size={24} aria-hidden="true" className="text-muted" />
-                  )}
+                  <Icon name="box" size={24} aria-hidden="true" className="text-muted" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 id={`cart-item-${item.id}`} className="font-semibold">
-                    {item.product.name}
+                    {nameOf(item)}
                   </h2>
-                  <p className="text-muted text-sm">{item.specs.map((spec) => spec.value).join(" · ")}</p>
                   <p className="text-muted mt-1 text-xs">
-                    {t("quote", { code: item.quote.quoteCode, date: format.date(item.quote.validUntil) })}
+                    {item.quoteCode
+                      ? t("quote", { code: item.quoteCode, date: format.date(item.priceLockedUntil) })
+                      : t("quoteNoCode", { date: format.date(item.priceLockedUntil) })}
                   </p>
                 </div>
                 <div className="text-end">
-                  <p className="font-semibold tabular-nums">{format.thb(item.grossAmount)}</p>
+                  <p className="font-semibold tabular-nums">{format.thb(item.productGrossAmount)}</p>
                   <p className="text-muted text-xs tabular-nums">
-                    {t("perPiece", {
-                      price: format.thb(item.unitPrice),
-                      quantity: format.number(item.quantity),
-                      unit: item.unit,
-                    })}
+                    {t("perUnit", { price: format.thb(item.unitPrice), quantity: format.number(item.quantity) })}
                   </p>
                 </div>
               </div>
 
-              {item.state === "repriced" && item.repricing ? (
+              {item.pendingReprice ? (
                 <Callout tone="warning" title={t("repricedTitle")}>
                   <div className="flex flex-col items-start gap-2">
                     <span>
                       {t("repriced", {
-                        before: format.thb(item.repricing.previousGrossAmount),
-                        after: format.thb(item.grossAmount),
+                        before: format.thb(item.pendingReprice.previousGrossAmount),
+                        after: format.thb(item.pendingReprice.newGrossAmount),
                       })}
                     </span>
                     <Button
                       size="sm"
                       onClick={() =>
                         mutate.mutate(() =>
-                          requests.call("POST /v1/store/cart/items/{itemId}/actions/accept-reprice", {
-                            path: { itemId: item.id },
-                          }),
+                          editCart((ifMatch) =>
+                            api.POST("/v1/store/cart/items/{itemId}/actions/confirm-reprice", {
+                              params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
+                            }),
+                          ),
                         )
                       }
                     >
@@ -271,26 +276,44 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
                     </Button>
                   </div>
                 </Callout>
+              ) : !item.priceLocked ? (
+                <Callout tone="warning" title={t("expiredTitle")}>
+                  <div className="flex flex-col items-start gap-2">
+                    <span>{t("expired")}</span>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        mutate.mutate(() =>
+                          editCart(() =>
+                            api.POST("/v1/store/cart/items/{itemId}/actions/reprice", {
+                              params: { path: { itemId: item.id } },
+                            }),
+                          ),
+                        )
+                      }
+                    >
+                      {t("reprice")}
+                    </Button>
+                  </div>
+                </Callout>
               ) : null}
-              {item.state === "unavailable" ? <Callout tone="danger">{item.unavailableReason}</Callout> : null}
 
               <div className="grid gap-4 sm:grid-cols-[14rem_minmax(0,1fr)]">
-                {item.designOptions.length > 1 ? (
+                {item.source === "instant" ? (
                   <Field label={t("designOption")} hint={t("designOptionHint")}>
                     <Select
                       value={item.designOption}
                       onValueChange={(designOption) =>
                         mutate.mutate(() =>
-                          requests.call("PATCH /v1/store/cart/items/{itemId}", {
-                            path: { itemId: item.id },
-                            body: { designOption: designOption as Item["designOption"] },
-                          }),
+                          editCart((ifMatch) =>
+                            api.PATCH("/v1/store/cart/items/{itemId}", {
+                              params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
+                              body: { designOption: designOption as Item["designOption"] },
+                            }),
+                          ),
                         )
                       }
-                      options={item.designOptions.map((option) => ({
-                        value: option,
-                        label: tDesign(`${option}.label`),
-                      }))}
+                      options={DESIGN_OPTIONS.map((option) => ({ value: option, label: tDesign(`${option}.label`) }))}
                     />
                   </Field>
                 ) : (
@@ -311,10 +334,12 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
                     onAddAddress={() => setAddressFor(item.id)}
                     onSave={(rows) =>
                       mutate.mutate(() =>
-                        requests.call("PUT /v1/store/cart/items/{itemId}/destinations", {
-                          path: { itemId: item.id },
-                          body: { destinations: rows },
-                        }),
+                        editCart((ifMatch) =>
+                          api.PUT("/v1/store/cart/items/{itemId}/destinations", {
+                            params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
+                            body: { destinations: rows },
+                          }),
+                        ),
                       )
                     }
                   />
@@ -328,12 +353,14 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
                   iconStart="trash"
                   onClick={() =>
                     mutate.mutate(() =>
-                      requests.call("DELETE /v1/store/cart/items/{itemId}", { path: { itemId: item.id } }),
+                      editCart(() =>
+                        api.DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } }),
+                      ),
                     )
                   }
                 >
                   {t("remove")}
-                  <span className="sr-only"> {item.product.name}</span>
+                  <span className="sr-only"> {nameOf(item)}</span>
                 </Button>
               </div>
             </article>
@@ -349,24 +376,23 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
           className="mt-4"
           rows={[
             {
-              label: t("itemsCount", { count: cart.itemCount }),
-              value: format.thb(cart.subtotalAmount),
+              label: t("itemsCount", { count: cart.items.length }),
+              value: format.thb(cart.productGrossAmount),
               hint: t("vatIncluded"),
             },
-            { label: t("vat"), value: format.thb(cart.vatAmount), tone: "muted" },
           ]}
-          total={{ label: t("subtotal"), value: format.thb(cart.subtotalAmount), hint: t("atCheckout") }}
+          total={{ label: t("subtotal"), value: format.thb(cart.productGrossAmount), hint: t("atCheckout") }}
         />
-        {cart.blockers.length > 0 ? (
+        {blocked.length > 0 ? (
           <Callout tone="warning" className="mt-4" title={t("blockedTitle")}>
             <ul className="list-disc ps-5">
-              {cart.blockers.map((blocker, index) => (
-                <li key={index}>{blocker.message}</li>
+              {blocked.map(({ item, kind }) => (
+                <li key={`${item.id}-${kind}`}>{t(`blockers.${kind}`, { name: nameOf(item) })}</li>
               ))}
             </ul>
           </Callout>
         ) : null}
-        {cart.readyForCheckout ? (
+        {blocked.length === 0 ? (
           <Button asChild block size="lg" className="mt-4">
             <Link href="/checkout" onClick={() => track("checkout_started", { route: "/cart" })}>
               {t("checkout")}

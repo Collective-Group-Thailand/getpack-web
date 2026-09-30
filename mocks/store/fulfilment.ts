@@ -11,9 +11,11 @@
  * (F3 3.3) places them like any other.
  */
 
+import { http } from "msw";
 import type { z } from "zod";
 
 import type { storeClaim } from "@/lib/api/requests/store-fulfilment";
+import type { Schemas } from "@/lib/api/types";
 import type { StoreQuote } from "./quotes";
 
 import { baht, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
@@ -21,7 +23,7 @@ import { adoptClaim, claimRow, customerClaimReply, fileCustomerClaim, type Logis
 import { files } from "../admin/platform";
 import { mockRequest } from "../route";
 import { bangkokIso, problem } from "../support";
-import { addToCart } from "./cart";
+import { addToCart, edited } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
 import {
   claimWindowEnd,
@@ -391,12 +393,15 @@ export const storeFulfilmentHandlers = [
     };
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/actions/reorder", ({ params, body, request }) => {
-    const found = mine(request, params.orderId);
+  // Published (U-F0.2): `store.claims.reorder` puts the order again in the cart at today's price
+  // and answers with the cart. There is no preview token to hold the price to (CONTRACT-GAP
+  // store.reorder); the cart shows what it costs.
+  http.post("*/v1/store/orders/:orderId/actions/reorder", async ({ params, request }) => {
+    const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { customer, order } = found;
-    if (body.previewToken !== tokenOf(order, body.quantity))
-      return problem(409, "reorder.repriced", "ราคาเปลี่ยนไปแล้ว กรุณาตรวจราคาใหม่อีกครั้ง");
-    return addReorderToCart(customer, order, body.quantity);
+    const body = (await request.json().catch(() => ({}))) as Schemas["ReorderOrderDto"];
+    addReorderToCart(customer, order, body.quantity ?? order.quantity);
+    return edited(customer, 201);
   }),
 ];

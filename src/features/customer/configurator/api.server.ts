@@ -1,16 +1,20 @@
 import "server-only";
 
 import { isApiError } from "@/lib/api/problem";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
-import { serverRequests } from "@/lib/api/requests/server";
+import { serverApi } from "@/lib/api/server";
+import type { Schemas } from "@/lib/api/types";
 
-export type SavedQuote = ResponseOf<Requests, "GET /v1/store/quotes/{quoteId}">;
+export type SavedQuote = Schemas["SavedQuoteDto"];
 
-/** One of the signed-in customer's quotations; `null` when it is not theirs or gone. */
+/** One of the signed-in customer's quotations (`store.quotes.get`); `null` when it is not theirs or gone. */
 export async function getMyQuote(quoteId: string): Promise<SavedQuote | null> {
   try {
-    return await (await serverRequests("customer")).call("GET /v1/store/quotes/{quoteId}", { path: { quoteId } });
+    const { data } = await (
+      await serverApi("customer")
+    ).GET("/v1/store/quotes/{quoteId}", {
+      params: { path: { quoteId } },
+    });
+    return data ?? null;
   } catch (error) {
     if (isApiError(error) && (error.status === 404 || error.status === 401)) return null;
     throw error;

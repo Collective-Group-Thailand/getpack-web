@@ -8,10 +8,11 @@ import { accessToken } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
 import { createRequestClient } from "@/lib/api/requests/client";
 import { REQUESTS } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 
 import { quantityBand } from "../analytics/bands";
 import { formatTaxId, isValidThaiTaxId } from "../account/tax-id";
-import { buildConfiguration } from "../configurator/build";
+import { buildCalculateBody } from "../configurator/build";
 import { initialState } from "../configurator/state";
 
 const server = setupServer(...handlers);
@@ -48,25 +49,25 @@ describe("the checkout, against the mock", () => {
     >["call"],
   };
 
+  const api = () => createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
+
+  /** An empty cart, then one quotation of `quantity` in it — through the published cart. */
   async function cartWith(quantity: number) {
-    const cart = await customer.call("GET /v1/store/cart");
-    for (const item of cart.items)
-      await customer.call("DELETE /v1/store/cart/items/{itemId}", { path: { itemId: item.id } });
+    const { data: cart } = await api().GET("/v1/store/cart");
+    for (const item of cart!.items)
+      await api().DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } });
     const configurator = await customer.call("GET /v1/store/catalog/products/{slug}/configurator", {
       path: { slug: "tuck-end-box" },
     });
     const state = { ...initialState(configurator), quantities: [quantity], quantity };
-    const quote = await customer.call("POST /v1/store/quotes", {
-      body: {
-        productTypeCode: configurator.productTypeCode,
-        catalogProductSlug: configurator.slug,
-        configuration: buildConfiguration(configurator, state) as unknown as Record<string, unknown>,
-        quantity,
-        designOption: "own_file",
-        mockupOption: "none",
-      },
+    const { data: quote } = await api().POST("/v1/store/quotes", {
+      body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],
     });
-    await customer.call("POST /v1/store/cart/items", { body: { quoteId: quote.id } });
+    const { response } = await api().GET("/v1/store/cart");
+    await api().POST("/v1/store/cart/items", {
+      params: { header: { "If-Match": response.headers.get("etag")! } },
+      body: { quoteId: quote!.id, quoteOptionId: quote!.options[0]!.id, designOption: "own_file" },
+    });
   }
 
   const input = {

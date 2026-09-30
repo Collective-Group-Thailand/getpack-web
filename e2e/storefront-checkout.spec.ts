@@ -82,10 +82,11 @@ test.describe("cart and checkout", () => {
     await first.getByRole("combobox", { name: "ที่อยู่ที่ 2" }).click();
     await page.getByRole("option", { name: /โกดังเชียงใหม่/ }).click();
     await first.getByRole("spinbutton", { name: "จำนวน" }).nth(1).fill("600");
-    await expect(first.getByText("รวม 1,000 จาก 1,000 ชิ้น")).toBeVisible();
+    // CONTRACT-GAP store.cart — a published cart line has no unit, so quantities stand alone.
+    await expect(first.getByText("รวม 1,000 จาก 1,000")).toBeVisible();
     await first.getByRole("button", { name: "บันทึกการแบ่งส่ง" }).click();
-    await expect(first.getByText(/400 ชิ้น → ผู้รับ/)).toBeVisible();
-    await expect(first.getByText(/600 ชิ้น → ผู้รับทดสอบ \(เชียงใหม่\)/)).toBeVisible();
+    await expect(first.getByText(/400 → ผู้รับ/)).toBeVisible();
+    await expect(first.getByText(/600 → ผู้รับทดสอบ \(เชียงใหม่\)/)).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("link", { name: "ดำเนินการชำระเงิน" }).click();

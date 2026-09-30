@@ -39,8 +39,8 @@ export type SlipStatus = Schemas["SlipStatus"];
 /** A refund, which needs approval (B3.2, D-169). **Source: contract** (B5.2). */
 export type RefundStatus = Schemas["RefundStatus"];
 
-/** A saved instant or CS quote, valid 15 days with the price locked (D-051). **Source: schema** (`quote_status`). */
-export type QuoteStatus = "calculated" | "saved" | "shared" | "converted" | "expired" | "superseded";
+/** A saved instant or CS quote, valid 15 days with the price locked (D-051). **Source: contract** (U-F0.2). */
+export type QuoteStatus = Schemas["QuoteStatus"];
 
 /** A discount memo, above the CS limit (D-052, D-162). **Source: schema** (`memo_status`). */
 export type MemoStatus = "draft" | "pending_approval" | "approved" | "rejected" | "withdrawn" | "expired" | "applied";
