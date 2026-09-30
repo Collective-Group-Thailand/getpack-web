@@ -31,6 +31,7 @@ const PRIVATE_PAGES = [
   "/configure/",
   "/rfq/",
   "/referral/",
+  "/r/",
 ];
 
 export default async function robots(): Promise<MetadataRoute.Robots> {

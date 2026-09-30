@@ -1,6 +1,7 @@
 /**
- * The customer's orders and account, mocked (CONTRACT-REQUEST store.orders, store.loyalty,
- * store.wallet, store.privacy, store.identities; published notification preferences, B1.3).
+ * The customer's orders and account, mocked (CONTRACT-REQUEST store.orders, store.privacy,
+ * store.identities; published: notification preferences, B1.3, and loyalty, referral and store
+ * credit, U-F0.2).
  *
  * Orders are the back office's own rows (`../admin/commerce`) seen from the customer's side: no
  * factory, no cost or margin, no internal timeline entry, and the actions the customer can take
@@ -31,6 +32,8 @@ type Detail = z.output<typeof storeOrderDetail>;
 type PrivacyRequest = z.output<typeof privacyRequest>;
 
 const DAY = 24 * 60;
+/** Where the mock pretends the storefront lives, for links the API builds (`STOREFRONT_BASE_URL`). */
+const MOCK_STOREFRONT = "http://localhost:3000";
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
 
@@ -522,166 +525,114 @@ export const storeOrderHandlers = [
     };
   }),
 
-  mockRequest("GET /v1/store/me/points", ({ request }) => {
+  // store.loyalty.get (published, U-F0.2): the balance, what expires soon, the tier.
+  http.get("*/v1/store/loyalty", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const spend = spendOf(customer);
-    const index = TIERS.findLastIndex((tier) => spend >= tier.from);
-    const current = TIERS[index]!;
-    const next = TIERS[index + 1] ?? null;
-    return {
-      balance: {
-        available: customer.points,
-        pending: customer.ownerIndex === null ? 0 : 42,
-        expiringSoon: customer.points > 0 ? 120 : 0,
-        expiringSoonAt: customer.points > 0 ? bangkokIso(21 * DAY) : null,
-        availableBahtValue: baht(customer.points * 250),
-      },
-      tier: {
-        current: current.tier,
-        multiplier: current.multiplier,
-        spend12m: baht(spend),
-        next: next?.tier ?? null,
-        nextThreshold: next ? baht(next.from) : null,
-        progressPct: next
-          ? Math.min(100, Math.round(((spend - current.from) / (next.from - current.from)) * 100))
-          : 100,
-      },
+    const current = TIERS[TIERS.findLastIndex((tier) => spendOf(customer) >= tier.from)]!;
+    const summary: Schemas["LoyaltySummaryDto"] = {
+      availablePoints: customer.points,
+      availableValue: baht(customer.points * 250),
+      currency: "THB",
+      expiringSoon: customer.points > 0 ? [{ points: 120, expiresAt: bangkokIso(21 * DAY) }] : [],
+      multiplier: current.multiplier,
+      pendingPoints: customer.ownerIndex === null ? 0 : 42,
       pointValue: "2.50",
+      spend12m: baht(spendOf(customer)),
+      tier: current.tier,
     };
+    return HttpResponse.json(summary);
   }),
 
-  mockRequest("GET /v1/store/me/points/entries", ({ query, request }) => {
+  // store.loyalty.ledger (published, U-F0.2), newest first.
+  http.get("*/v1/store/loyalty/ledger", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const entry = (
+      id: string,
+      entryType: Schemas["PointsEntryType"],
+      points: number,
+      createdMinutesAgo: number,
+      extra: Partial<Schemas["PointsEntryDto"]> = {},
+    ): Schemas["PointsEntryDto"] => ({
+      id,
+      entryType,
+      points,
+      bahtValue: baht(points * 250),
+      status: "available",
+      availableAt: bangkokIso(-createdMinutesAgo + DAY),
+      expiresAt: bangkokIso(365 * DAY - createdMinutesAgo),
+      orderCode: null,
+      groupCode: null,
+      reason: null,
+      createdAt: bangkokIso(-createdMinutesAgo),
+      ...extra,
+    });
     const earned = ordersOf(customer)
       .filter((order) => order.status === "completed")
-      .map((order, index) => ({
-        id: mockId("pte", index + 1),
-        entryType: "earn_order" as const,
-        points: Math.floor(satang(order.netAmount) / 50_000),
-        bahtValue: baht(Math.floor(satang(order.netAmount) / 50_000) * 250),
-        status: "available" as const,
-        availableAt: bangkokIso(-60 * 24),
-        expiresAt: bangkokIso(60 * 24 * 330),
-        order: { id: order.id, orderCode: order.orderCode },
-        note: null,
-        createdAt: bangkokIso(-60 * 24 * 2),
-      }));
-    const signup = {
-      id: mockId("pte", 900),
-      entryType: "earn_signup" as const,
-      points: 20,
-      bahtValue: "50.00",
-      status: "available" as const,
-      availableAt: bangkokIso(-60 * 24 * 60),
-      expiresAt: bangkokIso(60 * 24 * 21),
-      order: null,
-      note: "ของขวัญต้อนรับสมาชิกใหม่",
-      createdAt: bangkokIso(-60 * 24 * 60),
-    };
-    const counted = [...earned, signup].reduce((sum, entry) => sum + entry.points, 0);
+      .map((order, index) =>
+        entry(mockId("pte", index + 1), "earn_order", Math.floor(satang(order.netAmount) / 50_000), 2 * DAY, {
+          orderCode: order.orderCode,
+        }),
+      );
+    const signup = entry(mockId("pte", 900), "earn_signup", 20, 60 * DAY, { reason: "ของขวัญต้อนรับสมาชิกใหม่" });
+    const counted = [...earned, signup].reduce((sum, row) => sum + row.points, 0);
     const opening =
       customer.points - counted !== 0
         ? [
-            {
-              id: mockId("pte", 901),
-              entryType: "adjust" as const,
-              points: customer.points - counted,
-              bahtValue: baht((customer.points - counted) * 250),
-              status: "available" as const,
-              availableAt: bangkokIso(-60 * 24 * 90),
-              expiresAt: bangkokIso(60 * 24 * 270),
-              order: null,
-              note: "ยอดยกมา (ข้อมูลจำลอง)",
-              createdAt: bangkokIso(-60 * 24 * 90),
-            },
+            entry(mockId("pte", 901), "adjust", customer.points - counted, 90 * DAY, {
+              reason: "ยอดยกมา (ข้อมูลจำลอง)",
+            }),
           ]
         : [];
-    return paginate(
-      [...earned, signup, ...opening].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-      query,
+    const url = new URL(request.url);
+    return HttpResponse.json(
+      paginate(
+        [...earned, signup, ...opening].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+        { page: Number(url.searchParams.get("page") ?? 1), perPage: Number(url.searchParams.get("perPage") ?? 25) },
+      ),
     );
   }),
 
-  mockRequest("GET /v1/store/me/referral", ({ request }) => {
+  // store.referral.get (published, U-F0.2): the code, its link and counts by status only.
+  http.get("*/v1/store/referral", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const owner = customer.ownerIndex === null ? null : fakeCustomers[customer.ownerIndex]!;
-    return {
-      code: owner?.referralCode ?? `PKNEW${customer.phone.slice(-4)}`,
-      referrerReward: "รับ 200 คะแนน (มูลค่า ฿500) เมื่อเพื่อนสั่งซื้อครั้งแรกและพ้นช่วงเคลม",
-      refereeReward: "เพื่อนได้ส่วนลด 5% สำหรับคำสั่งซื้อแรก (สูงสุด ฿500)",
-      monthlyLimit: 10,
-      rewardedThisMonth: owner ? 1 : 0,
+    const code = owner?.referralCode ?? `PKNEW${customer.phone.slice(-4)}`;
+    const referral: Schemas["MyReferralDto"] = {
+      code,
+      link: `${MOCK_STOREFRONT}/r/${code}`,
       referrals: owner
+        ? { pending: 1, underReview: 0, qualified: 0, rewarded: 1, rejected: 0 }
+        : { pending: 0, underReview: 0, qualified: 0, rewarded: 0, rejected: 0 },
+    };
+    return HttpResponse.json(referral);
+  }),
+
+  // store.documents.storeCredit (published, U-F0.2).
+  http.get("*/v1/store/store-credit", ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const owned = customer.ownerIndex !== null;
+    const done = ordersOf(customer).find((order) => order.status === "completed");
+    const credit: Schemas["StoreCreditDto"] = {
+      balance: owned ? "350.00" : "0.00",
+      currency: "THB",
+      entries: owned
         ? [
             {
-              id: mockId("srf", 1),
-              refereeName: "ส*** ต***",
-              status: "rewarded",
-              joinedAt: bangkokIso(-60 * 24 * 40),
-              rewardPoints: 200,
-            },
-            {
-              id: mockId("srf", 2),
-              refereeName: "ว*** ต***",
-              status: "pending",
-              joinedAt: bangkokIso(-60 * 24 * 3),
-              rewardPoints: null,
+              id: mockId("scr", 1),
+              source: "shortage_credit",
+              amount: "350.00",
+              orderCode: done?.orderCode ?? null,
+              docNumber: "CN-2569-00007",
+              createdAt: bangkokIso(-7 * DAY),
             },
           ]
         : [],
     };
-  }),
-
-  mockRequest("GET /v1/store/me/wallet", ({ request }) => {
-    const customer = customerOf(request);
-    if (!customer) return unauthenticated();
-    const owned = customer.ownerIndex !== null;
-    return {
-      promotions: [
-        {
-          code: "PACKIO10",
-          title: "ลด 10% ค่าสินค้า",
-          benefit: "ลด 10% จากค่าสินค้า",
-          conditions: "ใช้ได้กับทุกสินค้า 1 ครั้ง",
-          validUntil: bangkokIso(60 * 24 * 30),
-          status: "available",
-        },
-        ...(owned
-          ? [
-              {
-                code: "FIRSTBOX",
-                title: "ลูกค้าใหม่ ลด 15%",
-                benefit: "ลด 15% สูงสุด ฿500",
-                conditions: "คำสั่งซื้อแรกเท่านั้น",
-                validUntil: null,
-                status: "used" as const,
-              },
-            ]
-          : []),
-      ],
-      storeCredit: {
-        balance: owned ? "350.00" : "0.00",
-        currency: "THB",
-        entries: owned
-          ? [
-              {
-                id: mockId("scr", 1),
-                kind: "shortage_credit",
-                amount: "350.00",
-                order: (() => {
-                  const done = ordersOf(customer).find((order) => order.status === "completed");
-                  return done ? { id: done.id, orderCode: done.orderCode } : null;
-                })(),
-                note: "สินค้าขาด 1.2% อยู่ในเกณฑ์ที่ตกลง คืนเป็นเครดิต (D-080)",
-                createdAt: bangkokIso(-60 * 24 * 7),
-              },
-            ]
-          : [],
-      },
-    };
+    return HttpResponse.json(credit);
   }),
 
   mockRequest("GET /v1/store/me/privacy-requests", ({ request }) => {

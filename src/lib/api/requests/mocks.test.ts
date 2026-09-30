@@ -89,9 +89,7 @@ describe("the mock API answers every contract request in its requested shape", (
     const api = createApiClient({ baseUrl: "http://api.mock" });
     const anonymous = createRequestClient(REQUESTS, api as unknown as Client<never>);
     await expect(anonymous.call("GET /v1/store/catalog/product-categories")).resolves.not.toHaveLength(0);
-    await expect(
-      anonymous.call("GET /v1/store/orders/by-code/{orderCode}", { path: { orderCode: "PK-2569-00042" } }),
-    ).rejects.toMatchObject({ status: 401 });
+    await expect(anonymous.call("GET /v1/store/me/privacy-requests")).rejects.toMatchObject({ status: 401 });
   });
 
   it("refuses a staff request without a session, like the API", async () => {

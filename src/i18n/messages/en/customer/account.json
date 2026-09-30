@@ -64,7 +64,7 @@
     "designs": "Designs",
     "points": "Points",
     "referral": "Invite friends",
-    "wallet": "Codes and credit",
+    "wallet": "Store credit",
     "addresses": "Addresses and tax invoices",
     "notifications": "Notifications",
     "privacy": "Privacy"
@@ -78,8 +78,7 @@
     "payDue": "An instalment is due — pay it",
     "points": "{points} points",
     "pointsValue": "Worth {amount}",
-    "tierProgress": "From {current} to {next}",
-    "tierProgressValue": "12-month spend {spend} of {threshold}",
+    "tierNow": "{tier} · 12-month spend {spend}",
     "tiers": {
       "member": "Member",
       "silver": "Silver",
@@ -208,9 +207,8 @@
     "pending": "On the way",
     "pendingHint": "Added once the order is received and the claim window has passed",
     "tier": "Tier",
-    "multiplier": "Points ×{multiplier}",
+    "tierHint": "Points ×{multiplier} · 12-month spend {spend}",
     "expiring": "{points} points expire on {date}",
-    "nextTier": "On the way to {tier}",
     "history": "Points history",
     "when": "Date",
     "what": "What",
@@ -240,34 +238,25 @@
     "copyCode": "Copy the code",
     "shareLink": "Share the link",
     "shareTitle": "Get your packaging made with Packio",
-    "limit": "Up to {limit} rewarded friends a month ({used} this month)",
     "friends": "Friends you invited",
     "noFriends": "No friends invited yet",
     "noFriendsBody": "Share your code with friends who need packaging.",
-    "joined": "Joined {date}",
-    "reward": "+{points} points"
+    "count": "{count, plural, one {# friend} other {# friends}}"
   },
   "wallet": {
-    "title": "Codes and credit",
-    "intro": "The promo codes you hold, and credit you can pay with.",
-    "codes": "Promo codes",
-    "statuses": {
-      "available": "Available",
-      "used": "Used",
-      "expired": "Expired"
-    },
-    "validUntil": "Valid until {date}",
-    "copy": "Copy",
-    "codesNote": "Enter a code at checkout and the discount is worked out for you.",
+    "title": "Store credit",
+    "intro": "Credit you can spend on your next order",
     "credit": "Store credit",
     "balance": "Credit balance",
     "creditHint": "Use it as a payment method next time",
-    "kinds": {
-      "shortage_credit": "Credit for a shortfall within tolerance",
-      "refund": "Refund as credit",
-      "goodwill": "Goodwill credit",
-      "spent": "Credit used",
-      "expired": "Credit expired"
+    "sources": {
+      "shortage_credit": "Credit for a shortage within tolerance",
+      "cancellation": "Credit from a cancelled order",
+      "claim": "Credit from a claim",
+      "refund_alternative": "Refund as credit",
+      "applied_to_order": "Used on an order",
+      "manual": "Adjusted by Packio staff",
+      "refunded": "Paid out as a refund"
     }
   },
   "copy": {

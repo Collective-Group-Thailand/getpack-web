@@ -1,7 +1,6 @@
 "use client";
 
 import { browserApi } from "@/lib/api/browser";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 
 /**
@@ -10,7 +9,12 @@ import type { Schemas } from "@/lib/api/types";
  *
  *   consent   every required purpose not granted, or granted at an older version (PDPA; Packio's
  *             own consent records, D-005), plus the optional ones never answered
- *   profile   no e-mail yet — the progressive-profiling step (CONTRACT-REQUEST store.profile)
+ *   profile   no e-mail yet and not asked before — the progressive-profiling step
+ *
+ * CONTRACT-GAP store.profile — `store.customerProfile.update` cannot write the e-mail and nothing
+ * says the step was answered, so "asked before" is remembered here, in a first-party cookie
+ * holding the customer's id: without it, a customer with no e-mail would be asked at every
+ * sign-in.
  */
 
 export type Consent = Schemas["ConsentDto"];
@@ -43,8 +47,26 @@ export function consentsToAsk(consents: readonly Consent[]): Consent[] {
   return consents.filter((consent) => consent.required || consent.granted === null || consent.outdated);
 }
 
-export function needsProfile(me: Onboarding["me"]): boolean {
-  return me !== null && !me.email;
+const PROFILE_ASKED_COOKIE = "pk_profile_asked";
+const PROFILE_ASKED_MAX_AGE = 60 * 60 * 24 * 365;
+
+function profileAskedFor(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  return document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${PROFILE_ASKED_COOKIE}=`))
+    ?.slice(PROFILE_ASKED_COOKIE.length + 1);
+}
+
+export function needsProfile(me: Onboarding["me"], askedFor = profileAskedFor()): boolean {
+  return me !== null && !me.email && askedFor !== me.id;
+}
+
+/** The step was answered (saved or skipped) — not asked again for this customer. */
+export function rememberProfileAsked(customerId: string): void {
+  document.cookie = `${PROFILE_ASKED_COOKIE}=${encodeURIComponent(customerId)}; path=/; max-age=${PROFILE_ASKED_MAX_AGE}; samesite=lax${
+    window.location.protocol === "https:" ? "; secure" : ""
+  }`;
 }
 
 /** One record per purpose, in order (`POST /v1/store/me/consents` takes one at a time). */
@@ -58,10 +80,12 @@ export async function recordConsents(
   }
 }
 
-export async function saveProfile(profile: {
-  displayName?: string;
-  email?: string;
-  customerType?: "individual" | "juristic" | "government";
-}): Promise<void> {
-  await browserRequests().call("PATCH /v1/store/me", { body: profile });
+/** `store.customerProfile.update` under the `ETag` of the profile read just before it. */
+export async function saveProfile(profile: Schemas["UpdateCustomerProfileDto"]): Promise<void> {
+  const api = browserApi();
+  const current = await api.GET("/v1/store/customer-profile");
+  await api.PATCH("/v1/store/customer-profile", {
+    params: { header: { "If-Match": current.response.headers.get("etag") ?? "" } },
+    body: profile,
+  });
 }

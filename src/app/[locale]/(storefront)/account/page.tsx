@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { accountRequests } from "@/features/customer/account/api.server";
+import { accountRequests, getPoints } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { getFormat } from "@/features/shared/format/server";
@@ -9,7 +9,6 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
-import { Meter } from "@/ui/components/Meter";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.home");
@@ -25,7 +24,7 @@ export default async function Page() {
     getTranslations("account.nav"),
     getFormat(),
     requests.call("GET /v1/store/orders", { query: { view: "active", perPage: 20 } }),
-    requests.call("GET /v1/store/me/points"),
+    getPoints(),
   ]);
   const todo = active.data.filter((order) => order.nextActions.length > 0);
 
@@ -81,25 +80,13 @@ export default async function Page() {
             {tNav("points")}
           </h2>
           <p className="mt-2 text-2xl font-bold tabular-nums">
-            {t("points", { points: format.number(points.balance.available) })}
+            {t("points", { points: format.number(points.availablePoints) })}
           </p>
-          <p className="text-muted text-sm">
-            {t("pointsValue", { amount: format.thb(points.balance.availableBahtValue) })}
+          <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
+          {/* CONTRACT-GAP store.loyalty — no next tier or threshold, so the tier stands without a progress bar. */}
+          <p className="mt-3 text-sm">
+            {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
           </p>
-          {points.tier.next ? (
-            <Meter
-              className="mt-3"
-              value={points.tier.progressPct}
-              valueText={t("tierProgressValue", {
-                spend: format.thb(points.tier.spend12m),
-                threshold: format.thb(points.tier.nextThreshold),
-              })}
-              label={t("tierProgress", {
-                current: t(`tiers.${points.tier.current}`),
-                next: t(`tiers.${points.tier.next}`),
-              })}
-            />
-          ) : null}
           <Button asChild variant="link" className="mt-2 px-0">
             <Link href="/account/points">{t("seePoints")}</Link>
           </Button>

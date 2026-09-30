@@ -3,27 +3,35 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
-import { isApiError } from "@/lib/api/problem";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 
-import { saveProfile } from "./onboarding";
+import { rememberProfileAsked, saveProfile } from "./onboarding";
 
 type CustomerType = "individual" | "juristic" | "government";
 
 /**
  * Progressive profiling (F3 3.1): asked once, right after a first sign-in, and skippable — a
- * name, an e-mail for documents, and whether they buy as a person or an organisation (the
- * payment schedule depends on it, D-020). Nothing here is required to use the shop.
- * CONTRACT-REQUEST store.profile.
+ * name, and whether they buy as a person or an organisation (the payment schedule depends on it,
+ * D-020). Nothing here is required to use the shop.
+ *
+ * CONTRACT-GAP store.profile — `store.customerProfile.update` does not take an e-mail, so the step
+ * no longer asks for one.
  */
-export function ProfileStep({ displayName, onDone }: { displayName: string; onDone: () => void }) {
+export function ProfileStep({
+  displayName,
+  customerId,
+  onDone,
+}: {
+  displayName: string;
+  customerId: string;
+  onDone: () => void;
+}) {
   const t = useTranslations("auth.customer.profile");
   const [name, setName] = useState(displayName);
-  const [email, setEmail] = useState("");
   const [type, setType] = useState<CustomerType>("individual");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -33,16 +41,11 @@ export function ProfileStep({ displayName, onDone }: { displayName: string; onDo
     setError(null);
     startTransition(async () => {
       try {
-        await saveProfile({
-          displayName: name.trim() || undefined,
-          email: email.trim() || undefined,
-          customerType: type,
-        });
+        await saveProfile({ displayName: name.trim() || undefined, customerType: type });
+        rememberProfileAsked(customerId);
         onDone();
-      } catch (failure) {
-        if (isApiError(failure) && failure.status === 409) setError(t("emailTaken"));
-        else if (isApiError(failure) && failure.status === 422) setError(t("invalidEmail"));
-        else setError(t("failed"));
+      } catch {
+        setError(t("failed"));
       }
     });
   };
@@ -57,16 +60,6 @@ export function ProfileStep({ displayName, onDone }: { displayName: string; onDo
 
       <Field label={t("name")}>
         <Input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" disabled={pending} />
-      </Field>
-      <Field label={t("email")} hint={t("emailHint")}>
-        <Input
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          autoComplete="email"
-          inputMode="email"
-          disabled={pending}
-        />
       </Field>
       <Field label={t("type")}>
         <RadioCards<CustomerType>
@@ -84,7 +77,17 @@ export function ProfileStep({ displayName, onDone }: { displayName: string; onDo
         <Button type="submit" size="lg" block loading={pending}>
           {pending ? t("saving") : t("save")}
         </Button>
-        <Button type="button" variant="ghost" size="lg" block disabled={pending} onClick={onDone}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="lg"
+          block
+          disabled={pending}
+          onClick={() => {
+            rememberProfileAsked(customerId);
+            onDone();
+          }}
+        >
           {t("skip")}
         </Button>
       </div>
