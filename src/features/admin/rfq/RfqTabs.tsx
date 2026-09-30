@@ -155,7 +155,7 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
     },
     {
       id: "prices",
-      header: t("prices"),
+      header: seesCost ? t("prices") : t("reply"),
       cell: (row) =>
         row.lines && row.lines.length > 0 ? (
           <ul className="space-y-0.5 text-sm tabular-nums">
