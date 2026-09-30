@@ -45,8 +45,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "GET /v1/store/designs/{designId}",
   "GET /v1/store/designs/{designId}/versions",
   "GET /v1/store/designs/{designId}/versions/{versionNo}",
-  "GET /v1/store/rfqs",
-  "GET /v1/store/rfqs/{rfqId}",
   "PATCH /v1/admin/campaigns/{campaignId}",
   "PATCH /v1/admin/promotions/{promotionId}",
   "POST /v1/admin/campaigns",
@@ -72,7 +70,5 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/partner/factories/{factoryId}/users",
   "POST /v1/store/designs",
   "POST /v1/store/designs/{designId}/assets",
-  "POST /v1/store/rfqs",
-  "POST /v1/store/rfqs/{rfqId}/messages",
   "PUT /v1/store/designs/{designId}",
 ];

@@ -112,13 +112,19 @@
     "acceptedTitle": "Accepted — quotation {code}",
     "acceptedBody": "{quantity} pieces. Add it to your cart to order.",
     "addToCart": "Add to cart",
-    "cartFailed": "We could not add it to your cart. Please try again."
+    "cartFailed": "We could not add it to your cart. Please try again.",
+    "declinedBody": "Chat with us to find another way, such as a different spec or quantity.",
+    "yes": "Yes",
+    "no": "No",
+    "acceptedTitleNoCode": "Quotation accepted"
   },
   "thread": {
     "askedForInfo": "Our team needs more information. Reply below so we can carry on pricing it.",
     "empty": "No messages yet",
     "reply": "Message to our team",
     "send": "Send",
-    "failed": "We could not send the message. It is still here — please try again."
+    "failed": "We could not send the message. It is still here — please try again.",
+    "you": "You",
+    "team": "Packio team"
   }
 }

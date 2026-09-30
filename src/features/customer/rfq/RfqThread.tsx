@@ -5,21 +5,21 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { cn } from "@/ui/lib/cn";
 
-type Message = ResponseOf<Requests, "GET /v1/store/rfqs/{rfqId}/messages">["data"][number];
+type Message = Schemas["RfqMessageDto"];
 
 /**
- * The conversation with CS about one RFQ. Staff appear as the team, never by name; an answer to a
- * request for information puts the RFQ back in front of CS (B2.5). The draft survives a failure.
+ * The conversation with CS about one RFQ, as the RFQ carries it (`RfqDto.messages`). Staff appear
+ * as the team, never by name; an answer to a request for information puts the RFQ back in front
+ * of CS (B2.5). The draft survives a failure.
  */
 export function RfqThread({
   rfqId,
@@ -43,8 +43,8 @@ export function RfqThread({
     setSending(true);
     setError(null);
     try {
-      await browserRequests().call("POST /v1/store/rfqs/{rfqId}/messages", {
-        path: { rfqId },
+      await browserApi().POST("/v1/store/rfqs/{rfqId}/messages", {
+        params: { path: { rfqId } },
         body: { body: body.trim() },
       });
       setBody("");
@@ -68,11 +68,11 @@ export function RfqThread({
               key={message.id}
               className={cn(
                 "max-w-[85%] rounded-xl px-4 py-3 text-sm",
-                message.authorKind === "customer" ? "bg-primary-subtle self-end" : "bg-bg-subtle self-start",
+                message.author === "customer" ? "bg-primary-subtle self-end" : "bg-bg-subtle self-start",
               )}
             >
               <p className="text-muted text-xs">
-                {message.authorName} · {format.dateTime(message.createdAt)}
+                {message.author === "customer" ? t("you") : t("team")} · {format.dateTime(message.createdAt)}
               </p>
               <p className="mt-1 whitespace-pre-line">{message.body}</p>
             </li>

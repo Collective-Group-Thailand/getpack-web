@@ -74,3 +74,14 @@ export function artworkActions(artwork: ArtworkFacts): ArtworkActions {
     reviewDesign: artwork.designServiceStatus === "delivered" && artwork.proofPending,
   };
 }
+
+/**
+ * Whether a sent quotation can be accepted now (D-051): the RFQ is quoted and the quotation is
+ * the one sent (CONTRACT-GAP entity.next-actions — see `orderActions`).
+ */
+export function canAcceptQuotation(
+  rfq: Pick<Schemas["RfqDto"], "status">,
+  quotation: Pick<Schemas["RfqQuotationDto"], "status">,
+): boolean {
+  return rfq.status === "quoted" && quotation.status === "sent";
+}

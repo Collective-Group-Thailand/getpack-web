@@ -9,8 +9,8 @@ import { uploadFile, type UploadedFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import type { Requests } from "@/lib/api/requests/registry";
 import { Button } from "@/ui/components/Button";
@@ -118,19 +118,18 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
     setSubmitting(true);
     setFailure(null);
     try {
-      const rfq = await browserRequests().call("POST /v1/store/rfqs", {
-        idempotencyKey: idempotencyKey.current,
+      // `store.rfqs.submit`: the server stamps the spec's schema version itself.
+      // CONTRACT-GAP store.rfqs — nothing carries which product routed the customer here (D-102).
+      const { data: rfq } = await browserApi().POST("/v1/store/rfqs", {
+        params: { header: { "Idempotency-Key": idempotencyKey.current } },
         body: {
           productTypeCode: form.productTypeCode,
-          specSchemaVersion: form.specSchemaVersion,
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
             ? {
-                dimensions: {
-                  lengthMm: Number(dims.l),
-                  widthMm: Number(dims.w),
-                  ...(form.dimensions.height && dims.h ? { heightMm: Number(dims.h) } : {}),
-                },
+                lengthMm: Number(dims.l),
+                widthMm: Number(dims.w),
+                ...(form.dimensions.height && dims.h ? { heightMm: Number(dims.h) } : {}),
               }
             : {}),
           quantities: [...new Set(quantities.filter((value) => value.trim() !== "").map(Number))],
@@ -138,18 +137,15 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
           deliveryPostcode: postcode,
           fileIds: files.flatMap((file) => (file.file ? [file.file.id] : [])),
           ...(notes.trim() ? { notes: notes.trim() } : {}),
-          ...(fromProduct
-            ? { routedFrom: { catalogProductSlug: fromProduct.slug, reason: "no_instant_price", configuration: {} } }
-            : {}),
         },
       });
       track("rfq_submitted", {
         route: "/rfq/[category]",
         productType: form.productTypeCode,
-        quantityBand: quantityBand(rfq.quantities[0] ?? 0),
+        quantityBand: quantityBand(rfq!.quantities[0] ?? 0),
         quoteMode: "rfq",
       });
-      router.push(`/account/rfqs/${rfq.id}?submitted=1`);
+      router.push(`/account/rfqs/${rfq!.id}?submitted=1`);
     } catch (error) {
       // A new attempt after a refusal is a new intent; a network failure may be retried as is.
       if (isApiError(error)) idempotencyKey.current = newKey();
