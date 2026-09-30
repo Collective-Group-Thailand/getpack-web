@@ -11,19 +11,26 @@ import { Link } from "@/i18n/navigation";
 
 type Params = { token: string };
 
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { token } = await params;
-  const [t, tracking] = await Promise.all([getTranslations("fulfilment.track"), getTracking(token).catch(() => null)]);
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("fulfilment.track");
   // A tracking link is shared, not published: never indexed.
   return {
-    title: tracking ? t("titleFor", { code: tracking.orderCode }) : t("title"),
+    title: t("title"),
     robots: { index: false, follow: false },
   };
 }
 
+/** The order statuses a tracking page names (`PublicTrackingDto.status` is the order's, as a string). */
+const ORDER_STATUSES = new Set<string>(Object.keys(ORDER_STATUS));
+
 /**
- * The public tracking page (F3 3.6): for whoever holds the link or the carton's QR — stages
- * promised against actual and each delivery's progress, with no name, address, amount or photo.
+ * The public tracking page (F3 3.6, `store.tracking.get`): for whoever holds the link or the
+ * carton's QR — the order's stages and each delivery's progress, with no name, address, amount or
+ * photo.
+ *
+ * CONTRACT-GAP store.tracking — the published page carries neither the order code nor what was
+ * ordered (on purpose, for the product; the code is an open ask) and no location, so the page shows
+ * the stages and the deliveries only.
  */
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { token } = await params;
@@ -40,18 +47,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <header className="flex flex-col gap-2">
         <p className="text-muted text-sm">{t("eyebrow")}</p>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-mono text-2xl font-bold">{tracking.orderCode}</h1>
-          <StatusChip map={ORDER_STATUS} value={tracking.status} size="md" />
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          {ORDER_STATUSES.has(tracking.status) ? (
+            <StatusChip map={ORDER_STATUS} value={tracking.status as keyof typeof ORDER_STATUS} size="md" />
+          ) : null}
         </div>
-        <p className="text-muted">
-          {t("what", {
-            product: tracking.productName,
-            quantity: format.number(tracking.quantity),
-            unit: tracking.unit,
-          })}
-        </p>
-        {tracking.estimatedDeliveryDate ? (
-          <p className="text-sm">{t("eta", { date: format.date(tracking.estimatedDeliveryDate) })}</p>
+        {tracking.promisedShipDate && !tracking.shippedAt ? (
+          <p className="text-sm">{t("shipBy", { date: format.date(tracking.promisedShipDate) })}</p>
         ) : null}
       </header>
 
@@ -59,7 +61,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <h2 id="track-stages" className="sr-only">
           {t("stages")}
         </h2>
-        <OrderStages stages={tracking.stages} />
+        <OrderStages steps={tracking.steps} />
       </section>
 
       {tracking.shipments.length > 0 ? (
@@ -70,20 +72,14 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           {tracking.shipments.map((shipment) => (
             <article key={shipment.shipmentNo} className="border-border rounded-lg border p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-medium">
-                  {t("shipmentTo", {
-                    quantity: format.number(shipment.quantity),
-                    unit: tracking.unit,
-                    province: shipment.province,
-                  })}
-                </h3>
+                <h3 className="font-medium">{t("shipmentNo", { shipment: shipment.shipmentNo })}</h3>
                 <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
               </div>
               <p className="text-muted mt-1 text-xs">
                 {shipmentT(shipment.trackingNo ? "metaTracking" : "meta", {
                   shipment: shipment.shipmentNo,
                   carrier: shipmentT(`carrier.${shipment.carrier}`),
-                  cartons: format.number(shipment.cartons),
+                  cartons: format.number(shipment.cartonsCount),
                   tracking: shipment.trackingNo ?? "",
                 })}
               </p>
@@ -98,13 +94,12 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                 </a>
               ) : null}
               <ol className="mt-3 flex flex-col gap-1 text-sm">
-                {[...shipment.events].reverse().map((event) => (
-                  <li key={`${event.at}-${event.status}`} className="flex flex-wrap gap-x-3">
-                    <time dateTime={event.at} className="text-muted tabular-nums">
-                      {format.dateTime(event.at)}
+                {[...shipment.steps].reverse().map((step) => (
+                  <li key={`${step.occurredAt}-${step.status}`} className="flex flex-wrap gap-x-3">
+                    <time dateTime={step.occurredAt} className="text-muted tabular-nums">
+                      {format.dateTime(step.occurredAt)}
                     </time>
-                    <span>{shipmentT(`eventStatus.${event.status}`)}</span>
-                    {event.location ? <span className="text-muted">{event.location}</span> : null}
+                    <span>{shipmentT(`eventStatus.${step.status}`)}</span>
                   </li>
                 ))}
               </ol>
@@ -114,7 +109,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       ) : null}
 
       <p className="text-muted text-xs">
-        {t("updated", { date: format.dateTime(tracking.updatedAt) })}{" "}
         <Link href="/account/orders" className="text-primary underline underline-offset-4">
           {t("owner")}
         </Link>

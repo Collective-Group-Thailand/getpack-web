@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPoints } from "@/features/customer/account/api.server";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
+import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { getFormat } from "@/features/shared/format/server";
@@ -21,13 +22,15 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const me = await liffCustomer();
   if (!me) return <LiffSignIn />;
-  const [t, format, orders, points] = await Promise.all([
+  const locale = await getLocale();
+  const [t, format, orders, points, names] = await Promise.all([
     getTranslations("liff.home"),
     getFormat(),
     listMyOrders("active"),
     getPoints(),
+    getProductTypeNames(locale),
   ]);
-  const todo = orders.data.filter((order) => order.nextActions.length > 0).slice(0, 5);
+  const todo = orders.filter((row) => row.actions.length > 0).slice(0, 5);
 
   return (
     <div className="flex flex-col gap-6">
@@ -45,11 +48,11 @@ export default async function Page() {
         </h2>
         {todo.length === 0 ? <p className="text-muted text-sm">{t("nothing")}</p> : null}
         <ul className="flex flex-col gap-3">
-          {todo.map((order) => (
+          {todo.map(({ order, actions }) => (
             <li key={order.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
               <div className="flex items-start justify-between gap-2">
                 <Link href={`/liff/orders/${order.id}`} className="min-w-0">
-                  <span className="block font-medium">{order.product.name}</span>
+                  <span className="block font-medium">{names[order.productTypeCode] ?? order.productTypeCode}</span>
                   <span className="text-muted block font-mono text-xs">{order.orderCode}</span>
                 </Link>
                 <StatusChip map={ORDER_STATUS} value={order.status} />
@@ -57,7 +60,7 @@ export default async function Page() {
               <OrderActions
                 orderId={order.id}
                 orderCode={order.orderCode}
-                actions={order.nextActions.slice(0, 2)}
+                actions={actions.slice(0, 2)}
                 size="sm"
                 surface="liff"
               />

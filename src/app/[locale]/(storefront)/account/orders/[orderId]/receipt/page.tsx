@@ -6,7 +6,6 @@ import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { ConfirmReceipt } from "@/features/customer/fulfilment/ConfirmReceipt";
 import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
 import { getMyOrder } from "@/features/customer/orders/api.server";
-import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
@@ -14,32 +13,29 @@ type Params = { orderId: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { orderId } = await params;
-  const [t, order] = await Promise.all([getTranslations("fulfilment.receipt"), getMyOrder(orderId).catch(() => null)]);
+  const [t, detail] = await Promise.all([getTranslations("fulfilment.receipt"), getMyOrder(orderId).catch(() => null)]);
   return {
-    title: order ? t("titleFor", { code: order.orderCode }) : t("title"),
+    title: detail ? t("titleFor", { code: detail.order.orderCode }) : t("title"),
     robots: { index: false, follow: false },
   };
 }
 
 /**
- * Receiving an order (F3 3.6): each delivery with its proof, what the delivered quantity meant
- * (D-021, D-080), and confirming receipt (D-081) — or the date it completes by itself. A problem
- * goes to a claim within the window (D-082).
+ * Receiving an order (F3 3.6): each delivery with its proof, and confirming receipt (D-081). A
+ * problem goes to a claim within the window (D-082).
+ *
+ * CONTRACT-GAP store.receipt — the published order has no receipt block (when it was confirmed,
+ * when it completes by itself, when the claim window ends) and no tolerance outcome (D-021, D-080),
+ * so the page says what it can.
  */
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, tolerance, format, order] = await Promise.all([
-    getTranslations("fulfilment.receipt"),
-    getTranslations("myOrders.tolerance"),
-    getFormat(),
-    getMyOrder(orderId),
-  ]);
-  if (!order) notFound();
-  const canConfirm = order.nextActions.some((action) => action.key === "order.confirm_receipt");
-  const canClaim = order.nextActions.some((action) => action.key === "order.open_claim");
-  const outcome = order.toleranceOutcome;
-
+  const [t, detail] = await Promise.all([getTranslations("fulfilment.receipt"), getMyOrder(orderId)]);
+  if (!detail) notFound();
+  const { order } = detail;
+  const canConfirm = detail.actions.some((action) => action.key === "order.confirm_receipt");
+  const canClaim = detail.actions.some((action) => action.key === "order.open_claim");
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
@@ -48,60 +44,28 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         </Link>
         <h1 className="text-2xl font-bold">{t("title")}</h1>
       </header>
-
-      {order.shipments.length === 0 ? (
+      {detail.shipments.length === 0 ? (
         <Callout tone="info">{t("notShipped")}</Callout>
       ) : (
         <section aria-labelledby="receipt-shipments" className="flex flex-col gap-3">
           <h2 id="receipt-shipments" className="text-lg font-semibold">
             {t("shipments")}
           </h2>
-          {order.shipments.map((shipment) => (
-            <ShipmentCard key={shipment.id} shipment={shipment} unit={order.unit} />
+          {detail.shipments.map((shipment) => (
+            <ShipmentCard key={shipment.id} shipment={shipment} orderCode={order.orderCode} />
           ))}
         </section>
       )}
-
-      {outcome ? (
-        <Callout
-          tone={
-            outcome.outcome === "outside_claim_opened" ? "warning" : outcome.outcome === "exact" ? "success" : "info"
-          }
-          title={t("quantityTitle")}
-        >
-          {tolerance(outcome.outcome, {
-            ordered: format.number(outcome.orderedQuantity),
-            delivered: format.number(outcome.deliveredQuantity),
-            credit: format.thb(outcome.creditAmount),
-          })}
-          {outcome.creditAmount ? (
-            <span className="mt-1 block">
-              <Link href="/account/wallet" className="underline underline-offset-4">
-                {t("creditLink")}
-              </Link>
-            </span>
-          ) : null}
-        </Callout>
-      ) : null}
-
-      {order.receipt?.confirmedAt ? (
+      {order.status === "completed" ? (
         <Callout tone="success" title={t("confirmedTitle")}>
-          {t("confirmed", { date: format.dateTime(order.receipt.confirmedAt) })}
+          {t("completedBody")}
         </Callout>
       ) : null}
-
       <div className="flex flex-col items-start gap-3">
-        {canConfirm ? (
-          <>
-            {order.receipt?.autoCompleteAt ? (
-              <p className="text-muted text-sm">{t("auto", { date: format.dateTime(order.receipt.autoCompleteAt) })}</p>
-            ) : null}
-            <ConfirmReceipt orderId={order.id} orderCode={order.orderCode} />
-          </>
-        ) : null}
-        {canClaim && order.receipt?.claimWindowEndsAt ? (
+        {canConfirm ? <ConfirmReceipt orderId={order.id} orderCode={order.orderCode} /> : null}
+        {canClaim ? (
           <p className="text-sm">
-            {t("problem", { date: format.dateTime(order.receipt.claimWindowEndsAt) })}{" "}
+            {t("problemNoDate")}{" "}
             <Link href={`/account/orders/${order.id}/claim`} className="text-primary underline underline-offset-4">
               {t("openClaim")}
             </Link>

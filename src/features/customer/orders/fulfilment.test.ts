@@ -49,8 +49,10 @@ const COMPLETED = mockId("ord", 37);
 
 describe("after production, against the mock", () => {
   it("tracks publicly by token without anything personal", async () => {
-    const order = await receiver.call("GET /v1/store/orders/{orderId}", { path: { orderId: DELIVERED } });
-    expect(order.stages.map((stage) => stage.key)).toEqual([
+    const api = receiver.api();
+    const path = { params: { path: { orderId: DELIVERED } } };
+    const { data: progress } = await api.GET("/v1/store/orders/{orderId}/progress", path);
+    expect(progress!.steps.map((step) => step.key)).toEqual([
       "ordered",
       "paid",
       "artwork",
@@ -58,84 +60,92 @@ describe("after production, against the mock", () => {
       "shipping",
       "completed",
     ]);
-    expect(order.stages.find((stage) => stage.state === "current")?.key).toBe("completed");
+    expect(progress!.steps.find((step) => step.status === "in_progress")?.key).toBe("completed");
 
-    const tracking = await guest.call("GET /v1/store/tracking/{token}", { path: { token: order.trackingToken! } });
-    expect(tracking.orderCode).toBe(order.orderCode);
-    const text = JSON.stringify(tracking);
-    for (const destination of order.destinations) {
-      expect(text).not.toContain(destination.recipientName);
-      expect(text).not.toContain(destination.phone);
-      expect(text).not.toContain(destination.line1);
-    }
-    expect(text).not.toContain(order.grossAmount);
-    expect((await failure(guest.call("GET /v1/store/tracking/{token}", { path: { token: "trk0000" } })))?.status).toBe(
-      404,
-    );
-  });
-
-  it("credits a shortage within tolerance and completes on confirmed receipt (D-080, D-081)", async () => {
-    const before = await receiver.call("GET /v1/store/orders/{orderId}", { path: { orderId: DELIVERED } });
-    expect(before.toleranceOutcome?.outcome).toBe("shortage_within");
-    expect(Number(before.toleranceOutcome?.creditAmount)).toBeGreaterThan(0);
-    expect(before.nextActions.map((action) => action.key)).toContain("order.confirm_receipt");
-
-    const after = await receiver.call("POST /v1/store/orders/{orderId}/actions/confirm-receipt", {
-      path: { orderId: DELIVERED },
-      body: {},
-      idempotencyKey: uuid(),
+    const { data: link } = await api.POST("/v1/store/orders/{orderId}/tracking-links", {
+      params: { path: { orderId: DELIVERED }, header: { "Idempotency-Key": uuid() } },
     });
-    expect(after.status).toBe("completed");
-    expect(after.receipt?.confirmedAt).toBeTruthy();
-    expect(after.nextActions.map((action) => action.key)).not.toContain("order.confirm_receipt");
-    expect(after.nextActions.map((action) => action.key)).toContain("order.open_claim");
+    const { data: order } = await api.GET("/v1/store/orders/{orderId}", path);
+    const { data: tracking } = await guest.api().GET("/v1/store/track/{token}", {
+      params: { path: { token: link!.token } },
+    });
+    expect(tracking!.steps).toEqual(progress!.steps);
+    const text = JSON.stringify(tracking);
+    expect(text).not.toContain(order!.orderCode);
+    for (const destination of order!.destinations) {
+      expect(text).not.toContain(destination.address.recipientName);
+      expect(text).not.toContain(destination.address.phone);
+      expect(text).not.toContain(destination.address.line1);
+    }
+    expect(text).not.toContain(order!.totals.grossAmount);
+    const missing = await failure(
+      guest.api().GET("/v1/store/track/{token}", { params: { path: { token: "trk0000" } } }),
+    );
+    expect(missing?.status).toBe(404);
   });
 
-  it("files a claim with both kinds of photo, and the thread reaches the desk (D-082)", async () => {
+  it("shows what was delivered and completes on confirmed receipt (D-080, D-081)", async () => {
+    const api = receiver.api();
+    const { data: shipments } = await api.GET("/v1/store/orders/{orderId}/shipments", {
+      params: { path: { orderId: DELIVERED } },
+    });
+    // CONTRACT-GAP store.orders — no tolerance outcome is published; the delivery says how many arrived.
+    const item = shipments![0]!.items[0]!;
+    expect(item.deliveredQuantity).toBeLessThan(item.quantity);
+
+    const refused = await failure(
+      api.POST("/v1/store/orders/{orderId}/actions/confirm-receipt", {
+        params: { path: { orderId: DELIVERED }, header: { "Idempotency-Key": "" } },
+      }),
+    );
+    expect(refused?.status).toBe(400);
+    const { data: after } = await api.POST("/v1/store/orders/{orderId}/actions/confirm-receipt", {
+      params: { path: { orderId: DELIVERED }, header: { "Idempotency-Key": uuid() } },
+    });
+    expect(after!.status).toBe("completed");
+    const { data: progress } = await api.GET("/v1/store/orders/{orderId}/progress", {
+      params: { path: { orderId: DELIVERED } },
+    });
+    expect(progress!.completedAt).toBeTruthy();
+  });
+
+  it("files a claim with both kinds of photo, and it reaches the desk (D-082)", async () => {
+    const api = receiver.api();
     const form = await receiver.call("GET /v1/store/orders/{orderId}/claim-form", { path: { orderId: DELIVERED } });
     expect(form.open).toBe(true);
     expect(form.evidence.minCartonPhotos).toBeGreaterThan(0);
 
-    const missing = await failure(
-      receiver.call("POST /v1/store/orders/{orderId}/claims", {
-        path: { orderId: DELIVERED },
+    const submit = (cartonPhotoFileIds: string[]) =>
+      api.POST("/v1/store/orders/{orderId}/claims", {
+        params: { path: { orderId: DELIVERED }, header: { "Idempotency-Key": uuid() } },
         body: {
           type: "damaged",
+          shipmentId: form.shipments[0]!.id,
+          claimedQuantity: 20,
           description: "กล่องบุบ 20 ใบ ฝาฉีก",
           requestedResolution: "reprint",
           productPhotoFileIds: [uuid()],
-          cartonPhotoFileIds: [],
+          cartonPhotoFileIds,
         },
-        idempotencyKey: uuid(),
+      });
+    expect((await failure(submit([])))?.status).toBe(422);
+
+    const { data: claim } = await submit([uuid()]);
+    expect(claim!.status).toBe("submitted");
+    expect(claim!.photos.carton).toHaveLength(1);
+    expect(claim!.claimedQuantity).toBe(20);
+
+    // `store.claims.respondInfo` answers only what the team asked for (status `need_info`).
+    const early = await failure(
+      api.POST("/v1/store/claims/{claimId}/info", {
+        params: { path: { claimId: claim!.id }, header: { "Idempotency-Key": uuid() } },
+        body: { response: "แนบรูปเพิ่มเติมแล้ว" },
       }),
     );
-    expect(missing?.status).toBe(422);
+    expect(early?.status).toBe(409);
 
-    const claim = await receiver.call("POST /v1/store/orders/{orderId}/claims", {
-      path: { orderId: DELIVERED },
-      body: {
-        type: "damaged",
-        shipmentId: form.shipments[0]!.id,
-        affectedQuantity: 20,
-        description: "กล่องบุบ 20 ใบ ฝาฉีก",
-        requestedResolution: "reprint",
-        productPhotoFileIds: [uuid()],
-        cartonPhotoFileIds: [uuid()],
-      },
-      idempotencyKey: uuid(),
-    });
-    expect(claim.status).toBe("submitted");
-    expect(claim.evidence.cartonPhotos).toHaveLength(1);
-    expect(claim.messages[0]?.authorKind).toBe("customer");
-
-    const replied = await receiver.call("POST /v1/store/orders/{orderId}/claims/{claimId}/messages", {
-      path: { orderId: DELIVERED, claimId: claim.id },
-      body: { body: "แนบรูปเพิ่มเติมแล้ว" },
-    });
-    expect(replied.messages).toHaveLength(2);
-
-    const order = await receiver.call("GET /v1/store/orders/{orderId}", { path: { orderId: DELIVERED } });
-    expect(order.claims.map((entry) => entry.claimNo)).toContain(claim.claimNo);
+    const { data: listed } = await api.GET("/v1/store/claims", { params: { query: { orderId: DELIVERED } } });
+    expect(listed!.data.map((entry) => entry.claimNo)).toContain(claim!.claimNo);
   });
 
   it("closes the claim window 7 days after receipt", async () => {

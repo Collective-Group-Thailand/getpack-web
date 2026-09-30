@@ -173,8 +173,10 @@ describe("business accounts, against the mock", () => {
   it.todo("signs a company up only with fresh KYC documents (D-120)");
 
   it("checks bulk reorder rows before anything reaches the cart (D-153)", async () => {
-    const orders = await admin.call("GET /v1/store/orders", { query: { view: "active" } });
-    const code = orders.data[0]!.orderCode;
+    const { data: groups } = await createApiClient({ baseUrl: "http://api.mock", accessToken: admin.token }).GET(
+      "/v1/store/order-groups",
+    );
+    const code = groups!.data[0]!.orders[0]!.orderCode;
     const preview = await admin.call("POST /v1/store/me/company/bulk-reorders/actions/preview", {
       body: {
         rows: [

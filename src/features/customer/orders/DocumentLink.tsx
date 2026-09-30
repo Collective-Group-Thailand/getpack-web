@@ -3,8 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Button } from "@/ui/components/Button";
 import { toast } from "@/ui/components/Toast";
 
@@ -13,7 +13,7 @@ import { toast } from "@/ui/components/Toast";
  * click, then opened by a second, explicit click — a tab opened after an await is a pop-up to the
  * browser, and blocked.
  */
-export function DocumentLink({ orderId, documentId, number }: { orderId: string; documentId: string; number: string }) {
+export function DocumentLink({ documentId, number }: { documentId: string; number: string }) {
   const t = useTranslations("myOrders.documents");
   const [url, setUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,13 +37,11 @@ export function DocumentLink({ orderId, documentId, number }: { orderId: string;
       onClick={async () => {
         setBusy(true);
         try {
-          const signed = await browserRequests().call(
-            "POST /v1/store/orders/{orderId}/documents/{documentId}/actions/download",
-            {
-              path: { orderId, documentId },
-            },
-          );
-          setUrl(signed.url);
+          // `store.documents.pdf`: 409 until the PDF is rendered.
+          const { data: signed } = await browserApi().GET("/v1/store/documents/{documentId}/pdf", {
+            params: { path: { documentId } },
+          });
+          setUrl(signed!.url);
         } catch (error) {
           toast.error(isApiError(error) ? error.detail : t("failed"));
         } finally {

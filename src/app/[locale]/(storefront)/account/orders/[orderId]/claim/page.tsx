@@ -14,9 +14,9 @@ type Params = { orderId: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { orderId } = await params;
-  const [t, order] = await Promise.all([getTranslations("fulfilment.claim"), getMyOrder(orderId).catch(() => null)]);
+  const [t, detail] = await Promise.all([getTranslations("fulfilment.claim"), getMyOrder(orderId).catch(() => null)]);
   return {
-    title: order ? t("titleFor", { code: order.orderCode }) : t("title"),
+    title: detail ? t("titleFor", { code: detail.order.orderCode }) : t("title"),
     robots: { index: false, follow: false },
   };
 }
@@ -25,12 +25,13 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, order, form] = await Promise.all([
+  const [t, detail, form] = await Promise.all([
     getTranslations("fulfilment.claim"),
     getMyOrder(orderId),
     getClaimForm(orderId),
   ]);
-  if (!order) notFound();
+  if (!detail) notFound();
+  const { order } = detail;
 
   return (
     <div className="flex flex-col gap-8">

@@ -1,0 +1,37 @@
+import type { NextAction } from "@/domain/status/next-action";
+import type { Schemas } from "@/lib/api/types";
+
+/** What the storefront knows about an order when it decides what to offer. */
+export interface OrderFacts {
+  status: Schemas["OrderStatus"];
+  artworkStatus: Schemas["ArtworkStatus"];
+  designOption: Schemas["DesignOption"];
+  /** A shipment of the order was delivered. */
+  delivered: boolean;
+  /** An instalment of the order's group is due now. */
+  instalmentDue: boolean;
+}
+
+/**
+ * The actions a customer is offered on an order, from its facts.
+ *
+ * CONTRACT-GAP entity.next-actions — no published order carries `nextActions` (packio-api delivers
+ * them in U-B0.3), so until then the storefront reads the order's status, artwork status and
+ * deliveries here, in one place, and offers what the workflow (D-073, D-081, D-082, D-153) would.
+ * This only decides which buttons to show: every action is still the API's to refuse, with a
+ * problem the page shows. Delete this module when the orders carry their own list.
+ */
+export function orderActions(order: OrderFacts): NextAction[] {
+  const actions: NextAction[] = [];
+  const open = order.status !== "cancelled" && order.status !== "completed";
+  if (open && order.instalmentDue) actions.push({ key: "order.pay_instalment" });
+  if (open && (order.artworkStatus === "awaiting_upload" || order.artworkStatus === "changes_requested"))
+    actions.push({ key: order.designOption === "hired_design" ? "order.design_brief" : "order.upload_artwork" });
+  if (open && order.artworkStatus === "proof_sent") actions.push({ key: "order.approve_proof" });
+  if (order.status === "shipping" && order.delivered) actions.push({ key: "order.confirm_receipt" });
+  const received = (order.status === "shipping" && order.delivered) || order.status === "completed";
+  if (received) actions.push({ key: "order.open_claim" });
+  // D-153: a delivered job can be ordered again, before or after its receipt is confirmed.
+  if (received) actions.push({ key: "order.reorder" });
+  return actions;
+}

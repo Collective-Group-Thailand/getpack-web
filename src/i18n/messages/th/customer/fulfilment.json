@@ -17,7 +17,8 @@
     "carrier": {
       "factory_fleet": "รถขนส่งของ Packio",
       "flash_express": "Flash Express",
-      "deliveree": "Deliveree"
+      "deliveree": "Deliveree",
+      "packio": "รถขนส่งของ Packio"
     },
     "carrierPage": "ดูสถานะที่เว็บขนส่ง",
     "events": "ความเคลื่อนไหว ({count})",
@@ -33,7 +34,10 @@
       "cancelled": "ยกเลิกการจัดส่ง"
     },
     "pod": "{name} รับสินค้า {quantity} {unit} เมื่อ {date}",
-    "podPhoto": "รูปหลักฐานการส่งมอบ {name}"
+    "podPhoto": "รูปหลักฐานการส่งมอบ {name}",
+    "toNoUnit": "จำนวน {quantity} ถึง {name} ({postcode})",
+    "podNoUnit": "{name} รับสินค้า จำนวน {quantity} เมื่อ {date}",
+    "podPhotos": "รูปหลักฐานการส่งมอบ {count} รูป"
   },
   "receipt": {
     "title": "รับสินค้า",
@@ -53,7 +57,9 @@
     "done": "ยืนยันรับสินค้าแล้ว ขอบคุณที่ใช้บริการ",
     "failed": "ยืนยันไม่สำเร็จ กรุณาลองใหม่",
     "problem": "สินค้ามีปัญหา? แจ้งได้ถึง {date}",
-    "openClaim": "แจ้งปัญหาสินค้า"
+    "openClaim": "แจ้งปัญหาสินค้า",
+    "completedBody": "คำสั่งซื้อนี้เสร็จสิ้นแล้ว หากสินค้ามีปัญหา แจ้งได้ภายใน 7 วันหลังได้รับสินค้า",
+    "problemNoDate": "สินค้ามีปัญหา?"
   },
   "photos": {
     "drop": "ลากรูปมาวางที่นี่",
@@ -142,7 +148,23 @@
     "by": "{name} · {date}",
     "reply": "ตอบกลับ",
     "send": "ส่งข้อความ",
-    "failed": "ส่งไม่สำเร็จ กรุณาลองใหม่"
+    "failed": "ส่งไม่สำเร็จ กรุณาลองใหม่",
+    "decided": {
+      "approved": "อนุมัติเคลมแล้ว",
+      "rejected": "ไม่อนุมัติเคลม",
+      "resolved": "ดำเนินการเคลมแล้ว",
+      "closed": "ปิดเคลมแล้ว"
+    },
+    "actionAmount": "{action} {amount}",
+    "actions": {
+      "reproduction_job": "ผลิตใหม่ให้",
+      "refund": "คืนเงิน",
+      "credit_note": "ออกใบลดหนี้",
+      "store_credit": "เพิ่มเครดิตร้านค้า",
+      "factory_deduction": "หักจากโรงงาน",
+      "carrier_recovery": "เรียกคืนจากผู้ขนส่ง"
+    },
+    "photoCount": "{count} รูป"
   },
   "reorder": {
     "title": "สั่งซ้ำ",
@@ -188,6 +210,8 @@
     "shipments": "การจัดส่ง",
     "shipmentTo": "{quantity} {unit} ไปยัง{province}",
     "updated": "ข้อมูลล่าสุด {date}",
-    "owner": "เจ้าของคำสั่งซื้อ ดูรายละเอียดทั้งหมดในบัญชี"
+    "owner": "เจ้าของคำสั่งซื้อ ดูรายละเอียดทั้งหมดในบัญชี",
+    "shipBy": "กำหนดส่งจากโรงงาน {date}",
+    "shipmentNo": "รอบจัดส่ง {shipment}"
   }
 }
