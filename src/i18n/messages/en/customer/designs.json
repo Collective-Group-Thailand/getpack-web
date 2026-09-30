@@ -17,7 +17,8 @@
     "noThumbnail": "No preview",
     "updated": "Edited {date}",
     "spec": "{style} · {size} mm · {paper}",
-    "linked": "Order {order}"
+    "linked": "Order {order}",
+    "size": "{l} × {w} × {h} mm"
   },
   "delete": {
     "title": "Delete this design?",

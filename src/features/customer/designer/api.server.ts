@@ -4,24 +4,50 @@ import { isApiError } from "@/lib/api/problem";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import type { Requests } from "@/lib/api/requests/registry";
 import { serverRequests } from "@/lib/api/requests/server";
+import { serverApi } from "@/lib/api/server";
+import type { Schemas } from "@/lib/api/types";
 
-export type MyDesign = ResponseOf<Requests, "GET /v1/store/designs/{designId}">;
-export type MyDesignSummary = ResponseOf<Requests, "GET /v1/store/designs">["data"][number];
+export type MyDesign = Schemas["DesignDocumentDto"];
 
-/** One of the customer's designs with its ETag; `null` for a design that is not theirs (404). Never cached. */
-export async function getMyDesign(designId: string): Promise<{ data: MyDesign; etag: string | null } | null> {
+export interface OpenedDesign {
+  data: MyDesign;
+  etag: string | null;
+  /** Each image asset with a signed URL, to refresh the document's image sources on open. */
+  assets: { id: string; url: string }[];
+}
+
+/**
+ * One of the customer's designs with its ETag; `null` for a design that is not theirs (404). Never
+ * cached. CONTRACT-GAP store.design-assets — an asset carries no URL, so each is signed for here.
+ */
+export async function getMyDesign(designId: string): Promise<OpenedDesign | null> {
+  const api = await serverApi("customer");
   try {
-    return await (await serverRequests("customer")).read("GET /v1/store/designs/{designId}", { path: { designId } });
+    const { data, response } = await api.GET("/v1/store/designs/{designId}", { params: { path: { designId } } });
+    const assets = await Promise.all(
+      data!.assets.map(async (asset) => {
+        const signed = await api
+          .GET("/v1/store/files/{fileId}/download", { params: { path: { fileId: asset.fileId } } })
+          .then(({ data: download }) => download?.url ?? null)
+          .catch(() => null);
+        return signed ? [{ id: asset.id, url: signed }] : [];
+      }),
+    );
+    return { data: data!, etag: response.headers.get("etag"), assets: assets.flat() };
   } catch (error) {
     if (isApiError(error) && error.status === 404) return null;
     throw error;
   }
 }
 
-/** The customer's designs, newest first. */
-export async function listMyDesigns(): Promise<MyDesignSummary[]> {
-  const page = await (await serverRequests("customer")).call("GET /v1/store/designs", { query: { perPage: 100 } });
-  return page.data;
+/** The customer's designs, newest first (`store.designs.list`). */
+export async function listMyDesigns(): Promise<MyDesign[]> {
+  const { data } = await (
+    await serverApi("customer")
+  ).GET("/v1/store/designs", {
+    params: { query: { perPage: 100, sort: "updatedAt", order: "desc" } },
+  });
+  return data!.data;
 }
 
 export type SharedDesignData = ResponseOf<Requests, "GET /v1/store/shared-designs/{token}">;

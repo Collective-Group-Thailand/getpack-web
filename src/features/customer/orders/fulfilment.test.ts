@@ -69,7 +69,9 @@ describe("after production, against the mock", () => {
     const { data: tracking } = await guest.api().GET("/v1/store/track/{token}", {
       params: { path: { token: link!.token } },
     });
-    expect(tracking!.steps).toEqual(progress!.steps);
+    // The same steps as the order's own page (their times are the mock's clock, read twice).
+    const stepsOf = (steps: { key: string; status: string }[]) => steps.map(({ key, status }) => ({ key, status }));
+    expect(stepsOf(tracking!.steps)).toEqual(stepsOf(progress!.steps));
     const text = JSON.stringify(tracking);
     expect(text).not.toContain(order!.orderCode);
     for (const destination of order!.destinations) {

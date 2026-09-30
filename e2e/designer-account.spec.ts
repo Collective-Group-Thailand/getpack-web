@@ -21,7 +21,7 @@ const DESIGN_ORDER = "00000000-0000-4000-8000-6f726400000a";
 /** The prepress plan's order whose customer used the designer (`mocks/admin/prepress` plan 15). */
 const PREPRESS_ORDER = "00000000-0000-4000-8000-6f7264000010";
 
-const UUID = /\/design\/[0-9a-f-]{36}$/;
+const UUID = /\/design\/[0-9a-f-]{36}(\?|$)/;
 
 async function startFromSetup(page: Page) {
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
@@ -33,8 +33,17 @@ async function startFromSetup(page: Page) {
 
 test.describe.configure({ mode: "serial" });
 
-test("a signed-in design is saved in the account, autosaved, and keeps its versions", async ({ page }) => {
+test("a blank design is saved in the account", async ({ page }) => {
+  test.fixme(
+    true,
+    "CONTRACT-GAP store.catalog-product-ref — a design needs its product by id; a blank design stays in the browser",
+  );
   await signInAsCustomer(page, "/design/new", MOCK_DESIGNER_PHONE);
+});
+
+test("a signed-in design is saved in the account, autosaved, and keeps its versions", async ({ page }) => {
+  // Started from a product: the published design needs one (store.catalog-product-ref).
+  await signInAsCustomer(page, "/design/new?product=tuck-end-box", MOCK_DESIGNER_PHONE);
   await startFromSetup(page);
 
   // The first autosave creates the design and swaps /design/new for its id.
@@ -113,6 +122,8 @@ test("the order's artwork page opens the designer on its box", async ({ page }) 
 test("a design for an order is sent to print and prepress takes it", async ({ page }) => {
   // The link the artwork page used to build (see the fixme above); the designer still takes it.
   const linked = new URLSearchParams({
+    // A published design needs its product (store.catalog-product-ref).
+    product: "tuck-end-box",
     style: "tuck-end",
     l: "80",
     w: "50",

@@ -296,10 +296,7 @@ export default function Editor({
           try {
             const blob = await (await fetch(image.src)).blob();
             const file = new File([blob], `image-${image.id}.${blob.type.split("/")[1] ?? "png"}`, { type: blob.type });
-            const asset = await storeDesigns.attachAsset(designId, file, {
-              widthPx: image.naturalWidth,
-              heightPx: image.naturalHeight,
-            });
+            const asset = await storeDesigns.attachAsset(designId, file);
             useEditor
               .getState()
               .updateElement(image.id, { src: asset.url, assetId: asset.id } as Partial<ImageElement>);

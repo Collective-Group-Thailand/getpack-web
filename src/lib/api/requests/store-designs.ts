@@ -17,15 +17,13 @@
 
 import { z } from "zod";
 
-import { cursorPage, dateTime, listQuery, nextAction, page, request, uuid } from "./define";
+import { dateTime, nextAction, request, uuid } from "./define";
 
 /* --------------------------------------------------------------------------------- documents */
 
 export const designSource = z
   .enum(["blank", "product", "order_item", "template", "import", "copy"])
   .meta({ id: "DesignSource" });
-
-export const designVersionKind = z.enum(["autosave", "manual", "restore", "import"]).meta({ id: "DesignVersionKind" });
 
 /** The designer's document. `spec` is the `@packio/dieline` spec, `content` the artwork. */
 export const designDocument = z
@@ -91,31 +89,7 @@ export const storeDesign = storeDesignSummary
   })
   .meta({ id: "StoreDesignDto" });
 
-export const designVersion = z
-  .object({
-    versionNo: z.number().int(),
-    kind: designVersionKind,
-    savedAt: dateTime(),
-    label: z.string().nullable(),
-    thumbnailUrl: z.string().nullable(),
-  })
-  .meta({ id: "DesignVersionDto" });
-
 const designName = z.string().trim().min(1).max(120);
-
-export const createDesignBody = z
-  .object({
-    name: designName,
-    document: designDocument,
-    source: designSource,
-    catalogProductSlug: z.string().optional(),
-    patternId: uuid().optional(),
-    materialId: uuid().optional(),
-    /** Start from an order line (the order's "design online"); the API checks the order is the customer's. */
-    link: z.object({ orderId: uuid(), itemId: uuid() }).optional(),
-    templateId: uuid().optional(),
-  })
-  .meta({ id: "CreateDesignDto" });
 
 /* --------------------------------------------------------------------------------- catalogue */
 
@@ -237,47 +211,6 @@ export const sharedDesign = z
 /* ---------------------------------------------------------------------------------- requests */
 
 export const storeDesignRequests = {
-  "GET /v1/store/designs": request({
-    request: "store.designs",
-    summary: "The signed-in customer's designs, newest first",
-    query: listQuery({ linked: z.enum(["any", "linked", "unlinked"]).optional() }),
-    response: page(storeDesignSummary),
-  }),
-  "POST /v1/store/designs": request({
-    request: "store.designs",
-    summary:
-      "Create a design — blank, from a product, an order line or a template; returns the first version and its ETag",
-    body: createDesignBody,
-    response: storeDesign,
-    status: 201,
-    idempotent: true,
-  }),
-  "GET /v1/store/designs/{designId}": request({
-    request: "store.designs",
-    summary: "One design with its current document; the ETag is its version",
-    response: storeDesign,
-  }),
-  "PUT /v1/store/designs/{designId}": request({
-    request: "store.designs",
-    summary:
-      "Save a new version (autosave or manual) under If-Match; 412 concurrency.stale when another tab saved first",
-    body: z.object({
-      name: designName,
-      document: designDocument,
-      kind: designVersionKind.exclude(["restore", "import"]),
-      patternId: uuid().nullable().optional(),
-      materialId: uuid().nullable().optional(),
-      /** A thumbnail uploaded through `files/presign` (PNG, ≤ 360 px). */
-      thumbnailFileId: uuid().optional(),
-    }),
-    response: storeDesign,
-    concurrency: true,
-  }),
-  "DELETE /v1/store/designs/{designId}": request({
-    request: "store.designs",
-    summary: "Delete a design that is not linked to an order; a linked one answers 409 design.linked",
-    status: 204,
-  }),
   "POST /v1/store/designs/{designId}/actions/duplicate": request({
     request: "store.designs",
     summary: "Copy a design (its current document and assets) under a new name, unlinked",
@@ -286,33 +219,11 @@ export const storeDesignRequests = {
     status: 201,
     idempotent: true,
   }),
-  "GET /v1/store/designs/{designId}/versions": request({
-    request: "store.designs",
-    summary: "The design's saved versions, newest first",
-    query: z.object({ cursor: z.string().optional(), limit: z.coerce.number().int().min(1).max(100).optional() }),
-    response: cursorPage(designVersion),
-  }),
-  "GET /v1/store/designs/{designId}/versions/{versionNo}": request({
-    request: "store.designs",
-    summary: "One saved version's document, to preview before restoring",
-    response: designVersion.extend({ document: designDocument }),
-  }),
   "POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore": request({
     request: "store.designs",
     summary: "Make an old version current again, as a new version (history is never rewritten)",
     response: storeDesign,
     concurrency: true,
-  }),
-  "POST /v1/store/designs/{designId}/assets": request({
-    request: "store.design-assets",
-    summary: "Attach an uploaded image (files/presign → PUT → complete) to the design; the document refers to it by id",
-    body: z.object({
-      fileId: uuid(),
-      widthPx: z.number().int().positive().optional(),
-      heightPx: z.number().int().positive().optional(),
-    }),
-    response: designAsset,
-    status: 201,
   }),
   "POST /v1/store/designs/actions/import": request({
     request: "store.designs",
