@@ -39,6 +39,207 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-29 | **U-F0.1** — adopt & reconcile the tagged contract | Lock pinned to packio-api **`v0.2.0`** (tag, commit, release asset, sha256); `gen:api --adopt --tag` reads only tagged releases; `pnpm gen:triage` imports packio-api's triage — all 135 open rows carry its verdict (62 published differently, 52 open in U-B0.N, 19 mixed, 2 awaiting triage) and `contract-requests.openapi.json` carries only the 89 operations still to build; BFF and server calls forward the visitor's IP (`TRUSTED_PROXY_HOPS`); admin menu `ops` + signals screen; generated error-path mocks for 265 codes and the `?mock=<operationId>:<code>` switcher (dev + Storybook story); th/en title for every problem code with a per-zone cut and the unmapped-code gate | Migrating call sites (U-F0.2–0.4); `CONTRACT-DEFECT` narrowings (packio-api U-B0.3); `e2e:integration` (U-F0.5) | `scheduleKey` stays requested (user); problem titles are packio-api's wording, for content review — see §U-F0.1 |
 
 | 2026-09-30 | **U-F0.2** — migrate the customer zone (`store.*`) | All 79 published store operations are called through `serverApi`/`browserApi` with the generated types (the user's call: migrate literally). Zod definitions and `mockRequest` overrides are deleted, and the mocks answer at the published paths with ETags. `awaiting-migration.ts` has no store entry (bound ≤ 54), and a gate keeps store requests to the 34 packio-api still builds. What v0.2.0 does not carry is marked `CONTRACT-GAP <id>` (gated) and left out of the screens; 14 e2e fixmes name their gap | Three defects raised (`store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`); the admin and partner zones (U-F0.3, U-F0.4) | See §U-F0.2 |
+| 2026-09-30 | **U-F0.3** — migrate the admin zone (`admin.*`) | Contract **`v0.3.0`** adopted (the storefront configurator parked for U2.F1). All published admin operations are called through `serverApi`/`browserApi`: customers, orders, the CS desk (folding and corrugate price for real; the other five calculators are RFQ-only; checkout through the customer's cart), RFQ, prepress and designs, production, logistics and claims, marketing, companies, analytics, reports and imports. Mock personas hold packio-api's role grants (`pnpm gen:rbac`, gated). Offered actions come from one module until entities carry `nextActions`. `awaiting-migration.ts` has no admin entry (bound ≤ 5), and a gate keeps admin requests to what packio-api still builds. Gaps are marked `CONTRACT-GAP`; 7 e2e fixmes name theirs | The partner zone (U-F0.4); `e2e:integration` (U-F0.5) | See §U-F0.3 |
+---
+
+## U-F0.3 — Migrate the admin zone (`admin.*`) — 2026-09-30
+
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.3, on `feat/u-f0.3-admin-migration` (worktree `../packio-web-u1`, from `main` at `5af34e9`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.3 (13 rows, all met).
+
+**User decisions (2026-09-30):**
+1. Adopt contract `v0.3.0` first, and park the newly published storefront configurator until U2.F1.
+2. Migrate every published admin operation literally, as U-F0.2 did:
+   - the screen follows the contract;
+   - what it lacks is marked `CONTRACT-GAP <id>`;
+   - a test that needs a missing piece is a `test.fixme` naming its gap.
+
+Slices 0–4 were built one after another. Slices 5–11 were built in parallel worktrees (`feat/u-f0.3-{a-rfq,b-prepress,c-production-logistics,d-marketing,e-companies,f-analytics}`), each against one written brief, and then merged.
+
+### Done
+- **Slice 0 — contract and triage.**
+  - `pnpm gen:api --adopt --tag v0.3.0`: +16 operations, none removed. The lock now pins `v0.3.0`.
+  - `pnpm gen:triage` imports packio-api's re-triage (`cb2ebe4`).
+  - `store.configurator` is published; it is parked (`CUSTOMER_ZONE_PARKED`) with a named exception in the customer-zone gate.
+- **Slice 1 — permissions.**
+  - `pnpm gen:rbac` reads packio-api's generated `docs/rbac.md` into `mocks/generated/rbac.ts`. Every mock persona holds exactly its role's grants.
+  - The 13 names F2 proposed are replaced by the ones each operation's `x-required-permissions` names (`rfqs.*`, `artwork.read`, `prepress.review`, `quotes.*`, `carts.manage_on_behalf`, `inspections.perform`, `claims.manage`, `promotions.*` / `campaigns.manage`, `companies.kyc_review`, `company_credit.manage`).
+  - Reports need only their data permission.
+  - New gate `permissions.test.ts`: every permission the admin UI or its mocks check is a packio-api staff permission, and every persona holds exactly its role's grants.
+- **Slice 2 — customers, loyalty, referrals.**
+  - Customer list, detail and find-or-create run on the published operations. The page is composed from the customer, its addresses, tax profiles and loyalty summary. Points come from `admin.loyalty.get` and `.ledger`.
+  - Referrals: `admin.referrals.list`.
+  - New addresses carry geography ids (`usePostcodeAreas`: a postcode's subdistricts, then their districts and provinces).
+- **Slice 3 — orders.**
+  - The desk is packio-api's queues.
+  - The order page is composed from the lean order, its group (found by order code), the customer and one resource per tab.
+  - Offered actions come from `src/domain/next-actions/admin.ts`.
+  - Cancel and manual start run on the published operations. CS records a slip by initiate payment + upload slip.
+  - Finance reviews a slip in its own sheet, reached from the order through the slip queue.
+  - The timeline comes from `type` / `messageKey`; notes are paged.
+  - The group page, the customer's orders tab and the banking identify dialog read order groups.
+- **Slice 4 — CS desk.**
+  - Folding and corrugate price for real (`admin.csFolding.*`, `admin.csCorrugate.*`) through typed forms. The other five calculators, and any type the catalogue has as `rfq`, are RFQ-only. There are no illustrative prices anywhere.
+  - Quotations: `admin.quotes.*`, with the PDF requested and then read until ready.
+  - CS create-order: the quotation option goes into the customer's cart (If-Match), then checkout (Idempotency-Key). The page refuses while the cart holds other items, because checkout takes the whole cart.
+  - Discounts are given at checkout; the API enforces the D-052 limit. Above it, a memo is raised on the cart and checkout uses `discountMemoId` once it is approved.
+- **Slice 5 — RFQ.**
+  - List (queues → filters) and detail with messages, consultations and quotations inline.
+  - Assign, request-info, decline, consultation (one factory per call), and draft / send / discard of quotations.
+- **Slice 6 — prepress and designs.**
+  - The queue has 3 kinds. The workspace is composed from the order, artwork, proofs, templates and design service.
+  - Accept and reject; send proof; annotate, reply and resolve; send template; draw; deliver and requote.
+  - Admin designs: `admin.designs.get` / `.save` with If-Match.
+  - The prepress mock is now the only source of artwork, so the order page's Artwork tab shows what prepress does.
+- **Slices 7 + 10 — production floor, logistics, claims.**
+  - The board is `admin.production.list`, grouped by milestone on the client.
+  - Inspections list and record. Scorecards per factory.
+  - Shipments list and detail, and carrier booking. Labels and packing lists are opened with `admin.files.download`.
+  - Claims: one operation per step (review, request-info, send-to-factory, decide, close, override-liability, resolve), each with an Idempotency-Key.
+- **Slice 8 — marketing.**
+  - Campaigns (If-Match on update; activate / pause / end), promotions (typed conditions and benefit), coupons (generate with an Idempotency-Key; enable / disable).
+  - Performance from `admin.promotions.report`.
+- **Slice 9 — companies.**
+  - List and detail, with members, branches and KYC inline.
+  - approve-kyc and reject-kyc need `companies.kyc_review`; suspend, reactivate and close need `companies.manage`. Each KYC document is reviewed on its own.
+  - Credit comes from `admin.companyCredit.get`, and a request goes to `.requestLimit`. Monthly statements come from `admin.receivables.companyStatement`.
+- **Slice 11 — analytics, reports, exports, imports.**
+  - The overview is composed from sales (this period and the one before), traffic and funnel. Demand, unmet demand, factories and campaigns run on the published operations.
+  - The prospectus is an async export, read until ready; the toast shows the API's `kThreshold`.
+  - Reports: the catalogue, then a preview capped at 200 rows, then an export run.
+  - Catalogue imports use the published preview → confirm pair; the unused generic import wizard is gone.
+- **Close-out.**
+  - `awaiting-migration.ts` holds no admin entry. The bound goes from 55 to 5: the partner zone's four (U-F0.4) and the parked configurator.
+  - New gate: a `/v1/admin/` request exists only while its verdict is `implement`.
+  - Every admin request file now holds only `implement` requests.
+  - `admin-sales.ts`, `admin-companies.ts` and `admin-partners.ts` are deleted. Their schemas still in use moved to `store-quotes.ts`, `store-business.ts` or mock-only model files under `mocks/admin/*-model.ts`.
+
+### What the screens lost (marked `CONTRACT-GAP`)
+- **Menu** (`admin.menu-entries`): the business entries stay mock-provided; packio-api's menu has platform entries only.
+- **Customers** (`admin.customers`, `admin.referrals`, `admin.customer-loyalty`, `admin.geo`):
+  - no type or channel filters;
+  - no company, order count, last order or referral code;
+  - no referrals tab, because the list has no referrer filter;
+  - a ledger line names its order by code only;
+  - there is no geography lookup that answers with ids.
+- **Orders** (`admin.orders`):
+  - no all-orders list or filters;
+  - no group or customer on the order;
+  - no specs, parts, tax profile, urgency, SLA or promised-vs-actual;
+  - no payments by order or group;
+  - no `hasSlipToReview`, so CS cannot tell that a slip waits (only Finance, through the slip queue);
+  - cancel and manual start declare no Idempotency-Key.
+- **CS desk** (`admin.cs-calculators`, `admin.quotations`, `admin.discount-memos`):
+  - no CS discount limit, quantity presets or pattern size rules in the input data;
+  - no comparison grid (the API picks the factory and print type);
+  - quotations carry no specs in words;
+  - memos have no code.
+- **RFQ** (`admin.rfqs`, `-messages`, `-actions`, `-consultations`, `-quotes`):
+  - no SLA target per category, and no urgency beyond `overdue`;
+  - no awaiting-factory queue, and no product-type, channel or date filters;
+  - no files, customer contact, events or calculator routing;
+  - the spec is a raw map;
+  - consultations have no suggested sell price, factory name, tier or requestedBy, and their lines are null without `factory_cost.read`;
+  - no unassign and no decline note;
+  - the draft PUT and record-acceptance stay requests.
+- **Prepress and designs** (`admin.prepress`, `-actions`, `-proofs`, `admin.design-documents`):
+  - desk rows have no customer, product type, artwork status, proof, round, assignee or filters;
+  - the workspace has no stage, SLA, specs, dieline size, list of drawing jobs, or design-document card (the order does not reference its design);
+  - the design service is found by paging;
+  - accept records no note;
+  - proofs have no preparedBy, decidedBy or resolvedBy;
+  - designs have no `editable` flag or owner.
+- **Production and logistics** (`admin.production-board`, `admin.inspections`, `admin.scorecards`, `admin.shipments`, `admin.claims`):
+  - the board has no API grouping, totals or filters, and no risk reason;
+  - inspections have no AQL per class, factory name or order;
+  - scorecards have no all-factories month;
+  - shipments have no queue filters, exception text, POD review state, `blockedByPayment`, ETag, carton list or order id on items;
+  - claims have no type or origin filters, customer, SLA, allowed actions or resolutions, message thread, rule explanation, or who decided.
+- **Marketing** (`admin.campaigns`, `admin.promotions`, `admin.coupons`):
+  - no `spentPct`, owner, promotion count or new customers;
+  - no benefit summary, usage or margin-guard cap on the promotion row;
+  - no reason on actions;
+  - codes have no batch, assigned customer or status filter;
+  - goals are shown read-only (they have no documented keys).
+- **Companies** (`admin.companies`, `admin.company-credit`):
+  - no receivables on the list or page, and no credit-status filter;
+  - no overdue day count;
+  - KYC files have no names or review stamps;
+  - members have no contacts;
+  - no limit history or approval link;
+  - statements are one month at a time, with no PDF.
+- **Analytics, reports, exports** (`admin.analytics`, `admin.reports`, `admin.exports`):
+  - no GMV, conversion or "priced but not taken" per demand cell, and no range presets;
+  - reports have no totals row, no pagination beyond 200 rows, and no `generatedAt`;
+  - the export button is gone from every list without a published export: orders, RFQs, and the finance payables, journals, banking, receivables, documents and assets lists.
+
+### e2e fixmes added
+Each names its gap:
+- `admin-orders`: a CS agent is told a slip waits (`admin.orders`).
+- `admin-rfq`:
+  - SLA hours and routed label (`admin.rfqs`);
+  - suggested sell price (`admin.rfq-consultations`);
+  - copying a factory's suggested price into a quote (`admin.rfq-quotes`).
+- `admin-prepress`: accepting with warnings records a note (`admin.prepress-actions`).
+- `designer-account`: saving an admin copy of a design (`admin.design-documents`).
+- `admin-logistics`: a report ends with a totals row (`admin.reports`).
+
+### Decisions taken, with reasons
+- **Backend names win** for permissions, even where F2's grants were wider. Visible effects:
+  - Marketing no longer reads customers.
+  - Finance no longer reviews KYC.
+  - approve-kyc needs `companies.kyc_review`, not `companies.manage`.
+  - The e2e cases sign in as the role packio-api grants.
+- **Offered actions** live in one pure module, `src/domain/next-actions/admin.ts`, until entities carry `nextActions` (U-B0.3): orders, RFQs, companies, campaigns, promotions, coupons, shipments, claims, prepress, submissions and designs. Every action is still the API's to refuse.
+- **CS checkout takes the customer's whole cart** (contract). The page refuses to place while the cart holds anything else, rather than place items CS did not choose.
+- **Discounts are enforced by the API.** The limit is a setting the input data does not carry, so the desk sends the discount. On `discounts.cs_limit_exceeded` it offers a memo, and it never shows a limit of its own.
+- **Slip review:** Finance's own sheet (bank reference, then the group code retyped) is reused on the order page; there is no second approve dialog.
+- **Mocks mirror packio-api's shapes and codes.**
+  - Fixtures keep a mock-only model, converted on the way out (`toXDto`).
+  - A handler serving only some requests falls through (`return undefined`).
+  - The prepress mock is the one source of artwork. The calculators price with the storefront mock's engine, so both sides agree.
+- **Axe scans leave the transient toaster out** (`storefront-account`), as the finance specs already did: a toast mid-fade measured 4.16:1.
+
+### For packio-api
+- **Orders:** a group or customer reference on `AdminOrderDto`; an all-orders list with filters; `hasSlipToReview`; payments by order or group; Idempotency-Key on cancel and manual start; the timeline's `type` / `messageKey` list; what `q` matches on the slip queue and on payments.
+- **CS desk:** `discounts.cs_limit_pct`, quantity presets and size rules in the calculator input data; the specs of a saved quotation in words; a memo code.
+- **Permissions:**
+  - approve/reject KYC needs `companies.kyc_review` while the other status actions need `companies.manage` — intended?
+  - `admin.designs.save` needs `catalog.manage`, which Prepress lacks.
+  - Should consultation lines show quantity and lead time without `factory_cost.read`?
+- **RFQ:** is the draft PUT still planned? A factory name on consultations; which code refuses sending a quote below the margin floor?
+- **Prepress:** a design-service filter by order; the order's design-document reference; `q` on the queue; drawing jobs per order.
+- **Logistics:** POD review state and "factory cannot serve this area" on the shipment; order id on shipment items; an ETag on the shipment (or drop If-Match from the planned split / resolve-exception); how a refund resolution finds its `paymentId`.
+- **Marketing:** the keys of campaign `goals`; the default sort and meaning of promotion `priority`; a code for "benefit locked after redemption".
+- **Companies:** approval id and version number on the credit-limit request; a list of statement months and the statement PDF; receivables on the company, and a `creditStatus` list filter.
+- **Analytics:** a `period` preset on the analytics endpoints; localised report `description`; a total row on demand.
+- Everything else in the triage's U-B0.2 / U-B0.3 gap lists still stands.
+
+### Verification
+- Checks, all passing:
+  - `pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm gen:api:check` (contract 0.3.0), `pnpm build`, `pnpm build-storybook`;
+  - `pnpm test:app`: 957 passed, 1 todo;
+  - `pnpm test:dieline`: 1,504 passed.
+  - On this loaded machine (load 13–25 from another session), `test:app` needs `--testTimeout=60000`. At the default 5 s, a handful of files time out (message parity, problem codes, designer panels), and each passes alone.
+- `pnpm e2e` (mocks, 2 workers): 347 passed, 21 skipped, 3 failed.
+  - The three failures, and what was done:
+    - the RFQ cost-column header showed the word "cost" to CS — fixed;
+    - a consultation names its factory by code only — now asserted as a named gap;
+    - the CS sidebar gained reports, prepress and production under packio-api's grants.
+  - Their specs were re-run: 24 passed, 3 skipped (named gaps).
+  - Earlier, under the other session's load, failures turned out to be timeouts; every one passed when re-run with one worker.
+- `pnpm e2e:journeys`: 11 walks pass, T6 pending (storefront journeys; untouched by this session).
+- Gates proven to bite:
+  - `permissions.test.ts` fails on a mock check of a non-backend key (`rfq.read`).
+  - The admin-zone gate in `registry.test.ts` uses the same logic as the store gate, which U-F0.2 proved to bite. It was not separately re-proven here.
+- `pnpm lhci`: the same three script-size ratchets fail as on `main`, and nothing else. The admin budgets pass.
+
+  | URL | budget | U-F0.2 | U-F0.3 |
+  |---|---|---|---|
+  | `/account/designs` | 293,000 | 309,269 | 309,255 |
+  | `/configure/tuck-end-box` | 293,000 | 319,354 | 319,366 |
+  | partner `/settings` | 300,000 | 300,933 | 300,946 |
+- Not run: `e2e:integration` (U-F0.5).
+
 ---
 
 ## U-F0.2 — Migrate the customer zone (`store.*`) — 2026-09-30
