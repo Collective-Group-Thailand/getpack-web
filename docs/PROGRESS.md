@@ -38,6 +38,127 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-29 | **U5.0** — UX baseline and instrumentation | Moderator guide, PDPA consent (th/en), Thai task cards, step-counting rule, results template; step counters for T1–T12 (`e2e/journeys/`, budgets checked against the scorecard, non-blocking `step-counters` CI job); journey funnel events (studio, claims, reorder) and an admin Journeys dashboard with the API's drop alert; consent-gated Sentry Replay, off by default; step baseline: **8 of 12 journeys over budget** | Running the competitor baseline round (people, not code); turning replay on; T6 walk (U2.3) | Replay gated on analytics consent (not a new purpose); seeded paid orders now carry a TR — see §U5.0 |
 | 2026-09-29 | **U-F0.1** — adopt & reconcile the tagged contract | Lock pinned to packio-api **`v0.2.0`** (tag, commit, release asset, sha256); `gen:api --adopt --tag` reads only tagged releases; `pnpm gen:triage` imports packio-api's triage — all 135 open rows carry its verdict (62 published differently, 52 open in U-B0.N, 19 mixed, 2 awaiting triage) and `contract-requests.openapi.json` carries only the 89 operations still to build; BFF and server calls forward the visitor's IP (`TRUSTED_PROXY_HOPS`); admin menu `ops` + signals screen; generated error-path mocks for 265 codes and the `?mock=<operationId>:<code>` switcher (dev + Storybook story); th/en title for every problem code with a per-zone cut and the unmapped-code gate | Migrating call sites (U-F0.2–0.4); `CONTRACT-DEFECT` narrowings (packio-api U-B0.3); `e2e:integration` (U-F0.5) | `scheduleKey` stays requested (user); problem titles are packio-api's wording, for content review — see §U-F0.1 |
 
+| 2026-09-30 | **U-F0.2** — migrate the customer zone (`store.*`) | All 79 published store operations are called through `serverApi`/`browserApi` with the generated types (the user's call: migrate literally). Zod definitions and `mockRequest` overrides are deleted, and the mocks answer at the published paths with ETags. `awaiting-migration.ts` has no store entry (bound ≤ 54), and a gate keeps store requests to the 34 packio-api still builds. What v0.2.0 does not carry is marked `CONTRACT-GAP <id>` (gated) and left out of the screens; 14 e2e fixmes name their gap | Three defects raised (`store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`); the admin and partner zones (U-F0.3, U-F0.4) | See §U-F0.2 |
+---
+
+## U-F0.2 — Migrate the customer zone (`store.*`) — 2026-09-30
+
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.2, on `feat/u-f0.2-store-migration` (worktree `../packio-web-u1`, from `main` at `601191d`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.2 (17 rows, all met). **User decision (2026-09-30): migrate all 79 literally.** Where v0.2.0 carries less, the screen follows it. What is missing is marked `// CONTRACT-GAP <id>`, and a test that needs it becomes `test.fixme` naming the gap. Nothing is invented.
+
+### Done
+Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
+- **Groundwork.** Mock ETag helpers (`versionTag`, `withEtag`, `precondition` → 428/412). The `CONTRACT-GAP` gate (`gaps.test.ts`): every marker in `src`, `mocks` and `e2e` names an open row. `src/domain/next-actions/store.ts` is the one place the storefront decides what to *offer* until `nextActions` ships (U-B0.3); the API still refuses what it must. The R1 payment-method list (`src/domain/payment-methods.ts`). The 2C2P return route `/payments/[paymentId]/return` (packio-api `payments.service.ts:259`).
+- **Account:**
+  - Points, ledger, referral and store credit.
+  - The customer profile, GET then PATCH under If-Match. The e-mail is not writable (triage open question 4); "already asked" is kept in the first-party cookie `pk_profile_asked`.
+  - Order search by code.
+  - The address book and tax profiles, paged, with edits under If-Match; `taxId` and `branch` are read-only. Create is blocked by `store.geo-ids`.
+- **Quotations, cart, reorder:**
+  - Saving a quotation sends `options[]` tiers. The PDF is requested, then polled; shared quotations work.
+  - The cart runs all six operations through one serialised If-Match chain (`editCart`), which reads the cart again after an operation that returns no ETag. Reprice is two-step, and the checkout gate is derived from the line flags; the API's 422 is the final word.
+  - Reorder is `store.claims.reorder`, answering with the cart.
+- **Checkout and payments:**
+  - Codes are applied on the cart; checkout places with `expectedGrossAmount` (and `companyId` for B2B, which lands in `pending_company_approval`).
+  - Payments start per group, with the QR drawn from `qrPayload`; slips are uploaded without the receiver account block.
+  - The instalment schedule is `store.paymentSchedules.get`.
+- **B2B:**
+  - `companyId` comes from `store.companies.listMine`; the company is then read for its ETag.
+  - Settings and members: invite with an E.164 phone, remove.
+  - Branches can be removed; adding one is blocked by `store.geo-ids`.
+  - Approvals are listed and decided; statements are read by month, with their PDF.
+- **Orders:**
+  - The list is group-first, each row with its actions; the list reads shipments only for orders in `shipping`.
+  - The order page is composed from `orders.get` and the order's timeline, progress, shipments, documents, claims and the group's schedule. The group is found by `listGroups?q=<orderCode>` (`store.order-group-ref`).
+  - Documents download as signed PDFs.
+  - Tracking links are made on click, since `createTrackingLink` is a write; the public page reads `/v1/store/track/{token}`.
+  - Receipt is confirmed with an Idempotency-Key.
+  - Claims are submitted, listed and read; the customer can reply only through `respondInfo`, while a claim is `need_info`.
+- **Artwork:**
+  - `loadArtwork` composes the order with its submissions, proofs, dieline templates and design service. Proof files, overlays and templates go through `store.files.download`.
+  - Annotations are flat, grouped by `parentId`; a reply resends its parent's page, kind and geometry. Approval is `approveProof` with an Idempotency-Key.
+  - Hired design has a fixed brief. A free revision is `requestProofChanges` on the delivered proof; a charged one is `confirm-extra-round` with the `feeGross` shown. The fee's instalment is found on the group schedule.
+  - The designer's send-to-print is `store.designs.submitForOrder`.
+- **RFQ:**
+  - The thread is carried on the RFQ; accepting names the `rfqQuoteId`.
+  - The saved quotation (`acceptedQuoteId`) goes to the cart by one of its options.
+  - The raw `spec` map is put into words from the category's form, which stays a request.
+- **Designer:**
+  - `DesignDocumentDto` with the document kept opaque (`{ spec, content }`, `schemaVersion` beside it); saves under If-Match.
+  - A new design takes `catalogProductId` from the configurator request.
+  - The product and order line it was opened with ride in its address when `/design/new` becomes `/design/{id}`.
+  - Asset and thumbnail images are signed through `store.files.download`.
+  - Duplicate, restore, import, sharing, the catalogue and templates stay requests; the mock serves both shapes from one store and one ETag chain.
+- **Close-out:**
+  - `awaiting-migration.ts` holds no store entry; the bound goes from ≤ 86 to ≤ 54.
+  - New gate: a `/v1/store/` request exists only while its verdict is `implement` (34, all U-B0.1).
+  - `store.order-by-code` moves to *Resolved*, and every migrated row's ` · web:` note says so.
+  - `contract-requests.openapi.json` is regenerated; the only shape change is the credit application now answering `CreditApplicationDto`.
+
+### What v0.2.0 does not carry (marked `CONTRACT-GAP`, left out of the screens)
+- **Three contract defects outside the triage**, raised as rows "Open — awaiting packio-api triage":
+  - **`store.geo-ids`.** The store geo reads have no ids, but address, tax-profile, company and branch inputs need `provinceId` and `subdistrictId`. So nothing new can be created; edits work.
+  - **`store.catalog-product-ref`.** A design and a saved quotation name their product by id only, and no catalogue read resolves an id. So a blank design stays in the browser, a reopened design has no product, price widget or order action, and a saved quotation cannot reopen in the configurator.
+  - **`store.order-group-ref`.** `OrderDto` does not name its group; the page finds it by the order's code.
+- **Losses by cluster:**
+  - **Cart:** product name, image, specs and unit; `readyForCheckout` and blockers.
+  - **Checkout:** payment-method fees, points bounds, the company block. The schedule is shown only, since `scheduleKey` stays requested.
+  - **Payments:** the receiver account, `failureReason`.
+  - **Quotations:** product and specs; the code until the quotation is shared or a PDF is asked for.
+  - **Orders:** product and unit, `nextActions`, receipt dates, the tolerance outcome and credit, estimated delivery. Timeline titles come from the storefront's own words for known `type`s, and anything else reads "updated".
+  - **Tracking:** the order code, product and quantity, places, promised dates.
+  - **Claims:** `respondBy`; the free thread.
+  - **Loyalty:** tier progress, the referral friends and rules. **Wallet:** the codes held.
+  - **Artwork:** the file rules, the dieline key and size (no rules list, no designer link, no 3D).
+  - **Proofs:** the checklist, the approver's name, rasterised pages (a PDF proof opens as a file).
+  - **RFQ:** files, the words of a decline, routed-from (D-102).
+  - **Designs:** the order link, the save kind, version kind and label, asset URLs.
+  - **B2B:** the `can{}` map (read from `members[].roles`), decided approvals, statement aging.
+- **e2e fixmes (14):**
+  - `designer-account`: blank design in the account (`store.catalog-product-ref`); designer link from the artwork page (`store.artwork`).
+  - `storefront-account`: saved quote reopens (`store.catalog-product-ref`); addresses added and removed (`store.geo-ids`); wallet codes (`store.wallet`); referral friends (`store.loyalty`).
+  - `storefront-artwork`: checklist and approver (`store.proofs`); 3D proof (`store.artwork`).
+  - `storefront-business`: decided approvals (`store.company-approvals`); company sign-up (`store.geo-ids`).
+  - `storefront-checkout`: the schedule choice (`store.checkout`); new address and new tax profile (`store.geo-ids`).
+  - `storefront-fulfilment`: the claim thread (`store.claims`).
+  - Plus one unit `todo`: company sign-up with fresh KYC (`store.geo-ids`).
+
+### Decisions taken, with reasons
+- **Offered actions come from facts, in one module.** Until U-B0.3 (`entity.next-actions`), `src/domain/next-actions/store.ts` reads the generated status enums (`orderActions`, `artworkActions`, `canAcceptQuotation`), and B2B reads `capabilitiesOf(roles)`. They decide what to show only; every action is still the API's to refuse. Reorder is offered once a delivery arrived, as before.
+- **The order list reads shipments for `shipping` orders only**, one call each, so receiving, claiming and reordering stay one tap from the list. T8 stays at 3 steps; drop it when the list carries actions.
+- **Context the customer arrived with is carried, not invented.** The designer keeps `?product=` and the order line in its address after creation, and a design's product id comes from the configurator request. Neither is stored on the design.
+- **Backend wins on send-to-print.** `submitForOrder` takes the design, and Prepress exports it (D-070). The browser-built print PDF (ADR-0009) is no longer submitted; the export and download still work. ADR-0009 needs a note from packio-api (below).
+- **Copy follows the contract, not the old shape:**
+  - Quantities show without a unit wherever the published order has none.
+  - A decline says the RFQ was declined, not why.
+  - A charged design round confirms `feeGross`; the round list shows `feeNet` "before VAT".
+- **Mocks mirror packio-api where the web cannot tell otherwise:**
+  - A design delivery becomes a proof.
+  - A design's preflight stays `pending` until export (about 3 s in the mock).
+  - Idempotency-Key is required exactly where the contract declares it.
+  - A charged round counts D-071's way: the first design is round 1, and round 4 is charged.
+- **The key gate now reads translators destructured from `Promise.all([getTranslations(…)])`**, which is how server pages load copy; it found ten missing keys here. **Flaky tests fixed:**
+  - Notification preferences e2e now waits for the PUT before reloading.
+  - The public-tracking unit test compared clock-derived step times from two reads.
+
+### For packio-api
+- Triage the three new rows: `store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`.
+- List the `TimelineEntryDto.type` / `messageKey` values, the checkout notice codes and the RFQ decline reason codes, so the storefront can have words for each rather than a fallback.
+- Confirm that `store.files.download` serves the customer the files staff attach to their order: proof files, `dielineFileId` overlays, dieline templates, design thumbnails and assets.
+- Confirm `revisionsUsed` against `freeRounds` (does the first design count?), and whether the D-071 fee is net or gross.
+- `submitForOrder` versus ADR-0009: which file goes to preflight — Prepress's export, or the web's browser-built print PDF? Until answered, the web sends the design.
+- The rest are the U-B0.1 additive gaps already in the triage.
+
+### Verification
+- `pnpm lint` · `pnpm typecheck` · `pnpm test` (930 app + 1 todo, 1,504 dieline) · `pnpm gen:api:check` (contract 0.2.0) · `pnpm format:check` · `pnpm build` · `pnpm build-storybook`.
+- `pnpm e2e` (mocks): **348 passed, 14 skipped** (the fixmes above), one run.
+- `pnpm e2e:journeys`: 11 walks pass, T6 pending; every count equals the U5.0 baseline (T7 2, T8 3, T9 7).
+- Gates proven to bite:
+  - Re-adding `GET /v1/store/rfqs` as a request fails `registry.test.ts` twice (shipped, off-contract).
+  - An unknown `CONTRACT-GAP store.no-such-gap` fails `gaps.test.ts`.
+  - Removing `claims.invalid_status`'s th copy fails `problems.test.ts` on the migrated `respondInfo` call.
+- `pnpm lhci`: started, not finished when the branch was merged (the user asked to merge); its result is to be added here.
+- Not run: `e2e:integration` (U-F0.5).
+
 ---
 
 ## U-F0.1 — Adopt & reconcile the tagged contract — 2026-09-29
