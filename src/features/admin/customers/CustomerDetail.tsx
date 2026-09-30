@@ -97,7 +97,7 @@ export function CustomerDetail({
             label: t("tabs.profile"),
             content: <Profile customer={customer} loyalty={loyalty.data} />,
           },
-          { value: "orders", label: t("tabs.orders"), content: <PartyOrders customerId={customer.id} /> },
+          { value: "orders", label: t("tabs.orders"), content: <PartyOrders customer={customer} /> },
           { value: "points", label: t("tabs.points"), content: <Points customerId={customer.id} /> },
           { value: "consents", label: t("tabs.consents"), content: <Consents customer={customer} /> },
         ]}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { useFormat, When } from "@/features/shared/format";
+import { When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -18,7 +19,30 @@ import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
 import type { IconName } from "@/ui/icons";
 
-import { problemMessage, useRoleLabel } from "../console";
+import { adminBrowserApis, problemMessage, useRoleLabel } from "../console";
+
+type Entry = Schemas["StaffTimelineEntryDto"];
+
+/** The timeline types the desk has words for (`orders.rail.types`). */
+const KNOWN_TYPES = new Set([
+  "order.placed",
+  "order.cancelled",
+  "order.note_added",
+  "payment.received",
+  "payment.reminder_sent",
+  "slip.uploaded",
+  "slip.uploaded_by_cs",
+  "slip.approved",
+  "slip.rejected",
+  "artwork.submitted",
+  "proof.sent",
+  "proof.approved",
+  "proof.changes_requested",
+  "production.started_manually",
+  "shipment.picked_up",
+  "shipment.in_transit",
+  "shipment.delivered",
+]);
 
 const KIND_ICONS: Record<string, IconName> = {
   order: "package",
@@ -44,17 +68,37 @@ export function OrderRail({ orderId }: { orderId: string }) {
   );
 }
 
+/**
+ * An entry's title. The API sends what happened (`type`) and an i18n key with params for the client
+ * to render; a production milestone names itself (`labelTh`/`labelEn`), the rest are the desk's
+ * words per type. CONTRACT-GAP admin.orders — the contract does not list its keys, so a type the
+ * desk has no words for shows its note, or "updated".
+ */
+function useEntryTitle() {
+  const t = useTranslations("orders.rail.types");
+  const locale = useLocale();
+  return (entry: Entry) => {
+    const params = entry.params as { labelTh?: unknown; labelEn?: unknown };
+    if (entry.type === "production.milestone_reached" && typeof params.labelTh === "string") {
+      const label = locale === "en" && typeof params.labelEn === "string" ? params.labelEn : params.labelTh;
+      return t("production_milestone", { stage: label });
+    }
+    return KNOWN_TYPES.has(entry.type) ? t(entry.type.replace(".", "_")) : t("other");
+  };
+}
+
 function OrderTimeline({ orderId }: { orderId: string }) {
   const t = useTranslations("orders.rail");
-  const format = useFormat();
+  const title = useEntryTitle();
   const feed = useInfiniteQuery({
     queryKey: queryKeys.related("admin", "order", orderId, "timeline"),
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam }) =>
-      browserRequests().call("GET /v1/admin/orders/{orderId}/timeline", {
-        path: { orderId },
-        query: { cursor: pageParam, limit: 30 },
-      }),
+    queryFn: async ({ pageParam }) =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/orders/{orderId}/timeline", {
+          params: { path: { orderId }, query: { cursor: pageParam, limit: 30 } },
+        })
+      ).data!,
     getNextPageParam: (last) => last.meta.nextCursor ?? undefined,
     staleTime: STALE_TIME.transactional,
   });
@@ -66,37 +110,25 @@ function OrderTimeline({ orderId }: { orderId: string }) {
         <CardTitle>{t("timeline")}</CardTitle>
       </CardHeader>
       {feed.isError ? <p className="text-danger text-sm">{problemMessage(feed.error, t("timelineFailed"))}</p> : null}
+      {/* Promised against actual per milestone is not on the published entry (CONTRACT-GAP admin.orders). */}
       <Timeline
         label={t("timeline")}
-        items={entries.map((entry) => {
-          const late = entry.promisedAt && Date.parse(entry.at) > Date.parse(entry.promisedAt);
-          return {
-            id: entry.id,
-            title: (
-              <span className="flex flex-wrap items-center gap-1">
-                {entry.title}
-                {entry.visibility === "internal" ? <Badge size="sm">{t("internal")}</Badge> : null}
-              </span>
-            ),
-            time: <When at={entry.at} />,
-            actor: entry.actor?.displayName,
-            icon: KIND_ICONS[entry.kind.split(".")[0] ?? ""] ?? "circle",
-            tone: late
-              ? "warning"
-              : entry.kind.endsWith("rejected") || entry.kind.endsWith("cancelled")
-                ? "danger"
-                : undefined,
-            description:
-              [
-                entry.detail,
-                entry.promisedAt
-                  ? t(late ? "promisedLate" : "promisedOnTime", { at: format.dateTime(entry.promisedAt) })
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" · ") || undefined,
-          };
-        })}
+        items={entries.map((entry) => ({
+          id: entry.id,
+          title: (
+            <span className="flex flex-wrap items-center gap-1">
+              {title(entry)}
+              {entry.visibility.includes("internal") && !entry.visibility.includes("customer") ? (
+                <Badge size="sm">{t("internal")}</Badge>
+              ) : null}
+            </span>
+          ),
+          time: <When at={entry.occurredAt} />,
+          actor: entry.actor?.displayName ?? undefined,
+          icon: KIND_ICONS[entry.type.split(".")[0] ?? ""] ?? "circle",
+          tone: entry.type.endsWith("rejected") || entry.type.endsWith("cancelled") ? "danger" : undefined,
+          description: entry.body ?? undefined,
+        }))}
       />
       {feed.hasNextPage ? (
         <Button
@@ -126,7 +158,12 @@ function Notes({ orderId }: { orderId: string }) {
 
   const notes = useQuery({
     queryKey: key,
-    queryFn: () => browserRequests().call("GET /v1/admin/orders/{orderId}/notes", { path: { orderId } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/orders/{orderId}/notes", {
+          params: { path: { orderId }, query: { perPage: 100 } },
+        })
+      ).data!,
   });
   const people = useQuery({
     queryKey: queryKeys.list("admin", "staff_directory", { q: query }),
@@ -136,15 +173,17 @@ function Notes({ orderId }: { orderId: string }) {
   });
 
   const add = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/orders/{orderId}/notes", {
-        path: { orderId },
-        // Only people still named in the text are notified — deleting "@สมชาย" un-mentions them.
-        body: {
-          body: body.trim(),
-          mentions: mentioned.filter((person) => body.includes(`@${person.label}`)).map((person) => person.value),
-        },
-      }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/notes", {
+          params: { path: { orderId } },
+          // Only people still named in the text are notified — deleting "@สมชาย" un-mentions them.
+          body: {
+            body: body.trim(),
+            mentions: mentioned.filter((person) => body.includes(`@${person.label}`)).map((person) => person.value),
+          },
+        })
+      ).data!,
     onSuccess: () => {
       setBody("");
       setMentioned([]);

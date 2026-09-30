@@ -176,10 +176,19 @@ test.describe("cart and checkout", () => {
     await staff.getByRole("link", { name: code }).first().click();
     await expect(staff.getByRole("heading", { level: 1 })).toHaveText(code);
     await gotoHydrated(staff, `${staff.url().split("?")[0]}?tab=payments`);
+    // Finance reviews it in its own sheet (D-061): the bank reference, then the group code retyped.
+    // The group is read after the order: wait for its code before reading it.
+    const header = staff.getByText(/· กลุ่ม [A-Z]/).first();
+    await expect(header).toBeVisible();
+    const headline = (await header.textContent())!;
+    const group = headline.match(/กลุ่ม (\S+)/)![1]!;
     await staff.getByRole("main").getByRole("button", { name: "อนุมัติสลิป" }).first().click();
-    const dialog = staff.getByRole("alertdialog", { name: "อนุมัติสลิปนี้?" });
-    await dialog.getByLabel(new RegExp(`พิมพ์ ${code}`)).fill(code);
-    await dialog.getByRole("button", { name: "อนุมัติสลิป" }).click();
+    const sheet = staff.getByRole("dialog", { name: `ตรวจสลิป ${group}` });
+    await sheet.getByLabel(/^เลขอ้างอิงรายการจากธนาคาร/).fill(`E2E-CHECKOUT-${code}`);
+    await sheet.getByRole("button", { name: "อนุมัติสลิป" }).click();
+    const confirm = staff.getByRole("alertdialog", { name: "อนุมัติสลิปและรับชำระเงิน" });
+    await confirm.getByLabel(new RegExp(`พิมพ์ ${group}`)).fill(group);
+    await confirm.getByRole("button", { name: "อนุมัติสลิป" }).click();
     await expect(staff.getByRole("alertdialog")).toHaveCount(0);
 
     await gotoHydrated(page, payUrl);
