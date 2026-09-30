@@ -9,8 +9,8 @@ import type {
   couponCode,
   promotionDetail,
   promotionSummary,
-  referral,
 } from "@/lib/api/requests/admin-marketing";
+import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
 import { defineList } from "../console/resource";
@@ -21,11 +21,17 @@ export type PromotionSummary = z.output<typeof promotionSummary>;
 export type Promotion = z.output<typeof promotionDetail>;
 export type CouponBatch = z.output<typeof couponBatch>;
 export type CouponCode = z.output<typeof couponCode>;
-export type Referral = z.output<typeof referral>;
+export type Referral = Schemas["AdminReferralDto"];
 
 export const CAMPAIGN_STATUSES = ["draft", "scheduled", "active", "paused", "exhausted", "ended"] as const;
 export const PROMOTION_KINDS = ["coupon", "automatic", "referral"] as const;
-export const REFERRAL_STATUSES = ["under_review", "pending", "qualified", "rewarded", "rejected_fraud"] as const;
+export const REFERRAL_STATUSES = [
+  "under_review",
+  "pending",
+  "qualified",
+  "rewarded",
+  "rejected_fraud",
+] as const satisfies readonly Schemas["ReferralStatus"][];
 
 export const campaignsList = defineList<CampaignSummary>({
   key: "campaign",
@@ -45,9 +51,11 @@ export const promotionsList = defineList<PromotionSummary>({
 
 export const referralsList = defineList<Referral>({
   key: "referral",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/referrals", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/referrals", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
-  getRowName: (row) => row.referralCode,
-  defaults: { filterKeys: ["status", "referrerId"] },
+  getRowName: (row) => row.code,
+  // CONTRACT-GAP admin.referrals: no referrerId filter.
+  defaults: { filterKeys: ["status"] },
   staleTime: STALE_TIME.live,
 });

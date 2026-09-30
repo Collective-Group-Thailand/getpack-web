@@ -11,7 +11,6 @@
 
 import type { z } from "zod";
 
-import type { customerDetail, customerSummary } from "@/lib/api/requests/admin-customers";
 import type { orderDetail, orderNote, orderSummary, timelineEntry } from "@/lib/api/requests/admin-orders";
 
 import { staffPersonaOf } from "../auth";
@@ -19,12 +18,12 @@ import { PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
 import { productTypeRef } from "./catalog";
+import type { CustomerRow } from "./customer-model";
 import { indexForSearch, registerQueue } from "./console";
 
 type Order = z.output<typeof orderDetail>;
 type OrderSummary = z.output<typeof orderSummary>;
-type Customer = z.output<typeof customerDetail>;
-type CustomerSummary = z.output<typeof customerSummary>;
+type Customer = CustomerRow;
 type Note = z.output<typeof orderNote>;
 type TimelineEntry = z.output<typeof timelineEntry>;
 
@@ -140,19 +139,6 @@ export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], 
           ]
         : [],
   };
-});
-
-const summaryOfCustomer = (customer: Customer): CustomerSummary => ({
-  id: customer.id,
-  customerCode: customer.customerCode,
-  displayName: customer.displayName,
-  phone: customer.phone,
-  email: customer.email,
-  customerType: customer.customerType,
-  companyName: customer.companyName,
-  createdVia: customer.createdVia,
-  ordersCount: customer.ordersCount,
-  createdAt: customer.createdAt,
 });
 
 /* ----------------------------------------------------------------------------------- orders */
@@ -1173,91 +1159,5 @@ export const commerceHandlers = [
       orders: members.map(toSummary),
       instalments: first.instalments,
     };
-  }),
-
-  /* customers */
-  mockRequest("GET /v1/admin/customers", ({ query }) => {
-    const rows = customers
-      .filter((customer) => !query.customerType || customer.customerType === query.customerType)
-      .filter((customer) => !query.createdVia || customer.createdVia === query.createdVia)
-      .filter((customer) =>
-        matchesQuery(
-          query.q,
-          customer.displayName,
-          customer.phone,
-          customer.email,
-          customer.customerCode,
-          customer.companyName,
-        ),
-      )
-      .map(summaryOfCustomer);
-    return paginate(sortBy(rows, query.sort ?? "createdAt", query.order ?? "desc"), query);
-  }),
-  mockRequest("POST /v1/admin/customers", ({ body }) => {
-    if (customers.some((customer) => customer.phone === body.phone))
-      return problem(409, "customer.phone_taken", "เบอร์นี้มีบัญชีลูกค้าอยู่แล้ว");
-    const customer: Customer = {
-      id: mockId("cus", customers.length + 1),
-      customerCode: `C${250001 + customers.length}`,
-      displayName: body.displayName,
-      phone: body.phone,
-      email: body.email ?? null,
-      customerType: body.customerType,
-      companyName: null,
-      createdVia: "cs",
-      ordersCount: 0,
-      createdAt: bangkokIso(),
-      referralCode: `PK${9000 + customers.length}`,
-      loyalty: { tier: "member", availablePoints: 0, spend12m: "0.00" },
-      lastOrderAt: null,
-      birthDate: null,
-      addresses: [],
-      taxProfiles: [],
-    };
-    customers.push(customer);
-    return summaryOfCustomer(customer);
-  }),
-  mockRequest(
-    "GET /v1/admin/customers/{customerId}",
-    ({ params }) =>
-      customers.find((customer) => customer.id === params.customerId) ??
-      problem(404, "http.not_found", "ไม่พบลูกค้านี้"),
-  ),
-  mockRequest("POST /v1/admin/customers/{customerId}/addresses", ({ params, body }) => {
-    const customer = customers.find((candidate) => candidate.id === params.customerId);
-    if (!customer) return problem(404, "http.not_found", "ไม่พบลูกค้านี้");
-    const address = {
-      ...body,
-      id: mockId("adr", 100 + customer.addresses.length + customers.indexOf(customer) * 10),
-      line2: body.line2 ?? null,
-      subdistrict: body.subdistrict ?? null,
-      district: body.district ?? null,
-      isDefault: body.isDefault ?? customer.addresses.length === 0,
-    };
-    customer.addresses.push(address);
-    return address;
-  }),
-  mockRequest("GET /v1/admin/geo/postcodes/{postcode}", ({ params }) => {
-    const known: Record<string, { province: string; districts: { name: string; subdistricts: string[] }[] }> = {
-      "10110": {
-        province: "กรุงเทพมหานคร",
-        districts: [
-          { name: "เขตวัฒนา", subdistricts: ["แขวงคลองเตยเหนือ", "แขวงคลองตันเหนือ"] },
-          { name: "เขตคลองเตย", subdistricts: ["แขวงคลองเตย", "แขวงคลองตัน"] },
-        ],
-      },
-      "10400": { province: "กรุงเทพมหานคร", districts: [{ name: "เขตพญาไท", subdistricts: ["แขวงสามเสนใน"] }] },
-      "50200": {
-        province: "เชียงใหม่",
-        districts: [{ name: "อำเภอเมืองเชียงใหม่", subdistricts: ["ตำบลศรีภูมิ", "ตำบลพระสิงห์"] }],
-      },
-      "20000": { province: "ชลบุรี", districts: [{ name: "อำเภอเมืองชลบุรี", subdistricts: ["ตำบลบางปลาสร้อย"] }] },
-      "90110": { province: "สงขลา", districts: [{ name: "อำเภอหาดใหญ่", subdistricts: ["ตำบลหาดใหญ่"] }] },
-      "40000": { province: "ขอนแก่น", districts: [{ name: "อำเภอเมืองขอนแก่น", subdistricts: ["ตำบลในเมือง"] }] },
-    };
-    const entry = known[params.postcode!];
-    return entry
-      ? { postcode: params.postcode!, ...entry }
-      : problem(404, "geo.postcode_unknown", "ไม่พบรหัสไปรษณีย์นี้");
   }),
 ];

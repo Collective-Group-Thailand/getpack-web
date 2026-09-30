@@ -190,6 +190,7 @@
     },
     "submit": "Create",
     "created": "Customer {code} created",
+    "matched": "Found the existing customer {name}; using them",
     "failed": "Could not create the customer"
   },
   "createOrder": {
