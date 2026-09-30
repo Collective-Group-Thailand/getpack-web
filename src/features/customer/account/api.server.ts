@@ -6,6 +6,8 @@ import { serverRequests } from "@/lib/api/requests/server";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
+import type { Address, TaxProfile } from "./address";
+
 export type Points = Schemas["LoyaltySummaryDto"];
 export type PointsEntry = Schemas["PointsEntryDto"];
 export type Referral = Schemas["MyReferralDto"];
@@ -44,6 +46,19 @@ export async function getReferral(): Promise<Referral> {
 export async function getStoreCredit(): Promise<StoreCredit> {
   const { data } = await (await serverApi("customer")).GET("/v1/store/store-credit");
   return data!;
+}
+
+/**
+ * The saved addresses and tax-invoice profiles (`store.addresses.list`, `store.taxProfiles.list`),
+ * as one page each — a book large enough to need a second page is not a customer's.
+ */
+export async function getAddressBook(): Promise<{ addresses: Address[]; taxProfiles: TaxProfile[] }> {
+  const api = await serverApi("customer");
+  const [addresses, taxProfiles] = await Promise.all([
+    api.GET("/v1/store/addresses", { params: { query: { perPage: 100 } } }),
+    api.GET("/v1/store/tax-profiles", { params: { query: { perPage: 100 } } }),
+  ]);
+  return { addresses: addresses.data!.data, taxProfiles: taxProfiles.data!.data };
 }
 
 export async function getPreferences() {

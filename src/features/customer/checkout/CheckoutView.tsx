@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import type { z } from "zod";
 
@@ -27,9 +27,8 @@ import { RadioCards } from "@/ui/components/RadioCards";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon } from "@/ui/icons";
 
-import type { Address } from "../account/AddressForm";
+import { addressLine, type Address, type TaxProfile } from "../account/address";
 import { formatTaxId } from "../account/tax-id";
-import type { TaxProfile } from "../account/TaxProfileForm";
 import { useDebounced } from "../configurator/pricing";
 
 const AddressSheet = dynamic(() => import("../cart/AddressSheet").then((module) => module.AddressSheet), {
@@ -68,6 +67,7 @@ export function CheckoutView({
   cartSplits,
 }: CheckoutViewProps) {
   const t = useTranslations("checkout");
+  const locale = useLocale();
   const tMethods = useTranslations("checkout.methods");
   const format = useFormat();
   const router = useRouter();
@@ -281,9 +281,7 @@ export function CheckoutView({
               options={addresses.map((address) => ({
                 value: address.id,
                 label: `${address.label} — ${address.recipientName}`,
-                description: [address.line1, address.district, address.province, address.postcode]
-                  .filter(Boolean)
-                  .join(" "),
+                description: addressLine(locale, address),
               }))}
             />
           ) : data ? (

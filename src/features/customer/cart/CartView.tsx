@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -10,6 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
+import { browserApi } from "@/lib/api/browser";
 import { browserRequests } from "@/lib/api/requests/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import type { Requests } from "@/lib/api/requests/registry";
@@ -24,7 +25,7 @@ import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
-import type { Address } from "../account/AddressForm";
+import { geoName, type Address } from "../account/address";
 import { storeImageSrc } from "../catalog/images";
 
 const AddressSheet = dynamic(() => import("./AddressSheet").then((module) => module.AddressSheet), { ssr: false });
@@ -50,6 +51,7 @@ function Destinations({
   onAddAddress: () => void;
 }) {
   const t = useTranslations("cart.destinations");
+  const locale = useLocale();
   const format = useFormat();
   const [rows, setRows] = useState(() =>
     item.destinations.map((destination) => ({
@@ -102,7 +104,7 @@ function Destinations({
               }
               options={addresses.map((address) => ({
                 value: address.id,
-                label: `${address.label} — ${address.recipientName}, ${address.province} ${address.postcode}`,
+                label: `${address.label} — ${address.recipientName}, ${geoName(locale, address.province)} ${address.postcode}`,
               }))}
             />
           </Field>
@@ -182,7 +184,8 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
   }).data;
   const addresses = useQuery({
     queryKey: addressesKey,
-    queryFn: async () => (await browserRequests().call("GET /v1/store/me/addresses")).data,
+    queryFn: async () =>
+      (await browserApi().GET("/v1/store/addresses", { params: { query: { perPage: 100 } } })).data!.data,
     initialData: initialAddresses,
   }).data;
 

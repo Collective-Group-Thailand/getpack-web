@@ -98,24 +98,25 @@ test.describe("the account", () => {
     await expect(page.getByText(/เปิดจากใบเสนอราคา QT-\S+ ที่คุณบันทึกไว้/)).toBeVisible();
   });
 
-  test("addresses and tax profiles are added and removed", async ({ page }) => {
+  test("a saved address is edited under its ETag; a new one cannot be added yet", async ({ page }) => {
     await signInAsCustomer(page, "/account/addresses");
-    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
-    await page.getByLabel(/^ชื่อที่อยู่/).fill("สำนักงานทดสอบ (e2e)");
-    await page.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับ e2e");
-    await page.getByLabel(/^เบอร์ผู้รับ/).fill("0877777777");
-    await page.getByLabel(/^รหัสไปรษณีย์/).fill("10400");
-    await page.getByRole("combobox", { name: "แขวง/ตำบล" }).click();
-    await page.getByRole("option").first().click();
-    await page.getByLabel(/^บ้านเลขที่/).fill("1 ถนนทดสอบ");
+    const card = page.getByRole("listitem").filter({ hasText: "ที่อยู่หลัก" }).first();
+    await card.getByRole("button", { name: /แก้ไข/ }).click();
+    await page.getByLabel(/^รายละเอียดเพิ่มเติม/).fill("ชั้น 2 (e2e)");
     await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
-    const card = page.getByRole("listitem").filter({ hasText: "สำนักงานทดสอบ (e2e)" });
-    await expect(card).toContainText("พญาไท");
+    await expect(page.getByRole("listitem").filter({ hasText: "ชั้น 2 (e2e)" })).toBeVisible();
     await expectNoViolations(page);
 
-    await card.getByRole("button", { name: /ลบ/ }).click();
-    await page.getByRole("alertdialog", { name: "ลบรายการนี้?" }).getByRole("button", { name: "ลบ" }).click();
-    await expect(page.getByText("สำนักงานทดสอบ (e2e)")).toHaveCount(0);
+    // CONTRACT-GAP store.geo-ids: the form says why instead of offering fields it cannot save.
+    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
+    await expect(page.getByText("ยังเพิ่มที่อยู่ใหม่ไม่ได้")).toBeVisible();
+  });
+
+  test("addresses and tax profiles are added and removed", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.geo-ids — no store geo read gives the province id an address needs");
+    await signInAsCustomer(page, "/account/addresses");
+    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
+    await page.getByLabel(/^รหัสไปรษณีย์/).fill("10400");
   });
 
   test("notification preferences: order e-mail stays on, marketing is the customer's choice", async ({ page }) => {

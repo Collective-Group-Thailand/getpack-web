@@ -1,29 +1,30 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
-import { Input, Textarea } from "@/ui/components/Input";
-import { RadioCards } from "@/ui/components/RadioCards";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Input } from "@/ui/components/Input";
 
-import { isValidThaiTaxId } from "./tax-id";
+import { geoName, type TaxProfile } from "./address";
+import { formatTaxId } from "./tax-id";
 
-export type TaxProfile = ResponseOf<Requests, "GET /v1/store/me/tax-profiles">["data"][number];
-type TaxType = TaxProfile["taxType"];
+export type { TaxProfile } from "./address";
 
 /**
- * Who the tax invoice is made out to (D-125): a person, a company or a government body; the head
- * office or a numbered branch; and whether the customer withholds tax (the API computes the
- * amount and it is shown at checkout).
+ * Who the tax invoice is made out to (D-125), edited under the `ETag` of a fresh read
+ * (`store.taxProfiles.update`, If-Match): the name, the registered address lines, the e-mail the
+ * documents go to, and whether the customer withholds tax (the API computes the amount and it is
+ * shown at checkout). The type, tax id and branch are the Revenue Department's record and do not
+ * change once saved.
+ *
+ * CONTRACT-GAP store.geo-ids — a profile is filed under a province **id**, which no store geo read
+ * gives, so a new profile cannot be created yet and a saved one keeps its province.
  */
 export function TaxProfileForm({
   profile,
@@ -35,51 +36,82 @@ export function TaxProfileForm({
   onCancel?: () => void;
 }) {
   const t = useTranslations("account.taxForm");
-  const [taxType, setTaxType] = useState<TaxType>(profile?.taxType ?? "juristic");
-  const [name, setName] = useState(profile?.name ?? "");
-  const [taxId, setTaxId] = useState(profile?.taxId ?? "");
-  const [branchType, setBranchType] = useState<"head_office" | "branch">(profile?.branchType ?? "head_office");
-  const [branchCode, setBranchCode] = useState(profile && profile.branchType === "branch" ? profile.branchCode : "");
-  const [address, setAddress] = useState(profile?.address ?? "");
-  const [withholdsTax, setWithholdsTax] = useState(profile?.withholdsTax ?? false);
-  const [isDefault, setIsDefault] = useState(profile?.isDefault ?? false);
+  if (!profile) {
+    return (
+      <div className="flex flex-col gap-4">
+        <Callout tone="info" title={t("createBlockedTitle")}>
+          {t("createBlocked")}
+        </Callout>
+        {onCancel ? (
+          <div>
+            <Button variant="secondary" onClick={onCancel}>
+              {t("cancel")}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+  return <EditTaxProfile profile={profile} onSaved={onSaved} onCancel={onCancel} />;
+}
+
+function EditTaxProfile({
+  profile,
+  onSaved,
+  onCancel,
+}: {
+  profile: TaxProfile;
+  onSaved: (profile: TaxProfile) => void;
+  onCancel?: () => void;
+}) {
+  const t = useTranslations("account.taxForm");
+  const locale = useLocale();
+  const [name, setName] = useState(profile.name);
+  const [line1, setLine1] = useState(profile.line1);
+  const [line2, setLine2] = useState(profile.line2 ?? "");
+  const [documentEmail, setDocumentEmail] = useState(profile.documentEmail ?? "");
+  const [withholdsTax, setWithholdsTax] = useState(profile.withholdsTax);
+  const [isDefault, setIsDefault] = useState(profile.isDefault);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const area = [geoName(locale, profile.subdistrict), geoName(locale, profile.province), profile.postcode]
+    .filter(Boolean)
+    .join(" ");
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
     event.stopPropagation();
     const found: Record<string, string> = {};
     if (!name.trim()) found.name = t("required");
-    if (!isValidThaiTaxId(taxId)) found.taxId = t("taxIdInvalid");
-    if (branchType === "branch" && !/^\d{5}$/.test(branchCode)) found.branchCode = t("branchInvalid");
-    if (!address.trim()) found.address = t("required");
+    if (!line1.trim()) found.line1 = t("required");
+    if (documentEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(documentEmail.trim()))
+      found.documentEmail = t("emailInvalid");
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     setSaving(true);
     setFailure(null);
-    const body = {
-      taxType,
-      name: name.trim(),
-      taxId,
-      branchType,
-      branchCode: branchType === "head_office" ? "00000" : branchCode,
-      address: address.trim(),
-      withholdsTax: taxType !== "individual" && withholdsTax,
-      isDefault,
-    };
     try {
-      const saved = profile
-        ? await browserRequests().call("PATCH /v1/store/me/tax-profiles/{profileId}", {
-            path: { profileId: profile.id },
-            body,
-          })
-        : await browserRequests().call("POST /v1/store/me/tax-profiles", { body });
-      onSaved(saved);
+      const api = browserApi();
+      const current = await api.GET("/v1/store/tax-profiles/{taxProfileId}", {
+        params: { path: { taxProfileId: profile.id } },
+      });
+      const { data } = await api.PATCH("/v1/store/tax-profiles/{taxProfileId}", {
+        params: {
+          path: { taxProfileId: profile.id },
+          header: { "If-Match": current.response.headers.get("etag") ?? "" },
+        },
+        body: {
+          name: name.trim(),
+          line1: line1.trim(),
+          line2: line2.trim() || null,
+          documentEmail: documentEmail.trim() || null,
+          withholdsTax: profile.taxType !== "individual" && withholdsTax,
+          isDefault,
+        },
+      });
+      onSaved(data!);
     } catch (error) {
-      if (isApiError(error) && error.errors.some((item) => item.path === "taxId"))
-        setErrors({ taxId: t("taxIdInvalid") });
       setFailure(isApiError(error) ? error.detail : t("failed"));
     } finally {
       setSaving(false);
@@ -93,70 +125,34 @@ export function TaxProfileForm({
           {failure}
         </Callout>
       ) : null}
-      <Field label={t("type")}>
-        <RadioCards
-          columns={3}
-          value={taxType}
-          onValueChange={(value) => setTaxType(value as TaxType)}
-          options={(["individual", "juristic", "government"] as const).map((value) => ({
-            value,
-            label: t(`types.${value}`),
-          }))}
+      <dl className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
+        <dt className="text-muted">{t("type")}</dt>
+        <dd>{t(`types.${profile.taxType}`)}</dd>
+        <dt className="text-muted">{t("taxId")}</dt>
+        <dd className="tabular-nums">{formatTaxId(profile.taxId)}</dd>
+        <dt className="text-muted">{t("branch")}</dt>
+        <dd>{profile.branchType === "head_office" ? t("headOffice") : t("branchNo", { code: profile.branchCode })}</dd>
+        <dt className="text-muted">{t("areaFixed")}</dt>
+        <dd>{area}</dd>
+      </dl>
+      <Field label={t("name")} error={errors.name} required requiredLabel={t("requiredMark")}>
+        <Input value={name} onChange={(event) => setName(event.target.value)} />
+      </Field>
+      <Field label={t("line1")} error={errors.line1} required requiredLabel={t("requiredMark")}>
+        <Input value={line1} onChange={(event) => setLine1(event.target.value)} />
+      </Field>
+      <Field label={t("line2")}>
+        <Input value={line2} onChange={(event) => setLine2(event.target.value)} />
+      </Field>
+      <Field label={t("documentEmail")} hint={t("documentEmailHint")} error={errors.documentEmail}>
+        <Input
+          type="email"
+          inputMode="email"
+          value={documentEmail}
+          onChange={(event) => setDocumentEmail(event.target.value)}
         />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label={taxType === "individual" ? t("personName") : t("companyName")}
-          error={errors.name}
-          required
-          requiredLabel={t("requiredMark")}
-        >
-          <Input value={name} onChange={(event) => setName(event.target.value)} />
-        </Field>
-        <Field label={t("taxId")} hint={t("taxIdHint")} error={errors.taxId} required requiredLabel={t("requiredMark")}>
-          <Input
-            inputMode="numeric"
-            maxLength={13}
-            value={taxId}
-            onChange={(event) => setTaxId(event.target.value.replace(/\D/g, "").slice(0, 13))}
-            className="tabular-nums"
-          />
-        </Field>
-      </div>
-      {taxType !== "individual" ? (
-        <div className="flex flex-wrap items-end gap-4">
-          <SegmentedControl
-            label={t("branch")}
-            value={branchType}
-            onValueChange={setBranchType}
-            options={[
-              { value: "head_office", label: t("headOffice") },
-              { value: "branch", label: t("branchOffice") },
-            ]}
-          />
-          {branchType === "branch" ? (
-            <Field label={t("branchCode")} error={errors.branchCode} required requiredLabel={t("requiredMark")}>
-              <Input
-                inputMode="numeric"
-                maxLength={5}
-                value={branchCode}
-                onChange={(event) => setBranchCode(event.target.value.replace(/\D/g, "").slice(0, 5))}
-                className="w-28"
-              />
-            </Field>
-          ) : null}
-        </div>
-      ) : null}
-      <Field
-        label={t("address")}
-        hint={t("addressHint")}
-        error={errors.address}
-        required
-        requiredLabel={t("requiredMark")}
-      >
-        <Textarea rows={3} value={address} onChange={(event) => setAddress(event.target.value)} />
-      </Field>
-      {taxType !== "individual" ? (
+      {profile.taxType !== "individual" ? (
         <Checkbox
           checked={withholdsTax}
           onCheckedChange={(checked) => setWithholdsTax(checked === true)}
