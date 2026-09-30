@@ -5,14 +5,13 @@ import { useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import { canAcceptQuotation } from "@/domain/next-actions/store";
 import { RFQ_QUOTE_STATUS } from "@/domain/status";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -21,34 +20,37 @@ import { toast } from "@/ui/components/Toast";
 import { quantityBand } from "../analytics/bands";
 import { editCart } from "../cart/cart-client";
 
-type Rfq = ResponseOf<Requests, "GET /v1/store/rfqs/{rfqId}">;
-type Line = Rfq["quotes"][number]["lines"][number];
+type Rfq = Schemas["RfqDto"];
+type Line = Schemas["RfqQuoteLineDto"];
+type Saved = Schemas["SavedQuoteDto"];
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
 /**
  * The quotes CS sent, newest first, and accepting one quantity of the current one — which makes
- * the quotation (`source = rfq`) the cart takes. Accepting is irreversible, so the dialog restates
- * the RFQ, the quantity and the amount, and the request carries one idempotency key per intent.
+ * the saved quotation (`source = rfq`, `acceptedQuoteId`) the cart takes. Accepting is
+ * irreversible, so the dialog restates the RFQ, the quantity and the amount, and the request
+ * carries one idempotency key per intent.
  */
-export function RfqQuotes({ rfq }: { rfq: Rfq }) {
+export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null }) {
   const t = useTranslations("quoteRequests.detail");
   const format = useFormat();
   const router = useRouter();
   const [choice, setChoice] = useState<{ quoteId: string; line: Line } | null>(null);
   const [busy, setBusy] = useState<"accept" | "cart" | null>(null);
   const key = useRef(newKey());
-  const accepting = rfq.nextActions.some((action) => action.key === "rfq.accept_quote");
+  const quotations = [...rfq.quotations]
+    .filter((quotation) => quotation.status !== "draft")
+    .sort((a, b) => b.versionNo - a.versionNo);
 
   async function accept() {
     if (!choice) return;
     setBusy("accept");
     try {
-      await browserRequests().call("POST /v1/store/rfqs/{rfqId}/quotes/{quoteId}/actions/accept", {
-        path: { rfqId: rfq.id, quoteId: choice.quoteId },
-        body: { quantity: choice.line.quantity },
-        idempotencyKey: key.current,
+      await browserApi().POST("/v1/store/rfqs/{rfqId}/actions/accept", {
+        params: { path: { rfqId: rfq.id }, header: { "Idempotency-Key": key.current } },
+        body: { rfqQuoteId: choice.quoteId, quantities: [choice.line.quantity] },
       });
       toast.success(t("accepted", { code: rfq.rfqCode }));
       setChoice(null);
@@ -61,25 +63,20 @@ export function RfqQuotes({ rfq }: { rfq: Rfq }) {
     }
   }
 
-  async function addToCart(quoteId: string) {
+  async function addToCart(saved: Saved, option: Saved["options"][number]) {
     setBusy("cart");
     try {
-      // The cart takes the quotation's option (`store.cart.addItem`), which the accepted quote
-      // does not name — so it is read from the saved quotation first.
-      const api = browserApi();
-      const { data: saved } = await api.GET("/v1/store/quotes/{quoteId}", { params: { path: { quoteId } } });
-      const option =
-        saved!.options.find((candidate) => candidate.quantity === rfq.acceptedQuote?.quantity) ?? saved!.options[0]!;
+      // The cart takes one option of the saved quotation the acceptance made (`store.cart.addItem`).
       await editCart((ifMatch) =>
-        api.POST("/v1/store/cart/items", {
+        browserApi().POST("/v1/store/cart/items", {
           params: { header: { "If-Match": ifMatch } },
-          body: { quoteId, quoteOptionId: option.id, designOption: "own_file" },
+          body: { quoteId: saved.id, quoteOptionId: option.id, designOption: "own_file" },
         }),
       );
       track("cart_item_added", {
         route: "/account/rfqs/[rfqId]",
-        productType: rfq.productType.code,
-        quantityBand: quantityBand(rfq.acceptedQuote?.quantity ?? 0),
+        productType: rfq.productTypeCode,
+        quantityBand: quantityBand(option.quantity),
         quoteMode: "rfq",
       });
       router.push("/cart");
@@ -89,40 +86,52 @@ export function RfqQuotes({ rfq }: { rfq: Rfq }) {
     }
   }
 
-  if (rfq.quotes.length === 0) {
+  if (quotations.length === 0) {
     return <p className="text-muted text-sm">{t("noQuotesYet")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {rfq.acceptedQuote ? (
-        <Callout tone="success" title={t("acceptedTitle", { code: rfq.acceptedQuote.quoteCode })}>
-          <div className="flex flex-col items-start gap-2">
-            <span>{t("acceptedBody", { quantity: format.number(rfq.acceptedQuote.quantity) })}</span>
-            <Button
-              size="sm"
-              iconStart="cart"
-              loading={busy === "cart"}
-              onClick={() => void addToCart(rfq.acceptedQuote!.id)}
-            >
-              {t("addToCart")}
-            </Button>
-          </div>
+      {accepted ? (
+        <Callout
+          tone="success"
+          title={accepted.quoteCode ? t("acceptedTitle", { code: accepted.quoteCode }) : t("acceptedTitleNoCode")}
+        >
+          <ul className="flex flex-col items-start gap-2">
+            {accepted.options.map((option) => (
+              <li key={option.id} className="flex flex-wrap items-center gap-2">
+                <span>{t("acceptedBody", { quantity: format.number(option.quantity) })}</span>
+                <Button
+                  size="sm"
+                  iconStart="cart"
+                  loading={busy === "cart"}
+                  onClick={() => void addToCart(accepted, option)}
+                >
+                  {t("addToCart")}
+                  {accepted.options.length > 1 ? (
+                    <span className="sr-only"> {t("acceptLine", { quantity: format.number(option.quantity) })}</span>
+                  ) : null}
+                </Button>
+              </li>
+            ))}
+          </ul>
         </Callout>
       ) : null}
 
-      {rfq.quotes.map((quote) => {
-        const current = quote.status === "sent" && accepting;
+      {quotations.map((quote) => {
+        const current = canAcceptQuotation(rfq, quote);
         return (
           <article key={quote.id} className="border-border rounded-xl border">
             <header className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
               <h3 className="font-semibold">{t("quoteVersion", { version: quote.versionNo })}</h3>
               <div className="flex items-center gap-2 text-sm">
                 <StatusChip map={RFQ_QUOTE_STATUS} value={quote.status} />
-                <span className="text-muted">{t("validUntil", { date: format.date(quote.validUntil) })}</span>
+                {quote.validUntil ? (
+                  <span className="text-muted">{t("validUntil", { date: format.date(quote.validUntil) })}</span>
+                ) : null}
               </div>
             </header>
-            {quote.customerNote ? <p className="px-4 pt-3 text-sm">{quote.customerNote}</p> : null}
+            {quote.note ? <p className="px-4 pt-3 text-sm">{quote.note}</p> : null}
             <div className="overflow-x-auto px-4 py-3">
               <table className="w-full text-sm">
                 <caption className="sr-only">{t("linesCaption", { version: quote.versionNo })}</caption>

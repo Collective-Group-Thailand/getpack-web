@@ -24,7 +24,7 @@ export default async function Page() {
     <div>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
-      {list.data.length === 0 ? (
+      {list.length === 0 ? (
         <EmptyState
           className="mt-8"
           icon="inbox"
@@ -38,7 +38,7 @@ export default async function Page() {
         />
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
-          {list.data.map((rfq) => (
+          {list.map((rfq) => (
             <li key={rfq.id} className="border-border rounded-xl border">
               <Link
                 href={`/account/rfqs/${rfq.id}`}
@@ -46,7 +46,7 @@ export default async function Page() {
               >
                 <div className="min-w-0">
                   <p className="font-semibold">
-                    {rfq.productType.name} <span className="text-muted font-mono text-sm">{rfq.rfqCode}</span>
+                    {rfq.productTypeName} <span className="text-muted font-mono text-sm">{rfq.rfqCode}</span>
                   </p>
                   <p className="text-muted text-sm">
                     {t("row", {

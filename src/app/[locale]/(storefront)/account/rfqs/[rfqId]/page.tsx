@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getMyRfq } from "@/features/customer/rfq/api.server";
+import { getMyRfq, specInWords } from "@/features/customer/rfq/api.server";
 import { RfqQuotes } from "@/features/customer/rfq/RfqQuotes";
 import { RfqThread } from "@/features/customer/rfq/RfqThread";
 import { getFormat } from "@/features/shared/format/server";
@@ -23,6 +23,9 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * One request for quotation (F3 3.2): what was asked, when CS will answer, the quotes sent, the
  * conversation, and — once a quote is accepted — the way to the cart.
+ *
+ * CONTRACT-GAP store.rfqs — the files sent with the RFQ and the words of a decline are not
+ * published (a decline names a reason code only).
  */
 export default async function Page({
   params,
@@ -33,9 +36,15 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ rfqId }, { submitted }] = await Promise.all([params, searchParams]);
-  const [t, format, found] = await Promise.all([getTranslations("quoteRequests.detail"), getFormat(), getMyRfq(rfqId)]);
+  const [t, format, locale, found] = await Promise.all([
+    getTranslations("quoteRequests.detail"),
+    getFormat(),
+    getLocale(),
+    getMyRfq(rfqId),
+  ]);
   if (!found) notFound();
-  const { rfq, messages } = found;
+  const { rfq, accepted, form } = found;
+  const dimensions = [rfq.lengthMm, rfq.widthMm, rfq.heightMm].filter((value): value is number => value !== null);
 
   return (
     <div>
@@ -43,7 +52,7 @@ export default async function Page({
         {t("back")}
       </Link>
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold">{t("heading", { type: rfq.productType.name })}</h1>
+        <h1 className="text-2xl font-bold">{t("heading", { type: rfq.productTypeName })}</h1>
         <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
       </div>
       <p className="text-muted mt-1 font-mono text-sm">{rfq.rfqCode}</p>
@@ -53,14 +62,14 @@ export default async function Page({
           {t("submitted", { code: rfq.rfqCode })}
         </Callout>
       ) : null}
-      {rfq.respondBy ? (
+      {rfq.slaDueAt && ["submitted", "in_review", "need_info"].includes(rfq.status) ? (
         <Callout tone="info" className="mt-4">
-          {t("respondBy", { date: format.dateTime(rfq.respondBy) })}
+          {t("respondBy", { date: format.dateTime(rfq.slaDueAt) })}
         </Callout>
       ) : null}
-      {rfq.declineReason ? (
+      {rfq.status === "declined" ? (
         <Callout tone="warning" className="mt-4" title={t("declinedTitle")}>
-          {rfq.declineReason}
+          {t("declinedBody")}
         </Callout>
       ) : null}
 
@@ -70,13 +79,13 @@ export default async function Page({
             <h2 id="rfq-quotes" className="mb-4 text-lg font-semibold">
               {t("quotesTitle")}
             </h2>
-            <RfqQuotes rfq={rfq} />
+            <RfqQuotes rfq={rfq} accepted={accepted} />
           </section>
           <section aria-labelledby="rfq-thread">
             <h2 id="rfq-thread" className="mb-4 text-lg font-semibold">
               {t("threadTitle")}
             </h2>
-            <RfqThread rfqId={rfq.id} messages={messages} askedForInfo={rfq.status === "need_info"} />
+            <RfqThread rfqId={rfq.id} messages={rfq.messages} askedForInfo={rfq.status === "need_info"} />
           </section>
         </div>
         <section aria-labelledby="rfq-spec">
@@ -85,16 +94,12 @@ export default async function Page({
           </h2>
           <DescriptionList
             items={[
-              ...rfq.spec.map((item) => ({ term: item.label, description: item.value })),
-              ...(rfq.dimensions
+              ...specInWords(rfq, form, locale, { yes: t("yes"), no: t("no") }),
+              ...(dimensions.length > 0
                 ? [
                     {
                       term: t("dimensions"),
-                      description:
-                        [rfq.dimensions.lengthMm, rfq.dimensions.widthMm, rfq.dimensions.heightMm]
-                          .filter((value): value is number => value !== null)
-                          .map((value) => format.number(value))
-                          .join(" × ") + ` ${t("mm")}`,
+                      description: dimensions.map((value) => format.number(value)).join(" × ") + ` ${t("mm")}`,
                     },
                   ]
                 : []),
@@ -106,9 +111,6 @@ export default async function Page({
               ...(rfq.targetDate ? [{ term: t("targetDate"), description: format.date(rfq.targetDate) }] : []),
               ...(rfq.notes ? [{ term: t("notes"), description: rfq.notes }] : []),
               { term: t("submittedAt"), description: format.dateTime(rfq.submittedAt) },
-              ...(rfq.files.length > 0
-                ? [{ term: t("files"), description: rfq.files.map((file) => file.originalName).join(", ") }]
-                : []),
             ]}
           />
         </section>
