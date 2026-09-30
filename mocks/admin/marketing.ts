@@ -1,7 +1,8 @@
 /**
- * Marketing, mocked (CONTRACT-REQUEST admin.campaigns, admin.promotions, admin.coupons,
- * admin.referrals): campaigns with budgets (D-154), promotions with typed conditions and
- * benefits (D-053), coupon batches and codes, and referral attributions held for review (D-136).
+ * Marketing on the published contract (`admin.campaigns.*`, `admin.promotions.*`, U-F0.3):
+ * campaigns with budgets (D-154), promotions with typed conditions and benefits (D-053), their
+ * coupon codes and the promotion report; and referral attributions held for review (D-136).
+ * Two requests stay (`mockRequest`): reordering promotions and listing coupon batches.
  *
  * The promotion engine is the API's: this mock only stores configuration and reports usage.
  * The budget alert threshold comes from the setting `campaigns.budget_alert_pct`; a held referral
@@ -10,31 +11,22 @@
 
 import type { z } from "zod";
 
-import type {
-  campaignDetail,
-  couponBatch,
-  couponCode,
-  promotionBenefit,
-  promotionConditions,
-  promotionDetail,
-} from "@/lib/api/requests/admin-marketing";
+import type { couponBatch } from "@/lib/api/requests/admin-marketing";
 import type { Schemas } from "@/lib/api/types";
 
 import { http, HttpResponse } from "msw";
 
 import { staffPersonaOf } from "../auth";
-import { can, PERSONAS, type StaffPersona } from "../personas";
+import { can, PERSONAS } from "../personas";
 import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
+import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, withEtag } from "../support";
 import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
+import type { CampaignRow, CouponCodeRow, PromotionRow } from "./marketing-model";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
-import { etagOf } from "./tables";
+import { etagOf as tableEtag } from "./tables";
 
-type Campaign = z.output<typeof campaignDetail>;
-type Promotion = z.output<typeof promotionDetail>;
 type Batch = z.output<typeof couponBatch>;
-type Code = z.output<typeof couponCode>;
 /** A referral as the fixture keeps it; `toReferralDto` is what the API answers (`AdminReferralDto`). */
 interface Referral {
   id: string;
@@ -53,6 +45,8 @@ const DAY = 24 * 60;
 const MARKETER = PERSONAS.find((persona) => persona.key === "marketing")!;
 const owner = { id: MARKETER.id, displayName: MARKETER.displayName };
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
+const invalid = (path: string, message: string) =>
+  problem(422, "validation.failed", message, [{ path, code: "invalid", message }]);
 const customerRef = (index: number) => {
   const customer = customers[index]!;
   return {
@@ -63,25 +57,21 @@ const customerRef = (index: number) => {
   };
 };
 
-/** Marketing reads with `marketing.read` and writes with `marketing.manage`. */
-function allowed(request: Request, manage = false): StaffPersona | Response {
+/** The operation's `x-required-permissions`: reads are `promotions.read`, writes name their own. */
+function allowed(request: Request, permission: "promotions.read" | "promotions.manage" | "campaigns.manage") {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, manage ? "promotions.manage" : "promotions.read")) return forbidden();
-  return who;
+  return who && can(who, permission) ? who : null;
 }
 
-/** An editable aggregate's weak ETag; the concurrency guard of api-conventions §3. */
-function guard(request: Request, row: { id: string; updatedAt: string }, what: string): Response | null {
-  const match = request.headers.get("if-match");
-  if (!match) return problem(428, "http.precondition_required", "ต้องส่ง If-Match");
-  if (match !== etagOf(row as never))
-    return problem(412, "http.precondition_failed", `${what}ถูกแก้ไขไปแล้ว กรุณาโหลดใหม่`);
-  return null;
-}
+const pageOf = (url: URL) => ({
+  page: Number(url.searchParams.get("page") ?? 1),
+  perPage: Number(url.searchParams.get("perPage") ?? 25),
+});
+/** Sums decimal strings in satang, so the mock's report adds up exactly. */
+const sum = (amounts: readonly string[]) =>
+  baht(amounts.reduce((total, amount) => total + Math.round(Number(amount) * 100), 0));
 
 /* -------------------------------------------------------------------------------- campaigns */
-
-type CampaignRow = Campaign & { updatedAt: string };
 
 const alertPct = () => settingValue<string>("campaigns.budget_alert_pct");
 
@@ -89,11 +79,11 @@ function campaign(
   n: number,
   code: string,
   name: string,
-  status: Campaign["status"],
-  budget: number,
+  status: CampaignRow["status"],
+  budget: number | null,
   spent: number,
-  window: [number, number],
-  goals: string | null,
+  window: [number, number | null],
+  goals: Record<string, unknown> = {},
 ): CampaignRow {
   return {
     id: mockId("cmp", n),
@@ -101,138 +91,74 @@ function campaign(
     name,
     status,
     startsAt: bangkokIso(window[0] * DAY),
-    endsAt: bangkokIso(window[1] * DAY),
-    budgetAmount: baht(budget * 100),
+    endsAt: window[1] === null ? null : bangkokIso(window[1] * DAY),
+    budgetAmount: budget === null ? null : baht(budget * 100),
     spentAmount: baht(spent * 100),
-    spentPct: "0",
-    alertThresholdPct: "80",
     alertedAt: null,
-    owner,
-    promotionsCount: 0,
-    createdAt: bangkokIso((window[0] - 7) * DAY),
     goals,
-    performance: {
-      redemptionsCount: 0,
-      ordersCount: 0,
-      discountAmount: "0.00",
-      revenueAmount: "0.00",
-      newCustomersCount: 0,
-    },
-    allowedActions: [],
+    owner,
+    createdAt: bangkokIso((window[0] - 7) * DAY),
     updatedAt: bangkokIso(-DAY),
   };
 }
 
 const campaigns: CampaignRow[] = [
-  campaign(
-    1,
-    "YEAR-END-2026",
-    "ส่งท้ายปี 2569 (ข้อมูลจำลอง)",
-    "active",
-    150000,
-    126300,
-    [-20, 40],
-    "ลูกค้าใหม่ 300 ราย",
-  ),
-  campaign(2, "SME-BOOST", "เพิ่มยอด SME ไตรมาส 4 (ข้อมูลจำลอง)", "active", 80000, 21450, [-10, 60], null),
-  campaign(3, "NEW-YEAR-2027", "ปีใหม่ 2570 (ข้อมูลจำลอง)", "scheduled", 120000, 0, [45, 80], "เปิดตัวกล่องของขวัญ"),
-  campaign(4, "RAINY-2026", "หน้าฝน 2569 (ข้อมูลจำลอง)", "exhausted", 50000, 50000, [-120, -60], null),
-  campaign(5, "SPRING-DRAFT", "ร่างแคมเปญหน้าร้อน (ข้อมูลจำลอง)", "draft", 60000, 0, [150, 200], null),
+  campaign(1, "year-end-2026", "ส่งท้ายปี 2569 (ข้อมูลจำลอง)", "active", 150000, 126300, [-20, 40], {
+    newCustomers: 300,
+  }),
+  campaign(2, "sme-boost", "เพิ่มยอด SME ไตรมาส 4 (ข้อมูลจำลอง)", "active", 80000, 21450, [-10, 60]),
+  campaign(3, "new-year-2027", "ปีใหม่ 2570 (ข้อมูลจำลอง)", "scheduled", 120000, 0, [45, 80], {
+    note: "เปิดตัวกล่องของขวัญ",
+  }),
+  campaign(4, "rainy-2026", "หน้าฝน 2569 (ข้อมูลจำลอง)", "exhausted", 50000, 50000, [-120, -60]),
+  campaign(5, "spring-draft", "ร่างแคมเปญหน้าร้อน (ข้อมูลจำลอง)", "draft", 60000, 0, [150, 200]),
 ];
 
-const CAMPAIGN_ACTIONS: Record<Campaign["status"], Campaign["allowedActions"]> = {
-  draft: ["activate"],
-  scheduled: ["pause", "end"],
-  active: ["pause", "end"],
-  paused: ["resume", "end"],
-  exhausted: ["end"],
-  ended: [],
-};
+/** Spend has reached the alert threshold of the budget (D-154); an unlimited campaign never alerts. */
+function crossed(row: CampaignRow): boolean {
+  if (row.budgetAmount === null || Number(row.budgetAmount) <= 0) return false;
+  return Number(row.spentAmount) * 100 >= Number(row.budgetAmount) * Number(alertPct());
+}
 
-/** The campaign as the API reports it: spend, the alert threshold in force, performance. */
-function present(row: CampaignRow, who: StaffPersona | null): CampaignRow {
-  const threshold = alertPct();
-  const spentPct = Number(row.budgetAmount) > 0 ? (Number(row.spentAmount) / Number(row.budgetAmount)) * 100 : 0;
+function toCampaignDto(row: CampaignRow): Schemas["CampaignDto"] {
   // The API stamps the alert when spend first crosses the threshold (D-154); the mock does so on read.
-  if (!row.alertedAt && spentPct >= Number(threshold)) row.alertedAt = bangkokIso(-60 * 5);
-  const mine = promotions.filter((item) => item.campaign?.id === row.id);
-  const redemptions = mine.reduce((sum, item) => sum + item.usage.redemptionsCount, 0);
+  if (!row.alertedAt && crossed(row)) row.alertedAt = bangkokIso(-60 * 5);
   return {
-    ...row,
-    spentPct: spentPct.toFixed(4),
-    alertThresholdPct: threshold,
-    promotionsCount: mine.length,
-    performance: {
-      redemptionsCount: redemptions,
-      ordersCount: redemptions,
-      discountAmount: row.spentAmount,
-      revenueAmount: baht(Number(row.spentAmount) * 100 * 9.4),
-      newCustomersCount: Math.round(redemptions * 0.4),
-    },
-    allowedActions: who && can(who, "promotions.manage") ? CAMPAIGN_ACTIONS[row.status] : [],
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    status: row.status,
+    startsAt: row.startsAt,
+    endsAt: row.endsAt,
+    budgetAmount: row.budgetAmount,
+    spentAmount: row.spentAmount,
+    alertThresholdPct: Number(alertPct()).toFixed(4),
+    alertedAt: row.alertedAt,
+    goals: row.goals,
+    currency: "THB",
   };
+}
+
+/** `activate | pause | end` (activate resumes a paused one); `null` when the status forbids it. */
+function nextCampaignStatus(row: CampaignRow, action: string): CampaignRow["status"] | null {
+  const upcoming = Date.parse(row.startsAt) > Date.now();
+  if (action === "activate" && (row.status === "draft" || row.status === "paused"))
+    return upcoming ? "scheduled" : "active";
+  if (action === "pause" && (row.status === "active" || row.status === "scheduled")) return "paused";
+  if (action === "end" && row.status !== "ended") return "ended";
+  return null;
 }
 
 /* ------------------------------------------------------------------------------- promotions */
 
-type PromotionRow = Promotion & { updatedAt: string };
-
-const anyConditions = (extra: Partial<z.output<typeof promotionConditions>> = {}) => ({
-  schemaVersion: 1 as const,
-  channels: [],
-  segments: [],
-  productTypeCodes: [],
-  minOrderValue: null,
-  minQuantity: null,
-  firstOrderOnly: false,
-  paymentMethods: [],
-  provinceIds: [],
-  ...extra,
-});
-const benefitOf = (extra: Partial<z.output<typeof promotionBenefit>> & { type: Promotion["benefit"]["type"] }) => ({
-  schemaVersion: 1 as const,
-  pct: null,
-  amount: null,
-  maxAmount: null,
-  tiers: [],
-  rounds: null,
-  multiplier: null,
-  points: null,
-  ...extra,
-});
-
-/** The one line the API writes from a benefit (in Thai, the mock's default language). */
-function summarise(benefit: Promotion["benefit"]): string {
-  switch (benefit.type) {
-    case "percent":
-      return `ลด ${Number(benefit.pct)} %${benefit.maxAmount ? ` สูงสุด ฿${Number(benefit.maxAmount).toLocaleString("en-US")}` : ""}`;
-    case "fixed":
-      return `ลด ฿${Number(benefit.amount).toLocaleString("en-US")}`;
-    case "tiered_percent":
-      return benefit.tiers
-        .map((tier) => `ซื้อครบ ฿${Number(tier.minOrderValue).toLocaleString("en-US")} ลด ${Number(tier.pct)} %`)
-        .join(" · ");
-    case "free_shipping":
-      return "ส่งฟรี";
-    case "free_design_rounds":
-      return `แก้แบบฟรีเพิ่ม ${benefit.rounds} รอบ`;
-    case "free_mockup":
-      return "ม็อกอัปฟรี";
-    case "points_multiplier":
-      return `แต้ม × ${Number(benefit.multiplier)}`;
-    case "bonus_points":
-      return `แต้มพิเศษ ${benefit.points} แต้ม`;
-  }
-}
-
 function promotion(
   n: number,
   name: string,
-  kind: Promotion["kind"],
-  status: Promotion["status"],
+  kind: PromotionRow["kind"],
+  status: PromotionRow["status"],
   campaignIndex: number | null,
-  conditions: Promotion["conditions"],
-  benefit: Promotion["benefit"],
+  conditions: PromotionRow["conditions"],
+  benefit: PromotionRow["benefit"],
   usage: [number, number, number],
   limits: { total?: number; perCustomer?: number } = {},
 ): PromotionRow {
@@ -240,22 +166,21 @@ function promotion(
   return {
     id: mockId("prm", n),
     name,
+    description: null,
     kind,
     status,
-    campaign: parent ? { id: parent.id, code: parent.code, name: parent.name } : null,
+    campaignId: parent?.id ?? null,
     priority: n * 10,
     stacking: kind === "automatic" ? "best_of" : "exclusive",
     stackGroup: null,
     startsAt: parent?.startsAt ?? bangkokIso(-30 * DAY),
     endsAt: parent?.endsAt ?? null,
-    benefitSummary: summarise(benefit),
-    usage: { redemptionsCount: usage[0], discountAmount: baht(usage[1] * 100), cappedAmount: baht(usage[2] * 100) },
     conditions,
     benefit,
     usageLimitTotal: limits.total ?? null,
     usageLimitPerCustomer: limits.perCustomer ?? null,
     budgetAmount: null,
-    allowedActions: [],
+    usage: { redemptions: usage[0], discountAmount: baht(usage[1] * 100), cappedAmount: baht(usage[2] * 100) },
     updatedAt: bangkokIso(-2 * DAY),
   };
 }
@@ -267,8 +192,8 @@ const promotions: PromotionRow[] = [
     "coupon",
     "active",
     0,
-    anyConditions({ segments: ["new"], firstOrderOnly: true, channels: ["web"] }),
-    benefitOf({ type: "percent", pct: "10", maxAmount: "500.00" }),
+    { segments: ["new"], firstOrderOnly: true, channels: ["web"] },
+    { type: "percent", pct: "10", maxAmount: "500.00" },
     [212, 84600, 1240],
     { perCustomer: 1 },
   ),
@@ -278,8 +203,8 @@ const promotions: PromotionRow[] = [
     "automatic",
     "active",
     0,
-    anyConditions({ minOrderValue: "5000.00" }),
-    benefitOf({ type: "free_shipping" }),
+    { minOrderValue: "5000.00" },
+    { type: "free_shipping" },
     [318, 41700, 0],
   ),
   promotion(
@@ -288,14 +213,15 @@ const promotions: PromotionRow[] = [
     "automatic",
     "active",
     1,
-    anyConditions({ productTypeCodes: ["folding_carton", "corrugated"] }),
-    benefitOf({
-      type: "tiered_percent",
+    { productTypeCodes: ["folding_carton", "corrugated"] },
+    {
+      type: "tiered",
+      basis: "value",
       tiers: [
-        { minOrderValue: "20000.00", pct: "3" },
-        { minOrderValue: "50000.00", pct: "5" },
+        { min: "20000.00", pct: "3" },
+        { min: "50000.00", pct: "5" },
       ],
-    }),
+    },
     [41, 21450, 3100],
   ),
   promotion(
@@ -304,8 +230,8 @@ const promotions: PromotionRow[] = [
     "coupon",
     "active",
     1,
-    anyConditions({ channels: ["web", "cs"] }),
-    benefitOf({ type: "fixed", amount: "300.00" }),
+    { channels: ["web", "cs"] },
+    { type: "fixed", amount: "300.00" },
     [0, 0, 0],
     { total: 500, perCustomer: 1 },
   ),
@@ -315,8 +241,8 @@ const promotions: PromotionRow[] = [
     "referral",
     "active",
     null,
-    anyConditions({ firstOrderOnly: true }),
-    benefitOf({ type: "percent", pct: "5", maxAmount: "500.00" }),
+    { firstOrderOnly: true },
+    { type: "percent", pct: "5", maxAmount: "500.00" },
     [37, 14800, 0],
   ),
   promotion(
@@ -325,8 +251,8 @@ const promotions: PromotionRow[] = [
     "automatic",
     "paused",
     null,
-    anyConditions(),
-    benefitOf({ type: "points_multiplier", multiplier: "2" }),
+    {},
+    { type: "points_multiplier", multiplier: "2" },
     [12, 0, 0],
   ),
   promotion(
@@ -335,38 +261,59 @@ const promotions: PromotionRow[] = [
     "coupon",
     "draft",
     2,
-    anyConditions({ productTypeCodes: ["rigid_box"] }),
-    benefitOf({ type: "free_design_rounds", rounds: 2 }),
+    { productTypeCodes: ["rigid_box"] },
+    { type: "free_revision_rounds", rounds: 2 },
     [0, 0, 0],
   ),
 ];
 
-const PROMOTION_ACTIONS: Record<Promotion["status"], Promotion["allowedActions"]> = {
-  draft: ["activate"],
-  active: ["pause", "end"],
-  paused: ["resume", "end"],
-  ended: [],
-};
+function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
+  const { usage, updatedAt, ...dto } = row;
+  void updatedAt;
+  // The spend is the discount given: what the promotion's own budget is measured against.
+  return { ...dto, spentAmount: usage.discountAmount };
+}
 
-const presentPromotion = (row: PromotionRow, who: StaffPersona | null): Promotion => ({
-  ...row,
-  benefitSummary: summarise(row.benefit),
-  allowedActions: who && can(who, "promotions.manage") ? PROMOTION_ACTIONS[row.status] : [],
-});
-const summaryOf = (row: PromotionRow) => {
-  const {
-    stackGroup,
-    conditions,
-    benefit,
-    usageLimitTotal,
-    usageLimitPerCustomer,
-    budgetAmount,
-    allowedActions,
-    ...rest
-  } = presentPromotion(row, null);
-  void [stackGroup, conditions, benefit, usageLimitTotal, usageLimitPerCustomer, budgetAmount, allowedActions];
-  return rest;
-};
+/** What a benefit of each type must carry, so a half-filled form is refused like the API would. */
+function benefitProblem(benefit: Schemas["PromotionBenefitDto"] | undefined): Response | null {
+  if (!benefit?.type) return invalid("benefit.type", "กรุณาเลือกสิทธิประโยชน์");
+  const needs: Partial<Record<Schemas["PromotionBenefitType"], [keyof Schemas["PromotionBenefitDto"], string]>> = {
+    percent: ["pct", "กรุณาระบุเปอร์เซ็นต์ส่วนลด"],
+    fixed: ["amount", "กรุณาระบุจำนวนเงินส่วนลด"],
+    unit_price_override: ["unitPrice", "กรุณาระบุราคาต่อชิ้น"],
+    free_revision_rounds: ["rounds", "กรุณาระบุจำนวนรอบ"],
+    points_multiplier: ["multiplier", "กรุณาระบุตัวคูณแต้ม"],
+    bonus_points: ["points", "กรุณาระบุจำนวนแต้ม"],
+  };
+  const need = needs[benefit.type];
+  if (need && (benefit[need[0]] === undefined || benefit[need[0]] === ""))
+    return invalid(`benefit.${need[0]}`, need[1]);
+  if (benefit.type === "tiered" && !benefit.tiers?.length) return invalid("benefit.tiers", "กรุณาระบุขั้นส่วนลด");
+  return null;
+}
+
+function nextPromotionStatus(row: PromotionRow, action: string): PromotionRow["status"] | null {
+  if (action === "activate" && (row.status === "draft" || row.status === "paused")) return "active";
+  if (action === "pause" && row.status === "active") return "paused";
+  if (action === "end" && row.status !== "ended") return "ended";
+  return null;
+}
+
+/** The promotion report (`PromotionReportDto`) over some promotions: the mock's usage, summed. */
+function reportOf(rows: readonly PromotionRow[]): Schemas["PromotionReportDto"] {
+  const redemptions = rows.reduce((total, row) => total + row.usage.redemptions, 0);
+  const discountSatang = rows.reduce((total, row) => total + Math.round(Number(row.usage.discountAmount) * 100), 0);
+  return {
+    redemptions,
+    appliedRedemptions: redemptions,
+    discountAmount: baht(discountSatang),
+    cappedAmount: sum(rows.map((row) => row.usage.cappedAmount)),
+    orderGroups: redemptions,
+    grossAmount: baht(discountSatang * 9.4),
+    customers: Math.round(redemptions * 0.9),
+    currency: "THB",
+  };
+}
 
 /* ---------------------------------------------------------------------------------- coupons */
 
@@ -392,33 +339,46 @@ const batches: Batch[] = [
     generatedBy: owner,
   },
 ];
-const codes: Code[] = [
+const codes: CouponCodeRow[] = [
   {
     id: mockId("cpc", 1),
     code: "WELCOME10",
+    promotionId: promotions[0]!.id,
     batchId: batches[0]!.id,
-    assignedCustomer: null,
+    assignedCustomerId: null,
     usageLimit: null,
     usedCount: 212,
     status: "active",
   },
-  ...["7K2Q", "9MXD", "3HTB", "P4VW", "Z8RN", "C6LJ"].map((tail, index): Code => ({
+  ...["7K2Q", "9MXD", "3HTB", "P4VW", "Z8RN", "C6LJ"].map((tail, index): CouponCodeRow => ({
     id: mockId("cpc", 10 + index),
     code: `FAIR${tail}`,
+    promotionId: promotions[3]!.id,
     batchId: batches[1]!.id,
-    assignedCustomer: null,
+    assignedCustomerId: null,
     usageLimit: 1,
     usedCount: index === 0 ? 1 : 0,
     status: index === 0 ? "used_up" : "active",
   })),
 ];
-const codeOwner = new Map<string, string>(
-  codes.map((item) => [item.id, batches.find((b) => b.id === item.batchId)!.promotionId]),
-);
 let codeSeq = 100;
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const randomTail = (seed: number) =>
   Array.from({ length: 6 }, (_, index) => ALPHABET[(seed * 7919 + index * 104729) % ALPHABET.length]).join("");
+
+function toCouponCodeDto(row: CouponCodeRow): Schemas["CouponCodeDto"] {
+  return {
+    id: row.id,
+    code: row.code,
+    status: row.status,
+    usageLimit: row.usageLimit,
+    usedCount: row.usedCount,
+    assignedCustomerId: row.assignedCustomerId,
+  };
+}
+
+/** Generated batches by `Idempotency-Key`, so a retried generate replays instead of making another. */
+const generated = new Map<string, Schemas["CouponBatchResultDto"]>();
 
 /* -------------------------------------------------------------------------------- referrals */
 
@@ -502,10 +462,9 @@ registerQueue("promotions.read", () => {
     nextDueAt: null,
   };
 });
+
 registerQueue("promotions.read", () => {
-  const alerted = campaigns.filter(
-    (row) => ["active", "scheduled"].includes(row.status) && Number(present(row, null).spentPct) >= Number(alertPct()),
-  );
+  const alerted = campaigns.filter((row) => ["active", "scheduled"].includes(row.status) && crossed(row));
   return {
     key: "marketing.budget_alerts",
     path: "/admin/marketing",
@@ -517,116 +476,123 @@ registerQueue("promotions.read", () => {
 
 /* --------------------------------------------------------------------------------- handlers */
 
-const withEtag = <T extends { id: string; updatedAt: string }>(row: T, body: object) =>
-  new Response(JSON.stringify(body), {
-    headers: { "Content-Type": "application/json", ETag: etagOf(row as never) },
-  });
+/** The weak ETag the table mocks use, from the row's id and last change. */
+const etagOf = (row: { id: string; updatedAt: string }) => tableEtag(row as never);
+const campaignOf = (id: unknown) => campaigns.find((row) => row.id === id);
+const promotionOf = (id: unknown) => promotions.find((row) => row.id === id);
+const noCampaign = () => problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
+const noPromotion = () => problem(404, "http.not_found", "ไม่พบโปรโมชันนี้");
+const touch = (row: { updatedAt: string }) => {
+  // A new ETag on every change, even two within the same millisecond.
+  row.updatedAt = new Date(Math.max(Date.now(), Date.parse(row.updatedAt) + 1)).toISOString();
+};
 
-export const marketingHandlers = [
-  mockRequest("GET /v1/admin/campaigns", ({ query, request }) => {
-    const who = allowed(request);
-    if (who instanceof Response) return who;
+/** `admin.campaigns.*` and `admin.promotions.*` on their published paths (U-F0.3). */
+export const marketingContractHandlers = [
+  http.get("*/v1/admin/campaigns", ({ request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const q = url.searchParams.get("q") ?? undefined;
     const rows = campaigns
-      .filter((row) => !query.status || row.status === query.status)
-      .filter((row) => matchesQuery(query.q, row.code, row.name))
-      .map((row) => {
-        const { goals, performance, allowedActions, updatedAt, ...summary } = present(row, who);
-        void [goals, performance, allowedActions, updatedAt];
-        return summary;
-      });
-    return paginate(rows, query);
+      .filter((row) => !status || row.status === status)
+      .filter((row) => matchesQuery(q, row.code, row.name))
+      .map(toCampaignDto);
+    return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
-  mockRequest("POST /v1/admin/campaigns", ({ body, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    if (campaigns.some((row) => row.code === body.code))
-      return problem(409, "campaign.duplicate_code", "มีแคมเปญรหัสนี้แล้ว", [
+  http.post("*/v1/admin/campaigns", async ({ request }) => {
+    const who = allowed(request, "campaigns.manage");
+    if (!who) return forbidden();
+    const body = (await request.json()) as Schemas["CreateCampaignDto"];
+    if (!/^[a-z0-9][a-z0-9_-]{1,39}$/.test(body.code ?? ""))
+      return invalid("code", "รหัสแคมเปญเป็นตัวพิมพ์เล็ก ตัวเลข - หรือ _");
+    if (campaigns.some((row) => row.code.toLowerCase() === body.code.toLowerCase()))
+      return problem(409, "promotions.code_taken", "มีแคมเปญรหัสนี้แล้ว", [
         { path: "code", code: "unique", message: "ซ้ำกับที่มีอยู่" },
       ]);
-    if (Date.parse(body.endsAt) <= Date.parse(body.startsAt))
-      return problem(422, "validation.failed", "วันสิ้นสุดต้องหลังวันเริ่ม", [
-        { path: "endsAt", code: "after", message: "ต้องหลังวันเริ่ม" },
-      ]);
-    const row = campaign(campaigns.length + 1, body.code, body.name, "draft", 0, 0, [0, 0], body.goals ?? null);
-    Object.assign(row, {
+    if (body.endsAt && Date.parse(body.endsAt) <= Date.parse(body.startsAt))
+      return invalid("endsAt", "วันสิ้นสุดต้องหลังวันเริ่ม");
+    const row: CampaignRow = {
+      ...campaign(campaigns.length + 1, body.code, body.name, "draft", null, 0, [0, null], body.goals ?? {}),
       startsAt: body.startsAt,
-      endsAt: body.endsAt,
-      budgetAmount: body.budgetAmount,
+      endsAt: body.endsAt ?? null,
+      budgetAmount: body.budgetAmount ?? null,
       owner: { id: who.id, displayName: who.displayName },
       createdAt: bangkokIso(),
-      updatedAt: bangkokIso(),
-    });
+      updatedAt: new Date().toISOString(),
+    };
     campaigns.unshift(row);
-    return present(row, who);
+    return withEtag(toCampaignDto(row), etagOf(row), 201);
   }),
-  mockRequest("GET /v1/admin/campaigns/{campaignId}", ({ params, request }) => {
-    const who = allowed(request);
-    if (who instanceof Response) return who;
-    const row = campaigns.find((candidate) => candidate.id === params.campaignId);
-    return row ? withEtag(row, present(row, who)) : problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
+  http.get("*/v1/admin/campaigns/:campaignId", ({ params, request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    const row = campaignOf(params.campaignId);
+    return row ? withEtag(toCampaignDto(row), etagOf(row)) : noCampaign();
   }),
-  mockRequest("PATCH /v1/admin/campaigns/{campaignId}", ({ params, body, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const row = campaigns.find((candidate) => candidate.id === params.campaignId);
-    if (!row) return problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
-    const refused = guard(request, row, "แคมเปญ");
+  http.patch("*/v1/admin/campaigns/:campaignId", async ({ params, request }) => {
+    if (!allowed(request, "campaigns.manage")) return forbidden();
+    const row = campaignOf(params.campaignId);
+    if (!row) return noCampaign();
+    const refused = precondition(request, etagOf(row));
     if (refused) return refused;
+    if (row.status === "ended") return problem(409, "promotions.ended", "แคมเปญนี้สิ้นสุดแล้ว แก้ไขไม่ได้");
+    const body = (await request.json()) as Schemas["UpdateCampaignDto"];
     if (body.budgetAmount && Number(body.budgetAmount) < Number(row.spentAmount))
-      return problem(422, "campaign.budget_below_spent", "งบต้องไม่น้อยกว่าที่ใช้ไปแล้ว", [
-        { path: "budgetAmount", code: "min", message: "น้อยกว่ายอดที่ใช้ไป" },
-      ]);
-    Object.assign(row, body, { updatedAt: bangkokIso() });
-    // A topped-up budget brings an exhausted campaign back (D-154).
-    if (row.status === "exhausted" && Number(row.budgetAmount) > Number(row.spentAmount)) row.status = "active";
-    return withEtag(row, present(row, who));
+      return invalid("budgetAmount", "งบต้องไม่น้อยกว่าที่ใช้ไปแล้ว");
+    const next = { ...row, ...body };
+    if (next.endsAt && Date.parse(next.endsAt) <= Date.parse(next.startsAt))
+      return invalid("endsAt", "วันสิ้นสุดต้องหลังวันเริ่ม");
+    if (body.name !== undefined) row.name = body.name;
+    if (body.startsAt !== undefined) row.startsAt = body.startsAt;
+    if (body.endsAt !== undefined) row.endsAt = body.endsAt;
+    if (body.budgetAmount !== undefined) row.budgetAmount = body.budgetAmount;
+    if (body.goals !== undefined) row.goals = body.goals;
+    // A topped-up budget brings an exhausted campaign back (D-154), and re-arms its alert.
+    if (row.status === "exhausted" && (row.budgetAmount === null || Number(row.budgetAmount) > Number(row.spentAmount)))
+      row.status = "active";
+    if (!crossed(row)) row.alertedAt = null;
+    touch(row);
+    return withEtag(toCampaignDto(row), etagOf(row));
   }),
-  mockRequest("POST /v1/admin/campaigns/{campaignId}/actions/{action}", ({ params, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const row = campaigns.find((candidate) => candidate.id === params.campaignId);
-    if (!row) return problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
-    const refused = guard(request, row, "แคมเปญ");
-    if (refused) return refused;
-    const action = params.action as Campaign["allowedActions"][number];
-    if (!CAMPAIGN_ACTIONS[row.status].includes(action))
-      return problem(409, "campaign.invalid_transition", "ทำรายการนี้กับแคมเปญในสถานะนี้ไม่ได้");
-    row.status =
-      action === "activate"
-        ? Date.parse(row.startsAt) > Date.now()
-          ? "scheduled"
-          : "active"
-        : action === "pause"
-          ? "paused"
-          : action === "resume"
-            ? "active"
-            : "ended";
-    if (row.status === "ended")
-      for (const item of promotions.filter((candidate) => candidate.campaign?.id === row.id)) item.status = "ended";
-    row.updatedAt = bangkokIso();
-    return withEtag(row, present(row, who));
+  http.post("*/v1/admin/campaigns/:campaignId/actions/:action", ({ params, request }) => {
+    if (!allowed(request, "campaigns.manage")) return forbidden();
+    const row = campaignOf(params.campaignId);
+    if (!row) return noCampaign();
+    const next = nextCampaignStatus(row, String(params.action));
+    if (!next) return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับแคมเปญในสถานะนี้ไม่ได้");
+    row.status = next;
+    // Ending a campaign ends its promotions (D-154).
+    if (next === "ended")
+      for (const item of promotions.filter((candidate) => candidate.campaignId === row.id)) {
+        item.status = "ended";
+        touch(item);
+      }
+    touch(row);
+    return withEtag(toCampaignDto(row), etagOf(row));
   }),
 
-  mockRequest("GET /v1/admin/promotions", ({ query, request }) => {
-    const who = allowed(request);
-    if (who instanceof Response) return who;
+  http.get("*/v1/admin/promotions", ({ request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    const url = new URL(request.url);
+    const [kind, status, campaignId] = ["kind", "status", "campaignId"].map((name) => url.searchParams.get(name));
+    const q = url.searchParams.get("q") ?? undefined;
     const rows = promotions
-      .filter((row) => !query.kind || row.kind === query.kind)
-      .filter((row) => !query.status || row.status === query.status)
-      .filter((row) => !query.campaignId || row.campaign?.id === query.campaignId)
-      .filter((row) => matchesQuery(query.q, row.name, row.campaign?.code))
+      .filter((row) => !kind || row.kind === kind)
+      .filter((row) => !status || row.status === status)
+      .filter((row) => !campaignId || row.campaignId === campaignId)
+      .filter((row) => matchesQuery(q, row.name, campaignOf(row.campaignId)?.code))
       .sort((a, b) => a.priority - b.priority)
-      .map(summaryOf);
-    return paginate(rows, query);
+      .map(toPromotionDto);
+    return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
-  mockRequest("POST /v1/admin/promotions", ({ body, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const parent = body.campaignId ? campaigns.find((row) => row.id === body.campaignId) : null;
-    if (body.campaignId && !parent)
-      return problem(422, "validation.failed", "ไม่พบแคมเปญ", [
-        { path: "campaignId", code: "exists", message: "ไม่พบแคมเปญ" },
-      ]);
+  http.post("*/v1/admin/promotions", async ({ request }) => {
+    if (!allowed(request, "promotions.manage")) return forbidden();
+    const body = (await request.json()) as Schemas["CreatePromotionDto"];
+    if (!body.name?.trim()) return invalid("name", "กรุณาระบุชื่อโปรโมชัน");
+    if (!Number.isInteger(body.priority)) return invalid("priority", "กรุณาระบุลำดับเป็นจำนวนเต็ม");
+    if (body.campaignId && !campaignOf(body.campaignId)) return invalid("campaignId", "ไม่พบแคมเปญ");
+    const refused = benefitProblem(body.benefit);
+    if (refused) return refused;
     const row: PromotionRow = {
       ...promotion(
         promotions.length + 1,
@@ -634,141 +600,174 @@ export const marketingHandlers = [
         body.kind,
         "draft",
         null,
-        body.conditions,
+        body.conditions ?? {},
         body.benefit,
         [0, 0, 0],
       ),
-      ...body,
-      campaign: parent ? { id: parent.id, code: parent.code, name: parent.name } : null,
-      priority: Math.max(0, ...promotions.map((item) => item.priority)) + 10,
-      updatedAt: bangkokIso(),
+      description: body.description ?? null,
+      campaignId: body.campaignId ?? null,
+      priority: body.priority,
+      stacking: body.stacking,
+      stackGroup: body.stackGroup ?? null,
+      startsAt: body.startsAt,
+      endsAt: body.endsAt ?? null,
+      usageLimitTotal: body.usageLimitTotal ?? null,
+      usageLimitPerCustomer: body.usageLimitPerCustomer ?? null,
+      budgetAmount: body.budgetAmount ?? null,
+      updatedAt: new Date().toISOString(),
     };
     promotions.push(row);
-    return presentPromotion(row, who);
+    return withEtag(toPromotionDto(row), etagOf(row), 201);
   }),
-  mockRequest("GET /v1/admin/promotions/{promotionId}", ({ params, request }) => {
-    const who = allowed(request);
-    if (who instanceof Response) return who;
-    const row = promotions.find((candidate) => candidate.id === params.promotionId);
-    return row ? withEtag(row, presentPromotion(row, who)) : problem(404, "http.not_found", "ไม่พบโปรโมชันนี้");
+  // Before `:promotionId`, which would otherwise take "report" for an id.
+  http.get("*/v1/admin/promotions/report", ({ request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    const url = new URL(request.url);
+    const campaignId = url.searchParams.get("campaignId");
+    const promotionId = url.searchParams.get("promotionId");
+    const rows = promotions
+      .filter((row) => !campaignId || row.campaignId === campaignId)
+      .filter((row) => !promotionId || row.id === promotionId);
+    return HttpResponse.json(reportOf(rows));
   }),
-  mockRequest("PATCH /v1/admin/promotions/{promotionId}", ({ params, body, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const row = promotions.find((candidate) => candidate.id === params.promotionId);
-    if (!row) return problem(404, "http.not_found", "ไม่พบโปรโมชันนี้");
-    const refused = guard(request, row, "โปรโมชัน");
+  http.get("*/v1/admin/promotions/:promotionId", ({ params, request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    const row = promotionOf(params.promotionId);
+    return row ? withEtag(toPromotionDto(row), etagOf(row)) : noPromotion();
+  }),
+  http.patch("*/v1/admin/promotions/:promotionId", async ({ params, request }) => {
+    if (!allowed(request, "promotions.manage")) return forbidden();
+    const row = promotionOf(params.promotionId);
+    if (!row) return noPromotion();
+    const refused = precondition(request, etagOf(row));
     if (refused) return refused;
-    if (body.benefit && row.usage.redemptionsCount > 0 && JSON.stringify(body.benefit) !== JSON.stringify(row.benefit))
-      return problem(
-        409,
-        "promotion.benefit_locked",
-        "โปรโมชันนี้มีการใช้แล้ว เปลี่ยนสิทธิประโยชน์ไม่ได้ ให้สร้างโปรโมชันใหม่",
-      );
-    const parent = body.campaignId === undefined ? undefined : campaigns.find((item) => item.id === body.campaignId);
-    Object.assign(row, body, {
-      ...(body.campaignId !== undefined
-        ? { campaign: parent ? { id: parent.id, code: parent.code, name: parent.name } : null }
-        : {}),
-      updatedAt: bangkokIso(),
-    });
-    return withEtag(row, presentPromotion(row, who));
+    if (row.status === "ended") return problem(409, "promotions.ended", "โปรโมชันนี้สิ้นสุดแล้ว แก้ไขไม่ได้");
+    const body = (await request.json()) as Schemas["UpdatePromotionDto"];
+    if (body.benefit) {
+      if (row.usage.redemptions > 0 && JSON.stringify(body.benefit) !== JSON.stringify(row.benefit))
+        return invalid("benefit", "โปรโมชันนี้มีการใช้แล้ว เปลี่ยนสิทธิประโยชน์ไม่ได้ ให้สร้างโปรโมชันใหม่");
+      const wrong = benefitProblem(body.benefit);
+      if (wrong) return wrong;
+    }
+    if (body.priority !== undefined && !Number.isInteger(body.priority))
+      return invalid("priority", "กรุณาระบุลำดับเป็นจำนวนเต็ม");
+    // Anything but the kind and the campaign (triage `admin.promotions`).
+    const { kind, campaignId, ...changes } = body as Schemas["UpdatePromotionDto"] & {
+      kind?: unknown;
+      campaignId?: unknown;
+    };
+    void [kind, campaignId];
+    Object.assign(row, changes);
+    touch(row);
+    return withEtag(toPromotionDto(row), etagOf(row));
   }),
-  mockRequest("POST /v1/admin/promotions/{promotionId}/actions/{action}", ({ params, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const row = promotions.find((candidate) => candidate.id === params.promotionId);
-    if (!row) return problem(404, "http.not_found", "ไม่พบโปรโมชันนี้");
-    const refused = guard(request, row, "โปรโมชัน");
-    if (refused) return refused;
-    const action = params.action as Promotion["allowedActions"][number];
-    if (!PROMOTION_ACTIONS[row.status].includes(action))
-      return problem(409, "promotion.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
-    if (action === "activate" && row.kind === "coupon" && !codes.some((code) => codeOwner.get(code.id) === row.id))
-      return problem(409, "promotion.no_codes", "สร้างโค้ดก่อนเปิดใช้โปรโมชันแบบโค้ด");
-    row.status = action === "pause" ? "paused" : action === "end" ? "ended" : "active";
-    row.updatedAt = bangkokIso();
-    return withEtag(row, presentPromotion(row, who));
-  }),
-  mockRequest("PUT /v1/admin/promotions/priority", ({ body, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    body.promotionIds.forEach((id, index) => {
-      const row = promotions.find((candidate) => candidate.id === id);
-      if (row) {
-        row.priority = (index + 1) * 10;
-        row.updatedAt = bangkokIso();
-      }
-    });
-    return { updated: body.promotionIds.length };
+  http.post("*/v1/admin/promotions/:promotionId/actions/:action", ({ params, request }) => {
+    if (!allowed(request, "promotions.manage")) return forbidden();
+    const row = promotionOf(params.promotionId);
+    if (!row) return noPromotion();
+    const next = nextPromotionStatus(row, String(params.action));
+    if (!next) return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
+    if (params.action === "activate" && row.kind === "coupon" && !codes.some((code) => code.promotionId === row.id))
+      return problem(409, "promotions.no_codes", "สร้างโค้ดก่อนเปิดใช้โปรโมชันแบบโค้ด");
+    row.status = next;
+    touch(row);
+    return withEtag(toPromotionDto(row), etagOf(row));
   }),
 
-  mockRequest("GET /v1/admin/promotions/{promotionId}/coupon-batches", ({ params, request }) => {
-    const who = allowed(request);
-    if (who instanceof Response) return who;
-    return batches.filter((batch) => batch.promotionId === params.promotionId);
+  http.get("*/v1/admin/promotions/:promotionId/coupons", ({ params, request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    if (!promotionOf(params.promotionId)) return noPromotion();
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = codes
+      .filter((code) => code.promotionId === params.promotionId)
+      .filter((code) => matchesQuery(q, code.code))
+      .map(toCouponCodeDto);
+    return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
-  mockRequest("POST /v1/admin/promotions/{promotionId}/coupon-batches", ({ params, body, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const row = promotions.find((candidate) => candidate.id === params.promotionId);
-    if (!row) return problem(404, "http.not_found", "ไม่พบโปรโมชันนี้");
-    if (row.kind !== "coupon") return problem(409, "promotion.not_coupon", "โปรโมชันนี้ไม่ได้ใช้โค้ด");
-    if (body.kind === "single" && !body.code)
-      return problem(422, "validation.failed", "กรุณาระบุโค้ด", [
-        { path: "code", code: "required", message: "จำเป็น" },
-      ]);
-    if (body.kind === "single" && codes.some((item) => item.code === body.code))
-      return problem(409, "coupon.duplicate_code", "มีโค้ดนี้แล้ว", [{ path: "code", code: "unique", message: "ซ้ำ" }]);
-    const count = body.kind === "single" ? 1 : (body.count ?? 0);
-    if (count < 1)
-      return problem(422, "validation.failed", "กรุณาระบุจำนวน", [
-        { path: "count", code: "min", message: "อย่างน้อย 1" },
-      ]);
+  http.post("*/v1/admin/promotions/:promotionId/coupons", async ({ params, request }) => {
+    const who = allowed(request, "promotions.manage");
+    if (!who) return forbidden();
+    const key = request.headers.get("idempotency-key");
+    if (!key) return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
+    const replay = generated.get(`${String(params.promotionId)}:${key}`);
+    if (replay) return HttpResponse.json(replay, { status: 201 });
+    const row = promotionOf(params.promotionId);
+    if (!row) return noPromotion();
+    if (row.kind !== "coupon") return problem(409, "promotions.not_a_coupon", "โปรโมชันนี้ไม่ได้ใช้โค้ด");
+    if (row.status === "ended") return problem(409, "promotions.ended", "โปรโมชันนี้สิ้นสุดแล้ว");
+    const body = (await request.json()) as Schemas["GenerateCouponsDto"];
+    if (body.kind === "single" && !/^[A-Za-z0-9-]{3,40}$/.test(body.code ?? ""))
+      return invalid("code", "โค้ด 3–40 ตัว ตัวอักษร ตัวเลข หรือ -");
+    if (body.kind === "single" && codes.some((item) => item.code.toLowerCase() === body.code!.toLowerCase()))
+      return problem(409, "promotions.code_taken", "มีโค้ดนี้แล้ว", [{ path: "code", code: "unique", message: "ซ้ำ" }]);
+    if (body.prefix !== undefined && !/^[A-Za-z0-9]{1,12}$/.test(body.prefix))
+      return invalid("prefix", "คำนำหน้าเป็นตัวอักษรหรือตัวเลข สูงสุด 12 ตัว");
+    const assignees = body.kind === "per_customer" ? (body.customerIds ?? []) : [];
+    const count = body.kind === "single" ? 1 : body.kind === "per_customer" ? assignees.length : (body.count ?? 0);
+    if (count < 1 || count > 10000) return invalid("count", "จำนวนโค้ด 1–10,000");
     const batch: Batch = {
       id: mockId("cpb", 10 + batches.length),
       promotionId: row.id,
       kind: body.kind,
       count,
       prefix: body.prefix ?? null,
-      usageLimitPerCode: body.usageLimitPerCode ?? (body.kind === "bulk_unique" ? 1 : null),
+      usageLimitPerCode: body.usageLimit ?? (body.kind === "single" ? null : 1),
       generatedAt: bangkokIso(),
       generatedBy: { id: who.id, displayName: who.displayName },
     };
     batches.push(batch);
     for (let index = 0; index < count; index += 1) {
-      const code: Code = {
-        id: mockId("cpc", codeSeq++),
+      codeSeq += 1;
+      codes.push({
+        id: mockId("cpc", codeSeq),
         code: body.kind === "single" ? body.code! : `${body.prefix ?? ""}${randomTail(codeSeq)}`,
+        promotionId: row.id,
         batchId: batch.id,
-        assignedCustomer: null,
+        assignedCustomerId: assignees[index] ?? null,
         usageLimit: batch.usageLimitPerCode,
         usedCount: 0,
         status: "active",
-      };
-      codes.push(code);
-      codeOwner.set(code.id, row.id);
+      });
     }
-    return batch;
+    const result: Schemas["CouponBatchResultDto"] = { batchId: batch.id, count };
+    generated.set(`${row.id}:${key}`, result);
+    return HttpResponse.json(result, { status: 201 });
   }),
-  mockRequest("GET /v1/admin/promotions/{promotionId}/coupon-codes", ({ params, query, request }) => {
-    const who = allowed(request);
-    if (who instanceof Response) return who;
-    const rows = codes
-      .filter((code) => codeOwner.get(code.id) === params.promotionId)
-      .filter((code) => !query.batchId || code.batchId === query.batchId)
-      .filter((code) => !query.status || code.status === query.status)
-      .filter((code) => matchesQuery(query.q, code.code));
-    return paginate(rows, query);
-  }),
-  mockRequest("POST /v1/admin/coupon-codes/{codeId}/actions/disable", ({ params, request }) => {
-    const who = allowed(request, true);
-    if (who instanceof Response) return who;
-    const code = codes.find((candidate) => candidate.id === params.codeId);
+  http.post("*/v1/admin/promotions/:promotionId/coupons/:couponId/actions/:action", ({ params, request }) => {
+    if (!allowed(request, "promotions.manage")) return forbidden();
+    const code = codes.find(
+      (candidate) => candidate.id === params.couponId && candidate.promotionId === params.promotionId,
+    );
     if (!code) return problem(404, "http.not_found", "ไม่พบโค้ดนี้");
-    if (code.status === "disabled") return problem(409, "coupon.already_disabled", "โค้ดนี้ถูกปิดไปแล้ว");
-    code.status = "disabled";
-    return code;
+    if (params.action !== "disable" && params.action !== "enable") return invalid("action", "ทำรายการนี้ไม่ได้");
+    // Enabling brings a code back as far as its uses allow (D-053); a disabled code is refused at the cart.
+    code.status =
+      params.action === "disable"
+        ? "disabled"
+        : code.usageLimit !== null && code.usedCount >= code.usageLimit
+          ? "used_up"
+          : "active";
+    return HttpResponse.json(toCouponCodeDto(code));
+  }),
+];
+
+/** The marketing requests packio-api still has to build, and the referral queue. */
+export const marketingHandlers = [
+  mockRequest("PUT /v1/admin/promotions/priority", ({ body, request }) => {
+    if (!allowed(request, "promotions.manage")) return forbidden();
+    body.promotionIds.forEach((id, index) => {
+      const row = promotionOf(id);
+      if (row) {
+        row.priority = (index + 1) * 10;
+        touch(row);
+      }
+    });
+    return { updated: body.promotionIds.length };
+  }),
+  mockRequest("GET /v1/admin/promotions/{promotionId}/coupon-batches", ({ params, request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    return batches.filter((batch) => batch.promotionId === params.promotionId);
   }),
 
   // admin.referrals.list (U-F0.3): no referrerId filter, the first order as its group.

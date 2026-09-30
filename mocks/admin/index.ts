@@ -13,7 +13,7 @@ import { financeHandlers } from "./finance";
 import { governanceHandlers } from "./governance";
 import { logisticsContractHandlers, logisticsHandlers } from "./logistics";
 import { loyaltyHandlers } from "./loyalty";
-import { marketingHandlers } from "./marketing";
+import { marketingContractHandlers, marketingHandlers } from "./marketing";
 import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
@@ -32,6 +32,7 @@ export const adminHandlers = [
   ...catalogueHandlers,
   ...governanceHandlers,
   ...partnerHandlers,
+  ...marketingContractHandlers,
   ...marketingHandlers,
   ...companyHandlers,
   ...financeHandlers,
