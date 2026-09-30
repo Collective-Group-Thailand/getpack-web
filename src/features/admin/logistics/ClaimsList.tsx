@@ -7,22 +7,21 @@ import { CLAIM_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
 import type { DataTableColumn } from "@/ui/components/DataTable";
-import { SlaTimer } from "@/ui/components/SlaTimer";
 
-import { QueueTabs, ResourceList, StatusChip, useSlaFormat, type InitialPage } from "../console";
-import { CLAIM_STATUSES, claimsList, type ClaimRow } from "./resources";
+import { QueueTabs, ResourceList, StatusChip, type InitialPage } from "../console";
+import { CLAIM_STATUSES, claimsList, type Claim } from "./resources";
 
 /**
- * Claims (F2 2.8, D-082, D-083): by status, with the current step's SLA, the liability the rule
- * gave and whether the claim came from the customer or from a tolerance breach (D-080).
+ * Claims (F2 2.8, D-082, D-083): by status, with the liability the rule gave and whether the claim
+ * came from the customer or from a tolerance breach (D-080). The published row names no customer
+ * and no SLA, and the list does not filter by type or origin (CONTRACT-GAP admin.claims).
  */
-export function ClaimsList({ initial }: { initial: InitialPage<ClaimRow> | null }) {
+export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) {
   const t = useTranslations("logistics.claims");
   const tStatus = useTranslations("status");
   const format = useFormat();
-  const sla = useSlaFormat();
 
-  const columns: DataTableColumn<ClaimRow>[] = [
+  const columns: DataTableColumn<Claim>[] = [
     {
       id: "claimNo",
       header: t("columns.claim"),
@@ -32,7 +31,8 @@ export function ClaimsList({ initial }: { initial: InitialPage<ClaimRow> | null 
             {row.claimNo}
           </Link>
           <p className="text-muted text-xs">
-            {row.order.orderCode} · {row.customer.displayName}
+            {row.orderCode}
+            {row.factoryCode ? ` · ${row.factoryCode}` : null}
           </p>
         </div>
       ),
@@ -63,16 +63,7 @@ export function ClaimsList({ initial }: { initial: InitialPage<ClaimRow> | null 
         </span>
       ),
     },
-    {
-      id: "sla",
-      header: t("columns.sla"),
-      cell: (row) =>
-        row.slaDueAt ? (
-          <SlaTimer dueAt={row.slaDueAt} format={sla} absolute={format.dateTime(row.slaDueAt)} />
-        ) : (
-          <span className="text-muted">–</span>
-        ),
-    },
+    { id: "windowEndsAt", header: t("columns.window"), cell: (row) => <When at={row.windowEndsAt} absoluteOnly /> },
     { id: "submittedAt", header: t("columns.submitted"), hideable: true, cell: (row) => <When at={row.submittedAt} /> },
   ];
 
@@ -92,28 +83,6 @@ export function ClaimsList({ initial }: { initial: InitialPage<ClaimRow> | null 
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        filters={[
-          {
-            id: "type",
-            label: t("columns.type"),
-            kind: "select",
-            options: (["damaged", "wrong_spec", "print_defect", "quantity_short", "late", "other"] as const).map(
-              (value) => ({
-                value,
-                label: t(`types.${value}`),
-              }),
-            ),
-          },
-          {
-            id: "origin",
-            label: t("origin"),
-            kind: "select",
-            options: (["customer", "tolerance_auto", "staff"] as const).map((value) => ({
-              value,
-              label: t(`origins.${value}`),
-            })),
-          },
-        ]}
         empty={{ title: t("empty") }}
       />
     </div>

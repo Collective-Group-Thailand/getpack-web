@@ -126,9 +126,10 @@ test.describe("a job from acceptance to delivery (F001)", () => {
       await expect(page.getByText("ส่งครบตามจำนวน")).toBeVisible();
     }
 
-    // The logistics desk has the PODs to review (D-013).
+    // The logistics desk sees them delivered (D-013). CONTRACT-GAP admin.shipments — no POD-review
+    // queue on the published list, so it is the delivered status.
     await signInAsStaff(page, "logistics");
-    await gotoHydrated(page, `${HOSTS.admin}/shipments?queue=pod_review`);
+    await gotoHydrated(page, `${HOSTS.admin}/shipments?status=delivered`);
     for (const shipmentNo of shipped) await expect(page.getByText(shipmentNo).first()).toBeVisible();
   });
 });

@@ -34,16 +34,17 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("..").locator("..");
 
 test.describe("the logistics desk (D-013, D-114)", () => {
-  test("the exceptions queue holds a failed attempt and an area the factory cannot serve", async ({ page }) => {
+  test("the failed tab holds a failed attempt, with the shipment's note", async ({ page }) => {
     await signInAsStaff(page, "logistics");
-    await gotoHydrated(page, `${HOSTS.admin}/shipments?queue=exceptions`);
+    // CONTRACT-GAP admin.shipments — no exceptions queue: the published list filters by status only,
+    // so an area the factory cannot serve (a ready shipment) is not on this tab.
+    await gotoHydrated(page, `${HOSTS.admin}/shipments?status=failed`);
     const table = page.getByRole("table", { name: "การจัดส่ง" });
     await expect(table).toContainText("ไม่มีผู้รับสินค้า โทรไม่ติด");
-    await expect(table).toContainText("โรงงานไม่ส่งในพื้นที่นี้");
     await expectAxeClean(page);
   });
 
-  test("a fallback carrier is quoted and booked", async ({ page }) => {
+  test("a fallback carrier is quoted and booked by carrier", async ({ page }) => {
     await signInAsStaff(page, "logistics");
     await gotoHydrated(page, `${HOSTS.admin}/shipments/${shipment(61)}`);
     await expect(page.getByText("โรงงานไม่ส่งในพื้นที่นี้ ต้องจองขนส่งสำรอง")).toBeVisible();
@@ -51,8 +52,8 @@ test.describe("the logistics desk (D-013, D-114)", () => {
 
     await page.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     const dialog = page.getByRole("dialog", { name: "จองขนส่งสำรอง" });
+    // admin.shipments.bookCarrier takes the carrier; no reason is recorded (CONTRACT-GAP admin.shipments).
     await dialog.getByRole("radio", { name: /Flash Express/ }).click();
-    await dialog.getByLabel(/^เหตุผล/).fill("โรงงานไม่ส่งในพื้นที่นี้");
     await dialog.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(header(page)).toContainText("Flash Express");
@@ -62,11 +63,11 @@ test.describe("the logistics desk (D-013, D-114)", () => {
   test("a shipment held by an unpaid instalment cannot be booked out", async ({ page }) => {
     await signInAsStaff(page, "logistics");
     await gotoHydrated(page, `${HOSTS.admin}/shipments/${shipment(62)}`);
-    await expect(page.getByText("ยังมียอดที่ต้องชำระก่อนจัดส่ง")).toBeVisible();
+    // CONTRACT-GAP admin.shipments — no blockedByPayment on the shipment: the hold shows when the API
+    // refuses the booking (`shipments.payment_pending`).
     await page.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     const dialog = page.getByRole("dialog", { name: "จองขนส่งสำรอง" });
     await dialog.getByRole("radio", { name: /Deliveree/ }).click();
-    await dialog.getByLabel(/^เหตุผล/).fill("ลูกค้าขอให้ส่งด่วน");
     await dialog.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     await expect(page.getByText("ยังมียอดที่ต้องชำระก่อนจัดส่ง ส่งของไม่ได้")).toBeVisible();
     await expect(dialog).toBeVisible();
@@ -93,13 +94,14 @@ test.describe("the logistics desk (D-013, D-114)", () => {
     await dialog.getByRole("button", { name: "รับหลักฐาน", exact: true }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.getByText("รับหลักฐานแล้ว").first()).toBeVisible();
+    // The review is known in this session only (CONTRACT-GAP admin.shipments, no POD review state).
     await expect(page.getByRole("button", { name: "รับหลักฐาน", exact: true })).toHaveCount(0);
   });
 
   test("a failed delivery is sent out again", async ({ page }) => {
     await signInAsStaff(page, "logistics");
     await gotoHydrated(page, `${HOSTS.admin}/shipments/${shipment(30)}`);
-    await expect(header(page)).toContainText("ส่งไม่สำเร็จ");
+    await expect(header(page)).toContainText("นำส่งไม่สำเร็จ");
     await page.getByRole("button", { name: "แก้ปัญหาการจัดส่ง" }).click();
     const dialog = page.getByRole("dialog", { name: "แก้ปัญหาการจัดส่ง" });
     await dialog.getByLabel(/^เหตุผล/).fill("นัดผู้รับใหม่วันพรุ่งนี้");
@@ -116,6 +118,7 @@ test.describe("claims (D-082, D-083)", () => {
     await expect(page.getByText("รูปสินค้า", { exact: true })).toBeVisible();
     await expect(page.getByText("รูปกล่องขนส่ง", { exact: true })).toBeVisible();
     await expect(page.getByText(/ตามกฎ: โรงงาน/)).toBeVisible();
+    await expect(page.getByRole("button", { name: /^รูปสินค้า 1/ })).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "อนุมัติเคลม" }).click();
@@ -133,15 +136,16 @@ test.describe("claims (D-082, D-083)", () => {
     await resolve.getByRole("button", { name: "ดำเนินการ" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(header(page)).toContainText("ดำเนินการเรียบร้อย");
-    await expect(page.getByText(/CN-2569-\d{5}/)).toBeVisible();
+    // CONTRACT-GAP admin.claims — a resolution names no document reference (the credit note's number).
+    await expect(page.getByText(/^ใบลดหนี้ · /)).toBeVisible();
   });
 
   test("an undetermined liability must be set, with a reason, before approval", async ({ page }) => {
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/claims/${claim(4)}`);
     await page.getByRole("button", { name: "เริ่มตรวจสอบ" }).click();
+    // admin.claims.review takes no note.
     let dialog = page.getByRole("alertdialog", { name: "เริ่มตรวจสอบเคลม" });
-    await dialog.getByLabel(/^หมายเหตุ/).fill("ได้รับข้อมูลเพิ่มแล้ว");
     await dialog.getByRole("button", { name: "เริ่มตรวจสอบ" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
 
@@ -158,10 +162,11 @@ test.describe("claims (D-082, D-083)", () => {
     await override.getByLabel(/^เหตุผล/).fill("โรงงานเริ่มผลิตช้ากว่าแผน");
     await override.getByRole("button", { name: "บันทึก" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page.getByText(/^เปลี่ยนโดย /)).toBeVisible();
+    // CONTRACT-GAP admin.claims — who overrode is not published, only the reason.
+    await expect(page.getByText("เปลี่ยนจากที่กฎกำหนด")).toBeVisible();
   });
 
-  test("a role without claims.decide reads a claim but cannot move it", async ({ page }) => {
+  test("a role without claims.manage reads a claim but cannot move it", async ({ page }) => {
     await signInAsStaff(page, "logistics");
     await gotoHydrated(page, `${HOSTS.admin}/claims/${claim(2)}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("CL-2569-00042");
