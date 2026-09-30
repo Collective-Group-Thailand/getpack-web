@@ -40,6 +40,7 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "GET /v1/partner/factories/{factoryId}/payouts",
   "GET /v1/partner/factories/{factoryId}/scorecards",
   "GET /v1/partner/factories/{factoryId}/users",
+  "GET /v1/store/catalog/products/{slug}/configurator",
   "PATCH /v1/admin/campaigns/{campaignId}",
   "PATCH /v1/admin/promotions/{promotionId}",
   "POST /v1/admin/campaigns",
@@ -64,3 +65,13 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/admin/shipments/{shipmentId}/actions/book-carrier",
   "POST /v1/partner/factories/{factoryId}/users",
 ];
+
+/**
+ * Customer-zone operations published after U-F0.2 closed the zone, parked here on purpose.
+ *
+ * `store.catalog.getConfigurator` arrived with contract v0.3.0 (2026-09-30), during U-F0.3. The
+ * configurator is rebuilt on the published shape by U2.F1 (configurator v2, RUN-ORDER §1 row 3), so
+ * moving it twice is wasted work (user decision 2026-09-30). The customer-zone gate in
+ * `registry.test.ts` allows exactly these, and each leaves the moment its screen migrates.
+ */
+export const CUSTOMER_ZONE_PARKED: readonly string[] = ["GET /v1/store/catalog/products/{slug}/configurator"];

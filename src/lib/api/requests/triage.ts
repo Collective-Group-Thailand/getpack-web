@@ -26,7 +26,7 @@ export interface RequestTriage {
   group: TriageGroup;
 }
 
-export const TRIAGE_SOURCE = {"commit":"45ef64e","triagedAgainst":"packio-web@9cbd99a","contract":"v0.2.0"} as const;
+export const TRIAGE_SOURCE = {"commit":"93d8d06","triagedAgainst":"packio-web@f225d30","contract":"v0.3.0"} as const;
 
 export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "DELETE /v1/admin/rfqs/{rfqId}/quotes/{quoteId}": {"request":"admin.rfq-quotes","verdict":"published_differently","group":"U-B0.2","operationId":"admin.rfqs.discardQuotation","publishedAs":"POST /v1/admin/rfq-quotations/{rfqQuoteId}/actions/discard","gaps":0},
@@ -43,6 +43,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "GET /v1/admin/analytics/campaigns": {"request":"admin.analytics","verdict":"published_differently","group":"U-B0.3","operationId":"admin.analytics.campaigns","publishedAs":"GET /v1/admin/analytics/campaigns","gaps":0},
   "GET /v1/admin/analytics/demand": {"request":"admin.analytics","verdict":"published_differently","group":"U-B0.3","operationId":"admin.analytics.demand","publishedAs":"GET /v1/admin/analytics/demand","gaps":1},
   "GET /v1/admin/analytics/factories": {"request":"admin.analytics","verdict":"published_differently","group":"U-B0.3","operationId":"admin.analytics.factories","publishedAs":"GET /v1/admin/analytics/factories","gaps":0},
+  "GET /v1/admin/analytics/journeys": {"request":"admin.analytics-journeys","verdict":"implement","group":"U-B0.3","gaps":0},
   "GET /v1/admin/analytics/overview": {"request":"admin.analytics","verdict":"published_differently","group":"U-B0.3","operationId":"admin.analytics.sales","publishedAs":"GET /v1/admin/analytics/sales","gaps":0},
   "GET /v1/admin/analytics/unmet-demand": {"request":"admin.analytics","verdict":"published_differently","group":"U-B0.3","operationId":"admin.analytics.unmetDemand","publishedAs":"GET /v1/admin/analytics/unmet-demand","gaps":0},
   "GET /v1/admin/bank-statement-lines/{lineId}/suggestions": {"request":"admin.bank-line-suggestions","verdict":"implement","group":"U-B0.3","gaps":0},
@@ -85,7 +86,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents": {"request":"admin.payout-documents","verdict":"implement","group":"U-B0.3","gaps":0},
   "GET /v1/admin/prepress": {"request":"admin.prepress","verdict":"published_differently","group":"U-B0.2","operationId":"admin.artwork.queue","publishedAs":"GET /v1/admin/prepress/queue","gaps":3},
   "GET /v1/admin/prepress/proofs/{proofId}/annotations": {"request":"admin.prepress-proofs","verdict":"published_differently","group":"U-B0.2","operationId":"admin.artwork.getProof","publishedAs":"GET /v1/admin/proofs/{proofId}","gaps":1},
-  "GET /v1/admin/prepress/{orderId}": {"request":"admin.prepress","verdict":"published_differently","group":"U-B0.2","operationId":"admin.artwork.list","publishedAs":"GET /v1/admin/orders/{orderId}/artwork-submissions","gaps":5},
+  "GET /v1/admin/prepress/{orderId}": {"request":"admin.prepress","verdict":"published_differently","group":"U-B0.2","operationId":"admin.artwork.list","publishedAs":"GET /v1/admin/orders/{orderId}/artwork-submissions","gaps":4},
   "GET /v1/admin/price-proposals/{proposalId}/simulations/{simulationId}": {"request":"admin.price-simulation-result","verdict":"implement","group":"U-B0.3","gaps":0},
   "GET /v1/admin/production-board": {"request":"admin.production-board","verdict":"published_differently","group":"U-B0.2","operationId":"admin.production.list","publishedAs":"GET /v1/admin/production-jobs","gaps":4},
   "GET /v1/admin/promotions": {"request":"admin.promotions","verdict":"published_differently","group":"U-B0.2","operationId":"admin.promotions.list","publishedAs":"GET /v1/admin/promotions","gaps":3},
@@ -93,7 +94,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "GET /v1/admin/promotions/{promotionId}/coupon-batches": {"request":"admin.coupons","verdict":"implement","group":"U-B0.2","gaps":0},
   "GET /v1/admin/promotions/{promotionId}/coupon-codes": {"request":"admin.coupons","verdict":"published_differently","group":"U-B0.2","operationId":"admin.promotions.listCoupons","publishedAs":"GET /v1/admin/promotions/{promotionId}/coupons","gaps":3},
   "GET /v1/admin/quotations": {"request":"admin.quotations","verdict":"published_differently","group":"U-B0.2","operationId":"admin.quotes.list","publishedAs":"GET /v1/admin/quotes","gaps":3},
-  "GET /v1/admin/quotations/{quoteId}": {"request":"admin.quotations","verdict":"published_differently","group":"U-B0.2","operationId":"admin.quotes.get","publishedAs":"GET /v1/admin/quotes/{quoteId}","gaps":1},
+  "GET /v1/admin/quotations/{quoteId}": {"request":"admin.quotations","verdict":"published_differently","group":"U-B0.2","operationId":"admin.quotes.get","publishedAs":"GET /v1/admin/quotes/{quoteId}","gaps":2},
   "GET /v1/admin/referrals": {"request":"admin.referrals","verdict":"published_differently","group":"U-B0.2","operationId":"admin.referrals.list","publishedAs":"GET /v1/admin/referrals","gaps":4},
   "GET /v1/admin/reports": {"request":"admin.reports","verdict":"published_differently","group":"U-B0.3","operationId":"admin.reports.catalogue","publishedAs":"GET /v1/admin/reports","gaps":1},
   "GET /v1/admin/reports/{reportKey}": {"request":"admin.reports","verdict":"published_differently","group":"U-B0.3","operationId":"admin.reports.preview","publishedAs":"GET /v1/admin/reports/{reportKey}/preview","gaps":3},
@@ -137,7 +138,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "GET /v1/store/cart": {"request":"store.cart","verdict":"published_differently","group":"U-B0.1","operationId":"store.cart.get","publishedAs":"GET /v1/store/cart","gaps":2},
   "GET /v1/store/catalog/price-hints": {"request":"store.price-hints","verdict":"implement","group":"U-B0.1","gaps":0},
   "GET /v1/store/catalog/product-categories": {"request":"store.product-categories","verdict":"implement","group":"U-B0.1","gaps":0},
-  "GET /v1/store/catalog/products/{slug}/configurator": {"request":"store.configurator","verdict":"implement","group":"U-B0.1","gaps":0},
+  "GET /v1/store/catalog/products/{slug}/configurator": {"request":"store.configurator","verdict":"published_differently","group":"U-B0.1","operationId":"store.catalog.getConfigurator","publishedAs":"GET /v1/store/catalog/products/{slug}/configurator","gaps":4},
   "GET /v1/store/catalog/products/{slug}/faqs": {"request":"store.product-faqs","verdict":"implement","group":"U-B0.1","gaps":0},
   "GET /v1/store/designer/catalog": {"request":"store.designer-catalog","verdict":"implement","group":"U-B0.1","gaps":0},
   "GET /v1/store/designer/templates/{templateId}": {"request":"store.designer-catalog","verdict":"implement","group":"U-B0.1","gaps":0},
@@ -170,7 +171,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "GET /v1/store/orders/{orderId}/reorder": {"request":"store.reorder","verdict":"implement","group":"U-B0.1","gaps":0},
   "GET /v1/store/payments/{paymentId}": {"request":"store.payments","verdict":"published_differently","group":"U-B0.1","operationId":"store.payments.get","publishedAs":"GET /v1/store/payments/{paymentId}","gaps":1},
   "GET /v1/store/quotes": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.list","publishedAs":"GET /v1/store/quotes","gaps":1},
-  "GET /v1/store/quotes/{quoteId}": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.get","publishedAs":"GET /v1/store/quotes/{quoteId}","gaps":3},
+  "GET /v1/store/quotes/{quoteId}": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.get","publishedAs":"GET /v1/store/quotes/{quoteId}","gaps":4},
   "GET /v1/store/rfq-forms/{productTypeCode}": {"request":"store.rfq-forms","verdict":"implement","group":"U-B0.1","gaps":0},
   "GET /v1/store/rfqs": {"request":"store.rfqs","verdict":"published_differently","group":"U-B0.1","operationId":"store.rfqs.list","publishedAs":"GET /v1/store/rfqs","gaps":2},
   "GET /v1/store/rfqs/{rfqId}": {"request":"store.rfqs","verdict":"published_differently","group":"U-B0.1","operationId":"store.rfqs.get","publishedAs":"GET /v1/store/rfqs/{rfqId}","gaps":2},
@@ -234,7 +235,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "POST /v1/admin/promotions": {"request":"admin.promotions","verdict":"published_differently","group":"U-B0.2","operationId":"admin.promotions.create","publishedAs":"POST /v1/admin/promotions","gaps":4},
   "POST /v1/admin/promotions/{promotionId}/actions/{action}": {"request":"admin.promotions","verdict":"published_differently","group":"U-B0.2","operationId":"admin.promotions.action","publishedAs":"POST /v1/admin/promotions/{promotionId}/actions/{action}","gaps":0},
   "POST /v1/admin/promotions/{promotionId}/coupon-batches": {"request":"admin.coupons","verdict":"published_differently","group":"U-B0.2","operationId":"admin.promotions.generateCoupons","publishedAs":"POST /v1/admin/promotions/{promotionId}/coupons","gaps":1},
-  "POST /v1/admin/quotations": {"request":"admin.quotations","verdict":"published_differently","group":"U-B0.2","operationId":"admin.quotes.create","publishedAs":"POST /v1/admin/quotes","gaps":3},
+  "POST /v1/admin/quotations": {"request":"admin.quotations","verdict":"published_differently","group":"U-B0.2","operationId":"admin.quotes.create","publishedAs":"POST /v1/admin/quotes","gaps":4},
   "POST /v1/admin/quotations/{quoteId}/actions/export-pdf": {"request":"admin.quotations","verdict":"published_differently","group":"U-B0.2","operationId":"admin.quotes.requestPdf","publishedAs":"POST /v1/admin/quotes/{quoteId}/actions/request-pdf","gaps":0},
   "POST /v1/admin/rfqs/{rfqId}/actions/assign": {"request":"admin.rfq-actions","verdict":"published_differently","group":"U-B0.2","operationId":"admin.rfqs.assign","publishedAs":"POST /v1/admin/rfqs/{rfqId}/actions/assign","gaps":1},
   "POST /v1/admin/rfqs/{rfqId}/actions/decline": {"request":"admin.rfq-actions","verdict":"published_differently","group":"U-B0.2","operationId":"admin.rfqs.decline","publishedAs":"POST /v1/admin/rfqs/{rfqId}/actions/decline","gaps":1},
@@ -314,7 +315,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
   "POST /v1/store/orders/{orderId}/proofs/{proofId}/annotations/{annotationId}/messages": {"request":"store.proofs","verdict":"published_differently","group":"U-B0.1","operationId":"store.artwork.annotate","publishedAs":"POST /v1/store/proofs/{proofId}/annotations","gaps":1},
   "POST /v1/store/payments/{paymentId}/slips": {"request":"store.payments","verdict":"published_differently","group":"U-B0.1","operationId":"store.payments.uploadSlip","publishedAs":"POST /v1/store/payments/{paymentId}/slips","gaps":0},
   "POST /v1/store/promotions/actions/check": {"request":"store.promo-check","verdict":"implement","group":"U-B0.1","gaps":0},
-  "POST /v1/store/quotes": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.save","publishedAs":"POST /v1/store/quotes","gaps":3},
+  "POST /v1/store/quotes": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.save","publishedAs":"POST /v1/store/quotes","gaps":4},
   "POST /v1/store/quotes/actions/calculate": {"request":"store.quote-configurations","verdict":"implement","group":"U-B0.1","operationId":"store.quotes.calculate","publishedAs":"POST /v1/store/quotes/actions/calculate","gaps":0},
   "POST /v1/store/quotes/{quoteId}/actions/export-pdf": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.requestPdf","publishedAs":"POST /v1/store/quotes/{quoteId}/actions/request-pdf","gaps":0},
   "POST /v1/store/quotes/{quoteId}/actions/share": {"request":"store.quotes","verdict":"published_differently","group":"U-B0.1","operationId":"store.quotes.share","publishedAs":"POST /v1/store/quotes/{quoteId}/actions/share","gaps":0},
@@ -338,6 +339,7 @@ export const OPERATION_TRIAGE: Readonly<Record<string, OperationTriage>> = {
 export const REQUEST_TRIAGE: Readonly<Record<string, RequestTriage>> = {
   "admin.account-roll-forward": {"verdict":"implement","group":"U-B0.3"},
   "admin.analytics": {"verdict":"published_differently","group":"U-B0.3"},
+  "admin.analytics-journeys": {"verdict":"implement","group":"U-B0.3"},
   "admin.bank-line-split": {"verdict":"implement","group":"U-B0.3"},
   "admin.bank-line-suggestions": {"verdict":"implement","group":"U-B0.3"},
   "admin.campaigns": {"verdict":"published_differently","group":"U-B0.2"},
@@ -436,7 +438,7 @@ export const REQUEST_TRIAGE: Readonly<Record<string, RequestTriage>> = {
   "store.company-members": {"verdict":"mixed","group":"U-B0.1"},
   "store.company-reorder": {"verdict":"implement","group":"U-B0.1"},
   "store.company-spend": {"verdict":"implement","group":"U-B0.1"},
-  "store.configurator": {"verdict":"implement","group":"U-B0.1"},
+  "store.configurator": {"verdict":"published_differently","group":"U-B0.1"},
   "store.design-assets": {"verdict":"published_differently","group":"U-B0.1"},
   "store.design-service": {"verdict":"published_differently","group":"U-B0.1"},
   "store.design-share": {"verdict":"implement","group":"U-B0.1"},
