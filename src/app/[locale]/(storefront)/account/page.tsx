@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
-import { accountRequests, getPoints } from "@/features/customer/account/api.server";
+import { getPoints } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { getProductTypeNames } from "@/features/customer/catalog/api.server";
+import { listMyOrders } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -18,15 +20,16 @@ export async function generateMetadata(): Promise<Metadata> {
 /** The account's front page (F3 3.4): what needs doing across orders, points, the latest orders. */
 export default async function Page() {
   const me = await requireCustomer();
-  const requests = await accountRequests();
-  const [t, tNav, format, active, points] = await Promise.all([
+  const locale = await getLocale();
+  const [t, tNav, format, active, points, names] = await Promise.all([
     getTranslations("account.home"),
     getTranslations("account.nav"),
     getFormat(),
-    requests.call("GET /v1/store/orders", { query: { view: "active", perPage: 20 } }),
+    listMyOrders("active"),
     getPoints(),
+    getProductTypeNames(locale),
   ]);
-  const todo = active.data.filter((order) => order.nextActions.length > 0);
+  const todo = active.filter((row) => row.actions.length > 0);
 
   return (
     <div className="flex flex-col gap-8">
@@ -43,12 +46,12 @@ export default async function Page() {
           <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-3">
-            {todo.map((order) => (
+            {todo.map(({ order, actions }) => (
               <li key={order.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
-                      {order.product.name}
+                      {names[order.productTypeCode] ?? order.productTypeCode}
                     </Link>
                     <span className="text-muted ms-2 font-mono text-sm">{order.orderCode}</span>
                   </p>
@@ -58,9 +61,9 @@ export default async function Page() {
                   orderId={order.id}
                   orderCode={order.orderCode}
                   size="sm"
-                  actions={order.nextActions.filter((action) => action.key !== "order.pay_instalment")}
+                  actions={actions.filter((action) => action.key !== "order.pay_instalment")}
                 />
-                {order.nextActions.some((action) => action.key === "order.pay_instalment") ? (
+                {actions.some((action) => action.key === "order.pay_instalment") ? (
                   <Link
                     href={`/account/orders/${order.id}#instalments`}
                     className="text-primary text-sm font-medium underline-offset-4 hover:underline"

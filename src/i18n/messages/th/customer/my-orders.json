@@ -90,7 +90,11 @@
     "shipmentMetaTracking": "{shipment} · {carrier} · {tracking}",
     "claimLine": "{claim} · {type} · {date}",
     "destinationLine": "{name} · {quantity} {unit}",
-    "stages": "สถานะตามขั้นตอน"
+    "stages": "สถานะตามขั้นตอน",
+    "destinationLineNoUnit": "{name} · จำนวน {quantity}",
+    "photos": "รูป {count} รูป",
+    "shipByTerm": "กำหนดส่งจากโรงงาน",
+    "trackingFailed": "สร้างลิงก์ติดตามไม่สำเร็จ กรุณาลองใหม่"
   },
   "tolerance": {
     "exact": "ได้รับครบ {delivered} จาก {ordered} ชิ้น",
@@ -105,5 +109,22 @@
     "quantity_short": "จำนวนขาด",
     "late": "ส่งล่าช้า",
     "other": "อื่น ๆ"
+  },
+  "rowNoUnit": "จำนวน {quantity} · สั่งเมื่อ {date}",
+  "timelineTypes": {
+    "order_placed": "สั่งซื้อแล้ว",
+    "payment_received": "รับชำระเงินแล้ว",
+    "artwork_submitted": "ส่งไฟล์งานแล้ว",
+    "proof_sent": "ได้รับปรู๊ฟ",
+    "proof_approved": "อนุมัติปรู๊ฟแล้ว",
+    "proof_changes_requested": "ขอแก้ไขปรู๊ฟ",
+    "production_milestone": "การผลิต: {stage}",
+    "shipment_picked_up": "ส่งออกจากโรงงานแล้ว",
+    "shipment_in_transit": "กำลังขนส่ง",
+    "shipment_out_for_delivery": "กำลังนำส่ง",
+    "shipment_delivered": "ส่งถึงแล้ว",
+    "order_receipt_confirmed": "ยืนยันรับสินค้าแล้ว",
+    "order_cancelled": "ยกเลิกคำสั่งซื้อ",
+    "other": "อัปเดตคำสั่งซื้อ"
   }
 }

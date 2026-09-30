@@ -27,7 +27,8 @@
   "orders": {
     "title": "คำสั่งซื้อ",
     "empty": "ยังไม่มีคำสั่งซื้อ",
-    "row": "{code} · {quantity} {unit}"
+    "row": "{code} · {quantity} {unit}",
+    "rowNoUnit": "{code} · จำนวน {quantity}"
   },
   "order": {
     "title": "คำสั่งซื้อ",
@@ -36,7 +37,8 @@
     "quantity": "จำนวน",
     "total": "ยอดรวม",
     "eta": "คาดว่าจะได้รับ",
-    "full": "ดูรายละเอียดทั้งหมดบนเว็บ"
+    "full": "ดูรายละเอียดทั้งหมดบนเว็บ",
+    "shipBy": "กำหนดส่งจากโรงงาน"
   },
   "points": {
     "tier": "ระดับสมาชิก",

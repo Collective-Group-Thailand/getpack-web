@@ -1055,6 +1055,56 @@ export const storeCheckoutHandlers = [
     );
   }),
 
+  // store.paymentSchedules.get (published, U-F0.2): the group's instalments, as paid so far.
+  http.get("*/v1/store/order-groups/:groupId/payment-schedule", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const seeded = orders.find((order) => order.groupId === params.groupId);
+    const group = groups.get(String(params.groupId)) ?? (seeded ? groupForOrder(seeded) : undefined);
+    if (!group || !owns(customer, group)) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
+    const members = group.orderIds
+      .map((id) => orders.find((order) => order.id === id))
+      .filter((order): order is MockOrder => Boolean(order));
+    const cancelled = members.length > 0 && members.every((order) => order.status === "cancelled");
+    const total = group.instalments.reduce((sum, entry) => sum + entry.gross, 0);
+    const statusOf = (entry: Group["instalments"][number]): Schemas["InstalmentStatus"] => {
+      if (entry.paid) return "paid";
+      if (cancelled) return "cancelled";
+      const share = members.flatMap((order) => order.instalments).find((candidate) => candidate.seq === entry.seq);
+      return (share?.status as Schemas["InstalmentStatus"] | undefined) ?? "pending";
+    };
+    const gateOpen = (gate: string) =>
+      group.instalments.filter((entry) => entry.requiredBefore === gate).every((entry) => entry.paid);
+    const schedule: Schemas["PaymentScheduleDto"] = {
+      id: mockId("sch", Number.parseInt(group.id.slice(-6), 16) % 0x10000),
+      templateKey: group.instalments.length > 1 ? "deposit_50_before_shipping_50" : "full_upfront",
+      templateNameTh: group.instalments.length > 1 ? "มัดจำ 50% ส่วนที่เหลือก่อนจัดส่ง" : "ชำระเต็มจำนวน",
+      templateNameEn: group.instalments.length > 1 ? "50 % deposit, 50 % before shipping" : "Paid in full",
+      isOverride: false,
+      productionGateOpen: gateOpen("production"),
+      shippingGateOpen: gateOpen("shipping"),
+      openAmount: baht(group.instalments.filter((entry) => !entry.paid).reduce((sum, entry) => sum + entry.gross, 0)),
+      instalments: group.instalments.map((entry) => ({
+        id: entry.id,
+        seq: entry.seq,
+        labelTh: entry.label,
+        labelEn: entry.label,
+        pct: total ? ((entry.gross / total) * 100).toFixed(4) : "0.0000",
+        dueTrigger: entry.dueTrigger as Schemas["DueTrigger"],
+        requiredBefore: entry.requiredBefore as Schemas["RequiredBefore"],
+        dueAt: entry.dueAt,
+        grossAmount: baht(entry.gross),
+        whtAmount: "0.00",
+        cashAmount: baht(entry.gross),
+        paidAmount: entry.paid ? baht(entry.gross) : "0.00",
+        openAmount: entry.paid ? "0.00" : baht(entry.gross),
+        paidAt: entry.paid ? (members[0]?.payments.find((payment) => payment.paidAt)?.paidAt ?? null) : null,
+        status: statusOf(entry),
+      })),
+    };
+    return HttpResponse.json(schedule);
+  }),
+
   http.post("*/v1/store/order-groups/:groupId/payments", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();

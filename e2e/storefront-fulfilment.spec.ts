@@ -7,7 +7,7 @@ import { gotoHydrated, signInAsStaff } from "./helpers/session";
 
 /**
  * F3 3.6 end to end: an order delivered yesterday, a little short. Its stages and the public
- * tracking page (nothing personal), the shortage credited within tolerance, receipt confirmed,
+ * tracking page (nothing personal), what arrived, receipt confirmed,
  * a claim filed with product and carton photos that lands on the logistics desk, and a
  * one-click reorder into checkout. The `receiver` persona owns the order, so parallel specs
  * never touch it.
@@ -47,32 +47,34 @@ test.describe("after production", () => {
     const stages = page.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" });
     await expect(stages.locator("[aria-current=step]")).toContainText("รับสินค้า");
     await expect(stages).toContainText("จัดส่ง · เสร็จแล้ว");
-    const href = await page.getByRole("link", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).getAttribute("href");
-    expect(href).toMatch(/\/track\/trk/);
+    await page.getByRole("button", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
+    await expect(page).toHaveURL(/\/track\/trk/);
+    const href = new URL(page.url()).pathname;
 
     const guest = await browser.newContext();
     const visitor = await guest.newPage();
     await acceptCookies(visitor);
     await gotoHydrated(visitor, `${HOSTS.customer}${href}`);
-    await expect(visitor.getByRole("heading", { level: 1, name: CODE })).toBeVisible();
-    await expect(visitor.getByText(/ไปยังกรุงเทพมหานคร/)).toBeVisible();
+    // CONTRACT-GAP store.tracking — the public page names neither the order nor where it goes.
+    await expect(visitor.getByRole("heading", { level: 1, name: "ติดตามคำสั่งซื้อ" })).toBeVisible();
+    await expect(visitor.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" })).toContainText("จัดส่ง · เสร็จแล้ว");
     const text = await visitor.locator("main").innerText();
+    expect(text).not.toContain(CODE);
     expect(text).not.toMatch(/ผู้รับ|บริษัท|฿/);
     await expectNoViolations(visitor);
     await guest.close();
   });
 
-  test("the shortage is credited within tolerance, and receipt is confirmed (D-080, D-081)", async ({ page }) => {
+  test("what arrived is shown, and receipt is confirmed (D-080, D-081)", async ({ page }) => {
     await signInAsCustomer(page, `/account/orders/${ORDER}`, MOCK_RECEIVER_PHONE);
     await page
       .getByRole("link", { name: /ยืนยันรับ/ })
       .first()
       .click();
     await expect(page.getByRole("heading", { level: 1, name: "รับสินค้า" })).toBeVisible();
-    await expect(
-      page.getByText(/ได้รับ 970 จาก 1,000 ชิ้น อยู่ในเกณฑ์ที่ยอมรับ ส่วนที่ขาดคืนเป็นเครดิต ฿/),
-    ).toBeVisible();
-    await expect(page.getByText(/รับสินค้า 970 ชิ้น เมื่อ/)).toBeVisible();
+    // CONTRACT-GAP store.orders — no tolerance outcome is published, so the credit for the shortage
+    // is not shown here; the delivery says how many arrived.
+    await expect(page.getByText(/รับสินค้า จำนวน 970 เมื่อ/)).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("button", { name: "ยืนยันรับสินค้า" }).click();
@@ -113,10 +115,10 @@ test.describe("after production", () => {
     await expect(heading).toBeVisible();
     const claimNo = (await heading.textContent())!.replace("เคลม ", "").trim();
     const claimId = page.url().split("/").at(-1)!;
-    await expect(page.getByRole("list", { name: "รูปหลักฐาน" }).getByRole("img")).toHaveCount(2);
-    await page.getByLabel("ตอบกลับ").fill("กล่องที่เหลือสภาพดีครับ");
-    await page.getByRole("button", { name: "ส่งข้อความ" }).click();
-    await expect(page.getByText("กล่องที่เหลือสภาพดีครับ")).toBeVisible();
+    // CONTRACT-GAP store.claims — the published claim names its photos by id only, and there is no
+    // free thread: the customer answers only when the team asks (`respondInfo`, status need_info).
+    await expect(page.getByText("2 รูป", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("ตอบกลับ")).toHaveCount(0);
     // The "received" toast animates over the header; axe reads it mid-fade.
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
     await expectNoViolations(page);
@@ -128,6 +130,14 @@ test.describe("after production", () => {
     await expect(desk.getByRole("heading", { level: 1 })).toContainText(claimNo);
     await expect(desk.getByRole("main")).toContainText("กล่องบุบ 20 ใบ");
     await staff.close();
+  });
+
+  test("the customer writes to the team in the claim's thread", async ({ page }) => {
+    test.fixme(
+      true,
+      "CONTRACT-GAP store.claims — no free claim thread is published; a reply is only `respondInfo` while the claim is need_info",
+    );
+    await signInAsCustomer(page, `/account/orders/${ORDER}`, MOCK_RECEIVER_PHONE);
   });
 
   test("one click reorders it, re-priced, into checkout (D-153)", async ({ page }) => {

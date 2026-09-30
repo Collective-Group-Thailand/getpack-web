@@ -17,7 +17,8 @@
     "carrier": {
       "factory_fleet": "Packio delivery",
       "flash_express": "Flash Express",
-      "deliveree": "Deliveree"
+      "deliveree": "Deliveree",
+      "packio": "Packio delivery"
     },
     "carrierPage": "Track on the carrier's site",
     "events": "Updates ({count})",
@@ -33,7 +34,10 @@
       "cancelled": "Shipment cancelled"
     },
     "pod": "{name} received {quantity} {unit} on {date}",
-    "podPhoto": "Proof-of-delivery photo {name}"
+    "podPhoto": "Proof-of-delivery photo {name}",
+    "toNoUnit": "Qty {quantity} to {name} ({postcode})",
+    "podNoUnit": "{name} received qty {quantity} on {date}",
+    "podPhotos": "{count, plural, one {# proof-of-delivery photo} other {# proof-of-delivery photos}}"
   },
   "receipt": {
     "title": "Receiving your order",
@@ -53,7 +57,9 @@
     "done": "Receipt confirmed — thank you",
     "failed": "Couldn't confirm. Please try again.",
     "problem": "Something wrong? Report it by {date}.",
-    "openClaim": "Report a problem"
+    "openClaim": "Report a problem",
+    "completedBody": "This order is complete. If something is wrong, you can report it within 7 days of receiving it.",
+    "problemNoDate": "Something wrong?"
   },
   "photos": {
     "drop": "Drop photos here",
@@ -142,7 +148,23 @@
     "by": "{name} · {date}",
     "reply": "Reply",
     "send": "Send",
-    "failed": "Couldn't send. Please try again."
+    "failed": "Couldn't send. Please try again.",
+    "decided": {
+      "approved": "Claim approved",
+      "rejected": "Claim not approved",
+      "resolved": "Claim resolved",
+      "closed": "Claim closed"
+    },
+    "actionAmount": "{action} {amount}",
+    "actions": {
+      "reproduction_job": "Reprint",
+      "refund": "Refund",
+      "credit_note": "Credit note",
+      "store_credit": "Store credit",
+      "factory_deduction": "Deducted from the factory",
+      "carrier_recovery": "Recovered from the carrier"
+    },
+    "photoCount": "{count, plural, one {# photo} other {# photos}}"
   },
   "reorder": {
     "title": "Reorder",
@@ -188,6 +210,8 @@
     "shipments": "Deliveries",
     "shipmentTo": "{quantity} {unit} to {province}",
     "updated": "Last updated {date}",
-    "owner": "Own this order? See everything in your account"
+    "owner": "Own this order? See everything in your account",
+    "shipBy": "Ships from the factory by {date}",
+    "shipmentNo": "Delivery {shipment}"
   }
 }

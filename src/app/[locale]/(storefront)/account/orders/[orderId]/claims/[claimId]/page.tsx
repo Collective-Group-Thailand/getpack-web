@@ -10,10 +10,10 @@ import { Link } from "@/i18n/navigation";
 type Params = { orderId: string; claimId: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { orderId, claimId } = await params;
+  const { claimId } = await params;
   const [t, claim] = await Promise.all([
     getTranslations("fulfilment.claimView"),
-    getMyClaim(orderId, claimId).catch(() => null),
+    getMyClaim(claimId).catch(() => null),
   ]);
   return {
     title: claim ? t("title", { claim: claim.claimNo }) : t("fallback"),
@@ -25,14 +25,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId, claimId } = await params;
-  const [t, claim] = await Promise.all([getTranslations("fulfilment.claimView"), getMyClaim(orderId, claimId)]);
+  const [t, claim] = await Promise.all([getTranslations("fulfilment.claimView"), getMyClaim(claimId)]);
   if (!claim) notFound();
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
         <Link href={`/account/orders/${orderId}`} className="text-primary text-sm underline-offset-4 hover:underline">
-          {t("back", { code: claim.order.orderCode })}
+          {t("back", { code: claim.orderCode })}
         </Link>
         <h1 className="text-2xl font-bold">{t("title", { claim: claim.claimNo })}</h1>
       </header>

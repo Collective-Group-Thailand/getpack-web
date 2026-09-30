@@ -40,7 +40,9 @@ test.describe("the account", () => {
     const todo = page
       .getByRole("region", { name: "สิ่งที่ต้องทำ" })
       .or(page.locator("section[aria-labelledby=account-todo]"));
-    await expect(todo.getByRole("link", { name: /ส่งไฟล์งาน/ }).first()).toBeVisible();
+    // CONTRACT-GAP entity.next-actions — without the order's own list, what needs doing is read from
+    // its status and its group's: a blocked preflight or a design brief is not visible from a list.
+    await expect(todo.getByRole("link", { name: "มีงวดที่ต้องชำระ — ไปชำระ" }).first()).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("navigation", { name: "บัญชีของฉัน" }).getByRole("link", { name: "คำสั่งซื้อ" }).click();
@@ -57,8 +59,8 @@ test.describe("the account", () => {
     await signInAsCustomer(page, `/account/orders/${COMPLETED_ORDER}`);
     await expect(page.getByText("PK-2569-00136").first()).toBeVisible();
     await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText("ส่งถึงแล้ว")).toBeVisible();
-    await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText(/กำหนด/).first()).toBeVisible();
-    await expect(page.getByText("ได้รับครบ 500 จาก 500 ชิ้น")).toBeVisible();
+    // CONTRACT-GAP store.tracking — the published timeline has no promised dates to show beside it.
+    await expect(page.getByText(/รับสินค้า จำนวน 500 เมื่อ/)).toBeVisible();
     await expect(page.getByRole("link", { name: "สั่งซ้ำ PK-2569-00136" })).toBeVisible();
 
     await page.getByRole("button", { name: /ขอลิงก์ดาวน์โหลด/ }).click();
@@ -66,7 +68,8 @@ test.describe("the account", () => {
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("href", /^data:/);
 
-    await page.getByRole("link", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
+    // The link is made when asked for (`store.timeline.createTrackingLink` is a write).
+    await page.getByRole("button", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
     await expect(page).toHaveURL(/\/track\/trk/);
     await page.goBack();
     await expectNoViolations(page);

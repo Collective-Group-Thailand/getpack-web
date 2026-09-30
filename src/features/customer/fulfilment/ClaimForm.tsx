@@ -7,7 +7,7 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import type { Requests } from "@/lib/api/requests/registry";
 import { Button } from "@/ui/components/Button";
@@ -71,22 +71,21 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
     }
     setBusy(true);
     try {
-      const claim = await browserRequests().call("POST /v1/store/orders/{orderId}/claims", {
-        path: { orderId },
+      const { data: claim } = await browserApi().POST("/v1/store/orders/{orderId}/claims", {
+        params: { path: { orderId }, header: { "Idempotency-Key": key.current } },
         body: {
           type: type!,
           ...(shipmentId ? { shipmentId } : {}),
-          ...(quantity ? { affectedQuantity: Number(quantity) } : {}),
+          ...(quantity ? { claimedQuantity: Number(quantity) } : {}),
           description: description.trim(),
           requestedResolution: resolution!,
           productPhotoFileIds: uploaded(product),
           cartonPhotoFileIds: uploaded(carton),
         },
-        idempotencyKey: key.current,
       });
       track("claim_submitted", { route: CLAIM_ROUTE, reason: type! });
-      toast.success(t("sent", { claim: claim.claimNo }));
-      router.push(`/account/orders/${orderId}/claims/${claim.id}`);
+      toast.success(t("sent", { claim: claim!.claimNo }));
+      router.push(`/account/orders/${orderId}/claims/${claim!.id}`);
     } catch (error) {
       key.current = newKey();
       toast.error(isApiError(error) ? error.detail : t("failed"));

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
+import { getProductTypeNames } from "@/features/customer/catalog/api.server";
+import { pick } from "@/features/customer/catalog/localize";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { getFormat } from "@/features/shared/format/server";
@@ -22,9 +24,26 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page({ params }: { params: Promise<{ orderId: string }> }) {
   if (!(await liffCustomer())) return <LiffSignIn />;
   const { orderId } = await params;
-  const [t, format, order] = await Promise.all([getTranslations("liff.order"), getFormat(), getMyOrder(orderId)]);
-  if (!order) notFound();
-  const due = order.instalments.find((instalment) => instalment.payable) ?? null;
+  const locale = await getLocale();
+  const [t, format, detail, names] = await Promise.all([
+    getTranslations("liff.order"),
+    getFormat(),
+    getMyOrder(orderId),
+    getProductTypeNames(locale),
+  ]);
+  if (!detail) notFound();
+  const { order } = detail;
+  const next = detail.schedule?.instalments.find(
+    (instalment) => instalment.status === "due" || instalment.status === "overdue",
+  );
+  const due = next
+    ? {
+        id: next.id,
+        label: pick(locale, next.labelTh, next.labelEn),
+        grossAmount: next.openAmount,
+        activePaymentId: null,
+      }
+    : null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -32,18 +51,19 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
         {t("back")}
       </Link>
       <header className="flex flex-col gap-2">
-        <h1 className="text-xl font-bold">{order.product.name}</h1>
+        <h1 className="text-xl font-bold">{names[order.productTypeCode] ?? order.productTypeCode}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted font-mono text-sm">{order.orderCode}</span>
           <StatusChip map={ORDER_STATUS} value={order.status} />
         </div>
       </header>
-      {order.nextActions.length > 0 ? (
+      {detail.actions.length > 0 ? (
         <OrderActions
           orderId={order.id}
           orderCode={order.orderCode}
-          actions={order.nextActions}
+          actions={detail.actions}
           payable={due}
+          groupId={detail.group?.id ?? null}
           surface="liff"
         />
       ) : null}
@@ -51,15 +71,14 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
         <h2 id="liff-stages" className="sr-only">
           {t("stages")}
         </h2>
-        <OrderStages stages={order.stages} />
+        {detail.progress ? <OrderStages steps={detail.progress.steps} /> : null}
       </section>
       <DescriptionList
         items={[
-          { term: t("quantity"), description: `${format.number(order.quantity)} ${order.unit}` },
-          { term: t("total"), description: format.thb(order.grossAmount) },
-          ...(order.estimatedDeliveryDate
-            ? [{ term: t("eta"), description: format.date(order.estimatedDeliveryDate) }]
-            : []),
+          { term: t("quantity"), description: format.number(order.quantityOrdered) },
+          { term: t("total"), description: format.thb(order.totals.grossAmount) },
+          // CONTRACT-GAP store.orders — no estimated delivery is published; the promised ship date is.
+          ...(order.promisedShipDate ? [{ term: t("shipBy"), description: format.date(order.promisedShipDate) }] : []),
         ]}
       />
       <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline underline-offset-4">
