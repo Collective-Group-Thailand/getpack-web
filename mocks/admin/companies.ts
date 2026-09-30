@@ -1,37 +1,39 @@
 /**
- * B2B companies, mocked (CONTRACT-REQUEST admin.companies, admin.company-credit): KYC and its
- * review (D-120), members and branches (D-125), credit — prepaid until a limit is approved by
- * the `credit_limit` policy (D-121) — receivables and the overdue block (D-122), statements.
+ * B2B companies on the published contract (`admin.companies.*`, `admin.companyCredit.*`,
+ * `admin.receivables.companyStatement`, U-F0.3): KYC and its review (D-120), members and branches
+ * inline on the company (D-125), credit — prepaid until a limit is approved by the `credit_limit`
+ * policy (D-121) — and monthly statements.
  *
- * The companies are the commerce mock's juristic customers; the limits, terms and overdue rules
- * are read from the settings the backend reads (`b2b.credit_terms`,
+ * The companies are the commerce mock's juristic customers, kept in their own model
+ * (`./company-model`) with the receivables and the credit history the contract does not carry
+ * yet; the storefront's business mock reads and changes the same rows. The limits, terms and
+ * overdue rules are read from the settings the backend reads (`b2b.credit_terms`,
  * `b2b.credit_eligibility_paid_orders`, `b2b.overdue_rules`).
  */
 
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import type {
-  companyBranch,
-  companyDetail,
-  companyKycDocument,
-  companyMember,
-  companyStatement,
-} from "@/lib/api/requests/admin-companies";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
-import { can, PERSONAS, type StaffPersona } from "../personas";
-import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
+import { can, PERSONAS } from "../personas";
+import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
 import { baht, customers } from "./commerce";
+import type {
+  CompanyBranchRow,
+  CompanyKycRow,
+  CompanyMemberRow,
+  CompanyRow,
+  CompanyStatementRow,
+} from "./company-model";
 import { registerQueue } from "./console";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
-import { etagOf } from "./tables";
 
-type Company = z.output<typeof companyDetail> & { updatedAt: string };
-type Kyc = z.output<typeof companyKycDocument>;
-type Member = z.output<typeof companyMember>;
-type Branch = z.output<typeof companyBranch>;
-type Statement = z.output<typeof companyStatement>;
+type Company = CompanyRow;
+type Kyc = CompanyKycRow;
+type Member = CompanyMemberRow;
+type Branch = CompanyBranchRow;
+type Statement = CompanyStatementRow;
 
 const DAY = 24 * 60;
 const FINANCE = PERSONAS.find((persona) => persona.key === "finance")!;
@@ -124,12 +126,11 @@ const SEEDS: Seed[] = [
   },
 ];
 
-const ACTIONS: Record<Company["status"], Company["allowedActions"]> = {
-  applied: ["close"],
-  kyc_review: ["approve-kyc", "return-kyc", "close"],
-  active: ["suspend", "close"],
-  suspended: ["reinstate", "close"],
-  closed: [],
+/** What each status action (`admin.companies.setStatus`) moves the company from and to. */
+const TRANSITIONS: Record<Schemas["CompanyAction"], { from: Company["status"][]; to: Company["status"] }> = {
+  suspend: { from: ["active"], to: "suspended" },
+  reactivate: { from: ["suspended"], to: "active" },
+  close: { from: ["applied", "kyc_review", "active", "suspended"], to: "closed" },
 };
 
 const stores = SEEDS.map((seed, index) => {
@@ -172,7 +173,7 @@ const stores = SEEDS.map((seed, index) => {
                 limitAmount: baht(seed.limit * 100),
                 termDays: seed.termDays!,
                 status: "approved",
-                basis: "financial_review",
+                basis: "financial_statement",
                 reason: "งบการเงินปีล่าสุดผ่านเกณฑ์ (ข้อมูลจำลอง)",
                 effectiveFrom: bangkokIso(-(120 - index * 10) * DAY),
                 approvalRequestId: null,
@@ -186,7 +187,7 @@ const stores = SEEDS.map((seed, index) => {
       index === 0
         ? { pct: "3.0000", discountMemoId: mockId("dmo", 30), memoCode: "DM-2569-0030", validTo: null }
         : null,
-    allowedActions: [],
+    statusReason: null,
     updatedAt: bangkokIso(-3 * DAY),
   };
   const members: Member[] = [
@@ -294,7 +295,7 @@ const stores = SEEDS.map((seed, index) => {
 });
 
 /** The company as the API reports it: credit figures, D-121 eligibility, the D-122 block. */
-function present(store: (typeof stores)[number], who: StaffPersona | null): Company {
+function present(store: (typeof stores)[number]): Company {
   const { company } = store;
   const paidOrdersNeeded = settingValue<number>("b2b.credit_eligibility_paid_orders");
   const { blockCreditOrdersAfterDaysOverdue } = settingValue<{ blockCreditOrdersAfterDaysOverdue: number }>(
@@ -321,26 +322,145 @@ function present(store: (typeof stores)[number], who: StaffPersona | null): Comp
       availableAmount: baht(available * 100),
       eligible,
       eligibleReason:
-        company.paidOrdersCount >= paidOrdersNeeded ? "paid_orders" : reviewed ? "financial_review" : "not_yet",
+        company.paidOrdersCount >= paidOrdersNeeded ? "paid_orders" : reviewed ? "financial_statement" : "not_yet",
     },
-    allowedActions: who && can(who, "companies.manage") ? ACTIONS[company.status] : [],
   };
 }
 
-/** `true` = `companies.manage`; a string names the permission packio-api checks for that operation. */
-function access(request: Request, companyId: string | undefined, manage: boolean | string = false) {
+/** The KYC documents D-120 requires: the certificate, the signatory, and the PP20 when VAT-registered. */
+const requiredKyc = (company: Company): Kyc["docType"][] =>
+  company.isVatRegistered
+    ? ["company_certificate", "vat_registration_pp20", "signatory_id"]
+    : ["company_certificate", "signatory_id"];
+
+export const toCompanyBranchDto = (branch: Branch): Schemas["CompanyBranchDto"] => ({
+  id: branch.id,
+  branchType: branch.branchType,
+  branchCode: branch.branchCode,
+  name: branch.name,
+  line1: branch.address,
+  line2: null,
+  postcode: branch.address.match(/(\d{5})\s*$/)?.[1] ?? "10110",
+  isDefault: branch.branchType === "head_office",
+});
+
+export const toCompanyKycDocumentDto = (doc: Kyc): Schemas["CompanyKycDocumentDto"] => ({
+  id: doc.id,
+  docType: doc.docType,
+  fileId: doc.file.id,
+  issuedOn: doc.issuedOn,
+  note: doc.note,
+  status: doc.status,
+});
+
+/** A company as `admin.companies.*` answers it: members, branches and KYC documents inline. */
+export function toAdminCompanyDto(store: (typeof stores)[number]): Schemas["AdminCompanyDto"] {
+  const company = present(store);
+  return {
+    id: company.id,
+    companyCode: company.companyCode,
+    legalName: company.legalName,
+    tradeName: null,
+    taxId: company.taxId,
+    isVatRegistered: company.isVatRegistered,
+    status: company.status,
+    statusReason: company.statusReason,
+    creditStatus: company.creditStatus,
+    documentEmail: null,
+    withholdsTax: false,
+    poNumberPolicy: company.poNumberPolicy,
+    orderApprovalThreshold: company.orderApprovalThreshold,
+    kycApprovedAt: company.kycApprovedAt,
+    paidOrdersCount: company.paidOrdersCount,
+    createdAt: company.createdAt,
+    members: store.members.map((member) => ({
+      id: member.id,
+      user: { id: member.user.id, displayName: member.user.displayName },
+      roles: member.roles,
+      status: member.status,
+      joinedAt: member.joinedAt,
+    })),
+    branches: store.branches.map(toCompanyBranchDto),
+    kycDocuments: store.kyc.map(toCompanyKycDocumentDto),
+    missingKyc: requiredKyc(company).filter(
+      (type) => !store.kyc.some((doc) => doc.docType === type && ["pending", "verified"].includes(doc.status)),
+    ),
+  };
+}
+
+/** The company's credit as `admin.companyCredit.*` answers it, with the limit request still waiting. */
+function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["CompanyCreditDto"] {
+  const company = present(store);
+  const pending = company.credit.versions.find((version) => version.status === "proposed");
+  return {
+    creditStatus: company.creditStatus,
+    limitAmount: Number(company.credit.limitAmount) > 0 ? company.credit.limitAmount : null,
+    termDays: company.credit.termDays,
+    availableAmount: company.credit.availableAmount,
+    exposureAmount: company.receivables.openAmount,
+    currency: "THB",
+    pendingRequest: pending
+      ? { limitAmount: pending.limitAmount, termDays: pending.termDays, requestedAt: pending.createdAt }
+      : null,
+  };
+}
+
+/**
+ * One month's statement (`admin.receivables.companyStatement`). A month the fixture did not seed is
+ * "generated on first request", as the API does: nothing invoiced, the balance carried over.
+ */
+function toCompanyStatementDto(store: (typeof stores)[number], month: string): Schemas["CompanyStatementDto"] {
+  const seeded = store.statements.find((statement) => statement.period === month);
+  if (seeded) {
+    return {
+      id: seeded.id,
+      month,
+      opening: seeded.openingBalance,
+      invoiced: seeded.invoicedAmount,
+      credited: "0.00",
+      paid: seeded.paidAmount,
+      closing: seeded.closingBalance,
+      currency: "THB",
+      pdfReady: seeded.file !== null,
+    };
+  }
+  const before = store.statements.filter((statement) => statement.period < month).at(-1);
+  const carried = before?.closingBalance ?? "0.00";
+  const n = stores.indexOf(store) * 100 + (Number(month.replace("-", "")) % 10_000);
+  return {
+    id: mockId("cst", 5000 + n),
+    month,
+    opening: carried,
+    invoiced: "0.00",
+    credited: "0.00",
+    paid: "0.00",
+    closing: carried,
+    currency: "THB",
+    pdfReady: true,
+  };
+}
+
+/** The staff persona when it holds the operation's `x-required-permissions`, and the company. */
+function access(request: Request, companyId: string | undefined, permission: string) {
   const who = staffPersonaOf(request);
-  const permission = typeof manage === "string" ? manage : manage ? "companies.manage" : "companies.read";
   if (!who || !can(who, permission)) return forbidden();
   const store = stores.find((candidate) => candidate.company.id === companyId);
   if (companyId !== undefined && !store) return notFound();
   return { who, store: store! };
 }
 
-const withEtag = (store: (typeof stores)[number], who: StaffPersona) =>
-  new Response(JSON.stringify(present(store, who)), {
-    headers: { "Content-Type": "application/json", ETag: etagOf(store.company as never) },
-  });
+async function reasonOf(request: Request): Promise<string | Response> {
+  const body = (await request.json().catch(() => null)) as Partial<Schemas["ReasonDto"]> | null;
+  const reason = body?.reason?.trim() ?? "";
+  if (reason.length < 3 || reason.length > 500)
+    return problem(422, "validation.failed", "กรุณาระบุเหตุผลอย่างน้อย 3 ตัวอักษร", [
+      { path: "reason", code: "min", message: "อย่างน้อย 3 ตัวอักษร" },
+    ]);
+  return reason;
+}
+
+const invalidStatus = () => problem(409, "companies.invalid_status", "ทำรายการนี้กับบริษัทในสถานะนี้ไม่ได้");
+const answer = (store: (typeof stores)[number]) => HttpResponse.json(toAdminCompanyDto(store));
 
 onApprovalDecided("credit_limit", (approval, outcome) => {
   const store = stores.find((candidate) => candidate.company.id === approval.subjectId);
@@ -355,7 +475,7 @@ onApprovalDecided("credit_limit", (approval, outcome) => {
   store.company.updatedAt = bangkokIso();
 });
 
-registerQueue("companies.manage", () => {
+registerQueue("companies.kyc_review", () => {
   const rows = stores.filter((store) => store.company.status === "kyc_review");
   return {
     key: "companies.kyc_review",
@@ -366,132 +486,171 @@ registerQueue("companies.manage", () => {
   };
 });
 registerQueue("companies.read", () => {
-  const rows = stores.filter((store) => present(store, null).receivables.creditOrdersBlocked);
+  const rows = stores.filter((store) => present(store).receivables.creditOrdersBlocked);
   return {
     key: "companies.overdue",
-    path: "/admin/companies?creditStatus=blocked_overdue",
+    // CONTRACT-GAP admin.companies — the published list has no creditStatus filter, so the queue opens the list.
+    path: "/admin/companies",
     count: rows.length,
     overdueCount: rows.length,
     nextDueAt: null,
   };
 });
 
+const pageOf = (url: URL) => ({
+  page: Number(url.searchParams.get("page") ?? 1),
+  perPage: Number(url.searchParams.get("perPage") ?? 25),
+});
+
 export const companyHandlers = [
-  mockRequest("GET /v1/admin/companies", ({ query, request }) => {
-    const ok = access(request, undefined);
+  // admin.companies.list — newest first; `status=kyc_review` is the review queue (D-120).
+  http.get("*/v1/admin/companies", ({ request }) => {
+    const ok = access(request, undefined, "companies.read");
     if (ok instanceof Response) return ok;
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const q = url.searchParams.get("q") ?? undefined;
     const rows = stores
-      .map((store) => present(store, ok.who))
-      .filter((company) => !query.status || company.status === query.status)
-      .filter((company) => !query.creditStatus || company.creditStatus === query.creditStatus)
-      .filter((company) => matchesQuery(query.q, company.companyCode, company.legalName, company.taxId))
-      .map((company) => ({
-        id: company.id,
-        companyCode: company.companyCode,
-        legalName: company.legalName,
-        taxId: company.taxId,
-        status: company.status,
-        creditStatus: company.creditStatus,
-        membersCount: company.membersCount,
-        paidOrdersCount: company.paidOrdersCount,
-        receivables: company.receivables,
-        createdAt: company.createdAt,
-      }));
-    return paginate(rows, query);
+      .filter((store) => !status || store.company.status === status)
+      .filter((store) => matchesQuery(q, store.company.companyCode, store.company.legalName, store.company.taxId))
+      .map(toAdminCompanyDto);
+    const sort = url.searchParams.get("sort") ?? "createdAt";
+    const order = (url.searchParams.get("order") as "asc" | "desc" | null) ?? "desc";
+    return HttpResponse.json(paginate(sortBy(rows, sort, order), pageOf(url)));
   }),
-  mockRequest("GET /v1/admin/companies/{companyId}", ({ params, request }) => {
-    const ok = access(request, params.companyId);
-    if (ok instanceof Response) return ok;
-    return withEtag(ok.store, ok.who);
+
+  http.get("*/v1/admin/companies/:companyId", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.read");
+    return ok instanceof Response ? ok : answer(ok.store);
   }),
-  mockRequest("POST /v1/admin/companies/{companyId}/actions/{action}", ({ params, request }) => {
-    const ok = access(request, params.companyId, true);
+
+  // admin.companies.approveKyc: every required document verified → active, prepaid (D-120, D-121).
+  http.post("*/v1/admin/companies/:companyId/actions/approve-kyc", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.kyc_review");
     if (ok instanceof Response) return ok;
     const { company } = ok.store;
-    const match = request.headers.get("if-match");
-    if (!match) return problem(428, "http.precondition_required", "ต้องส่ง If-Match");
-    if (match !== etagOf(company as never))
-      return problem(412, "http.precondition_failed", "ข้อมูลบริษัทถูกแก้ไขไปแล้ว กรุณาโหลดใหม่");
-    const action = params.action as Company["allowedActions"][number];
-    if (!ACTIONS[company.status].includes(action))
-      return problem(409, "company.invalid_transition", "ทำรายการนี้กับบริษัทในสถานะนี้ไม่ได้");
-    if (action === "approve-kyc") {
-      const required = company.isVatRegistered
-        ? ["company_certificate", "vat_registration_pp20", "signatory_id"]
-        : ["company_certificate", "signatory_id"];
-      const missing = required.filter(
-        (type) => !ok.store.kyc.some((doc) => doc.docType === type && doc.status === "verified"),
-      );
-      if (missing.length > 0)
-        return problem(409, "company.kyc_incomplete", "ต้องตรวจผ่านเอกสารที่จำเป็นครบก่อน (D-120)");
-      company.kycApprovedAt = bangkokIso();
-    }
-    company.status = {
-      "approve-kyc": "active",
-      "return-kyc": "applied",
-      suspend: "suspended",
-      reinstate: "active",
-      close: "closed",
-    }[action] as Company["status"];
-    company.updatedAt = bangkokIso();
-    return withEtag(ok.store, ok.who);
+    if (company.status !== "kyc_review") return invalidStatus();
+    const missing = requiredKyc(company).filter(
+      (type) => !ok.store.kyc.some((doc) => doc.docType === type && doc.status === "verified"),
+    );
+    if (missing.length > 0)
+      return problem(409, "companies.kyc_incomplete", "ต้องตรวจผ่านเอกสารที่จำเป็นครบก่อน (D-120)");
+    Object.assign(company, {
+      status: "active",
+      statusReason: null,
+      kycApprovedAt: bangkokIso(),
+      updatedAt: bangkokIso(),
+    });
+    return answer(ok.store);
   }),
-  mockRequest("GET /v1/admin/companies/{companyId}/kyc-documents", ({ params, request }) => {
-    const ok = access(request, params.companyId);
-    return ok instanceof Response ? ok : ok.store.kyc;
-  }),
-  mockRequest(
-    "POST /v1/admin/companies/{companyId}/kyc-documents/{documentId}/actions/review",
-    ({ params, body, request }) => {
-      const ok = access(request, params.companyId, "companies.kyc_review");
-      if (ok instanceof Response) return ok;
-      const doc = ok.store.kyc.find((candidate) => candidate.id === params.documentId);
-      if (!doc) return problem(404, "http.not_found", "ไม่พบเอกสารนี้");
-      if (body.outcome === "rejected" && !body.note?.trim())
-        return problem(422, "validation.failed", "กรุณาระบุสิ่งที่ต้องแก้", [
-          { path: "note", code: "required", message: "จำเป็นเมื่อไม่ผ่าน" },
-        ]);
-      // D-120: a company certificate must be at most 6 months old when it is reviewed.
-      if (body.outcome === "verified" && doc.docType === "company_certificate" && doc.issuedOn) {
-        const limit = new Date(`${today()}T00:00:00+07:00`);
-        limit.setUTCMonth(limit.getUTCMonth() - 6);
-        if (Date.parse(`${doc.issuedOn}T00:00:00+07:00`) < limit.getTime())
-          return problem(422, "company.certificate_too_old", "หนังสือรับรองบริษัทต้องออกไม่เกิน 6 เดือน (D-120)");
-      }
-      Object.assign(doc, {
-        status: body.outcome,
-        note: body.note ?? null,
-        reviewedBy: { id: ok.who.id, displayName: ok.who.displayName },
-        reviewedAt: bangkokIso(),
-      });
-      ok.store.company.updatedAt = bangkokIso();
-      return doc;
-    },
-  ),
-  mockRequest("GET /v1/admin/companies/{companyId}/members", ({ params, request }) => {
-    const ok = access(request, params.companyId);
-    return ok instanceof Response ? ok : ok.store.members;
-  }),
-  mockRequest("GET /v1/admin/companies/{companyId}/branches", ({ params, request }) => {
-    const ok = access(request, params.companyId);
-    return ok instanceof Response ? ok : ok.store.branches;
-  }),
-  mockRequest("POST /v1/admin/companies/{companyId}/credit-limits", ({ params, body, request }) => {
-    const ok = access(request, params.companyId, "company_credit.manage");
+
+  // admin.companies.rejectKyc: back to the applicant, who may upload again and resubmit (D-120).
+  http.post("*/v1/admin/companies/:companyId/actions/reject-kyc", async ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.kyc_review");
     if (ok instanceof Response) return ok;
+    const reason = await reasonOf(request);
+    if (reason instanceof Response) return reason;
     const { company } = ok.store;
-    if (company.status !== "active") return problem(409, "company.not_active", "ขอวงเงินได้เฉพาะบริษัทที่ใช้งานอยู่");
-    const { allowedDays } = settingValue<{ allowedDays: number[] }>("b2b.credit_terms");
-    if (!allowedDays.includes(body.termDays))
-      return problem(422, "validation.failed", "ระยะเวลาเครดิตไม่อยู่ในค่าที่อนุญาต", [
-        { path: "termDays", code: "oneOf", message: allowedDays.join(", ") },
+    if (company.status !== "kyc_review") return invalidStatus();
+    Object.assign(company, { status: "applied", statusReason: reason, updatedAt: bangkokIso() });
+    return answer(ok.store);
+  }),
+
+  // admin.companies.setStatus: suspend | reactivate | close, with a reason; closing returns it to prepaid.
+  http.post("*/v1/admin/companies/:companyId/actions/:action", async ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.manage");
+    if (ok instanceof Response) return ok;
+    const transition = TRANSITIONS[String(params.action) as Schemas["CompanyAction"]];
+    if (!transition)
+      return problem(422, "validation.failed", "ไม่รู้จักรายการนี้", [
+        { path: "action", code: "enum", message: "suspend | reactivate | close" },
       ]);
-    const presented = present(ok.store, ok.who);
-    if (!presented.credit.eligible && body.basis === "paid_orders")
-      return problem(409, "company.not_eligible", "ยังไม่ครบเงื่อนไขการขอเครดิต (D-121)");
+    const reason = await reasonOf(request);
+    if (reason instanceof Response) return reason;
+    const { company } = ok.store;
+    if (!transition.from.includes(company.status)) return invalidStatus();
+    company.status = transition.to;
+    company.statusReason = transition.to === "active" ? null : reason;
+    if (transition.to === "closed") {
+      company.credit.limitAmount = "0.00";
+      company.credit.termDays = null;
+    }
+    company.updatedAt = bangkokIso();
+    return answer(ok.store);
+  }),
+
+  // admin.companies.reviewKycDocument — answers the whole company.
+  http.post("*/v1/admin/companies/:companyId/kyc-documents/:documentId/actions/review", async ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.kyc_review");
+    if (ok instanceof Response) return ok;
+    const doc = ok.store.kyc.find((candidate) => candidate.id === params.documentId);
+    if (!doc) return problem(404, "http.not_found", "ไม่พบเอกสารนี้");
+    const body = (await request.json().catch(() => null)) as Schemas["ReviewKycDocumentDto"] | null;
+    if (!body || !["verified", "rejected"].includes(body.outcome))
+      return problem(422, "validation.failed", "กรุณาเลือกผลการตรวจ", [
+        { path: "outcome", code: "enum", message: "verified | rejected" },
+      ]);
+    // D-120: a company certificate older than `b2b.kyc_certificate_max_age_months` (6) cannot be verified.
+    if (body.outcome === "verified" && doc.docType === "company_certificate" && doc.issuedOn) {
+      const limit = new Date(`${today()}T00:00:00+07:00`);
+      limit.setUTCMonth(limit.getUTCMonth() - 6);
+      if (Date.parse(`${doc.issuedOn}T00:00:00+07:00`) < limit.getTime())
+        return problem(422, "companies.certificate_too_old", "หนังสือรับรองบริษัทต้องออกไม่เกิน 6 เดือน (D-120)");
+    }
+    Object.assign(doc, {
+      status: body.outcome,
+      note: body.note?.trim() || null,
+      reviewedBy: { id: ok.who.id, displayName: ok.who.displayName },
+      reviewedAt: bangkokIso(),
+    });
+    ok.store.company.updatedAt = bangkokIso();
+    return answer(ok.store);
+  }),
+
+  // admin.companyCredit.get
+  http.get("*/v1/admin/companies/:companyId/credit", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.read");
+    return ok instanceof Response ? ok : HttpResponse.json(toCompanyCreditDto(ok.store));
+  }),
+
+  // admin.companyCredit.requestLimit — opens a credit_limit approval, answers the credit (D-121).
+  http.post("*/v1/admin/companies/:companyId/credit-limits", async ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "company_credit.manage");
+    if (ok instanceof Response) return ok;
+    const body = (await request.json().catch(() => null)) as Schemas["RequestCreditLimitDto"] | null;
+    const { allowedDays, defaultDays } = settingValue<{ allowedDays: number[]; defaultDays: number }>(
+      "b2b.credit_terms",
+    );
+    const termDays = body?.termDays ?? defaultDays;
+    const errors = [
+      ...(!body?.limitAmount || !/^\d{1,12}(\.\d{1,2})?$/.test(body.limitAmount) || Number(body.limitAmount) <= 0
+        ? [{ path: "limitAmount", code: "pattern", message: "จำนวนเงินไม่ถูกต้อง" }]
+        : []),
+      ...(!allowedDays.includes(termDays)
+        ? [{ path: "termDays", code: "oneOf", message: allowedDays.join(", ") }]
+        : []),
+      ...(!body || !["paid_orders", "financial_statement"].includes(body.basis)
+        ? [{ path: "basis", code: "enum", message: "paid_orders | financial_statement" }]
+        : []),
+      ...((body?.reason?.trim().length ?? 0) < 3
+        ? [{ path: "reason", code: "min", message: "อย่างน้อย 3 ตัวอักษร" }]
+        : []),
+    ];
+    if (errors.length > 0 || !body) return problem(422, "validation.failed", "ข้อมูลคำขอวงเงินไม่ถูกต้อง", errors);
+    const { company } = ok.store;
+    if (company.status !== "active")
+      return problem(409, "companies.invalid_status", "ขอวงเงินได้เฉพาะบริษัทที่ใช้งานอยู่");
+    const presented = present(ok.store);
+    if (
+      (body.basis === "paid_orders" && presented.credit.eligibleReason !== "paid_orders") ||
+      (body.basis === "financial_statement" &&
+        !ok.store.kyc.some((doc) => doc.docType === "financial_statement" && doc.status === "verified"))
+    )
+      return problem(409, "companies.credit_not_eligible", "ยังไม่ครบเงื่อนไขการขอเครดิต (D-121)");
     if (company.credit.versions.some((version) => version.status === "proposed"))
-      return problem(409, "company.credit_pending", "มีคำขอวงเงินที่รออนุมัติอยู่แล้ว");
+      return problem(409, "approval.already_pending", "มีคำขอวงเงินที่รออนุมัติอยู่แล้ว");
     const versionNo = Math.max(0, ...company.credit.versions.map((version) => version.versionNo)) + 1;
+    const reason = body.reason.trim();
     const opened = openApproval({
       policy: "credit_limit",
       subjectType: "company_credit_limit",
@@ -501,29 +660,37 @@ export const companyHandlers = [
       payload: {
         company: `${company.companyCode} ${company.legalName}`,
         limitAmount: body.limitAmount,
-        termDays: body.termDays,
+        termDays,
         basis: body.basis,
-        reason: body.reason,
+        reason,
       },
     });
     company.credit.versions.unshift({
       versionNo,
       limitAmount: body.limitAmount,
-      termDays: body.termDays,
+      termDays,
       status: "proposed",
       basis: body.basis,
-      reason: body.reason,
+      reason,
       effectiveFrom: bangkokIso(),
       approvalRequestId: opened.id,
       requestedBy: { id: ok.who.id, displayName: ok.who.displayName },
       createdAt: bangkokIso(),
     });
     company.updatedAt = bangkokIso();
-    return { versionNo, approvalRequestId: opened.id, status: "proposed" as const };
+    return HttpResponse.json(toCompanyCreditDto(ok.store), { status: 201 });
   }),
-  mockRequest("GET /v1/admin/companies/{companyId}/statements", ({ params, request }) => {
-    const ok = access(request, params.companyId);
-    return ok instanceof Response ? ok : ok.store.statements;
+
+  // admin.receivables.companyStatement — one month per call (D-125).
+  http.get("*/v1/admin/companies/:companyId/statements", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "receivables.read");
+    if (ok instanceof Response) return ok;
+    const month = new URL(request.url).searchParams.get("month") ?? "";
+    if (!/^\d{4}-\d{2}$/.test(month))
+      return problem(422, "validation.failed", "กรุณาระบุเดือน (YYYY-MM)", [
+        { path: "month", code: "pattern", message: "YYYY-MM" },
+      ]);
+    return HttpResponse.json(toCompanyStatementDto(ok.store, month));
   }),
 ];
 
@@ -535,7 +702,7 @@ export type CompanyStore = (typeof stores)[number];
 export const companyStores: CompanyStore[] = stores;
 
 /** The company with the API's figures (credit, eligibility, the D-122 block), for the storefront. */
-export const presentCompany = (store: CompanyStore): Company => present(store, null);
+export const presentCompany = (store: CompanyStore): Company => present(store);
 
 let registered = 0;
 
@@ -582,7 +749,7 @@ export function registerCompany(input: {
         versions: [],
       },
       discount: null,
-      allowedActions: [],
+      statusReason: null,
       updatedAt: bangkokIso(),
     },
     members: [

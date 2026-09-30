@@ -45,11 +45,11 @@ export type QuoteStatus = Schemas["QuoteStatus"];
 /** A discount memo, above the CS limit (D-052, D-162). **Source: schema** (`memo_status`). */
 export type MemoStatus = "draft" | "pending_approval" | "approved" | "rejected" | "withdrawn" | "expired" | "applied";
 
-/** A B2B company account (D-120). **Source: schema** (`company_status`). */
-export type CompanyStatus = "applied" | "kyc_review" | "active" | "suspended" | "closed";
+/** A B2B company account (D-120). **Source: contract** (U-F0.3). */
+export type CompanyStatus = Schemas["CompanyStatus"];
 
-/** A company's credit standing (D-121, D-122). **Source: schema** (`credit_status`). */
-export type CreditStatus = "prepaid" | "eligible" | "credit" | "blocked_overdue";
+/** A company's credit standing (D-121, D-122). **Source: contract** (U-F0.3). */
+export type CreditStatus = Schemas["CreditStatus"];
 
 /** A campaign with a THB budget; auto-stops when exhausted (D-154). **Source: schema** (`campaign_status`). */
 export type CampaignStatus = "draft" | "scheduled" | "active" | "paused" | "exhausted" | "ended";
@@ -69,8 +69,8 @@ export type StatementStatus = "open" | "paid" | "overdue";
 /** The review of a proof of delivery (D-013): an accepted factory POD makes the payout eligible. **Proposed** in contract request `admin.shipments`. */
 export type PodReviewStatus = "pending" | "accepted" | "rejected";
 
-/** A member of a B2B company account (D-120). **Source: schema** (`member_status`). */
-export type MemberStatus = "invited" | "active" | "removed";
+/** A member of a B2B company account (D-120). **Source: contract** (U-F0.3). */
+export type MemberStatus = Schemas["MemberStatus"];
 
 /** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: contract** (U-F0.2). */
 export type ReferralStatus = Schemas["ReferralStatus"];

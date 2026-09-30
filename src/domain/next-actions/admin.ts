@@ -56,3 +56,39 @@ export function adminOrderActions(order: AdminOrderFacts, can: (permission: stri
   }
   return actions;
 }
+
+/** A company action the desk can offer: the KYC decisions and the status actions (`Schemas["CompanyAction"]`). */
+export type AdminCompanyActionKey = "approve-kyc" | "reject-kyc" | Schemas["CompanyAction"];
+
+export interface AdminCompanyAction {
+  key: AdminCompanyActionKey;
+  /** Suspending and closing are confirmed by typing the company code. */
+  destructive?: boolean;
+  /** `ReasonDto`: every action but approve-kyc is sent with a reason. */
+  needsReason: boolean;
+}
+
+/**
+ * The actions staff are offered on a B2B company, from its status and what the actor may do.
+ *
+ * CONTRACT-GAP admin.companies — `AdminCompanyDto` carries no `allowedActions` (packio-api
+ * U-B0.2), so the desk reads the status here (D-120): a company under review is approved or sent
+ * back (`companies.kyc_review`, as the operations require); an active one can be suspended, a
+ * suspended one reactivated, and any open one closed (`companies.manage`). The API still refuses
+ * what the workflow does not allow (`companies.invalid_status`, `companies.kyc_incomplete`).
+ */
+export function adminCompanyActions(
+  status: Schemas["CompanyStatus"],
+  can: (permission: string) => boolean,
+): AdminCompanyAction[] {
+  const actions: AdminCompanyAction[] = [];
+  if (status === "kyc_review" && can("companies.kyc_review")) {
+    actions.push({ key: "approve-kyc", needsReason: false }, { key: "reject-kyc", needsReason: true });
+  }
+  if (can("companies.manage")) {
+    if (status === "active") actions.push({ key: "suspend", destructive: true, needsReason: true });
+    if (status === "suspended") actions.push({ key: "reactivate", needsReason: true });
+    if (status !== "closed") actions.push({ key: "close", destructive: true, needsReason: true });
+  }
+  return actions;
+}

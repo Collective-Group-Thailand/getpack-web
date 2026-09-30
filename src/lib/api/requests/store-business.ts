@@ -1,7 +1,7 @@
 /**
  * Packio for business, from the company's side (F3 3.7; B3.5, B5.2, D-120–D-125).
  *
- * The back office's companies desk (`admin-companies.ts`, F2 2.7) holds the same rows: a company
+ * The back office's companies desk (`admin.companies.*`, F2 2.7) holds the same rows: a company
  * that signs up here is the one Finance reviews for KYC, a credit application is the limit request
  * the `credit_limit` policy routes, and the statements are the ones the desk issues. What the
  * company sees is its own: its members and their roles, its branches, what waits for its
@@ -13,10 +13,23 @@
 
 import { z } from "zod";
 
-import { companyMember, companyRole } from "./admin-companies";
 import { dateTime, fileRef, money, request, uuid } from "./define";
 
 /* ---------------------------------------------------------------------------------- company */
+
+export const companyRole = z
+  .enum(["company_admin", "company_buyer", "company_approver", "company_accountant"])
+  .meta({ id: "CompanyRole" });
+
+export const companyMember = z
+  .object({
+    id: uuid(),
+    user: z.object({ id: uuid(), displayName: z.string(), email: z.string().nullable(), phone: z.string().nullable() }),
+    roles: z.array(companyRole),
+    status: z.enum(["invited", "active", "removed"]),
+    joinedAt: dateTime().nullable(),
+  })
+  .meta({ id: "CompanyMemberDto" });
 
 export const creditApplication = z
   .object({
