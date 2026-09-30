@@ -86,7 +86,8 @@ test.describe("factory consultation", () => {
 
     await expect(page.getByRole("dialog")).toHaveCount(0);
     const table = page.getByRole("table", { name: "ราคาจากโรงงาน" });
-    await expect(table).toContainText("โรงงานบรรจุภัณฑ์อาหาร");
+    // CONTRACT-GAP admin.rfq-consultations — the consultation names its factory by code only.
+    await expect(table).toContainText("F003");
     await expect(table).toContainText("รอโรงงานตอบ");
   });
 

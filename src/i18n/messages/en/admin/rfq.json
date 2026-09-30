@@ -223,7 +223,8 @@
       "none": "No factory asked yet",
       "noneBody": "Ask the factories that make this category, then quote from their answers.",
       "noCostNote": "Factory cost is shown only to the roles allowed to see it (D-141). Set the sell price in the quote.",
-      "answered": "Answered"
+      "answered": "Answered",
+      "reply": "Factory's answer"
     },
     "quotes": {
       "version": "Version {version}",
