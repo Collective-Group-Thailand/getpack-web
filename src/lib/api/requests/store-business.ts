@@ -26,7 +26,6 @@ import {
   poNumberPolicy,
 } from "./admin-companies";
 import { dateTime, fileRef, money, page, pct, request, uuid } from "./define";
-import { checkoutInput } from "./store-checkout";
 import { signedUrl } from "./store-quotes";
 
 /* ---------------------------------------------------------------------------------- company */
@@ -291,16 +290,6 @@ export const storeBusinessRequests = {
     request: "store.company-assets",
     summary: "Stop sharing a brand asset",
     response: z.object({ removed: z.literal(true) }),
-  }),
-  "POST /v1/store/me/company/approvals": request({
-    request: "store.company-approvals",
-    summary:
-      "Send a checkout over the company threshold to its approver instead of placing it (D-123); the preview token holds the price",
-    decisions: ["D-123"],
-    body: checkoutInput.extend({ previewToken: z.string() }),
-    response: companyApproval,
-    status: 201,
-    idempotent: true,
   }),
   "GET /v1/store/me/company/approvals": request({
     request: "store.company-approvals",

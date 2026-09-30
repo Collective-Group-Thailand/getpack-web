@@ -1,6 +1,8 @@
 /**
- * Checkout and payments, mocked (CONTRACT-REQUEST store.checkout, store.payments,
- * store.instalments).
+ * Checkout and payments, on the published contract (`store.checkout.*`, `store.payments.*`,
+ * `store.orders.listGroups`, U-F0.2), and the instalment centre (CONTRACT-REQUEST
+ * store.instalments). The pricing below is the mock's own (`./model.ts` records), projected to
+ * the published shapes by `toPreviewDto`, `toGroupDto` and `toPaymentDto`.
  *
  * Placing an order creates **the back office's own order rows** (`../admin/commerce`): one order
  * per cart line, in one group, waiting for payment — so the CS queues, slip review and the
@@ -17,21 +19,23 @@
 import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
-import type { checkoutInput, checkoutPreview, storeInstalment, storePayment } from "@/lib/api/requests/store-checkout";
+import type { storeInstalment } from "@/lib/api/requests/store-checkout";
+import type { Schemas } from "@/lib/api/types";
 
 import { baht, customers as fakeCustomers, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { bookOf } from "./book";
-import { cartLines, cartOf, clearCart } from "./cart";
+import { cartLines, cartOf, clearCart, codes as cartCodes } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
+import type { Input, Payment, Preview } from "./model";
+import { toOrderDto } from "./order-dto";
 import { ownerIdOf } from "./owner";
 import { checkCode, PROMOTIONS, quotesOf, type StoreQuote } from "./quotes";
 
-type Input = z.output<typeof checkoutInput>;
-type Preview = z.output<typeof checkoutPreview>;
-type Payment = z.output<typeof storePayment>;
 type Instalment = z.output<typeof storeInstalment>;
+/** The mock's record of a payment: its own view plus what the published one adds. */
+type StoredPayment = Payment & { groupId: string; persona: string; orderPaymentId: string | null; createdAt: string };
 
 const DAY = 24 * 60;
 const THRESHOLD = 2_000_000; // D-020, THB 20,000 — a setting in the real API.
@@ -256,7 +260,11 @@ export function price(customer: MockCustomer, input: Input): Priced | Response {
         },
       ],
     });
-  const selected = options.find((option) => option.key === input.scheduleKey) ?? options[0]!;
+  // D-020: the rules choose — an approved B2B account with credit to spare pays on its term.
+  const selected =
+    options.find((option) => option.key === input.scheduleKey) ??
+    options.find((option) => option.kind === ("credit_term" as never)) ??
+    options[0]!;
   const parts = split(
     gross,
     selected.parts.map((part) => part.share),
@@ -387,9 +395,8 @@ interface Group {
   }[];
 }
 
-const previews = new Map<string, { fingerprint: string; gross: number; persona: string; expiresAt: number }>();
 export const groups = new Map<string, Group>();
-const payments = new Map<string, Payment & { groupId: string; persona: string; orderPaymentId: string | null }>();
+const payments = new Map<string, StoredPayment>();
 let groupSeq = 0;
 let paymentSeq = 0;
 
@@ -627,13 +634,6 @@ export function paymentsOfInstalment(instalmentId: string): Payment[] {
     .map(view);
 }
 
-function groupOfInstalment(instalmentId: string): Group | undefined {
-  for (const group of groups.values()) if (group.instalments.some((entry) => entry.id === instalmentId)) return group;
-  // A seeded order's instalment: its group is built on first use.
-  const order = orders.find((candidate) => candidate.instalments.some((entry) => entry.id === instalmentId));
-  return order ? groupForOrder(order) : undefined;
-}
-
 /** Whether the customer owns the group's orders. */
 function owns(customer: MockCustomer, group: Group): boolean {
   const owner = ownerIdOf(customer);
@@ -641,7 +641,7 @@ function owns(customer: MockCustomer, group: Group): boolean {
 }
 
 /** A payment's view, synced from the order payment Finance may have decided in the back office. */
-function view(payment: Payment & { groupId: string; persona: string; orderPaymentId: string | null }): Payment {
+function view(payment: StoredPayment): Payment {
   if (payment.orderPaymentId && payment.status === "awaiting_verification") {
     const group = groups.get(payment.groupId);
     const first = group ? orders.find((order) => order.id === group.orderIds[0]) : undefined;
@@ -697,22 +697,6 @@ function fakeQr(seed: string): string {
   return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 240"><rect width="220" height="240" fill="#fff"/><g fill="#111">${rects}</g><text x="110" y="232" font-size="14" text-anchor="middle" font-family="sans-serif">mock QR</text></svg>`)}`;
 }
 
-/** The placement's checks: the preview is this customer's, still valid, unblocked and unchanged. */
-export function checkPreview(customer: MockCustomer, previewToken: string, input: Input): Priced | Response {
-  const known = previews.get(previewToken);
-  if (!known || known.persona !== customer.persona || known.expiresAt < Date.now())
-    return problem(409, "checkout.preview_expired", "ราคาที่แสดงหมดเวลาแล้ว กรุณาตรวจสอบราคาอีกครั้ง");
-  const priced = price(customer, input);
-  if (priced instanceof Response) return priced;
-  if (priced.preview.blockers.length > 0)
-    return problem(422, "checkout.blocked", priced.preview.blockers.map((blocker) => blocker.message).join(" · "));
-  if (priced.fingerprint !== known.fingerprint || priced.gross !== known.gross)
-    return problem(409, "checkout.repriced", "ราคาหรือรายการในตะกร้าเปลี่ยนไปตั้งแต่ที่คุณตรวจสอบ กรุณายืนยันราคาใหม่");
-  return priced;
-}
-
-export const forgetPreview = (previewToken: string) => previews.delete(previewToken);
-
 /** Places a checked checkout — directly, or when the company's approver approves it (F3 3.7). */
 export function placeChecked(customer: MockCustomer, input: Input, priced: Priced) {
   const group = placeOrders(customer, input, priced);
@@ -733,53 +717,375 @@ export function placeChecked(customer: MockCustomer, input: Input, priced: Price
   };
 }
 
+/* -------------------------------------------------------------------- the published checkout */
+
+/** A requested checkout's input, from the published body and what the cart holds (its codes). */
+function inputOf(customer: MockCustomer, body: Schemas["CheckoutDto"]): Input {
+  return {
+    contact: { name: customer.displayName, phone: customer.phone, email: customer.email ?? "seed@packio.invalid" },
+    delivery: { mode: "per_item" },
+    taxProfileId: body.taxProfileId ?? null,
+    couponCodes: (cartCodes.get(customer.persona) ?? [])
+      .filter((entry) => entry.status === "validated")
+      .map((entry) => entry.code),
+    pointsToRedeem: body.redeemPoints ?? 0,
+    ...(body.poNumber ? { poNumber: body.poNumber } : {}),
+  };
+}
+
+/** The mock's blockers, as the problems the published checkout answers with instead. */
+function refusal(priced: Priced): Response | null {
+  const codes = priced.preview.blockers.map((blocker) => blocker.code);
+  const message = priced.preview.blockers.map((blocker) => blocker.message).join(" · ");
+  if (codes.includes("cart_empty")) return problem(422, "checkout.cart_empty", message);
+  if (codes.includes("reprice_unconfirmed")) return problem(409, "checkout.price_expired", message);
+  if (codes.some((code) => code === "destination_missing" || code === "split_mismatch"))
+    return problem(422, "checkout.destinations_incomplete", message);
+  if (codes.includes("po_required")) return problem(422, "companies.po_required", message);
+  return null;
+}
+
+const DUE_AT_CHECKOUT = new Set(["at_checkout"]);
+
+function toPreviewDto(customer: MockCustomer, priced: Priced): Schemas["CheckoutPreviewDto"] {
+  const { preview } = priced;
+  const cart = cartOf(customer);
+  const net = (gross: string) => baht(satang(gross) - vatIn(satang(gross)));
+  const totals = (gross: string, discount = "0.00", shipping = "0.00", wht = "0.00"): Schemas["MoneyTotalsDto"] => ({
+    netAmount: net(gross),
+    discountAmount: discount,
+    shippingNetAmount: shipping,
+    vatAmount: baht(vatIn(satang(gross))),
+    grossAmount: gross,
+    whtAmount: wht,
+    cashAmount: baht(satang(gross) - satang(wht)),
+    currency: "THB",
+  });
+  const notices: Schemas["CheckoutNoticeDto"][] = [
+    ...preview.promotions.applied.flatMap((promotion) => [
+      {
+        code: "promotion.applied",
+        params: { promotionId: null, name: promotion.title, code: promotion.code, amount: promotion.discountAmount },
+      },
+      ...(promotion.capped
+        ? [{ code: "promotion.capped", params: { promotionId: null, code: promotion.code, cappedAmount: "0.00" } }]
+        : []),
+    ]),
+    ...preview.promotions.rejected.map((rejected) => ({
+      code: "promotion.rejected",
+      params: { promotionId: null, code: rejected.code, reason: rejected.reason },
+    })),
+    ...(preview.points.redeemed > 0
+      ? [{ code: "points.applied", params: { points: preview.points.redeemed, amount: preview.points.redeemedAmount } }]
+      : []),
+    ...preview.blockers
+      .filter((blocker) => blocker.code === "points_above_maximum")
+      .map(() => ({
+        code: "points.capped",
+        params: { requested: preview.points.redeemed, points: preview.points.max, reason: "max_redeem_pct" },
+      })),
+    ...preview.blockers
+      .filter((blocker) => blocker.code === "points_below_minimum")
+      .map(() => ({
+        code: "points.rejected",
+        params: { requested: 0, reason: "below_minimum", minimumBaht: "10.00" },
+      })),
+    ...(preview.company?.needsApproval
+      ? [{ code: "company.approval_required", params: { threshold: preview.company.approvalThreshold } }]
+      : []),
+    ...(priced.schedule.kind === ("credit_term" as never)
+      ? [
+          {
+            code: "company.credit_order",
+            params: {
+              termDays: preview.schedule.options.find((option) => option.key === priced.schedule.key)?.creditDays ?? 30,
+              available: preview.company?.creditAvailableAmount ?? "0.00",
+            },
+          },
+        ]
+      : preview.company?.creditBlocked
+        ? [{ code: "company.credit_unavailable", params: { reason: "blocked_overdue" } }]
+        : []),
+  ];
+  const schedule = priced.schedule;
+  const parts = split(
+    priced.gross,
+    schedule.parts.map((part) => part.share),
+  );
+  return {
+    orders: cart.items.map((item, index) => ({
+      cartItemId: item.id,
+      productTypeCode: item.productType.code,
+      quantity: item.quantity,
+      destinations: item.destinations.map((destination) => ({
+        postcode: destination.address?.postcode ?? "",
+        quantity: destination.quantity,
+        shippingNetAmount: "0.00",
+      })),
+      discounts:
+        index === 0
+          ? [
+              ...preview.promotions.applied.map((promotion) => ({
+                source: promotion.kind === "automatic" ? ("automatic_promotion" as const) : ("coupon" as const),
+                code: promotion.code,
+                promotionId: null,
+                lineNo: null,
+                amount: promotion.discountAmount,
+                cappedAmount: "0.00",
+                capReason: null,
+              })),
+              ...(preview.points.redeemed > 0
+                ? [
+                    {
+                      source: "points_redemption" as const,
+                      code: null,
+                      promotionId: null,
+                      lineNo: null,
+                      amount: preview.points.redeemedAmount,
+                      cappedAmount: "0.00",
+                      capReason: null,
+                    },
+                  ]
+                : []),
+            ]
+          : [],
+      lines: [],
+      totals: totals(item.grossAmount),
+    })),
+    paymentSchedule: {
+      templateKey: schedule.key,
+      instalments: schedule.parts.map((part, index) => ({
+        seq: index + 1,
+        labelTh: part.label,
+        labelEn: part.label,
+        pct: (part.share * 100).toFixed(2),
+        grossAmount: baht(parts[index]!),
+        cashAmount: baht(parts[index]! - (schedule.parts.length === 1 ? satang(preview.totals.withholdingAmount) : 0)),
+        dueTrigger: part.dueTrigger as Schemas["DueTrigger"],
+        requiredBefore: part.requiredBefore as Schemas["RequiredBefore"],
+      })),
+    },
+    totals: totals(
+      preview.totals.grossAmount,
+      baht(satang(preview.totals.discountAmount) + satang(preview.totals.pointsAmount)),
+      baht(satang(preview.totals.shippingAmount) - vatIn(satang(preview.totals.shippingAmount))),
+      preview.totals.withholdingAmount,
+    ),
+    withholding: preview.taxInvoice?.withholdsTax ?? false,
+    notices,
+  };
+}
+
+/** A placed group, as the published checkout answers (`OrderGroupDto`). */
+function toGroupDto(
+  customer: MockCustomer,
+  group: Group,
+  priced: Priced,
+  poNumber: string | null,
+): Schemas["OrderGroupDto"] {
+  const gross = baht(priced.gross);
+  return {
+    id: group.id,
+    groupCode: group.code,
+    status: priced.schedule.parts.some((part) => DUE_AT_CHECKOUT.has(part.dueTrigger))
+      ? "waiting_payment"
+      : "in_progress",
+    channel: "web",
+    customerId: customer.id,
+    poNumber,
+    ccEmails: [],
+    placedAt: bangkokIso(),
+    expiresAt: bangkokIso(7 * DAY),
+    cancelledAt: null,
+    totals: {
+      netAmount: baht(priced.gross - vatIn(priced.gross)),
+      discountAmount: priced.preview.totals.discountAmount,
+      shippingNetAmount: "0.00",
+      vatAmount: baht(vatIn(priced.gross)),
+      grossAmount: gross,
+      whtAmount: priced.preview.totals.withholdingAmount,
+      cashAmount: baht(priced.gross - satang(priced.preview.totals.withholdingAmount)),
+      currency: "THB",
+    },
+    orders: group.orderIds
+      .map((id) => orders.find((order) => order.id === id))
+      .filter((order): order is MockOrder => Boolean(order))
+      .map(toOrderDto),
+  };
+}
+
+/** A payment as the published contract has it (`PaymentDto`), from the mock's own record. */
+export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
+  const shown = view(payment);
+  return {
+    id: shown.id,
+    referenceCode: `PAY-${shown.id.slice(-8).toUpperCase()}`,
+    groupId: payment.groupId,
+    method: shown.method,
+    status: shown.status,
+    amount: shown.amount,
+    whtAmount: "0.00",
+    cashAmount: shown.amount,
+    currency: "THB",
+    qrPayload: shown.qr?.payload ?? null,
+    redirectUrl: shown.redirectUrl,
+    expiresAt: shown.expiresAt,
+    paidAt: shown.paidAt,
+    createdAt: payment.createdAt,
+    slips: shown.slips.map((slip) => ({
+      id: slip.id,
+      status: slip.status,
+      lastCheck: slip.status === "passed" ? "pass" : slip.status === "pending" ? null : "mismatch",
+      slaDueAt: slip.reviewDueAt,
+      declaredAmount: slipDeclared.get(slip.id)?.amount ?? shown.amount,
+      declaredTransferredAt: slipDeclared.get(slip.id)?.at ?? slip.uploadedAt,
+      createdAt: slip.uploadedAt,
+    })),
+  };
+}
+
+const slipDeclared = new Map<string, { amount: string; at: string }>();
+
+/** Company approval of a checkout over its threshold (D-123) — the business mock answers it. */
+let requestApproval: (
+  customer: MockCustomer,
+  input: Input,
+  priced: Priced,
+) => { id: string; requestNo: string } | Response = () => problem(409, "companies.invalid_status", "no company");
+export function setApprovalRequester(requester: typeof requestApproval): void {
+  requestApproval = requester;
+}
+
+async function bodyOf<T>(request: Request): Promise<T> {
+  return ((await request.json().catch(() => ({}))) ?? {}) as T;
+}
+
 export const storeCheckoutHandlers = [
-  mockRequest("POST /v1/store/checkout/actions/preview", ({ body, request }) => {
+  http.post("*/v1/store/checkout/actions/preview", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const priced = price(customer, body);
+    const priced = price(customer, inputOf(customer, await bodyOf<Schemas["CheckoutDto"]>(request)));
     if (priced instanceof Response) return priced;
-    const token = `pvw${Math.random().toString(36).slice(2, 12)}`;
-    previews.set(token, {
-      fingerprint: priced.fingerprint,
-      gross: priced.gross,
-      persona: customer.persona,
-      expiresAt: Date.now() + 15 * 60_000,
-    });
-    return { ...priced.preview, previewToken: token };
+    return refusal(priced) ?? HttpResponse.json(toPreviewDto(customer, priced));
   }),
 
-  mockRequest("POST /v1/store/checkout", ({ body, request }) => {
+  http.post("*/v1/store/checkout", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const { previewToken, ...input } = body;
-    const priced = checkPreview(customer, previewToken, input);
+    if (!request.headers.get("idempotency-key"))
+      return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
+    const body = await bodyOf<Schemas["CheckoutDto"]>(request);
+    const input = inputOf(customer, body);
+    const priced = price(customer, input);
     if (priced instanceof Response) return priced;
-    if (priced.preview.company?.needsApproval)
-      return problem(409, "company.approval_required", "ยอดนี้เกินเกณฑ์ของบริษัท ต้องส่งให้ผู้อนุมัติก่อน (D-123)");
-    previews.delete(previewToken);
-    return placeChecked(customer, input, priced);
+    const refused = refusal(priced);
+    if (refused) return refused;
+    if (body.expectedGrossAmount && body.expectedGrossAmount !== baht(priced.gross))
+      return problem(409, "checkout.total_changed", "ยอดรวมเปลี่ยนไปตั้งแต่ที่คุณตรวจสอบ กรุณายืนยันราคาใหม่");
+    if (priced.preview.company?.needsApproval) {
+      if (!body.companyId) return problem(409, "companies.invalid_status", "คำสั่งซื้อนี้ต้องสั่งในนามบริษัท");
+      const approval = requestApproval(customer, input, priced);
+      if (approval instanceof Response) return approval;
+      // Placed as waiting for the company's approver; the approval places the orders (D-123).
+      const pending: Schemas["OrderGroupDto"] = {
+        ...toGroupDto(
+          customer,
+          { id: approval.id, code: approval.requestNo, persona: customer.persona, orderIds: [], instalments: [] },
+          priced,
+          body.poNumber ?? null,
+        ),
+        status: "pending_company_approval",
+      };
+      return HttpResponse.json(pending, { status: 201 });
+    }
+    const group = groups.get(placeChecked(customer, input, priced).groupId)!;
+    return HttpResponse.json(toGroupDto(customer, group, priced, body.poNumber ?? null), { status: 201 });
   }),
 
-  mockRequest("POST /v1/store/instalments/{instalmentId}/payments", ({ params, body, request }) => {
+  http.get("*/v1/store/order-groups", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const group = groupOfInstalment(params.instalmentId);
-    if (!group || !owns(customer, group)) return problem(404, "http.not_found", "ไม่พบงวดชำระนี้");
-    const instalment = group.instalments.find((entry) => entry.id === params.instalmentId)!;
-    if (instalment.paid) return problem(409, "instalment.already_paid", "งวดนี้ชำระแล้ว");
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q")?.toLowerCase();
+    const owner = ownerIdOf(customer);
+    for (const order of orders.filter((candidate) => candidate.customer.id === owner)) groupForOrder(order);
+    const rows = [...groups.values()]
+      .filter((group) => owns(customer, group))
+      .map((group) => {
+        const list = group.orderIds
+          .map((id) => orders.find((order) => order.id === id))
+          .filter((order): order is MockOrder => Boolean(order));
+        const gross = list.reduce((sum, order) => sum + satang(order.grossAmount), 0);
+        const dto: Schemas["OrderGroupDto"] = {
+          id: group.id,
+          groupCode: group.code,
+          status: list[0]?.group.status ?? "waiting_payment",
+          channel: list[0]?.channel ?? "web",
+          customerId: customer.id,
+          poNumber: null,
+          ccEmails: [],
+          placedAt: list[0]?.createdAt ?? bangkokIso(),
+          expiresAt: list[0]?.expiresAt ?? null,
+          cancelledAt: list[0]?.cancelledAt ?? null,
+          totals: {
+            netAmount: baht(gross - vatIn(gross)),
+            discountAmount: "0.00",
+            shippingNetAmount: "0.00",
+            vatAmount: baht(vatIn(gross)),
+            grossAmount: baht(gross),
+            whtAmount: "0.00",
+            cashAmount: baht(gross),
+            currency: "THB",
+          },
+          orders: list.map(toOrderDto),
+        };
+        return dto;
+      })
+      .filter(
+        (group) =>
+          !q ||
+          group.groupCode.toLowerCase().includes(q) ||
+          group.orders.some((order) => order.orderCode.toLowerCase().includes(q)),
+      );
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
+    );
+  }),
+
+  http.post("*/v1/store/order-groups/:groupId/payments", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    if (!request.headers.get("idempotency-key"))
+      return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
+    const body = await bodyOf<Schemas["InitiatePaymentDto"]>(request);
+    const seeded = orders.find((order) => order.groupId === params.groupId);
+    const group = groups.get(String(params.groupId)) ?? (seeded ? groupForOrder(seeded) : undefined);
+    if (!group || !owns(customer, group)) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
+    // An order's share of an instalment has its own id; it stands for the group's instalment of
+    // the same number.
+    const asked = body.instalmentIds?.[0];
+    const share = asked ? orders.flatMap((order) => order.instalments).find((entry) => entry.id === asked) : undefined;
+    const instalment = asked
+      ? (group.instalments.find((entry) => entry.id === asked) ??
+        group.instalments.find((entry) => share && entry.seq === share.seq))
+      : group.instalments.find((entry) => !entry.paid);
+    if (!instalment || instalment.paid) return problem(409, "payments.nothing_to_pay", "ไม่มียอดที่ต้องชำระตอนนี้");
     if (
       !["scb_qr", "scb_qr_cross_bank", "card_2c2p", "online_banking_2c2p", "bank_transfer_slip"].includes(body.method)
     )
-      return problem(422, "payment.method_unavailable", "วิธีชำระเงินนี้ใช้ไม่ได้");
+      return problem(422, "payments.method_unavailable", "วิธีชำระเงินนี้ใช้ไม่ได้");
     paymentSeq += 1;
     const id = mockId("wpy", paymentSeq);
-    const returnUrl = body.returnUrl ?? "/checkout/return";
-    const payment: Payment & { groupId: string; persona: string; orderPaymentId: string | null } = {
+    // packio-api returns 2C2P to the storefront's /payments/{id}/return (`payments.service.ts`).
+    const returnUrl = `/payments/${id}/return`;
+    const payment: StoredPayment = {
       id,
       instalmentId: instalment.id,
       orderGroupCode: group.code,
-      method: body.method,
+      method: body.method as Payment["method"],
       status: body.method === "bank_transfer_slip" ? "initiated" : "pending",
       amount: baht(instalment.gross),
       currency: "THB",
@@ -793,46 +1099,39 @@ export const storeCheckoutHandlers = [
         : null,
       // A mock-only "gateway" page approves it and sends the customer back, as 2C2P would.
       redirectUrl: body.method.includes("2c2p")
-        ? `/bff/v1/store/mock-gateway/payments/${id}/checkout?return=${encodeURIComponent(
-            `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}payment=${id}`,
-          )}`
+        ? `/bff/v1/store/mock-gateway/payments/${id}/checkout?return=${encodeURIComponent(returnUrl)}`
         : null,
-      bankAccount:
-        body.method === "bank_transfer_slip"
-          ? {
-              bank: "ธนาคารตัวอย่าง (ข้อมูลจำลอง)",
-              accountName: "บจก. คอลเลคทีฟ กรุ๊ป (ประเทศไทย) (ข้อมูลจำลอง)",
-              accountNo: "000-0-00000-0",
-            }
-          : null,
+      bankAccount: null,
       slips: [],
       paidAt: null,
       failureReason: null,
       groupId: group.id,
       persona: customer.persona,
       orderPaymentId: null,
+      createdAt: bangkokIso(),
     };
     payments.set(id, payment);
-    return view(payment);
+    return HttpResponse.json(toPaymentDto(payment), { status: 201 });
   }),
 
-  mockRequest("GET /v1/store/payments/{paymentId}", ({ params, request }) => {
+  http.get("*/v1/store/payments/:paymentId", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const payment = payments.get(params.paymentId);
+    const payment = payments.get(String(params.paymentId));
     if (!payment || payment.persona !== customer.persona)
       return problem(404, "http.not_found", "ไม่พบรายการชำระเงินนี้");
-    return view(payment);
+    return HttpResponse.json(toPaymentDto(payment));
   }),
 
-  mockRequest("POST /v1/store/payments/{paymentId}/slips", ({ params, body, request }) => {
+  http.post("*/v1/store/payments/:paymentId/slips", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const payment = payments.get(params.paymentId);
+    const payment = payments.get(String(params.paymentId));
     if (!payment || payment.persona !== customer.persona)
       return problem(404, "http.not_found", "ไม่พบรายการชำระเงินนี้");
     if (payment.method !== "bank_transfer_slip")
-      return problem(409, "payment.not_slip", "รายการนี้ไม่ได้ชำระด้วยการโอน");
+      return problem(409, "payments.not_a_slip_payment", "รายการนี้ไม่ได้ชำระด้วยการโอน");
+    const body = await bodyOf<Schemas["UploadSlipDto"]>(request);
     const matches = body.declaredAmount === payment.amount;
     const slip = {
       id: mockId("wsl", paymentSeq * 10 + payment.slips.length),
@@ -841,6 +1140,7 @@ export const storeCheckoutHandlers = [
       reviewDueAt: matches ? null : bangkokIso(4 * 60),
       uploadedAt: bangkokIso(),
     };
+    slipDeclared.set(slip.id, { amount: body.declaredAmount, at: body.transferredAt });
     payment.slips.push(slip);
     if (matches) {
       succeed(payment);
@@ -871,7 +1171,7 @@ export const storeCheckoutHandlers = [
                 url: null,
               },
               declaredAmount: body.declaredAmount,
-              declaredTransferredAt: body.declaredTransferredAt,
+              declaredTransferredAt: body.transferredAt,
               verificationStatus: "manual_review",
               checks: { receiverMatched: true, amountMatched: false, dateMatched: true, duplicate: false },
               slaDueAt: slip.reviewDueAt,
@@ -886,7 +1186,7 @@ export const storeCheckoutHandlers = [
         payment.orderPaymentId = orderPaymentId;
       }
     }
-    return view(payment);
+    return HttpResponse.json(toPaymentDto(payment), { status: 201 });
   }),
 
   mockRequest("GET /v1/store/instalments", ({ query, request }) => {

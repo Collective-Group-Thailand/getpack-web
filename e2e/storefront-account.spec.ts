@@ -136,8 +136,13 @@ test.describe("the account", () => {
     await expect(locked).toBeDisabled();
     const sms = page.getByRole("switch", { name: "ข่าวสารและโปรโมชัน ทางSMS" });
     const before = await sms.isChecked();
+    // Reload only once the save has answered: the switch flips at once, the PUT follows.
+    const saved = page.waitForResponse(
+      (response) => response.url().includes("notification-preferences") && response.request().method() === "PUT",
+    );
     await sms.click();
     await expect(sms).toBeChecked({ checked: !before });
+    await saved;
     await page.reload();
     await expect(page.getByRole("switch", { name: "ข่าวสารและโปรโมชัน ทางSMS" })).toBeChecked({ checked: !before });
     await expect(page.getByRole("button", { name: "เชื่อมต่อ LINE" })).toBeDisabled();

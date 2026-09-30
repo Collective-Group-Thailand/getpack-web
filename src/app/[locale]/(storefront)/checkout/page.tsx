@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { getPoints } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { getMyCompany } from "@/features/customer/business/companies.server";
 import { getCartAndBook } from "@/features/customer/cart/api.server";
 import { lineBlockers } from "@/features/customer/cart/cart";
 import { CheckoutView } from "@/features/customer/checkout/CheckoutView";
@@ -15,10 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Checkout (F3 3.3). The preview refuses a cart that is not ready; the page says so first. */
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
-  const [me, { locale }] = await Promise.all([requireCustomer(), params]);
-  const [t, { cart, addresses, taxProfiles }] = await Promise.all([
+  const [, { locale }] = await Promise.all([requireCustomer(), params]);
+  const [t, { cart, addresses, taxProfiles, typeNames }, points, company] = await Promise.all([
     getTranslations("checkout"),
     getCartAndBook(locale),
+    getPoints(),
+    getMyCompany(),
   ]);
   if (cart.items.length === 0) return redirect({ href: "/cart", locale });
 
@@ -34,10 +38,12 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </Callout>
       ) : null}
       <CheckoutView
-        contact={{ name: me.displayName, phone: me.phone ?? "", email: me.email ?? "" }}
+        cart={cart}
         addresses={addresses}
         taxProfiles={taxProfiles}
-        cartSplits={cart.items.some((item) => item.destinations.length > 1)}
+        pointsBalance={points.availablePoints}
+        company={company?.status === "active" ? company : null}
+        typeNames={typeNames}
       />
     </div>
   );

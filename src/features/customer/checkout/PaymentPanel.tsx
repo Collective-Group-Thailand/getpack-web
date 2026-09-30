@@ -4,29 +4,30 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
+import { ONLINE_PAYMENT_METHODS } from "@/domain/payment-methods";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { PAYMENT_STATUS } from "@/domain/status";
 import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
+import { QRCode } from "@/ui/components/QRCode";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
-export type Payment = ResponseOf<Requests, "GET /v1/store/payments/{paymentId}">;
+export type Payment = Schemas["PaymentDto"];
 type Method = Payment["method"];
 
-const FINAL = new Set(["succeeded", "failed", "expired", "cancelled", "refunded"]);
+const FINAL = new Set(["succeeded", "failed", "expired", "cancelled", "refunded", "partially_refunded"]);
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
@@ -44,10 +45,15 @@ function useCountdown(until: string | null): number | null {
 }
 
 /**
- * Paying one instalment (F3 3.3): a PromptPay/SCB QR with its countdown and the status as it
- * changes (the API settles it from the gateway's webhook; the page watches), the 2C2P redirect for
- * card and online banking, or Collective Group (Thailand)'s bank account and the slip, verified at
- * once or by Finance within 4 business hours (D-061). Another method is one tap away.
+ * Paying (F3 3.3, `store.payments.get`): a PromptPay/SCB QR drawn from the payload the API gives,
+ * with its countdown and the status as it changes (the API settles it from the gateway's webhook;
+ * the page watches), the 2C2P redirect for card and online banking, or a transfer and its slip,
+ * verified at once or by Finance within 4 business hours (D-061). Another method is one tap away —
+ * a new payment on the same order group (`store.payments.initiate`).
+ *
+ * CONTRACT-GAP store.payments — the published payment has no receiver bank account for a transfer
+ * and no failure reason, so the page asks for the slip without showing where to transfer, and a
+ * failure says so in general words.
  */
 export function PaymentPanel({ initial }: { initial: Payment }) {
   const t = useTranslations("payment");
@@ -59,7 +65,8 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
 
   const payment = useQuery({
     queryKey: queryKeys.detail("customer", "payment", initial.id),
-    queryFn: () => browserRequests().call("GET /v1/store/payments/{paymentId}", { path: { paymentId: initial.id } }),
+    queryFn: async () =>
+      (await browserApi().GET("/v1/store/payments/{paymentId}", { params: { path: { paymentId: initial.id } } })).data!,
     initialData: initial,
     // The webhook settles it; the realtime channel invalidates this key, and polling covers the gap.
     refetchInterval: (query) =>
@@ -76,17 +83,14 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
   }, [data.status]);
 
   async function restart(method: Method) {
+    if (!data.groupId) return;
     setSwitching(true);
     try {
-      const next = await browserRequests().call("POST /v1/store/instalments/{instalmentId}/payments", {
-        path: { instalmentId: data.instalmentId },
-        body: {
-          method,
-          returnUrl: `${window.location.origin}${window.location.pathname.replace(/\/checkout.*$/, "")}/checkout/return`,
-        },
-        idempotencyKey: newKey(),
+      const { data: next } = await browserApi().POST("/v1/store/order-groups/{groupId}/payments", {
+        params: { path: { groupId: data.groupId }, header: { "Idempotency-Key": newKey() } },
+        body: { method },
       });
-      router.replace(`/checkout/pay/${next.id}`);
+      router.replace(`/checkout/pay/${next!.id}`);
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));
       setSwitching(false);
@@ -96,8 +100,13 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
   const header = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <p className="text-muted text-sm">{t("forGroup", { code: data.orderGroupCode })}</p>
-        <p className="text-3xl font-bold tabular-nums">{format.thb(data.amount)}</p>
+        <p className="text-muted text-sm">{t("reference", { code: data.referenceCode })}</p>
+        <p className="text-3xl font-bold tabular-nums">{format.thb(data.cashAmount)}</p>
+        {data.whtAmount !== "0.00" ? (
+          <p className="text-muted text-xs">
+            {t("withheld", { total: format.thb(data.amount), wht: format.thb(data.whtAmount) })}
+          </p>
+        ) : null}
       </div>
       <StatusChip map={PAYMENT_STATUS} value={data.status} size="md" />
     </div>
@@ -122,27 +131,27 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
     );
   }
 
-  const others: Method[] = (["scb_qr", "card_2c2p", "online_banking_2c2p", "bank_transfer_slip"] as const).filter(
-    (method) => method !== data.method,
-  );
+  const others = ONLINE_PAYMENT_METHODS.filter((method) => method !== data.method);
 
   return (
     <div className="flex flex-col gap-6">
       {header}
       {data.status === "failed" ? (
         <Callout tone="danger" live title={t("failedTitle")}>
-          {data.failureReason ?? t("failedBody")}
+          {t("failedBody")}
         </Callout>
       ) : null}
       {data.status === "expired" ? (
         <Callout tone="warning" live title={t("expiredTitle")}>
-          <Button size="sm" className="mt-2" loading={switching} onClick={() => void restart(data.method)}>
-            {t("newQr")}
-          </Button>
+          {data.groupId ? (
+            <Button size="sm" className="mt-2" loading={switching} onClick={() => void restart(data.method)}>
+              {t("newQr")}
+            </Button>
+          ) : null}
         </Callout>
       ) : null}
 
-      {data.qr && data.status === "pending" ? (
+      {data.qrPayload && data.status === "pending" ? (
         <section
           aria-labelledby="pay-qr"
           className="border-border flex flex-col items-center gap-3 rounded-2xl border p-6 text-center"
@@ -150,11 +159,11 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
           <h2 id="pay-qr" className="font-semibold">
             {t("qrTitle")}
           </h2>
-          {/* eslint-disable-next-line @next/next/no-img-element -- the gateway's QR image, generated per payment */}
-          <img
-            src={data.qr.imageUrl}
-            alt={t("qrAlt", { amount: format.thb(data.amount) })}
-            className="size-60 rounded-lg bg-white p-2"
+          <QRCode
+            value={data.qrPayload}
+            size={240}
+            label={t("qrAlt", { amount: format.thb(data.cashAmount) })}
+            className="rounded-lg bg-white p-2"
           />
           {left !== null ? (
             <p className="tabular-nums" aria-live="off">
@@ -188,9 +197,11 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
         </section>
       ) : null}
 
-      {data.bankAccount ? <SlipSection payment={data} onChange={() => void payment.refetch()} /> : null}
+      {data.method === "bank_transfer_slip" ? (
+        <SlipSection payment={data} onChange={() => void payment.refetch()} />
+      ) : null}
 
-      {!FINAL.has(data.status) || data.status === "failed" ? (
+      {data.groupId && (!FINAL.has(data.status) || data.status === "failed") ? (
         <section aria-labelledby="pay-other">
           <h2 id="pay-other" className="text-sm font-medium">
             {t("otherMethods")}
@@ -218,13 +229,12 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
   const t = useTranslations("payment.slip");
   const format = useFormat();
   const [file, setFile] = useState<File | null>(null);
-  const [amount, setAmount] = useState(payment.amount);
+  const [amount, setAmount] = useState(payment.cashAmount);
   const [at, setAt] = useState("");
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const key = useRef(newKey());
   const latest = payment.slips.at(-1);
-  const account = payment.bankAccount!;
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -237,14 +247,13 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
     try {
       const uploaded = await uploadFile("customer", file, "slip");
       const [whole, fraction = ""] = amount.split(".");
-      await browserRequests().call("POST /v1/store/payments/{paymentId}/slips", {
-        path: { paymentId: payment.id },
+      await browserApi().POST("/v1/store/payments/{paymentId}/slips", {
+        params: { path: { paymentId: payment.id }, header: { "Idempotency-Key": key.current } },
         body: {
           fileId: uploaded.id,
           declaredAmount: `${whole}.${fraction.padEnd(2, "0")}`,
-          declaredTransferredAt: `${at}:00+07:00`,
+          transferredAt: `${at}:00+07:00`,
         },
-        idempotencyKey: key.current,
       });
       key.current = newKey();
       setFile(null);
@@ -262,44 +271,16 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
       <h2 id="pay-transfer" className="font-semibold">
         {t("title")}
       </h2>
-      <dl className="grid gap-2 text-sm sm:grid-cols-3">
-        <div>
-          <dt className="text-muted text-xs">{t("bank")}</dt>
-          <dd>{account.bank}</dd>
-        </div>
-        <div>
-          <dt className="text-muted text-xs">{t("accountName")}</dt>
-          <dd>{account.accountName}</dd>
-        </div>
-        <div>
-          <dt className="text-muted text-xs">{t("accountNo")}</dt>
-          <dd className="flex items-center gap-2 font-mono">
-            {account.accountNo}
-            <Button
-              size="sm"
-              variant="ghost"
-              iconStart="copy"
-              onClick={() =>
-                void navigator.clipboard
-                  ?.writeText(account.accountNo.replace(/-/g, ""))
-                  .then(() => toast.success(t("copied")))
-              }
-            >
-              {t("copy")}
-            </Button>
-          </dd>
-        </div>
-      </dl>
+      <p className="text-muted text-sm">{t("accountElsewhere")}</p>
 
       {latest?.status === "manual_review" ? (
         <Callout tone="info" live title={t("reviewTitle")}>
-          {t("reviewBody", { date: format.dateTime(latest.reviewDueAt) })}
-          {latest.message ? <span className="block">{latest.message}</span> : null}
+          {latest.slaDueAt ? t("reviewBody", { date: format.dateTime(latest.slaDueAt) }) : null}
         </Callout>
       ) : null}
       {latest?.status === "manual_rejected" || latest?.status === "failed" ? (
         <Callout tone="danger" live title={t("rejectedTitle")}>
-          {latest.message ?? t("rejectedBody")}
+          {t("rejectedBody")}
         </Callout>
       ) : null}
 

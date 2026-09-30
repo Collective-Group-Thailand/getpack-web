@@ -10,19 +10,21 @@
  * company (`setCheckoutCompany`) for the PO rule, the approval threshold and credit.
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
 import type { brandAsset, companyApproval, storeCompany } from "@/lib/api/requests/store-business";
-import type { checkoutInput } from "@/lib/api/requests/store-checkout";
+import type { Schemas } from "@/lib/api/types";
 
 import { baht, orders, satang } from "../admin/commerce";
 import { companyStores, presentCompany, registerCompany, type CompanyStore } from "../admin/companies";
 import { files, settingValue } from "../admin/platform";
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
-import { checkPreview, forgetPreview, placeChecked, price, setCheckoutCompany } from "./checkout";
+import { placeChecked, price, setApprovalRequester, setCheckoutCompany } from "./checkout";
 import { customerByPersona, customerOf, type CustomerPersona, type MockCustomer } from "./customers";
 import { addReorderToCart, reorderOf } from "./fulfilment";
+import type { Input } from "./model";
 import { ordersOf } from "./orders";
 
 type Company = z.output<typeof storeCompany>;
@@ -30,7 +32,6 @@ type Approval = z.output<typeof companyApproval>;
 type BrandAsset = z.output<typeof brandAsset>;
 type Member = CompanyStore["members"][number];
 type Role = Member["roles"][number];
-type Input = z.output<typeof checkoutInput>;
 
 const DAY = 24 * 60;
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
@@ -213,6 +214,99 @@ const placedBy = new Map<string, string>();
 /* ------------------------------------------------------------------------------ bulk reorder */
 
 const bulkPreviews = new Map<string, { persona: string; rows: { orderId: string; quantity: number }[] }>();
+
+/* --------------------------------------------------------------------- the published company */
+
+/** A company as the published contract has it (`CompanyDto`), from the back office's row. */
+export function toCompanyDto(store: CompanyStore): Schemas["CompanyDto"] {
+  const presented = presentCompany(store);
+  return {
+    id: presented.id,
+    companyCode: presented.companyCode,
+    legalName: presented.legalName,
+    tradeName: null,
+    taxId: presented.taxId,
+    isVatRegistered: presented.isVatRegistered,
+    status: presented.status,
+    statusReason:
+      presented.status === "suspended" ? "บัญชีบริษัทถูกระงับชั่วคราว กรุณาติดต่อทีมงาน (ข้อมูลจำลอง)" : null,
+    creditStatus: presented.creditStatus,
+    documentEmail: null,
+    withholdsTax: false,
+    poNumberPolicy: presented.poNumberPolicy,
+    orderApprovalThreshold: presented.orderApprovalThreshold,
+    createdAt: presented.createdAt,
+    members: store.members.map((member) => ({
+      id: member.id,
+      user: { id: member.user.id, displayName: member.user.displayName },
+      roles: member.roles,
+      status: member.status,
+      joinedAt: member.joinedAt,
+    })),
+    branches: store.branches.map((branch) => ({
+      id: branch.id,
+      branchType: branch.branchType,
+      branchCode: branch.branchCode,
+      name: branch.name,
+      line1: branch.address,
+      line2: null,
+      postcode: branch.address.match(/(\d{5})\s*$/)?.[1] ?? "10110",
+      isDefault: branch.branchType === "head_office",
+    })),
+    kycDocuments: store.kyc.map((document) => ({
+      id: document.id,
+      docType: document.docType,
+      fileId: document.file.id,
+      issuedOn: document.issuedOn,
+      note: document.note,
+      status: document.status,
+    })),
+    missingKyc: [],
+  };
+}
+
+/** The stores of the companies a customer belongs to, whatever their status. */
+function companiesOf(customer: MockCustomer): CompanyStore[] {
+  const link = memberships.get(customer.persona);
+  const store = link && companyStores.find((candidate) => candidate.company.id === link.companyId);
+  return store ? [store] : [];
+}
+
+/* ---------------------------------------------------------------- approval at checkout (D-123) */
+
+setApprovalRequester((customer, input, priced) => {
+  const found = membershipOf(customer);
+  if (!found) return problem(409, "companies.invalid_status", "บัญชีนี้ยังไม่ได้อยู่ในบริษัทใด");
+  const company = priced.preview.company;
+  const seq = approvals.length + 1;
+  const view: Approval = {
+    id: mockId("cap", seq),
+    requestNo: `AP-2569-${String(seq).padStart(5, "0")}`,
+    status: "pending",
+    requestedBy: { id: found.member.id, displayName: found.member.user.displayName },
+    requestedAt: bangkokIso(),
+    grossAmount: priced.preview.totals.grossAmount,
+    threshold: company?.approvalThreshold ?? "0.00",
+    poNumber: input.poNumber ?? null,
+    branch: priced.preview.taxInvoice?.branch ?? null,
+    items: priced.preview.items.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      grossAmount: item.grossAmount,
+    })),
+    scheduleLabel:
+      priced.preview.schedule.options.find((option) => option.key === priced.preview.schedule.selectedKey)?.label ?? "",
+    note: input.note ?? null,
+    decidedBy: null,
+    decidedAt: null,
+    reason: null,
+    orders: [],
+    expiresAt: bangkokIso(3 * DAY),
+  };
+  approvals.unshift({ view, companyId: found.store.company.id, requester: customer.persona, input });
+  return { id: view.id, requestNo: view.requestNo };
+});
 
 /* --------------------------------------------------------------------------------- handlers */
 
@@ -420,45 +514,11 @@ export const storeBusinessHandlers = [
     return { removed: true as const };
   }),
 
-  mockRequest("POST /v1/store/me/company/approvals", ({ body, request }) => {
-    const found = context(request);
-    if (found instanceof Response) return found;
-    const { previewToken, ...input } = body;
-    const priced = checkPreview(found.customer, previewToken, input);
-    if (priced instanceof Response) return priced;
-    const company = priced.preview.company;
-    if (!company?.needsApproval)
-      return problem(409, "company.approval_not_needed", "คำสั่งซื้อนี้สั่งได้เลยโดยไม่ต้องอนุมัติ");
-    forgetPreview(previewToken);
-    const seq = approvals.length + 1;
-    const view: Approval = {
-      id: mockId("cap", seq),
-      requestNo: `AP-2569-${String(seq).padStart(5, "0")}`,
-      status: "pending",
-      requestedBy: { id: found.member.id, displayName: found.member.user.displayName },
-      requestedAt: bangkokIso(),
-      grossAmount: priced.preview.totals.grossAmount,
-      threshold: company.approvalThreshold ?? "0.00",
-      poNumber: input.poNumber ?? null,
-      branch: priced.preview.taxInvoice?.branch ?? null,
-      items: priced.preview.items.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        unit: item.unit,
-        grossAmount: item.grossAmount,
-      })),
-      scheduleLabel:
-        priced.preview.schedule.options.find((option) => option.key === priced.preview.schedule.selectedKey)?.label ??
-        "",
-      note: input.note ?? null,
-      decidedBy: null,
-      decidedAt: null,
-      reason: null,
-      orders: [],
-      expiresAt: bangkokIso(3 * DAY),
-    };
-    approvals.unshift({ view, companyId: found.store.company.id, requester: found.customer.persona, input });
-    return view;
+  // store.companies.listMine (published, U-F0.2): the companies a customer belongs to.
+  http.get("*/v1/store/companies", ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    return HttpResponse.json(companiesOf(customer).map(toCompanyDto));
   }),
 
   mockRequest("GET /v1/store/me/company/approvals", ({ query, request }) => {
