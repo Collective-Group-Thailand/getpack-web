@@ -256,7 +256,7 @@ const REPORTS: {
     key: "sales",
     group: "sales",
     asOf: false,
-    permission: "reports.read",
+    permission: "orders.read",
     filters: [
       {
         key: "channel",
@@ -291,7 +291,7 @@ const REPORTS: {
     key: "sales_tax",
     group: "finance",
     asOf: false,
-    permission: "reports.read",
+    permission: "tax.read",
     filters: [],
     columns: [
       { key: "date", type: "date", total: false },
@@ -317,7 +317,7 @@ const REPORTS: {
     key: "payments",
     group: "finance",
     asOf: false,
-    permission: "reports.read",
+    permission: "payments.read",
     filters: [
       {
         key: "method",
@@ -356,7 +356,7 @@ const REPORTS: {
     key: "orders_quotations",
     group: "sales",
     asOf: false,
-    permission: "reports.read",
+    permission: "quotes.read",
     filters: [],
     columns: [
       { key: "date", type: "date", total: false },
@@ -374,7 +374,7 @@ const REPORTS: {
     key: "promotion_usage",
     group: "marketing",
     asOf: false,
-    permission: "reports.read",
+    permission: "promotions.read",
     filters: [],
     columns: [
       { key: "promotion", type: "text", total: false },
@@ -395,7 +395,7 @@ const REPORTS: {
     key: "points_liability",
     group: "finance",
     asOf: true,
-    permission: "reports.read",
+    permission: "loyalty.read",
     filters: [],
     columns: [
       { key: "month", type: "text", total: false },
@@ -623,8 +623,9 @@ export const analyticsHandlers = [
     };
   }),
   mockRequest("GET /v1/admin/reports", ({ request }) => {
+    // The catalogue needs no permission of its own; each report needs its data permission (B6.2).
     const who = staffPersonaOf(request);
-    if (!can(who, "reports.read")) return forbidden();
+    if (!who) return forbidden();
     return REPORTS.filter((report) => can(who, report.permission)).map(({ key, group, asOf, filters }) => ({
       key,
       group,
@@ -636,7 +637,7 @@ export const analyticsHandlers = [
     const who = staffPersonaOf(request);
     const report = REPORTS.find((candidate) => candidate.key === params.reportKey);
     if (!report) return problem(404, "http.not_found", "ไม่พบรายงานนี้");
-    if (!can(who, "reports.read") || !can(who, report.permission)) return forbidden();
+    if (!can(who, report.permission)) return forbidden();
     const from = query.from ?? query.asOf ?? bangkokIso().slice(0, 10);
     const to = query.to ?? from;
     const count = report.asOf ? 6 : Math.min(60, days(from, to) * 2);

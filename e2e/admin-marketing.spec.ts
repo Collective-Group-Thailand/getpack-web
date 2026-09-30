@@ -200,7 +200,8 @@ test.describe("loyalty rules (D-130…D-136)", () => {
 
 test.describe("customers", () => {
   test("a customer's points add up to the balance, and consents are read-only", async ({ page }) => {
-    await signInAsStaff(page, "marketing");
+    // packio-api grants customers.read to CS, not to Marketing (docs/rbac.md).
+    await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/customers`);
     await expect(page.getByRole("table", { name: "ลูกค้า" })).toContainText("บริษัท ตัวอย่างขนม จำกัด");
     await expectAxeClean(page);
@@ -219,7 +220,8 @@ test.describe("customers", () => {
 
 test.describe("B2B companies (D-120…D-125)", () => {
   test("KYC is reviewed document by document, then the account approved", async ({ page }) => {
-    await signInAsStaff(page, "finance");
+    // packio-api: companies.kyc_review reviews each document, companies.manage approves (docs/rbac.md).
+    await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(3)}?tab=kyc`);
     await expect(header(page)).toContainText("กำลังตรวจเอกสาร");
     await expectAxeClean(page);
@@ -247,7 +249,7 @@ test.describe("B2B companies (D-120…D-125)", () => {
   });
 
   test("a company certificate older than six months is refused (D-120)", async ({ page }) => {
-    await signInAsStaff(page, "finance");
+    await signInAsStaff(page, "finance_manager");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(5)}?tab=kyc`);
     await page.getByRole("button", { name: "ตรวจหนังสือรับรองบริษัท" }).click();
     const dialog = page.getByRole("dialog", { name: "ตรวจหนังสือรับรองบริษัท" });

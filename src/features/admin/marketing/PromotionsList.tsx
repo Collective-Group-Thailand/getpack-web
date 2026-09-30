@@ -28,7 +28,7 @@ export function PromotionsList({ initial }: { initial: InitialPage<PromotionSumm
   const t = useTranslations("marketing.promotions");
   const tStatus = useTranslations("status");
   const format = useFormat();
-  const canManage = useCan("marketing.manage");
+  const canManage = useCan("promotions.manage");
   const [ordering, setOrdering] = useState(false);
 
   const columns: DataTableColumn<PromotionSummary>[] = [

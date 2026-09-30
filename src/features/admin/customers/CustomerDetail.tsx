@@ -279,7 +279,7 @@ function Points({ customer }: { customer: Customer }) {
 function Referrals({ customer }: { customer: Customer }) {
   const t = useTranslations("customers.referrals");
   const format = useFormat();
-  const canMarketing = useCan("marketing.read");
+  const canMarketing = useCan("promotions.read");
   const referrals = useQuery({
     queryKey: queryKeys.list("admin", "referral", { referrerId: customer.id }),
     queryFn: () => browserRequests().call("GET /v1/admin/referrals", { query: { referrerId: customer.id } }),

@@ -516,7 +516,7 @@ orders.forEach((order, index) => {
 
 const QUEUE_LABEL_KEYS = ["preflight", "proof", "changes_requested", "template", "design"] as const;
 for (const queue of QUEUE_LABEL_KEYS) {
-  registerQueue("prepress.read", () => {
+  registerQueue("artwork.read", () => {
     const rows = [...details.values()].map(refresh).filter((detail) => detail.stage === queue);
     const due = rows
       .map((row) => row.slaDueAt)
@@ -568,7 +568,7 @@ function manage(
   action?: string,
 ): Response | { detail: Detail; who: StaffPersona } {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, "prepress.manage")) return forbidden();
+  if (!who || !can(who, "prepress.review")) return forbidden();
   const detail = orderId ? prepressOf(orderId) : undefined;
   if (!detail) return notFound();
   if (action && !refresh(detail).nextActions.some((item) => item.key === action && !item.disabledReason)) {
@@ -801,7 +801,7 @@ function documentResponse(
 
 export const prepressHandlers = [
   mockRequest("GET /v1/admin/prepress", ({ query, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
+    if (!can(staffPersonaOf(request), "artwork.read")) return forbidden();
     const rows = [...details.values()]
       .map(refresh)
       .filter((detail) => detail.stage !== null)
@@ -814,7 +814,7 @@ export const prepressHandlers = [
     return paginate(sortBy(rows, query.sort ?? "slaDueAt", query.order ?? "asc"), query);
   }),
   mockRequest("GET /v1/admin/prepress/{orderId}", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
+    if (!can(staffPersonaOf(request), "artwork.read")) return forbidden();
     // Any order has a prepress row once asked for — a web order the customer uploaded to, say.
     const detail = prepressOf(params.orderId!);
     return detail ?? notFound();
@@ -823,13 +823,13 @@ export const prepressHandlers = [
     const found = manage(request, params.orderId, "prepress.assign");
     if (found instanceof Response) return found;
     const person = body.assigneeId ? PERSONAS.find((candidate) => candidate.id === body.assigneeId) : null;
-    if (body.assigneeId && (!person || !can(person, "prepress.manage")))
+    if (body.assigneeId && (!person || !can(person, "prepress.review")))
       return problem(422, "prepress.assignee_not_eligible", "พนักงานคนนี้ไม่มีสิทธิ์ทำงานก่อนพิมพ์");
     found.detail.assignee = person ? refOf(person) : null;
     return refresh(found.detail);
   }),
   mockRequest("POST /v1/admin/prepress/submissions/{submissionId}/actions/accept", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.manage")) return forbidden();
+    if (!can(staffPersonaOf(request), "prepress.review")) return forbidden();
     const found = bySubmission(params.submissionId);
     if (!found) return notFound();
     const action = found.submission.nextActions.find((item) => item.key === "submission.accept");
@@ -840,7 +840,7 @@ export const prepressHandlers = [
     return refresh(found.detail);
   }),
   mockRequest("POST /v1/admin/prepress/submissions/{submissionId}/actions/reject", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.manage")) return forbidden();
+    if (!can(staffPersonaOf(request), "prepress.review")) return forbidden();
     const found = bySubmission(params.submissionId);
     if (!found) return notFound();
     if (found.submission.status !== "submitted") return conflict("ส่งคืนไฟล์นี้ไม่ได้ในขั้นตอนนี้");
@@ -881,12 +881,12 @@ export const prepressHandlers = [
     return refresh(detail);
   }),
   mockRequest("GET /v1/admin/prepress/proofs/{proofId}/annotations", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
+    if (!can(staffPersonaOf(request), "artwork.read")) return forbidden();
     return byProof(params.proofId) ? { data: annotations.get(params.proofId!) ?? [] } : notFound();
   }),
   mockRequest("POST /v1/admin/prepress/proofs/{proofId}/annotations", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.manage")) return forbidden();
+    if (!who || !can(who, "prepress.review")) return forbidden();
     const found = byProof(params.proofId);
     if (!found) return notFound();
     const list = annotations.get(found.proof.id) ?? [];
@@ -915,7 +915,7 @@ export const prepressHandlers = [
     "POST /v1/admin/prepress/proofs/{proofId}/annotations/{annotationId}/actions/resolve",
     ({ params, request }) => {
       const who = staffPersonaOf(request);
-      if (!who || !can(who, "prepress.manage")) return forbidden();
+      if (!who || !can(who, "prepress.review")) return forbidden();
       const found = byProof(params.proofId);
       const item = (annotations.get(params.proofId!) ?? []).find((candidate) => candidate.id === params.annotationId);
       if (!found || !item || item.parentId) return notFound();
@@ -970,14 +970,14 @@ export const prepressHandlers = [
   }),
   mockRequest("GET /v1/admin/design-documents/{documentId}", ({ params, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.read")) return forbidden();
+    if (!who || !can(who, "artwork.read")) return forbidden();
     const found = documentFor(params.documentId, who.id);
     if (!found) return problem(404, "design.not_found", "ไม่พบแบบนี้");
     return documentResponse("GET /v1/admin/design-documents/{documentId}", found);
   }),
   mockRequest("PUT /v1/admin/design-documents/{documentId}", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.manage")) return forbidden();
+    if (!who || !can(who, "prepress.review")) return forbidden();
     const copy = staffCopies.get(params.documentId);
     if (!copy) {
       return documentFor(params.documentId, who.id)
@@ -1001,7 +1001,7 @@ export const prepressHandlers = [
   }),
   mockRequest("POST /v1/admin/design-documents/{documentId}/actions/copy", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.manage")) return forbidden();
+    if (!who || !can(who, "prepress.review")) return forbidden();
     const source = documentFor(params.documentId, who.id);
     if (!source) return problem(404, "design.not_found", "ไม่พบแบบนี้");
     copyCounter += 1;

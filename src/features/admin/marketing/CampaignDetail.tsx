@@ -41,7 +41,7 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
   const t = useTranslations("marketing.campaign");
   const format = useFormat();
   const queryClient = useQueryClient();
-  const canManage = useCan("marketing.manage");
+  const canManage = useCan("campaigns.manage");
   const key = queryKeys.detail("admin", "campaign", campaignId);
   const [action, setAction] = useState<Action | null>(null);
   const [editing, setEditing] = useState(false);

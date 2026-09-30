@@ -358,7 +358,7 @@ const NEXT: Record<Claim["allowedActions"][number], Claim["status"]> = {
 };
 
 function presentClaim(item: Claim, who: StaffPersona | null): Claim {
-  const decide = who ? can(who, "claims.decide") : false;
+  const decide = who ? can(who, "claims.manage") : false;
   return {
     ...item,
     allowedActions: decide ? CLAIM_ACTIONS[item.status] : [],
@@ -724,7 +724,7 @@ export const logisticsHandlers = [
     return item ? withEtag(item, presentClaim(item, who)) : problem(404, "http.not_found", "ไม่พบเคลมนี้");
   }),
   mockRequest("POST /v1/admin/claims/{claimId}/actions/{action}", ({ params, body, request }) => {
-    const who = access(request, "claims.decide");
+    const who = access(request, "claims.manage");
     if (!who) return forbidden();
     const item = claims.find((candidate) => candidate.id === params.claimId);
     if (!item) return problem(404, "http.not_found", "ไม่พบเคลมนี้");
@@ -762,7 +762,7 @@ export const logisticsHandlers = [
     return presentClaim(item, who);
   }),
   mockRequest("POST /v1/admin/claims/{claimId}/resolutions", ({ params, body, request }) => {
-    const who = access(request, "claims.decide");
+    const who = access(request, "claims.manage");
     if (!who) return forbidden();
     const item = claims.find((candidate) => candidate.id === params.claimId);
     if (!item) return problem(404, "http.not_found", "ไม่พบเคลมนี้");

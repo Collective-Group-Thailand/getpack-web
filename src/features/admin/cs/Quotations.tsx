@@ -71,7 +71,7 @@ export function QuotationsList({ initial }: { initial: InitialPage<QuotationSumm
 export function QuotationDetail({ quoteId }: { quoteId: string }) {
   const t = useTranslations("cs.quotations");
   const format = useFormat();
-  const canOrder = useCan("orders.create_on_behalf");
+  const canOrder = useCan("carts.manage_on_behalf");
   const quote = useQuery({
     queryKey: queryKeys.detail("admin", "quote", quoteId),
     queryFn: () => browserRequests().call("GET /v1/admin/quotations/{quoteId}", { path: { quoteId } }),

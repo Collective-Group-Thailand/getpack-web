@@ -26,7 +26,7 @@ type Values = z.infer<typeof schema>;
 
 const config = defineResource<CampaignSummary, Values>({
   list: campaignsList,
-  manage: "marketing.manage",
+  manage: "campaigns.manage",
   form: {
     schema,
     empty: { code: "", name: "", startsOn: "", endsOn: "", budgetAmount: "", goals: "" },

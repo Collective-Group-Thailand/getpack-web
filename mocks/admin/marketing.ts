@@ -52,7 +52,7 @@ const customerRef = (index: number) => {
 /** Marketing reads with `marketing.read` and writes with `marketing.manage`. */
 function allowed(request: Request, manage = false): StaffPersona | Response {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, manage ? "marketing.manage" : "marketing.read")) return forbidden();
+  if (!who || !can(who, manage ? "promotions.manage" : "promotions.read")) return forbidden();
   return who;
 }
 
@@ -155,7 +155,7 @@ function present(row: CampaignRow, who: StaffPersona | null): CampaignRow {
       revenueAmount: baht(Number(row.spentAmount) * 100 * 9.4),
       newCustomersCount: Math.round(redemptions * 0.4),
     },
-    allowedActions: who && can(who, "marketing.manage") ? CAMPAIGN_ACTIONS[row.status] : [],
+    allowedActions: who && can(who, "promotions.manage") ? CAMPAIGN_ACTIONS[row.status] : [],
   };
 }
 
@@ -337,7 +337,7 @@ const PROMOTION_ACTIONS: Record<Promotion["status"], Promotion["allowedActions"]
 const presentPromotion = (row: PromotionRow, who: StaffPersona | null): Promotion => ({
   ...row,
   benefitSummary: summarise(row.benefit),
-  allowedActions: who && can(who, "marketing.manage") ? PROMOTION_ACTIONS[row.status] : [],
+  allowedActions: who && can(who, "promotions.manage") ? PROMOTION_ACTIONS[row.status] : [],
 });
 const summaryOf = (row: PromotionRow) => {
   const {
@@ -459,7 +459,7 @@ onApprovalDecided("referral_review", (approval, outcome) => {
   if (item) item.status = outcome === "approved" ? "rewarded" : "rejected_fraud";
 });
 
-registerQueue("marketing.read", () => {
+registerQueue("promotions.read", () => {
   const held = referrals.filter((item) => item.status === "under_review");
   return {
     key: "marketing.referral_review",
@@ -469,7 +469,7 @@ registerQueue("marketing.read", () => {
     nextDueAt: null,
   };
 });
-registerQueue("marketing.read", () => {
+registerQueue("promotions.read", () => {
   const alerted = campaigns.filter(
     (row) => ["active", "scheduled"].includes(row.status) && Number(present(row, null).spentPct) >= Number(alertPct()),
   );
@@ -740,7 +740,7 @@ export const marketingHandlers = [
 
   mockRequest("GET /v1/admin/referrals", ({ query, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || (!can(who, "marketing.read") && !can(who, "customers.read"))) return forbidden();
+    if (!who || (!can(who, "promotions.read") && !can(who, "customers.read"))) return forbidden();
     const rows = referrals
       .filter((item) => !query.status || item.status === query.status)
       .filter((item) => !query.referrerId || item.referrer.id === query.referrerId)

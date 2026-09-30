@@ -29,7 +29,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
   const t = useTranslations("marketing.coupons");
   const format = useFormat();
   const queryClient = useQueryClient();
-  const canManage = useCan("marketing.manage") && promotion.status !== "ended";
+  const canManage = useCan("promotions.manage") && promotion.status !== "ended";
   const [generating, setGenerating] = useState<{ key: string } | null>(null);
   const [kind, setKind] = useState<"single" | "bulk_unique">("single");
   const [code, setCode] = useState("");

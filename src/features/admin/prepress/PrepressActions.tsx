@@ -131,7 +131,7 @@ export function PrepressActionDialogs({
           title={t("assign.title")}
           description={t("assign.body", { code: detail.orderCode })}
           current={detail.assignee}
-          permission="prepress.manage"
+          permission="prepress.review"
           personHint={t("assign.personHint")}
           onAssign={async (assigneeId) =>
             settle(
