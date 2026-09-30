@@ -20,7 +20,8 @@ export default async function RfqDetailPage({ params, searchParams }: Props) {
   const tab = (RFQ_TABS as readonly string[]).includes(String(query.tab)) ? (query.tab as RfqTab) : "request";
   let initial = null;
   try {
-    initial = await (await adminServerApis()).requests.call("GET /v1/admin/rfqs/{rfqId}", { path: { rfqId } });
+    const { contract } = await adminServerApis();
+    initial = (await contract.GET("/v1/admin/rfqs/{rfqId}", { params: { path: { rfqId } } })).data ?? null;
   } catch {
     // Rendered by the client as the API answered it.
   }

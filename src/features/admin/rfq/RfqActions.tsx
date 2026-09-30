@@ -1,13 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import type { AdminRfqAction } from "@/domain/next-actions/admin";
 import { useFormat } from "@/features/shared/format";
-import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -18,8 +17,9 @@ import { Input, Textarea } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
-import { AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
-import type { Rfq } from "./resources";
+import { adminBrowserApis, AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
+import { useSettleRfq, useUnmetDemandReasons } from "./data";
+import { draftOf, sentOf, type Rfq } from "./resources";
 
 export type RfqActionKey =
   | "start_review"
@@ -46,12 +46,22 @@ const SUPPORTED = new Set<string>([
   "create_order",
 ]);
 
-/** The RFQ's actions, exactly as the API offered them — see `NextActionBar`. */
-export function RfqActionBar({ rfq, onAction }: { rfq: Rfq; onAction: (key: RfqActionKey) => void }) {
+/** The RFQ's actions as `adminRfqActions` offers them — see `NextActionBar`. */
+export function RfqActionBar({
+  actions,
+  onAction,
+}: {
+  actions: AdminRfqAction[];
+  onAction: (key: RfqActionKey) => void;
+}) {
   const t = useTranslations("rfq.actions");
   return (
     <NextActionBar
-      actions={rfq.nextActions}
+      actions={actions.map(({ key, irreversible, blockedBy }) => ({
+        key,
+        irreversible,
+        disabledReason: blockedBy ? t(`blocked.${blockedBy}`) : null,
+      }))}
       supported={SUPPORTED}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
       onAction={(key) => onAction(key as RfqActionKey)}
@@ -59,41 +69,24 @@ export function RfqActionBar({ rfq, onAction }: { rfq: Rfq; onAction: (key: RfqA
   );
 }
 
-/** Keeps the screen, the queues and the dashboard counts in step after an action. */
-function useSettle(rfqId: string) {
-  const queryClient = useQueryClient();
-  return (updated?: Rfq) => {
-    if (updated) queryClient.setQueryData(queryKeys.detail("admin", "rfq", rfqId), updated);
-    else void queryClient.invalidateQueries({ queryKey: queryKeys.detail("admin", "rfq", rfqId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "rfq") });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.related("admin", "rfq", rfqId, "messages") });
-  };
-}
-
 /** The dialog for whichever action is open. One component so every action shares the same rules. */
 export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqActionKey | null; onClose: () => void }) {
   const t = useTranslations("rfq.actions");
   const format = useFormat();
-  const settle = useSettle(rfq.id);
+  const settle = useSettleRfq(rfq.id);
   const rfqId = rfq.id;
-  const draft = rfq.quotes.find((quote) => quote.status === "draft");
-  const sent = rfq.quotes.find((quote) => quote.status === "sent");
+  const draft = draftOf(rfq);
+  const sent = sentOf(rfq);
   const [reasonCode, setReasonCode] = useState("");
   const [quantity, setQuantity] = useState("");
-
-  const reasons = useQuery({
-    queryKey: queryKeys.list("admin", "unmet_demand_reason", {}),
-    queryFn: () => browserRequests().call("GET /v1/admin/unmet-demand-reasons"),
-    staleTime: STALE_TIME.reference,
-    enabled: open === "decline",
-  });
+  const reasons = useUnmetDemandReasons(open === "decline");
 
   const fail = (error: unknown): never => {
     toast.error(problemMessage(error, t("failed")));
     throw error;
   };
   const common = { open: true, onOpenChange: (next: boolean) => (next ? undefined : onClose()) };
+  const { contract, requests } = adminBrowserApis();
 
   switch (open) {
     case "assign":
@@ -101,22 +94,24 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
         <AssignDialog
           title={t("assign.title")}
           description={t("assign.body", { code: rfq.rfqCode })}
-          current={rfq.assignee}
+          current={rfq.assignedTo}
           permission="rfqs.manage"
           personHint={t("assign.personHint")}
-          onAssign={async (assigneeId) =>
-            settle(
-              await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/actions/assign", {
-                path: { rfqId },
-                body: { assigneeId },
-              }),
-            )
-          }
+          // CONTRACT-GAP admin.rfq-actions — `admin.rfqs.assign` takes a person; it cannot unassign.
+          clearable={false}
+          onAssign={async (userId) => {
+            if (!userId) return;
+            const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/actions/assign", {
+              params: { path: { rfqId } },
+              body: { userId },
+            });
+            settle(data);
+          }}
           onClose={onClose}
         />
       );
     case "request_factory_cost":
-      return <ConsultDialog rfq={rfq} onClose={onClose} onDone={() => settle()} />;
+      return <ConsultDialog rfq={rfq} onClose={onClose} />;
     case "request_info":
       return (
         <ConfirmAction
@@ -127,12 +122,11 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           reason={{ label: t("requestInfo.message"), required: true, minLength: 3, hint: t("requestInfo.hint") }}
           onConfirm={async ({ reason }) => {
             try {
-              settle(
-                await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/actions/request-info", {
-                  path: { rfqId },
-                  body: { message: reason },
-                }),
-              );
+              const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/actions/request-info", {
+                params: { path: { rfqId } },
+                body: { body: reason },
+              });
+              settle(data);
               toast.success(t("requestInfo.done"));
             } catch (error) {
               fail(error);
@@ -150,19 +144,18 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           tone="destructive"
           confirmationPhrase={rfq.rfqCode}
           reason={{ label: t("decline.note"), hint: t("decline.noteHint") }}
-          onConfirm={async ({ idempotencyKey, reason }) => {
+          onConfirm={async ({ reason }) => {
             if (!reasonCode) {
               toast.error(t("decline.needReason"));
               throw new Error("reason code required");
             }
             try {
-              settle(
-                await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/actions/decline", {
-                  path: { rfqId },
-                  body: { reasonCode, ...(reason ? { note: reason } : {}) },
-                  idempotencyKey,
-                }),
-              );
+              // `admin.rfqs.decline` declares no Idempotency-Key.
+              const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/actions/decline", {
+                params: { path: { rfqId } },
+                body: { reasonCode, ...(reason ? { note: reason } : {}) },
+              });
+              settle(data);
               toast.success(t("decline.done"));
             } catch (error) {
               fail(error);
@@ -186,13 +179,7 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           title={t("send.title", { version: draft.versionNo })}
           description={
             <>
-              <span className="block">
-                {t("send.body", {
-                  code: rfq.rfqCode,
-                  customer: rfq.customer.displayName,
-                  validUntil: format.date(draft.validUntil),
-                })}
-              </span>
+              <span className="block">{t("send.body", { code: rfq.rfqCode, customer: rfq.customer.displayName })}</span>
               <span className="mt-2 block">
                 {draft.lines.map((line) => (
                   <span key={line.quantity} className="flex justify-between gap-4 tabular-nums">
@@ -208,14 +195,13 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           }
           confirmLabel={t("send.confirm")}
           confirmationPhrase={rfq.rfqCode}
-          onConfirm={async ({ idempotencyKey }) => {
+          onConfirm={async () => {
             try {
-              settle(
-                await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/send", {
-                  path: { rfqId, quoteId: draft.id },
-                  idempotencyKey,
-                }),
-              );
+              // `admin.rfqs.sendQuotation` declares no Idempotency-Key; the API sets the validity (D-051).
+              const { data } = await contract.POST("/v1/admin/rfq-quotations/{rfqQuoteId}/actions/send", {
+                params: { path: { rfqQuoteId: draft.id } },
+              });
+              settle(data);
               toast.success(t("send.done"));
             } catch (error) {
               fail(error);
@@ -239,13 +225,14 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
               throw new Error("quantity required");
             }
             try {
-              settle(
-                await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance", {
-                  path: { rfqId, quoteId: sent.id },
-                  body: { quantity: chosen, note: reason },
-                  idempotencyKey,
-                }),
-              );
+              // Still a contract request (admin.rfq-quotes): its answer is not the published RFQ,
+              // so the RFQ is read again.
+              await requests.call("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance", {
+                path: { rfqId, quoteId: sent.id },
+                body: { quantity: chosen, note: reason },
+                idempotencyKey,
+              });
+              settle();
               toast.success(t("accept.done"));
             } catch (error) {
               fail(error);
@@ -276,34 +263,51 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
 /**
  * "Request cost from factory" (F2 2.3): the factories the API says could make this category,
  * with their D-043 tier and on-time rate; one that cannot says why and cannot be picked.
+ *
+ * `admin.rfqs.requestConsultation` asks one factory per call and declares no Idempotency-Key, so
+ * the dialog asks each chosen factory in turn (CONTRACT-GAP admin.rfq-consultations — no
+ * multi-factory request). A failure stops the run; the factories already asked stay asked, and
+ * the RFQ the last call answered shows them.
  */
-function ConsultDialog({ rfq, onClose, onDone }: { rfq: Rfq; onClose: () => void; onDone: () => void }) {
+function ConsultDialog({ rfq, onClose }: { rfq: Rfq; onClose: () => void }) {
   const t = useTranslations("rfq.actions.consult");
   const tCommon = useTranslations("common");
   const format = useFormat();
+  const settle = useSettleRfq(rfq.id);
   const [chosen, setChosen] = useState<string[]>([]);
   const [dueAt, setDueAt] = useState("");
   const [note, setNote] = useState("");
-  const [idempotencyKey] = useState(newIdempotencyKey);
   const [missing, setMissing] = useState(false);
 
   const candidates = useQuery({
     queryKey: queryKeys.related("admin", "rfq", rfq.id, "candidate_factories"),
+    // Still a contract request (admin.rfq-consultations).
     queryFn: () =>
-      browserRequests().call("GET /v1/admin/rfqs/{rfqId}/candidate-factories", { path: { rfqId: rfq.id } }),
+      adminBrowserApis().requests.call("GET /v1/admin/rfqs/{rfqId}/candidate-factories", { path: { rfqId: rfq.id } }),
     staleTime: STALE_TIME.transactional,
   });
 
   const request = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/rfqs/{rfqId}/consultations", {
-        path: { rfqId: rfq.id },
-        body: { factoryIds: chosen, dueAt: `${dueAt}:00+07:00`, ...(note.trim() ? { note: note.trim() } : {}) },
-        idempotencyKey,
-      }),
-    onSuccess: (result) => {
-      toast.success(t("done", { count: result.data.length }));
-      onDone();
+    mutationFn: async () => {
+      const { contract } = adminBrowserApis();
+      let latest: Rfq | undefined;
+      let asked = 0;
+      try {
+        for (const factoryId of chosen) {
+          const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/consultations", {
+            params: { path: { rfqId: rfq.id } },
+            body: { factoryId, dueAt: `${dueAt}:00+07:00`, ...(note.trim() ? { note: note.trim() } : {}) },
+          });
+          latest = data;
+          asked += 1;
+        }
+      } finally {
+        if (asked > 0) settle(latest);
+      }
+      return asked;
+    },
+    onSuccess: (asked) => {
+      toast.success(t("done", { count: asked }));
       onClose();
     },
     onError: (error) => toast.error(problemMessage(error, t("failed"))),
@@ -323,7 +327,7 @@ function ConsultDialog({ rfq, onClose, onDone }: { rfq: Rfq; onClose: () => void
       size="lg"
       onOpenChange={(next) => (next ? undefined : onClose())}
       title={t("title")}
-      description={t("body", { code: rfq.rfqCode, type: rfq.productType.name })}
+      description={t("body", { code: rfq.rfqCode, type: rfq.productTypeName })}
       closeLabel={tCommon("actions.close")}
       footer={
         <>
