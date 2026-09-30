@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { adminOrderActions, type AdminOrderFacts } from "./admin";
+import { adminCompanyActions, adminOrderActions, type AdminOrderFacts } from "./admin";
 
 const everyone = () => true;
 const nobody = () => false;
@@ -43,5 +43,36 @@ describe("adminOrderActions", () => {
     expect(keys({ status: "waiting_payment", artworkStatus: "awaiting_upload", slipToReview: true }, nobody)).toEqual(
       [],
     );
+  });
+});
+
+describe("adminCompanyActions", () => {
+  const companyKeys = (
+    status: Parameters<typeof adminCompanyActions>[0],
+    can: (permission: string) => boolean = everyone,
+  ) => adminCompanyActions(status, can).map((action) => action.key);
+
+  it("offers the KYC decision only while under review, and only for companies.kyc_review (D-120)", () => {
+    expect(companyKeys("kyc_review")).toEqual(["approve-kyc", "reject-kyc", "close"]);
+    expect(companyKeys("kyc_review", (permission) => permission === "companies.kyc_review")).toEqual([
+      "approve-kyc",
+      "reject-kyc",
+    ]);
+    expect(companyKeys("applied")).toEqual(["close"]);
+  });
+
+  it("suspends an active company and reactivates a suspended one, for companies.manage", () => {
+    expect(companyKeys("active")).toEqual(["suspend", "close"]);
+    expect(companyKeys("suspended")).toEqual(["reactivate", "close"]);
+    expect(companyKeys("active", (permission) => permission === "companies.kyc_review")).toEqual([]);
+  });
+
+  it("asks a reason for everything but approving KYC, and offers nothing on a closed company", () => {
+    const actions = adminCompanyActions("kyc_review", everyone);
+    expect(actions.find((action) => action.key === "approve-kyc")?.needsReason).toBe(false);
+    expect(actions.filter((action) => action.key !== "approve-kyc").every((action) => action.needsReason)).toBe(true);
+    expect(adminCompanyActions("active", everyone).find((action) => action.key === "suspend")?.destructive).toBe(true);
+    expect(companyKeys("closed")).toEqual([]);
+    expect(companyKeys("kyc_review", nobody)).toEqual([]);
   });
 });

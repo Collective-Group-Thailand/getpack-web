@@ -1,23 +1,15 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import {
-  COMPANY_STATUS,
-  CREDIT_STATUS,
-  KYC_STATUS,
-  MEMBER_STATUS,
-  SETTING_VERSION_STATUS,
-  STATEMENT_STATUS,
-} from "@/domain/status";
+import { adminCompanyActions, type AdminCompanyAction } from "@/domain/next-actions/admin";
+import { COMPANY_STATUS, CREDIT_STATUS, KYC_STATUS, MEMBER_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
-import { newIdempotencyKey } from "@/lib/api/client";
+import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
@@ -26,7 +18,7 @@ import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
-import { NumberInput, Textarea } from "@/ui/components/Input";
+import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Select } from "@/ui/components/Select";
@@ -34,6 +26,7 @@ import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 
 import {
+  adminBrowserApis,
   ConfirmAction,
   FormDialog,
   FormError,
@@ -41,41 +34,60 @@ import {
   QueryError,
   Section,
   StatusChip,
+  useActor,
   useCan,
 } from "../console";
-import { adminBrowserApis } from "../console/api";
 import { PartyOrders } from "../orders";
-import type { Company, CompanyBranch, CompanyKyc, CompanyMember, CompanyStatement, CompanyTab } from "./resources";
+import type { Company, CompanyBranch, CompanyKyc, CompanyMember, CompanyTab } from "./resources";
 
-type Action = Company["allowedActions"][number];
-const DESTRUCTIVE = new Set<Action>(["suspend", "close"]);
+type Basis = "paid_orders" | "financial_statement";
 
-/** Reads the company with its ETag: status actions are sent under `If-Match`. */
 async function readCompany(companyId: string) {
-  return browserRequests().read("GET /v1/admin/companies/{companyId}", { path: { companyId } });
+  const { data } = await adminBrowserApis().contract.GET("/v1/admin/companies/{companyId}", {
+    params: { path: { companyId } },
+  });
+  return data!;
+}
+
+/** Today's month in Bangkok, `YYYY-MM` — a default for the month field, never date maths. */
+function bangkokMonth() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date()).slice(0, 7);
 }
 
 /**
- * One B2B company (F2 2.7, D-120…D-125): terms and what it owes, KYC review, members and their
- * company roles, branches (a tax invoice each), credit — prepaid until a limit is approved by
- * the `credit_limit` policy — monthly statements and its orders. The header restates the code
- * and status on every tab and carries the account actions.
+ * One B2B company (F2 2.7, D-120…D-125): terms, KYC review, members and their company roles,
+ * branches (a tax invoice each), credit — prepaid until a limit is approved by the
+ * `credit_limit` policy — monthly statements and its orders. The header restates the code and
+ * status on every tab and carries the account actions.
+ *
+ * On the published contract (U-F0.3): `admin.companies.get` carries the members, branches and
+ * KYC documents inline; credit is `admin.companyCredit.get`; a statement is one month of
+ * `admin.receivables.companyStatement`. What the old page aggregate carried and the contract
+ * does not — receivables, the company discount, credit eligibility and the limit history, the
+ * allowed actions — is marked where it was shown (CONTRACT-GAP admin.companies, admin.company-credit).
  */
 export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: CompanyTab }) {
   const t = useTranslations("companies.detail");
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const actor = useActor();
   const [current, setCurrent] = useState<string>(tab);
-  const [action, setAction] = useState<Action | null>(null);
+  const [action, setAction] = useState<AdminCompanyAction | null>(null);
   const key = queryKeys.detail("admin", "company", companyId);
-  const query = useQuery({ queryKey: key, queryFn: async () => (await readCompany(companyId)).data });
+  const query = useQuery({ queryKey: key, queryFn: () => readCompany(companyId) });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const company = query.data;
   if (!company) return null;
 
+  const code = company.companyCode ?? t("noCode");
+  const actions = adminCompanyActions(company.status, (permission) => actor.permissions.includes(permission));
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "company") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
+  };
+  const changed = (updated: Company) => {
+    queryClient.setQueryData(key, updated);
+    refresh();
   };
   const go = (next: string) => {
     setCurrent(next);
@@ -88,37 +100,38 @@ export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: C
         breadcrumbs={
           <Breadcrumbs
             label={t("breadcrumb")}
-            items={[{ label: t("companies"), href: "/companies" }, { label: company.companyCode }]}
+            items={[{ label: t("companies"), href: "/companies" }, { label: company.companyCode ?? company.legalName }]}
           />
         }
         title={company.legalName}
         meta={
           <>
-            <span className="text-muted font-mono text-sm">{company.companyCode}</span>
+            <span className="text-muted font-mono text-sm">{code}</span>
             <StatusChip map={COMPANY_STATUS} value={company.status} size="md" />
             <StatusChip map={CREDIT_STATUS} value={company.creditStatus} size="md" />
           </>
         }
         description={t("taxId", { taxId: company.taxId })}
-        actions={company.allowedActions.map((item) => (
+        actions={actions.map((item) => (
           <Button
-            key={item}
-            variant={DESTRUCTIVE.has(item) ? "ghost" : item === "approve-kyc" ? "primary" : "secondary"}
+            key={item.key}
+            variant={item.destructive ? "ghost" : item.key === "approve-kyc" ? "primary" : "secondary"}
             onClick={() => setAction(item)}
           >
-            {t(`actions.${item}.label`)}
+            {t(`actions.${item.key}.label`)}
           </Button>
         ))}
       />
 
-      {company.receivables.creditOrdersBlocked ? (
-        <Callout
-          tone="danger"
-          title={t("blocked", {
-            days: company.receivables.oldestOverdueDays,
-          })}
-        >
+      {/* CONTRACT-GAP admin.companies — no receivables on the company, so the block cannot say how many days overdue. */}
+      {company.creditStatus === "blocked_overdue" ? (
+        <Callout tone="danger" title={t("blocked")}>
           {t("blockedBody")}
+        </Callout>
+      ) : null}
+      {company.statusReason ? (
+        <Callout tone={company.status === "active" ? "info" : "warning"} title={t("statusReason")}>
+          {company.statusReason}
         </Callout>
       ) : null}
 
@@ -128,7 +141,7 @@ export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: C
         onValueChange={go}
         items={[
           { value: "overview", label: t("tabs.overview"), content: <Overview company={company} /> },
-          { value: "kyc", label: t("tabs.kyc"), content: <Kyc company={company} onChanged={refresh} /> },
+          { value: "kyc", label: t("tabs.kyc"), content: <Kyc company={company} onChanged={changed} /> },
           { value: "members", label: t("tabs.members"), content: <Members company={company} /> },
           { value: "branches", label: t("tabs.branches"), content: <Branches company={company} /> },
           { value: "credit", label: t("tabs.credit"), content: <Credit company={company} onChanged={refresh} /> },
@@ -141,22 +154,30 @@ export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: C
         <ConfirmAction
           open
           onOpenChange={(open) => (open ? undefined : setAction(null))}
-          title={t(`actions.${action}.title`)}
-          description={t(`actions.${action}.body`, { code: company.companyCode, name: company.legalName })}
-          confirmLabel={t(`actions.${action}.label`)}
-          tone={DESTRUCTIVE.has(action) ? "destructive" : "primary"}
-          confirmationPhrase={DESTRUCTIVE.has(action) ? company.companyCode : undefined}
-          reason={{ label: t("reason"), required: true, minLength: 3 }}
+          title={t(`actions.${action.key}.title`)}
+          description={t(`actions.${action.key}.body`, { name: company.legalName })}
+          confirmLabel={t(`actions.${action.key}.label`)}
+          tone={action.destructive ? "destructive" : "primary"}
+          confirmationPhrase={action.destructive ? (company.companyCode ?? undefined) : undefined}
+          reason={action.needsReason ? { label: t("reason"), required: true, minLength: 3 } : undefined}
           onConfirm={async ({ reason }) => {
+            const { contract } = adminBrowserApis();
+            const path = { companyId };
+            const chosen = action.key;
             try {
-              const { etag } = await readCompany(companyId);
-              const updated = await browserRequests().call("POST /v1/admin/companies/{companyId}/actions/{action}", {
-                path: { companyId, action },
-                body: { reason },
-                etag: etag ?? undefined,
-              });
-              queryClient.setQueryData(key, updated);
-              refresh();
+              const { data } =
+                chosen === "approve-kyc"
+                  ? await contract.POST("/v1/admin/companies/{companyId}/actions/approve-kyc", { params: { path } })
+                  : chosen === "reject-kyc"
+                    ? await contract.POST("/v1/admin/companies/{companyId}/actions/reject-kyc", {
+                        params: { path },
+                        body: { reason },
+                      })
+                    : await contract.POST("/v1/admin/companies/{companyId}/actions/{action}", {
+                        params: { path: { companyId, action: chosen } },
+                        body: { reason },
+                      });
+              changed(data!);
               toast.success(t("changed"));
             } catch (error) {
               toast.error(problemMessage(error, t("failed")));
@@ -172,86 +193,83 @@ export function CompanyWorkspace({ companyId, tab }: { companyId: string; tab: C
 function Overview({ company }: { company: Company }) {
   const t = useTranslations("companies.overview");
   const format = useFormat();
+  // CONTRACT-GAP admin.companies — no active company discount and no receivables summary (D-122,
+  // D-124) on the published company; the overview shows the terms only.
   return (
-    <div className="flex flex-col gap-4">
-      <Section title={t("terms")} description={t("termsNote")}>
-        <DescriptionList
-          columns={3}
-          items={[
-            { term: t("vat"), description: company.isVatRegistered ? t("vatYes") : t("vatNo") },
-            { term: t("poPolicy"), description: t(`poPolicies.${company.poNumberPolicy}`) },
-            {
-              term: t("approvalThreshold"),
-              description: company.orderApprovalThreshold
-                ? format.thb(company.orderApprovalThreshold)
-                : t("noThreshold"),
-            },
-            {
-              term: t("kycApproved"),
-              description: company.kycApprovedAt ? <When at={company.kycApprovedAt} absoluteOnly /> : t("notYet"),
-            },
-            {
-              term: t("discount"),
-              description: company.discount ? (
-                <span>
-                  {format.percent(company.discount.pct)} ·{" "}
-                  <Link
-                    href={`/discount-memos?q=${encodeURIComponent(company.discount.memoCode)}`}
-                    className="text-primary font-mono hover:underline"
-                  >
-                    {company.discount.memoCode}
-                  </Link>
-                </span>
-              ) : (
-                t("noDiscount")
-              ),
-            },
-            { term: t("paidOrders"), description: format.number(company.paidOrdersCount) },
-          ]}
-        />
-      </Section>
-      <Section title={t("receivables")} description={t("receivablesNote")}>
-        <dl className="grid gap-3 sm:grid-cols-4">
-          {(
-            [
-              ["open", format.thb(company.receivables.openAmount)],
-              ["overdue", format.thb(company.receivables.overdueAmount)],
-              ["oldest", t("days", { days: company.receivables.oldestOverdueDays })],
-              ["available", format.thb(company.credit.availableAmount)],
-            ] as const
-          ).map(([name, value]) => (
-            <div key={name} className="rounded-md border p-3">
-              <dt className="text-muted text-xs">{t(`figures.${name}`)}</dt>
-              <dd className="text-lg font-semibold tabular-nums">{value}</dd>
-            </div>
-          ))}
-        </dl>
-        {company.receivables.nextDueAt ? (
-          <p className="text-muted mt-2 text-sm">
-            {t("nextDue")} <When at={company.receivables.nextDueAt} absoluteOnly />
-          </p>
-        ) : null}
-      </Section>
-    </div>
+    <Section title={t("terms")} description={t("termsNote")}>
+      <DescriptionList
+        columns={3}
+        items={[
+          { term: t("tradeName"), description: company.tradeName ?? t("none") },
+          { term: t("vat"), description: company.isVatRegistered ? t("vatYes") : t("vatNo") },
+          { term: t("withholdsTax"), description: company.withholdsTax ? t("withholdsYes") : t("withholdsNo") },
+          { term: t("documentEmail"), description: company.documentEmail ?? t("none") },
+          { term: t("poPolicy"), description: t(`poPolicies.${company.poNumberPolicy}`) },
+          {
+            term: t("approvalThreshold"),
+            description: company.orderApprovalThreshold ? format.thb(company.orderApprovalThreshold) : t("noThreshold"),
+          },
+          {
+            term: t("kycApproved"),
+            description: company.kycApprovedAt ? <When at={company.kycApprovedAt} absoluteOnly /> : t("notYet"),
+          },
+          { term: t("paidOrders"), description: format.number(company.paidOrdersCount) },
+        ]}
+      />
+    </Section>
   );
 }
 
-function Kyc({ company, onChanged }: { company: Company; onChanged: () => void }) {
+/** A KYC file, through a short-lived signed URL (`admin.files.download`): asked for, then opened. */
+function KycFile({ fileId, name }: { fileId: string; name: string }) {
   const t = useTranslations("companies.kyc");
-  const queryClient = useQueryClient();
-  // Each document is reviewed with `companies.kyc_review`; approving the account is an action (companies.manage).
-  const canManage = useCan("companies.kyc_review");
-  const key = queryKeys.related("admin", "company", company.id, "kyc");
-  const docs = useQuery({
-    queryKey: key,
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/companies/{companyId}/kyc-documents", { path: { companyId: company.id } }),
-  });
+  const [url, setUrl] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  if (url) {
+    return (
+      <Button asChild size="sm" variant="ghost" iconStart="external">
+        <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${t("open")} ${name}`}>
+          {t("open")}
+        </a>
+      </Button>
+    );
+  }
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      iconStart="download"
+      loading={busy}
+      aria-label={`${t("download")} ${name}`}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          const { data } = await adminBrowserApis().contract.GET("/v1/admin/files/{fileId}/download", {
+            params: { path: { fileId } },
+          });
+          setUrl(data!.url);
+        } catch (error) {
+          toast.error(isApiError(error) ? error.detail : t("downloadFailed"));
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      {t("download")}
+    </Button>
+  );
+}
+
+function Kyc({ company, onChanged }: { company: Company; onChanged: (company: Company) => void }) {
+  const t = useTranslations("companies.kyc");
+  // Each document is reviewed with `companies.kyc_review` (admin.companies.reviewKycDocument).
+  const canReview = useCan("companies.kyc_review");
   const [reviewing, setReviewing] = useState<CompanyKyc | null>(null);
   const [outcome, setOutcome] = useState<"verified" | "rejected">("verified");
   const [note, setNote] = useState("");
-  if (docs.isError) return <QueryError error={docs.error} onRetry={() => void docs.refetch()} />;
 
+  // CONTRACT-GAP admin.companies — a KYC document carries its file id only: no file name, no
+  // upload time and no reviewer or review time.
   const columns: DataTableColumn<CompanyKyc>[] = [
     { id: "docType", header: t("doc"), cell: (row) => t(`types.${row.docType}`) },
     { id: "status", header: t("status"), cell: (row) => <StatusChip map={KYC_STATUS} value={row.status} /> },
@@ -263,17 +281,10 @@ function Kyc({ company, onChanged }: { company: Company; onChanged: () => void }
     {
       id: "file",
       header: t("file"),
-      cell: (row) =>
-        row.file.url ? (
-          <a href={row.file.url} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-            {row.file.originalName}
-          </a>
-        ) : (
-          row.file.originalName
-        ),
+      cell: (row) => <KycFile fileId={row.fileId} name={t(`types.${row.docType}`)} />,
     },
     { id: "note", header: t("note"), cell: (row) => row.note ?? "" },
-    ...(canManage
+    ...(canReview
       ? [
           {
             id: "review",
@@ -299,36 +310,39 @@ function Kyc({ company, onChanged }: { company: Company; onChanged: () => void }
 
   return (
     <Section title={t("title")} description={t("rule")}>
+      {company.missingKyc.length > 0 ? (
+        <Callout tone="warning" className="mb-3" title={t("missing")}>
+          {company.missingKyc.map((type) => t(`types.${type}`)).join(" · ")}
+        </Callout>
+      ) : null}
       <DataTable
         caption={t("title")}
         columns={columns}
-        rows={docs.data ?? []}
+        rows={company.kycDocuments}
         getRowId={(row) => row.id}
-        loading={docs.isPending}
         empty={<EmptyState icon="file-check" title={t("empty")} />}
       />
       {reviewing ? (
         <FormDialog
           title={t("reviewDoc", { doc: t(`types.${reviewing.docType}`) })}
-          description={t("reviewBody", { code: company.companyCode })}
+          description={t("reviewBody", { code: company.companyCode ?? company.legalName })}
           submitLabel={t("save")}
           onClose={() => setReviewing(null)}
           onSubmit={async () => {
             if (outcome === "rejected" && !note.trim()) throw new FormError(t("needNote"));
             try {
-              await browserRequests().call(
-                "POST /v1/admin/companies/{companyId}/kyc-documents/{documentId}/actions/review",
+              const { data } = await adminBrowserApis().contract.POST(
+                "/v1/admin/companies/{companyId}/kyc-documents/{documentId}/actions/review",
                 {
-                  path: { companyId: company.id, documentId: reviewing.id },
+                  params: { path: { companyId: company.id, documentId: reviewing.id } },
                   body: { outcome, note: note.trim() || null },
                 },
               );
+              onChanged(data!);
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
             }
             toast.success(t("reviewed"));
-            void queryClient.invalidateQueries({ queryKey: key });
-            onChanged();
           }}
         >
           <SegmentedControl
@@ -351,23 +365,9 @@ function Kyc({ company, onChanged }: { company: Company; onChanged: () => void }
 
 function Members({ company }: { company: Company }) {
   const t = useTranslations("companies.members");
-  const members = useQuery({
-    queryKey: queryKeys.related("admin", "company", company.id, "members"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/companies/{companyId}/members", { path: { companyId: company.id } }),
-  });
-  if (members.isError) return <QueryError error={members.error} onRetry={() => void members.refetch()} />;
+  // CONTRACT-GAP admin.companies — a member's user carries a name only: no e-mail, no phone.
   const columns: DataTableColumn<CompanyMember>[] = [
-    {
-      id: "name",
-      header: t("member"),
-      cell: (row) => (
-        <div>
-          <p className="font-medium">{row.user.displayName}</p>
-          <p className="text-muted text-xs">{[row.user.email, row.user.phone].filter(Boolean).join(" · ")}</p>
-        </div>
-      ),
-    },
+    { id: "name", header: t("member"), cell: (row) => <span className="font-medium">{row.user.displayName}</span> },
     {
       id: "roles",
       header: t("roles"),
@@ -389,9 +389,8 @@ function Members({ company }: { company: Company }) {
       <DataTable
         caption={t("title")}
         columns={columns}
-        rows={members.data ?? []}
+        rows={company.members}
         getRowId={(row) => row.id}
-        loading={members.isPending}
         density="compact"
       />
     </Section>
@@ -400,29 +399,31 @@ function Members({ company }: { company: Company }) {
 
 function Branches({ company }: { company: Company }) {
   const t = useTranslations("companies.branches");
-  const branches = useQuery({
-    queryKey: queryKeys.related("admin", "company", company.id, "branches"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/companies/{companyId}/branches", { path: { companyId: company.id } }),
-  });
-  if (branches.isError) return <QueryError error={branches.error} onRetry={() => void branches.refetch()} />;
   const columns: DataTableColumn<CompanyBranch>[] = [
     { id: "code", header: t("code"), cell: (row) => <span className="font-mono">{row.branchCode}</span> },
     {
       id: "name",
       header: t("name"),
-      cell: (row) => (row.branchType === "head_office" ? t("headOffice") : row.name),
+      cell: (row) => (
+        <span className="inline-flex flex-wrap items-center gap-2">
+          {row.branchType === "head_office" ? t("headOffice") : row.name}
+          {row.isDefault ? <Badge size="sm">{t("default")}</Badge> : null}
+        </span>
+      ),
     },
-    { id: "address", header: t("address"), cell: (row) => row.address },
+    {
+      id: "address",
+      header: t("address"),
+      cell: (row) => [row.line1, row.line2, row.postcode].filter(Boolean).join(" "),
+    },
   ];
   return (
     <Section title={t("title")} description={t("note")}>
       <DataTable
         caption={t("title")}
         columns={columns}
-        rows={branches.data ?? []}
+        rows={company.branches}
         getRowId={(row) => row.id}
-        loading={branches.isPending}
         density="compact"
       />
     </Section>
@@ -432,15 +433,31 @@ function Branches({ company }: { company: Company }) {
 function Credit({ company, onChanged }: { company: Company; onChanged: () => void }) {
   const t = useTranslations("companies.credit");
   const format = useFormat();
+  const queryClient = useQueryClient();
   const canManage = useCan("company_credit.manage");
   const canReadSettings = useCan("settings.read");
-  const [requesting, setRequesting] = useState<{ key: string } | null>(null);
-  const [draft, setDraft] = useState({ limitAmount: "", termDays: "", basis: "financial_review", reason: "" });
+  const [requesting, setRequesting] = useState(false);
+  const [draft, setDraft] = useState<{ limitAmount: string; termDays: string; basis: Basis; reason: string }>({
+    limitAmount: "",
+    termDays: "",
+    basis: "financial_statement",
+    reason: "",
+  });
+  const key = queryKeys.related("admin", "company", company.id, "credit");
+  const credit = useQuery({
+    queryKey: key,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/companies/{companyId}/credit", {
+          params: { path: { companyId: company.id } },
+        })
+      ).data!,
+  });
   // The terms a company may be given are a setting (`b2b.credit_terms`, D-121), never a constant.
   const terms = useQuery({
     queryKey: queryKeys.list("admin", "setting", {}),
     queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/settings")).data!,
-    enabled: canReadSettings && requesting !== null,
+    enabled: canReadSettings && requesting,
     select: (settings) => {
       const value = settings.find((setting) => setting.key === "b2b.credit_terms")?.current?.value;
       const record = value && typeof value === "object" && !Array.isArray(value) ? value : null;
@@ -452,35 +469,14 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
       };
     },
   });
-  const pending = company.credit.versions.some((version) => version.status === "proposed");
-
-  const columns: DataTableColumn<Company["credit"]["versions"][number]>[] = [
-    { id: "versionNo", header: t("version"), numeric: true, cell: (row) => row.versionNo },
-    { id: "limit", header: t("limit"), numeric: true, cell: (row) => format.thb(row.limitAmount) },
-    { id: "term", header: t("term"), cell: (row) => t("termDays", { days: row.termDays }) },
-    { id: "basis", header: t("basis"), cell: (row) => t(`bases.${row.basis}`) },
-    {
-      id: "status",
-      header: t("status"),
-      cell: (row) => <StatusChip map={SETTING_VERSION_STATUS} value={row.status} />,
-    },
-    { id: "reason", header: t("reason"), cell: (row) => row.reason },
-    {
-      id: "approval",
-      header: t("approval"),
-      cell: (row) =>
-        row.approvalRequestId ? (
-          <Link href={`/approvals/${row.approvalRequestId}`} className="text-primary hover:underline">
-            {t("openApproval")}
-          </Link>
-        ) : (
-          "–"
-        ),
-    },
-  ];
+  if (credit.isError) return <QueryError error={credit.error} onRetry={() => void credit.refetch()} />;
+  const figures = credit.data;
+  const pending = figures?.pendingRequest ?? null;
 
   return (
     <div className="flex flex-col gap-4">
+      {/* CONTRACT-GAP admin.companies — no credit eligibility (paid orders / financial review) and no
+          limit history; CONTRACT-GAP admin.company-credit — a request answers no approval id. */}
       <Section
         title={t("title")}
         description={t("note")}
@@ -490,15 +486,15 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
               size="sm"
               variant="secondary"
               iconStart="plus"
-              disabled={pending}
+              disabled={!figures || pending !== null}
               onClick={() => {
                 setDraft({
                   limitAmount: "",
                   termDays: "",
-                  basis: company.credit.eligibleReason === "paid_orders" ? "paid_orders" : "financial_review",
+                  basis: company.creditStatus === "eligible" ? "paid_orders" : "financial_statement",
                   reason: "",
                 });
-                setRequesting({ key: newIdempotencyKey() });
+                setRequesting(true);
               }}
             >
               {t("request")}
@@ -509,58 +505,56 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
         <dl className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-md border p-3">
             <dt className="text-muted text-xs">{t("limit")}</dt>
-            <dd className="text-lg font-semibold tabular-nums">{format.thb(company.credit.limitAmount)}</dd>
+            <dd className="text-lg font-semibold tabular-nums">
+              {figures ? (figures.limitAmount ? format.thb(figures.limitAmount) : t("noLimit")) : "–"}
+            </dd>
           </div>
           <div className="rounded-md border p-3">
             <dt className="text-muted text-xs">{t("term")}</dt>
             <dd className="text-lg font-semibold">
-              {company.credit.termDays === null ? t("prepaid") : t("termDays", { days: company.credit.termDays })}
+              {figures ? (figures.termDays === null ? t("prepaid") : t("termDays", { days: figures.termDays })) : "–"}
             </dd>
           </div>
           <div className="rounded-md border p-3">
             <dt className="text-muted text-xs">{t("available")}</dt>
-            <dd className="text-lg font-semibold tabular-nums">{format.thb(company.credit.availableAmount)}</dd>
+            <dd className="text-lg font-semibold tabular-nums">
+              {figures ? format.thb(figures.availableAmount) : "–"}
+            </dd>
           </div>
           <div className="rounded-md border p-3">
-            <dt className="text-muted text-xs">{t("eligibility")}</dt>
-            <dd className="text-sm font-medium">{t(`eligible.${company.credit.eligibleReason}`)}</dd>
+            <dt className="text-muted text-xs">{t("exposure")}</dt>
+            <dd className="text-lg font-semibold tabular-nums">{figures ? format.thb(figures.exposureAmount) : "–"}</dd>
           </div>
         </dl>
-        {pending ? <Callout tone="info" className="mt-3" title={t("pending")} /> : null}
-      </Section>
-      <Section title={t("versions")}>
-        <DataTable
-          caption={t("versions")}
-          columns={columns}
-          rows={company.credit.versions}
-          getRowId={(row) => String(row.versionNo)}
-          density="compact"
-          empty={<EmptyState icon="credit-card" title={t("noVersions")} />}
-        />
+        {pending ? (
+          <Callout tone="info" className="mt-3" title={t("pending")}>
+            {t("pendingBody", { limit: format.thb(pending.limitAmount), days: pending.termDays })}{" "}
+            <When at={pending.requestedAt} absoluteOnly />
+          </Callout>
+        ) : null}
       </Section>
 
       {requesting ? (
         <FormDialog
           title={t("requestTitle")}
-          description={t("requestBody", { code: company.companyCode, name: company.legalName })}
+          description={t("requestBody", { code: company.companyCode ?? "–", name: company.legalName })}
           submitLabel={t("send")}
-          onClose={() => setRequesting(null)}
+          onClose={() => setRequesting(false)}
           onSubmit={async () => {
             if (!draft.limitAmount || Number(draft.limitAmount) <= 0) throw new FormError(t("needLimit"));
-            if (!draft.termDays) throw new FormError(t("needTerm"));
             if (draft.reason.trim().length < 3) throw new FormError(t("needReason"));
             try {
-              await browserRequests().call("POST /v1/admin/companies/{companyId}/credit-limits", {
-                path: { companyId: company.id },
+              // No Idempotency-Key: admin.companyCredit.requestLimit does not declare one.
+              const { data } = await adminBrowserApis().contract.POST("/v1/admin/companies/{companyId}/credit-limits", {
+                params: { path: { companyId: company.id } },
                 body: {
                   limitAmount: Number(draft.limitAmount).toFixed(2),
-                  termDays: Number(draft.termDays),
-                  basis: draft.basis as "paid_orders" | "financial_review",
+                  ...(draft.termDays ? { termDays: Number(draft.termDays) } : {}),
+                  basis: draft.basis,
                   reason: draft.reason.trim(),
-                  evidenceFileIds: [],
                 },
-                idempotencyKey: requesting.key,
               });
+              queryClient.setQueryData(key, data);
               toast.success(t("sent"));
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
@@ -578,7 +572,7 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
               onChange={(event) => setDraft({ ...draft, limitAmount: event.target.value })}
             />
           </Field>
-          <Field label={t("term")} hint={canReadSettings ? t("termHint") : t("termHidden")} required>
+          <Field label={t("term")} hint={canReadSettings ? t("termHint") : t("termHidden")}>
             <Select
               value={draft.termDays || undefined}
               placeholder={t("chooseTerm")}
@@ -592,14 +586,10 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
           <SegmentedControl
             label={t("basis")}
             value={draft.basis}
-            onValueChange={(basis) => setDraft({ ...draft, basis })}
+            onValueChange={(basis) => setDraft({ ...draft, basis: basis as Basis })}
             options={[
-              {
-                value: "paid_orders",
-                label: t("bases.paid_orders"),
-                disabled: company.credit.eligibleReason !== "paid_orders",
-              },
-              { value: "financial_review", label: t("bases.financial_review") },
+              { value: "paid_orders", label: t("bases.paid_orders") },
+              { value: "financial_statement", label: t("bases.financial_statement") },
             ]}
           />
           <Field label={t("reason")} required>
@@ -618,42 +608,59 @@ function Credit({ company, onChanged }: { company: Company; onChanged: () => voi
 function Statements({ company }: { company: Company }) {
   const t = useTranslations("companies.statements");
   const format = useFormat();
-  const statements = useQuery({
-    queryKey: queryKeys.related("admin", "company", company.id, "statements"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/companies/{companyId}/statements", { path: { companyId: company.id } }),
+  // admin.receivables.companyStatement is a receivables read (`receivables.read`).
+  const canRead = useCan("receivables.read");
+  const [month, setMonth] = useState(bangkokMonth);
+  const statement = useQuery({
+    queryKey: queryKeys.related("admin", "company", company.id, `statements:${month}`),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/companies/{companyId}/statements", {
+          params: { path: { companyId: company.id }, query: { month } },
+        })
+      ).data!,
+    enabled: canRead,
   });
-  if (statements.isError) return <QueryError error={statements.error} onRetry={() => void statements.refetch()} />;
-  const columns: DataTableColumn<CompanyStatement>[] = [
-    { id: "period", header: t("period"), cell: (row) => <span className="font-mono">{row.period}</span> },
-    { id: "opening", header: t("opening"), numeric: true, cell: (row) => format.thb(row.openingBalance) },
-    { id: "invoiced", header: t("invoiced"), numeric: true, cell: (row) => format.thb(row.invoicedAmount) },
-    { id: "paid", header: t("paid"), numeric: true, cell: (row) => format.thb(row.paidAmount) },
-    { id: "closing", header: t("closing"), numeric: true, cell: (row) => format.thb(row.closingBalance) },
-    { id: "dueAt", header: t("due"), cell: (row) => (row.dueAt ? <When at={row.dueAt} absoluteOnly /> : "–") },
-    { id: "status", header: t("status"), cell: (row) => <StatusChip map={STATEMENT_STATUS} value={row.status} /> },
-    {
-      id: "file",
-      header: <span className="sr-only">{t("download")}</span>,
-      cell: (row) =>
-        row.file?.url ? (
-          <a href={row.file.url} target="_blank" rel="noreferrer" className="text-primary text-sm hover:underline">
-            {t("downloadPeriod", { period: row.period })}
-          </a>
-        ) : null,
-    },
-  ];
+  if (!canRead) {
+    return (
+      <Section title={t("title")} description={t("note")}>
+        <Callout tone="info" title={t("noAccess")} />
+      </Section>
+    );
+  }
+  const data = statement.data;
+  // CONTRACT-GAP admin.company-credit — one month per call: no list of statement months, no due
+  // date, status or issue date, and no PDF download link (`pdfReady` only).
   return (
-    <Section title={t("title")} description={t("note")}>
-      <DataTable
-        caption={t("title")}
-        columns={columns}
-        rows={statements.data ?? []}
-        getRowId={(row) => row.id}
-        loading={statements.isPending}
-        density="compact"
-        empty={<EmptyState icon="receipt" title={t("empty")} />}
-      />
+    <Section
+      title={t("title")}
+      description={t("note")}
+      actions={
+        <Field label={t("month")} className="w-44">
+          <Input type="month" value={month} onChange={(event) => setMonth(event.target.value || month)} />
+        </Field>
+      }
+    >
+      {statement.isError ? (
+        <QueryError error={statement.error} onRetry={() => void statement.refetch()} />
+      ) : (
+        <dl className="grid gap-3 sm:grid-cols-5">
+          {(
+            [
+              ["opening", data?.opening],
+              ["invoiced", data?.invoiced],
+              ["credited", data?.credited],
+              ["paid", data?.paid],
+              ["closing", data?.closing],
+            ] as const
+          ).map(([name, amount]) => (
+            <div key={name} className="rounded-md border p-3">
+              <dt className="text-muted text-xs">{t(name)}</dt>
+              <dd className="text-lg font-semibold tabular-nums">{amount ? format.thb(amount) : "–"}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </Section>
   );
 }
