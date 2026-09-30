@@ -92,6 +92,7 @@ function optionGroups(): Schemas["StoreOptionGroupDto"][] {
       {
         kind: kind as Schemas["OfferableOptionKind"],
         options: rows.map((row, index) => ({
+          id: String(row.id),
           code: String(row.code),
           nameTh: String(row.nameTh ?? row.code),
           nameEn: String(row.nameEn ?? row.code),

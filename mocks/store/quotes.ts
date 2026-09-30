@@ -598,6 +598,7 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     productAmount: null,
     designFeeAmount: null,
     structureDesignFeeAmount: null,
+    toolingAmount: null,
     shippingAmount: null,
     vatAmount: null,
     grossAmount: null,
@@ -630,6 +631,8 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     productAmount: baht(productGross),
     designFeeAmount: baht(designNet + vat(designNet)),
     structureDesignFeeAmount: baht(structureNet + vat(structureNet)),
+    // The mock prices no plates or die blocks (v0.3.0 `toolingAmount`); the engine does.
+    toolingAmount: baht(0),
     shippingAmount: baht(shippingGross),
     vatAmount: baht(vat(productNet) + vat(designNet) + vat(structureNet) + vat(shippingNet)),
     grossAmount: baht(productGross + designNet + vat(designNet) + structureNet + vat(structureNet) + shippingGross),

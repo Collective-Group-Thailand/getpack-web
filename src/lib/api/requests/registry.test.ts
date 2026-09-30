@@ -4,7 +4,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { createApiClient } from "../client";
 import { createRequestClient } from "./client";
-import { PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
+import { CUSTOMER_ZONE_PARKED, PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
 import { AWAITING_TRIAGE, isStillOpen } from "./awaiting-triage";
 import { REQUESTS, type RequestKey } from "./registry";
 import { OPERATION_TRIAGE, REQUEST_TRIAGE } from "./triage";
@@ -40,8 +40,9 @@ describe("the contract-request registry", () => {
       return !(key in REQUESTS) || contract.paths[path]?.[method.toLowerCase()] === undefined;
     });
     expect(stale).toEqual([]);
-    // U-F0.2 migrated the customer zone's 32; U-F0.3 and U-F0.4 take the rest.
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(54);
+    // U-F0.2 migrated the customer zone's 32; U-F0.3 and U-F0.4 take the rest. v0.3.0 added the
+    // parked configurator (55 until U-F0.3 closes the admin zone).
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(55);
   });
 
   it("keeps the customer zone on the published contract", () => {
@@ -51,9 +52,12 @@ describe("the contract-request registry", () => {
     const offContract = entries
       .map(([key]) => key)
       .filter((key) => key.includes(" /v1/store/"))
-      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key));
+      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key))
+      .filter((key) => !CUSTOMER_ZONE_PARKED.includes(key));
     expect(offContract).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual([]);
+    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual(CUSTOMER_ZONE_PARKED);
+    // A parked operation is still a published one awaiting its screen, never a way to hide a new request.
+    expect(CUSTOMER_ZONE_PARKED.filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key))).toEqual([]);
   });
 
   it("spells every key as a method and a surface path template", () => {
