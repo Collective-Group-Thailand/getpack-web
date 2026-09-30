@@ -9,14 +9,9 @@
  * is deleted — so the list only shrinks.
  */
 export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
-  "GET /v1/admin/analytics/campaigns",
-  "GET /v1/admin/analytics/demand",
-  "GET /v1/admin/analytics/factories",
-  "GET /v1/admin/analytics/unmet-demand",
   "GET /v1/admin/claims",
   "GET /v1/admin/claims/{claimId}",
   "GET /v1/admin/inspections",
-  "GET /v1/admin/reports",
   "GET /v1/admin/shipments",
   "GET /v1/admin/shipments/{shipmentId}",
   "GET /v1/partner/factories/{factoryId}/payouts",

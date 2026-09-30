@@ -171,7 +171,7 @@ test.describe("claims (D-082, D-083)", () => {
 });
 
 test.describe("demand analytics (D-102)", () => {
-  test("the dashboard reads as tables too, and small groups are withheld", async ({ page }) => {
+  test("the dashboard reads as tables too, and breaks demand down by province", async ({ page }) => {
     await signInAsStaff(page, "c_level");
     await gotoHydrated(page, `${HOSTS.admin}/analytics`);
     const funnel = page.getByRole("figure", { name: "เส้นทางการซื้อ" });
@@ -179,9 +179,18 @@ test.describe("demand analytics (D-102)", () => {
     await funnel.getByRole("button", { name: "ดูเป็นตาราง" }).click();
     await expect(funnel.getByRole("button", { name: "ดูเป็นกราฟ" })).toHaveAttribute("aria-expanded", "true");
 
+    // Staff dashboards are not k-suppressed (D-044 applies to the prospectus): every province shows.
     await page.getByRole("radio", { name: "จังหวัด" }).click();
-    await expect(page.getByText(/ซ่อน \d+ กลุ่มที่มีไม่ถึง 5 รายการ/)).toBeVisible();
+    await expect(page.getByRole("table", { name: "ใบเสนอราคาและคำขอราคา" })).toContainText("นราธิวาส");
+    await expect(page.getByRole("table", { name: "การใช้กำลังผลิตของโรงงาน" })).toBeVisible();
     await expectAxeClean(page);
+  });
+
+  test("the prospectus is an export the API renders, with the k it applied (D-160)", async ({ page }) => {
+    await signInAsStaff(page, "c_level");
+    await gotoHydrated(page, `${HOSTS.admin}/analytics`);
+    await page.getByRole("button", { name: "รายงานสำหรับโรงงาน (PDF)" }).click();
+    await expect(page.getByText(/ช่องที่มีไม่ถึง 3 รายถูกซ่อน/)).toBeVisible();
   });
 
   test("a journey's funnel shows the week's drop the API flagged (U5.0)", async ({ page }) => {
@@ -204,29 +213,46 @@ test.describe("demand analytics (D-102)", () => {
     await gotoHydrated(page, `${HOSTS.admin}/analytics`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByRole("button", { name: "รายงานสำหรับโรงงาน (PDF)" })).toHaveCount(0);
+    // Named factories are staff-only for those who hold analytics.read_factories (D-044).
+    await expect(page.getByRole("table", { name: "การใช้กำลังผลิตของโรงงาน" })).toHaveCount(0);
   });
 });
 
 test.describe("operational reports (B6.2)", () => {
-  test("a report runs for a period with the API's totals, and exports", async ({ page }) => {
+  test("a report previews a period and exports the whole file", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/reports`);
-    await page.getByRole("link", { name: /^ยอดขาย/ }).click();
+    await page.getByRole("link", { name: /^รายงานยอดขาย/ }).click();
     await expect(page).toHaveURL(/\/reports\/sales$/);
+    await page.getByRole("combobox", { name: "ช่วงเวลา" }).click();
+    await page.getByRole("option", { name: "กำหนดเอง", exact: true }).click();
     await page.getByLabel(/^ตั้งแต่/).fill("2026-09-01");
     await page.getByLabel(/^ถึง/).fill("2026-09-03");
     await page.getByRole("button", { name: "แสดงรายงาน" }).click();
-    const table = page.getByRole("table", { name: "ยอดขาย" });
-    await expect(table.locator("tfoot")).toContainText("รวม");
-    await expect(table.locator("tfoot")).toContainText("฿");
-    await expect(page.getByRole("button", { name: /ส่งออก/ })).toBeVisible();
+    const table = page.getByRole("table", { name: "รายงานยอดขาย" });
+    await expect(table).toContainText("฿");
+    await expect(page.getByText(/^ข้อมูล /)).toBeVisible();
     await expectAxeClean(page);
+
+    // The export is a run the worker writes; the screen reads it until done, then fetches the file.
+    const file = page.waitForResponse((response) => /\/report-runs\/[^/]+\/file/.test(response.url()));
+    await page.getByRole("button", { name: "ส่งออก" }).click();
+    await page.getByRole("menuitem", { name: "CSV" }).click();
+    expect((await file).ok()).toBe(true);
+  });
+
+  // CONTRACT-GAP admin.reports — ReportPreviewDto has no totals row (columns[].total + totals, packio-api U-B0.3).
+  test.fixme("a report ends with the API's totals row", async ({ page }) => {
+    await signInAsStaff(page, "finance");
+    await gotoHydrated(page, `${HOSTS.admin}/reports/sales`);
+    const table = page.getByRole("table", { name: "รายงานยอดขาย" });
+    await expect(table.locator("tfoot")).toContainText("รวม");
   });
 
   test("a report outside the role is not offered", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/reports`);
-    await expect(page.getByRole("link", { name: /^การใช้โปรโมชัน/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /^อายุเจ้าหนี้/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /^รายงานการใช้แคมเปญและโปรโมชั่น/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^รายงานอายุเจ้าหนี้/ })).toHaveCount(0);
   });
 });

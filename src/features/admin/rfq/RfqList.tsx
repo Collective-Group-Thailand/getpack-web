@@ -153,7 +153,6 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
         columns={columns}
         caption={t("title")}
         initial={initial}
-        exportable
         searchLabel={t("search")}
         searchPlaceholder={t("searchPlaceholder")}
         filters={[

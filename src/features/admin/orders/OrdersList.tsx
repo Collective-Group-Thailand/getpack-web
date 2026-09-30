@@ -124,7 +124,6 @@ export function OrdersList({ initial }: { initial: InitialPage<OrderQueueItem> |
         columns={columns}
         caption={t("title")}
         initial={initial}
-        exportable
         searchLabel={t("search")}
         searchPlaceholder={t("searchPlaceholder")}
         bulkActions={

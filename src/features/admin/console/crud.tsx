@@ -74,7 +74,6 @@ export interface CrudListProps<TRow extends object, TValues extends FieldValues>
     deleteDescription?: (row: TRow) => React.ReactNode;
     empty?: string;
   };
-  exportable?: boolean;
   toolbarEnd?: React.ReactNode;
 }
 
@@ -87,7 +86,6 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
   searchLabel,
   initial,
   labels,
-  exportable,
   toolbarEnd,
 }: CrudListProps<TRow, TValues>) {
   const t = useTranslations("console.crud");
@@ -139,7 +137,6 @@ export function CrudList<TRow extends object, TValues extends FieldValues>({
         filters={filters}
         searchLabel={searchLabel}
         initial={initial}
-        exportable={exportable}
         empty={labels.empty ? { title: labels.empty } : undefined}
         toolbarEnd={
           <>

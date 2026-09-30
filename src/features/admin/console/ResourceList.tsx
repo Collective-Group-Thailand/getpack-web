@@ -14,7 +14,6 @@ import { Pagination } from "@/ui/components/Pagination";
 import { Button } from "@/ui/components/Button";
 
 import { adminBrowserApis } from "./api";
-import { ExportButton } from "./ExportButton";
 import { FilterControl, ListSearch, type FilterDef } from "./filters";
 import { toApiQuery, viewQuery } from "./list-state";
 import { QueryError } from "./QueryError";
@@ -36,19 +35,21 @@ export interface ResourceListProps<TRow extends object> {
   bulkActions?: (ids: string[], clear: () => void) => React.ReactNode;
   rowTone?: (row: TRow) => RowTone | undefined;
   savedViews?: boolean;
-  exportable?: boolean;
   /** Extra controls at the end of the toolbar (import, create). */
   toolbarEnd?: React.ReactNode;
   empty?: { title: string; description?: string; action?: React.ReactNode };
 }
 
 /**
- * A back-office list: toolbar (search, filters, saved views, columns, export), bulk bar, server
+ * A back-office list: toolbar (search, filters, saved views, columns), bulk bar, server
  * table and pagination — all driven by the URL (`./list-state.ts`).
  *
  * The first page arrives with the HTML: the Server Component fetches it with the same resource
  * definition and passes it as `initial`, and TanStack Query adopts it only if the query matches,
  * so a client-side filter change can never be answered with the server's stale page.
+ *
+ * There is no export button: the contract exports reports (`admin.reports.export`), the audit log
+ * and the catalogue, not arbitrary lists (CONTRACT-GAP admin.exports).
  */
 export function ResourceList<TRow extends object>({
   resource,
@@ -61,7 +62,6 @@ export function ResourceList<TRow extends object>({
   bulkActions,
   rowTone,
   savedViews = true,
-  exportable = false,
   toolbarEnd,
   empty,
 }: ResourceListProps<TRow>) {
@@ -129,7 +129,6 @@ export function ResourceList<TRow extends object>({
             hidden={state.hidden}
             onHiddenChange={(hidden) => update({ hidden })}
           />
-          {exportable ? <ExportButton resource={resourceName} query={currentViewQuery} /> : null}
           {toolbarEnd}
         </div>
       </Toolbar>
