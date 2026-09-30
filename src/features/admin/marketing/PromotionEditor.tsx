@@ -201,7 +201,7 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const format = useFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const canManage = useCan("marketing.manage");
+  const canManage = useCan("promotions.manage");
   const productTypes = useProductTypes();
   const key = queryKeys.detail("admin", "promotion", promotionId ?? "new");
   const [draft, setDraft] = useState<Draft | null>(promotionId ? null : blank(campaignId ?? null));

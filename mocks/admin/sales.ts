@@ -377,7 +377,7 @@ function directLimit(): string {
 
 export const salesHandlers = [
   mockRequest("GET /v1/admin/cs/{type}/input-data", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "cs.calculate"))
+    if (!can(staffPersonaOf(request), "quotes.calculate"))
       return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ใช้เครื่องคำนวณราคา");
     const types = ["folding", "corrugate", "label", "tag_sleeve", "pouch", "standard_product", "service"] as const;
     const type = types.find((candidate) => candidate === params.type);
@@ -386,7 +386,7 @@ export const salesHandlers = [
   }),
   mockRequest("POST /v1/admin/cs/{type}/calculate", ({ params, body, request }) => {
     const persona = staffPersonaOf(request);
-    if (!can(persona, "cs.calculate")) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ใช้เครื่องคำนวณราคา");
+    if (!can(persona, "quotes.calculate")) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ใช้เครื่องคำนวณราคา");
     if (body.input.calculator !== params.type) {
       return problem(422, "validation.failed", "ชนิดเครื่องคำนวณไม่ตรงกับข้อมูล", [
         { path: "input.calculator", code: "equals", message: "ไม่ตรงกับเครื่องคำนวณ" },

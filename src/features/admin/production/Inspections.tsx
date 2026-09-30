@@ -28,7 +28,7 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
   const t = useTranslations("production.inspections");
   const tStatus = useTranslations("status");
   const format = useFormat();
-  const canInspect = useCan("qc.inspect");
+  const canInspect = useCan("inspections.perform");
   const queryClient = useQueryClient();
   const [recording, setRecording] = useState<Inspection | null>(null);
   const [found, setFound] = useState({ critical: "0", major: "0", minor: "0" });

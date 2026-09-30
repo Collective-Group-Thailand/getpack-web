@@ -55,8 +55,8 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
   const tCommon = useTranslations("common");
   const format = useFormat();
   const router = useRouter();
-  const canQuote = useCan("quotations.manage");
-  const canOrder = useCan("orders.create_on_behalf");
+  const canQuote = useCan("quotes.manage");
+  const canOrder = useCan("carts.manage_on_behalf");
 
   const [customer, setCustomer] = useState<ComboboxOption | null>(null);
   const [customerQuery, setCustomerQuery] = useState("");

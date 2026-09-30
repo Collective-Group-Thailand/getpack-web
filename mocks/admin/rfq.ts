@@ -678,7 +678,7 @@ function forActor(rfq: Rfq, who: StaffPersona | undefined): Rfq {
   const cost = can(who, "factory_cost.read");
   const margin = can(who, "margin.read");
   const whenDiscounting = can(who, "margin.read_pct_when_discounting");
-  const manage = can(who, "rfq.manage");
+  const manage = can(who, "rfqs.manage");
   return {
     ...rfq,
     consultations: rfq.consultations.map((item) => ({
@@ -721,7 +721,7 @@ const QUEUES: Record<string, (rfq: Rfq, who: StaffPersona | undefined) => boolea
 };
 
 for (const queue of ["new", "mine", "awaiting_factory", "overdue"] as const) {
-  registerQueue("rfq.read", (who) => {
+  registerQueue("rfqs.read", (who) => {
     const rows = rfqs.filter((rfq) => QUEUES[queue]!(rfq, who));
     const due = rows
       .filter((rfq) => !rfq.firstResponseAt)
@@ -745,7 +745,7 @@ indexForSearch(
     code: rfq.rfqCode,
     title: `${rfq.rfqCode} · ${rfq.customer.displayName}`,
     subtitle: rfq.productType.name,
-    permission: "rfq.read",
+    permission: "rfqs.read",
     keywords: rfq.contact.phone ?? "",
   })),
 );
@@ -778,7 +778,7 @@ function manage(
   action: string,
 ): Response | { rfq: Rfq; who: StaffPersona } {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, "rfq.manage")) return forbidden();
+  if (!who || !can(who, "rfqs.manage")) return forbidden();
   const rfq = find(rfqId);
   if (!rfq) return notFound();
   if (!offered(rfq, action)) return conflict("ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
@@ -850,7 +850,7 @@ export function customerAcceptQuote(
 export const rfqHandlers = [
   mockRequest("GET /v1/admin/rfqs", ({ query, request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "rfq.read")) return forbidden();
+    if (!can(who, "rfqs.read")) return forbidden();
     const rows = rfqs
       .map(refresh)
       .filter((rfq) => !query.queue || QUEUES[query.queue]!(rfq, who))
@@ -874,18 +874,18 @@ export const rfqHandlers = [
   }),
   mockRequest("GET /v1/admin/rfqs/{rfqId}", ({ params, request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "rfq.read")) return forbidden();
+    if (!can(who, "rfqs.read")) return forbidden();
     const rfq = find(params.rfqId);
     return rfq ? respond(rfq, who) : notFound();
   }),
   mockRequest("GET /v1/admin/rfqs/{rfqId}/messages", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfq.read")) return forbidden();
+    if (!can(staffPersonaOf(request), "rfqs.read")) return forbidden();
     const rfq = find(params.rfqId);
     return rfq ? { data: messages.get(rfq.id) ?? [] } : notFound();
   }),
   mockRequest("POST /v1/admin/rfqs/{rfqId}/messages", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "rfq.manage")) return forbidden();
+    if (!can(who, "rfqs.manage")) return forbidden();
     const rfq = find(params.rfqId);
     if (!rfq) return notFound();
     const message: Message = {
@@ -907,7 +907,7 @@ export const rfqHandlers = [
     const { rfq, who } = found;
     const assignee = body.assigneeId ? PERSONAS.find((candidate) => candidate.id === body.assigneeId) : null;
     if (body.assigneeId && !assignee) return problem(422, "validation.failed", "ไม่พบพนักงานที่เลือก");
-    if (assignee && !can(assignee, "rfq.manage"))
+    if (assignee && !can(assignee, "rfqs.manage"))
       return problem(422, "rfq.assignee_not_eligible", "พนักงานคนนี้ไม่มีสิทธิ์รับผิดชอบคำขอราคา");
     rfq.assignee = assignee ? refOf(assignee) : null;
     log(rfq, "rfq.assigned", assignee ? `มอบหมายให้ ${assignee.displayName}` : "ยกเลิกการมอบหมาย", who);
@@ -963,7 +963,7 @@ export const rfqHandlers = [
   }),
   mockRequest("GET /v1/admin/unmet-demand-reasons", () => ({ data: UNMET_REASONS })),
   mockRequest("GET /v1/admin/rfqs/{rfqId}/candidate-factories", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfq.manage")) return forbidden();
+    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
     const rfq = find(params.rfqId);
     if (!rfq) return notFound();
     const data: Candidate[] = FACTORIES.map((factory) => {
@@ -1019,7 +1019,7 @@ export const rfqHandlers = [
     return { data: created };
   }),
   mockRequest("POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfq.manage")) return forbidden();
+    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
     const rfq = find(params.rfqId);
     const item = rfq?.consultations.find((candidate) => candidate.id === params.consultationId);
     if (!rfq || !item) return notFound();

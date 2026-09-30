@@ -331,9 +331,11 @@ function present(store: (typeof stores)[number], who: StaffPersona | null): Comp
   };
 }
 
-function access(request: Request, companyId: string | undefined, manage = false) {
+/** `true` = `companies.manage`; a string names the permission packio-api checks for that operation. */
+function access(request: Request, companyId: string | undefined, manage: boolean | string = false) {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, manage ? "companies.manage" : "companies.read")) return forbidden();
+  const permission = typeof manage === "string" ? manage : manage ? "companies.manage" : "companies.read";
+  if (!who || !can(who, permission)) return forbidden();
   const store = stores.find((candidate) => candidate.company.id === companyId);
   if (companyId !== undefined && !store) return notFound();
   return { who, store: store! };
@@ -445,7 +447,7 @@ export const companyHandlers = [
   mockRequest(
     "POST /v1/admin/companies/{companyId}/kyc-documents/{documentId}/actions/review",
     ({ params, body, request }) => {
-      const ok = access(request, params.companyId, true);
+      const ok = access(request, params.companyId, "companies.kyc_review");
       if (ok instanceof Response) return ok;
       const doc = ok.store.kyc.find((candidate) => candidate.id === params.documentId);
       if (!doc) return problem(404, "http.not_found", "ไม่พบเอกสารนี้");
@@ -479,7 +481,7 @@ export const companyHandlers = [
     return ok instanceof Response ? ok : ok.store.branches;
   }),
   mockRequest("POST /v1/admin/companies/{companyId}/credit-limits", ({ params, body, request }) => {
-    const ok = access(request, params.companyId, true);
+    const ok = access(request, params.companyId, "company_credit.manage");
     if (ok instanceof Response) return ok;
     const { company } = ok.store;
     if (company.status !== "active") return problem(409, "company.not_active", "ขอวงเงินได้เฉพาะบริษัทที่ใช้งานอยู่");

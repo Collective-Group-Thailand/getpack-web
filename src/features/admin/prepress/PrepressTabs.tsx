@@ -195,7 +195,7 @@ function DesignDocumentCard({
   orderId: string;
 }) {
   const t = useTranslations("prepress.detail.design");
-  const canManage = useCan("prepress.manage");
+  const canManage = useCan("prepress.review");
   const [copy, setCopy] = useState<{ id: string; title: string } | null>(null);
   const read = readDesignDocument(document.document);
 
@@ -336,7 +336,7 @@ function Marker({ annotation, number, active }: { annotation: ProofAnnotation; n
  */
 function Annotations({ proof }: { proof: Proof }) {
   const t = useTranslations("prepress.detail.proofs");
-  const canManage = useCan("prepress.manage");
+  const canManage = useCan("prepress.review");
   const queryClient = useQueryClient();
   const key = queryKeys.related("admin", "proof", proof.id, "annotations");
   const [active, setActive] = useState<string | null>(null);

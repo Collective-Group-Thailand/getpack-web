@@ -239,7 +239,8 @@ function Overview({ company }: { company: Company }) {
 function Kyc({ company, onChanged }: { company: Company; onChanged: () => void }) {
   const t = useTranslations("companies.kyc");
   const queryClient = useQueryClient();
-  const canManage = useCan("companies.manage");
+  // Each document is reviewed with `companies.kyc_review`; approving the account is an action (companies.manage).
+  const canManage = useCan("companies.kyc_review");
   const key = queryKeys.related("admin", "company", company.id, "kyc");
   const docs = useQuery({
     queryKey: key,
@@ -431,7 +432,7 @@ function Branches({ company }: { company: Company }) {
 function Credit({ company, onChanged }: { company: Company; onChanged: () => void }) {
   const t = useTranslations("companies.credit");
   const format = useFormat();
-  const canManage = useCan("companies.manage");
+  const canManage = useCan("company_credit.manage");
   const canReadSettings = useCan("settings.read");
   const [requesting, setRequesting] = useState<{ key: string } | null>(null);
   const [draft, setDraft] = useState({ limitAmount: "", termDays: "", basis: "financial_review", reason: "" });

@@ -38,7 +38,7 @@ export function OrdersList({ initial }: { initial: InitialPage<OrderSummary> | n
   const format = useFormat();
   const sla = useSlaFormat();
   const canManage = useCan("orders.manage");
-  const canCreate = useCan("orders.create_on_behalf");
+  const canCreate = useCan("carts.manage_on_behalf");
   const queryClient = useQueryClient();
 
   const remind = useMutation({

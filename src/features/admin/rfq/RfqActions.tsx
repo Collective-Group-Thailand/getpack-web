@@ -102,7 +102,7 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           title={t("assign.title")}
           description={t("assign.body", { code: rfq.rfqCode })}
           current={rfq.assignee}
-          permission="rfq.manage"
+          permission="rfqs.manage"
           personHint={t("assign.personHint")}
           onAssign={async (assigneeId) =>
             settle(

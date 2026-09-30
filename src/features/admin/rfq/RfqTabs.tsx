@@ -131,7 +131,7 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
   const t = useTranslations("rfq.detail.factories");
   const format = useFormat();
   const sla = useSlaFormat();
-  const canManage = useCan("rfq.manage");
+  const canManage = useCan("rfqs.manage");
 
   const remind = useMutation({
     mutationFn: (consultationId: string) =>
@@ -432,7 +432,7 @@ export function QuotesTab({
 
 export function MessagesTab({ rfq }: { rfq: Rfq }) {
   const t = useTranslations("rfq.detail.messages");
-  const canManage = useCan("rfq.manage");
+  const canManage = useCan("rfqs.manage");
   const queryClient = useQueryClient();
   const key = queryKeys.related("admin", "rfq", rfq.id, "messages");
   const [body, setBody] = useState("");

@@ -287,7 +287,7 @@ export const inspections: Inspection[] = boardJobs()
     };
   });
 
-registerQueue("qc.inspect", () => {
+registerQueue("inspections.perform", () => {
   const open = inspections.filter((item) => item.status === "planned" || item.status === "in_progress");
   return {
     key: "production.inspections",
@@ -458,7 +458,7 @@ export const governanceHandlers = [
   }),
   mockRequest("GET /v1/admin/inspections", ({ query, request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "qc.inspect") && !can(who, "production.read")) return forbidden();
+    if (!can(who, "inspections.perform") && !can(who, "production.read")) return forbidden();
     return paginate(
       inspections
         .filter((item) => !query.status || item.status === query.status)
@@ -468,7 +468,7 @@ export const governanceHandlers = [
   }),
   mockRequest("POST /v1/admin/inspections/{inspectionId}/actions/record", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || !can(who, "qc.inspect")) return forbidden();
+    if (!who || !can(who, "inspections.perform")) return forbidden();
     const item = inspections.find((candidate) => candidate.id === params.inspectionId);
     if (!item) return problem(404, "http.not_found", "ไม่พบงานตรวจนี้");
     if (!["planned", "in_progress"].includes(item.status))
