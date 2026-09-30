@@ -20,7 +20,8 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const tab = (ORDER_TABS as readonly string[]).includes(String(query.tab)) ? (query.tab as OrderTab) : "summary";
   let initial = null;
   try {
-    initial = await (await adminServerApis()).requests.call("GET /v1/admin/orders/{orderId}", { path: { orderId } });
+    const { contract } = await adminServerApis();
+    initial = (await contract.GET("/v1/admin/orders/{orderId}", { params: { path: { orderId } } })).data ?? null;
   } catch {
     // Rendered by the client as the API answered it.
   }

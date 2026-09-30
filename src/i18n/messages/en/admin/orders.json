@@ -4,11 +4,9 @@
     "description": "The CS work queues, most urgent first.",
     "queuesLabel": "Queues",
     "queues": {
-      "all": "All",
       "waiting_payment": "Awaiting payment",
-      "slip_review": "Slips to check",
-      "awaiting_artwork": "Awaiting artwork",
-      "ready_to_produce": "Ready to produce",
+      "artwork_review": "Artwork review",
+      "waiting_production": "Ready to produce",
       "due_soon": "Due soon",
       "late": "Late"
     },
@@ -23,7 +21,8 @@
       "factory": "Factory",
       "ship": "Ship by",
       "sla": "SLA",
-      "created": "Created"
+      "created": "Created",
+      "expires": "Payment expires"
     },
     "slipWaiting": "Slip to check",
     "noFactory": "Not assigned",
@@ -53,10 +52,6 @@
     "breadcrumb": "Breadcrumb",
     "orders": "Orders",
     "headline": "{customer} · {amount} · group {group}",
-    "urgency": {
-      "due_soon": "Due soon",
-      "late": "Late"
-    },
     "slipWaiting": "A slip is waiting for Finance — see Payments.",
     "belowFloor": "This order is below the margin floor.",
     "tabsLabel": "Order sections",
@@ -205,7 +200,11 @@
       "notChecked": "Not checked automatically yet",
       "reviewNote": "Note: {note} ({by})",
       "approve": "Approve slip",
-      "reject": "Reject"
+      "reject": "Reject",
+      "expected": "Expected {amount}",
+      "slipsWaiting": "Slips waiting for Finance",
+      "paymentsElsewhere": "The order's payments are on the finance desk",
+      "openPayments": "Open this group's payments"
     },
     "artwork": {
       "title": "Artwork",
@@ -304,7 +303,8 @@
         "late": "Late",
         "other": "Other"
       }
-    }
+    },
+    "unreadable": "Your role cannot see this part"
   },
   "actions": {
     "failed": "That did not work",
@@ -316,22 +316,6 @@
       "cancel": "Cancel order",
       "send_payment_reminder": "Send payment reminder",
       "record_slip": "Upload slip for customer"
-    },
-    "approveSlip": {
-      "title": "Approve this slip?",
-      "body": "Accept {amount} for order {code}. This is posted to the ledger and cannot be undone.",
-      "confirm": "Approve slip",
-      "note": "Note",
-      "noteHint": "e.g. matched against the bank statement",
-      "done": "Slip approved"
-    },
-    "rejectSlip": {
-      "title": "Reject this slip?",
-      "body": "The customer of order {code} is told why and can upload another.",
-      "confirm": "Reject",
-      "reason": "Reason the customer sees",
-      "reasonHint": "e.g. the amount does not match what is due",
-      "done": "Slip rejected"
     },
     "startProduction": {
       "title": "Start production manually?",
@@ -375,6 +359,9 @@
       "baht": "THB",
       "transferredAt": "Transferred at",
       "bangkokTime": "Bangkok time"
+    },
+    "blocked": {
+      "artwork_not_approved": "The artwork is not approved yet — a manual start is for exceptions only"
     }
   },
   "rail": {
@@ -382,8 +369,6 @@
     "timelineFailed": "Could not load the timeline",
     "internal": "internal",
     "more": "Load more",
-    "promisedOnTime": "on time ({at})",
-    "promisedLate": "later than promised ({at})",
     "notes": "Internal notes",
     "newNote": "New note",
     "noteHint": "Customers and factories never see these.",
@@ -392,14 +377,34 @@
     "noPeople": "No one found",
     "clearMention": "Clear",
     "addNote": "Add note",
-    "noteFailed": "Could not add the note"
+    "noteFailed": "Could not add the note",
+    "types": {
+      "order_placed": "Order placed",
+      "order_cancelled": "Order cancelled",
+      "order_note_added": "Internal note added",
+      "payment_received": "Payment received",
+      "payment_reminder_sent": "Payment reminder sent",
+      "slip_uploaded": "Customer sent a slip",
+      "slip_uploaded_by_cs": "CS uploaded a slip for the customer",
+      "slip_approved": "Slip approved",
+      "slip_rejected": "Slip rejected",
+      "artwork_submitted": "Artwork submitted",
+      "proof_sent": "Proof sent to the customer",
+      "proof_approved": "Customer approved the proof",
+      "proof_changes_requested": "Customer asked for proof changes",
+      "production_started_manually": "Production started manually (exception)",
+      "production_milestone": "Production: {stage}",
+      "shipment_picked_up": "Left the factory",
+      "shipment_in_transit": "In transit",
+      "shipment_delivered": "Delivered",
+      "other": "Order updated"
+    }
   },
   "group": {
     "title": "Order group",
     "breadcrumb": "Breadcrumb",
     "orders": "Orders",
     "headline": "{customer} · {amount}",
-    "placedBy": "Placed by",
     "placedAt": "Placed",
     "channel": "Channel",
     "po": "PO number",
@@ -420,8 +425,9 @@
     "productType": "Product type",
     "status": "Status",
     "amount": "Total",
-    "placedBy": "Placed by",
     "created": "Placed",
-    "empty": "No orders yet"
+    "empty": "No orders yet",
+    "unavailable": "Orders cannot be listed here yet",
+    "unavailableBody": "The system has no order list by company, or for a customer without a customer code. Search by order code on the orders desk instead."
   }
 }

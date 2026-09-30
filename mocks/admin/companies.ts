@@ -22,7 +22,7 @@ import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
-import { baht, customers, setCompanyMembers } from "./commerce";
+import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
 import { etagOf } from "./tables";
@@ -292,10 +292,6 @@ const stores = SEEDS.map((seed, index) => {
       : [];
   return { company, members, branches, kyc, statements };
 });
-
-setCompanyMembers(
-  (companyId) => stores.find((store) => store.company.id === companyId)?.members.map((member) => member.user.id) ?? [],
-);
 
 /** The company as the API reports it: credit figures, D-121 eligibility, the D-122 block. */
 function present(store: (typeof stores)[number], who: StaffPersona | null): Company {

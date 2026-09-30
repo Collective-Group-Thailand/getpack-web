@@ -8,9 +8,11 @@
  * opened a claim automatically (D-080). Claims follow the D-082 window and D-083 rules.
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
 import type { carrierQuote, claimDetail, shipmentDetail } from "@/lib/api/requests/admin-logistics";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, type StaffPersona } from "../personas";
@@ -563,6 +565,141 @@ const claimRowOf = (item: Claim) => {
   ];
   return row;
 };
+
+/* ------------------------------------------------------------------ the published shapes */
+
+/** A shipment as `admin.shipments.*` answers it (U-F0.3): the fixture's names become codes and ids. */
+export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Schemas["AdminShipmentDto"] {
+  const seesCost = Boolean(who && can(who, "factory_cost.read"));
+  return {
+    id: item.id,
+    shipmentNo: item.shipmentNo,
+    status: item.status,
+    carrier: item.carrier,
+    carrierBookingRef: null,
+    carrierCostAmount: seesCost && item.carrier !== "factory_fleet" ? "0.00" : null,
+    payoutAmount: seesCost ? "0.00" : null,
+    trackingNo: item.trackingNo,
+    trackingUrl: null,
+    factoryId: item.factory.id,
+    factoryCode: item.factory.code,
+    destination: {
+      recipientName: item.destination.recipientName,
+      phone: item.destination.phone,
+      line1: item.destination.line1,
+      line2: item.destination.line2,
+      postcode: item.destination.postcode,
+    },
+    items: item.items.map((line, index) => ({
+      jobId: mockId("job", 700 + index),
+      jobNo: `JOB-${line.orderCode.slice(-6)}`,
+      orderCode: line.orderCode,
+      destinationId: mockId("dst", 700 + index),
+      quantity: line.quantity,
+      deliveredQuantity: item.pod?.deliveredQuantity ?? null,
+    })),
+    cartonsCount: item.cartons,
+    weightG: item.weightG ?? 0,
+    volumeCm3: null,
+    events: item.events.map((event) => ({ ...event })),
+    proofOfDelivery: item.pod
+      ? {
+          kind: item.pod.kind,
+          receiverName: item.pod.receiverName,
+          deliveredQuantity: item.pod.deliveredQuantity,
+          capturedAt: item.pod.capturedAt,
+          photoFileIds: item.pod.photos.map((photo) => photo.id),
+          signatureFileId: item.pod.signature?.id ?? null,
+          carrierPodRef: null,
+        }
+      : null,
+    labelFileId: null,
+    packingListFileId: null,
+    note: item.exception,
+    plannedShipOn: item.promisedShipDate,
+    readyAt: item.readyAt,
+    pickedUpAt: item.events.find((event) => event.status === "picked_up")?.occurredAt ?? null,
+    deliveredAt: item.status === "delivered" ? (item.pod?.capturedAt ?? item.lastEvent?.occurredAt ?? null) : null,
+    cancelledAt: null,
+    cancelReason: null,
+  };
+}
+
+/** A claim as `admin.claims.*` answers it (U-F0.3). */
+export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
+  return {
+    id: item.id,
+    claimNo: item.claimNo,
+    type: item.type,
+    origin: item.origin,
+    status: item.status,
+    orderId: item.order.id,
+    orderCode: item.order.orderCode,
+    jobId: null,
+    jobNo: null,
+    shipmentId: item.shipment?.id ?? null,
+    factoryId: item.factory?.id ?? null,
+    factoryCode: item.factory?.code ?? null,
+    description: item.description,
+    requestedResolution: item.requestedResolution,
+    claimedAmount: item.claimedAmount,
+    claimedQuantity: item.claimedQuantity,
+    liability: item.liability,
+    liabilityByRule: item.liabilityByRule,
+    overrideReason: item.liabilityOverride?.reason ?? null,
+    photos: {
+      product: item.evidence.productPhotos.map((photo) => photo.id),
+      carton: item.evidence.cartonPhotos.map((photo) => photo.id),
+    },
+    infoRequest: null,
+    infoResponse: null,
+    factoryResponse: item.factoryResponse?.response ?? null,
+    factoryResponseNote: item.factoryResponse?.note ?? null,
+    decidedAt: item.decision?.at ?? null,
+    decisionNote: item.decision?.reason ?? null,
+    resolutions: item.resolutions.map((resolution) => ({
+      action: resolution.action,
+      amount: resolution.amount,
+      executedAt: resolution.executedAt,
+      jobNo: null,
+      quantity: null,
+      refundId: null,
+    })),
+    submittedAt: item.submittedAt,
+    receivedAt: item.receivedAt,
+    windowEndsAt: item.windowEndsAt,
+  };
+}
+
+const pageOf = (url: URL) => ({
+  page: Number(url.searchParams.get("page") ?? 1),
+  perPage: Number(url.searchParams.get("perPage") ?? 25),
+});
+
+/**
+ * The order screen's shipments and claims (`?orderId=`, U-F0.3). The logistics desk itself still
+ * reads the requests below until its own migration; without `orderId` these fall through to them.
+ */
+export const logisticsContractHandlers = [
+  http.get("*/v1/admin/shipments", ({ request }) => {
+    const url = new URL(request.url);
+    const orderId = url.searchParams.get("orderId");
+    if (!orderId) return undefined;
+    const who = staffPersonaOf(request) ?? null;
+    if (!who || !can(who, "shipments.read")) return forbidden();
+    const rows = shipments.filter((item) => item.order.id === orderId).map((item) => toAdminShipmentDto(item, who));
+    return HttpResponse.json(paginate(rows, pageOf(url)));
+  }),
+  http.get("*/v1/admin/claims", ({ request }) => {
+    const url = new URL(request.url);
+    const orderId = url.searchParams.get("orderId");
+    if (!orderId) return undefined;
+    const who = staffPersonaOf(request) ?? null;
+    if (!who || !can(who, "claims.read")) return forbidden();
+    const rows = claims.filter((item) => item.order.id === orderId).map(toAdminClaimDto);
+    return HttpResponse.json(paginate(rows, pageOf(url)));
+  }),
+];
 
 export const logisticsHandlers = [
   mockRequest("GET /v1/admin/shipments", ({ query, request }) => {

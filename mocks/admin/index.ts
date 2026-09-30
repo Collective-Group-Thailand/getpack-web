@@ -11,9 +11,10 @@ import { consoleHandlers } from "./console";
 import { customerHandlers } from "./customers";
 import { financeHandlers } from "./finance";
 import { governanceHandlers } from "./governance";
-import { logisticsHandlers } from "./logistics";
+import { logisticsContractHandlers, logisticsHandlers } from "./logistics";
 import { loyaltyHandlers } from "./loyalty";
 import { marketingHandlers } from "./marketing";
+import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
 import { prepressHandlers } from "./prepress";
@@ -22,6 +23,7 @@ import { salesHandlers } from "./sales";
 
 export const adminHandlers = [
   ...consoleHandlers,
+  ...orderHandlers,
   ...commerceHandlers,
   ...customerHandlers,
   ...salesHandlers,
@@ -34,6 +36,7 @@ export const adminHandlers = [
   ...companyHandlers,
   ...financeHandlers,
   ...loyaltyHandlers,
+  ...logisticsContractHandlers,
   ...logisticsHandlers,
   ...analyticsHandlers,
   ...platformHandlers,

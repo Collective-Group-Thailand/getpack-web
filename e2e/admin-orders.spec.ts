@@ -30,32 +30,43 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 }
 
 test.describe("the CS queues", () => {
-  test("open on a queue with counts, SLA timers and the orders in it", async ({ page }) => {
+  test("open on packio-api's first queue, with its count and the orders in it", async ({ page }) => {
     await signInAsStaff(page, "cs");
-    await gotoHydrated(page, `${HOSTS.admin}/orders?queue=waiting_payment`);
+    await gotoHydrated(page, `${HOSTS.admin}/orders`);
     const tab = page.getByRole("link", { name: /^รอชำระ/ });
     await expect(tab).toHaveAttribute("aria-current", "page");
     const table = page.getByRole("table", { name: "คำสั่งซื้อ" });
     await expect(table.getByRole("row")).not.toHaveCount(1);
-    await expect(table).toContainText("เหลือ");
+    // The queue row carries no SLA timer (CONTRACT-GAP admin.orders); the queue is the SLA order.
+    await page.getByRole("link", { name: /^รอตรวจไฟล์/ }).click();
+    await expect(page).toHaveURL(/queue=artwork_review/);
     await expectAxeClean(page);
   });
 });
 
 test.describe("slip review (D-061)", () => {
-  test("Finance approves a slip, restating the order code and amount", async ({ page }) => {
+  test("Finance reviews the order's slip with the bank reference, restating the group code", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(10)}?tab=payments`);
+    await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
     await expectAxeClean(page);
 
-    // Read before the dialog opens: a modal hides the page behind it from the accessibility tree.
-    const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
+    // Read before the sheet opens: a modal hides the page behind it from the accessibility tree.
+    // The group is read after the order: wait for its code before reading it.
+    const header = page.getByText(/· กลุ่ม [A-Z]/).first();
+    await expect(header).toBeVisible();
+    const headline = (await header.textContent())!;
+    const group = headline.match(/กลุ่ม (\S+)/)![1]!;
+
+    // The slip is reviewed in Finance's own sheet (D-061), opened from the order.
     await page.getByRole("main").getByRole("button", { name: "อนุมัติสลิป" }).first().click();
-    const dialog = page.getByRole("alertdialog", { name: "อนุมัติสลิปนี้?" });
-    await expect(dialog).toContainText(code);
-    await expect(dialog.getByRole("button", { name: "อนุมัติสลิป" })).toBeDisabled();
-    await dialog.getByLabel(new RegExp(`พิมพ์ ${code}`)).fill(code);
-    await dialog.getByRole("button", { name: "อนุมัติสลิป" }).click();
+    const sheet = page.getByRole("dialog", { name: `ตรวจสลิป ${group}` });
+    await sheet.getByLabel(/^เลขอ้างอิงรายการจากธนาคาร/).fill("E2E-ORDER-000010");
+    await sheet.getByRole("button", { name: "อนุมัติสลิป" }).click();
+    const confirm = page.getByRole("alertdialog", { name: "อนุมัติสลิปและรับชำระเงิน" });
+    await expect(confirm).toContainText(group);
+    await confirm.getByLabel(new RegExp(`พิมพ์ ${group}`)).fill(group);
+    await confirm.getByRole("button", { name: "อนุมัติสลิป" }).click();
 
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 }).locator("..")).toContainText("ชำระเงินแล้ว");
@@ -64,8 +75,16 @@ test.describe("slip review (D-061)", () => {
   test("a CS agent is not offered slip approval", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(8)}?tab=payments`);
-    await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "งวดการชำระเงิน" })).toBeVisible();
     await expect(page.getByRole("button", { name: "อนุมัติสลิป" })).toHaveCount(0);
+  });
+
+  // CONTRACT-GAP admin.orders — only the slip queue (payments.verify_slip) says a slip waits; CS
+  // cannot tell until the order carries `hasSlipToReview`.
+  test.fixme("a CS agent is told a slip waits for Finance", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/orders/${order(8)}?tab=payments`);
+    await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
   });
 });
 
