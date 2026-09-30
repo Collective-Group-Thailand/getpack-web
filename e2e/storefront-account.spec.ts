@@ -158,11 +158,25 @@ test.describe("the account", () => {
 
     await gotoHydrated(page, `${HOSTS.customer}/account/referral`);
     await expect(page.getByText("PK1000", { exact: true })).toBeVisible();
-    await expect(page.getByText("ส*** ต***")).toBeVisible();
+    // The share link is the API's (`store.referral.get`), and the friends are counts by status.
+    await expect(page.getByText(/\/r\/PK1000$/)).toBeVisible();
+    await expect(page.getByRole("list").getByText("1 คน").first()).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/account/wallet`);
-    await expect(page.getByText("PACKIO10")).toBeVisible();
     await expect(page.getByText("เครดิตจากสินค้าขาดตามเกณฑ์")).toBeVisible();
+    await expect(page.getByText("CN-2569-00007")).toBeVisible();
     await expectNoViolations(page);
+  });
+
+  test("the wallet lists the promotion codes a customer holds", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.wallet — v0.2.0 has no customer-facing list of held codes");
+    await signInAsCustomer(page, "/account/wallet");
+    await expect(page.getByText("PACKIO10")).toBeVisible();
+  });
+
+  test("the referral page names each friend it brought", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.loyalty — store.referral.get gives counts, not the friends");
+    await signInAsCustomer(page, "/account/referral");
+    await expect(page.getByText("ส*** ต***")).toBeVisible();
   });
 });

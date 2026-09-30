@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { accountRequests } from "@/features/customer/account/api.server";
+import { getPoints } from "@/features/customer/account/api.server";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
@@ -21,12 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const me = await liffCustomer();
   if (!me) return <LiffSignIn />;
-  const requests = await accountRequests();
   const [t, format, orders, points] = await Promise.all([
     getTranslations("liff.home"),
     getFormat(),
     listMyOrders("active"),
-    requests.call("GET /v1/store/me/points"),
+    getPoints(),
   ]);
   const todo = orders.data.filter((order) => order.nextActions.length > 0).slice(0, 5);
 
@@ -38,7 +37,7 @@ export default async function Page() {
         className="bg-primary-subtle text-primary-subtle-fg flex items-center justify-between rounded-xl p-4"
       >
         <span>{t("points")}</span>
-        <span className="text-xl font-bold tabular-nums">{format.number(points.balance.available)}</span>
+        <span className="text-xl font-bold tabular-nums">{format.number(points.availablePoints)}</span>
       </Link>
       <section aria-labelledby="liff-todo" className="flex flex-col gap-3">
         <h2 id="liff-todo" className="font-semibold">

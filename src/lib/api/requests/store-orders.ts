@@ -14,8 +14,6 @@
 
 import { z } from "zod";
 
-import { loyaltyTier, pointsBalance, pointsEntry } from "./admin-customers";
-import { referralStatus } from "./admin-marketing";
 import {
   addressSnapshot,
   artworkStatus,
@@ -249,76 +247,6 @@ export const storeOrderDetail = storeOrderSummary
 
 /* ---------------------------------------------------------------------------- the account */
 
-export const storePoints = z
-  .object({
-    balance: pointsBalance,
-    /** D-134: tier by 12-month spend, the next tier and what it takes — the API's figures. */
-    tier: z.object({
-      current: loyaltyTier,
-      multiplier: z.string().describe("Decimal, e.g. 1.25"),
-      spend12m: money(),
-      next: loyaltyTier.nullable(),
-      nextThreshold: money().nullable(),
-      /** 0–100: how far to the next tier. */
-      progressPct: z.number().min(0).max(100),
-    }),
-    /** D-131 point value, shown as "1 คะแนน = ฿2.50". */
-    pointValue: money(),
-  })
-  .meta({ id: "StorePointsDto" });
-
-export const storeReferral = z
-  .object({
-    code: z.string(),
-    /** The rules in words, from `referral.rules` (D-136). */
-    referrerReward: z.string(),
-    refereeReward: z.string(),
-    monthlyLimit: z.number().int(),
-    rewardedThisMonth: z.number().int(),
-    referrals: z.array(
-      z.object({
-        id: uuid(),
-        /** Masked: "ส*** ต***" — the customer sees that a friend joined, not who they are. */
-        refereeName: z.string(),
-        status: referralStatus,
-        joinedAt: dateTime(),
-        rewardPoints: z.number().int().nullable(),
-      }),
-    ),
-  })
-  .meta({ id: "StoreReferralDto" });
-
-export const walletPromotion = z
-  .object({
-    code: z.string().nullable(),
-    title: z.string(),
-    benefit: z.string(),
-    conditions: z.string().nullable(),
-    validUntil: dateTime().nullable(),
-    status: z.enum(["available", "used", "expired"]).meta({ id: "WalletPromotionStatus" }),
-  })
-  .meta({ id: "WalletPromotionDto" });
-
-export const storeWallet = z
-  .object({
-    promotions: z.array(walletPromotion),
-    storeCredit: z.object({
-      balance: money(),
-      currency: currency(),
-      entries: z.array(
-        z.object({
-          id: uuid(),
-          kind: z.enum(["shortage_credit", "refund", "goodwill", "spent", "expired"]).meta({ id: "StoreCreditKind" }),
-          amount: money().describe("Signed"),
-          order: z.object({ id: uuid(), orderCode: z.string() }).nullable(),
-          note: z.string().nullable(),
-          createdAt: dateTime(),
-        }),
-      ),
-    }),
-  })
-  .meta({ id: "StoreWalletDto" });
-
 export const privacyRequest = z
   .object({
     id: uuid(),
@@ -354,30 +282,6 @@ export const storeOrderRequests = {
     summary: "A short-lived signed URL for one of the order's documents, issued by Collective Group (Thailand)",
     decisions: ["D-010", "D-092"],
     response: signedUrl,
-  }),
-  "GET /v1/store/me/points": request({
-    request: "store.loyalty",
-    summary: "Points balance, what expires soon, and progress to the next tier",
-    decisions: ["D-130", "D-131", "D-132", "D-134"],
-    response: storePoints,
-  }),
-  "GET /v1/store/me/points/entries": request({
-    request: "store.loyalty",
-    summary: "The customer's points history, newest first",
-    query: listQuery({}),
-    response: page(pointsEntry),
-  }),
-  "GET /v1/store/me/referral": request({
-    request: "store.loyalty",
-    summary: "The customer's referral code, the rules in words, and the friends it brought",
-    decisions: ["D-136"],
-    response: storeReferral,
-  }),
-  "GET /v1/store/me/wallet": request({
-    request: "store.wallet",
-    summary: "Promotion codes the customer holds, and their store credit with its history",
-    decisions: ["D-053", "D-080"],
-    response: storeWallet,
   }),
   "GET /v1/store/me/privacy-requests": request({
     request: "store.privacy",

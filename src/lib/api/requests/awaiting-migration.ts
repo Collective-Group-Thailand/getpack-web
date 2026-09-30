@@ -47,7 +47,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "GET /v1/store/designs/{designId}",
   "GET /v1/store/designs/{designId}/versions",
   "GET /v1/store/designs/{designId}/versions/{versionNo}",
-  "GET /v1/store/orders/by-code/{orderCode}",
   "GET /v1/store/orders/{orderId}",
   "GET /v1/store/payments/{paymentId}",
   "GET /v1/store/quotes",
