@@ -210,35 +210,6 @@ export const couponCode = z
   })
   .meta({ id: "CouponCodeDto" });
 
-/* -------------------------------------------------------------------------------- referrals */
-
-export const referralStatus = z
-  .enum(["pending", "qualified", "rewarded", "rejected_fraud", "under_review"])
-  .meta({ id: "ReferralStatus" });
-/** Why a referral was held (D-136): an identity match with the referrer, or the monthly cap. */
-export const referralFlag = z
-  .enum(["phone_match", "address_match", "card_match", "device_match", "monthly_cap_reached"])
-  .meta({ id: "ReferralFlag" });
-
-export const referral = z
-  .object({
-    id: uuid(),
-    referrer: customerRef,
-    referee: customerRef,
-    referralCode: z.string(),
-    attributedAt: dateTime(),
-    firstOrder: z
-      .object({ id: uuid(), orderCode: z.string(), grossAmount: money(), claimWindowEndsAt: dateTime().nullable() })
-      .nullable(),
-    status: referralStatus,
-    fraudFlags: z.array(referralFlag),
-    /** The referral_review approval (Marketing) when held; decided in the approvals engine. */
-    approvalRequestId: uuid().nullable(),
-    /** Points the referrer receives or received, from `referral.rules` at the time (D-136, D-131). */
-    rewardPoints: z.number().int().nullable(),
-  })
-  .meta({ id: "ReferralDto" });
-
 /* ----------------------------------------------------------------------------------- requests */
 
 export const adminMarketingRequests = {
@@ -361,12 +332,5 @@ export const adminMarketingRequests = {
     summary: "Disable one code (leaked, misused); redemptions already made stay",
     body: z.object({ reason: z.string().min(3).max(500) }),
     response: couponCode,
-  }),
-  "GET /v1/admin/referrals": request({
-    request: "admin.referrals",
-    summary: "Referral attributions; `status=under_review` is Marketing's fraud-review queue (D-136)",
-    decisions: ["D-136"],
-    query: listQuery({ status: referralStatus.optional(), referrerId: uuid().optional() }),
-    response: page(referral),
   }),
 } as const;

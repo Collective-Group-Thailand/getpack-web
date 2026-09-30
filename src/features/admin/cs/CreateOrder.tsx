@@ -22,7 +22,8 @@ import { Select } from "@/ui/components/Select";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
-import { problemMessage, QueryError } from "../console";
+import { adminBrowserApis, problemMessage, QueryError } from "../console";
+import { useGeoName, usePostcodeAreas } from "../customers/geo";
 
 type DesignOption = "own_file" | "online_designer" | "hired_design" | "free_design";
 type MockupOption = "none" | "with_print" | "without_print";
@@ -58,10 +59,35 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
   const customerId = quote.data?.customer.id;
   const customer = useQuery({
     queryKey: queryKeys.detail("admin", "customer", customerId ?? ""),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/customers/{customerId}", { path: { customerId: customerId! } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}", {
+          params: { path: { customerId: customerId! } },
+        })
+      ).data!,
     enabled: Boolean(customerId),
   });
+  const addressBook = useQuery({
+    queryKey: queryKeys.related("admin", "customer", customerId ?? "", "addresses"),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/addresses", {
+          params: { path: { customerId: customerId! }, query: { perPage: 100 } },
+        })
+      ).data!,
+    enabled: Boolean(customerId),
+  });
+  const taxProfiles = useQuery({
+    queryKey: queryKeys.related("admin", "customer", customerId ?? "", "tax_profiles"),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/tax-profiles", {
+          params: { path: { customerId: customerId! }, query: { perPage: 100 } },
+        })
+      ).data!,
+    enabled: Boolean(customerId),
+  });
+  const geoName = useGeoName();
 
   const ccList = cc.split(/[,\s]+/).filter(Boolean);
   const destinations = Object.entries(split).filter(([, value]) => value > 0);
@@ -93,10 +119,10 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
   });
 
   if (quote.isError) return <QueryError error={quote.error} onRetry={() => void quote.refetch()} />;
-  if (!quote.data || !customer.data) return <Skeleton className="h-96" />;
+  if (!quote.data || !customer.data || !addressBook.data || !taxProfiles.data) return <Skeleton className="h-96" />;
 
   const option = quote.data.options.find((candidate) => candidate.quantity === quantity) ?? quote.data.options[0]!;
-  const addresses = customer.data.addresses.filter((address) => address.kind === "delivery");
+  const addresses = addressBook.data.data.filter((address) => address.kind === "delivery");
   const juristic = customer.data.customerType !== "individual";
   const ready = total === quantity && destinations.length > 0 && ccList.every((email) => /^\S+@\S+\.\S+$/.test(email));
 
@@ -127,7 +153,13 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
                       {address.recipientName}
                     </p>
                     <p className="text-muted">
-                      {[address.line1, address.line2, address.district, address.province, address.postcode]
+                      {[
+                        address.line1,
+                        address.line2,
+                        geoName(address.subdistrict),
+                        geoName(address.province),
+                        address.postcode,
+                      ]
                         .filter(Boolean)
                         .join(" ")}
                     </p>
@@ -165,7 +197,7 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
                 onValueChange={setTaxProfileId}
                 options={[
                   { value: "none", label: t("noTaxInvoice") },
-                  ...customer.data.taxProfiles.map((profile) => ({
+                  ...taxProfiles.data.data.map((profile) => ({
                     value: profile.id,
                     label: `${profile.name} · ${profile.taxId}`,
                   })),
@@ -219,7 +251,10 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
         <DescriptionList
           columns={1}
           items={[
-            { term: t("customer"), description: `${customer.data.displayName} · ${customer.data.customerCode}` },
+            {
+              term: t("customer"),
+              description: [customer.data.displayName, customer.data.customerCode].filter(Boolean).join(" · "),
+            },
             { term: t("quote"), description: <span className="font-mono">{quote.data.quoteCode}</span> },
             { term: t("quantity"), description: format.number(option.quantity) },
             {
@@ -252,7 +287,7 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
           onClose={() => setAddingAddress(false)}
           onAdded={() => {
             setAddingAddress(false);
-            void customer.refetch();
+            void addressBook.refetch();
           }}
           closeLabel={tCommon("actions.close")}
         />
@@ -281,42 +316,40 @@ function AddAddressDialog({
     line1: "",
     line2: "",
     postcode: "",
-    district: "",
-    subdistrict: "",
+    subdistrictId: "",
   });
-  const lookup = useQuery({
-    queryKey: queryKeys.detail("admin", "postcode", values.postcode),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/geo/postcodes/{postcode}", { path: { postcode: values.postcode } }),
-    enabled: /^\d{5}$/.test(values.postcode),
-    retry: false,
-  });
-  const districts = lookup.data?.districts ?? [];
-  const subdistricts = districts.find((district) => district.name === values.district)?.subdistricts ?? [];
+  const lookup = usePostcodeAreas(values.postcode);
+  const geoName = useGeoName();
+  const areas = lookup.data ?? [];
+  const area = areas.find((candidate) => candidate.subdistrict.id === values.subdistrictId) ?? null;
+  // A postcode can straddle provinces; the address needs one, so it waits for the subdistrict then.
+  const provinces = [...new Set(areas.map((candidate) => candidate.province.id))];
+  const provinceId = area?.province.id ?? (provinces.length === 1 ? provinces[0]! : null);
 
   const add = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/customers/{customerId}/addresses", {
-        path: { customerId },
-        body: {
-          kind: "delivery",
-          label: values.label,
-          recipientName: values.recipientName,
-          phone: values.phone,
-          line1: values.line1,
-          line2: values.line2 || null,
-          postcode: values.postcode,
-          province: lookup.data!.province,
-          ...(values.district ? { district: values.district } : {}),
-          ...(values.subdistrict ? { subdistrict: values.subdistrict } : {}),
-        },
-      }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/addresses", {
+          params: { path: { customerId } },
+          body: {
+            kind: "delivery",
+            label: values.label,
+            recipientName: values.recipientName,
+            phone: values.phone,
+            line1: values.line1,
+            line2: values.line2 || null,
+            postcode: values.postcode,
+            provinceId: provinceId!,
+            subdistrictId: values.subdistrictId || null,
+          },
+        })
+      ).data!,
     onSuccess: onAdded,
   });
 
   const set = (key: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) =>
     setValues({ ...values, [key]: event.target.value });
-  const ready = values.label && values.recipientName && /^0\d{8,9}$/.test(values.phone) && values.line1 && lookup.data;
+  const ready = values.label && values.recipientName && /^0\d{8,9}$/.test(values.phone) && values.line1 && provinceId;
 
   return (
     <Dialog
@@ -350,7 +383,10 @@ function AddAddressDialog({
         </Field>
         <Field
           label={t("postcode")}
-          hint={lookup.data?.province ?? (lookup.isError ? t("postcodeUnknown") : undefined)}
+          hint={
+            geoName(area?.province ?? areas[0]?.province) ??
+            (lookup.isError || (lookup.isSuccess && areas.length === 0) ? t("postcodeUnknown") : undefined)
+          }
           required
           requiredLabel={tCommon("state.required")}
         >
@@ -359,7 +395,7 @@ function AddAddressDialog({
             maxLength={5}
             value={values.postcode}
             onChange={(event) =>
-              setValues({ ...values, postcode: event.target.value.replace(/\D/g, ""), district: "", subdistrict: "" })
+              setValues({ ...values, postcode: event.target.value.replace(/\D/g, ""), subdistrictId: "" })
             }
           />
         </Field>
@@ -369,25 +405,18 @@ function AddAddressDialog({
         <Field label={t("line2")} className="sm:col-span-2">
           <Input value={values.line2} onChange={set("line2")} />
         </Field>
-        {districts.length > 0 ? (
-          <>
-            <Field label={t("district")}>
-              <Select
-                value={values.district || undefined}
-                onValueChange={(district) => setValues({ ...values, district, subdistrict: "" })}
-                placeholder={t("choose")}
-                options={districts.map((district) => ({ value: district.name, label: district.name }))}
-              />
-            </Field>
-            <Field label={t("subdistrict")}>
-              <Select
-                value={values.subdistrict || undefined}
-                onValueChange={(subdistrict) => setValues({ ...values, subdistrict })}
-                placeholder={t("choose")}
-                options={subdistricts.map((name) => ({ value: name, label: name }))}
-              />
-            </Field>
-          </>
+        {areas.length > 0 ? (
+          <Field label={t("subdistrict")} className="sm:col-span-2">
+            <Select
+              value={values.subdistrictId || undefined}
+              onValueChange={(subdistrictId) => setValues({ ...values, subdistrictId })}
+              placeholder={t("choose")}
+              options={areas.map((candidate) => ({
+                value: candidate.subdistrict.id,
+                label: [candidate.subdistrict, candidate.district, candidate.province].map(geoName).join(" · "),
+              }))}
+            />
+          </Field>
         ) : null}
       </div>
     </Dialog>

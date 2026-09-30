@@ -13,6 +13,7 @@ import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { csCalculation, discountMemo, quotationDetail } from "@/lib/api/requests/admin-sales";
 import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -28,7 +29,8 @@ import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
-import { download, problemMessage, QueryError, useCan } from "../console";
+import { adminBrowserApis, download, problemMessage, QueryError, useCan } from "../console";
+import { useGeoName, usePostcodeAreas } from "../customers/geo";
 import { CalculatorForm, emptyInput, missingFields, type CalculatorInput, type CalculatorKey } from "./forms";
 
 type Calculation = z.output<typeof csCalculation>;
@@ -70,6 +72,7 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
   const [memo, setMemo] = useState<Memo | null>(null);
   const [memoOpen, setMemoOpen] = useState(false);
   const [creatingCustomer, setCreatingCustomer] = useState(false);
+  const geoName = useGeoName();
 
   const data = useQuery({
     queryKey: queryKeys.detail("admin", "cs_input", type),
@@ -79,18 +82,17 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
 
   const customers = useQuery({
     queryKey: queryKeys.list("admin", "customer", { q: customerQuery }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/customers", { query: { q: customerQuery || undefined, perPage: 10 } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers", {
+          params: { query: { q: customerQuery || undefined, perPage: 10 } },
+        })
+      ).data!,
     enabled: customerQuery.trim().length >= 2,
   });
 
-  const place = useQuery({
-    queryKey: queryKeys.detail("admin", "postcode", postcode),
-    queryFn: () => browserRequests().call("GET /v1/admin/geo/postcodes/{postcode}", { path: { postcode } }),
-    enabled: /^\d{5}$/.test(postcode),
-    staleTime: STALE_TIME.stable,
-    retry: false,
-  });
+  const place = usePostcodeAreas(postcode);
+  const placeName = geoName(place.data?.[0]?.province);
 
   const calculate = useMutation({
     mutationFn: () =>
@@ -180,7 +182,7 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
               options={(customers.data?.data ?? []).map((item) => ({
                 value: item.id,
                 label: item.displayName,
-                description: [item.customerCode, item.phone, item.companyName].filter(Boolean).join(" · "),
+                description: [item.customerCode, item.phone].filter(Boolean).join(" · "),
               }))}
               placeholder={t("customerPlaceholder")}
               labels={{ loading: tCommon("state.loading"), empty: t("noCustomer"), clear: t("clearCustomer") }}
@@ -267,7 +269,10 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
           </CardHeader>
           <Field
             label={t("postcode")}
-            hint={place.data ? place.data.province : place.isError ? t("postcodeUnknown") : t("postcodeHint")}
+            hint={
+              placeName ??
+              (place.isError || (place.isSuccess && place.data.length === 0) ? t("postcodeUnknown") : t("postcodeHint"))
+            }
             error={postcode && !/^\d{0,5}$/.test(postcode) ? t("postcodeFormat") : undefined}
           >
             <Input
@@ -504,7 +509,11 @@ export function CalculatorWorkspace({ type }: { type: CalculatorKey }) {
         <CreateCustomerDialog
           onClose={() => setCreatingCustomer(false)}
           onCreated={(created) => {
-            setCustomer({ value: created.id, label: created.displayName, description: created.customerCode });
+            setCustomer({
+              value: created.id,
+              label: created.displayName,
+              description: created.customerCode ?? undefined,
+            });
             setCreatingCustomer(false);
           }}
         />
@@ -668,7 +677,7 @@ export function CreateCustomerDialog({
   onCreated,
 }: {
   onClose: () => void;
-  onCreated: (customer: { id: string; displayName: string; customerCode: string }) => void;
+  onCreated: (customer: Schemas["AdminCustomerDto"]) => void;
 }) {
   const t = useTranslations("cs.newCustomer");
   const tCommon = useTranslations("common");
@@ -678,13 +687,17 @@ export function CreateCustomerDialog({
   const [customerType, setCustomerType] = useState<"individual" | "juristic">("individual");
 
   const create = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/customers", {
-        body: { displayName: displayName.trim(), phone, ...(email ? { email } : {}), customerType },
-      }),
-    onSuccess: (created) => {
-      toast.success(t("created", { code: created.customerCode }));
-      onCreated(created);
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/customers", {
+          body: { displayName: displayName.trim(), phone, ...(email ? { email } : {}), customerType },
+        })
+      ).data!,
+    // Find-or-create: a phone or e-mail that matches an account answers that customer instead.
+    onSuccess: ({ created, customer }) => {
+      const name = customer.customerCode ?? customer.displayName;
+      toast.success(created ? t("created", { code: name }) : t("matched", { name }));
+      onCreated(customer);
     },
   });
 

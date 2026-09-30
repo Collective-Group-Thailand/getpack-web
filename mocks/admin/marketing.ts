@@ -17,8 +17,10 @@ import type {
   promotionBenefit,
   promotionConditions,
   promotionDetail,
-  referral,
 } from "@/lib/api/requests/admin-marketing";
+import type { Schemas } from "@/lib/api/types";
+
+import { http, HttpResponse } from "msw";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
@@ -33,7 +35,19 @@ type Campaign = z.output<typeof campaignDetail>;
 type Promotion = z.output<typeof promotionDetail>;
 type Batch = z.output<typeof couponBatch>;
 type Code = z.output<typeof couponCode>;
-type Referral = z.output<typeof referral>;
+/** A referral as the fixture keeps it; `toReferralDto` is what the API answers (`AdminReferralDto`). */
+interface Referral {
+  id: string;
+  referrer: ReturnType<typeof customerRef>;
+  referee: ReturnType<typeof customerRef>;
+  referralCode: string;
+  attributedAt: string;
+  firstOrder: { id: string; orderCode: string; grossAmount: string; claimWindowEndsAt: string | null } | null;
+  status: Schemas["ReferralStatus"];
+  fraudFlags: string[];
+  approvalRequestId: string | null;
+  rewardPoints: number | null;
+}
 
 const DAY = 24 * 60;
 const MARKETER = PERSONAS.find((persona) => persona.key === "marketing")!;
@@ -433,10 +447,29 @@ const referrals: Referral[] = [
           claimWindowEndsAt: bangkokIso(-(3 - index) * DAY),
         },
   status: status as Referral["status"],
-  fraudFlags: flags as Referral["fraudFlags"],
+  fraudFlags: flags as string[],
   approvalRequestId: null,
   rewardPoints: status === "rewarded" || status === "qualified" || status === "under_review" ? REFERRER_POINTS : null,
 }));
+
+function toReferralDto(item: Referral): Schemas["AdminReferralDto"] {
+  const settled = item.status === "rewarded" || item.status === "rejected_fraud";
+  return {
+    id: item.id,
+    code: item.referralCode,
+    referrer: { id: item.referrer.id, displayName: item.referrer.displayName },
+    referee: { id: item.referee.id, displayName: item.referee.displayName },
+    attributedAt: item.attributedAt,
+    firstOrderGroupId: item.firstOrder ? mockId("grp", 900 + referrals.indexOf(item)) : null,
+    firstOrderGroupCode: item.firstOrder?.orderCode.replace(/^PK/, "PG") ?? null,
+    status: item.status,
+    fraudFlags: item.fraudFlags,
+    approvalId: item.approvalRequestId,
+    qualifiedAt: item.status === "pending" ? null : item.attributedAt,
+    rewardedAt: item.status === "rewarded" ? item.attributedAt : null,
+    decidedAt: settled ? item.attributedAt : null,
+  };
+}
 
 /** Held referrals wait on Marketing in the approvals engine (policy `referral_review`, D-136). */
 for (const item of referrals.filter((candidate) => candidate.status === "under_review")) {
@@ -738,13 +771,22 @@ export const marketingHandlers = [
     return code;
   }),
 
-  mockRequest("GET /v1/admin/referrals", ({ query, request }) => {
+  // admin.referrals.list (U-F0.3): no referrerId filter, the first order as its group.
+  http.get("*/v1/admin/referrals", ({ request }) => {
     const who = staffPersonaOf(request);
-    if (!who || (!can(who, "promotions.read") && !can(who, "customers.read"))) return forbidden();
+    if (!who || !can(who, "promotions.read")) return forbidden();
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const q = url.searchParams.get("q") ?? undefined;
     const rows = referrals
-      .filter((item) => !query.status || item.status === query.status)
-      .filter((item) => !query.referrerId || item.referrer.id === query.referrerId)
-      .filter((item) => matchesQuery(query.q, item.referralCode, item.referrer.displayName, item.referee.displayName));
-    return paginate(rows, query);
+      .filter((item) => !status || item.status === status)
+      .filter((item) => matchesQuery(q, item.referralCode, item.referrer.displayName, item.referee.displayName))
+      .map(toReferralDto);
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
+    );
   }),
 ];

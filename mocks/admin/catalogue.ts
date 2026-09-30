@@ -23,6 +23,21 @@ const M = "catalog.manage";
 const CMS = "cms.manage";
 const GEO = "geography.manage";
 
+/** Geography ids the variants below link to each other by; Bangkok is the contract example's own row. */
+const GEO_ID = {
+  bkk: "0192f3a0-7c1e-7d2a-9b1f-00000000a201",
+  cnx: mockId("gpv", 50),
+  cbi: mockId("gpv", 20),
+  ska: mockId("gpv", 90),
+  kkn: mockId("gpv", 40),
+  wattana: mockId("gdt", 1039),
+  khlongtoei: mockId("gdt", 1033),
+  muangCnx: mockId("gdt", 5001),
+  muangCbi: mockId("gdt", 2001),
+  hatyai: mockId("gdt", 9011),
+  muangKkn: mockId("gdt", 4001),
+} as const;
+
 const group = (code: string, nameTh: string, nameEn: string, sort: number) => ({ code, nameTh, nameEn, sort });
 
 const typeId = (code: string) => PRODUCT_TYPES.find((type) => type.code === code)!.id;
@@ -557,9 +572,12 @@ const TABLES: Record<string, TableConfig> = {
     ns: "gpv",
     search: ["code", "nameTh", "nameEn"],
     unique: "code",
+    // Enough geography for the fake customers' postcodes (D-161, D-170), linked by id.
     variants: [
-      { code: "50", nameTh: "เชียงใหม่", nameEn: "Chiang Mai", region: "north" },
-      { code: "20", nameTh: "ชลบุรี", nameEn: "Chon Buri", region: "east" },
+      { id: GEO_ID.cnx, code: "50", nameTh: "เชียงใหม่", nameEn: "Chiang Mai", region: "north" },
+      { id: GEO_ID.cbi, code: "20", nameTh: "ชลบุรี", nameEn: "Chon Buri", region: "east" },
+      { id: GEO_ID.ska, code: "90", nameTh: "สงขลา", nameEn: "Songkhla", region: "south" },
+      { id: GEO_ID.kkn, code: "40", nameTh: "ขอนแก่น", nameEn: "Khon Kaen", region: "northeast" },
     ],
   },
   districts: {
@@ -570,7 +588,21 @@ const TABLES: Record<string, TableConfig> = {
     search: ["code", "nameTh", "nameEn"],
     filters: ["provinceId"],
     unique: "code",
-    variants: [{ code: "1002", nameTh: "ดุสิต", nameEn: "Dusit" }],
+    variants: [
+      { code: "1002", nameTh: "ดุสิต", nameEn: "Dusit" },
+      { id: GEO_ID.wattana, code: "1039", nameTh: "วัฒนา", nameEn: "Watthana", provinceId: GEO_ID.bkk },
+      { id: GEO_ID.khlongtoei, code: "1033", nameTh: "คลองเตย", nameEn: "Khlong Toei", provinceId: GEO_ID.bkk },
+      {
+        id: GEO_ID.muangCnx,
+        code: "5001",
+        nameTh: "เมืองเชียงใหม่",
+        nameEn: "Mueang Chiang Mai",
+        provinceId: GEO_ID.cnx,
+      },
+      { id: GEO_ID.muangCbi, code: "2001", nameTh: "เมืองชลบุรี", nameEn: "Mueang Chon Buri", provinceId: GEO_ID.cbi },
+      { id: GEO_ID.hatyai, code: "9011", nameTh: "หาดใหญ่", nameEn: "Hat Yai", provinceId: GEO_ID.ska },
+      { id: GEO_ID.muangKkn, code: "4001", nameTh: "เมืองขอนแก่น", nameEn: "Mueang Khon Kaen", provinceId: GEO_ID.kkn },
+    ],
   },
   subdistricts: {
     path: "/v1/admin/geography/subdistricts",
@@ -580,7 +612,28 @@ const TABLES: Record<string, TableConfig> = {
     search: ["code", "nameTh", "nameEn", "postcode"],
     filters: ["districtId", "postcode"],
     unique: "code",
-    variants: [{ code: "100102", nameTh: "วังบูรพาภิรมย์", nameEn: "Wang Burapha Phirom" }],
+    variants: [
+      { code: "100102", nameTh: "วังบูรพาภิรมย์", nameEn: "Wang Burapha Phirom" },
+      ...(
+        [
+          ["103901", "คลองเตยเหนือ", "Khlong Toei Nuea", "wattana", "10110"],
+          ["103902", "คลองตันเหนือ", "Khlong Tan Nuea", "wattana", "10110"],
+          ["103301", "คลองเตย", "Khlong Toei", "khlongtoei", "10110"],
+          ["103302", "คลองตัน", "Khlong Tan", "khlongtoei", "10110"],
+          ["500101", "ศรีภูมิ", "Si Phum", "muangCnx", "50200"],
+          ["500102", "พระสิงห์", "Phra Sing", "muangCnx", "50200"],
+          ["200101", "บางปลาสร้อย", "Bang Pla Soi", "muangCbi", "20000"],
+          ["901101", "หาดใหญ่", "Hat Yai", "hatyai", "90110"],
+          ["400101", "ในเมือง", "Nai Mueang", "muangKkn", "40000"],
+        ] as const
+      ).map(([code, nameTh, nameEn, district, postcode]) => ({
+        code,
+        nameTh,
+        nameEn,
+        districtId: GEO_ID[district],
+        postcode,
+      })),
+    ],
   },
   banners: {
     path: "/v1/admin/cms/banners",

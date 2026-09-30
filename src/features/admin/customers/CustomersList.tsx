@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { useFormat, When } from "@/features/shared/format";
+import { When } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { ResourceList, type InitialPage } from "../console";
-import { customersList, type CustomerSummary } from "./resources";
+import { customersList, type Customer } from "./resources";
 
-/** Customers (F2 2.7): who they are, how they came, how much they have ordered. */
-export function CustomersList({ initial }: { initial: InitialPage<CustomerSummary> | null }) {
+/**
+ * Customers (F2 2.7): who they are and how they came. The published row carries no company or
+ * order count, and the list has no type or channel filter (CONTRACT-GAP admin.customers).
+ */
+export function CustomersList({ initial }: { initial: InitialPage<Customer> | null }) {
   const t = useTranslations("customers.list");
-  const format = useFormat();
 
-  const columns: DataTableColumn<CustomerSummary>[] = [
+  const columns: DataTableColumn<Customer>[] = [
     {
       id: "displayName",
       header: t("columns.customer"),
@@ -25,16 +27,11 @@ export function CustomersList({ initial }: { initial: InitialPage<CustomerSummar
           <Link href={`/customers/${row.id}`} className="text-primary font-medium hover:underline">
             {row.displayName}
           </Link>
-          <p className="text-muted font-mono text-xs">{row.customerCode}</p>
+          {row.customerCode ? <p className="text-muted font-mono text-xs">{row.customerCode}</p> : null}
         </div>
       ),
     },
     { id: "customerType", header: t("columns.type"), cell: (row) => t(`types.${row.customerType}`) },
-    {
-      id: "company",
-      header: t("columns.company"),
-      cell: (row) => row.companyName ?? <span className="text-muted">–</span>,
-    },
     {
       id: "contact",
       header: t("columns.contact"),
@@ -45,7 +42,6 @@ export function CustomersList({ initial }: { initial: InitialPage<CustomerSummar
         </div>
       ),
     },
-    { id: "ordersCount", header: t("columns.orders"), numeric: true, cell: (row) => format.number(row.ordersCount) },
     {
       id: "createdVia",
       header: t("columns.via"),
@@ -62,23 +58,6 @@ export function CustomersList({ initial }: { initial: InitialPage<CustomerSummar
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      filters={[
-        {
-          id: "customerType",
-          label: t("columns.type"),
-          kind: "select",
-          options: (["individual", "juristic", "government"] as const).map((value) => ({
-            value,
-            label: t(`types.${value}`),
-          })),
-        },
-        {
-          id: "createdVia",
-          label: t("columns.via"),
-          kind: "select",
-          options: (["self", "cs", "line_liff"] as const).map((value) => ({ value, label: t(`channels.${value}`) })),
-        },
-      ]}
       empty={{ title: t("empty") }}
     />
   );
