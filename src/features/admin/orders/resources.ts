@@ -1,8 +1,5 @@
 /** The order-desk lists, in a plain module so Server Components can call their fetchers. */
 
-import type { z } from "zod";
-
-import type { discountMemo, quotationSummary } from "@/lib/api/requests/admin-sales";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
@@ -12,8 +9,8 @@ export type Order = Schemas["AdminOrderDto"];
 export type OrderGroup = Schemas["AdminOrderGroupDto"];
 export type OrderQueueItem = Schemas["OrderQueueItemDto"];
 export type OrderQueue = Schemas["OrderQueue"];
-export type QuotationSummary = z.output<typeof quotationSummary>;
-export type DiscountMemo = z.output<typeof discountMemo>;
+export type Quotation = Schemas["AdminSavedQuoteDto"];
+export type DiscountMemo = Schemas["DiscountMemoDto"];
 
 /** packio-api's order queues, in the desk's order. The first is the one the desk opens on. */
 export const ORDER_QUEUES = [
@@ -48,18 +45,21 @@ export const ordersList = defineList<OrderQueueItem>({
   staleTime: STALE_TIME.live,
 });
 
-export const quotationsList = defineList<QuotationSummary>({
+export const quotationsList = defineList<Quotation>({
   key: "quote",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/quotations", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/quotes", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
-  getRowName: (row) => row.quoteCode,
-  defaults: { filterKeys: ["status", "channel", "customerId"], sort: "createdAt", order: "desc" },
+  getRowName: (row) => row.quoteCode ?? row.id.slice(0, 8),
+  defaults: { filterKeys: ["status", "customerId"], sort: "createdAt", order: "desc" },
 });
 
 export const memosList = defineList<DiscountMemo>({
   key: "discount_memo",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/discount-memos", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/discount-memos", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
-  getRowName: (row) => row.memoCode,
-  defaults: { filterKeys: ["status"], sort: "createdAt", order: "desc" },
+  // A memo has no code of its own (CONTRACT-GAP admin.discount-memos); its customer names it.
+  getRowName: (row) => row.customer?.displayName ?? row.id.slice(0, 8),
+  defaults: { filterKeys: ["status", "customerId"], sort: "createdAt", order: "desc" },
 });

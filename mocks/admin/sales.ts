@@ -1,282 +1,344 @@
 /**
- * The CS sales desk, mocked: calculator input data and results, quotations, discount memos
- * and CS create-order (CONTRACT-REQUEST admin.cs-calculators, admin.quotations,
- * admin.discount-memos, admin.cs-create-order).
+ * The CS sales desk on the published contract (U-F0.3): the folding and corrugate calculators
+ * (`admin.csFolding.*`, `admin.csCorrugate.*`), saved quotations (`admin.quotes.*`), discount memos
+ * on the customer's cart (`admin.discountMemos.*`), the customer's cart as CS fills it
+ * (`admin.cart.*`) and CS checkout (`admin.checkout.*`).
  *
- * **The prices are illustrative, not the legacy maths.** The seven calculators are ported with
- * golden tests in packio-api B2.3; this only has to produce rows with the right shape and a
- * plausible spread so the screen can be built and tested. Discount memos go through the same
- * approvals mock as everything else, so a memo raised here appears in a Director's inbox.
+ * The calculators read the catalogue mock's own rows and price with the storefront mock's engine
+ * (`../store/quotes.ts` `boxStepsOf`), so the same spec costs the same on both sides — obviously fake
+ * figures standing in for packio-api's ported calculators. The other five calculators are not
+ * published; nothing here answers for them. Memos go through the approvals mock like everything
+ * else, so a memo raised here appears in a Director's inbox.
  */
 
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import type { csCalculation, csInputData, discountMemo, quotationDetail } from "@/lib/api/requests/admin-sales";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
-import { can } from "../personas";
-import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
-import { productTypeOfCalculator, productTypeRef } from "./catalog";
-import { baht, customers, FACTORY, orders } from "./commerce";
-import { approvals, settings } from "./platform";
+import { can, type StaffPersona } from "../personas";
+import { boxStepsOf } from "../store/quotes";
+import {
+  bangkokIso,
+  matchesQuery,
+  mockId,
+  paginate,
+  precondition,
+  problem,
+  sortBy,
+  versionTag,
+  withEtag,
+} from "../support";
+import { PRODUCT_TYPES } from "./catalog";
+import { catalogueRows } from "./catalogue";
+import { customers, orders } from "./commerce";
+import { toGroupDto } from "./orders";
+import { approvals, openApproval, settings } from "./platform";
 
-type InputData = z.output<typeof csInputData>;
-type Calculation = z.output<typeof csCalculation>;
-type Quotation = z.output<typeof quotationDetail>;
-type Memo = z.output<typeof discountMemo>;
+type Quote = Schemas["AdminSavedQuoteDto"];
+type Memo = Schemas["DiscountMemoDto"];
+type Cart = Schemas["CartDto"];
+type Calculator = "folding" | "corrugate";
 
-const opt = (
-  code: string,
-  name: string,
-  meta: InputData["options"][string][number]["meta"] = {},
-  group: string | null = null,
-) => ({ code, name, group, meta });
+const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
+const notFound = (what: string) => problem(404, "http.not_found", `ไม่พบ${what}นี้`);
+const invalid = (path: string, message: string) =>
+  problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [{ path, code: "invalid", message }]);
 
-const PATTERNS: InputData["patterns"] = [
-  {
-    code: "rsc",
-    name: "กล่องฝาเสียบ (RSC)",
-    subPatterns: [
-      { code: "rsc_tuck", name: "ฝาเสียบบน-ล่าง" },
-      { code: "rsc_lock", name: "ฝาเสียบบน ล็อกก้น" },
-    ],
-    constraints: {
-      minLengthMm: 30,
-      maxLengthMm: 400,
-      minWidthMm: 20,
-      maxWidthMm: 300,
-      minHeightMm: 20,
-      maxHeightMm: 400,
-      lengthMustExceedWidth: true,
-    },
-    standardSizes: [
-      { code: "s", label: "S 80 × 60 × 40", lengthMm: 80, widthMm: 60, heightMm: 40 },
-      { code: "m", label: "M 120 × 80 × 60", lengthMm: 120, widthMm: 80, heightMm: 60 },
-    ],
-  },
-  {
-    code: "tray",
-    name: "กล่องถาดพับ",
-    subPatterns: [],
-    constraints: {
-      minLengthMm: 50,
-      maxLengthMm: 450,
-      minWidthMm: 40,
-      maxWidthMm: 350,
-      minHeightMm: 15,
-      maxHeightMm: 150,
-      lengthMustExceedWidth: false,
-    },
-    standardSizes: [],
-  },
-];
+const pageOf = (url: URL) => ({
+  page: Number(url.searchParams.get("page") ?? 1),
+  perPage: Number(url.searchParams.get("perPage") ?? 25),
+});
 
-function inputData(type: InputData["type"], directLimitPct: string): InputData {
-  const base: InputData = {
-    type,
-    factories: [FACTORY],
-    printTypes: [
-      { code: "offset", name: "ออฟเซ็ต" },
-      { code: "digital", name: "ดิจิทัล" },
-    ],
-    patterns: ["folding", "corrugate"].includes(type) ? PATTERNS : [],
-    options: {},
-    quantityPresets: [500, 1000, 2000, 3000, 5000],
-    discountPolicy: { directLimitPct },
-  };
-  switch (type) {
-    case "folding":
-      base.options = {
-        materials: [
-          opt("artcard", "อาร์ตการ์ด", { gsm: [230, 260, 300, 350] }, "กระดาษ"),
-          opt("kraft", "กระดาษคราฟท์", { gsm: [250, 300] }, "กระดาษ"),
-          opt("greyback", "กล่องแป้งหลังเทา", { gsm: [300, 350, 400] }, "กระดาษ"),
-        ],
-        finishes: [
-          opt("matt_lam", "เคลือบด้าน", { needsArea: false }, "เคลือบ"),
-          opt("gloss_lam", "เคลือบเงา", { needsArea: false }, "เคลือบ"),
-          opt("spot_uv", "สปอตยูวี", { needsArea: true }, "พิเศษ"),
-          opt("hot_foil", "ปั๊มฟอยล์", { needsArea: true }, "พิเศษ"),
-          opt("emboss", "ปั๊มนูน", { needsArea: true }, "พิเศษ"),
-        ],
-        diecutGroups: [opt("standard", "ไดคัทมาตรฐาน"), opt("window", "เจาะหน้าต่าง")],
-        assemblies: [opt("glue_side", "ปะกาวข้าง"), opt("glue_lock", "ปะกาวล็อกก้น")],
-        difficultyLevels: [opt("normal", "ปกติ"), opt("hard", "ยาก")],
-      };
-      break;
-    case "corrugate":
-      base.options = {
-        flutes: [opt("e", "ลอน E"), opt("b", "ลอน B"), opt("c", "ลอน C"), opt("bc", "ลอน BC (2 ชั้น)")],
-        paperGrades: [opt("ka125", "KA125"), opt("ki150", "KI150"), opt("kt185", "KT185")],
-      };
-      break;
-    case "label":
-      base.options = {
-        shapes: [opt("rect", "สี่เหลี่ยม"), opt("round", "วงกลม"), opt("oval", "วงรี"), opt("custom", "ไดคัทตามรูป")],
-        materials: [opt("pp_white", "PP ขาว"), opt("pp_clear", "PP ใส"), opt("paper_gloss", "กระดาษเคลือบเงา")],
-        finishes: [
-          opt("gloss_lam", "เคลือบเงา", { needsArea: false }),
-          opt("matt_lam", "เคลือบด้าน", { needsArea: false }),
-        ],
-      };
-      break;
-    case "tag_sleeve":
-      base.options = {
-        materials: [
-          opt("artcard", "อาร์ตการ์ด", { gsm: [260, 300, 350] }),
-          opt("kraft", "กระดาษคราฟท์", { gsm: [250, 300] }),
-        ],
-        finishes: [
-          opt("matt_lam", "เคลือบด้าน", { needsArea: false }),
-          opt("hot_foil", "ปั๊มฟอยล์", { needsArea: true }),
-        ],
-      };
-      break;
-    case "pouch":
-      base.options = {
-        pouchTypes: [
-          opt("stand_up", "ซองตั้งได้"),
-          opt("three_side", "ซองซีล 3 ด้าน"),
-          opt("flat_bottom", "ซองก้นแบน"),
-        ],
-        materials: [opt("pet_pe", "PET/PE"), opt("pet_al_pe", "PET/AL/PE (กันแสง)"), opt("kraft_pe", "คราฟท์/PE")],
-        microns: [
-          opt("80", "80 ไมครอน", { micron: 80 }),
-          opt("100", "100 ไมครอน", { micron: 100 }),
-          opt("120", "120 ไมครอน", { micron: 120 }),
-        ],
-      };
-      break;
-    case "standard_product":
-      base.options = {
-        products: [
-          opt("std_box_s", "กล่องไปรษณีย์ไซซ์ S", { unit: "ใบ" }),
-          opt("std_bag_kraft", "ถุงกระดาษคราฟท์ M", { unit: "ใบ" }),
-          opt("std_tape", "เทปพิมพ์โลโก้ 2 นิ้ว", { unit: "ม้วน" }),
-        ],
-      };
-      base.quantityPresets = [50, 100, 500, 1000];
-      break;
-    case "service":
-      base.options = {
-        services: [
-          opt("design", "ออกแบบลายกล่อง", { unit: "งาน" }),
-          opt("structure", "ออกแบบโครงสร้าง", { unit: "งาน" }),
-          opt("mockup", "ม็อกอัปตัวอย่าง", { unit: "ชิ้น" }),
-          opt("plate", "ทำเพลต", { unit: "ชุด" }),
-          opt("delivery", "ค่าจัดส่งเพิ่ม", { unit: "เที่ยว" }),
-        ],
-      };
-      base.quantityPresets = [1];
-      break;
-  }
-  return base;
+function allowed(request: Request, permission: string): StaffPersona | null {
+  const who = staffPersonaOf(request);
+  return who && can(who, permission) ? who : null;
 }
 
-/** Satang per piece, before quantity breaks — a plausible spread, nothing more. */
-const BASE: Record<InputData["type"], number> = {
-  folding: 850,
-  corrugate: 1650,
-  label: 90,
-  tag_sleeve: 240,
-  pouch: 620,
-  standard_product: 1500,
-  service: 250000,
-};
+const live = <T extends Record<string, unknown>>(rows: T[]) => rows.filter((row) => row.status !== "archived");
+const str = (value: unknown) => String(value ?? "");
 
-const calculations = new Map<string, Calculation & { customerId?: string }>();
+/* ---------------------------------------------------------------------------- input data */
 
-const seedCustomer = (index: number) => {
-  const customer = customers[index]!;
+function named(row: Record<string, unknown>): Schemas["InputNamedDto"] {
+  return { id: str(row.id), code: str(row.code), nameTh: str(row.nameTh), nameEn: str(row.nameEn ?? row.nameTh) };
+}
+
+function subPatternsOf(patternId: unknown) {
+  return live(catalogueRows("subPatterns"))
+    .filter((row) => row.patternId === patternId)
+    .map((row) => ({ id: str(row.id), name: str(row.name), seq: Number(row.seq ?? 1) }));
+}
+
+function inkColours(): Schemas["InputInkColourDto"][] {
+  return live(catalogueRows("inkColours")).map((row) => ({
+    id: str(row.id),
+    code: str(row.code),
+    name: str(row.name),
+    colourKind: str(row.colourKind ?? "process"),
+  }));
+}
+
+function assemblies(): Schemas["InputAssemblyDto"][] {
+  return live(catalogueRows("assemblies")).map((row) => ({
+    ...named(row),
+    requiresAmount: Boolean(row.requiresAmount),
+    requiresLength: Boolean(row.requiresLength),
+    requiresWidth: Boolean(row.requiresWidth),
+  }));
+}
+
+function foldingInputData(): Schemas["FoldingInputDataDto"] {
   return {
-    id: customer.id,
-    customerCode: customer.customerCode,
-    displayName: customer.displayName,
-    companyName: customer.companyName,
+    patterns: live(catalogueRows("patterns")).map((row) => ({
+      id: str(row.id),
+      code: str(row.code),
+      name: str(row.name),
+      geometryFormula: str(row.geometryFormula ?? row.dielineKey ?? "rsc"),
+      subPatterns: subPatternsOf(row.id),
+    })),
+    materials: live(catalogueRows("materials"))
+      .filter((row) => row.kind !== "corrugated_board")
+      .map((row) => ({ ...named(row), gsm: row.gsm === null || row.gsm === undefined ? null : Number(row.gsm) })),
+    inkColours: inkColours(),
+    finishes: live(catalogueRows("finishes")).map((row) => ({
+      ...named(row),
+      finishKind: str(row.finishKind),
+      slot: "finish1",
+      requiresAmount: Boolean(row.requiresAmount),
+      requiresLength: Boolean(row.requiresLength),
+      requiresWidth: Boolean(row.requiresWidth),
+    })),
+    diecutTypes: live(catalogueRows("diecutTypes")).map(named),
+    assemblies: assemblies(),
+    difficultyLevels: live(catalogueRows("difficultyLevels")).map(named),
   };
-};
+}
 
-/** Two quotations CS saved earlier, so the list and the create-order flow have something real. */
-export const quotations: Quotation[] = [
+function corrugateInputData(): Schemas["CorrugateInputDataDto"] {
+  const flutes = live(catalogueRows("fluteTypes"));
+  const fluteOf = (id: unknown) => flutes.find((row) => row.id === id) ?? flutes[0]!;
+  return {
+    patterns: live(catalogueRows("patterns")).map((row) => ({
+      id: str(row.id),
+      code: str(row.code),
+      name: str(row.name),
+      corrugateFormula: (row.corrugateFormula as Schemas["CorrugateFormula"] | null) ?? "rsc",
+      fluteTypeIds: flutes.map((flute) => str(flute.id)),
+      subPatterns: subPatternsOf(row.id).map((sub) => ({ ...sub, corrugateFormula: null })),
+    })),
+    boards: live(catalogueRows("materials"))
+      .filter((row) => row.kind === "corrugated_board" || row.fluteTypeId)
+      .map((row) => {
+        const flute = fluteOf(row.fluteTypeId);
+        return {
+          ...named(row),
+          gsm: row.gsm === null || row.gsm === undefined ? null : Number(row.gsm),
+          coatable: Boolean(row.coatable),
+          strength: (row.strength as string | null) ?? null,
+          insideColour: (row.insideColour as string | null) ?? null,
+          outsideColour: (row.outsideColour as string | null) ?? null,
+          flute: { id: str(flute.id), code: str(flute.code), name: str(flute.name), layers: Number(flute.layers ?? 3) },
+        };
+      }),
+    coatings: live(catalogueRows("finishes")).map((row) => ({ ...named(row), finishKind: str(row.finishKind) })),
+    inkColours: inkColours(),
+    assemblies: assemblies(),
+    difficultyLevels: live(catalogueRows("difficultyLevels")).map(named),
+    printAreas: ["top", "side", "top_side", "all_round"],
+  };
+}
+
+/* ---------------------------------------------------------------------------- calculators */
+
+type Configuration = Schemas["FoldingConfigurationDto"] | Schemas["CsCorrugateConfigurationDto"];
+
+/** What the fake engine needs from either configuration; a `Response` when the body is refused. */
+function boxOf(calculator: Calculator, config: Configuration) {
+  if (!config.patternId || !config.materialId || !config.difficultyLevelId)
+    return invalid(
+      !config.patternId ? "patternId" : !config.materialId ? "materialId" : "difficultyLevelId",
+      "required",
+    );
+  if (!(config.l > 0 && config.w > 0 && config.d > 0)) return invalid("l", "dimensions must be positive (mm)");
+  if (!Array.isArray(config.quantities) || config.quantities.length === 0 || config.quantities.some((q) => !(q > 0)))
+    return invalid("quantities", "at least one positive quantity");
+  const material = catalogueRows("materials").find((row) => row.id === config.materialId);
+  if (!material) return invalid("materialId", "unknown material");
+  const part = config.parts[0];
+  const colours = (part?.printFront?.length ?? 0) + (part?.printBack?.length ?? 0);
+  const folding = part as Schemas["FoldingPartDto"] | undefined;
+  const corrugate = part as Schemas["CorrugatePartDto"] | undefined;
+  const extras =
+    calculator === "folding"
+      ? (folding?.finish1FrontId ? 1 : 0) + (folding?.finish1BackId ? 1 : 0) + (folding?.diecutTypeId ? 1 : 0)
+      : (corrugate?.coatingFrontId ? 1 : 0) + (corrugate?.coatingBackId ? 1 : 0);
+  return {
+    l: config.l,
+    w: config.w,
+    d: config.d,
+    colours,
+    extras: extras + (part?.assemblies?.length ?? 0),
+    materialFactor: material.gsm ? Number(material.gsm) / 350 : 1,
+  };
+}
+
+function internalOf(who: StaffPersona, step: Schemas["QuoteStepDto"]): Schemas["QuoteInternalDto"] | null {
+  if (!step.instant) return null;
+  const seesCost = can(who, "factory_cost.read");
+  const seesMargin = seesCost || can(who, "margin.read") || can(who, "margin.read_pct_when_discounting");
+  const product = Number(step.productAmount ?? 0);
+  return {
+    factoryId: mockId("fac", 1),
+    printTypeId: mockId("prt", 1),
+    priceListVersionId: mockId("plv", 1),
+    productionRun: step.quantity,
+    buyPrice: seesCost ? (product * 0.72).toFixed(2) : null,
+    marginPct: seesMargin ? "28.0000" : null,
+    belowMarginFloor: false,
+    parts: [],
+    shipping: null,
+  };
+}
+
+function calculate(calculator: Calculator, who: StaffPersona, config: Configuration, postcode: string | undefined) {
+  const box = boxOf(calculator, config);
+  if (box instanceof Response) return box;
+  const design = { graphic: config.design?.graphic ?? false, structure: config.design?.structure ?? false };
+  const steps = boxStepsOf(calculator, box, design, config.quantities, postcode);
+  const body: Schemas["AdminQuoteCalculationDto"] = {
+    calculatorVersion: `${calculator}-mock-1`,
+    options: [],
+    steps: steps.map((step) => ({
+      ...step,
+      // Plates and die blocks: corrugate flexo only; folding keeps them at 0.00 (v0.3.0).
+      toolingAmount: step.instant ? (calculator === "corrugate" ? "1800.00" : "0.00") : null,
+      internal: internalOf(who, step),
+    })),
+  };
+  return body;
+}
+
+/* ---------------------------------------------------------------------------- quotations */
+
+const DAY = 24 * 60;
+const CS = "00000000-0000-4000-8000-000000005106";
+
+function customerRef(index: number): Schemas["UserRefDto"] {
+  const customer = customers[index]!;
+  return { id: customer.id, displayName: customer.displayName };
+}
+
+function option(quantity: number, unit: string, lead: number): Schemas["AdminSavedQuoteOptionDto"] {
+  const net = Math.round(Number(unit) * quantity * 100);
+  const vat = Math.round(net * 0.07);
+  return {
+    id: mockId("qop", quantity),
+    quantity,
+    unitPrice: unit,
+    productAmount: ((net + vat) / 100).toFixed(2),
+    designFeeAmount: "0.00",
+    structureDesignFeeAmount: "0.00",
+    shippingAmount: null,
+    shippingPending: true,
+    shippingPendingReason: "no_postcode",
+    netAmount: (net / 100).toFixed(2),
+    vatAmount: (vat / 100).toFixed(2),
+    grossAmount: ((net + vat) / 100).toFixed(2),
+    leadTimeDays: lead,
+    earliestShipDate: bangkokIso(DAY * (lead + 4)).slice(0, 10),
+    earliestDeliveryDate: null,
+    toleranceShortagePct: "5.0000",
+    toleranceOveragePct: "5.0000",
+    internal: null,
+  };
+}
+
+export const quotations: Quote[] = [
   {
     id: mockId("quo", 900),
     quoteCode: "QT-2569-00118",
+    productTypeCode: "folding_carton",
     source: "instant",
-    rfq: null,
-    customer: seedCustomer(1),
-    productType: productTypeRef("folding_carton"),
-    quantities: [3000],
-    grossAmount: "38520.00",
-    currency: "THB",
     status: "saved",
     channel: "cs",
-    validUntil: bangkokIso(60 * 24 * 12),
-    createdBy: { id: "00000000-0000-4000-8000-000000005106", displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
-    createdAt: bangkokIso(-60 * 24 * 3),
-    specs: [
-      { label: "รูปแบบ", value: "กล่องฝาเสียบ (RSC)" },
-      { label: "ขนาด", value: "120 × 80 × 60 มม." },
-      { label: "วัสดุ", value: "อาร์ตการ์ด 350 แกรม" },
-    ],
-    options: [
-      {
-        quantity: 3000,
-        unitPrice: "10.500000",
-        netAmount: "31500.00",
-        discountAmount: "0.00",
-        vatAmount: "2520.00",
-        grossAmount: "38520.00",
-        leadTimeDays: 12,
-        earliestShipDate: bangkokIso(60 * 24 * 16).slice(0, 10),
-      },
-    ],
-    discount: null,
-    pdf: null,
-    nextActions: [{ key: "quote.export_pdf" }, { key: "quote.create_order" }],
+    customer: customerRef(1),
+    createdBy: { id: CS, displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
+    configuration: null,
+    deliveryPostcode: null,
+    currency: "THB",
+    options: [option(3000, "10.500000", 12)],
+    priceLocked: true,
+    pdfStatus: "none",
+    sharedAt: null,
+    validUntil: bangkokIso(DAY * 12),
+    createdAt: bangkokIso(-DAY * 3),
   },
   {
     id: mockId("quo", 901),
     quoteCode: "QT-2569-00121",
+    productTypeCode: "label_sticker",
     source: "instant",
-    rfq: null,
-    customer: seedCustomer(0),
-    productType: productTypeRef("label_sticker"),
-    quantities: [5000],
-    grossAmount: "4494.00",
-    currency: "THB",
     status: "expired",
     channel: "web",
-    validUntil: bangkokIso(-60 * 24 * 2),
+    customer: customerRef(0),
     createdBy: null,
-    createdAt: bangkokIso(-60 * 24 * 17),
-    specs: [{ label: "ขนาด", value: "50 × 50 มม." }],
-    options: [
-      {
-        quantity: 5000,
-        unitPrice: "0.800000",
-        netAmount: "4000.00",
-        discountAmount: "0.00",
-        vatAmount: "280.00",
-        grossAmount: "4494.00",
-        leadTimeDays: 5,
-        earliestShipDate: bangkokIso(-60 * 24).slice(0, 10),
-      },
-    ],
-    discount: null,
-    pdf: null,
-    nextActions: [],
+    configuration: null,
+    deliveryPostcode: null,
+    currency: "THB",
+    options: [option(5000, "0.800000", 5)],
+    priceLocked: false,
+    pdfStatus: "none",
+    sharedAt: null,
+    validUntil: bangkokIso(-DAY * 2),
+    createdAt: bangkokIso(-DAY * 17),
   },
 ];
 
-/** The memos behind the two discount-memo approvals the platform mock seeds. */
+/* --------------------------------------------------------------------- carts and memos */
+
+/** Each customer's cart as CS fills it; a customer with none has an empty one. */
+const carts = new Map<string, { cart: Cart; version: number }>();
+
+function cartOf(customerId: string) {
+  let entry = carts.get(customerId);
+  if (!entry) {
+    entry = {
+      version: 1,
+      cart: {
+        id: mockId("crt", customers.findIndex((customer) => customer.id === customerId) + 1),
+        customerId,
+        channel: "cs",
+        items: [],
+        codes: [],
+        productGrossAmount: "0.00",
+        currency: "THB",
+        updatedAt: bangkokIso(),
+      },
+    };
+    carts.set(customerId, entry);
+  }
+  return entry;
+}
+
+const cartTag = (entry: { cart: Cart; version: number }) => versionTag(entry.cart.id, entry.version);
+
+function touch(entry: { cart: Cart; version: number }) {
+  entry.version += 1;
+  entry.cart.updatedAt = bangkokIso();
+  const total = entry.cart.items.reduce((sum, item) => sum + Math.round(Number(item.productGrossAmount) * 100), 0);
+  entry.cart.productGrossAmount = (total / 100).toFixed(2);
+}
+
+/** The memos behind the two discount-memo approvals the platform mock seeds (same subject ids). */
 const memos: Memo[] = [
   {
     id: mockId("subj", 1),
-    memoCode: "DM-2569-00001",
+    scope: "order",
     status: "pending_approval",
-    customer: seedCustomer(1),
-    requestedBy: { id: "00000000-0000-4000-8000-000000005106", displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
+    customer: customerRef(1),
+    companyId: null,
+    requestedBy: { id: CS, displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
     orderValue: "86400.00",
     requestedPct: "8.0000",
     requestedAmount: "6912.00",
@@ -284,17 +346,18 @@ const memos: Memo[] = [
     resultingMarginPct: "17.5000",
     belowMarginFloor: false,
     reason: "ลูกค้าเทียบราคากับคู่แข่ง ขอส่วนลดเพื่อปิดการขาย",
-    evidence: [],
-    approvalRequestId: mockId("appr", 1),
-    validUntil: bangkokIso(60 * 24 * 14),
+    approvalId: mockId("appr", 1),
+    appliedGroupCode: null,
+    validUntil: bangkokIso(DAY * 14),
     createdAt: bangkokIso(-53),
   },
   {
     id: mockId("subj", 2),
-    memoCode: "DM-2569-00002",
+    scope: "order",
     status: "pending_approval",
-    customer: seedCustomer(0),
-    requestedBy: { id: "00000000-0000-4000-8000-000000005106", displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
+    customer: customerRef(0),
+    companyId: null,
+    requestedBy: { id: CS, displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
     orderValue: "24500.00",
     requestedPct: "18.0000",
     requestedAmount: "4410.00",
@@ -302,343 +365,382 @@ const memos: Memo[] = [
     resultingMarginPct: "8.2000",
     belowMarginFloor: true,
     reason: "ลูกค้าประจำ สั่งซ้ำทุกเดือน",
-    evidence: [],
-    approvalRequestId: mockId("appr", 2),
-    validUntil: bangkokIso(60 * 24 * 14),
+    approvalId: mockId("appr", 2),
+    appliedGroupCode: null,
+    validUntil: bangkokIso(DAY * 14),
     createdAt: bangkokIso(-106),
   },
 ];
 
-function calculate(type: InputData["type"], quantities: number[], showMargin: boolean): Calculation {
-  const results: Calculation["results"] = [];
-  for (const printType of [
-    { code: "offset", name: "ออฟเซ็ต" },
-    { code: "digital", name: "ดิจิทัล" },
-  ]) {
-    for (const quantity of quantities) {
-      const breakFactor = quantity >= 5000 ? 0.62 : quantity >= 2000 ? 0.74 : quantity >= 1000 ? 0.86 : 1;
-      const digital = printType.code === "digital";
-      const unit = Math.round(BASE[type] * breakFactor * (digital ? (quantity <= 1000 ? 0.9 : 1.35) : 1));
-      const net = unit * quantity;
-      const plate = digital || type === "service" ? 0 : 180000;
-      const dieBlock = ["folding", "corrugate", "label"].includes(type) && !digital ? 150000 : 0;
-      const shipping = 45000;
-      const design = 0;
-      const vat = Math.round((net + plate + dieBlock + shipping + design) * 0.07);
-      const gross = net + plate + dieBlock + shipping + design + vat;
-      results.push({
-        id: `${printType.code}-${quantity}`,
-        factory: FACTORY,
-        printType,
-        quantity,
-        unitPrice: (unit / 100).toFixed(6),
-        perPieceWithDelivery: ((net + shipping) / 100 / quantity).toFixed(6),
-        netAmount: baht(net),
-        plateAmount: baht(plate),
-        dieBlockAmount: baht(dieBlock),
-        shippingAmount: baht(shipping),
-        designFeeAmount: baht(design),
-        vatAmount: baht(vat),
-        grossAmount: baht(gross),
-        currency: "THB",
-        leadTimeDays: digital ? 5 : 12,
-        earliestShipDate: bangkokIso(60 * 24 * (digital ? 7 : 16)).slice(0, 10),
-        toleranceShortagePct: "5",
-        toleranceOveragePct: "5",
-        cheapest: false,
-        fastest: false,
-        ...(showMargin ? { marginPct: digital ? "22.5000" : "31.0000", belowMarginFloor: false } : {}),
-      });
-    }
-  }
-  // "The API marks the best rows" — per quantity, cheapest by gross and fastest by lead time.
-  for (const quantity of quantities) {
-    const rows = results.filter((row) => row.quantity === quantity);
-    const cheapest = rows.reduce((best, row) => (Number(row.grossAmount) < Number(best.grossAmount) ? row : best));
-    const fastest = rows.reduce((best, row) => (row.leadTimeDays < best.leadTimeDays ? row : best));
-    cheapest.cheapest = true;
-    fastest.fastest = true;
-  }
-  return {
-    calculationId: mockId("calc", calculations.size + 1 + Math.floor(Math.random() * 1e5)),
-    type,
-    validUntil: bangkokIso(60 * 24 * 15),
-    specs: [],
-    results,
-    notes: type === "corrugate" ? ["ลอน BC ขนาดนี้พิมพ์ดิจิทัลไม่ได้ จึงไม่มีราคาแบบดิจิทัลบางรายการ"] : [],
-    routeToRfq: false,
-  };
+/** D-052: what CS may give on their own (`discounts.cs_limit_pct`); the API enforces it, not the UI. */
+function csLimit(): number {
+  const setting = settings.find((candidate) => candidate.key === "discounts.cs_limit_pct");
+  return Number(typeof setting?.current?.value === "string" ? setting.current.value : "5");
 }
 
-function directLimit(): string {
-  const setting = settings.find((candidate) => candidate.key === "discounts.cs_limit_pct");
-  return typeof setting?.current?.value === "string" ? setting.current.value : "5";
+/** Follow each memo's approval, as the backend's subscriber would. */
+function syncMemos() {
+  for (const memo of memos) {
+    const approval = approvals.find((candidate) => candidate.id === memo.approvalId);
+    if (memo.status === "pending_approval" && approval && approval.status !== "pending") {
+      memo.status =
+        approval.status === "approved" ? "approved" : approval.status === "rejected" ? "rejected" : "withdrawn";
+      if (memo.status === "approved") memo.approvedPct = memo.requestedPct;
+    }
+  }
 }
+
+/** Refuses a discount the actor may not give alone, as checkout and its preview both do. */
+function refusedDiscount(body: Schemas["AdminCheckoutDto"]): Response | null {
+  syncMemos();
+  const memo = body.discountMemoId ? memos.find((candidate) => candidate.id === body.discountMemoId) : undefined;
+  if (body.discountMemoId && memo?.status !== "approved")
+    return problem(409, "discount_memos.not_usable", "บันทึกขอส่วนลดยังไม่ได้รับอนุมัติ");
+  if (!memo && body.csDiscountPct && Number(body.csDiscountPct) > csLimit())
+    return problem(422, "discounts.cs_limit_exceeded", `ส่วนลดเกิน ${csLimit()}% ต้องขออนุมัติผ่านบันทึกขอส่วนลด`);
+  return null;
+}
+
+/* -------------------------------------------------------------------------------- handlers */
 
 export const salesHandlers = [
-  mockRequest("GET /v1/admin/cs/{type}/input-data", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "quotes.calculate"))
-      return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ใช้เครื่องคำนวณราคา");
-    const types = ["folding", "corrugate", "label", "tag_sleeve", "pouch", "standard_product", "service"] as const;
-    const type = types.find((candidate) => candidate === params.type);
-    if (!type) return problem(404, "cs.unknown_calculator", "ไม่พบเครื่องคำนวณนี้");
-    return inputData(type, directLimit());
-  }),
-  mockRequest("POST /v1/admin/cs/{type}/calculate", ({ params, body, request }) => {
-    const persona = staffPersonaOf(request);
-    if (!can(persona, "quotes.calculate")) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ใช้เครื่องคำนวณราคา");
-    if (body.input.calculator !== params.type) {
-      return problem(422, "validation.failed", "ชนิดเครื่องคำนวณไม่ตรงกับข้อมูล", [
-        { path: "input.calculator", code: "equals", message: "ไม่ตรงกับเครื่องคำนวณ" },
-      ]);
-    }
-    const input = body.input;
-    if (input.calculator === "folding" || input.calculator === "corrugate") {
-      const pattern = PATTERNS.find((candidate) => candidate.code === input.pattern);
-      if (pattern?.constraints.lengthMustExceedWidth && input.lengthMm < input.widthMm) {
-        return problem(422, "validation.failed", "ความยาวต้องมากกว่าความกว้างสำหรับรูปแบบนี้", [
-          { path: "input.lengthMm", code: "gteWidth", message: "ความยาวต้องมากกว่าความกว้าง" },
-        ]);
-      }
-    }
-    const result = calculate(
-      body.input.calculator,
-      body.quantities,
-      can(persona, "margin.read_pct_when_discounting") || can(persona, "margin.read"),
-    );
-    const specs =
-      body.input.calculator === "service"
-        ? body.input.services.map((service) => ({ label: service.code, value: String(service.quantity) }))
-        : Object.entries(body.input)
-            .filter(([key]) => key !== "calculator")
-            .map(([label, value]) => ({
-              label,
-              value: typeof value === "object" ? JSON.stringify(value) : String(value),
-            }));
-    const calculation = { ...result, specs, customerId: body.customerId };
-    calculations.set(calculation.calculationId, calculation);
-    const { customerId, ...response } = calculation;
-    void customerId;
-    return response;
+  ...(["folding", "corrugate"] as const).flatMap((calculator) => [
+    http.get(`*/v1/admin/cs/${calculator}/input-data`, ({ request }) => {
+      if (!allowed(request, "quotes.calculate")) return forbidden();
+      return HttpResponse.json(calculator === "folding" ? foldingInputData() : corrugateInputData());
+    }),
+    http.post(`*/v1/admin/cs/${calculator}/calculate`, async ({ request }) => {
+      const who = allowed(request, "quotes.calculate");
+      if (!who) return forbidden();
+      const config = (await request.json().catch(() => null)) as Configuration | null;
+      if (!config) return invalid("", "body required");
+      const postcode = new URL(request.url).searchParams.get("deliveryPostcode") ?? undefined;
+      const result = calculate(calculator, who, config, postcode);
+      return result instanceof Response ? result : HttpResponse.json(result);
+    }),
+  ]),
+
+  http.get("*/v1/admin/quotes", ({ request }) => {
+    if (!allowed(request, "quotes.read")) return forbidden();
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const customerId = url.searchParams.get("customerId");
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = quotations
+      .filter((quote) => !status || quote.status === status)
+      .filter((quote) => !customerId || quote.customer?.id === customerId)
+      .filter((quote) => matchesQuery(q, quote.quoteCode, quote.customer?.displayName));
+    const sort = url.searchParams.get("sort") ?? "createdAt";
+    const order = (url.searchParams.get("order") as "asc" | "desc" | null) ?? "desc";
+    return HttpResponse.json(paginate(sortBy(rows, sort, order), pageOf(url)));
   }),
 
-  mockRequest("GET /v1/admin/quotations", ({ query }) => {
-    const rows = quotations
-      .filter((quote) => !query.status || quote.status === query.status)
-      .filter((quote) => !query.customerId || quote.customer.id === query.customerId)
-      .filter((quote) => matchesQuery(query.q, quote.quoteCode, quote.customer.displayName));
-    return paginate(sortBy(rows, query.sort ?? "createdAt", query.order ?? "desc"), query);
-  }),
-  mockRequest("POST /v1/admin/quotations", ({ body, request }) => {
-    const persona = staffPersonaOf(request)!;
-    const calculation = calculations.get(body.calculationId);
-    if (!calculation) return problem(404, "cs.calculation_expired", "ผลการคำนวณหมดอายุแล้ว กรุณาคำนวณใหม่");
-    const row = calculation.results.find((candidate) => candidate.id === body.resultId);
-    const customer = customers.find((candidate) => candidate.id === body.customerId);
-    if (!row || !customer) return problem(404, "http.not_found", "ไม่พบรายการที่เลือก");
-    const limit = Number(directLimit());
-    const memo = body.discountMemoId ? memos.find((candidate) => candidate.id === body.discountMemoId) : undefined;
-    if (body.discountMemoId && memo?.status !== "approved")
-      return problem(409, "memo.not_approved", "บันทึกขอส่วนลดยังไม่ได้รับอนุมัติ");
-    if (!memo && body.discountPct && Number(body.discountPct) > limit) {
-      return problem(422, "discount.above_cs_limit", `ส่วนลดเกิน ${limit}% ต้องขออนุมัติผ่านบันทึกขอส่วนลด`, [
-        { path: "discountPct", code: "max", message: `ไม่เกิน ${limit}%` },
-      ]);
-    }
-    const pctValue = memo?.approvedPct ?? body.discountPct ?? null;
-    const net = Math.round(Number(row.netAmount) * 100);
-    const discount = pctValue ? Math.round((net * Number(pctValue)) / 100) : 0;
-    const vat = Math.round(
-      (net -
-        discount +
-        Number(row.shippingAmount) * 100 +
-        Number(row.plateAmount) * 100 +
-        Number(row.dieBlockAmount) * 100) *
-        0.07,
-    );
-    const gross =
-      net -
-      discount +
-      Math.round(Number(row.shippingAmount) * 100 + Number(row.plateAmount) * 100 + Number(row.dieBlockAmount) * 100) +
-      vat;
-    const quote: Quotation = {
-      id: mockId("quo", quotations.length + 1),
+  http.post("*/v1/admin/quotes", async ({ request }) => {
+    const who = allowed(request, "quotes.manage");
+    if (!who) return forbidden();
+    const body = (await request.json().catch(() => null)) as Schemas["StaffSaveQuoteDto"] | null;
+    if (!body?.productTypeCode) return invalid("productTypeCode", "required");
+    const calculator = PRODUCT_TYPES.find((type) => type.code === body.productTypeCode)?.calculatorKey;
+    if (calculator !== "folding" && calculator !== "corrugate")
+      return problem(422, "pricing.not_instant", "ประเภทสินค้านี้ขอใบเสนอราคา (RFQ) เท่านั้น");
+    const customer = customers.find((candidate) => candidate.id === body.customerUserId);
+    const config = body.configuration as Configuration;
+    const result = calculate(calculator, who, config, body.deliveryPostcode);
+    if (result instanceof Response) return result;
+    const instant = result.steps.filter((step) => step.instant);
+    if (instant.length === 0) return problem(422, "pricing.not_instant", "ราคานี้คำนวณทันทีไม่ได้ ส่งเป็น RFQ");
+    const quote: Quote = {
+      id: mockId("quo", 902 + quotations.length),
       quoteCode: `QT-2569-${String(200 + quotations.length).padStart(5, "0")}`,
+      productTypeCode: body.productTypeCode,
       source: "instant",
-      rfq: null,
-      customer: {
-        id: customer.id,
-        customerCode: customer.customerCode,
-        displayName: customer.displayName,
-        companyName: customer.companyName,
-      },
-      productType: productTypeOfCalculator(calculation.type),
-      quantities: [row.quantity],
-      grossAmount: baht(gross),
-      currency: "THB",
       status: "saved",
       channel: "cs",
-      validUntil: calculation.validUntil,
-      createdBy: { id: persona.id, displayName: persona.displayName },
+      customer: customer ? { id: customer.id, displayName: customer.displayName } : null,
+      createdBy: { id: who.id, displayName: who.displayName },
+      configuration: config,
+      deliveryPostcode: body.deliveryPostcode ?? null,
+      currency: "THB",
+      options: instant.map((step, index) => ({
+        id: mockId("qop", 1000 + quotations.length * 10 + index),
+        quantity: step.quantity,
+        unitPrice: step.unitPrice!,
+        productAmount: step.productAmount!,
+        designFeeAmount: step.designFeeAmount ?? "0.00",
+        structureDesignFeeAmount: step.structureDesignFeeAmount ?? "0.00",
+        shippingAmount: step.shippingAmount,
+        shippingPending: step.shippingPending,
+        shippingPendingReason: step.shippingPendingReason,
+        netAmount: (
+          (Math.round(Number(step.grossAmount) * 100) - Math.round(Number(step.vatAmount) * 100)) /
+          100
+        ).toFixed(2),
+        vatAmount: step.vatAmount!,
+        grossAmount: step.grossAmount!,
+        leadTimeDays: step.leadTimeDays,
+        earliestShipDate: step.earliestShipDate,
+        earliestDeliveryDate: step.earliestDeliveryDate,
+        toleranceShortagePct: step.toleranceShortagePct,
+        toleranceOveragePct: step.toleranceOveragePct,
+        internal: step.internal,
+      })),
+      priceLocked: true,
+      pdfStatus: "none",
+      sharedAt: null,
+      validUntil: bangkokIso(DAY * 15),
       createdAt: bangkokIso(),
-      specs: calculation.specs,
-      options: [
-        {
-          quantity: row.quantity,
-          unitPrice: row.unitPrice,
-          netAmount: baht(net),
-          discountAmount: baht(discount),
-          vatAmount: baht(vat),
-          grossAmount: baht(gross),
-          leadTimeDays: row.leadTimeDays,
-          earliestShipDate: row.earliestShipDate,
-        },
-      ],
-      discount: pctValue ? { pct: pctValue, memo: memo ? { id: memo.id, status: memo.status } : null } : null,
-      pdf: null,
-      nextActions: [{ key: "quote.export_pdf" }, { key: "quote.create_order" }],
     };
     quotations.unshift(quote);
-    if (memo) memo.status = "applied";
-    return quote;
-  }),
-  mockRequest(
-    "GET /v1/admin/quotations/{quoteId}",
-    ({ params }) =>
-      quotations.find((quote) => quote.id === params.quoteId) ?? problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้"),
-  ),
-  mockRequest("POST /v1/admin/quotations/{quoteId}/actions/export-pdf", ({ params }) => {
-    const quote = quotations.find((candidate) => candidate.id === params.quoteId);
-    if (!quote) return problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
-    const text = `ใบเสนอราคา ${quote.quoteCode}\nบริษัท Collective Group (Thailand) — Packio\nยอดรวม ${quote.grossAmount} บาท (ข้อมูลจำลอง)`;
-    return { url: `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`, expiresAt: bangkokIso(5) };
+    return HttpResponse.json(quote, { status: 201 });
   }),
 
-  mockRequest("POST /v1/admin/discount-memos", ({ body, request }) => {
-    const persona = staffPersonaOf(request)!;
-    const calculation = calculations.get(body.calculationId);
-    const row = calculation?.results.find((candidate) => candidate.id === body.resultId);
-    const customer = customers.find((candidate) => candidate.id === body.customerId);
-    if (!calculation || !row || !customer)
-      return problem(404, "cs.calculation_expired", "ผลการคำนวณหมดอายุแล้ว กรุณาคำนวณใหม่");
+  http.get("*/v1/admin/quotes/:quoteId", ({ params, request }) => {
+    if (!allowed(request, "quotes.read")) return forbidden();
+    const quote = quotations.find((candidate) => candidate.id === params.quoteId);
+    return quote ? HttpResponse.json(quote) : notFound("ใบเสนอราคา");
+  }),
+
+  // The PDF is rendered asynchronously: request it, then read it until it is ready.
+  http.post("*/v1/admin/quotes/:quoteId/actions/request-pdf", ({ params, request }) => {
+    if (!allowed(request, "quotes.manage")) return forbidden();
+    const quote = quotations.find((candidate) => candidate.id === params.quoteId);
+    if (!quote) return notFound("ใบเสนอราคา");
+    quote.pdfStatus = "ready";
+    return HttpResponse.json(quote, { status: 202 });
+  }),
+
+  http.get("*/v1/admin/quotes/:quoteId/pdf", ({ params, request }) => {
+    if (!allowed(request, "quotes.read")) return forbidden();
+    const quote = quotations.find((candidate) => candidate.id === params.quoteId);
+    if (!quote) return notFound("ใบเสนอราคา");
+    const text = `ใบเสนอราคา ${quote.quoteCode}\nบริษัท Collective Group (Thailand) — Packio (ข้อมูลจำลอง)`;
+    const body: Schemas["QuotePdfDto"] =
+      quote.pdfStatus === "ready"
+        ? {
+            status: "ready",
+            url: `data:text/plain;charset=utf-8,${encodeURIComponent(text)}`,
+            expiresAt: bangkokIso(5),
+          }
+        : { status: quote.pdfStatus, url: null, expiresAt: null };
+    return HttpResponse.json(body);
+  }),
+
+  http.get("*/v1/admin/customers/:customerId/cart", ({ params, request }) => {
+    if (!allowed(request, "carts.manage_on_behalf")) return forbidden();
+    const entry = cartOf(params.customerId as string);
+    return withEtag(entry.cart, cartTag(entry));
+  }),
+
+  http.post("*/v1/admin/customers/:customerId/cart/items", async ({ params, request }) => {
+    if (!allowed(request, "carts.manage_on_behalf")) return forbidden();
+    const entry = cartOf(params.customerId as string);
+    const refused = precondition(request, cartTag(entry));
+    if (refused) return refused;
+    const body = (await request.json().catch(() => null)) as Schemas["AddCartItemDto"] | null;
+    const quote = quotations.find((candidate) => candidate.id === body?.quoteId);
+    const chosen = quote?.options.find((candidate) => candidate.id === body?.quoteOptionId);
+    if (!body || !quote || !chosen) return notFound("ใบเสนอราคา");
+    if (!["saved", "shared"].includes(quote.status))
+      return problem(409, "quotes.not_live", "ใบเสนอราคานี้ใช้ไม่ได้แล้ว");
+    if (entry.cart.items.some((item) => item.quoteOptionId === chosen.id))
+      return problem(409, "cart.item_exists", "รายการนี้อยู่ในตะกร้าแล้ว");
+    const customer = customers.find((candidate) => candidate.id === params.customerId)!;
+    const destinations = (body.destinations ?? []).map((destination, index) => {
+      const address = customer.addresses.find((candidate) => candidate.id === destination.addressId);
+      return {
+        id: mockId("cds", entry.cart.items.length * 10 + index + 1),
+        addressId: destination.addressId,
+        quantity: destination.quantity,
+        address: {
+          recipientName: address?.recipientName ?? "",
+          phone: address?.phone ?? "",
+          line1: address?.line1 ?? "",
+          line2: address?.line2 ?? null,
+          subdistrictId: null,
+          subdistrictNameTh: address?.subdistrict ?? null,
+          districtNameTh: address?.district ?? null,
+          provinceId: mockId("prv", 1),
+          provinceNameTh: address?.province ?? "",
+          postcode: address?.postcode ?? "",
+        },
+      };
+    });
+    entry.cart.items.push({
+      id: mockId("cti", entry.cart.items.length + 1 + Math.floor(Math.random() * 1e4)),
+      quoteId: quote.id,
+      quoteOptionId: chosen.id,
+      quoteCode: quote.quoteCode,
+      productTypeCode: quote.productTypeCode,
+      source: "instant",
+      quantity: chosen.quantity,
+      unitPrice: chosen.unitPrice,
+      productGrossAmount: chosen.grossAmount,
+      designFeeAmount: chosen.designFeeAmount,
+      quoteShippingAmount: chosen.shippingAmount,
+      designOption: body.designOption,
+      designDocumentId: body.designDocumentId ?? null,
+      designNote: body.designNote ?? null,
+      mockupOption: body.mockupOption ?? "none",
+      destinations,
+      destinationsComplete: destinations.reduce((sum, item) => sum + item.quantity, 0) === chosen.quantity,
+      priceLocked: true,
+      priceLockedUntil: quote.validUntil,
+      pendingReprice: null,
+      reorderOf: null,
+      reusesApprovedArtwork: false,
+    });
+    touch(entry);
+    return withEtag(entry.cart, cartTag(entry), 201);
+  }),
+
+  http.delete("*/v1/admin/customers/:customerId/cart/items/:itemId", ({ params, request }) => {
+    if (!allowed(request, "carts.manage_on_behalf")) return forbidden();
+    const entry = cartOf(params.customerId as string);
+    entry.cart.items = entry.cart.items.filter((item) => item.id !== params.itemId);
+    touch(entry);
+    return withEtag(entry.cart, cartTag(entry));
+  }),
+
+  http.get("*/v1/admin/discount-memos", ({ request }) => {
+    if (!allowed(request, "discount_memos.read")) return forbidden();
+    syncMemos();
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const customerId = url.searchParams.get("customerId");
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = memos
+      .filter((memo) => !status || memo.status === status)
+      .filter((memo) => !customerId || memo.customer?.id === customerId)
+      .filter((memo) => matchesQuery(q, memo.customer?.displayName, memo.reason));
+    return HttpResponse.json(paginate(rows, pageOf(url)));
+  }),
+
+  http.get("*/v1/admin/discount-memos/:memoId", ({ params, request }) => {
+    if (!allowed(request, "discount_memos.read")) return forbidden();
+    syncMemos();
+    const memo = memos.find((candidate) => candidate.id === params.memoId);
+    return memo ? HttpResponse.json(memo) : notFound("บันทึกขอส่วนลด");
+  }),
+
+  // A memo prices the customer's CS cart (the triage's mapping): no cart, no memo.
+  http.post("*/v1/admin/discount-memos", async ({ request }) => {
+    const who = allowed(request, "discount_memos.request");
+    if (!who) return forbidden();
+    const body = (await request.json().catch(() => null)) as Schemas["RaiseOrderMemoDto"] | null;
+    const customer = customers.find((candidate) => candidate.id === body?.customerId);
+    if (!body || !customer) return notFound("ลูกค้า");
+    const entry = cartOf(customer.id);
+    if (entry.cart.items.length === 0) return problem(422, "checkout.cart_empty", "ตะกร้าของลูกค้ายังว่าง");
     const requested = Number(body.requestedPct);
-    const role = requested > 15 ? "c_level" : requested > 10 ? "vp" : "director";
+    if (!(requested > csLimit()))
+      return problem(
+        422,
+        "discount_memos.within_cs_limit",
+        `ส่วนลดไม่เกิน ${csLimit()}% CS ให้เองได้ ไม่ต้องขออนุมัติ`,
+      );
+    const orderValue = Math.round(Number(entry.cart.productGrossAmount) * 100);
     const margin = 31 - requested;
     const memo: Memo = {
       id: mockId("mem", memos.length + 1),
-      memoCode: `DM-2569-${String(10 + memos.length).padStart(5, "0")}`,
+      scope: "order",
       status: "pending_approval",
-      customer: {
-        id: customer.id,
-        customerCode: customer.customerCode,
-        displayName: customer.displayName,
-        companyName: customer.companyName,
-      },
-      requestedBy: { id: persona.id, displayName: persona.displayName },
-      orderValue: row.netAmount,
-      requestedPct: body.requestedPct,
-      requestedAmount: baht(Math.round((Math.round(Number(row.netAmount) * 100) * requested) / 100)),
+      customer: { id: customer.id, displayName: customer.displayName },
+      companyId: null,
+      requestedBy: { id: who.id, displayName: who.displayName },
+      orderValue: (orderValue / 100).toFixed(2),
+      requestedPct: requested.toFixed(4),
+      requestedAmount: (Math.round((orderValue * requested) / 100) / 100).toFixed(2),
       approvedPct: null,
-      resultingMarginPct: `${margin.toFixed(4)}`,
+      resultingMarginPct: margin.toFixed(4),
       belowMarginFloor: margin < 10,
       reason: body.reason,
-      evidence: [],
-      approvalRequestId: mockId("appr", 100 + memos.length),
-      validUntil: calculation.validUntil,
+      approvalId: null,
+      appliedGroupCode: null,
+      validUntil: bangkokIso(DAY * 15),
       createdAt: bangkokIso(),
     };
-    memos.unshift(memo);
-    // The memo enters the generic approvals engine, routed to the matching tier only (D-162).
-    approvals.unshift({
-      id: memo.approvalRequestId!,
+    // The memo enters the approvals engine, routed to the matching tier only (D-162).
+    memo.approvalId = openApproval({
       policy: "discount_memo",
       subjectType: "discount_memo",
       subjectId: memo.id,
-      status: "pending",
-      requester: memo.requestedBy,
+      requester: who,
       amount: memo.requestedAmount,
-      currency: "THB",
-      pct: `${requested.toFixed(4)}`,
-      flags: memo.belowMarginFloor ? ["below_margin_floor"] : [],
+      pct: memo.requestedPct,
       payload: {
         customerName: customer.displayName,
         orderValue: memo.orderValue,
-        requestedPct: `${requested.toFixed(4)}`,
+        requestedPct: memo.requestedPct,
         resultingMarginPct: memo.resultingMarginPct,
         reason: body.reason,
       },
-      currentStepNo: 1,
-      steps: [
-        {
-          stepNo: 1,
-          role: memo.belowMarginFloor ? "c_level" : role,
-          quorum: 1,
-          status: "pending",
-          dueAt: bangkokIso(60 * 8),
-          completedAt: null,
-        },
-      ],
-      actions: [],
-      createdAt: bangkokIso(),
-      expiresAt: memo.validUntil,
-      decidedAt: null,
-    });
-    return memo;
+    }).id;
+    memos.unshift(memo);
+    return HttpResponse.json(memo, { status: 201 });
   }),
-  mockRequest("GET /v1/admin/discount-memos", ({ query }) => {
-    for (const memo of memos) {
-      // Follow the approval, as the backend's subscriber would.
-      const approval = approvals.find((candidate) => candidate.id === memo.approvalRequestId);
-      if (memo.status === "pending_approval" && approval && approval.status !== "pending") {
-        memo.status =
-          approval.status === "approved" ? "approved" : approval.status === "rejected" ? "rejected" : "withdrawn";
-        if (memo.status === "approved") memo.approvedPct = memo.requestedPct;
-      }
-    }
-    const rows = memos
-      .filter((memo) => !query.status || memo.status === query.status)
-      .filter((memo) => matchesQuery(query.q, memo.memoCode, memo.customer.displayName));
-    return paginate(rows, query);
-  }),
-  mockRequest(
-    "GET /v1/admin/discount-memos/{memoId}",
-    ({ params }) =>
-      memos.find((memo) => memo.id === params.memoId) ?? problem(404, "http.not_found", "ไม่พบบันทึกขอส่วนลดนี้"),
-  ),
 
-  mockRequest("POST /v1/admin/orders", ({ body }) => {
-    const quote = quotations.find((candidate) => candidate.id === body.quoteId);
-    if (!quote) return problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
-    const total = body.destinations.reduce((sum, destination) => sum + destination.quantity, 0);
-    if (total !== body.quantity) {
-      return problem(422, "validation.failed", "จำนวนที่แบ่งส่งรวมกันต้องเท่ากับจำนวนที่สั่ง", [
-        { path: "destinations", code: "sum", message: "ผลรวมไม่เท่ากับจำนวนที่สั่ง" },
-      ]);
-    }
+  http.post("*/v1/admin/customers/:customerId/checkout/actions/preview", async ({ params, request }) => {
+    if (!allowed(request, "carts.manage_on_behalf")) return forbidden();
+    const entry = cartOf(params.customerId as string);
+    if (entry.cart.items.length === 0) return problem(422, "checkout.cart_empty", "ตะกร้าของลูกค้ายังว่าง");
+    const body = ((await request.json().catch(() => null)) ?? {}) as Schemas["AdminCheckoutDto"];
+    const refused = refusedDiscount(body);
+    if (refused) return refused;
+    return undefined;
+  }),
+
+  // CS checkout: the customer's whole cart becomes one order group.
+  http.post("*/v1/admin/customers/:customerId/checkout", async ({ params, request }) => {
+    const who = allowed(request, "carts.manage_on_behalf");
+    if (!who) return forbidden();
+    if (!request.headers.get("Idempotency-Key"))
+      return problem(400, "idempotency.key_required", "ต้องระบุ Idempotency-Key");
+    const customer = customers.find((candidate) => candidate.id === params.customerId);
+    if (!customer) return notFound("ลูกค้า");
+    const entry = cartOf(customer.id);
+    if (entry.cart.items.length === 0) return problem(422, "checkout.cart_empty", "ตะกร้าของลูกค้ายังว่าง");
+    if (entry.cart.items.some((item) => !item.destinationsComplete))
+      return problem(422, "checkout.destinations_incomplete", "ยังแบ่งจำนวนส่งไม่ครบ");
+    const body = ((await request.json().catch(() => null)) ?? {}) as Schemas["AdminCheckoutDto"];
+    const refused = refusedDiscount(body);
+    if (refused) return refused;
+    const memo = body.discountMemoId ? memos.find((candidate) => candidate.id === body.discountMemoId) : undefined;
     const groupNo = 900 + orders.length;
-    quote.status = "converted";
-    // A real order row, so the new order opens and shows up in รอชำระ.
+    const groupId = mockId("grp", groupNo);
+    const groupCode = `PG-2569-${String(groupNo).padStart(5, "0")}`;
+    // Real order rows, so the new order opens and shows up in รอชำระ.
     const template = orders.find((order) => order.status === "waiting_payment")!;
-    const id = mockId("ord", groupNo);
-    const orderCode = `PK-2569-${String(groupNo).padStart(5, "0")}`;
-    orders.unshift({
-      ...structuredClone(template),
-      id,
-      orderCode,
-      groupId: mockId("grp", groupNo),
-      groupCode: `PG-2569-${String(groupNo).padStart(5, "0")}`,
-      channel: "cs",
-      customer: quote.customer,
-      quantity: body.quantity,
-      grossAmount: quote.grossAmount,
-      createdAt: bangkokIso(),
-      csRemarks: body.csRemarks ?? null,
-      poNumber: body.poNumber ?? null,
+    entry.cart.items.forEach((item, index) => {
+      orders.unshift({
+        ...structuredClone(template),
+        id: mockId("ord", groupNo * 10 + index),
+        orderCode: `PK-2569-${String(groupNo * 10 + index).padStart(6, "0")}`,
+        groupId,
+        groupCode,
+        channel: "cs",
+        customer: {
+          id: customer.id,
+          customerCode: customer.customerCode,
+          displayName: customer.displayName,
+          companyName: customer.companyName,
+        },
+        quantity: item.quantity,
+        grossAmount: item.productGrossAmount,
+        createdAt: bangkokIso(),
+        csRemarks: body.csRemarks ?? null,
+        poNumber: body.poNumber ?? null,
+      });
     });
-    return {
-      groupId: mockId("grp", groupNo),
-      groupCode: `PG-2569-${String(groupNo).padStart(5, "0")}`,
-      orders: [{ id, orderCode }],
-    };
+    for (const item of entry.cart.items) {
+      const quote = quotations.find((candidate) => candidate.id === item.quoteId);
+      if (quote) quote.status = "converted";
+    }
+    if (memo) {
+      memo.status = "applied";
+      memo.appliedGroupCode = groupCode;
+    }
+    entry.cart.items = [];
+    touch(entry);
+    return HttpResponse.json(toGroupDto(groupId, who), { status: 201 });
   }),
 ];

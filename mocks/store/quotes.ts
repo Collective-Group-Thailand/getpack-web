@@ -648,6 +648,28 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
   };
 }
 
+/**
+ * The same fake engine for the CS desk's published calculators (`../admin/sales.ts`, U-F0.3): a box
+ * priced per quantity, so the back office and the storefront answer alike for the same spec.
+ */
+export function boxStepsOf(
+  calculator: "folding" | "corrugate",
+  box: { l: number; w: number; d: number; colours: number; extras: number; materialFactor: number },
+  design: { graphic: boolean; structure: boolean },
+  quantities: number[],
+  postcode: string | undefined,
+): Step[] {
+  const inputs = {
+    configurator: { calculator, size: { kind: "box" } } as unknown as Configurator,
+    product: {} as Row,
+    gusset: 0,
+    quantities,
+    ...box,
+    ...design,
+  } satisfies Inputs;
+  return quantities.map((quantity) => stepOf(inputs, quantity, postcode));
+}
+
 /* ------------------------------------------------------------------------------ saved quotes */
 
 export const PROMOTIONS: Record<

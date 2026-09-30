@@ -30,7 +30,7 @@ import {
   poNumberPolicy,
 } from "@/lib/api/requests/admin-companies";
 import { promotionKind } from "@/lib/api/requests/admin-marketing";
-import { quoteSource } from "@/lib/api/requests/admin-sales";
+import { quoteSource } from "@/lib/api/requests/store-quotes";
 import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
 import { creditApplication } from "@/lib/api/requests/store-business";
 
