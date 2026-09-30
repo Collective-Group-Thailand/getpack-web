@@ -20,7 +20,9 @@ export default async function PrepressWorkspacePage({ params, searchParams }: Pr
   const tab = (PREPRESS_TABS as readonly string[]).includes(String(query.tab)) ? (query.tab as PrepressTab) : "artwork";
   let initial = null;
   try {
-    initial = await (await adminServerApis()).requests.call("GET /v1/admin/prepress/{orderId}", { path: { orderId } });
+    // The workspace is composed from the order and its artwork resources (U-F0.3); the order leads.
+    const { contract } = await adminServerApis();
+    initial = (await contract.GET("/v1/admin/orders/{orderId}", { params: { path: { orderId } } })).data ?? null;
   } catch {
     // Rendered by the client as the API answered it.
   }

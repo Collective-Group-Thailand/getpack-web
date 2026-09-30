@@ -1,7 +1,8 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import {
   ARTWORK_STATUS,
@@ -10,13 +11,15 @@ import {
   INSTALMENT_STATUS,
   JOB_STATUS,
   MILESTONE_STATUS,
-  PAYMENT_STATUS,
   PREFLIGHT_STATUS,
   PROOF_STATUS,
   SHIPMENT_STATUS,
   SLIP_STATUS,
 } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
+import { queryKeys } from "@/lib/api/query-keys";
+import type { Schemas } from "@/lib/api/types";
+import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -24,14 +27,16 @@ import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Skeleton } from "@/ui/components/Skeleton";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { StatusChip, useSlaFormat } from "../console";
-import type { Order } from "./resources";
+import { adminBrowserApis, QueryError, StatusChip, useCan, useProductTypes, useSlaFormat } from "../console";
+import { useGroupSchedule, type QueuedSlip } from "./data";
+import type { Order, OrderGroup } from "./resources";
 
-type Slip = Order["payments"][number]["slips"][number];
+type Customer = Schemas["AdminCustomerDto"];
 
 function Section({
   title,
@@ -53,71 +58,83 @@ function Section({
   );
 }
 
-function address(value: Order["destinations"][number]) {
-  return [value.line1, value.line2, value.subdistrict, value.district, value.province, value.postcode]
-    .filter(Boolean)
-    .join(" ");
+/** A tab whose resource the actor's role may not read says so, rather than failing. */
+function Unreadable({ icon }: { icon: "factory" | "truck" | "document" | "flag" | "image" }) {
+  const t = useTranslations("orders.detail");
+  return <EmptyState icon={icon} title={t("unreadable")} />;
 }
 
-export function SummaryTab({ order }: { order: Order }) {
+function useLocalized() {
+  const locale = useLocale();
+  return (th: string, en: string | null | undefined) => (locale === "en" && en ? en : th);
+}
+
+export function SummaryTab({
+  order,
+  group,
+  customer,
+}: {
+  order: Order;
+  group: OrderGroup | null;
+  customer: Customer | null;
+}) {
   const t = useTranslations("orders.detail");
   const format = useFormat();
+  const { labelOf } = useProductTypes();
   return (
     <div className="flex flex-col gap-4">
       <Section title={t("summary.title")}>
+        {/* No specs, tax profile, factory name, start mode or cancel reason on the order (CONTRACT-GAP admin.orders). */}
         <DescriptionList
           columns={3}
           items={[
             {
               term: t("summary.customer"),
-              description: (
-                <Link href={`/customers/${order.customer.id}`} className="text-primary hover:underline">
-                  {order.customer.displayName}
+              description: customer ? (
+                <Link href={`/customers/${customer.id}`} className="text-primary hover:underline">
+                  {customer.displayName}
                 </Link>
+              ) : (
+                "—"
               ),
             },
             {
               term: t("summary.customerCode"),
-              description: <span className="font-mono">{order.customer.customerCode}</span>,
+              description: <span className="font-mono">{customer?.customerCode ?? "—"}</span>,
             },
-            { term: t("summary.channel"), description: t(`channels.${order.channel}`) },
+            { term: t("summary.channel"), description: group ? t(`channels.${group.channel}`) : "—" },
             {
               term: t("summary.group"),
-              description: (
-                <Link href={`/orders/groups/${order.group.id}`} className="text-primary font-mono hover:underline">
-                  {order.group.groupCode}
+              description: group ? (
+                <Link href={`/orders/groups/${group.id}`} className="text-primary font-mono hover:underline">
+                  {group.groupCode}
                 </Link>
+              ) : (
+                "—"
               ),
             },
-            { term: t("summary.productType"), description: order.productType.name },
-            { term: t("summary.quantity"), description: `${format.number(order.quantity)} ${order.unit}` },
-            { term: t("summary.leadTime"), description: t("summary.days", { days: order.leadTimeDays }) },
+            { term: t("summary.productType"), description: labelOf(order.productTypeCode) },
+            { term: t("summary.quantity"), description: format.number(order.quantityOrdered) },
+            {
+              term: t("summary.leadTime"),
+              description: order.leadTimeDays === null ? "—" : t("summary.days", { days: order.leadTimeDays }),
+            },
             { term: t("summary.promised"), description: format.date(order.promisedShipDate) },
             {
               term: t("summary.tolerance"),
-              description: t("summary.toleranceValue", {
-                shortage: format.percent(order.tolerance.shortagePct),
-                overage: format.percent(order.tolerance.overagePct),
-              }),
+              description:
+                order.toleranceShortagePct === null && order.toleranceOveragePct === null
+                  ? "—"
+                  : t("summary.toleranceValue", {
+                      shortage: format.percent(order.toleranceShortagePct),
+                      overage: format.percent(order.toleranceOveragePct),
+                    }),
             },
             { term: t("summary.design"), description: t(`designOptions.${order.designOption}`) },
             { term: t("summary.mockup"), description: t(`mockupOptions.${order.mockupOption}`) },
-            ...(order.factory ? [{ term: t("summary.factory"), description: order.factory.name }] : []),
-            ...(order.poNumber ? [{ term: t("summary.po"), description: order.poNumber }] : []),
-            ...(order.startMode
-              ? [{ term: t("summary.startMode"), description: t(`startModes.${order.startMode}`) }]
-              : []),
-            ...(order.csRemarks ? [{ term: t("summary.remarks"), description: order.csRemarks, wide: true }] : []),
-            ...(order.cancelReason
-              ? [{ term: t("summary.cancelReason"), description: order.cancelReason, wide: true }]
-              : []),
+            ...(group?.poNumber ? [{ term: t("summary.po"), description: group.poNumber }] : []),
+            ...(group?.csRemarks ? [{ term: t("summary.remarks"), description: group.csRemarks, wide: true }] : []),
           ]}
-        />
-      </Section>
-      <Section title={t("summary.specs")}>
-        <DescriptionList
-          columns={3}
-          items={order.specs.map((spec) => ({ term: spec.label, description: spec.value }))}
         />
       </Section>
       <Section title={t("summary.destinations")}>
@@ -125,33 +142,26 @@ export function SummaryTab({ order }: { order: Order }) {
           {order.destinations.map((destination) => (
             <li key={destination.id} className="flex flex-wrap justify-between gap-2 py-2">
               <span>
-                <span className="font-medium">{destination.recipientName}</span>
-                <span className="text-muted"> · {destination.phone}</span>
-                <span className="block">{address(destination)}</span>
+                <span className="font-medium">{destination.address.recipientName}</span>
+                <span className="text-muted"> · {destination.address.phone}</span>
+                <span className="block">
+                  {[
+                    destination.address.line1,
+                    destination.address.line2,
+                    destination.address.subdistrictNameTh,
+                    destination.address.districtNameTh,
+                    destination.address.provinceNameTh,
+                    destination.address.postcode,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                </span>
               </span>
-              <span className="tabular-nums">
-                {format.number(destination.quantity)} {order.unit}
-              </span>
+              <span className="tabular-nums">{format.number(destination.quantity)}</span>
             </li>
           ))}
         </ul>
       </Section>
-      {order.taxProfile ? (
-        <Section title={t("summary.taxProfile")}>
-          <DescriptionList
-            items={[
-              { term: t("summary.taxName"), description: order.taxProfile.name },
-              { term: t("summary.taxId"), description: <span className="font-mono">{order.taxProfile.taxId}</span> },
-              { term: t("summary.branch"), description: order.taxProfile.branch },
-              {
-                term: t("summary.withholds"),
-                description: order.taxProfile.withholdsTax ? t("summary.yes") : t("summary.no"),
-              },
-              { term: t("summary.taxAddress"), description: order.taxProfile.address, wide: true },
-            ]}
-          />
-        </Section>
-      ) : null}
     </div>
   );
 }
@@ -159,6 +169,7 @@ export function SummaryTab({ order }: { order: Order }) {
 export function ItemsTab({ order }: { order: Order }) {
   const t = useTranslations("orders.detail.items");
   const format = useFormat();
+  const localized = useLocalized();
   const lineColumns: DataTableColumn<Order["lines"][number]>[] = [
     { id: "lineNo", header: t("lineNo"), numeric: true, cell: (line) => line.lineNo },
     {
@@ -166,70 +177,53 @@ export function ItemsTab({ order }: { order: Order }) {
       header: t("description"),
       cell: (line) => (
         <div>
-          <p>{line.description}</p>
+          <p>{localized(line.descriptionTh, line.descriptionEn)}</p>
           <p className="text-muted text-xs">{t(`lineTypes.${line.lineType}`)}</p>
-          {line.waivedReason ? <p className="text-success text-xs">{line.waivedReason}</p> : null}
         </div>
       ),
     },
-    {
-      id: "quantity",
-      header: t("quantity"),
-      numeric: true,
-      cell: (line) => `${line.quantity.replace(/\.?0+$/, "")} ${line.unit}`,
-    },
+    { id: "quantity", header: t("quantity"), numeric: true, cell: (line) => line.quantity.replace(/\.?0+$/, "") },
     { id: "unitPrice", header: t("unitPrice"), numeric: true, cell: (line) => format.thb(line.unitPrice) },
     { id: "net", header: t("net"), numeric: true, cell: (line) => format.thb(line.netAmount) },
     { id: "vat", header: t("vat"), numeric: true, cell: (line) => format.thb(line.vatAmount) },
     { id: "gross", header: t("gross"), numeric: true, cell: (line) => format.thb(line.grossAmount) },
   ];
+  const { internal, totals } = order;
+  // Masked for roles without cost visibility (D-141): the fields are there, their values null.
+  const showMargin = internal.buyCostNet !== null || internal.marginPct !== null;
   return (
     <div className="flex flex-col gap-4">
-      <Section title={t("parts")}>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {order.parts.map((part) => (
-            <li key={part.name} className="border-border rounded-lg border p-3 text-sm">
-              <p className="font-medium">{part.name}</p>
-              <p className="text-muted text-xs">
-                {part.specs.map((spec) => `${spec.label}: ${spec.value}`).join(" · ")}
-              </p>
-              <p className="mt-1 tabular-nums">
-                {t("partPrice", { unit: format.thb(part.unitPrice), total: format.thb(part.netAmount) })}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </Section>
+      {/* Parts with per-part prices are not on the published order (CONTRACT-GAP admin.orders). */}
       <Section title={t("lines")}>
         <DataTable
           caption={t("lines")}
           columns={lineColumns}
           rows={order.lines}
-          getRowId={(line) => String(line.lineNo)}
+          getRowId={(line) => line.id}
           density="compact"
         />
         {/* Totals as the API computed them — the UI adds nothing up. */}
         <dl className="ms-auto mt-4 grid max-w-xs grid-cols-2 gap-x-4 gap-y-1 text-sm">
           <dt className="text-muted">{t("totals.net")}</dt>
-          <dd className="text-end tabular-nums">{format.thb(order.netAmount)}</dd>
-          {order.discountAmount !== "0.00" ? (
+          <dd className="text-end tabular-nums">{format.thb(totals.netAmount)}</dd>
+          {totals.discountAmount !== "0.00" ? (
             <>
               <dt className="text-muted">{t("totals.discount")}</dt>
               <dd className="text-end tabular-nums">
                 {"-"}
-                {format.thb(order.discountAmount)}
+                {format.thb(totals.discountAmount)}
               </dd>
             </>
           ) : null}
           <dt className="text-muted">{t("totals.shipping")}</dt>
-          <dd className="text-end tabular-nums">{format.thb(order.shippingAmount)}</dd>
+          <dd className="text-end tabular-nums">{format.thb(totals.shippingNetAmount)}</dd>
           <dt className="text-muted">{t("totals.vat")}</dt>
-          <dd className="text-end tabular-nums">{format.thb(order.vatAmount)}</dd>
+          <dd className="text-end tabular-nums">{format.thb(totals.vatAmount)}</dd>
           <dt className="font-medium">{t("totals.gross")}</dt>
-          <dd className="text-end font-semibold tabular-nums">{format.thb(order.grossAmount)}</dd>
+          <dd className="text-end font-semibold tabular-nums">{format.thb(totals.grossAmount)}</dd>
         </dl>
       </Section>
-      {order.margin ? (
+      {showMargin ? (
         <Section title={t("margin.title")}>
           <p className="text-muted mb-3 text-xs">{t("margin.hint")}</p>
           <DescriptionList
@@ -237,18 +231,18 @@ export function ItemsTab({ order }: { order: Order }) {
             items={[
               {
                 term: t("margin.buyCost"),
-                description: <span className="tabular-nums">{format.thb(order.margin.buyCostNet)}</span>,
+                description: <span className="tabular-nums">{format.thb(internal.buyCostNet)}</span>,
               },
               {
                 term: t("margin.amount"),
-                description: <span className="tabular-nums">{format.thb(order.margin.marginAmount)}</span>,
+                description: <span className="tabular-nums">{format.thb(internal.marginAmount)}</span>,
               },
               {
                 term: t("margin.pct"),
                 description: (
-                  <span className={cn("tabular-nums", order.margin.belowMarginFloor && "text-danger font-medium")}>
-                    {format.percent(order.margin.marginPct)}
-                    {order.margin.belowMarginFloor ? ` · ${t("margin.belowFloor")}` : null}
+                  <span className={cn("tabular-nums", internal.belowMarginFloor && "text-danger font-medium")}>
+                    {format.percent(internal.marginPct)}
+                    {internal.belowMarginFloor ? ` · ${t("margin.belowFloor")}` : null}
                   </span>
                 ),
               },
@@ -260,51 +254,33 @@ export function ItemsTab({ order }: { order: Order }) {
   );
 }
 
-function SlipCard({ slip, onApprove, onReject }: { slip: Slip; onApprove?: () => void; onReject?: () => void }) {
+function SlipCard({ slip, onApprove, onReject }: { slip: QueuedSlip; onApprove?: () => void; onReject?: () => void }) {
   const t = useTranslations("orders.detail.payments");
+  const tFinance = useTranslations("finance.common");
   const format = useFormat();
   const sla = useSlaFormat();
-  const check = (ok: boolean, label: string) => (
-    <li className={cn("flex items-center gap-1", ok ? "text-success" : "text-danger")}>
-      <Icon name={ok ? "check" : "close"} size={14} />
-      {label}
-      <span className="sr-only">{ok ? t("checkPassed") : t("checkFailed")}</span>
-    </li>
-  );
   return (
     <div className="border-border flex flex-col gap-2 rounded-lg border p-3 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="flex items-center gap-2">
           <Icon name="receipt" size={16} className="text-muted" />
-          {slip.file.originalName}
+          <span className="tabular-nums">
+            {t("declared", {
+              amount: format.thb(slip.declaredAmount),
+              at: format.dateTime(slip.declaredTransferredAt),
+            })}
+          </span>
         </span>
-        <StatusChip map={SLIP_STATUS} value={slip.verificationStatus} />
+        <StatusChip map={SLIP_STATUS} value={slip.status} />
       </div>
-      <p className="tabular-nums">
-        {t("declared", { amount: format.thb(slip.declaredAmount), at: format.dateTime(slip.declaredTransferredAt) })}
+      <p className="text-muted text-xs">
+        {t("expected", { amount: format.thb(slip.expectedAmount) })} · {tFinance(`checks.${slip.lastCheck ?? "none"}`)}
       </p>
-      {slip.checks ? (
-        <ul className="flex flex-wrap gap-3 text-xs" aria-label={t("checks")}>
-          {check(slip.checks.receiverMatched, t("receiver"))}
-          {check(slip.checks.amountMatched, t("amount"))}
-          {check(slip.checks.dateMatched, t("date"))}
-          {check(!slip.checks.duplicate, t("notDuplicate"))}
-        </ul>
-      ) : (
-        <p className="text-muted text-xs">{t("notChecked")}</p>
-      )}
-      {slip.verificationStatus === "manual_review" ? (
-        <SlaTimer
-          dueAt={slip.slaDueAt}
-          format={sla}
-          absolute={slip.slaDueAt ? format.dateTime(slip.slaDueAt) : undefined}
-        />
-      ) : null}
-      {slip.reviewNote ? (
-        <p className="text-muted text-xs">
-          {t("reviewNote", { note: slip.reviewNote, by: slip.reviewedBy?.displayName ?? "—" })}
-        </p>
-      ) : null}
+      <SlaTimer
+        dueAt={slip.slaDueAt}
+        format={sla}
+        absolute={slip.slaDueAt ? format.dateTime(slip.slaDueAt) : undefined}
+      />
       {onApprove || onReject ? (
         <div className="flex gap-2">
           {onApprove ? (
@@ -323,20 +299,29 @@ function SlipCard({ slip, onApprove, onReject }: { slip: Slip; onApprove?: () =>
   );
 }
 
+/**
+ * The group's payment schedule, and the slips waiting for Finance. The payments themselves cannot
+ * be listed by order or group (CONTRACT-GAP admin.orders); Finance finds them in its payments desk.
+ */
 export function PaymentsTab({
-  order,
+  group,
+  slips,
   onApproveSlip,
   onRejectSlip,
 }: {
-  order: Order;
-  onApproveSlip?: (slip: Slip) => void;
-  onRejectSlip?: (slip: Slip) => void;
+  group: OrderGroup | null;
+  slips: QueuedSlip[];
+  onApproveSlip?: (slip: QueuedSlip) => void;
+  onRejectSlip?: (slip: QueuedSlip) => void;
 }) {
   const t = useTranslations("orders.detail.payments");
   const format = useFormat();
-  const instalmentColumns: DataTableColumn<Order["instalments"][number]>[] = [
+  const localized = useLocalized();
+  const canPayments = useCan("payments.read");
+  const schedule = useGroupSchedule(group?.id);
+  const instalmentColumns: DataTableColumn<Schemas["InstalmentDto"]>[] = [
     { id: "seq", header: t("seq"), numeric: true, cell: (row) => row.seq },
-    { id: "label", header: t("instalment"), cell: (row) => row.label },
+    { id: "label", header: t("instalment"), cell: (row) => localized(row.labelTh, row.labelEn) },
     { id: "trigger", header: t("trigger"), cell: (row) => t(`triggers.${row.dueTrigger}`) },
     {
       id: "required",
@@ -352,106 +337,117 @@ export function PaymentsTab({
     <div className="flex flex-col gap-4">
       <Section title={t("schedule")}>
         <p className="text-muted mb-3 text-xs">{t("scheduleHint")}</p>
+        {schedule.isError ? <QueryError error={schedule.error} onRetry={() => void schedule.refetch()} /> : null}
         <DataTable
           caption={t("schedule")}
           columns={instalmentColumns}
-          rows={order.instalments}
+          rows={schedule.data?.instalments ?? []}
           getRowId={(row) => row.id}
+          loading={!group || schedule.isPending}
           density="compact"
         />
       </Section>
-      <Section title={t("payments")}>
-        {order.payments.length === 0 ? (
-          <EmptyState icon="wallet" title={t("noPayments")} />
-        ) : (
-          <ul className="flex flex-col gap-4">
-            {order.payments.map((payment) => (
-              <li key={payment.id} className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <span className="font-medium">{t(`methods.${payment.method}`)}</span>
-                  <span className="flex items-center gap-2">
-                    <span className="tabular-nums">{format.thb(payment.amount)}</span>
-                    <StatusChip map={PAYMENT_STATUS} value={payment.status} />
-                  </span>
-                </div>
-                {payment.providerRef ? (
-                  <p className="text-muted text-xs">{t("reference", { ref: payment.providerRef })}</p>
-                ) : null}
-                {payment.slips.length > 0 ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {payment.slips.map((slip) => (
-                      <SlipCard
-                        key={slip.id}
-                        slip={slip}
-                        onApprove={
-                          slip.verificationStatus === "manual_review" && onApproveSlip
-                            ? () => onApproveSlip(slip)
-                            : undefined
-                        }
-                        onReject={
-                          slip.verificationStatus === "manual_review" && onRejectSlip
-                            ? () => onRejectSlip(slip)
-                            : undefined
-                        }
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+      {slips.length > 0 ? (
+        <Section title={t("slipsWaiting")}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {slips.map((slip) => (
+              <SlipCard
+                key={slip.id}
+                slip={slip}
+                onApprove={onApproveSlip ? () => onApproveSlip(slip) : undefined}
+                onReject={onRejectSlip ? () => onRejectSlip(slip) : undefined}
+              />
             ))}
-          </ul>
-        )}
-      </Section>
+          </div>
+        </Section>
+      ) : null}
+      <Callout tone="info" title={t("paymentsElsewhere")}>
+        {canPayments && group ? (
+          <Link
+            href={`/finance/payments?q=${encodeURIComponent(group.groupCode)}`}
+            className="text-primary hover:underline"
+          >
+            {t("openPayments")}
+          </Link>
+        ) : null}
+      </Callout>
     </div>
   );
 }
 
 export function ArtworkTab({ order }: { order: Order }) {
   const t = useTranslations("orders.detail.artwork");
+  const localized = useLocalized();
+  const allowed = useCan("artwork.read");
+  const path = { orderId: order.id };
+  const submissions = useQuery({
+    queryKey: queryKeys.related("admin", "order", order.id, "artwork"),
+    enabled: allowed,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/orders/{orderId}/artwork-submissions", { params: { path } }))
+        .data!,
+  });
+  const proofs = useQuery({
+    queryKey: queryKeys.related("admin", "order", order.id, "proofs"),
+    enabled: allowed,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/orders/{orderId}/proofs", { params: { path } })).data!,
+  });
+  if (!allowed) return <Unreadable icon="image" />;
+  if (submissions.isError) return <QueryError error={submissions.error} onRetry={() => void submissions.refetch()} />;
+  if (!submissions.data) return <Skeleton className="h-40" />;
   return (
     <div className="flex flex-col gap-4">
-      <Section title={t("title")} actions={<StatusChip map={ARTWORK_STATUS} value={order.artwork.status} size="md" />}>
-        {order.artwork.submissions.length === 0 ? (
+      <Section title={t("title")} actions={<StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />}>
+        {submissions.data.length === 0 ? (
           <EmptyState icon="upload" title={t("noSubmissions")} description={t("noSubmissionsBody")} />
         ) : (
           <ul className="flex flex-col gap-3">
-            {order.artwork.submissions.map((submission) => (
-              <li key={submission.id} className="border-border rounded-lg border p-3 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium">{t("version", { no: submission.versionNo })}</span>
-                  <StatusChip map={PREFLIGHT_STATUS} value={submission.preflightStatus} />
-                </div>
-                <p className="text-muted text-xs">
-                  {t(`sources.${submission.source}`)} · <When at={submission.submittedAt} />
-                </p>
-                {submission.findings.length > 0 ? (
-                  <ul className="mt-2 space-y-1">
-                    {submission.findings.map((finding, index) => (
-                      <li
-                        key={index}
-                        className={cn(
-                          "flex items-start gap-2 text-xs",
-                          finding.severity === "block"
-                            ? "text-danger"
-                            : finding.severity === "warn"
-                              ? "text-warning-subtle-fg"
-                              : "text-muted",
-                        )}
-                      >
-                        <Icon
-                          name={finding.severity === "block" ? "ban" : finding.severity === "warn" ? "warning" : "info"}
-                          size={14}
-                        />
-                        <span>
-                          <span className="font-medium">{t(`checks.${finding.check}`)}</span>
-                          {finding.page ? ` · ${t("page", { page: finding.page })}` : null} — {finding.message}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </li>
-            ))}
+            {submissions.data.map((submission) => {
+              const findings = (submission.preflightReport?.files ?? []).flatMap((file) =>
+                file.checks.filter((check) => check.outcome !== "pass"),
+              );
+              return (
+                <li key={submission.id} className="border-border rounded-lg border p-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium">{t("version", { no: submission.versionNo })}</span>
+                    <StatusChip map={PREFLIGHT_STATUS} value={submission.preflightStatus} />
+                  </div>
+                  <p className="text-muted text-xs">
+                    {t(`sources.${submission.source}`)} · <When at={submission.submittedAt} />
+                  </p>
+                  {findings.length > 0 ? (
+                    <ul className="mt-2 space-y-1">
+                      {findings.map((finding, index) => (
+                        <li
+                          key={index}
+                          className={cn(
+                            "flex items-start gap-2 text-xs",
+                            finding.severity === "block"
+                              ? "text-danger"
+                              : finding.severity === "warn"
+                                ? "text-warning-subtle-fg"
+                                : "text-muted",
+                          )}
+                        >
+                          <Icon
+                            name={
+                              finding.severity === "block" ? "ban" : finding.severity === "warn" ? "warning" : "info"
+                            }
+                            size={14}
+                          />
+                          <span>
+                            <span className="font-medium">{t(`checks.${finding.check}`)}</span>
+                            {finding.page ? ` · ${t("page", { page: finding.page })}` : null} —{" "}
+                            {localized(finding.messageTh, finding.messageEn)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
         )}
       </Section>
@@ -459,34 +455,37 @@ export function ArtworkTab({ order }: { order: Order }) {
         title={t("proofs")}
         actions={
           <Button variant="secondary" size="sm" asChild>
-            <Link href={`/prepress?order=${order.id}`}>{t("openPrepress")}</Link>
+            <Link href={`/prepress/${order.id}`}>{t("openPrepress")}</Link>
           </Button>
         }
       >
-        {order.artwork.proofs.length === 0 ? (
+        {(proofs.data ?? []).length === 0 ? (
           <p className="text-muted text-sm">{t("noProofs")}</p>
         ) : (
           <ul className="divide-border divide-y text-sm">
-            {order.artwork.proofs.map((proof) => (
-              <li key={proof.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span>
-                  {t("proofVersion", { no: proof.versionNo })}
-                  <span className="text-muted"> · </span>
-                  <When at={proof.sentAt} />
-                  {proof.openAnnotations > 0 ? (
-                    <Badge size="sm" tone="warning" className="ms-2">
-                      {t("openAnnotations", { count: proof.openAnnotations })}
-                    </Badge>
-                  ) : null}
-                </span>
-                <span className="flex items-center gap-2">
-                  {proof.decisionChannel ? (
-                    <span className="text-muted text-xs">{t(`channels.${proof.decisionChannel}`)}</span>
-                  ) : null}
-                  <StatusChip map={PROOF_STATUS} value={proof.status} />
-                </span>
-              </li>
-            ))}
+            {(proofs.data ?? []).map((proof) => {
+              const open = proof.annotations.filter((note) => note.parentId === null && !note.resolvedAt).length;
+              return (
+                <li key={proof.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <span>
+                    {t("proofVersion", { no: proof.versionNo })}
+                    <span className="text-muted"> · </span>
+                    <When at={proof.sentAt} />
+                    {open > 0 ? (
+                      <Badge size="sm" tone="warning" className="ms-2">
+                        {t("openAnnotations", { count: open })}
+                      </Badge>
+                    ) : null}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {proof.decisionChannel ? (
+                      <span className="text-muted text-xs">{t(`channels.${proof.decisionChannel}`)}</span>
+                    ) : null}
+                    <StatusChip map={PROOF_STATUS} value={proof.status} />
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Section>
@@ -497,10 +496,27 @@ export function ArtworkTab({ order }: { order: Order }) {
 export function ProductionTab({ order }: { order: Order }) {
   const t = useTranslations("orders.detail.production");
   const format = useFormat();
-  if (order.jobs.length === 0) return <EmptyState icon="factory" title={t("noJobs")} description={t("noJobsBody")} />;
+  const localized = useLocalized();
+  const allowed = useCan("production.read");
+  const jobs = useQuery({
+    queryKey: queryKeys.list("admin", "production_job", { orderId: order.id }),
+    enabled: allowed,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/production-jobs", {
+          params: { query: { orderId: order.id, perPage: 50 } },
+        })
+      ).data!,
+    staleTime: STALE_TIME.transactional,
+  });
+  if (!allowed) return <Unreadable icon="factory" />;
+  if (jobs.isError) return <QueryError error={jobs.error} onRetry={() => void jobs.refetch()} />;
+  if (!jobs.data) return <Skeleton className="h-40" />;
+  if (jobs.data.data.length === 0)
+    return <EmptyState icon="factory" title={t("noJobs")} description={t("noJobsBody")} />;
   return (
     <div className="flex flex-col gap-4">
-      {order.jobs.map((job) => (
+      {jobs.data.data.map((job) => (
         <Section
           key={job.id}
           title={t("job", { jobNo: job.jobNo })}
@@ -517,7 +533,7 @@ export function ProductionTab({ order }: { order: Order }) {
         >
           <p className="text-muted mb-3 text-sm">
             {[
-              job.factory?.name,
+              job.factoryCode,
               t(`kinds.${job.kind}`),
               job.promisedShipDate ? t("promised", { date: format.date(job.promisedShipDate) }) : null,
             ]
@@ -526,20 +542,20 @@ export function ProductionTab({ order }: { order: Order }) {
           </p>
           {job.milestones.length === 0 ? (
             <p className="text-muted text-sm">
-              {job.acceptDueAt ? t("awaitingAcceptance", { at: format.dateTime(job.acceptDueAt) }) : t("noMilestones")}
+              {job.acceptedAt ? t("noMilestones") : t("awaitingAcceptance", { at: format.dateTime(job.acceptDueAt) })}
             </p>
           ) : (
             <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {job.milestones.map((step) => (
                 <li
-                  key={step.seq}
+                  key={step.id}
                   className="border-border flex items-start justify-between gap-2 rounded-lg border p-2 text-sm"
                 >
                   <div>
                     <p className="font-medium">
                       {step.seq}
                       {". "}
-                      {step.name}
+                      {localized(step.nameTh, step.nameEn)}
                     </p>
                     <p className="text-muted text-xs">
                       {step.completedAt
@@ -564,48 +580,73 @@ export function ProductionTab({ order }: { order: Order }) {
 export function ShipmentsTab({ order }: { order: Order }) {
   const t = useTranslations("orders.detail.shipments");
   const format = useFormat();
-  if (order.shipments.length === 0) return <EmptyState icon="truck" title={t("none")} description={t("noneBody")} />;
+  const allowed = useCan("shipments.read");
+  const shipments = useQuery({
+    queryKey: queryKeys.list("admin", "shipment", { orderId: order.id }),
+    enabled: allowed,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/shipments", {
+          params: { query: { orderId: order.id, perPage: 50 } },
+        })
+      ).data!,
+  });
+  if (!allowed) return <Unreadable icon="truck" />;
+  if (shipments.isError) return <QueryError error={shipments.error} onRetry={() => void shipments.refetch()} />;
+  if (!shipments.data) return <Skeleton className="h-40" />;
+  if (shipments.data.data.length === 0)
+    return <EmptyState icon="truck" title={t("none")} description={t("noneBody")} />;
   return (
     <div className="flex flex-col gap-4">
-      {order.shipments.map((shipment) => (
-        <Section
-          key={shipment.id}
-          title={shipment.shipmentNo}
-          actions={<StatusChip map={SHIPMENT_STATUS} value={shipment.status} size="md" />}
-        >
-          <DescriptionList
-            columns={3}
-            items={[
-              { term: t("carrier"), description: t(`carriers.${shipment.carrier}`) },
-              { term: t("tracking"), description: shipment.trackingNo ?? "—" },
-              {
-                term: t("quantity"),
-                description: `${format.number(shipment.quantity)} ${order.unit} · ${t("cartons", { count: shipment.cartons })}`,
-              },
-              {
-                term: t("destination"),
-                description: `${shipment.destination.recipientName} · ${address({ ...shipment.destination, id: "", quantity: 0 })}`,
-                wide: true,
-              },
-              { term: t("deliveredAt"), description: <When at={shipment.deliveredAt} absoluteOnly /> },
-            ]}
-          />
-          {shipment.pod ? (
-            <Callout
-              tone="success"
-              title={t("pod", {
-                name: shipment.pod.receiverName,
-                quantity: format.number(shipment.pod.deliveredQuantity),
-              })}
-              className="mt-3"
-            >
-              <When at={shipment.pod.capturedAt} absoluteOnly />
-            </Callout>
-          ) : shipment.status === "delivered" ? (
-            <Callout tone="warning" title={t("podMissing")} className="mt-3" />
-          ) : null}
-        </Section>
-      ))}
+      {shipments.data.data.map((shipment) => {
+        const quantity = shipment.items
+          .filter((item) => item.orderCode === order.orderCode)
+          .reduce((sum, item) => sum + item.quantity, 0);
+        const pod = shipment.proofOfDelivery;
+        return (
+          <Section
+            key={shipment.id}
+            title={shipment.shipmentNo}
+            actions={<StatusChip map={SHIPMENT_STATUS} value={shipment.status} size="md" />}
+          >
+            <DescriptionList
+              columns={3}
+              items={[
+                { term: t("carrier"), description: t(`carriers.${shipment.carrier}`) },
+                { term: t("tracking"), description: shipment.trackingNo ?? "—" },
+                {
+                  term: t("quantity"),
+                  description: `${format.number(quantity)} · ${t("cartons", { count: shipment.cartonsCount })}`,
+                },
+                {
+                  term: t("destination"),
+                  description: [
+                    shipment.destination.recipientName,
+                    shipment.destination.line1,
+                    shipment.destination.line2,
+                    shipment.destination.postcode,
+                  ]
+                    .filter(Boolean)
+                    .join(" · "),
+                  wide: true,
+                },
+                { term: t("deliveredAt"), description: <When at={shipment.deliveredAt} absoluteOnly /> },
+              ]}
+            />
+            {pod ? (
+              <Callout
+                tone="success"
+                title={t("pod", { name: pod.receiverName, quantity: format.number(pod.deliveredQuantity) })}
+                className="mt-3"
+              >
+                <When at={pod.capturedAt} absoluteOnly />
+              </Callout>
+            ) : shipment.status === "delivered" ? (
+              <Callout tone="warning" title={t("podMissing")} className="mt-3" />
+            ) : null}
+          </Section>
+        );
+      })}
     </div>
   );
 }
@@ -613,9 +654,22 @@ export function ShipmentsTab({ order }: { order: Order }) {
 export function DocumentsTab({ order }: { order: Order }) {
   const t = useTranslations("orders.detail.documents");
   const format = useFormat();
-  const columns: DataTableColumn<Order["documents"][number]>[] = [
-    { id: "type", header: t("type"), cell: (row) => t(`types.${row.type}`) },
-    { id: "number", header: t("number"), cell: (row) => <span className="font-mono">{row.number}</span> },
+  const allowed = useCan("receivables.read");
+  const documents = useQuery({
+    queryKey: queryKeys.list("admin", "customer-document", { orderId: order.id }),
+    enabled: allowed,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customer-documents", {
+          params: { query: { orderId: order.id, perPage: 50 } },
+        })
+      ).data!,
+  });
+  if (!allowed) return <Unreadable icon="document" />;
+  if (documents.isError) return <QueryError error={documents.error} onRetry={() => void documents.refetch()} />;
+  const columns: DataTableColumn<Schemas["CustomerDocumentDto"]>[] = [
+    { id: "type", header: t("type"), cell: (row) => t(`types.${row.docType}`) },
+    { id: "number", header: t("number"), cell: (row) => <span className="font-mono">{row.docNumber}</span> },
     { id: "issuedAt", header: t("issuedAt"), cell: (row) => <When at={row.issuedAt} absoluteOnly /> },
     { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
     { id: "status", header: t("status"), cell: (row) => <StatusChip map={DOCUMENT_STATUS} value={row.status} /> },
@@ -626,8 +680,9 @@ export function DocumentsTab({ order }: { order: Order }) {
       <DataTable
         caption={t("title")}
         columns={columns}
-        rows={order.documents}
+        rows={documents.data?.data ?? []}
         getRowId={(row) => row.id}
+        loading={documents.isPending}
         density="compact"
         empty={<EmptyState icon="document" title={t("none")} />}
       />
@@ -637,11 +692,21 @@ export function DocumentsTab({ order }: { order: Order }) {
 
 export function ClaimsTab({ order }: { order: Order }) {
   const t = useTranslations("orders.detail.claims");
-  if (order.claims.length === 0) return <EmptyState icon="flag" title={t("none")} description={t("noneBody")} />;
+  const allowed = useCan("claims.read");
+  const claims = useQuery({
+    queryKey: queryKeys.list("admin", "claim", { orderId: order.id }),
+    enabled: allowed,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/claims", { params: { query: { orderId: order.id } } })).data!,
+  });
+  if (!allowed) return <Unreadable icon="flag" />;
+  if (claims.isError) return <QueryError error={claims.error} onRetry={() => void claims.refetch()} />;
+  if (!claims.data) return <Skeleton className="h-24" />;
+  if (claims.data.data.length === 0) return <EmptyState icon="flag" title={t("none")} description={t("noneBody")} />;
   return (
     <Section title={t("title")}>
       <ul className="divide-border divide-y text-sm">
-        {order.claims.map((claim) => (
+        {claims.data.data.map((claim) => (
           <li key={claim.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
             <Link href={`/claims/${claim.id}`} className="text-primary font-mono hover:underline">
               {claim.claimNo}

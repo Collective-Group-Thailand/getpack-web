@@ -1,35 +1,52 @@
 /** The prepress desk's list and types, in a plain module so Server Components can call its fetcher. */
 
-import type { z } from "zod";
-
-import type { prepressDetail, prepressItem, proofAnnotation } from "@/lib/api/requests/admin-prepress";
+import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
 import { defineList } from "../console/resource";
 
-export type PrepressItem = z.output<typeof prepressItem>;
-export type PrepressDetail = z.output<typeof prepressDetail>;
-export type ProofAnnotation = z.output<typeof proofAnnotation>;
+export type PrepressQueueItem = Schemas["PrepressQueueItemDto"];
+export type PrepressQueueKind = Schemas["PrepressQueueKind"];
+export type ArtworkSubmission = Schemas["ArtworkSubmissionDto"];
+export type Proof = Schemas["ProofDto"];
+export type ProofAnnotation = Schemas["AnnotationDto"];
+export type DielineDelivery = Schemas["DielineDeliveryDto"];
+export type DrawingJob = Schemas["DrawingJobDto"];
+export type DesignService = Schemas["DesignServiceDto"];
+export type DesignDocument = Schemas["DesignDocumentDto"];
 
+/** packio-api's prepress queues (`admin.artwork.queue`), in the desk's order; the first is the default. */
 export const PREPRESS_QUEUES = [
-  "preflight",
-  "proof",
-  "awaiting_customer",
+  "submissions",
   "changes_requested",
-  "template",
-  "design",
-  "mockup",
-] as const;
+  "proofs_waiting",
+] as const satisfies readonly PrepressQueueKind[];
 
 /** The workspace's tabs, for the page to validate `?tab=` against. */
-export const PREPRESS_TABS = ["artwork", "proofs", "template", "design", "mockup"] as const;
+export const PREPRESS_TABS = ["artwork", "proofs", "template", "design"] as const;
 export type PrepressTab = (typeof PREPRESS_TABS)[number];
 
-export const prepressList = defineList<PrepressItem>({
+/**
+ * The prepress desk is its three queues (`GET /v1/admin/prepress/queue?kind=`): files to review,
+ * proofs the customer sent back, proofs with the customer. `?kind=` picks one and the desk opens on
+ * the first. Each row is one submission or one proof (`itemId`), so an order can appear twice.
+ *
+ * CONTRACT-GAP admin.prepress — no all-stages queue (template, design and mockup stages), no
+ * customer, product type, artwork status or assignee on a row, and no filters by them.
+ */
+export const prepressList = defineList<PrepressQueueItem>({
   key: "prepress",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/prepress", { query: query as never }),
-  getRowId: (row) => row.orderId,
+  fetch: async ({ contract }, { kind, ...query }) => {
+    const chosen = (PREPRESS_QUEUES as readonly string[]).includes(String(kind))
+      ? (kind as PrepressQueueKind)
+      : PREPRESS_QUEUES[0];
+    return (
+      await contract.GET("/v1/admin/prepress/queue", { params: { query: { ...(query as object), kind: chosen } } })
+    ).data!;
+  },
+  getRowId: (row) => row.itemId,
   getRowName: (row) => row.orderCode,
-  defaults: { filterKeys: ["queue", "artworkStatus", "productType", "assigneeId"] },
+  defaults: { filterKeys: ["kind"] },
+  // A queue with SLA timers on it.
   staleTime: STALE_TIME.live,
 });

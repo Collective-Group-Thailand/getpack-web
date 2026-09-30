@@ -159,7 +159,6 @@ export function PayablesList({ initial }: { initial: InitialPage<PayableItem> | 
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      exportable
       filters={[
         {
           id: "status",
@@ -216,7 +215,6 @@ export function PurchaseOrdersList({ initial }: { initial: InitialPage<PurchaseO
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      exportable
       filters={[
         {
           id: "status",
@@ -370,7 +368,6 @@ export function GoodsReceiptsList({ initial }: { initial: InitialPage<GoodsRecei
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      exportable
       empty={{ title: t("empty") }}
     />
   );
@@ -734,7 +731,6 @@ export function VendorInvoicesList({ initial }: { initial: InitialPage<VendorInv
       caption={t("title")}
       initial={initial}
       searchLabel={t("search")}
-      exportable
       filters={[
         {
           id: "status",

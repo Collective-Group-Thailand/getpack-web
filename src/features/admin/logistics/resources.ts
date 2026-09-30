@@ -2,24 +2,28 @@
 
 import type { z } from "zod";
 
-import type {
-  carrierQuote,
-  claimDetail,
-  claimRow,
-  shipmentDetail,
-  shipmentRow,
-} from "@/lib/api/requests/admin-logistics";
+import type { carrierQuote } from "@/lib/api/requests/admin-logistics";
+import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
 import { defineList } from "../console/resource";
 
-export type ShipmentRow = z.output<typeof shipmentRow>;
-export type Shipment = z.output<typeof shipmentDetail>;
+export type Shipment = Schemas["AdminShipmentDto"];
+export type Claim = Schemas["AdminClaimDto"];
+/** A fallback carrier's price for one shipment (CONTRACT-REQUEST admin.shipments, carrier quotes). */
 export type CarrierQuote = z.output<typeof carrierQuote>;
-export type ClaimRow = z.output<typeof claimRow>;
-export type Claim = z.output<typeof claimDetail>;
 
-export const SHIPMENT_QUEUES = ["awaiting_pickup", "in_transit", "exceptions", "pod_review"] as const;
+export const SHIPMENT_STATUSES = [
+  "draft",
+  "ready",
+  "picked_up",
+  "in_transit",
+  "out_for_delivery",
+  "delivered",
+  "failed",
+  "returned",
+  "cancelled",
+] as const satisfies readonly Schemas["ShipmentStatus"][];
 export const CLAIM_STATUSES = [
   "submitted",
   "under_review",
@@ -29,22 +33,33 @@ export const CLAIM_STATUSES = [
   "rejected",
   "resolved",
   "closed",
-] as const;
+] as const satisfies readonly Schemas["ClaimStatus"][];
 
-export const shipmentsList = defineList<ShipmentRow>({
+/**
+ * The logistics desk (`admin.shipments.list`). The published list filters by status, order and
+ * `q` only — no queues (awaiting pick-up, exceptions, POD review), carrier or factory
+ * (CONTRACT-GAP admin.shipments) — so the desk's tabs are the statuses.
+ */
+export const shipmentsList = defineList<Shipment>({
   key: "shipment",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/shipments", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/shipments", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.shipmentNo,
-  defaults: { filterKeys: ["queue", "status", "carrier", "factoryId"] },
+  defaults: { filterKeys: ["status"] },
   staleTime: STALE_TIME.live,
 });
 
-export const claimsList = defineList<ClaimRow>({
+/**
+ * Claims (`admin.claims.list`), by status and `q`. No type or origin filter, no customer and no SLA
+ * on the row (CONTRACT-GAP admin.claims).
+ */
+export const claimsList = defineList<Claim>({
   key: "claim",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/claims", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/claims", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.claimNo,
-  defaults: { filterKeys: ["status", "type", "origin"] },
+  defaults: { filterKeys: ["status"] },
   staleTime: STALE_TIME.live,
 });

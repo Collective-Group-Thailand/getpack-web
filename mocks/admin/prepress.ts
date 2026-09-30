@@ -1,33 +1,56 @@
 /**
- * The prepress desk, mocked (CONTRACT-REQUEST admin.prepress, admin.prepress-actions,
- * admin.prepress-proofs, admin.prepress-template, admin.design-services, admin.design-documents).
+ * The prepress desk's state — every order's artwork submissions, proofs and annotations, template
+ * deliveries and hired design — and the back office's design documents.
  *
- * Prepress state hangs off the commerce mock's own orders, so `/orders/{id}` and
- * `/prepress/{id}` describe the same order; a change here moves that order's artwork status
- * too, the way B4.1's events would. Stages follow B4.1: preflight (D-070) → accepted for proof
+ * This is the one stateful source of artwork (U-F0.3): the published admin operations
+ * (`./artwork.ts`) and the storefront's (`../store/artwork.ts`) both project these rows onto the
+ * contract's DTOs, so a file accepted in prepress, a proof sent or a comment made shows on the
+ * order screen, the prepress workspace and the customer's pages alike. Prepress state hangs off the
+ * commerce mock's own orders, and a change here moves that order's artwork status too, the way
+ * B4.1's events would. Stages follow B4.1: preflight (D-070) → accepted for proof
  * → proof with the customer → approved or changes requested; hired design rounds with three
  * free, then a paid round the customer settles first (D-071); a mockup job (D-072). Drawing the
  * dieline answers 501 `drawing.engine_unavailable`, exactly as B4.1 does until the engine ships.
+ *
+ * The rows keep the aggregate's shape the prepress requests asked for (`admin-prepress.ts`),
+ * because assigning an order is still a request that answers it. Two requests stay mocked here:
+ * assign and copy (CONTRACT-REQUEST admin.prepress-actions, admin.design-documents).
  */
 
-import { HttpResponse } from "msw";
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
-import type { designRound, prepressDetail, proofAnnotation, proofDetail } from "@/lib/api/requests/admin-prepress";
-import { designDocumentView, prepressItem } from "@/lib/api/requests/admin-prepress";
+import type { designRound, prepressDetail, proofDetail } from "@/lib/api/requests/admin-prepress";
+import type { designDocumentView } from "@/lib/api/requests/admin-prepress";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
-import { storeDesignForStaff } from "../store/designs";
+import { bangkokIso, mockId, problem } from "../support";
+import { storeDesignDtoForStaff } from "../store/designs";
 import { baht, orders, satang } from "./commerce";
 import { registerQueue } from "./console";
 
 type Detail = z.output<typeof prepressDetail>;
 type Proof = z.output<typeof proofDetail>;
-type Annotation = z.output<typeof proofAnnotation>;
 type Round = z.output<typeof designRound>;
+
+/** One annotation as the desk keeps it; replies carry `parentId` (the old request's shape, mock-only). */
+interface Annotation {
+  id: string;
+  parentId: string | null;
+  page: number;
+  kind: Schemas["AnnotationKind"];
+  /** Page-relative 0–1 coordinates: `{ x, y }` for a pin, `{ x, y, w, h }` for a rect, `{ points }` for a drawing. */
+  geometry: Record<string, unknown>;
+  comment: string;
+  author: { id: string; displayName: string };
+  authorKind: Schemas["AnnotationAuthorKind"];
+  createdAt: string;
+  resolvedAt: string | null;
+  resolvedBy: { id: string; displayName: string } | null;
+}
 type Order = (typeof orders)[number];
 type FileRef = Detail["proofs"][number]["proofFile"];
 
@@ -512,51 +535,94 @@ orders.forEach((order, index) => {
   if (plan) details.set(order.id, build(order, index, plan));
 });
 
-/* ----------------------------------------------------------------------------- queues, search */
+/* ----------------------------------------------------------------------------- queues, lookups */
 
-const QUEUE_LABEL_KEYS = ["preflight", "proof", "changes_requested", "template", "design"] as const;
-for (const queue of QUEUE_LABEL_KEYS) {
-  registerQueue("prepress.read", () => {
-    const rows = [...details.values()].map(refresh).filter((detail) => detail.stage === queue);
+/** packio-api's prepress queue (`admin.artwork.queue`), one row per submission or proof. */
+export type QueueKind = Schemas["PrepressQueueKind"];
+
+/** Prepress's SLA in the mock: a flat number of hours from when the work arrived (D-175 is the API's). */
+const PREPRESS_SLA_MINUTES = 8 * HOUR;
+
+function dueOf(since: string) {
+  return new Date(Date.parse(since) + PREPRESS_SLA_MINUTES * 60_000);
+}
+
+/**
+ * The rows of one queue, oldest first, as packio-api builds them: preflighted files still to
+ * review; proofs waiting for the customer (no due time — they wait on the customer); proofs the
+ * customer sent back that no newer proof answers yet.
+ */
+export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
+  const rows: Schemas["PrepressQueueItemDto"][] = [];
+  for (const detail of [...details.values()].map(refresh)) {
+    const order = orders.find((candidate) => candidate.id === detail.orderId);
+    if (!order || order.status === "cancelled") continue;
+    if (kind === "submissions") {
+      for (const item of detail.submissions) {
+        if (item.status !== "submitted" || item.preflightStatus === "pending" || item.preflightStatus === "running")
+          continue;
+        const since = item.preflightCompletedAt ?? item.submittedAt;
+        rows.push({
+          orderId: detail.orderId,
+          orderCode: detail.orderCode,
+          kind,
+          itemId: item.id,
+          versionNo: item.versionNo,
+          preflightStatus: item.preflightStatus,
+          since,
+          dueAt: bangkokIsoOf(dueOf(since)),
+          overdue: dueOf(since).getTime() < Date.now(),
+        });
+      }
+    } else {
+      const latest = detail.proofs[0];
+      for (const item of detail.proofs) {
+        const waiting = kind === "proofs_waiting" && item.status === "pending_customer";
+        const sentBack =
+          kind === "changes_requested" &&
+          item.status === "changes_requested" &&
+          item === latest &&
+          detail.artworkStatus === "changes_requested";
+        if (!waiting && !sentBack) continue;
+        const since = waiting ? item.sentAt : (item.decidedAt ?? item.sentAt);
+        rows.push({
+          orderId: detail.orderId,
+          orderCode: detail.orderCode,
+          kind,
+          itemId: item.id,
+          versionNo: item.versionNo,
+          preflightStatus: null,
+          since,
+          dueAt: waiting ? null : bangkokIsoOf(dueOf(since)),
+          overdue: !waiting && dueOf(since).getTime() < Date.now(),
+        });
+      }
+    }
+  }
+  return rows.sort((left, right) => Date.parse(left.since) - Date.parse(right.since));
+}
+
+/** A `Date` as the API writes it, on Bangkok time. */
+function bangkokIsoOf(date: Date): string {
+  return bangkokIso(Math.round((date.getTime() - Date.now()) / 60_000));
+}
+
+for (const kind of ["submissions", "changes_requested", "proofs_waiting"] as const) {
+  registerQueue("artwork.read", () => {
+    const rows = queueItems(kind);
     const due = rows
-      .map((row) => row.slaDueAt)
+      .map((row) => row.dueAt)
       .filter((at): at is string => Boolean(at))
       .sort();
     return {
-      key: `prepress.${queue}`,
-      path: `/admin/prepress?queue=${queue}`,
+      key: `prepress.${kind}`,
+      path: `/admin/prepress?kind=${kind}`,
       count: rows.length,
-      overdueCount: due.filter((at) => Date.parse(at) < Date.now()).length,
+      overdueCount: rows.filter((row) => row.overdue).length,
       nextDueAt: due.find((at) => Date.parse(at) >= Date.now()) ?? null,
     };
   });
 }
-
-const itemOf = (detail: Detail) =>
-  prepressItem.parse({
-    ...detail,
-    latestSubmission: detail.submissions[0]
-      ? {
-          versionNo: detail.submissions[0].versionNo,
-          preflightStatus: detail.submissions[0].preflightStatus,
-          submittedAt: detail.submissions[0].submittedAt,
-        }
-      : null,
-    latestProof: detail.proofs[0]
-      ? { versionNo: detail.proofs[0].versionNo, status: detail.proofs[0].status, sentAt: detail.proofs[0].sentAt }
-      : null,
-    design: detail.designService
-      ? {
-          status: detail.designService.status,
-          roundNo: Math.max(1, detail.designService.rounds.length),
-          freeRounds: detail.designService.freeRounds,
-        }
-      : null,
-    mockup: detail.mockup ? { status: detail.mockup.status } : null,
-    updatedAt: detail.submissions[0]?.submittedAt ?? detail.proofs[0]?.sentAt ?? bangkokIso(-DAY),
-  });
-
-/* --------------------------------------------------------------------------------- handlers */
 
 const notFound = () => problem(404, "prepress.not_found", "ไม่พบงานก่อนพิมพ์ของคำสั่งซื้อนี้");
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
@@ -568,7 +634,7 @@ function manage(
   action?: string,
 ): Response | { detail: Detail; who: StaffPersona } {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, "prepress.manage")) return forbidden();
+  if (!who || !can(who, "prepress.review")) return forbidden();
   const detail = orderId ? prepressOf(orderId) : undefined;
   if (!detail) return notFound();
   if (action && !refresh(detail).nextActions.some((item) => item.key === action && !item.disabledReason)) {
@@ -577,7 +643,7 @@ function manage(
   return { detail, who };
 }
 
-function bySubmission(submissionId: string | undefined) {
+export function bySubmission(submissionId: string | undefined) {
   for (const detail of details.values()) {
     const found = detail.submissions.find((item) => item.id === submissionId);
     if (found) return { detail, submission: found };
@@ -585,7 +651,7 @@ function bySubmission(submissionId: string | undefined) {
   return null;
 }
 
-function byProof(proofId: string | undefined) {
+export function byProof(proofId: string | undefined) {
   for (const detail of details.values()) {
     const found = detail.proofs.find((item) => item.id === proofId);
     if (found) return { detail, proof: found };
@@ -593,7 +659,28 @@ function byProof(proofId: string | undefined) {
   return null;
 }
 
-function uploaded(fileId: string, name: string): FileRef {
+export function byAnnotation(annotationId: string | undefined) {
+  for (const [proofId, list] of annotations) {
+    const annotation = list.find((item) => item.id === annotationId);
+    const found = annotation ? byProof(proofId) : null;
+    if (annotation && found) return { ...found, annotation };
+  }
+  return null;
+}
+
+export function byDesignService(designServiceId: string | undefined) {
+  for (const detail of details.values()) {
+    if (detail.designService?.id === designServiceId) return { detail, service: detail.designService! };
+  }
+  return null;
+}
+
+/** Every prepress row made so far (the seeded plans and any order opened since). */
+export function prepressRows(): Detail[] {
+  return [...details.values()].map(refresh);
+}
+
+export function uploaded(fileId: string, name: string): FileRef {
   return {
     id: fileId,
     originalName: name,
@@ -603,6 +690,11 @@ function uploaded(fileId: string, name: string): FileRef {
     url: null,
   };
 }
+
+/** Why prepress sent a submission back, which the customer reads (`rejectReason`). */
+export const rejectReasons = new Map<string, string>();
+/** A manual template's note to the customer (`DielineDeliveryDto.note`). */
+export const templateNotes = new Map<string, string>();
 
 /* ------------------------------------------------------------ the customer's side (mocks/store) */
 
@@ -621,6 +713,44 @@ export function prepressOf(orderId: string): Detail | undefined {
   detail.artworkStatus = order.artworkStatus;
   detail.designOption = order.designOption;
   detail.mockupOption = order.mockupOption;
+  // What the commerce fixture already holds for the order, so the order screen and the workspace
+  // start from the same history.
+  const customer = { id: order.customer.id, displayName: order.customer.displayName };
+  detail.submissions = [...order.artwork.submissions]
+    .sort((left, right) => right.versionNo - left.versionNo)
+    .map((item) => ({
+      id: item.id,
+      versionNo: item.versionNo,
+      source: item.source,
+      status: order.artworkStatus === "uploaded" ? "submitted" : "accepted_for_proof",
+      preflightStatus: item.preflightStatus,
+      preflightCompletedAt: item.submittedAt,
+      findings: item.findings.map((finding) => ({ ...finding, thumbnailUrl: null })),
+      files: item.files.map((entry) => ({ role: "artwork" as const, file: entry })),
+      designDocumentId: null,
+      submittedBy: item.submittedBy,
+      submittedAt: item.submittedAt,
+      nextActions: [],
+    }));
+  detail.proofs = [...order.artwork.proofs]
+    .sort((left, right) => right.versionNo - left.versionNo)
+    .map((item) => ({
+      id: item.id,
+      versionNo: item.versionNo,
+      submissionVersionNo: detail.submissions[0]?.versionNo ?? 1,
+      status: item.status,
+      proofFile: item.file,
+      dielineFile: null,
+      note: null,
+      preparedBy: refOf(PREPRESS),
+      sentAt: item.sentAt,
+      decidedAt: item.decidedAt,
+      decidedBy: item.decidedAt ? customer : null,
+      decisionChannel: item.decisionChannel,
+      onBehalfReason: null,
+      approvedFileSha256: item.status === "approved" ? "a3f5".padEnd(64, "0") : null,
+      annotations: { open: 0, resolved: 0 },
+    }));
   if (order.designOption === "hired_design")
     detail.designService = designService(order, index + 1, { stage: "design", rounds: [] });
   details.set(orderId, detail);
@@ -761,247 +891,116 @@ export function refreshPrepress(detail: Detail): Detail {
 
 type DesignDocumentView = z.output<typeof designDocumentView>;
 
-/** Copies prepress made to work on (F2 2.4, F4 C.2): editable by the staff member who made them. */
+/** Copies prepress made to work on (F2 2.4, F4 C.2): only the staff member who made one saves it. */
 const staffCopies = new Map<string, { ownerId: string; view: DesignDocumentView }>();
 let copyCounter = 0;
 
-/** A document by id: a staff copy, a customer's document on an order, or a customer's saved design. */
+/** The document on a seeded order (the online designer's), by id. */
+function onOrder(id: string) {
+  return [...details.values()].find((detail) => detail.designDocument?.id === id)?.designDocument ?? null;
+}
+
+/** A document by id, in the copy request's shape: a staff copy, a customer's document on an order, or a saved design. */
 function documentFor(id: string, staffId: string): DesignDocumentView | null {
   const copy = staffCopies.get(id);
   if (copy) return { ...copy.view, editable: copy.ownerId === staffId };
-  const onOrder = [...details.values()].find((detail) => detail.designDocument?.id === id)?.designDocument;
-  if (onOrder) return { ...onOrder, editable: false };
-  const saved = storeDesignForStaff(id);
+  const ordered = onOrder(id);
+  if (ordered) return { ...ordered, editable: false };
+  const saved = storeDesignDtoForStaff(id);
   if (!saved) return null;
+  const document = saved.document as DesignDocumentView["document"] | null;
   return {
     id: saved.id,
-    title: saved.name,
-    versionNo: saved.versionNo,
-    schemaVersion: saved.document.schemaVersion,
-    document: { spec: saved.document.spec, content: saved.document.content },
-    thumbnailUrl: saved.thumbnailUrl,
+    title: saved.title,
+    versionNo: saved.versionNo ?? 1,
+    schemaVersion: saved.schemaVersion ?? 1,
+    document: document ?? { spec: {}, content: {} },
+    thumbnailUrl: null,
     owner: { displayName: "ลูกค้า" },
     editable: false,
     updatedAt: saved.updatedAt,
   };
 }
 
-/** The view with its ETag, checked against its request like `mockRequest` checks a plain return. */
-function documentResponse(
-  key: "GET /v1/admin/design-documents/{documentId}" | "PUT /v1/admin/design-documents/{documentId}",
-  view: DesignDocumentView,
-) {
-  const checked = designDocumentView.safeParse(view);
-  if (!checked.success) {
-    console.error(`[mock drift] ${key}`, checked.error.issues.slice(0, 5));
-    return problem(500, "mock.drift", `The mock for ${key} returned a shape its request does not describe.`);
-  }
-  return HttpResponse.json(view, { headers: { ETag: `"v${view.versionNo}"` } });
+/** The published design (`admin.designs.get`): the document opaque, no owner and no editable flag. */
+function toDesignDto(id: string): Schemas["DesignDocumentDto"] | null {
+  const saved = storeDesignDtoForStaff(id);
+  if (saved && !staffCopies.has(id)) return saved;
+  const view = staffCopies.get(id)?.view ?? onOrder(id);
+  if (!view) return null;
+  return {
+    id: view.id,
+    title: view.title,
+    catalogProductId: mockId("cpr", 1),
+    patternId: null,
+    materialId: null,
+    semiDesignTemplateId: null,
+    lengthMm: null,
+    widthMm: null,
+    heightMm: null,
+    document: view.document,
+    schemaVersion: view.schemaVersion,
+    versionNo: view.versionNo,
+    thumbnailFileId: null,
+    assets: [],
+    updatedAt: view.updatedAt,
+  };
 }
 
+const etagOf = (versionNo: number | null) => `"v${versionNo ?? 0}"`;
+
+/** The published design surface of the back office (`admin.designs.get` / `.save`, If-Match). */
+export const designContractHandlers = [
+  http.get("*/v1/admin/designs/:designId", ({ params, request }) => {
+    if (!can(staffPersonaOf(request), "artwork.read")) return forbidden();
+    const found = toDesignDto(String(params.designId));
+    if (!found) return problem(404, "http.not_found", "ไม่พบแบบนี้");
+    return HttpResponse.json(found, { headers: { ETag: etagOf(found.versionNo) } });
+  }),
+
+  http.put("*/v1/admin/designs/:designId", async ({ params, request }) => {
+    const who = staffPersonaOf(request);
+    if (!who || !can(who, "catalog.manage")) return forbidden();
+    const copy = staffCopies.get(String(params.designId));
+    // Only the staff author's own designs save; anyone else's is not found, as packio-api answers.
+    if (!copy || copy.ownerId !== who.id) return problem(404, "http.not_found", "ไม่พบแบบนี้");
+    const match = request.headers.get("if-match");
+    if (!match) return problem(428, "concurrency.precondition_required", "ต้องส่ง If-Match");
+    if (match !== etagOf(copy.view.versionNo))
+      return problem(412, "concurrency.stale", "แบบนี้ถูกบันทึกจากที่อื่นหลังจากที่คุณเปิด");
+    const body = (await request.json()) as Schemas["SaveDesignDto"];
+    const document = body.document as { spec?: unknown; content?: unknown };
+    if (!document || typeof document.spec !== "object" || typeof document.content !== "object")
+      return problem(422, "validation.failed", "เอกสารแบบไม่ถูกต้อง", [
+        { path: "document", code: "invalid", message: "spec and content are required" },
+      ]);
+    copy.view = {
+      ...copy.view,
+      title: body.title ?? copy.view.title,
+      document: document as DesignDocumentView["document"],
+      schemaVersion: body.schemaVersion,
+      versionNo: copy.view.versionNo + 1,
+      updatedAt: bangkokIso(),
+    };
+    const saved = toDesignDto(copy.view.id)!;
+    return HttpResponse.json(saved, { headers: { ETag: etagOf(saved.versionNo) } });
+  }),
+];
+
+/** What is still a request (CONTRACT-REQUEST admin.prepress-actions, admin.design-documents). */
 export const prepressHandlers = [
-  mockRequest("GET /v1/admin/prepress", ({ query, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
-    const rows = [...details.values()]
-      .map(refresh)
-      .filter((detail) => detail.stage !== null)
-      .filter((detail) => !query.queue || detail.stage === query.queue)
-      .filter((detail) => !query.artworkStatus || detail.artworkStatus === query.artworkStatus)
-      .filter((detail) => !query.productType || detail.productType.code === query.productType)
-      .filter((detail) => !query.assigneeId || detail.assignee?.id === query.assigneeId)
-      .filter((detail) => matchesQuery(query.q, detail.orderCode, detail.customer.displayName))
-      .map(itemOf);
-    return paginate(sortBy(rows, query.sort ?? "slaDueAt", query.order ?? "asc"), query);
-  }),
-  mockRequest("GET /v1/admin/prepress/{orderId}", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
-    // Any order has a prepress row once asked for — a web order the customer uploaded to, say.
-    const detail = prepressOf(params.orderId!);
-    return detail ?? notFound();
-  }),
   mockRequest("POST /v1/admin/prepress/{orderId}/actions/assign", ({ params, body, request }) => {
     const found = manage(request, params.orderId, "prepress.assign");
     if (found instanceof Response) return found;
     const person = body.assigneeId ? PERSONAS.find((candidate) => candidate.id === body.assigneeId) : null;
-    if (body.assigneeId && (!person || !can(person, "prepress.manage")))
+    if (body.assigneeId && (!person || !can(person, "prepress.review")))
       return problem(422, "prepress.assignee_not_eligible", "พนักงานคนนี้ไม่มีสิทธิ์ทำงานก่อนพิมพ์");
     found.detail.assignee = person ? refOf(person) : null;
     return refresh(found.detail);
   }),
-  mockRequest("POST /v1/admin/prepress/submissions/{submissionId}/actions/accept", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.manage")) return forbidden();
-    const found = bySubmission(params.submissionId);
-    if (!found) return notFound();
-    const action = found.submission.nextActions.find((item) => item.key === "submission.accept");
-    if (!action) return conflict("รับไฟล์นี้ไม่ได้ในขั้นตอนนี้");
-    if (action.disabledReason) return problem(409, "preflight.blocking_findings", action.disabledReason);
-    found.submission.status = "accepted_for_proof";
-    found.detail.slaDueAt = bangkokIso(8 * HOUR);
-    return refresh(found.detail);
-  }),
-  mockRequest("POST /v1/admin/prepress/submissions/{submissionId}/actions/reject", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.manage")) return forbidden();
-    const found = bySubmission(params.submissionId);
-    if (!found) return notFound();
-    if (found.submission.status !== "submitted") return conflict("ส่งคืนไฟล์นี้ไม่ได้ในขั้นตอนนี้");
-    found.submission.status = "rejected";
-    found.detail.artworkStatus = "awaiting_upload";
-    return refresh(found.detail);
-  }),
-  mockRequest("POST /v1/admin/prepress/{orderId}/proofs", ({ params, body, request }) => {
-    const found = manage(request, params.orderId, "prepress.upload_proof");
-    if (found instanceof Response) return found;
-    const { detail, who } = found;
-    const source = detail.submissions.find((item) => item.id === body.submissionId);
-    if (!source || source.status !== "accepted_for_proof")
-      return problem(422, "validation.failed", "เลือกไฟล์งานที่ผ่านการตรวจแล้ว", [
-        { path: "submissionId", code: "state", message: "ไฟล์งานยังไม่ผ่านการตรวจ" },
-      ]);
-    for (const item of detail.proofs) if (item.status !== "approved") item.status = "superseded";
-    const versionNo = (detail.proofs[0]?.versionNo ?? 0) + 1;
-    detail.proofs.unshift({
-      id: mockId("prf", 8000 + versionNo + Math.floor(Math.random() * 900)),
-      versionNo,
-      submissionVersionNo: source.versionNo,
-      status: "pending_customer",
-      proofFile: uploaded(body.proofFileId, `${detail.orderCode}-proof-v${versionNo}.pdf`),
-      dielineFile: body.dielineFileId ? uploaded(body.dielineFileId, `${detail.orderCode}-dieline.pdf`) : null,
-      note: body.note ?? null,
-      preparedBy: refOf(who),
-      sentAt: bangkokIso(),
-      decidedAt: null,
-      decidedBy: null,
-      decisionChannel: null,
-      onBehalfReason: null,
-      approvedFileSha256: null,
-      annotations: { open: 0, resolved: 0 },
-    });
-    detail.artworkStatus = "proof_sent";
-    detail.slaDueAt = bangkokIso(48 * HOUR);
-    return refresh(detail);
-  }),
-  mockRequest("GET /v1/admin/prepress/proofs/{proofId}/annotations", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "prepress.read")) return forbidden();
-    return byProof(params.proofId) ? { data: annotations.get(params.proofId!) ?? [] } : notFound();
-  }),
-  mockRequest("POST /v1/admin/prepress/proofs/{proofId}/annotations", ({ params, body, request }) => {
-    const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.manage")) return forbidden();
-    const found = byProof(params.proofId);
-    if (!found) return notFound();
-    const list = annotations.get(found.proof.id) ?? [];
-    const parent = list.find((item) => item.id === body.parentId && !item.parentId);
-    if (!parent)
-      return problem(422, "validation.failed", "ไม่พบความเห็นที่ตอบกลับ", [
-        { path: "parentId", code: "exists", message: "ไม่พบความเห็นนี้" },
-      ]);
-    const reply: Annotation = {
-      id: mockId("ann", 9000 + list.length + Math.floor(Math.random() * 900)),
-      parentId: parent.id,
-      page: parent.page,
-      kind: parent.kind,
-      geometry: parent.geometry,
-      comment: body.comment,
-      author: refOf(who),
-      authorKind: "staff",
-      createdAt: bangkokIso(),
-      resolvedAt: null,
-      resolvedBy: null,
-    };
-    annotations.set(found.proof.id, [...list, reply]);
-    return reply;
-  }),
-  mockRequest(
-    "POST /v1/admin/prepress/proofs/{proofId}/annotations/{annotationId}/actions/resolve",
-    ({ params, request }) => {
-      const who = staffPersonaOf(request);
-      if (!who || !can(who, "prepress.manage")) return forbidden();
-      const found = byProof(params.proofId);
-      const item = (annotations.get(params.proofId!) ?? []).find((candidate) => candidate.id === params.annotationId);
-      if (!found || !item || item.parentId) return notFound();
-      item.resolvedAt = bangkokIso();
-      item.resolvedBy = refOf(who);
-      refresh(found.detail);
-      return item;
-    },
-  ),
-  mockRequest("POST /v1/admin/prepress/{orderId}/drawing-jobs", ({ params, request }) => {
-    const found = manage(request, params.orderId, "prepress.draw_dieline");
-    if (found instanceof Response) return found;
-    // B4.1: until @packio/dieline is deployed server-side, the drawing service answers this.
-    return problem(501, "drawing.engine_unavailable", "ระบบวาดแบบกล่องยังไม่พร้อมใช้งาน ส่งแบบจากไฟล์ที่มีอยู่แทน");
-  }),
-  mockRequest("POST /v1/admin/prepress/{orderId}/actions/send-template", ({ params, body, request }) => {
-    const found = manage(request, params.orderId, "prepress.send_template");
-    if (found instanceof Response) return found;
-    const { detail, who } = found;
-    if (!body.fileId && !body.drawingJobId)
-      return problem(422, "validation.failed", "แนบไฟล์แบบกล่อง", [
-        { path: "fileId", code: "required", message: "แนบไฟล์แบบกล่อง" },
-      ]);
-    detail.templateDeliveries.unshift({
-      id: mockId("dld", 100 + detail.templateDeliveries.length + Math.floor(Math.random() * 900)),
-      trigger: "manual",
-      sentAt: bangkokIso(),
-      sentBy: refOf(who),
-      file: uploaded(body.fileId ?? body.drawingJobId!, `${detail.orderCode}-template.pdf`),
-    });
-    detail.artworkStatus = "awaiting_upload";
-    return refresh(detail);
-  }),
-  mockRequest("POST /v1/admin/prepress/{orderId}/design/actions/deliver-round", ({ params, body, request }) => {
-    const found = manage(request, params.orderId, "prepress.deliver_round");
-    if (found instanceof Response) return found;
-    const service = found.detail.designService!;
-    const round = service.rounds.find((item) => item.status === "in_progress");
-    if (!round) return conflict("ไม่มีรอบงานออกแบบที่กำลังทำ");
-    round.status = "delivered";
-    round.deliveredAt = bangkokIso();
-    round.files = body.fileIds.map((id, at) => uploaded(id, `design-round-${round.roundNo}-${at + 1}.pdf`));
-    round.note = body.note ?? null;
-    service.status = "delivered";
-    return refresh(found.detail);
-  }),
-  mockRequest("POST /v1/admin/prepress/{orderId}/design/actions/requote", ({ params, request }) => {
-    const found = manage(request, params.orderId, "prepress.requote_design");
-    if (found instanceof Response) return found;
-    found.detail.designService!.status = "requoted";
-    return refresh(found.detail);
-  }),
-  mockRequest("GET /v1/admin/design-documents/{documentId}", ({ params, request }) => {
-    const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.read")) return forbidden();
-    const found = documentFor(params.documentId, who.id);
-    if (!found) return problem(404, "design.not_found", "ไม่พบแบบนี้");
-    return documentResponse("GET /v1/admin/design-documents/{documentId}", found);
-  }),
-  mockRequest("PUT /v1/admin/design-documents/{documentId}", ({ params, body, request }) => {
-    const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.manage")) return forbidden();
-    const copy = staffCopies.get(params.documentId);
-    if (!copy) {
-      return documentFor(params.documentId, who.id)
-        ? problem(403, "design.read_only", "แบบของลูกค้าเปิดได้อย่างเดียว ทำสำเนาเพื่อแก้ไข")
-        : problem(404, "design.not_found", "ไม่พบแบบนี้");
-    }
-    if (copy.ownerId !== who.id) return problem(403, "design.read_only", "สำเนานี้เป็นของเจ้าหน้าที่คนอื่น");
-    const match = request.headers.get("if-match");
-    if (!match) return problem(428, "http.precondition_required", "ต้องส่ง If-Match");
-    if (match !== `"v${copy.view.versionNo}"`)
-      return problem(412, "concurrency.stale", "สำเนานี้ถูกบันทึกจากที่อื่นหลังจากที่คุณเปิด");
-    copy.view = {
-      ...copy.view,
-      title: body.title,
-      document: body.document,
-      schemaVersion: body.document.schemaVersion,
-      versionNo: copy.view.versionNo + 1,
-      updatedAt: bangkokIso(),
-    };
-    return documentResponse("PUT /v1/admin/design-documents/{documentId}", { ...copy.view, editable: true });
-  }),
   mockRequest("POST /v1/admin/design-documents/{documentId}/actions/copy", ({ params, body, request }) => {
     const who = staffPersonaOf(request);
-    if (!who || !can(who, "prepress.manage")) return forbidden();
+    if (!who || !can(who, "prepress.review")) return forbidden();
     const source = documentFor(params.documentId, who.id);
     if (!source) return problem(404, "design.not_found", "ไม่พบแบบนี้");
     copyCounter += 1;

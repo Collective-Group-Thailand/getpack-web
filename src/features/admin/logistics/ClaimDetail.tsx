@@ -5,11 +5,12 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { adminClaimActions, adminClaimResolutions, type AdminClaimActionKey } from "@/domain/next-actions/admin";
 import { CLAIM_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
@@ -19,10 +20,10 @@ import { Field } from "@/ui/components/Field";
 import { NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { Select } from "@/ui/components/Select";
-import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
 
 import {
+  adminBrowserApis,
   ConfirmAction,
   FormDialog,
   FormError,
@@ -30,13 +31,22 @@ import {
   QueryError,
   Section,
   StatusChip,
-  useCan,
+  useActor,
 } from "../console";
+import { FileList } from "./files";
 import type { Claim } from "./resources";
 
-type Action = Claim["allowedActions"][number];
-type Resolution = Claim["allowedResolutions"][number];
-const LIABILITIES = ["factory", "customer", "carrier", "packio", "undetermined"] as const;
+type Resolution = Schemas["ClaimAction"];
+/** The steps confirmed in one dialog; resolving and overriding have their own forms. */
+type Step = Exclude<AdminClaimActionKey, "claim.resolve" | "claim.override_liability">;
+
+const LIABILITIES = [
+  "factory",
+  "customer",
+  "carrier",
+  "packio",
+  "undetermined",
+] as const satisfies readonly Schemas["ClaimLiability"][];
 const WITH_AMOUNT = new Set<Resolution>([
   "refund",
   "credit_note",
@@ -44,34 +54,76 @@ const WITH_AMOUNT = new Set<Resolution>([
   "factory_deduction",
   "carrier_recovery",
 ]);
+/** The steps that carry a note (`ClaimNoteDto`, `DecideClaimDto`, 3–2000 characters). */
+const WITH_NOTE = new Set<Step>(["claim.request_info", "claim.approve", "claim.reject"]);
+/** The copy key of each step, under `logistics.claim.actions`. */
+const COPY: Record<Step, string> = {
+  "claim.review": "review",
+  "claim.request_info": "request_info",
+  "claim.send_to_factory": "send_to_factory",
+  "claim.approve": "approve",
+  "claim.reject": "reject",
+  "claim.close": "close",
+};
 
-async function readClaim(claimId: string) {
-  return browserRequests().read("GET /v1/admin/claims/{claimId}", { path: { claimId } });
+/** One published operation per step, each under its own Idempotency-Key (`admin.claims.*`). */
+async function runStep(claimId: string, step: Step, idempotencyKey: string, note: string): Promise<Claim> {
+  const { contract } = adminBrowserApis();
+  const params = { path: { claimId }, header: { "Idempotency-Key": idempotencyKey } };
+  switch (step) {
+    case "claim.review":
+      return (await contract.POST("/v1/admin/claims/{claimId}/actions/review", { params })).data!;
+    case "claim.request_info":
+      return (await contract.POST("/v1/admin/claims/{claimId}/actions/request-info", { params, body: { note } })).data!;
+    case "claim.send_to_factory":
+      return (await contract.POST("/v1/admin/claims/{claimId}/actions/send-to-factory", { params })).data!;
+    case "claim.approve":
+    case "claim.reject":
+      return (
+        await contract.POST("/v1/admin/claims/{claimId}/actions/decide", {
+          params,
+          body: { decision: step === "claim.approve" ? "approved" : "rejected", note },
+        })
+      ).data!;
+    case "claim.close":
+      return (await contract.POST("/v1/admin/claims/{claimId}/actions/close", { params })).data!;
+  }
 }
 
 /**
  * One claim (F2 2.8, D-082, D-083): the evidence the customer had to give (product and carton
- * photos), the liability the rule gave and why — overridden only with its own permission and a
- * reason — the steps with their audience, and the resolution, which runs an existing mechanism
- * (re-production, refund, credit note, deduction from the factory) under one idempotency key.
+ * photos), the liability the rule gave — overridden only with its own permission and a reason —
+ * what the team asked and the factory answered, and the resolution, which runs an existing
+ * mechanism (re-production, refund, credit note, deduction from the factory) under one
+ * idempotency key.
+ *
+ * Not on the published claim (CONTRACT-GAP admin.claims): `allowedActions` / `allowedResolutions`
+ * (offered from the status and liability, `src/domain/next-actions/admin.ts`), the message thread,
+ * the rule's explanation, the approved proof (D-083), the customer, who decided or overrode, and
+ * each resolution's document reference and executor.
  */
 export function ClaimDetail({ claimId }: { claimId: string }) {
   const t = useTranslations("logistics.claim");
   const tClaims = useTranslations("logistics.claims");
   const format = useFormat();
   const queryClient = useQueryClient();
-  const canOverride = useCan("claims.override_liability");
+  const actor = useActor();
   const key = queryKeys.detail("admin", "claim", claimId);
-  const [action, setAction] = useState<Action | null>(null);
-  const [overriding, setOverriding] = useState(false);
-  const [liability, setLiability] = useState<(typeof LIABILITIES)[number]>("factory");
+  const [step, setStep] = useState<Step | null>(null);
+  const [overriding, setOverriding] = useState<{ key: string } | null>(null);
+  const [liability, setLiability] = useState<Schemas["ClaimLiability"]>("factory");
   const [reason, setReason] = useState("");
   const [resolving, setResolving] = useState<{ key: string } | null>(null);
   const [resolution, setResolution] = useState<Resolution | "">("");
   const [amount, setAmount] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [note, setNote] = useState("");
 
-  const query = useQuery({ queryKey: key, queryFn: async () => (await readClaim(claimId)).data });
+  const query = useQuery({
+    queryKey: key,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/claims/{claimId}", { params: { path: { claimId } } })).data!,
+  });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const claim = query.data;
   if (!claim) return null;
@@ -81,29 +133,10 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
     void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "claim") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
   };
-  const photos = (files: Claim["evidence"]["productPhotos"], label: string) => (
-    <div>
-      <p className="text-muted mb-1 text-xs">{label}</p>
-      {files.length === 0 ? (
-        <p className="text-muted text-sm">{t("noPhotos")}</p>
-      ) : (
-        <ul className="flex flex-wrap gap-2">
-          {files.map((file) => (
-            <li key={file.id}>
-              <a
-                href={file.url ?? "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary bg-surface-subtle flex h-16 w-24 items-center justify-center rounded-md border text-xs hover:underline"
-              >
-                {file.originalName}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+  const offered = adminClaimActions({ status: claim.status }, (permission) => actor.permissions.includes(permission));
+  const has = (action: AdminClaimActionKey) => offered.some((item) => item.key === action);
+  const steps = offered.map((item) => item.key).filter((item): item is Step => item in COPY);
+  const resolutions = adminClaimResolutions(claim.liability);
 
   return (
     <div className="flex flex-col gap-5">
@@ -122,14 +155,15 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
             {claim.origin !== "customer" ? <Badge tone="info">{tClaims(`origins.${claim.origin}`)}</Badge> : null}
           </>
         }
-        description={t("summary", { order: claim.order.orderCode, customer: claim.customer.displayName })}
+        description={t("summary", { order: claim.orderCode, factory: claim.factoryCode ?? "–" })}
         actions={
           <>
-            {claim.allowedResolutions.length > 0 ? (
+            {has("claim.resolve") ? (
               <Button
                 onClick={() => {
-                  setResolution(claim.allowedResolutions[0] ?? "");
+                  setResolution(resolutions[0] ?? "");
                   setAmount(claim.claimedAmount ?? "");
+                  setQuantity(claim.claimedQuantity === null ? "" : String(claim.claimedQuantity));
                   setNote("");
                   setResolving({ key: newIdempotencyKey() });
                 }}
@@ -137,13 +171,13 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                 {t("resolve")}
               </Button>
             ) : null}
-            {claim.allowedActions.map((item) => (
+            {steps.map((item) => (
               <Button
                 key={item}
-                variant={item === "reject" ? "ghost" : item === "approve" ? "primary" : "secondary"}
-                onClick={() => setAction(item)}
+                variant={item === "claim.reject" ? "ghost" : item === "claim.approve" ? "primary" : "secondary"}
+                onClick={() => setStep(item)}
               >
-                {t(`actions.${item}.label`)}
+                {t(`actions.${COPY[item]}.label`)}
               </Button>
             ))}
           </>
@@ -157,6 +191,14 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
             <DescriptionList
               columns={3}
               items={[
+                {
+                  term: t("order"),
+                  description: (
+                    <Link href={`/orders/${claim.orderId}`} className="text-primary font-mono hover:underline">
+                      {claim.orderCode}
+                    </Link>
+                  ),
+                },
                 { term: t("requested"), description: tClaims(`resolutions.${claim.requestedResolution}`) },
                 { term: t("claimedAmount"), description: format.thb(claim.claimedAmount) },
                 {
@@ -167,51 +209,50 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                 { term: t("window"), description: <When at={claim.windowEndsAt} absoluteOnly /> },
                 {
                   term: t("shipment"),
-                  description: claim.shipment ? (
-                    <Link href={`/shipments/${claim.shipment.id}`} className="text-primary font-mono hover:underline">
-                      {claim.shipment.shipmentNo}
+                  description: claim.shipmentId ? (
+                    <Link href={`/shipments/${claim.shipmentId}`} className="text-primary hover:underline">
+                      {t("openShipment")}
                     </Link>
                   ) : (
                     "–"
                   ),
                 },
+                { term: t("job"), description: claim.jobNo ?? "–" },
               ]}
             />
           </Section>
 
           <Section title={t("evidence")} description={t("evidenceNote")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              {photos(claim.evidence.productPhotos, t("productPhotos"))}
-              {photos(claim.evidence.cartonPhotos, t("cartonPhotos"))}
+              <FileList fileIds={claim.photos.product} label={t("productPhotos")} empty={t("noPhotos")} />
+              <FileList fileIds={claim.photos.carton} label={t("cartonPhotos")} empty={t("noPhotos")} />
             </div>
           </Section>
 
-          <Section title={t("thread")}>
-            <Timeline
-              label={t("thread")}
-              items={[...claim.messages].reverse().map((message, at) => ({
-                id: `${message.at}-${at}`,
-                title: message.body,
-                time: <When at={message.at} />,
-                actor: `${message.author} · ${t(`audiences.${message.audience}`)}`,
-                icon: message.audience === "factory" ? "factory" : message.audience === "customer" ? "user" : "lock",
-              }))}
-            />
-          </Section>
+          {claim.infoRequest ? (
+            <Section title={t("info")}>
+              <DescriptionList
+                items={[
+                  { term: t("infoRequest"), description: claim.infoRequest },
+                  { term: t("infoResponse"), description: claim.infoResponse ?? t("noResponse") },
+                ]}
+              />
+            </Section>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-5">
           <Section
             title={t("liability")}
             actions={
-              canOverride && !["resolved", "closed"].includes(claim.status) ? (
+              has("claim.override_liability") ? (
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() => {
                     setLiability(claim.liability);
                     setReason("");
-                    setOverriding(true);
+                    setOverriding({ key: newIdempotencyKey() });
                   }}
                 >
                   {t("override")}
@@ -221,37 +262,27 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           >
             <p className="text-lg font-semibold">{tClaims(`liabilities.${claim.liability}`)}</p>
             <p className="text-muted text-sm">
-              {t("byRule", { liability: tClaims(`liabilities.${claim.liabilityByRule}`) })} · {claim.liabilityRule}
+              {t("byRule", { liability: tClaims(`liabilities.${claim.liabilityByRule}`) })}
             </p>
-            {claim.liabilityOverride ? (
-              <Callout
-                tone="warning"
-                className="mt-3"
-                title={t("overridden", { by: claim.liabilityOverride.by.displayName })}
-              >
-                {claim.liabilityOverride.reason}
+            {claim.overrideReason ? (
+              <Callout tone="warning" className="mt-3" title={t("overridden")}>
+                {claim.overrideReason}
               </Callout>
-            ) : null}
-            {claim.approvedProof ? (
-              <p className="text-muted mt-3 text-sm">
-                {t("approvedProof", { no: claim.approvedProof.versionNo })}{" "}
-                <When at={claim.approvedProof.approvedAt} absoluteOnly />
-              </p>
             ) : null}
           </Section>
           {claim.factoryResponse ? (
             <Section title={t("factoryResponse")}>
-              <Badge tone={claim.factoryResponse.response === "accepted" ? "success" : "warning"}>
-                {t(`responses.${claim.factoryResponse.response}`)}
+              <Badge tone={claim.factoryResponse === "accepted" ? "success" : "warning"}>
+                {t(`responses.${claim.factoryResponse}`)}
               </Badge>
-              {claim.factoryResponse.note ? <p className="mt-2 text-sm">{claim.factoryResponse.note}</p> : null}
+              {claim.factoryResponseNote ? <p className="mt-2 text-sm">{claim.factoryResponseNote}</p> : null}
             </Section>
           ) : null}
-          {claim.decision ? (
+          {claim.decidedAt ? (
             <Section title={t("decision")}>
-              <p className="text-sm">{claim.decision.reason}</p>
+              {claim.decisionNote ? <p className="text-sm">{claim.decisionNote}</p> : null}
               <p className="text-muted text-xs">
-                {claim.decision.by.displayName} · <When at={claim.decision.at} />
+                <When at={claim.decidedAt} />
               </p>
             </Section>
           ) : null}
@@ -265,9 +296,9 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                       {item.amount ? ` · ${format.thb(item.amount)}` : ""}
                     </p>
                     <p className="text-muted text-xs">
-                      {item.reference ? <span className="font-mono">{item.reference}</span> : null}
-                      {item.reference ? " · " : ""}
-                      {item.executedBy.displayName} · <When at={item.executedAt} />
+                      {item.jobNo ? <span className="font-mono">{item.jobNo} · </span> : null}
+                      {item.quantity !== null ? `${t("pieces", { quantity: format.number(item.quantity) })} · ` : null}
+                      <When at={item.executedAt} />
                     </p>
                   </li>
                 ))}
@@ -277,24 +308,20 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
         </div>
       </div>
 
-      {action ? (
+      {step ? (
         <ConfirmAction
           open
-          onOpenChange={(open) => (open ? undefined : setAction(null))}
-          title={t(`actions.${action}.title`)}
-          description={t(`actions.${action}.body`, { no: claim.claimNo, order: claim.order.orderCode })}
-          confirmLabel={t(`actions.${action}.label`)}
-          tone={action === "reject" ? "destructive" : "primary"}
-          reason={{ label: t(`actions.${action}.reason`), required: true, minLength: 3 }}
-          onConfirm={async ({ reason: text }) => {
+          onOpenChange={(open) => (open ? undefined : setStep(null))}
+          title={t(`actions.${COPY[step]}.title`)}
+          description={t(`actions.${COPY[step]}.body`, { no: claim.claimNo, order: claim.orderCode })}
+          confirmLabel={t(`actions.${COPY[step]}.label`)}
+          tone={step === "claim.reject" ? "destructive" : "primary"}
+          reason={
+            WITH_NOTE.has(step) ? { label: t(`actions.${COPY[step]}.reason`), required: true, minLength: 3 } : undefined
+          }
+          onConfirm={async ({ idempotencyKey, reason: text }) => {
             try {
-              const { etag } = await readClaim(claimId);
-              const updated = await browserRequests().call("POST /v1/admin/claims/{claimId}/actions/{action}", {
-                path: { claimId, action },
-                body: { reason: text },
-                etag: etag ?? undefined,
-              });
-              settle(updated);
+              settle(await runStep(claimId, step, idempotencyKey, text));
               toast.success(t("changed"));
             } catch (error) {
               toast.error(problemMessage(error, t("failed")));
@@ -309,16 +336,17 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           title={t("overrideTitle")}
           description={t("overrideBody", { no: claim.claimNo, rule: tClaims(`liabilities.${claim.liabilityByRule}`) })}
           submitLabel={t("save")}
-          onClose={() => setOverriding(false)}
+          onClose={() => setOverriding(null)}
           onSubmit={async () => {
-            if (reason.trim().length < 3) throw new FormError(t("needReason"));
+            // OverrideLiabilityDto.reason is at least 10 characters.
+            if (reason.trim().length < 10) throw new FormError(t("needOverrideReason"));
             try {
-              const { etag } = await readClaim(claimId);
-              const updated = await browserRequests().call("POST /v1/admin/claims/{claimId}/liability", {
-                path: { claimId },
-                body: { liability, reason: reason.trim() },
-                etag: etag ?? undefined,
-              });
+              const updated = (
+                await adminBrowserApis().contract.POST("/v1/admin/claims/{claimId}/actions/override-liability", {
+                  params: { path: { claimId }, header: { "Idempotency-Key": overriding.key } },
+                  body: { liability, reason: reason.trim() },
+                })
+              ).data!;
               settle(updated);
               toast.success(t("saved"));
             } catch (error) {
@@ -333,7 +361,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
               options={LIABILITIES.map((value) => ({ value, label: tClaims(`liabilities.${value}`) }))}
             />
           </Field>
-          <Field label={t("reason")} required>
+          <Field label={t("reason")} hint={t("overrideHint")} required>
             <Textarea rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />
           </Field>
         </FormDialog>
@@ -348,17 +376,26 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           onSubmit={async () => {
             if (!resolution) throw new FormError(t("needResolution"));
             if (WITH_AMOUNT.has(resolution) && !(Number(amount) > 0)) throw new FormError(t("needAmount"));
-            if (note.trim().length < 3) throw new FormError(t("needReason"));
+            const pieces = resolution === "reproduction_job" && quantity ? Math.trunc(Number(quantity)) : undefined;
+            if (pieces !== undefined && !(pieces >= 1)) throw new FormError(t("needQuantity"));
             try {
-              const updated = await browserRequests().call("POST /v1/admin/claims/{claimId}/resolutions", {
-                path: { claimId },
-                body: {
-                  action: resolution,
-                  amount: WITH_AMOUNT.has(resolution) ? Number(amount).toFixed(2) : null,
-                  note: note.trim(),
-                },
-                idempotencyKey: resolving.key,
-              });
+              // One action per run here; `ResolveClaimDto` takes up to six in one transaction. A refund
+              // names no payment — the order's payments are not listed by order (CONTRACT-GAP admin.orders).
+              const updated = (
+                await adminBrowserApis().contract.POST("/v1/admin/claims/{claimId}/actions/resolve", {
+                  params: { path: { claimId }, header: { "Idempotency-Key": resolving.key } },
+                  body: {
+                    actions: [
+                      {
+                        action: resolution,
+                        ...(WITH_AMOUNT.has(resolution) ? { amount: Number(amount).toFixed(2) } : {}),
+                        ...(pieces !== undefined ? { quantity: pieces } : {}),
+                        ...(note.trim() ? { note: note.trim() } : {}),
+                      },
+                    ],
+                  },
+                })
+              ).data!;
               settle(updated);
               toast.success(t("executed"));
             } catch (error) {
@@ -370,7 +407,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
             <Select
               value={resolution || undefined}
               onValueChange={(value) => setResolution(value as Resolution)}
-              options={claim.allowedResolutions.map((value) => ({ value, label: t(`resolutionActions.${value}`) }))}
+              options={resolutions.map((value) => ({ value, label: t(`resolutionActions.${value}`) }))}
             />
           </Field>
           {resolution && WITH_AMOUNT.has(resolution) ? (
@@ -384,7 +421,12 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
               />
             </Field>
           ) : null}
-          <Field label={t("note")} required>
+          {resolution === "reproduction_job" ? (
+            <Field label={t("reproduceQuantity")} hint={t("optional")}>
+              <NumberInput min={1} value={quantity} onChange={(event) => setQuantity(event.target.value)} />
+            </Field>
+          ) : null}
+          <Field label={t("note")} hint={t("optional")}>
             <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
           </Field>
         </FormDialog>

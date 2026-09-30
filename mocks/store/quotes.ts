@@ -598,6 +598,7 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     productAmount: null,
     designFeeAmount: null,
     structureDesignFeeAmount: null,
+    toolingAmount: null,
     shippingAmount: null,
     vatAmount: null,
     grossAmount: null,
@@ -630,6 +631,8 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     productAmount: baht(productGross),
     designFeeAmount: baht(designNet + vat(designNet)),
     structureDesignFeeAmount: baht(structureNet + vat(structureNet)),
+    // The mock prices no plates or die blocks (v0.3.0 `toolingAmount`); the engine does.
+    toolingAmount: baht(0),
     shippingAmount: baht(shippingGross),
     vatAmount: baht(vat(productNet) + vat(designNet) + vat(structureNet) + vat(shippingNet)),
     grossAmount: baht(productGross + designNet + vat(designNet) + structureNet + vat(structureNet) + shippingGross),
@@ -643,6 +646,28 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     shippingPending: !postcode,
     shippingPendingReason: postcode ? null : "no_postcode",
   };
+}
+
+/**
+ * The same fake engine for the CS desk's published calculators (`../admin/sales.ts`, U-F0.3): a box
+ * priced per quantity, so the back office and the storefront answer alike for the same spec.
+ */
+export function boxStepsOf(
+  calculator: "folding" | "corrugate",
+  box: { l: number; w: number; d: number; colours: number; extras: number; materialFactor: number },
+  design: { graphic: boolean; structure: boolean },
+  quantities: number[],
+  postcode: string | undefined,
+): Step[] {
+  const inputs = {
+    configurator: { calculator, size: { kind: "box" } } as unknown as Configurator,
+    product: {} as Row,
+    gusset: 0,
+    quantities,
+    ...box,
+    ...design,
+  } satisfies Inputs;
+  return quantities.map((quantity) => stepOf(inputs, quantity, postcode));
 }
 
 /* ------------------------------------------------------------------------------ saved quotes */

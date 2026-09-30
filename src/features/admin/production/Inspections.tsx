@@ -1,14 +1,12 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { INSPECTION_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
@@ -16,19 +14,41 @@ import { Field } from "@/ui/components/Field";
 import { NumberInput, Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
-import { ConfirmAction, problemMessage, ResourceList, StatusChip, useCan, type InitialPage } from "../console";
+import {
+  adminBrowserApis,
+  ConfirmAction,
+  problemMessage,
+  ResourceList,
+  StatusChip,
+  useCan,
+  type InitialPage,
+} from "../console";
 import { inspectionsList, type Inspection } from "../partners/resources";
+
+type Grade = "critical" | "major" | "minor";
+
+/**
+ * A count from the inspection's accept or found map. CONTRACT-GAP admin.inspections — they are free
+ * maps on the published `InspectionDto`, not typed `{critical, major, minor}` objects (U-B0.2).
+ */
+function countOf(map: Inspection["accept"] | null, grade: Grade): string {
+  const value = map?.[grade];
+  return typeof value === "number" ? String(value) : "–";
+}
 
 /**
  * Packio's risk-based QC inspections (D-076): why each job was selected, the ISO 2859-1 sample and
  * the accept numbers per defect class, and recording what was found — the API judges pass or fail
  * against those numbers; the result feeds the factory's scorecard.
+ *
+ * Not on the published inspection (CONTRACT-GAP admin.inspections): the order and product type,
+ * the factory's name (its code only), the AQL per class and the inspector as a person.
  */
 export function Inspections({ initial }: { initial: InitialPage<Inspection> | null }) {
   const t = useTranslations("production.inspections");
   const tStatus = useTranslations("status");
   const format = useFormat();
-  const canInspect = useCan("qc.inspect");
+  const canInspect = useCan("inspections.perform");
   const queryClient = useQueryClient();
   const [recording, setRecording] = useState<Inspection | null>(null);
   const [found, setFound] = useState({ critical: "0", major: "0", minor: "0" });
@@ -40,10 +60,8 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
       header: t("columns.job"),
       cell: (row) => (
         <div>
-          <Link href={`/orders/${row.order.id}?tab=production`} className="text-primary font-mono hover:underline">
-            {row.job.jobNo}
-          </Link>
-          <p className="text-muted text-xs">{row.factory.name}</p>
+          <span className="font-mono">{row.jobNo}</span>
+          <p className="text-muted text-xs">{row.factoryCode}</p>
         </div>
       ),
     },
@@ -68,9 +86,9 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
           {t("sample", { sample: format.number(row.sampleSize), lot: format.number(row.lotSize) })}
           <span className="text-muted block text-xs">
             {t("accept", {
-              critical: row.acceptNumbers.critical,
-              major: row.acceptNumbers.major,
-              minor: row.acceptNumbers.minor,
+              critical: countOf(row.accept, "critical"),
+              major: countOf(row.accept, "major"),
+              minor: countOf(row.accept, "minor"),
             })}
           </span>
         </span>
@@ -81,7 +99,11 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
       header: t("columns.found"),
       cell: (row) =>
         row.found
-          ? t("foundValue", { critical: row.found.critical, major: row.found.major, minor: row.found.minor })
+          ? t("foundValue", {
+              critical: countOf(row.found, "critical"),
+              major: countOf(row.found, "major"),
+              minor: countOf(row.found, "minor"),
+            })
           : "–",
     },
     {
@@ -92,8 +114,12 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
     {
       id: "when",
       header: t("columns.when"),
-      cell: (row) =>
-        row.resultAt ? <When at={row.resultAt} /> : row.scheduledAt ? <When at={row.scheduledAt} /> : "–",
+      cell: (row) => (
+        <span className="text-sm">
+          {row.resultAt ? <When at={row.resultAt} /> : row.scheduledAt ? <When at={row.scheduledAt} /> : "–"}
+          {row.inspector ? <span className="text-muted block text-xs">{row.inspector}</span> : null}
+        </span>
+      ),
     },
     ...(canInspect
       ? [
@@ -111,7 +137,7 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
                     setRecording(row);
                   }}
                 >
-                  {t("recordFor", { job: row.job.jobNo })}
+                  {t("recordFor", { job: row.jobNo })}
                 </Button>
               ) : null,
           },
@@ -142,31 +168,35 @@ export function Inspections({ initial }: { initial: InitialPage<Inspection> | nu
       <ConfirmAction
         open={recording !== null}
         onOpenChange={(open) => (open ? undefined : setRecording(null))}
-        title={recording ? t("recordTitle", { job: recording.job.jobNo }) : ""}
+        title={recording ? t("recordTitle", { job: recording.jobNo }) : ""}
         description={
           recording
             ? t("recordBody", {
-                job: recording.job.jobNo,
-                factory: recording.factory.name,
+                job: recording.jobNo,
+                factory: recording.factoryCode,
                 sample: recording.sampleSize,
-                critical: recording.acceptNumbers.critical,
-                major: recording.acceptNumbers.major,
-                minor: recording.acceptNumbers.minor,
+                critical: countOf(recording.accept, "critical"),
+                major: countOf(recording.accept, "major"),
+                minor: countOf(recording.accept, "minor"),
               })
             : ""
         }
         confirmLabel={t("record")}
-        onConfirm={async ({ idempotencyKey }) => {
+        onConfirm={async () => {
           if (!recording) return;
           try {
-            const result = await browserRequests().call("POST /v1/admin/inspections/{inspectionId}/actions/record", {
-              path: { inspectionId: recording.id },
-              body: {
-                found: { critical: Number(found.critical), major: Number(found.major), minor: Number(found.minor) },
-                ...(notes.trim() ? { notes: notes.trim() } : {}),
-              },
-              idempotencyKey,
-            });
+            // admin.inspections.record takes flat counts and declares no Idempotency-Key.
+            const result = (
+              await adminBrowserApis().contract.POST("/v1/admin/inspections/{inspectionId}/actions/record", {
+                params: { path: { inspectionId: recording.id } },
+                body: {
+                  foundCritical: Math.trunc(Number(found.critical) || 0),
+                  foundMajor: Math.trunc(Number(found.major) || 0),
+                  foundMinor: Math.trunc(Number(found.minor) || 0),
+                  ...(notes.trim() ? { notes: notes.trim() } : {}),
+                },
+              })
+            ).data!;
             toast.success(result.status === "passed" ? t("passed") : t("failed"));
             void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "inspection") });
           } catch (error) {

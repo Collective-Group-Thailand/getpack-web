@@ -16,7 +16,10 @@
     "promised": "กำหนดส่ง",
     "atRisk": "เสี่ยงล่าช้า",
     "predicted": "คาดว่าเสร็จ {date}",
-    "empty": "ไม่มีงาน"
+    "empty": "ไม่มีงาน",
+    "awaiting": "รอโรงงานรับงาน",
+    "pieces": "{quantity} ชิ้น",
+    "truncated": "แสดง {count} งานแรก"
   },
   "inspections": {
     "title": "งานตรวจคุณภาพ",
@@ -56,8 +59,7 @@
   },
   "scorecards": {
     "title": "คะแนนโรงงาน",
-    "description": "คะแนนรายเดือนที่โรงงานเห็นเหมือนกัน ใช้จัดลำดับการจ่ายงาน (D-155, D-075)",
-    "month": "เดือน {month}",
+    "description": "คะแนนรายเดือนของโรงงาน 12 เดือนล่าสุด ที่โรงงานเห็นเหมือนกัน ใช้จัดลำดับการจ่ายงาน (D-155, D-075)",
     "factory": "โรงงาน",
     "jobs": "จำนวนงาน",
     "metrics": {
@@ -66,6 +68,9 @@
       "qcFirstPassPct": "QC ผ่านครั้งแรก",
       "onTimeUpdatesPct": "อัปเดตตรงเวลา",
       "claimRatePct": "อัตราเคลม"
-    }
+    },
+    "monthColumn": "เดือน",
+    "openFactory": "เปิดโรงงาน {code}",
+    "caption": "คะแนนโรงงาน {code}"
   }
 }

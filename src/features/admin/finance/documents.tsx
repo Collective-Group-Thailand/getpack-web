@@ -133,7 +133,6 @@ export function DocumentsRegister({ initial }: { initial: InitialPage<CustomerDo
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         filters={[
           {
             id: "status",

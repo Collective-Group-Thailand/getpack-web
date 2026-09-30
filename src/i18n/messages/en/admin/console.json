@@ -41,49 +41,6 @@
     "linkCopied": "Link copied",
     "linkCopyFailed": "Could not copy — copy it from the address bar"
   },
-  "export": {
-    "label": "Export",
-    "xlsx": "Excel (.xlsx)",
-    "csv": "CSV",
-    "failed": "Export failed",
-    "truncated": "Only the first {rows} rows were exported. Narrow the filters."
-  },
-  "import": {
-    "open": "Import from Excel",
-    "title": "Import from Excel",
-    "description": "Upload, check the preview, then confirm. Nothing is saved until you confirm.",
-    "dropPrompt": "Drop an Excel file here, or",
-    "browse": "choose a file",
-    "dropHint": ".xlsx up to {size}",
-    "tooLarge": "{name} is larger than {size}",
-    "wrongType": "{name} is not an .xlsx file",
-    "template": "Download a blank template",
-    "checking": "Checking the file",
-    "uploadFailed": "Upload or check failed",
-    "row": "Row",
-    "action": "Result",
-    "problems": "Problems",
-    "invalid": "Invalid",
-    "actions": {
-      "create": "Create",
-      "update": "Update",
-      "skip": "Skip"
-    },
-    "totals": {
-      "rows": "Rows",
-      "create": "New",
-      "update": "Updated",
-      "invalid": "Invalid"
-    },
-    "invalidTitle": "Some rows are invalid",
-    "invalidBody": "Invalid rows will be skipped. Fix them in the file and import again.",
-    "previewCaption": "Preview of {file}",
-    "chooseAnother": "Choose another file",
-    "apply": "Import {count, plural, one {# row} other {# rows}}",
-    "applyFailed": "Import failed",
-    "appliedTitle": "Import complete",
-    "appliedBody": "{create} created, {update} updated"
-  },
   "queues": {
     "overdue": "{count} overdue"
   },
@@ -151,7 +108,7 @@
     "required": "This is required",
     "taxId": "A 13-digit tax ID",
     "branchCode": "A 5-digit branch code",
-    "code": "3+ capitals, digits, - or _",
+    "code": "Lower case, digits, - or _; at least 2",
     "amount": "An amount, e.g. 150000 or 150000.50",
     "json": "Invalid JSON"
   }

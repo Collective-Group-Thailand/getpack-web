@@ -1,6 +1,6 @@
 /**
- * A customer's points and consents, mocked (CONTRACT-REQUEST admin.customer-loyalty,
- * admin.customer-consents).
+ * A customer's points on the published contract (`admin.loyalty.get`, `admin.loyalty.ledger`,
+ * U-F0.3) and consents (CONTRACT-REQUEST admin.customer-consents).
  *
  * The ledger is append-only and adds up to the balance the customer detail reports; baht values
  * use the point value in force (`loyalty.point_value`, D-131), and earnings wait for completion
@@ -8,9 +8,11 @@
  * seeded identities (`prisma/seed/data/reference.ts`).
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
-import type { customerConsent, pointsEntry } from "@/lib/api/requests/admin-customers";
+import type { customerConsent } from "@/lib/api/requests/admin-customers";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can } from "../personas";
@@ -19,7 +21,11 @@ import { bangkokIso, mockId, paginate, problem } from "../support";
 import { customers } from "./commerce";
 import { settingValue } from "./platform";
 
-type Entry = z.output<typeof pointsEntry>;
+/** A ledger line as the fixture keeps it (with the order it came from); served as `PointsEntryDto`. */
+type Entry = Omit<Schemas["PointsEntryDto"], "orderCode" | "groupCode" | "reason"> & {
+  order: { id: string; orderCode: string } | null;
+  note: string | null;
+};
 type Consent = z.output<typeof customerConsent>;
 
 const DAY = 24 * 60;
@@ -119,17 +125,22 @@ function consentsOf(index: number): Consent[] {
   });
 }
 
-function customerIndex(request: Request, customerId: string | undefined): number | Response {
+function customerIndex(
+  request: Request,
+  customerId: string | undefined,
+  permission = "customers.read",
+): number | Response {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, "customers.read")) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
+  if (!who || !can(who, permission)) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
   const index = customers.findIndex((customer) => customer.id === customerId);
   return index < 0 ? problem(404, "http.not_found", "ไม่พบลูกค้านี้") : index;
 }
 
 export const loyaltyHandlers = [
-  mockRequest("GET /v1/admin/customers/{customerId}/points", ({ params, query, request }) => {
-    const index = customerIndex(request, params.customerId);
+  http.get("*/v1/admin/customers/:customerId/loyalty", ({ params, request }) => {
+    const index = customerIndex(request, params.customerId as string, "loyalty.read");
     if (index instanceof Response) return index;
+    const customer = customers[index]!;
     const entries = ledgerOf(index);
     const { reminderDaysBefore } = settingValue<{ reminderDaysBefore: number }>("loyalty.points_expiry");
     const soon = entries.filter(
@@ -139,25 +150,36 @@ export const loyaltyHandlers = [
         entry.expiresAt !== null &&
         Date.parse(entry.expiresAt) - Date.now() < reminderDaysBefore * DAY * 60_000,
     );
-    const available = customers[index]!.loyalty.availablePoints;
     const pending = entries.filter((entry) => entry.status === "pending").reduce((sum, entry) => sum + entry.points, 0);
-    const page = paginate(
-      entries.filter((entry) => !query.entryType || entry.entryType === query.entryType),
-      query,
-    );
-    return {
-      ...page,
-      balance: {
-        available,
-        pending,
-        expiringSoon: Math.min(
-          available,
-          soon.reduce((sum, entry) => sum + entry.points, 0),
-        ),
-        expiringSoonAt: soon[0]?.expiresAt ?? null,
-        availableBahtValue: value(available),
-      },
+    const body: Schemas["LoyaltySummaryDto"] = {
+      tier: customer.loyalty.tier,
+      availablePoints: customer.loyalty.availablePoints,
+      availableValue: value(customer.loyalty.availablePoints),
+      pendingPoints: pending,
+      expiringSoon: soon.map((entry) => ({ points: entry.points, expiresAt: entry.expiresAt! })),
+      spend12m: customer.loyalty.spend12m,
+      pointValue: settingValue<string>("loyalty.point_value"),
+      multiplier: customer.loyalty.tier === "silver" ? "1.25" : customer.loyalty.tier === "gold" ? "1.50" : "1.00",
+      currency: "THB",
     };
+    return HttpResponse.json(body);
+  }),
+  http.get("*/v1/admin/customers/:customerId/loyalty/ledger", ({ params, request }) => {
+    const index = customerIndex(request, params.customerId as string, "loyalty.read");
+    if (index instanceof Response) return index;
+    const url = new URL(request.url);
+    const rows: Schemas["PointsEntryDto"][] = ledgerOf(index).map(({ order, note, ...entry }) => ({
+      ...entry,
+      orderCode: order?.orderCode ?? null,
+      groupCode: null,
+      reason: note,
+    }));
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
+    );
   }),
   mockRequest("GET /v1/admin/customers/{customerId}/consents", ({ params, request }) => {
     const index = customerIndex(request, params.customerId);

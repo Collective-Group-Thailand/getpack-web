@@ -16,7 +16,10 @@
     "promised": "Promised",
     "atRisk": "At risk",
     "predicted": "forecast {date}",
-    "empty": "No jobs"
+    "empty": "No jobs",
+    "awaiting": "Awaiting acceptance",
+    "pieces": "{quantity} pcs",
+    "truncated": "Showing the first {count} jobs"
   },
   "inspections": {
     "title": "QC inspections",
@@ -56,8 +59,7 @@
   },
   "scorecards": {
     "title": "Factory scorecards",
-    "description": "The monthly card the factory also sees; used in allocation (D-155, D-075)",
-    "month": "Month {month}",
+    "description": "A factory's monthly scorecard over the latest 12 months, the same the factory sees, weighed in allocation (D-155, D-075)",
     "factory": "Factory",
     "jobs": "Jobs",
     "metrics": {
@@ -66,6 +68,9 @@
       "qcFirstPassPct": "QC first pass",
       "onTimeUpdatesPct": "On-time updates",
       "claimRatePct": "Claim rate"
-    }
+    },
+    "monthColumn": "Month",
+    "openFactory": "Open factory {code}",
+    "caption": "Scorecards of {code}"
   }
 }

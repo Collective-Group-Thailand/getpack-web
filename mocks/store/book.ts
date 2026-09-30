@@ -4,24 +4,22 @@
  * under `If-Match`.
  *
  * The returning customer's book **is** the first fake commerce customer's (`../admin/commerce`),
- * the same arrays the back office's customer screen reads (still in the admin request shape until
- * U-F0.3), so an address edited here is one CS sees. The newcomer starts with an empty book on
+ * the same arrays the back office's customer screen reads (`../admin/customers.ts`), so an address
+ * edited here is one CS sees. The newcomer starts with an empty book on
  * every sign-in. Create is left to the generated example: the web cannot send a province id yet
  * (CONTRACT-GAP store.geo-ids).
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
-
-import type { customerAddress, taxProfile } from "@/lib/api/requests/admin-customers";
 import type { Schemas } from "@/lib/api/types";
 
 import { customers as fakeCustomers } from "../admin/commerce";
+import type { CustomerAddressRow, TaxProfileRow } from "../admin/customer-model";
 import { mockId, paginate, precondition, problem, versionTag, withEtag } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 
-type Address = z.output<typeof customerAddress>;
-type TaxProfile = z.output<typeof taxProfile>;
+type Address = CustomerAddressRow;
+type TaxProfile = TaxProfileRow;
 
 const newcomer = { addresses: [] as Address[], taxProfiles: [] as TaxProfile[] };
 
@@ -72,7 +70,7 @@ export function toAddressDto(address: Address): Schemas["AddressDto"] {
 }
 
 /** The row's one-line address is split back into what the contract holds. */
-function toTaxProfileDto(profile: TaxProfile): Schemas["TaxProfileDto"] {
+export function toTaxProfileDto(profile: TaxProfile): Schemas["TaxProfileDto"] {
   const postcode = profile.address.match(/(\d{5})\s*$/)?.[1] ?? "10110";
   const province = PROVINCES.find((name) => profile.address.includes(name)) ?? "กรุงเทพมหานคร";
   const line1 = profile.address.replace(postcode, "").replace(province, "").trim() || profile.address;

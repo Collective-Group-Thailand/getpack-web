@@ -8,7 +8,8 @@ import { gotoHydrated, signInAsStaff } from "./helpers/session";
  * F2 2.4 — prepress and design services, against the mock API.
  *
  * Prepress state hangs off the commerce mock's orders (`…-6f7264` + the order's number in hex),
- * and each test that changes state uses an order no other test reads.
+ * and each test that changes state uses an order no other test reads. The desk is packio-api's
+ * queues and the workspace is composed from the published artwork resources (U-F0.3).
  */
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -32,10 +33,10 @@ async function attach(scope: Locator, index = 0) {
 const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("..");
 
 test.describe("the prepress desk", () => {
-  test("opens on a stage with its SLA and the preflight result", async ({ page }) => {
+  test("opens on the files to review with their SLA and the preflight result", async ({ page }) => {
     await signInAsStaff(page, "prepress");
-    await gotoHydrated(page, `${HOSTS.admin}/prepress?queue=preflight`);
-    await expect(page.getByRole("link", { name: /^ตรวจไฟล์ \(preflight\)/ })).toHaveAttribute("aria-current", "page");
+    await gotoHydrated(page, `${HOSTS.admin}/prepress`);
+    await expect(page.getByRole("link", { name: /^ไฟล์รอตรวจ \(preflight\)/ })).toHaveAttribute("aria-current", "page");
     const table = page.getByRole("table", { name: "งานก่อนพิมพ์" });
     await expect(table).toContainText("ไม่ผ่าน ต้องแก้ไฟล์");
     await expect(table).toContainText("ผ่านแต่มีคำเตือน");
@@ -58,21 +59,25 @@ test.describe("preflight (D-070)", () => {
     await dialog.getByRole("button", { name: "ส่งคืน" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByRole("main")).toContainText("ส่งคืนให้แก้ไข");
-    await expect(header(page)).toContainText("รอไฟล์งาน");
+    // packio-api puts the order's artwork into changes_requested (D-070).
+    await expect(header(page)).toContainText("ขอให้แก้ไขไฟล์");
   });
 
-  test("accepting a file with warnings asks why it is acceptable", async ({ page }) => {
+  test("accepting a file with warnings names them, then a proof is offered", async ({ page }) => {
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(14)}`);
     await page.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
     const dialog = page.getByRole("alertdialog", { name: "รับไฟล์ฉบับที่ 1 ไปทำปรู๊ฟ" });
     await expect(dialog).toContainText("ข้อควรระวัง 2 ข้อ");
     await dialog.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
-    await expect(dialog).toContainText("กรุณาระบุเหตุผล");
-    await dialog.getByLabel(/^เหตุผลที่รับได้/).fill("ภาพพื้นหลังเป็นลายจาง ความละเอียดพอสำหรับงานนี้");
-    await dialog.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "อัปโหลดและส่งปรู๊ฟ" })).toBeVisible();
+  });
+
+  test("accepting a file with warnings asks why it is acceptable", async ({ page }) => {
+    // CONTRACT-GAP admin.prepress-actions — admin.artwork.accept takes no body, so no acknowledgement note.
+    test.fixme(true, "CONTRACT-GAP admin.prepress-actions — accepting records no acknowledgement of the warnings");
+    await signInAsStaff(page, "prepress");
   });
 });
 
@@ -80,8 +85,8 @@ test.describe("proofs", () => {
   test("a proof is uploaded, restating the order, and sent as a new version", async ({ page }) => {
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(16)}`);
-    // The customer's online design, read-only, beside the files it produced.
-    await expect(page.getByRole("img", { name: /^ตัวอย่างแบบ/ })).toBeVisible();
+    // CONTRACT-GAP admin.prepress — the order does not reference its online design, so the
+    // read-only preview beside the files is no longer shown.
     const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
 
     await page.getByRole("button", { name: "อัปโหลดและส่งปรู๊ฟ" }).click();
@@ -153,7 +158,12 @@ test.describe("template & dieline", () => {
 });
 
 test.describe("every 2.4 screen is axe-clean", () => {
-  for (const path of [`/prepress`, `/prepress/${order(20)}?tab=mockup`, `/prepress/${order(19)}`]) {
+  // The mockup tab is gone: D-192 replaces the mockup with the sample (U2.F).
+  for (const path of [
+    `/prepress?kind=proofs_waiting`,
+    `/prepress/${order(20)}?tab=template`,
+    `/prepress/${order(19)}`,
+  ]) {
     test(path, async ({ page }) => {
       await signInAsStaff(page, "prepress");
       await gotoHydrated(page, `${HOSTS.admin}${path}`);

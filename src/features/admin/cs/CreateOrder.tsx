@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { MEMO_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
@@ -22,26 +23,39 @@ import { Select } from "@/ui/components/Select";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
-import { problemMessage, QueryError } from "../console";
+import { adminBrowserApis, problemMessage, QueryError, StatusChip, useCan } from "../console";
+import { useGeoName, usePostcodeAreas } from "../customers/geo";
 
-type DesignOption = "own_file" | "online_designer" | "hired_design" | "free_design";
-type MockupOption = "none" | "with_print" | "without_print";
+type DesignOption = Schemas["DesignOption"];
+type MockupOption = Schemas["MockupOption"];
+type Memo = Schemas["DiscountMemoDto"];
 
 /**
- * CS places an order on a customer's behalf (F2 2.2, B3.1, legacy `create_order_modal`), from a
- * saved quotation: where it goes (split across addresses, which must add up to the quantity), who
- * the tax invoice is for, how the artwork arrives, and the PO number.
+ * CS places an order for a customer (F2 2.2) the way packio-api publishes it (`admin.cart.*`,
+ * `admin.checkout.place`): the quotation's option goes into the customer's cart with its
+ * destinations, and the cart is checked out. A discount is given at checkout — up to the CS limit
+ * on CS's own, above it through a discount memo that prices the cart (D-052, D-162); the API says
+ * which, since the limit is its setting (`discounts.cs_limit_pct`, not in the input data —
+ * CONTRACT-GAP admin.cs-calculators).
  *
- * One idempotency key for the life of this form: a double click, or a retry after a timeout,
- * creates one order group, not two (api-conventions §3).
+ * Checkout takes the customer's whole cart, so the page will not place while the cart holds
+ * anything else: CS removes it first, or the customer checks it out themselves.
  */
-export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: number }) {
+export function CreateOrder({
+  quoteId,
+  optionId,
+  quantity,
+}: {
+  quoteId: string;
+  optionId?: string;
+  quantity?: number;
+}) {
   const t = useTranslations("cs.createOrder");
   const tCommon = useTranslations("common");
   const format = useFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [idempotencyKey] = useState(newIdempotencyKey);
+  const canMemo = useCan("discount_memos.request");
   const [split, setSplit] = useState<Record<string, number>>({});
   const [taxProfileId, setTaxProfileId] = useState<string>("none");
   const [designOption, setDesignOption] = useState<DesignOption>("own_file");
@@ -49,60 +63,174 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
   const [poNumber, setPoNumber] = useState("");
   const [cc, setCc] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [discount, setDiscount] = useState("");
+  const [memo, setMemo] = useState<Memo | null>(null);
+  const [memoOpen, setMemoOpen] = useState(false);
+  const [aboveLimit, setAboveLimit] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
 
   const quote = useQuery({
     queryKey: queryKeys.detail("admin", "quote", quoteId),
-    queryFn: () => browserRequests().call("GET /v1/admin/quotations/{quoteId}", { path: { quoteId } }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/quotes/{quoteId}", { params: { path: { quoteId } } })).data!,
   });
-  const customerId = quote.data?.customer.id;
+  const customerId = quote.data?.customer?.id;
+  const path = { customerId: customerId ?? "" };
   const customer = useQuery({
     queryKey: queryKeys.detail("admin", "customer", customerId ?? ""),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/customers/{customerId}", { path: { customerId: customerId! } }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}", { params: { path } })).data!,
     enabled: Boolean(customerId),
   });
+  const addressBook = useQuery({
+    queryKey: queryKeys.related("admin", "customer", customerId ?? "", "addresses"),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/addresses", {
+          params: { path, query: { perPage: 100 } },
+        })
+      ).data!,
+    enabled: Boolean(customerId),
+  });
+  const taxProfiles = useQuery({
+    queryKey: queryKeys.related("admin", "customer", customerId ?? "", "tax_profiles"),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/tax-profiles", {
+          params: { path, query: { perPage: 100 } },
+        })
+      ).data!,
+    enabled: Boolean(customerId),
+  });
+  const cartKey = queryKeys.related("admin", "customer", customerId ?? "", "cart");
+  const cart = useQuery({
+    queryKey: cartKey,
+    queryFn: async () => {
+      const { data, response } = await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/cart", {
+        params: { path },
+      });
+      return { cart: data!, etag: response.headers.get("ETag") };
+    },
+    enabled: Boolean(customerId),
+  });
+  const geoName = useGeoName();
 
+  const option =
+    quote.data?.options.find((candidate) => candidate.id === optionId) ??
+    quote.data?.options.find((candidate) => candidate.quantity === quantity) ??
+    quote.data?.options[0];
   const ccList = cc.split(/[,\s]+/).filter(Boolean);
   const destinations = Object.entries(split).filter(([, value]) => value > 0);
   const total = destinations.reduce((sum, [, value]) => sum + value, 0);
+  const others = (cart.data?.cart.items ?? []).filter((item) => item.quoteOptionId !== option?.id);
+  const discountValid = discount === "" || /^\d+(\.\d{1,2})?$/.test(discount);
+
+  const removeOther = useMutation({
+    mutationFn: async (itemId: string) =>
+      (
+        await adminBrowserApis().contract.DELETE("/v1/admin/customers/{customerId}/cart/items/{itemId}", {
+          params: { path: { ...path, itemId } },
+        })
+      ).data!,
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: cartKey }),
+  });
+
+  /** The option in the cart with these destinations — added once, then kept for a retry. */
+  async function ensureInCart() {
+    const current = cart.data!;
+    if (current.cart.items.some((item) => item.quoteOptionId === option!.id)) return;
+    await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/cart/items", {
+      params: { path, header: { "If-Match": current.etag ?? "" } },
+      body: {
+        quoteId,
+        quoteOptionId: option!.id,
+        designOption,
+        mockupOption,
+        destinations: destinations.map(([addressId, value]) => ({ addressId, quantity: value })),
+      },
+    });
+    await queryClient.invalidateQueries({ queryKey: cartKey });
+  }
 
   const place = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/orders", {
-        body: {
-          quoteId,
-          quantity,
-          customerId: customerId!,
-          destinations: destinations.map(([addressId, value]) => ({ addressId, quantity: value })),
-          taxProfileId: taxProfileId === "none" ? null : taxProfileId,
-          designOption,
-          mockupOption,
-          ...(poNumber ? { poNumber } : {}),
-          ccEmails: ccList,
-          ...(remarks ? { csRemarks: remarks } : {}),
-        },
-        idempotencyKey,
-      }),
-    onSuccess: (created) => {
-      toast.success(t("placed", { code: created.groupCode }));
+    mutationFn: async () => {
+      await ensureInCart();
+      const approved = memo?.status === "approved";
+      return (
+        await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/checkout", {
+          // A new key per attempt: a retry after a refusal sends a different body.
+          params: { path, header: { "Idempotency-Key": newIdempotencyKey() } },
+          body: {
+            taxProfileId: taxProfileId === "none" ? null : taxProfileId,
+            ...(poNumber ? { poNumber } : {}),
+            ccEmails: ccList,
+            ...(remarks ? { csRemarks: remarks } : {}),
+            ...(approved ? { discountMemoId: memo.id } : discount ? { csDiscountPct: discount } : {}),
+          },
+        })
+      ).data!;
+    },
+    onSuccess: (group) => {
+      toast.success(t("placed", { code: group.groupCode }));
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "order") });
-      const first = created.orders[0];
+      const first = group.orders[0];
       router.push(first ? `/orders/${first.id}` : "/orders");
+    },
+    onError: (error) => {
+      if (isApiError(error) && error.code === "discounts.cs_limit_exceeded") setAboveLimit(true);
     },
   });
 
-  if (quote.isError) return <QueryError error={quote.error} onRetry={() => void quote.refetch()} />;
-  if (!quote.data || !customer.data) return <Skeleton className="h-96" />;
+  const refreshMemo = useMutation({
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/discount-memos/{memoId}", {
+          params: { path: { memoId: memo!.id } },
+        })
+      ).data!,
+    onSuccess: setMemo,
+  });
 
-  const option = quote.data.options.find((candidate) => candidate.quantity === quantity) ?? quote.data.options[0]!;
-  const addresses = customer.data.addresses.filter((address) => address.kind === "delivery");
+  if (quote.isError) return <QueryError error={quote.error} onRetry={() => void quote.refetch()} />;
+  if (!quote.data || !option) return <Skeleton className="h-96" />;
+  if (!customerId) return <Callout tone="warning" title={t("noCustomer")} />;
+  if (!customer.data || !addressBook.data || !taxProfiles.data || !cart.data) return <Skeleton className="h-96" />;
+
+  const addresses = addressBook.data.data.filter((address) => address.kind === "delivery");
   const juristic = customer.data.customerType !== "individual";
-  const ready = total === quantity && destinations.length > 0 && ccList.every((email) => /^\S+@\S+\.\S+$/.test(email));
+  const ready =
+    total === option.quantity &&
+    destinations.length > 0 &&
+    others.length === 0 &&
+    discountValid &&
+    (!memo || memo.status === "approved") &&
+    ccList.every((email) => /^\S+@\S+\.\S+$/.test(email));
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="flex flex-col gap-4">
+        {others.length > 0 ? (
+          <Callout tone="warning" title={t("cartBusy", { count: others.length })}>
+            <ul className="mt-2 space-y-1 text-sm">
+              {others.map((item) => (
+                <li key={item.id} className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono">{item.quoteCode ?? item.quoteId.slice(0, 8)}</span>
+                  <span>
+                    {format.number(item.quantity)} · {format.thb(item.productGrossAmount)}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    loading={removeOther.isPending && removeOther.variables === item.id}
+                    onClick={() => removeOther.mutate(item.id)}
+                  >
+                    {t("removeFromCart")}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </Callout>
+        ) : null}
         <Card padding="lg">
           <CardHeader className="flex items-center justify-between gap-2">
             <CardTitle>{t("destinations")}</CardTitle>
@@ -110,24 +238,28 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
               {t("addAddress")}
             </Button>
           </CardHeader>
-          <p className="text-muted mb-3 text-sm">{t("destinationsHint", { quantity: format.number(quantity) })}</p>
           {addresses.length === 0 ? (
-            <Callout tone="warning" title={t("noAddress")} />
+            <p className="text-muted text-sm">{t("noAddress")}</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {addresses.map((address) => (
                 <li
                   key={address.id}
-                  className="border-border flex flex-wrap items-end justify-between gap-3 rounded-lg border p-3 text-sm"
+                  className="border-border flex flex-wrap items-end justify-between gap-3 rounded-lg border p-3"
                 >
-                  <div className="min-w-0">
+                  <div className="min-w-0 text-sm">
                     <p className="font-medium">
                       {address.label}
-                      {" · "}
-                      {address.recipientName}
+                      <span className="text-muted font-normal"> · {address.recipientName}</span>
                     </p>
                     <p className="text-muted">
-                      {[address.line1, address.line2, address.district, address.province, address.postcode]
+                      {[
+                        address.line1,
+                        address.line2,
+                        geoName(address.subdistrict),
+                        geoName(address.province),
+                        address.postcode,
+                      ]
                         .filter(Boolean)
                         .join(" ")}
                     </p>
@@ -135,7 +267,7 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
                   <Field label={t("quantityFor", { label: address.label })} className="w-40">
                     <NumberInput
                       min={0}
-                      max={quantity}
+                      max={option.quantity}
                       value={split[address.id] ?? ""}
                       onChange={(event) =>
                         setSplit({ ...split, [address.id]: Math.max(0, Number(event.target.value) || 0) })
@@ -147,10 +279,10 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
             </ul>
           )}
           <p
-            className={total === quantity ? "text-success mt-3 text-sm" : "text-warning-subtle-fg mt-3 text-sm"}
+            className={total === option.quantity ? "text-success mt-3 text-sm" : "text-warning-subtle-fg mt-3 text-sm"}
             aria-live="polite"
           >
-            {t("allocated", { allocated: format.number(total), quantity: format.number(quantity) })}
+            {t("allocated", { allocated: format.number(total), quantity: format.number(option.quantity) })}
           </p>
         </Card>
 
@@ -165,7 +297,7 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
                 onValueChange={setTaxProfileId}
                 options={[
                   { value: "none", label: t("noTaxInvoice") },
-                  ...customer.data.taxProfiles.map((profile) => ({
+                  ...taxProfiles.data.data.map((profile) => ({
                     value: profile.id,
                     label: `${profile.name} · ${profile.taxId}`,
                   })),
@@ -208,6 +340,57 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
             <Field label={t("remarks")} hint={t("remarksHint")}>
               <Textarea rows={3} value={remarks} onChange={(event) => setRemarks(event.target.value)} />
             </Field>
+            <Field
+              label={t("discount")}
+              hint={t("discountHint")}
+              error={discountValid ? undefined : t("discountFormat")}
+              className="w-44"
+            >
+              <NumberInput
+                unit="%"
+                inputMode="decimal"
+                value={discount}
+                disabled={Boolean(memo)}
+                onChange={(event) => {
+                  setDiscount(event.target.value);
+                  setAboveLimit(false);
+                }}
+              />
+            </Field>
+            {aboveLimit && !memo ? (
+              <Callout tone="warning" title={t("aboveLimit")}>
+                {canMemo ? (
+                  <Button size="sm" variant="secondary" iconStart="percent" onClick={() => setMemoOpen(true)}>
+                    {t("requestMemo")}
+                  </Button>
+                ) : null}
+              </Callout>
+            ) : null}
+            {memo ? (
+              <Callout
+                tone={memo.status === "approved" ? "success" : memo.status === "pending_approval" ? "info" : "danger"}
+                title={t("memoState", { pct: format.percent(memo.approvedPct ?? memo.requestedPct) })}
+              >
+                <div className="flex flex-wrap items-center gap-3">
+                  <StatusChip map={MEMO_STATUS} value={memo.status} />
+                  {memo.approvalId ? (
+                    <a href={`/approvals/${memo.approvalId}`} className="text-primary text-sm underline">
+                      {t("openApproval")}
+                    </a>
+                  ) : null}
+                  {memo.status === "pending_approval" ? (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      loading={refreshMemo.isPending}
+                      onClick={() => refreshMemo.mutate()}
+                    >
+                      {t("refreshMemo")}
+                    </Button>
+                  ) : null}
+                </div>
+              </Callout>
+            ) : null}
           </div>
         </Card>
       </div>
@@ -219,7 +402,10 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
         <DescriptionList
           columns={1}
           items={[
-            { term: t("customer"), description: `${customer.data.displayName} · ${customer.data.customerCode}` },
+            {
+              term: t("customer"),
+              description: [customer.data.displayName, customer.data.customerCode].filter(Boolean).join(" · "),
+            },
             { term: t("quote"), description: <span className="font-mono">{quote.data.quoteCode}</span> },
             { term: t("quantity"), description: format.number(option.quantity) },
             {
@@ -229,7 +415,7 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
             { term: t("validUntil"), description: format.date(quote.data.validUntil) },
           ]}
         />
-        {place.error ? (
+        {place.error && !aboveLimit ? (
           <Callout tone="danger" title={problemMessage(place.error, t("failed"))} className="mt-4">
             {isApiError(place.error) ? place.error.errors.map((item) => item.message).join(" ") : null}
           </Callout>
@@ -246,18 +432,90 @@ export function CreateOrder({ quoteId, quantity }: { quoteId: string; quantity: 
         <p className="text-muted mt-2 text-xs">{t("placeHint")}</p>
       </Card>
 
+      {memoOpen ? (
+        <MemoDialog
+          customerId={customerId}
+          requestedPct={discount}
+          onPrepare={ensureInCart}
+          onClose={() => setMemoOpen(false)}
+          onCreated={(created) => {
+            setMemo(created);
+            setMemoOpen(false);
+          }}
+        />
+      ) : null}
       {addingAddress ? (
         <AddAddressDialog
-          customerId={customer.data.id}
+          customerId={customerId}
           onClose={() => setAddingAddress(false)}
           onAdded={() => {
             setAddingAddress(false);
-            void customer.refetch();
+            void addressBook.refetch();
           }}
           closeLabel={tCommon("actions.close")}
         />
       ) : null}
     </div>
+  );
+}
+
+/** A discount above the CS limit, raised as a memo on the customer's cart (D-052, routed by D-162). */
+function MemoDialog({
+  customerId,
+  requestedPct,
+  onPrepare,
+  onClose,
+  onCreated,
+}: {
+  customerId: string;
+  requestedPct: string;
+  onPrepare: () => Promise<void>;
+  onClose: () => void;
+  onCreated: (memo: Memo) => void;
+}) {
+  const t = useTranslations("cs.memo");
+  const tCommon = useTranslations("common");
+  const [reason, setReason] = useState("");
+  const raise = useMutation({
+    mutationFn: async () => {
+      // The memo prices the cart, so the option must be in it first.
+      await onPrepare();
+      return (
+        await adminBrowserApis().contract.POST("/v1/admin/discount-memos", {
+          body: { customerId, requestedPct, reason: reason.trim() },
+        })
+      ).data!;
+    },
+    onSuccess: (memo) => {
+      toast.success(t("created"));
+      onCreated(memo);
+    },
+  });
+  return (
+    <Dialog
+      open
+      onOpenChange={(next) => (next ? undefined : onClose())}
+      title={t("title")}
+      closeLabel={tCommon("actions.close")}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            {tCommon("actions.cancel")}
+          </Button>
+          <Button onClick={() => raise.mutate()} loading={raise.isPending} disabled={reason.trim().length < 5}>
+            {t("submit")}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {raise.error ? <Callout tone="danger" title={problemMessage(raise.error, t("failed"))} /> : null}
+        <p className="text-sm">{t("body", { pct: requestedPct })}</p>
+        <Field label={t("reason")} hint={t("reasonHint")} required requiredLabel={tCommon("state.required")}>
+          <Textarea rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />
+        </Field>
+      </div>
+    </Dialog>
   );
 }
 
@@ -281,42 +539,40 @@ function AddAddressDialog({
     line1: "",
     line2: "",
     postcode: "",
-    district: "",
-    subdistrict: "",
+    subdistrictId: "",
   });
-  const lookup = useQuery({
-    queryKey: queryKeys.detail("admin", "postcode", values.postcode),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/geo/postcodes/{postcode}", { path: { postcode: values.postcode } }),
-    enabled: /^\d{5}$/.test(values.postcode),
-    retry: false,
-  });
-  const districts = lookup.data?.districts ?? [];
-  const subdistricts = districts.find((district) => district.name === values.district)?.subdistricts ?? [];
+  const lookup = usePostcodeAreas(values.postcode);
+  const geoName = useGeoName();
+  const areas = lookup.data ?? [];
+  const area = areas.find((candidate) => candidate.subdistrict.id === values.subdistrictId) ?? null;
+  // A postcode can straddle provinces; the address needs one, so it waits for the subdistrict then.
+  const provinces = [...new Set(areas.map((candidate) => candidate.province.id))];
+  const provinceId = area?.province.id ?? (provinces.length === 1 ? provinces[0]! : null);
 
   const add = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/customers/{customerId}/addresses", {
-        path: { customerId },
-        body: {
-          kind: "delivery",
-          label: values.label,
-          recipientName: values.recipientName,
-          phone: values.phone,
-          line1: values.line1,
-          line2: values.line2 || null,
-          postcode: values.postcode,
-          province: lookup.data!.province,
-          ...(values.district ? { district: values.district } : {}),
-          ...(values.subdistrict ? { subdistrict: values.subdistrict } : {}),
-        },
-      }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/customers/{customerId}/addresses", {
+          params: { path: { customerId } },
+          body: {
+            kind: "delivery",
+            label: values.label,
+            recipientName: values.recipientName,
+            phone: values.phone,
+            line1: values.line1,
+            line2: values.line2 || null,
+            postcode: values.postcode,
+            provinceId: provinceId!,
+            subdistrictId: values.subdistrictId || null,
+          },
+        })
+      ).data!,
     onSuccess: onAdded,
   });
 
   const set = (key: keyof typeof values) => (event: React.ChangeEvent<HTMLInputElement>) =>
     setValues({ ...values, [key]: event.target.value });
-  const ready = values.label && values.recipientName && /^0\d{8,9}$/.test(values.phone) && values.line1 && lookup.data;
+  const ready = values.label && values.recipientName && /^0\d{8,9}$/.test(values.phone) && values.line1 && provinceId;
 
   return (
     <Dialog
@@ -350,7 +606,10 @@ function AddAddressDialog({
         </Field>
         <Field
           label={t("postcode")}
-          hint={lookup.data?.province ?? (lookup.isError ? t("postcodeUnknown") : undefined)}
+          hint={
+            geoName(area?.province ?? areas[0]?.province) ??
+            (lookup.isError || (lookup.isSuccess && areas.length === 0) ? t("postcodeUnknown") : undefined)
+          }
           required
           requiredLabel={tCommon("state.required")}
         >
@@ -359,7 +618,7 @@ function AddAddressDialog({
             maxLength={5}
             value={values.postcode}
             onChange={(event) =>
-              setValues({ ...values, postcode: event.target.value.replace(/\D/g, ""), district: "", subdistrict: "" })
+              setValues({ ...values, postcode: event.target.value.replace(/\D/g, ""), subdistrictId: "" })
             }
           />
         </Field>
@@ -369,25 +628,18 @@ function AddAddressDialog({
         <Field label={t("line2")} className="sm:col-span-2">
           <Input value={values.line2} onChange={set("line2")} />
         </Field>
-        {districts.length > 0 ? (
-          <>
-            <Field label={t("district")}>
-              <Select
-                value={values.district || undefined}
-                onValueChange={(district) => setValues({ ...values, district, subdistrict: "" })}
-                placeholder={t("choose")}
-                options={districts.map((district) => ({ value: district.name, label: district.name }))}
-              />
-            </Field>
-            <Field label={t("subdistrict")}>
-              <Select
-                value={values.subdistrict || undefined}
-                onValueChange={(subdistrict) => setValues({ ...values, subdistrict })}
-                placeholder={t("choose")}
-                options={subdistricts.map((name) => ({ value: name, label: name }))}
-              />
-            </Field>
-          </>
+        {areas.length > 0 ? (
+          <Field label={t("subdistrict")} className="sm:col-span-2">
+            <Select
+              value={values.subdistrictId || undefined}
+              onValueChange={(subdistrictId) => setValues({ ...values, subdistrictId })}
+              placeholder={t("choose")}
+              options={areas.map((candidate) => ({
+                value: candidate.subdistrict.id,
+                label: [candidate.subdistrict, candidate.district, candidate.province].map(geoName).join(" · "),
+              }))}
+            />
+          </Field>
         ) : null}
       </div>
     </Dialog>

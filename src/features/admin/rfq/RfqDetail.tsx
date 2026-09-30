@@ -6,10 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { adminRfqActions } from "@/domain/next-actions/admin";
 import { RFQ_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -20,57 +20,59 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { Tabs } from "@/ui/components/Tabs";
-import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
-import type { IconName } from "@/ui/icons";
 
-import { problemMessage, QueryError, StatusChip, useActor, useSlaFormat } from "../console";
+import { adminBrowserApis, problemMessage, QueryError, StatusChip, useActor, useCan, useSlaFormat } from "../console";
+import { useRfq, useSettleRfq, useUnmetDemandReasons } from "./data";
 import { RfqActionBar, RfqActionDialogs, type RfqActionKey } from "./RfqActions";
 import { FactoriesTab, MessagesTab, QuotesTab, RequestTab } from "./RfqTabs";
-import type { Rfq, RfqTab } from "./resources";
-
-const EVENT_ICONS: Record<string, IconName> = {
-  "rfq.submitted": "inbox",
-  "rfq.assigned": "user",
-  "rfq.review_started": "eye",
-  "rfq.info_requested": "help",
-  "rfq.consultation_requested": "factory",
-  "rfq.consultation_responded": "factory",
-  "rfq.quote_sent": "send",
-  "rfq.accepted": "check",
-  "rfq.declined": "ban",
-};
+import { draftOf, sentOf, type Rfq, type RfqTab } from "./resources";
 
 /**
  * One RFQ (F2 2.3): what the customer asked for, what the factories answered, the quote versions
  * and the conversation — with the SLA, the customer and the owner in the rail. The header
- * restates code, customer and category on every tab, and leads with the next action the API
- * offers.
+ * restates code, customer and category on every tab, and leads with the next action on offer.
+ *
+ * The published RFQ (`admin.rfqs.get`) carries no files, customer contact, events, routing
+ * reason, SLA target or `nextActions` (CONTRACT-GAP admin.rfqs); what to offer comes from
+ * `adminRfqActions`.
  */
 export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq | null; tab: RfqTab }) {
   const t = useTranslations("rfq.detail");
   const format = useFormat();
   const pathname = usePathname();
   const router = useRouter();
+  const actor = useActor();
+  const settle = useSettleRfq(rfqId);
   const [current, setCurrent] = useState<string>(tab);
   const [action, setAction] = useState<RfqActionKey | null>(null);
   const [composing, setComposing] = useState(false);
   const [starting, setStarting] = useState(false);
 
-  const query = useQuery({
-    queryKey: queryKeys.detail("admin", "rfq", rfqId),
-    queryFn: () => browserRequests().call("GET /v1/admin/rfqs/{rfqId}", { path: { rfqId } }),
-    initialData: initial ?? undefined,
-    staleTime: STALE_TIME.transactional,
-  });
+  const query = useRfq(rfqId, initial);
+  const rfq = query.data;
+  const reasons = useUnmetDemandReasons(rfq?.status === "declined" && Boolean(rfq.declineReasonCode));
 
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
-  const rfq = query.data;
   if (!rfq) return null;
 
-  const offered = new Set(
-    rfq.nextActions.filter((item) => !item.disabledReason).map((item) => item.key.slice(item.key.lastIndexOf(".") + 1)),
+  const draft = draftOf(rfq);
+  const actions = adminRfqActions(
+    {
+      status: rfq.status,
+      hasDraft: Boolean(draft),
+      draftBelowMarginFloor: Boolean(draft?.lines.some((line) => line.belowMarginFloor)),
+      hasSent: Boolean(sentOf(rfq)),
+      hasAcceptedQuotation: Boolean(rfq.acceptedQuoteId),
+    },
+    (permission) => actor.permissions.includes(permission),
   );
+  const offered = new Set(actions.filter((item) => !item.blockedBy).map((item) => item.key.slice("rfq.".length)));
+  const sendBlocked = actions.find((item) => item.key === "rfq.send_quote")?.blockedBy;
+  const declineReason = rfq.declineReasonCode
+    ? (reasons.data?.data.find((reason) => reason.code === rfq.declineReasonCode)?.name ?? rfq.declineReasonCode)
+    : null;
+  const accepted = rfq.quotations.find((quote) => quote.status === "accepted");
 
   const go = (next: string) => {
     setCurrent(next);
@@ -86,17 +88,19 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
         go("quotes");
         return;
       case "create_order":
-        if (rfq.acceptedQuotation) {
-          router.push(`/orders/new?quote=${rfq.acceptedQuotation.id}&quantity=${rfq.acceptedQuotation.quantity}`);
-        }
+        // The saved quotation names its quantity; CS create-order picks the option from it.
+        if (rfq.acceptedQuoteId) router.push(`/orders/new?quote=${rfq.acceptedQuoteId}`);
         return;
       case "start_review":
-        // Reversible and routine: no confirmation, just the call.
+        // Reversible and routine: no confirmation, just the call. Still a contract request
+        // (admin.rfq-actions), so the RFQ is read again after it.
         setStarting(true);
         try {
-          await browserRequests().call("POST /v1/admin/rfqs/{rfqId}/actions/start-review", { path: { rfqId } });
+          await adminBrowserApis().requests.call("POST /v1/admin/rfqs/{rfqId}/actions/start-review", {
+            path: { rfqId },
+          });
           toast.success(t("reviewStarted"));
-          void query.refetch();
+          settle();
         } catch (error) {
           toast.error(problemMessage(error, t("actionFailed")));
         } finally {
@@ -108,7 +112,6 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
     }
   };
 
-  const draft = rfq.quotes.find((quote) => quote.status === "draft");
   const tabs = [
     { value: "request", label: t("tabs.request"), content: <RequestTab rfq={rfq} /> },
     {
@@ -123,7 +126,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
     },
     {
       value: "quotes",
-      label: `${t("tabs.quotes")}${rfq.quotes.length ? ` (${rfq.quotes.length})` : ""}${draft ? " •" : ""}`,
+      label: `${t("tabs.quotes")}${rfq.quotations.length ? ` (${rfq.quotations.length})` : ""}${draft ? " •" : ""}`,
       content: (
         <QuotesTab
           rfq={rfq}
@@ -131,6 +134,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
           onCompose={offered.has("compose_quote") || offered.has("edit_quote") ? () => setComposing(true) : undefined}
           onCloseComposer={() => setComposing(false)}
           onSend={offered.has("send_quote") ? () => setAction("send_quote") : undefined}
+          sendBlocked={sendBlocked}
         />
       ),
     },
@@ -148,22 +152,21 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
           meta={
             <>
               <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
-              {rfq.urgency !== "normal" ? (
-                <Badge tone={rfq.urgency === "late" ? "danger" : "warning"} icon="warning">
-                  {t(`urgency.${rfq.urgency}`)}
+              {rfq.overdue ? (
+                <Badge tone="danger" icon="warning">
+                  {t("overdue")}
                 </Badge>
               ) : null}
-              {rfq.routedFromCalculator ? <Badge icon="calculator">{t("routed")}</Badge> : null}
             </>
           }
           description={t("headline", {
             customer: rfq.customer.displayName,
-            type: rfq.productType.name,
+            type: rfq.productTypeName,
             quantities: rfq.quantities.map((quantity) => format.number(quantity)).join(" / "),
           })}
           actions={
             <RfqActionBar
-              rfq={rfq}
+              actions={actions}
               onAction={(key) => {
                 if (!starting) void run(key);
               }}
@@ -172,29 +175,18 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
         />
       </div>
 
-      {rfq.routedFrom ? (
-        <Callout tone="info" title={t("routedTitle")}>
-          {rfq.routedFrom.reason}
+      {rfq.status === "declined" && declineReason ? (
+        // CONTRACT-GAP admin.rfq-actions — the published RFQ keeps the reason code, not the note.
+        <Callout tone="neutral" title={t("declinedTitle", { reason: declineReason })}>
+          {t("declinedBody")}
         </Callout>
       ) : null}
-      {rfq.status === "declined" && rfq.declineReason ? (
-        <Callout tone="neutral" title={t("declinedTitle", { reason: rfq.declineReason.name })}>
-          {rfq.declineNote ?? t("declinedBody")}
-        </Callout>
-      ) : null}
-      {rfq.acceptedQuotation ? (
-        <Callout tone="success" title={t("acceptedTitle", { version: rfq.acceptedQuotation.versionNo })}>
-          <span className="flex flex-wrap items-center gap-3">
-            <Link href={`/quotations/${rfq.acceptedQuotation.id}`} className="text-primary font-mono hover:underline">
-              {rfq.acceptedQuotation.quoteCode}
-            </Link>
-            {offered.has("create_order") ? (
-              <Button size="sm" iconStart="cart" onClick={() => void run("create_order")}>
-                {t("createOrder")}
-              </Button>
-            ) : null}
-          </span>
-        </Callout>
+      {rfq.acceptedQuoteId ? (
+        <AcceptedCallout
+          quoteId={rfq.acceptedQuoteId}
+          versionNo={accepted?.versionNo ?? null}
+          onCreateOrder={offered.has("create_order") ? () => void run("create_order") : undefined}
+        />
       ) : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -204,6 +196,49 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
 
       <RfqActionDialogs rfq={rfq} open={action} onClose={() => setAction(null)} />
     </div>
+  );
+}
+
+/**
+ * The customer's acceptance made a saved quotation. The RFQ names only its id, so its code is
+ * read from `admin.quotes.get` when the actor may read quotations.
+ */
+function AcceptedCallout({
+  quoteId,
+  versionNo,
+  onCreateOrder,
+}: {
+  quoteId: string;
+  versionNo: number | null;
+  onCreateOrder?: () => void;
+}) {
+  const t = useTranslations("rfq.detail");
+  const canRead = useCan("quotes.read");
+  const quote = useQuery({
+    queryKey: queryKeys.detail("admin", "quote", quoteId),
+    enabled: canRead,
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/quotes/{quoteId}", { params: { path: { quoteId } } })).data!,
+    staleTime: STALE_TIME.reference,
+  });
+  return (
+    <Callout
+      tone="success"
+      title={versionNo === null ? t("acceptedTitleNoVersion") : t("acceptedTitle", { version: versionNo })}
+    >
+      <span className="flex flex-wrap items-center gap-3">
+        {canRead ? (
+          <Link href={`/quotations/${quoteId}`} className="text-primary font-mono hover:underline">
+            {quote.data?.quoteCode ?? t("openQuotation")}
+          </Link>
+        ) : null}
+        {onCreateOrder ? (
+          <Button size="sm" iconStart="cart" onClick={onCreateOrder}>
+            {t("createOrder")}
+          </Button>
+        ) : null}
+      </span>
+    </Callout>
   );
 }
 
@@ -233,9 +268,7 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
             absolute={rfq.slaDueAt ? format.dateTime(rfq.slaDueAt) : undefined}
           />
         )}
-        <p className="text-muted mt-1 text-xs">
-          {t("target", { hours: rfq.slaTargetHours, type: rfq.productType.name })}
-        </p>
+        {/* CONTRACT-GAP admin.rfqs — the category's SLA target (business hours) is not published. */}
         <p className="text-muted mt-1 text-xs">
           {t("submitted")} <When at={rfq.submittedAt} />
         </p>
@@ -246,16 +279,16 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
           <CardTitle>{t("owner")}</CardTitle>
           {onAssign ? (
             <Button size="sm" variant="secondary" iconStart="user-plus" onClick={onAssign}>
-              {rfq.assignee ? t("reassign") : t("assign")}
+              {rfq.assignedTo ? t("reassign") : t("assign")}
             </Button>
           ) : null}
         </CardHeader>
         <p className="text-sm">
-          {rfq.assignee ? (
-            rfq.assignee.id === actor.id ? (
+          {rfq.assignedTo ? (
+            rfq.assignedTo.id === actor.id ? (
               t("you")
             ) : (
-              rfq.assignee.displayName
+              rfq.assignedTo.displayName
             )
           ) : (
             <span className="text-warning-subtle-fg font-medium">{t("unassigned")}</span>
@@ -267,6 +300,7 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
         <CardHeader>
           <CardTitle>{t("customer")}</CardTitle>
         </CardHeader>
+        {/* CONTRACT-GAP admin.rfqs — no customer code, company or contact on the published RFQ. */}
         <DescriptionList
           columns={1}
           items={[
@@ -278,28 +312,7 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
                 </Link>
               ),
             },
-            ...(rfq.customer.companyName ? [{ term: t("company"), description: rfq.customer.companyName }] : []),
-            { term: t("code"), description: <span className="font-mono">{rfq.customer.customerCode}</span> },
-            ...(rfq.contact.phone ? [{ term: t("phone"), description: rfq.contact.phone }] : []),
-            ...(rfq.contact.email ? [{ term: t("email"), description: rfq.contact.email }] : []),
           ]}
-        />
-      </Card>
-
-      <Card padding="md">
-        <CardHeader>
-          <CardTitle>{t("activity")}</CardTitle>
-        </CardHeader>
-        <Timeline
-          label={t("activity")}
-          items={[...rfq.events].reverse().map((event) => ({
-            id: event.id,
-            title: event.title,
-            time: <When at={event.at} />,
-            actor: event.actor?.displayName,
-            icon: EVENT_ICONS[event.kind] ?? "circle",
-            tone: event.kind === "rfq.declined" ? "danger" : event.kind === "rfq.accepted" ? "success" : undefined,
-          }))}
         />
       </Card>
     </div>

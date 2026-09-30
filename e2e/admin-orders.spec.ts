@@ -30,32 +30,43 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 }
 
 test.describe("the CS queues", () => {
-  test("open on a queue with counts, SLA timers and the orders in it", async ({ page }) => {
+  test("open on packio-api's first queue, with its count and the orders in it", async ({ page }) => {
     await signInAsStaff(page, "cs");
-    await gotoHydrated(page, `${HOSTS.admin}/orders?queue=waiting_payment`);
+    await gotoHydrated(page, `${HOSTS.admin}/orders`);
     const tab = page.getByRole("link", { name: /^รอชำระ/ });
     await expect(tab).toHaveAttribute("aria-current", "page");
     const table = page.getByRole("table", { name: "คำสั่งซื้อ" });
     await expect(table.getByRole("row")).not.toHaveCount(1);
-    await expect(table).toContainText("เหลือ");
+    // The queue row carries no SLA timer (CONTRACT-GAP admin.orders); the queue is the SLA order.
+    await page.getByRole("link", { name: /^รอตรวจไฟล์/ }).click();
+    await expect(page).toHaveURL(/queue=artwork_review/);
     await expectAxeClean(page);
   });
 });
 
 test.describe("slip review (D-061)", () => {
-  test("Finance approves a slip, restating the order code and amount", async ({ page }) => {
+  test("Finance reviews the order's slip with the bank reference, restating the group code", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(10)}?tab=payments`);
+    await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
     await expectAxeClean(page);
 
-    // Read before the dialog opens: a modal hides the page behind it from the accessibility tree.
-    const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
+    // Read before the sheet opens: a modal hides the page behind it from the accessibility tree.
+    // The group is read after the order: wait for its code before reading it.
+    const header = page.getByText(/· กลุ่ม [A-Z]/).first();
+    await expect(header).toBeVisible();
+    const headline = (await header.textContent())!;
+    const group = headline.match(/กลุ่ม (\S+)/)![1]!;
+
+    // The slip is reviewed in Finance's own sheet (D-061), opened from the order.
     await page.getByRole("main").getByRole("button", { name: "อนุมัติสลิป" }).first().click();
-    const dialog = page.getByRole("alertdialog", { name: "อนุมัติสลิปนี้?" });
-    await expect(dialog).toContainText(code);
-    await expect(dialog.getByRole("button", { name: "อนุมัติสลิป" })).toBeDisabled();
-    await dialog.getByLabel(new RegExp(`พิมพ์ ${code}`)).fill(code);
-    await dialog.getByRole("button", { name: "อนุมัติสลิป" }).click();
+    const sheet = page.getByRole("dialog", { name: `ตรวจสลิป ${group}` });
+    await sheet.getByLabel(/^เลขอ้างอิงรายการจากธนาคาร/).fill("E2E-ORDER-000010");
+    await sheet.getByRole("button", { name: "อนุมัติสลิป" }).click();
+    const confirm = page.getByRole("alertdialog", { name: "อนุมัติสลิปและรับชำระเงิน" });
+    await expect(confirm).toContainText(group);
+    await confirm.getByLabel(new RegExp(`พิมพ์ ${group}`)).fill(group);
+    await confirm.getByRole("button", { name: "อนุมัติสลิป" }).click();
 
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 }).locator("..")).toContainText("ชำระเงินแล้ว");
@@ -64,8 +75,16 @@ test.describe("slip review (D-061)", () => {
   test("a CS agent is not offered slip approval", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(8)}?tab=payments`);
-    await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "งวดการชำระเงิน" })).toBeVisible();
     await expect(page.getByRole("button", { name: "อนุมัติสลิป" })).toHaveCount(0);
+  });
+
+  // CONTRACT-GAP admin.orders — only the slip queue (payments.verify_slip) says a slip waits; CS
+  // cannot tell until the order carries `hasSlipToReview`.
+  test.fixme("a CS agent is told a slip waits for Finance", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/orders/${order(8)}?tab=payments`);
+    await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
   });
 });
 
@@ -113,30 +132,36 @@ test.describe("order actions", () => {
 test.describe("the CS calculator", () => {
   async function priceAFoldingBox(page: Page) {
     await gotoHydrated(page, `${HOSTS.admin}/cs/folding`);
-    await choose(page, /รูปแบบกล่อง/, "กล่องฝาเสียบ (RSC)");
-    await page.getByRole("button", { name: /M 120 × 80 × 60/ }).click();
-    await choose(page, /^วัสดุ/, /อาร์ตการ์ด/);
-    await choose(page, /^แกรม/, "350 gsm");
-    await page.getByRole("button", { name: "1,000", exact: true }).click();
-    await page.getByRole("button", { name: "3,000", exact: true }).click();
+    await choose(page, /รูปแบบกล่อง/, "กล่องฝาชน (RSC)");
+    await page.getByLabel(/^ยาว/).fill("120");
+    await page.getByLabel(/^กว้าง/).fill("80");
+    await page.getByLabel(/^สูง/).fill("60");
+    await choose(page, /^วัสดุ/, /อาร์ตการ์ด 350/);
+    await choose(page, /^ระดับความยาก/, "ระดับ 2");
+    for (const quantity of ["1000", "3000"]) {
+      await page.getByLabel(/^จำนวนอื่น/).fill(quantity);
+      await page.getByRole("button", { name: "เพิ่ม", exact: true }).click();
+    }
     await page.getByLabel(/รหัสไปรษณีย์ปลายทาง/).fill("10110");
     await page.getByRole("button", { name: "คำนวณราคา" }).click();
-    await expect(page.getByRole("table", { name: /จำนวน 1,000/ })).toBeVisible();
+    await expect(page.getByRole("table", { name: "ราคาตามจำนวน" })).toBeVisible();
   }
 
-  test("prices, saves a quotation and places the order", async ({ page }) => {
+  test("prices on the published calculator, saves a quotation and places the order", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await priceAFoldingBox(page);
-    await expect(page.getByText("ถูกที่สุด").first()).toBeVisible();
+    // One price per quantity, as the API answered it — the desk compares nothing of its own.
+    const results = page.getByRole("table", { name: "ราคาตามจำนวน" });
+    await expect(results.getByRole("row")).toHaveCount(3);
     await expectAxeClean(page);
 
-    await page.getByRole("radio", { name: "เลือก ดิจิทัล 1000" }).check();
     await page.getByRole("combobox", { name: /^ลูกค้า/ }).fill("กาแฟ");
     await page.getByRole("option", { name: /ร้านกาแฟตัวอย่าง/ }).click();
     await page.getByRole("button", { name: "บันทึกใบเสนอราคา" }).click();
     await expect(page.getByText(/ใบเสนอราคา QT-2569-\d+ ใช้ได้ถึง/)).toBeVisible();
 
-    await page.getByRole("button", { name: "สร้างคำสั่งซื้อ" }).click();
+    await page.getByRole("link", { name: "สร้างคำสั่งซื้อจากใบนี้" }).click();
+    await page.getByRole("row", { name: /1,000/ }).getByRole("link", { name: "สร้างคำสั่งซื้อ" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "สร้างคำสั่งซื้อแทนลูกค้า" })).toBeVisible();
     await page.getByLabel(/จำนวนที่ส่งไป ที่อยู่หลัก/).fill("1000");
     await expect(page.getByText("จัดสรรแล้ว 1,000 จาก 1,000")).toBeVisible();
@@ -145,16 +170,29 @@ test.describe("the CS calculator", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("PK-2569-");
   });
 
-  test("a discount above the CS limit asks for a memo instead of saving", async ({ page }) => {
+  test("a type without a published calculator is RFQ-only, never a price of the desk's own", async ({ page }) => {
     await signInAsStaff(page, "cs");
-    await priceAFoldingBox(page);
-    await page.getByRole("combobox", { name: /^ลูกค้า/ }).fill("กาแฟ");
-    await page.getByRole("option", { name: /ร้านกาแฟตัวอย่าง/ }).click();
-    // The limit comes from the input data (the setting), not the UI.
-    await expect(page.getByText(/ให้เองได้ไม่เกิน 5%/)).toBeVisible();
+    await gotoHydrated(page, `${HOSTS.admin}/cs`);
+    await expect(page.getByRole("link", { name: /ซองบรรจุภัณฑ์.*RFQ เท่านั้น/ })).toBeVisible();
+    await gotoHydrated(page, `${HOSTS.admin}/cs/pouch`);
+    await expect(page.getByText("ประเภทนี้ขอใบเสนอราคา (RFQ) เท่านั้น")).toBeVisible();
+    await expect(page.getByRole("button", { name: "คำนวณราคา" })).toHaveCount(0);
+  });
+
+  test("a discount above the CS limit asks for a memo at checkout (D-052)", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/orders/new?quote=${QUOTE}&quantity=3000`);
+    await page.getByLabel(/จำนวนที่ส่งไป ที่อยู่หลัก/).fill("3000");
+    // The limit is the API's setting: the desk sends the discount and the API says it is too much.
     await page.getByLabel(/^ส่วนลด/).fill("8");
-    await expect(page.getByRole("button", { name: "ขออนุมัติส่วนลด" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "บันทึกใบเสนอราคา" })).toBeDisabled();
+    await page.getByRole("button", { name: "สร้างคำสั่งซื้อ" }).click();
+    await expect(page.getByText("ส่วนลดนี้เกินที่ CS ให้เองได้ ต้องขออนุมัติผ่านบันทึกขอส่วนลด")).toBeVisible();
+    await page.getByRole("button", { name: "ขออนุมัติส่วนลด" }).click();
+    const dialog = page.getByRole("dialog", { name: "ขออนุมัติส่วนลด" });
+    await dialog.getByLabel(/^เหตุผล/).fill("ลูกค้าเทียบราคากับคู่แข่ง");
+    await dialog.getByRole("button", { name: "ส่งขออนุมัติ" }).click();
+    await expect(page.getByText(/^บันทึกขอส่วนลด 8/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "สร้างคำสั่งซื้อ" })).toBeDisabled();
   });
 });
 

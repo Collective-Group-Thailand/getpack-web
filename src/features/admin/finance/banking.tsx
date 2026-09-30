@@ -296,7 +296,6 @@ export function BankLines({ initial }: { initial: InitialPage<BankLine> | null }
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         empty={{ title: t("empty") }}
       />
       {openId ? <LineSheet lineId={openId} line={opened} onClose={() => setOpen(null)} /> : null}
@@ -843,9 +842,12 @@ function Identify({ receipt, onClose }: { receipt: Schemas["UnidentifiedReceiptD
   const [q, setQ] = useState("");
   const [text, setText] = useDebouncedValue(q, setQ);
   const [picked, setPicked] = useState<{ groupId: string; groupCode: string; orderCode: string } | null>(null);
-  const orders = useQuery({
-    queryKey: queryKeys.list("admin", "order", { q, identify: true }),
-    queryFn: () => browserRequests().call("GET /v1/admin/orders", { query: { q, perPage: 10 } }),
+  // `q` matches a group or order code, or the customer code (admin.orders.listGroups).
+  const groups = useQuery({
+    queryKey: queryKeys.list("admin", "order_group", { q, identify: true }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/order-groups", { params: { query: { q, perPage: 10 } } }))
+        .data!,
     enabled: q.trim().length >= 2,
   });
   return (
@@ -867,24 +869,23 @@ function Identify({ receipt, onClose }: { receipt: Schemas["UnidentifiedReceiptD
         <SearchInput value={text} onValueChange={setText} clearLabel={t("clear")} />
       </Field>
       <ul className="mt-3 flex flex-col gap-2">
-        {(orders.data?.data ?? []).map((order) => (
-          <li key={order.id}>
-            <button
-              type="button"
-              className="border-border hover:bg-surface-subtle flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border p-3 text-start text-sm"
-              onClick={() =>
-                setPicked({ groupId: order.groupId, groupCode: order.groupCode, orderCode: order.orderCode })
-              }
-            >
-              <span className="font-mono font-medium">{order.groupCode}</span>
-              <span className="font-mono">{order.orderCode}</span>
-              <span className="min-w-0 truncate">{order.customer.displayName}</span>
-              <span className="ms-auto tabular-nums">
-                {order.nextInstalment ? format.thb(order.nextInstalment.grossAmount) : t("nothingDue")}
-              </span>
-            </button>
-          </li>
-        ))}
+        {(groups.data?.data ?? []).map((group) => {
+          const orderCodes = group.orders.map((order) => order.orderCode).join(", ");
+          return (
+            <li key={group.id}>
+              <button
+                type="button"
+                className="border-border hover:bg-surface-subtle flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-md border p-3 text-start text-sm"
+                onClick={() => setPicked({ groupId: group.id, groupCode: group.groupCode, orderCode: orderCodes })}
+              >
+                <span className="font-mono font-medium">{group.groupCode}</span>
+                <span className="font-mono">{orderCodes}</span>
+                {/* The group names its customer by id only (CONTRACT-GAP admin.orders). */}
+                <span className="ms-auto tabular-nums">{format.thb(group.totals.grossAmount)}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
       {picked ? (
         <ConfirmAction

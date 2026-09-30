@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.2.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.3.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -1868,6 +1868,140 @@ export interface paths {
         patch: operations["admin.catalogFoilTypes.update"];
         trace?: never;
     };
+    "/v1/admin/catalog/geometry-band-tables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List geometry band tables
+         * @description Filters, sort and `q` (free text over code, name). Allowances by box dimension (legacy `conditions`); bands are replaced with `PUT …/bands`. Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        get: operations["admin.catalogGeometryBandTables.list"];
+        put?: never;
+        /**
+         * Create a geometry band table
+         * @description Audited (config) and published as `catalog.geometry_band_table.created`. Allowances by box dimension (legacy `conditions`); bands are replaced with `PUT …/bands`. Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        post: operations["admin.catalogGeometryBandTables.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/geometry-band-tables/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one geometry band table
+         * @description Returns the geometry band table and its ETag for a later update. Allowances by box dimension (legacy `conditions`); bands are replaced with `PUT …/bands`. Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        get: operations["admin.catalogGeometryBandTables.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update a geometry band table
+         * @description Partial update guarded by `If-Match`. Rows are archived through `status`, never deleted (schema-design §1.6). Audited and published as `catalog.geometry_band_table.updated`. Allowances by box dimension (legacy `conditions`); bands are replaced with `PUT …/bands`. Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        patch: operations["admin.catalogGeometryBandTables.update"];
+        trace?: never;
+    };
+    "/v1/admin/catalog/geometry-band-tables/{id}/bands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace the bands of a geometry band table
+         * @description Legacy `conditions` rows of one table: bounds inclusive (`lower ≤ v ≤ upper`), never overlapping (422 `overlap` on the band), read in the order given. The whole set is replaced in one transaction; guarded by the table ETag; audited and published as `catalog.geometry_band_table.updated`. Applies to the next quote.
+         *
+         *     Implements: D-100, D-005.
+         */
+        put: operations["admin.catalogGeometryBandTables.replaceBands"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/geometry-conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List geometry conditions
+         * @description Filters, sort and `q` (free text over code, variable). A band table read by one box dimension (legacy `calculate_conditions`); patterns use conditions in their slots (`PUT /v1/admin/catalog/patterns/{id}/geometry-conditions`). Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        get: operations["admin.catalogGeometryConditions.list"];
+        put?: never;
+        /**
+         * Create a geometry condition
+         * @description Audited (config) and published as `catalog.geometry_condition.created`. A band table read by one box dimension (legacy `calculate_conditions`); patterns use conditions in their slots (`PUT /v1/admin/catalog/patterns/{id}/geometry-conditions`). Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        post: operations["admin.catalogGeometryConditions.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/geometry-conditions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one geometry condition
+         * @description Returns the geometry condition and its ETag for a later update. A band table read by one box dimension (legacy `calculate_conditions`); patterns use conditions in their slots (`PUT /v1/admin/catalog/patterns/{id}/geometry-conditions`). Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        get: operations["admin.catalogGeometryConditions.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update a geometry condition
+         * @description Partial update guarded by `If-Match`. Rows are archived through `status`, never deleted (schema-design §1.6). Audited and published as `catalog.geometry_condition.updated`. A band table read by one box dimension (legacy `calculate_conditions`); patterns use conditions in their slots (`PUT /v1/admin/catalog/patterns/{id}/geometry-conditions`). Read by the folding and corrugate calculators when they price a pattern; a change applies to the next quote (quotes keep their frozen inputs).
+         *
+         *     Implements: D-100, D-005.
+         */
+        patch: operations["admin.catalogGeometryConditions.update"];
+        trace?: never;
+    };
     "/v1/admin/catalog/imports": {
         parameters: {
             query?: never;
@@ -2285,6 +2419,72 @@ export interface paths {
          *     Implements: D-100, D-005.
          */
         put: operations["admin.catalogPatterns.replaceFluteTypes"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/patterns/{id}/geometry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the geometry of a pattern
+         * @description The condition slots of the pattern and its parts (legacy `pattern.condition_*`) and its standard blanks (legacy `pattern_rel_standard_sizes`), with the pattern ETag for a later replace.
+         *
+         *     Implements: D-100, D-005.
+         */
+        get: operations["admin.catalogPatterns.getGeometry"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/patterns/{id}/geometry-conditions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace the condition slots of a pattern
+         * @description Which geometry condition each slot reads, for the pattern and its parts. A folding type takes the slots `dw dl nd nl nw aux_f aux_f10` read by `w l d x c`; a corrugate type the pattern slots `i k m` read by W and `j` by W ÷ L (U-B6, port map §6.1). Archived conditions are refused. The whole set is replaced in one transaction; guarded by the pattern ETag; audited and published as `catalog.pattern.updated`.
+         *
+         *     Implements: D-100, D-005.
+         */
+        put: operations["admin.catalogPatterns.replaceGeometryConditions"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/catalog/patterns/{id}/standard-blanks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Replace the standard blanks of a pattern
+         * @description The die-cut blank (DW × DL) of the pattern at each standard size, read by the folding formula `standard_blank`. One blank per standard size. The whole set is replaced in one transaction; guarded by the pattern ETag; audited and published as `catalog.pattern.updated`.
+         *
+         *     Implements: D-100, D-005.
+         */
+        put: operations["admin.catalogPatterns.replaceStandardBlanks"];
         post?: never;
         delete?: never;
         options?: never;
@@ -4530,6 +4730,50 @@ export interface paths {
          *     Implements: D-010, D-092, D-033, D-169.
          */
         get: operations["admin.customerDocuments.listCreditRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cs/corrugate/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a corrugate configuration for a customer (CS)
+         * @description The store calculation plus the staff view (selected factory and print type, price-list version, margin-floor flag, each option’s reason when it has no price). Plates and die blocks are their own tooling line. Buy prices need `factory_cost.read`, the margin `margin.read` (D-141). CS may price digital print on its coverage. Works before the type is switched to instant, for checks.
+         *
+         *     Implements: D-100, D-043, D-050, D-051, D-101, D-012, D-141.
+         */
+        post: operations["admin.csCorrugate.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/cs/corrugate/input-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Catalogue choices of the CS corrugate calculator
+         * @description Active corrugate patterns with their parts and blank formulas, corrugated boards with their flute, ink colours, coatings, assemblies (the automatic packing is added by the calculator), difficulty levels and print areas (legacy `cs/corrugate`, D-100).
+         *
+         *     Implements: D-100.
+         */
+        get: operations["admin.csCorrugate.inputData"];
         put?: never;
         post?: never;
         delete?: never;
@@ -13224,6 +13468,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/partner/factories/{factoryId}/pricing/corrugate/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Price a corrugate configuration on my own price list
+         * @description The buy side only, on the factory’s own price list in force: cost, buy price per part (plates and die blocks included), layouts, sheets, lead time, per print type. Never Packio’s sell price or another factory (D-044, D-042); another factory is 404.
+         *
+         *     Implements: D-044, D-042, D-040.
+         */
+        post: operations["partner.pricingCorrugate.calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/partner/factories/{factoryId}/pricing/folding/calculate": {
         parameters: {
             query?: never;
@@ -14848,6 +15114,28 @@ export interface paths {
          *     Implements: D-100, D-050.
          */
         get: operations["store.catalog.getProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/store/catalog/products/{slug}/configurator": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the configurator of a calculator-priced product
+         * @description What the configurator needs to build the quote configuration of the product’s calculator (folding, corrugate): patterns with their parts, flutes and typed size rules, standard sizes, the options offered with the ids the configuration takes, the product’s difficulty level, print areas and the D-051 validity; `instant` says whether it is priced online now (D-043, D-100). A product of a type priced by RFQ only is not found. No prices or factory data (D-050).
+         *
+         *     Implements: D-100, D-043, D-050, D-051.
+         */
+        get: operations["store.catalog.getConfigurator"];
         put?: never;
         post?: never;
         delete?: never;
@@ -16969,7 +17257,7 @@ export interface paths {
         put?: never;
         /**
          * Calculate an instant price for a configuration
-         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously.
+         * @description Prices each quantity from the active factories that hold an instant price path (D-043, D-100): price incl. VAT, lead time and earliest ship date within capacity (D-101), quantity tolerance (D-021). A quantity without an instant price carries the reason and routes to RFQ. The configuration is the one of the type’s calculator (folding, corrugate). Nothing is saved (quotes are saved with B2.5, D-051); no factory data is returned (D-050). Works signed in or anonymously.
          *
          *     Implements: D-100, D-043, D-050, D-051, D-101.
          */
@@ -18661,6 +18949,11 @@ export interface components {
              */
             toleranceShortagePct: string | null;
             /**
+             * @description Print plates and die blocks, incl. VAT, charged apart from the pieces (corrugate flexo, legacy `calculate_cs:835-837`); 0.00 for the other calculators
+             * @example 0.00
+             */
+            toolingAmount: string | null;
+            /**
              * @description Per piece incl. VAT, excluding shipping (its own line, D-013)
              * @example 13.38
              */
@@ -18757,8 +19050,10 @@ export interface components {
         AdminSavedQuoteDto: {
             /** @example web */
             channel: components["schemas"]["SalesChannel"];
-            /** @description Null for RFQ quotes */
-            configuration: components["schemas"]["FoldingConfigurationDto"] | null;
+            /** @description The configuration of the product type's calculator; null for RFQ quotes */
+            configuration: {
+                [key: string]: unknown;
+            } | (components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"]) | null;
             /**
              * Format: date-time
              * @example 2026-10-01T09:00:00+07:00
@@ -19611,6 +19906,11 @@ export interface components {
         /** @enum {string} */
         ArtworkUploadRole: "artwork" | "font" | "reference";
         AssemblyDto: {
+            /**
+             * @description Added to every corrugate part, e.g. packing (legacy assembly group 22, U-B6 quirk C8)
+             * @example false
+             */
+            autoAdd: boolean;
             /** @example side-glue */
             code: string;
             /**
@@ -20187,7 +20487,10 @@ export interface components {
             liabilities: string;
         };
         CalculateQuoteDto: {
-            configuration: components["schemas"]["FoldingConfigurationDto"];
+            /** @description The configuration of the product type's calculator: `FoldingConfigurationDto` for folding cartons, `CorrugateConfigurationDto` for corrugated boxes (validated against it; paths under `configuration`) */
+            configuration: {
+                [key: string]: unknown;
+            } | components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"];
             /**
              * @description Delivery postcode: prices shipping on the customer rate card (D-013)
              * @example 10110
@@ -20875,6 +21178,12 @@ export interface components {
         /** @enum {string} */
         CatalogOptionKind: "material" | "finish" | "coating" | "ink_colour" | "diecut" | "assembly" | "print_type" | "print_side" | "pattern" | "process";
         CatalogProductDto: {
+            /**
+             * Format: uuid
+             * @description The difficulty level online prices use (legacy SME hard-coded group 5, U-B6); null = not priced online
+             * @example null
+             */
+            defaultDifficultyLevelId: string | null;
             /** @example Reverse tuck-end folding box */
             descriptionEn: string | null;
             /** @example กล่องพับฝาเสียบบน-ล่าง */
@@ -21777,6 +22086,247 @@ export interface components {
         };
         /** @enum {string} */
         ConversationStatus: "open" | "pending" | "closed";
+        CorrugateAssemblyDto: {
+            /**
+             * @description Pieces per box, when the assembly takes sizes
+             * @example 1
+             */
+            amount?: number;
+            /**
+             * Format: uuid
+             * @description Window film, handle, insert… (not packing: automatic)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b105
+             */
+            assemblyId: string;
+            /**
+             * @description Length of a piece Unit: mm.
+             * @example 100
+             */
+            l?: number;
+            /**
+             * @description Width of a piece Unit: mm.
+             * @example 80
+             */
+            w?: number;
+        };
+        CorrugateConfigurationDto: {
+            /**
+             * Format: uuid
+             * @description The catalogue product: its standard sizes carry no die block (legacy `recheckStandardSize`). Required on the store, where the difficulty level must be the product’s own (configurator `difficultyLevelId`, quirk C9)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b106
+             */
+            catalogProductId?: string;
+            /**
+             * @description Box height (0 for a flat sheet) Unit: mm.
+             * @example 250
+             */
+            d: number;
+            design?: components["schemas"]["DesignOptionsDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a103
+             */
+            difficultyLevelId: string;
+            /**
+             * @description Box length Unit: mm.
+             * @example 400
+             */
+            l: number;
+            /**
+             * Format: uuid
+             * @description The corrugated board; its flute is the box’s flute
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b102
+             */
+            materialId: string;
+            /** @description One entry per part (one for single-part patterns) */
+            parts: components["schemas"]["CorrugatePartDto"][];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b101
+             */
+            patternId: string;
+            /**
+             * @description Quantities to price, 1 to 10
+             * @example [
+             *       500,
+             *       1000,
+             *       3000
+             *     ]
+             */
+            quantities: number[];
+            /**
+             * @description Box width Unit: mm.
+             * @example 300
+             */
+            w: number;
+        };
+        /**
+         * @description Blank formula of the corrugate calculator; never together with `geometryFormula` (U-B6, A-49)
+         * @enum {string}
+         */
+        CorrugateFormula: "rsc" | "single_tuck" | "double_tuck" | "double_tuck_top_wall" | "double_tuck_side_wall" | "flat_sheet" | "seafood" | "open_top" | "handle" | "handle_rim" | "tele_body" | "tele_lid" | "slide_tray" | "slide_sleeve" | "tray" | "full_overlap";
+        CorrugateInputBoardDto: {
+            /**
+             * @description Takes a coating (legacy `can_finish`)
+             * @example false
+             */
+            coatable: boolean;
+            /** @example ka125-b */
+            code: string;
+            flute: components["schemas"]["CorrugateInputFluteDto"];
+            /** @example 450 */
+            gsm: number | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b102
+             */
+            id: string;
+            /** @example น้ำตาล */
+            insideColour: string | null;
+            /** @example Kraft board KA125 B-flute */
+            nameEn: string;
+            /** @example กระดาษลัง KA125 ลอน B */
+            nameTh: string;
+            /** @example น้ำตาล */
+            outsideColour: string | null;
+            /** @example null */
+            strength: string | null;
+        };
+        CorrugateInputCoatingDto: {
+            /** @example standard */
+            code: string;
+            /** @example coating */
+            finishKind: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a106
+             */
+            id: string;
+            /** @example Standard die-cut */
+            nameEn: string;
+            /** @example ไดคัททั่วไป */
+            nameTh: string;
+        };
+        CorrugateInputDataDto: {
+            /** @description Without the automatic ones (packing), added by the calculator */
+            assemblies: components["schemas"]["InputAssemblyDto"][];
+            boards: components["schemas"]["CorrugateInputBoardDto"][];
+            /** @description Digital print on a coatable board only */
+            coatings: components["schemas"]["CorrugateInputCoatingDto"][];
+            difficultyLevels: components["schemas"]["InputNamedDto"][];
+            inkColours: components["schemas"]["InputInkColourDto"][];
+            patterns: components["schemas"]["CorrugateInputPatternDto"][];
+            /**
+             * @example [
+             *       "top",
+             *       "side",
+             *       "top_side",
+             *       "all_round"
+             *     ]
+             */
+            printAreas: components["schemas"]["CorrugatePrintArea"][];
+        };
+        CorrugateInputFluteDto: {
+            /** @example B */
+            code: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a102
+             */
+            id: string;
+            /** @example 3 */
+            layers: number;
+            /** @example ลอน B (3 ชั้น) */
+            name: string;
+        };
+        CorrugateInputPatternDto: {
+            /** @example RSC-01 */
+            code: string;
+            /**
+             * @description Blank formula (port map §6.1); null when each part has its own
+             * @example rsc
+             */
+            corrugateFormula: components["schemas"]["CorrugateFormula"] | null;
+            /**
+             * @description Flutes offered; empty = any
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-00000000a102"
+             *     ]
+             */
+            fluteTypeIds: string[];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b101
+             */
+            id: string;
+            /** @example กล่องฝาชน */
+            name: string;
+            /** @description Parts to configure; empty = one part */
+            subPatterns: components["schemas"]["CorrugateInputSubPatternDto"][];
+        };
+        CorrugateInputSubPatternDto: {
+            /**
+             * @description The part's blank formula; null = the pattern's
+             * @example tele_body
+             */
+            corrugateFormula: components["schemas"]["CorrugateFormula"] | null;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a101
+             */
+            id: string;
+            /** @example ถาด */
+            name: string;
+            /** @example 1 */
+            seq: number;
+        };
+        CorrugatePartDto: {
+            assemblies?: components["schemas"]["CorrugateAssemblyDto"][];
+            /**
+             * Format: uuid
+             * @description Coating inside (digital, coatable board)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b104
+             */
+            coatingBackId?: string;
+            /**
+             * Format: uuid
+             * @description Coating outside (digital, coatable board)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b104
+             */
+            coatingFrontId?: string;
+            /** @description Colours printed inside */
+            printBack?: components["schemas"]["CorrugatePrintColourDto"][];
+            /** @description Colours printed outside */
+            printFront?: components["schemas"]["CorrugatePrintColourDto"][];
+            /**
+             * Format: uuid
+             * @description The part of a combination (Tele body / lid, slide tray / sleeve)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b103
+             */
+            subPatternId?: string;
+        };
+        /**
+         * @description Corrugate: where a colour can print; empty for the other calculators
+         * @enum {string}
+         */
+        CorrugatePrintArea: "top" | "side" | "top_side" | "all_round";
+        CorrugatePrintColourDto: {
+            /**
+             * @description Where the colour prints (legacy pattern areas top, side, top + side, all round); the % of the blank follows from the box. Give this or `percent`.
+             * @example top
+             */
+            area?: components["schemas"]["CorrugatePrintArea"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a104
+             */
+            inkColourId: string;
+            /**
+             * @description The % of the blank the colour covers, when no area is given
+             * @example 30
+             */
+            percent?: number;
+        };
         CostCentreDto: {
             /** @example OPS */
             code: string;
@@ -21944,6 +22494,8 @@ export interface components {
             titleTh: string;
         };
         CreateAssemblyDto: {
+            /** @example false */
+            autoAdd?: boolean;
             /** @example side-glue */
             code: string;
             /**
@@ -22125,6 +22677,12 @@ export interface components {
             status?: components["schemas"]["CatalogStatus"];
         };
         CreateCatalogProductDto: {
+            /**
+             * Format: uuid
+             * @description Difficulty level for online prices
+             * @example null
+             */
+            defaultDifficultyLevelId?: string | null;
             /** @example Reverse tuck-end folding box */
             descriptionEn?: string | null;
             /** @example กล่องพับฝาเสียบบน-ล่าง */
@@ -22540,6 +23098,8 @@ export interface components {
             colFh?: number | null;
             /** @example null */
             colG?: number | null;
+            /** @example null */
+            ct?: number | null;
             /** @example 5 */
             layers: number;
             /** @example ลอน BC (5 ชั้น) */
@@ -22575,6 +23135,41 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a201
              */
             provinceId: string;
+        };
+        CreateGeometryBandTableDto: {
+            /** @example rte_dw */
+            code: string;
+            /** @example ฝาเสียบ — ระยะเผื่อ DW */
+            name: string;
+            /**
+             * @description `archived` replaces deletion (schema-design §1.6)
+             * @example active
+             */
+            status?: components["schemas"]["CatalogStatus"];
+        };
+        CreateGeometryConditionDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            bandTableId: string;
+            /** @example rte_dw_by_w */
+            code: string;
+            /**
+             * @description The box dimension the band table is read by: `w`, `l`, `d`, `x`, `c` (folding), `w_over_l` (W ÷ L, corrugate `j`)
+             * @example w
+             */
+            determinant: components["schemas"]["GeometryDeterminant"];
+            /**
+             * @description `archived` replaces deletion (schema-design §1.6)
+             * @example active
+             */
+            status?: components["schemas"]["CatalogStatus"];
+            /**
+             * @description Legacy variable name (only the lock-bottom formula reads `b`)
+             * @example a
+             */
+            variable: string;
         };
         CreateGeoProvinceDto: {
             /** @example 10 */
@@ -22712,6 +23307,8 @@ export interface components {
             status?: components["schemas"]["CapabilityStatus"];
         };
         CreateMaterialDto: {
+            /** @example false */
+            coatable?: boolean;
             /**
              * @description Natural key used by Excel import
              * @example art-card-350
@@ -22826,8 +23423,12 @@ export interface components {
             constraints?: {
                 [key: string]: unknown;
             };
+            /** @example null */
+            corrugateFormula?: components["schemas"]["CorrugateFormula"] | null;
             /** @example rte */
             dielineKey?: string | null;
+            /** @example tuck_top */
+            geometryFormula?: components["schemas"]["GeometryFormula"] | null;
             /** @example ฝาเสียบกลับด้าน */
             name: string;
             /** @example null */
@@ -23326,6 +23927,11 @@ export interface components {
         };
         CreateStandardSizeDto: {
             /**
+             * Format: uuid
+             * @example null
+             */
+            calcFluteTypeId?: string | null;
+            /**
              * @description Unit: mm.
              * @example null
              */
@@ -23460,12 +24066,16 @@ export interface components {
             conditions?: {
                 [key: string]: unknown;
             } | null;
+            /** @example tele_body */
+            corrugateFormula?: components["schemas"]["CorrugateFormula"] | null;
             /** @example 1 */
             dh?: number | null;
             /** @example 1 */
             dl?: number | null;
             /** @example 1 */
             dw?: number | null;
+            /** @example null */
+            geometryFormula?: components["schemas"]["GeometryFormula"] | null;
             /** @example ตัวกล่อง */
             name: string;
             /** @example 1 */
@@ -23481,6 +24091,8 @@ export interface components {
             patternId: string;
             /** @example 1 */
             seq: number;
+            /** @example false */
+            swapDimensions?: boolean;
         };
         CreateTemplateDto: {
             /** @example transactional */
@@ -23675,6 +24287,62 @@ export interface components {
          * @enum {string}
          */
         CreditStatus: "prepaid" | "eligible" | "credit" | "blocked_overdue";
+        CsCorrugateConfigurationDto: {
+            /**
+             * Format: uuid
+             * @description The catalogue product: its standard sizes carry no die block (legacy `recheckStandardSize`). Required on the store, where the difficulty level must be the product’s own (configurator `difficultyLevelId`, quirk C9)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b106
+             */
+            catalogProductId?: string;
+            /**
+             * @description Box height (0 for a flat sheet) Unit: mm.
+             * @example 250
+             */
+            d: number;
+            design?: components["schemas"]["DesignOptionsDto"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a103
+             */
+            difficultyLevelId: string;
+            /**
+             * @description Digital only: the outside print covers this % of the blank (legacy CS option `printing_calculate_type` 2); omit for the whole blank
+             * @example 60
+             */
+            digitalFrontCoveragePct?: number;
+            /**
+             * @description Box length Unit: mm.
+             * @example 400
+             */
+            l: number;
+            /**
+             * Format: uuid
+             * @description The corrugated board; its flute is the box’s flute
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b102
+             */
+            materialId: string;
+            /** @description One entry per part (one for single-part patterns) */
+            parts: components["schemas"]["CorrugatePartDto"][];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000b101
+             */
+            patternId: string;
+            /**
+             * @description Quantities to price, 1 to 10
+             * @example [
+             *       500,
+             *       1000,
+             *       3000
+             *     ]
+             */
+            quantities: number[];
+            /**
+             * @description Box width Unit: mm.
+             * @example 300
+             */
+            w: number;
+        };
         /**
          * @description Always THB (one currency)
          * @enum {string}
@@ -25871,6 +26539,11 @@ export interface components {
             /** @example null */
             colG: number | null;
             /**
+             * @description Board caliper allowance of a telescope lid (legacy `flute_type.ct`, corrugate calculator)
+             * @example null
+             */
+            ct: number | null;
+            /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000d002
              */
@@ -26096,6 +26769,106 @@ export interface components {
              */
             updatedAt: string;
         };
+        GeometryBandDto: {
+            /**
+             * @description Lower bound, inclusive
+             * @example 0
+             */
+            lower: number;
+            /**
+             * @description Upper bound, inclusive
+             * @example 100
+             */
+            upper: number;
+            /**
+             * @description The allowance read for a dimension in the band
+             * @example 12.5
+             */
+            value: number;
+        };
+        GeometryBandInputDto: {
+            /**
+             * @description Lower bound, inclusive
+             * @example 0
+             */
+            lower: number;
+            /**
+             * @description Upper bound, inclusive; at least `lower`
+             * @example 100
+             */
+            upper: number;
+            /**
+             * @description The allowance read for a dimension in the band (may be negative; 4 decimals)
+             * @example 12.5
+             */
+            value: number;
+        };
+        GeometryBandTableDto: {
+            /** @description Bands in evaluation order; bounds inclusive, never overlapping (legacy `conditions`) */
+            bands: components["schemas"]["GeometryBandDto"][];
+            /** @example rte_dw */
+            code: string;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            id: string;
+            /** @example ฝาเสียบ — ระยะเผื่อ DW */
+            name: string;
+            /** @example active */
+            status: components["schemas"]["CatalogStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-09-29T10:00:00+07:00
+             */
+            updatedAt: string;
+        };
+        GeometryConditionDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            bandTableId: string;
+            /** @example rte_dw_by_w */
+            code: string;
+            /**
+             * @description The box dimension the band table is read by: `w`, `l`, `d`, `x`, `c` (folding), `w_over_l` (W ÷ L, corrugate `j`)
+             * @example w
+             */
+            determinant: components["schemas"]["GeometryDeterminant"];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e002
+             */
+            id: string;
+            /** @example active */
+            status: components["schemas"]["CatalogStatus"];
+            /**
+             * Format: date-time
+             * @example 2026-09-29T10:00:00+07:00
+             */
+            updatedAt: string;
+            /**
+             * @description Legacy variable name (only the lock-bottom formula reads `b`)
+             * @example a
+             */
+            variable: string;
+        };
+        /**
+         * @description The box dimension the band table is read by: `w`, `l`, `d`, `x`, `c` (folding), `w_over_l` (W ÷ L, corrugate `j`)
+         * @enum {string}
+         */
+        GeometryDeterminant: "w" | "l" | "d" | "x" | "c" | "w_over_l";
+        /**
+         * @description Blank formula of the folding calculator; null = not priceable by folding (B2.3, A-25)
+         * @enum {string}
+         */
+        GeometryFormula: "tuck_top" | "tray" | "sleeve" | "lid" | "insert" | "hanger_tuck_top" | "popup_tuck_top" | "popup_hanger" | "house" | "fold_flap" | "wagashi" | "wagashi_side_tuck" | "wagashi_open_top" | "flat_overlap" | "flat" | "lock_bottom_top" | "flat_overlap_combined" | "slide_tray" | "slide_sleeve" | "cover_base" | "flat_extended" | "standard_blank";
+        /**
+         * @description Folding slots `dw dl nd nl nw aux_f aux_f10`; corrugate slots `i j k m` (read by W, W ÷ L, W, W)
+         * @enum {string}
+         */
+        GeometrySlot: "dw" | "dl" | "nd" | "nl" | "nw" | "aux_f" | "aux_f10" | "i" | "j" | "k" | "m";
         GeoProvinceDto: {
             /** @example 10 */
             code: string;
@@ -27441,6 +28214,11 @@ export interface components {
             targetType: components["schemas"]["BankMatchTarget"];
         };
         MaterialDto: {
+            /**
+             * @description The board takes a coating (legacy `paper_grade.can_finish`; the corrugate calculator refuses coating otherwise)
+             * @example false
+             */
+            coatable: boolean;
             /** @example art-card-350 */
             code: string;
             /**
@@ -28582,6 +29360,52 @@ export interface components {
             /** @example 18000 */
             weightG: number;
         };
+        PatternConditionSlotDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e002
+             */
+            conditionId: string;
+            /**
+             * @description Order of the conditions in one slot
+             * @example 1
+             */
+            seq: number;
+            /**
+             * @description Folding slots `dw dl nd nl nw aux_f aux_f10`; corrugate slots `i j k m` (read by W, W ÷ L, W, W)
+             * @example dw
+             */
+            slot: components["schemas"]["GeometrySlot"];
+            /**
+             * Format: uuid
+             * @description The part the slot belongs to; null for the pattern itself
+             * @example null
+             */
+            subPatternId: string | null;
+        };
+        PatternConditionSlotInputDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e002
+             */
+            conditionId: string;
+            /**
+             * @description Order in the slot (default 1)
+             * @example 1
+             */
+            seq?: number;
+            /**
+             * @description Folding slots `dw dl nd nl nw aux_f aux_f10`; corrugate slots `i j k m` (read by W, W ÷ L, W, W)
+             * @example dw
+             */
+            slot: components["schemas"]["GeometrySlot"];
+            /**
+             * Format: uuid
+             * @description A part of this pattern (folding only); omit or null for the pattern itself
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e004
+             */
+            subPatternId?: string | null;
+        };
         PatternDto: {
             /** @example RTE-01 */
             code: string;
@@ -28595,6 +29419,11 @@ export interface components {
             constraints: {
                 [key: string]: unknown;
             };
+            /**
+             * @description Blank formula of the corrugate calculator; never together with `geometryFormula` (U-B6, A-49)
+             * @example null
+             */
+            corrugateFormula: components["schemas"]["CorrugateFormula"] | null;
             /** @example rte */
             dielineKey: string | null;
             /**
@@ -28604,6 +29433,11 @@ export interface components {
              *     ]
              */
             fluteTypeIds: string[];
+            /**
+             * @description Blank formula of the folding calculator; null = not priceable by folding (B2.3, A-25)
+             * @example tuck_top
+             */
+            geometryFormula: components["schemas"]["GeometryFormula"] | null;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c006
@@ -28631,6 +29465,16 @@ export interface components {
              */
             updatedAt: string;
         };
+        PatternGeometryDto: {
+            conditions: components["schemas"]["PatternConditionSlotDto"][];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e003
+             */
+            patternId: string;
+            /** @description The die-cut blank at a standard size (folding formula `standard_blank`) */
+            standardBlanks: components["schemas"]["PatternStandardBlankDto"][];
+        };
         PatternLinkInput: {
             /** @example 1 */
             factorNd?: number | null;
@@ -28648,6 +29492,40 @@ export interface components {
              * @example 10
              */
             sort?: number;
+        };
+        PatternStandardBlankDto: {
+            /**
+             * @description Blank length. Unit: mm.
+             * @example 320
+             */
+            dlMm: number;
+            /**
+             * @description Blank width. Unit: mm.
+             * @example 210
+             */
+            dwMm: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e005
+             */
+            standardSizeId: string;
+        };
+        PatternStandardBlankInputDto: {
+            /**
+             * @description Blank length Unit: mm.
+             * @example 320
+             */
+            dlMm: number;
+            /**
+             * @description Blank width Unit: mm.
+             * @example 210
+             */
+            dwMm: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e005
+             */
+            standardSizeId: string;
         };
         PayableDto: {
             /** @example THB */
@@ -29498,7 +30376,7 @@ export interface components {
         /** @enum {string} */
         PriceColumnType: "decimal" | "integer" | "ref" | "text" | "boolean";
         /** @enum {string} */
-        PriceComponent: "material_prices" | "paper_sheets" | "paper_sizes" | "paper_roll_widths" | "film_prices" | "foil_prices" | "print_prices" | "print_plates" | "print_blocks" | "ink_colours" | "finish_prices" | "finish_plates" | "diecut_prices" | "diecut_block_prices" | "assembly_prices" | "assembly_sheets" | "sortings" | "packing_prices" | "difficulty_levels" | "print_wastes" | "finish_wastes" | "diecut_wastes" | "assembly_wastes" | "semi_plate_wastes" | "paper_trims" | "print_type_terms" | "factory_margins" | "step_prices" | "code_margins" | "difficulty_margins" | "fix_cost_pcts" | "percent_reduces" | "standard_size_prices" | "stock_product_prices" | "conditions" | "calculate_conditions" | "production_conditions" | "pattern_conditions" | "process_exclusions" | "spec_details";
+        PriceComponent: "material_prices" | "paper_sheets" | "paper_sizes" | "paper_roll_widths" | "film_prices" | "foil_prices" | "print_prices" | "print_plates" | "print_blocks" | "ink_colours" | "finish_prices" | "finish_plates" | "diecut_prices" | "diecut_block_prices" | "assembly_prices" | "assembly_sheets" | "sortings" | "packing_prices" | "difficulty_levels" | "print_wastes" | "finish_wastes" | "diecut_wastes" | "assembly_wastes" | "semi_plate_wastes" | "paper_trims" | "print_type_terms" | "factory_margins" | "step_prices" | "code_margins" | "difficulty_margins" | "fix_cost_pcts" | "percent_reduces" | "standard_size_prices" | "stock_product_prices" | "conditions" | "calculate_conditions" | "production_conditions" | "pattern_conditions" | "process_exclusions" | "spec_details" | "board_prices" | "corrugate_print_type_terms" | "corrugate_process_terms" | "corrugate_die_blocks" | "corrugate_print_prices" | "corrugate_diecut_prices" | "corrugate_assembly_prices" | "corrugate_pattern_conditions" | "fixed_options";
         PriceComponentDto: {
             /** @example material_prices */
             component: components["schemas"]["PriceComponent"];
@@ -31059,6 +31937,11 @@ export interface components {
              */
             toleranceShortagePct: string | null;
             /**
+             * @description Print plates and die blocks, incl. VAT, charged apart from the pieces (corrugate flexo, legacy `calculate_cs:835-837`); 0.00 for the other calculators
+             * @example 0.00
+             */
+            toolingAmount: string | null;
+            /**
              * @description Per piece incl. VAT, excluding shipping (its own line, D-013)
              * @example 13.38
              */
@@ -31751,14 +32634,26 @@ export interface components {
              */
             fontIds: string[];
         };
+        ReplaceGeometryBandsDto: {
+            /** @description Every band of the table, in evaluation order (the whole set is replaced) */
+            bands: components["schemas"]["GeometryBandInputDto"][];
+        };
         ReplaceOptionsDto: {
             options: components["schemas"]["OptionInput"][];
+        };
+        ReplacePatternConditionsDto: {
+            /** @description Every slot of the pattern and its parts */
+            conditions: components["schemas"]["PatternConditionSlotInputDto"][];
         };
         ReplacePatternsDto: {
             patterns: components["schemas"]["PatternLinkInput"][];
         };
         ReplaceProposalLinesDto: {
             lines: components["schemas"]["PriceProposalLineInput"][];
+        };
+        ReplaceStandardBlanksDto: {
+            /** @description One blank per standard size */
+            standardBlanks: components["schemas"]["PatternStandardBlankInputDto"][];
         };
         ReplaceStockAttributesDto: {
             attributes: components["schemas"]["StockAttributeInput"][];
@@ -32803,8 +33698,10 @@ export interface components {
             title?: string;
         };
         SavedQuoteDto: {
-            /** @description Null for RFQ quotes */
-            configuration: components["schemas"]["FoldingConfigurationDto"] | null;
+            /** @description The configuration of the product type's calculator; null for RFQ quotes */
+            configuration: {
+                [key: string]: unknown;
+            } | (components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"]) | null;
             /**
              * Format: date-time
              * @example 2026-10-01T09:00:00+07:00
@@ -32932,7 +33829,10 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e604
              */
             anonymousId?: string;
-            configuration: components["schemas"]["FoldingConfigurationDto"];
+            /** @description The configuration of the product type's calculator: `FoldingConfigurationDto` for folding cartons, `CorrugateConfigurationDto` for corrugated boxes (validated against it; paths under `configuration`) */
+            configuration: {
+                [key: string]: unknown;
+            } | components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"];
             /**
              * @description Delivery postcode: prices shipping on the customer rate card (D-013)
              * @example 10110
@@ -34383,7 +35283,10 @@ export interface components {
             vatAmount: string;
         };
         StaffSaveQuoteDto: {
-            configuration: components["schemas"]["FoldingConfigurationDto"];
+            /** @description The configuration of the product type's calculator: `FoldingConfigurationDto` for folding cartons, `CorrugateConfigurationDto` for corrugated boxes (validated against it; paths under `configuration`) */
+            configuration: {
+                [key: string]: unknown;
+            } | components["schemas"]["FoldingConfigurationDto"] | components["schemas"]["CorrugateConfigurationDto"];
             /**
              * Format: uuid
              * @description The customer the quote is for
@@ -34517,6 +35420,12 @@ export interface components {
             visibility: components["schemas"]["ActivityVisibility"][];
         };
         StandardSizeDto: {
+            /**
+             * Format: uuid
+             * @description Corrugate: the flute the calculation size was measured for; null = any flute (port map quirk C12)
+             * @example null
+             */
+            calcFluteTypeId: string | null;
             /** @example null */
             calcHeightMm: number | null;
             /**
@@ -34908,6 +35817,114 @@ export interface components {
              */
             windowEndsAt: string;
         };
+        StoreConfiguratorDto: {
+            /** @example corrugate */
+            calculator: components["schemas"]["CalculatorKey"];
+            /**
+             * Format: uuid
+             * @description The configuration’s `catalogProductId`
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            catalogProductId: string;
+            /**
+             * Format: uuid
+             * @description The configuration’s `difficultyLevelId` (the product’s, not the customer’s choice)
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e006
+             */
+            difficultyLevelId: string | null;
+            /**
+             * @description Priced online now: the type is instant (D-043, D-100) and the product has a difficulty level; else the configurator routes to RFQ
+             * @example true
+             */
+            instant: boolean;
+            /** @description The options offered, with the ids the configuration takes */
+            optionGroups: components["schemas"]["StoreOptionGroupDto"][];
+            patterns: components["schemas"]["StoreConfiguratorPatternDto"][];
+            /**
+             * @description Corrugate: where a colour can print; empty for the other calculators
+             * @example [
+             *       "top",
+             *       "side",
+             *       "top_side",
+             *       "all_round"
+             *     ]
+             */
+            printAreas: components["schemas"]["CorrugatePrintArea"][];
+            /** @example corrugated */
+            productTypeCode: string;
+            /**
+             * @description Days a saved price holds (D-051)
+             * @example 15
+             */
+            quoteValidityDays: number;
+            /** @example rsc-carton */
+            slug: string;
+            /** @description Standard sizes (corrugate: no die block on them) */
+            standardSizes: components["schemas"]["StoreConfiguratorSizeDto"][];
+        };
+        StoreConfiguratorPartDto: {
+            /** @example ตัวกล่อง */
+            name: string;
+            /** @example 1 */
+            seq: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e003
+             */
+            subPatternId: string;
+        };
+        StoreConfiguratorPatternDto: {
+            /** @example RSC-01 */
+            code: string;
+            /**
+             * @description Key for `@packio/dieline`
+             * @example rsc
+             */
+            dielineKey: string | null;
+            /**
+             * @description Corrugate: the flutes offered (a board of another flute is refused); empty = any
+             * @example [
+             *       "0192f3a0-7c1e-7d2a-9b1f-00000000e004"
+             *     ]
+             */
+            fluteTypeIds: string[];
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e002
+             */
+            id: string;
+            /** @example กล่องฝาชน */
+            name: string;
+            /** @description The parts to configure (a Tele body and lid…); empty = one part, sent without `subPatternId` */
+            parts: components["schemas"]["StoreConfiguratorPartDto"][];
+            rules: components["schemas"]["StoreSizeRulesDto"];
+        };
+        StoreConfiguratorSizeDto: {
+            /** @example M */
+            code: string;
+            /**
+             * @description Unit: mm.
+             * @example 250
+             */
+            heightMm: number;
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e005
+             */
+            id: string;
+            /**
+             * @description Unit: mm.
+             * @example 400
+             */
+            lengthMm: number;
+            /** @example 30×40×25 ซม. */
+            name: string;
+            /**
+             * @description Unit: mm.
+             * @example 300
+             */
+            widthMm: number;
+        };
         StoreConversationDto: {
             /**
              * Format: uuid
@@ -35065,6 +36082,12 @@ export interface components {
              * @example art-card-350
              */
             code: string;
+            /**
+             * Format: uuid
+             * @description Public id of the offered row: the id the quote configuration takes
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c010
+             */
+            id: string;
             /** @example true */
             isDefault: boolean;
             /** @example Art card 350 gsm */
@@ -35329,6 +36352,53 @@ export interface components {
             /** @example serum-box-30ml */
             slug: string;
         };
+        StoreSizeRulesDto: {
+            /**
+             * @description The length must be at least the height
+             * @example false
+             */
+            lengthMustExceedHeight: boolean;
+            /**
+             * @description The length must be at least the width
+             * @example false
+             */
+            lengthMustExceedWidth: boolean;
+            /**
+             * @description Unit: mm.
+             * @example 800
+             */
+            maxHMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example 1000
+             */
+            maxLMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example 800
+             */
+            maxWMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example 50
+             */
+            minHMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example 100
+             */
+            minLMm: number | null;
+            /**
+             * @description Unit: mm.
+             * @example 100
+             */
+            minWMm: number | null;
+            /**
+             * @description Corrugate: the height at most 0.95 × the width
+             * @example true
+             */
+            widthMustExceedHeight: boolean;
+        };
         StoreStandardSizeDto: {
             /** @example S */
             code: string;
@@ -35542,12 +36612,22 @@ export interface components {
             conditions: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * @description Multi-part corrugate patterns: the part's own blank formula (Tele body / lid, slide tray / sleeve)
+             * @example tele_body
+             */
+            corrugateFormula: components["schemas"]["CorrugateFormula"] | null;
             /** @example 1 */
             dh: number | null;
             /** @example 1 */
             dl: number | null;
             /** @example 1 */
             dw: number | null;
+            /**
+             * @description Multi-part folding patterns: the part's own blank formula
+             * @example null
+             */
+            geometryFormula: components["schemas"]["GeometryFormula"] | null;
             /**
              * Format: uuid
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c007
@@ -35568,6 +36648,11 @@ export interface components {
             patternId: string;
             /** @example 1 */
             seq: number;
+            /**
+             * @description Folding: the part is laid with its box turned (l ← w, w ← d, d ← l)
+             * @example false
+             */
+            swapDimensions: boolean;
             /**
              * Format: date-time
              * @example 2026-09-25T10:00:00+07:00
@@ -36441,6 +37526,8 @@ export interface components {
             titleTh?: string;
         };
         UpdateAssemblyDto: {
+            /** @example false */
+            autoAdd?: boolean;
             /** @example side-glue */
             code?: string;
             /**
@@ -36599,6 +37686,12 @@ export interface components {
             status?: components["schemas"]["CatalogStatus"];
         };
         UpdateCatalogProductDto: {
+            /**
+             * Format: uuid
+             * @description Difficulty level for online prices
+             * @example null
+             */
+            defaultDifficultyLevelId?: string | null;
             /** @example Reverse tuck-end folding box */
             descriptionEn?: string | null;
             /** @example กล่องพับฝาเสียบบน-ล่าง */
@@ -36879,6 +37972,8 @@ export interface components {
             colFh?: number | null;
             /** @example null */
             colG?: number | null;
+            /** @example null */
+            ct?: number | null;
             /** @example 5 */
             layers?: number;
             /** @example ลอน BC (5 ชั้น) */
@@ -36914,6 +38009,41 @@ export interface components {
              * @example 0192f3a0-7c1e-7d2a-9b1f-00000000a201
              */
             provinceId?: string;
+        };
+        UpdateGeometryBandTableDto: {
+            /** @example rte_dw */
+            code?: string;
+            /** @example ฝาเสียบ — ระยะเผื่อ DW */
+            name?: string;
+            /**
+             * @description `archived` replaces deletion (schema-design §1.6)
+             * @example active
+             */
+            status?: components["schemas"]["CatalogStatus"];
+        };
+        UpdateGeometryConditionDto: {
+            /**
+             * Format: uuid
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000e001
+             */
+            bandTableId?: string;
+            /** @example rte_dw_by_w */
+            code?: string;
+            /**
+             * @description The box dimension the band table is read by: `w`, `l`, `d`, `x`, `c` (folding), `w_over_l` (W ÷ L, corrugate `j`)
+             * @example w
+             */
+            determinant?: components["schemas"]["GeometryDeterminant"];
+            /**
+             * @description `archived` replaces deletion (schema-design §1.6)
+             * @example active
+             */
+            status?: components["schemas"]["CatalogStatus"];
+            /**
+             * @description Legacy variable name (only the lock-bottom formula reads `b`)
+             * @example a
+             */
+            variable?: string;
         };
         UpdateGeoProvinceDto: {
             /** @example 10 */
@@ -37009,6 +38139,8 @@ export interface components {
             status?: components["schemas"]["CapabilityStatus"];
         };
         UpdateMaterialDto: {
+            /** @example false */
+            coatable?: boolean;
             /**
              * @description Natural key used by Excel import
              * @example art-card-350
@@ -37175,8 +38307,12 @@ export interface components {
             constraints?: {
                 [key: string]: unknown;
             };
+            /** @example null */
+            corrugateFormula?: components["schemas"]["CorrugateFormula"] | null;
             /** @example rte */
             dielineKey?: string | null;
+            /** @example tuck_top */
+            geometryFormula?: components["schemas"]["GeometryFormula"] | null;
             /** @example ฝาเสียบกลับด้าน */
             name?: string;
             /** @example null */
@@ -37461,6 +38597,11 @@ export interface components {
         };
         UpdateStandardSizeDto: {
             /**
+             * Format: uuid
+             * @example null
+             */
+            calcFluteTypeId?: string | null;
+            /**
              * @description Unit: mm.
              * @example null
              */
@@ -37590,12 +38731,16 @@ export interface components {
             conditions?: {
                 [key: string]: unknown;
             } | null;
+            /** @example tele_body */
+            corrugateFormula?: components["schemas"]["CorrugateFormula"] | null;
             /** @example 1 */
             dh?: number | null;
             /** @example 1 */
             dl?: number | null;
             /** @example 1 */
             dw?: number | null;
+            /** @example null */
+            geometryFormula?: components["schemas"]["GeometryFormula"] | null;
             /** @example ตัวกล่อง */
             name?: string;
             /** @example 1 */
@@ -37606,6 +38751,8 @@ export interface components {
             nw?: number | null;
             /** @example 1 */
             seq?: number;
+            /** @example false */
+            swapDimensions?: boolean;
         };
         UpdateTaxProfileDto: {
             /**
@@ -44813,6 +45960,7 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "autoAdd": false,
                      *           "code": "side-glue",
                      *           "groupId": "0192f3a0-7c1e-7d2a-9b1f-00000000d004",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d009",
@@ -44923,6 +46071,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "autoAdd": false,
                      *       "code": "side-glue",
                      *       "groupId": "0192f3a0-7c1e-7d2a-9b1f-00000000d004",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d009",
@@ -45041,6 +46190,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "autoAdd": false,
                      *       "code": "side-glue",
                      *       "groupId": "0192f3a0-7c1e-7d2a-9b1f-00000000d004",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d009",
@@ -45155,6 +46305,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "autoAdd": false,
                      *       "code": "side-glue",
                      *       "groupId": "0192f3a0-7c1e-7d2a-9b1f-00000000d004",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d009",
@@ -45788,6 +46939,7 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "defaultDifficultyLevelId": null,
                      *           "descriptionEn": "Reverse tuck-end folding box",
                      *           "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -45928,6 +47080,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -46076,6 +47229,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -46220,6 +47374,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -46403,6 +47558,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -46573,6 +47729,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -46736,6 +47893,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -46909,6 +48067,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "defaultDifficultyLevelId": null,
                      *       "descriptionEn": "Reverse tuck-end folding box",
                      *       "descriptionTh": "กล่องพับฝาเสียบบน-ล่าง",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c004",
@@ -50552,6 +51711,7 @@ export interface operations {
                      *           "colDd": null,
                      *           "colFh": null,
                      *           "colG": null,
+                     *           "ct": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d002",
                      *           "layers": 5,
                      *           "name": "ลอน BC (5 ชั้น)",
@@ -50662,6 +51822,7 @@ export interface operations {
                      *       "colDd": null,
                      *       "colFh": null,
                      *       "colG": null,
+                     *       "ct": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d002",
                      *       "layers": 5,
                      *       "name": "ลอน BC (5 ชั้น)",
@@ -50780,6 +51941,7 @@ export interface operations {
                      *       "colDd": null,
                      *       "colFh": null,
                      *       "colG": null,
+                     *       "ct": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d002",
                      *       "layers": 5,
                      *       "name": "ลอน BC (5 ชั้น)",
@@ -50894,6 +52056,7 @@ export interface operations {
                      *       "colDd": null,
                      *       "colFh": null,
                      *       "colG": null,
+                     *       "ct": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000d002",
                      *       "layers": 5,
                      *       "name": "ลอน BC (5 ชั้น)",
@@ -51372,6 +52535,1150 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["FoilTypeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryBandTables.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["CatalogStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "bands": [
+                     *             {
+                     *               "lower": 0,
+                     *               "upper": 100,
+                     *               "value": 12.5
+                     *             },
+                     *             {
+                     *               "lower": 100.01,
+                     *               "upper": 300,
+                     *               "value": 15
+                     *             }
+                     *           ],
+                     *           "code": "rte_dw",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *           "name": "ฝาเสียบ — ระยะเผื่อ DW",
+                     *           "status": "active",
+                     *           "updatedAt": "2026-09-29T10:00:00+07:00"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["GeometryBandTableDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryBandTables.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGeometryBandTableDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    Location: components["headers"]["Location"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bands": [
+                     *         {
+                     *           "lower": 0,
+                     *           "upper": 100,
+                     *           "value": 12.5
+                     *         },
+                     *         {
+                     *           "lower": 100.01,
+                     *           "upper": 300,
+                     *           "value": 15
+                     *         }
+                     *       ],
+                     *       "code": "rte_dw",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "name": "ฝาเสียบ — ระยะเผื่อ DW",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryBandTableDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryBandTables.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Public id of the geometry band table */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The geometry band table */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bands": [
+                     *         {
+                     *           "lower": 0,
+                     *           "upper": 100,
+                     *           "value": 12.5
+                     *         },
+                     *         {
+                     *           "lower": 100.01,
+                     *           "upper": 300,
+                     *           "value": 15
+                     *         }
+                     *       ],
+                     *       "code": "rte_dw",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "name": "ฝาเสียบ — ระยะเผื่อ DW",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryBandTableDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryBandTables.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                /** @description Public id of the geometry band table */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGeometryBandTableDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bands": [
+                     *         {
+                     *           "lower": 0,
+                     *           "upper": 100,
+                     *           "value": 12.5
+                     *         },
+                     *         {
+                     *           "lower": 100.01,
+                     *           "upper": 300,
+                     *           "value": 15
+                     *         }
+                     *       ],
+                     *       "code": "rte_dw",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "name": "ฝาเสียบ — ระยะเผื่อ DW",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryBandTableDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryBandTables.replaceBands": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceGeometryBandsDto"];
+            };
+        };
+        responses: {
+            /** @description The band table */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bands": [
+                     *         {
+                     *           "lower": 0,
+                     *           "upper": 100,
+                     *           "value": 12.5
+                     *         },
+                     *         {
+                     *           "lower": 100.01,
+                     *           "upper": 300,
+                     *           "value": 15
+                     *         }
+                     *       ],
+                     *       "code": "rte_dw",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "name": "ฝาเสียบ — ระยะเผื่อ DW",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryBandTableDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryConditions.list": {
+        parameters: {
+            query?: {
+                bandTableId?: string;
+                determinant?: components["schemas"]["GeometryDeterminant"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                status?: components["schemas"]["CatalogStatus"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "bandTableId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *           "code": "rte_dw_by_w",
+                     *           "determinant": "w",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *           "status": "active",
+                     *           "updatedAt": "2026-09-29T10:00:00+07:00",
+                     *           "variable": "a"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["GeometryConditionDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryConditions.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGeometryConditionDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    Location: components["headers"]["Location"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bandTableId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "code": "rte_dw_by_w",
+                     *       "determinant": "w",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00",
+                     *       "variable": "a"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryConditionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `catalog.code_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryConditions.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Public id of the geometry condition */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The geometry condition */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bandTableId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "code": "rte_dw_by_w",
+                     *       "determinant": "w",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00",
+                     *       "variable": "a"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryConditionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogGeometryConditions.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                /** @description Public id of the geometry condition */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGeometryConditionDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "bandTableId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "code": "rte_dw_by_w",
+                     *       "determinant": "w",
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *       "status": "active",
+                     *       "updatedAt": "2026-09-29T10:00:00+07:00",
+                     *       "variable": "a"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GeometryConditionDto"];
                 };
             };
             /** @description Problem: `http.bad_request`, `http.malformed_json` */
@@ -53367,6 +55674,7 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "coatable": false,
                      *           "code": "art-card-350",
                      *           "familyId": "0192f3a0-7c1e-7d2a-9b1f-00000000d001",
                      *           "fluteTypeId": null,
@@ -53481,6 +55789,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "coatable": false,
                      *       "code": "art-card-350",
                      *       "familyId": "0192f3a0-7c1e-7d2a-9b1f-00000000d001",
                      *       "fluteTypeId": null,
@@ -53603,6 +55912,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "coatable": false,
                      *       "code": "art-card-350",
                      *       "familyId": "0192f3a0-7c1e-7d2a-9b1f-00000000d001",
                      *       "fluteTypeId": null,
@@ -53721,6 +56031,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "coatable": false,
                      *       "code": "art-card-350",
                      *       "familyId": "0192f3a0-7c1e-7d2a-9b1f-00000000d001",
                      *       "fluteTypeId": null,
@@ -54359,10 +56670,12 @@ export interface operations {
                      *             "maxW": 500,
                      *             "minW": 30
                      *           },
+                     *           "corrugateFormula": null,
                      *           "dielineKey": "rte",
                      *           "fluteTypeIds": [
                      *             "0192f3a0-7c1e-7d2a-9b1f-00000000c011"
                      *           ],
+                     *           "geometryFormula": "tuck_top",
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *           "name": "ฝาเสียบกลับด้าน",
                      *           "patternKind": null,
@@ -54473,10 +56786,12 @@ export interface operations {
                      *         "maxW": 500,
                      *         "minW": 30
                      *       },
+                     *       "corrugateFormula": null,
                      *       "dielineKey": "rte",
                      *       "fluteTypeIds": [
                      *         "0192f3a0-7c1e-7d2a-9b1f-00000000c011"
                      *       ],
+                     *       "geometryFormula": "tuck_top",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "name": "ฝาเสียบกลับด้าน",
                      *       "patternKind": null,
@@ -54595,10 +56910,12 @@ export interface operations {
                      *         "maxW": 500,
                      *         "minW": 30
                      *       },
+                     *       "corrugateFormula": null,
                      *       "dielineKey": "rte",
                      *       "fluteTypeIds": [
                      *         "0192f3a0-7c1e-7d2a-9b1f-00000000c011"
                      *       ],
+                     *       "geometryFormula": "tuck_top",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "name": "ฝาเสียบกลับด้าน",
                      *       "patternKind": null,
@@ -54713,10 +57030,12 @@ export interface operations {
                      *         "maxW": 500,
                      *         "minW": 30
                      *       },
+                     *       "corrugateFormula": null,
                      *       "dielineKey": "rte",
                      *       "fluteTypeIds": [
                      *         "0192f3a0-7c1e-7d2a-9b1f-00000000c011"
                      *       ],
+                     *       "geometryFormula": "tuck_top",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "name": "ฝาเสียบกลับด้าน",
                      *       "patternKind": null,
@@ -54870,10 +57189,12 @@ export interface operations {
                      *         "maxW": 500,
                      *         "minW": 30
                      *       },
+                     *       "corrugateFormula": null,
                      *       "dielineKey": "rte",
                      *       "fluteTypeIds": [
                      *         "0192f3a0-7c1e-7d2a-9b1f-00000000c011"
                      *       ],
+                     *       "geometryFormula": "tuck_top",
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "name": "ฝาเสียบกลับด้าน",
                      *       "patternKind": null,
@@ -54884,6 +57205,411 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["PatternDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogPatterns.getGeometry": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The pattern geometry */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "conditions": [
+                     *         {
+                     *           "conditionId": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *           "seq": 1,
+                     *           "slot": "dw",
+                     *           "subPatternId": null
+                     *         }
+                     *       ],
+                     *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
+                     *       "standardBlanks": [
+                     *         {
+                     *           "dlMm": 320,
+                     *           "dwMm": 210,
+                     *           "standardSizeId": "0192f3a0-7c1e-7d2a-9b1f-00000000e005"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PatternGeometryDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogPatterns.replaceGeometryConditions": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplacePatternConditionsDto"];
+            };
+        };
+        responses: {
+            /** @description The pattern geometry */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "conditions": [
+                     *         {
+                     *           "conditionId": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *           "seq": 1,
+                     *           "slot": "dw",
+                     *           "subPatternId": null
+                     *         }
+                     *       ],
+                     *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
+                     *       "standardBlanks": [
+                     *         {
+                     *           "dlMm": 320,
+                     *           "dwMm": 210,
+                     *           "standardSizeId": "0192f3a0-7c1e-7d2a-9b1f-00000000e005"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PatternGeometryDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.catalogPatterns.replaceStandardBlanks": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceStandardBlanksDto"];
+            };
+        };
+        responses: {
+            /** @description The pattern geometry */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "conditions": [
+                     *         {
+                     *           "conditionId": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *           "seq": 1,
+                     *           "slot": "dw",
+                     *           "subPatternId": null
+                     *         }
+                     *       ],
+                     *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000e003",
+                     *       "standardBlanks": [
+                     *         {
+                     *           "dlMm": 320,
+                     *           "dwMm": 210,
+                     *           "standardSizeId": "0192f3a0-7c1e-7d2a-9b1f-00000000e005"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PatternGeometryDto"];
                 };
             };
             /** @description Problem: `http.bad_request`, `http.malformed_json` */
@@ -59470,6 +62196,7 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "calcFluteTypeId": null,
                      *           "calcHeightMm": null,
                      *           "calcLengthMm": null,
                      *           "calcWidthMm": null,
@@ -59581,6 +62308,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "calcFluteTypeId": null,
                      *       "calcHeightMm": null,
                      *       "calcLengthMm": null,
                      *       "calcWidthMm": null,
@@ -59700,6 +62428,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "calcFluteTypeId": null,
                      *       "calcHeightMm": null,
                      *       "calcLengthMm": null,
                      *       "calcWidthMm": null,
@@ -59815,6 +62544,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "calcFluteTypeId": null,
                      *       "calcHeightMm": null,
                      *       "calcLengthMm": null,
                      *       "calcWidthMm": null,
@@ -61503,9 +64233,11 @@ export interface operations {
                      *       "data": [
                      *         {
                      *           "conditions": null,
+                     *           "corrugateFormula": "tele_body",
                      *           "dh": 1,
                      *           "dl": 1,
                      *           "dw": 1,
+                     *           "geometryFormula": null,
                      *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c007",
                      *           "name": "ตัวกล่อง",
                      *           "nh": 1,
@@ -61513,6 +64245,7 @@ export interface operations {
                      *           "nw": 2,
                      *           "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *           "seq": 1,
+                     *           "swapDimensions": false,
                      *           "updatedAt": "2026-09-25T10:00:00+07:00"
                      *         }
                      *       ],
@@ -61613,9 +64346,11 @@ export interface operations {
                     /**
                      * @example {
                      *       "conditions": null,
+                     *       "corrugateFormula": "tele_body",
                      *       "dh": 1,
                      *       "dl": 1,
                      *       "dw": 1,
+                     *       "geometryFormula": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c007",
                      *       "name": "ตัวกล่อง",
                      *       "nh": 1,
@@ -61623,6 +64358,7 @@ export interface operations {
                      *       "nw": 2,
                      *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "seq": 1,
+                     *       "swapDimensions": false,
                      *       "updatedAt": "2026-09-25T10:00:00+07:00"
                      *     }
                      */
@@ -61731,9 +64467,11 @@ export interface operations {
                     /**
                      * @example {
                      *       "conditions": null,
+                     *       "corrugateFormula": "tele_body",
                      *       "dh": 1,
                      *       "dl": 1,
                      *       "dw": 1,
+                     *       "geometryFormula": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c007",
                      *       "name": "ตัวกล่อง",
                      *       "nh": 1,
@@ -61741,6 +64479,7 @@ export interface operations {
                      *       "nw": 2,
                      *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "seq": 1,
+                     *       "swapDimensions": false,
                      *       "updatedAt": "2026-09-25T10:00:00+07:00"
                      *     }
                      */
@@ -61845,9 +64584,11 @@ export interface operations {
                     /**
                      * @example {
                      *       "conditions": null,
+                     *       "corrugateFormula": "tele_body",
                      *       "dh": 1,
                      *       "dl": 1,
                      *       "dw": 1,
+                     *       "geometryFormula": null,
                      *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c007",
                      *       "name": "ตัวกล่อง",
                      *       "nh": 1,
@@ -61855,6 +64596,7 @@ export interface operations {
                      *       "nw": 2,
                      *       "patternId": "0192f3a0-7c1e-7d2a-9b1f-00000000c006",
                      *       "seq": 1,
+                     *       "swapDimensions": false,
                      *       "updatedAt": "2026-09-25T10:00:00+07:00"
                      *     }
                      */
@@ -72855,6 +75597,311 @@ export interface operations {
             };
         };
     };
+    "admin.csCorrugate.calculate": {
+        parameters: {
+            query?: {
+                /** @description Prices shipping on the customer rate card (D-013) */
+                deliveryPostcode?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CsCorrugateConfigurationDto"];
+            };
+        };
+        responses: {
+            /** @description Prices per quantity with the staff view */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculatorVersion": "1.0.0",
+                     *       "options": [
+                     *         {
+                     *           "error": null,
+                     *           "optionKey": "0192f3a0-7c1e-7d2a-9b1f-00000000f001:0192f3a0-7c1e-7d2a-9b1f-00000000a107"
+                     *         }
+                     *       ],
+                     *       "steps": [
+                     *         {
+                     *           "designFeeAmount": "0.00",
+                     *           "earliestDeliveryDate": "2026-10-10",
+                     *           "earliestShipDate": "2026-10-09",
+                     *           "grossAmount": "13508.40",
+                     *           "instant": true,
+                     *           "internal": {
+                     *             "belowMarginFloor": false,
+                     *             "buyPrice": "10123.45",
+                     *             "factoryId": "0192f3a0-7c1e-7d2a-9b1f-00000000f001",
+                     *             "marginPct": "24.1234",
+                     *             "parts": [
+                     *               {
+                     *                 "buyPrice": "10123.45",
+                     *                 "layoutAmount": 10,
+                     *                 "layoutStandard": false,
+                     *                 "partKey": "main",
+                     *                 "sheets": 225
+                     *               }
+                     *             ],
+                     *             "priceListVersionId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101",
+                     *             "printTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a107",
+                     *             "productionRun": 1000,
+                     *             "shipping": {
+                     *               "cartons": 2,
+                     *               "costAmount": "95.00",
+                     *               "customerRateVersionId": "0192f3a0-7c1e-7d2a-9b1f-00000000d402",
+                     *               "factoryPayoutVersionId": "0192f3a0-7c1e-7d2a-9b1f-00000000d412",
+                     *               "marginAmount": "25.00",
+                     *               "method": "factory_fleet",
+                     *               "pallets": null,
+                     *               "volumeCm3": 61776,
+                     *               "weightG": 31000,
+                     *               "zoneCode": "bkk"
+                     *             }
+                     *           },
+                     *           "leadTimeDays": 7,
+                     *           "productAmount": "13380.00",
+                     *           "quantity": 1000,
+                     *           "reason": null,
+                     *           "shippingAmount": "128.40",
+                     *           "shippingNetAmount": "120.00",
+                     *           "shippingPending": false,
+                     *           "shippingPendingReason": null,
+                     *           "shippingVatAmount": "8.40",
+                     *           "structureDesignFeeAmount": "0.00",
+                     *           "toleranceOveragePct": "5.0000",
+                     *           "toleranceShortagePct": "5.0000",
+                     *           "toolingAmount": "0.00",
+                     *           "unitPrice": "13.38",
+                     *           "vatAmount": "883.73"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminQuoteCalculationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `pricing.vat_rate_missing` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.csCorrugate.inputData": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Input data */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "assemblies": [],
+                     *       "boards": [
+                     *         {
+                     *           "coatable": false,
+                     *           "code": "ka125-b",
+                     *           "flute": {
+                     *             "code": "B",
+                     *             "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a102",
+                     *             "layers": 3,
+                     *             "name": "ลอน B (3 ชั้น)"
+                     *           },
+                     *           "gsm": 450,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b102",
+                     *           "insideColour": "น้ำตาล",
+                     *           "nameEn": "Kraft board KA125 B-flute",
+                     *           "nameTh": "กระดาษลัง KA125 ลอน B",
+                     *           "outsideColour": "น้ำตาล",
+                     *           "strength": null
+                     *         }
+                     *       ],
+                     *       "coatings": [
+                     *         {
+                     *           "code": "aqueous",
+                     *           "finishKind": "coating",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b104",
+                     *           "nameEn": "Aqueous coating",
+                     *           "nameTh": "เคลือบวานิช"
+                     *         }
+                     *       ],
+                     *       "difficultyLevels": [
+                     *         {
+                     *           "code": "normal",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a103",
+                     *           "nameEn": "Normal",
+                     *           "nameTh": "ปกติ"
+                     *         }
+                     *       ],
+                     *       "inkColours": [
+                     *         {
+                     *           "code": "black",
+                     *           "colourKind": "spot",
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000a104",
+                     *           "name": "ดำ"
+                     *         }
+                     *       ],
+                     *       "patterns": [
+                     *         {
+                     *           "code": "RSC-01",
+                     *           "corrugateFormula": "rsc",
+                     *           "fluteTypeIds": [
+                     *             "0192f3a0-7c1e-7d2a-9b1f-00000000a102"
+                     *           ],
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000b101",
+                     *           "name": "กล่องฝาชน",
+                     *           "subPatterns": []
+                     *         }
+                     *       ],
+                     *       "printAreas": [
+                     *         "top",
+                     *         "side",
+                     *         "top_side",
+                     *         "all_round"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CorrugateInputDataDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.csFolding.calculate": {
         parameters: {
             query?: {
@@ -72942,6 +75989,7 @@ export interface operations {
                      *           "structureDesignFeeAmount": "0.00",
                      *           "toleranceOveragePct": "5.0000",
                      *           "toleranceShortagePct": "5.0000",
+                     *           "toolingAmount": "0.00",
                      *           "unitPrice": "13.38",
                      *           "vatAmount": "883.73"
                      *         }
@@ -131180,6 +134228,140 @@ export interface operations {
             };
         };
     };
+    "partner.pricingCorrugate.calculate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                factoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrugateConfigurationDto"];
+            };
+        };
+        responses: {
+            /** @description Buy side per print type */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculatorVersion": "1.0.0",
+                     *       "options": [
+                     *         {
+                     *           "error": null,
+                     *           "printTypeId": "0192f3a0-7c1e-7d2a-9b1f-00000000a107",
+                     *           "steps": [
+                     *             {
+                     *               "buyPrice": "10123.45",
+                     *               "leadTimeDays": 7,
+                     *               "parts": [
+                     *                 {
+                     *                   "buyPrice": "10123.45",
+                     *                   "layoutAmount": 10,
+                     *                   "layoutStandard": false,
+                     *                   "partKey": "main",
+                     *                   "sheets": 225,
+                     *                   "totalCost": "9111.11"
+                     *                 }
+                     *               ],
+                     *               "productionRun": 1000,
+                     *               "quantity": 1000
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "priceListVersionId": "0192f3a0-7c1e-7d2a-9b1f-00000000a101"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FactoryQuoteDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "partner.pricingFolding.calculate": {
         parameters: {
             query?: never;
@@ -140736,6 +143918,7 @@ export interface operations {
                      *                 "kind": "paper"
                      *               },
                      *               "code": "art-card-350",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c010",
                      *               "isDefault": true,
                      *               "nameEn": "Art card 350 gsm",
                      *               "nameTh": "อาร์ตการ์ด 350 แกรม"
@@ -140786,6 +143969,146 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["StoreProductDetailDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "store.catalog.getConfigurator": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en`. */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The configurator */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "calculator": "corrugate",
+                     *       "catalogProductId": "0192f3a0-7c1e-7d2a-9b1f-00000000e001",
+                     *       "difficultyLevelId": "0192f3a0-7c1e-7d2a-9b1f-00000000e006",
+                     *       "instant": true,
+                     *       "optionGroups": [
+                     *         {
+                     *           "kind": "material",
+                     *           "options": [
+                     *             {
+                     *               "attributes": {
+                     *                 "coatable": false,
+                     *                 "flute": "B",
+                     *                 "gsm": 450,
+                     *                 "kind": "corrugated_board"
+                     *               },
+                     *               "code": "ka125-b",
+                     *               "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e007",
+                     *               "isDefault": true,
+                     *               "nameEn": "Kraft board KA125 B-flute",
+                     *               "nameTh": "กระดาษลัง KA125 ลอน B"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "patterns": [
+                     *         {
+                     *           "code": "RSC-01",
+                     *           "dielineKey": "rsc",
+                     *           "fluteTypeIds": [
+                     *             "0192f3a0-7c1e-7d2a-9b1f-00000000e004"
+                     *           ],
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e002",
+                     *           "name": "กล่องฝาชน",
+                     *           "parts": [],
+                     *           "rules": {
+                     *             "lengthMustExceedHeight": false,
+                     *             "lengthMustExceedWidth": false,
+                     *             "maxHMm": 800,
+                     *             "maxLMm": 1000,
+                     *             "maxWMm": 800,
+                     *             "minHMm": 50,
+                     *             "minLMm": 100,
+                     *             "minWMm": 100,
+                     *             "widthMustExceedHeight": true
+                     *           }
+                     *         }
+                     *       ],
+                     *       "printAreas": [
+                     *         "top",
+                     *         "side",
+                     *         "top_side",
+                     *         "all_round"
+                     *       ],
+                     *       "productTypeCode": "corrugated",
+                     *       "quoteValidityDays": 15,
+                     *       "slug": "rsc-carton",
+                     *       "standardSizes": [
+                     *         {
+                     *           "code": "M",
+                     *           "heightMm": 250,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000e005",
+                     *           "lengthMm": 400,
+                     *           "name": "30×40×25 ซม.",
+                     *           "widthMm": 300
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StoreConfiguratorDto"];
                 };
             };
             /** @description Problem: `http.not_found` */
@@ -154870,6 +158193,7 @@ export interface operations {
                      *           "structureDesignFeeAmount": "0.00",
                      *           "toleranceOveragePct": "5.0000",
                      *           "toleranceShortagePct": "5.0000",
+                     *           "toolingAmount": "0.00",
                      *           "unitPrice": "13.38",
                      *           "vatAmount": "883.73"
                      *         }

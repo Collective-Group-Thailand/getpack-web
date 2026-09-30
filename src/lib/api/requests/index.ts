@@ -18,16 +18,13 @@ export {
 export { REQUESTS, type RequestKey, type Requests } from "./registry";
 export * from "./admin-console";
 export * from "./admin-analytics";
-export * from "./admin-companies";
 export * from "./admin-customers";
 export * from "./admin-finance";
 export * from "./admin-logistics";
 export * from "./admin-marketing";
 export * from "./admin-orders";
-export * from "./admin-partners";
 export * from "./admin-prepress";
 export * from "./admin-rfq";
-export * from "./admin-sales";
 export * from "./partner-account";
 export * from "./partner-billing";
 export * from "./partner-jobs";

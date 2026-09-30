@@ -11,19 +11,19 @@
 import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
-import type { rfqDetail } from "@/lib/api/requests/admin-rfq";
 import type { storeRfqForm } from "@/lib/api/requests/store-rfq";
 import type { Schemas } from "@/lib/api/types";
 
 import { PRODUCT_TYPES } from "../admin/catalog";
 import { customers as fakeCustomers } from "../admin/commerce";
 import { addCustomerRfq, customerAcceptQuote, rfqMessages, rfqs } from "../admin/rfq";
+import type { RfqRow } from "../admin/rfq-model";
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 import { nextQuoteId, quotesOf, QUOTE_VALIDITY_DAYS, type StoreQuote } from "./quotes";
 
-type AdminRfq = z.output<typeof rfqDetail>;
+type AdminRfq = RfqRow;
 type Form = z.output<typeof storeRfqForm>;
 type Field = Form["fields"][number];
 
@@ -386,7 +386,6 @@ export const storeRfqHandlers = [
       author: null,
       visibility: "customer" as const,
       body: body.body,
-      files: [],
       createdAt: bangkokIso(),
     };
     rfqMessages.set(rfq.id, [...(rfqMessages.get(rfq.id) ?? []), message]);

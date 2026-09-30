@@ -26,8 +26,17 @@
 import { z } from "zod";
 
 import { designOption, mockupOption, orderLineType, productTypeRef } from "./admin-orders";
-import { calculatorKey, quoteSource, quoteStatus } from "./admin-sales";
 import { currency, date, dateTime, money, nextAction, pct, request, uuid } from "./define";
+
+/* ------------------------------------------------------------------------------------ enums */
+
+export const calculatorKey = z
+  .enum(["folding", "corrugate", "label", "tag_sleeve", "pouch", "standard_product", "service"])
+  .meta({ id: "CalculatorKey" });
+export const quoteStatus = z
+  .enum(["calculated", "saved", "shared", "converted", "expired", "superseded"])
+  .meta({ id: "QuoteStatus" });
+export const quoteSource = z.enum(["instant", "rfq"]).meta({ id: "QuoteSource" });
 
 /* ------------------------------------------------------------------------------ configurator */
 

@@ -20,6 +20,7 @@
     "gen:api": "tsx scripts/gen-api.ts",
     "gen:api:check": "tsx scripts/gen-api.ts --check",
     "gen:triage": "tsx scripts/gen-triage.ts",
+    "gen:rbac": "tsx scripts/gen-rbac.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm test:app && pnpm test:dieline",

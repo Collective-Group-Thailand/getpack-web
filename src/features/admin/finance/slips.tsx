@@ -135,14 +135,23 @@ type Decision = "approve" | "reject";
  * the API refuses one already used, which is how a duplicate slip is caught — and is confirmed by
  * retyping the group code, since it pays the instalment and issues the tax invoice / receipt.
  */
-function SlipReview({ slip, onClose }: { slip: SlipItem; onClose: () => void }) {
+export function SlipReview({
+  slip,
+  onClose,
+  initialDecision = "approve",
+}: {
+  slip: SlipItem;
+  onClose: () => void;
+  /** The order screen opens it from "approve" or "reject" (`../orders/OrderActions.tsx`). */
+  initialDecision?: Decision;
+}) {
   const t = useTranslations("finance.slips.review");
   const tFinance = useTranslations("finance.common");
   const tCommon = useTranslations("common");
   const format = useFormat();
   const queryClient = useQueryClient();
   const canVerify = useCan("payments.verify_slip");
-  const [decision, setDecision] = useState<Decision>("approve");
+  const [decision, setDecision] = useState<Decision>(initialDecision);
   const [bankTransRef, setBankTransRef] = useState("");
   const [received, setReceived] = useState("");
   const [note, setNote] = useState("");

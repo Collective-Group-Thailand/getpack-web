@@ -150,7 +150,6 @@ export function ReceivablesList({ initial }: { initial: InitialPage<Receivable> 
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         filters={[
           {
             id: "status",
@@ -420,7 +419,6 @@ export function WhtCertificates({ initial }: { initial: InitialPage<WhtCertifica
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         empty={{ title: t("empty") }}
       />
       {recording ? <RecordCertificate certificate={recording} onClose={() => setRecording(null)} /> : null}
@@ -512,12 +510,17 @@ function RecordCertificate({ certificate, onClose }: { certificate: WhtCertifica
   );
 }
 
-/** The companies with credit terms, for the statement and dunning pickers (CONTRACT-REQUEST admin.companies). */
+/** The active companies, for the statement and dunning pickers (`admin.companies.list`). */
 function useCreditCompanies() {
   return useQuery({
-    queryKey: queryKeys.list("admin", "company", { picker: "credit" }),
-    queryFn: () => browserRequests().call("GET /v1/admin/companies", { query: { perPage: 100 } }),
-    select: (page) => page.data.filter((company) => company.status === "active"),
+    queryKey: queryKeys.list("admin", "company", { picker: "active" }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/companies", {
+          params: { query: { status: "active", perPage: 100 } },
+        })
+      ).data!,
+    select: (page) => page.data,
   });
 }
 
@@ -567,7 +570,7 @@ export function CompanyStatements() {
               placeholder={t("pickCompany")}
               options={(companies.data ?? []).map((company) => ({
                 value: company.id,
-                label: `${company.legalName} · ${company.companyCode}`,
+                label: company.companyCode ? `${company.legalName} · ${company.companyCode}` : company.legalName,
               }))}
             />
           </Field>
