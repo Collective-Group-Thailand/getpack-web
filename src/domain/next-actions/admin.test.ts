@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { adminOrderActions, type AdminOrderFacts } from "./admin";
+import {
+  adminCampaignActions,
+  adminCouponActions,
+  adminOrderActions,
+  adminPromotionActions,
+  type AdminOrderFacts,
+} from "./admin";
 
 const everyone = () => true;
 const nobody = () => false;
@@ -43,5 +49,57 @@ describe("adminOrderActions", () => {
     expect(keys({ status: "waiting_payment", artworkStatus: "awaiting_upload", slipToReview: true }, nobody)).toEqual(
       [],
     );
+  });
+});
+
+describe("adminCampaignActions", () => {
+  const actions = (
+    status: Parameters<typeof adminCampaignActions>[0],
+    can: (permission: string) => boolean = everyone,
+  ) => adminCampaignActions(status, can);
+
+  it("activates a draft, pauses or ends a running campaign (D-154)", () => {
+    expect(actions("draft")).toEqual([{ action: "activate" }]);
+    expect(actions("scheduled")).toEqual([{ action: "pause" }, { action: "end" }]);
+    expect(actions("active")).toEqual([{ action: "pause" }, { action: "end" }]);
+  });
+
+  it("resumes a paused campaign with activate, and only ends an exhausted one", () => {
+    expect(actions("paused")).toEqual([{ action: "activate", resumes: true }, { action: "end" }]);
+    expect(actions("exhausted")).toEqual([{ action: "end" }]);
+    expect(actions("ended")).toEqual([]);
+  });
+
+  it("offers nothing without campaigns.manage", () => {
+    expect(actions("active", (permission) => permission !== "campaigns.manage")).toEqual([]);
+  });
+});
+
+describe("adminPromotionActions", () => {
+  it("follows the promotion's status (D-053)", () => {
+    expect(adminPromotionActions("draft", everyone)).toEqual([{ action: "activate" }]);
+    expect(adminPromotionActions("active", everyone)).toEqual([{ action: "pause" }, { action: "end" }]);
+    expect(adminPromotionActions("paused", everyone)).toEqual([
+      { action: "activate", resumes: true },
+      { action: "end" },
+    ]);
+    expect(adminPromotionActions("ended", everyone)).toEqual([]);
+  });
+
+  it("offers nothing without promotions.manage", () => {
+    expect(adminPromotionActions("draft", (permission) => permission !== "promotions.manage")).toEqual([]);
+  });
+});
+
+describe("adminCouponActions", () => {
+  it("disables an active code and enables a disabled one", () => {
+    expect(adminCouponActions({ status: "active" }, "active", everyone)).toEqual(["disable"]);
+    expect(adminCouponActions({ status: "disabled" }, "active", everyone)).toEqual(["enable"]);
+    expect(adminCouponActions({ status: "used_up" }, "active", everyone)).toEqual([]);
+  });
+
+  it("offers nothing on an ended promotion or without promotions.manage", () => {
+    expect(adminCouponActions({ status: "active" }, "ended", everyone)).toEqual([]);
+    expect(adminCouponActions({ status: "active" }, "active", nobody)).toEqual([]);
   });
 });

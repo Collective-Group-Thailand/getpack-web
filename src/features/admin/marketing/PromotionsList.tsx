@@ -16,22 +16,45 @@ import { Dialog } from "@/ui/components/Dialog";
 import { IconButton } from "@/ui/components/IconButton";
 import { toast } from "@/ui/components/Toast";
 
-import { problemMessage, QueueTabs, ResourceList, StatusChip, useCan, type InitialPage } from "../console";
-import { PROMOTION_KINDS, promotionsList, type PromotionSummary } from "./resources";
+import {
+  adminBrowserApis,
+  problemMessage,
+  QueueTabs,
+  ResourceList,
+  StatusChip,
+  useCan,
+  type InitialPage,
+} from "../console";
+import { PROMOTION_KINDS, promotionsList, type Promotion } from "./resources";
+
+/** The campaigns a promotion can name, by id — the row carries only `campaignId`. */
+function useCampaignCodes() {
+  const campaigns = useQuery({
+    queryKey: queryKeys.list("admin", "campaign", { perPage: 100 }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/campaigns", { params: { query: { perPage: 100 } } })).data!,
+  });
+  return new Map((campaigns.data?.data ?? []).map((row) => [row.id, row.code]));
+}
 
 /**
  * Promotions (F2 2.7, D-053): coupons, automatic promotions and the referral discount, in the
- * priority order the engine applies them. Usage shows what the margin guard capped — the API
- * caps; the screen reports.
+ * priority order the engine applies them. The spend is what each has given away.
+ *
+ * CONTRACT-GAP admin.promotions — the row has no benefit summary (its benefit type names it), no
+ * usage (redemptions, the margin guard's cap: the promotion's own page reads the report) and no
+ * campaign ref (the campaign's code comes from the campaign list).
  */
-export function PromotionsList({ initial }: { initial: InitialPage<PromotionSummary> | null }) {
+export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | null }) {
   const t = useTranslations("marketing.promotions");
+  const tBenefits = useTranslations("marketing.promotion.benefits");
   const tStatus = useTranslations("status");
   const format = useFormat();
   const canManage = useCan("promotions.manage");
+  const campaignCodes = useCampaignCodes();
   const [ordering, setOrdering] = useState(false);
 
-  const columns: DataTableColumn<PromotionSummary>[] = [
+  const columns: DataTableColumn<Promotion>[] = [
     { id: "priority", header: t("columns.priority"), numeric: true, cell: (row) => row.priority },
     {
       id: "name",
@@ -41,7 +64,7 @@ export function PromotionsList({ initial }: { initial: InitialPage<PromotionSumm
           <Link href={`/marketing/promotions/${row.id}`} className="text-primary font-medium hover:underline">
             {row.name}
           </Link>
-          <p className="text-muted text-xs">{row.benefitSummary}</p>
+          <p className="text-muted text-xs">{tBenefits(row.benefit.type)}</p>
         </div>
       ),
     },
@@ -55,12 +78,12 @@ export function PromotionsList({ initial }: { initial: InitialPage<PromotionSumm
       id: "campaign",
       header: t("columns.campaign"),
       cell: (row) =>
-        row.campaign ? (
+        row.campaignId ? (
           <Link
-            href={`/marketing/campaigns/${row.campaign.id}`}
+            href={`/marketing/campaigns/${row.campaignId}`}
             className="text-primary font-mono text-xs hover:underline"
           >
-            {row.campaign.code}
+            {campaignCodes.get(row.campaignId) ?? t("campaignLink")}
           </Link>
         ) : (
           <span className="text-muted">–</span>
@@ -68,18 +91,10 @@ export function PromotionsList({ initial }: { initial: InitialPage<PromotionSumm
     },
     { id: "stacking", header: t("columns.stacking"), hideable: true, cell: (row) => t(`stacking.${row.stacking}`) },
     {
-      id: "usage",
-      header: t("columns.usage"),
-      cell: (row) => (
-        <span className="text-sm">
-          {t("usage", { count: row.usage.redemptionsCount, amount: format.thb(row.usage.discountAmount) })}
-          {Number(row.usage.cappedAmount) > 0 ? (
-            <span className="text-warning-subtle-fg block text-xs">
-              {t("capped", { amount: format.thb(row.usage.cappedAmount) })}
-            </span>
-          ) : null}
-        </span>
-      ),
+      id: "spent",
+      header: t("columns.spent"),
+      numeric: true,
+      cell: (row) => <span className="text-sm">{format.thb(row.spentAmount)}</span>,
     },
     {
       id: "window",
@@ -148,9 +163,10 @@ function PriorityDialog({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const live = useQuery({
     queryKey: queryKeys.list("admin", "promotion", { priority: true }),
-    queryFn: () => browserRequests().call("GET /v1/admin/promotions", { query: { perPage: 100 } }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/promotions", { params: { query: { perPage: 100 } } })).data!,
   });
-  const [order, setOrder] = useState<PromotionSummary[] | null>(null);
+  const [order, setOrder] = useState<Promotion[] | null>(null);
   const rows = order ?? (live.data?.data ?? []).filter((row) => row.status === "active" || row.status === "paused");
 
   const save = useMutation({

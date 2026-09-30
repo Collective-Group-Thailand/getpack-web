@@ -4,11 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { adminCouponActions } from "@/domain/next-actions/admin";
 import { COUPON_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -17,25 +19,42 @@ import { Input, NumberInput } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { toast } from "@/ui/components/Toast";
 
-import { ConfirmAction, FormDialog, FormError, problemMessage, Section, StatusChip, useCan } from "../console";
+import {
+  adminBrowserApis,
+  ConfirmAction,
+  FormDialog,
+  FormError,
+  problemMessage,
+  Section,
+  StatusChip,
+  useActor,
+  useCan,
+} from "../console";
 import type { CouponCode, Promotion } from "./resources";
 
 /**
  * A coupon promotion's codes (D-053): one named code customers type, or a batch of unique
  * generated codes to hand out. Generating is one intent with one idempotency key, so a retry
- * never makes a second batch. A leaked code is disabled with a reason; its redemptions stay.
+ * never makes a second batch. A leaked code is disabled; its redemptions stay, and it can be
+ * enabled again.
+ *
+ * The batch list is still a request (`admin.coupons`, packio-api U-B0.2).
+ * CONTRACT-GAP admin.coupons — a code has no batch or assigned-customer ref, the list has no
+ * batch or status filter, and disabling records no reason.
  */
 export function CouponCodes({ promotion }: { promotion: Promotion }) {
   const t = useTranslations("marketing.coupons");
   const format = useFormat();
   const queryClient = useQueryClient();
-  const canManage = useCan("promotions.manage") && promotion.status !== "ended";
+  const actor = useActor();
+  const can = (permission: string) => actor.permissions.includes(permission);
+  const canGenerate = useCan("promotions.manage") && promotion.status !== "ended";
   const [generating, setGenerating] = useState<{ key: string } | null>(null);
   const [kind, setKind] = useState<"single" | "bulk_unique">("single");
   const [code, setCode] = useState("");
   const [count, setCount] = useState("100");
   const [prefix, setPrefix] = useState("");
-  const [disabling, setDisabling] = useState<CouponCode | null>(null);
+  const [changing, setChanging] = useState<{ coupon: CouponCode; action: Schemas["CouponAction"] } | null>(null);
 
   const batches = useQuery({
     queryKey: queryKeys.related("admin", "promotion", promotion.id, "batches"),
@@ -46,17 +65,20 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
   });
   const codes = useQuery({
     queryKey: queryKeys.related("admin", "promotion", promotion.id, "codes"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/promotions/{promotionId}/coupon-codes", {
-        path: { promotionId: promotion.id },
-        query: { perPage: 100 },
-      }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/coupons", {
+          params: { path: { promotionId: promotion.id }, query: { perPage: 100 } },
+        })
+      ).data!,
   });
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.related("admin", "promotion", promotion.id, "batches") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.related("admin", "promotion", promotion.id, "codes") });
   };
 
+  const rows = codes.data?.data ?? [];
+  const withActions = rows.some((row) => adminCouponActions(row, promotion.status, can).length > 0);
   const columns: DataTableColumn<CouponCode>[] = [
     { id: "code", header: t("columns.code"), cell: (row) => <span className="font-mono">{row.code}</span> },
     {
@@ -71,17 +93,17 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       cell: (row) =>
         row.usageLimit ? t("usedOf", { used: row.usedCount, limit: row.usageLimit }) : format.number(row.usedCount),
     },
-    ...(canManage
+    ...(withActions
       ? [
           {
-            id: "disable",
-            header: <span className="sr-only">{t("disable")}</span>,
+            id: "actions",
+            header: <span className="sr-only">{t("actionsHeader")}</span>,
             cell: (row: CouponCode) =>
-              row.status === "active" ? (
-                <Button size="sm" variant="ghost" onClick={() => setDisabling(row)}>
-                  {t("disableCode", { code: row.code })}
+              adminCouponActions(row, promotion.status, can).map((action) => (
+                <Button key={action} size="sm" variant="ghost" onClick={() => setChanging({ coupon: row, action })}>
+                  {t(`${action}Code`, { code: row.code })}
                 </Button>
-              ) : null,
+              )),
           },
         ]
       : []),
@@ -92,7 +114,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       title={t("title")}
       description={t("note")}
       actions={
-        canManage ? (
+        canGenerate ? (
           <Button
             size="sm"
             variant="secondary"
@@ -123,16 +145,14 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       <DataTable
         caption={t("title")}
         columns={columns}
-        rows={codes.data?.data ?? []}
+        rows={rows}
         getRowId={(row) => row.id}
         loading={codes.isPending}
         density="compact"
         empty={<EmptyState icon="ticket" title={t("empty")} description={t("emptyBody")} />}
       />
-      {(codes.data?.meta.total ?? 0) > (codes.data?.data.length ?? 0) ? (
-        <p className="text-muted mt-2 text-xs">
-          {t("more", { shown: codes.data!.data.length, total: codes.data!.meta.total })}
-        </p>
+      {(codes.data?.meta.total ?? 0) > rows.length ? (
+        <p className="text-muted mt-2 text-xs">{t("more", { shown: rows.length, total: codes.data!.meta.total })}</p>
       ) : null}
 
       {generating ? (
@@ -144,8 +164,8 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
           onSubmit={async () => {
             if (kind === "single" && !code.trim()) throw new FormError(t("needCode"));
             try {
-              await browserRequests().call("POST /v1/admin/promotions/{promotionId}/coupon-batches", {
-                path: { promotionId: promotion.id },
+              await adminBrowserApis().contract.POST("/v1/admin/promotions/{promotionId}/coupons", {
+                params: { path: { promotionId: promotion.id }, header: { "Idempotency-Key": generating.key } },
                 body:
                   kind === "single"
                     ? { kind, code: code.trim().toUpperCase() }
@@ -154,7 +174,6 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
                         count: Math.trunc(Number(count)),
                         ...(prefix.trim() ? { prefix: prefix.trim().toUpperCase() } : {}),
                       },
-                idempotencyKey: generating.key,
               });
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
@@ -193,22 +212,25 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
         </FormDialog>
       ) : null}
 
-      {disabling ? (
+      {changing ? (
         <ConfirmAction
           open
-          onOpenChange={(open) => (open ? undefined : setDisabling(null))}
-          title={t("disableTitle", { code: disabling.code })}
-          description={t("disableBody", { code: disabling.code, used: disabling.usedCount })}
-          confirmLabel={t("disable")}
-          tone="destructive"
-          reason={{ label: t("reason"), required: true, minLength: 3 }}
-          onConfirm={async ({ reason }) => {
+          onOpenChange={(open) => (open ? undefined : setChanging(null))}
+          title={t(`${changing.action}Title`, { code: changing.coupon.code })}
+          description={t(`${changing.action}Body`, { code: changing.coupon.code, used: changing.coupon.usedCount })}
+          confirmLabel={t(changing.action)}
+          tone={changing.action === "disable" ? "destructive" : "primary"}
+          onConfirm={async () => {
             try {
-              await browserRequests().call("POST /v1/admin/coupon-codes/{codeId}/actions/disable", {
-                path: { codeId: disabling.id },
-                body: { reason },
-              });
-              toast.success(t("disabled"));
+              await adminBrowserApis().contract.POST(
+                "/v1/admin/promotions/{promotionId}/coupons/{couponId}/actions/{action}",
+                {
+                  params: {
+                    path: { promotionId: promotion.id, couponId: changing.coupon.id, action: changing.action },
+                  },
+                },
+              );
+              toast.success(t(`${changing.action}d`));
               refresh();
             } catch (error) {
               toast.error(problemMessage(error, t("failed")));
