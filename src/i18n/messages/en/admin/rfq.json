@@ -8,7 +8,6 @@
       "new": "New, unassigned",
       "mine": "Mine",
       "need_info": "Waiting on customer",
-      "awaiting_factory": "Waiting on factory",
       "quoted": "Quoted",
       "overdue": "Past SLA"
     },
@@ -23,7 +22,6 @@
       "sla": "SLA",
       "submitted": "Submitted"
     },
-    "routed": "Routed from calculator",
     "noConsultations": "Not requested",
     "consultations": "{responded} of {total} answered",
     "you": "You",
@@ -31,19 +29,8 @@
     "noTarget": "Not given",
     "respondedInTime": "Answered within SLA",
     "respondedLate": "Answered after SLA",
-    "slaTarget": "Target {hours} business hours",
     "search": "Search RFQs",
     "searchPlaceholder": "RFQ code, customer or phone",
-    "productType": "Product type",
-    "channel": "Channel",
-    "channels": {
-      "web": "Website",
-      "cs": "CS",
-      "line": "LINE",
-      "b2b": "B2B"
-    },
-    "submittedFrom": "Submitted from",
-    "submittedTo": "Submitted to",
     "emptyTitle": "No RFQs in this queue",
     "emptyBody": "Try another queue or clear the filters."
   },
@@ -83,7 +70,7 @@
     },
     "send": {
       "title": "Send quote version {version}",
-      "body": "To {customer} for {code}, valid until {validUntil}.",
+      "body": "Sent to {customer} for {code}. The price holds for the policy period (D-051) from the day it is sent.",
       "line": "{quantity} pcs",
       "supersedes": "Version {version}, sent earlier, will be superseded.",
       "confirm": "Send to customer",
@@ -124,25 +111,27 @@
       "confirm": "Request ({count})",
       "done": "Requests sent ({count})",
       "failed": "Could not send the requests"
+    },
+    "blocked": {
+      "below_margin_floor": "A line is below the margin floor — it needs approval before it is sent (D-012)"
     }
   },
   "composer": {
     "title": "Compose a quote",
     "editTitle": "Draft version {version}",
     "fillFrom": "Use a factory's answer",
-    "fillOption": "{factory} · {days}-day lead time",
-    "noAnswers": "No factory has answered yet. Price it yourself, or request factory cost first.",
+    "fillOption": "{factory}",
+    "noAnswers": "No factory answer you can see yet. Type the sell price, or ask the factories first.",
     "line": "Line {no}",
     "quantity": "Quantity (pcs)",
     "unitPrice": "Unit price (THB, before VAT)",
     "unitPriceHint": "Up to 6 decimal places",
-    "suggested": "Suggested {price}",
     "leadTime": "Lead time",
     "days": "days",
     "removeLine": "Remove line {no}",
     "addLine": "Add a quantity",
     "validUntil": "Valid until",
-    "validUntilHint": "Starts from the policy default (D-051); you may change it.",
+    "validUntilHint": "Editing a draft still asks for a validity date; a sent version gets the policy validity (D-051).",
     "customerNote": "Note to the customer",
     "customerNoteHint": "Shown on the quote.",
     "unsaved": "You have unsaved changes. The amounts below are the last saved version's.",
@@ -157,8 +146,11 @@
       "quantity": "Enter a whole number above 0",
       "duplicate": "This quantity is already listed",
       "price": "Enter a price above 0, up to 6 decimals",
-      "leadTime": "Enter 1–365 days"
-    }
+      "leadTime": "Enter 1–365 days",
+      "validUntil": "Enter the date the price holds until"
+    },
+    "buyPrice": "Factory cost {price}",
+    "validityAtSend": "The price holds for the policy period (D-051) from the day it is sent."
   },
   "detail": {
     "title": "Request for quote",
@@ -171,13 +163,7 @@
       "quotes": "Quotes",
       "messages": "Messages"
     },
-    "urgency": {
-      "due_soon": "SLA due soon",
-      "late": "Past SLA"
-    },
-    "routed": "Routed from calculator",
     "headline": "{customer} · {type} · quantities {quantities}",
-    "routedTitle": "Sent here by the instant calculator",
     "declinedTitle": "Declined: {reason}",
     "declinedBody": "Recorded as unmet demand.",
     "acceptedTitle": "The customer accepted version {version}",
@@ -188,7 +174,6 @@
       "sla": "Response SLA",
       "respondedInTime": "Answered within SLA",
       "respondedLate": "Answered after SLA",
-      "target": "{type} target: {hours} business hours",
       "submitted": "Submitted",
       "owner": "Owner",
       "assign": "Assign",
@@ -196,12 +181,7 @@
       "you": "You",
       "unassigned": "Unassigned",
       "customer": "Customer",
-      "name": "Name",
-      "company": "Company",
-      "code": "Customer code",
-      "phone": "Phone",
-      "email": "Email",
-      "activity": "Activity"
+      "name": "Name"
     },
     "request": {
       "title": "What was asked",
@@ -222,45 +202,35 @@
       },
       "notes": "Customer's notes",
       "spec": "Specification",
-      "noSpec": "No specification given",
-      "specVersion": "Spec form version {version}",
-      "files": "Files",
-      "noFiles": "No files",
-      "download": "Download"
+      "noSpec": "No specification given"
     },
     "factories": {
       "title": "Factory costs",
       "request": "Request factory cost",
-      "costNote": "Factory cost is shown only to the roles allowed to see it (D-141). Suggested prices come from the sell-margin table.",
-      "sellNote": "Showing the suggested sell price the system derived from each factory's answer.",
+      "costNote": "A factory's answer is its cost, shown only to the roles allowed to see it (D-141).",
       "factory": "Factory",
-      "tier": "Tier",
       "status": "Status",
       "due": "Answer by",
       "respondedAt": "Answered",
-      "prices": "Suggested unit price",
-      "pricesWithCost": "Suggested / cost per unit",
-      "tierPrice": "{quantity} pcs: {price}",
-      "buy": "cost {price}",
+      "prices": "Cost per piece · lead time",
+      "tierPrice": "{quantity} pcs: cost {price}",
       "waiting": "Waiting for the factory",
-      "leadTime": "Lead time",
       "days": "{days} days",
       "actions": "Actions",
       "remind": "Remind",
       "reminded": "Reminder sent",
       "remindFailed": "Could not send the reminder",
       "none": "No factory asked yet",
-      "noneBody": "Ask the factories that make this category, then quote from their answers."
+      "noneBody": "Ask the factories that make this category, then quote from their answers.",
+      "noCostNote": "Factory cost is shown only to the roles allowed to see it (D-141). Set the sell price in the quote.",
+      "answered": "Answered"
     },
     "quotes": {
       "version": "Version {version}",
       "validUntil": "Valid until {date}",
       "sentAt": "sent",
-      "acceptedAt": "accepted",
-      "by": "By {name}",
       "quantity": "Quantity",
       "unitPrice": "Unit price",
-      "suggested": "suggested {price}",
       "net": "Net",
       "vat": "VAT",
       "gross": "Total",
@@ -274,12 +244,12 @@
       "compose": "Compose a quote",
       "newVersion": "New version",
       "none": "No quote yet",
-      "noneBody": "Compose one when you have a price to offer."
+      "noneBody": "Compose one when you have a price to offer.",
+      "shipping": "Shipping",
+      "validityAtSend": "Validity set when sent (D-051)"
     },
     "messages": {
       "title": "Messages",
-      "loadFailed": "Could not load the messages",
-      "customer": "Customer",
       "fromCustomer": "from the customer",
       "fromStaff": "from the team",
       "internal": "Internal",
@@ -295,6 +265,9 @@
       "noted": "Note added",
       "sentToCustomer": "Message sent to the customer",
       "failed": "Could not send the message"
-    }
+    },
+    "overdue": "Past SLA",
+    "acceptedTitleNoVersion": "The customer accepted the quote",
+    "openQuotation": "Open the quotation"
   }
 }
