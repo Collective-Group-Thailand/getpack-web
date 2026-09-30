@@ -23,12 +23,9 @@ import { partnerBillingRequests } from "./partner-billing";
 import { partnerJobRequests } from "./partner-jobs";
 import { partnerOnboardingRequests } from "./partner-onboarding";
 import { partnerShipmentRequests } from "./partner-shipments";
-import { storeAccountRequests } from "./store-account";
-import { storeArtworkRequests } from "./store-artwork";
 import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
-import { storeCartRequests } from "./store-cart";
 import { storeCatalogRequests } from "./store-catalog";
 import { storeCheckoutRequests } from "./store-checkout";
 import { storeDesignRequests } from "./store-designs";
@@ -50,13 +47,10 @@ export const REQUESTS = {
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,
   ...storeCatalogRequests,
-  ...storeAccountRequests,
   ...storeQuoteRequests,
   ...storeRfqRequests,
-  ...storeCartRequests,
   ...storeCheckoutRequests,
   ...storeOrderRequests,
-  ...storeArtworkRequests,
   ...storeFulfilmentRequests,
   ...storeSupportRequests,
   ...storeBusinessRequests,

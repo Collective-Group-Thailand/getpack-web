@@ -8,10 +8,11 @@ import { accessToken } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
 import { createRequestClient } from "@/lib/api/requests/client";
 import { REQUESTS } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 
 import { quantityBand } from "../analytics/bands";
 import { formatTaxId, isValidThaiTaxId } from "../account/tax-id";
-import { buildConfiguration } from "../configurator/build";
+import { buildCalculateBody } from "../configurator/build";
 import { initialState } from "../configurator/state";
 
 const server = setupServer(...handlers);
@@ -48,72 +49,62 @@ describe("the checkout, against the mock", () => {
     >["call"],
   };
 
+  const api = () => createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
+
+  /** An empty cart, then one quotation of `quantity` in it — through the published cart. */
   async function cartWith(quantity: number) {
-    const cart = await customer.call("GET /v1/store/cart");
-    for (const item of cart.items)
-      await customer.call("DELETE /v1/store/cart/items/{itemId}", { path: { itemId: item.id } });
+    const { data: cart } = await api().GET("/v1/store/cart");
+    for (const item of cart!.items)
+      await api().DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } });
     const configurator = await customer.call("GET /v1/store/catalog/products/{slug}/configurator", {
       path: { slug: "tuck-end-box" },
     });
     const state = { ...initialState(configurator), quantities: [quantity], quantity };
-    const quote = await customer.call("POST /v1/store/quotes", {
-      body: {
-        productTypeCode: configurator.productTypeCode,
-        catalogProductSlug: configurator.slug,
-        configuration: buildConfiguration(configurator, state) as unknown as Record<string, unknown>,
-        quantity,
-        designOption: "own_file",
-        mockupOption: "none",
-      },
+    const { data: quote } = await api().POST("/v1/store/quotes", {
+      body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],
     });
-    await customer.call("POST /v1/store/cart/items", { body: { quoteId: quote.id } });
+    const { response } = await api().GET("/v1/store/cart");
+    await api().POST("/v1/store/cart/items", {
+      params: { header: { "If-Match": response.headers.get("etag")! } },
+      body: { quoteId: quote!.id, quoteOptionId: quote!.options[0]!.id, designOption: "own_file" },
+    });
   }
 
-  const input = {
-    contact: { name: "ทดสอบ", phone: "0812345678", email: "seed.customer@packio.invalid" },
-    delivery: { mode: "per_item" as const },
-    taxProfileId: null,
-    couponCodes: [],
-    pointsToRedeem: 0,
-  };
+  const preview = async (body: Schemas["CheckoutDto"] = { taxProfileId: null }) =>
+    (await api().POST("/v1/store/checkout/actions/preview", { body })).data!;
 
-  it("offers only full payment below the threshold, and 50/50 above it (D-020)", async () => {
+  it("pays in full below the threshold, and 50/50 above it (D-020) — the schedule the rules chose", async () => {
     await cartWith(500);
-    const small = await customer.call("POST /v1/store/checkout/actions/preview", { body: input });
-    expect(small.schedule.options.map((option) => option.key)).toEqual(["full"]);
-    expect(small.totals.payableNowAmount).toBe(small.totals.grossAmount);
+    const small = await preview();
+    expect(small.paymentSchedule!.instalments).toHaveLength(1);
+    expect(small.paymentSchedule!.instalments[0]).toMatchObject({ dueTrigger: "at_checkout" });
 
     await cartWith(5000);
-    const large = await customer.call("POST /v1/store/checkout/actions/preview", { body: input });
-    expect(large.schedule.selectedKey).toBe("deposit_50");
-    expect(large.schedule.options[0]!.instalments.map((instalment) => instalment.requiredBefore)).toEqual([
+    const large = await preview();
+    expect(large.paymentSchedule!.templateKey).toBe("deposit_50");
+    expect(large.paymentSchedule!.instalments.map((instalment) => instalment.requiredBefore)).toEqual([
       "production",
       "shipping",
     ]);
   });
 
-  it("keeps points within the D-133 limits and says so", async () => {
+  it("keeps points within the D-133 limits and says so in its notices", async () => {
     await cartWith(1000);
-    const preview = await customer.call("POST /v1/store/checkout/actions/preview", {
-      body: { ...input, pointsToRedeem: 999_999 },
-    });
-    expect(preview.points.redeemed).toBe(preview.points.max);
-    expect(preview.blockers.map((blocker) => blocker.code)).toContain("points_above_maximum");
-    const tooFew = await customer.call("POST /v1/store/checkout/actions/preview", {
-      body: { ...input, pointsToRedeem: 1 },
-    });
-    expect(tooFew.blockers.map((blocker) => blocker.code)).toContain("points_below_minimum");
+    const many = await preview({ taxProfileId: null, redeemPoints: 999_999 });
+    expect(many.notices.map((notice) => notice.code)).toContain("points.capped");
+    const one = await preview({ taxProfileId: null, redeemPoints: 1 });
+    expect(one.notices.map((notice) => notice.code)).toContain("points.rejected");
   });
 
-  it("refuses a placement whose cart changed after the preview", async () => {
+  it("refuses a placement whose total moved since the preview", async () => {
     await cartWith(1000);
-    const preview = await customer.call("POST /v1/store/checkout/actions/preview", { body: input });
+    const seen = await preview();
     await cartWith(2000);
     await expect(
-      customer.call("POST /v1/store/checkout", {
-        body: { ...input, previewToken: preview.previewToken },
-        idempotencyKey: "test-reprice",
+      api().POST("/v1/store/checkout", {
+        params: { header: { "Idempotency-Key": "test-reprice" } },
+        body: { taxProfileId: null, expectedGrossAmount: seen.totals.grossAmount },
       }),
-    ).rejects.toMatchObject({ status: 409, code: "checkout.repriced" });
+    ).rejects.toMatchObject({ status: 409, code: "checkout.total_changed" });
   });
 });

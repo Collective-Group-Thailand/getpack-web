@@ -5,21 +5,23 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 import { toast } from "@/ui/components/Toast";
 
-type Member = ResponseOf<Requests, "GET /v1/store/me/company/members">["data"][number];
-type Role = Member["roles"][number];
+type Member = Schemas["CompanyMemberDto"];
+type Role = Schemas["CompanyRole"];
+
+/** `0812345678` → `+66812345678`, the form `store.companies.inviteMember` takes. */
+const e164 = (phone: string) => `+66${phone.slice(1)}`;
 const ROLES: Role[] = ["company_admin", "company_buyer", "company_approver", "company_accountant"];
 
 function RoleBoxes({ value, onChange, legend }: { value: Role[]; onChange: (roles: Role[]) => void; legend: string }) {
@@ -44,13 +46,19 @@ function RoleBoxes({ value, onChange, legend }: { value: Role[]; onChange: (role
 
 /**
  * Members and their roles (F3 3.7): Company Admin, Buyer, Approver, Accountant. An admin invites
- * by phone, edits roles and removes people; everyone else reads the list.
+ * someone who already has a Packio account by their phone (`store.companies.inviteMember`), edits
+ * roles and removes people (`store.companies.removeMember`); everyone else reads the list.
+ *
+ * CONTRACT-GAP store.company-members — a published member is a name only (no phone or e-mail to
+ * show), an invitation takes no name, and changing roles is still being built (its request stays).
  */
 export function MembersManager({
+  companyId,
   members,
   canManage,
   selfId,
 }: {
+  companyId: string;
   members: Member[];
   canManage: boolean;
   selfId: string | null;
@@ -58,7 +66,7 @@ export function MembersManager({
   const t = useTranslations("business.members");
   const format = useFormat();
   const router = useRouter();
-  const [invite, setInvite] = useState({ name: "", phone: "", roles: ["company_buyer"] as Role[] });
+  const [invite, setInvite] = useState({ phone: "", roles: ["company_buyer"] as Role[] });
   const [inviteError, setInviteError] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState<{ id: string; roles: Role[] } | null>(null);
   const [removing, setRemoving] = useState<Member | null>(null);
@@ -82,19 +90,19 @@ export function MembersManager({
   async function sendInvite(event: React.FormEvent) {
     event.preventDefault();
     const found: Record<string, string> = {};
-    if (!invite.name.trim()) found.name = t("errors.name");
     if (!/^0\d{8,9}$/.test(invite.phone)) found.phone = t("errors.phone");
     if (invite.roles.length === 0) found.roles = t("errors.roles");
     setInviteError(found);
     if (Object.keys(found).length > 0) return;
     const ok = await run(
       () =>
-        browserRequests().call("POST /v1/store/me/company/members", {
-          body: { name: invite.name.trim(), phone: invite.phone, roles: invite.roles },
+        browserApi().POST("/v1/store/companies/{companyId}/members", {
+          params: { path: { companyId } },
+          body: { phone: e164(invite.phone), roles: invite.roles },
         }),
-      t("invited", { name: invite.name.trim() }),
+      t("invited", { name: invite.phone }),
     );
-    if (ok) setInvite({ name: "", phone: "", roles: ["company_buyer"] });
+    if (ok) setInvite({ phone: "", roles: ["company_buyer"] });
   }
 
   return (
@@ -109,9 +117,6 @@ export function MembersManager({
                   {member.id === selfId ? (
                     <span className="text-muted ms-2 text-sm font-normal">{t("you")}</span>
                   ) : null}
-                </p>
-                <p className="text-muted text-sm">
-                  {[member.user.phone, member.user.email].filter(Boolean).join(" · ")}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">
                   {member.roles.map((role) => (
@@ -189,12 +194,6 @@ export function MembersManager({
             {t("inviteTitle")}
           </h2>
           <form noValidate onSubmit={(event) => void sendInvite(event)} className="flex flex-col gap-4">
-            <Field label={t("name")} error={inviteError.name}>
-              <Input
-                value={invite.name}
-                onChange={(event) => setInvite((current) => ({ ...current, name: event.target.value }))}
-              />
-            </Field>
             <Field label={t("phone")} hint={t("phoneHint")} error={inviteError.phone}>
               <PhoneInput value={invite.phone} onChange={(phone) => setInvite((current) => ({ ...current, phone }))} />
             </Field>
@@ -223,8 +222,8 @@ export function MembersManager({
           if (!removing) return;
           const ok = await run(
             () =>
-              browserRequests().call("DELETE /v1/store/me/company/members/{memberId}", {
-                path: { memberId: removing.id },
+              browserApi().POST("/v1/store/companies/{companyId}/members/{memberId}/actions/remove", {
+                params: { path: { companyId, memberId: removing.id } },
               }),
             t("removed", { name: removing.user.displayName }),
           );

@@ -40,7 +40,9 @@ test.describe("the account", () => {
     const todo = page
       .getByRole("region", { name: "สิ่งที่ต้องทำ" })
       .or(page.locator("section[aria-labelledby=account-todo]"));
-    await expect(todo.getByRole("link", { name: /ส่งไฟล์งาน/ }).first()).toBeVisible();
+    // CONTRACT-GAP entity.next-actions — without the order's own list, what needs doing is read from
+    // its status and its group's: a blocked preflight or a design brief is not visible from a list.
+    await expect(todo.getByRole("link", { name: "มีงวดที่ต้องชำระ — ไปชำระ" }).first()).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("navigation", { name: "บัญชีของฉัน" }).getByRole("link", { name: "คำสั่งซื้อ" }).click();
@@ -57,8 +59,8 @@ test.describe("the account", () => {
     await signInAsCustomer(page, `/account/orders/${COMPLETED_ORDER}`);
     await expect(page.getByText("PK-2569-00136").first()).toBeVisible();
     await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText("ส่งถึงแล้ว")).toBeVisible();
-    await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText(/กำหนด/).first()).toBeVisible();
-    await expect(page.getByText("ได้รับครบ 500 จาก 500 ชิ้น")).toBeVisible();
+    // CONTRACT-GAP store.tracking — the published timeline has no promised dates to show beside it.
+    await expect(page.getByText(/รับสินค้า จำนวน 500 เมื่อ/)).toBeVisible();
     await expect(page.getByRole("link", { name: "สั่งซ้ำ PK-2569-00136" })).toBeVisible();
 
     await page.getByRole("button", { name: /ขอลิงก์ดาวน์โหลด/ }).click();
@@ -66,7 +68,8 @@ test.describe("the account", () => {
     await expect(open).toBeVisible();
     await expect(open).toHaveAttribute("href", /^data:/);
 
-    await page.getByRole("link", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
+    // The link is made when asked for (`store.timeline.createTrackingLink` is a write).
+    await page.getByRole("button", { name: "ลิงก์ติดตามสถานะสำหรับแชร์" }).click();
     await expect(page).toHaveURL(/\/track\/trk/);
     await page.goBack();
     await expectNoViolations(page);
@@ -82,40 +85,51 @@ test.describe("the account", () => {
     await expect(page.getByRole("img", { name: /คิวอาร์โค้ดพร้อมเพย์/ })).toBeVisible();
   });
 
-  test("a saved quotation reopens in the configurator", async ({ page }) => {
+  test("a saved quotation is listed with its price and validity", async ({ page }) => {
     await signInAsCustomer(page, "/configure/tuck-end-box");
     const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
     await expect(dock.getByText(/\/ ชิ้น$/)).toBeVisible();
     await dock.getByRole("button", { name: "บันทึก" }).click();
-    await expect(page.getByText(/บันทึกใบเสนอราคา QT-/)).toBeVisible();
+    // A saved quotation has no code until it is shared or put in a PDF (store.quotes.save).
+    await expect(page.getByText(/บันทึกใบเสนอราคาแล้ว ราคาคงที่ถึง/)).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/account/quotes`);
+    await expect(page.getByText(/ราคาคงที่ถึง/).first()).toBeVisible();
+    await expectNoViolations(page);
+  });
+
+  test("a saved quotation reopens in the configurator", async ({ page }) => {
+    test.fixme(
+      true,
+      "CONTRACT-GAP store.catalog-product-ref — a saved quote names its product by id, and the catalogue has no read by id",
+    );
+    await signInAsCustomer(page, "/account/quotes");
     await page
       .getByRole("link", { name: /เปิดอีกครั้ง/ })
       .first()
       .click();
     await expect(page).toHaveURL(/\/configure\/tuck-end-box\?quote=/);
-    await expect(page.getByText(/เปิดจากใบเสนอราคา QT-\S+ ที่คุณบันทึกไว้/)).toBeVisible();
+  });
+
+  test("a saved address is edited under its ETag; a new one cannot be added yet", async ({ page }) => {
+    await signInAsCustomer(page, "/account/addresses");
+    const card = page.getByRole("listitem").filter({ hasText: "ที่อยู่หลัก" }).first();
+    await card.getByRole("button", { name: /แก้ไข/ }).click();
+    await page.getByLabel(/^รายละเอียดเพิ่มเติม/).fill("ชั้น 2 (e2e)");
+    await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
+    await expect(page.getByRole("listitem").filter({ hasText: "ชั้น 2 (e2e)" })).toBeVisible();
+    await expectNoViolations(page);
+
+    // CONTRACT-GAP store.geo-ids: the form says why instead of offering fields it cannot save.
+    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
+    await expect(page.getByText("ยังเพิ่มที่อยู่ใหม่ไม่ได้")).toBeVisible();
   });
 
   test("addresses and tax profiles are added and removed", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.geo-ids — no store geo read gives the province id an address needs");
     await signInAsCustomer(page, "/account/addresses");
     await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
-    await page.getByLabel(/^ชื่อที่อยู่/).fill("สำนักงานทดสอบ (e2e)");
-    await page.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับ e2e");
-    await page.getByLabel(/^เบอร์ผู้รับ/).fill("0877777777");
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("10400");
-    await page.getByRole("combobox", { name: "แขวง/ตำบล" }).click();
-    await page.getByRole("option").first().click();
-    await page.getByLabel(/^บ้านเลขที่/).fill("1 ถนนทดสอบ");
-    await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
-    const card = page.getByRole("listitem").filter({ hasText: "สำนักงานทดสอบ (e2e)" });
-    await expect(card).toContainText("พญาไท");
-    await expectNoViolations(page);
-
-    await card.getByRole("button", { name: /ลบ/ }).click();
-    await page.getByRole("alertdialog", { name: "ลบรายการนี้?" }).getByRole("button", { name: "ลบ" }).click();
-    await expect(page.getByText("สำนักงานทดสอบ (e2e)")).toHaveCount(0);
   });
 
   test("notification preferences: order e-mail stays on, marketing is the customer's choice", async ({ page }) => {
@@ -125,8 +139,13 @@ test.describe("the account", () => {
     await expect(locked).toBeDisabled();
     const sms = page.getByRole("switch", { name: "ข่าวสารและโปรโมชัน ทางSMS" });
     const before = await sms.isChecked();
+    // Reload only once the save has answered: the switch flips at once, the PUT follows.
+    const saved = page.waitForResponse(
+      (response) => response.url().includes("notification-preferences") && response.request().method() === "PUT",
+    );
     await sms.click();
     await expect(sms).toBeChecked({ checked: !before });
+    await saved;
     await page.reload();
     await expect(page.getByRole("switch", { name: "ข่าวสารและโปรโมชัน ทางSMS" })).toBeChecked({ checked: !before });
     await expect(page.getByRole("button", { name: "เชื่อมต่อ LINE" })).toBeDisabled();
@@ -158,11 +177,25 @@ test.describe("the account", () => {
 
     await gotoHydrated(page, `${HOSTS.customer}/account/referral`);
     await expect(page.getByText("PK1000", { exact: true })).toBeVisible();
-    await expect(page.getByText("ส*** ต***")).toBeVisible();
+    // The share link is the API's (`store.referral.get`), and the friends are counts by status.
+    await expect(page.getByText(/\/r\/PK1000$/)).toBeVisible();
+    await expect(page.getByRole("list").getByText("1 คน").first()).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.customer}/account/wallet`);
-    await expect(page.getByText("PACKIO10")).toBeVisible();
     await expect(page.getByText("เครดิตจากสินค้าขาดตามเกณฑ์")).toBeVisible();
+    await expect(page.getByText("CN-2569-00007")).toBeVisible();
     await expectNoViolations(page);
+  });
+
+  test("the wallet lists the promotion codes a customer holds", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.wallet — v0.2.0 has no customer-facing list of held codes");
+    await signInAsCustomer(page, "/account/wallet");
+    await expect(page.getByText("PACKIO10")).toBeVisible();
+  });
+
+  test("the referral page names each friend it brought", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.loyalty — store.referral.get gives counts, not the friends");
+    await signInAsCustomer(page, "/account/referral");
+    await expect(page.getByText("ส*** ต***")).toBeVisible();
   });
 });

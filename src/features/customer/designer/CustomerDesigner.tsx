@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import type { DesignerCatalog } from "@/features/designer/data/api";
 import Editor, { type EditorSeed, type EditorSession, type InitialDesign } from "@/features/designer/components/Editor";
@@ -19,11 +19,15 @@ export interface CustomerDesignerProps {
   id: string;
   signedIn: boolean;
   /** The account's copy, when the page read one. */
-  design: (InitialDesign & { link: OrderLink | null; productSlug: string | null }) | null;
+  design: InitialDesign | null;
   catalog: DesignerCatalog | null;
   seed?: EditorSeed;
-  /** The order line a new design is for (from the order's "design online"). */
+  /** The order line the design is for, as the page was opened (`?order=&item=&orderCode=`). */
   link: OrderLink | null;
+  /** The product the design is for, as the page was opened (`?product=`). */
+  productSlug: string | null;
+  /** That product's id, which a new account design needs (from the configurator request). */
+  catalogProductId: string | null;
   templateId?: string | null;
 }
 
@@ -32,16 +36,38 @@ export interface CustomerDesignerProps {
  * (autosaved, versioned); a guest's stays in this browser until sign-in imports it. The top bar
  * carries the live price for the design's product and the one next step — send to print for a
  * design that belongs to an order, order it otherwise.
+ *
+ * CONTRACT-GAP store.catalog-product-ref — a design names its product by id, which no catalogue
+ * read resolves, and a design names no order (store.designs). So the product and the order line
+ * the page was opened with are carried in its address when `/design/new` becomes the design's
+ * own; a design reopened from the list has neither. A new design with no product cannot be made
+ * in the account and stays in this browser.
  */
-export function CustomerDesigner({ id, signedIn, design, catalog, seed, link, templateId }: CustomerDesignerProps) {
+export function CustomerDesigner({
+  id,
+  signedIn,
+  design,
+  catalog,
+  seed,
+  link,
+  productSlug: openedWith,
+  catalogProductId,
+  templateId,
+}: CustomerDesignerProps) {
+  const t = useTranslations("designer.account");
   // A design id the account does not know but this browser does: a guest design from before
   // sign-in, opened from the list before it is imported. It still opens, from the browser.
   const [localFallback] = useState(
     () => signedIn && !design && id !== "new" && typeof window !== "undefined" && !!designRepo.get(id),
   );
-  const mode = signedIn && !localFallback ? "store" : "local";
-  const productSlug = design?.productSlug ?? seed?.productSlug ?? catalog?.product?.slug ?? null;
-  const orderLink = design?.link ?? link;
+  const cannotCreate = !design && id === "new" && !catalogProductId;
+  const mode = signedIn && !localFallback && !cannotCreate ? "store" : "local";
+  const productSlug = openedWith ?? seed?.productSlug ?? catalog?.product?.slug ?? null;
+  const orderLink = link;
+  const carried = new URLSearchParams({
+    ...(productSlug ? { product: productSlug } : {}),
+    ...(link ? { order: link.orderId, item: link.itemId, orderCode: link.orderCode } : {}),
+  }).toString();
   const router = useRouter();
   const locale = useLocale();
 
@@ -64,14 +90,14 @@ export function CustomerDesigner({ id, signedIn, design, catalog, seed, link, te
     mode,
     editable: true,
     design,
-    create: {
-      source: link ? "order_item" : templateId ? "template" : productSlug ? "product" : "blank",
-      ...(productSlug ? { catalogProductSlug: productSlug } : {}),
-      ...(seed?.patternId ? { patternId: seed.patternId } : {}),
-      ...(seed?.materialId ? { materialId: seed.materialId } : {}),
-      ...(link ? { link: { orderId: link.orderId, itemId: link.itemId } } : {}),
-      ...(templateId ? { templateId } : {}),
-    },
+    create: catalogProductId
+      ? {
+          catalogProductId,
+          ...(seed?.patternId ? { patternId: seed.patternId } : {}),
+          ...(seed?.materialId ? { materialId: seed.materialId } : {}),
+          ...(templateId ? { semiDesignTemplateId: templateId } : {}),
+        }
+      : undefined,
     onSaved,
   };
 
@@ -81,12 +107,18 @@ export function CustomerDesigner({ id, signedIn, design, catalog, seed, link, te
       nav={{
         home: locale === "en" ? "/en" : "/",
         push: (href) => router.push(href),
-        replace: (href) => router.replace(href),
+        replace: (href) => router.replace(carried && href.startsWith("/design/") ? `${href}?${carried}` : href),
       }}
       session={session}
       catalog={catalog}
       seed={seed}
-      topBarExtra={productSlug && mode === "store" ? <PriceWidget productSlug={productSlug} /> : null}
+      topBarExtra={
+        productSlug && mode === "store" ? (
+          <PriceWidget productSlug={productSlug} />
+        ) : signedIn && cannotCreate ? (
+          <span className="text-muted text-xs">{t("browserOnly")}</span>
+        ) : null
+      }
       primaryAction={<OrderAction link={mode === "store" ? orderLink : null} productSlug={productSlug} />}
     />
   );

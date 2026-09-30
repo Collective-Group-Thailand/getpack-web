@@ -21,7 +21,11 @@ export default async function Page() {
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       {company.can.manageSettings ? (
-        <CompanySettings threshold={company.orderApprovalThreshold} poNumberPolicy={company.poNumberPolicy} />
+        <CompanySettings
+          companyId={company.id}
+          threshold={company.orderApprovalThreshold}
+          poNumberPolicy={company.poNumberPolicy}
+        />
       ) : (
         <Callout tone="info">{t("adminOnly")}</Callout>
       )}

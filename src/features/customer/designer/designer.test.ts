@@ -51,52 +51,68 @@ const document = {
   content: blank as unknown as Record<string, unknown>,
 };
 
+/** The published client, for the design operations this zone has migrated (U-F0.2). */
+const api = (persona?: string) =>
+  createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer", persona) });
+/** Any catalogue product: a published design needs one, by id. */
+const PRODUCT = async () =>
+  (await client().call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug: "tuck-end-box" } }))
+    .catalogProductId;
+const published = { document: { spec, content: blank } as unknown as Record<string, never>, schemaVersion: 2 };
+
 describe("store.designs (mock)", () => {
   it("creates, saves under If-Match, refuses a stale save with 412, and keeps every version", async () => {
-    const api = client("customer");
-    const created = await api.read("POST /v1/store/designs", {
-      body: { name: "กล่องทดสอบ", document, source: "blank" },
-      idempotencyKey: crypto.randomUUID(),
+    const catalogProductId = await PRODUCT();
+    const created = await api().POST("/v1/store/designs", {
+      body: { title: "กล่องทดสอบ", catalogProductId, ...published },
     });
-    expect(created.etag).toBe('"v1"');
-    const id = created.data.id;
+    const first = created.response.headers.get("etag")!;
+    expect(first).toBe('"v1"');
+    const id = created.data!.id;
+    expect(created.data!.catalogProductId).toBe(catalogProductId);
 
-    const saved = await api.read("PUT /v1/store/designs/{designId}", {
-      path: { designId: id },
-      body: { name: "กล่องทดสอบ", document, kind: "autosave" },
-      etag: created.etag!,
+    const saved = await api().PUT("/v1/store/designs/{designId}", {
+      params: { path: { designId: id }, header: { "If-Match": first } },
+      body: { title: "กล่องทดสอบ", ...published },
     });
-    expect(saved.data.versionNo).toBe(2);
-    expect(saved.etag).toBe('"v2"');
+    expect(saved.data!.versionNo).toBe(2);
+    const second = saved.response.headers.get("etag")!;
+    expect(second).toBe('"v2"');
 
     // Another tab saving from version 1 again is refused, not merged.
     const stale = await failure(
-      api.call("PUT /v1/store/designs/{designId}", {
-        path: { designId: id },
-        body: { name: "จากแท็บอื่น", document, kind: "manual" },
-        etag: created.etag!,
+      api().PUT("/v1/store/designs/{designId}", {
+        params: { path: { designId: id }, header: { "If-Match": first } },
+        body: { title: "จากแท็บอื่น", ...published },
       }),
     );
     expect(stale?.status).toBe(412);
     expect(stale?.code).toBe("concurrency.stale");
 
-    const versions = await api.call("GET /v1/store/designs/{designId}/versions", { path: { designId: id } });
-    expect(versions.data.map((v) => v.versionNo)).toEqual([2, 1]);
-
-    const restored = await api.read("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", {
-      path: { designId: id, versionNo: "1" },
-      etag: saved.etag!,
+    const { data: versions } = await api().GET("/v1/store/designs/{designId}/versions", {
+      params: { path: { designId: id } },
     });
+    expect(versions!.map((v) => v.versionNo)).toEqual([2, 1]);
+
+    // Restore is still a request (store.designs), under the same ETag chain.
+    const restored = await client("customer").read(
+      "POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore",
+      { path: { designId: id, versionNo: "1" }, etag: second },
+    );
     expect(restored.data.versionNo).toBe(3);
   });
 
-  it("hides another customer's design and replays an import by local id", async () => {
-    const mine = await client("customer").call("POST /v1/store/designs", {
-      body: { name: "ของฉัน", document, source: "blank" },
-      idempotencyKey: crypto.randomUUID(),
+  it("refuses a design without a product, hides another customer's, and replays an import by local id", async () => {
+    const orphan = await failure(
+      api().POST("/v1/store/designs", { body: { title: "ไม่มีสินค้า", catalogProductId: "", ...published } }),
+    );
+    expect(orphan?.status).toBe(422);
+
+    const { data: mine } = await api().POST("/v1/store/designs", {
+      body: { title: "ของฉัน", catalogProductId: await PRODUCT(), ...published },
     });
     const theirs = await failure(
-      client("customer", "receiver").call("GET /v1/store/designs/{designId}", { path: { designId: mine.id } }),
+      api("receiver").GET("/v1/store/designs/{designId}", { params: { path: { designId: mine!.id } } }),
     );
     expect(theirs?.status).toBe(404);
 

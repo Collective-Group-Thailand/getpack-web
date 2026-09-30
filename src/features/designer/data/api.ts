@@ -1,8 +1,10 @@
 "use client";
 
+import { browserApi } from "@/lib/api/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import { browserRequests } from "@/lib/api/requests/browser";
 import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { uploadFile } from "@/features/shared/files/upload";
 
 import type { DesignContent, DesignSpec } from "../types";
@@ -13,11 +15,14 @@ import { DOCUMENT_SCHEMA_VERSION } from "../document";
  * (`/v1/store/designs`, `store.designs`) and prepress's view of a document
  * (`/v1/admin/design-documents`, `admin.design-documents`). Each zone's BFF only forwards its own
  * surface, so the designer never picks the path from a URL — the session says which it is.
+ *
+ * The published design keeps the document opaque (`{ spec, content }`, with `schemaVersion` beside
+ * it). Duplicate, restore and import are still requests (`store.designs`, packio-api U-B0.1) and
+ * answer in the request's shape.
  */
 
-export type StoreDesign = ResponseOf<Requests, "GET /v1/store/designs/{designId}">;
-export type StoreDesignSummary = ResponseOf<Requests, "GET /v1/store/designs">["data"][number];
-export type DesignVersion = ResponseOf<Requests, "GET /v1/store/designs/{designId}/versions">["data"][number];
+export type StoreDesign = Schemas["DesignDocumentDto"];
+export type DesignVersion = Schemas["DesignVersionDto"];
 export type DesignerCatalog = ResponseOf<Requests, "GET /v1/store/designer/catalog">;
 export type DesignerMaterial = DesignerCatalog["materials"][number];
 export type DesignerTemplate = DesignerCatalog["templates"][number];
@@ -29,102 +34,122 @@ export interface Saved<T> {
   etag: string | null;
 }
 
+/** The request-shaped document (`{ schemaVersion, spec, content }`) the admin surface and requests take. */
 export const toDocument = (spec: DesignSpec, content: DesignContent) => ({
   schemaVersion: DOCUMENT_SCHEMA_VERSION,
   spec: spec as unknown as Record<string, unknown>,
   content: content as unknown as Record<string, unknown>,
 });
 
+/** The published body: the document opaque, its schema version beside it. */
+const published = (spec: DesignSpec, content: DesignContent) => ({
+  document: { spec, content } as unknown as Record<string, never>,
+  schemaVersion: DOCUMENT_SCHEMA_VERSION,
+});
+
+export { documentOf } from "./published";
+
+/**
+ * How a new design is created. CONTRACT-GAP store.catalog-product-ref — the product is required
+ * by id, and only the configurator (a request) names it; a design without one is not created.
+ */
 export interface CreateInput {
   name: string;
   spec: DesignSpec;
   content: DesignContent;
-  source: StoreDesign["source"];
-  catalogProductSlug?: string;
+  catalogProductId: string;
   patternId?: string;
   materialId?: string;
-  link?: { orderId: string; itemId: string };
-  templateId?: string;
+  semiDesignTemplateId?: string;
 }
+
+const etagOf = (response: Response) => response.headers.get("etag");
 
 export const storeDesigns = {
   async get(designId: string): Promise<Saved<StoreDesign>> {
-    return browserRequests().read("GET /v1/store/designs/{designId}", { path: { designId } });
+    const { data, response } = await browserApi().GET("/v1/store/designs/{designId}", {
+      params: { path: { designId } },
+    });
+    return { data: data!, etag: etagOf(response) };
   },
-  async create(input: CreateInput, idempotencyKey: string): Promise<Saved<StoreDesign>> {
-    return browserRequests().read("POST /v1/store/designs", {
+  async create(input: CreateInput): Promise<Saved<StoreDesign>> {
+    const { data, response } = await browserApi().POST("/v1/store/designs", {
       body: {
-        name: input.name,
-        document: toDocument(input.spec, input.content),
-        source: input.source,
-        ...(input.catalogProductSlug ? { catalogProductSlug: input.catalogProductSlug } : {}),
+        title: input.name,
+        catalogProductId: input.catalogProductId,
+        ...published(input.spec, input.content),
         ...(input.patternId ? { patternId: input.patternId } : {}),
         ...(input.materialId ? { materialId: input.materialId } : {}),
-        ...(input.link ? { link: input.link } : {}),
-        ...(input.templateId ? { templateId: input.templateId } : {}),
+        ...(input.semiDesignTemplateId ? { semiDesignTemplateId: input.semiDesignTemplateId } : {}),
       },
-      idempotencyKey,
     });
+    return { data: data!, etag: etagOf(response) };
   },
+  /**
+   * Every save is a new version. CONTRACT-GAP store.designs — an autosave and a manual save are
+   * not told apart, and the material lives in the document's spec only.
+   */
   async save(
     designId: string,
-    input: {
-      name: string;
-      spec: DesignSpec;
-      content: DesignContent;
-      kind: "autosave" | "manual";
-      thumbnailFileId?: string;
-      materialId?: string | null;
-    },
+    input: { name: string; spec: DesignSpec; content: DesignContent; thumbnailFileId?: string },
     etag: string | null,
   ): Promise<Saved<StoreDesign>> {
-    return browserRequests().read("PUT /v1/store/designs/{designId}", {
-      path: { designId },
+    const { data, response } = await browserApi().PUT("/v1/store/designs/{designId}", {
+      params: { path: { designId }, header: { "If-Match": etag ?? "" } },
       body: {
-        name: input.name,
-        document: toDocument(input.spec, input.content),
-        kind: input.kind,
+        title: input.name,
+        ...published(input.spec, input.content),
         ...(input.thumbnailFileId ? { thumbnailFileId: input.thumbnailFileId } : {}),
-        ...(input.materialId !== undefined ? { materialId: input.materialId } : {}),
       },
-      etag: etag ?? undefined,
     });
+    return { data: data!, etag: etagOf(response) };
   },
   async remove(designId: string) {
-    await browserRequests().call("DELETE /v1/store/designs/{designId}", { path: { designId } });
+    await browserApi().DELETE("/v1/store/designs/{designId}", { params: { path: { designId } } });
   },
-  async duplicate(designId: string, name: string, idempotencyKey: string): Promise<Saved<StoreDesign>> {
+  async duplicate(designId: string, name: string, idempotencyKey: string) {
     return browserRequests().read("POST /v1/store/designs/{designId}/actions/duplicate", {
       path: { designId },
       body: { name },
       idempotencyKey,
     });
   },
-  async versions(designId: string) {
-    return browserRequests().call("GET /v1/store/designs/{designId}/versions", {
-      path: { designId },
-      query: { limit: 50 },
+  /** The design's versions, newest first. CONTRACT-GAP store.designs — no kind, label or paging. */
+  async versions(designId: string): Promise<DesignVersion[]> {
+    const { data } = await browserApi().GET("/v1/store/designs/{designId}/versions", {
+      params: { path: { designId } },
     });
+    return [...data!].sort((a, b) => b.versionNo - a.versionNo);
   },
-  async version(designId: string, versionNo: number) {
-    return browserRequests().call("GET /v1/store/designs/{designId}/versions/{versionNo}", {
-      path: { designId, versionNo: String(versionNo) },
+  async version(designId: string, versionNo: number): Promise<DesignVersion> {
+    const { data } = await browserApi().GET("/v1/store/designs/{designId}/versions/{versionNo}", {
+      params: { path: { designId, versionNo } },
     });
+    return data!;
   },
-  async restore(designId: string, versionNo: number, etag: string | null): Promise<Saved<StoreDesign>> {
+  async restore(designId: string, versionNo: number, etag: string | null) {
     return browserRequests().read("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", {
       path: { designId, versionNo: String(versionNo) },
       etag: etag ?? undefined,
     });
   },
-  /** Uploads an image once and attaches it to the design; the document then refers to it by id. */
-  async attachAsset(designId: string, file: File, size: { widthPx?: number; heightPx?: number }) {
+  /**
+   * Uploads an image once and attaches it to the design; the document then refers to it by id.
+   * CONTRACT-GAP store.design-assets — the asset carries no URL, so it is signed for with the file.
+   */
+  async attachAsset(designId: string, file: File): Promise<{ id: string; url: string }> {
     // `design_asset` is requested as a file purpose (store.design-assets); until then, artwork.
     const uploaded = await uploadFile("customer", file, "artwork");
-    return browserRequests().call("POST /v1/store/designs/{designId}/assets", {
-      path: { designId },
-      body: { fileId: uploaded.id, ...size },
+    const api = browserApi();
+    const { data: design } = await api.POST("/v1/store/designs/{designId}/assets", {
+      params: { path: { designId } },
+      body: { fileId: uploaded.id, kind: "image" },
     });
+    const asset = design!.assets.find((candidate) => candidate.fileId === uploaded.id)!;
+    const { data: signed } = await api.GET("/v1/store/files/{fileId}/download", {
+      params: { path: { fileId: uploaded.id } },
+    });
+    return { id: asset.id, url: signed!.url };
   },
   /** A thumbnail PNG, uploaded as a file for the next save to reference. */
   async uploadThumbnail(dataUrl: string, name: string): Promise<string> {

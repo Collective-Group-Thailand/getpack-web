@@ -40,7 +40,20 @@ describe("the contract-request registry", () => {
       return !(key in REQUESTS) || contract.paths[path]?.[method.toLowerCase()] === undefined;
     });
     expect(stale).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(86);
+    // U-F0.2 migrated the customer zone's 32; U-F0.3 and U-F0.4 take the rest.
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(54);
+  });
+
+  it("keeps the customer zone on the published contract", () => {
+    // U-F0.2: a store request is only one packio-api still has to build (verdict `implement`, or
+    // written after the triage and awaiting it). Anything else is published and is called through
+    // serverApi/browserApi with the generated types — never through a request again.
+    const offContract = entries
+      .map(([key]) => key)
+      .filter((key) => key.includes(" /v1/store/"))
+      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key));
+    expect(offContract).toEqual([]);
+    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual([]);
   });
 
   it("spells every key as a method and a surface path template", () => {

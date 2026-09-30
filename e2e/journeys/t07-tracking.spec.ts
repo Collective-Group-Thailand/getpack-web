@@ -12,6 +12,7 @@ test("T7 find the job's stage and arrival date from LINE", async ({ page, journe
   await signInAsCustomer(page, "/liff", MOCK_BUYER_PHONE);
   await j.startHere();
   j.gap("the LINE notification cannot open the order itself — it has no link (notifications.unread-and-link)");
+  j.gap("the order shows when it ships from the factory, not when it arrives (store.orders: no estimated delivery)");
 
   const tabs = page.getByRole("navigation", { name: "เมนู Packio ใน LINE" });
   await j.screen(
@@ -29,6 +30,7 @@ test("T7 find the job's stage and arrival date from LINE", async ({ page, journe
     await expect(
       page.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" }).locator("[aria-current=step]"),
     ).toBeVisible();
-    await expect(page.getByText("คาดว่าจะได้รับ")).toBeVisible();
+    // The order promises a ship date; an arrival date is not published (CONTRACT-GAP store.orders).
+    await expect(page.getByText("กำหนดส่งจากโรงงาน")).toBeVisible();
   });
 });

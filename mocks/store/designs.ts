@@ -1,5 +1,9 @@
 /**
- * CONTRACT-REQUEST store.designs, store.design-assets, store.designer-catalog (F4 Part C).
+ * The customer's designs (F4 Part C): list, create, get, save, delete, versions and assets at their
+ * published paths (`store.designs.*`, U-F0.2); duplicate, restore, import, sharing, the designer's
+ * catalogue and templates are still CONTRACT-REQUEST (store.designs, store.design-share,
+ * store.designer-catalog). One store serves both: its rows keep the request's shape, and the
+ * published handlers answer `DesignDocumentDto` from them.
  *
  * A stateful designs store: every save is a version, the version number is the ETag, and a save
  * with a stale `If-Match` answers `412 concurrency.stale` — so the designer's autosave and its
@@ -11,14 +15,14 @@
  * fixed caliper per flute code for corrugated. The real API reads `materials.micron`.
  */
 
-import { HttpResponse } from "msw";
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
 import { REQUESTS, type RequestKey } from "@/lib/api/requests/registry";
 import type { designDocument, storeDesign } from "@/lib/api/requests/store-designs";
+import type { Schemas } from "@/lib/api/types";
 
 import { catalogueRows } from "../admin/catalogue";
-import { orders } from "../admin/commerce";
 import { fileDataUrl, files } from "../admin/platform";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
@@ -40,10 +44,13 @@ interface Row {
   owner: string;
   design: StoreDesign;
   versions: Version[];
+  /** What the published design carries and the request's shape does not. */
+  catalogProductId: string;
+  semiDesignTemplateId: string | null;
+  thumbnailFileId: string | null;
 }
 
 const designs = new Map<string, Row>();
-const byIdempotencyKey = new Map<string, string>();
 const importedLocalIds = new Map<string, string>();
 /** View links: token → design id, and each design's live token. // CONTRACT-REQUEST store.design-share */
 const shares = new Map<string, { designId: string; createdAt: string; expiresAt: string | null }>();
@@ -91,8 +98,10 @@ const styleOf = (document: DesignDocument): string | null =>
       ? document.spec.style
       : null;
 
-function summaryFields(design: StoreDesign) {
-  return { ...design, styleId: styleOf(design.document) };
+/** The catalogue product with this id, as the request's shape names it (by slug). */
+function productOfId(id: string | null): StoreDesign["product"] {
+  const row = id ? catalogueRows("catalogProducts").find((candidate) => String(candidate.id) === id) : undefined;
+  return row ? productOf(String(row.slug)) : null;
 }
 
 function productOf(slug: string | undefined): StoreDesign["product"] {
@@ -121,6 +130,8 @@ function create(
     link?: StoreDesign["link"];
     patternId?: string | null;
     materialId?: string | null;
+    catalogProductId?: string | null;
+    semiDesignTemplateId?: string | null;
   },
 ): Row {
   counter += 1;
@@ -146,6 +157,11 @@ function create(
     owner,
     design,
     versions: [{ versionNo: 1, kind: "manual", savedAt: now, label: null, document: input.document }],
+    // A browser design imported by the (requested) import names no product; the mock files it under
+    // the first one, since the published design always has one.
+    catalogProductId: input.catalogProductId ?? String(catalogueRows("catalogProducts")[0]?.id ?? mockId("cpr", 1)),
+    semiDesignTemplateId: input.semiDesignTemplateId ?? null,
+    thumbnailFileId: null,
   };
   designs.set(design.id, row);
   return row;
@@ -155,6 +171,51 @@ function create(
 export function storeDesignForStaff(id: string) {
   return designs.get(id)?.design ?? null;
 }
+
+/* ---------------------------------------------------------------------------- published */
+
+const sizeOfDocument = (document: DesignDocument) => {
+  const values = (document.spec.values ?? {}) as Record<string, unknown>;
+  const mm = (key: string) => (typeof values[key] === "number" ? (values[key] as number) : null);
+  return { lengthMm: mm("length"), widthMm: mm("width"), heightMm: mm("height") };
+};
+
+/** A design as `store.designs` answers it: the document opaque, its schema version beside it. */
+function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
+  const { design } = row;
+  return {
+    id: design.id,
+    title: design.name,
+    catalogProductId: row.catalogProductId,
+    patternId: design.patternId,
+    materialId: design.materialId,
+    semiDesignTemplateId: row.semiDesignTemplateId,
+    ...sizeOfDocument(design.document),
+    document: withDocument ? { spec: design.document.spec, content: design.document.content } : null,
+    schemaVersion: design.document.schemaVersion,
+    versionNo: design.versionNo,
+    thumbnailFileId: row.thumbnailFileId,
+    assets: design.assets.map((asset) => ({ id: asset.id, fileId: asset.fileId, kind: "image" as const })),
+    updatedAt: design.updatedAt,
+  };
+}
+
+const withDesignEtag = (row: Row, status = 200) =>
+  HttpResponse.json(toDto(row), { status, headers: { ETag: etagOf(row.design) } });
+
+/** The published body's document, back in the request's shape the rows keep. */
+function documentFrom(body: { document?: unknown; schemaVersion?: number | null }): DesignDocument | null {
+  const document = body.document as { spec?: unknown; content?: unknown } | undefined;
+  if (!document || typeof document.spec !== "object" || typeof document.content !== "object") return null;
+  return {
+    schemaVersion: body.schemaVersion ?? 2,
+    spec: document.spec as DesignDocument["spec"],
+    content: document.content as DesignDocument["content"],
+  };
+}
+
+const fakeSha = (versionNo: number, id: string) =>
+  `${id.replace(/-/g, "").slice(-8)}${String(versionNo).padStart(4, "0")}`.padEnd(64, "0");
 
 /* ------------------------------------------------------------------------------ catalogue */
 
@@ -368,99 +429,82 @@ export const storeDesignHandlers = [
     };
   }),
 
-  mockRequest("GET /v1/store/designs", ({ query, request }) => {
+  // store.designs.list (published, U-F0.2): newest first; bodies are left out of a list.
+  http.get("*/v1/store/designs", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const owner = ownerIdOf(customer);
+    const query = Object.fromEntries(new URL(request.url).searchParams);
     const rows = [...designs.values()]
       .filter((row) => row.owner === owner)
-      .map((row) => row.design)
-      .filter((design) => (query.linked === "linked" ? design.link : query.linked === "unlinked" ? !design.link : true))
-      .filter((design) => matchesQuery(query.q, design.name))
-      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-    const pageOf = paginate(rows, query);
-    return {
-      ...pageOf,
-      data: pageOf.data.map(({ id, name, styleId, thumbnailUrl, product, link, versionNo, createdAt, updatedAt }) => ({
-        id,
-        name,
-        styleId,
-        thumbnailUrl,
-        product,
-        link,
-        versionNo,
-        createdAt,
-        updatedAt,
-      })),
-    };
+      .filter((row) => matchesQuery(query.q, row.design.name))
+      .sort((a, b) => b.design.updatedAt.localeCompare(a.design.updatedAt))
+      .map((row) => toDto(row, false));
+    return HttpResponse.json(paginate(rows, { page: Number(query.page ?? 1), perPage: Number(query.perPage ?? 25) }));
   }),
 
-  mockRequest("POST /v1/store/designs", ({ body, request }) => {
+  // store.designs.create (published, U-F0.2): the product is required, by id.
+  http.post("*/v1/store/designs", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const owner = ownerIdOf(customer);
-    const key = `${owner}:${request.headers.get("idempotency-key")}`;
-    const replay = byIdempotencyKey.get(key);
-    if (replay && designs.has(replay)) return withEtag("POST /v1/store/designs", designs.get(replay)!.design, 201);
-
-    let link: StoreDesign["link"] = null;
-    if (body.link) {
-      const order = orders.find((candidate) => candidate.id === body.link!.orderId && candidate.customer.id === owner);
-      if (!order) return problem(404, "order.not_found", "ไม่พบคำสั่งซื้อนี้");
-      link = {
-        orderId: order.id,
-        orderCode: order.orderCode,
-        itemId: body.link.itemId,
-        itemName: order.parts[0]?.name ?? order.orderCode,
-      };
-    }
-    let document = body.document;
-    if (body.templateId) {
-      const template = TEMPLATES.find((candidate) => candidate.id === body.templateId);
-      if (!template) return problem(404, "template.not_found", "ไม่พบเทมเพลตนี้");
-      document = { ...template.document, spec: { ...template.document.spec, ...body.document.spec } };
-    }
+    const body = (await request.json()) as Schemas["CreateDesignDto"];
+    if (!body.catalogProductId || !body.title?.trim())
+      return problem(422, "validation.failed", "ต้องระบุสินค้าและชื่อแบบ", [
+        { path: "catalogProductId", code: "required", message: "required" },
+      ]);
+    let document = documentFrom(body);
+    const template = body.semiDesignTemplateId
+      ? TEMPLATES.find(
+          (candidate) =>
+            candidate.semiDesignId === body.semiDesignTemplateId || candidate.id === body.semiDesignTemplateId,
+        )
+      : undefined;
+    if (body.semiDesignTemplateId && !template) return problem(404, "http.not_found", "ไม่พบเทมเพลตนี้");
+    if (template) document = { ...template.document, spec: { ...template.document.spec, ...(document?.spec ?? {}) } };
+    if (!document) return problem(409, "designs.template_without_design", "ต้องมีแบบหรือเทมเพลตให้เริ่ม");
     const row = create(owner, {
-      name: body.name,
+      name: body.title,
       document,
-      source: body.source,
-      product: productOf(body.catalogProductSlug),
-      link,
+      source: template ? "template" : "product",
+      product: productOfId(body.catalogProductId),
       patternId: body.patternId ?? null,
       materialId: body.materialId ?? null,
+      catalogProductId: body.catalogProductId,
+      semiDesignTemplateId: template?.semiDesignId ?? null,
     });
-    byIdempotencyKey.set(key, row.design.id);
-    return withEtag("POST /v1/store/designs", summaryFields(row.design), 201);
+    return withDesignEtag(row, 201);
   }),
 
-  mockRequest("GET /v1/store/designs/{designId}", ({ params, request }) => {
-    const row = rowOf(request, params.designId);
-    if (row instanceof Response) return row;
-    return withEtag("GET /v1/store/designs/{designId}", row.design);
+  http.get("*/v1/store/designs/:designId", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
+    return row instanceof Response ? row : withDesignEtag(row);
   }),
 
-  mockRequest("PUT /v1/store/designs/{designId}", ({ params, body, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.save (published, U-F0.2): every save is a new version, under If-Match.
+  http.put("*/v1/store/designs/:designId", async ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
     const stale = checkMatch(request, row);
     if (stale) return stale;
-    saveVersion(row, body.kind, body.document);
-    row.design = {
-      ...row.design,
-      name: body.name,
-      ...(body.patternId !== undefined ? { patternId: body.patternId } : {}),
-      ...(body.materialId !== undefined ? { materialId: body.materialId } : {}),
-      ...(body.thumbnailFileId ? { thumbnailUrl: fileDataUrl(body.thumbnailFileId) } : {}),
-    };
-    return withEtag("PUT /v1/store/designs/{designId}", row.design);
+    const body = (await request.json()) as Schemas["SaveDesignDto"];
+    const document = documentFrom(body);
+    if (!document) return problem(422, "validation.failed", "เอกสารแบบไม่ถูกต้อง");
+    saveVersion(row, "manual", document);
+    if (body.title) row.design = { ...row.design, name: body.title };
+    if (body.thumbnailFileId) {
+      row.thumbnailFileId = body.thumbnailFileId;
+      row.design = { ...row.design, thumbnailUrl: fileDataUrl(body.thumbnailFileId) };
+    }
+    return withDesignEtag(row);
   }),
 
-  mockRequest("DELETE /v1/store/designs/{designId}", ({ params, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.delete (published): a soft delete — an order keeps the version it used.
+  http.delete("*/v1/store/designs/:designId", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
-    if (row.design.link) return problem(409, "design.linked", "แบบนี้ผูกกับคำสั่งซื้อแล้ว ลบไม่ได้");
-    designs.delete(params.designId);
-    return undefined as never;
+    designs.delete(row.design.id);
+    return new HttpResponse(null, { status: 204 });
   }),
 
   mockRequest("POST /v1/store/designs/{designId}/actions/duplicate", ({ params, body, request }) => {
@@ -473,32 +517,40 @@ export const storeDesignHandlers = [
       product: row.design.product,
       patternId: row.design.patternId,
       materialId: row.design.materialId,
+      catalogProductId: row.catalogProductId,
+      semiDesignTemplateId: row.semiDesignTemplateId,
     });
     copy.design.assets = [...row.design.assets];
     return withEtag("POST /v1/store/designs/{designId}/actions/duplicate", copy.design, 201);
   }),
 
-  mockRequest("GET /v1/store/designs/{designId}/versions", ({ params, query, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.listVersions / getVersion (published, U-F0.2): bodies only on the one version.
+  http.get("*/v1/store/designs/:designId/versions", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
-    const start = query.cursor ? Number(query.cursor) : 0;
-    const limit = query.limit ?? 20;
-    const slice = row.versions.slice(start, start + limit);
-    return {
-      data: slice.map(({ document: _document, ...version }) => {
-        void _document;
-        return { ...version, thumbnailUrl: null };
-      }),
-      meta: { nextCursor: start + limit < row.versions.length ? String(start + limit) : null },
-    };
+    return HttpResponse.json(
+      row.versions.map((version) => ({
+        versionNo: version.versionNo,
+        createdAt: version.savedAt,
+        schemaVersion: version.document.schemaVersion,
+        contentSha256: fakeSha(version.versionNo, row.design.id),
+        document: null,
+      })) satisfies Schemas["DesignVersionDto"][],
+    );
   }),
 
-  mockRequest("GET /v1/store/designs/{designId}/versions/{versionNo}", ({ params, request }) => {
-    const row = rowOf(request, params.designId);
+  http.get("*/v1/store/designs/:designId/versions/:versionNo", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
     const version = row.versions.find((candidate) => candidate.versionNo === Number(params.versionNo));
-    if (!version) return problem(404, "design.version_not_found", "ไม่พบเวอร์ชันนี้");
-    return { ...version, thumbnailUrl: null };
+    if (!version) return problem(404, "http.not_found", "ไม่พบเวอร์ชันนี้");
+    return HttpResponse.json({
+      versionNo: version.versionNo,
+      createdAt: version.savedAt,
+      schemaVersion: version.document.schemaVersion,
+      contentSha256: fakeSha(version.versionNo, row.design.id),
+      document: { spec: version.document.spec, content: version.document.content },
+    } satisfies Schemas["DesignVersionDto"]);
   }),
 
   mockRequest("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", ({ params, request }) => {
@@ -512,23 +564,24 @@ export const storeDesignHandlers = [
     return withEtag("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", row.design);
   }),
 
-  mockRequest("POST /v1/store/designs/{designId}/assets", ({ params, body, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.addAsset (published, U-F0.2): answers with the whole design.
+  http.post("*/v1/store/designs/:designId/assets", async ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
+    const body = (await request.json()) as Schemas["AddDesignAssetDto"];
     const file = files.get(body.fileId);
-    if (!file) return problem(404, "file.not_found", "ไม่พบไฟล์นี้");
-    const asset = {
+    if (!file) return problem(404, "http.not_found", "ไม่พบไฟล์นี้");
+    row.design.assets.push({
       id: mockId("das", row.design.assets.length + 1 + counter * 100),
       fileId: body.fileId,
       url: fileDataUrl(file.id) ?? `data:text/plain,${encodeURIComponent(file.originalName)}`,
       mimeType: file.mimeType,
-      widthPx: body.widthPx ?? null,
-      heightPx: body.heightPx ?? null,
+      widthPx: null,
+      heightPx: null,
       sizeBytes: file.sizeBytes,
       createdAt: bangkokIso(),
-    };
-    row.design.assets.push(asset);
-    return asset;
+    });
+    return HttpResponse.json(toDto(row), { status: 201 });
   }),
 
   mockRequest("POST /v1/store/designs/actions/import", ({ body, request }) => {

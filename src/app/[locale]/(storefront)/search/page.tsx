@@ -74,9 +74,9 @@ export default async function SearchPage({
   const orderHits: Hit[] = order
     ? [
         {
-          key: order.orderId,
+          key: order.id,
           label: order.orderCode,
-          href: `/account/orders/${order.orderId}`,
+          href: `/account/orders/${order.id}`,
           icon: "package",
           hint: tStatus(statusMeta(ORDER_STATUS, order.status).labelKey),
         },

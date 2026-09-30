@@ -8,11 +8,8 @@ import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { DESIGN_ROUND_STATUS, DESIGN_SERVICE_STATUS } from "@/domain/status";
-import type { NextAction } from "@/domain/status/next-action";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -21,61 +18,59 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { Meter } from "@/ui/components/Meter";
-import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
 import { PayInstalmentButton } from "../checkout/PayInstalmentButton";
+import { pendingProof, type Artwork } from "./artwork";
 import { artworkKey } from "./keys";
-
-type Service = NonNullable<ResponseOf<Requests, "GET /v1/store/orders/{orderId}/artwork">["designService"]>;
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
+type Brief = { brandName: string; brandCategory: string; description: string };
+const BRIEF_KEYS = ["brandName", "brandCategory", "description"] as const;
+
 /**
- * Hired design (D-071): the brief, then rounds — the first three free, the counter always in view,
- * and from the fourth the fee the API quotes, accepted explicitly and paid before the designer
+ * Hired design (D-071): the brief, then rounds — the free ones counted, the counter always in
+ * view, and past them the fee the API quotes, accepted explicitly and paid before the designer
  * starts. A change of structure or concept is a new design, re-quoted by the team, not a round.
+ *
+ * The designer's delivery arrives as a proof (`store.designServices`): approving the design is
+ * approving that proof, and a free revision is asking for changes on it. Only a charged round is
+ * the design service's own action (`confirm-extra-round`, with the fee the customer saw).
  */
-export function DesignServicePanel({
-  orderId,
-  orderCode,
-  service,
-  actions,
-}: {
-  orderId: string;
-  orderCode: string;
-  service: Service;
-  actions: readonly NextAction[];
-}) {
+export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
   const t = useTranslations("artwork.design");
   const locale = useLocale();
   const format = useFormat();
   const queryClient = useQueryClient();
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const service = artwork.designService!;
+  const { order } = artwork;
+  const proof = pendingProof(artwork.proofs);
+  const [brief, setBrief] = useState<Brief>({ brandName: "", brandCategory: "", description: "" });
+  const [errors, setErrors] = useState<Partial<Record<keyof Brief, string>>>({});
   const [note, setNote] = useState("");
   const [feeAccepted, setFeeAccepted] = useState(false);
   const [approving, setApproving] = useState(false);
   const [busy, setBusy] = useState(false);
   const key = useRef(newKey());
-  // Counted as the back office counts them (every round the API did not charge, the first design
-  // included); whether the next one is charged is the API's `nextRound`, never this count.
-  const used = Math.min(service.rounds.filter((round) => !round.chargeable).length, service.freeRounds);
+  const used = Math.min(service.revisionsUsed, service.freeRounds);
   const freeLeft = service.freeRounds - used;
-  const can = (action: string) => actions.some((entry) => entry.key === action);
-
-  const update = (next: unknown) => queryClient.setQueryData(artworkKey(orderId), next);
+  const next = service.nextRevision;
+  const charged = Boolean(next?.chargeable && next.feeGross);
 
   async function run(call: () => Promise<unknown>, done: string) {
     setBusy(true);
     try {
-      update(await call());
+      await call();
+      await queryClient.invalidateQueries({ queryKey: artworkKey(order.id) });
       toast.success(done);
       key.current = newKey();
+      return true;
     } catch (error) {
       if (isApiError(error)) key.current = newKey();
       toast.error(isApiError(error) ? error.detail : t("failed"));
+      return false;
     } finally {
       setBusy(false);
     }
@@ -83,20 +78,39 @@ export function DesignServicePanel({
 
   function submitBrief(event: React.FormEvent) {
     event.preventDefault();
-    const found: Record<string, string> = {};
-    for (const field of service.briefFields)
-      if (field.required && !answers[field.key]?.trim())
-        found[field.key] = t("required", { name: pick(locale, field.labelTh, field.labelEn) });
+    const found: Partial<Record<keyof Brief, string>> = {};
+    for (const field of BRIEF_KEYS)
+      if (!brief[field].trim()) found[field] = t("required", { name: t(`brief.${field}`) });
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     void run(
       () =>
-        browserRequests().call("PUT /v1/store/orders/{orderId}/design-service/brief", {
-          path: { orderId },
-          body: { answers, fileIds: [] },
+        browserApi().PUT("/v1/store/orders/{orderId}/design-service/brief", {
+          params: { path: { orderId: order.id } },
+          body: {
+            brandName: brief.brandName.trim(),
+            brandCategory: brief.brandCategory.trim(),
+            description: brief.description.trim(),
+          },
         }),
       t("briefSent"),
     );
+  }
+
+  function requestRevision() {
+    void run(
+      () =>
+        charged
+          ? browserApi().POST("/v1/store/orders/{orderId}/design-service/actions/confirm-extra-round", {
+              params: { path: { orderId: order.id }, header: { "Idempotency-Key": key.current } },
+              body: { changeRequest: note.trim(), expectedFeeGross: next!.feeGross! },
+            })
+          : browserApi().POST("/v1/store/proofs/{proofId}/actions/request-changes", {
+              params: { path: { proofId: proof!.id } },
+              body: { comment: note.trim() },
+            }),
+      t("revisionSent"),
+    ).then((sent) => sent && setNote(""));
   }
 
   return (
@@ -108,50 +122,47 @@ export function DesignServicePanel({
         <StatusChip map={DESIGN_SERVICE_STATUS} value={service.status} size="md" />
       </div>
 
-      {!service.briefSubmitted ? (
+      {artwork.actions.submitBrief ? (
         <form noValidate onSubmit={submitBrief} className="flex flex-col gap-4">
           <p className="text-muted text-sm">{t("briefIntro")}</p>
-          {service.briefFields.map((field) => {
-            const label = pick(locale, field.labelTh, field.labelEn);
-            const help = pick(locale, field.helpTh ?? "", field.helpEn) || undefined;
-            const set = (value: string) => setAnswers((current) => ({ ...current, [field.key]: value }));
-            return (
-              <Field
-                key={field.key}
-                label={label}
-                hint={help}
-                required={field.required}
-                requiredLabel={t("requiredMark")}
-                error={errors[field.key]}
-              >
-                {field.type === "select" ? (
-                  <Select
-                    value={answers[field.key] || undefined}
-                    placeholder={t("choose")}
-                    onValueChange={set}
-                    options={field.options.map((option) => ({
-                      value: option.value,
-                      label: pick(locale, option.labelTh, option.labelEn),
-                    }))}
-                  />
-                ) : field.type === "textarea" ? (
-                  <Textarea rows={4} value={answers[field.key] ?? ""} onChange={(event) => set(event.target.value)} />
-                ) : (
-                  <Input value={answers[field.key] ?? ""} onChange={(event) => set(event.target.value)} />
-                )}
-              </Field>
-            );
-          })}
+          {BRIEF_KEYS.map((field) => (
+            <Field
+              key={field}
+              label={t(`brief.${field}`)}
+              hint={field === "description" ? t("brief.descriptionHint") : undefined}
+              required
+              requiredLabel={t("requiredMark")}
+              error={errors[field]}
+            >
+              {field === "description" ? (
+                <Textarea
+                  rows={4}
+                  maxLength={4000}
+                  value={brief[field]}
+                  onChange={(event) => setBrief((current) => ({ ...current, [field]: event.target.value }))}
+                />
+              ) : (
+                <Input
+                  value={brief[field]}
+                  onChange={(event) => setBrief((current) => ({ ...current, [field]: event.target.value }))}
+                />
+              )}
+            </Field>
+          ))}
           <Button type="submit" className="self-start" loading={busy}>
             {t("sendBrief")}
           </Button>
         </form>
-      ) : (
+      ) : service.brief ? (
         <>
-          <DescriptionList items={service.brief.map((item) => ({ term: item.label, description: item.value }))} />
-          <p className="text-muted text-sm">
-            {t("due", { target: format.date(service.targetDueAt), max: format.date(service.maxDueAt) })}
-          </p>
+          <DescriptionList
+            items={BRIEF_KEYS.map((field) => ({ term: t(`brief.${field}`), description: service.brief![field] }))}
+          />
+          {service.targetDueAt && service.maxDueAt ? (
+            <p className="text-muted text-sm">
+              {t("due", { target: format.date(service.targetDueAt), max: format.date(service.maxDueAt) })}
+            </p>
+          ) : null}
           <div className="border-border rounded-xl border p-4">
             <Meter
               value={service.freeRounds ? Math.min(100, Math.round((used / service.freeRounds) * 100)) : 100}
@@ -163,71 +174,58 @@ export function DesignServicePanel({
           </div>
           <ol className="flex flex-col gap-2">
             {service.rounds.map((round) => (
-              <li key={round.roundNo} className="border-border flex flex-col gap-2 rounded-lg border p-3 text-sm">
+              <li key={round.id} className="border-border flex flex-col gap-2 rounded-lg border p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     {round.kind === "initial"
                       ? t("initial", { round: round.roundNo })
                       : t("revision", { round: round.roundNo })}
-                    {round.chargeable && round.feeAmount ? (
+                    {round.chargeable && round.feeNet ? (
                       <span className="text-muted ml-2 font-normal">
-                        {t("paidRound", { fee: format.thb(round.feeAmount) })}
+                        {t("paidRoundNet", { fee: format.thb(round.feeNet) })}
                       </span>
                     ) : null}
                   </p>
                   <StatusChip map={DESIGN_ROUND_STATUS} value={round.status} />
                 </div>
-                {round.note ? <p className="text-muted">{round.note}</p> : null}
-                {round.files.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2">
-                    {round.files.map((file) =>
-                      file.url ? (
-                        <li key={file.id}>
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary underline underline-offset-4"
-                          >
-                            {file.originalName}
-                          </a>
-                        </li>
-                      ) : (
-                        <li key={file.id} className="text-muted">
-                          {file.originalName}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                ) : null}
+                {round.changeRequest ? <p className="text-muted">{round.changeRequest}</p> : null}
               </li>
             ))}
           </ol>
         </>
-      )}
+      ) : null}
 
-      {service.pendingFeeInstalment ? (
+      {artwork.feeInstalment && artwork.feeInstalment.status !== "paid" ? (
         <Callout tone="warning" title={t("feeDueTitle")}>
           <div className="flex flex-col items-start gap-2">
-            <span>{t("feeDue", { fee: format.thb(service.pendingFeeInstalment.grossAmount) })}</span>
-            <PayInstalmentButton size="sm" instalment={service.pendingFeeInstalment} orderCode={orderCode}>
+            <span>{t("feeDue", { fee: format.thb(artwork.feeInstalment.openAmount) })}</span>
+            <PayInstalmentButton
+              size="sm"
+              instalment={{
+                id: artwork.feeInstalment.id,
+                label: pick(locale, artwork.feeInstalment.labelTh, artwork.feeInstalment.labelEn),
+                grossAmount: artwork.feeInstalment.openAmount,
+                activePaymentId: null,
+              }}
+              orderCode={order.orderCode}
+            >
               {t("payFee")}
             </PayInstalmentButton>
           </div>
         </Callout>
       ) : null}
 
-      {can("design.request_revision") ? (
+      {artwork.actions.reviewDesign && proof ? (
         <div className="flex flex-col gap-3">
           <Field label={t("revisionNote")} hint={t("revisionHint")}>
             <Textarea rows={3} maxLength={2000} value={note} onChange={(event) => setNote(event.target.value)} />
           </Field>
-          {service.nextRound.chargeable && service.nextRound.feeAmount ? (
-            <Callout tone="info" title={t("chargeableTitle", { round: service.nextRound.roundNo })}>
+          {charged ? (
+            <Callout tone="info" title={t("chargeableTitle", { round: next!.revisionNo + 1 })}>
               <Checkbox
                 checked={feeAccepted}
                 onCheckedChange={(checked) => setFeeAccepted(checked === true)}
-                label={t("acceptFee", { fee: format.thb(service.nextRound.feeAmount) })}
+                label={t("acceptFee", { fee: format.thb(next!.feeGross!) })}
               />
             </Callout>
           ) : (
@@ -237,27 +235,12 @@ export function DesignServicePanel({
             <Button
               variant="secondary"
               loading={busy}
-              disabled={note.trim().length < 3 || (service.nextRound.chargeable && !feeAccepted)}
-              onClick={() =>
-                void run(
-                  () =>
-                    browserRequests().call("POST /v1/store/orders/{orderId}/design-service/rounds", {
-                      path: { orderId },
-                      body: {
-                        note: note.trim(),
-                        ...(service.nextRound.chargeable && service.nextRound.feeAmount
-                          ? { acceptedFee: service.nextRound.feeAmount }
-                          : {}),
-                      },
-                      idempotencyKey: key.current,
-                    }),
-                  t("revisionSent"),
-                )
-              }
+              disabled={note.trim().length < 3 || (charged && !feeAccepted)}
+              onClick={requestRevision}
             >
               {t("requestRevision")}
             </Button>
-            {can("design.approve") ? <Button onClick={() => setApproving(true)}>{t("approve")}</Button> : null}
+            <Button onClick={() => setApproving(true)}>{t("approve")}</Button>
           </div>
         </div>
       ) : null}
@@ -266,16 +249,15 @@ export function DesignServicePanel({
         open={approving}
         onOpenChange={setApproving}
         title={t("approveTitle")}
-        description={t("approveBody", { code: orderCode })}
+        description={t("approveBody", { code: order.orderCode })}
         confirmLabel={t("approve")}
         cancelLabel={t("cancel")}
         loading={busy}
         onConfirm={() =>
           void run(
             () =>
-              browserRequests().call("POST /v1/store/orders/{orderId}/design-service/actions/approve", {
-                path: { orderId },
-                idempotencyKey: key.current,
+              browserApi().POST("/v1/store/proofs/{proofId}/actions/approve", {
+                params: { path: { proofId: proof!.id }, header: { "Idempotency-Key": key.current } },
               }),
             t("approved"),
           ).then(() => setApproving(false))

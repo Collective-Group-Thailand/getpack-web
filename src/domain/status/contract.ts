@@ -20,15 +20,8 @@
 
 import type { Schemas } from "@/lib/api/types";
 
-/** A customer order (one configuration). Driven by facts — instalments, artwork, jobs, shipments — not set by hand (B3.1). **Source: schema** (`order_status`). */
-export type OrderStatus =
-  | "waiting_payment"
-  | "paid_for_production"
-  | "artwork_approved"
-  | "in_production"
-  | "shipping"
-  | "completed"
-  | "cancelled";
+/** A customer order (one configuration). Driven by facts — instalments, artwork, jobs, shipments — not set by hand (B3.1). **Source: contract** (U-F0.2). */
+export type OrderStatus = Schemas["OrderStatus"];
 
 /** One checkout: a group of orders with one payment schedule (B3.1). **Source: schema** (`order_group_status`). */
 export type OrderGroupStatus =
@@ -46,8 +39,8 @@ export type SlipStatus = Schemas["SlipStatus"];
 /** A refund, which needs approval (B3.2, D-169). **Source: contract** (B5.2). */
 export type RefundStatus = Schemas["RefundStatus"];
 
-/** A saved instant or CS quote, valid 15 days with the price locked (D-051). **Source: schema** (`quote_status`). */
-export type QuoteStatus = "calculated" | "saved" | "shared" | "converted" | "expired" | "superseded";
+/** A saved instant or CS quote, valid 15 days with the price locked (D-051). **Source: contract** (U-F0.2). */
+export type QuoteStatus = Schemas["QuoteStatus"];
 
 /** A discount memo, above the CS limit (D-052, D-162). **Source: schema** (`memo_status`). */
 export type MemoStatus = "draft" | "pending_approval" | "approved" | "rejected" | "withdrawn" | "expired" | "applied";
@@ -67,8 +60,8 @@ export type PromotionStatus = "draft" | "active" | "paused" | "ended";
 /** One coupon code (D-053). **Source: schema** (`coupon_status`). */
 export type CouponStatus = "active" | "used_up" | "disabled";
 
-/** One line of the points ledger (D-132): pending until completion + claim window. **Source: schema** (`points_status`). */
-export type PointsStatus = "pending" | "available" | "expired" | "reversed";
+/** One line of the points ledger (D-132): pending until completion + claim window. **Source: contract** (U-F0.2). */
+export type PointsStatus = Schemas["PointsStatus"];
 
 /** A company's monthly statement (D-125, B5.2). **Proposed** in contract request `admin.company-credit`. */
 export type StatementStatus = "open" | "paid" | "overdue";
@@ -79,8 +72,8 @@ export type PodReviewStatus = "pending" | "accepted" | "rejected";
 /** A member of a B2B company account (D-120). **Source: schema** (`member_status`). */
 export type MemberStatus = "invited" | "active" | "removed";
 
-/** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: schema** (`referral_status`). */
-export type ReferralStatus = "pending" | "qualified" | "rewarded" | "rejected_fraud" | "under_review";
+/** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: contract** (U-F0.2). */
+export type ReferralStatus = Schemas["ReferralStatus"];
 
 /** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: schema** (`artwork_status`). */
 export type ArtworkStatus =

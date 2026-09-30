@@ -1,14 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -17,17 +16,33 @@ import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
-type Approval = ResponseOf<Requests, "GET /v1/store/me/company/approvals">["data"][number];
+type Approval = Schemas["CompanyApprovalDto"];
 
-const TONE = { pending: "warning", approved: "success", rejected: "danger", expired: "neutral" } as const;
-const newKey = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
+const TONE = {
+  pending: "warning",
+  approved: "success",
+  rejected: "danger",
+  withdrawn: "neutral",
+  expired: "neutral",
+} as const;
 
 /**
- * Orders waiting for the company's approver (D-123). Approving restates the amount and places
- * the orders as they were checked out; rejecting needs a reason the buyer reads.
+ * Orders waiting for the company's approver (D-123), each an order group placed as
+ * `pending_company_approval`. Approving restates the amount and releases the orders; rejecting
+ * needs a reason the buyer reads (`store.companyApprovals.decide`).
+ *
+ * CONTRACT-GAP store.company-approvals — the published approval names the group, its amount, PO and
+ * requester only: no lines, threshold or payment plan, and the decision carries no idempotency key.
  */
-export function ApprovalsList({ approvals, canApprove }: { approvals: Approval[]; canApprove: boolean }) {
+export function ApprovalsList({
+  companyId,
+  approvals,
+  canApprove,
+}: {
+  companyId: string;
+  approvals: Approval[];
+  canApprove: boolean;
+}) {
   const t = useTranslations("business.approvals");
   const format = useFormat();
   const router = useRouter();
@@ -35,33 +50,24 @@ export function ApprovalsList({ approvals, canApprove }: { approvals: Approval[]
   const [rejecting, setRejecting] = useState<Approval | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
-  const key = useRef(newKey());
 
   async function decide(approval: Approval, outcome: "approve" | "reject") {
     setBusy(true);
     try {
-      if (outcome === "approve")
-        await browserRequests().call("POST /v1/store/me/company/approvals/{approvalId}/actions/approve", {
-          path: { approvalId: approval.id },
-          idempotencyKey: key.current,
-        });
-      else
-        await browserRequests().call("POST /v1/store/me/company/approvals/{approvalId}/actions/reject", {
-          path: { approvalId: approval.id },
-          body: { reason: reason.trim() },
-        });
-      key.current = newKey();
+      await browserApi().POST("/v1/store/companies/{companyId}/approvals/{approvalId}/actions/{decision}", {
+        params: { path: { companyId, approvalId: approval.id, decision: outcome } },
+        body: outcome === "reject" ? { comment: reason.trim() } : {},
+      });
       toast.success(
         outcome === "approve"
-          ? t("approved", { request: approval.requestNo })
-          : t("rejected", { request: approval.requestNo }),
+          ? t("approved", { request: approval.groupCode })
+          : t("rejected", { request: approval.groupCode }),
       );
       setApproving(null);
       setRejecting(null);
       setReason("");
       router.refresh();
     } catch (error) {
-      key.current = newKey();
       toast.error(isApiError(error) ? error.detail : t("failed"));
     } finally {
       setBusy(false);
@@ -82,54 +88,27 @@ export function ApprovalsList({ approvals, canApprove }: { approvals: Approval[]
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h3 id={`approval-${approval.id}`} className="font-semibold">
-                    {t("title", { request: approval.requestNo, amount: format.thb(approval.grossAmount) })}
+                    {t("title", { request: approval.groupCode, amount: format.thb(approval.amount) })}
                   </h3>
                   <p className="text-muted text-sm">
-                    {t("meta", {
-                      name: approval.requestedBy.displayName,
+                    {t("metaShort", {
+                      name: approval.requester.displayName,
                       date: format.dateTime(approval.requestedAt),
-                      threshold: format.thb(approval.threshold),
                     })}
                   </p>
                 </div>
                 <Badge tone={TONE[approval.status]}>{t(`status.${approval.status}`)}</Badge>
               </div>
-              <ul className="text-sm">
-                {approval.items.map((item, at) => (
-                  <li key={`${item.name}-${at}`} className="flex justify-between gap-3">
-                    <span>
-                      {t("item", { name: item.name, quantity: format.number(item.quantity), unit: item.unit })}
-                    </span>
-                    <span className="tabular-nums">{format.thb(item.grossAmount)}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-muted text-xs">
-                {t("details", { po: approval.poNumber ?? t("noPo"), schedule: approval.scheduleLabel })}
-              </p>
-              {approval.reason ? <p className="text-sm">{t("reasonShown", { reason: approval.reason })}</p> : null}
-              {approval.orders.length > 0 ? (
-                <p className="flex flex-wrap gap-2 text-sm">
-                  {approval.orders.map((order) => (
-                    <Link
-                      key={order.id}
-                      href={`/account/orders/${order.id}`}
-                      className="text-primary underline underline-offset-4"
-                    >
-                      {order.orderCode}
-                    </Link>
-                  ))}
-                </p>
-              ) : null}
+              <p className="text-muted text-xs">{t("poOnly", { po: approval.poNumber ?? t("noPo") })}</p>
               {canApprove && approval.status === "pending" ? (
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => setApproving(approval)}>
                     {t("approve")}
-                    <span className="sr-only"> {approval.requestNo}</span>
+                    <span className="sr-only"> {approval.groupCode}</span>
                   </Button>
                   <Button variant="secondary" onClick={() => setRejecting(approval)}>
                     {t("reject")}
-                    <span className="sr-only"> {approval.requestNo}</span>
+                    <span className="sr-only"> {approval.groupCode}</span>
                   </Button>
                 </div>
               ) : null}
@@ -141,10 +120,10 @@ export function ApprovalsList({ approvals, canApprove }: { approvals: Approval[]
       <AlertDialog
         open={Boolean(approving)}
         onOpenChange={(open) => !open && setApproving(null)}
-        title={t("approveTitle", { request: approving?.requestNo ?? "" })}
+        title={t("approveTitle", { request: approving?.groupCode ?? "" })}
         description={
           approving
-            ? t("approveBody", { amount: format.thb(approving.grossAmount), name: approving.requestedBy.displayName })
+            ? t("approveBody", { amount: format.thb(approving.amount), name: approving.requester.displayName })
             : ""
         }
         confirmLabel={t("approve")}
@@ -155,7 +134,7 @@ export function ApprovalsList({ approvals, canApprove }: { approvals: Approval[]
       <Dialog
         open={Boolean(rejecting)}
         onOpenChange={(open) => !open && setRejecting(null)}
-        title={t("rejectTitle", { request: rejecting?.requestNo ?? "" })}
+        title={t("rejectTitle", { request: rejecting?.groupCode ?? "" })}
         closeLabel={t("cancel")}
         footer={
           <Button

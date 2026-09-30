@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 
 import { useRouter } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { toast } from "@/ui/components/Toast";
@@ -27,10 +27,8 @@ export function ConfirmReceipt({ orderId, orderCode }: { orderId: string; orderC
   async function confirm() {
     setBusy(true);
     try {
-      await browserRequests().call("POST /v1/store/orders/{orderId}/actions/confirm-receipt", {
-        path: { orderId },
-        body: {},
-        idempotencyKey: key.current,
+      await browserApi().POST("/v1/store/orders/{orderId}/actions/confirm-receipt", {
+        params: { path: { orderId }, header: { "Idempotency-Key": key.current } },
       });
       setOpen(false);
       toast.success(t("done"));

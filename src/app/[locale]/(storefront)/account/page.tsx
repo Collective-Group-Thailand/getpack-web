@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
-import { accountRequests } from "@/features/customer/account/api.server";
+import { getPoints } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { getProductTypeNames } from "@/features/customer/catalog/api.server";
+import { listMyOrders } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
-import { Meter } from "@/ui/components/Meter";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.home");
@@ -19,15 +20,16 @@ export async function generateMetadata(): Promise<Metadata> {
 /** The account's front page (F3 3.4): what needs doing across orders, points, the latest orders. */
 export default async function Page() {
   const me = await requireCustomer();
-  const requests = await accountRequests();
-  const [t, tNav, format, active, points] = await Promise.all([
+  const locale = await getLocale();
+  const [t, tNav, format, active, points, names] = await Promise.all([
     getTranslations("account.home"),
     getTranslations("account.nav"),
     getFormat(),
-    requests.call("GET /v1/store/orders", { query: { view: "active", perPage: 20 } }),
-    requests.call("GET /v1/store/me/points"),
+    listMyOrders("active"),
+    getPoints(),
+    getProductTypeNames(locale),
   ]);
-  const todo = active.data.filter((order) => order.nextActions.length > 0);
+  const todo = active.filter((row) => row.actions.length > 0);
 
   return (
     <div className="flex flex-col gap-8">
@@ -44,12 +46,12 @@ export default async function Page() {
           <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-3">
-            {todo.map((order) => (
+            {todo.map(({ order, actions }) => (
               <li key={order.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
-                      {order.product.name}
+                      {names[order.productTypeCode] ?? order.productTypeCode}
                     </Link>
                     <span className="text-muted ms-2 font-mono text-sm">{order.orderCode}</span>
                   </p>
@@ -59,9 +61,9 @@ export default async function Page() {
                   orderId={order.id}
                   orderCode={order.orderCode}
                   size="sm"
-                  actions={order.nextActions.filter((action) => action.key !== "order.pay_instalment")}
+                  actions={actions.filter((action) => action.key !== "order.pay_instalment")}
                 />
-                {order.nextActions.some((action) => action.key === "order.pay_instalment") ? (
+                {actions.some((action) => action.key === "order.pay_instalment") ? (
                   <Link
                     href={`/account/orders/${order.id}#instalments`}
                     className="text-primary text-sm font-medium underline-offset-4 hover:underline"
@@ -81,25 +83,13 @@ export default async function Page() {
             {tNav("points")}
           </h2>
           <p className="mt-2 text-2xl font-bold tabular-nums">
-            {t("points", { points: format.number(points.balance.available) })}
+            {t("points", { points: format.number(points.availablePoints) })}
           </p>
-          <p className="text-muted text-sm">
-            {t("pointsValue", { amount: format.thb(points.balance.availableBahtValue) })}
+          <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
+          {/* CONTRACT-GAP store.loyalty — no next tier or threshold, so the tier stands without a progress bar. */}
+          <p className="mt-3 text-sm">
+            {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
           </p>
-          {points.tier.next ? (
-            <Meter
-              className="mt-3"
-              value={points.tier.progressPct}
-              valueText={t("tierProgressValue", {
-                spend: format.thb(points.tier.spend12m),
-                threshold: format.thb(points.tier.nextThreshold),
-              })}
-              label={t("tierProgress", {
-                current: t(`tiers.${points.tier.current}`),
-                next: t(`tiers.${points.tier.next}`),
-              })}
-            />
-          ) : null}
           <Button asChild variant="link" className="mt-2 px-0">
             <Link href="/account/points">{t("seePoints")}</Link>
           </Button>

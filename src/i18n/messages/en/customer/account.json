@@ -2,57 +2,52 @@
   "addressForm": {
     "required": "Please fill this in",
     "phoneInvalid": "A 10-digit mobile number starting with 0",
-    "postcodeInvalid": "A postcode has 5 digits",
     "failed": "We could not save it. Your details are still here — please try again.",
     "label": "Address name",
     "labelHint": "e.g. home, shop, warehouse",
     "requiredMark": "required",
     "recipient": "Recipient",
     "phone": "Recipient's phone",
-    "postcode": "Postcode",
-    "postcodeHint": "We fill in the province and district",
-    "subdistrict": "Sub-district",
-    "choose": "Choose",
-    "area": "{district}, {province}",
-    "pickSubdistrict": "Choose the sub-district",
-    "province": "Province",
-    "postcodeUnknown": "We do not know this postcode — type the province",
     "line1": "House number, building, street",
     "line1Hint": "So the driver can find it",
     "line2": "More details",
     "default": "Make this my main address",
     "save": "Save address",
     "cancel": "Cancel",
-    "newTitle": "New address"
+    "newTitle": "New address",
+    "createBlockedTitle": "New addresses cannot be added yet",
+    "createBlocked": "Adding a new address on the website is not open yet. Your saved addresses work as usual, or ask our team to add one for you.",
+    "areaFixed": "Sub-district, province and postcode"
   },
   "taxForm": {
     "required": "Please fill this in",
-    "taxIdInvalid": "This tax ID is not valid — please check the 13 digits",
-    "branchInvalid": "A branch code has 5 digits",
     "failed": "We could not save it. Your details are still here — please try again.",
-    "type": "Type",
-    "types": {
-      "individual": "Individual",
-      "juristic": "Company",
-      "government": "Government body"
-    },
-    "personName": "Full name",
-    "companyName": "Company or body",
     "requiredMark": "required",
     "taxId": "Tax ID",
-    "taxIdHint": "13 digits",
     "branch": "Office",
     "headOffice": "Head office",
-    "branchOffice": "Branch",
-    "branchCode": "Branch code",
-    "address": "Registered address",
-    "addressHint": "Printed on the tax invoice",
     "withholds": "We withhold tax",
     "withholdsHint": "We work out the amount and show it at checkout",
     "default": "Make this my main profile",
     "save": "Save",
     "cancel": "Cancel",
-    "newTitle": "New tax-invoice details"
+    "newTitle": "New tax-invoice details",
+    "createBlockedTitle": "New tax-invoice details cannot be added yet",
+    "createBlocked": "Adding new tax-invoice details on the website is not open yet. Your saved details work as usual, or ask our team to add them for you.",
+    "areaFixed": "Province and postcode",
+    "name": "Name on the tax invoice",
+    "line1": "Registered address",
+    "line2": "More details",
+    "documentEmail": "E-mail for documents",
+    "documentEmailHint": "Tax invoices and receipts are sent here",
+    "emailInvalid": "This e-mail address does not look right",
+    "branchNo": "Branch {code}",
+    "type": "Type",
+    "types": {
+      "individual": "Individual",
+      "juristic": "Company",
+      "government": "Government body"
+    }
   },
   "nav": {
     "label": "My account",
@@ -64,7 +59,7 @@
     "designs": "Designs",
     "points": "Points",
     "referral": "Invite friends",
-    "wallet": "Codes and credit",
+    "wallet": "Store credit",
     "addresses": "Addresses and tax invoices",
     "notifications": "Notifications",
     "privacy": "Privacy"
@@ -78,8 +73,7 @@
     "payDue": "An instalment is due — pay it",
     "points": "{points} points",
     "pointsValue": "Worth {amount}",
-    "tierProgress": "From {current} to {next}",
-    "tierProgressValue": "12-month spend {spend} of {threshold}",
+    "tierNow": "{tier} · 12-month spend {spend}",
     "tiers": {
       "member": "Member",
       "silver": "Silver",
@@ -90,13 +84,13 @@
   },
   "quotes": {
     "title": "Saved quotations",
-    "intro": "The price holds until the date shown. Reopen one to change it or order.",
+    "intro": "Each price holds until the date shown",
     "emptyTitle": "No quotations yet",
     "emptyBody": "Save a quotation from a product's configurator.",
     "browse": "Browse products",
     "validUntil": "Price holds until {date}",
-    "reopen": "Reopen",
-    "row": "{code} · {quantity} {unit} · {amount}"
+    "row": "{code} · quantity {quantity} · {amount}",
+    "rowNoCode": "Quantity {quantity} · {amount}"
   },
   "book": {
     "title": "Addresses and tax invoices",
@@ -208,9 +202,8 @@
     "pending": "On the way",
     "pendingHint": "Added once the order is received and the claim window has passed",
     "tier": "Tier",
-    "multiplier": "Points ×{multiplier}",
+    "tierHint": "Points ×{multiplier} · 12-month spend {spend}",
     "expiring": "{points} points expire on {date}",
-    "nextTier": "On the way to {tier}",
     "history": "Points history",
     "when": "Date",
     "what": "What",
@@ -240,34 +233,25 @@
     "copyCode": "Copy the code",
     "shareLink": "Share the link",
     "shareTitle": "Get your packaging made with Packio",
-    "limit": "Up to {limit} rewarded friends a month ({used} this month)",
     "friends": "Friends you invited",
     "noFriends": "No friends invited yet",
     "noFriendsBody": "Share your code with friends who need packaging.",
-    "joined": "Joined {date}",
-    "reward": "+{points} points"
+    "count": "{count, plural, one {# friend} other {# friends}}"
   },
   "wallet": {
-    "title": "Codes and credit",
-    "intro": "The promo codes you hold, and credit you can pay with.",
-    "codes": "Promo codes",
-    "statuses": {
-      "available": "Available",
-      "used": "Used",
-      "expired": "Expired"
-    },
-    "validUntil": "Valid until {date}",
-    "copy": "Copy",
-    "codesNote": "Enter a code at checkout and the discount is worked out for you.",
+    "title": "Store credit",
+    "intro": "Credit you can spend on your next order",
     "credit": "Store credit",
     "balance": "Credit balance",
     "creditHint": "Use it as a payment method next time",
-    "kinds": {
-      "shortage_credit": "Credit for a shortfall within tolerance",
-      "refund": "Refund as credit",
-      "goodwill": "Goodwill credit",
-      "spent": "Credit used",
-      "expired": "Credit expired"
+    "sources": {
+      "shortage_credit": "Credit for a shortage within tolerance",
+      "cancellation": "Credit from a cancelled order",
+      "claim": "Credit from a claim",
+      "refund_alternative": "Refund as credit",
+      "applied_to_order": "Used on an order",
+      "manual": "Adjusted by Packio staff",
+      "refunded": "Paid out as a refund"
     }
   },
   "copy": {

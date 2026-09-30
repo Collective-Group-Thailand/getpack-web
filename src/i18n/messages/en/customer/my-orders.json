@@ -90,7 +90,11 @@
     "shipmentMetaTracking": "{shipment} · {carrier} · {tracking}",
     "claimLine": "{claim} · {type} · {date}",
     "destinationLine": "{name} · {quantity} {unit}",
-    "stages": "Stage by stage"
+    "stages": "Stage by stage",
+    "destinationLineNoUnit": "{name} · qty {quantity}",
+    "photos": "{count, plural, one {# photo} other {# photos}}",
+    "shipByTerm": "Ships from the factory",
+    "trackingFailed": "Couldn't create a tracking link. Please try again."
   },
   "tolerance": {
     "exact": "All {delivered} of {ordered} received",
@@ -105,5 +109,22 @@
     "quantity_short": "Short quantity",
     "late": "Late",
     "other": "Other"
+  },
+  "rowNoUnit": "Qty {quantity} · Ordered {date}",
+  "timelineTypes": {
+    "order_placed": "Order placed",
+    "payment_received": "Payment received",
+    "artwork_submitted": "Artwork submitted",
+    "proof_sent": "Proof ready",
+    "proof_approved": "Proof approved",
+    "proof_changes_requested": "Changes requested on the proof",
+    "production_milestone": "Production: {stage}",
+    "shipment_picked_up": "Left the factory",
+    "shipment_in_transit": "In transit",
+    "shipment_out_for_delivery": "Out for delivery",
+    "shipment_delivered": "Delivered",
+    "order_receipt_confirmed": "Receipt confirmed",
+    "order_cancelled": "Order cancelled",
+    "other": "Order updated"
   }
 }

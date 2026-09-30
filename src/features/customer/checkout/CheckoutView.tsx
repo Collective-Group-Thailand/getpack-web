@@ -1,35 +1,32 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import type { z } from "zod";
 
+import { ONLINE_PAYMENT_METHODS, type PaymentMethod } from "@/domain/payment-methods";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
-import type { checkoutInput } from "@/lib/api/requests/store-checkout";
+import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
-import { Input, NumberInput, Textarea } from "@/ui/components/Input";
-import { PhoneInput } from "@/ui/components/PhoneInput";
+import { Input, NumberInput } from "@/ui/components/Input";
 import { PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { Skeleton } from "@/ui/components/Skeleton";
-import { Icon } from "@/ui/icons";
 
-import type { Address } from "../account/AddressForm";
+import { addressLine, type Address, type TaxProfile } from "../account/address";
 import { formatTaxId } from "../account/tax-id";
-import type { TaxProfile } from "../account/TaxProfileForm";
+import { editCart, type Cart } from "../cart/cart-client";
+import { pick } from "../catalog/localize";
 import { useDebounced } from "../configurator/pricing";
 
 const AddressSheet = dynamic(() => import("../cart/AddressSheet").then((module) => module.AddressSheet), {
@@ -39,129 +36,204 @@ const TaxProfileSheet = dynamic(() => import("./TaxProfileSheet").then((module) 
   ssr: false,
 });
 
-type Input = z.input<typeof checkoutInput>;
-type Preview = ResponseOf<Requests, "POST /v1/store/checkout/actions/preview">;
-type PaymentMethod = Preview["paymentMethods"][number]["method"];
+type Preview = Schemas["CheckoutPreviewDto"];
+type Body = Schemas["CheckoutDto"];
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 const NO_TAX = "__receipt__";
+/** The notices the storefront has words for (the contract names none; packio-api's checkout extensions do). */
+const KNOWN_NOTICES = new Set([
+  "promotion.applied",
+  "promotion.capped",
+  "promotion.rejected",
+  "promotion.payment_method_required",
+  "discount.applied",
+  "discount.capped",
+  "points.applied",
+  "points.capped",
+  "points.rejected",
+  "company.approval_required",
+  "company.credit_order",
+  "company.credit_unavailable",
+]);
+
+/** What the company block of a checkout needs from `CompanyDto`. */
+export type CheckoutCompany = Pick<
+  Schemas["CompanyDto"],
+  "id" | "legalName" | "companyCode" | "poNumberPolicy" | "orderApprovalThreshold"
+>;
 
 export interface CheckoutViewProps {
-  contact: { name: string; phone: string; email: string };
+  cart: Cart;
   addresses: Address[];
   taxProfiles: TaxProfile[];
-  /** Whether the cart already splits lines across addresses — then that is the default. */
-  cartSplits: boolean;
+  /** Points the customer holds (`store.loyalty.get`). */
+  pointsBalance: number;
+  /** The company the customer orders for, if they belong to one (`store.companies.listMine`). */
+  company: CheckoutCompany | null;
+  /** Product type code → name, since a cart line names its type only. */
+  typeNames: Record<string, string>;
 }
 
 /**
- * The checkout (F3 3.3): contact → delivery → tax invoice → promotions → points → payment schedule
- * → method → review, on one page so nothing typed is asked for twice (WCAG 3.3.7). Every figure is
- * the API's preview, asked for again after each change; placing re-prices, and if anything moved
- * the customer sees the old and new totals and confirms again (design-system.md §1.3).
+ * The checkout (F3 3.3): delivery → tax invoice → codes → points → company → the payment schedule
+ * the rules chose → how to pay → review, on one page. Every figure is the API's preview
+ * (`store.checkout.preview`), asked for again after each change; placing (`store.checkout.place`)
+ * carries the total the customer saw as `expectedGrossAmount`, and if it moved the customer sees the
+ * old and new totals and confirms again (design-system.md §1.3).
+ *
+ * What the published checkout does differently, and so this page:
+ * - delivery and codes are the cart's: one address for everything is set on each line
+ *   (`store.cart.setDestinations`), and a code is applied to the cart (`store.cart.applyCode`);
+ * - the payment method is chosen when paying (`store.payments.initiate`, per order group);
+ * - over a company's threshold the order is placed as `pending_company_approval` (D-123).
+ *
+ * CONTRACT-GAP store.checkout — no contact block, no note to the team, no choice of payment schedule
+ * (`scheduleKey`, kept requested), no list of payment methods, no points bounds or points to earn, no
+ * company credit summary in the preview.
  */
 export function CheckoutView({
-  contact: initialContact,
+  cart: initialCart,
   addresses: initialAddresses,
   taxProfiles: initialProfiles,
-  cartSplits,
+  pointsBalance,
+  company,
+  typeNames,
 }: CheckoutViewProps) {
   const t = useTranslations("checkout");
   const tMethods = useTranslations("checkout.methods");
+  const tNotices = useTranslations("checkout.notices");
+  const locale = useLocale();
   const format = useFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [contact, setContact] = useState(initialContact);
+  const [cart, setCart] = useState(initialCart);
   const [addresses, setAddresses] = useState(initialAddresses);
   const [profiles, setProfiles] = useState(initialProfiles);
+  // "One address for everything" is what the cart already says when every line goes, whole, to
+  // the same saved address; the page never rewrites the cart on its own.
+  const single = new Set(
+    initialCart.items.map((item) => (item.destinations.length === 1 ? item.destinations[0]!.addressId : null)),
+  );
+  const sharedId = single.size === 1 ? [...single][0] : null;
   const defaultAddress = initialAddresses.find((address) => address.isDefault) ?? initialAddresses[0];
-  const [mode, setMode] = useState<"shared" | "per_item">(cartSplits || !defaultAddress ? "per_item" : "shared");
-  const [addressId, setAddressId] = useState(defaultAddress?.id ?? "");
+  const [mode, setMode] = useState<"shared" | "per_item">(sharedId ? "shared" : "per_item");
+  const [addressId, setAddressId] = useState(sharedId ?? defaultAddress?.id ?? "");
   const [taxProfileId, setTaxProfileId] = useState<string>(
     initialProfiles.find((profile) => profile.isDefault)?.id ?? NO_TAX,
   );
-  const [codes, setCodes] = useState<string[]>([]);
   const [codeDraft, setCodeDraft] = useState("");
   const [points, setPoints] = useState(0);
-  const [scheduleKey, setScheduleKey] = useState<string | undefined>(undefined);
   const [method, setMethod] = useState<PaymentMethod>("scb_qr");
-  const [note, setNote] = useState("");
   const [poNumber, setPoNumber] = useState("");
   const [sheet, setSheet] = useState<"address" | "tax" | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
-  const [repriced, setRepriced] = useState<{ before: Preview["totals"] } | null>(null);
+  const [repriced, setRepriced] = useState<{ before: string } | null>(null);
   const idempotencyKey = useRef(newKey());
 
-  const input: Input = {
-    contact,
-    delivery: mode === "shared" && addressId ? { mode: "shared", addressId } : { mode: "per_item" },
+  const api = browserApi();
+  const edit = useMutation({
+    mutationFn: async (run: () => Promise<Cart>) => run(),
+    onSuccess: (next) => {
+      setCart(next);
+      queryClient.setQueryData(queryKeys.resource("customer", "cart"), next);
+    },
+    onError: (error) => setFailure(isApiError(error) ? error.detail : t("failed")),
+  });
+
+  /** One address for every line: each line's whole quantity goes there (`store.cart.setDestinations`). */
+  function shipAllTo(id: string) {
+    setAddressId(id);
+    edit.mutate(async () => {
+      let next = cart;
+      for (const item of cart.items)
+        next = await editCart((ifMatch) =>
+          api.PUT("/v1/store/cart/items/{itemId}/destinations", {
+            params: { path: { itemId: item.id }, header: { "If-Match": ifMatch } },
+            body: { destinations: [{ addressId: id, quantity: item.quantity }] },
+          }),
+        );
+      return next;
+    });
+  }
+
+  const body: Body = {
     taxProfileId: taxProfileId === NO_TAX ? null : taxProfileId,
-    couponCodes: codes,
-    pointsToRedeem: points,
-    ...(scheduleKey ? { scheduleKey } : {}),
-    paymentMethod: method,
-    ...(note.trim() ? { note: note.trim() } : {}),
-    ...(poNumber.trim() ? { poNumber: poNumber.trim() } : {}),
+    ...(points >= 1 ? { redeemPoints: points } : {}),
+    ...(company ? { companyId: company.id } : {}),
+    ...(company && poNumber.trim() ? { poNumber: poNumber.trim() } : {}),
   };
-  const key = JSON.stringify(input);
+  // The cart's `updatedAt` is in the key, so a change to its codes or destinations prices again.
+  const key = JSON.stringify({ body, cart: cart.updatedAt, codes: cart.codes, destinations: cart.items });
   const settled = useDebounced(key, 400);
   const preview = useQuery({
     queryKey: [...queryKeys.resource("customer", "checkout-preview"), settled],
-    queryFn: ({ signal }) =>
-      browserRequests().call("POST /v1/store/checkout/actions/preview", { body: JSON.parse(settled) as Input, signal }),
+    queryFn: async ({ signal }) =>
+      (
+        await api.POST("/v1/store/checkout/actions/preview", {
+          body: (JSON.parse(settled) as { body: Body }).body,
+          signal,
+        })
+      ).data!,
     placeholderData: (previous) => previous,
     staleTime: 0,
   });
-  const data = preview.data;
-  const pending = key !== settled || preview.isFetching;
+  const data: Preview | undefined = preview.data;
+  const pending = key !== settled || preview.isFetching || edit.isPending;
+  const needsApproval = data?.notices.some((notice) => notice.code === "company.approval_required") ?? false;
+  const dueNow = data?.paymentSchedule?.instalments.find((instalment) => instalment.dueTrigger === "at_checkout");
+  const canPlace = Boolean(data) && !pending && (company?.poNumberPolicy !== "required" || poNumber.trim() !== "");
 
-  const contactValid =
-    contact.name.trim() !== "" && /^0\d{8,9}$/.test(contact.phone) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email);
-  const canPlace = Boolean(data) && !pending && contactValid && data!.blockers.length === 0;
+  async function applyCode(code: string) {
+    edit.mutate(() =>
+      editCart((ifMatch) =>
+        api.POST("/v1/store/cart/codes", { params: { header: { "If-Match": ifMatch } }, body: { code } }),
+      ),
+    );
+  }
+
+  function removeCode(code: string) {
+    edit.mutate(() =>
+      editCart((ifMatch) =>
+        api.DELETE("/v1/store/cart/codes/{code}", { params: { path: { code }, header: { "If-Match": ifMatch } } }),
+      ),
+    );
+  }
 
   async function place() {
     if (!data) return;
     setPlacing(true);
     setFailure(null);
     try {
-      if (data.company?.needsApproval) {
-        // D-123: over the company threshold — the approver places it, not the buyer.
-        const approval = await browserRequests().call("POST /v1/store/me/company/approvals", {
-          body: { ...input, previewToken: data.previewToken },
-          idempotencyKey: idempotencyKey.current,
-        });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
-        router.push(`/business/approvals?sent=${encodeURIComponent(approval.requestNo)}`);
-        return;
-      }
-      const placed = await browserRequests().call("POST /v1/store/checkout", {
-        body: { ...input, previewToken: data.previewToken },
-        idempotencyKey: idempotencyKey.current,
+      const { data: group } = await api.POST("/v1/store/checkout", {
+        params: { header: { "Idempotency-Key": idempotencyKey.current } },
+        body: { ...body, expectedGrossAmount: data.totals.grossAmount },
       });
-      track("order_placed", { route: "/checkout", quoteMode: "instant" });
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
-      if (!placed.firstInstalment) {
-        router.push(`/account/orders?placed=${encodeURIComponent(placed.groupCode)}`);
+      if (group!.status === "pending_company_approval") {
+        // D-123: over the company threshold — placed, and waiting for the company's approver.
+        router.push(`/business/approvals?sent=${encodeURIComponent(group!.groupCode)}`);
         return;
       }
-      const payment = await browserRequests().call("POST /v1/store/instalments/{instalmentId}/payments", {
-        path: { instalmentId: placed.firstInstalment.id },
-        body: {
-          method,
-          returnUrl: `${window.location.origin}${window.location.pathname.replace(/\/checkout.*$/, "")}/checkout/return`,
-        },
-        idempotencyKey: `${idempotencyKey.current}:pay`,
+      track("order_placed", { route: "/checkout", quoteMode: "instant" });
+      if (!dueNow) {
+        router.push(`/account/orders?placed=${encodeURIComponent(group!.groupCode)}`);
+        return;
+      }
+      const { data: payment } = await api.POST("/v1/store/order-groups/{groupId}/payments", {
+        params: { path: { groupId: group!.id }, header: { "Idempotency-Key": `${idempotencyKey.current}:pay` } },
+        body: { method },
       });
-      router.push(`/checkout/pay/${payment.id}`);
+      router.push(`/checkout/pay/${payment!.id}`);
     } catch (error) {
       setConfirming(false);
-      if (isApiError(error) && (error.code === "checkout.repriced" || error.code === "checkout.preview_expired")) {
+      if (isApiError(error) && (error.code === "checkout.total_changed" || error.code === "checkout.price_expired")) {
         // Priced again from scratch: the customer sees both totals and confirms the new one.
-        setRepriced({ before: data.totals });
+        setRepriced({ before: data.totals.grossAmount });
         idempotencyKey.current = newKey();
         await preview.refetch();
       } else {
@@ -173,7 +245,6 @@ export function CheckoutView({
   }
 
   const totalsRows = (totals: Preview["totals"]): PriceRow[] => [
-    { label: t("summary.items"), value: format.thb(totals.itemsAmount) },
     ...(totals.discountAmount !== "0.00"
       ? [
           {
@@ -183,85 +254,59 @@ export function CheckoutView({
           },
         ]
       : []),
-    ...(totals.shippingAmount !== "0.00"
-      ? [{ label: t("summary.shipping"), value: format.thb(totals.shippingAmount) }]
+    ...(totals.shippingNetAmount !== "0.00"
+      ? [{ label: t("summary.shipping"), value: format.thb(totals.shippingNetAmount) }]
       : []),
-    ...(totals.pointsAmount !== "0.00"
-      ? [
-          {
-            label: t("summary.points"),
-            value: t("summary.minus", { amount: format.thb(totals.pointsAmount) }),
-            tone: "discount" as const,
-          },
-        ]
-      : []),
+    { label: t("summary.net"), value: format.thb(totals.netAmount) },
     {
       label: t("summary.vat"),
       value: format.thb(totals.vatAmount),
       tone: "muted" as const,
-      hint: t("summary.vatHint"),
     },
-    ...(totals.withholdingAmount !== "0.00"
+    ...(totals.whtAmount !== "0.00"
       ? [
           {
             label: t("summary.withholding"),
-            value: t("summary.minus", { amount: format.thb(totals.withholdingAmount) }),
+            value: t("summary.minus", { amount: format.thb(totals.whtAmount) }),
             hint: t("summary.withholdingHint"),
           },
         ]
       : []),
   ];
 
-  const schedule = data?.schedule.options.find((option) => option.key === data.schedule.selectedKey);
+  const profile = profiles.find((candidate) => candidate.id === taxProfileId);
+  // The notice's code picks the message; its params fill it (the key is known only at runtime).
+  const translate = tNotices as unknown as (key: string, values: Record<string, string>) => string;
+  const noticeText = (notice: Schemas["CheckoutNoticeDto"]) =>
+    KNOWN_NOTICES.has(notice.code)
+      ? translate(notice.code.replace(".", "_"), {
+          ...Object.fromEntries(
+            Object.entries(notice.params ?? {}).map(([name, value]) => [
+              name,
+              value === null || value === undefined
+                ? ""
+                : typeof value === "string" && /^-?\d+\.\d{2}$/.test(value)
+                  ? format.thb(value)
+                  : Array.isArray(value)
+                    ? value.join(", ")
+                    : String(value),
+            ]),
+          ),
+        })
+      : translate("other", { code: notice.code });
 
   return (
     <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
       <div className="flex flex-col gap-10">
-        <FormSection title={t("contact.title")} description={t("contact.hint")}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label={t("contact.name")}
-              required
-              requiredLabel={t("requiredMark")}
-              error={contact.name.trim() ? undefined : t("contact.nameRequired")}
-            >
-              <Input
-                autoComplete="name"
-                value={contact.name}
-                onChange={(event) => setContact({ ...contact, name: event.target.value })}
-              />
-            </Field>
-            <Field label={t("contact.phone")} required requiredLabel={t("requiredMark")}>
-              <PhoneInput value={contact.phone} onChange={(phone) => setContact({ ...contact, phone })} />
-            </Field>
-            <Field
-              label={t("contact.email")}
-              hint={t("contact.emailHint")}
-              required
-              requiredLabel={t("requiredMark")}
-              className="sm:col-span-2"
-              error={
-                contact.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email)
-                  ? t("contact.emailInvalid")
-                  : undefined
-              }
-            >
-              <Input
-                type="email"
-                autoComplete="email"
-                value={contact.email}
-                onChange={(event) => setContact({ ...contact, email: event.target.value })}
-              />
-            </Field>
-          </div>
-        </FormSection>
-
         <FormSection title={t("delivery.title")}>
           <RadioCards
             aria-label={t("delivery.title")}
             columns={2}
             value={mode}
-            onValueChange={(value) => setMode(value as "shared" | "per_item")}
+            onValueChange={(value) => {
+              setMode(value as "shared" | "per_item");
+              if (value === "shared" && addressId) shipAllTo(addressId);
+            }}
             options={[
               {
                 value: "shared",
@@ -277,33 +322,30 @@ export function CheckoutView({
               aria-label={t("delivery.address")}
               columns={2}
               value={addressId}
-              onValueChange={setAddressId}
+              onValueChange={shipAllTo}
               options={addresses.map((address) => ({
                 value: address.id,
                 label: `${address.label} — ${address.recipientName}`,
-                description: [address.line1, address.district, address.province, address.postcode]
-                  .filter(Boolean)
-                  .join(" "),
+                description: addressLine(locale, address),
               }))}
             />
-          ) : data ? (
+          ) : (
             <ul className="flex flex-col gap-2 text-sm">
-              {data.items.map((item) => (
-                <li key={item.cartItemId} className="border-border rounded-lg border p-3">
-                  <p className="font-medium">{item.name}</p>
-                  {item.destinations.map((destination, index) => (
-                    <p key={index} className="text-muted">
+              {cart.items.map((item) => (
+                <li key={item.id} className="border-border rounded-lg border p-3">
+                  <p className="font-medium">{typeNames[item.productTypeCode] ?? item.productTypeCode}</p>
+                  {item.destinations.map((destination) => (
+                    <p key={destination.id} className="text-muted">
                       {t("delivery.line", {
                         quantity: format.number(destination.quantity),
-                        unit: item.unit,
-                        label: destination.label,
+                        label: `${destination.address.recipientName} · ${destination.address.provinceNameTh}`,
                       })}
                     </p>
                   ))}
                 </li>
               ))}
             </ul>
-          ) : null}
+          )}
           <Button variant="ghost" size="sm" iconStart="plus" className="self-start" onClick={() => setSheet("address")}>
             {t("delivery.newAddress")}
           </Button>
@@ -317,14 +359,14 @@ export function CheckoutView({
             onValueChange={setTaxProfileId}
             options={[
               { value: NO_TAX, label: t("tax.receipt"), description: t("tax.receiptHint") },
-              ...profiles.map((profile) => ({
-                value: profile.id,
-                label: profile.name,
-                description: `${t(`tax.types.${profile.taxType}`)} · ${formatTaxId(profile.taxId)} · ${
-                  profile.branchType === "head_office"
+              ...profiles.map((candidate) => ({
+                value: candidate.id,
+                label: candidate.name,
+                description: `${t(`tax.types.${candidate.taxType}`)} · ${formatTaxId(candidate.taxId)} · ${
+                  candidate.branchType === "head_office"
                     ? t("tax.headOffice")
-                    : t("tax.branch", { code: profile.branchCode })
-                }${profile.withholdsTax ? ` · ${t("tax.withholds")}` : ""}`,
+                    : t("tax.branch", { code: candidate.branchCode })
+                }${candidate.withholdsTax ? ` · ${t("tax.withholds")}` : ""}`,
               })),
             ]}
           />
@@ -339,7 +381,7 @@ export function CheckoutView({
             onSubmit={(event) => {
               event.preventDefault();
               const code = codeDraft.trim().toUpperCase();
-              if (code && !codes.includes(code) && codes.length < 3) setCodes([...codes, code]);
+              if (code && !cart.codes.some((entry) => entry.code === code)) void applyCode(code);
               setCodeDraft("");
             }}
           >
@@ -355,114 +397,71 @@ export function CheckoutView({
               type="submit"
               variant="secondary"
               className="mt-[1.625rem]"
-              disabled={!codeDraft.trim() || codes.length >= 3}
+              disabled={!codeDraft.trim()}
+              loading={edit.isPending}
             >
               {t("promotions.apply")}
             </Button>
           </form>
-          {data?.promotions.applied.length ? (
+          {cart.codes.length > 0 ? (
             <ul className="flex flex-col gap-2">
-              {data.promotions.applied.map((promotion, index) => (
+              {cart.codes.map((entry) => (
                 <li
-                  key={index}
-                  className="bg-success-subtle text-success-subtle-fg flex items-start justify-between gap-3 rounded-lg px-3 py-2 text-sm"
+                  key={entry.code}
+                  className={`${
+                    entry.status === "validated"
+                      ? "bg-success-subtle text-success-subtle-fg"
+                      : "bg-warning-subtle text-warning-subtle-fg"
+                  } flex items-start justify-between gap-3 rounded-lg px-3 py-2 text-sm`}
                 >
                   <span>
-                    <Icon
-                      name={promotion.kind === "automatic" ? "sparkles" : "ticket"}
-                      size={16}
-                      aria-hidden="true"
-                      className="me-1 inline"
-                    />
-                    {promotion.code ? `${promotion.code} · ` : ""}
-                    {promotion.title}
-                    {promotion.capped && promotion.cappedNote ? (
-                      <span className="block text-xs">{promotion.cappedNote}</span>
-                    ) : null}
+                    {entry.status === "validated"
+                      ? t("promotions.accepted", { code: entry.code })
+                      : t("promotions.rejected", { code: entry.code, message: entry.rejectReason ?? "" })}
                   </span>
-                  <span className="flex items-center gap-1 tabular-nums">
-                    {t("summary.minus", { amount: format.thb(promotion.discountAmount) })}
-                    {promotion.code ? (
-                      <IconButton
-                        name="close"
-                        size="sm"
-                        variant="ghost"
-                        label={t("promotions.remove", { code: promotion.code })}
-                        onClick={() => setCodes(codes.filter((code) => code !== promotion.code))}
-                      />
-                    ) : null}
-                  </span>
+                  <IconButton
+                    name="close"
+                    size="sm"
+                    variant="ghost"
+                    label={t("promotions.remove", { code: entry.code })}
+                    onClick={() => removeCode(entry.code)}
+                  />
                 </li>
               ))}
             </ul>
           ) : null}
-          {data?.promotions.rejected.map((rejected) => (
-            <Callout key={rejected.code} tone="warning">
-              <span className="flex items-center justify-between gap-2">
-                {t("promotions.rejected", { code: rejected.code, message: rejected.message })}
-                <IconButton
-                  name="close"
-                  size="sm"
-                  variant="ghost"
-                  label={t("promotions.remove", { code: rejected.code })}
-                  onClick={() => setCodes(codes.filter((code) => code !== rejected.code))}
-                />
-              </span>
-            </Callout>
-          ))}
         </FormSection>
 
-        {data && data.points.balance > 0 ? (
+        {pointsBalance > 0 ? (
           <FormSection
             title={t("points.title")}
-            description={t("points.hint", {
-              balance: format.number(data.points.balance),
-              value: format.thb(data.points.pointValue),
-              min: format.number(data.points.min),
-              max: format.number(data.points.max),
-            })}
+            description={t("points.hint", { balance: format.number(pointsBalance) })}
           >
             <div className="flex items-end gap-2">
               <Field label={t("points.redeem")} className="w-48">
                 <NumberInput
                   min={0}
-                  max={data.points.max}
+                  max={pointsBalance}
                   step={1}
                   unit={t("points.unit")}
                   value={points || ""}
                   onChange={(event) => setPoints(Math.max(0, Math.floor(Number(event.target.value) || 0)))}
                 />
               </Field>
-              <Button
-                variant="secondary"
-                onClick={() => setPoints(data.points.max)}
-                disabled={data.points.max < data.points.min}
-              >
-                {t("points.useMax")}
-              </Button>
             </div>
-            {data.points.redeemed > 0 ? (
-              <p className="text-sm">
-                {t("points.redeemed", {
-                  points: format.number(data.points.redeemed),
-                  amount: format.thb(data.points.redeemedAmount),
-                })}
-              </p>
-            ) : null}
-            <p className="text-muted text-xs">{t("points.toEarn", { points: format.number(data.points.toEarn) })}</p>
           </FormSection>
         ) : null}
 
-        {data?.company ? (
+        {company ? (
           <FormSection
             title={t("company.title")}
-            description={t("company.intro", { name: data.company.legalName, code: data.company.companyCode })}
+            description={t("company.intro", { name: company.legalName, code: company.companyCode ?? "" })}
           >
-            {data.company.poNumberPolicy !== "none" ? (
+            {company.poNumberPolicy !== "none" ? (
               <Field
                 label={t("company.po")}
-                hint={data.company.poNumberPolicy === "required" ? t("company.poRequired") : t("company.poOptional")}
-                required={data.company.poNumberPolicy === "required"}
+                hint={company.poNumberPolicy === "required" ? t("company.poRequired") : t("company.poOptional")}
+                required={company.poNumberPolicy === "required"}
                 requiredLabel={t("company.required")}
               >
                 <Input
@@ -473,76 +472,43 @@ export function CheckoutView({
                 />
               </Field>
             ) : null}
-            {data.company.needsApproval && data.company.approvalThreshold ? (
-              <Callout tone="info" title={t("company.approvalTitle")}>
-                {t("company.approval", { threshold: format.thb(data.company.approvalThreshold) })}
-              </Callout>
-            ) : null}
-            {data.company.creditBlocked ? (
-              <Callout tone="warning" title={t("company.creditBlockedTitle")}>
-                {t("company.creditBlocked")}
-              </Callout>
-            ) : null}
           </FormSection>
         ) : null}
 
-        <FormSection title={t("schedule.title")} description={data?.schedule.note ?? undefined}>
+        <FormSection title={t("schedule.title")} description={t("schedule.hint")}>
           {data ? (
-            <RadioCards
-              aria-label={t("schedule.title")}
-              columns={2}
-              value={data.schedule.selectedKey}
-              onValueChange={(key) => {
-                setScheduleKey(key);
-                // A credit term (D-121) is paid by transfer against the statement; nothing else is.
-                const credit = data.schedule.options.find((option) => option.key === key)?.kind === "credit_term";
-                if (credit) setMethod("credit_term_transfer");
-                else if (method === "credit_term_transfer") setMethod("scb_qr");
-              }}
-              options={data.schedule.options.map((option) => ({
-                value: option.key,
-                label: option.label,
-                description: (
-                  <>
-                    <span className="block">{option.description}</span>
-                    {option.instalments.map((instalment) => (
-                      <span key={instalment.seq} className="block tabular-nums">
-                        {instalment.label}: {format.thb(instalment.grossAmount)}
-                      </span>
-                    ))}
-                  </>
-                ),
-              }))}
-            />
+            data.paymentSchedule ? (
+              <ul className="border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
+                {data.paymentSchedule.instalments.map((instalment) => (
+                  <li key={instalment.seq} className="flex justify-between gap-3 tabular-nums">
+                    <span>{pick(locale, instalment.labelTh, instalment.labelEn)}</span>
+                    <span>{format.thb(instalment.grossAmount)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted text-sm">{t("schedule.none")}</p>
+            )
           ) : (
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-16 w-full" />
           )}
         </FormSection>
 
-        <FormSection title={t("method.title")}>
-          {data ? (
+        {dueNow && !needsApproval ? (
+          <FormSection title={t("method.title")} description={t("method.hint")}>
             <RadioCards
               aria-label={t("method.title")}
               columns={2}
               value={method}
               onValueChange={(value) => setMethod(value as PaymentMethod)}
-              options={data.paymentMethods.map((option) => ({
-                value: option.method,
-                label: tMethods(`${option.method}.label`),
-                description: option.available ? tMethods(`${option.method}.description`) : option.unavailableReason,
-                disabled: !option.available,
+              options={ONLINE_PAYMENT_METHODS.map((option) => ({
+                value: option,
+                label: tMethods(`${option}.label`),
+                description: tMethods(`${option}.description`),
               }))}
             />
-          ) : (
-            <Skeleton className="h-24 w-full" />
-          )}
-        </FormSection>
-
-        <FormSection title={t("note.title")}>
-          <Field label={t("note.label")} hint={t("note.hint")}>
-            <Textarea rows={3} maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)} />
-          </Field>
-        </FormSection>
+          </FormSection>
+        ) : null}
       </div>
 
       <aside
@@ -555,7 +521,7 @@ export function CheckoutView({
         {repriced && data ? (
           <Callout tone="warning" live className="mt-4" title={t("repriced.title")}>
             {t("repriced.body", {
-              before: format.thb(repriced.before.grossAmount),
+              before: format.thb(repriced.before),
               after: format.thb(data.totals.grossAmount),
             })}
           </Callout>
@@ -568,38 +534,43 @@ export function CheckoutView({
               rows={totalsRows(data.totals)}
               total={{ label: t("summary.total"), value: format.thb(data.totals.grossAmount) }}
             />
-            <div className="bg-bg-subtle mt-4 rounded-lg p-3">
-              <p className="text-sm">{schedule?.label}</p>
-              <p className="text-lg font-bold tabular-nums">
-                {t("summary.payNow", { amount: format.thb(data.totals.payableNowAmount) })}
-              </p>
-            </div>
-            {data.taxInvoice ? (
+            {dueNow ? (
+              <div className="bg-bg-subtle mt-4 rounded-lg p-3">
+                <p className="text-sm">{pick(locale, dueNow.labelTh, dueNow.labelEn)}</p>
+                <p className="text-lg font-bold tabular-nums">
+                  {t("summary.payNow", { amount: format.thb(dueNow.cashAmount) })}
+                </p>
+              </div>
+            ) : null}
+            {profile ? (
               <p className="text-muted mt-3 text-xs">
                 {t("summary.taxInvoice", {
-                  name: data.taxInvoice.name,
-                  taxId: formatTaxId(data.taxInvoice.taxId),
-                  branch: data.taxInvoice.branch,
+                  name: profile.name,
+                  taxId: formatTaxId(profile.taxId),
+                  branch:
+                    profile.branchType === "head_office"
+                      ? t("tax.headOffice")
+                      : t("tax.branch", { code: profile.branchCode }),
                 })}
               </p>
             ) : null}
+            {data.notices.length > 0 ? (
+              <ul className="mt-4 flex flex-col gap-2 text-sm">
+                {data.notices.map((notice, index) => (
+                  <li key={`${notice.code}-${index}`} className="bg-bg-subtle rounded-lg px-3 py-2">
+                    {noticeText(notice)}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ) : preview.isError ? (
-          <Callout tone="danger" className="mt-4">
+          <Callout tone="danger" className="mt-4" title={t("blockedTitle")}>
             {isApiError(preview.error) ? preview.error.detail : t("previewFailed")}
           </Callout>
         ) : (
           <Skeleton className="mt-4 h-40 w-full" />
         )}
-        {data && data.blockers.length > 0 ? (
-          <Callout tone="warning" className="mt-4" title={t("blockedTitle")}>
-            <ul className="list-disc ps-5">
-              {data.blockers.map((blocker) => (
-                <li key={blocker.code}>{blocker.message}</li>
-              ))}
-            </ul>
-          </Callout>
-        ) : null}
         {failure ? (
           <Callout tone="danger" live className="mt-4">
             {failure}
@@ -614,9 +585,11 @@ export function CheckoutView({
           onClick={() => setConfirming(true)}
         >
           {data
-            ? data.company?.needsApproval
+            ? needsApproval
               ? t("company.send")
-              : t("place", { amount: format.thb(data.totals.payableNowAmount) })
+              : dueNow
+                ? t("place", { amount: format.thb(dueNow.cashAmount) })
+                : t("placeLater")
             : t("placeLoading")}
         </Button>
         <p className="text-muted mt-3 text-xs">{t("terms")}</p>
@@ -625,19 +598,21 @@ export function CheckoutView({
       <AlertDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title={data?.company?.needsApproval ? t("company.confirmTitle") : t("confirm.title")}
+        title={needsApproval ? t("company.confirmTitle") : t("confirm.title")}
         description={
-          data?.company?.needsApproval
-            ? t("company.confirmBody", { total: format.thb(data.totals.grossAmount), name: data.company.legalName })
-            : data
+          data && needsApproval && company
+            ? t("company.confirmBody", { total: format.thb(data.totals.grossAmount), name: company.legalName })
+            : data && dueNow
               ? t("confirm.body", {
                   total: format.thb(data.totals.grossAmount),
-                  now: format.thb(data.totals.payableNowAmount),
+                  now: format.thb(dueNow.cashAmount),
                   method: tMethods(`${method}.label`),
                 })
-              : ""
+              : data
+                ? t("confirm.bodyLater", { total: format.thb(data.totals.grossAmount) })
+                : ""
         }
-        confirmLabel={data?.company?.needsApproval ? t("company.send") : t("confirm.yes")}
+        confirmLabel={needsApproval ? t("company.send") : t("confirm.yes")}
         cancelLabel={t("confirm.no")}
         loading={placing}
         onConfirm={() => void place()}
@@ -649,8 +624,8 @@ export function CheckoutView({
           onOpenChange={(open) => !open && setSheet(null)}
           onSaved={(address) => {
             setAddresses((current) => [...current, address]);
-            setAddressId(address.id);
             setMode("shared");
+            shipAllTo(address.id);
             setSheet(null);
           }}
         />
@@ -659,9 +634,9 @@ export function CheckoutView({
         <TaxProfileSheet
           open
           onOpenChange={(open) => !open && setSheet(null)}
-          onSaved={(profile) => {
-            setProfiles((current) => [...current, profile]);
-            setTaxProfileId(profile.id);
+          onSaved={(saved) => {
+            setProfiles((current) => [...current, saved]);
+            setTaxProfileId(saved.id);
             setSheet(null);
           }}
         />

@@ -20,8 +20,11 @@ const STATUS_TONE = {
 } as const;
 
 /**
- * The company's overview (F3 3.7): who it is and its status, the notices that need acting on
- * (D-122), credit at a glance, what waits for approval, and where the money went.
+ * The company's overview (F3 3.7): who it is and its status, credit at a glance, what waits for
+ * approval, and where the money went.
+ *
+ * CONTRACT-GAP store.companies — the published company has no receivables summary and no D-122
+ * notices (due soon, overdue, credit blocked), so the overview shows neither.
  */
 export async function BusinessDashboard({
   company,
@@ -45,7 +48,10 @@ export async function BusinessDashboard({
           <Badge tone={STATUS_TONE[company.status]}>{t(`status.${company.status}`)}</Badge>
         </div>
         <p className="text-muted text-sm">
-          {t("meta", { code: company.companyCode, roles: company.myRoles.map((role) => roles(role)).join(", ") })}
+          {t("meta", {
+            code: company.companyCode ?? "",
+            roles: company.myRoles.map((role) => roles(role)).join(", "),
+          })}
         </p>
       </header>
 
@@ -54,58 +60,32 @@ export async function BusinessDashboard({
           {t("applied")}
         </Callout>
       ) : null}
-      {company.statusNote ? <Callout tone="info">{company.statusNote}</Callout> : null}
-      {company.notices.map((notice) => (
-        <Callout
-          key={`${notice.kind}-${notice.statementId ?? "all"}`}
-          tone={notice.kind === "due_soon" ? "info" : notice.kind === "due_today" ? "warning" : "danger"}
-          title={t(`notices.${notice.kind}.title`)}
-        >
-          {t(`notices.${notice.kind}.body`, {
-            amount: format.thb(notice.amount),
-            date: format.date(notice.dueAt),
-            days: notice.daysOverdue,
-            period: notice.period ?? "",
-          })}
-          {company.can.viewFinance ? (
-            <Link href="/business/credit" className="ms-2 underline underline-offset-4">
-              {t("seeStatements")}
-            </Link>
-          ) : null}
-        </Callout>
-      ))}
+      {company.statusReason ? <Callout tone="info">{company.statusReason}</Callout> : null}
+      {company.status === "kyc_review" || company.status === "applied" ? (
+        <Callout tone="info">{t("inReview")}</Callout>
+      ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <section aria-labelledby="dash-credit" className="border-border rounded-xl border p-5">
           <h2 id="dash-credit" className="text-muted text-sm font-medium">
             {t("credit")}
           </h2>
-          <p className="mt-1 text-2xl font-bold tabular-nums">
-            {company.credit.status === "credit" || company.credit.status === "blocked_overdue"
-              ? format.thb(company.credit.availableAmount)
-              : t(`creditStatus.${company.credit.status}`)}
-          </p>
-          <p className="text-muted text-sm">
-            {company.credit.termDays
-              ? t("creditMeta", { limit: format.thb(company.credit.limitAmount), days: company.credit.termDays })
-              : t("prepaid")}
-          </p>
-        </section>
-        <section aria-labelledby="dash-owed" className="border-border rounded-xl border p-5">
-          <h2 id="dash-owed" className="text-muted text-sm font-medium">
-            {t("owed")}
-          </h2>
-          <p className="mt-1 text-2xl font-bold tabular-nums">{format.thb(company.receivables.openAmount)}</p>
-          <p className="text-muted text-sm">
-            {company.receivables.overdueAmount !== "0.00"
-              ? t("overdue", {
-                  amount: format.thb(company.receivables.overdueAmount),
-                  days: company.receivables.oldestOverdueDays,
-                })
-              : company.receivables.nextDueAt
-                ? t("nextDue", { date: format.date(company.receivables.nextDueAt) })
-                : t("nothingDue")}
-          </p>
+          {company.credit ? (
+            <>
+              <p className="mt-1 text-2xl font-bold tabular-nums">
+                {company.credit.creditStatus === "credit" || company.credit.creditStatus === "blocked_overdue"
+                  ? format.thb(company.credit.availableAmount)
+                  : t(`creditStatus.${company.credit.creditStatus}`)}
+              </p>
+              <p className="text-muted text-sm">
+                {company.credit.termDays && company.credit.limitAmount
+                  ? t("creditMeta", { limit: format.thb(company.credit.limitAmount), days: company.credit.termDays })
+                  : t("prepaid")}
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-2xl font-bold">{t(`creditStatus.${company.creditStatus}`)}</p>
+          )}
         </section>
         <section aria-labelledby="dash-approvals" className="border-border rounded-xl border p-5">
           <h2 id="dash-approvals" className="text-muted text-sm font-medium">

@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
       <Link href={`/liff/orders/${orderId}`} className="text-primary text-sm">
         {t("back")}
       </Link>
-      <h1 className="text-xl font-bold">{t("titleFor", { code: artwork.orderCode })}</h1>
+      <h1 className="text-xl font-bold">{t("titleFor", { code: artwork.order.orderCode })}</h1>
       {artwork.proofs.length === 0 ? (
         <p className="text-muted">{t("noneHint")}</p>
       ) : (

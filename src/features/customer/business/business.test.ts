@@ -9,9 +9,11 @@ import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { createRequestClient } from "@/lib/api/requests/client";
 import { REQUESTS } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 
-import { buildConfiguration } from "../configurator/build";
+import { buildCalculateBody } from "../configurator/build";
 import { initialState } from "../configurator/state";
+import { capabilitiesOf } from "./capabilities";
 import { parseReorderCsv } from "./csv";
 
 const server = setupServer(...handlers);
@@ -20,6 +22,7 @@ afterAll(() => server.close());
 
 // Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
 const as = (persona: string) => ({
+  token: accessToken("customer", persona),
   call: ((...args: unknown[]) =>
     (
       createRequestClient(
@@ -33,7 +36,6 @@ const as = (persona: string) => ({
 });
 const admin = as("companyadmin");
 const buyer = as("companybuyer");
-const founder = as("founder");
 const uuid = () => crypto.randomUUID();
 const failure = (promise: Promise<unknown>) =>
   promise.then(
@@ -41,35 +43,25 @@ const failure = (promise: Promise<unknown>) =>
     (error: unknown) => (isApiError(error) ? error : Promise.reject(error)),
   );
 
+/** An empty cart, then one quotation of `quantity` in it — through the published cart. */
 async function cartWith(customer: typeof admin, quantity: number) {
-  const cart = await customer.call("GET /v1/store/cart");
-  for (const item of cart.items)
-    await customer.call("DELETE /v1/store/cart/items/{itemId}", { path: { itemId: item.id } });
+  const api = createApiClient({ baseUrl: "http://api.mock", accessToken: customer.token });
+  const { data: cart } = await api.GET("/v1/store/cart");
+  for (const item of cart!.items)
+    await api.DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } });
   const configurator = await customer.call("GET /v1/store/catalog/products/{slug}/configurator", {
     path: { slug: "tuck-end-box" },
   });
   const state = { ...initialState(configurator), quantities: [quantity], quantity };
-  const quote = await customer.call("POST /v1/store/quotes", {
-    body: {
-      productTypeCode: configurator.productTypeCode,
-      catalogProductSlug: configurator.slug,
-      configuration: buildConfiguration(configurator, state) as unknown as Record<string, unknown>,
-      quantity,
-      designOption: "own_file",
-      mockupOption: "none",
-    },
+  const { data: quote } = await api.POST("/v1/store/quotes", {
+    body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],
   });
-  await customer.call("POST /v1/store/cart/items", { body: { quoteId: quote.id } });
+  const { response } = await api.GET("/v1/store/cart");
+  await api.POST("/v1/store/cart/items", {
+    params: { header: { "If-Match": response.headers.get("etag")! } },
+    body: { quoteId: quote!.id, quoteOptionId: quote!.options[0]!.id, designOption: "own_file" },
+  });
 }
-
-const input = (poNumber?: string) => ({
-  contact: { name: "ฝ่ายจัดซื้อ", phone: "0878901234", email: "seed.companybuyer@packio.invalid" },
-  delivery: { mode: "per_item" as const },
-  taxProfileId: null,
-  couponCodes: [],
-  pointsToRedeem: 0,
-  ...(poNumber ? { poNumber } : {}),
-});
 
 describe("the bulk reorder CSV", () => {
   it("reads order numbers and quantities, with or without a header, and says which lines are wrong", () => {
@@ -86,135 +78,105 @@ describe("the bulk reorder CSV", () => {
 });
 
 describe("business accounts, against the mock", () => {
-  it("shows each member what their roles allow", async () => {
-    const mine = await admin.call("GET /v1/store/me/company");
-    expect(mine.can).toMatchObject({ manageMembers: true, approveOrders: true });
-    const theirs = await buyer.call("GET /v1/store/me/company");
-    expect(theirs.can).toMatchObject({ manageMembers: false, approveOrders: false, order: true });
-    expect((await failure(buyer.call("GET /v1/store/me/company/statements")))?.status).toBe(403);
-  });
+  /** The member's company and their own membership in it, through the published contract. */
+  async function membership(member: typeof admin) {
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: member.token });
+    const [{ data: me }, { data: companies }] = await Promise.all([
+      api.GET("/v1/store/me"),
+      api.GET("/v1/store/companies"),
+    ]);
+    const company = companies![0]!;
+    return { api, company, self: company.members.find((entry) => entry.user.id === me!.id)! };
+  }
 
-  it("sends a buyer's order over the threshold to the approver, who places it (D-123, D-125)", async () => {
-    await cartWith(buyer, 10_000);
-    const blocked = await buyer.call("POST /v1/store/checkout/actions/preview", { body: input() });
-    expect(blocked.company?.needsApproval).toBe(true);
-    expect(blocked.blockers.map((blocker) => blocker.code)).toContain("po_required");
-
-    const preview = await buyer.call("POST /v1/store/checkout/actions/preview", { body: input("PO-7788") });
-    expect(preview.blockers).toEqual([]);
-    const refused = await failure(
-      buyer.call("POST /v1/store/checkout", {
-        body: { ...input("PO-7788"), previewToken: preview.previewToken },
-        idempotencyKey: uuid(),
-      }),
-    );
-    expect(refused?.code).toBe("company.approval_required");
-
-    const sent = await buyer.call("POST /v1/store/me/company/approvals", {
-      body: { ...input("PO-7788"), previewToken: preview.previewToken },
-      idempotencyKey: uuid(),
+  it("shows each member what their roles open (read from the published roles)", async () => {
+    const mine = await membership(admin);
+    expect(capabilitiesOf(mine.self.roles)).toMatchObject({ manageMembers: true, approveOrders: true });
+    const theirs = await membership(buyer);
+    expect(capabilitiesOf(theirs.self.roles)).toMatchObject({
+      manageMembers: false,
+      approveOrders: false,
+      order: true,
     });
-    expect(sent).toMatchObject({ status: "pending", poNumber: "PO-7788", grossAmount: preview.totals.grossAmount });
-
+    const month = new Date().toISOString().slice(0, 7);
     expect(
       (
         await failure(
-          buyer.call("POST /v1/store/me/company/approvals/{approvalId}/actions/approve", {
-            path: { approvalId: sent.id },
-            idempotencyKey: uuid(),
+          theirs.api.GET("/v1/store/companies/{companyId}/statements", {
+            params: { path: { companyId: theirs.company.id }, query: { month } },
           }),
         )
       )?.status,
     ).toBe(403);
-    const pending = await admin.call("GET /v1/store/me/company/approvals", { query: { status: "pending" } });
-    expect(pending.data.map((approval) => approval.requestNo)).toContain(sent.requestNo);
-    const approved = await admin.call("POST /v1/store/me/company/approvals/{approvalId}/actions/approve", {
-      path: { approvalId: sent.id },
-      idempotencyKey: uuid(),
-    });
-    expect(approved.status).toBe("approved");
-    expect(approved.orders.length).toBeGreaterThan(0);
   });
 
-  it("offers the credit term within available credit, with nothing to pay today (D-121)", async () => {
+  it("places a buyer's order over the threshold as waiting for the approver, who places it (D-123, D-125)", async () => {
+    await cartWith(buyer, 10_000);
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: buyer.token });
+    const [company] = (await api.GET("/v1/store/companies")).data!;
+    const body = (poNumber?: string): Schemas["CheckoutDto"] => ({
+      taxProfileId: null,
+      companyId: company!.id,
+      ...(poNumber ? { poNumber } : {}),
+    });
+
+    const withoutPo = await failure(api.POST("/v1/store/checkout/actions/preview", { body: body() }));
+    expect(withoutPo?.code).toBe("companies.po_required");
+    const { data: preview } = await api.POST("/v1/store/checkout/actions/preview", { body: body("PO-7788") });
+    expect(preview!.notices.map((notice) => notice.code)).toContain("company.approval_required");
+
+    const { data: group } = await api.POST("/v1/store/checkout", {
+      params: { header: { "Idempotency-Key": uuid() } },
+      body: { ...body("PO-7788"), expectedGrossAmount: preview!.totals.grossAmount },
+    });
+    expect(group).toMatchObject({ status: "pending_company_approval", poNumber: "PO-7788" });
+
+    const approver = await membership(admin);
+    const { data: pending } = await approver.api.GET("/v1/store/companies/{companyId}/approvals", {
+      params: { path: { companyId: approver.company.id } },
+    });
+    const sent = pending!.find((approval) => approval.groupCode === group!.groupCode)!;
+    expect(sent).toMatchObject({ amount: preview!.totals.grossAmount, poNumber: "PO-7788" });
+    const decide = (member: Awaited<ReturnType<typeof membership>>, decision: "approve" | "reject") =>
+      member.api.POST("/v1/store/companies/{companyId}/approvals/{approvalId}/actions/{decision}", {
+        params: { path: { companyId: member.company.id, approvalId: sent.id, decision } },
+        body: {},
+      });
+    expect((await failure(decide(await membership(buyer), "approve")))?.status).toBe(403);
+    const { data: approved } = await decide(approver, "approve");
+    expect(approved!.status).toBe("approved");
+  });
+
+  it("puts a company with credit on its term by rule, with nothing to pay today (D-020, D-121)", async () => {
     await cartWith(admin, 1000);
-    const preview = await admin.call("POST /v1/store/checkout/actions/preview", { body: input("PO-1") });
-    const credit = preview.schedule.options.find((option) => option.kind === "credit_term");
-    expect(credit?.creditDays).toBe(30);
-    const before = await admin.call("GET /v1/store/me/company");
-    const chosen = await admin.call("POST /v1/store/checkout/actions/preview", {
-      body: { ...input("PO-1"), scheduleKey: credit!.key, paymentMethod: "credit_term_transfer" },
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: admin.token });
+    const [company] = (await api.GET("/v1/store/companies")).data!;
+    const body: Schemas["CheckoutDto"] = { taxProfileId: null, companyId: company!.id, poNumber: "PO-1" };
+    const { data: preview } = await api.POST("/v1/store/checkout/actions/preview", { body });
+    expect(preview!.paymentSchedule!.instalments.map((instalment) => instalment.dueTrigger)).toEqual([
+      "days_after_delivery",
+    ]);
+    expect(preview!.notices.map((notice) => notice.code)).toContain("company.credit_order");
+    const credit = async () =>
+      (await api.GET("/v1/store/companies/{companyId}/credit", { params: { path: { companyId: company!.id } } })).data!;
+    const before = await credit();
+    const { data: group } = await api.POST("/v1/store/checkout", {
+      params: { header: { "Idempotency-Key": uuid() } },
+      body: { ...body, expectedGrossAmount: preview!.totals.grossAmount },
     });
-    const placed = await admin.call("POST /v1/store/checkout", {
-      body: {
-        ...input("PO-1"),
-        scheduleKey: credit!.key,
-        paymentMethod: "credit_term_transfer",
-        previewToken: chosen.previewToken,
-      },
-      idempotencyKey: uuid(),
-    });
-    expect(placed.firstInstalment).toBeNull();
-    const after = await admin.call("GET /v1/store/me/company");
-    expect(Number(after.credit.availableAmount)).toBeLessThan(Number(before.credit.availableAmount));
+    expect(group!.status).toBe("in_progress");
+    const after = await credit();
+    expect(Number(after.availableAmount)).toBeLessThan(Number(before.availableAmount));
   });
 
-  it("signs a company up only with fresh KYC documents (D-120)", async () => {
-    const body = {
-      legalName: "บริษัท ทดสอบ จำกัด",
-      taxId: "0105569000011",
-      isVatRegistered: true,
-      headOffice: { address: "99 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพมหานคร 10110" },
-      signatory: { name: "สมใจ ทดสอบ", position: "กรรมการผู้จัดการ" },
-      contactPhone: "0889012345",
-    };
-    const old = new Date(Date.now() - 200 * 86_400_000).toISOString().slice(0, 10);
-    const today = new Date().toISOString().slice(0, 10);
-    const missing = await failure(
-      founder.call("POST /v1/store/companies", {
-        body: {
-          ...body,
-          documents: [
-            { docType: "company_certificate", fileId: uuid(), issuedOn: today },
-            { docType: "signatory_id", fileId: uuid() },
-          ],
-        },
-        idempotencyKey: uuid(),
-      }),
-    );
-    expect(missing?.code).toBe("company.kyc_missing");
-    const stale = await failure(
-      founder.call("POST /v1/store/companies", {
-        body: {
-          ...body,
-          documents: [
-            { docType: "company_certificate", fileId: uuid(), issuedOn: old },
-            { docType: "vat_registration_pp20", fileId: uuid() },
-            { docType: "signatory_id", fileId: uuid() },
-          ],
-        },
-        idempotencyKey: uuid(),
-      }),
-    );
-    expect(stale?.code).toBe("company.certificate_too_old");
-    const created = await founder.call("POST /v1/store/companies", {
-      body: {
-        ...body,
-        documents: [
-          { docType: "company_certificate", fileId: uuid(), issuedOn: today },
-          { docType: "vat_registration_pp20", fileId: uuid() },
-          { docType: "signatory_id", fileId: uuid() },
-        ],
-      },
-      idempotencyKey: uuid(),
-    });
-    expect(created).toMatchObject({ status: "kyc_review", myRoles: expect.arrayContaining(["company_admin"]) });
-    expect(created.statusNote).toBeTruthy();
-  });
+  // CONTRACT-GAP store.geo-ids: `store.companies.apply` needs the head office's province id.
+  it.todo("signs a company up only with fresh KYC documents (D-120)");
 
   it("checks bulk reorder rows before anything reaches the cart (D-153)", async () => {
-    const orders = await admin.call("GET /v1/store/orders", { query: { view: "active" } });
-    const code = orders.data[0]!.orderCode;
+    const { data: groups } = await createApiClient({ baseUrl: "http://api.mock", accessToken: admin.token }).GET(
+      "/v1/store/order-groups",
+    );
+    const code = groups!.data[0]!.orders[0]!.orderCode;
     const preview = await admin.call("POST /v1/store/me/company/bulk-reorders/actions/preview", {
       body: {
         rows: [

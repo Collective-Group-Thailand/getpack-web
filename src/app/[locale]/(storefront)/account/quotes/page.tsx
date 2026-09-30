@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { accountRequests } from "@/features/customer/account/api.server";
+import { getSavedQuotes } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { configureHref } from "@/features/customer/catalog/paths";
+import { getProductTypes } from "@/features/customer/catalog/api.server";
+import { pick } from "@/features/customer/catalog/localize";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { QUOTE_STATUS } from "@/domain/status";
@@ -17,22 +18,30 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Saved quotations and configurations (F3 3.4): each holds its price until its validity ends
- * (D-051) and reopens in the configurator, where it is priced again at today's prices.
+ * Saved quotations (F3 3.4): each holds its price until its validity ends (D-051).
+ *
+ * CONTRACT-GAP store.catalog-product-ref — a published quotation names its catalogue product by id
+ * only, and the store catalogue cannot be read by id, so a quotation can no longer be reopened in
+ * the configurator from here, and is named by its product type.
  */
-export default async function Page() {
-  await requireCustomer();
-  const [t, format, quotes] = await Promise.all([
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const [, { locale }] = await Promise.all([requireCustomer(), params]);
+  const [t, format, quotes, types] = await Promise.all([
     getTranslations("account.quotes"),
     getFormat(),
-    (await accountRequests()).call("GET /v1/store/quotes", { query: { perPage: 50 } }),
+    getSavedQuotes(),
+    getProductTypes(),
   ]);
+  const typeName = (code: string) => {
+    const type = types.find((candidate) => candidate.code === code);
+    return type ? pick(locale, type.nameTh, type.nameEn) : code;
+  };
 
   return (
     <div>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
-      {quotes.data.length === 0 ? (
+      {quotes.length === 0 ? (
         <EmptyState
           className="mt-8"
           icon="receipt"
@@ -46,36 +55,30 @@ export default async function Page() {
         />
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
-          {quotes.data.map((quote) => (
-            <li
-              key={quote.id}
-              className="border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
-            >
-              <div className="min-w-0">
-                <p className="font-semibold">{quote.product.name}</p>
-                <p className="text-muted text-sm">
-                  {t("row", {
-                    code: quote.quoteCode,
-                    quantity: format.number(quote.quantity),
-                    unit: quote.unit,
-                    amount: format.thb(quote.grossAmount),
-                  })}
-                </p>
-                <p className="text-muted text-xs">{t("validUntil", { date: format.date(quote.validUntil) })}</p>
-              </div>
-              <div className="flex items-center gap-2">
+          {quotes.map((quote) => {
+            const option = quote.options[0];
+            return (
+              <li
+                key={quote.id}
+                className="border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
+              >
+                <div className="min-w-0">
+                  <p className="font-semibold">{typeName(quote.productTypeCode)}</p>
+                  {option ? (
+                    <p className="text-muted text-sm">
+                      {t(quote.quoteCode ? "row" : "rowNoCode", {
+                        code: quote.quoteCode ?? "",
+                        quantity: format.number(option.quantity),
+                        amount: format.thb(option.grossAmount),
+                      })}
+                    </p>
+                  ) : null}
+                  <p className="text-muted text-xs">{t("validUntil", { date: format.date(quote.validUntil) })}</p>
+                </div>
                 <StatusChip map={QUOTE_STATUS} value={quote.status} />
-                {quote.source === "instant" && quote.product.slug ? (
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href={`${configureHref(quote.product.slug)}?quote=${quote.id}`}>
-                      {t("reopen")}
-                      <span className="sr-only"> {quote.quoteCode}</span>
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

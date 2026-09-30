@@ -8,7 +8,7 @@ import { readDesign } from "../document";
 import { designRepo } from "../storage";
 import { useEditor } from "../store/editor";
 import type { DesignContent, DesignSpec } from "../types";
-import { adminDocuments, storeDesigns, type CreateInput } from "./api";
+import { adminDocuments, documentOf, storeDesigns, type CreateInput } from "./api";
 import { drafts, type Draft } from "./drafts";
 
 /**
@@ -34,7 +34,10 @@ export interface PersistenceConfig {
   versionNo: number | null;
   /** When the server copy was last saved (ISO), to tell whether a local draft is newer. */
   updatedAt: string | null;
-  /** How a new store design is created (source, product, order line, template). */
+  /**
+   * How a new store design is created (its product, pattern, material, template). Without it a
+   * store design cannot be created — the product is required (CONTRACT-GAP store.catalog-product-ref).
+   */
   create?: Omit<CreateInput, "name" | "spec" | "content">;
   /** Called once a new design has its server (or local) id — the page swaps `/design/new` for it. */
   onCreated?: (id: string) => void;
@@ -67,7 +70,6 @@ export function usePersistence(config: PersistenceConfig) {
   const serverId = useRef(config.serverId);
   const etag = useRef(config.etag);
   const versionNo = useRef(config.versionNo);
-  const createKey = useRef<string | null>(null);
   const inFlight = useRef<Promise<boolean> | null>(null);
   const again = useRef<"autosave" | "manual" | null>(null);
   const configRef = useRef(config);
@@ -110,11 +112,8 @@ export function usePersistence(config: PersistenceConfig) {
             if (!previous) cfg.onCreated?.(snapshot.designId);
           } else if (cfg.mode === "store") {
             if (!serverId.current) {
-              createKey.current ??= crypto.randomUUID();
-              const created = await storeDesigns.create(
-                { ...(cfg.create ?? { source: "blank" }), name, spec, content },
-                createKey.current,
-              );
+              if (!cfg.create) throw new Error("design.product_unknown");
+              const created = await storeDesigns.create({ ...cfg.create, name, spec, content });
               await drafts.remove(snapshot.designId);
               serverId.current = created.data.id;
               etag.current = created.etag;
@@ -127,7 +126,7 @@ export function usePersistence(config: PersistenceConfig) {
               if (png) thumbnailFileId = await storeDesigns.uploadThumbnail(png, name).catch(() => undefined);
               const saved = await storeDesigns.save(
                 serverId.current,
-                { name, spec, content, kind, thumbnailFileId, materialId: spec.materialId },
+                { name, spec, content, thumbnailFileId },
                 etag.current,
               );
               etag.current = saved.etag;
@@ -256,24 +255,26 @@ export function usePersistence(config: PersistenceConfig) {
         return;
       }
       if (choice === "theirs") {
-        const document = "document" in latest.data ? latest.data.document : null;
+        const document = documentOf(latest.data);
         const read = document ? readDesign(document.spec, document.content) : null;
         const editor = useEditor.getState();
-        const name = "name" in latest.data ? latest.data.name : latest.data.title;
+        const name = latest.data.title;
         if (read) editor.load({ id: editor.designId, name, spec: read.spec, content: read.content });
         etag.current = latest.etag;
-        versionNo.current = latest.data.versionNo;
+        versionNo.current = latest.data.versionNo ?? versionNo.current;
         await drafts.remove(draftKey());
         setState("saved");
         return;
       }
-      if (cfg.mode === "store") {
+      if (cfg.mode === "store" && cfg.create) {
         const editor = useEditor.getState();
         if (!editor.spec) return;
-        const copy = await storeDesigns.create(
-          { source: "copy", name: editor.name, spec: editor.spec, content: editor.content },
-          crypto.randomUUID(),
-        );
+        const copy = await storeDesigns.create({
+          ...cfg.create,
+          name: editor.name,
+          spec: editor.spec,
+          content: editor.content,
+        });
         editor.markSaved();
         setState("saved");
         cfg.onCreated?.(copy.data.id);
