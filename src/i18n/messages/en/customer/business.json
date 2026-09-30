@@ -115,7 +115,8 @@
       "byMember": "By buyer",
       "byProductType": "By product type"
     },
-    "spendNone": "No data yet"
+    "spendNone": "No data yet",
+    "inReview": "Our finance team is reviewing your documents, usually within 1–2 business days. Meanwhile you can order and pay in advance."
   },
   "apply": {
     "title": "Open a company account",
@@ -171,7 +172,9 @@
       "phone": "That mobile number doesn't look right",
       "issuedOn": "Please enter the certificate's issue date",
       "document": "Please attach the {name}"
-    }
+    },
+    "blockedTitle": "Company sign-up is not open on the website yet",
+    "blocked": "Company accounts cannot be applied for on the website yet. Contact our team and we will open one for you; you can order and pay in advance meanwhile."
   },
   "members": {
     "title": "Members",
@@ -232,7 +235,9 @@
       "code": "A 5-digit branch code, e.g. 00001",
       "name": "Please enter the branch name",
       "address": "Please enter the address"
-    }
+    },
+    "addBlockedTitle": "New branches cannot be added on the website yet",
+    "addBlocked": "Adding a branch on the website is not open yet. Ask our team to add it for you."
   },
   "assets": {
     "title": "Brand assets",
@@ -277,7 +282,8 @@
       "pending": "Waiting",
       "approved": "Approved",
       "rejected": "Rejected",
-      "expired": "Expired"
+      "expired": "Expired",
+      "withdrawn": "Withdrawn"
     },
     "item": "{name}, {quantity} {unit}",
     "details": "PO {po} · {schedule}",
@@ -293,7 +299,10 @@
     "cancel": "Cancel",
     "approved": "{request} approved",
     "rejected": "{request} rejected",
-    "failed": "That didn't work. Please try again."
+    "failed": "That didn't work. Please try again.",
+    "decidedUnavailable": "Decided requests cannot be shown yet — only those waiting for approval",
+    "metaShort": "Requested by {name} on {date}",
+    "poOnly": "PO {po}"
   },
   "credit": {
     "title": "Credit & statements",
@@ -343,7 +352,8 @@
     "failed": "That didn't work. Please try again.",
     "errors": {
       "limit": "Enter the limit in whole baht, at least 1,000",
-      "statement": "Please attach the financial statements"
+      "statement": "Please attach the financial statements",
+      "term": "Please give the term as a number of days"
     },
     "statements": "Monthly statements",
     "aging": {
@@ -362,7 +372,10 @@
       "overdue": "Overdue"
     },
     "download": "Get download link",
-    "open": "Open file"
+    "open": "Open file",
+    "blockedShort": "The company has overdue amounts; you can order and pay in advance as usual (D-122)",
+    "statementMetaShort": "Invoiced {invoiced} · paid {paid} · outstanding {balance}",
+    "termHint": "Days, e.g. 30"
   },
   "reorder": {
     "title": "Bulk reorder",

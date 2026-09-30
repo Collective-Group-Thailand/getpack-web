@@ -10,6 +10,8 @@ import { REQUESTS, type Requests } from "@/lib/api/requests/registry";
 import type { ApiPaths, Schemas } from "@/lib/api/types";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 
+import { pick } from "./localize";
+
 /**
  * The storefront's public catalogue and content, read once and shared by every visitor.
  *
@@ -102,7 +104,7 @@ export type SearchResult = Schemas["StoreSearchResultDto"];
 export type ShowcaseProduct = Schemas["StoreShowcaseProductDto"];
 export type Page<T> = { data: T[]; meta: Schemas["PageMeta"] };
 export type Configurator = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/configurator">;
-export type SharedQuote = ResponseOf<Requests, "GET /v1/store/shared-quotes/{token}">;
+export type SharedQuote = Schemas["SavedQuoteDto"];
 export type SupportChannels = ResponseOf<Requests, "GET /v1/store/support-channels">;
 export type RfqForm = ResponseOf<Requests, "GET /v1/store/rfq-forms/{productTypeCode}">;
 
@@ -111,6 +113,12 @@ export type RfqForm = ResponseOf<Requests, "GET /v1/store/rfq-forms/{productType
 export async function getProductTypes(): Promise<ProductType[]> {
   const { data } = await (await publicApi("catalogue")).GET("/v1/store/catalog/product-types");
   return data ?? [];
+}
+
+/** Product type code → its name in `locale` — for records that name their type only. */
+export async function getProductTypeNames(locale: string): Promise<Record<string, string>> {
+  const types = await getProductTypes();
+  return Object.fromEntries(types.map((type) => [type.code, pick(locale, type.nameTh, type.nameEn)]));
 }
 
 export async function getProductCategories(): Promise<ProductCategory[]> {
@@ -215,10 +223,13 @@ export async function getConfigurator(slug: string): Promise<Configurator | null
   return orNull(requests.call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug } }));
 }
 
-/** A quotation someone shared (CONTRACT-REQUEST store.quotes); `null` once the link has expired. */
+/** A quotation someone shared (`store.quotes.getShared`); `null` once the link has expired. */
 export async function getSharedQuote(token: string): Promise<SharedQuote | null> {
-  const requests = await publicRequests("prices");
-  return orNull(requests.call("GET /v1/store/shared-quotes/{token}", { path: { token } }));
+  return orNull(
+    (await publicApi("prices"))
+      .GET("/v1/store/quotes/shared/{token}", { params: { path: { token } } })
+      .then(({ data }) => data!),
+  );
 }
 
 /** Packio's CS channels (CONTRACT-REQUEST store.support-channels); `null` when unavailable. */
@@ -276,12 +287,15 @@ export async function searchCatalogue(q: string): Promise<SearchResult> {
   return data!;
 }
 
-export type Tracking = ResponseOf<Requests, "GET /v1/store/tracking/{token}">;
+export type Tracking = Schemas["PublicTrackingDto"];
 
-/** The public tracking page's data (CONTRACT-REQUEST store.tracking); `null` for an unknown token. */
+/** The public tracking page's data (`store.tracking.get`); `null` for an unknown token. */
 export async function getTracking(token: string): Promise<Tracking | null> {
-  const requests = await publicRequests("prices");
-  return orNull(requests.call("GET /v1/store/tracking/{token}", { path: { token } }));
+  return orNull(
+    (await publicApi("prices"))
+      .GET("/v1/store/track/{token}", { params: { path: { token } } })
+      .then(({ data }) => data!),
+  );
 }
 
 export type SampleKit = ResponseOf<Requests, "GET /v1/store/sample-kits">["data"][number];

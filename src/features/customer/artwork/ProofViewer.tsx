@@ -4,21 +4,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
-import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
-import { resolveStyleId } from "@packio/dieline";
+import { FileLink } from "@/features/customer/files/FileLink";
+import { useFileUrl } from "@/features/customer/files/files";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { PROOF_STATUS } from "@/domain/status";
 import { useRouter } from "@/i18n/navigation";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Textarea } from "@/ui/components/Input";
@@ -28,18 +24,20 @@ import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
-import type { Artwork } from "./ArtworkWorkspace";
+import { loadArtwork, placeOf, threadsOf, type Artwork, type Proof, type Thread } from "./artwork";
 import { artworkKey } from "./keys";
 
-type Proof = Artwork["proofs"][number];
-type Thread = ResponseOf<Requests, "GET /v1/store/orders/{orderId}/proofs/{proofId}/annotations">["data"][number];
 type Tool = "view" | "pin" | "rect";
 type Draft = { kind: "pin" | "rect"; geometry: Record<string, number> };
 
 const ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3];
+/** Comments sit on the proof's first page; the API numbers pages from 1. */
+const FIRST_PAGE = 1;
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
+/** A proof the browser can show as a picture to point at; any other file is opened instead. */
+const isImage = (proof: Proof) => proof.proofFile.mimeType.startsWith("image/");
 
 /** A proof page as an image with its dieline overlay; the markers and drawing layer sit on top. */
 function Page({
@@ -66,7 +64,9 @@ function Page({
   label: string;
 }) {
   const t = useTranslations("proof");
-  const page = proof.pages[0];
+  const imageUrl = useFileUrl(isImage(proof) ? proof.proofFile.id : null);
+  const overlayUrl = useFileUrl(overlay ? proof.dielineFileId : null);
+  const [overlayBroken, setOverlayBroken] = useState(false);
   const layer = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
@@ -77,7 +77,22 @@ function Page({
     return { x: clamp((event.clientX - rect.left) / rect.width), y: clamp((event.clientY - rect.top) / rect.height) };
   };
 
-  if (!page) return <p className="text-muted text-sm">{t("noPages")}</p>;
+  if (!isImage(proof)) {
+    // CONTRACT-GAP store.proofs — no rasterised pages are published; a PDF proof is opened as a file.
+    return (
+      <Callout tone="info" title={t("fileProof", { name: proof.proofFile.originalName })}>
+        <div className="mt-2">
+          <FileLink
+            fileId={proof.proofFile.id}
+            label={t("fileDownload")}
+            openLabel={t("fileOpen")}
+            failed={t("failed")}
+          />
+        </div>
+      </Callout>
+    );
+  }
+  if (!imageUrl) return <p className="text-muted text-sm">{t("loadingPage")}</p>;
 
   return (
     <div
@@ -107,20 +122,21 @@ function Page({
       onPointerLeave={() => (drag.current = null)}
     >
       <div className="relative mx-auto" style={{ width: `${zoom * 100}%` }}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- a rasterised proof page from the API */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- the proof file, through a signed URL */}
         <img
-          src={page.imageUrl}
+          src={imageUrl}
           alt={t("pageAlt", { version: proof.versionNo })}
           className="block w-full select-none"
           draggable={false}
         />
-        {overlay && page.dielineOverlayUrl ? (
+        {overlay && overlayUrl && !overlayBroken ? (
           // eslint-disable-next-line @next/next/no-img-element -- the dieline overlay, decorative (the toggle names it)
           <img
-            src={page.dielineOverlayUrl}
+            src={overlayUrl}
             alt=""
             className="pointer-events-none absolute inset-0 block w-full select-none"
             draggable={false}
+            onError={() => setOverlayBroken(true)}
           />
         ) : null}
         <div
@@ -150,24 +166,25 @@ function Page({
             }
           }}
         >
-          {threads.map((thread, index) => {
-            const { x = 0.5, y = 0.5, w, h } = thread.geometry;
-            const first = thread.messages[0]?.body ?? "";
+          {threads.map(({ root }, index) => {
+            const { x, y, w, h } = placeOf(root);
+            const resolved = Boolean(root.resolvedAt);
+            const boxed = root.kind === "rect" && w && h;
             return (
               <button
-                key={thread.id}
+                key={root.id}
                 type="button"
                 onPointerDown={(event) => event.stopPropagation()}
-                onClick={() => onSelect?.(thread.id)}
-                aria-label={t("marker", { index: index + 1, text: first })}
-                aria-pressed={selected === thread.id}
+                onClick={() => onSelect?.(root.id)}
+                aria-label={t("marker", { index: index + 1, text: root.comment })}
+                aria-pressed={selected === root.id}
                 className={cn(
                   "absolute flex items-start justify-start",
-                  thread.kind === "rect" ? "rounded border-2" : "-translate-x-1/2 -translate-y-1/2",
-                  thread.resolved ? "border-success" : "border-warning",
+                  boxed ? "rounded border-2" : "-translate-x-1/2 -translate-y-1/2",
+                  resolved ? "border-success" : "border-warning",
                 )}
                 style={
-                  thread.kind === "rect" && w && h
+                  boxed
                     ? { left: `${x * 100}%`, top: `${y * 100}%`, width: `${w * 100}%`, height: `${h * 100}%` }
                     : { left: `${x * 100}%`, top: `${y * 100}%` }
                 }
@@ -175,8 +192,8 @@ function Page({
                 <span
                   className={cn(
                     "flex size-7 items-center justify-center rounded-full text-xs font-bold shadow",
-                    thread.resolved ? "bg-success text-success-fg" : "bg-warning text-warning-fg",
-                    selected === thread.id && "ring-primary ring-2 ring-offset-2",
+                    resolved ? "bg-success text-success-fg" : "bg-warning text-warning-fg",
+                    selected === root.id && "ring-primary ring-2 ring-offset-2",
                   )}
                 >
                   {index + 1}
@@ -218,30 +235,61 @@ function Page({
   );
 }
 
+/** Two versions under one slider: the earlier one clipped over the later. */
+function Slider({ proof, other, slider }: { proof: Proof; other: Proof; slider: number }) {
+  const t = useTranslations("proof");
+  const under = useFileUrl(isImage(proof) ? proof.proofFile.id : null);
+  const over = useFileUrl(isImage(other) ? other.proofFile.id : null);
+  if (!under || !over) return <p className="text-muted text-sm">{t("loadingPage")}</p>;
+  return (
+    <div
+      className="border-border relative overflow-hidden rounded-xl border"
+      role="img"
+      aria-label={t("sliderAlt", { a: other.versionNo, b: proof.versionNo, percent: slider })}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- the proof file, through a signed URL */}
+      <img src={under} alt="" className="block w-full" draggable={false} />
+      {/* eslint-disable-next-line @next/next/no-img-element -- the proof file, through a signed URL */}
+      <img
+        src={over}
+        alt=""
+        className="absolute inset-0 block w-full"
+        style={{ clipPath: `inset(0 ${100 - slider}% 0 0)` }}
+        draggable={false}
+      />
+      <span aria-hidden className="bg-primary absolute inset-y-0 w-0.5" style={{ left: `${slider}%` }} />
+    </div>
+  );
+}
+
 /**
  * The proof viewer (F3 3.5, design-system.md §3 "ProofViewer"): zoom and pan, the dieline on or
- * off, the box in 3D, any two versions side by side or under a slider, comments pinned or boxed
- * on the page in threads prepress answers, and — once every checklist item is confirmed — the
- * approval that sends the file to production, or a request for changes.
+ * off, any two versions side by side or under a slider, comments pinned or boxed on the page in
+ * threads prepress answers, and the approval that sends the file to production, or a request for
+ * changes.
  *
  * Placing a comment by pointer is the quick way, never the only one: "comment on the whole page"
  * needs no pointing (WCAG 2.5.7), and every marker is a button in the tab order.
+ *
+ * CONTRACT-GAP store.proofs — no approval checklist, no approver's name and no rasterised pages
+ * are published, and the box's size is not (store.artwork), so there is no 3D view of it here.
  */
 export function ProofViewer({ initial, version }: { initial: Artwork; version: number | null }) {
   const t = useTranslations("proof");
   const format = useFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const artwork = useQuery({
-    queryKey: artworkKey(initial.orderId),
-    queryFn: () =>
-      browserRequests().call("GET /v1/store/orders/{orderId}/artwork", { path: { orderId: initial.orderId } }),
-    initialData: initial,
-  }).data;
+  const orderId = initial.order.id;
+  const artwork =
+    useQuery({
+      queryKey: artworkKey(orderId),
+      queryFn: () => loadArtwork(browserApi(), orderId),
+      initialData: initial,
+    }).data ?? initial;
   const proofs = artwork.proofs;
   const [versionNo, setVersionNo] = useState(version ?? proofs[0]?.versionNo ?? 1);
   const proof = proofs.find((candidate) => candidate.versionNo === versionNo) ?? proofs[0]!;
-  const [view, setView] = useState<"proof" | "compare" | "3d">("proof");
+  const [view, setView] = useState<"proof" | "compare">("proof");
   const [compareMode, setCompareMode] = useState<"side" | "slider">("side");
   const [against, setAgainst] = useState<number>(
     proofs.find((candidate) => candidate.versionNo !== proof.versionNo)?.versionNo ?? proof.versionNo,
@@ -254,40 +302,40 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
   const [comment, setComment] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [reply, setReply] = useState<Record<string, string>>({});
-  const [checked, setChecked] = useState<Set<string>>(new Set());
   const [changes, setChanges] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const key = useRef(newKey());
   const open = proof.status === "pending_customer";
+  const pointable = isImage(proof);
+  const threads = threadsOf(proof);
 
-  const threadsKey = queryKeys.related("customer", "proofs", proof.id, "annotations");
-  const threads =
-    useQuery({
-      queryKey: threadsKey,
-      queryFn: async () =>
-        (
-          await browserRequests().call("GET /v1/store/orders/{orderId}/proofs/{proofId}/annotations", {
-            path: { orderId: artwork.orderId, proofId: proof.id },
-          })
-        ).data,
-    }).data ?? [];
+  const reload = () => queryClient.invalidateQueries({ queryKey: artworkKey(orderId) });
 
-  const refetchThreads = () => queryClient.invalidateQueries({ queryKey: threadsKey });
+  /** `store.artwork.annotate`: a new comment, or a reply naming its thread (with the thread's place). */
+  async function annotate(input: { comment: string; parent?: Thread["root"]; draft?: Draft }) {
+    const place = input.parent ?? null;
+    await browserApi().POST("/v1/store/proofs/{proofId}/annotations", {
+      params: { path: { proofId: proof.id } },
+      body: {
+        comment: input.comment,
+        page: place?.page ?? FIRST_PAGE,
+        kind: place?.kind ?? input.draft!.kind,
+        geometry: place?.geometry ?? input.draft!.geometry,
+        ...(place ? { parentId: place.id } : {}),
+      },
+    });
+    await reload();
+  }
 
   async function saveDraft() {
     if (!draft || !comment.trim()) return;
     setBusy(true);
     try {
-      const thread = await browserRequests().call("POST /v1/store/orders/{orderId}/proofs/{proofId}/annotations", {
-        path: { orderId: artwork.orderId, proofId: proof.id },
-        body: { page: 0, kind: draft.kind, geometry: draft.geometry, body: comment.trim() },
-      });
+      await annotate({ comment: comment.trim(), draft });
       setDraft(null);
       setComment("");
       setTool("view");
-      setSelected(thread.id);
-      await refetchThreads();
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));
     } finally {
@@ -295,19 +343,12 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
     }
   }
 
-  async function sendReply(threadId: string) {
-    const body = reply[threadId]?.trim();
+  async function sendReply(thread: Thread) {
+    const body = reply[thread.root.id]?.trim();
     if (!body) return;
     try {
-      await browserRequests().call(
-        "POST /v1/store/orders/{orderId}/proofs/{proofId}/annotations/{annotationId}/messages",
-        {
-          path: { orderId: artwork.orderId, proofId: proof.id, annotationId: threadId },
-          body: { body },
-        },
-      );
-      setReply((current) => ({ ...current, [threadId]: "" }));
-      await refetchThreads();
+      await annotate({ comment: body, parent: thread.root });
+      setReply((current) => ({ ...current, [thread.root.id]: "" }));
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));
     }
@@ -316,19 +357,17 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
   async function decide(outcome: "approve" | "changes") {
     setBusy(true);
     try {
-      const next =
-        outcome === "approve"
-          ? await browserRequests().call("POST /v1/store/orders/{orderId}/proofs/{proofId}/actions/approve", {
-              path: { orderId: artwork.orderId, proofId: proof.id },
-              body: { checklist: [...checked] },
-              idempotencyKey: key.current,
-            })
-          : await browserRequests().call("POST /v1/store/orders/{orderId}/proofs/{proofId}/actions/request-changes", {
-              path: { orderId: artwork.orderId, proofId: proof.id },
-              body: { note: changes.trim() },
-            });
+      if (outcome === "approve")
+        await browserApi().POST("/v1/store/proofs/{proofId}/actions/approve", {
+          params: { path: { proofId: proof.id }, header: { "Idempotency-Key": key.current } },
+        });
+      else
+        await browserApi().POST("/v1/store/proofs/{proofId}/actions/request-changes", {
+          params: { path: { proofId: proof.id } },
+          body: { comment: changes.trim() },
+        });
       key.current = newKey();
-      queryClient.setQueryData(artworkKey(artwork.orderId), next);
+      await reload();
       setConfirming(false);
       toast.success(outcome === "approve" ? t("approved") : t("changesSent"));
       router.refresh();
@@ -340,8 +379,8 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
     }
   }
 
-  const style = resolveStyleId(artwork.dieline.dielineKey);
   const other = proofs.find((candidate) => candidate.versionNo === against) ?? proof;
+  const decided = proof.status === "approved" || proof.status === "changes_requested" ? proof.status : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -364,21 +403,22 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
           </div>
         ) : null}
         <StatusChip map={PROOF_STATUS} value={proof.status} size="md" />
-        <SegmentedControl
-          label={t("view")}
-          value={view}
-          onValueChange={(next) => {
-            setView(next);
-            setTool("view");
-            setDraft(null);
-          }}
-          options={[
-            { value: "proof", label: t("views.proof") },
-            ...(proofs.length > 1 ? [{ value: "compare" as const, label: t("views.compare") }] : []),
-            ...(style ? [{ value: "3d" as const, label: t("views.3d") }] : []),
-          ]}
-        />
-        {view !== "3d" ? (
+        {proofs.length > 1 && pointable ? (
+          <SegmentedControl
+            label={t("view")}
+            value={view}
+            onValueChange={(next) => {
+              setView(next);
+              setTool("view");
+              setDraft(null);
+            }}
+            options={[
+              { value: "proof", label: t("views.proof") },
+              { value: "compare" as const, label: t("views.compare") },
+            ]}
+          />
+        ) : null}
+        {pointable ? (
           <>
             <div className="flex items-center gap-1" role="group" aria-label={t("zoom")}>
               <IconButton
@@ -404,7 +444,9 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 {t("fit")}
               </Button>
             </div>
-            <Switch checked={overlay} onCheckedChange={setOverlay} label={t("dieline")} />
+            {proof.dielineFileId ? (
+              <Switch checked={overlay} onCheckedChange={setOverlay} label={t("dieline")} />
+            ) : null}
           </>
         ) : null}
       </div>
@@ -415,20 +457,22 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
             <>
               {open ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <SegmentedControl
-                    label={t("tools")}
-                    size="sm"
-                    value={tool}
-                    onValueChange={(next) => {
-                      setTool(next);
-                      setDraft(null);
-                    }}
-                    options={[
-                      { value: "view", label: t("toolView"), icon: "grip" },
-                      { value: "pin", label: t("toolPin"), icon: "map-pin" },
-                      { value: "rect", label: t("toolRect"), icon: "rectangle" },
-                    ]}
-                  />
+                  {pointable ? (
+                    <SegmentedControl
+                      label={t("tools")}
+                      size="sm"
+                      value={tool}
+                      onValueChange={(next) => {
+                        setTool(next);
+                        setDraft(null);
+                      }}
+                      options={[
+                        { value: "view", label: t("toolView"), icon: "grip" },
+                        { value: "pin", label: t("toolPin"), icon: "map-pin" },
+                        { value: "rect", label: t("toolRect"), icon: "rectangle" },
+                      ]}
+                    />
+                  ) : null}
                   <Button
                     size="sm"
                     variant="ghost"
@@ -437,9 +481,11 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                   >
                     {t("pageComment")}
                   </Button>
-                  <span className="text-muted text-xs" aria-live="polite">
-                    {tool === "pin" ? t("pinHint") : tool === "rect" ? t("rectHint") : t("viewHint")}
-                  </span>
+                  {pointable ? (
+                    <span className="text-muted text-xs" aria-live="polite">
+                      {tool === "pin" ? t("pinHint") : tool === "rect" ? t("rectHint") : t("viewHint")}
+                    </span>
+                  ) : null}
                 </div>
               ) : null}
               <Page
@@ -455,7 +501,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 label={t("canvas", { version: proof.versionNo })}
               />
             </>
-          ) : view === "compare" ? (
+          ) : (
             <>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="w-48">
@@ -484,46 +530,22 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               </div>
               {compareMode === "side" ? (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-1 text-sm font-medium">{t("versionLabel", { version: other.versionNo })}</p>
-                    <Page
-                      proof={other}
-                      overlay={overlay}
-                      zoom={zoom}
-                      threads={[]}
-                      label={t("canvas", { version: other.versionNo })}
-                    />
-                  </div>
-                  <div>
-                    <p className="mb-1 text-sm font-medium">{t("versionLabel", { version: proof.versionNo })}</p>
-                    <Page
-                      proof={proof}
-                      overlay={overlay}
-                      zoom={zoom}
-                      threads={[]}
-                      label={t("canvas", { version: proof.versionNo })}
-                    />
-                  </div>
+                  {[other, proof].map((entry) => (
+                    <div key={entry.id}>
+                      <p className="mb-1 text-sm font-medium">{t("versionLabel", { version: entry.versionNo })}</p>
+                      <Page
+                        proof={entry}
+                        overlay={overlay}
+                        zoom={zoom}
+                        threads={[]}
+                        label={t("canvas", { version: entry.versionNo })}
+                      />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <div
-                    className="border-border relative overflow-hidden rounded-xl border"
-                    role="img"
-                    aria-label={t("sliderAlt", { a: other.versionNo, b: proof.versionNo, percent: slider })}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- rasterised proof page */}
-                    <img src={proof.pages[0]?.imageUrl} alt="" className="block w-full" draggable={false} />
-                    {/* eslint-disable-next-line @next/next/no-img-element -- rasterised proof page */}
-                    <img
-                      src={other.pages[0]?.imageUrl}
-                      alt=""
-                      className="absolute inset-0 block w-full"
-                      style={{ clipPath: `inset(0 ${100 - slider}% 0 0)` }}
-                      draggable={false}
-                    />
-                    <span aria-hidden className="bg-primary absolute inset-y-0 w-0.5" style={{ left: `${slider}%` }} />
-                  </div>
+                  <Slider proof={proof} other={other} slider={slider} />
                   <label className="flex items-center gap-3 text-sm">
                     <span className="shrink-0">{t("versionLabel", { version: other.versionNo })}</span>
                     <input
@@ -540,30 +562,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 </div>
               )}
             </>
-          ) : style ? (
-            <BoxPreview3D
-              style={style}
-              dims={{
-                length: artwork.dieline.lengthMm ?? 100,
-                width: artwork.dieline.widthMm ?? 100,
-                height: artwork.dieline.heightMm ?? 50,
-              }}
-              colour="#e9e3d8"
-              printed
-              label={t("box3d", {
-                l: artwork.dieline.lengthMm ?? 0,
-                w: artwork.dieline.widthMm ?? 0,
-                h: artwork.dieline.heightMm ?? 0,
-              })}
-              labels={{
-                rotateLeft: t("rotateLeft"),
-                rotateRight: t("rotateRight"),
-                tiltUp: t("tiltUp"),
-                tiltDown: t("tiltDown"),
-                reset: t("reset"),
-              }}
-            />
-          ) : null}
+          )}
         </div>
 
         <aside aria-label={t("panel")} className="flex flex-col gap-6">
@@ -579,7 +578,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               <Field label={t("comment")} className="mt-2">
                 <Textarea
                   rows={3}
-                  maxLength={2000}
+                  maxLength={4000}
                   value={comment}
                   onChange={(event) => setComment(event.target.value)}
                   autoFocus
@@ -602,54 +601,59 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
             </h2>
             {threads.length === 0 ? <p className="text-muted mt-2 text-sm">{t("noThreads")}</p> : null}
             <ol className="mt-2 flex flex-col gap-3">
-              {threads.map((thread, index) => (
-                <li
-                  key={thread.id}
-                  className={cn(
-                    "border-border rounded-lg border p-3 text-sm",
-                    selected === thread.id && "border-primary",
-                  )}
-                  aria-current={selected === thread.id ? "true" : undefined}
-                >
-                  <p className="flex items-center justify-between gap-2 font-medium">
-                    {t("threadTitle", { index: index + 1 })}
-                    <span className={cn("text-xs", thread.resolved ? "text-success-subtle-fg" : "text-muted")}>
-                      {thread.resolved ? t("resolved") : t("open")}
-                    </span>
-                  </p>
-                  <ul className="mt-2 flex flex-col gap-2">
-                    {thread.messages.map((message) => (
-                      <li key={message.id}>
-                        <p className="text-muted text-xs">
-                          {t("by", { name: message.authorName, date: format.dateTime(message.createdAt) })}
-                        </p>
-                        <p className="whitespace-pre-line">{message.body}</p>
-                      </li>
-                    ))}
-                  </ul>
-                  {open && !thread.resolved ? (
-                    <div className="mt-2 flex items-end gap-2">
-                      <Field label={t("replyTo", { index: index + 1 })} labelHidden className="flex-1">
-                        <Textarea
-                          rows={1}
-                          value={reply[thread.id] ?? ""}
-                          placeholder={t("replyPlaceholder")}
-                          onChange={(event) => setReply((current) => ({ ...current, [thread.id]: event.target.value }))}
-                        />
-                      </Field>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled={!reply[thread.id]?.trim()}
-                        onClick={() => void sendReply(thread.id)}
-                      >
-                        {t("reply")}
-                        <span className="sr-only"> {t("threadTitle", { index: index + 1 })}</span>
-                      </Button>
-                    </div>
-                  ) : null}
-                </li>
-              ))}
+              {threads.map((thread, index) => {
+                const resolved = Boolean(thread.root.resolvedAt);
+                return (
+                  <li
+                    key={thread.root.id}
+                    className={cn(
+                      "border-border rounded-lg border p-3 text-sm",
+                      selected === thread.root.id && "border-primary",
+                    )}
+                    aria-current={selected === thread.root.id ? "true" : undefined}
+                  >
+                    <p className="flex items-center justify-between gap-2 font-medium">
+                      {t("threadTitle", { index: index + 1 })}
+                      <span className={cn("text-xs", resolved ? "text-success-subtle-fg" : "text-muted")}>
+                        {resolved ? t("resolved") : t("open")}
+                      </span>
+                    </p>
+                    <ul className="mt-2 flex flex-col gap-2">
+                      {[thread.root, ...thread.replies].map((message) => (
+                        <li key={message.id}>
+                          <p className="text-muted text-xs">
+                            {t("by", { name: message.author.displayName, date: format.dateTime(message.createdAt) })}
+                          </p>
+                          <p className="whitespace-pre-line">{message.comment}</p>
+                        </li>
+                      ))}
+                    </ul>
+                    {open && !resolved ? (
+                      <div className="mt-2 flex items-end gap-2">
+                        <Field label={t("replyTo", { index: index + 1 })} labelHidden className="flex-1">
+                          <Textarea
+                            rows={1}
+                            value={reply[thread.root.id] ?? ""}
+                            placeholder={t("replyPlaceholder")}
+                            onChange={(event) =>
+                              setReply((current) => ({ ...current, [thread.root.id]: event.target.value }))
+                            }
+                          />
+                        </Field>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={!reply[thread.root.id]?.trim()}
+                          onClick={() => void sendReply(thread)}
+                        >
+                          {t("reply")}
+                          <span className="sr-only"> {t("threadTitle", { index: index + 1 })}</span>
+                        </Button>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ol>
           </section>
 
@@ -661,29 +665,8 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               <h2 id="proof-decision" className="font-semibold">
                 {t("decide")}
               </h2>
-              <fieldset className="flex flex-col gap-2">
-                <legend className="text-sm">{t("checklist")}</legend>
-                {artwork.checklist.map((item) => (
-                  <Checkbox
-                    key={item.key}
-                    checked={checked.has(item.key)}
-                    onCheckedChange={(value) =>
-                      setChecked((current) => {
-                        const next = new Set(current);
-                        if (value === true) next.add(item.key);
-                        else next.delete(item.key);
-                        return next;
-                      })
-                    }
-                    label={item.label}
-                  />
-                ))}
-              </fieldset>
-              <Button
-                disabled={checked.size < artwork.checklist.length}
-                onClick={() => setConfirming(true)}
-                iconStart="check"
-              >
+              <p className="text-muted text-sm">{t("approveIntro")}</p>
+              <Button onClick={() => setConfirming(true)} iconStart="check">
                 {t("approve")}
               </Button>
               <Field label={t("changesLabel")} hint={t("changesHint")}>
@@ -703,15 +686,13 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 {t("requestChanges")}
               </Button>
             </section>
-          ) : proof.decision ? (
-            <Callout
-              tone={proof.decision.outcome === "approved" ? "success" : "warning"}
-              title={t(`decision.${proof.decision.outcome}`)}
-            >
-              {t("decisionRecord", { name: proof.decision.byName, date: format.dateTime(proof.decision.at) })}
-              {proof.decision.fileSha256 ? (
+          ) : decided && proof.decidedAt ? (
+            <Callout tone={decided === "approved" ? "success" : "warning"} title={t(`decision.${decided}`)}>
+              {t("decisionAt", { date: format.dateTime(proof.decidedAt) })}
+              {proof.decisionComment ? <span className="mt-1 block">{proof.decisionComment}</span> : null}
+              {proof.approvedFileSha256 ? (
                 <span className="mt-1 block font-mono text-xs break-all">
-                  {t("hash", { hash: proof.decision.fileSha256.slice(0, 16) })}
+                  {t("hash", { hash: proof.approvedFileSha256.slice(0, 16) })}
                 </span>
               ) : null}
             </Callout>
@@ -723,7 +704,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
         open={confirming}
         onOpenChange={setConfirming}
         title={t("approveTitle", { version: proof.versionNo })}
-        description={t("approveBody", { code: artwork.orderCode, version: proof.versionNo })}
+        description={t("approveBody", { code: artwork.order.orderCode, version: proof.versionNo })}
         confirmLabel={t("approve")}
         cancelLabel={t("cancel")}
         loading={busy}

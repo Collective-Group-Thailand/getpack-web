@@ -7,6 +7,7 @@
   "intro": "Choose the size, material and print. The price and delivery date update as you go.",
   "sharedExpired": "This quotation link has expired. You can still configure and price it again.",
   "sharedFrom": "Opened from shared quotation {code}. The price below is worked out again at today's prices.",
+  "sharedFromNoCode": "Opened from a quotation someone shared with you — priced again at today’s prices",
   "stepsLabel": "Configuration steps",
   "steps": {
     "size": "Size and style",
@@ -192,17 +193,14 @@
     "receiveBy": "Arrives around {date}",
     "tolerance": "You may receive up to {shortage} fewer or {overage} more, as is normal in production; any shortfall comes back as credit.",
     "validity": "Save it as a quotation and this price holds for {days} days.",
-    "appliedOnQuote": "The sample and any promo code are applied on the quotation.",
+    "appliedOnQuote": "The mockup is priced on the cart line; discount codes are applied at checkout",
     "breaksCaption": "Price per quantity",
     "breaksQuantity": "Quantity",
     "breaksPerPiece": "Each",
     "breaksTotal": "Total",
     "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "Choose",
-    "breaksChosen": "Chosen",
-    "promoApplied": "Code {code} takes off {amount}",
-    "promoNotApplied": "Code {code} does not apply to this quotation",
-    "promoCapped": "The discount was capped at its limit."
+    "breaksChosen": "Chosen"
   },
   "actions": {
     "addToCart": "Add to cart",
@@ -215,12 +213,15 @@
     "addedToCart": "{name} added to your cart",
     "viewCart": "View cart",
     "saved": "Quotation {code} saved; the price holds until {date}",
+    "savedNoCode": "Quotation saved — the price holds until {date}",
     "viewQuotes": "View quotations",
     "linkCopied": "Quotation link copied",
     "pdfReady": "Quotation {code} is ready",
+    "pdfPending": "The PDF is still being made. Try again in a moment.",
     "openPdf": "Open PDF",
     "noInstantPrice": "This quantity no longer has an instant price. Choose another or request a quote.",
     "failed": "That did not work. Please try again."
   },
-  "savedFrom": "Opened from your saved quotation {code}. The price below is worked out again at today's prices."
+  "savedFrom": "Opened from your saved quotation {code}. The price below is worked out again at today's prices.",
+  "savedFromNoCode": "Opened from a quotation you saved — priced again at today’s prices"
 }

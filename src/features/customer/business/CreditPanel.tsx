@@ -6,20 +6,19 @@ import { useRef, useState } from "react";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
-import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
-type Company = ResponseOf<Requests, "GET /v1/store/me/company">;
+type Credit = Schemas["CompanyCreditDto"];
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
@@ -27,39 +26,39 @@ const newKey = () =>
 /**
  * Applying for credit (D-121): the limit and term wanted, on the strength of paid orders or a
  * financial statement. Eligibility, the terms on offer and who decides are the API's.
+ *
+ * CONTRACT-GAP store.company-credit — the published credit says only whether a request is pending,
+ * not whether the company is eligible or which terms are on offer, so the form offers both bases
+ * and takes the term in days; the API refuses what it does not allow.
  */
-export function CreditApplication({ company }: { company: Company }) {
+export function CreditApplication({ credit }: { credit: Credit | null }) {
   const t = useTranslations("business.credit");
   const format = useFormat();
   const router = useRouter();
   const [limit, setLimit] = useState("");
-  const [term, setTerm] = useState(
-    String(company.credit.allowedTerms.includes(30) ? 30 : (company.credit.allowedTerms[0] ?? 30)),
-  );
-  const [basis, setBasis] = useState<"paid_orders" | "financial_review">(
-    company.credit.eligible ? "paid_orders" : "financial_review",
-  );
+  const [term, setTerm] = useState("30");
+  const [basis, setBasis] = useState<"paid_orders" | "financial_review">("paid_orders");
   const [statement, setStatement] = useState<{ name: string; fileId?: string } | null>(null);
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const key = useRef(newKey());
-  const application = company.credit.application;
+  const pending = credit?.pendingRequest;
 
-  if (application?.status === "submitted")
+  if (pending)
     return (
       <Callout tone="info" title={t("pendingTitle")}>
         {t("pending", {
-          limit: format.thb(application.requestedLimit),
-          days: application.termDays,
-          date: format.date(application.submittedAt),
+          limit: format.thb(pending.limitAmount),
+          days: pending.termDays,
+          date: format.date(pending.requestedAt),
         })}
-        {application.note ? <span className="mt-1 block">{application.note}</span> : null}
       </Callout>
     );
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!/^\d{4,9}$/.test(limit)) return setError(t("errors.limit"));
+    if (!/^\d{1,3}$/.test(term)) return setError(t("errors.term"));
     if (basis === "financial_review" && !statement?.fileId) return setError(t("errors.statement"));
     setError(undefined);
     setBusy(true);
@@ -87,11 +86,6 @@ export function CreditApplication({ company }: { company: Company }) {
 
   return (
     <form noValidate onSubmit={(event) => void submit(event)} className="flex max-w-xl flex-col gap-4">
-      <p className="text-muted text-sm">
-        {company.credit.eligible
-          ? t("eligible", { count: company.credit.paidOrdersCount })
-          : t("notEligible", { count: company.credit.paidOrdersCount, needed: company.credit.paidOrdersNeeded })}
-      </p>
       {error ? (
         <Callout tone="danger" role="alert">
           {error}
@@ -105,11 +99,11 @@ export function CreditApplication({ company }: { company: Company }) {
             onChange={(event) => setLimit(event.target.value.replace(/\D/g, ""))}
           />
         </Field>
-        <Field label={t("term")}>
-          <Select
+        <Field label={t("term")} hint={t("termHint")}>
+          <Input
+            inputMode="numeric"
             value={term}
-            onValueChange={setTerm}
-            options={company.credit.allowedTerms.map((days) => ({ value: String(days), label: t("days", { days }) }))}
+            onChange={(event) => setTerm(event.target.value.replace(/\D/g, ""))}
           />
         </Field>
       </div>
@@ -122,7 +116,6 @@ export function CreditApplication({ company }: { company: Company }) {
               value: "paid_orders",
               label: t("bases.paid_orders"),
               description: t("basisHints.paid_orders"),
-              disabled: !company.credit.eligible,
             },
             {
               value: "financial_review",
@@ -171,8 +164,11 @@ export function CreditApplication({ company }: { company: Company }) {
   );
 }
 
-/** A statement's PDF: a signed URL asked for on click, opened on a second, explicit click. */
-export function StatementLink({ statementId, period }: { statementId: string; period: string }) {
+/**
+ * A month's statement PDF (`store.documents.companyStatementPdf`): a signed URL asked for on click,
+ * opened on a second, explicit click. The API answers `409` until the PDF is rendered.
+ */
+export function StatementLink({ companyId, month }: { companyId: string; month: string }) {
   const t = useTranslations("business.credit");
   const [url, setUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -181,7 +177,7 @@ export function StatementLink({ statementId, period }: { statementId: string; pe
       <Button asChild size="sm" variant="secondary" iconStart="external">
         <a href={url} target="_blank" rel="noopener noreferrer">
           {t("open")}
-          <span className="sr-only"> {period}</span>
+          <span className="sr-only"> {month}</span>
         </a>
       </Button>
     );
@@ -194,13 +190,10 @@ export function StatementLink({ statementId, period }: { statementId: string; pe
       onClick={async () => {
         setBusy(true);
         try {
-          const signed = await browserRequests().call(
-            "POST /v1/store/me/company/statements/{statementId}/actions/download",
-            {
-              path: { statementId },
-            },
-          );
-          setUrl(signed.url);
+          const { data } = await browserApi().GET("/v1/store/companies/{companyId}/statements/{month}/pdf", {
+            params: { path: { companyId, month } },
+          });
+          setUrl(data!.url);
         } catch (failure) {
           toast.error(isApiError(failure) ? failure.detail : t("failed"));
         } finally {
@@ -209,7 +202,7 @@ export function StatementLink({ statementId, period }: { statementId: string; pe
       }}
     >
       {t("download")}
-      <span className="sr-only"> {period}</span>
+      <span className="sr-only"> {month}</span>
     </Button>
   );
 }

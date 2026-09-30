@@ -2,6 +2,8 @@ import "server-only";
 
 import { isApiError } from "@/lib/api/problem";
 import { serverRequests } from "@/lib/api/requests/server";
+import { serverApi } from "@/lib/api/server";
+import type { Schemas } from "@/lib/api/types";
 
 /** `null` for the API's 404 or 409 (not this customer's, or not yet possible) — the page says so. */
 async function orNull<T>(read: Promise<T>): Promise<T | null> {
@@ -19,11 +21,12 @@ export async function getClaimForm(orderId: string) {
   );
 }
 
-export async function getMyClaim(orderId: string, claimId: string) {
+/** One of the customer's claims (`store.claims.get`); `null` for anyone else's. */
+export async function getMyClaim(claimId: string): Promise<Schemas["StoreClaimDto"] | null> {
   return orNull(
-    (await serverRequests("customer")).call("GET /v1/store/orders/{orderId}/claims/{claimId}", {
-      path: { orderId, claimId },
-    }),
+    (await serverApi("customer"))
+      .GET("/v1/store/claims/{claimId}", { params: { path: { claimId } } })
+      .then(({ data }) => data!),
   );
 }
 

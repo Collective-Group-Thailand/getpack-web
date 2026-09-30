@@ -1,6 +1,6 @@
 /**
- * Requests for quotation from the storefront, mocked (CONTRACT-REQUEST store.rfq-forms,
- * store.rfqs).
+ * Requests for quotation from the storefront: the form stays mocked (CONTRACT-REQUEST
+ * store.rfq-forms), the RFQs are at their published paths (`store.rfqs.*`, U-F0.2).
  *
  * The customer's RFQs are the **same rows** the RFQ desk works on (`../admin/rfq.ts`): what a
  * customer submits here lands in the desk's "new" queue, the quote CS sends there shows here,
@@ -8,10 +8,12 @@
  * walked across the two zones. The returning customer owns the first fake customer's RFQs.
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
 import type { rfqDetail } from "@/lib/api/requests/admin-rfq";
-import type { storeRfq, storeRfqForm } from "@/lib/api/requests/store-rfq";
+import type { storeRfqForm } from "@/lib/api/requests/store-rfq";
+import type { Schemas } from "@/lib/api/types";
 
 import { PRODUCT_TYPES } from "../admin/catalog";
 import { customers as fakeCustomers } from "../admin/commerce";
@@ -189,57 +191,67 @@ function ownerOf(customer: MockCustomer) {
 
 const mine = (customer: MockCustomer) => rfqs.filter((rfq) => rfq.customer.id === ownerOf(customer).id);
 
-function storeView(rfq: AdminRfq): z.output<typeof storeRfq> {
-  const sent = rfq.quotes.filter((quote) => quote.status !== "draft");
-  const latest = sent[0] ?? null;
-  const sentQuote = sent.find((quote) => quote.status === "sent");
+/** The answers as the customer sent them (the desk's row keeps them in words), per RFQ. */
+const rawSpecs = new Map<string, Record<string, unknown>>();
+
+/** The desk's row as the customer sees it (`RfqDto`): sent quotations only, the thread in words. */
+function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
+  const closed = ["accepted", "declined", "expired"].includes(rfq.status);
   return {
     id: rfq.id,
     rfqCode: rfq.rfqCode,
     status: rfq.status,
-    productType: rfq.productType,
+    productTypeCode: rfq.productType.code,
+    productTypeName: rfq.productType.name,
     quantities: rfq.quantities,
+    lengthMm: rfq.dimensions?.lengthMm ?? null,
+    widthMm: rfq.dimensions?.widthMm ?? null,
+    heightMm: rfq.dimensions?.heightMm ?? null,
     targetDate: rfq.targetDate,
-    respondBy: rfq.firstResponseAt ? null : rfq.slaDueAt,
-    latestQuote: latest ? { versionNo: latest.versionNo, status: latest.status, validUntil: latest.validUntil } : null,
-    submittedAt: rfq.submittedAt,
-    spec: rfq.spec,
-    dimensions: rfq.dimensions,
     deliveryPostcode: rfq.deliveryPostcode,
-    notes: rfq.notes,
-    files: rfq.files,
-    quotes: sent.map((quote) => ({
-      id: quote.id,
-      versionNo: quote.versionNo,
-      status: quote.status,
-      validUntil: quote.validUntil,
-      customerNote: quote.customerNote,
-      lines: quote.lines.map((line) => ({
-        quantity: line.quantity,
-        unitPrice: line.unitPrice,
-        netAmount: line.netAmount,
-        vatAmount: line.vatAmount,
-        grossAmount: line.grossAmount,
-        leadTimeDays: line.leadTimeDays,
+    notes: rfq.notes ?? "",
+    // A seeded row has only the words; its labels stand in for the keys.
+    spec: rawSpecs.get(rfq.id) ?? Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
+    slaDueAt: rfq.slaDueAt,
+    submittedAt: rfq.submittedAt,
+    closedAt: closed ? (rfq.acceptedQuotation ? bangkokIso() : rfq.submittedAt) : null,
+    declineReasonCode: rfq.declineReason?.code ?? null,
+    acceptedQuoteId: rfq.acceptedQuotation?.id ?? null,
+    quotations: rfq.quotes
+      .filter((quote) => quote.status !== "draft")
+      .map((quote) => ({
+        id: quote.id,
+        versionNo: quote.versionNo,
+        status: quote.status,
+        sentAt: quote.sentAt,
+        validUntil: quote.validUntil ? `${quote.validUntil}T23:59:59+07:00` : null,
+        note: quote.customerNote ?? "",
+        lines: quote.lines.map((line) => ({
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+          netAmount: line.netAmount,
+          vatAmount: line.vatAmount,
+          grossAmount: line.grossAmount,
+          leadTimeDays: line.leadTimeDays,
+          shippingNetAmount: "0.00",
+        })),
       })),
-      sentAt: quote.sentAt,
-      acceptedAt: quote.acceptedAt,
-    })),
-    acceptedQuote: rfq.acceptedQuotation
-      ? {
-          id: rfq.acceptedQuotation.id,
-          quoteCode: rfq.acceptedQuotation.quoteCode,
-          quantity: rfq.acceptedQuotation.quantity,
-        }
-      : null,
-    declineReason: rfq.declineReason?.name ?? null,
-    nextActions: [
-      ...(rfq.status === "quoted" && sentQuote ? [{ key: "rfq.accept_quote", irreversible: true }] : []),
-      ...(rfq.status === "need_info" ? [{ key: "rfq.reply" }] : []),
-      ...(rfq.acceptedQuotation ? [{ key: "quote.add_to_cart" }] : []),
-    ],
+    // Staff appear as the team (`packio`); internal notes never leave the desk.
+    messages: (rfqMessages.get(rfq.id) ?? [])
+      .filter((message) => message.visibility === "customer")
+      .map((message) => ({
+        id: message.id,
+        author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
+        body: message.body,
+        createdAt: message.createdAt,
+      })),
   };
 }
+
+const keyRequired = (request: Request) =>
+  request.headers.get("idempotency-key")
+    ? null
+    : problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key สำหรับคำสั่งนี้");
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "rfq.not_found", "ไม่พบคำขอราคานี้");
@@ -253,14 +265,18 @@ export const storeRfqHandlers = [
     ({ params }) => formOf(params.productTypeCode) ?? notFound(),
   ),
 
-  // CONTRACT-REQUEST store.rfqs
-  mockRequest("POST /v1/store/rfqs", ({ body, request }) => {
+  // store.rfqs.submit (published, U-F0.2): lands in the desk's "new" queue.
+  http.post("*/v1/store/rfqs", async ({ request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const body = (await request.json()) as Schemas["SubmitRfqDto"];
+    const spec = body.spec as Record<string, unknown>;
     const form = formOf(body.productTypeCode);
     if (!form) return problem(422, "validation.failed", "ไม่พบประเภทสินค้านี้");
     const missing = form.fields.find(
-      (field) => field.required && (body.spec[field.key] === undefined || body.spec[field.key] === ""),
+      (field) => field.required && (spec[field.key] === undefined || spec[field.key] === ""),
     );
     if (missing)
       return problem(422, "validation.failed", "กรุณากรอกข้อมูลที่จำเป็น", [
@@ -285,6 +301,7 @@ export const storeRfqHandlers = [
     const n = 900 + submitted;
     const owner = ownerOf(customer);
     const now = bangkokIso();
+    const fileIds = body.fileIds ?? [];
     const rfq: AdminRfq = {
       id: mockId("rfq", n),
       rfqCode: `RFQ-2569-${String(n).padStart(5, "0")}`,
@@ -293,13 +310,10 @@ export const storeRfqHandlers = [
       productType: { code: form.productTypeCode, name: form.nameTh },
       customer: owner,
       quantities: [...body.quantities].sort((a, b) => a - b),
-      dimensions: body.dimensions
-        ? {
-            lengthMm: body.dimensions.lengthMm,
-            widthMm: body.dimensions.widthMm,
-            heightMm: body.dimensions.heightMm ?? null,
-          }
-        : null,
+      dimensions:
+        body.lengthMm && body.widthMm
+          ? { lengthMm: body.lengthMm, widthMm: body.widthMm, heightMm: body.heightMm ?? null }
+          : null,
       targetDate: body.targetDate ?? null,
       province: null,
       assignee: null,
@@ -309,14 +323,15 @@ export const storeRfqHandlers = [
       urgency: "normal",
       consultationCounts: { requested: 0, responded: 0 },
       latestQuote: null,
-      routedFromCalculator: Boolean(body.routedFrom),
+      // CONTRACT-GAP store.rfqs — the published submit does not say which product routed here.
+      routedFromCalculator: false,
       submittedAt: now,
       contact: { phone: customer.phone, email: customer.email },
-      spec: Object.entries(body.spec).map(([key, value]) => ({ label: labelOf(key), value: valueOf(key, value) })),
-      specSchemaVersion: body.specSchemaVersion,
+      spec: Object.entries(spec).map(([key, value]) => ({ label: labelOf(key), value: valueOf(key, value) })),
+      specSchemaVersion: form.specSchemaVersion,
       notes: body.notes ?? null,
       deliveryPostcode: body.deliveryPostcode,
-      files: body.fileIds.map((id, index) => ({
+      files: fileIds.map((id, index) => ({
         id,
         originalName: `file-${index + 1}`,
         mimeType: "application/octet-stream",
@@ -324,7 +339,7 @@ export const storeRfqHandlers = [
         thumbnailUrl: null,
         url: null,
       })),
-      routedFrom: body.routedFrom ? { reason: body.routedFrom.reason, calculator: null } : null,
+      routedFrom: null,
       declineReason: null,
       declineNote: null,
       acceptedQuotation: null,
@@ -334,61 +349,37 @@ export const storeRfqHandlers = [
       events: [],
       nextActions: [],
     };
-    return storeView(addCustomerRfq(rfq));
+    rawSpecs.set(rfq.id, spec);
+    return HttpResponse.json(toRfqDto(addCustomerRfq(rfq)), { status: 201 });
   }),
 
-  mockRequest("GET /v1/store/rfqs", ({ query, request }) => {
+  // store.rfqs.list / get (published, U-F0.2).
+  http.get("*/v1/store/rfqs", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const query = Object.fromEntries(new URL(request.url).searchParams);
     const list = mine(customer)
       .filter((rfq) => !query.status || rfq.status === query.status)
       .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
-      .map(storeView)
-      .map(({ id, rfqCode, status, productType, quantities, targetDate, respondBy, latestQuote, submittedAt }) => ({
-        id,
-        rfqCode,
-        status,
-        productType,
-        quantities,
-        targetDate,
-        respondBy,
-        latestQuote,
-        submittedAt,
-      }));
-    return paginate(list, query);
+      .map(toRfqDto);
+    return HttpResponse.json(paginate(list, { page: Number(query.page ?? 1), perPage: Number(query.perPage ?? 20) }));
   }),
 
-  mockRequest("GET /v1/store/rfqs/{rfqId}", ({ params, request }) => {
+  http.get("*/v1/store/rfqs/:rfqId", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
-    return rfq ? storeView(rfq) : notFound();
+    return rfq ? HttpResponse.json(toRfqDto(rfq)) : notFound();
   }),
 
-  mockRequest("GET /v1/store/rfqs/{rfqId}/messages", ({ params, request }) => {
+  // store.rfqs.postMessage (published, U-F0.2): answers with the whole RFQ.
+  http.post("*/v1/store/rfqs/:rfqId/messages", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
     if (!rfq) return notFound();
-    return {
-      data: (rfqMessages.get(rfq.id) ?? [])
-        .filter((message) => message.visibility === "customer")
-        .map((message) => ({
-          id: message.id,
-          authorKind: message.authorKind,
-          authorName: message.authorKind === "staff" ? "ทีม Packio" : customer.displayName,
-          body: message.body,
-          files: message.files,
-          createdAt: message.createdAt,
-        })),
-    };
-  }),
-
-  mockRequest("POST /v1/store/rfqs/{rfqId}/messages", ({ params, body, request }) => {
-    const customer = customerOf(request);
-    if (!customer) return unauthenticated();
-    const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
-    if (!rfq) return notFound();
+    const body = (await request.json()) as Schemas["RfqMessageInputDto"];
+    if (!body.body?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ข้อความ");
     const message = {
       id: mockId("rms", 8000 + (rfqMessages.get(rfq.id)?.length ?? 0) + Math.floor(Math.random() * 900)),
       authorKind: "customer" as const,
@@ -401,22 +392,21 @@ export const storeRfqHandlers = [
     rfqMessages.set(rfq.id, [...(rfqMessages.get(rfq.id) ?? []), message]);
     // Answering a request for information puts the RFQ back in front of CS (B2.5).
     if (rfq.status === "need_info") rfq.status = "in_review";
-    return {
-      id: message.id,
-      authorKind: "customer",
-      authorName: customer.displayName,
-      body: message.body,
-      files: [],
-      createdAt: message.createdAt,
-    };
+    return HttpResponse.json(toRfqDto(rfq), { status: 201 });
   }),
 
-  mockRequest("POST /v1/store/rfqs/{rfqId}/quotes/{quoteId}/actions/accept", ({ params, body, request }) => {
+  // store.rfqs.accept (published, U-F0.2): the saved quotation it makes is `acceptedQuoteId`.
+  http.post("*/v1/store/rfqs/:rfqId/actions/accept", async ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
     if (!rfq) return notFound();
-    const accepted = customerAcceptQuote(rfq, params.quoteId, body.quantity);
+    const body = (await request.json()) as Schemas["AcceptRfqQuoteDto"];
+    const sentQuote = rfq.quotes.find((candidate) => candidate.id === body.rfqQuoteId);
+    const quantity = body.quantities?.[0] ?? sentQuote?.lines[0]?.quantity ?? 0;
+    const accepted = customerAcceptQuote(rfq, body.rfqQuoteId, quantity);
     if (accepted instanceof Response) return accepted;
     const { line } = accepted;
     const net = line.netAmount;
@@ -458,7 +448,7 @@ export const storeRfqHandlers = [
       estimatedDeliveryDate: null,
       deliveryPostcode: rfq.deliveryPostcode,
       tolerance: { shortagePct: "5.0000", overagePct: "5.0000" },
-      validUntil: `${rfq.quotes.find((item) => item.id === params.quoteId)!.validUntil}T23:59:59+07:00`,
+      validUntil: `${sentQuote!.validUntil}T23:59:59+07:00`,
       configuration: { rfqId: rfq.id },
       source: "rfq",
       nextActions: [{ key: "quote.add_to_cart" }, { key: "quote.export_pdf" }],
@@ -468,6 +458,6 @@ export const storeRfqHandlers = [
     quote.id = accepted.id;
     quote.quoteCode = accepted.quoteCode;
     quotesOf(customer.persona).unshift(quote);
-    return { rfq: storeView(rfq), quote };
+    return HttpResponse.json(toRfqDto(rfq));
   }),
 ];

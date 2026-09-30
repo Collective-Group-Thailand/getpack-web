@@ -173,44 +173,47 @@ describe("the calculate body", () => {
 });
 
 describe("keeping the price", () => {
-  it("saves a quotation, with validity and lines, and puts it in the cart", async () => {
+  it("saves a quotation with one option per quantity, and puts that option in the cart", async () => {
     const configurator = await configuratorOf("tuck-end-box");
-    const state = { ...initialState(configurator), postcode: "10110", mockupOption: "with_print" as const };
-    const customer = requests(accessToken("customer"));
-    const quote = await customer.call("POST /v1/store/quotes", {
+    const state = { ...initialState(configurator), postcode: "10110" };
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
+    const body = buildCalculateBody(configurator, { ...state, quantities: [state.quantity] });
+    const { data: quote } = await api.POST("/v1/store/quotes", {
+      body: body as unknown as Schemas["SaveQuoteDto"],
+    });
+    expect(quote!.options).toHaveLength(1);
+    expect(quote!.options[0]).toMatchObject({ quantity: state.quantity, shippingPending: false });
+    // No code until it is shared or its PDF is asked for (the published model).
+    expect(quote!.quoteCode).toBeNull();
+    expect(Date.parse(quote!.validUntil)).toBeGreaterThan(Date.now() + 14 * 24 * 3600_000);
+
+    const { response } = await api.GET("/v1/store/cart");
+    const { data: cart } = await api.POST("/v1/store/cart/items", {
+      params: { header: { "If-Match": response.headers.get("etag")! } },
       body: {
-        productTypeCode: configurator.productTypeCode,
-        catalogProductSlug: configurator.slug,
-        configuration: buildConfiguration(configurator, state) as unknown as Record<string, unknown>,
-        quantity: state.quantity,
-        deliveryPostcode: state.postcode,
-        designOption: state.designOption,
-        mockupOption: state.mockupOption,
-        promoCode: "PACKIO10",
+        quoteId: quote!.id,
+        quoteOptionId: quote!.options[0]!.id,
+        designOption: "own_file",
+        mockupOption: "with_print",
       },
     });
-    expect(quote.lines.map((line) => line.lineType)).toEqual(expect.arrayContaining(["product", "mockup", "shipping"]));
-    expect(quote.lines.find((line) => line.lineType === "mockup")?.oneOff).toBe(true);
-    expect(quote.promotion).toMatchObject({ code: "PACKIO10", applied: true });
-    expect(Date.parse(quote.validUntil)).toBeGreaterThan(Date.now() + 14 * 24 * 3600_000);
+    expect(cart!.items.find((item) => item.quoteId === quote!.id)?.mockupOption).toBe("with_print");
 
-    const cart = await customer.call("POST /v1/store/cart/items", { body: { quoteId: quote.id } });
-    expect(cart.items.some((item) => item.quote.id === quote.id)).toBe(true);
+    // An edit under a stale tag is refused, as the API does.
+    await expect(
+      api.POST("/v1/store/cart/items", {
+        params: { header: { "If-Match": response.headers.get("etag")! } },
+        body: { quoteId: quote!.id, quoteOptionId: quote!.options[0]!.id, designOption: "own_file" },
+      }),
+    ).rejects.toMatchObject({ status: 412 });
   });
 
   it("will not save a quotation without a session", async () => {
     const configurator = await configuratorOf("tuck-end-box");
     const state = initialState(configurator);
     await expect(
-      requests().call("POST /v1/store/quotes", {
-        body: {
-          productTypeCode: configurator.productTypeCode,
-          catalogProductSlug: configurator.slug,
-          configuration: buildConfiguration(configurator, state) as unknown as Record<string, unknown>,
-          quantity: state.quantity,
-          designOption: state.designOption,
-          mockupOption: state.mockupOption,
-        },
+      anonymous().POST("/v1/store/quotes", {
+        body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],
       }),
     ).rejects.toMatchObject({ status: 401 });
   });

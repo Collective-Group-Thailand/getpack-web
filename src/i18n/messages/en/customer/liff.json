@@ -27,7 +27,8 @@
   "orders": {
     "title": "Orders",
     "empty": "No orders yet",
-    "row": "{code} · {quantity} {unit}"
+    "row": "{code} · {quantity} {unit}",
+    "rowNoUnit": "{code} · qty {quantity}"
   },
   "order": {
     "title": "Order",
@@ -36,7 +37,8 @@
     "quantity": "Quantity",
     "total": "Total",
     "eta": "Expected by",
-    "full": "See everything on the website"
+    "full": "See everything on the website",
+    "shipBy": "Ships from the factory"
   },
   "points": {
     "tier": "Tier",

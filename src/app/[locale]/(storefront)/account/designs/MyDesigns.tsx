@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { nanoid } from "nanoid";
 
-import { getStyle, isStyleId } from "@packio/dieline";
-import { storeDesigns, type StoreDesignSummary } from "@/features/designer/data/api";
+import { getStyle } from "@packio/dieline";
+import { storeDesigns, type StoreDesign } from "@/features/designer/data/api";
+import { useFileUrl } from "@/features/customer/files/files";
 import { sizeOf } from "@/features/designer/document";
 import { designRepo, importedLocalIds, markImported } from "@/features/designer/storage";
 import type { SavedDesign } from "@/features/designer/types";
@@ -27,13 +28,29 @@ import { toast } from "@/ui/components/Toast";
 interface Row {
   id: string;
   name: string;
+  /** A browser design's own PNG; an account design's is a file, signed for when shown. */
   thumbnail: string | null;
+  thumbnailFileId?: string | null;
   spec: string | null;
   updatedAt: string | number;
   orderCode: string | null;
 }
 
-export default function MyDesigns({ account }: { account: StoreDesignSummary[] | null }) {
+/** A card's picture: the browser's own PNG, or the account's thumbnail file through a signed URL. */
+function Thumbnail({ src, fileId, empty }: { src: string | null; fileId: string | null; empty: string }) {
+  const signed = useFileUrl(src ? null : fileId);
+  const url = src ?? signed;
+  return url ? (
+    // A data URL from the canvas or a signed URL: next/image cannot optimise either, and the name
+    // below is the accessible label.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" className="h-full w-full object-contain" />
+  ) : (
+    <span className="text-subtle flex h-full items-center justify-center text-sm">{empty}</span>
+  );
+}
+
+export default function MyDesigns({ account }: { account: StoreDesign[] | null }) {
   const t = useTranslations("designs");
   const tCommon = useTranslations("common");
   const locale = useLocale() as "th" | "en";
@@ -66,13 +83,19 @@ export default function MyDesigns({ account }: { account: StoreDesignSummary[] |
     updatedAt: design.updatedAt,
     orderCode: null,
   });
-  const accountRow = (design: StoreDesignSummary): Row => ({
+  // CONTRACT-GAP store.designs — a listed design names no product, box style or order; its size is
+  // what the card can say.
+  const accountRow = (design: StoreDesign): Row => ({
     id: design.id,
-    name: design.name,
-    thumbnail: design.thumbnailUrl,
-    spec: design.styleId && isStyleId(design.styleId) ? getStyle(design.styleId).name[locale] : null,
+    name: design.title,
+    thumbnail: null,
+    thumbnailFileId: design.thumbnailFileId,
+    spec:
+      design.lengthMm && design.widthMm && design.heightMm
+        ? t("card.size", { l: design.lengthMm, w: design.widthMm, h: design.heightMm })
+        : null,
     updatedAt: design.updatedAt,
-    orderCode: design.link?.orderCode ?? null,
+    orderCode: null,
   });
 
   // Designs kept in this browser that the account does not have yet.
@@ -191,18 +214,9 @@ export default function MyDesigns({ account }: { account: StoreDesignSummary[] |
                 href={`/design/${row.id}`}
                 className="bg-surface-subtle block aspect-[4/3] p-4"
                 tabIndex={-1}
-                aria-hidden={Boolean(row.thumbnail)}
+                aria-hidden={Boolean(row.thumbnail || row.thumbnailFileId)}
               >
-                {row.thumbnail ? (
-                  // A data URL from the canvas or a signed URL: next/image cannot optimise either,
-                  // and the name below is the accessible label.
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={row.thumbnail} alt="" className="h-full w-full object-contain" />
-                ) : (
-                  <span className="text-subtle flex h-full items-center justify-center text-sm">
-                    {t("card.noThumbnail")}
-                  </span>
-                )}
+                <Thumbnail src={row.thumbnail} fileId={row.thumbnailFileId ?? null} empty={t("card.noThumbnail")} />
               </Link>
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">

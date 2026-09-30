@@ -38,8 +38,15 @@ interface Failure {
 
 type Step =
   | { kind: "credentials" }
-  | { kind: "consent"; consents: Consent[]; source: ConsentSource; displayName: string; askProfile: boolean }
-  | { kind: "profile"; displayName: string };
+  | {
+      kind: "consent";
+      consents: Consent[];
+      source: ConsentSource;
+      displayName: string;
+      customerId: string;
+      askProfile: boolean;
+    }
+  | { kind: "profile"; displayName: string; customerId: string };
 
 /**
  * Customer sign-in, then what a first sign-in needs.
@@ -72,8 +79,9 @@ export function SignInSheet({ open, onOpenChange, onSignedIn, resume, lineReturn
     const ask = consentsToAsk(consents);
     const askProfile = needsProfile(me);
     const displayName = me?.displayName ?? "";
-    if (ask.length > 0) setStep({ kind: "consent", consents: ask, source, displayName, askProfile });
-    else if (askProfile) setStep({ kind: "profile", displayName });
+    const customerId = me?.id ?? "";
+    if (ask.length > 0) setStep({ kind: "consent", consents: ask, source, displayName, customerId, askProfile });
+    else if (askProfile) setStep({ kind: "profile", displayName, customerId });
     else onSignedIn?.();
   }
 
@@ -163,12 +171,13 @@ export function SignInSheet({ open, onOpenChange, onSignedIn, resume, lineReturn
           consents={step.consents}
           source={step.source}
           onDone={() => {
-            if (step.askProfile) setStep({ kind: "profile", displayName: step.displayName });
+            if (step.askProfile)
+              setStep({ kind: "profile", displayName: step.displayName, customerId: step.customerId });
             else onSignedIn?.();
           }}
         />
       ) : step.kind === "profile" ? (
-        <ProfileStep displayName={step.displayName} onDone={() => onSignedIn?.()} />
+        <ProfileStep displayName={step.displayName} customerId={step.customerId} onDone={() => onSignedIn?.()} />
       ) : (
         <div className="flex flex-col gap-4">
           {failure ? (

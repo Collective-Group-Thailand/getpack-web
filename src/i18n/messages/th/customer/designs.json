@@ -17,7 +17,8 @@
     "noThumbnail": "ไม่มีภาพตัวอย่าง",
     "updated": "แก้ไข {date}",
     "spec": "{style} · {size} มม. · {paper}",
-    "linked": "คำสั่งซื้อ {order}"
+    "linked": "คำสั่งซื้อ {order}",
+    "size": "{l} × {w} × {h} มม."
   },
   "delete": {
     "title": "ลบแบบนี้?",

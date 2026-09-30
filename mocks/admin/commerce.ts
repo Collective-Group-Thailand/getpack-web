@@ -102,6 +102,26 @@ export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], 
         postcode,
         isDefault: true,
       },
+      // A second site for the company the B2B personas share, so the storefront can split a line
+      // across two addresses: a customer cannot add one there yet (CONTRACT-GAP store.geo-ids).
+      ...(index === 1
+        ? [
+            {
+              id: mockId("adr", 101),
+              kind: "delivery" as const,
+              label: "โกดังเชียงใหม่ (ทดสอบ)",
+              recipientName: "ผู้รับทดสอบ",
+              phone: "0899999999",
+              line1: "99 ถนนทดสอบ",
+              line2: null,
+              subdistrict: "ศรีภูมิ",
+              district: "เมืองเชียงใหม่",
+              province: "เชียงใหม่",
+              postcode: "50200",
+              isDefault: false,
+            },
+          ]
+        : []),
     ],
     taxProfiles:
       type === "juristic"

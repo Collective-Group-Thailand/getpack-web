@@ -12,6 +12,7 @@ import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
+import { browserApi } from "@/lib/api/browser";
 import { browserRequests } from "@/lib/api/requests/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
 import type { Requests } from "@/lib/api/requests/registry";
@@ -71,10 +72,12 @@ export function ReorderView({ initial }: { initial: Preview }) {
   async function reorder(then: "checkout" | "cart") {
     setBusy(then);
     try {
-      await browserRequests().call("POST /v1/store/orders/{orderId}/actions/reorder", {
-        path: { orderId },
-        body: { quantity: preview.quantity, previewToken: preview.previewToken },
-        idempotencyKey: key.current,
+      // `store.claims.reorder` adds the line straight to the cart; the preview it answered with is
+      // not bound to it (CONTRACT-GAP store.reorder: no preview token), so the price shown is the
+      // one the cart will re-check.
+      await browserApi().POST("/v1/store/orders/{orderId}/actions/reorder", {
+        params: { path: { orderId }, header: { "Idempotency-Key": key.current } },
+        body: { quantity: preview.quantity, reuseArtwork: preview.artwork.reused },
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
       // The reorder funnel (docs/ux/funnels.md): the band, never the quantity; where it went next.

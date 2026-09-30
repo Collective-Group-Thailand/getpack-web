@@ -1,19 +1,23 @@
 /**
- * The customer's address book and tax-invoice profiles, mocked (CONTRACT-REQUEST
- * store.address-book).
+ * The customer's address book and tax-invoice profiles, on the published contract
+ * (`store.addresses.*`, `store.taxProfiles.*`, U-F0.2): paged lists, reads with an `ETag`, edits
+ * under `If-Match`.
  *
  * The returning customer's book **is** the first fake commerce customer's (`../admin/commerce`),
- * the same arrays the back office's customer screen reads, so an address added at checkout is
- * one CS sees. The newcomer starts with an empty book on every sign-in.
+ * the same arrays the back office's customer screen reads (still in the admin request shape until
+ * U-F0.3), so an address edited here is one CS sees. The newcomer starts with an empty book on
+ * every sign-in. Create is left to the generated example: the web cannot send a province id yet
+ * (CONTRACT-GAP store.geo-ids).
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
 import type { customerAddress, taxProfile } from "@/lib/api/requests/admin-customers";
+import type { Schemas } from "@/lib/api/types";
 
 import { customers as fakeCustomers } from "../admin/commerce";
-import { mockRequest } from "../route";
-import { mockId, problem } from "../support";
+import { mockId, paginate, precondition, problem, versionTag, withEtag } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 
 type Address = z.output<typeof customerAddress>;
@@ -32,60 +36,112 @@ export function resetNewcomerBook(): void {
   newcomer.taxProfiles = [];
 }
 
-let seq = 0;
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 
-/** The Thai tax id checksum (13 digits): the last digit checks the first twelve. */
-export function validTaxId(taxId: string): boolean {
-  if (!/^\d{13}$/.test(taxId)) return false;
-  const digits = [...taxId].map(Number);
-  const sum = digits.slice(0, 12).reduce((total, digit, index) => total + digit * (13 - index), 0);
-  return (11 - (sum % 11)) % 10 === digits[12];
+/** A stable fake geo id per name — the rows hold names, the contract ids. */
+function geoRef(namespace: string, nameTh: string | null): Schemas["GeoRefDto"] | null {
+  if (!nameTh) return null;
+  const n = [...nameTh].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) % 0xfffff, 7);
+  return { id: mockId(namespace, n), nameTh, nameEn: nameTh };
 }
 
+const versions = new Map<string, number>();
+const tagOf = (id: string) => versionTag(id, versions.get(id) ?? 1);
+const bump = (id: string) => versions.set(id, (versions.get(id) ?? 1) + 1);
+const UPDATED_AT = "2026-09-20T10:00:00+07:00";
+/** What a tax profile holds that the admin row has no column for. */
+const documentEmails = new Map<string, string | null>();
+
+export function toAddressDto(address: Address): Schemas["AddressDto"] {
+  return {
+    id: address.id,
+    kind: address.kind,
+    label: address.label,
+    recipientName: address.recipientName,
+    phone: address.phone,
+    line1: address.line1,
+    line2: address.line2,
+    subdistrict: geoRef("sdt", address.subdistrict),
+    province: geoRef("prv", address.province)!,
+    postcode: address.postcode,
+    lat: null,
+    lng: null,
+    isDefault: address.isDefault,
+    updatedAt: UPDATED_AT,
+  };
+}
+
+/** The row's one-line address is split back into what the contract holds. */
+function toTaxProfileDto(profile: TaxProfile): Schemas["TaxProfileDto"] {
+  const postcode = profile.address.match(/(\d{5})\s*$/)?.[1] ?? "10110";
+  const province = PROVINCES.find((name) => profile.address.includes(name)) ?? "กรุงเทพมหานคร";
+  const line1 = profile.address.replace(postcode, "").replace(province, "").trim() || profile.address;
+  return {
+    id: profile.id,
+    name: profile.name,
+    taxId: profile.taxId,
+    taxType: profile.taxType,
+    branchType: profile.branchType,
+    branchCode: profile.branchType === "head_office" ? "00000" : profile.branchCode,
+    line1,
+    line2: null,
+    subdistrict: null,
+    province: geoRef("prv", province)!,
+    postcode,
+    documentEmail: documentEmails.get(profile.id) ?? null,
+    withholdsTax: profile.withholdsTax,
+    isDefault: profile.isDefault,
+    updatedAt: UPDATED_AT,
+  };
+}
+
+const PROVINCES = ["กรุงเทพมหานคร", "เชียงใหม่", "ชลบุรี", "สงขลา", "ขอนแก่น"];
+
+const perPageOf = (request: Request) => ({
+  page: Number(new URL(request.url).searchParams.get("page") ?? 1),
+  perPage: Number(new URL(request.url).searchParams.get("perPage") ?? 25),
+});
+
 export const storeBookHandlers = [
-  mockRequest("GET /v1/store/me/addresses", ({ request }) => {
-    const customer = customerOf(request);
-    return customer ? { data: bookOf(customer).addresses } : unauthenticated();
-  }),
-  mockRequest("POST /v1/store/me/addresses", ({ body, request }) => {
+  http.get("*/v1/store/addresses", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const book = bookOf(customer);
-    seq += 1;
-    const makeDefault = body.isDefault ?? book.addresses.length === 0;
-    if (makeDefault) for (const address of book.addresses) address.isDefault = false;
-    const address: Address = {
-      id: mockId("sad", seq),
-      kind: "delivery",
-      label: body.label,
-      recipientName: body.recipientName,
-      phone: body.phone,
-      line1: body.line1,
-      line2: body.line2 ?? null,
-      subdistrict: body.subdistrict ?? null,
-      district: body.district ?? null,
-      province: body.province,
-      postcode: body.postcode,
-      isDefault: makeDefault,
-    };
-    book.addresses.push(address);
-    return address;
+    return HttpResponse.json(paginate(bookOf(customer).addresses.map(toAddressDto), perPageOf(request)));
   }),
-  mockRequest("PATCH /v1/store/me/addresses/{addressId}", ({ params, body, request }) => {
+  http.get("*/v1/store/addresses/:addressId", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const address = bookOf(customer).addresses.find((candidate) => candidate.id === params.addressId);
+    return address
+      ? withEtag(toAddressDto(address), tagOf(address.id))
+      : problem(404, "http.not_found", "ไม่พบที่อยู่นี้");
+  }),
+  http.patch("*/v1/store/addresses/:addressId", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const book = bookOf(customer);
     const address = book.addresses.find((candidate) => candidate.id === params.addressId);
     if (!address) return problem(404, "http.not_found", "ไม่พบที่อยู่นี้");
+    const refused = precondition(request, tagOf(address.id));
+    if (refused) return refused;
+    const body = (await request.json().catch(() => ({}))) as Schemas["UpdateAddressDto"];
+    if (body.provinceId !== undefined || body.subdistrictId !== undefined || body.postcode !== undefined) {
+      // The mock keeps names, not ids: moving an address to another area is not something it can do.
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "provinceId", code: "mock", message: "not supported by the mock" },
+      ]);
+    }
     if (body.isDefault) for (const other of book.addresses) other.isDefault = false;
-    Object.assign(address, {
-      ...body,
-      ...(body.line2 !== undefined ? { line2: body.line2 || null } : {}),
-    });
-    return address;
+    if (body.label !== undefined) address.label = body.label;
+    if (body.recipientName !== undefined) address.recipientName = body.recipientName;
+    if (body.phone !== undefined) address.phone = body.phone;
+    if (body.line1 !== undefined) address.line1 = body.line1;
+    if (body.line2 !== undefined) address.line2 = body.line2 ?? null;
+    if (body.isDefault !== undefined) address.isDefault = body.isDefault;
+    bump(address.id);
+    return withEtag(toAddressDto(address), tagOf(address.id));
   }),
-  mockRequest("DELETE /v1/store/me/addresses/{addressId}", ({ params, request }) => {
+  http.delete("*/v1/store/addresses/:addressId", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const book = bookOf(customer);
@@ -93,48 +149,52 @@ export const storeBookHandlers = [
     if (index < 0) return problem(404, "http.not_found", "ไม่พบที่อยู่นี้");
     const [removed] = book.addresses.splice(index, 1);
     if (removed?.isDefault && book.addresses[0]) book.addresses[0].isDefault = true;
-    return undefined;
+    return new HttpResponse(null, { status: 204 });
   }),
-  mockRequest("GET /v1/store/me/tax-profiles", ({ request }) => {
-    const customer = customerOf(request);
-    return customer ? { data: bookOf(customer).taxProfiles } : unauthenticated();
-  }),
-  mockRequest("POST /v1/store/me/tax-profiles", ({ body, request }) => {
+
+  http.get("*/v1/store/tax-profiles", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    if (!validTaxId(body.taxId))
-      return problem(422, "validation.failed", "เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง", [
-        { path: "taxId", code: "checksum", message: "เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง" },
-      ]);
-    const book = bookOf(customer);
-    seq += 1;
-    const makeDefault = body.isDefault ?? book.taxProfiles.length === 0;
-    if (makeDefault) for (const profile of book.taxProfiles) profile.isDefault = false;
-    const profile: TaxProfile = { id: mockId("stx", seq), ...body, isDefault: makeDefault };
-    book.taxProfiles.push(profile);
-    return profile;
+    return HttpResponse.json(paginate(bookOf(customer).taxProfiles.map(toTaxProfileDto), perPageOf(request)));
   }),
-  mockRequest("PATCH /v1/store/me/tax-profiles/{profileId}", ({ params, body, request }) => {
+  http.get("*/v1/store/tax-profiles/:taxProfileId", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const profile = bookOf(customer).taxProfiles.find((candidate) => candidate.id === params.taxProfileId);
+    return profile
+      ? withEtag(toTaxProfileDto(profile), tagOf(profile.id))
+      : problem(404, "http.not_found", "ไม่พบข้อมูลใบกำกับภาษีนี้");
+  }),
+  http.patch("*/v1/store/tax-profiles/:taxProfileId", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const book = bookOf(customer);
-    const profile = book.taxProfiles.find((candidate) => candidate.id === params.profileId);
+    const profile = book.taxProfiles.find((candidate) => candidate.id === params.taxProfileId);
     if (!profile) return problem(404, "http.not_found", "ไม่พบข้อมูลใบกำกับภาษีนี้");
-    if (body.taxId && !validTaxId(body.taxId))
-      return problem(422, "validation.failed", "เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง", [
-        { path: "taxId", code: "checksum", message: "เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง" },
-      ]);
+    const refused = precondition(request, tagOf(profile.id));
+    if (refused) return refused;
+    const body = (await request.json().catch(() => ({}))) as Schemas["UpdateTaxProfileDto"];
     if (body.isDefault) for (const other of book.taxProfiles) other.isDefault = false;
-    Object.assign(profile, body);
-    return profile;
+    const dto = toTaxProfileDto(profile);
+    if (body.name !== undefined) profile.name = body.name;
+    if (body.line1 !== undefined || body.line2 !== undefined) {
+      const line1 = body.line1 ?? dto.line1;
+      const line2 = body.line2 === undefined ? dto.line2 : body.line2;
+      profile.address = [line1, line2, dto.province.nameTh, dto.postcode].filter(Boolean).join(" ");
+    }
+    if (body.documentEmail !== undefined) documentEmails.set(profile.id, body.documentEmail);
+    if (body.withholdsTax !== undefined) profile.withholdsTax = body.withholdsTax;
+    if (body.isDefault !== undefined) profile.isDefault = body.isDefault;
+    bump(profile.id);
+    return withEtag(toTaxProfileDto(profile), tagOf(profile.id));
   }),
-  mockRequest("DELETE /v1/store/me/tax-profiles/{profileId}", ({ params, request }) => {
+  http.delete("*/v1/store/tax-profiles/:taxProfileId", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const book = bookOf(customer);
-    const index = book.taxProfiles.findIndex((candidate) => candidate.id === params.profileId);
+    const index = book.taxProfiles.findIndex((candidate) => candidate.id === params.taxProfileId);
     if (index < 0) return problem(404, "http.not_found", "ไม่พบข้อมูลใบกำกับภาษีนี้");
     book.taxProfiles.splice(index, 1);
-    return undefined;
+    return new HttpResponse(null, { status: 204 });
   }),
 ];

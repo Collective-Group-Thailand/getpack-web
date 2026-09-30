@@ -1,6 +1,7 @@
 /**
- * After production, from the customer's side, mocked (CONTRACT-REQUEST store.tracking,
- * store.receipt, store.claims, store.reorder).
+ * After production, from the customer's side: tracking, receipt, claims and reorder at their
+ * published paths (U-F0.2); the claim form and the reorder preview stay CONTRACT-REQUEST
+ * (store.claims, store.reorder).
  *
  * Orders are the back office's rows (`../admin/commerce`) and claims the logistics desk's
  * (`../admin/logistics`, F2 2.8): a claim filed here is on the desk's queue, and what the desk
@@ -11,36 +12,35 @@
  * (F3 3.3) places them like any other.
  */
 
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import type { storeClaim } from "@/lib/api/requests/store-fulfilment";
+import type { Schemas } from "@/lib/api/types";
 import type { StoreQuote } from "./quotes";
 
 import { baht, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
 import { adoptClaim, claimRow, customerClaimReply, fileCustomerClaim, type LogisticsClaim } from "../admin/logistics";
 import { files } from "../admin/platform";
 import { mockRequest } from "../route";
-import { bangkokIso, problem } from "../support";
-import { addToCart } from "./cart";
+import { bangkokIso, paginate, problem } from "../support";
+import { addToCart, edited } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
 import {
   claimWindowEnd,
   deliveredAt,
   orderOf,
   receipts,
-  stagesOf,
-  toDetail,
-  toSummary,
+  ordersOf,
+  productOf,
+  toProgress,
+  toShipments,
   trackingTokenOf,
 } from "./orders";
+import { toOrderDto } from "./order-dto";
 import { nextQuoteId, quotesOf } from "./quotes";
-
-type Claim = z.output<typeof storeClaim>;
 
 const DAY = 24 * 60;
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-const TEAM = "ทีม Packio";
 
 function mine(request: Request, orderId: string) {
   const customer = customerOf(request);
@@ -49,65 +49,76 @@ function mine(request: Request, orderId: string) {
   return order ? { customer, order } : notFound();
 }
 
+/** The contract declares an Idempotency-Key on these; the API refuses a call without one. */
+function keyRequired(request: Request): Response | null {
+  return request.headers.get("idempotency-key")
+    ? null
+    : problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key สำหรับคำสั่งนี้");
+}
+
+/** A delivery's status as the public page names it (a draft or a cancelled one is not shown). */
+const TRACKING_OF: Partial<Record<Schemas["ShipmentStatus"], Schemas["TrackingStatus"]>> = {
+  ready: "ready",
+  picked_up: "picked_up",
+  in_transit: "in_transit",
+  out_for_delivery: "out_for_delivery",
+  delivered: "delivered",
+  failed: "failed",
+  returned: "returned",
+};
+
 const isDelivered = (order: MockOrder) =>
   order.shipments.length > 0 && order.shipments.every((shipment) => shipment.status === "delivered");
 
 /* ----------------------------------------------------------------------------------- claims */
 
-const RESOLUTION_OF: Record<string, Claim["requestedResolution"]> = {
-  reproduction_job: "reprint",
-  credit_note: "credit",
-  store_credit: "credit",
-};
-
-/** A desk row as the customer sees it: their messages and the team's, the outcome in words. */
-function toClaim(row: LogisticsClaim): Claim {
+/**
+ * A desk row as the customer sees it (`StoreClaimDto`): what they filed, what the team asked for
+ * and decided, what was done. Liability, the factory and internal notes stay behind; the free
+ * message thread is not published (CONTRACT-GAP store.claims).
+ */
+function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
   const order = orders.find((candidate) => candidate.id === row.order.id);
-  const resolution = row.resolutions.at(-1);
-  const decided = row.decision && ["approved", "rejected", "resolved", "closed"].includes(row.status);
+  const asked = row.messages.filter(
+    (message) => message.audience === "customer" && message.author !== order?.customer.displayName,
+  );
   return {
     id: row.id,
     claimNo: row.claimNo,
-    order: row.order,
+    orderId: row.order.id,
+    orderCode: row.order.orderCode,
     type: row.type,
+    origin: row.origin,
     status: row.status,
-    shipment: row.shipment,
-    affectedQuantity: row.claimedQuantity,
     description: row.description,
     requestedResolution: row.requestedResolution,
-    evidence: row.evidence,
-    automatic: row.origin === "tolerance_auto",
+    claimedQuantity: row.claimedQuantity,
+    claimedAmount: row.claimedAmount,
+    receivedAt: row.receivedAt,
+    windowEndsAt: row.windowEndsAt,
     submittedAt: row.submittedAt,
-    respondBy: row.slaDueAt,
-    messages: row.messages
-      .filter((message) => message.audience === "customer")
-      .map((message, at) => {
-        const customer = message.author === order?.customer.displayName;
-        return {
-          id: `${row.id}:${at}`,
-          at: message.at,
-          authorKind: customer ? ("customer" as const) : ("staff" as const),
-          authorName: customer ? message.author : TEAM,
-          body: message.body,
-          files: [],
-        };
-      }),
-    outcome:
-      decided && row.decision
-        ? {
-            decision: row.status === "rejected" ? "rejected" : "approved",
-            resolution: resolution
-              ? (RESOLUTION_OF[resolution.action] ?? row.requestedResolution)
-              : row.status === "rejected"
-                ? null
-                : row.requestedResolution,
-            amount: resolution?.amount ?? null,
-            note: row.decision.reason,
-            at: row.decision.at,
-          }
-        : null,
-    canReply: !["rejected", "resolved", "closed"].includes(row.status),
+    infoRequest: row.status === "need_info" ? (asked.at(-1)?.body ?? null) : null,
+    decisionNote: row.decision?.reason ?? null,
+    photos: {
+      product: row.evidence.productPhotos.map((photo) => photo.id),
+      carton: row.evidence.cartonPhotos.map((photo) => photo.id),
+    },
+    resolutions: row.resolutions.map((resolution, index) => ({
+      action: resolution.action,
+      amount: resolution.amount,
+      quantity: resolution.action === "reproduction_job" ? row.claimedQuantity : null,
+      jobNo: resolution.action === "reproduction_job" ? (resolution.reference ?? `JOB-R${index + 1}`) : null,
+      refundId: null,
+      executedAt: resolution.executedAt,
+    })),
   };
+}
+
+/** The desk's rows for one customer's orders, adopting the ones the seed lists but never built. */
+function claimsOf(customer: MockCustomer): LogisticsClaim[] {
+  return ordersOf(customer).flatMap((order) =>
+    order.claims.map((summary) => claimOf(order, summary.id)).filter((row): row is LogisticsClaim => Boolean(row)),
+  );
 }
 
 function claimOf(order: MockOrder, claimId: string): LogisticsClaim | undefined {
@@ -188,7 +199,7 @@ const tokenOf = (order: MockOrder, quantity: number) => `rop.${order.id.slice(-6
 /** A reorder as a quotation in the customer's cart (D-153); bulk reorders (F3 3.7) add theirs here too. */
 export function addReorderToCart(customer: MockCustomer, order: MockOrder, quantity: number) {
   const priced = reorderOf(order, quantity);
-  const summary = toSummary(order);
+  const product = productOf(order);
   const { id, quoteCode } = nextQuoteId();
   const quote: StoreQuote = {
     id,
@@ -196,9 +207,9 @@ export function addReorderToCart(customer: MockCustomer, order: MockOrder, quant
     status: "saved",
     productType: order.productType,
     product: {
-      slug: summary.product.slug ?? "reorder",
-      name: summary.product.name,
-      imageUrl: summary.product.imageUrl,
+      slug: product.slug ?? "reorder",
+      name: product.name,
+      imageUrl: product.imageUrl,
     },
     specs: [...order.specs, { label: "สั่งซ้ำจาก", value: order.orderCode }],
     quantity: quantity,
@@ -232,54 +243,48 @@ export function addReorderToCart(customer: MockCustomer, order: MockOrder, quant
 /* --------------------------------------------------------------------------------- handlers */
 
 export const storeFulfilmentHandlers = [
-  mockRequest("GET /v1/store/tracking/{token}", ({ params }) => {
+  // store.timeline.track (published, U-F0.2): anyone with the token sees the steps and the
+  // carriers' progress — no order code, product, name or place (CONTRACT-GAP store.tracking).
+  http.get("*/v1/store/track/:token", ({ params }) => {
     const order = orders.find((candidate) => trackingTokenOf(candidate) === params.token);
     if (!order || order.status === "cancelled") return problem(404, "http.not_found", "ไม่พบข้อมูลการติดตามนี้");
-    const summary = toSummary(order);
-    return {
-      orderCode: order.orderCode,
+    const progress = toProgress(order);
+    return HttpResponse.json({
       status: order.status,
-      productName: summary.product.name,
-      quantity: order.quantity,
-      unit: order.unit,
-      stages: stagesOf(order),
-      estimatedDeliveryDate: order.promisedShipDate,
-      shipments: order.shipments.map((shipment) => ({
+      promisedShipDate: order.promisedShipDate,
+      shippedAt: progress.shippedAt,
+      deliveredAt: progress.deliveredAt,
+      steps: progress.steps,
+      shipments: toShipments(order).map((shipment) => ({
         shipmentNo: shipment.shipmentNo,
-        status: shipment.status,
+        status: TRACKING_OF[shipment.status] ?? "ready",
         carrier: shipment.carrier,
         trackingNo: shipment.trackingNo,
-        trackingUrl: null,
-        province: shipment.destination.province,
-        quantity: shipment.quantity,
-        cartons: shipment.cartons,
-        shippedAt: bangkokIso(-DAY * 3),
-        deliveredAt: shipment.deliveredAt,
-        events: [
-          { at: bangkokIso(-DAY * 3), status: "picked_up" as const, location: "โรงงานพาร์ตเนอร์" },
-          { at: bangkokIso(-DAY * 3 + 180), status: "in_transit" as const, location: null },
-          ...(shipment.deliveredAt
-            ? [{ at: shipment.deliveredAt, status: "delivered" as const, location: shipment.destination.province }]
-            : []),
-        ],
+        trackingUrl: shipment.trackingUrl,
+        cartonsCount: shipment.cartonsCount,
+        steps: shipment.events.flatMap((event) =>
+          TRACKING_OF[event.status] ? [{ status: TRACKING_OF[event.status]!, occurredAt: event.occurredAt }] : [],
+        ),
       })),
-      updatedAt: bangkokIso(),
-    };
+    } satisfies Schemas["PublicTrackingDto"]);
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/actions/confirm-receipt", ({ params, request }) => {
-    const found = mine(request, params.orderId);
+  // store.claims.confirmReceipt (published, U-F0.2): answers with the order.
+  http.post("*/v1/store/orders/:orderId/actions/confirm-receipt", ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { order } = found;
     if (!isDelivered(order))
-      return problem(409, "order.not_delivered", "ยังส่งสินค้าไม่ครบ ยืนยันรับสินค้าได้หลังส่งถึงแล้ว");
+      return problem(409, "order.invalid_transition", "ยังส่งสินค้าไม่ครบ ยืนยันรับสินค้าได้หลังส่งถึงแล้ว");
     if (!receipts.has(order.id)) {
       receipts.set(order.id, { confirmedAt: bangkokIso() });
       // D-081: confirming completes the order; the claim window runs from now (D-082).
       if (order.status === "shipping") order.status = "completed";
       refreshOrder(order);
     }
-    return toDetail(order);
+    return HttpResponse.json(toOrderDto(order));
   }),
 
   mockRequest("GET /v1/store/orders/{orderId}/claim-form", ({ params, request }) => {
@@ -311,18 +316,25 @@ export const storeFulfilmentHandlers = [
     };
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/claims", ({ params, body, request }) => {
-    const found = mine(request, params.orderId);
+  // store.claims.submit (published, U-F0.2).
+  http.post("*/v1/store/orders/:orderId/claims", async ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { order } = found;
+    const body = (await request.json()) as Schemas["SubmitClaimDto"];
+    // D-082: both kinds of photo; the API's validation answers the same way.
+    if (!body.productPhotoFileIds?.length || !body.cartonPhotoFileIds?.length)
+      return problem(422, "validation.failed", "ต้องแนบรูปสินค้าและรูปกล่องอย่างน้อยอย่างละ 1 รูป");
     const windowEndsAt = claimWindowEnd(order);
     const received = receipts.get(order.id)?.confirmedAt ?? deliveredAt(order);
     if (!windowEndsAt || !received || Date.parse(windowEndsAt) <= Date.now())
-      return problem(422, "claim.window_closed", "เลยกำหนดเปิดเคลม 7 วันหลังได้รับสินค้าแล้ว (D-082)");
+      return problem(422, "claims.window_closed", "เลยกำหนดเปิดเคลม 7 วันหลังได้รับสินค้าแล้ว (D-082)");
     const row = fileCustomerClaim(order, {
       type: body.type,
       shipmentId: body.shipmentId ?? null,
-      affectedQuantity: body.affectedQuantity ?? null,
+      affectedQuantity: body.claimedQuantity ?? null,
       description: body.description,
       requestedResolution: body.requestedResolution,
       productPhotos: body.productPhotoFileIds.map(photoOf),
@@ -330,23 +342,40 @@ export const storeFulfilmentHandlers = [
       receivedAt: received,
       windowEndsAt,
     });
-    return toClaim(row);
+    return HttpResponse.json(toClaim(row), { status: 201 });
   }),
 
-  mockRequest("GET /v1/store/orders/{orderId}/claims/{claimId}", ({ params, request }) => {
-    const found = mine(request, params.orderId);
-    if (found instanceof Response) return found;
-    const row = claimOf(found.order, params.claimId);
-    return row ? toClaim(row) : problem(404, "http.not_found", "ไม่พบเคลมนี้");
+  // store.claims.list / get (published, U-F0.2): the customer's claims, by order when asked.
+  http.get("*/v1/store/claims", ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const query = Object.fromEntries(new URL(request.url).searchParams);
+    const rows = claimsOf(customer)
+      .filter((row) => !query.orderId || row.order.id === query.orderId)
+      .filter((row) => !query.status || row.status === query.status)
+      .map(toClaim)
+      .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+    return HttpResponse.json(paginate(rows, { page: Number(query.page ?? 1), perPage: Number(query.perPage ?? 20) }));
+  }),
+  http.get("*/v1/store/claims/:claimId", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const row = claimsOf(customer).find((candidate) => candidate.id === params.claimId);
+    return row ? HttpResponse.json(toClaim(row)) : problem(404, "http.not_found", "ไม่พบเคลมนี้");
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/claims/{claimId}/messages", ({ params, body, request }) => {
-    const found = mine(request, params.orderId);
-    if (found instanceof Response) return found;
-    const row = claimOf(found.order, params.claimId);
+  // store.claims.respondInfo (published, U-F0.2): only while the team is waiting for more.
+  http.post("*/v1/store/claims/:claimId/info", async ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const row = claimsOf(customer).find((candidate) => candidate.id === params.claimId);
     if (!row) return problem(404, "http.not_found", "ไม่พบเคลมนี้");
-    if (!toClaim(row).canReply) return problem(409, "claim.closed", "เคลมนี้ปิดแล้ว");
-    return toClaim(customerClaimReply(row, found.order.customer.displayName, body.body));
+    if (row.status !== "need_info") return problem(409, "claims.invalid_status", "เคลมนี้ไม่ได้รอข้อมูลเพิ่มจากคุณ");
+    const body = (await request.json()) as Schemas["ClaimInfoDto"];
+    const order = orders.find((candidate) => candidate.id === row.order.id)!;
+    return HttpResponse.json(toClaim(customerClaimReply(row, order.customer.displayName, body.response)));
   }),
 
   mockRequest("GET /v1/store/orders/{orderId}/reorder", ({ params, query, request }) => {
@@ -357,7 +386,6 @@ export const storeFulfilmentHandlers = [
     const minQuantity = 500;
     const quantity = Math.max(minQuantity, query.quantity ?? order.quantity);
     const priced = reorderOf(order, quantity);
-    const summary = toSummary(order);
     const approved = order.artworkStatus === "approved";
     return {
       source: {
@@ -366,7 +394,7 @@ export const storeFulfilmentHandlers = [
         quantity: order.quantity,
         unitPrice: priced.originalUnit.toFixed(6),
       },
-      product: summary.product,
+      product: productOf(order),
       specs: order.specs,
       artwork: {
         reused: approved,
@@ -391,12 +419,15 @@ export const storeFulfilmentHandlers = [
     };
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/actions/reorder", ({ params, body, request }) => {
-    const found = mine(request, params.orderId);
+  // Published (U-F0.2): `store.claims.reorder` puts the order again in the cart at today's price
+  // and answers with the cart. There is no preview token to hold the price to (CONTRACT-GAP
+  // store.reorder); the cart shows what it costs.
+  http.post("*/v1/store/orders/:orderId/actions/reorder", async ({ params, request }) => {
+    const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { customer, order } = found;
-    if (body.previewToken !== tokenOf(order, body.quantity))
-      return problem(409, "reorder.repriced", "ราคาเปลี่ยนไปแล้ว กรุณาตรวจราคาใหม่อีกครั้ง");
-    return addReorderToCart(customer, order, body.quantity);
+    const body = (await request.json().catch(() => ({}))) as Schemas["ReorderOrderDto"];
+    addReorderToCart(customer, order, body.quantity ?? order.quantity);
+    return edited(customer, 201);
   }),
 ];

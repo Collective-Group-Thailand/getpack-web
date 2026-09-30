@@ -6,7 +6,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ORDER_STATUS, statusMeta } from "@/domain/status";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { CommandPalette, type CommandItem } from "@/ui/components/CommandPalette";
 
@@ -15,7 +14,7 @@ import { articleHref, productHref, stockProductHref } from "../catalog/paths";
 import { matchFaqs, mightBeOrderCode, orderCodeOf } from "./match";
 import { clearRecent, readRecent, rememberSearch } from "./recent";
 
-type Order = { orderId: string; orderCode: string; status: string };
+type Order = Pick<Schemas["OrderDto"], "id" | "orderCode" | "status">;
 
 interface Results {
   q: string;
@@ -63,11 +62,12 @@ export default function SearchDialog({ open, onOpenChange }: { open: boolean; on
           .catch(() => []),
         faqs.current,
         mightBeOrderCode(term)
-          ? browserRequests()
-              .call("GET /v1/store/orders/by-code/{orderCode}", {
-                path: { orderCode: orderCodeOf(term) },
+          ? browserApi()
+              .GET("/v1/store/orders/by-code/{orderCode}", {
+                params: { path: { orderCode: orderCodeOf(term) } },
                 signal: controller.signal,
               })
+              .then((response) => response.data ?? null)
               .catch(() => null)
           : Promise.resolve(null),
       ]);
@@ -93,12 +93,12 @@ export default function SearchDialog({ open, onOpenChange }: { open: boolean; on
     if (results.order) {
       const order = results.order;
       list.push({
-        id: `order-${order.orderId}`,
+        id: `order-${order.id}`,
         label: order.orderCode,
         hint: tStatus(statusMeta(ORDER_STATUS, order.status).labelKey),
         group: t("search.groups.order"),
         icon: "package",
-        onSelect: () => go(`/account/orders/${order.orderId}`),
+        onSelect: () => go(`/account/orders/${order.id}`),
       });
     }
     for (const kind of ["catalog_product", "stock_product", "article"] as const) {

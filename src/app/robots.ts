@@ -24,12 +24,14 @@ const PRIVATE_PAGES = [
   "/account/",
   "/cart",
   "/checkout",
+  "/payments/",
   "/track/",
   "/liff",
   "/sign-in",
   "/configure/",
   "/rfq/",
   "/referral/",
+  "/r/",
 ];
 
 export default async function robots(): Promise<MetadataRoute.Robots> {

@@ -33,7 +33,7 @@ describe("what a sign-in asks for", () => {
     expect(consentsToAsk([consent("terms_of_service", true, true, true)])).toHaveLength(1);
   });
 
-  it("asks for a profile only when there is no e-mail", () => {
+  it("asks for a profile only when there is no e-mail and this customer was not asked before", () => {
     const me = {
       id: "x",
       displayName: "ลูกค้า",
@@ -44,8 +44,12 @@ describe("what a sign-in asks for", () => {
       scopes: [],
       identities: [],
     };
-    expect(needsProfile({ ...me, email: null })).toBe(true);
-    expect(needsProfile({ ...me, email: "a@b.invalid" })).toBe(false);
-    expect(needsProfile(null)).toBe(false);
+    expect(needsProfile({ ...me, email: null }, undefined)).toBe(true);
+    expect(needsProfile({ ...me, email: "a@b.invalid" }, undefined)).toBe(false);
+    expect(needsProfile(null, undefined)).toBe(false);
+    // Saved or skipped once: the e-mail cannot be set there (CONTRACT-GAP store.profile), so the
+    // step would otherwise come back at every sign-in.
+    expect(needsProfile({ ...me, email: null }, "x")).toBe(false);
+    expect(needsProfile({ ...me, email: null }, "someone-else")).toBe(true);
   });
 });

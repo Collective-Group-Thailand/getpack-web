@@ -4950,7 +4950,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StoreCompanyDto"
+                  "$ref": "#/components/schemas/CreditApplicationDto"
                 }
               }
             }
@@ -6851,24 +6851,6 @@
           "other"
         ]
       },
-      "CompanyKycDocType": {
-        "type": "string",
-        "enum": [
-          "company_certificate",
-          "vat_registration_pp20",
-          "signatory_id",
-          "financial_statement"
-        ]
-      },
-      "CompanyKycStatus": {
-        "type": "string",
-        "enum": [
-          "pending",
-          "verified",
-          "rejected",
-          "expired"
-        ]
-      },
       "CompanyMemberDto": {
         "type": "object",
         "properties": {
@@ -6942,71 +6924,6 @@
           "joinedAt"
         ],
         "additionalProperties": false
-      },
-      "CompanyNoticeDto": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "$ref": "#/components/schemas/CompanyNoticeKind"
-          },
-          "statementId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "period": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "amount": {
-            "type": "string",
-            "pattern": "^-?\\d+\\.\\d{2}$",
-            "description": "Money (THB, 2 decimals)"
-          },
-          "dueAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "daysOverdue": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          }
-        },
-        "required": [
-          "kind",
-          "statementId",
-          "period",
-          "amount",
-          "dueAt",
-          "daysOverdue"
-        ],
-        "additionalProperties": false
-      },
-      "CompanyNoticeKind": {
-        "type": "string",
-        "enum": [
-          "due_soon",
-          "due_today",
-          "overdue",
-          "credit_blocked"
-        ]
       },
       "CompanyRole": {
         "type": "string",
@@ -7136,16 +7053,6 @@
           "byProductType"
         ],
         "additionalProperties": false
-      },
-      "CompanyStatus": {
-        "type": "string",
-        "enum": [
-          "applied",
-          "kyc_review",
-          "active",
-          "suspended",
-          "closed"
-        ]
       },
       "ConfiguratorGroupDto": {
         "type": "object",
@@ -7862,15 +7769,6 @@
           "direction"
         ],
         "additionalProperties": false
-      },
-      "CreditStatus": {
-        "type": "string",
-        "enum": [
-          "prepaid",
-          "eligible",
-          "credit",
-          "blocked_overdue"
-        ]
       },
       "CustomerConsentDto": {
         "type": "object",
@@ -12362,14 +12260,6 @@
           "rejected"
         ]
       },
-      "PoNumberPolicy": {
-        "type": "string",
-        "enum": [
-          "required",
-          "optional",
-          "none"
-        ]
-      },
       "PreflightCheck": {
         "type": "string",
         "enum": [
@@ -15476,270 +15366,6 @@
           "resolutions",
           "shipments",
           "evidence"
-        ],
-        "additionalProperties": false
-      },
-      "StoreCompanyDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "companyCode": {
-            "type": "string"
-          },
-          "legalName": {
-            "type": "string"
-          },
-          "taxId": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/CompanyStatus"
-          },
-          "isVatRegistered": {
-            "type": "boolean"
-          },
-          "myRoles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CompanyRole"
-            }
-          },
-          "can": {
-            "type": "object",
-            "properties": {
-              "manageMembers": {
-                "type": "boolean"
-              },
-              "manageSettings": {
-                "type": "boolean"
-              },
-              "approveOrders": {
-                "type": "boolean"
-              },
-              "viewFinance": {
-                "type": "boolean"
-              },
-              "order": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "manageMembers",
-              "manageSettings",
-              "approveOrders",
-              "viewFinance",
-              "order"
-            ],
-            "additionalProperties": false
-          },
-          "poNumberPolicy": {
-            "$ref": "#/components/schemas/PoNumberPolicy"
-          },
-          "orderApprovalThreshold": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "description": "Money (THB, 2 decimals)"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "discountPct": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^-?\\d+(\\.\\d+)?$",
-                "description": "Percent as a decimal string"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "credit": {
-            "type": "object",
-            "properties": {
-              "status": {
-                "$ref": "#/components/schemas/CreditStatus"
-              },
-              "limitAmount": {
-                "type": "string",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "description": "Money (THB, 2 decimals)"
-              },
-              "availableAmount": {
-                "type": "string",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "description": "Money (THB, 2 decimals)"
-              },
-              "termDays": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "eligible": {
-                "type": "boolean"
-              },
-              "paidOrdersCount": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "paidOrdersNeeded": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "allowedTerms": {
-                "type": "array",
-                "items": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                }
-              },
-              "application": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/CreditApplicationDto"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "required": [
-              "status",
-              "limitAmount",
-              "availableAmount",
-              "termDays",
-              "eligible",
-              "paidOrdersCount",
-              "paidOrdersNeeded",
-              "allowedTerms",
-              "application"
-            ],
-            "additionalProperties": false
-          },
-          "receivables": {
-            "type": "object",
-            "properties": {
-              "openAmount": {
-                "type": "string",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "description": "Money (THB, 2 decimals)"
-              },
-              "overdueAmount": {
-                "type": "string",
-                "pattern": "^-?\\d+\\.\\d{2}$",
-                "description": "Money (THB, 2 decimals)"
-              },
-              "oldestOverdueDays": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              "nextDueAt": {
-                "anyOf": [
-                  {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "creditOrdersBlocked": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "openAmount",
-              "overdueAmount",
-              "oldestOverdueDays",
-              "nextDueAt",
-              "creditOrdersBlocked"
-            ],
-            "additionalProperties": false
-          },
-          "notices": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CompanyNoticeDto"
-            }
-          },
-          "kyc": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "docType": {
-                  "$ref": "#/components/schemas/CompanyKycDocType"
-                },
-                "status": {
-                  "$ref": "#/components/schemas/CompanyKycStatus"
-                },
-                "note": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "uploadedAt": {
-                  "type": "string",
-                  "format": "date-time",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                }
-              },
-              "required": [
-                "docType",
-                "status",
-                "note",
-                "uploadedAt"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "statusNote": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "companyCode",
-          "legalName",
-          "taxId",
-          "status",
-          "isVatRegistered",
-          "myRoles",
-          "can",
-          "poNumberPolicy",
-          "orderApprovalThreshold",
-          "discountPct",
-          "credit",
-          "receivables",
-          "notices",
-          "kyc",
-          "statusNote"
         ],
         "additionalProperties": false
       },

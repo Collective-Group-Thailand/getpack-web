@@ -15,20 +15,24 @@ export interface OrderActionsProps {
   actions: readonly NextAction[];
   /** The instalment "pay" pays, when the order has one due. */
   payable?: { id: string; label: string; grossAmount: string; activePaymentId: string | null } | null;
+  /** The order's group, which a payment starts on (when the page knows it). */
+  groupId?: string | null;
   size?: "sm" | "md";
   /** Where the order is shown: the account, or LINE's LIFF (D-151). */
   surface?: Surface;
 }
 
 /**
- * The actions the API offers on an order, the first one leading (design-system.md §4: the single
- * next best action), each named with the order code for a screen reader.
+ * The actions offered on an order, the first one leading (design-system.md §4: the single next best
+ * action), each named with the order code for a screen reader. Which ones are offered comes from
+ * `src/domain/next-actions/store.ts` until the API sends them (CONTRACT-GAP entity.next-actions).
  */
 export function OrderActions({
   orderId,
   orderCode,
   actions,
   payable,
+  groupId,
   size = "md",
   surface = "account",
 }: OrderActionsProps) {
@@ -55,6 +59,7 @@ export function OrderActions({
               iconStart={meta.icon}
               instalment={payable}
               orderCode={orderCode}
+              groupId={groupId}
               surface={surface}
             >
               {label}

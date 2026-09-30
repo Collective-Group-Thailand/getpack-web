@@ -72,31 +72,21 @@ test.describe("cart and checkout", () => {
     const lines = page.getByRole("list", { name: "รายการในตะกร้า" }).locator(":scope > li");
     await expect(lines).toHaveCount(2);
 
-    // Split the first line: add an address on the spot, then 400 + 600.
+    // Split the first line across the two saved addresses, 400 + 600. (Adding an address on the
+    // spot waits for CONTRACT-GAP store.geo-ids — see "a new address is added from the cart".)
     const first = lines.first();
     await first.getByRole("button", { name: "แบ่งส่งหลายที่อยู่" }).click();
-    await first.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).click();
-    const sheet = page.getByRole("dialog", { name: "เพิ่มที่อยู่ใหม่" });
-    await sheet.getByLabel(/^ชื่อที่อยู่/).fill("โกดังเชียงใหม่ (ทดสอบ)");
-    await sheet.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับทดสอบ");
-    await sheet.getByLabel(/^เบอร์ผู้รับ/).fill("0899999999");
-    await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("50200");
-    await sheet.getByRole("combobox", { name: "แขวง/ตำบล" }).click();
-    await page.getByRole("option").first().click();
-    await expect(sheet.getByText("เมืองเชียงใหม่ เชียงใหม่")).toBeVisible();
-    await sheet.getByLabel(/^บ้านเลขที่/).fill("99 ถนนทดสอบ");
-    await sheet.getByRole("button", { name: "บันทึกที่อยู่" }).click();
-    await expect(sheet).toBeHidden();
 
     await first.getByRole("spinbutton", { name: "จำนวน" }).fill("400");
     await first.getByRole("button", { name: "เพิ่มที่อยู่ปลายทาง" }).click();
     await first.getByRole("combobox", { name: "ที่อยู่ที่ 2" }).click();
     await page.getByRole("option", { name: /โกดังเชียงใหม่/ }).click();
     await first.getByRole("spinbutton", { name: "จำนวน" }).nth(1).fill("600");
-    await expect(first.getByText("รวม 1,000 จาก 1,000 ชิ้น")).toBeVisible();
+    // CONTRACT-GAP store.cart — a published cart line has no unit, so quantities stand alone.
+    await expect(first.getByText("รวม 1,000 จาก 1,000")).toBeVisible();
     await first.getByRole("button", { name: "บันทึกการแบ่งส่ง" }).click();
-    await expect(first.getByText(/400 ชิ้น → ผู้รับ/)).toBeVisible();
-    await expect(first.getByText(/600 ชิ้น → ผู้รับทดสอบ \(เชียงใหม่\)/)).toBeVisible();
+    await expect(first.getByText(/400 → ผู้รับ/)).toBeVisible();
+    await expect(first.getByText(/600 → ผู้รับทดสอบ \(เชียงใหม่\)/)).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("link", { name: "ดำเนินการชำระเงิน" }).click();
@@ -104,20 +94,21 @@ test.describe("cart and checkout", () => {
     await page.locator("html[data-hydrated]").waitFor();
     // The split in the cart is the default: each line goes where it was set.
     await expect(page.getByRole("radio", { name: /ตามที่แบ่งไว้ในตะกร้า/ })).toBeChecked();
-    await expect(page.getByText(/600 ชิ้น → ผู้รับทดสอบ · เชียงใหม่/)).toBeVisible();
+    await expect(page.getByText(/600 → ผู้รับทดสอบ · เชียงใหม่/)).toBeVisible();
 
+    // A code is applied to the cart (store.cart.applyCode); the preview says what it took off.
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
     await page.getByLabel("โค้ดส่วนลด").fill("packio10");
     await page.getByRole("button", { name: "ใช้โค้ด" }).click();
-    await expect(page.getByText(/PACKIO10 · ลด 10% ค่าสินค้า/)).toBeVisible();
+    await expect(page.getByText(/ใช้โค้ด PACKIO10 แล้ว/)).toBeVisible();
     await expect(summary).toContainText("ส่วนลด");
 
-    await page.getByRole("button", { name: "ใช้สูงสุด" }).click();
-    await expect(page.getByText(/ใช้ [\d,]+ คะแนน ลด ฿/)).toBeVisible();
-    await expect(summary).toContainText("คะแนนสะสม");
+    await page.getByLabel(/^คะแนนที่ใช้/).fill("10");
+    await expect(summary.getByText(/ใช้ 10 คะแนน ลด ฿/)).toBeVisible();
 
-    // Above THB 20,000: 50/50 is offered and chosen; what is due today is half.
-    await expect(page.getByRole("radio", { name: /มัดจำ 50%/ })).toBeChecked();
+    // Above THB 20,000 the rules choose 50/50 (D-020); what is due today is the deposit.
+    // CONTRACT-GAP store.checkout: the schedule is shown, not chosen.
+    await expect(page.getByText(/มัดจำ 50%/).first()).toBeVisible();
     await expect(summary).toContainText("ชำระวันนี้");
     await page.evaluate(() => window.scrollTo(0, 0));
     await expectNoViolations(page);
@@ -238,7 +229,21 @@ test.describe("cart and checkout", () => {
     await expect(page).toHaveURL(/\/checkout\/pay\//);
   });
 
+  test("the customer picks the payment schedule", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.checkout — scheduleKey stays requested; v0.2.0 lets the rules choose");
+    await signInAsCustomer(page, "/checkout", MOCK_BUYER_PHONE);
+    await expect(page.getByRole("radio", { name: /มัดจำ 50%/ })).toBeChecked();
+  });
+
+  test("a new address is added from the cart", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.geo-ids — no store geo read gives the province id an address needs");
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
+    await page.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).first().click();
+    await expect(page.getByRole("dialog", { name: "เพิ่มที่อยู่ใหม่" }).getByLabel(/^รหัสไปรษณีย์/)).toBeVisible();
+  });
+
   test("a tax invoice profile needs a valid tax id", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.geo-ids — a new tax profile needs a province id no store geo read gives");
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");

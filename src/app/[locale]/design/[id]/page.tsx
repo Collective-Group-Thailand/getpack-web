@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import { resolveStyleId } from "@packio/dieline";
 
-import { getDesignerCatalog } from "@/features/customer/catalog/api.server";
+import { getConfigurator, getDesignerCatalog } from "@/features/customer/catalog/api.server";
 import { CustomerDesigner } from "@/features/customer/designer/CustomerDesigner";
 import { getMyDesign } from "@/features/customer/designer/api.server";
+import { documentOf } from "@/features/designer/data/published";
 import type { EditorSeed } from "@/features/designer/components/Editor";
 import { getActor } from "@/lib/auth/actor";
 
@@ -20,7 +21,9 @@ const mm = (value: unknown) => (typeof value === "string" && /^\d{1,4}(\.\d)?$/.
 /**
  * A new design's starting point (F4 C.2): `?style=&l=&w=&h=` from the configurator or an order's
  * artwork page, plus `product`, `pattern` and `material` to preselect the catalogue's choices.
- * Anything malformed is ignored — the setup dialog still opens.
+ * Anything malformed is ignored — the setup dialog still opens. `product` and the order line
+ * (`order`, `item`, `orderCode`) stay in the address once the design has its own id, since the
+ * design does not name them (CONTRACT-GAP store.catalog-product-ref, store.designs).
  */
 function seedOf(query: Query): EditorSeed | undefined {
   const style = typeof query.style === "string" ? resolveStyleId(query.style) : null;
@@ -50,8 +53,12 @@ export default async function DesignPage({
   // account id at all, so a signed-in customer opening one falls back to the browser copy.
   if (signedIn && id !== "new" && !saved && uuid(id)) notFound();
 
-  const productSlug = saved?.data.product?.slug ?? text(query.product) ?? undefined;
-  const catalog = await getDesignerCatalog(productSlug);
+  const productSlug = text(query.product) ?? undefined;
+  const [catalog, configurator] = await Promise.all([
+    getDesignerCatalog(productSlug),
+    productSlug ? getConfigurator(productSlug).catch(() => null) : Promise.resolve(null),
+  ]);
+  const document = saved ? documentOf(saved.data) : null;
   const orderId = uuid(query.order);
   const itemId = uuid(query.item) ?? orderId;
   const orderCode = text(query.orderCode);
@@ -64,24 +71,18 @@ export default async function DesignPage({
       seed={id === "new" ? seedOf(query) : undefined}
       templateId={id === "new" ? uuid(query.template) : null}
       link={orderId && itemId && signedIn ? { orderId, itemId, orderCode: orderCode ?? "" } : null}
+      productSlug={productSlug ?? null}
+      catalogProductId={configurator?.catalogProductId ?? null}
       design={
         saved
           ? {
               id: saved.data.id,
-              name: saved.data.name,
-              document: saved.data.document,
-              versionNo: saved.data.versionNo,
+              name: saved.data.title,
+              document: document ?? { spec: null, content: null },
+              versionNo: saved.data.versionNo ?? 0,
               etag: saved.etag,
               updatedAt: saved.data.updatedAt,
-              assets: saved.data.assets.map((asset) => ({ id: asset.id, url: asset.url })),
-              link: saved.data.link
-                ? {
-                    orderId: saved.data.link.orderId,
-                    orderCode: saved.data.link.orderCode,
-                    itemId: saved.data.link.itemId,
-                  }
-                : null,
-              productSlug: saved.data.product?.slug ?? null,
+              assets: saved.assets,
             }
           : null
       }

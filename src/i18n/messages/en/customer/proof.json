@@ -11,7 +11,11 @@
   "version": "Version",
   "versionLabel": "Version {version}",
   "view": "View",
-  "views": { "proof": "Proof", "compare": "Compare", "3d": "3D box" },
+  "views": {
+    "proof": "Proof",
+    "compare": "Compare",
+    "3d": "3D box"
+  },
   "zoom": "Zoom",
   "zoomIn": "Zoom in",
   "zoomOut": "Zoom out",
@@ -64,7 +68,16 @@
   "requestChanges": "Request changes",
   "changesSent": "Changes requested — prepress will send a new proof",
   "failed": "That didn't work. Please try again.",
-  "decision": { "approved": "Approved", "changes_requested": "Changes requested" },
+  "decision": {
+    "approved": "Approved",
+    "changes_requested": "Changes requested"
+  },
   "decisionRecord": "By {name} on {date}",
-  "hash": "File fingerprint {hash}…"
+  "hash": "File fingerprint {hash}…",
+  "fileProof": "This proof is the file {name}",
+  "fileDownload": "Get the proof link",
+  "fileOpen": "Open the proof",
+  "loadingPage": "Loading the proof…",
+  "approveIntro": "Check the text, the artwork against the dieline, the colours and the size before you approve.",
+  "decisionAt": "On {date}"
 }

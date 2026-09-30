@@ -10,27 +10,34 @@
  * company (`setCheckoutCompany`) for the PO rule, the approval threshold and credit.
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
-import type { brandAsset, companyApproval, storeCompany } from "@/lib/api/requests/store-business";
-import type { checkoutInput } from "@/lib/api/requests/store-checkout";
+import type { brandAsset } from "@/lib/api/requests/store-business";
+import type { Schemas } from "@/lib/api/types";
 
 import { baht, orders, satang } from "../admin/commerce";
-import { companyStores, presentCompany, registerCompany, type CompanyStore } from "../admin/companies";
+import { companyStores, presentCompany, type CompanyStore } from "../admin/companies";
 import { files, settingValue } from "../admin/platform";
 import { mockRequest } from "../route";
-import { bangkokIso, mockId, paginate, problem } from "../support";
-import { checkPreview, forgetPreview, placeChecked, price, setCheckoutCompany } from "./checkout";
-import { customerByPersona, customerOf, type CustomerPersona, type MockCustomer } from "./customers";
+import { bangkokIso, mockId, precondition, problem, versionTag, withEtag } from "../support";
+import { placeChecked, price, setApprovalRequester, setCheckoutCompany } from "./checkout";
+import {
+  customerByPersona,
+  customerOf,
+  MOCK_CUSTOMER_PHONES,
+  type CustomerPersona,
+  type MockCustomer,
+} from "./customers";
 import { addReorderToCart, reorderOf } from "./fulfilment";
+import type { CompanyApproval, Input, StoreCompany } from "./model";
 import { ordersOf } from "./orders";
 
-type Company = z.output<typeof storeCompany>;
-type Approval = z.output<typeof companyApproval>;
+type Company = StoreCompany;
+type Approval = CompanyApproval;
 type BrandAsset = z.output<typeof brandAsset>;
 type Member = CompanyStore["members"][number];
 type Role = Member["roles"][number];
-type Input = z.output<typeof checkoutInput>;
 
 const DAY = 24 * 60;
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
@@ -87,91 +94,6 @@ const assets = new Map<string, BrandAsset[]>([
   ],
 ]);
 
-function noticesOf(store: CompanyStore, blocked: boolean): Company["notices"] {
-  const now = Date.now();
-  const notices: Company["notices"] = [];
-  for (const statement of store.statements) {
-    if (statement.status === "paid" || !statement.dueAt) continue;
-    const days = Math.floor((now - Date.parse(statement.dueAt)) / 86_400_000);
-    const kind =
-      statement.status === "overdue" || days > 0
-        ? "overdue"
-        : days === 0
-          ? "due_today"
-          : days >= -7
-            ? "due_soon"
-            : null;
-    if (kind)
-      notices.push({
-        kind,
-        statementId: statement.id,
-        period: statement.period,
-        amount: statement.closingBalance,
-        dueAt: statement.dueAt,
-        daysOverdue: Math.max(0, days),
-      });
-  }
-  if (blocked)
-    notices.unshift({
-      kind: "credit_blocked",
-      statementId: null,
-      period: null,
-      amount: store.company.receivables.overdueAmount,
-      dueAt: null,
-      daysOverdue: store.company.receivables.oldestOverdueDays,
-    });
-  return notices;
-}
-
-function toCompany(store: CompanyStore, member: Member): Company {
-  const presented = presentCompany(store);
-  const { allowedDays } = settingValue<{ allowedDays: number[] }>("b2b.credit_terms");
-  return {
-    id: presented.id,
-    companyCode: presented.companyCode,
-    legalName: presented.legalName,
-    taxId: presented.taxId,
-    status: presented.status,
-    isVatRegistered: presented.isVatRegistered,
-    myRoles: member.roles,
-    can: {
-      manageMembers: has(member, "company_admin"),
-      manageSettings: has(member, "company_admin"),
-      approveOrders: has(member, "company_approver"),
-      viewFinance: has(member, "company_admin", "company_accountant"),
-      order: has(member, "company_admin", "company_buyer", "company_approver"),
-    },
-    poNumberPolicy: presented.poNumberPolicy,
-    orderApprovalThreshold: presented.orderApprovalThreshold,
-    discountPct: presented.discount?.pct ?? null,
-    credit: {
-      status: presented.creditStatus,
-      limitAmount: presented.credit.limitAmount,
-      availableAmount: presented.credit.availableAmount,
-      termDays: presented.credit.termDays,
-      eligible: presented.credit.eligible,
-      paidOrdersCount: presented.paidOrdersCount,
-      paidOrdersNeeded: settingValue<number>("b2b.credit_eligibility_paid_orders"),
-      allowedTerms: allowedDays,
-      application: applications.get(presented.id) ?? null,
-    },
-    receivables: presented.receivables,
-    notices: noticesOf(store, presented.receivables.creditOrdersBlocked),
-    kyc: store.kyc.map((document) => ({
-      docType: document.docType,
-      status: document.status,
-      note: document.note,
-      uploadedAt: document.uploadedAt,
-    })),
-    statusNote:
-      presented.status === "kyc_review" || presented.status === "applied"
-        ? "ทีมการเงินกำลังตรวจเอกสาร ใช้เวลาประมาณ 1–2 วันทำการ ระหว่างนี้สั่งซื้อแบบชำระก่อนได้ตามปกติ (ข้อมูลจำลอง)"
-        : presented.status === "suspended"
-          ? "บัญชีบริษัทถูกระงับชั่วคราว กรุณาติดต่อทีมงาน"
-          : null,
-  };
-}
-
 /* ---------------------------------------------------------------------------- checkout link */
 
 setCheckoutCompany(
@@ -214,106 +136,181 @@ const placedBy = new Map<string, string>();
 
 const bulkPreviews = new Map<string, { persona: string; rows: { orderId: string; quantity: number }[] }>();
 
+/* --------------------------------------------------------------------- the published company */
+
+/** A company as the published contract has it (`CompanyDto`), from the back office's row. */
+export function toCompanyDto(store: CompanyStore): Schemas["CompanyDto"] {
+  const presented = presentCompany(store);
+  return {
+    id: presented.id,
+    companyCode: presented.companyCode,
+    legalName: presented.legalName,
+    tradeName: null,
+    taxId: presented.taxId,
+    isVatRegistered: presented.isVatRegistered,
+    status: presented.status,
+    statusReason:
+      presented.status === "suspended" ? "บัญชีบริษัทถูกระงับชั่วคราว กรุณาติดต่อทีมงาน (ข้อมูลจำลอง)" : null,
+    creditStatus: presented.creditStatus,
+    documentEmail: null,
+    withholdsTax: false,
+    poNumberPolicy: presented.poNumberPolicy,
+    orderApprovalThreshold: presented.orderApprovalThreshold,
+    createdAt: presented.createdAt,
+    members: store.members.map((member) => ({
+      id: member.id,
+      // A persona's membership is linked by member id; the published member names its user, who is
+      // the persona's customer.
+      user: { id: personaUserOf(member.id) ?? member.user.id, displayName: member.user.displayName },
+      roles: member.roles,
+      status: member.status,
+      joinedAt: member.joinedAt,
+    })),
+    branches: store.branches.map((branch) => ({
+      id: branch.id,
+      branchType: branch.branchType,
+      branchCode: branch.branchCode,
+      name: branch.name,
+      line1: branch.address,
+      line2: null,
+      postcode: branch.address.match(/(\d{5})\s*$/)?.[1] ?? "10110",
+      isDefault: branch.branchType === "head_office",
+    })),
+    kycDocuments: store.kyc.map((document) => ({
+      id: document.id,
+      docType: document.docType,
+      fileId: document.file.id,
+      issuedOn: document.issuedOn,
+      note: document.note,
+      status: document.status,
+    })),
+    missingKyc: [],
+  };
+}
+
+function personaUserOf(memberId: string): string | undefined {
+  const persona = [...memberships.entries()].find(([, link]) => link.memberId === memberId)?.[0];
+  return persona ? customerByPersona(persona as CustomerPersona).id : undefined;
+}
+
+/** The stores of the companies a customer belongs to, whatever their status. */
+function companiesOf(customer: MockCustomer): CompanyStore[] {
+  const link = memberships.get(customer.persona);
+  const store = link && companyStores.find((candidate) => candidate.company.id === link.companyId);
+  return store ? [store] : [];
+}
+
+/** The member's company by id — a company they are not in is a 404, like the API's. */
+function companyContext(request: Request, companyId: string) {
+  const customer = customerOf(request);
+  if (!customer) return unauthenticated();
+  const found = membershipOf(customer);
+  return found && found.store.company.id === companyId
+    ? { customer, ...found }
+    : problem(404, "http.not_found", "ไม่พบบริษัทนี้");
+}
+
+const companyTag = (store: CompanyStore) => versionTag(store.company.id, Date.parse(store.company.updatedAt) || 1);
+
+function toApprovalDto(view: Approval): Schemas["CompanyApprovalDto"] {
+  return {
+    id: view.id,
+    status: view.status,
+    groupId: view.id,
+    groupCode: view.requestNo,
+    poNumber: view.poNumber,
+    amount: view.grossAmount,
+    currency: "THB",
+    requester: view.requestedBy,
+    requestedAt: view.requestedAt,
+  };
+}
+
+/* ---------------------------------------------------------------- approval at checkout (D-123) */
+
+setApprovalRequester((customer, input, priced) => {
+  const found = membershipOf(customer);
+  if (!found) return problem(409, "companies.invalid_status", "บัญชีนี้ยังไม่ได้อยู่ในบริษัทใด");
+  const company = priced.preview.company;
+  const seq = approvals.length + 1;
+  const view: Approval = {
+    id: mockId("cap", seq),
+    requestNo: `AP-2569-${String(seq).padStart(5, "0")}`,
+    status: "pending",
+    requestedBy: { id: found.member.id, displayName: found.member.user.displayName },
+    requestedAt: bangkokIso(),
+    grossAmount: priced.preview.totals.grossAmount,
+    threshold: company?.approvalThreshold ?? "0.00",
+    poNumber: input.poNumber ?? null,
+    branch: priced.preview.taxInvoice?.branch ?? null,
+    items: priced.preview.items.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      grossAmount: item.grossAmount,
+    })),
+    scheduleLabel:
+      priced.preview.schedule.options.find((option) => option.key === priced.preview.schedule.selectedKey)?.label ?? "",
+    note: input.note ?? null,
+    decidedBy: null,
+    decidedAt: null,
+    reason: null,
+    orders: [],
+    expiresAt: bangkokIso(3 * DAY),
+  };
+  approvals.unshift({ view, companyId: found.store.company.id, requester: customer.persona, input });
+  return { id: view.id, requestNo: view.requestNo };
+});
+
 /* --------------------------------------------------------------------------------- handlers */
 
 export const storeBusinessHandlers = [
-  mockRequest("POST /v1/store/companies", ({ body, request }) => {
+  // store.companies.listMine (published, U-F0.2): the companies a customer belongs to.
+  http.get("*/v1/store/companies", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    if (membershipOf(customer)) return problem(409, "company.already_member", "บัญชีนี้อยู่ในบริษัทแล้ว");
-    if (companyStores.some((store) => store.company.taxId === body.taxId))
-      return problem(
-        409,
-        "company.exists",
-        "เลขประจำตัวผู้เสียภาษีนี้มีบัญชีบริษัทแล้ว ขอให้ผู้ดูแลบริษัทเชิญคุณเข้าร่วม",
-      );
-    const needed = ["company_certificate", "signatory_id", ...(body.isVatRegistered ? ["vat_registration_pp20"] : [])];
-    const missing = needed.filter((docType) => !body.documents.some((document) => document.docType === docType));
-    if (missing.length > 0)
-      return problem(
-        422,
-        "company.kyc_missing",
-        "กรุณาแนบเอกสารให้ครบ (D-120)",
-        missing.map((docType) => ({ path: `documents.${docType}`, code: "required", message: docType })),
-      );
-    const certificate = body.documents.find((document) => document.docType === "company_certificate");
-    if (!certificate?.issuedOn || Date.parse(certificate.issuedOn) < Date.now() - 183 * 86_400_000)
-      return problem(422, "company.certificate_too_old", "หนังสือรับรองบริษัทต้องออกไม่เกิน 6 เดือน (D-120)", [
-        { path: "documents.company_certificate.issuedOn", code: "max_age", message: "6 months" },
-      ]);
-    const store = registerCompany({
-      legalName: body.legalName,
-      taxId: body.taxId,
-      isVatRegistered: body.isVatRegistered,
-      address: body.headOffice.address,
-      applicant: {
-        id: customer.id,
-        displayName: `${body.signatory.name} (${body.signatory.position})`,
-        email: customer.email,
-        phone: body.contactPhone,
-      },
-      documents: body.documents.map((document) => {
-        const file = files.get(document.fileId);
-        return {
-          docType: document.docType,
-          issuedOn: document.issuedOn ?? null,
-          file: {
-            id: document.fileId,
-            originalName: file?.originalName ?? `${document.docType}.pdf`,
-            mimeType: file?.mimeType ?? "application/pdf",
-            sizeBytes: file?.sizeBytes ?? 0,
-            thumbnailUrl: null,
-            url: null,
-          },
-        };
-      }),
-    });
-    memberships.set(customer.persona, { companyId: store.company.id, memberId: store.members[0]!.id });
-    return toCompany(store, store.members[0]!);
+    return HttpResponse.json(companiesOf(customer).map(toCompanyDto));
   }),
 
-  mockRequest("GET /v1/store/me/company", ({ request }) => {
-    const found = context(request);
-    return found instanceof Response ? found : toCompany(found.store, found.member);
+  http.get("*/v1/store/companies/:companyId", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    return found instanceof Response ? found : withEtag(toCompanyDto(found.store), companyTag(found.store));
   }),
 
-  mockRequest("PATCH /v1/store/me/company", ({ body, request }) => {
-    const found = context(request);
+  http.patch("*/v1/store/companies/:companyId", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     if (!has(found.member, "company_admin")) return forbidden();
+    const refused = precondition(request, companyTag(found.store));
+    if (refused) return refused;
+    const body = (await request.json().catch(() => ({}))) as Schemas["UpdateCompanySettingsDto"];
     const { company } = found.store;
     if (body.orderApprovalThreshold !== undefined) company.orderApprovalThreshold = body.orderApprovalThreshold;
     if (body.poNumberPolicy) company.poNumberPolicy = body.poNumberPolicy;
     company.updatedAt = bangkokIso();
-    return toCompany(found.store, found.member);
+    return withEtag(toCompanyDto(found.store), companyTag(found.store));
   }),
 
-  mockRequest("GET /v1/store/me/company/members", ({ request }) => {
-    const found = context(request);
-    if (found instanceof Response) return found;
-    return { data: found.store.members.filter((member) => member.status !== "removed") };
-  }),
-
-  mockRequest("POST /v1/store/me/company/members", ({ body, request }) => {
-    const found = context(request);
+  // An invitation goes to someone who already has a Packio account, found by phone (E.164).
+  http.post("*/v1/store/companies/:companyId/members", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     if (!has(found.member, "company_admin")) return forbidden();
-    if (found.store.members.some((member) => member.status !== "removed" && member.user.phone === body.phone))
-      return problem(409, "company.member_exists", "เบอร์นี้เป็นสมาชิกบริษัทอยู่แล้ว");
-    const member: Member = {
+    const body = (await request.json().catch(() => ({}))) as Schemas["InviteMemberDto"];
+    const local = body.phone?.startsWith("+66") ? `0${body.phone.slice(3)}` : body.phone;
+    const persona = local ? MOCK_CUSTOMER_PHONES[local] : undefined;
+    if (!persona) return problem(422, "companies.account_not_found", "ไม่พบบัญชี Packio ของเบอร์นี้");
+    const invitee = customerByPersona(persona);
+    if (found.store.members.some((member) => member.status !== "removed" && member.user.phone === local))
+      return problem(409, "companies.already_member", "เบอร์นี้เป็นสมาชิกบริษัทอยู่แล้ว");
+    found.store.members.push({
       id: mockId("cmm", 2000 + found.store.members.length + companyStores.indexOf(found.store) * 100),
-      user: {
-        id: mockId("usr", 9000 + found.store.members.length),
-        displayName: body.name,
-        email: body.email ?? null,
-        phone: body.phone,
-      },
+      user: { id: invitee.id, displayName: invitee.displayName, email: invitee.email, phone: local! },
       roles: body.roles,
       status: "invited",
       joinedAt: null,
-    };
-    found.store.members.push(member);
-    return member;
+    });
+    return HttpResponse.json(toCompanyDto(found.store), { status: 201 });
   }),
 
   mockRequest("PATCH /v1/store/me/company/members/{memberId}", ({ params, body, request }) => {
@@ -333,50 +330,30 @@ export const storeBusinessHandlers = [
     return member;
   }),
 
-  mockRequest("DELETE /v1/store/me/company/members/{memberId}", ({ params, request }) => {
-    const found = context(request);
+  http.post("*/v1/store/companies/:companyId/members/:memberId/actions/remove", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     if (!has(found.member, "company_admin")) return forbidden();
     const member = found.store.members.find(
       (candidate) => candidate.id === params.memberId && candidate.status !== "removed",
     );
     if (!member) return problem(404, "http.not_found", "ไม่พบสมาชิกนี้");
-    if (member.id === found.member.id) return problem(409, "company.remove_self", "นำตัวเองออกจากบริษัทไม่ได้");
+    if (member.id === found.member.id)
+      return problem(409, "companies.cannot_remove_self", "นำตัวเองออกจากบริษัทไม่ได้");
     member.status = "removed";
-    return { removed: true as const };
+    return HttpResponse.json(toCompanyDto(found.store));
   }),
 
-  mockRequest("GET /v1/store/me/company/branches", ({ request }) => {
-    const found = context(request);
-    return found instanceof Response ? found : { data: found.store.branches };
-  }),
-
-  mockRequest("POST /v1/store/me/company/branches", ({ body, request }) => {
-    const found = context(request);
-    if (found instanceof Response) return found;
-    if (!has(found.member, "company_admin")) return forbidden();
-    if (found.store.branches.some((branch) => branch.branchCode === body.branchCode))
-      return problem(409, "company.branch_exists", "รหัสสาขานี้มีอยู่แล้ว");
-    const branch = {
-      id: mockId("cbr", 3000 + found.store.branches.length + companyStores.indexOf(found.store) * 100),
-      branchType: "branch" as const,
-      branchCode: body.branchCode,
-      name: body.name,
-      address: body.address,
-    };
-    found.store.branches.push(branch);
-    return branch;
-  }),
-
-  mockRequest("DELETE /v1/store/me/company/branches/{branchId}", ({ params, request }) => {
-    const found = context(request);
+  http.delete("*/v1/store/companies/:companyId/branches/:branchId", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     if (!has(found.member, "company_admin")) return forbidden();
     const branch = found.store.branches.find((candidate) => candidate.id === params.branchId);
     if (!branch) return problem(404, "http.not_found", "ไม่พบสาขานี้");
-    if (branch.branchType === "head_office") return problem(409, "company.head_office", "ลบสำนักงานใหญ่ไม่ได้");
+    if (branch.branchType === "head_office")
+      return problem(409, "companies.head_office_required", "ลบสำนักงานใหญ่ไม่ได้");
     found.store.branches.splice(found.store.branches.indexOf(branch), 1);
-    return { removed: true as const };
+    return HttpResponse.json(toCompanyDto(found.store));
   }),
 
   mockRequest("GET /v1/store/me/company/brand-assets", ({ request }) => {
@@ -420,106 +397,44 @@ export const storeBusinessHandlers = [
     return { removed: true as const };
   }),
 
-  mockRequest("POST /v1/store/me/company/approvals", ({ body, request }) => {
-    const found = context(request);
-    if (found instanceof Response) return found;
-    const { previewToken, ...input } = body;
-    const priced = checkPreview(found.customer, previewToken, input);
-    if (priced instanceof Response) return priced;
-    const company = priced.preview.company;
-    if (!company?.needsApproval)
-      return problem(409, "company.approval_not_needed", "คำสั่งซื้อนี้สั่งได้เลยโดยไม่ต้องอนุมัติ");
-    forgetPreview(previewToken);
-    const seq = approvals.length + 1;
-    const view: Approval = {
-      id: mockId("cap", seq),
-      requestNo: `AP-2569-${String(seq).padStart(5, "0")}`,
-      status: "pending",
-      requestedBy: { id: found.member.id, displayName: found.member.user.displayName },
-      requestedAt: bangkokIso(),
-      grossAmount: priced.preview.totals.grossAmount,
-      threshold: company.approvalThreshold ?? "0.00",
-      poNumber: input.poNumber ?? null,
-      branch: priced.preview.taxInvoice?.branch ?? null,
-      items: priced.preview.items.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        unit: item.unit,
-        grossAmount: item.grossAmount,
-      })),
-      scheduleLabel:
-        priced.preview.schedule.options.find((option) => option.key === priced.preview.schedule.selectedKey)?.label ??
-        "",
-      note: input.note ?? null,
-      decidedBy: null,
-      decidedAt: null,
-      reason: null,
-      orders: [],
-      expiresAt: bangkokIso(3 * DAY),
-    };
-    approvals.unshift({ view, companyId: found.store.company.id, requester: found.customer.persona, input });
-    return view;
-  }),
-
-  mockRequest("GET /v1/store/me/company/approvals", ({ query, request }) => {
-    const found = context(request);
+  // The pending ones only (the published list has no decided history).
+  http.get("*/v1/store/companies/:companyId/approvals", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     const mine = approvals
-      .filter((entry) => entry.companyId === found.store.company.id)
+      .filter((entry) => entry.companyId === found.store.company.id && entry.view.status === "pending")
       .filter(
         (entry) => has(found.member, "company_approver", "company_admin") || entry.requester === found.customer.persona,
       )
-      .map((entry) => entry.view)
-      .filter((view) =>
-        query.status === "pending"
-          ? view.status === "pending"
-          : query.status === "decided"
-            ? view.status !== "pending"
-            : true,
-      );
-    return paginate(mine, { page: query.page, perPage: 20 });
+      .map((entry) => toApprovalDto(entry.view));
+    return HttpResponse.json(mine);
   }),
 
-  mockRequest("POST /v1/store/me/company/approvals/{approvalId}/actions/approve", ({ params, request }) => {
-    const found = context(request);
+  http.post("*/v1/store/companies/:companyId/approvals/:approvalId/actions/:decision", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     if (!has(found.member, "company_approver")) return forbidden();
     const entry = approvals.find(
       (candidate) => candidate.view.id === params.approvalId && candidate.companyId === found.store.company.id,
     );
     if (!entry) return problem(404, "http.not_found", "ไม่พบคำขออนุมัตินี้");
-    if (entry.view.status === "approved") return entry.view;
-    if (entry.view.status !== "pending") return problem(409, "approval.closed", "คำขอนี้ตัดสินไปแล้ว");
-    const requester = customerByPersona(entry.requester);
-    const priced = price(requester, entry.input);
-    if (priced instanceof Response) return priced;
-    if (baht(priced.gross) !== entry.view.grossAmount) {
-      entry.view.status = "expired";
-      return problem(409, "approval.repriced", "ตะกร้าของผู้ขอเปลี่ยนไปแล้ว ต้องส่งขออนุมัติใหม่");
+    if (entry.view.status !== "pending") return problem(409, "approval.not_pending", "คำขอนี้ตัดสินไปแล้ว");
+    const body = (await request.json().catch(() => ({}))) as Schemas["CompanyApprovalDecisionDto"];
+    if (params.decision === "reject") {
+      entry.view.status = "rejected";
+      entry.view.reason = body.comment ?? null;
+    } else {
+      const requester = customerByPersona(entry.requester);
+      const priced = price(requester, entry.input);
+      if (priced instanceof Response) return priced;
+      const placed = placeChecked(requester, entry.input, priced);
+      for (const order of placed.orders) placedBy.set(order.id, entry.view.requestedBy.displayName);
+      entry.view.status = "approved";
+      entry.view.orders = placed.orders;
     }
-    const placed = placeChecked(requester, entry.input, priced);
-    for (const order of placed.orders) placedBy.set(order.id, entry.view.requestedBy.displayName);
-    entry.view.status = "approved";
     entry.view.decidedBy = { id: found.member.id, displayName: found.member.user.displayName };
     entry.view.decidedAt = bangkokIso();
-    entry.view.orders = placed.orders;
-    return entry.view;
-  }),
-
-  mockRequest("POST /v1/store/me/company/approvals/{approvalId}/actions/reject", ({ params, body, request }) => {
-    const found = context(request);
-    if (found instanceof Response) return found;
-    if (!has(found.member, "company_approver")) return forbidden();
-    const entry = approvals.find(
-      (candidate) => candidate.view.id === params.approvalId && candidate.companyId === found.store.company.id,
-    );
-    if (!entry) return problem(404, "http.not_found", "ไม่พบคำขออนุมัตินี้");
-    if (entry.view.status !== "pending") return problem(409, "approval.closed", "คำขอนี้ตัดสินไปแล้ว");
-    entry.view.status = "rejected";
-    entry.view.reason = body.reason;
-    entry.view.decidedBy = { id: found.member.id, displayName: found.member.user.displayName };
-    entry.view.decidedAt = bangkokIso();
-    return entry.view;
+    return HttpResponse.json(toApprovalDto(entry.view));
   }),
 
   mockRequest("POST /v1/store/me/company/credit-applications", ({ body, request }) => {
@@ -560,47 +475,63 @@ export const storeBusinessHandlers = [
           : "ฝ่ายการเงินพิจารณา (D-121)",
       approvedLimit: null,
     });
-    return toCompany(found.store, found.member);
+    return applications.get(presented.id)!;
   }),
 
-  mockRequest("GET /v1/store/me/company/statements", ({ request }) => {
-    const found = context(request);
+  http.get("*/v1/store/companies/:companyId/credit", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    const presented = presentCompany(found.store);
+    const application = applications.get(presented.id);
+    const credit: Schemas["CompanyCreditDto"] = {
+      creditStatus: presented.creditStatus,
+      limitAmount: presented.credit.limitAmount,
+      availableAmount: presented.credit.availableAmount,
+      exposureAmount: presented.receivables.openAmount,
+      termDays: presented.credit.termDays,
+      currency: "THB",
+      pendingRequest:
+        application?.status === "submitted"
+          ? {
+              limitAmount: application.requestedLimit,
+              termDays: application.termDays,
+              requestedAt: application.submittedAt,
+            }
+          : null,
+    };
+    return HttpResponse.json(credit);
+  }),
+
+  http.get("*/v1/store/companies/:companyId/statements", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
     if (!has(found.member, "company_admin", "company_accountant")) return forbidden();
-    const presented = presentCompany(found.store);
-    const buckets = { current: 0, days1to30: 0, days31to60: 0, days61to90: 0, over90: 0 };
-    for (const statement of found.store.statements) {
-      if (statement.status === "paid" || !statement.dueAt) continue;
-      const days = Math.floor((Date.now() - Date.parse(statement.dueAt)) / 86_400_000);
-      const amount = satang(statement.closingBalance);
-      if (days <= 0) buckets.current += amount;
-      else if (days <= 30) buckets.days1to30 += amount;
-      else if (days <= 60) buckets.days31to60 += amount;
-      else if (days <= 90) buckets.days61to90 += amount;
-      else buckets.over90 += amount;
-    }
-    return {
-      data: found.store.statements,
-      aging: {
-        current: baht(buckets.current),
-        days1to30: baht(buckets.days1to30),
-        days31to60: baht(buckets.days31to60),
-        days61to90: baht(buckets.days61to90),
-        over90: baht(buckets.over90),
-      },
-      receivables: presented.receivables,
+    const month = new URL(request.url).searchParams.get("month");
+    const statement = found.store.statements.find((candidate) => candidate.period === month);
+    if (!statement) return problem(404, "http.not_found", "ไม่มีใบแจ้งยอดของเดือนนี้");
+    const dto: Schemas["CompanyStatementDto"] = {
+      id: statement.id,
+      month: statement.period,
+      opening: statement.openingBalance,
+      invoiced: statement.invoicedAmount,
+      credited: "0.00",
+      paid: statement.paidAmount,
+      closing: statement.closingBalance,
+      currency: "THB",
+      pdfReady: true,
     };
+    return HttpResponse.json(dto);
   }),
 
-  mockRequest("POST /v1/store/me/company/statements/{statementId}/actions/download", ({ params, request }) => {
-    const found = context(request);
+  http.get("*/v1/store/companies/:companyId/statements/:month/pdf", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
     if (found instanceof Response) return found;
-    const statement = found.store.statements.find((candidate) => candidate.id === params.statementId);
+    const statement = found.store.statements.find((candidate) => candidate.period === params.month);
     if (!statement) return problem(404, "http.not_found", "ไม่พบใบแจ้งยอดนี้");
-    return {
+    return HttpResponse.json({
       url: `https://files.example.invalid/signed/statement-${statement.period}.pdf?sig=mock`,
       expiresAt: bangkokIso(15),
-    };
+    });
   }),
 
   mockRequest("GET /v1/store/me/company/spend", ({ query, request }) => {

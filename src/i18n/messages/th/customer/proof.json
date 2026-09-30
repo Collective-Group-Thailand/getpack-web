@@ -11,7 +11,11 @@
   "version": "ฉบับ",
   "versionLabel": "ฉบับที่ {version}",
   "view": "มุมมอง",
-  "views": { "proof": "ปรู๊ฟ", "compare": "เทียบฉบับ", "3d": "กล่อง 3D" },
+  "views": {
+    "proof": "ปรู๊ฟ",
+    "compare": "เทียบฉบับ",
+    "3d": "กล่อง 3D"
+  },
   "zoom": "ซูม",
   "zoomIn": "ซูมเข้า",
   "zoomOut": "ซูมออก",
@@ -64,7 +68,16 @@
   "requestChanges": "ขอแก้ไข",
   "changesSent": "ส่งคำขอแก้ไขแล้ว ทีมจะส่งปรู๊ฟฉบับใหม่ให้",
   "failed": "ทำรายการไม่สำเร็จ กรุณาลองใหม่",
-  "decision": { "approved": "อนุมัติแล้ว", "changes_requested": "ขอแก้ไขแล้ว" },
+  "decision": {
+    "approved": "อนุมัติแล้ว",
+    "changes_requested": "ขอแก้ไขแล้ว"
+  },
   "decisionRecord": "โดย {name} เมื่อ {date}",
-  "hash": "ลายนิ้วมือไฟล์ {hash}…"
+  "hash": "ลายนิ้วมือไฟล์ {hash}…",
+  "fileProof": "ปรู๊ฟฉบับนี้เป็นไฟล์ {name}",
+  "fileDownload": "ขอลิงก์ไฟล์ปรู๊ฟ",
+  "fileOpen": "เปิดไฟล์ปรู๊ฟ",
+  "loadingPage": "กำลังโหลดภาพปรู๊ฟ…",
+  "approveIntro": "ตรวจข้อความ ตำแหน่งงานเทียบเส้นไดคัท สี และขนาดให้ครบก่อนอนุมัติ",
+  "decisionAt": "เมื่อ {date}"
 }
