@@ -7,7 +7,6 @@
  */
 
 import { adminAnalyticsRequests } from "./admin-analytics";
-import { adminCompanyRequests } from "./admin-companies";
 import { adminConsoleRequests } from "./admin-console";
 import { adminCustomerRequests } from "./admin-customers";
 import { adminFinanceRequests } from "./admin-finance";
@@ -40,7 +39,6 @@ export const REQUESTS = {
   ...adminPrepressRequests,
   ...adminPartnerRequests,
   ...adminMarketingRequests,
-  ...adminCompanyRequests,
   ...adminLogisticsRequests,
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,
