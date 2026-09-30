@@ -315,7 +315,6 @@ export function JournalsList({ initial }: { initial: InitialPage<Journal> | null
       caption={t("journals")}
       initial={initial}
       searchLabel={t("search")}
-      exportable
       toolbarEnd={
         canManage ? (
           <Button asChild size="sm" iconStart="plus">

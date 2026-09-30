@@ -177,13 +177,14 @@ describe("the request client", () => {
 
   it("fills path parameters and sends the idempotency key it was given", async () => {
     const { seen, requests } = recorder();
-    await requests.call("POST /v1/admin/imports/{importId}/actions/apply", {
-      path: { importId: "0192f3a0-7c1e-7d2a-9b1f-00000000a001" },
+    await requests.call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
+      path: { documentId: "0192f3a0-7c1e-7d2a-9b1f-00000000a001" },
+      body: { channels: ["email"] },
       idempotencyKey: "k-1",
     });
 
     expect(seen[0]?.url).toBe(
-      "https://api.example/v1/admin/imports/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/apply",
+      "https://api.example/v1/admin/customer-documents/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/resend",
     );
     expect(seen[0]?.headers.get("Idempotency-Key")).toBe("k-1");
   });
@@ -221,9 +222,12 @@ describe("the request client", () => {
     // Compile-time guarantees, checked by `pnpm typecheck` rather than at runtime:
     const never = () => {
       // @ts-expect-error — an irreversible action needs the caller's idempotency key
-      void requests.call("POST /v1/admin/imports/{importId}/actions/apply", { path: { importId: "x" } });
+      void requests.call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
+        path: { documentId: "x" },
+        body: { channels: ["email"] },
+      });
       // @ts-expect-error — a path parameter cannot be forgotten
-      void requests.call("GET /v1/admin/imports/{importId}");
+      void requests.call("GET /v1/admin/customers/{customerId}/consents");
       // @ts-expect-error — neither can a body
       void requests.call("POST /v1/admin/saved-views");
       // @ts-expect-error — nor can a key be misspelt
