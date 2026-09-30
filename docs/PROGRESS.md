@@ -156,7 +156,13 @@ Eleven slices (`308b1cd`…`7f9c159`), each green on lint, typecheck and unit:
   - Re-adding `GET /v1/store/rfqs` as a request fails `registry.test.ts` twice (shipped, off-contract).
   - An unknown `CONTRACT-GAP store.no-such-gap` fails `gaps.test.ts`.
   - Removing `claims.invalid_status`'s th copy fails `problems.test.ts` on the migrated `respondInfo` call.
-- `pnpm lhci`: started, not finished when the branch was merged (the user asked to merge); its result is to be added here.
+- `pnpm lhci`: the same three script-size ratchets fail as on `main`, and nothing else. `/account/designs` grows 4,596 B: the cards sign their thumbnails through `store.files.download` (`useFileUrl`), and the page calls the published client. Measured after the merge (the customer set was re-run alone):
+
+  | URL | budget | U-F0.1 | U-F0.2 |
+  |---|---|---|---|
+  | `/account/designs` | 293,000 | 304,673 | 309,269 |
+  | `/configure/tuck-end-box` | 293,000 | 319,626 | 319,354 |
+  | partner `/settings` | 300,000 | 301,256 | 300,933 |
 - Not run: `e2e:integration` (U-F0.5).
 
 ---
