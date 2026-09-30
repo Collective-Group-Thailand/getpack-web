@@ -1,36 +1,47 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { adminPrepressActions } from "@/domain/next-actions/admin";
 import { ARTWORK_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
-import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import { STALE_TIME } from "@/lib/query/defaults";
-import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { PageHeader } from "@/ui/components/PageHeader";
-import { SlaTimer } from "@/ui/components/SlaTimer";
+import { Skeleton } from "@/ui/components/Skeleton";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 
-import { problemMessage, QueryError, StatusChip, useActor, useSlaFormat } from "../console";
-import { PrepressActionBar, PrepressActionDialogs, usePrepressSettle, type PrepressActionKey } from "./PrepressActions";
-import { ArtworkTab, DesignTab, MockupTab, ProofsTab, TemplateTab } from "./PrepressTabs";
-import type { PrepressDetail, PrepressTab } from "./resources";
+import { adminBrowserApis, problemMessage, QueryError, StatusChip, useActor, useProductTypes } from "../console";
+import { useOrder } from "../orders/data";
+import type { Order } from "../orders/resources";
+import { useOrderDesignService, usePrepressSettle, useProofs, useSubmissions, useTemplates } from "./data";
+import {
+  PrepressActionBar,
+  PrepressActionDialogs,
+  type PrepressActionKey,
+  type PrepressOwner,
+} from "./PrepressActions";
+import { ArtworkTab, DesignTab, ProofsTab, TemplateTab } from "./PrepressTabs";
+import type { DrawingJob, PrepressTab } from "./resources";
 
 /**
  * One order's prepress workspace (F2 2.4): the customer's files and their preflight, the proof
- * versions and the customer's annotations, the template, the hired-design rounds and the mockup
- * — with the stage, its SLA and the order in the rail. The header restates the order code and
- * the customer on every tab, and leads with the next action the API offers.
+ * versions and the customer's annotations, the template, and the hired-design rounds — with the
+ * order in the rail. The header restates the order code on every tab and leads with what
+ * `adminPrepressActions` offers.
+ *
+ * Composed (U-F0.3) from the lean order (`admin.orders.get`) and its artwork resources
+ * (`admin.artwork.list`, `.listProofs`, `.listTemplates`, `admin.designServices.list`).
+ * CONTRACT-GAP admin.prepress — no workspace aggregate: no stage or its SLA (they are on the desk's
+ * queue rows), no customer, specs or dieline size, no assignee (assigning is still a request, and
+ * the owner shown is the one it last answered), and no design document. The mockup job is not
+ * here: D-192 replaces it with the sample, which comes to this page with U2.F.
  */
 export function PrepressWorkspace({
   orderId,
@@ -38,32 +49,44 @@ export function PrepressWorkspace({
   tab,
 }: {
   orderId: string;
-  initial: PrepressDetail | null;
+  initial: Order | null;
   tab: PrepressTab;
 }) {
   const t = useTranslations("prepress.detail");
   const pathname = usePathname();
+  const actor = useActor();
+  const productTypes = useProductTypes();
   const [current, setCurrent] = useState<string>(tab);
   const [action, setAction] = useState<PrepressActionKey | null>(null);
   const [drawing, setDrawing] = useState(false);
+  const [drawings, setDrawings] = useState<DrawingJob[]>([]);
+  const [owner, setOwner] = useState<PrepressOwner | undefined>(undefined);
   const settle = usePrepressSettle(orderId);
 
-  const query = useQuery({
-    queryKey: queryKeys.detail("admin", "prepress", orderId),
-    queryFn: () => browserRequests().call("GET /v1/admin/prepress/{orderId}", { path: { orderId } }),
-    initialData: initial ?? undefined,
-    staleTime: STALE_TIME.transactional,
-  });
+  const query = useOrder(orderId, initial);
+  const submissions = useSubmissions(orderId);
+  const proofs = useProofs(orderId);
+  const templates = useTemplates(orderId);
+  const design = useOrderDesignService(query.data);
 
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
-  const detail = query.data;
-  if (!detail) return null;
+  const order = query.data;
+  if (!order) return null;
+  const failed = [submissions, proofs, templates].find((item) => item.isError);
+  if (failed) return <QueryError error={failed.error} onRetry={() => void failed.refetch()} />;
+  if (!submissions.data || !proofs.data) return <Skeleton className="h-64" />;
 
-  const offered = new Set(
-    detail.nextActions
-      .filter((item) => !item.disabledReason)
-      .map((item) => item.key.slice(item.key.lastIndexOf(".") + 1)),
+  const service = design.data ?? null;
+  const actions = adminPrepressActions(
+    {
+      artworkStatus: order.artworkStatus,
+      latestSubmission: submissions.data[0]?.status ?? null,
+      latestProof: proofs.data[0]?.status ?? null,
+      designService: service?.status ?? null,
+    },
+    (permission) => actor.permissions.includes(permission),
   );
+  const offered = new Set(actions.map((item) => item.key.slice("prepress.".length)));
 
   const go = (next: string) => {
     setCurrent(next);
@@ -74,14 +97,15 @@ export function PrepressWorkspace({
   const draw = async () => {
     setDrawing(true);
     try {
-      await browserRequests().call("POST /v1/admin/prepress/{orderId}/drawing-jobs", {
-        path: { orderId },
+      const { data } = await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/drawings", {
+        params: { path: { orderId } },
         body: { format: "pdf" },
       });
+      setDrawings((jobs) => [data!, ...jobs]);
       toast.success(t("drawQueued"));
       settle();
     } catch (error) {
-      // B4.1 answers 501 drawing.engine_unavailable until the engine ships; its detail says so.
+      // packio-api answers 501 drawing.engine_unavailable until the engine ships; its detail says so.
       toast.error(problemMessage(error, t("drawFailed")));
     } finally {
       setDrawing(false);
@@ -97,15 +121,20 @@ export function PrepressWorkspace({
     setAction(key);
   };
 
-  const openThreads = detail.proofs[0]?.annotations.open ?? 0;
+  const openThreads = proofs.data[0]?.annotations.filter((item) => !item.parentId && !item.resolvedAt).length ?? 0;
   const tabs = [
-    { value: "artwork", label: t("tabs.artwork"), content: <ArtworkTab detail={detail} /> },
+    {
+      value: "artwork",
+      label: t("tabs.artwork"),
+      content: <ArtworkTab order={order} submissions={submissions.data} />,
+    },
     {
       value: "proofs",
-      label: `${t("tabs.proofs")}${detail.proofs.length ? ` (${detail.proofs.length})` : ""}${openThreads ? " •" : ""}`,
+      label: `${t("tabs.proofs")}${proofs.data.length ? ` (${proofs.data.length})` : ""}${openThreads ? " •" : ""}`,
       content: (
         <ProofsTab
-          detail={detail}
+          proofs={proofs.data}
+          submissions={submissions.data}
           onUpload={offered.has("upload_proof") ? () => setAction("upload_proof") : undefined}
         />
       ),
@@ -115,17 +144,23 @@ export function PrepressWorkspace({
       label: t("tabs.template"),
       content: (
         <TemplateTab
-          detail={detail}
+          deliveries={templates.data ?? []}
+          drawings={drawings}
           drawing={drawing}
           onDraw={offered.has("draw_dieline") ? () => void draw() : undefined}
           onSend={offered.has("send_template") ? () => setAction("send_template") : undefined}
         />
       ),
     },
-    ...(detail.designService
-      ? [{ value: "design", label: t("tabs.design"), content: <DesignTab detail={detail} /> }]
+    ...(order.designOption === "hired_design"
+      ? [
+          {
+            value: "design",
+            label: t("tabs.design"),
+            content: design.isPending ? <Skeleton className="h-40" /> : <DesignTab service={service} />,
+          },
+        ]
       : []),
-    ...(detail.mockup ? [{ value: "mockup", label: t("tabs.mockup"), content: <MockupTab detail={detail} /> }] : []),
   ];
   const shown = tabs.some((item) => item.value === current) ? current : "artwork";
 
@@ -136,85 +171,78 @@ export function PrepressWorkspace({
           breadcrumbs={
             <Breadcrumbs
               label={t("breadcrumb")}
-              items={[{ label: t("desk"), href: "/prepress" }, { label: detail.orderCode }]}
+              items={[{ label: t("desk"), href: "/prepress" }, { label: order.orderCode }]}
             />
           }
-          title={<span className="font-mono">{detail.orderCode}</span>}
-          meta={
-            <>
-              <StatusChip map={ARTWORK_STATUS} value={detail.artworkStatus} size="md" />
-              {detail.stage ? <Badge>{t(`stages.${detail.stage}`)}</Badge> : null}
-              {detail.urgency !== "normal" ? (
-                <Badge tone={detail.urgency === "late" ? "danger" : "warning"} icon="warning">
-                  {t(`urgency.${detail.urgency}`)}
-                </Badge>
-              ) : null}
-            </>
-          }
+          title={<span className="font-mono">{order.orderCode}</span>}
+          meta={<StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />}
           description={t("headline", {
-            customer: detail.customer.displayName,
-            type: detail.productType.name,
-            quantity: detail.quantity,
-            unit: detail.unit,
+            type: productTypes.labelOf(order.productTypeCode),
+            quantity: order.quantityOrdered,
           })}
-          actions={<PrepressActionBar detail={detail} onAction={run} />}
+          actions={<PrepressActionBar actions={actions} onAction={run} />}
         />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <Tabs label={t("tabsLabel")} items={tabs} value={shown} onValueChange={go} />
-        <PrepressRail detail={detail} onAssign={offered.has("assign") ? () => setAction("assign") : undefined} />
+        <PrepressRail
+          order={order}
+          owner={owner}
+          onAssign={offered.has("assign") ? () => setAction("assign") : undefined}
+        />
       </div>
 
       {/* Keyed by the open action, so each opening starts with empty fields. */}
-      <PrepressActionDialogs key={action ?? "none"} detail={detail} open={action} onClose={() => setAction(null)} />
+      <PrepressActionDialogs
+        key={action ?? "none"}
+        order={order}
+        submissions={submissions.data}
+        proofs={proofs.data}
+        designService={service}
+        owner={owner}
+        onAssigned={setOwner}
+        open={action}
+        onClose={() => setAction(null)}
+      />
     </div>
   );
 }
 
-function PrepressRail({ detail, onAssign }: { detail: PrepressDetail; onAssign?: () => void }) {
+function PrepressRail({
+  order,
+  owner,
+  onAssign,
+}: {
+  order: Order;
+  owner: PrepressOwner | undefined;
+  onAssign?: () => void;
+}) {
   const t = useTranslations("prepress.detail.rail");
-  const tDetail = useTranslations("prepress.detail");
   const format = useFormat();
-  const sla = useSlaFormat();
   const actor = useActor();
 
   return (
     <div className="flex flex-col gap-4">
       <Card padding="md">
-        <CardHeader>
-          <CardTitle>{t("stage")}</CardTitle>
-        </CardHeader>
-        <p className="text-sm font-medium">{detail.stage ? tDetail(`stages.${detail.stage}`) : t("noStage")}</p>
-        {detail.stage && detail.stage !== "awaiting_customer" ? (
-          <SlaTimer
-            dueAt={detail.slaDueAt}
-            format={sla}
-            absolute={detail.slaDueAt ? format.dateTime(detail.slaDueAt) : undefined}
-          />
-        ) : detail.stage === "awaiting_customer" ? (
-          <p className="text-muted text-xs">{t("withCustomer")}</p>
-        ) : null}
-      </Card>
-
-      <Card padding="md">
         <CardHeader className="flex items-center justify-between gap-2">
           <CardTitle>{t("owner")}</CardTitle>
           {onAssign ? (
             <Button size="sm" variant="secondary" iconStart="user-plus" onClick={onAssign}>
-              {detail.assignee ? t("reassign") : t("assign")}
+              {owner ? t("reassign") : t("assign")}
             </Button>
           ) : null}
         </CardHeader>
+        {/* CONTRACT-GAP admin.prepress — the owner is not published; only an assignment made here is known. */}
         <p className="text-sm">
-          {detail.assignee ? (
-            detail.assignee.id === actor.id ? (
-              t("you")
-            ) : (
-              detail.assignee.displayName
-            )
-          ) : (
+          {owner === undefined ? (
+            <span className="text-muted">{t("ownerUnknown")}</span>
+          ) : owner === null ? (
             <span className="text-warning-subtle-fg font-medium">{t("unassigned")}</span>
+          ) : owner.id === actor.id ? (
+            t("you")
+          ) : (
+            owner.displayName
           )}
         </p>
       </Card>
@@ -229,30 +257,17 @@ function PrepressRail({ detail, onAssign }: { detail: PrepressDetail; onAssign?:
             {
               term: t("orderCode"),
               description: (
-                <Link href={`/orders/${detail.orderId}`} className="text-primary font-mono hover:underline">
-                  {detail.orderCode}
+                <Link href={`/orders/${order.id}`} className="text-primary font-mono hover:underline">
+                  {order.orderCode}
                 </Link>
               ),
             },
-            { term: t("customer"), description: detail.customer.displayName },
-            { term: t("design"), description: t(`designOptions.${detail.designOption}`) },
-            { term: t("mockup"), description: t(`mockupOptions.${detail.mockupOption}`) },
-            { term: t("promised"), description: format.date(detail.promisedShipDate) },
+            { term: t("design"), description: t(`designOptions.${order.designOption}`) },
+            { term: t("mockup"), description: t(`mockupOptions.${order.mockupOption}`) },
+            { term: t("promised"), description: format.date(order.promisedShipDate) },
           ]}
         />
       </Card>
-
-      {detail.specs.length > 0 ? (
-        <Card padding="md">
-          <CardHeader>
-            <CardTitle>{t("specs")}</CardTitle>
-          </CardHeader>
-          <DescriptionList
-            columns={1}
-            items={detail.specs.map((spec) => ({ term: spec.label, description: spec.value }))}
-          />
-        </Card>
-      ) : null}
     </div>
   );
 }

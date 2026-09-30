@@ -45,20 +45,20 @@ export type QuoteStatus = Schemas["QuoteStatus"];
 /** A discount memo, above the CS limit (D-052, D-162). **Source: schema** (`memo_status`). */
 export type MemoStatus = "draft" | "pending_approval" | "approved" | "rejected" | "withdrawn" | "expired" | "applied";
 
-/** A B2B company account (D-120). **Source: schema** (`company_status`). */
-export type CompanyStatus = "applied" | "kyc_review" | "active" | "suspended" | "closed";
+/** A B2B company account (D-120). **Source: contract** (U-F0.3). */
+export type CompanyStatus = Schemas["CompanyStatus"];
 
-/** A company's credit standing (D-121, D-122). **Source: schema** (`credit_status`). */
-export type CreditStatus = "prepaid" | "eligible" | "credit" | "blocked_overdue";
+/** A company's credit standing (D-121, D-122). **Source: contract** (U-F0.3). */
+export type CreditStatus = Schemas["CreditStatus"];
 
-/** A campaign with a THB budget; auto-stops when exhausted (D-154). **Source: schema** (`campaign_status`). */
-export type CampaignStatus = "draft" | "scheduled" | "active" | "paused" | "exhausted" | "ended";
+/** A campaign with a THB budget; auto-stops when exhausted (D-154). **Source: contract** (U-F0.3). */
+export type CampaignStatus = Schemas["CampaignStatus"];
 
-/** A coupon, automatic or referral promotion (D-053). **Source: schema** (`promotion_status`). */
-export type PromotionStatus = "draft" | "active" | "paused" | "ended";
+/** A coupon, automatic or referral promotion (D-053). **Source: contract** (U-F0.3). */
+export type PromotionStatus = Schemas["PromotionStatus"];
 
-/** One coupon code (D-053). **Source: schema** (`coupon_status`). */
-export type CouponStatus = "active" | "used_up" | "disabled";
+/** One coupon code (D-053). **Source: contract** (U-F0.3). */
+export type CouponStatus = Schemas["CouponStatus"];
 
 /** One line of the points ledger (D-132): pending until completion + claim window. **Source: contract** (U-F0.2). */
 export type PointsStatus = Schemas["PointsStatus"];
@@ -69,34 +69,32 @@ export type StatementStatus = "open" | "paid" | "overdue";
 /** The review of a proof of delivery (D-013): an accepted factory POD makes the payout eligible. **Proposed** in contract request `admin.shipments`. */
 export type PodReviewStatus = "pending" | "accepted" | "rejected";
 
-/** A member of a B2B company account (D-120). **Source: schema** (`member_status`). */
-export type MemberStatus = "invited" | "active" | "removed";
+/** A member of a B2B company account (D-120). **Source: contract** (U-F0.3). */
+export type MemberStatus = Schemas["MemberStatus"];
 
 /** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: contract** (U-F0.2). */
 export type ReferralStatus = Schemas["ReferralStatus"];
 
-/** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: schema** (`artwork_status`). */
-export type ArtworkStatus =
-  "awaiting_template" | "awaiting_upload" | "uploaded" | "in_review" | "proof_sent" | "changes_requested" | "approved";
+/** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: contract** (U-F0.3). */
+export type ArtworkStatus = Schemas["ArtworkStatus"];
 
-/** A proof version sent to the customer (B4.1). **Source: schema** (`proof_status`). */
-export type ProofStatus = "pending_customer" | "approved" | "changes_requested" | "superseded";
+/** A proof version sent to the customer (B4.1). **Source: contract** (U-F0.3). */
+export type ProofStatus = Schemas["ProofStatus"];
 
-/** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). **Source: schema** (`preflight_status`). */
-export type PreflightStatus = "pending" | "running" | "passed" | "passed_with_warnings" | "blocked" | "error";
+/** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). **Source: contract** (U-F0.3). */
+export type PreflightStatus = Schemas["PreflightStatus"];
 
-/** One version of the artwork a customer submitted, before and after prepress looked at it (B4.1). **Source: schema** (`submission_status`). */
-export type SubmissionStatus = "submitted" | "superseded" | "accepted_for_proof" | "rejected";
+/** One version of the artwork a customer submitted, before and after prepress looked at it (B4.1). **Source: contract** (U-F0.3). */
+export type SubmissionStatus = Schemas["SubmissionStatus"];
 
-/** Drawing a dieline with `@packio/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: schema** (`drawing_status`). */
-export type DrawingStatus = "queued" | "running" | "succeeded" | "failed" | "engine_unavailable";
+/** Drawing a dieline with `@packio/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: contract** (U-F0.3). */
+export type DrawingStatus = Schemas["DrawingStatus"];
 
-/** A hired design job: 3 free revision rounds, then paid (D-071). **Source: schema** (`design_service_status`). */
-export type DesignServiceStatus =
-  "brief_pending" | "in_progress" | "delivered" | "revision_requested" | "approved" | "cancelled" | "requoted";
+/** A hired design job: 3 free revision rounds, then paid (D-071). **Source: contract** (U-F0.3). */
+export type DesignServiceStatus = Schemas["DesignServiceStatus"];
 
-/** One round of a hired design; a paid round waits for payment (D-071). **Source: schema** (`design_round_status`). */
-export type DesignRoundStatus = "awaiting_payment" | "in_progress" | "delivered" | "approved" | "changes_requested";
+/** One round of a hired design; a paid round waits for payment (D-071). **Source: contract** (U-F0.3). */
+export type DesignRoundStatus = Schemas["DesignRoundStatus"];
 
 /** A request for quote, with an SLA per category (D-100, D-043). **Source: schema** (`rfq_status`). */
 export type RfqStatus = "submitted" | "in_review" | "need_info" | "quoted" | "accepted" | "declined" | "expired";

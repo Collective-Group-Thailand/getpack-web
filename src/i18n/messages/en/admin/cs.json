@@ -32,7 +32,8 @@
         "name": "Services",
         "description": "Design, mockups, plates and other services"
       }
-    }
+    },
+    "rfqOnly": "RFQ only"
   },
   "form": {
     "choose": "Choose",
@@ -75,7 +76,22 @@
     "window": "Clear window",
     "product": "Product",
     "services": "Services",
-    "serviceQuantity": "{service} quantity"
+    "serviceQuantity": "{service} quantity",
+    "none": "None",
+    "board": "Board",
+    "finishFront": "Outside finish",
+    "finishBack": "Inside finish",
+    "coatingFront": "Outside coating",
+    "coatingBack": "Inside coating",
+    "printArea": "Print area",
+    "printAreas": {
+      "top": "Top",
+      "side": "Side",
+      "top_side": "Top and side",
+      "all_round": "All round"
+    },
+    "designGraphic": "Graphic design by Packio",
+    "designStructure": "Structure design by Packio"
   },
   "workspace": {
     "steps": {
@@ -91,7 +107,6 @@
     "clearCustomer": "Clear customer",
     "newCustomer": "New customer",
     "tiersHint": "Pick up to {max} quantities to compare",
-    "presets": "Common quantities",
     "customQuantity": "Other quantity",
     "addQuantity": "Add",
     "custom": "Custom quantities",
@@ -103,79 +118,69 @@
     "toCalculate": "Still needed: {missing}",
     "missing": {
       "pattern": "pattern",
-      "size": "size",
       "material": "material",
-      "gsm": "grammage",
-      "flute": "flute",
-      "paperGrade": "paper grade",
-      "shape": "shape",
-      "pouchType": "pouch type",
-      "micron": "thickness",
-      "product": "product",
-      "services": "services",
-      "quantities": "quantities",
-      "postcode": "postcode"
+      "difficulty": "difficulty",
+      "dimensions": "size",
+      "quantities": "quantities"
     },
     "noResultsTitle": "Nothing calculated yet",
-    "noResultsBody": "Fill in the specification and calculate; results compare every factory, print type and quantity.",
+    "noResultsBody": "Fill in the spec and calculate: the system picks the factory and print type for each quantity",
     "routeToRfq": "No instant price covers this specification — it goes to RFQ (D-043).",
     "openRfq": "Go to RFQs",
-    "forQuantity": "{quantity} pieces",
-    "choose": "Choose",
-    "chooseRow": "Choose {option}",
     "columns": {
-      "option": "Option",
+      "quantity": "Quantity",
       "perPiece": "Per piece",
+      "product": "Product",
       "oneOff": "One-off",
       "shipping": "Shipping",
       "vat": "VAT",
       "total": "Total",
       "lead": "Lead time"
     },
-    "cheapest": "Cheapest",
-    "fastest": "Fastest",
     "belowFloor": "Below margin floor",
-    "withDelivery": "{price} with delivery",
     "leadDays": "{days} working days",
     "earliest": "earliest {date}",
     "actionBar": "Chosen option and actions",
-    "chosen": "Chosen: {option} · {total}",
-    "discount": "Discount",
-    "discountHint": "Up to {limit} on your own; above that needs approval (D-052)",
-    "discountFormat": "A number with up to 2 decimals",
     "margin": "Margin {pct}",
-    "requestMemo": "Request discount approval",
     "saveQuotation": "Save quotation",
     "saved": "Quotation {code} saved",
     "saveFailed": "Could not save the quotation",
     "exportPdf": "Download PDF",
     "exportFailed": "Could not create the PDF",
-    "createOrder": "Create order",
+    "createOrder": "Order from this quotation",
     "needCustomer": "Choose a customer before saving the quotation",
-    "memo": {
-      "pending": "Memo {code} ({pct}) is waiting for approval",
-      "approved": "Discount {pct} approved ({code}) — you can save the quotation",
-      "closed": "Memo {code} was not approved",
-      "open": "Open the approval",
-      "refresh": "Check again"
+    "quoteReady": "Quotation {code} is valid until {until} (price locked, D-051)",
+    "rfqOnlyTitle": "This type is quote on request (RFQ) only",
+    "rfqOnlyNotPublished": "This type's calculator is not live yet. Send it as a request for quote; the desk never shows a price the real calculator did not give.",
+    "rfqOnlyByCatalogue": "The catalogue has this type on quote on request for now (D-043)",
+    "productType": "Product type",
+    "removeQuantity": "Remove {quantity}",
+    "calculateFailed": "Could not price this",
+    "results": "Price by quantity",
+    "noPrice": {
+      "no_price_path": "No factory prices this spec yet: send it as an RFQ",
+      "not_priceable": "This spec cannot be priced instantly",
+      "capacity_unavailable": "Not enough capacity for this quantity",
+      "delivery_unavailable": "Cannot deliver to this destination"
     },
-    "quoteReady": "Quotation {code} is valid until {until} (price locked, D-051)"
+    "shippingPending": {
+      "no_postcode": "Enter a postcode for shipping",
+      "no_rate_card": "No shipping rate card yet",
+      "zone_unknown": "Unknown zone",
+      "no_band": "No band for this weight"
+    },
+    "tooling": "Plates and dies {amount}",
+    "discountAtCheckout": "Discounts are given when the order is placed; above the CS limit the system asks for approval (D-052)"
   },
   "memo": {
     "title": "Request a discount",
-    "description": "Asking for {pct}, above the {limit} you may give on your own",
     "routing": "It goes to the approver for that band only; anything below the margin floor goes to C-Level (D-052, D-162).",
     "reason": "Reason",
     "reasonHint": "e.g. a competitor's price, a repeat customer, the volume",
-    "evidence": "Evidence",
-    "evidenceHint": "e.g. a competitor's quotation; up to 10 files",
-    "drop": "Drop files here, or",
-    "browse": "choose files",
-    "tooLarge": "{name} is larger than 10 MB",
-    "wrongType": "{name} must be an image or a PDF",
     "submit": "Send for approval",
-    "created": "Memo {code} sent",
-    "failed": "Could not send the memo"
+    "created": "Sent for approval",
+    "failed": "Could not send the memo",
+    "body": "A {pct}% discount on the customer's cart, routed to the approver for that band (D-052, D-162)"
   },
   "newCustomer": {
     "title": "New customer",
@@ -190,6 +195,7 @@
     },
     "submit": "Create",
     "created": "Customer {code} created",
+    "matched": "Found the existing customer {name}; using them",
     "failed": "Could not create the customer"
   },
   "createOrder": {
@@ -243,7 +249,18 @@
     "place": "Place order",
     "placeHint": "The customer receives payment links for the schedule the system picks (D-020).",
     "placed": "Order group {code} placed",
-    "failed": "Could not place the order"
+    "failed": "Could not place the order",
+    "noCustomer": "This quotation has no customer, so no order can be placed from it",
+    "cartBusy": "The customer's cart holds {count} other items. Checkout takes the whole cart: remove them first, or let the customer check out.",
+    "removeFromCart": "Remove from cart",
+    "discount": "Discount",
+    "discountHint": "The system checks it against the CS limit (D-052)",
+    "discountFormat": "A number with up to 2 decimals",
+    "aboveLimit": "This discount is above what CS may give: ask for approval with a discount memo",
+    "requestMemo": "Ask for approval",
+    "memoState": "Discount memo {pct}",
+    "openApproval": "Open the approval",
+    "refreshMemo": "Check again"
   },
   "address": {
     "title": "Add a delivery address",
@@ -277,18 +294,15 @@
       "quantity": "Quantity",
       "unitPrice": "Per piece",
       "net": "Net",
-      "discount": "Discount",
       "vat": "VAT",
       "lead": "Lead time",
       "actions": "Actions"
     },
     "empty": "No quotations yet",
     "emptyBody": "Quotations saved by CS or by customers appear here.",
-    "headline": "{customer} · valid until {until}",
+    "headline": "{customer} · {product} · valid until {until}",
     "exportPdf": "Download PDF",
     "exportFailed": "Could not create the PDF",
-    "specs": "Specification",
-    "discount": "Discount {pct}",
     "options": "Prices by quantity",
     "leadDays": "{days} working days",
     "createOrder": "Create order"
@@ -298,7 +312,6 @@
     "description": "Discounts above the CS limit and how they were decided (D-052).",
     "search": "Search memos",
     "columns": {
-      "code": "Number",
       "customer": "Customer",
       "orderValue": "Order value",
       "requested": "Requested",

@@ -20,11 +20,9 @@ export default async function CustomerPage({ params, searchParams }: Props) {
   const tab = (CUSTOMER_TABS as readonly string[]).includes(String(query.tab)) ? (query.tab as CustomerTab) : "profile";
   let initial = null;
   try {
-    initial = await (
-      await adminServerApis()
-    ).requests.call("GET /v1/admin/customers/{customerId}", {
-      path: { customerId },
-    });
+    const { contract } = await adminServerApis();
+    initial =
+      (await contract.GET("/v1/admin/customers/{customerId}", { params: { path: { customerId } } })).data ?? null;
   } catch {
     // Rendered by the client as the API answered it.
   }

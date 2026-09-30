@@ -368,12 +368,13 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
       expect(delivered.status).toBe("delivered");
       expect(delivered.tolerance?.outcome).toBe("exact");
     }
-    // The logistics desk has both PODs to review (D-013).
-    const queue = await createRequestClient(REQUESTS, staff("logistics") as unknown as Client<never>).call(
-      "GET /v1/admin/shipments",
-      { query: { queue: "pod_review", perPage: 100 } },
-    );
-    const numbers = queue.data.map((row) => row.id);
+    // The logistics desk sees both delivered, with their POD (D-013). The published list has no
+    // POD-review queue (CONTRACT-GAP admin.shipments), so it is the delivered status.
+    const delivered = (
+      await staff("logistics").GET("/v1/admin/shipments", { params: { query: { status: "delivered", perPage: 100 } } })
+    ).data!.data;
+    expect(delivered.filter((row) => shipmentIds.includes(row.id)).every((row) => row.proofOfDelivery)).toBe(true);
+    const numbers = delivered.map((row) => row.id);
     expect(shipmentIds.every((id) => numbers.includes(id))).toBe(true);
   });
 

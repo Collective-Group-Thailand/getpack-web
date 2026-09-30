@@ -7,17 +7,14 @@
  */
 
 import { adminAnalyticsRequests } from "./admin-analytics";
-import { adminCompanyRequests } from "./admin-companies";
 import { adminConsoleRequests } from "./admin-console";
 import { adminCustomerRequests } from "./admin-customers";
 import { adminFinanceRequests } from "./admin-finance";
 import { adminLogisticsRequests } from "./admin-logistics";
 import { adminMarketingRequests } from "./admin-marketing";
 import { adminOrderRequests } from "./admin-orders";
-import { adminPartnerRequests } from "./admin-partners";
 import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
-import { adminSalesRequests } from "./admin-sales";
 import { partnerAccountRequests } from "./partner-account";
 import { partnerBillingRequests } from "./partner-billing";
 import { partnerJobRequests } from "./partner-jobs";
@@ -37,12 +34,9 @@ export const REQUESTS = {
   ...adminConsoleRequests,
   ...adminOrderRequests,
   ...adminCustomerRequests,
-  ...adminSalesRequests,
   ...adminRfqRequests,
   ...adminPrepressRequests,
-  ...adminPartnerRequests,
   ...adminMarketingRequests,
-  ...adminCompanyRequests,
   ...adminLogisticsRequests,
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,

@@ -1,24 +1,20 @@
 "use client";
 
-import NextLink from "next/link";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { adminSubmissionActions, type AdminSubmissionAction } from "@/domain/next-actions/admin";
 import {
   DESIGN_ROUND_STATUS,
   DESIGN_SERVICE_STATUS,
   DRAWING_STATUS,
-  JOB_STATUS,
   PREFLIGHT_STATUS,
   PROOF_STATUS,
   SUBMISSION_STATUS,
 } from "@/domain/status";
-import { DesignViewer, readDesignDocument } from "@/features/designer/components/DesignViewer";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -33,13 +29,18 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { problemMessage, StatusChip, useCan, useSlaFormat } from "../console";
+import { adminBrowserApis, problemMessage, StatusChip, useActor, useCan, useSlaFormat } from "../console";
+import type { Order } from "../orders/resources";
+import { useProof } from "./data";
 import { SubmissionDialogs } from "./PrepressActions";
-import type { PrepressDetail, ProofAnnotation } from "./resources";
-
-type FileRef = PrepressDetail["proofs"][number]["proofFile"];
-type Submission = PrepressDetail["submissions"][number];
-type Proof = PrepressDetail["proofs"][number];
+import type {
+  ArtworkSubmission,
+  DesignService,
+  DielineDelivery,
+  DrawingJob,
+  Proof,
+  ProofAnnotation,
+} from "./resources";
 
 function Section({
   title,
@@ -61,35 +62,79 @@ function Section({
   );
 }
 
-function FileLink({ file }: { file: FileRef }) {
+/**
+ * A stored file, downloaded through a short-lived signed URL (`admin.files.download`): asked for on
+ * click, then opened by a second, explicit click — a tab opened after an await is a pop-up to the
+ * browser, and blocked.
+ */
+function FileItem({ fileId, name, sizeBytes }: { fileId: string | null; name: string; sizeBytes?: number | null }) {
   const t = useTranslations("prepress.detail");
   const format = useFormat();
+  const [url, setUrl] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   return (
-    <span className="flex min-w-0 items-center gap-2 text-sm">
+    <span className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
       <Icon name="paperclip" size={16} />
-      {file.url ? (
-        <a href={file.url} download={file.originalName} className="text-primary truncate hover:underline">
-          {file.originalName}
-        </a>
+      <span className="truncate">{name}</span>
+      {sizeBytes ? <span className="text-muted text-xs whitespace-nowrap">{format.bytes(sizeBytes)}</span> : null}
+      {!fileId ? null : url ? (
+        <Button asChild size="sm" variant="ghost" iconStart="external">
+          <a href={url} target="_blank" rel="noopener noreferrer" aria-label={t("openFile", { name })}>
+            {t("open")}
+          </a>
+        </Button>
       ) : (
-        <span className="truncate">{file.originalName}</span>
+        <Button
+          size="sm"
+          variant="ghost"
+          iconStart="download"
+          loading={busy}
+          aria-label={t("downloadFile", { name })}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              const { data } = await adminBrowserApis().contract.GET("/v1/admin/files/{fileId}/download", {
+                params: { path: { fileId } },
+              });
+              setUrl(data!.url);
+            } catch (error) {
+              toast.error(problemMessage(error, t("downloadFailed")));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {t("download")}
+        </Button>
       )}
-      <span className="text-muted text-xs whitespace-nowrap">{format.bytes(file.sizeBytes)}</span>
-      {file.url ? <span className="sr-only">{t("download")}</span> : null}
     </span>
   );
 }
 
+function useLocalized() {
+  const locale = useLocale();
+  return (th: string, en: string | null | undefined) => (locale === "en" && en ? en : th);
+}
+
 /* ------------------------------------------------------------------------------------ artwork */
 
-function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submission: Submission }) {
+const SEVERITIES = ["block", "warn", "info"] as const;
+
+function SubmissionCard({ order, submission }: { order: Order; submission: ArtworkSubmission }) {
   const t = useTranslations("prepress.detail.artwork");
-  const [open, setOpen] = useState<"accept" | "reject" | null>(null);
-  const accept = submission.nextActions.find((action) => action.key === "submission.accept");
-  const reject = submission.nextActions.find((action) => action.key === "submission.reject");
-  const groups = (["block", "warn", "info"] as const)
-    .map((severity) => ({ severity, findings: submission.findings.filter((finding) => finding.severity === severity) }))
-    .filter((group) => group.findings.length > 0);
+  const localized = useLocalized();
+  const actor = useActor();
+  const [open, setOpen] = useState<AdminSubmissionAction["key"] | null>(null);
+  const actions = adminSubmissionActions(submission, (permission) => actor.permissions.includes(permission));
+  const accept = actions.find((action) => action.key === "submission.accept");
+  const reject = actions.find((action) => action.key === "submission.reject");
+  const findings = (submission.preflightReport?.files ?? []).flatMap((file) =>
+    file.checks.filter((check) => check.outcome !== "pass"),
+  );
+  const groups = SEVERITIES.map((severity) => ({
+    severity,
+    findings: findings.filter((finding) => finding.severity === severity),
+  })).filter((group) => group.findings.length > 0);
 
   return (
     <Section
@@ -104,7 +149,7 @@ function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submis
         accept || reject ? (
           <div className="flex flex-wrap gap-2">
             {reject ? (
-              <Button size="sm" variant="secondary" iconStart="undo" onClick={() => setOpen("reject")}>
+              <Button size="sm" variant="secondary" iconStart="undo" onClick={() => setOpen("submission.reject")}>
                 {t("reject")}
               </Button>
             ) : null}
@@ -112,8 +157,8 @@ function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submis
               <Button
                 size="sm"
                 iconStart="check"
-                disabled={Boolean(accept.disabledReason)}
-                onClick={() => setOpen("accept")}
+                disabled={Boolean(accept.blockedBy)}
+                onClick={() => setOpen("submission.accept")}
               >
                 {t("accept")}
               </Button>
@@ -122,15 +167,23 @@ function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submis
         ) : null
       }
     >
+      {/* CONTRACT-GAP admin.prepress — the submission does not say who submitted it. */}
       <p className="text-muted mb-3 text-xs">
-        {t(`sources.${submission.source}`)}
-        {submission.submittedBy ? ` · ${submission.submittedBy.displayName}` : null} ·{" "}
+        {t(`sources.${submission.source}`)} · {t(`channels.${submission.channel}`)} ·{" "}
         <When at={submission.submittedAt} />
       </p>
-      {accept?.disabledReason ? <Callout tone="danger" title={accept.disabledReason} className="mb-3" /> : null}
+      {accept?.blockedBy ? <Callout tone="danger" title={t(`blocked.${accept.blockedBy}`)} className="mb-3" /> : null}
+      {submission.rejectReason ? (
+        <Callout tone="warning" title={t("rejectReason")} className="mb-3">
+          {submission.rejectReason}
+        </Callout>
+      ) : null}
+      {submission.note ? <p className="mb-3 text-sm">{t("note", { note: submission.note })}</p> : null}
 
       <h3 className="mb-2 text-sm font-medium">{t("report")}</h3>
-      {groups.length === 0 ? (
+      {!submission.preflightReport ? (
+        <p className="text-muted text-sm">{t("reportPending")}</p>
+      ) : groups.length === 0 ? (
         <p className="text-success-subtle-fg flex items-center gap-2 text-sm">
           <Icon name="check" size={16} />
           {t("clean")}
@@ -160,7 +213,7 @@ function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submis
                   <li key={index} className="flex flex-wrap justify-between gap-2 px-3 py-2">
                     <span>
                       <span className="font-medium">{t(`checks.${finding.check}`)}</span>
-                      <span className="text-muted"> · {finding.message}</span>
+                      <span className="text-muted"> · {localized(finding.messageTh, finding.messageEn)}</span>
                     </span>
                     {finding.page ? (
                       <span className="text-muted text-xs">{t("page", { page: finding.page })}</span>
@@ -176,114 +229,37 @@ function SubmissionCard({ detail, submission }: { detail: PrepressDetail; submis
       <h3 className="mt-4 mb-2 text-sm font-medium">{t("files")}</h3>
       <ul className="space-y-1">
         {submission.files.map((entry) => (
-          <li key={entry.file.id} className="flex items-center gap-2">
-            <FileLink file={entry.file} />
+          <li key={entry.id} className="flex flex-wrap items-center gap-2">
+            {entry.linkUrl ? (
+              <a href={entry.linkUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-sm">
+                {entry.originalName ?? entry.linkUrl}
+              </a>
+            ) : (
+              <FileItem fileId={entry.fileId} name={entry.originalName ?? t("unnamed")} sizeBytes={entry.sizeBytes} />
+            )}
             <Badge size="sm">{t(`roles.${entry.role}`)}</Badge>
           </li>
         ))}
       </ul>
-      <SubmissionDialogs detail={detail} submission={submission} open={open} onClose={() => setOpen(null)} />
+      <SubmissionDialogs order={order} submission={submission} open={open} onClose={() => setOpen(null)} />
     </Section>
   );
 }
 
-function DesignDocumentCard({
-  document,
-  orderId,
-}: {
-  document: NonNullable<PrepressDetail["designDocument"]>;
-  orderId: string;
-}) {
-  const t = useTranslations("prepress.detail.design");
-  const canManage = useCan("prepress.manage");
-  const [copy, setCopy] = useState<{ id: string; title: string } | null>(null);
-  const read = readDesignDocument(document.document);
-
-  const makeCopy = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/design-documents/{documentId}/actions/copy", {
-        path: { documentId: document.id },
-        body: { title: t("copyTitle", { title: document.title }) },
-      }),
-    onSuccess: (created) => {
-      setCopy({ id: created.id, title: created.title });
-      toast.success(t("copied", { title: created.title }));
-    },
-    onError: (error) => toast.error(problemMessage(error, t("copyFailed"))),
-  });
-
-  return (
-    <Section
-      title={
-        <>
-          {t("documentTitle")}
-          <Badge size="sm" icon="eye">
-            {t("readOnly")}
-          </Badge>
-        </>
-      }
-      actions={
-        <>
-          <Button asChild size="sm" variant="ghost" iconStart="eye">
-            <NextLink href={`/designs/${document.id}?from=${encodeURIComponent(`/prepress/${orderId}`)}`}>
-              {t("openInDesigner")}
-            </NextLink>
-          </Button>
-          {canManage ? (
-            <Button
-              size="sm"
-              variant="secondary"
-              iconStart="copy"
-              loading={makeCopy.isPending}
-              onClick={() => makeCopy.mutate()}
-            >
-              {t("copy")}
-            </Button>
-          ) : null}
-        </>
-      }
-    >
-      <p className="text-muted mb-3 text-xs">
-        {t("documentMeta", { title: document.title, version: document.versionNo, owner: document.owner.displayName })} ·{" "}
-        <When at={document.updatedAt} />
-      </p>
-      {read ? (
-        <div className="bg-surface-subtle aspect-[4/3] w-full rounded-md border p-4">
-          <DesignViewer
-            {...read}
-            label={t("viewerLabel", { title: document.title })}
-            idPrefix={`design-${document.id}`}
-          />
-        </div>
-      ) : (
-        <Callout tone="warning" title={t("unreadable")} />
-      )}
-      <p className="text-muted mt-2 text-xs">{t("previewNote")}</p>
-      {copy ? (
-        <Callout tone="success" title={t("copyReady", { title: copy.title })} className="mt-3">
-          {t("copyNext")}
-          <Button asChild size="sm" className="mt-2">
-            <NextLink href={`/designs/${copy.id}?from=${encodeURIComponent(`/prepress/${orderId}`)}`}>
-              {t("openCopy")}
-            </NextLink>
-          </Button>
-        </Callout>
-      ) : null}
-    </Section>
-  );
-}
-
-export function ArtworkTab({ detail }: { detail: PrepressDetail }) {
+/**
+ * The customer's files and their preflight (D-070), newest first.
+ *
+ * CONTRACT-GAP admin.prepress — the order does not reference the design document an online design
+ * was sent from, so the read-only preview and "open in the designer" are not shown here.
+ */
+export function ArtworkTab({ order, submissions }: { order: Order; submissions: ArtworkSubmission[] }) {
   const t = useTranslations("prepress.detail.artwork");
   return (
     <div className="flex flex-col gap-4">
-      {detail.designDocument ? <DesignDocumentCard document={detail.designDocument} orderId={detail.orderId} /> : null}
-      {detail.submissions.length === 0 ? (
+      {submissions.length === 0 ? (
         <EmptyState icon="upload" title={t("none")} description={t("noneBody")} />
       ) : (
-        detail.submissions.map((submission) => (
-          <SubmissionCard key={submission.id} detail={detail} submission={submission} />
-        ))
+        submissions.map((submission) => <SubmissionCard key={submission.id} order={order} submission={submission} />)
       )}
     </div>
   );
@@ -330,57 +306,71 @@ function Marker({ annotation, number, active }: { annotation: ProofAnnotation; n
   );
 }
 
+/** Prepress answers while the customer decides, and after changes were requested (B4.1). */
+const OPEN_FOR_STAFF: readonly Proof["status"][] = ["pending_customer", "changes_requested"];
+
 /**
- * The customer's annotation threads on one proof: a page map of where each points (page-relative,
- * as the proof viewer records them) beside the threads, where prepress replies and resolves.
+ * The customer's annotation threads on one proof (inline on `admin.artwork.getProof`): a page map of
+ * where each points (page-relative, as the proof viewer records them) beside the threads, where
+ * prepress replies and resolves. Both answer the whole proof, which replaces the cached one.
  */
-function Annotations({ proof }: { proof: Proof }) {
+function Annotations({ proof: listed }: { proof: Proof }) {
   const t = useTranslations("prepress.detail.proofs");
-  const canManage = useCan("prepress.manage");
+  const canManage = useCan("prepress.review");
   const queryClient = useQueryClient();
-  const key = queryKeys.related("admin", "proof", proof.id, "annotations");
+  const query = useProof(listed);
+  const proof = query.data ?? listed;
   const [active, setActive] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const contract = adminBrowserApis().contract;
 
-  const list = useQuery({
-    queryKey: key,
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/prepress/proofs/{proofId}/annotations", { path: { proofId: proof.id } }),
-    staleTime: STALE_TIME.transactional,
-  });
-  const refresh = () => {
-    void queryClient.invalidateQueries({ queryKey: key });
+  const settle = (updated: Proof) => {
+    queryClient.setQueryData(queryKeys.detail("admin", "proof", updated.id), updated);
+    void queryClient.invalidateQueries({ queryKey: queryKeys.related("admin", "order", updated.orderId, "proofs") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "prepress") });
   };
 
   const reply = useMutation({
-    mutationFn: (parentId: string) =>
-      browserRequests().call("POST /v1/admin/prepress/proofs/{proofId}/annotations", {
-        path: { proofId: proof.id },
-        body: { parentId, comment: (drafts[parentId] ?? "").trim() },
-      }),
-    onSuccess: (_, parentId) => {
-      setDrafts((current) => ({ ...current, [parentId]: "" }));
+    // CONTRACT-GAP admin.prepress-proofs — a reply must carry a kind, page and geometry, so it
+    // repeats its thread's (as the storefront does).
+    mutationFn: async (parent: ProofAnnotation) =>
+      (
+        await contract.POST("/v1/admin/proofs/{proofId}/annotations", {
+          params: { path: { proofId: proof.id } },
+          body: {
+            parentId: parent.id,
+            kind: parent.kind,
+            page: parent.page,
+            geometry: parent.geometry,
+            comment: (drafts[parent.id] ?? "").trim(),
+          },
+        })
+      ).data!,
+    onSuccess: (updated, parent) => {
+      setDrafts((current) => ({ ...current, [parent.id]: "" }));
       toast.success(t("replied"));
-      refresh();
+      settle(updated);
     },
     onError: (error) => toast.error(problemMessage(error, t("replyFailed"))),
   });
   const resolve = useMutation({
-    mutationFn: (annotationId: string) =>
-      browserRequests().call("POST /v1/admin/prepress/proofs/{proofId}/annotations/{annotationId}/actions/resolve", {
-        path: { proofId: proof.id, annotationId },
-      }),
-    onSuccess: () => {
+    mutationFn: async (annotationId: string) =>
+      (
+        await contract.POST("/v1/admin/proof-annotations/{annotationId}/actions/resolve", {
+          params: { path: { annotationId } },
+        })
+      ).data!,
+    onSuccess: (updated) => {
       toast.success(t("resolved"));
-      refresh();
+      settle(updated);
     },
     onError: (error) => toast.error(problemMessage(error, t("resolveFailed"))),
   });
 
-  const all = list.data?.data ?? [];
+  const all = proof.annotations;
   const threads = all.filter((item) => !item.parentId);
-  if (list.isError) return <p className="text-danger text-sm">{problemMessage(list.error, t("loadFailed"))}</p>;
+  const answerable = canManage && OPEN_FOR_STAFF.includes(proof.status);
+  if (query.isError) return <p className="text-danger text-sm">{problemMessage(query.error, t("loadFailed"))}</p>;
   if (threads.length === 0) return <p className="text-muted text-sm">{t("noAnnotations")}</p>;
 
   return (
@@ -411,6 +401,7 @@ function Annotations({ proof }: { proof: Proof }) {
                   </span>
                   {t("thread", { page: thread.page, kind: t(`kinds.${thread.kind}`) })}
                 </p>
+                {/* CONTRACT-GAP admin.prepress-proofs — who resolved a thread is not published. */}
                 {thread.resolvedAt ? (
                   <Badge tone="success" size="sm" icon="check">
                     {t("isResolved")}
@@ -443,12 +434,12 @@ function Annotations({ proof }: { proof: Proof }) {
                   ))}
                 </ul>
               ) : null}
-              {canManage && !thread.resolvedAt ? (
+              {answerable && !thread.resolvedAt ? (
                 <form
                   className="mt-3 flex flex-col gap-2"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    if ((drafts[thread.id] ?? "").trim()) reply.mutate(thread.id);
+                    if ((drafts[thread.id] ?? "").trim()) reply.mutate(thread);
                   }}
                 >
                   <Field label={t("replyLabel", { number: index + 1 })} labelHidden>
@@ -465,7 +456,7 @@ function Annotations({ proof }: { proof: Proof }) {
                       size="sm"
                       iconStart="send"
                       disabled={!(drafts[thread.id] ?? "").trim()}
-                      loading={reply.isPending && reply.variables === thread.id}
+                      loading={reply.isPending && reply.variables?.id === thread.id}
                     >
                       {t("reply")}
                     </Button>
@@ -480,9 +471,22 @@ function Annotations({ proof }: { proof: Proof }) {
   );
 }
 
-export function ProofsTab({ detail, onUpload }: { detail: PrepressDetail; onUpload?: () => void }) {
+/**
+ * The proof versions, newest first.
+ *
+ * CONTRACT-GAP admin.prepress-proofs — a proof does not say who prepared it or who decided it.
+ */
+export function ProofsTab({
+  proofs,
+  submissions,
+  onUpload,
+}: {
+  proofs: Proof[];
+  submissions: ArtworkSubmission[];
+  onUpload?: () => void;
+}) {
   const t = useTranslations("prepress.detail.proofs");
-  if (detail.proofs.length === 0) {
+  if (proofs.length === 0) {
     return (
       <EmptyState
         icon="file-check"
@@ -503,89 +507,107 @@ export function ProofsTab({ detail, onUpload }: { detail: PrepressDetail; onUplo
       {onUpload ? (
         <div className="flex justify-end">
           <Button iconStart="upload" onClick={onUpload}>
-            {t("uploadNext", { version: detail.proofs[0]!.versionNo + 1 })}
+            {t("uploadNext", { version: proofs[0]!.versionNo + 1 })}
           </Button>
         </div>
       ) : null}
-      {detail.proofs.map((proof, index) => (
-        <Section
-          key={proof.id}
-          title={
-            <>
-              {t("version", { version: proof.versionNo })}
-              <StatusChip map={PROOF_STATUS} value={proof.status} />
-              {proof.annotations.open > 0 ? (
-                <Badge tone="danger" size="sm" icon="chat">
-                  {t("openCount", { count: proof.annotations.open })}
-                </Badge>
-              ) : null}
-            </>
-          }
-        >
-          <DescriptionList
-            columns={3}
-            items={[
-              { term: t("fromFile"), description: t("fileVersion", { version: proof.submissionVersionNo }) },
-              { term: t("preparedBy"), description: proof.preparedBy.displayName },
-              { term: t("sentAt"), description: <When at={proof.sentAt} /> },
-              ...(proof.decidedAt
-                ? [
-                    {
-                      term: t("decidedAt"),
-                      description: (
-                        <span>
-                          <When at={proof.decidedAt} />
-                          {proof.decidedBy ? ` · ${proof.decidedBy.displayName}` : null}
-                          {proof.decisionChannel ? ` · ${t(`channels.${proof.decisionChannel}`)}` : null}
-                        </span>
-                      ),
-                    },
-                  ]
-                : []),
-              ...(proof.onBehalfReason ? [{ term: t("onBehalf"), description: proof.onBehalfReason, wide: true }] : []),
-              ...(proof.approvedFileSha256
-                ? [
-                    {
-                      term: t("locked"),
-                      description: <span className="font-mono text-xs break-all">{proof.approvedFileSha256}</span>,
-                      wide: true,
-                    },
-                  ]
-                : []),
-              ...(proof.note ? [{ term: t("note"), description: proof.note, wide: true }] : []),
-            ]}
-          />
-          <div className="mt-3 flex flex-col gap-1">
-            <FileLink file={proof.proofFile} />
-            {proof.dielineFile ? <FileLink file={proof.dielineFile} /> : null}
-          </div>
-          {index === 0 || proof.annotations.open + proof.annotations.resolved > 0 ? (
-            <div className="mt-4">
-              <h3 className="mb-2 text-sm font-medium">{t("annotations")}</h3>
-              <Annotations proof={proof} />
+      {proofs.map((proof, index) => {
+        const open = proof.annotations.filter((item) => !item.parentId && !item.resolvedAt).length;
+        const source = submissions.find((item) => item.id === proof.submissionId);
+        return (
+          <Section
+            key={proof.id}
+            title={
+              <>
+                {t("version", { version: proof.versionNo })}
+                <StatusChip map={PROOF_STATUS} value={proof.status} />
+                {open > 0 ? (
+                  <Badge tone="danger" size="sm" icon="chat">
+                    {t("openCount", { count: open })}
+                  </Badge>
+                ) : null}
+              </>
+            }
+          >
+            <DescriptionList
+              columns={3}
+              items={[
+                ...(source
+                  ? [{ term: t("fromFile"), description: t("fileVersion", { version: source.versionNo }) }]
+                  : []),
+                { term: t("sentAt"), description: <When at={proof.sentAt} /> },
+                ...(proof.decidedAt
+                  ? [
+                      {
+                        term: t("decidedAt"),
+                        description: (
+                          <span>
+                            <When at={proof.decidedAt} />
+                            {proof.decisionChannel ? ` · ${t(`channels.${proof.decisionChannel}`)}` : null}
+                          </span>
+                        ),
+                      },
+                    ]
+                  : []),
+                ...(proof.decisionComment
+                  ? [{ term: t("decisionComment"), description: proof.decisionComment, wide: true }]
+                  : []),
+                ...(proof.onBehalfReason
+                  ? [{ term: t("onBehalf"), description: proof.onBehalfReason, wide: true }]
+                  : []),
+                ...(proof.approvedFileSha256
+                  ? [
+                      {
+                        term: t("locked"),
+                        description: <span className="font-mono text-xs break-all">{proof.approvedFileSha256}</span>,
+                        wide: true,
+                      },
+                    ]
+                  : []),
+                ...(proof.changeNote ? [{ term: t("note"), description: proof.changeNote, wide: true }] : []),
+              ]}
+            />
+            <div className="mt-3 flex flex-col gap-1">
+              <FileItem fileId={proof.proofFile.id} name={proof.proofFile.originalName} />
+              {proof.dielineFileId ? <FileItem fileId={proof.dielineFileId} name={t("dielineFile")} /> : null}
             </div>
-          ) : null}
-        </Section>
-      ))}
+            {index === 0 || proof.annotations.length > 0 ? (
+              <div className="mt-4">
+                <h3 className="mb-2 text-sm font-medium">{t("annotations")}</h3>
+                <Annotations proof={proof} />
+              </div>
+            ) : null}
+          </Section>
+        );
+      })}
     </div>
   );
 }
 
 /* ----------------------------------------------------------------------------------- template */
 
+/**
+ * The dieline and the templates sent to the customer.
+ *
+ * CONTRACT-GAP admin.prepress — the order carries no dieline pattern or size and there is no list
+ * of an order's drawing jobs: the size and the jobs shown are those of a drawing asked for on this
+ * page. A delivery does not say who sent it.
+ */
 export function TemplateTab({
-  detail,
+  deliveries,
+  drawings,
   onSend,
   onDraw,
   drawing,
 }: {
-  detail: PrepressDetail;
+  deliveries: DielineDelivery[];
+  drawings: DrawingJob[];
   onSend?: () => void;
   onDraw?: () => void;
   drawing: boolean;
 }) {
   const t = useTranslations("prepress.detail.template");
-  const size = detail.dieline;
+  const size = drawings[0];
   return (
     <div className="flex flex-col gap-4">
       <Section
@@ -601,26 +623,24 @@ export function TemplateTab({
         <DescriptionList
           columns={3}
           items={[
-            { term: t("pattern"), description: size.patternCode ?? t("noPattern") },
             {
               term: t("size"),
-              description:
-                size.lengthMm && size.widthMm && size.heightMm
-                  ? t("sizeValue", { length: size.lengthMm, width: size.widthMm, height: size.heightMm })
-                  : t("noSize"),
+              description: size
+                ? t("sizeValue", { length: size.lengthMm, width: size.widthMm, height: size.heightMm })
+                : t("noSize"),
             },
           ]}
         />
-        {detail.drawingJobs.length > 0 ? (
+        {drawings.length > 0 ? (
           <ul className="divide-border mt-3 divide-y text-sm">
-            {detail.drawingJobs.map((job) => (
+            {drawings.map((job) => (
               <li key={job.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                 <span className="flex items-center gap-2">
                   <span className="font-mono uppercase">{job.format}</span>
                   <StatusChip map={DRAWING_STATUS} value={job.status} />
                 </span>
-                {job.outputFile ? (
-                  <FileLink file={job.outputFile} />
+                {job.outputFileId ? (
+                  <FileItem fileId={job.outputFileId} name={t("drawnFile", { format: job.format.toUpperCase() })} />
                 ) : job.error ? (
                   <span className="text-danger text-xs">{job.error}</span>
                 ) : null}
@@ -639,17 +659,19 @@ export function TemplateTab({
           ) : null
         }
       >
-        {detail.templateDeliveries.length === 0 ? (
+        {deliveries.length === 0 ? (
           <p className="text-muted text-sm">{t("noDeliveries")}</p>
         ) : (
           <ul className="divide-border divide-y text-sm">
-            {detail.templateDeliveries.map((delivery) => (
-              <li key={delivery.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <FileLink file={delivery.file} />
-                <span className="text-muted text-xs">
-                  {t(`triggers.${delivery.trigger}`)}
-                  {delivery.sentBy ? ` · ${delivery.sentBy.displayName}` : null} · <When at={delivery.sentAt} />
-                </span>
+            {deliveries.map((delivery) => (
+              <li key={delivery.id} className="flex flex-col gap-1 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <FileItem fileId={delivery.fileId} name={t("templateFile")} />
+                  <span className="text-muted text-xs">
+                    {t(`triggers.${delivery.trigger}`)} · <When at={delivery.sentAt} />
+                  </span>
+                </div>
+                {delivery.note ? <p className="text-muted text-xs">{delivery.note}</p> : null}
               </li>
             ))}
           </ul>
@@ -661,13 +683,18 @@ export function TemplateTab({
 
 /* ------------------------------------------------------------------------------------- design */
 
-export function DesignTab({ detail }: { detail: PrepressDetail }) {
+/**
+ * The hired design (D-071): its due dates, the free rounds used, what the next revision costs (the
+ * API's figure), the brief and the rounds. A delivered round becomes an artwork version, so its
+ * files are on the artwork tab.
+ */
+export function DesignTab({ service }: { service: DesignService | null }) {
   const t = useTranslations("prepress.detail.design");
   const format = useFormat();
   const sla = useSlaFormat();
-  const service = detail.designService;
-  if (!service) return <EmptyState icon="palette" title={t("none")} />;
-  const used = Math.min(service.rounds.filter((round) => !round.chargeable).length, service.freeRounds);
+  if (!service) return <EmptyState icon="palette" title={t("notFound")} />;
+  const used = Math.min(service.revisionsUsed, service.freeRounds);
+  const next = service.nextRevision;
 
   return (
     <div className="flex flex-col gap-4">
@@ -682,11 +709,19 @@ export function DesignTab({ detail }: { detail: PrepressDetail }) {
         <div className="grid gap-4 md:grid-cols-3">
           <div>
             <p className="text-muted text-xs">{t("target")}</p>
-            <SlaTimer dueAt={service.targetDueAt} format={sla} absolute={format.dateTime(service.targetDueAt)} />
+            {service.targetDueAt ? (
+              <SlaTimer dueAt={service.targetDueAt} format={sla} absolute={format.dateTime(service.targetDueAt)} />
+            ) : (
+              <p className="text-sm">{t("notStarted")}</p>
+            )}
           </div>
           <div>
             <p className="text-muted text-xs">{t("max")}</p>
-            <SlaTimer dueAt={service.maxDueAt} format={sla} absolute={format.dateTime(service.maxDueAt)} />
+            {service.maxDueAt ? (
+              <SlaTimer dueAt={service.maxDueAt} format={sla} absolute={format.dateTime(service.maxDueAt)} />
+            ) : (
+              <p className="text-sm">{t("notStarted")}</p>
+            )}
           </div>
           <div>
             <p className="text-muted mb-1 text-xs">{t("freeRounds")}</p>
@@ -699,14 +734,11 @@ export function DesignTab({ detail }: { detail: PrepressDetail }) {
             <p className="mt-1 text-sm font-medium">{t("freeUsed", { used, free: service.freeRounds })}</p>
           </div>
         </div>
-        {service.nextRound.chargeable ? (
+        {next?.chargeable ? (
           <Callout
             tone="warning"
             className="mt-4"
-            title={t("nextChargeable", {
-              round: service.nextRound.roundNo,
-              fee: format.thb(service.nextRound.feeAmount),
-            })}
+            title={t("nextChargeable", { round: next.revisionNo, fee: format.thb(next.feeNet) })}
           >
             {t("nextChargeableBody")}
           </Callout>
@@ -715,25 +747,36 @@ export function DesignTab({ detail }: { detail: PrepressDetail }) {
           className="mt-4"
           columns={3}
           items={[
-            { term: t("designer"), description: service.designer?.displayName ?? t("noDesigner") },
+            { term: t("designer"), description: service.assignee?.displayName ?? t("noDesigner") },
             { term: t("fee"), description: format.thb(service.designFeeNet) },
             { term: t("rule"), description: t("ruleValue", { free: service.freeRounds }) },
+            ...(service.closeReason ? [{ term: t("closeReason"), description: service.closeReason, wide: true }] : []),
           ]}
         />
       </Section>
 
       <Section title={t("brief")}>
-        <DescriptionList
-          columns={2}
-          items={service.brief.map((item) => ({ term: item.label, description: item.value }))}
-        />
-        {service.briefFiles.length > 0 ? (
-          <div className="mt-3 flex flex-col gap-1">
-            {service.briefFiles.map((file) => (
-              <FileLink key={file.id} file={file} />
-            ))}
-          </div>
-        ) : null}
+        {service.brief ? (
+          <>
+            <DescriptionList
+              columns={2}
+              items={[
+                { term: t("brandName"), description: service.brief.brandName },
+                { term: t("brandCategory"), description: service.brief.brandCategory || "—" },
+                { term: t("briefDescription"), description: service.brief.description, wide: true },
+              ]}
+            />
+            {service.brief.attachmentFileIds.length > 0 ? (
+              <div className="mt-3 flex flex-col gap-1">
+                {service.brief.attachmentFileIds.map((fileId, index) => (
+                  <FileItem key={fileId} fileId={fileId} name={t("attachment", { number: index + 1 })} />
+                ))}
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <p className="text-muted text-sm">{t("noBrief")}</p>
+        )}
       </Section>
 
       <Section title={t("rounds")}>
@@ -742,13 +785,13 @@ export function DesignTab({ detail }: { detail: PrepressDetail }) {
         ) : (
           <ol className="divide-border divide-y text-sm">
             {service.rounds.map((round) => (
-              <li key={round.roundNo} className="flex flex-col gap-1 py-3">
+              <li key={round.id} className="flex flex-col gap-1 py-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{t("round", { round: round.roundNo })}</span>
                   <StatusChip map={DESIGN_ROUND_STATUS} value={round.status} />
                   {round.chargeable ? (
                     <Badge tone="warning" size="sm" icon="coins">
-                      {t("paidRound", { fee: format.thb(round.feeAmount) })}
+                      {t("paidRound", { fee: format.thb(round.feeNet) })}
                     </Badge>
                   ) : (
                     <Badge size="sm">{t("freeRound")}</Badge>
@@ -763,45 +806,12 @@ export function DesignTab({ detail }: { detail: PrepressDetail }) {
                     </>
                   ) : null}
                 </p>
-                {round.note ? <p>{round.note}</p> : null}
-                {round.files.map((file) => (
-                  <FileLink key={file.id} file={file} />
-                ))}
+                {round.changeRequest ? <p>{round.changeRequest}</p> : null}
               </li>
             ))}
           </ol>
         )}
       </Section>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------------------------- mockup */
-
-export function MockupTab({ detail }: { detail: PrepressDetail }) {
-  const t = useTranslations("prepress.detail.mockup");
-  const format = useFormat();
-  const job = detail.mockup;
-  if (!job) return <EmptyState icon="package" title={t("none")} description={t("noneBody")} />;
-  return (
-    <Section
-      title={
-        <>
-          {t("title")}
-          <StatusChip map={JOB_STATUS} value={job.status} />
-        </>
-      }
-    >
-      <DescriptionList
-        columns={3}
-        items={[
-          { term: t("jobNo"), description: <span className="font-mono">{job.jobNo}</span> },
-          { term: t("option"), description: t(`options.${job.option}`) },
-          { term: t("factory"), description: job.factory?.name ?? t("noFactory") },
-          { term: t("promised"), description: job.promisedAt ? format.dateTime(job.promisedAt) : t("noPromise") },
-        ]}
-      />
-      <p className="text-muted mt-3 text-xs">{t("note")}</p>
-    </Section>
   );
 }

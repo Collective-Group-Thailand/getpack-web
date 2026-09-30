@@ -4,7 +4,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { createApiClient } from "../client";
 import { createRequestClient } from "./client";
-import { PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
+import { CUSTOMER_ZONE_PARKED, PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
 import { AWAITING_TRIAGE, isStillOpen } from "./awaiting-triage";
 import { REQUESTS, type RequestKey } from "./registry";
 import { OPERATION_TRIAGE, REQUEST_TRIAGE } from "./triage";
@@ -40,8 +40,9 @@ describe("the contract-request registry", () => {
       return !(key in REQUESTS) || contract.paths[path]?.[method.toLowerCase()] === undefined;
     });
     expect(stale).toEqual([]);
-    // U-F0.2 migrated the customer zone's 32; U-F0.3 and U-F0.4 take the rest.
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(54);
+    // U-F0.2 migrated the customer zone, U-F0.3 the admin zone; left are the partner zone's four
+    // (U-F0.4) and the configurator parked for U2.F1.
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(5);
   });
 
   it("keeps the customer zone on the published contract", () => {
@@ -51,9 +52,24 @@ describe("the contract-request registry", () => {
     const offContract = entries
       .map(([key]) => key)
       .filter((key) => key.includes(" /v1/store/"))
+      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key))
+      .filter((key) => !CUSTOMER_ZONE_PARKED.includes(key));
+    expect(offContract).toEqual([]);
+    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual(CUSTOMER_ZONE_PARKED);
+    // A parked operation is still a published one awaiting its screen, never a way to hide a new request.
+    expect(CUSTOMER_ZONE_PARKED.filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key))).toEqual([]);
+  });
+
+  it("keeps the admin zone on the published contract", () => {
+    // U-F0.3: an admin request is only one packio-api still has to build (verdict `implement`, or
+    // written after the triage and awaiting it). Anything else is published and is called through
+    // serverApi/browserApi with the generated types — never through a request again.
+    const offContract = entries
+      .map(([key]) => key)
+      .filter((key) => key.includes(" /v1/admin/"))
       .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key));
     expect(offContract).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual([]);
+    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/admin/"))).toEqual([]);
   });
 
   it("spells every key as a method and a surface path template", () => {
@@ -173,28 +189,29 @@ describe("the request client", () => {
 
   it("fills path parameters and sends the idempotency key it was given", async () => {
     const { seen, requests } = recorder();
-    await requests.call("POST /v1/admin/imports/{importId}/actions/apply", {
-      path: { importId: "0192f3a0-7c1e-7d2a-9b1f-00000000a001" },
+    await requests.call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
+      path: { documentId: "0192f3a0-7c1e-7d2a-9b1f-00000000a001" },
+      body: { channels: ["email"] },
       idempotencyKey: "k-1",
     });
 
     expect(seen[0]?.url).toBe(
-      "https://api.example/v1/admin/imports/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/apply",
+      "https://api.example/v1/admin/customer-documents/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/resend",
     );
     expect(seen[0]?.headers.get("Idempotency-Key")).toBe("k-1");
   });
 
   it("reads the ETag for an edit and sends it back as If-Match", async () => {
     const { seen, requests } = recorder();
-    const campaignId = "0192f3a0-7c1e-7d2a-9b1f-00000000a002";
-    const { etag } = await requests.read("GET /v1/admin/campaigns/{campaignId}", { path: { campaignId } });
-    await requests.call("PATCH /v1/admin/campaigns/{campaignId}", {
-      path: { campaignId },
-      body: { name: "ใหม่" },
+    const designId = "0192f3a0-7c1e-7d2a-9b1f-00000000a002";
+    const { etag } = await requests.read("GET /v1/admin/saved-views", { query: { resource: "order" } });
+    await requests.call("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", {
+      path: { designId, versionNo: "3" },
       etag: etag!,
     });
 
     expect(etag).toBe('W/"v1"');
+    expect(seen[1]?.url).toBe(`https://api.example/v1/store/designs/${designId}/versions/3/actions/restore`);
     expect(seen[1]?.headers.get("If-Match")).toBe('W/"v1"');
   });
 
@@ -217,9 +234,12 @@ describe("the request client", () => {
     // Compile-time guarantees, checked by `pnpm typecheck` rather than at runtime:
     const never = () => {
       // @ts-expect-error — an irreversible action needs the caller's idempotency key
-      void requests.call("POST /v1/admin/imports/{importId}/actions/apply", { path: { importId: "x" } });
+      void requests.call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
+        path: { documentId: "x" },
+        body: { channels: ["email"] },
+      });
       // @ts-expect-error — a path parameter cannot be forgotten
-      void requests.call("GET /v1/admin/imports/{importId}");
+      void requests.call("GET /v1/admin/customers/{customerId}/consents");
       // @ts-expect-error — neither can a body
       void requests.call("POST /v1/admin/saved-views");
       // @ts-expect-error — nor can a key be misspelt

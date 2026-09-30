@@ -4,22 +4,23 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { COMPANY_STATUS, CREDIT_STATUS } from "@/domain/status";
-import { useFormat } from "@/features/shared/format";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { QueueTabs, ResourceList, StatusChip, type InitialPage } from "../console";
-import { COMPANY_STATUSES, CREDIT_STATUSES, companiesList, type CompanySummary } from "./resources";
+import { COMPANY_STATUSES, companiesList, type Company } from "./resources";
 
 /**
- * B2B companies (F2 2.7, D-120…D-125): by account status, with the credit standing and what is
- * owed. A company blocked for being overdue (D-122) is flagged in the row.
+ * B2B companies (F2 2.7, D-120…D-125): by account status, with the credit standing. A company
+ * blocked for being overdue (D-122, `creditStatus: blocked_overdue`) is flagged in the row.
+ *
+ * CONTRACT-GAP admin.companies — the published list carries no receivables per row (open,
+ * overdue, oldest overdue days) and cannot be filtered by credit status, so neither is shown.
  */
-export function CompaniesList({ initial }: { initial: InitialPage<CompanySummary> | null }) {
+export function CompaniesList({ initial }: { initial: InitialPage<Company> | null }) {
   const t = useTranslations("companies.list");
   const tStatus = useTranslations("status");
-  const format = useFormat();
 
-  const columns: DataTableColumn<CompanySummary>[] = [
+  const columns: DataTableColumn<Company>[] = [
     {
       id: "legalName",
       header: t("columns.company"),
@@ -29,7 +30,7 @@ export function CompaniesList({ initial }: { initial: InitialPage<CompanySummary
             {row.legalName}
           </Link>
           <p className="text-muted font-mono text-xs">
-            {row.companyCode} · {row.taxId}
+            {row.companyCode ?? t("noCode")} · {row.taxId}
           </p>
         </div>
       ),
@@ -45,26 +46,12 @@ export function CompaniesList({ initial }: { initial: InitialPage<CompanySummary
       cell: (row) => <StatusChip map={CREDIT_STATUS} value={row.creditStatus} />,
     },
     {
-      id: "open",
-      header: t("columns.open"),
+      id: "members",
+      header: t("columns.members"),
       numeric: true,
-      cell: (row) => format.thb(row.receivables.openAmount),
+      // CONTRACT-GAP admin.companies: no membersCount — the members arrive inline and are counted here.
+      cell: (row) => row.members.filter((member) => member.status !== "removed").length,
     },
-    {
-      id: "overdue",
-      header: t("columns.overdue"),
-      numeric: true,
-      cell: (row) =>
-        Number(row.receivables.overdueAmount) > 0 ? (
-          <span className="text-danger">
-            {format.thb(row.receivables.overdueAmount)}
-            <span className="block text-xs">{t("days", { days: row.receivables.oldestOverdueDays })}</span>
-          </span>
-        ) : (
-          <span className="text-muted">–</span>
-        ),
-    },
-    { id: "members", header: t("columns.members"), numeric: true, cell: (row) => row.membersCount },
     {
       id: "paidOrders",
       header: t("columns.paidOrders"),
@@ -94,15 +81,7 @@ export function CompaniesList({ initial }: { initial: InitialPage<CompanySummary
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        rowTone={(row) => (row.receivables.creditOrdersBlocked ? "danger" : undefined)}
-        filters={[
-          {
-            id: "creditStatus",
-            label: t("columns.credit"),
-            kind: "select",
-            options: CREDIT_STATUSES.map((value) => ({ value, label: tStatus(CREDIT_STATUS[value].labelKey) })),
-          },
-        ]}
+        rowTone={(row) => (row.creditStatus === "blocked_overdue" ? "danger" : undefined)}
         empty={{ title: t("empty") }}
       />
     </div>

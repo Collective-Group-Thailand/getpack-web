@@ -10,59 +10,68 @@ import { Badge } from "@/ui/components/Badge";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { CrudList, defineResource, QueueTabs, StatusChip, type FieldDef, type InitialPage } from "../console";
-import { BudgetMeter } from "./BudgetMeter";
-import { CAMPAIGN_STATUSES, campaignsList, type CampaignSummary } from "./resources";
-import { bangkokMidnight } from "./time";
+import { CampaignBudget } from "./CampaignBudget";
+import { CAMPAIGN_STATUSES, campaignsList, type Campaign } from "./resources";
+import { bangkokDayOf, bangkokMidnight } from "./time";
 
+const day = /^\d{4}-\d{2}-\d{2}$/;
 const schema = z.object({
-  code: z.string().regex(/^[A-Z0-9][A-Z0-9_-]{2,39}$/, "code"),
+  // `CreateCampaignDto.code`: lower case, digits, `-` or `_`, 2–40 long.
+  code: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,39}$/, "code"),
   name: z.string().trim().min(1, "required"),
-  startsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "required"),
-  endsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "required"),
-  budgetAmount: z.string().regex(/^\d+(\.\d{1,2})?$/, "amount"),
-  goals: z.string().optional(),
+  startsOn: z.string().regex(day, "required"),
+  endsOn: z.string().regex(day).or(z.literal("")),
+  budgetAmount: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, "amount")
+    .or(z.literal("")),
 });
 type Values = z.infer<typeof schema>;
 
-const config = defineResource<CampaignSummary, Values>({
+const config = defineResource<Campaign, Values>({
   list: campaignsList,
-  manage: "marketing.manage",
+  manage: "campaigns.manage",
   form: {
     schema,
-    empty: { code: "", name: "", startsOn: "", endsOn: "", budgetAmount: "", goals: "" },
+    empty: { code: "", name: "", startsOn: "", endsOn: "", budgetAmount: "" },
     toValues: (row) => ({
       code: row.code,
       name: row.name,
-      startsOn: row.startsAt.slice(0, 10),
-      endsOn: row.endsAt.slice(0, 10),
-      budgetAmount: row.budgetAmount,
-      goals: "",
+      startsOn: bangkokDayOf(row.startsAt),
+      endsOn: bangkokDayOf(row.endsAt),
+      budgetAmount: row.budgetAmount ?? "",
     }),
-    create: ({ requests }, values) =>
-      requests.call("POST /v1/admin/campaigns", {
-        body: {
-          code: values.code,
-          name: values.name.trim(),
-          startsAt: bangkokMidnight(values.startsOn),
-          endsAt: bangkokMidnight(values.endsOn, true),
-          budgetAmount: Number(values.budgetAmount).toFixed(2),
-          goals: values.goals?.trim() || null,
-        },
-      }),
+    // Goals are a free map on the contract (`goals: { … }`) with no documented keys, so the form
+    // does not write them; the campaign page shows what the API holds.
+    create: async ({ contract }, values) =>
+      (
+        await contract.POST("/v1/admin/campaigns", {
+          body: {
+            code: values.code,
+            name: values.name.trim(),
+            startsAt: bangkokMidnight(values.startsOn),
+            endsAt: values.endsOn ? bangkokMidnight(values.endsOn, true) : null,
+            budgetAmount: values.budgetAmount ? Number(values.budgetAmount).toFixed(2) : null,
+          },
+        })
+      ).data!,
   },
 });
 
 /**
  * Campaigns (F2 2.7, D-053, D-154): a time-boxed THB budget grouping promotions. Each row shows
- * how much of the budget is spent against the alert threshold the API reports — the setting
+ * the budget spent and the alert threshold the API reports — the setting
  * `campaigns.budget_alert_pct` — and the API stops a campaign whose budget runs out.
+ *
+ * CONTRACT-GAP admin.campaigns — no owner, `spentPct` or `promotionsCount` on the row, so the list
+ * has no gauge and no promotion count.
  */
-export function CampaignsList({ initial }: { initial: InitialPage<CampaignSummary> | null }) {
+export function CampaignsList({ initial }: { initial: InitialPage<Campaign> | null }) {
   const t = useTranslations("marketing.campaigns");
   const tStatus = useTranslations("status");
   const format = useFormat();
 
-  const columns: DataTableColumn<CampaignSummary>[] = [
+  const columns: DataTableColumn<Campaign>[] = [
     {
       id: "code",
       header: t("columns.campaign"),
@@ -84,8 +93,8 @@ export function CampaignsList({ initial }: { initial: InitialPage<CampaignSummar
       id: "budget",
       header: t("columns.budget"),
       cell: (row) => (
-        <div className="w-48">
-          <BudgetMeter campaign={row} compact />
+        <div className="w-56">
+          <CampaignBudget campaign={row} compact />
         </div>
       ),
     },
@@ -94,15 +103,9 @@ export function CampaignsList({ initial }: { initial: InitialPage<CampaignSummar
       header: t("columns.window"),
       cell: (row) => (
         <span className="text-sm whitespace-nowrap">
-          {format.date(row.startsAt)} – {format.date(row.endsAt)}
+          {format.date(row.startsAt)} – {row.endsAt ? format.date(row.endsAt) : t("noEnd")}
         </span>
       ),
-    },
-    {
-      id: "promotions",
-      header: t("columns.promotions"),
-      numeric: true,
-      cell: (row) => row.promotionsCount,
     },
     {
       id: "alert",
@@ -122,10 +125,9 @@ export function CampaignsList({ initial }: { initial: InitialPage<CampaignSummar
   const fields: FieldDef<Values>[] = [
     { name: "name", label: t("fields.name"), kind: "text", required: true, wide: true },
     { name: "code", label: t("fields.code"), kind: "text", required: true, hint: t("hints.code") },
-    { name: "budgetAmount", label: t("fields.budget"), kind: "text", required: true, hint: t("hints.budget") },
+    { name: "budgetAmount", label: t("fields.budget"), kind: "text", hint: t("hints.budget") },
     { name: "startsOn", label: t("fields.startsOn"), kind: "date", required: true },
-    { name: "endsOn", label: t("fields.endsOn"), kind: "date", required: true },
-    { name: "goals", label: t("fields.goals"), kind: "textarea", wide: true },
+    { name: "endsOn", label: t("fields.endsOn"), kind: "date", hint: t("hints.endsOn") },
   ];
 
   return (

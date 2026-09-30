@@ -2,10 +2,10 @@
  * Artwork, proofs and design services from the customer's side, at their published paths
  * (`store.artwork.*`, `store.designServices.*`, `store.files.download`; U-F0.2).
  *
- * The rows are the prepress desk's (`../admin/prepress.ts`), which keep the admin zone's request
- * shape until U-F0.3: an upload here is the submission prepress checks, a proof prepress sends is
- * the one the customer reviews, a comment is one thread both reply to. This file projects them onto
- * the published DTOs.
+ * The rows are the prepress desk's (`../admin/prepress.ts`): an upload here is the submission
+ * prepress checks, a proof prepress sends is the one the customer reviews, a comment is one thread
+ * both reply to. This file projects them onto the published DTOs, for this zone and for the back
+ * office's own operations (`../admin/artwork.ts`), which show staff by name.
  *
  * Proof pages and the dieline template are drawn with `@packio/dieline` from the order's box size —
  * obviously fake artwork on the real outline — and served as SVG through `store.files.download`,
@@ -38,6 +38,8 @@ import {
   prepressOf,
   proofAnnotations,
   refreshPrepress,
+  rejectReasons,
+  templateNotes,
   type PrepressDetail,
 } from "../admin/prepress";
 import { fileDataUrl, files } from "../admin/platform";
@@ -65,6 +67,17 @@ const keyRequired = (request: Request) =>
 const svgUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 /** What `store.files.download` hands back for a file the mock drew (proof pages, overlays, templates). */
 const drawn = new Map<string, string>();
+
+/** A file the mock drew, or one it keeps the bytes of, as a data URL — for either zone's download. */
+export function mockFileUrl(fileId: string): string | null {
+  return (
+    drawn.get(fileId) ??
+    fileDataUrl(fileId) ??
+    (files.get(fileId)
+      ? `data:text/plain;charset=utf-8,${encodeURIComponent(`${files.get(fileId)!.originalName} (ข้อมูลจำลอง)`)}`
+      : null)
+  );
+}
 /** A stable id for a file the mock draws for a row, in its own namespace. */
 const drawnId = (namespace: string, of: string) =>
   mockId(namespace, Number.parseInt(of.replace(/-/g, "").slice(-6), 16) % 0x100000);
@@ -120,7 +133,7 @@ function proofPage(detail: PrepressDetail, versionNo: number) {
 const exporting = new Map<string, number>();
 const EXPORT_MS = 3_000;
 
-function toSubmission(detail: PrepressDetail, submission: Submission): Schemas["ArtworkSubmissionDto"] {
+export function toSubmission(detail: PrepressDetail, submission: Submission): Schemas["ArtworkSubmissionDto"] {
   const since = exporting.get(submission.id);
   if (since !== undefined && Date.now() - since >= EXPORT_MS) {
     exporting.delete(submission.id);
@@ -182,9 +195,10 @@ function toSubmission(detail: PrepressDetail, submission: Submission): Schemas["
           },
     rejectReason:
       submission.status === "rejected"
-        ? submission.preflightStatus === "blocked"
-          ? "ไฟล์ไม่ผ่านการตรวจอัตโนมัติ กรุณาแก้ตามรายการด้านล่างแล้วส่งใหม่"
-          : "ทีมงานส่งไฟล์คืนให้แก้ไข"
+        ? (rejectReasons.get(submission.id) ??
+          (submission.preflightStatus === "blocked"
+            ? "ไฟล์ไม่ผ่านการตรวจอัตโนมัติ กรุณาแก้ตามรายการด้านล่างแล้วส่งใหม่"
+            : "ทีมงานส่งไฟล์คืนให้แก้ไข"))
         : null,
     reviewedAt: null,
     submittedAt: submission.submittedAt,
@@ -194,7 +208,12 @@ function toSubmission(detail: PrepressDetail, submission: Submission): Schemas["
 /** What the customer wrote when asking for changes, per proof (the desk's row keeps no comment). */
 const decisionComments = new Map<string, string>();
 
-function toProof(detail: PrepressDetail, proof: Proof): Schemas["ProofDto"] {
+/** Staff appear as the team to the customer (`customer`), by name to the back office (`staff`). */
+export function toProof(
+  detail: PrepressDetail,
+  proof: Proof,
+  audience: "customer" | "staff" = "customer",
+): Schemas["ProofDto"] {
   const { page, overlay } = proofPage(detail, proof.versionNo);
   const pageId = drawnId("prp", proof.id);
   const overlayId = proof.dielineFile?.id ?? drawnId("prd", proof.id);
@@ -246,7 +265,10 @@ function toProof(detail: PrepressDetail, proof: Proof): Schemas["ProofDto"] {
       geometry: item.geometry,
       comment: item.comment,
       // Staff appear as the team.
-      author: { kind: item.authorKind, displayName: item.authorKind === "staff" ? TEAM : item.author.displayName },
+      author: {
+        kind: item.authorKind,
+        displayName: item.authorKind === "staff" && audience === "customer" ? TEAM : item.author.displayName,
+      },
       createdAt: item.createdAt,
       resolvedAt: item.resolvedAt,
     })),
@@ -254,7 +276,7 @@ function toProof(detail: PrepressDetail, proof: Proof): Schemas["ProofDto"] {
 }
 
 /** The dieline templates sent for the order; one is drawn for a box the mock knows the shape of. */
-function toTemplates(detail: PrepressDetail): Schemas["DielineDeliveryDto"][] {
+export function toTemplates(detail: PrepressDetail): Schemas["DielineDeliveryDto"][] {
   const style = DIELINE_KEYS[detail.dieline.patternCode ?? ""];
   const sent = detail.templateDeliveries.map((delivery) => {
     if (style)
@@ -262,7 +284,7 @@ function toTemplates(detail: PrepressDetail): Schemas["DielineDeliveryDto"][] {
     return {
       id: delivery.id,
       fileId: delivery.file.id,
-      note: null,
+      note: templateNotes.get(delivery.id) ?? null,
       sentAt: delivery.sentAt,
       trigger: delivery.trigger,
     };
@@ -297,7 +319,7 @@ function briefOf(service: Service): Schemas["DesignBriefViewDto"] | null {
   };
 }
 
-function toDesignService(detail: PrepressDetail, service: Service): Schemas["DesignServiceDto"] {
+export function toDesignService(detail: PrepressDetail, service: Service): Schemas["DesignServiceDto"] {
   const order = orders.find((candidate) => candidate.id === detail.orderId)!;
   const group = groupForOrder(order);
   const next = service.nextRound;
@@ -363,7 +385,7 @@ const designProofs = new Map<string, { serviceId: string; roundNo: number }>();
  * A delivered design round as the proof the customer decides on (packio-api: the delivery is a
  * submission with source `design_service` that goes to a proof). Made once per delivered round.
  */
-function syncDesign(detail: PrepressDetail): PrepressDetail {
+export function syncDesign(detail: PrepressDetail): PrepressDetail {
   const service = detail.designService;
   const order = orders.find((candidate) => candidate.id === detail.orderId);
   if (!service || !order) return detail;
@@ -691,13 +713,7 @@ export const storeArtworkHandlers = [
   // mock kept them, as for a design's images and thumbnails), as a data URL.
   http.get("*/v1/store/files/:fileId/download", ({ params, request }) => {
     if (!customerOf(request)) return unauthenticated();
-    const fileId = String(params.fileId);
-    const url =
-      drawn.get(fileId) ??
-      fileDataUrl(fileId) ??
-      (files.get(fileId)
-        ? `data:text/plain;charset=utf-8,${encodeURIComponent(`${files.get(fileId)!.originalName} (ข้อมูลจำลอง)`)}`
-        : null);
+    const url = mockFileUrl(String(params.fileId));
     if (!url) return problem(404, "http.not_found", "ไม่พบไฟล์นี้");
     return HttpResponse.json({ url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),

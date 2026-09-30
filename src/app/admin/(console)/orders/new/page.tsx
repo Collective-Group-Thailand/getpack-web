@@ -18,7 +18,8 @@ export default async function NewOrderPage({ searchParams }: Props) {
   const t = await getTranslations("cs.createOrder");
   const query = await searchParams;
   const quoteId = typeof query.quote === "string" ? query.quote : null;
-  const quantity = Number(query.quantity);
+  const optionId = typeof query.option === "string" ? query.option : undefined;
+  const quantity = Number(query.quantity) || undefined;
   return (
     <ConsolePage>
       <PageHeader
@@ -31,8 +32,8 @@ export default async function NewOrderPage({ searchParams }: Props) {
         title={t("title")}
         description={t("description")}
       />
-      {quoteId && quantity > 0 ? (
-        <CreateOrder quoteId={quoteId} quantity={quantity} />
+      {quoteId ? (
+        <CreateOrder quoteId={quoteId} optionId={optionId} quantity={quantity} />
       ) : (
         <EmptyState icon="calculator" title={t("needQuote")} description={t("needQuoteBody")} />
       )}

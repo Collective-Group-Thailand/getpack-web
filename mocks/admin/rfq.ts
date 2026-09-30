@@ -1,25 +1,23 @@
 /**
- * The RFQ desk, mocked (CONTRACT-REQUEST admin.rfqs, admin.rfq-messages, admin.rfq-actions,
- * admin.rfq-consultations, admin.rfq-quotes, admin.unmet-demand-reasons).
+ * The RFQ desk, mocked. The published surface (`admin.rfqs.*`, U-F0.3) is served at its own paths
+ * with `StaffRfqDto`; what packio-api still has to build stays a contract request (`mockRequest`):
+ * start-review, candidate factories, remind, the draft edit, record-acceptance and the
+ * unmet-demand reasons (CONTRACT-REQUEST admin.rfq-actions, admin.rfq-consultations,
+ * admin.rfq-quotes, admin.unmet-demand-reasons).
  *
  * State moves the way B2.5 describes: `submitted → in_review → need_info → quoted → accepted |
  * declined | expired`. A factory's answer arrives as a buy price per quantity; the mock derives
- * the suggested sell price from it with a flat mark-up standing in for the sell-margin table,
- * and computes line amounts in whole satang — standing in for the backend, the only place money
- * is computed. Cost and margin leave per D-141, decided per actor in `forActor`.
+ * a suggested sell price from it with a flat mark-up standing in for the sell-margin table (kept
+ * in the fixture; the published RFQ does not carry it), and computes line amounts in whole satang
+ * — standing in for the backend, the only place money is computed. Cost and margin leave per
+ * D-141, decided per actor on the way out.
  */
 
+import { http, HttpResponse } from "msw";
 import type { z } from "zod";
 
-import type {
-  candidateFactory,
-  consultation,
-  rfqDetail,
-  rfqMessage,
-  rfqQuote,
-  rfqQuoteLine,
-} from "@/lib/api/requests/admin-rfq";
-import { rfqSummary } from "@/lib/api/requests/admin-rfq";
+import type { candidateFactory } from "@/lib/api/requests/admin-rfq";
+import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
@@ -30,13 +28,14 @@ import { baht, customers, FACTORY } from "./commerce";
 import { indexForSearch, registerQueue } from "./console";
 import { PARTICIPATION } from "./partners";
 import { settings } from "./platform";
+import type { ConsultationRow, QuoteLineRow, QuoteRow, RfqMessageRow, RfqRow } from "./rfq-model";
 import { quotations } from "./sales";
 
-type Rfq = z.output<typeof rfqDetail>;
-type Consultation = z.output<typeof consultation>;
-type Quote = z.output<typeof rfqQuote>;
-type QuoteLine = z.output<typeof rfqQuoteLine>;
-type Message = z.output<typeof rfqMessage>;
+type Rfq = RfqRow;
+type Consultation = ConsultationRow;
+type Quote = QuoteRow;
+type QuoteLine = QuoteLineRow;
+type Message = RfqMessageRow;
 type Candidate = z.output<typeof candidateFactory>;
 
 const HOUR = 60;
@@ -95,14 +94,20 @@ function numberSetting(key: string, fallback: number): number {
 const suggestedFrom = (buy: string) => (Math.round(Number(buy) * 130) / 100).toFixed(6);
 
 function priceLine(
-  input: { quantity: number; unitPrice: string; leadTimeDays: number; consultationId?: string | null },
+  input: {
+    quantity: number;
+    unitPrice: string;
+    leadTimeDays: number;
+    consultationId?: string | null;
+    buyUnitPrice?: string | null;
+  },
   rfq: Rfq,
 ): QuoteLine {
   const net = Math.round(Number(input.unitPrice) * input.quantity * 100);
   const vat = Math.round(net * 0.07);
   const source = rfq.consultations.find((item) => item.id === input.consultationId);
   const tier = source?.response?.tiers.find((item) => item.quantity === input.quantity);
-  const buy = tier?.buyUnitPrice;
+  const buy = input.buyUnitPrice ?? tier?.buyUnitPrice;
   const margin = buy ? ((Number(input.unitPrice) - Number(buy)) / Number(input.unitPrice)) * 100 : null;
   return {
     quantity: input.quantity,
@@ -114,7 +119,7 @@ function priceLine(
     suggestedUnitPrice: tier?.suggestedUnitPrice ?? null,
     consultationId: source?.id ?? null,
     factory: source?.factory ?? null,
-    ...(buy ? { buyUnitPrice: buy } : {}),
+    ...(buy ? { buyUnitPrice: Number(buy).toFixed(6) } : {}),
     ...(margin !== null ? { marginPct: margin.toFixed(4) } : {}),
     belowMarginFloor: margin !== null && margin < numberSetting("pricing.margin_floor_pct", 10),
   };
@@ -540,7 +545,6 @@ function build(seed: Seed, index: number): Rfq {
       author: { id: customer.id, displayName: customer.displayName },
       visibility: "customer",
       body: seed.notes ?? "รบกวนเสนอราคาตามสเปกที่แนบครับ",
-      files: [],
       createdAt: rfq.submittedAt,
     },
     ...(seed.status === "need_info"
@@ -551,7 +555,6 @@ function build(seed: Seed, index: number): Rfq {
             author: refOf(CS),
             visibility: "customer" as const,
             body: "รบกวนแจ้งจำนวนสีที่ต้องการพิมพ์ และส่งไฟล์โลโก้แบบเวกเตอร์ครับ",
-            files: [],
             createdAt: rfq.firstResponseAt!,
           },
         ]
@@ -566,37 +569,46 @@ function toQuotation(rfq: Rfq, quote: Quote, quantity: number, by: StaffPersona)
   const line = quote.lines.find((item) => item.quantity === quantity) ?? quote.lines[0]!;
   const id = mockId("quo", 700 + quotations.length);
   const quoteCode = `QT-2569-${String(700 + quotations.length).padStart(5, "0")}`;
+  // The published saved quotation (`AdminSavedQuoteDto`, U-F0.3) with the accepted line as its option.
   quotations.unshift({
     id,
     quoteCode,
+    productTypeCode: rfq.productType.code,
     source: "rfq",
-    rfq: { id: rfq.id, rfqCode: rfq.rfqCode },
-    customer: rfq.customer,
-    productType: rfq.productType,
-    quantities: [line.quantity],
-    grossAmount: line.grossAmount,
-    currency: "THB",
     status: "saved",
     channel: "cs",
-    validUntil: `${quote.validUntil}T23:59:59+07:00`,
+    customer: { id: rfq.customer.id, displayName: rfq.customer.displayName },
     createdBy: refOf(by),
-    createdAt: bangkokIso(),
-    specs: rfq.spec,
+    configuration: null,
+    deliveryPostcode: null,
+    currency: "THB",
     options: [
       {
+        id: mockId("qop", 7000 + quotations.length),
         quantity: line.quantity,
         unitPrice: line.unitPrice,
+        productAmount: line.grossAmount,
+        designFeeAmount: "0.00",
+        structureDesignFeeAmount: "0.00",
+        shippingAmount: null,
+        shippingPending: true,
+        shippingPendingReason: "no_postcode",
         netAmount: line.netAmount,
-        discountAmount: "0.00",
         vatAmount: line.vatAmount,
         grossAmount: line.grossAmount,
         leadTimeDays: line.leadTimeDays,
         earliestShipDate: day(line.leadTimeDays * DAY),
+        earliestDeliveryDate: null,
+        toleranceShortagePct: "5.0000",
+        toleranceOveragePct: "5.0000",
+        internal: null,
       },
     ],
-    discount: null,
-    pdf: null,
-    nextActions: [{ key: "quote.export_pdf" }, { key: "quote.create_order" }],
+    priceLocked: true,
+    pdfStatus: "none",
+    sharedAt: null,
+    validUntil: `${quote.validUntil}T23:59:59+07:00`,
+    createdAt: bangkokIso(),
   });
   return { id, quoteCode, versionNo: quote.versionNo, quantity: line.quantity };
 }
@@ -678,7 +690,7 @@ function forActor(rfq: Rfq, who: StaffPersona | undefined): Rfq {
   const cost = can(who, "factory_cost.read");
   const margin = can(who, "margin.read");
   const whenDiscounting = can(who, "margin.read_pct_when_discounting");
-  const manage = can(who, "rfq.manage");
+  const manage = can(who, "rfqs.manage");
   return {
     ...rfq,
     consultations: rfq.consultations.map((item) => ({
@@ -705,23 +717,118 @@ function forActor(rfq: Rfq, who: StaffPersona | undefined): Rfq {
   };
 }
 
-/** A list row carries the summary columns only. */
-const summaryOf = (rfq: Rfq) => rfqSummary.parse(rfq);
+/* ---------------------------------------------------------------------- the published StaffRfqDto */
+
+const CLOSED: readonly Rfq["status"][] = ["accepted", "declined", "expired"];
+
+/** When the request was closed: its acceptance or decline, as the log has it. */
+function closedAtOf(rfq: Rfq): string | null {
+  if (!CLOSED.includes(rfq.status)) return null;
+  const closing = [...rfq.events]
+    .reverse()
+    .find((event) => event.kind === "rfq.accepted" || event.kind === "rfq.declined");
+  return closing?.at ?? rfq.quotes.find((quote) => quote.acceptedAt)?.acceptedAt ?? rfq.submittedAt;
+}
+
+/**
+ * A row as `admin.rfqs.get` publishes it. Buy prices need `factory_cost.read`, the margin
+ * `margin.read` (D-141); the rest of the fixture (files, contact, events, SLA target, suggested
+ * prices, tiers) stays in the mock (CONTRACT-GAP admin.rfqs).
+ */
+export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas["StaffRfqDto"] {
+  const rfq = refresh(row);
+  const cost = can(who, "factory_cost.read");
+  const margin = can(who, "margin.read");
+  const customer = { id: rfq.customer.id, displayName: rfq.customer.displayName };
+  return {
+    id: rfq.id,
+    rfqCode: rfq.rfqCode,
+    status: rfq.status,
+    channel: rfq.channel,
+    customer,
+    assignedTo: rfq.assignee,
+    productTypeCode: rfq.productType.code,
+    productTypeName: rfq.productType.name,
+    quantities: rfq.quantities,
+    lengthMm: rfq.dimensions?.lengthMm ?? null,
+    widthMm: rfq.dimensions?.widthMm ?? null,
+    heightMm: rfq.dimensions?.heightMm ?? null,
+    targetDate: rfq.targetDate,
+    deliveryPostcode: rfq.deliveryPostcode,
+    notes: rfq.notes ?? "",
+    // The fixture keeps the spec in words; its labels stand in for the answer keys.
+    spec: Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
+    submittedAt: rfq.submittedAt,
+    firstResponseAt: rfq.firstResponseAt,
+    slaDueAt: rfq.slaDueAt,
+    overdue: rfq.urgency === "late",
+    closedAt: closedAtOf(rfq),
+    declineReasonCode: rfq.declineReason?.code ?? null,
+    acceptedQuoteId: rfq.acceptedQuotation?.id ?? null,
+    consultations: rfq.consultations.map((item) => ({
+      id: item.id,
+      factoryId: item.factory.id,
+      factoryCode: item.factory.code,
+      status: item.status,
+      dueAt: item.dueAt,
+      note: item.note ?? "",
+      respondedAt: item.respondedAt,
+      responseNote: item.response?.notes ?? item.declineNote ?? null,
+      lines:
+        cost && item.response
+          ? item.response.tiers
+              .filter((tier) => tier.buyUnitPrice)
+              .map((tier) => ({
+                quantity: tier.quantity,
+                buyUnitPrice: tier.buyUnitPrice!,
+                leadTimeDays: item.response!.leadTimeDays,
+              }))
+          : null,
+    })),
+    quotations: rfq.quotes.map((quote) => ({
+      id: quote.id,
+      versionNo: quote.versionNo,
+      status: quote.status,
+      // A draft has no validity yet: the API sets it when the version is sent (D-051).
+      validUntil: quote.status === "draft" ? null : `${quote.validUntil}T23:59:59+07:00`,
+      sentAt: quote.sentAt,
+      note: quote.customerNote ?? "",
+      lines: quote.lines.map((line) => ({
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+        netAmount: line.netAmount,
+        vatAmount: line.vatAmount,
+        grossAmount: line.grossAmount,
+        leadTimeDays: line.leadTimeDays,
+        shippingNetAmount: "0.00",
+        belowMarginFloor: line.belowMarginFloor,
+        factoryId: line.factory?.id ?? null,
+        buyUnitPrice: cost ? (line.buyUnitPrice ?? null) : null,
+        marginPct: margin ? (line.marginPct ?? null) : null,
+      })),
+    })),
+    messages: (messages.get(rfq.id) ?? []).map((message) => ({
+      id: message.id,
+      author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
+      authorUser: message.author ?? customer,
+      visibility: message.visibility,
+      body: message.body,
+      createdAt: message.createdAt,
+    })),
+  };
+}
 
 /* ----------------------------------------------------------------------------- queues, search */
 
+/** The desk's queues as the published filters express them (`status`, `assignedToId`, `overdue`). */
 const QUEUES: Record<string, (rfq: Rfq, who: StaffPersona | undefined) => boolean> = {
-  new: (rfq) => rfq.status === "submitted" && !rfq.assignee,
-  mine: (rfq, who) => rfq.assignee?.id === who?.id && ["submitted", "in_review", "need_info"].includes(rfq.status),
-  need_info: (rfq) => rfq.status === "need_info",
-  awaiting_factory: (rfq) =>
-    ["in_review", "need_info"].includes(rfq.status) && rfq.consultations.some((item) => item.status === "requested"),
-  quoted: (rfq) => rfq.status === "quoted",
+  new: (rfq) => rfq.status === "submitted",
+  mine: (rfq, who) => rfq.assignee?.id === who?.id,
   overdue: (rfq) => refresh(rfq).urgency === "late",
 };
 
-for (const queue of ["new", "mine", "awaiting_factory", "overdue"] as const) {
-  registerQueue("rfq.read", (who) => {
+for (const queue of ["new", "mine", "overdue"] as const) {
+  registerQueue("rfqs.read", (who) => {
     const rows = rfqs.filter((rfq) => QUEUES[queue]!(rfq, who));
     const due = rows
       .filter((rfq) => !rfq.firstResponseAt)
@@ -745,15 +852,17 @@ indexForSearch(
     code: rfq.rfqCode,
     title: `${rfq.rfqCode} · ${rfq.customer.displayName}`,
     subtitle: rfq.productType.name,
-    permission: "rfq.read",
+    permission: "rfqs.read",
     keywords: rfq.contact.phone ?? "",
   })),
 );
 
 /* --------------------------------------------------------------------------------- handlers */
 
-const find = (rfqId: string | undefined) => rfqs.find((rfq) => rfq.id === rfqId);
+const find = (rfqId: unknown) => rfqs.find((rfq) => rfq.id === rfqId);
+const findByQuote = (quoteId: unknown) => rfqs.find((rfq) => rfq.quotes.some((quote) => quote.id === quoteId));
 const notFound = () => problem(404, "rfq.not_found", "ไม่พบคำขอราคานี้");
+const httpNotFound = () => problem(404, "http.not_found", "ไม่พบคำขอราคานี้");
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
 const conflict = (detail: string) => problem(409, "rfq.invalid_state", detail);
 
@@ -778,10 +887,28 @@ function manage(
   action: string,
 ): Response | { rfq: Rfq; who: StaffPersona } {
   const who = staffPersonaOf(request);
-  if (!who || !can(who, "rfq.manage")) return forbidden();
+  if (!who || !can(who, "rfqs.manage")) return forbidden();
   const rfq = find(rfqId);
   if (!rfq) return notFound();
-  if (!offered(rfq, action)) return conflict("ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
+  if (!offered(refresh(rfq), action)) return conflict("ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
+  return { rfq, who };
+}
+
+/**
+ * The same for a published operation (`rfqs.manage`), answering with the codes it documents:
+ * `rfq.closed` on a closed request, `rfq.invalid_transition` for anything else it does not offer.
+ */
+function managePublished(
+  request: Request,
+  rfq: Rfq | undefined,
+  action: string,
+): Response | { rfq: Rfq; who: StaffPersona } {
+  const who = staffPersonaOf(request);
+  if (!who || !can(who, "rfqs.manage")) return forbidden();
+  if (!rfq) return httpNotFound();
+  if (CLOSED.includes(rfq.status)) return problem(409, "rfq.closed", "คำขอราคานี้ปิดแล้ว");
+  if (!offered(refresh(rfq), action))
+    return problem(409, "rfq.invalid_transition", "ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
   return { rfq, who };
 }
 
@@ -789,24 +916,37 @@ function respond(rfq: Rfq, who: StaffPersona | undefined) {
   return forActor(refresh(rfq), who);
 }
 
+const published = (rfq: Rfq, who: StaffPersona | undefined, status = 200) =>
+  HttpResponse.json(toStaffRfqDto(rfq, who), { status });
+
+async function bodyOf<T>(request: Request): Promise<T | null> {
+  return (await request.json().catch(() => null)) as T | null;
+}
+
 /** The draft's lines priced by the "API", or the 422 it answers with. */
 function draftLines(
   rfq: Rfq,
-  body: {
-    validUntil: string;
-    lines: { quantity: number; unitPrice: string; leadTimeDays: number; consultationId?: string }[];
-  },
+  lines: {
+    quantity: number;
+    unitPrice: string;
+    leadTimeDays: number;
+    consultationId?: string | null;
+    buyUnitPrice?: string | null;
+  }[],
 ): Response | QuoteLine[] {
-  if (body.validUntil < day(0))
-    return problem(422, "validation.failed", "วันหมดอายุต้องไม่อยู่ในอดีต", [
-      { path: "validUntil", code: "min", message: "ต้องไม่อยู่ในอดีต" },
+  if (lines.length === 0)
+    return problem(422, "validation.failed", "ต้องมีอย่างน้อยหนึ่งรายการ", [
+      { path: "lines", code: "min", message: "ต้องมีอย่างน้อยหนึ่งรายการ" },
     ]);
-  if (new Set(body.lines.map((line) => line.quantity)).size !== body.lines.length)
+  if (new Set(lines.map((line) => line.quantity)).size !== lines.length)
     return problem(422, "validation.failed", "จำนวนซ้ำกัน", [
       { path: "lines", code: "unique", message: "จำนวนต้องไม่ซ้ำกัน" },
     ]);
-  return body.lines.map((line) => priceLine(line, rfq));
+  return lines.map((line) => priceLine(line, rfq));
 }
+
+/** The validity a version gets when it is sent: `quotes.validity_days` from today (D-051). */
+const validityFromToday = () => day(numberSetting("quotes.validity_days", 15) * DAY);
 
 /* ------------------------------------------------------------ the customer's side (mocks/store) */
 
@@ -847,85 +987,96 @@ export function customerAcceptQuote(
   return { ...rfq.acceptedQuotation, line };
 }
 
-export const rfqHandlers = [
-  mockRequest("GET /v1/admin/rfqs", ({ query, request }) => {
+/** The published RFQ surface (`admin.rfqs.*`, contract v0.3.0). */
+const publishedHandlers = [
+  // admin.rfqs.list (`rfqs.read`)
+  http.get("*/v1/admin/rfqs", ({ request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "rfq.read")) return forbidden();
+    if (!can(who, "rfqs.read")) return forbidden();
+    const url = new URL(request.url);
+    const query = Object.fromEntries(url.searchParams);
     const rows = rfqs
       .map(refresh)
-      .filter((rfq) => !query.queue || QUEUES[query.queue]!(rfq, who))
       .filter((rfq) => !query.status || rfq.status === query.status)
-      .filter((rfq) => !query.productType || rfq.productType.code === query.productType)
-      .filter((rfq) => !query.assigneeId || rfq.assignee?.id === query.assigneeId)
-      .filter((rfq) => !query.channel || rfq.channel === query.channel)
-      .filter((rfq) => !query.submittedFrom || rfq.submittedAt.slice(0, 10) >= query.submittedFrom)
-      .filter((rfq) => !query.submittedTo || rfq.submittedAt.slice(0, 10) <= query.submittedTo)
+      .filter((rfq) => !query.assignedToId || rfq.assignee?.id === query.assignedToId)
+      .filter((rfq) => query.overdue !== "true" || rfq.urgency === "late")
       .filter((rfq) =>
         matchesQuery(query.q, rfq.rfqCode, rfq.customer.displayName, rfq.customer.companyName, rfq.contact.phone),
       )
-      .map(summaryOf);
-    // Queues work oldest-deadline first; everything else newest first unless asked otherwise.
+      .map((rfq) => toStaffRfqDto(rfq, who));
+    // Overdue work is oldest-deadline first; everything else newest first unless asked otherwise.
     const sorted = query.sort
-      ? sortBy(rows, query.sort, query.order)
-      : query.queue && query.queue !== "quoted"
+      ? sortBy(rows, query.sort, query.order as "asc" | "desc" | undefined)
+      : query.overdue === "true"
         ? sortBy(rows, "slaDueAt", "asc")
         : sortBy(rows, "submittedAt", "desc");
-    return paginate(sorted, query);
+    return HttpResponse.json(
+      paginate(sorted, {
+        page: query.page ? Number(query.page) : undefined,
+        perPage: query.perPage ? Number(query.perPage) : undefined,
+      }),
+    );
   }),
-  mockRequest("GET /v1/admin/rfqs/{rfqId}", ({ params, request }) => {
+
+  // admin.rfqs.get (`rfqs.read`)
+  http.get("*/v1/admin/rfqs/:rfqId", ({ params, request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "rfq.read")) return forbidden();
+    if (!can(who, "rfqs.read")) return forbidden();
     const rfq = find(params.rfqId);
-    return rfq ? respond(rfq, who) : notFound();
+    return rfq ? published(rfq, who) : httpNotFound();
   }),
-  mockRequest("GET /v1/admin/rfqs/{rfqId}/messages", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfq.read")) return forbidden();
-    const rfq = find(params.rfqId);
-    return rfq ? { data: messages.get(rfq.id) ?? [] } : notFound();
-  }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/messages", ({ params, body, request }) => {
+
+  // admin.rfqs.postMessage (`rfqs.manage`): answers the whole RFQ.
+  http.post("*/v1/admin/rfqs/:rfqId/messages", async ({ params, request }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "rfq.manage")) return forbidden();
+    if (!who || !can(who, "rfqs.manage")) return forbidden();
     const rfq = find(params.rfqId);
-    if (!rfq) return notFound();
+    if (!rfq) return httpNotFound();
+    if (CLOSED.includes(rfq.status)) return problem(409, "rfq.closed", "คำขอราคานี้ปิดแล้ว");
+    const body = await bodyOf<Schemas["StaffRfqMessageInputDto"]>(request);
+    if (!body?.body?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ข้อความ");
     const message: Message = {
       id: mockId("rms", 5000 + (messages.get(rfq.id)?.length ?? 0) + Math.floor(Math.random() * 1000)),
       authorKind: "staff",
-      author: refOf(who!),
+      author: refOf(who),
       visibility: body.visibility,
       body: body.body,
-      files: [],
       createdAt: bangkokIso(),
     };
     messages.set(rfq.id, [...(messages.get(rfq.id) ?? []), message]);
+    // The first customer-visible message records the first response (D-100).
     if (body.visibility === "customer" && !rfq.firstResponseAt) rfq.firstResponseAt = message.createdAt;
-    return message;
+    return published(rfq, who, 201);
   }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/actions/assign", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.assign");
+
+  // admin.rfqs.assign (`rfqs.manage`): a submitted request moves to in_review (D-100).
+  http.post("*/v1/admin/rfqs/:rfqId/actions/assign", async ({ params, request }) => {
+    const found = managePublished(request, find(params.rfqId), "rfq.assign");
     if (found instanceof Response) return found;
     const { rfq, who } = found;
-    const assignee = body.assigneeId ? PERSONAS.find((candidate) => candidate.id === body.assigneeId) : null;
-    if (body.assigneeId && !assignee) return problem(422, "validation.failed", "ไม่พบพนักงานที่เลือก");
-    if (assignee && !can(assignee, "rfq.manage"))
-      return problem(422, "rfq.assignee_not_eligible", "พนักงานคนนี้ไม่มีสิทธิ์รับผิดชอบคำขอราคา");
-    rfq.assignee = assignee ? refOf(assignee) : null;
-    log(rfq, "rfq.assigned", assignee ? `มอบหมายให้ ${assignee.displayName}` : "ยกเลิกการมอบหมาย", who);
-    return respond(rfq, who);
+    const body = await bodyOf<Schemas["AssignRfqDto"]>(request);
+    const assignee = PERSONAS.find((candidate) => candidate.id === body?.userId);
+    if (!assignee)
+      return problem(422, "validation.failed", "ไม่พบพนักงานที่เลือก", [
+        { path: "userId", code: "exists", message: "ไม่พบพนักงานที่เลือก" },
+      ]);
+    if (!can(assignee, "rfqs.manage"))
+      return problem(422, "validation.failed", "พนักงานคนนี้ไม่มีสิทธิ์รับผิดชอบคำขอราคา", [
+        { path: "userId", code: "permission", message: "ไม่มีสิทธิ์ rfqs.manage" },
+      ]);
+    rfq.assignee = refOf(assignee);
+    if (rfq.status === "submitted") rfq.status = "in_review";
+    log(rfq, "rfq.assigned", `มอบหมายให้ ${assignee.displayName}`, who);
+    return published(rfq, who);
   }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/actions/start-review", ({ params, request }) => {
-    const found = manage(request, params.rfqId, "rfq.start_review");
+
+  // admin.rfqs.requestInfo (`rfqs.manage`): → need_info; the message goes to the customer.
+  http.post("*/v1/admin/rfqs/:rfqId/actions/request-info", async ({ params, request }) => {
+    const found = managePublished(request, find(params.rfqId), "rfq.request_info");
     if (found instanceof Response) return found;
     const { rfq, who } = found;
-    rfq.status = "in_review";
-    rfq.assignee ??= refOf(who);
-    log(rfq, "rfq.review_started", "เริ่มพิจารณาคำขอราคา", who);
-    return respond(rfq, who);
-  }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/actions/request-info", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.request_info");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
+    const body = await bodyOf<Schemas["RfqMessageInputDto"]>(request);
+    if (!body?.body?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ข้อความ");
     rfq.status = "need_info";
     rfq.firstResponseAt ??= bangkokIso();
     messages.set(rfq.id, [
@@ -935,35 +1086,162 @@ export const rfqHandlers = [
         authorKind: "staff",
         author: refOf(who),
         visibility: "customer",
-        body: body.message,
-        files: [],
+        body: body.body,
         createdAt: bangkokIso(),
       },
     ]);
     log(rfq, "rfq.info_requested", "ขอข้อมูลเพิ่มเติมจากลูกค้า", who);
-    return respond(rfq, who);
+    return published(rfq, who);
   }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/actions/decline", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.decline");
+
+  // admin.rfqs.decline (`rfqs.manage`): an unmet-demand reason code (D-102).
+  http.post("*/v1/admin/rfqs/:rfqId/actions/decline", async ({ params, request }) => {
+    const found = managePublished(request, find(params.rfqId), "rfq.decline");
     if (found instanceof Response) return found;
     const { rfq, who } = found;
-    const reason = UNMET_REASONS.find((candidate) => candidate.code === body.reasonCode);
+    const body = await bodyOf<Schemas["StaffDeclineRfqDto"]>(request);
+    const reason = UNMET_REASONS.find((candidate) => candidate.code === body?.reasonCode);
     if (!reason)
       return problem(422, "validation.failed", "เหตุผลไม่ถูกต้อง", [
         { path: "reasonCode", code: "enum", message: "ไม่รู้จักเหตุผลนี้" },
       ]);
     rfq.status = "declined";
     rfq.declineReason = reason;
-    rfq.declineNote = body.note ?? null;
+    rfq.declineNote = body?.note ?? null;
     rfq.firstResponseAt ??= bangkokIso();
     for (const quote of rfq.quotes)
       if (quote.status === "sent" || quote.status === "draft") quote.status = "superseded";
     log(rfq, "rfq.declined", `ปฏิเสธคำขอราคา: ${reason.name} (บันทึกเป็นความต้องการที่ไม่ได้รับการตอบสนอง)`, who);
+    return published(rfq, who);
+  }),
+
+  // admin.rfqs.requestConsultation (`rfqs.manage`): one factory per call.
+  http.post("*/v1/admin/rfqs/:rfqId/consultations", async ({ params, request }) => {
+    const found = managePublished(request, find(params.rfqId), "rfq.request_factory_cost");
+    if (found instanceof Response) return found;
+    const { rfq, who } = found;
+    const body = await bodyOf<Schemas["RequestConsultationDto"]>(request);
+    if (!body?.dueAt || Date.parse(body.dueAt) <= Date.now())
+      return problem(422, "validation.failed", "กำหนดตอบต้องเป็นเวลาในอนาคต", [
+        { path: "dueAt", code: "min", message: "ต้องเป็นเวลาในอนาคต" },
+      ]);
+    const factory = FACTORIES.find((candidate) => candidate.id === body.factoryId);
+    const tier = factory ? (PARTICIPATION[factory.id]?.[rfq.productType.code] ?? null) : null;
+    if (!factory || tier === null)
+      return problem(422, "validation.failed", "โรงงานที่เลือกผลิตประเภทนี้ไม่ได้", [
+        { path: "factoryId", code: "capability", message: factory?.name ?? String(body.factoryId) },
+      ]);
+    if (rfq.consultations.some((item) => item.factory.id === factory.id && item.status === "requested"))
+      return problem(409, "rfq.consultation_open", `ขอราคาจาก ${factory.name} ไว้แล้ว`);
+    const created: Consultation = {
+      id: mockId("rcn", 9000 + rfq.consultations.length + Math.floor(Math.random() * 500)),
+      factory,
+      tier,
+      status: "requested",
+      note: body.note ?? null,
+      requestedBy: refOf(who),
+      requestedAt: bangkokIso(),
+      dueAt: body.dueAt,
+      respondedAt: null,
+      response: null,
+      declineNote: null,
+    };
+    rfq.consultations.push(created);
+    if (rfq.status === "submitted") rfq.status = "in_review";
+    log(rfq, "rfq.consultation_requested", `ขอราคาจาก ${factory.name}`, who);
+    return published(rfq, who, 201);
+  }),
+
+  // admin.rfqs.draftQuotation (`rfqs.manage`): one draft at a time; validity is set at send (D-051).
+  http.post("*/v1/admin/rfqs/:rfqId/quotations", async ({ params, request }) => {
+    const found = managePublished(request, find(params.rfqId), "rfq.compose_quote");
+    if (found instanceof Response) {
+      const rfq = find(params.rfqId);
+      if (rfq?.quotes.some((quote) => quote.status === "draft"))
+        return problem(409, "rfq.draft_open", "มีฉบับร่างอยู่แล้ว แก้ไขหรือทิ้งฉบับร่างนั้นก่อน");
+      return found;
+    }
+    const { rfq, who } = found;
+    const body = await bodyOf<Schemas["DraftRfqQuoteDto"]>(request);
+    const lines = draftLines(
+      rfq,
+      (body?.lines ?? []).map((line) => ({
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+        leadTimeDays: line.leadTimeDays,
+        consultationId:
+          rfq.consultations.find((item) => item.factory.id === line.factoryId && item.status === "responded")?.id ??
+          null,
+        buyUnitPrice: line.buyUnitPrice ?? null,
+      })),
+    );
+    if (lines instanceof Response) return lines;
+    rfq.quotes.unshift({
+      id: mockId("rqt", 9000 + rfq.quotes.length + Math.floor(Math.random() * 500)),
+      versionNo: rfq.quotes.length + 1,
+      status: "draft",
+      // Kept for the fixture only; the draft is published without a validity.
+      validUntil: validityFromToday(),
+      customerNote: body?.note?.trim() || null,
+      lines,
+      currency: "THB",
+      createdBy: refOf(who),
+      createdAt: bangkokIso(),
+      sentAt: null,
+      acceptedAt: null,
+    });
+    return published(rfq, who, 201);
+  }),
+
+  // admin.rfqs.discardQuotation (`rfqs.manage`): drafts only.
+  http.post("*/v1/admin/rfq-quotations/:rfqQuoteId/actions/discard", ({ params, request }) => {
+    const rfq = findByQuote(params.rfqQuoteId);
+    const who = staffPersonaOf(request);
+    if (!who || !can(who, "rfqs.manage")) return forbidden();
+    if (!rfq) return httpNotFound();
+    const at = rfq.quotes.findIndex((candidate) => candidate.id === params.rfqQuoteId);
+    if (rfq.quotes[at]?.status !== "draft") return problem(409, "rfq.quote_not_draft", "ทิ้งได้เฉพาะฉบับร่าง");
+    rfq.quotes.splice(at, 1);
+    return published(rfq, who);
+  }),
+
+  // admin.rfqs.sendQuotation (`rfqs.manage`): supersedes the version before it; RFQ → quoted.
+  http.post("*/v1/admin/rfq-quotations/:rfqQuoteId/actions/send", ({ params, request }) => {
+    const rfq = findByQuote(params.rfqQuoteId);
+    const quote = rfq?.quotes.find((candidate) => candidate.id === params.rfqQuoteId);
+    if (quote && quote.status !== "draft") {
+      const who = staffPersonaOf(request);
+      if (!who || !can(who, "rfqs.manage")) return forbidden();
+      return problem(409, "rfq.quote_not_draft", "ส่งได้เฉพาะฉบับร่าง");
+    }
+    const found = managePublished(request, rfq, "rfq.send_quote");
+    if (found instanceof Response) return found;
+    const { who } = found;
+    for (const other of found.rfq.quotes) if (other.status === "sent") other.status = "superseded";
+    quote!.status = "sent";
+    quote!.sentAt = bangkokIso();
+    quote!.validUntil = validityFromToday();
+    found.rfq.status = "quoted";
+    found.rfq.firstResponseAt ??= quote!.sentAt;
+    log(found.rfq, "rfq.quote_sent", `ส่งใบเสนอราคาฉบับที่ ${quote!.versionNo} ให้ลูกค้า`, who);
+    return published(found.rfq, who);
+  }),
+];
+
+/** What packio-api still has to build (verdict `implement`), as contract requests. */
+const requestHandlers = [
+  mockRequest("POST /v1/admin/rfqs/{rfqId}/actions/start-review", ({ params, request }) => {
+    const found = manage(request, params.rfqId, "rfq.start_review");
+    if (found instanceof Response) return found;
+    const { rfq, who } = found;
+    rfq.status = "in_review";
+    rfq.assignee ??= refOf(who);
+    log(rfq, "rfq.review_started", "เริ่มพิจารณาคำขอราคา", who);
     return respond(rfq, who);
   }),
   mockRequest("GET /v1/admin/unmet-demand-reasons", () => ({ data: UNMET_REASONS })),
   mockRequest("GET /v1/admin/rfqs/{rfqId}/candidate-factories", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfq.manage")) return forbidden();
+    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
     const rfq = find(params.rfqId);
     if (!rfq) return notFound();
     const data: Candidate[] = FACTORIES.map((factory) => {
@@ -981,73 +1259,13 @@ export const rfqHandlers = [
     }).sort((a, b) => Number(b.capable) - Number(a.capable));
     return { data };
   }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/consultations", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.request_factory_cost");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    if (Date.parse(body.dueAt) <= Date.now())
-      return problem(422, "validation.failed", "กำหนดตอบต้องเป็นเวลาในอนาคต", [
-        { path: "dueAt", code: "min", message: "ต้องเป็นเวลาในอนาคต" },
-      ]);
-    const created: Consultation[] = [];
-    for (const factoryId of body.factoryIds) {
-      const factory = FACTORIES.find((candidate) => candidate.id === factoryId);
-      const tier = factory ? (PARTICIPATION[factory.id]?.[rfq.productType.code] ?? null) : null;
-      if (!factory || tier === null)
-        return problem(422, "rfq.factory_not_capable", "โรงงานที่เลือกผลิตประเภทนี้ไม่ได้", [
-          { path: "factoryIds", code: "capability", message: factory?.name ?? factoryId },
-        ]);
-      if (rfq.consultations.some((item) => item.factory.id === factoryId && item.status === "requested"))
-        return problem(409, "rfq.consultation_open", `ขอราคาจาก ${factory.name} ไว้แล้ว`);
-      created.push({
-        id: mockId("rcn", 9000 + rfq.consultations.length + created.length + Math.floor(Math.random() * 500)),
-        factory,
-        tier,
-        status: "requested",
-        note: body.note ?? null,
-        requestedBy: refOf(who),
-        requestedAt: bangkokIso(),
-        dueAt: body.dueAt,
-        respondedAt: null,
-        response: null,
-        declineNote: null,
-      });
-    }
-    rfq.consultations.push(...created);
-    if (rfq.status === "submitted") rfq.status = "in_review";
-    for (const item of created) log(rfq, "rfq.consultation_requested", `ขอราคาจาก ${item.factory.name}`, who);
-    return { data: created };
-  }),
   mockRequest("POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfq.manage")) return forbidden();
+    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
     const rfq = find(params.rfqId);
     const item = rfq?.consultations.find((candidate) => candidate.id === params.consultationId);
     if (!rfq || !item) return notFound();
     if (item.status !== "requested") return conflict("โรงงานตอบแล้ว ไม่ต้องเตือน");
     return new Response(null, { status: 204 });
-  }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/quotes", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.compose_quote");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    const lines = draftLines(rfq, body);
-    if (lines instanceof Response) return lines;
-    const quote: Quote = {
-      id: mockId("rqt", 9000 + rfq.quotes.length + Math.floor(Math.random() * 500)),
-      versionNo: rfq.quotes.length + 1,
-      status: "draft",
-      validUntil: body.validUntil,
-      customerNote: body.customerNote ?? null,
-      lines,
-      currency: "THB",
-      createdBy: refOf(who),
-      createdAt: bangkokIso(),
-      sentAt: null,
-      acceptedAt: null,
-    };
-    rfq.quotes.unshift(quote);
-    refresh(rfq);
-    return forActor(rfq, who).quotes[0]!;
   }),
   mockRequest("PUT /v1/admin/rfqs/{rfqId}/quotes/{quoteId}", ({ params, body, request }) => {
     const found = manage(request, params.rfqId, "rfq.edit_quote");
@@ -1056,35 +1274,15 @@ export const rfqHandlers = [
     const quote = rfq.quotes.find((candidate) => candidate.id === params.quoteId);
     if (!quote) return notFound();
     if (quote.status !== "draft") return conflict("แก้ได้เฉพาะฉบับร่าง");
-    const lines = draftLines(rfq, body);
+    if (body.validUntil < day(0))
+      return problem(422, "validation.failed", "วันหมดอายุต้องไม่อยู่ในอดีต", [
+        { path: "validUntil", code: "min", message: "ต้องไม่อยู่ในอดีต" },
+      ]);
+    const lines = draftLines(rfq, body.lines);
     if (lines instanceof Response) return lines;
     Object.assign(quote, { validUntil: body.validUntil, customerNote: body.customerNote ?? null, lines });
     refresh(rfq);
     return forActor(rfq, who).quotes.find((candidate) => candidate.id === quote.id)!;
-  }),
-  mockRequest("DELETE /v1/admin/rfqs/{rfqId}/quotes/{quoteId}", ({ params, request }) => {
-    const found = manage(request, params.rfqId, "rfq.edit_quote");
-    if (found instanceof Response) return found;
-    const { rfq } = found;
-    const at = rfq.quotes.findIndex((candidate) => candidate.id === params.quoteId && candidate.status === "draft");
-    if (at < 0) return notFound();
-    rfq.quotes.splice(at, 1);
-    refresh(rfq);
-    return new Response(null, { status: 204 });
-  }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/send", ({ params, request }) => {
-    const found = manage(request, params.rfqId, "rfq.send_quote");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    const quote = rfq.quotes.find((candidate) => candidate.id === params.quoteId);
-    if (!quote || quote.status !== "draft") return conflict("ส่งได้เฉพาะฉบับร่าง");
-    for (const other of rfq.quotes) if (other.status === "sent") other.status = "superseded";
-    quote.status = "sent";
-    quote.sentAt = bangkokIso();
-    rfq.status = "quoted";
-    rfq.firstResponseAt ??= quote.sentAt;
-    log(rfq, "rfq.quote_sent", `ส่งใบเสนอราคาฉบับที่ ${quote.versionNo} ให้ลูกค้า`, who);
-    return respond(rfq, who);
   }),
   mockRequest("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance", ({ params, body, request }) => {
     const found = manage(request, params.rfqId, "rfq.record_acceptance");
@@ -1105,3 +1303,5 @@ export const rfqHandlers = [
     return respond(rfq, who);
   }),
 ];
+
+export const rfqHandlers = [...publishedHandlers, ...requestHandlers];

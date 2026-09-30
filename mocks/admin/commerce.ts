@@ -11,20 +11,17 @@
 
 import type { z } from "zod";
 
-import type { customerDetail, customerSummary } from "@/lib/api/requests/admin-customers";
-import type { orderDetail, orderNote, orderSummary, timelineEntry } from "@/lib/api/requests/admin-orders";
-
 import { staffPersonaOf } from "../auth";
-import { PERSONAS, type StaffPersona } from "../personas";
+import type { StaffPersona } from "../personas";
 import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { bangkokIso, mockId, problem } from "../support";
 import { productTypeRef } from "./catalog";
+import type { CustomerRow } from "./customer-model";
+import type { orderDetail, orderNote, timelineEntry } from "./order-model";
 import { indexForSearch, registerQueue } from "./console";
 
 type Order = z.output<typeof orderDetail>;
-type OrderSummary = z.output<typeof orderSummary>;
-type Customer = z.output<typeof customerDetail>;
-type CustomerSummary = z.output<typeof customerSummary>;
+type Customer = CustomerRow;
 type Note = z.output<typeof orderNote>;
 type TimelineEntry = z.output<typeof timelineEntry>;
 
@@ -39,12 +36,6 @@ export const satang = (amount: string) => Math.round(Number(amount) * 100);
 const vatOf = (net: number) => Math.round(net * 0.07);
 
 /* -------------------------------------------------------------------------------- customers */
-
-let companyMembers: (companyId: string) => string[] = () => [];
-/** The companies mock says who belongs to a company, for the orders filter (no import cycle). */
-export function setCompanyMembers(lookup: (companyId: string) => string[]): void {
-  companyMembers = lookup;
-}
 
 const FAKE_CUSTOMERS: [string, "individual" | "juristic", string | null][] = [
   ["ร้านกาแฟตัวอย่าง", "individual", null],
@@ -140,19 +131,6 @@ export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], 
           ]
         : [],
   };
-});
-
-const summaryOfCustomer = (customer: Customer): CustomerSummary => ({
-  id: customer.id,
-  customerCode: customer.customerCode,
-  displayName: customer.displayName,
-  phone: customer.phone,
-  email: customer.email,
-  customerType: customer.customerType,
-  companyName: customer.companyName,
-  createdVia: customer.createdVia,
-  ordersCount: customer.ordersCount,
-  createdAt: customer.createdAt,
 });
 
 /* ----------------------------------------------------------------------------------- orders */
@@ -683,46 +661,15 @@ for (const order of orders) {
   if (!customer.lastOrderAt || customer.lastOrderAt < order.createdAt) customer.lastOrderAt = order.createdAt;
 }
 
-function toSummary(order: Order): OrderSummary {
-  return {
-    id: order.id,
-    orderCode: order.orderCode,
-    groupId: order.groupId,
-    groupCode: order.groupCode,
-    channel: order.channel,
-    customer: order.customer,
-    productType: order.productType,
-    factory: order.factory,
-    quantity: order.quantity,
-    unit: order.unit,
-    grossAmount: order.grossAmount,
-    currency: order.currency,
-    status: order.status,
-    artworkStatus: order.artworkStatus,
-    nextInstalment: order.nextInstalment
-      ? {
-          label: order.nextInstalment.label,
-          status: order.nextInstalment.status,
-          dueAt: order.nextInstalment.dueAt,
-          grossAmount: order.nextInstalment.grossAmount,
-        }
-      : null,
-    hasSlipToReview: order.hasSlipToReview,
-    promisedShipDate: order.promisedShipDate,
-    slaDueAt: order.slaDueAt,
-    urgency: order.urgency,
-    createdAt: order.createdAt,
-  };
-}
-
-/** What each queue holds — the API's definition, applied to the mock's rows. */
+/** What each of packio-api's order queues holds (`admin.orderOperations.queue`), applied to the mock's rows. */
 export const QUEUES: Record<string, (order: Order) => boolean> = {
-  waiting_payment: (order) => order.status === "waiting_payment" && !order.hasSlipToReview,
-  slip_review: (order) => order.hasSlipToReview,
-  awaiting_artwork: (order) =>
+  waiting_payment: (order) => order.status === "waiting_payment",
+  artwork_review: (order) =>
     ["paid_for_production", "waiting_payment"].includes(order.status) &&
-    ["awaiting_upload", "changes_requested", "awaiting_template"].includes(order.artworkStatus),
-  ready_to_produce: (order) =>
+    ["uploaded", "in_review", "awaiting_upload", "changes_requested", "awaiting_template"].includes(
+      order.artworkStatus,
+    ),
+  waiting_production: (order) =>
     order.status === "artwork_approved" ||
     (order.status === "paid_for_production" && order.artworkStatus === "approved"),
   due_soon: (order) => order.urgency === "due_soon",
@@ -731,10 +678,10 @@ export const QUEUES: Record<string, (order: Order) => boolean> = {
 
 /* -------------------------------------------------------------------- notes and the timeline */
 
-const notes = new Map<string, Note[]>();
+export const notes = new Map<string, Note[]>();
 const extraTimeline = new Map<string, TimelineEntry[]>();
 
-function timelineOf(order: Order): TimelineEntry[] {
+export function timelineOf(order: Order): TimelineEntry[] {
   const entries: TimelineEntry[] = [
     {
       id: `${order.id}:created`,
@@ -798,7 +745,7 @@ function timelineOf(order: Order): TimelineEntry[] {
   return [...entries, ...(extraTimeline.get(order.id) ?? [])].sort((a, b) => b.at.localeCompare(a.at));
 }
 
-function logEvent(
+export function logEvent(
   order: Order,
   kind: string,
   title: string,
@@ -822,17 +769,12 @@ function logEvent(
 
 /* ----------------------------------------------------------------------- queues and search */
 
-const QUEUE_KEYS: Record<string, string> = {
-  waiting_payment: "orders.waiting_payment",
-  slip_review: "orders.slip_review",
-  awaiting_artwork: "orders.awaiting_artwork",
-  ready_to_produce: "orders.ready_to_produce",
-  due_soon: "orders.due_soon",
-  late: "orders.late",
-};
+const QUEUE_KEYS: Record<string, string> = Object.fromEntries(
+  Object.keys(QUEUES).map((queue) => [queue, `orders.${queue}`]),
+);
 
 for (const [queue, key] of Object.entries(QUEUE_KEYS)) {
-  registerQueue(queue === "slip_review" ? "approvals.act" : "orders.read", () => {
+  registerQueue("orders.read", () => {
     const rows = orders.filter(QUEUES[queue]!);
     const due = rows
       .map((row) => row.slaDueAt)
@@ -868,22 +810,6 @@ indexForSearch(
     keywords: `${customer.phone} ${customer.email}`,
   })),
 );
-
-/**
- * What this actor may see and do — the real API decides per actor (ADR-0005, D-141). Slip review is
- * Finance's (D-061); cost and margin only for the roles D-141 names.
- */
-function forActor(order: Order, persona: ReturnType<typeof staffPersonaOf>): Order {
-  const finance = persona?.roles.some((role) => ["finance", "finance_manager", "superadmin"].includes(role)) ?? false;
-  const seesMargin = persona?.permissions.includes("margin.read") ?? false;
-  return {
-    ...order,
-    margin: seesMargin ? order.margin : undefined,
-    nextActions: order.nextActions.filter(
-      (action) => finance || !["order.approve_slip", "order.reject_slip"].includes(action.key),
-    ),
-  };
-}
 
 /* ------------------------------------------------------------------------------- slips */
 
@@ -947,7 +873,7 @@ export function decideSlip(
 
 /* ---------------------------------------------------------------------------------- handlers */
 
-const find = (orderId: string | undefined) => orders.find((order) => order.id === orderId);
+export const find = (orderId: string | undefined) => orders.find((order) => order.id === orderId);
 /** Recomputes the derived columns after the storefront mock changed an order (mocks/store). */
 export const refreshOrder = (order: Order) => refresh(order);
 const refresh = (order: Order) => {
@@ -956,63 +882,8 @@ const refresh = (order: Order) => {
   return order;
 };
 
+/** The order-desk requests packio-api still builds (U-B0.2); the published surface is `./orders.ts`. */
 export const commerceHandlers = [
-  mockRequest("GET /v1/admin/orders", ({ query }) => {
-    const rows = orders
-      .filter((order) => !query.queue || QUEUES[query.queue]!(order))
-      .filter((order) => !query.status || order.status === query.status)
-      .filter((order) => !query.artworkStatus || order.artworkStatus === query.artworkStatus)
-      .filter((order) => !query.channel || order.channel === query.channel)
-      .filter((order) => !query.productType || order.productType.code === query.productType)
-      .filter((order) => !query.customerId || order.customer.id === query.customerId)
-      .filter((order) => !query.companyId || companyMembers(query.companyId).includes(order.customer.id))
-      .filter((order) => !query.createdFrom || order.createdAt.slice(0, 10) >= query.createdFrom)
-      .filter((order) => !query.createdTo || order.createdAt.slice(0, 10) <= query.createdTo)
-      .filter((order) =>
-        matchesQuery(
-          query.q,
-          order.orderCode,
-          order.groupCode,
-          order.customer.displayName,
-          customers.find((c) => c.id === order.customer.id)?.phone,
-        ),
-      );
-    return paginate(sortBy(rows.map(toSummary), query.sort ?? "createdAt", query.order ?? "desc"), query);
-  }),
-  mockRequest("GET /v1/admin/orders/{orderId}", ({ params, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    return forActor(order, staffPersonaOf(request));
-  }),
-  mockRequest("GET /v1/admin/orders/{orderId}/timeline", ({ params, query }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const all = timelineOf(order);
-    const start = Number(query.cursor ?? 0);
-    const limit = query.limit ?? 50;
-    return {
-      data: all.slice(start, start + limit),
-      meta: { nextCursor: start + limit < all.length ? String(start + limit) : null },
-    };
-  }),
-  mockRequest("GET /v1/admin/orders/{orderId}/notes", ({ params }) => ({
-    data: [...(notes.get(params.orderId!) ?? [])].reverse(),
-  })),
-  mockRequest("POST /v1/admin/orders/{orderId}/notes", ({ params, body, request }) => {
-    const persona = staffPersonaOf(request)!;
-    const note: Note = {
-      id: mockId("not", (notes.get(params.orderId!)?.length ?? 0) + 1 + Math.floor(Math.random() * 1e5)),
-      author: { id: persona.id, displayName: persona.displayName },
-      body: body.body,
-      mentions: body.mentions
-        .map((id) => PERSONAS.find((p) => p.id === id))
-        .filter(Boolean)
-        .map((p) => ({ id: p!.id, displayName: p!.displayName })),
-      createdAt: bangkokIso(),
-    };
-    notes.set(params.orderId!, [...(notes.get(params.orderId!) ?? []), note]);
-    return note;
-  }),
   mockRequest("GET /v1/admin/order-cancel-reasons", () => ({
     data: [
       { code: "customer_request", name: "ลูกค้าขอยกเลิก", requiresCreditNote: false },
@@ -1021,77 +892,6 @@ export const commerceHandlers = [
       { code: "duplicate", name: "คำสั่งซื้อซ้ำ", requiresCreditNote: false },
     ],
   })),
-  mockRequest("POST /v1/admin/orders/{orderId}/actions/approve-slip", ({ params, body, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const outcome = decideSlip(order, body.slipId, staffPersonaOf(request)!, {
-      approve: true,
-      note: body.note ?? null,
-    });
-    if (outcome instanceof Response) return outcome;
-    return forActor(refresh(order), staffPersonaOf(request));
-  }),
-  mockRequest("POST /v1/admin/orders/{orderId}/actions/reject-slip", ({ params, body, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const outcome = decideSlip(order, body.slipId, staffPersonaOf(request)!, { approve: false, note: body.reason });
-    if (outcome instanceof Response) return outcome;
-    return forActor(refresh(order), staffPersonaOf(request));
-  }),
-  mockRequest("POST /v1/admin/orders/{orderId}/actions/start-production", ({ params, body, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    if (!["paid_for_production", "artwork_approved"].includes(order.status))
-      return problem(409, "order.invalid_transition", "คำสั่งซื้อนี้เริ่มผลิตไม่ได้ในสถานะปัจจุบัน");
-    const persona = staffPersonaOf(request)!;
-    order.status = "in_production";
-    order.startMode = "manual_exception";
-    order.confirmedProductionDate = bangkokIso().slice(0, 10);
-    order.jobs = [
-      {
-        id: mockId("job", 900 + orders.indexOf(order)),
-        jobNo: `J-2569-${String(900 + orders.indexOf(order))}`,
-        kind: "production",
-        factory: FACTORY,
-        status: "released",
-        acceptDueAt: bangkokIso(60 * 24),
-        promisedShipDate: order.promisedShipDate,
-        atRisk: false,
-        milestones: [],
-      },
-    ];
-    logEvent(
-      order,
-      "production.started_manually",
-      "เริ่มผลิตด้วยมือ (กรณียกเว้น)",
-      { id: persona.id, displayName: persona.displayName },
-      body.reason,
-    );
-    return forActor(refresh(order), staffPersonaOf(request));
-  }),
-  mockRequest("POST /v1/admin/orders/{orderId}/actions/cancel", ({ params, body, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    if (!["waiting_payment", "paid_for_production", "artwork_approved"].includes(order.status))
-      return problem(409, "order.invalid_transition", "ยกเลิกคำสั่งซื้อที่เริ่มผลิตแล้วไม่ได้");
-    const persona = staffPersonaOf(request)!;
-    Object.assign(order, {
-      status: "cancelled",
-      cancelledAt: bangkokIso(),
-      cancelReason: body.note ?? body.reasonCode,
-      hasSlipToReview: false,
-      slaDueAt: null,
-    });
-    order.group.status = "cancelled";
-    logEvent(
-      order,
-      "order.cancelled",
-      "ยกเลิกคำสั่งซื้อ",
-      { id: persona.id, displayName: persona.displayName },
-      body.note ?? body.reasonCode,
-    );
-    return forActor(refresh(order), staffPersonaOf(request));
-  }),
   mockRequest("POST /v1/admin/orders/{orderId}/actions/send-payment-reminder", ({ params, request }) => {
     const order = find(params.orderId);
     if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
@@ -1101,163 +901,10 @@ export const commerceHandlers = [
       displayName: persona.displayName,
     });
   }),
-  mockRequest("POST /v1/admin/orders/{orderId}/actions/record-slip", ({ params, body, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const persona = staffPersonaOf(request)!;
-    const slipEntry = {
-      id: mockId("slp", 500 + Math.floor(Math.random() * 1e5)),
-      file: {
-        id: body.fileId,
-        originalName: "slip.jpg",
-        mimeType: "image/jpeg",
-        sizeBytes: 120_000,
-        thumbnailUrl: null,
-        url: null,
-      },
-      declaredAmount: body.declaredAmount,
-      declaredTransferredAt: body.declaredTransferredAt,
-      verificationStatus: "manual_review" as const,
-      checks: null,
-      slaDueAt: bangkokIso(240),
-      reviewedBy: null,
-      reviewNote: null,
-      uploadedAt: bangkokIso(),
-    };
-    const payment = order.payments[0] ?? {
-      id: mockId("pay", 700 + orders.indexOf(order)),
-      method: "bank_transfer_slip" as const,
-      status: "awaiting_verification" as const,
-      amount: body.declaredAmount,
-      feeAmount: "0.00",
-      providerRef: null,
-      paidAt: null,
-      slips: [],
-    };
-    if (!order.payments.includes(payment)) order.payments.push(payment);
-    payment.slips.push(slipEntry);
-    slipUploadedBy.set(slipEntry.id, persona.id);
-    order.hasSlipToReview = true;
-    logEvent(order, "slip.uploaded_by_cs", "CS อัปโหลดสลิปแทนลูกค้า", {
-      id: persona.id,
-      displayName: persona.displayName,
-    });
-    return forActor(refresh(order), staffPersonaOf(request));
-  }),
   mockRequest("POST /v1/admin/orders/actions/send-payment-reminders", ({ body }) => {
     const skipped = body.orderIds
       .filter((id) => find(id)?.status !== "waiting_payment")
       .map((orderId) => ({ orderId, reason: "คำสั่งซื้อไม่ได้รอชำระเงินแล้ว" }));
     return { sent: body.orderIds.length - skipped.length, skipped };
-  }),
-  mockRequest("GET /v1/admin/order-groups/{groupId}", ({ params }) => {
-    const members = orders.filter((order) => order.groupId === params.groupId);
-    const first = members[0];
-    if (!first) return problem(404, "http.not_found", "ไม่พบกลุ่มคำสั่งซื้อนี้");
-    return {
-      id: first.groupId,
-      groupCode: first.groupCode,
-      status: first.group.status,
-      channel: first.channel,
-      customer: first.customer,
-      placedBy: { id: PERSONAS[5]!.id, displayName: PERSONAS[5]!.displayName },
-      netAmount: first.netAmount,
-      discountAmount: first.discountAmount,
-      shippingAmount: first.shippingAmount,
-      vatAmount: first.vatAmount,
-      grossAmount: first.grossAmount,
-      currency: "THB" as const,
-      poNumber: first.poNumber,
-      expiresAt: first.expiresAt,
-      placedAt: first.createdAt,
-      orders: members.map(toSummary),
-      instalments: first.instalments,
-    };
-  }),
-
-  /* customers */
-  mockRequest("GET /v1/admin/customers", ({ query }) => {
-    const rows = customers
-      .filter((customer) => !query.customerType || customer.customerType === query.customerType)
-      .filter((customer) => !query.createdVia || customer.createdVia === query.createdVia)
-      .filter((customer) =>
-        matchesQuery(
-          query.q,
-          customer.displayName,
-          customer.phone,
-          customer.email,
-          customer.customerCode,
-          customer.companyName,
-        ),
-      )
-      .map(summaryOfCustomer);
-    return paginate(sortBy(rows, query.sort ?? "createdAt", query.order ?? "desc"), query);
-  }),
-  mockRequest("POST /v1/admin/customers", ({ body }) => {
-    if (customers.some((customer) => customer.phone === body.phone))
-      return problem(409, "customer.phone_taken", "เบอร์นี้มีบัญชีลูกค้าอยู่แล้ว");
-    const customer: Customer = {
-      id: mockId("cus", customers.length + 1),
-      customerCode: `C${250001 + customers.length}`,
-      displayName: body.displayName,
-      phone: body.phone,
-      email: body.email ?? null,
-      customerType: body.customerType,
-      companyName: null,
-      createdVia: "cs",
-      ordersCount: 0,
-      createdAt: bangkokIso(),
-      referralCode: `PK${9000 + customers.length}`,
-      loyalty: { tier: "member", availablePoints: 0, spend12m: "0.00" },
-      lastOrderAt: null,
-      birthDate: null,
-      addresses: [],
-      taxProfiles: [],
-    };
-    customers.push(customer);
-    return summaryOfCustomer(customer);
-  }),
-  mockRequest(
-    "GET /v1/admin/customers/{customerId}",
-    ({ params }) =>
-      customers.find((customer) => customer.id === params.customerId) ??
-      problem(404, "http.not_found", "ไม่พบลูกค้านี้"),
-  ),
-  mockRequest("POST /v1/admin/customers/{customerId}/addresses", ({ params, body }) => {
-    const customer = customers.find((candidate) => candidate.id === params.customerId);
-    if (!customer) return problem(404, "http.not_found", "ไม่พบลูกค้านี้");
-    const address = {
-      ...body,
-      id: mockId("adr", 100 + customer.addresses.length + customers.indexOf(customer) * 10),
-      line2: body.line2 ?? null,
-      subdistrict: body.subdistrict ?? null,
-      district: body.district ?? null,
-      isDefault: body.isDefault ?? customer.addresses.length === 0,
-    };
-    customer.addresses.push(address);
-    return address;
-  }),
-  mockRequest("GET /v1/admin/geo/postcodes/{postcode}", ({ params }) => {
-    const known: Record<string, { province: string; districts: { name: string; subdistricts: string[] }[] }> = {
-      "10110": {
-        province: "กรุงเทพมหานคร",
-        districts: [
-          { name: "เขตวัฒนา", subdistricts: ["แขวงคลองเตยเหนือ", "แขวงคลองตันเหนือ"] },
-          { name: "เขตคลองเตย", subdistricts: ["แขวงคลองเตย", "แขวงคลองตัน"] },
-        ],
-      },
-      "10400": { province: "กรุงเทพมหานคร", districts: [{ name: "เขตพญาไท", subdistricts: ["แขวงสามเสนใน"] }] },
-      "50200": {
-        province: "เชียงใหม่",
-        districts: [{ name: "อำเภอเมืองเชียงใหม่", subdistricts: ["ตำบลศรีภูมิ", "ตำบลพระสิงห์"] }],
-      },
-      "20000": { province: "ชลบุรี", districts: [{ name: "อำเภอเมืองชลบุรี", subdistricts: ["ตำบลบางปลาสร้อย"] }] },
-      "90110": { province: "สงขลา", districts: [{ name: "อำเภอหาดใหญ่", subdistricts: ["ตำบลหาดใหญ่"] }] },
-      "40000": { province: "ขอนแก่น", districts: [{ name: "อำเภอเมืองขอนแก่น", subdistricts: ["ตำบลในเมือง"] }] },
-    };
-    const entry = known[params.postcode!];
-    return entry
-      ? { postcode: params.postcode!, ...entry }
-      : problem(404, "geo.postcode_unknown", "ไม่พบรหัสไปรษณีย์นี้");
   }),
 ];

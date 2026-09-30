@@ -12,13 +12,13 @@ import { DOCUMENT_SCHEMA_VERSION } from "../document";
 
 /*
  * The designer's calls to the API, one place per surface: the customer's own designs
- * (`/v1/store/designs`, `store.designs`) and prepress's view of a document
- * (`/v1/admin/design-documents`, `admin.design-documents`). Each zone's BFF only forwards its own
- * surface, so the designer never picks the path from a URL — the session says which it is.
+ * (`/v1/store/designs`, `store.designs`) and the back office's (`/v1/admin/designs`,
+ * `admin.designs`). Each zone's BFF only forwards its own surface, so the designer never picks the
+ * path from a URL — the session says which it is.
  *
  * The published design keeps the document opaque (`{ spec, content }`, with `schemaVersion` beside
- * it). Duplicate, restore and import are still requests (`store.designs`, packio-api U-B0.1) and
- * answer in the request's shape.
+ * it). Duplicate, restore and import are still requests (`store.designs`, packio-api U-B0.1), as is
+ * a staff copy (`admin.design-documents`, U-B0.2), and answer in the request's shape.
  */
 
 export type StoreDesign = Schemas["DesignDocumentDto"];
@@ -27,14 +27,14 @@ export type DesignerCatalog = ResponseOf<Requests, "GET /v1/store/designer/catal
 export type DesignerMaterial = DesignerCatalog["materials"][number];
 export type DesignerTemplate = DesignerCatalog["templates"][number];
 export type DesignerPattern = DesignerCatalog["patterns"][number];
-export type AdminDesignDocument = ResponseOf<Requests, "GET /v1/admin/design-documents/{documentId}">;
+export type AdminDesignDocument = Schemas["DesignDocumentDto"];
 
 export interface Saved<T> {
   data: T;
   etag: string | null;
 }
 
-/** The request-shaped document (`{ schemaVersion, spec, content }`) the admin surface and requests take. */
+/** The request-shaped document (`{ schemaVersion, spec, content }`) the remaining requests take. */
 export const toDocument = (spec: DesignSpec, content: DesignContent) => ({
   schemaVersion: DOCUMENT_SCHEMA_VERSION,
   spec: spec as unknown as Record<string, unknown>,
@@ -184,19 +184,23 @@ export const storeDesigns = {
 };
 
 export const adminDocuments = {
-  async get(documentId: string): Promise<Saved<AdminDesignDocument>> {
-    return browserRequests().read("GET /v1/admin/design-documents/{documentId}", { path: { documentId } });
+  async get(designId: string): Promise<Saved<AdminDesignDocument>> {
+    const { data, response } = await browserApi().GET("/v1/admin/designs/{designId}", {
+      params: { path: { designId } },
+    });
+    return { data: data!, etag: etagOf(response) };
   },
+  /** Only the staff author's own designs save (`catalog.manage`); anyone else's is refused. */
   async save(
-    documentId: string,
+    designId: string,
     input: { title: string; spec: DesignSpec; content: DesignContent },
     etag: string | null,
   ): Promise<Saved<AdminDesignDocument>> {
-    return browserRequests().read("PUT /v1/admin/design-documents/{documentId}", {
-      path: { documentId },
-      body: { title: input.title, document: toDocument(input.spec, input.content) },
-      etag: etag ?? undefined,
+    const { data, response } = await browserApi().PUT("/v1/admin/designs/{designId}", {
+      params: { path: { designId }, header: { "If-Match": etag ?? "" } },
+      body: { title: input.title, ...published(input.spec, input.content) },
     });
+    return { data: data!, etag: etagOf(response) };
   },
   async copy(documentId: string, title: string) {
     return browserRequests().call("POST /v1/admin/design-documents/{documentId}/actions/copy", {

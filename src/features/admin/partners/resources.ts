@@ -1,8 +1,5 @@
 /** The partner lists and types, in a plain module so Server Components can prefetch. */
 
-import type { z } from "zod";
-
-import type { inspection } from "@/lib/api/requests/admin-partners";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
@@ -11,7 +8,7 @@ import { defineList } from "../console/resource";
 export type Factory = Schemas["FactoryDto"];
 export type Proposal = Schemas["PriceProposalDto"];
 export type ProposalSummary = Schemas["PriceProposalSummaryDto"];
-export type Inspection = z.output<typeof inspection>;
+export type Inspection = Schemas["InspectionDto"];
 
 export const FACTORY_STATUSES = ["applied", "under_review", "trial", "active", "suspended", "offboarded"] as const;
 
@@ -46,11 +43,16 @@ export const proposalsList = defineList<ProposalSummary>({
   staleTime: STALE_TIME.live,
 });
 
+/**
+ * Packio's inspections (`admin.inspections.list`), by status. No factory filter, search or sort
+ * (CONTRACT-GAP admin.inspections).
+ */
 export const inspectionsList = defineList<Inspection>({
   key: "inspection",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/inspections", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/inspections", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
-  getRowName: (row) => row.job.jobNo,
-  defaults: { filterKeys: ["status", "factoryId"] },
+  getRowName: (row) => row.jobNo,
+  defaults: { filterKeys: ["status"] },
   staleTime: STALE_TIME.live,
 });
