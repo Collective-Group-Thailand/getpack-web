@@ -26,6 +26,8 @@ export interface AssignDialogProps {
   permission: string;
   /** Explains who is offered, e.g. "only people who can handle RFQs". */
   personHint: string;
+  /** Whether the item can be put back with nobody on it (default true); some APIs cannot unassign. */
+  clearable?: boolean;
   /** Calls the API; the dialog closes when it resolves and stays open when it throws. */
   onAssign: (assigneeId: string | null) => Promise<void>;
   onClose: () => void;
@@ -42,6 +44,7 @@ export function AssignDialog({
   current,
   permission,
   personHint,
+  clearable = true,
   onAssign,
   onClose,
 }: AssignDialogProps) {
@@ -79,7 +82,7 @@ export function AssignDialog({
       closeLabel={tCommon("actions.close")}
       footer={
         <>
-          {current ? (
+          {current && clearable ? (
             <Button
               variant="ghost"
               loading={assign.isPending && assign.variables === null}

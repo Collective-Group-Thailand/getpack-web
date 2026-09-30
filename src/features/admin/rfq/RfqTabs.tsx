@@ -1,14 +1,12 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import type { AdminRfqBlock } from "@/domain/next-actions/admin";
 import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
-import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -21,12 +19,12 @@ import { Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { toast } from "@/ui/components/Toast";
-import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { problemMessage, StatusChip, useCan, useSlaFormat } from "../console";
+import { adminBrowserApis, problemMessage, StatusChip, useCan, useSlaFormat } from "../console";
+import { useSettleRfq } from "./data";
 import { QuoteComposer } from "./QuoteComposer";
-import type { Rfq, RfqConsultation, RfqQuote } from "./resources";
+import { byVersionDesc, draftOf, type Rfq, type RfqConsultation, type RfqQuote, type RfqQuoteLine } from "./resources";
 
 function Section({
   title,
@@ -48,85 +46,74 @@ function Section({
   );
 }
 
+/** A spec answer as text: the API sends the customer's raw values (CONTRACT-GAP admin.rfqs). */
+function specValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "–";
+  if (Array.isArray(value)) return value.map(specValue).join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
 /* ------------------------------------------------------------------------------------ request */
 
 export function RequestTab({ rfq }: { rfq: Rfq }) {
   const t = useTranslations("rfq.detail.request");
   const format = useFormat();
-  const size = rfq.dimensions;
+  const spec = Object.entries(rfq.spec);
+  const sized = rfq.lengthMm !== null || rfq.widthMm !== null || rfq.heightMm !== null;
   return (
     <div className="flex flex-col gap-4">
       <Section title={t("title")}>
         <DescriptionList
           columns={3}
           items={[
-            { term: t("productType"), description: rfq.productType.name },
+            { term: t("productType"), description: rfq.productTypeName },
             {
               term: t("quantities"),
               description: rfq.quantities.map((quantity) => format.number(quantity)).join(" / "),
             },
             {
               term: t("size"),
-              description:
-                size && (size.lengthMm || size.widthMm || size.heightMm)
-                  ? t("sizeValue", {
-                      length: size.lengthMm ?? "–",
-                      width: size.widthMm ?? "–",
-                      height: size.heightMm ?? "–",
-                    })
-                  : t("noSize"),
+              description: sized
+                ? t("sizeValue", {
+                    length: rfq.lengthMm ?? "–",
+                    width: rfq.widthMm ?? "–",
+                    height: rfq.heightMm ?? "–",
+                  })
+                : t("noSize"),
             },
             { term: t("targetDate"), description: rfq.targetDate ? format.date(rfq.targetDate) : t("noTarget") },
-            {
-              term: t("delivery"),
-              description: [rfq.province, rfq.deliveryPostcode].filter(Boolean).join(" "),
-            },
+            // CONTRACT-GAP admin.rfqs — the delivery province is not published; the postcode is.
+            { term: t("delivery"), description: rfq.deliveryPostcode },
             { term: t("channel"), description: t(`channels.${rfq.channel}`) },
             ...(rfq.notes ? [{ term: t("notes"), description: rfq.notes, wide: true }] : []),
           ]}
         />
       </Section>
       <Section title={t("spec")}>
-        {rfq.spec.length > 0 ? (
+        {/* CONTRACT-GAP admin.rfqs — the spec comes as the raw answers, not rendered as label/value
+            from the category's rfqSpecSchema, and without its version. */}
+        {spec.length > 0 ? (
           <DescriptionList
             columns={2}
-            items={rfq.spec.map((item) => ({ term: item.label, description: item.value }))}
+            items={spec.map(([key, value]) => ({ term: key, description: specValue(value) }))}
           />
         ) : (
           <p className="text-muted text-sm">{t("noSpec")}</p>
         )}
-        <p className="text-muted mt-3 text-xs">{t("specVersion", { version: rfq.specSchemaVersion })}</p>
       </Section>
-      <Section title={t("files")}>
-        {rfq.files.length === 0 ? (
-          <p className="text-muted text-sm">{t("noFiles")}</p>
-        ) : (
-          <ul className="divide-border divide-y text-sm">
-            {rfq.files.map((file) => (
-              <li key={file.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span className="flex min-w-0 items-center gap-2">
-                  <Icon name="paperclip" size={16} />
-                  <span className="truncate">{file.originalName}</span>
-                  <span className="text-muted text-xs">{format.bytes(file.sizeBytes)}</span>
-                </span>
-                {file.url ? (
-                  <Button variant="link" size="sm" iconStart="download" asChild>
-                    <a href={file.url} download={file.originalName}>
-                      {t("download")}
-                    </a>
-                  </Button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+      {/* CONTRACT-GAP admin.rfqs — the request's files are not published. */}
     </div>
   );
 }
 
 /* ---------------------------------------------------------------------------------- factories */
 
+/**
+ * The factories asked and what they answered. A factory's buy prices are published only to
+ * `factory_cost.read` (D-141); nobody sees a suggested sell price (CONTRACT-GAP
+ * admin.rfq-consultations), nor the factory's name, tier or who asked.
+ */
 export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => void }) {
   const t = useTranslations("rfq.detail.factories");
   const format = useFormat();
@@ -134,28 +121,23 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
   const canManage = useCan("rfqs.manage");
 
   const remind = useMutation({
+    // Still a contract request (admin.rfq-consultations).
     mutationFn: (consultationId: string) =>
-      browserRequests().call("POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind", {
+      adminBrowserApis().requests.call("POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind", {
         path: { rfqId: rfq.id, consultationId },
       }),
     onSuccess: () => toast.success(t("reminded")),
     onError: (error) => toast.error(problemMessage(error, t("remindFailed"))),
   });
 
-  const seesCost = rfq.consultations.some((item) => item.response?.tiers.some((tier) => tier.buyUnitPrice));
+  const seesCost = rfq.consultations.some((item) => item.lines !== null);
 
   const columns: DataTableColumn<RfqConsultation>[] = [
     {
       id: "factory",
       header: t("factory"),
-      cell: (row) => (
-        <div className="min-w-48">
-          <p className="font-medium">{row.factory.name}</p>
-          <p className="text-muted font-mono text-xs">{row.factory.code}</p>
-        </div>
-      ),
+      cell: (row) => <p className="font-mono font-medium">{row.factoryCode}</p>,
     },
-    { id: "tier", header: t("tier"), cell: (row) => (row.tier ? <Badge size="sm">{row.tier}</Badge> : "–") },
     { id: "status", header: t("status"), cell: (row) => <StatusChip map={CONSULTATION_STATUS} value={row.status} /> },
     {
       id: "due",
@@ -173,30 +155,24 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
     },
     {
       id: "prices",
-      header: seesCost ? t("pricesWithCost") : t("prices"),
+      header: t("prices"),
       cell: (row) =>
-        row.response ? (
+        row.lines && row.lines.length > 0 ? (
           <ul className="space-y-0.5 text-sm tabular-nums">
-            {row.response.tiers.map((tier) => (
-              <li key={tier.quantity} className="whitespace-nowrap">
-                {t("tierPrice", { quantity: format.number(tier.quantity), price: format.thb(tier.suggestedUnitPrice) })}
-                {tier.buyUnitPrice ? (
-                  <span className="text-muted"> · {t("buy", { price: format.thb(tier.buyUnitPrice) })}</span>
-                ) : null}
+            {row.lines.map((line) => (
+              <li key={line.quantity} className="whitespace-nowrap">
+                {t("tierPrice", { quantity: format.number(line.quantity), price: format.thb(line.buyUnitPrice) })}
+                <span className="text-muted"> · {t("days", { days: line.leadTimeDays })}</span>
               </li>
             ))}
           </ul>
-        ) : row.declineNote ? (
-          <span className="text-muted text-sm">{row.declineNote}</span>
-        ) : (
+        ) : row.status === "requested" ? (
           <span className="text-muted text-sm">{t("waiting")}</span>
+        ) : row.status === "responded" ? (
+          <span className="text-muted text-sm">{t("answered")}</span>
+        ) : (
+          "–"
         ),
-    },
-    {
-      id: "leadTime",
-      header: t("leadTime"),
-      numeric: true,
-      cell: (row) => (row.response ? t("days", { days: row.response.leadTimeDays }) : "–"),
     },
     {
       id: "actions",
@@ -216,6 +192,8 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
     },
   ];
 
+  const notes = rfq.consultations.filter((item) => item.responseNote);
+
   return (
     <Section
       title={t("title")}
@@ -227,7 +205,7 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
         ) : null
       }
     >
-      <p className="text-muted mb-3 text-xs">{seesCost ? t("costNote") : t("sellNote")}</p>
+      <p className="text-muted mb-3 text-xs">{seesCost ? t("costNote") : t("noCostNote")}</p>
       <DataTable
         caption={t("title")}
         columns={columns}
@@ -236,15 +214,13 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
         density="compact"
         empty={<EmptyState icon="factory" title={t("none")} description={t("noneBody")} />}
       />
-      {rfq.consultations.some((item) => item.response?.notes) ? (
+      {notes.length > 0 ? (
         <ul className="mt-3 space-y-1 text-sm">
-          {rfq.consultations
-            .filter((item) => item.response?.notes)
-            .map((item) => (
-              <li key={item.id}>
-                <span className="font-medium">{item.factory.name}:</span> {item.response!.notes}
-              </li>
-            ))}
+          {notes.map((item) => (
+            <li key={item.id}>
+              <span className="font-mono font-medium">{item.factoryCode}:</span> {item.responseNote}
+            </li>
+          ))}
         </ul>
       ) : null}
     </Section>
@@ -253,27 +229,20 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
 
 /* ------------------------------------------------------------------------------------- quotes */
 
+/**
+ * One quotation version as the API priced it. The buy price shows to `factory_cost.read`, the
+ * margin to `margin.read` (D-141). CONTRACT-GAP admin.rfq-quotes — no suggested price per line,
+ * no author or creation time, no acceptance time.
+ */
 function QuoteVersion({ quote }: { quote: RfqQuote }) {
   const t = useTranslations("rfq.detail.quotes");
   const format = useFormat();
-  type Line = RfqQuote["lines"][number];
-  const seesCost = quote.lines.some((line) => line.buyUnitPrice);
-  const seesMargin = quote.lines.some((line) => line.marginPct);
-  const columns: DataTableColumn<Line>[] = [
+  const seesCost = quote.lines.some((line) => line.buyUnitPrice !== null);
+  const seesMargin = quote.lines.some((line) => line.marginPct !== null);
+  const columns: DataTableColumn<RfqQuoteLine>[] = [
     { id: "quantity", header: t("quantity"), numeric: true, cell: (row) => format.number(row.quantity) },
-    {
-      id: "unitPrice",
-      header: t("unitPrice"),
-      numeric: true,
-      cell: (row) => (
-        <div>
-          <p>{format.thb(row.unitPrice)}</p>
-          {row.suggestedUnitPrice ? (
-            <p className="text-muted text-xs">{t("suggested", { price: format.thb(row.suggestedUnitPrice) })}</p>
-          ) : null}
-        </div>
-      ),
-    },
+    { id: "unitPrice", header: t("unitPrice"), numeric: true, cell: (row) => format.thb(row.unitPrice) },
+    { id: "shipping", header: t("shipping"), numeric: true, cell: (row) => format.thb(row.shippingNetAmount) },
     { id: "net", header: t("net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
     { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
     {
@@ -289,15 +258,7 @@ function QuoteVersion({ quote }: { quote: RfqQuote }) {
             id: "cost",
             header: t("cost"),
             numeric: true,
-            cell: (row: Line) =>
-              row.buyUnitPrice ? (
-                <div>
-                  <p>{format.thb(row.buyUnitPrice)}</p>
-                  {row.factory ? <p className="text-muted text-xs">{row.factory.name}</p> : null}
-                </div>
-              ) : (
-                "–"
-              ),
+            cell: (row: RfqQuoteLine) => (row.buyUnitPrice ? format.thb(row.buyUnitPrice) : "–"),
           },
         ]
       : []),
@@ -307,7 +268,7 @@ function QuoteVersion({ quote }: { quote: RfqQuote }) {
             id: "margin",
             header: t("margin"),
             numeric: true,
-            cell: (row: Line) => (row.marginPct ? format.percent(row.marginPct) : "–"),
+            cell: (row: RfqQuoteLine) => (row.marginPct ? format.percent(row.marginPct) : "–"),
           },
         ]
       : []),
@@ -316,7 +277,7 @@ function QuoteVersion({ quote }: { quote: RfqQuote }) {
           {
             id: "floor",
             header: t("floor"),
-            cell: (row: Line) =>
+            cell: (row: RfqQuoteLine) =>
               row.belowMarginFloor ? (
                 <Badge tone="danger" size="sm" icon="warning">
                   {t("belowFloor")}
@@ -334,17 +295,11 @@ function QuoteVersion({ quote }: { quote: RfqQuote }) {
           <StatusChip map={RFQ_QUOTE_STATUS} value={quote.status} />
         </CardTitle>
         <p className="text-muted text-xs">
-          {t("validUntil", { date: format.date(quote.validUntil) })}
+          {quote.validUntil ? t("validUntil", { date: format.date(quote.validUntil) }) : t("validityAtSend")}
           {quote.sentAt ? (
             <>
               {" · "}
               {t("sentAt")} <When at={quote.sentAt} />
-            </>
-          ) : null}
-          {quote.acceptedAt ? (
-            <>
-              {" · "}
-              {t("acceptedAt")} <When at={quote.acceptedAt} />
             </>
           ) : null}
         </p>
@@ -357,10 +312,7 @@ function QuoteVersion({ quote }: { quote: RfqQuote }) {
         density="compact"
         rowTone={(row) => (row.belowMarginFloor ? "danger" : undefined)}
       />
-      {quote.customerNote ? <p className="text-muted mt-3 text-sm">{quote.customerNote}</p> : null}
-      <p className="text-muted mt-2 text-xs">
-        {t("by", { name: quote.createdBy.displayName })} · <When at={quote.createdAt} />
-      </p>
+      {quote.note ? <p className="text-muted mt-3 text-sm">{quote.note}</p> : null}
     </Card>
   );
 }
@@ -371,17 +323,19 @@ export function QuotesTab({
   onCompose,
   onCloseComposer,
   onSend,
+  sendBlocked,
 }: {
   rfq: Rfq;
   composing: boolean;
   onCompose?: () => void;
   onCloseComposer: () => void;
   onSend?: () => void;
+  sendBlocked?: AdminRfqBlock;
 }) {
   const t = useTranslations("rfq.detail.quotes");
-  const draft = rfq.quotes.find((quote) => quote.status === "draft");
-  const sendBlocked = rfq.nextActions.find((action) => action.key === "rfq.send_quote")?.disabledReason;
-  const others = rfq.quotes.filter((quote) => quote !== draft);
+  const tActions = useTranslations("rfq.actions");
+  const draft = draftOf(rfq);
+  const others = byVersionDesc(rfq.quotations.filter((quote) => quote !== draft));
   const showComposer = composing || Boolean(draft && onCompose);
 
   return (
@@ -398,7 +352,7 @@ export function QuotesTab({
           {draft ? (
             <>
               <QuoteVersion quote={draft} />
-              {sendBlocked ? <Callout tone="danger" title={sendBlocked} /> : null}
+              {sendBlocked ? <Callout tone="danger" title={tActions(`blocked.${sendBlocked}`)} /> : null}
               {onSend ? (
                 <div className="flex justify-end">
                   <Button iconStart="send" onClick={onSend}>
@@ -414,7 +368,7 @@ export function QuotesTab({
       ) : onCompose ? (
         <div className="flex justify-end">
           <Button iconStart="plus" onClick={onCompose}>
-            {rfq.quotes.length > 0 ? t("newVersion") : t("compose")}
+            {rfq.quotations.length > 0 ? t("newVersion") : t("compose")}
           </Button>
         </div>
       ) : null}
@@ -430,51 +384,48 @@ export function QuotesTab({
 
 /* ----------------------------------------------------------------------------------- messages */
 
+/**
+ * The thread, inline on the RFQ (`admin.rfqs.get`); posting answers the whole RFQ, which replaces
+ * the cached one. CONTRACT-GAP admin.rfq-messages — no attachments.
+ */
 export function MessagesTab({ rfq }: { rfq: Rfq }) {
   const t = useTranslations("rfq.detail.messages");
   const canManage = useCan("rfqs.manage");
-  const queryClient = useQueryClient();
-  const key = queryKeys.related("admin", "rfq", rfq.id, "messages");
+  const settle = useSettleRfq(rfq.id);
   const [body, setBody] = useState("");
   const [visibility, setVisibility] = useState<"customer" | "internal">("internal");
 
-  const thread = useQuery({
-    queryKey: key,
-    queryFn: () => browserRequests().call("GET /v1/admin/rfqs/{rfqId}/messages", { path: { rfqId: rfq.id } }),
-    staleTime: STALE_TIME.transactional,
-  });
-
   const send = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/rfqs/{rfqId}/messages", {
-        path: { rfqId: rfq.id },
-        body: { body: body.trim(), visibility },
-      }),
-    onSuccess: () => {
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/rfqs/{rfqId}/messages", {
+          params: { path: { rfqId: rfq.id } },
+          body: { body: body.trim(), visibility },
+        })
+      ).data!,
+    onSuccess: (updated) => {
       setBody("");
       toast.success(visibility === "customer" ? t("sentToCustomer") : t("noted"));
-      void queryClient.invalidateQueries({ queryKey: key });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.detail("admin", "rfq", rfq.id) });
+      settle(updated);
     },
     onError: (error) => toast.error(problemMessage(error, t("failed"))),
   });
 
   return (
     <Section title={t("title")}>
-      {thread.isError ? <p className="text-danger text-sm">{problemMessage(thread.error, t("loadFailed"))}</p> : null}
       <ol className="space-y-3">
-        {(thread.data?.data ?? []).map((message) => (
+        {rfq.messages.map((message) => (
           <li
             key={message.id}
             className={cn(
               "rounded-md border p-3 text-sm",
               message.visibility === "internal" ? "border-warning bg-warning-subtle" : "border-border",
-              message.authorKind === "staff" ? "sm:ms-12" : "sm:me-12",
+              message.author === "packio" ? "sm:ms-12" : "sm:me-12",
             )}
           >
             <p className="text-muted flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-fg font-medium">{message.author?.displayName ?? t("customer")}</span>
-              <span>{message.authorKind === "customer" ? t("fromCustomer") : t("fromStaff")}</span>
+              <span className="text-fg font-medium">{message.authorUser.displayName}</span>
+              <span>{message.author === "customer" ? t("fromCustomer") : t("fromStaff")}</span>
               {message.visibility === "internal" ? <Badge size="sm">{t("internal")}</Badge> : null}
               <When at={message.createdAt} />
             </p>

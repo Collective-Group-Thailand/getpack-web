@@ -92,3 +92,74 @@ export function adminCompanyActions(
   }
   return actions;
 }
+
+/* ---------------------------------------------------------------------------------------- RFQs */
+
+/** What the back office knows about an RFQ when it decides what to offer (from `StaffRfqDto`). */
+export interface AdminRfqFacts {
+  status: Schemas["RfqStatus"];
+  /** A draft quotation version exists (at most one, D-100). */
+  hasDraft: boolean;
+  /** A line of the draft is below the margin floor (D-012). */
+  draftBelowMarginFloor: boolean;
+  /** A version was sent to the customer and still stands. */
+  hasSent: boolean;
+  /** The customer's acceptance made a saved quotation (`acceptedQuoteId`). */
+  hasAcceptedQuotation: boolean;
+}
+
+export type AdminRfqBlock = "below_margin_floor";
+
+export interface AdminRfqAction {
+  key: `rfq.${string}`;
+  irreversible?: boolean;
+  blockedBy?: AdminRfqBlock;
+}
+
+const RFQ_OPEN: readonly Schemas["RfqStatus"][] = ["submitted", "in_review", "need_info"];
+
+/**
+ * The actions staff are offered on an RFQ, from its facts and what the actor may do.
+ *
+ * CONTRACT-GAP entity.next-actions — the published `StaffRfqDto` carries no `nextActions`
+ * (packio-api U-B0.3), so the RFQ desk reads the status here, in one place, and offers what the
+ * B2.5 workflow would: `submitted → in_review → need_info → quoted → accepted | declined`. Every
+ * RFQ action needs `rfqs.manage` (the operations' `x-required-permissions`); ordering from the
+ * accepted quotation is CS create-order (`carts.manage_on_behalf`). It only decides which buttons
+ * to show: every action is still the API's to refuse. Delete this when the RFQ carries its own list.
+ */
+export function adminRfqActions(rfq: AdminRfqFacts, can: (permission: string) => boolean): AdminRfqAction[] {
+  const actions: AdminRfqAction[] = [];
+  if (rfq.status === "accepted") {
+    if (rfq.hasAcceptedQuotation && can("carts.manage_on_behalf")) actions.push({ key: "rfq.create_order" });
+    return actions;
+  }
+  if (!can("rfqs.manage")) return actions;
+  // Sending a draft priced under the floor waits for approval (D-012), so it is offered blocked.
+  const send: AdminRfqAction = {
+    key: "rfq.send_quote",
+    irreversible: true,
+    ...(rfq.draftBelowMarginFloor ? { blockedBy: "below_margin_floor" as const } : {}),
+  };
+  const compose: AdminRfqAction = { key: rfq.hasDraft ? "rfq.edit_quote" : "rfq.compose_quote" };
+  switch (rfq.status) {
+    case "submitted":
+      actions.push({ key: "rfq.start_review" }, { key: "rfq.assign" }, { key: "rfq.request_info" });
+      break;
+    case "in_review":
+    case "need_info":
+      if (rfq.hasDraft) actions.push(send);
+      actions.push({ key: "rfq.request_factory_cost" }, compose, { key: "rfq.request_info" }, { key: "rfq.assign" });
+      break;
+    case "quoted":
+      if (rfq.hasSent) actions.push({ key: "rfq.record_acceptance", irreversible: true });
+      if (rfq.hasDraft) actions.push(send);
+      actions.push(compose, { key: "rfq.assign" });
+      break;
+    default:
+      break;
+  }
+  if (RFQ_OPEN.includes(rfq.status) || rfq.status === "quoted")
+    actions.push({ key: "rfq.decline", irreversible: true });
+  return actions;
+}
