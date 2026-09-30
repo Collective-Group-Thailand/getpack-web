@@ -181,14 +181,16 @@ function toJobDto(order: MockOrder, job: MockOrder["jobs"][number]): Schemas["Ad
     promisedShipDate: job.promisedShipDate,
     plannedStartOn: null,
     plannedFinishOn: job.promisedShipDate,
-    predictedFinishOn: null,
+    // The SLA engine's predicted finish, past the promise when the job is at risk (D-075).
+    predictedFinishOn: job.atRisk ? bangkokIso(60 * 24 * 3).slice(0, 10) : null,
     quantityOrdered: order.quantity,
     quantityGood: null,
     quantityScrap: null,
     lotNo: null,
     buyCostNet: null,
-    inspectionRequired: false,
-    inspectionReasons: [],
+    // Packio inspects by value (D-076); the mock's inspections are on these jobs (`./governance.ts`).
+    inspectionRequired: Number(order.grossAmount) >= 100_000,
+    inspectionReasons: Number(order.grossAmount) >= 100_000 ? ["value_band_sample"] : [],
     approvedFileId: null,
     dielineFileId: null,
     spec: { productTypeCode: order.productType.code, quantity: order.quantity },
@@ -577,14 +579,36 @@ export const orderHandlers = [
     return HttpResponse.json(order.artwork.proofs.map((proof) => toProofDto(order, proof)));
   }),
 
+  // admin.production.list: the order page's Production tab (`?orderId=`) and the production board
+  // (`?queue=at_risk`), both from the commerce jobs.
   http.get("*/v1/admin/production-jobs", ({ request }) => {
     if (!allowed(request, "production.read")) return forbidden();
     const url = new URL(request.url);
     const orderId = url.searchParams.get("orderId");
+    const status = url.searchParams.get("status");
+    const queue = url.searchParams.get("queue");
+    const q = url.searchParams.get("q") ?? undefined;
     const rows = orders
       .filter((order) => !orderId || order.id === orderId)
-      .flatMap((order) => order.jobs.map((job) => toJobDto(order, job)));
+      .flatMap((order) => order.jobs.map((job) => toJobDto(order, job)))
+      .filter((job) => !status || job.status === status)
+      .filter(
+        (job) =>
+          !queue ||
+          (queue === "at_risk" && job.atRisk) ||
+          (queue === "awaiting_acceptance" && job.status === "released") ||
+          (queue === "escalated" && job.escalatedAt !== null),
+      )
+      .filter((job) => matchesQuery(q, job.jobNo, job.orderCode));
     return HttpResponse.json(paginate(rows, pageOf(url)));
+  }),
+  http.get("*/v1/admin/production-jobs/:jobId", ({ params, request }) => {
+    if (!allowed(request, "production.read")) return forbidden();
+    for (const order of orders) {
+      const job = order.jobs.find((candidate) => candidate.id === params.jobId);
+      if (job) return HttpResponse.json(toJobDto(order, job));
+    }
+    return problem(404, "http.not_found", "ไม่พบงานผลิตนี้");
   }),
 ];
 

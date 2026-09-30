@@ -271,14 +271,14 @@ test.describe("the production floor", () => {
     await expect(page.getByText("ผลตรวจ: ผ่าน")).toBeVisible();
   });
 
-  test("scorecards show the month's metrics", async ({ page }) => {
+  test("scorecards show a factory's months", async ({ page }) => {
     await signInAsStaff(page, "partner_manager");
-    await gotoHydrated(page, `${HOSTS.admin}/production/scorecards`);
+    // admin.inspections.scorecards is per factory (CONTRACT-GAP admin.scorecards: no month across factories).
+    await gotoHydrated(page, `${HOSTS.admin}/production/scorecards?factoryId=${factory(2)}`);
     await expect(page.getByText("ส่งตรงเวลา").first()).toBeVisible();
-    await expect(page.getByRole("row", { name: /โรงงานกล่องแข็ง/ }).getByRole("link")).toHaveAttribute(
-      "href",
-      `/partners/${factory(2)}`,
-    );
+    const table = page.getByRole("table", { name: /^คะแนนโรงงาน / });
+    await expect(table.getByRole("row")).toHaveCount(13);
+    await expect(page.getByRole("link", { name: /^เปิดโรงงาน / })).toHaveAttribute("href", `/partners/${factory(2)}`);
     await expectAxeClean(page);
   });
 });
