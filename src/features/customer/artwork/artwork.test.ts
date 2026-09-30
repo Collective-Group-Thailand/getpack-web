@@ -1,14 +1,11 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken, mockId } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
-import { createRequestClient } from "@/lib/api/requests/client";
-import { REQUESTS } from "@/lib/api/requests/registry";
 
 import { findingsOf, loadArtwork, pendingProof, threadsOf } from "./artwork";
 
@@ -18,18 +15,7 @@ afterAll(() => server.close());
 
 // Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
 const api = () => createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
-const prepress = {
-  call: ((...args: unknown[]) =>
-    (
-      createRequestClient(
-        REQUESTS,
-        createApiClient({
-          baseUrl: "http://api.mock",
-          accessToken: accessToken("staff", "prepress"),
-        }) as unknown as Client<never>,
-      ).call as (...a: unknown[]) => unknown
-    )(...args)) as ReturnType<typeof createRequestClient<typeof REQUESTS>>["call"],
-};
+const prepress = () => createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("staff", "prepress") });
 const uuid = () => crypto.randomUUID();
 const failure = (promise: Promise<unknown>) =>
   promise.then(
@@ -60,14 +46,12 @@ describe("artwork and proofs, against the mock", () => {
 
   it("reviews a proof prepress sends: threaded comments, then approval evidence", async () => {
     const submission = (await artworkOf(BLOCKED_ORDER)).submissions[0]!;
-    await prepress.call("POST /v1/admin/prepress/submissions/{submissionId}/actions/accept", {
-      path: { submissionId: submission.id },
-      body: {},
+    await prepress().POST("/v1/admin/artwork-submissions/{submissionId}/actions/accept", {
+      params: { path: { submissionId: submission.id } },
     });
-    await prepress.call("POST /v1/admin/prepress/{orderId}/proofs", {
-      path: { orderId: BLOCKED_ORDER },
+    await prepress().POST("/v1/admin/orders/{orderId}/proofs", {
+      params: { path: { orderId: BLOCKED_ORDER } },
       body: { submissionId: submission.id, proofFileId: uuid() },
-      idempotencyKey: uuid(),
     });
 
     const artwork = await artworkOf(BLOCKED_ORDER);
