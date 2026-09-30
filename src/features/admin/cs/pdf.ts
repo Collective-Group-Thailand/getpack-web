@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { adminBrowserApis } from "../console/api";
-import { download } from "../console/ExportButton";
+import { download } from "../console/download";
 
 const TRIES = 10;
 const PAUSE_MS = 800;

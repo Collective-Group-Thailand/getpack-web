@@ -44,11 +44,6 @@ function asSurface(key: RequestKey) {
 const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/saved-views": { resource: "order" },
   "GET /v1/admin/search": { q: "ตัวอย่าง" },
-  "GET /v1/admin/analytics/overview": { range: "30d" },
-  "GET /v1/admin/analytics/demand": { range: "30d", dimension: "province" },
-  "GET /v1/admin/analytics/unmet-demand": { range: "30d" },
-  "GET /v1/admin/analytics/factories": { range: "30d" },
-  "GET /v1/admin/analytics/campaigns": { range: "30d" },
   "GET /v1/admin/analytics/journeys": { range: "7d", journey: "claims" },
   "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
   "GET /v1/partner/factories/{factoryId}/jobs/lookup": { code: "J-2569-00300" },
