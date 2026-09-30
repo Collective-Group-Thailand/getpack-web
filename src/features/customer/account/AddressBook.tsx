@@ -1,20 +1,21 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { formatTaxId } from "@/features/customer/account/tax-id";
 import { useRouter } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { toast } from "@/ui/components/Toast";
 
-import { AddressForm, type Address } from "./AddressForm";
-import { TaxProfileForm, type TaxProfile } from "./TaxProfileForm";
+import { addressLine, type Address, type TaxProfile } from "./address";
+import { AddressForm } from "./AddressForm";
+import { TaxProfileForm } from "./TaxProfileForm";
 
 type Editing = { kind: "address"; item?: Address } | { kind: "tax"; item?: TaxProfile } | null;
 
@@ -24,6 +25,7 @@ type Editing = { kind: "address"; item?: Address } | { kind: "tax"; item?: TaxPr
  */
 export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; taxProfiles: TaxProfile[] }) {
   const t = useTranslations("account.book");
+  const locale = useLocale();
   const router = useRouter();
   const [editing, setEditing] = useState<Editing>(null);
   const [removing, setRemoving] = useState<{ kind: "address" | "tax"; id: string; name: string } | null>(null);
@@ -40,10 +42,10 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
     setBusy(true);
     try {
       if (removing.kind === "address")
-        await browserRequests().call("DELETE /v1/store/me/addresses/{addressId}", { path: { addressId: removing.id } });
+        await browserApi().DELETE("/v1/store/addresses/{addressId}", { params: { path: { addressId: removing.id } } });
       else
-        await browserRequests().call("DELETE /v1/store/me/tax-profiles/{profileId}", {
-          path: { profileId: removing.id },
+        await browserApi().DELETE("/v1/store/tax-profiles/{taxProfileId}", {
+          params: { path: { taxProfileId: removing.id } },
         });
       setRemoving(null);
       router.refresh();
@@ -85,18 +87,7 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
                 <p className="text-sm">
                   {address.recipientName} · {address.phone}
                 </p>
-                <p className="text-muted text-sm">
-                  {[
-                    address.line1,
-                    address.line2,
-                    address.subdistrict,
-                    address.district,
-                    address.province,
-                    address.postcode,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                </p>
+                <p className="text-muted text-sm">{addressLine(locale, address)}</p>
                 <div className="mt-auto flex gap-2">
                   <Button size="sm" variant="secondary" onClick={() => setEditing({ kind: "address", item: address })}>
                     {t("edit")}
@@ -148,6 +139,7 @@ export function AddressBook({ addresses, taxProfiles }: { addresses: Address[]; 
                   {profile.branchType === "head_office" ? t("headOffice") : t("branch", { code: profile.branchCode })}
                   {profile.withholdsTax ? ` · ${t("withholds")}` : ""}
                 </p>
+                <p className="text-muted text-sm">{addressLine(locale, profile)}</p>
                 <div className="mt-auto flex gap-2">
                   <Button size="sm" variant="secondary" onClick={() => setEditing({ kind: "tax", item: profile })}>
                     {t("edit")}

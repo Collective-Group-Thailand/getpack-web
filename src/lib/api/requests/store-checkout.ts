@@ -16,43 +16,9 @@
 
 import { z } from "zod";
 
-import { customerAddress, customerType, taxProfile } from "./admin-customers";
 import { dueTrigger, instalmentStatus, paymentMethod, paymentStatus, requiredBefore, slipStatus } from "./admin-orders";
 import { promotionKind } from "./admin-marketing";
 import { currency, dateTime, fileRef, listQuery, money, page, request, uuid } from "./define";
-
-/* ----------------------------------------------------------------------------- address book */
-
-export const addressInput = z
-  .object({
-    label: z.string().trim().min(1).max(60),
-    recipientName: z.string().trim().min(1).max(120),
-    phone: z.string().regex(/^0\d{8,9}$/),
-    line1: z.string().trim().min(1).max(200),
-    line2: z.string().trim().max(200).optional(),
-    subdistrict: z.string().trim().max(120).optional(),
-    district: z.string().trim().max(120).optional(),
-    province: z.string().trim().min(1).max(120),
-    postcode: z.string().regex(/^\d{5}$/),
-    isDefault: z.boolean().optional(),
-  })
-  .meta({ id: "StoreAddressInputDto" });
-
-export const taxProfileInput = z
-  .object({
-    taxType: customerType,
-    name: z.string().trim().min(1).max(200),
-    /** 13 digits; the API checks the checksum as well. */
-    taxId: z.string().regex(/^\d{13}$/),
-    branchType: z.enum(["head_office", "branch"]),
-    /** `00000` for the head office. */
-    branchCode: z.string().regex(/^\d{5}$/),
-    address: z.string().trim().min(1).max(500),
-    /** A juristic customer who withholds tax on services (ภ.ง.ด.53) — the API computes the amount. */
-    withholdsTax: z.boolean(),
-    isDefault: z.boolean().optional(),
-  })
-  .meta({ id: "StoreTaxProfileInputDto" });
 
 /* ----------------------------------------------------------------------------------- checkout */
 
@@ -279,53 +245,6 @@ export const storeInstalment = z
 /* ----------------------------------------------------------------------------------- requests */
 
 export const storeCheckoutRequests = {
-  "GET /v1/store/me/addresses": request({
-    request: "store.address-book",
-    summary: "The customer's saved addresses",
-    response: z.object({ data: z.array(customerAddress) }),
-  }),
-  "POST /v1/store/me/addresses": request({
-    request: "store.address-book",
-    summary: "Save an address; the first one becomes the default",
-    body: addressInput,
-    response: customerAddress,
-    status: 201,
-  }),
-  "PATCH /v1/store/me/addresses/{addressId}": request({
-    request: "store.address-book",
-    summary: "Change a saved address or make it the default",
-    body: addressInput.partial(),
-    response: customerAddress,
-  }),
-  "DELETE /v1/store/me/addresses/{addressId}": request({
-    request: "store.address-book",
-    summary: "Remove a saved address (orders keep their snapshot)",
-    status: 204,
-  }),
-  "GET /v1/store/me/tax-profiles": request({
-    request: "store.address-book",
-    summary: "The customer's tax-invoice profiles (individual, juristic, government; head office or branch)",
-    decisions: ["D-125"],
-    response: z.object({ data: z.array(taxProfile) }),
-  }),
-  "POST /v1/store/me/tax-profiles": request({
-    request: "store.address-book",
-    summary: "Save a tax-invoice profile; the API validates the tax id",
-    body: taxProfileInput,
-    response: taxProfile,
-    status: 201,
-  }),
-  "PATCH /v1/store/me/tax-profiles/{profileId}": request({
-    request: "store.address-book",
-    summary: "Change a tax-invoice profile",
-    body: taxProfileInput.partial(),
-    response: taxProfile,
-  }),
-  "DELETE /v1/store/me/tax-profiles/{profileId}": request({
-    request: "store.address-book",
-    summary: "Remove a tax-invoice profile",
-    status: 204,
-  }),
   "POST /v1/store/checkout/actions/preview": request({
     request: "store.checkout",
     summary:
