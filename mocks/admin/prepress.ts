@@ -727,7 +727,7 @@ export function customerDecide(
 
 export function customerAnnotate(
   proofId: string,
-  input: { page: number; kind: "pin" | "rect"; geometry: Record<string, number>; body: string; parentId?: string },
+  input: { page: number; kind: Annotation["kind"]; geometry: Record<string, unknown>; body: string; parentId?: string },
   who: { id: string; displayName: string },
 ): Annotation {
   const list = annotations.get(proofId) ?? [];

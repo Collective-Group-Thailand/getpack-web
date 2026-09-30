@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { orderActions, type OrderFacts } from "./store";
+import { artworkActions, orderActions, type ArtworkFacts, type OrderFacts } from "./store";
 
 const facts = (overrides: Partial<OrderFacts>): OrderFacts => ({
   status: "in_production",
@@ -32,5 +32,40 @@ describe("the actions offered on an order until the API sends them", () => {
       "order.reorder",
     ]);
     expect(keys({ status: "completed", delivered: true })).toEqual(["order.open_claim", "order.reorder"]);
+  });
+});
+
+describe("the artwork actions offered until the API sends them", () => {
+  const base: ArtworkFacts = {
+    artworkStatus: "awaiting_upload",
+    designOption: "own_file",
+    latest: null,
+    proofPending: false,
+    designServiceStatus: null,
+  };
+
+  it("asks for a file until one is accepted, again after a blocked preflight, never while a proof waits", () => {
+    expect(artworkActions(base).upload).toBe(true);
+    expect(artworkActions({ ...base, artworkStatus: "in_review" }).upload).toBe(false);
+    expect(
+      artworkActions({
+        ...base,
+        artworkStatus: "in_review",
+        latest: { preflightStatus: "blocked", status: "rejected" },
+      }).upload,
+    ).toBe(true);
+    expect(artworkActions({ ...base, artworkStatus: "proof_sent", proofPending: true })).toMatchObject({
+      upload: false,
+      reviewProof: true,
+    });
+  });
+
+  it("walks hired design from the brief to the delivered design (D-071)", () => {
+    const hired = { ...base, designOption: "hired_design" as const };
+    expect(artworkActions({ ...hired, designServiceStatus: "brief_pending" })).toMatchObject({
+      upload: false,
+      submitBrief: true,
+    });
+    expect(artworkActions({ ...hired, designServiceStatus: "delivered", proofPending: true }).reviewDesign).toBe(true);
   });
 });

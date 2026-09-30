@@ -272,7 +272,8 @@
     },
     "confirm": {
       "title": "Send this design as the artwork for order {order}?",
-      "body": "A print PDF is made (die lines on their own layers, artwork at 300 dpi with bleed) and checked at once. The team sends a proof before production."
+      "body": "A print PDF is made (die lines on their own layers, artwork at 300 dpi with bleed) and checked at once. The team sends a proof before production.",
+      "bodyFromDesign": "We'll save this design and send it to prepress, who make the print file. You'll get a proof to check before production."
     },
     "result": {
       "sentTitle": "Artwork for order {order} sent",
@@ -281,7 +282,8 @@
       "warnBody": "The file passed, with the notes below. The team will send a proof.",
       "okBody": "The file passed. The team will send a proof before production.",
       "toArtwork": "Go to artwork and proofs",
-      "version": "File version {version}"
+      "version": "File version {version}",
+      "pendingBody": "Design sent. Prepress is making and checking the print file, and will send you a proof before production."
     }
   },
   "textPanel": {

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { orderId } = await params;
   const [t, artwork] = await Promise.all([getTranslations("proof"), getMyArtwork(orderId).catch(() => null)]);
   return {
-    title: artwork ? t("titleFor", { code: artwork.orderCode }) : t("title"),
+    title: artwork ? t("titleFor", { code: artwork.order.orderCode }) : t("title"),
     robots: { index: false, follow: false },
   };
 }
@@ -42,7 +42,7 @@ export default async function Page({
         >
           {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">{t("titleFor", { code: artwork.orderCode })}</h1>
+        <h1 className="text-2xl font-bold">{t("titleFor", { code: artwork.order.orderCode })}</h1>
       </header>
       {artwork.proofs.length === 0 ? (
         <EmptyState icon="file-check" title={t("none")} description={t("noneHint")} />
