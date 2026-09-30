@@ -220,7 +220,7 @@ test.describe("customers", () => {
 
 test.describe("B2B companies (D-120…D-125)", () => {
   test("KYC is reviewed document by document, then the account approved", async ({ page }) => {
-    // packio-api: companies.kyc_review reviews each document, companies.manage approves (docs/rbac.md).
+    // packio-api: companies.kyc_review reviews each document and approves the account (approve-kyc, no reason).
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(3)}?tab=kyc`);
     await expect(header(page)).toContainText("กำลังตรวจเอกสาร");
@@ -228,9 +228,8 @@ test.describe("B2B companies (D-120…D-125)", () => {
 
     await page.getByRole("button", { name: "อนุมัติ KYC" }).click();
     let confirm = page.getByRole("alertdialog", { name: "อนุมัติเอกสาร KYC" });
-    await confirm.getByLabel(/^เหตุผล/).fill("ตรวจแล้ว");
     await confirm.getByRole("button", { name: "อนุมัติ KYC" }).click();
-    await expect(page.getByText("ต้องตรวจผ่านเอกสารที่จำเป็นครบก่อน (D-120)", { exact: true })).toBeVisible();
+    await expect(page.getByText("ต้องตรวจผ่านเอกสารที่จำเป็นครบก่อน (D-120)", { exact: true }).first()).toBeVisible();
     await confirm.getByRole("button", { name: "ยกเลิก" }).click();
 
     for (const doc of ["หนังสือรับรองบริษัท", "ภ.พ.20", "บัตรผู้มีอำนาจลงนาม"]) {
@@ -242,7 +241,6 @@ test.describe("B2B companies (D-120…D-125)", () => {
 
     await page.getByRole("button", { name: "อนุมัติ KYC" }).click();
     confirm = page.getByRole("alertdialog", { name: "อนุมัติเอกสาร KYC" });
-    await confirm.getByLabel(/^เหตุผล/).fill("เอกสารครบถ้วน");
     await confirm.getByRole("button", { name: "อนุมัติ KYC" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(header(page)).toContainText("ใช้งานได้");
@@ -261,7 +259,8 @@ test.describe("B2B companies (D-120…D-125)", () => {
   test("a credit limit is requested with a term the setting allows (D-121)", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(2)}?tab=credit`);
-    await expect(page.getByText("ครบจำนวนคำสั่งซื้อที่ชำระแล้ว")).toBeVisible();
+    // CONTRACT-GAP admin.companies — no eligibility reason; the credit status says it is eligible.
+    await expect(header(page)).toContainText("มีสิทธิ์ขอเครดิต");
     await page.getByRole("button", { name: "ขอวงเงิน" }).click();
     const dialog = page.getByRole("dialog", { name: "ขอวงเงินเครดิต" });
     await dialog.getByLabel(/^วงเงิน/).fill("80000");
@@ -269,21 +268,26 @@ test.describe("B2B companies (D-120…D-125)", () => {
     await dialog.getByLabel(/^เหตุผล/).fill("สั่งซื้อสม่ำเสมอ ชำระตรงเวลา");
     await dialog.getByRole("button", { name: "ส่งขออนุมัติ" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    const history = page.getByRole("table", { name: "ประวัติวงเงิน" });
-    await expect(history).toContainText("฿80,000.00");
-    await expect(history).toContainText("เสนอแล้ว");
-    await expect(history.getByRole("link", { name: "เปิดรายการอนุมัติ" })).toBeVisible();
+    // The request answers the credit with its pending request. CONTRACT-GAP admin.company-credit —
+    // no limit history and no approval id, so there is no link to the approval.
+    await expect(page.getByText("มีคำขอวงเงินที่รออนุมัติ")).toBeVisible();
+    await expect(page.getByText(/฿80,000\.00 ระยะ 30 วัน/)).toBeVisible();
     await expect(page.getByRole("button", { name: "ขอวงเงิน" })).toBeDisabled();
   });
 
   test("an overdue company is blocked from credit orders (D-122)", async ({ page }) => {
     await signInAsStaff(page, "finance");
-    await gotoHydrated(page, `${HOSTS.admin}/companies?creditStatus=blocked_overdue`);
-    await expect(page.getByRole("table", { name: "บริษัท (B2B)" })).toContainText("อาหารเสริม");
+    // CONTRACT-GAP admin.companies — no creditStatus filter on the list; the row carries the status.
+    await gotoHydrated(page, `${HOSTS.admin}/companies`);
+    const table = page.getByRole("table", { name: "บริษัท (B2B)" });
+    await expect(table.getByRole("row", { name: /อาหารเสริม/ })).toContainText("ระงับเครดิต (ค้างชำระ)");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(4)}`);
-    await expect(page.getByText("ระงับการสั่งแบบเครดิต: ค้างชำระเกินกำหนด 12 วัน")).toBeVisible();
+    // CONTRACT-GAP admin.companies — no receivables on the company, so the block names no day count.
+    await expect(page.getByText("ระงับการสั่งแบบเครดิต: ค้างชำระเกินกำหนด")).toBeVisible();
     await page.getByRole("tab", { name: "ใบแจ้งยอด" }).click();
-    await expect(page.getByRole("table", { name: "ใบแจ้งยอดรายเดือน" })).toContainText("เกินกำหนด");
+    // CONTRACT-GAP admin.company-credit — a statement is one month's figures, with no status or due date.
+    await expect(page.getByRole("tabpanel")).toContainText("ยกมา");
+    await expect(page.getByRole("tabpanel")).toContainText("คงค้าง");
     await expectAxeClean(page);
   });
 });

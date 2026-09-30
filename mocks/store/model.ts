@@ -20,19 +20,19 @@ import {
   requiredBefore,
   slipStatus,
 } from "@/lib/api/requests/admin-orders";
+import { promotionKind } from "@/lib/api/requests/admin-marketing";
+import { quoteSource } from "@/lib/api/requests/store-quotes";
+import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
+import { companyRole, creditApplication } from "@/lib/api/requests/store-business";
+
 import {
   companyKycDocType,
   companyKycStatus,
   companyReceivables,
-  companyRole,
   companyStatus,
   creditStatus,
   poNumberPolicy,
-} from "@/lib/api/requests/admin-companies";
-import { promotionKind } from "@/lib/api/requests/admin-marketing";
-import { quoteSource } from "@/lib/api/requests/store-quotes";
-import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
-import { creditApplication } from "@/lib/api/requests/store-business";
+} from "../admin/company-model";
 
 /* ------------------------------------------------------------------------------------- cart */
 
