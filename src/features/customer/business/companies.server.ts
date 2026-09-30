@@ -27,7 +27,7 @@ export async function listMyCompanies(): Promise<Company[]> {
  * has no singular "my company" (the request asked for `/me/company`), so the storefront takes the
  * first. A picker belongs here once a customer with two companies exists.
  */
-export async function getMyCompany(): Promise<Company | null> {
+export async function findMyCompany(): Promise<Company | null> {
   const companies = await listMyCompanies();
   return companies.find((company) => company.status === "active") ?? companies[0] ?? null;
 }

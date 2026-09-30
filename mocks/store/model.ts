@@ -20,9 +20,19 @@ import {
   requiredBefore,
   slipStatus,
 } from "@/lib/api/requests/admin-orders";
+import {
+  companyKycDocType,
+  companyKycStatus,
+  companyReceivables,
+  companyRole,
+  companyStatus,
+  creditStatus,
+  poNumberPolicy,
+} from "@/lib/api/requests/admin-companies";
 import { promotionKind } from "@/lib/api/requests/admin-marketing";
 import { quoteSource } from "@/lib/api/requests/admin-sales";
-import { currency, dateTime, money, uuid } from "@/lib/api/requests/define";
+import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
+import { creditApplication } from "@/lib/api/requests/store-business";
 
 /* ------------------------------------------------------------------------------------- cart */
 
@@ -299,3 +309,96 @@ export const storePayment = z
 export type Input = z.output<typeof checkoutInput>;
 export type Preview = z.output<typeof checkoutPreview>;
 export type Payment = z.output<typeof storePayment>;
+
+/* ------------------------------------------------------------------------------------ company */
+
+export const companyNotice = z
+  .object({
+    /** D-122: 7 days before, on the due date, and overdue (credit orders blocked after 7 days). */
+    kind: z.enum(["due_soon", "due_today", "overdue", "credit_blocked"]).meta({ id: "CompanyNoticeKind" }),
+    statementId: uuid().nullable(),
+    period: z.string().nullable(),
+    amount: money(),
+    dueAt: dateTime().nullable(),
+    daysOverdue: z.number().int(),
+  })
+  .meta({ id: "CompanyNoticeDto" });
+
+export const storeCompany = z
+  .object({
+    id: uuid(),
+    companyCode: z.string(),
+    legalName: z.string(),
+    taxId: z.string(),
+    status: companyStatus,
+    isVatRegistered: z.boolean(),
+    /** The signed-in member's roles in this company. */
+    myRoles: z.array(companyRole),
+    /** What those roles allow here — the API's reading of them. */
+    can: z.object({
+      manageMembers: z.boolean(),
+      manageSettings: z.boolean(),
+      approveOrders: z.boolean(),
+      viewFinance: z.boolean(),
+      order: z.boolean(),
+    }),
+    poNumberPolicy,
+    /** D-123: orders above it wait for the approver; `null` = no approval step. */
+    orderApprovalThreshold: money().nullable(),
+    /** D-124: the company's agreed discount, when there is one. */
+    discountPct: pct().nullable(),
+    credit: z.object({
+      status: creditStatus,
+      limitAmount: money(),
+      availableAmount: money(),
+      termDays: z.number().int().nullable(),
+      /** D-121: eligible after 3 paid orders or a financial-statement review. */
+      eligible: z.boolean(),
+      paidOrdersCount: z.number().int(),
+      paidOrdersNeeded: z.number().int(),
+      /** The terms Finance offers (setting `b2b.credit_terms`). */
+      allowedTerms: z.array(z.number().int()),
+      application: creditApplication.nullable(),
+    }),
+    receivables: companyReceivables,
+    notices: z.array(companyNotice),
+    kyc: z.array(
+      z.object({
+        docType: companyKycDocType,
+        status: companyKycStatus,
+        note: z.string().nullable(),
+        uploadedAt: dateTime(),
+      }),
+    ),
+    /** Why the company is not active yet, in words, while KYC is under review or was returned. */
+    statusNote: z.string().nullable(),
+  })
+  .meta({ id: "StoreCompanyDto" });
+
+export const companyApproval = z
+  .object({
+    id: uuid(),
+    requestNo: z.string(),
+    status: z.enum(["pending", "approved", "rejected", "expired"]).meta({ id: "CompanyApprovalStatus" }),
+    requestedBy: z.object({ id: uuid(), displayName: z.string() }),
+    requestedAt: dateTime(),
+    grossAmount: money(),
+    /** The company threshold it went over (D-123). */
+    threshold: money(),
+    poNumber: z.string().nullable(),
+    branch: z.string().nullable(),
+    items: z.array(z.object({ name: z.string(), quantity: z.number().int(), unit: z.string(), grossAmount: money() })),
+    scheduleLabel: z.string(),
+    note: z.string().nullable(),
+    decidedBy: z.object({ id: uuid(), displayName: z.string() }).nullable(),
+    decidedAt: dateTime().nullable(),
+    reason: z.string().nullable(),
+    /** Once approved: the orders it placed. */
+    orders: z.array(z.object({ id: uuid(), orderCode: z.string() })),
+    /** An approval waits this long before it lapses and the price must be checked again. */
+    expiresAt: dateTime(),
+  })
+  .meta({ id: "CompanyApprovalDto" });
+
+export type StoreCompany = z.output<typeof storeCompany>;
+export type CompanyApproval = z.output<typeof companyApproval>;

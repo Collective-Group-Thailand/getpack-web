@@ -20,9 +20,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ a
   const [{ applied }, spend, pending] = await Promise.all([
     searchParams,
     company.can.viewFinance || company.can.order ? getSpend(12) : Promise.resolve(null),
-    getApprovals("pending"),
+    getApprovals(company.id),
   ]);
-  return (
-    <BusinessDashboard company={company} spend={spend} pending={pending?.meta.total ?? 0} applied={applied === "1"} />
-  );
+  return <BusinessDashboard company={company} spend={spend} pending={pending?.length ?? 0} applied={applied === "1"} />;
 }

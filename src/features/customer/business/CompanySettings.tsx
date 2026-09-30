@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { useRouter } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
@@ -18,9 +18,18 @@ type Policy = "required" | "optional" | "none";
 /**
  * What the company's admin decides (D-123, D-125): the order value above which the approver must
  * approve, and whether a PO number is required. The amount is whole baht as typed, sent as the
- * API's decimal string — nothing is computed from it here.
+ * API's decimal string — nothing is computed from it here. Saved under the `ETag` of a fresh read
+ * (`store.companies.updateSettings`, If-Match).
  */
-export function CompanySettings({ threshold, poNumberPolicy }: { threshold: string | null; poNumberPolicy: Policy }) {
+export function CompanySettings({
+  companyId,
+  threshold,
+  poNumberPolicy,
+}: {
+  companyId: string;
+  threshold: string | null;
+  poNumberPolicy: Policy;
+}) {
   const t = useTranslations("business.settings");
   const router = useRouter();
   const [enabled, setEnabled] = useState(threshold !== null);
@@ -38,7 +47,10 @@ export function CompanySettings({ threshold, poNumberPolicy }: { threshold: stri
     setError(undefined);
     setBusy(true);
     try {
-      await browserRequests().call("PATCH /v1/store/me/company", {
+      const api = browserApi();
+      const current = await api.GET("/v1/store/companies/{companyId}", { params: { path: { companyId } } });
+      await api.PATCH("/v1/store/companies/{companyId}", {
+        params: { path: { companyId }, header: { "If-Match": current.response.headers.get("etag") ?? "" } },
         body: { orderApprovalThreshold: enabled ? `${amount}.00` : null, poNumberPolicy: policy },
       });
       toast.success(t("saved"));
