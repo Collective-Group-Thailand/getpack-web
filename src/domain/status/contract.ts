@@ -51,14 +51,14 @@ export type CompanyStatus = Schemas["CompanyStatus"];
 /** A company's credit standing (D-121, D-122). **Source: contract** (U-F0.3). */
 export type CreditStatus = Schemas["CreditStatus"];
 
-/** A campaign with a THB budget; auto-stops when exhausted (D-154). **Source: schema** (`campaign_status`). */
-export type CampaignStatus = "draft" | "scheduled" | "active" | "paused" | "exhausted" | "ended";
+/** A campaign with a THB budget; auto-stops when exhausted (D-154). **Source: contract** (U-F0.3). */
+export type CampaignStatus = Schemas["CampaignStatus"];
 
-/** A coupon, automatic or referral promotion (D-053). **Source: schema** (`promotion_status`). */
-export type PromotionStatus = "draft" | "active" | "paused" | "ended";
+/** A coupon, automatic or referral promotion (D-053). **Source: contract** (U-F0.3). */
+export type PromotionStatus = Schemas["PromotionStatus"];
 
-/** One coupon code (D-053). **Source: schema** (`coupon_status`). */
-export type CouponStatus = "active" | "used_up" | "disabled";
+/** One coupon code (D-053). **Source: contract** (U-F0.3). */
+export type CouponStatus = Schemas["CouponStatus"];
 
 /** One line of the points ledger (D-132): pending until completion + claim window. **Source: contract** (U-F0.2). */
 export type PointsStatus = Schemas["PointsStatus"];

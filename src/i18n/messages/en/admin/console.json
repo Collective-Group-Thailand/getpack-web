@@ -151,7 +151,7 @@
     "required": "This is required",
     "taxId": "A 13-digit tax ID",
     "branchCode": "A 5-digit branch code",
-    "code": "3+ capitals, digits, - or _",
+    "code": "Lower case, digits, - or _; at least 2",
     "amount": "An amount, e.g. 150000 or 150000.50",
     "json": "Invalid JSON"
   }
