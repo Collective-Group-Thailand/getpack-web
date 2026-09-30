@@ -17,9 +17,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
   const company = await requireMember();
   const { view, sent } = await searchParams;
   const decided = view === "decided";
+  // CONTRACT-GAP store.company-approvals: the published list has the pending ones only.
   const [t, approvals] = await Promise.all([
     getTranslations("business.approvals"),
-    getApprovals(decided ? "decided" : "pending"),
+    decided ? Promise.resolve([]) : getApprovals(company.id),
   ]);
   return (
     <div className="flex flex-col gap-6">
@@ -48,7 +49,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
           {t("sent")}
         </Callout>
       ) : null}
-      <ApprovalsList approvals={approvals?.data ?? []} canApprove={company.can.approveOrders} />
+      {decided ? <Callout tone="info">{t("decidedUnavailable")}</Callout> : null}
+      <ApprovalsList companyId={company.id} approvals={approvals ?? []} canApprove={company.can.approveOrders} />
     </div>
   );
 }

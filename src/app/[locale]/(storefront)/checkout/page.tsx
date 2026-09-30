@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { getPoints } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getMyCompany } from "@/features/customer/business/companies.server";
+import { findMyCompany } from "@/features/customer/business/companies.server";
 import { getCartAndBook } from "@/features/customer/cart/api.server";
 import { lineBlockers } from "@/features/customer/cart/cart";
 import { CheckoutView } from "@/features/customer/checkout/CheckoutView";
@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     getTranslations("checkout"),
     getCartAndBook(locale),
     getPoints(),
-    getMyCompany(),
+    findMyCompany(),
   ]);
   if (cart.items.length === 0) return redirect({ href: "/cart", locale });
 
