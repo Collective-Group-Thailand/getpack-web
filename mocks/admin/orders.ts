@@ -1,7 +1,8 @@
 /**
  * The order desk on the published contract (U-F0.3): the queues, the lean order, groups and their
  * payment schedule, the staff timeline and notes, cancel and manual start, CS recording a slip, and
- * each order's artwork, proofs and production jobs.
+ * each order's production jobs. Its artwork submissions and proofs are the prepress desk's
+ * (`./artwork.ts`), the one stateful source of artwork.
  *
  * The rows are the fake commerce orders (`./commerce`), the same ones the storefront, finance and
  * logistics mocks read, so a change made here is one every screen sees. Each handler turns a row
@@ -215,100 +216,6 @@ function toJobDto(order: MockOrder, job: MockOrder["jobs"][number]): Schemas["Ad
       quantityIn: null,
       quantityOut: null,
       quantityScrap: null,
-    })),
-  };
-}
-
-function toSubmissionDto(
-  order: MockOrder,
-  submission: MockOrder["artwork"]["submissions"][number],
-): Schemas["ArtworkSubmissionDto"] {
-  const blocks = submission.findings.filter((finding) => finding.severity === "block").length;
-  return {
-    id: submission.id,
-    orderId: order.id,
-    orderCode: order.orderCode,
-    versionNo: submission.versionNo,
-    source: submission.source,
-    channel: "web",
-    status: submission.preflightStatus === "blocked" ? "rejected" : "submitted",
-    preflightStatus: submission.preflightStatus,
-    preflightCompletedAt: submission.submittedAt,
-    preflightReport: {
-      run: 1,
-      blockCount: blocks,
-      warnCount: submission.findings.filter((finding) => finding.severity === "warn").length,
-      expectedSize: null,
-      files: submission.files.map((file, index) => ({
-        submissionFileId: file.id,
-        name: file.originalName,
-        kind: "pdf",
-        pageCount: 1,
-        thumbnailFileId: null,
-        checks:
-          index === 0
-            ? submission.findings.map((finding) => ({
-                check: finding.check,
-                severity: finding.severity,
-                outcome: finding.severity === "info" ? "pass" : "fail",
-                page: finding.page,
-                messageTh: finding.message,
-                messageEn: finding.message,
-                measurements: {},
-              }))
-            : [],
-      })),
-    },
-    files: submission.files.map((file) => ({
-      id: mockId("sbf", Number.parseInt(file.id.slice(-6), 16) % 0x10000),
-      fileId: file.id,
-      role: "artwork",
-      originalName: file.originalName,
-      mimeType: file.mimeType,
-      sizeBytes: file.sizeBytes,
-      linkUrl: null,
-    })),
-    note: null,
-    rejectReason: null,
-    reviewedAt: null,
-    submittedAt: submission.submittedAt,
-  };
-}
-
-function toProofDto(order: MockOrder, proof: MockOrder["artwork"]["proofs"][number]): Schemas["ProofDto"] {
-  return {
-    id: proof.id,
-    orderId: order.id,
-    orderCode: order.orderCode,
-    submissionId: null,
-    versionNo: proof.versionNo,
-    status: proof.status,
-    sentAt: proof.sentAt,
-    decidedAt: proof.decidedAt,
-    decisionChannel: proof.decisionChannel,
-    decisionComment: null,
-    onBehalfReason: null,
-    changeNote: null,
-    proofFile: {
-      id: proof.file.id,
-      originalName: proof.file.originalName,
-      mimeType: proof.file.mimeType,
-      pageCount: 1,
-    },
-    dielineFileId: null,
-    approvedFileId: null,
-    approvedFileSha256: null,
-    compare: null,
-    annotations: Array.from({ length: proof.openAnnotations }, (_, index) => ({
-      id: mockId("ann", (Number.parseInt(proof.id.slice(-6), 16) % 0x1000) * 16 + index),
-      parentId: null,
-      kind: "pin",
-      page: 1,
-      geometry: { x: 0.3 + index * 0.1, y: 0.4 },
-      comment: "ขอแก้ไขตรงนี้ (ข้อมูลจำลอง)",
-      author: { kind: "customer", displayName: order.customer.displayName },
-      createdAt: proof.sentAt,
-      resolvedAt: null,
     })),
   };
 }
@@ -563,20 +470,6 @@ export const orderHandlers = [
     logEvent(order, "slip.uploaded_by_cs", "CS อัปโหลดสลิปแทนลูกค้า", { id: who.id, displayName: who.displayName });
     refreshOrder(order);
     return HttpResponse.json(paymentDto(order, payment), { status: 201 });
-  }),
-
-  http.get("*/v1/admin/orders/:orderId/artwork-submissions", ({ params, request }) => {
-    if (!allowed(request, "artwork.read")) return forbidden();
-    const order = find(params.orderId as string);
-    if (!order) return notFound();
-    return HttpResponse.json(order.artwork.submissions.map((submission) => toSubmissionDto(order, submission)));
-  }),
-
-  http.get("*/v1/admin/orders/:orderId/proofs", ({ params, request }) => {
-    if (!allowed(request, "artwork.read")) return forbidden();
-    const order = find(params.orderId as string);
-    if (!order) return notFound();
-    return HttpResponse.json(order.artwork.proofs.map((proof) => toProofDto(order, proof)));
   }),
 
   // admin.production.list: the order page's Production tab (`?orderId=`) and the production board
