@@ -63,7 +63,7 @@ function membersOf(groupId: string) {
   return orders.filter((order) => order.groupId === groupId);
 }
 
-function toGroupDto(groupId: string, who: StaffPersona | null): Schemas["AdminOrderGroupDto"] | null {
+export function toGroupDto(groupId: string, who: StaffPersona | null): Schemas["AdminOrderGroupDto"] | null {
   const members = membersOf(groupId);
   const first = members[0];
   if (!first) return null;
