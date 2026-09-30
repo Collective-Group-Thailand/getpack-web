@@ -3,38 +3,26 @@
     "title": "Prepress",
     "description": "Artwork, proofs, templates and design work waiting on prepress; each stage has its own SLA.",
     "queuesLabel": "Prepress stages",
-    "queues": {
-      "all": "All",
-      "preflight": "Preflight review",
-      "proof": "Proof to prepare",
-      "awaiting_customer": "Proof with customer",
-      "changes_requested": "Changes requested",
-      "template": "Template to send",
-      "design": "Design work",
-      "mockup": "Mockup"
-    },
     "columns": {
       "order": "Order",
-      "customer": "Customer",
       "stage": "Stage",
       "progress": "Progress",
       "sla": "SLA",
-      "assignee": "Owner",
-      "updated": "Updated"
+      "since": "Waiting since"
     },
     "fileVersion": "File v{version}",
     "proofVersion": "Proof v{version}",
-    "designRound": "Round {round} ({free} free)",
-    "mockup": "Mockup",
     "withCustomer": "With the customer",
-    "you": "You",
-    "unassigned": "Unassigned",
     "search": "Search prepress",
-    "searchPlaceholder": "Order code or customer",
-    "artworkStatus": "Artwork status",
-    "productType": "Product type",
+    "searchPlaceholder": "Order number",
     "emptyTitle": "Nothing at this stage",
-    "emptyBody": "Try another stage or clear the filters."
+    "emptyBody": "Try another queue.",
+    "queues": {
+      "submissions": "Files to review (preflight)",
+      "changes_requested": "Changes requested",
+      "proofs_waiting": "Proofs with the customer"
+    },
+    "noSla": "No SLA"
   },
   "actions": {
     "labels": {
@@ -60,7 +48,7 @@
     },
     "proof": {
       "title": "Send proof version {version}",
-      "body": "The proof goes to {customer} for {code}; an earlier version not yet approved is superseded.",
+      "body": "The proof for {code} goes to the customer; the version waiting for them is superseded.",
       "confirm": "Upload and send",
       "submission": "Made from",
       "chooseSubmission": "Choose the submission",
@@ -77,7 +65,7 @@
     },
     "template": {
       "title": "Send the template",
-      "body": "Sends {code}'s template to {customer} to lay out their artwork.",
+      "body": "Send the dieline template for {code} to the customer to lay out their artwork on.",
       "confirm": "Send template",
       "file": "Template file",
       "fileHint": "PDF, SVG or DXF",
@@ -88,7 +76,7 @@
     },
     "deliver": {
       "title": "Deliver design round {round}",
-      "body": "Sends {code}'s design files to {customer} to approve or change.",
+      "body": "Send the design files for {code} to the customer to approve or ask for changes.",
       "confirm": "Send to customer",
       "files": "Design files",
       "note": "Message to the customer",
@@ -109,13 +97,11 @@
       "body": "{code}'s file passed preflight and goes to proofing.",
       "bodyWarnings": "{code}'s file has {count} warnings; accepting it acknowledges them.",
       "confirm": "Accept for proof",
-      "note": "Why it is acceptable",
-      "noteHint": "Kept with the review history.",
       "done": "Accepted for proof"
     },
     "reject": {
       "title": "Send file v{version} back",
-      "body": "{customer} is asked to upload {code}'s file again, with this reason.",
+      "body": "The customer is asked to upload the files for {code} again, with this reason.",
       "confirm": "Send back",
       "reason": "What needs fixing",
       "reasonHint": "The customer sees this.",
@@ -131,30 +117,13 @@
       "artwork": "Artwork",
       "proofs": "Proofs",
       "template": "Template",
-      "design": "Design service",
-      "mockup": "Mockup"
+      "design": "Design service"
     },
-    "stages": {
-      "preflight": "Preflight review",
-      "proof": "Proof to prepare",
-      "awaiting_customer": "Proof with customer",
-      "changes_requested": "Changes requested",
-      "template": "Template to send",
-      "design": "Design work",
-      "mockup": "Mockup"
-    },
-    "urgency": {
-      "due_soon": "SLA due soon",
-      "late": "Past SLA"
-    },
-    "headline": "{customer} · {type} · {quantity} {unit}",
+    "headline": "{type} · quantity {quantity}",
     "download": "Download",
     "drawQueued": "Dieline drawing queued",
     "drawFailed": "Could not draw the dieline",
     "rail": {
-      "stage": "Current stage",
-      "noStage": "Nothing pending",
-      "withCustomer": "With the customer — not prepress's SLA",
       "owner": "Owner",
       "assign": "Assign",
       "reassign": "Change",
@@ -162,11 +131,9 @@
       "unassigned": "Unassigned",
       "order": "Order",
       "orderCode": "Order",
-      "customer": "Customer",
       "design": "Design",
       "mockup": "Mockup",
       "promised": "Promised ship date",
-      "specs": "Specification",
       "designOptions": {
         "own_file": "Customer's own file",
         "online_designer": "Online designer",
@@ -177,7 +144,8 @@
         "none": "No mockup",
         "with_print": "Printed mockup",
         "without_print": "Blank mockup"
-      }
+      },
+      "ownerUnknown": "Not shown yet (the API does not publish the owner)"
     },
     "artwork": {
       "version": "File version {version}",
@@ -215,22 +183,26 @@
         "reference": "Reference"
       },
       "none": "No artwork yet",
-      "noneBody": "Send the template, then wait for the customer's file."
+      "noneBody": "Send the template, then wait for the customer's file.",
+      "channels": {
+        "web": "On the website",
+        "line_liff": "Through LINE",
+        "cs": "Sent by CS"
+      },
+      "blocked": {
+        "preflight_blocked": "Blocking findings must be fixed before a proof (size or bleed, D-070)",
+        "preflight_pending": "Preflight is still running; wait for its result"
+      },
+      "rejectReason": "Why it was sent back",
+      "note": "Customer note: {note}",
+      "reportPending": "No preflight result yet",
+      "unnamed": "Unnamed file"
     },
     "design": {
-      "documentTitle": "Online designer document",
-      "readOnly": "Read-only",
-      "documentMeta": "{title} · version {version} · by {owner}",
-      "viewerLabel": "Preview of {title}",
-      "unreadable": "This design cannot be shown here; it may come from a newer designer.",
-      "previewNote": "An indicative preview; the proof is what gets checked.",
       "copy": "Make a working copy",
       "copyTitle": "Prepress copy — {title}",
       "copied": "Created {title}",
       "copyFailed": "Could not make a copy",
-      "copyReady": "{title} is ready",
-      "copyNext": "The customer's design is untouched. Opening copies in the designer from the back office comes with server-side designs (F4).",
-      "none": "No design service on this order",
       "title": "Hired design",
       "target": "Target (5 business days)",
       "max": "Maximum (10 business days)",
@@ -251,8 +223,14 @@
       "freeRound": "Free round",
       "requested": "Requested",
       "delivered": "delivered",
-      "openInDesigner": "Open in the designer",
-      "openCopy": "Open the copy in the designer"
+      "notFound": "No hired design found for this order",
+      "notStarted": "Not started",
+      "closeReason": "Why it was closed",
+      "brandName": "Brand name",
+      "brandCategory": "Category",
+      "briefDescription": "Description",
+      "attachment": "Attachment {number}",
+      "noBrief": "The customer has not sent the brief yet"
     },
     "proofs": {
       "none": "No proof yet",
@@ -263,7 +241,6 @@
       "openCount": "{count} open",
       "fromFile": "Made from",
       "fileVersion": "File v{version}",
-      "preparedBy": "Prepared by",
       "sentAt": "Sent",
       "decidedAt": "Decided",
       "channels": {
@@ -292,40 +269,29 @@
       "replyPlaceholder": "Reply to the customer",
       "reply": "Reply",
       "replied": "Reply sent",
-      "replyFailed": "Could not reply"
+      "replyFailed": "Could not reply",
+      "decisionComment": "Customer comment",
+      "dielineFile": "Proof dieline"
     },
     "template": {
       "dieline": "Dieline",
       "draw": "Draw dieline",
-      "pattern": "Pattern",
-      "noPattern": "Not given",
       "size": "Size (L × W × H)",
       "sizeValue": "{length} × {width} × {height} mm",
-      "noSize": "Not given",
+      "noSize": "Unknown (known once a dieline is drawn)",
       "deliveries": "Templates sent",
       "send": "Send template",
       "noDeliveries": "No template sent yet",
       "triggers": {
         "auto_after_payment": "Sent automatically after payment",
         "manual": "Sent by staff"
-      }
-    },
-    "mockup": {
-      "none": "No mockup",
-      "noneBody": "The customer did not choose a mockup (D-072).",
-      "title": "Mockup job",
-      "jobNo": "Job",
-      "option": "Kind",
-      "options": {
-        "none": "No mockup",
-        "with_print": "Printed mockup",
-        "without_print": "Blank mockup"
       },
-      "factory": "Factory",
-      "noFactory": "Not assigned",
-      "promised": "Promised",
-      "noPromise": "Not set",
-      "note": "A paid add-on the customer chose (D-072); follow it on the production board."
-    }
+      "drawnFile": "Drawn dieline ({format})",
+      "templateFile": "Template file"
+    },
+    "open": "Open",
+    "openFile": "Open {name}",
+    "downloadFile": "Download {name}",
+    "downloadFailed": "Could not download the file"
   }
 }
