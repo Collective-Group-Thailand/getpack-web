@@ -108,3 +108,22 @@ export function sortBy<T>(rows: T[], sort: string | undefined, order: "asc" | "d
     );
   });
 }
+
+/** A weak `ETag` for version `version` of the mock aggregate `id` — the form the API sends. */
+export const versionTag = (id: string, version: number) => `W/"${id}.${version}"`;
+
+/** A JSON answer that carries the aggregate's `ETag`, for the next edit's `If-Match`. */
+export function withEtag(body: unknown, etag: string, status = 200) {
+  return HttpResponse.json(body as never, { status, headers: { ETag: etag } });
+}
+
+/**
+ * The API's optimistic-concurrency check (api-conventions §3): `428` without `If-Match`,
+ * `412` when it names another version. `null` means the edit may go ahead.
+ */
+export function precondition(request: Request, current: string): Response | null {
+  const match = request.headers.get("if-match");
+  if (!match) return problem(428, "concurrency.precondition_required", "ต้องส่ง If-Match");
+  if (match !== current) return problem(412, "concurrency.stale", "ข้อมูลนี้ถูกแก้ไขไปแล้ว กรุณาโหลดใหม่");
+  return null;
+}

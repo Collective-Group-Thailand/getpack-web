@@ -24,6 +24,7 @@ const PRIVATE_PAGES = [
   "/account/",
   "/cart",
   "/checkout",
+  "/payments/",
   "/track/",
   "/liff",
   "/sign-in",
