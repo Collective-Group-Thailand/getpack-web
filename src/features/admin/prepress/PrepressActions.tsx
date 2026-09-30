@@ -1,20 +1,21 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import type { AdminPrepressAction, AdminSubmissionAction } from "@/domain/next-actions/admin";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
-import { queryKeys } from "@/lib/api/query-keys";
 import { browserRequests } from "@/lib/api/requests/browser";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
-import { AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
-import type { PrepressDetail } from "./resources";
+import { adminBrowserApis, AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
+import type { Order } from "../orders/resources";
+import { usePrepressSettle } from "./data";
+import type { ArtworkSubmission, DesignService, Proof } from "./resources";
 
 export type PrepressActionKey =
   "upload_proof" | "send_template" | "deliver_round" | "requote_design" | "draw_dieline" | "assign";
@@ -28,40 +29,29 @@ const SUPPORTED = new Set<string>([
   "assign",
 ]);
 
-type Submission = PrepressDetail["submissions"][number];
-
 const PDF = "application/pdf";
 const MAX_BYTES = 200 * 1024 * 1024;
 
-/** The workspace's actions, exactly as the API offered them — see `NextActionBar`. */
+/** Who owns the order's prepress work, as the assign request last answered it. */
+export type PrepressOwner = { id: string; displayName: string } | null;
+
+/** The workspace's actions as `adminPrepressActions` offers them — see `NextActionBar`. */
 export function PrepressActionBar({
-  detail,
+  actions,
   onAction,
 }: {
-  detail: PrepressDetail;
+  actions: AdminPrepressAction[];
   onAction: (key: PrepressActionKey) => void;
 }) {
   const t = useTranslations("prepress.actions");
   return (
     <NextActionBar
-      actions={detail.nextActions}
+      actions={actions.map(({ key, irreversible }) => ({ key, irreversible }))}
       supported={SUPPORTED}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
       onAction={(key) => onAction(key as PrepressActionKey)}
     />
   );
-}
-
-/** Keeps the workspace, the desk, the order screen and the dashboard in step. */
-export function usePrepressSettle(orderId: string) {
-  const queryClient = useQueryClient();
-  return (updated?: PrepressDetail) => {
-    if (updated) queryClient.setQueryData(queryKeys.detail("admin", "prepress", orderId), updated);
-    else void queryClient.invalidateQueries({ queryKey: queryKeys.detail("admin", "prepress", orderId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "prepress") });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.detail("admin", "order", orderId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
-  };
 }
 
 function Dropzone({
@@ -92,25 +82,39 @@ function Dropzone({
   );
 }
 
-/** The dialog for whichever workspace action is open. */
+/**
+ * The dialog for whichever workspace action is open. None of the published operations declares an
+ * Idempotency-Key, so none is sent (`admin.prepress-proofs`, `-template`, `admin.design-services`).
+ */
 export function PrepressActionDialogs({
-  detail,
+  order,
+  submissions,
+  proofs,
+  designService,
+  owner,
+  onAssigned,
   open,
   onClose,
 }: {
-  detail: PrepressDetail;
+  order: Order;
+  submissions: ArtworkSubmission[];
+  proofs: Proof[];
+  designService: DesignService | null;
+  owner: PrepressOwner | undefined;
+  onAssigned: (owner: PrepressOwner) => void;
   open: PrepressActionKey | null;
   onClose: () => void;
 }) {
   const t = useTranslations("prepress.actions");
   const format = useFormat();
-  const settle = usePrepressSettle(detail.orderId);
-  const orderId = detail.orderId;
-  const accepted = detail.submissions.filter((item) => item.status === "accepted_for_proof");
+  const settle = usePrepressSettle(order.id);
+  const orderId = order.id;
+  const accepted = submissions.filter((item) => item.status === "accepted_for_proof");
   const [submissionId, setSubmissionId] = useState(accepted[0]?.id ?? "");
   const [proofFile, setProofFile] = useState<File[]>([]);
   const [dieline, setDieline] = useState<File[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const contract = adminBrowserApis().contract;
 
   const fail = (error: unknown): never => {
     toast.error(problemMessage(error, t("failed")));
@@ -126,51 +130,50 @@ export function PrepressActionDialogs({
 
   switch (open) {
     case "assign":
+      // Still a request (packio-api U-B0.2); it answers the aggregate it was asked with.
       return (
         <AssignDialog
           title={t("assign.title")}
-          description={t("assign.body", { code: detail.orderCode })}
-          current={detail.assignee}
+          description={t("assign.body", { code: order.orderCode })}
+          current={owner ?? null}
           permission="prepress.review"
           personHint={t("assign.personHint")}
-          onAssign={async (assigneeId) =>
-            settle(
-              await browserRequests().call("POST /v1/admin/prepress/{orderId}/actions/assign", {
-                path: { orderId },
-                body: { assigneeId },
-              }),
-            )
-          }
+          onAssign={async (assigneeId) => {
+            const updated = await browserRequests().call("POST /v1/admin/prepress/{orderId}/actions/assign", {
+              path: { orderId },
+              body: { assigneeId },
+            });
+            onAssigned(updated.assignee);
+            settle();
+          }}
           onClose={onClose}
         />
       );
     case "upload_proof": {
-      const version = (detail.proofs[0]?.versionNo ?? 0) + 1;
+      const version = (proofs[0]?.versionNo ?? 0) + 1;
       return (
         <ConfirmAction
           {...common}
           title={t("proof.title", { version })}
-          description={t("proof.body", { code: detail.orderCode, customer: detail.customer.displayName })}
+          description={t("proof.body", { code: order.orderCode })}
           confirmLabel={t("proof.confirm")}
           reason={{ label: t("proof.note"), hint: t("proof.noteHint") }}
-          onConfirm={async ({ idempotencyKey, reason }) => {
+          onConfirm={async ({ reason }) => {
             need(Boolean(submissionId), t("proof.needSubmission"));
             need(proofFile.length === 1, t("proof.needFile"));
             try {
               const proof = await uploadFile("admin", proofFile[0]!, "proof");
               const line = dieline[0] ? await uploadFile("admin", dieline[0], "proof") : null;
-              settle(
-                await browserRequests().call("POST /v1/admin/prepress/{orderId}/proofs", {
-                  path: { orderId },
-                  body: {
-                    submissionId,
-                    proofFileId: proof.id,
-                    ...(line ? { dielineFileId: line.id } : {}),
-                    ...(reason ? { note: reason } : {}),
-                  },
-                  idempotencyKey,
-                }),
-              );
+              await contract.POST("/v1/admin/orders/{orderId}/proofs", {
+                params: { path: { orderId } },
+                body: {
+                  submissionId,
+                  proofFileId: proof.id,
+                  ...(line ? { dielineFileId: line.id } : {}),
+                  ...(reason ? { changeNote: reason } : {}),
+                },
+              });
+              settle();
               toast.success(t("proof.done", { version }));
             } catch (error) {
               fail(error);
@@ -204,20 +207,18 @@ export function PrepressActionDialogs({
         <ConfirmAction
           {...common}
           title={t("template.title")}
-          description={t("template.body", { code: detail.orderCode, customer: detail.customer.displayName })}
+          description={t("template.body", { code: order.orderCode })}
           confirmLabel={t("template.confirm")}
           reason={{ label: t("template.message"), hint: t("template.messageHint") }}
-          onConfirm={async ({ idempotencyKey, reason }) => {
+          onConfirm={async ({ reason }) => {
             need(files.length === 1, t("template.needFile"));
             try {
               const uploaded = await uploadFile("admin", files[0]!, "document");
-              settle(
-                await browserRequests().call("POST /v1/admin/prepress/{orderId}/actions/send-template", {
-                  path: { orderId },
-                  body: { fileId: uploaded.id, ...(reason ? { message: reason } : {}) },
-                  idempotencyKey,
-                }),
-              );
+              await contract.POST("/v1/admin/orders/{orderId}/templates", {
+                params: { path: { orderId } },
+                body: { fileId: uploaded.id, ...(reason ? { note: reason } : {}) },
+              });
+              settle();
               toast.success(t("template.done"));
             } catch (error) {
               fail(error);
@@ -236,25 +237,24 @@ export function PrepressActionDialogs({
         </ConfirmAction>
       );
     case "deliver_round": {
-      const round = detail.designService?.rounds.find((item) => item.status === "in_progress");
+      if (!designService) return null;
+      const round = designService.rounds.find((item) => item.status === "in_progress");
       return (
         <ConfirmAction
           {...common}
           title={t("deliver.title", { round: round?.roundNo ?? 1 })}
-          description={t("deliver.body", { code: detail.orderCode, customer: detail.customer.displayName })}
+          description={t("deliver.body", { code: order.orderCode })}
           confirmLabel={t("deliver.confirm")}
           reason={{ label: t("deliver.note"), hint: t("deliver.noteHint") }}
-          onConfirm={async ({ idempotencyKey, reason }) => {
+          onConfirm={async ({ reason }) => {
             need(files.length > 0, t("deliver.needFiles"));
             try {
               const uploaded = await Promise.all(files.map((file) => uploadFile("admin", file, "artwork")));
-              settle(
-                await browserRequests().call("POST /v1/admin/prepress/{orderId}/design/actions/deliver-round", {
-                  path: { orderId },
-                  body: { fileIds: uploaded.map((item) => item.id), ...(reason ? { note: reason } : {}) },
-                  idempotencyKey,
-                }),
-              );
+              await contract.POST("/v1/admin/design-services/{designServiceId}/actions/deliver", {
+                params: { path: { designServiceId: designService.id } },
+                body: { fileIds: uploaded.map((item) => item.id), ...(reason ? { note: reason } : {}) },
+              });
+              settle();
               toast.success(t("deliver.done"));
             } catch (error) {
               fail(error);
@@ -275,27 +275,23 @@ export function PrepressActionDialogs({
       );
     }
     case "requote_design":
+      if (!designService) return null;
       return (
         <ConfirmAction
           {...common}
           title={t("requote.title")}
-          description={t("requote.body", {
-            code: detail.orderCode,
-            fee: format.thb(detail.designService?.designFeeNet ?? null),
-          })}
+          description={t("requote.body", { code: order.orderCode, fee: format.thb(designService.designFeeNet) })}
           confirmLabel={t("requote.confirm")}
           tone="destructive"
-          confirmationPhrase={detail.orderCode}
+          confirmationPhrase={order.orderCode}
           reason={{ label: t("requote.reason"), required: true, minLength: 3, hint: t("requote.reasonHint") }}
-          onConfirm={async ({ idempotencyKey, reason }) => {
+          onConfirm={async ({ reason }) => {
             try {
-              settle(
-                await browserRequests().call("POST /v1/admin/prepress/{orderId}/design/actions/requote", {
-                  path: { orderId },
-                  body: { reason },
-                  idempotencyKey,
-                }),
-              );
+              await contract.POST("/v1/admin/design-services/{designServiceId}/actions/requote", {
+                params: { path: { designServiceId: designService.id } },
+                body: { reason },
+              });
+              settle();
               toast.success(t("requote.done"));
             } catch (error) {
               fail(error);
@@ -308,47 +304,45 @@ export function PrepressActionDialogs({
   }
 }
 
-/** Accept or send back one submission, as its own `nextActions` allow. */
+/** Accept or send back one submission, as `adminSubmissionActions` offers. */
 export function SubmissionDialogs({
-  detail,
+  order,
   submission,
   open,
   onClose,
 }: {
-  detail: PrepressDetail;
-  submission: Submission;
-  open: "accept" | "reject" | null;
+  order: Order;
+  submission: ArtworkSubmission;
+  open: AdminSubmissionAction["key"] | null;
   onClose: () => void;
 }) {
   const t = useTranslations("prepress.actions");
-  const settle = usePrepressSettle(detail.orderId);
-  const warnings = submission.findings.filter((finding) => finding.severity === "warn").length;
+  const settle = usePrepressSettle(order.id);
+  const warnings = submission.preflightReport?.warnCount ?? 0;
   const common = { open: true, onOpenChange: (next: boolean) => (next ? undefined : onClose()) };
+  const path = { params: { path: { submissionId: submission.id } } };
   const fail = (error: unknown): never => {
     toast.error(problemMessage(error, t("failed")));
     throw error;
   };
 
-  if (open === "accept") {
+  if (open === "submission.accept") {
     return (
       <ConfirmAction
         {...common}
         title={t("accept.title", { version: submission.versionNo })}
+        // CONTRACT-GAP admin.prepress-actions — accepting takes no body, so the acknowledgement of
+        // the warnings is not recorded; the dialog still names them.
         description={
           warnings > 0
-            ? t("accept.bodyWarnings", { code: detail.orderCode, count: warnings })
-            : t("accept.body", { code: detail.orderCode })
+            ? t("accept.bodyWarnings", { code: order.orderCode, count: warnings })
+            : t("accept.body", { code: order.orderCode })
         }
         confirmLabel={t("accept.confirm")}
-        reason={{ label: t("accept.note"), hint: t("accept.noteHint"), required: warnings > 0, minLength: 3 }}
-        onConfirm={async ({ reason }) => {
+        onConfirm={async () => {
           try {
-            settle(
-              await browserRequests().call("POST /v1/admin/prepress/submissions/{submissionId}/actions/accept", {
-                path: { submissionId: submission.id },
-                body: reason ? { note: reason } : {},
-              }),
-            );
+            await adminBrowserApis().contract.POST("/v1/admin/artwork-submissions/{submissionId}/actions/accept", path);
+            settle();
             toast.success(t("accept.done"));
           } catch (error) {
             fail(error);
@@ -357,23 +351,22 @@ export function SubmissionDialogs({
       />
     );
   }
-  if (open === "reject") {
+  if (open === "submission.reject") {
     return (
       <ConfirmAction
         {...common}
         title={t("reject.title", { version: submission.versionNo })}
-        description={t("reject.body", { code: detail.orderCode, customer: detail.customer.displayName })}
+        description={t("reject.body", { code: order.orderCode })}
         confirmLabel={t("reject.confirm")}
         tone="destructive"
         reason={{ label: t("reject.reason"), required: true, minLength: 3, hint: t("reject.reasonHint") }}
         onConfirm={async ({ reason }) => {
           try {
-            settle(
-              await browserRequests().call("POST /v1/admin/prepress/submissions/{submissionId}/actions/reject", {
-                path: { submissionId: submission.id },
-                body: { reason },
-              }),
-            );
+            await adminBrowserApis().contract.POST("/v1/admin/artwork-submissions/{submissionId}/actions/reject", {
+              ...path,
+              body: { reason },
+            });
+            settle();
             toast.success(t("reject.done"));
           } catch (error) {
             fail(error);

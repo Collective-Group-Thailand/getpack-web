@@ -167,9 +167,10 @@ function create(
   return row;
 }
 
-/** The design, as the back office sees it (a customer's document is read-only there). */
-export function storeDesignForStaff(id: string) {
-  return designs.get(id)?.design ?? null;
+/** A customer's design as the back office reads it (`admin.designs.get`): the published DTO. */
+export function storeDesignDtoForStaff(id: string): Schemas["DesignDocumentDto"] | null {
+  const row = designs.get(id);
+  return row ? toDto(row) : null;
 }
 
 /* ---------------------------------------------------------------------------- published */

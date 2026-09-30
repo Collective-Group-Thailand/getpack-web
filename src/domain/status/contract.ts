@@ -75,28 +75,26 @@ export type MemberStatus = "invited" | "active" | "removed";
 /** One referral, rewarded only after the referee's first order passes the claim window (D-136). **Source: contract** (U-F0.2). */
 export type ReferralStatus = Schemas["ReferralStatus"];
 
-/** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: schema** (`artwork_status`). */
-export type ArtworkStatus =
-  "awaiting_template" | "awaiting_upload" | "uploaded" | "in_review" | "proof_sent" | "changes_requested" | "approved";
+/** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: contract** (U-F0.3). */
+export type ArtworkStatus = Schemas["ArtworkStatus"];
 
-/** A proof version sent to the customer (B4.1). **Source: schema** (`proof_status`). */
-export type ProofStatus = "pending_customer" | "approved" | "changes_requested" | "superseded";
+/** A proof version sent to the customer (B4.1). **Source: contract** (U-F0.3). */
+export type ProofStatus = Schemas["ProofStatus"];
 
-/** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). **Source: schema** (`preflight_status`). */
-export type PreflightStatus = "pending" | "running" | "passed" | "passed_with_warnings" | "blocked" | "error";
+/** The automated preflight of an artwork submission: blocks on size or bleed, warns on resolution or RGB (D-070). **Source: contract** (U-F0.3). */
+export type PreflightStatus = Schemas["PreflightStatus"];
 
-/** One version of the artwork a customer submitted, before and after prepress looked at it (B4.1). **Source: schema** (`submission_status`). */
-export type SubmissionStatus = "submitted" | "superseded" | "accepted_for_proof" | "rejected";
+/** One version of the artwork a customer submitted, before and after prepress looked at it (B4.1). **Source: contract** (U-F0.3). */
+export type SubmissionStatus = Schemas["SubmissionStatus"];
 
-/** Drawing a dieline with `@packio/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: schema** (`drawing_status`). */
-export type DrawingStatus = "queued" | "running" | "succeeded" | "failed" | "engine_unavailable";
+/** Drawing a dieline with `@packio/dieline`; `engine_unavailable` until the engine is deployed (B4.1). **Source: contract** (U-F0.3). */
+export type DrawingStatus = Schemas["DrawingStatus"];
 
-/** A hired design job: 3 free revision rounds, then paid (D-071). **Source: schema** (`design_service_status`). */
-export type DesignServiceStatus =
-  "brief_pending" | "in_progress" | "delivered" | "revision_requested" | "approved" | "cancelled" | "requoted";
+/** A hired design job: 3 free revision rounds, then paid (D-071). **Source: contract** (U-F0.3). */
+export type DesignServiceStatus = Schemas["DesignServiceStatus"];
 
-/** One round of a hired design; a paid round waits for payment (D-071). **Source: schema** (`design_round_status`). */
-export type DesignRoundStatus = "awaiting_payment" | "in_progress" | "delivered" | "approved" | "changes_requested";
+/** One round of a hired design; a paid round waits for payment (D-071). **Source: contract** (U-F0.3). */
+export type DesignRoundStatus = Schemas["DesignRoundStatus"];
 
 /** A request for quote, with an SLA per category (D-100, D-043). **Source: schema** (`rfq_status`). */
 export type RfqStatus = "submitted" | "in_review" | "need_info" | "quoted" | "accepted" | "declined" | "expired";
