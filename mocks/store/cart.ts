@@ -1,26 +1,26 @@
 /**
- * The customer's cart, mocked (CONTRACT-REQUEST store.cart).
+ * The customer's cart, on the published contract (`store.cart.*`, U-F0.2): one editable aggregate
+ * with an `ETag`, edits under `If-Match`, and a two-step re-price (reprice → confirm-reprice).
  *
  * A line is a saved quotation (`./quotes.ts`); its price is the quotation's. A quotation past
- * its validity (D-051) is "re-priced" here by a flat 4 % — obviously fake — and the line says so
- * until the customer confirms. Destinations are the returning customer's saved addresses (the
- * first fake customer's, as their orders are); the newcomer has none, so their cart says an
- * address is missing.
+ * its validity (D-051) is "re-priced" here by a flat 4 % — obviously fake — once the customer
+ * asks, and the line says so until they confirm. Destinations are the customer's saved addresses
+ * (the fake commerce customer's, as their orders are); the newcomer has none.
+ *
+ * `cartOf` is the mock's own record of a cart, which the checkout mock reads; the handlers answer
+ * with `toCartDto`, the published shape.
  */
 
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import type { cartItem, storeCart } from "@/lib/api/requests/store-cart";
+import type { Schemas } from "@/lib/api/types";
 
 import { baht, satang } from "../admin/commerce";
-import { mockRequest } from "../route";
-import { bangkokIso, mockId, problem } from "../support";
-import { bookOf } from "./book";
+import { bangkokIso, mockId, precondition, problem, versionTag, withEtag } from "../support";
+import { bookOf, toAddressDto } from "./book";
 import { customerOf, type MockCustomer } from "./customers";
-import { quotesOf, type StoreQuote } from "./quotes";
-
-type Cart = z.output<typeof storeCart>;
-type Item = z.output<typeof cartItem>;
+import type { Cart, Item } from "./model";
+import { optionIdOf, quotesOf, type StoreQuote } from "./quotes";
 
 interface Line {
   id: string;
@@ -29,7 +29,10 @@ interface Line {
   destinations: { id: string; addressId: string | null; quantity: number }[];
   /** Set when the quote expired: what it cost before, until the customer confirms. */
   repricedFrom: { unitPrice: string; grossAmount: string } | null;
+  /** The customer asked for today's price (`store.cart.repriceItem`). */
+  repriceRequested: boolean;
   confirmedReprice: boolean;
+  mockupOption: Schemas["MockupOption"];
 }
 
 const carts = new Map<string, Line[]>();
@@ -159,7 +162,9 @@ export function addToCart(customer: MockCustomer, quote: StoreQuote): string {
     designOption: quote.designOption,
     destinations: [{ id: mockId("cds", lineSeq * 10), addressId: address?.id ?? null, quantity: quote.quantity }],
     repricedFrom: null,
+    repriceRequested: false,
     confirmedReprice: false,
+    mockupOption: quote.mockupOption,
   });
   if (quote.status === "saved" || quote.status === "shared") quote.status = "saved";
   return id;
@@ -168,69 +173,207 @@ export function addToCart(customer: MockCustomer, quote: StoreQuote): string {
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบรายการนี้ในตะกร้า");
 
+/* ------------------------------------------------------------------------- the published cart */
+
+const versions = new Map<string, number>();
+const cartTag = (customer: MockCustomer) => versionTag(`cart-${customer.persona}`, versions.get(customer.persona) ?? 1);
+const bump = (customer: MockCustomer) => versions.set(customer.persona, (versions.get(customer.persona) ?? 1) + 1);
+
+export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
+  const cart = cartOf(customer);
+  const lines = linesOf(customer);
+  const addresses = addressesOf(customer);
+  return {
+    id: cart.id,
+    customerId: customer.id,
+    channel: "web",
+    currency: "THB",
+    codes: (codes.get(customer.persona) ?? []).map((code) => ({ ...code })),
+    productGrossAmount: cart.subtotalAmount,
+    updatedAt: cart.updatedAt,
+    items: cart.items.map((item) => {
+      const line = lines.find((candidate) => candidate.id === item.id)!;
+      const quote = quotesOf(customer.persona).find((candidate) => candidate.id === item.quote.id)!;
+      const expired = Date.parse(quote.validUntil) < Date.now();
+      const pending = expired && line.repriceRequested && !line.confirmedReprice;
+      const designFee = quote.lines.find((entry) => entry.lineType === "design_fee")?.netAmount ?? "0.00";
+      const shipping = quote.lines.find((entry) => entry.lineType === "shipping")?.netAmount ?? null;
+      return {
+        id: item.id,
+        quoteId: quote.id,
+        quoteOptionId: optionIdOf(quote),
+        quoteCode: quote.quoteCode,
+        source: quote.source,
+        productTypeCode: quote.productType.code,
+        quantity: item.quantity,
+        unitPrice: pending || line.confirmedReprice ? item.unitPrice : quote.unitPrice,
+        productGrossAmount: line.confirmedReprice ? item.grossAmount : quote.grossAmount,
+        designOption: item.designOption,
+        mockupOption: line.mockupOption,
+        designFeeAmount: designFee,
+        designDocumentId: null,
+        designNote: null,
+        quoteShippingAmount: shipping,
+        destinations: item.destinations.map((destination) => {
+          const saved = addresses.find((candidate) => candidate.id === destination.addressId);
+          const dto = saved ? toAddressDto(saved) : null;
+          return {
+            id: destination.id,
+            addressId: destination.addressId,
+            quantity: destination.quantity,
+            address: {
+              recipientName: dto?.recipientName ?? "",
+              phone: dto?.phone ?? "",
+              line1: dto?.line1 ?? "",
+              line2: dto?.line2 ?? null,
+              subdistrictId: dto?.subdistrict?.id ?? null,
+              subdistrictNameTh: dto?.subdistrict?.nameTh ?? null,
+              districtNameTh: saved?.district ?? null,
+              provinceId: dto?.province.id ?? mockId("prv", 0),
+              provinceNameTh: dto?.province.nameTh ?? "",
+              postcode: dto?.postcode ?? "",
+            },
+          };
+        }),
+        destinationsComplete:
+          item.destinations.every((destination) => destination.addressId !== null) &&
+          item.destinations.reduce((sum, destination) => sum + destination.quantity, 0) === item.quantity,
+        priceLocked: !expired || line.confirmedReprice,
+        priceLockedUntil: line.confirmedReprice ? bangkokIso(15 * 24 * 60) : quote.validUntil,
+        pendingReprice: pending
+          ? {
+              quoteId: quote.id,
+              quoteOptionId: optionIdOf(quote),
+              previousGrossAmount: quote.grossAmount,
+              newGrossAmount: item.grossAmount,
+              newUnitPrice: item.unitPrice,
+              differenceAmount: baht(satang(item.grossAmount) - satang(quote.grossAmount)),
+              validUntil: bangkokIso(15 * 24 * 60),
+            }
+          : null,
+        reorderOf: null,
+        reusesApprovedArtwork: false,
+      };
+    }),
+  };
+}
+
+/** Codes applied to a customer's cart (`store.cart.applyCode`), which the checkout prices. */
+export const codes = new Map<string, Schemas["CartCodeDto"][]>();
+
+/** Answers an edit with the cart after it, under its next `ETag` (the reorder mock's too). */
+export function edited(customer: MockCustomer, status = 200) {
+  bump(customer);
+  return withEtag(toCartDto(customer), cartTag(customer), status);
+}
+
+async function bodyOf<T>(request: Request): Promise<T | null> {
+  return (await request.json().catch(() => null)) as T | null;
+}
+
 export const storeCartHandlers = [
-  mockRequest("GET /v1/store/cart", ({ request }) => {
+  http.get("*/v1/store/cart", ({ request }) => {
     const customer = customerOf(request);
-    return customer ? cartOf(customer) : unauthenticated();
+    return customer ? withEtag(toCartDto(customer), cartTag(customer)) : unauthenticated();
   }),
 
-  mockRequest("POST /v1/store/cart/items", ({ body, request }) => {
+  http.post("*/v1/store/cart/items", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === body.quoteId);
-    if (!quote) return problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
-    addToCart(customer, quote);
-    return cartOf(customer);
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
+    const body = await bodyOf<Schemas["AddCartItemDto"]>(request);
+    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === body?.quoteId);
+    if (!body || !quote) return problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
+    if (body.quoteOptionId !== optionIdOf(quote)) return problem(404, "http.not_found", "ไม่พบตัวเลือกนี้ในใบเสนอราคา");
+    if (linesOf(customer).some((line) => line.quoteId === quote.id))
+      return problem(409, "cart.item_exists", "ใบเสนอราคานี้อยู่ในตะกร้าแล้ว");
+    const id = addToCart(customer, quote);
+    const line = linesOf(customer).find((candidate) => candidate.id === id)!;
+    line.designOption = body.designOption;
+    if (body.mockupOption) line.mockupOption = body.mockupOption;
+    return edited(customer, 201);
   }),
 
-  mockRequest("PATCH /v1/store/cart/items/{itemId}", ({ params, body, request }) => {
+  http.patch("*/v1/store/cart/items/:itemId", async ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
     const line = linesOf(customer).find((candidate) => candidate.id === params.itemId);
     if (!line) return notFound();
-    if (body.designOption) line.designOption = body.designOption;
-    return cartOf(customer);
+    const body = await bodyOf<Schemas["UpdateCartItemDto"]>(request);
+    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === line.quoteId);
+    if (body?.designOption && quote?.source === "rfq" && body.designOption !== "own_file")
+      return problem(422, "cart.design_option_unavailable", "ใบเสนอราคาจากทีมงานเปลี่ยนงานออกแบบไม่ได้");
+    if (body?.designOption) line.designOption = body.designOption;
+    if (body?.mockupOption) line.mockupOption = body.mockupOption;
+    return edited(customer);
   }),
 
-  mockRequest("DELETE /v1/store/cart/items/{itemId}", ({ params, request }) => {
+  // No If-Match and no ETag in the answer (as published): the next edit reads the cart first.
+  http.delete("*/v1/store/cart/items/:itemId", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     if (!linesOf(customer).some((line) => line.id === params.itemId)) return notFound();
-    clearCart(customer, [params.itemId]);
-    return cartOf(customer);
+    clearCart(customer, [String(params.itemId)]);
+    bump(customer);
+    return HttpResponse.json(toCartDto(customer));
   }),
 
-  mockRequest("PUT /v1/store/cart/items/{itemId}/destinations", ({ params, body, request }) => {
+  http.put("*/v1/store/cart/items/:itemId/destinations", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
+    const line = linesOf(customer).find((candidate) => candidate.id === params.itemId);
+    const quote = line && quotesOf(customer.persona).find((candidate) => candidate.id === line.quoteId);
+    if (!line || !quote) return notFound();
+    const body = await bodyOf<Schemas["SetDestinationsDto"]>(request);
+    const destinations = body?.destinations ?? [];
+    const total = destinations.reduce((sum, destination) => sum + destination.quantity, 0);
+    if (total !== quote.quantity)
+      return problem(422, "validation.failed", "จำนวนที่แบ่งส่งต้องรวมกันเท่ากับจำนวนที่สั่ง", [
+        { path: "destinations", code: "sum", message: `รวม ${total} จาก ${quote.quantity}` },
+      ]);
+    const known = new Set(addressesOf(customer).map((address) => address.id));
+    const unknown = destinations.findIndex((destination) => !known.has(destination.addressId));
+    if (unknown >= 0)
+      return problem(422, "validation.failed", "ไม่พบที่อยู่นี้", [
+        { path: `destinations[${unknown}].addressId`, code: "exists", message: "unknown address" },
+      ]);
+    line.destinations = destinations.map((destination, index) => ({
+      id: mockId("cds", Number.parseInt(line.id.slice(-4), 16) * 10 + index),
+      addressId: destination.addressId,
+      quantity: destination.quantity,
+    }));
+    return edited(customer);
+  }),
+
+  // Asks for today's price; the line then carries it as `pendingReprice` until confirmed.
+  http.post("*/v1/store/cart/items/:itemId/actions/reprice", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const line = linesOf(customer).find((candidate) => candidate.id === params.itemId);
     const quote = line && quotesOf(customer.persona).find((candidate) => candidate.id === line.quoteId);
     if (!line || !quote) return notFound();
-    const total = body.destinations.reduce((sum, destination) => sum + destination.quantity, 0);
-    if (total !== quote.quantity)
-      return problem(422, "cart.split_mismatch", "จำนวนที่แบ่งส่งต้องรวมกันเท่ากับจำนวนที่สั่ง", [
-        { path: "destinations", code: "sum", message: `รวม ${total} จาก ${quote.quantity}` },
-      ]);
-    const known = new Set(addressesOf(customer).map((address) => address.id));
-    const unknown = body.destinations.findIndex((destination) => !known.has(destination.addressId));
-    if (unknown >= 0)
-      return problem(422, "validation.failed", "ไม่พบที่อยู่นี้", [
-        { path: `destinations[${unknown}].addressId`, code: "exists", message: "unknown address" },
-      ]);
-    line.destinations = body.destinations.map((destination, index) => ({
-      id: mockId("cds", Number.parseInt(line.id.slice(-4), 16) * 10 + index),
-      addressId: destination.addressId,
-      quantity: destination.quantity,
-    }));
-    return cartOf(customer);
+    if (Date.parse(quote.validUntil) >= Date.now() || line.confirmedReprice)
+      return problem(409, "cart.price_locked", "ราคานี้ยังคงที่อยู่ ไม่ต้องคำนวณใหม่");
+    line.repriceRequested = true;
+    bump(customer);
+    return HttpResponse.json(toCartDto(customer));
   }),
 
-  mockRequest("POST /v1/store/cart/items/{itemId}/actions/accept-reprice", ({ params, request }) => {
+  http.post("*/v1/store/cart/items/:itemId/actions/confirm-reprice", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
     const line = linesOf(customer).find((candidate) => candidate.id === params.itemId);
     if (!line) return notFound();
+    if (!line.repriceRequested || line.confirmedReprice)
+      return problem(409, "cart.no_pending_reprice", "ไม่มีราคาใหม่ให้ยืนยัน");
     line.confirmedReprice = true;
-    return cartOf(customer);
+    return edited(customer);
   }),
 ];

@@ -31,6 +31,18 @@ export async function calculate(body: CalculateBody, signal?: AbortSignal): Prom
   return data!;
 }
 
+export type SavedQuote = Schemas["SavedQuoteDto"];
+
+/**
+ * `store.quotes.save`: keeps a price for its validity (D-051). The body is `calculate`'s, cast the
+ * same way, with the one quantity the customer chose — the saved quotation holds one option per
+ * quantity it was given.
+ */
+export async function saveQuote(body: CalculateBody): Promise<SavedQuote> {
+  const { data } = await browserApi().POST("/v1/store/quotes", { body: body as unknown as Schemas["SaveQuoteDto"] });
+  return data!;
+}
+
 /** `value`, once it has stopped changing for `delay` ms. */
 export function useDebounced<T>(value: T, delay: number): T {
   const [settled, setSettled] = useState(value);

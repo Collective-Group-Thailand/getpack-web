@@ -4,7 +4,10 @@
  *   published  `POST /v1/store/quotes/actions/calculate` (B2.3) — for all seven instant types,
  *              folding in its own `FoldingConfigurationDto`, the others in the generic shape of
  *              CONTRACT-REQUEST store.quote-configurations
- *   requested  store.configurator, store.quotes, store.promo-check, store.support-channels
+ *   published  saved quotations (`store.quotes.save` / `.list` / `.get` / `.share` / `.getShared` /
+ *              `.requestPdf` / `.getPdf`, U-F0.2) — projected from the records below, which the
+ *              cart, checkout, RFQ and reorder mocks share
+ *   requested  store.configurator, store.promo-check, store.support-channels
  *
  * The configurator is built from the back office's own catalogue rows (`../admin/catalogue.ts`)
  * — patterns, materials, ink colours, finishes, die-cuts, assemblies — so an admin edit shows in
@@ -879,6 +882,61 @@ function buildQuote(
   };
 }
 
+/* ------------------------------------------------------------------- the published quotation */
+
+const TOKEN_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+/** Quotations saved by the storefront, which have no code until shared or put in a PDF. */
+const uncoded = new Set<string>();
+const sharedAt = new Map<string, string>();
+const pdfs = new Map<string, Schemas["QuotePdfStatus"]>();
+
+/** A quotation's one option, as a stable id of its own. */
+export const optionIdOf = (quote: StoreQuote) => quote.id.replace("-8000-", "-9000-");
+
+const netOf = (quote: StoreQuote, lineType: StoreQuote["lines"][number]["lineType"]) =>
+  quote.lines.find((line) => line.lineType === lineType)?.netAmount ?? "0.00";
+
+export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
+  const expired = Date.parse(quote.validUntil) < Date.now();
+  const shipping = quote.lines.find((line) => line.lineType === "shipping");
+  return {
+    id: quote.id,
+    quoteCode: uncoded.has(quote.id) ? null : quote.quoteCode,
+    status: expired ? "expired" : quote.status,
+    source: quote.source,
+    productTypeCode: quote.productType.code,
+    configuration: quote.configuration as unknown as Schemas["FoldingConfigurationDto"],
+    deliveryPostcode: quote.deliveryPostcode,
+    options: [
+      {
+        id: optionIdOf(quote),
+        quantity: quote.quantity,
+        unitPrice: quote.unitPrice,
+        productAmount: netOf(quote, "product"),
+        designFeeAmount: netOf(quote, "design_fee"),
+        structureDesignFeeAmount: netOf(quote, "structure_design_fee"),
+        shippingAmount: shipping ? shipping.netAmount : null,
+        shippingPending: !shipping,
+        shippingPendingReason: shipping ? null : "no_postcode",
+        netAmount: quote.netAmount,
+        vatAmount: quote.vatAmount,
+        grossAmount: quote.grossAmount,
+        leadTimeDays: quote.leadTimeDays,
+        earliestShipDate: quote.earliestShipDate,
+        earliestDeliveryDate: quote.estimatedDeliveryDate,
+        toleranceShortagePct: quote.tolerance.shortagePct,
+        toleranceOveragePct: quote.tolerance.overagePct,
+      },
+    ],
+    priceLocked: !expired,
+    validUntil: quote.validUntil,
+    sharedAt: sharedAt.get(quote.id) ?? null,
+    pdfStatus: pdfs.get(quote.id) ?? "none",
+    currency: "THB",
+    createdAt: quote.createdAt,
+  };
+}
+
 /* ---------------------------------------------------------------------------------- handlers */
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
@@ -911,90 +969,115 @@ export const storeQuoteHandlers: HttpHandler[] = [
     return configurator ?? problem(404, "http.not_found", "สินค้านี้ขอใบเสนอราคาเท่านั้น");
   }),
 
-  // CONTRACT-REQUEST store.quotes
-  mockRequest("POST /v1/store/quotes", ({ body, request }) => {
+  // Published (U-F0.2): the saved quotation. One option per quantity it was given — the storefront
+  // saves one — and no code until it is shared or its PDF is asked for.
+  http.post("*/v1/store/quotes", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const product = productOfSlug(body.catalogProductSlug);
+    const body = (await request.json().catch(() => null)) as Schemas["SaveQuoteDto"] | null;
+    const raw = body?.configuration as unknown as (Record<string, unknown> & { quantities?: number[] }) | undefined;
+    if (!body?.productTypeCode || !raw) return invalid("configuration", "required");
+    const product = productOfId(raw.catalogProductId as string | undefined);
     if (!product) return problem(404, "http.not_found", "ไม่พบสินค้านี้");
-    const inputs = inputsOf(body.productTypeCode, { ...body.configuration, quantities: [body.quantity] });
+    const quantity = raw.quantities?.[0];
+    if (!quantity) return invalid("configuration.quantities", "ระบุจำนวน");
+    const inputs = inputsOf(body.productTypeCode, { ...raw, quantities: [quantity] });
     if (inputs instanceof Response) return inputs;
-    const quote = buildQuote(inputs, body.configuration, body, english(request));
+    const design = raw.design as { graphic?: boolean } | undefined;
+    const quote = buildQuote(
+      inputs,
+      raw,
+      {
+        quantity,
+        ...(body.deliveryPostcode ? { deliveryPostcode: body.deliveryPostcode } : {}),
+        designOption: design?.graphic ? "hired_design" : "own_file",
+        mockupOption: "none",
+      },
+      english(request),
+    );
     if (quote instanceof Response) return quote;
     quotesOf(customer.persona).unshift(quote);
-    return quote;
+    uncoded.add(quote.id);
+    return HttpResponse.json(toSavedQuote(quote), { status: 201 });
   }),
 
-  mockRequest("GET /v1/store/quotes", ({ query, request }) => {
+  http.get("*/v1/store/quotes", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const list = quotesOf(customer.persona).filter((quote) => !query.status || quote.status === query.status);
-    return paginate(
-      list.map((quote) => ({
-        id: quote.id,
-        quoteCode: quote.quoteCode,
-        status: Date.parse(quote.validUntil) < Date.now() ? "expired" : quote.status,
-        productType: quote.productType,
-        product: quote.product,
-        quantity: quote.quantity,
-        unit: quote.unit,
-        grossAmount: quote.grossAmount,
-        currency: quote.currency,
-        validUntil: quote.validUntil,
-        source: quote.source,
-        createdAt: quote.createdAt,
-      })),
-      query,
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const list = quotesOf(customer.persona)
+      .map(toSavedQuote)
+      .filter((quote) => !status || quote.status === status);
+    return HttpResponse.json(
+      paginate(list, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
     );
   }),
 
-  mockRequest("GET /v1/store/quotes/{quoteId}", ({ params, request }) => {
-    const customer = customerOf(request);
-    if (!customer) return unauthenticated();
-    return quotesOf(customer.persona).find((quote) => quote.id === params.quoteId) ?? notFound();
-  }),
-
-  mockRequest("POST /v1/store/quotes/{quoteId}/actions/share", ({ params, request }) => {
-    const customer = customerOf(request);
-    if (!customer) return unauthenticated();
-    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === params.quoteId);
-    if (!quote) return notFound();
-    const token = `shr${quote.id.slice(-6)}${Math.random().toString(36).slice(2, 8)}`;
-    shareTokens.set(token, { quoteId: quote.id, persona: customer.persona, expiresAt: quote.validUntil });
-    if (quote.status === "saved") quote.status = "shared";
-    return { token, expiresAt: quote.validUntil };
-  }),
-
-  mockRequest("GET /v1/store/shared-quotes/{token}", ({ params }) => {
-    const share = shareTokens.get(params.token);
+  // Before `:quoteId`, which would otherwise take "shared" for an id. Public: anyone with the link.
+  http.get("*/v1/store/quotes/shared/:token", ({ params }) => {
+    const share = shareTokens.get(String(params.token));
     const quote = share ? quotesOf(share.persona).find((candidate) => candidate.id === share.quoteId) : undefined;
     if (!share || !quote || Date.parse(share.expiresAt) < Date.now())
       return problem(404, "http.not_found", "ลิงก์นี้หมดอายุหรือไม่มีอยู่");
-    return {
-      quoteCode: quote.quoteCode,
-      productType: quote.productType,
-      product: quote.product,
-      specs: quote.specs,
-      quantity: quote.quantity,
-      unit: quote.unit,
-      unitPrice: quote.unitPrice,
-      grossAmount: quote.grossAmount,
-      currency: quote.currency,
-      leadTimeDays: quote.leadTimeDays,
-      validUntil: quote.validUntil,
-      configuration: quote.configuration,
-    };
+    return HttpResponse.json(toSavedQuote(quote));
   }),
 
-  mockRequest("POST /v1/store/quotes/{quoteId}/actions/export-pdf", ({ params, request }) => {
+  http.get("*/v1/store/quotes/:quoteId", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === params.quoteId);
+    return quote ? HttpResponse.json(toSavedQuote(quote)) : notFound();
+  }),
+
+  http.post("*/v1/store/quotes/:quoteId/actions/share", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const quote = quotesOf(customer.persona).find((candidate) => candidate.id === params.quoteId);
     if (!quote) return notFound();
-    return {
-      url: `data:text/plain;charset=utf-8,${encodeURIComponent(`ใบเสนอราคา ${quote.quoteCode} (ข้อมูลจำลอง) — Collective Group (Thailand)`)}`,
-      expiresAt: bangkokIso(5),
+    const shareToken = Array.from({ length: 43 }, () => TOKEN_ALPHABET[Math.floor(Math.random() * 64)]).join("");
+    shareTokens.set(shareToken, { quoteId: quote.id, persona: customer.persona, expiresAt: quote.validUntil });
+    if (quote.status === "saved") quote.status = "shared";
+    uncoded.delete(quote.id);
+    sharedAt.set(quote.id, bangkokIso());
+    const result: Schemas["ShareQuoteResultDto"] = {
+      quote: toSavedQuote(quote),
+      shareToken,
+      sharePath: `/quotes/shared/${shareToken}`,
     };
+    return HttpResponse.json(result);
+  }),
+
+  http.post("*/v1/store/quotes/:quoteId/actions/request-pdf", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === params.quoteId);
+    if (!quote) return notFound();
+    uncoded.delete(quote.id);
+    pdfs.set(quote.id, "pending");
+    return HttpResponse.json(toSavedQuote(quote), { status: 202 });
+  }),
+
+  // The mock renders at once: the first poll after the request finds it ready.
+  http.get("*/v1/store/quotes/:quoteId/pdf", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const quote = quotesOf(customer.persona).find((candidate) => candidate.id === params.quoteId);
+    if (!quote) return notFound();
+    const status = pdfs.get(quote.id) ?? "none";
+    if (status === "pending") pdfs.set(quote.id, "ready");
+    const pdf: Schemas["QuotePdfDto"] =
+      status === "none"
+        ? { status: "none", url: null, expiresAt: null }
+        : {
+            status: "ready",
+            url: `data:text/plain;charset=utf-8,${encodeURIComponent(`ใบเสนอราคา ${quote.quoteCode} (ข้อมูลจำลอง) — Collective Group (Thailand)`)}`,
+            expiresAt: bangkokIso(5),
+          };
+    return HttpResponse.json(pdf);
   }),
 
   // CONTRACT-REQUEST store.promo-check

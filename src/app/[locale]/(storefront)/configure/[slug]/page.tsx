@@ -81,7 +81,11 @@ export default async function Page({
   const source = saved ?? shared;
   // A saved or shared quote wins; otherwise a design's "order this" may have filled the size in.
   const seed = source
-    ? seedFromConfiguration(configurator, source.configuration, source.quantity)
+    ? seedFromConfiguration(
+        configurator,
+        (source.configuration ?? {}) as unknown as Record<string, unknown>,
+        source.options[0]?.quantity,
+      )
     : seedFromDesign(configurator, search);
   const name = pick(locale, product.nameTh, product.nameEn);
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
@@ -106,12 +110,12 @@ export default async function Page({
       ) : null}
       {shared ? (
         <Callout tone="info" className="mt-4 max-w-2xl">
-          {t("sharedFrom", { code: shared.quoteCode })}
+          {shared.quoteCode ? t("sharedFrom", { code: shared.quoteCode }) : t("sharedFromNoCode")}
         </Callout>
       ) : null}
       {saved ? (
         <Callout tone="info" className="mt-4 max-w-2xl">
-          {t("savedFrom", { code: saved.quoteCode })}
+          {saved.quoteCode ? t("savedFrom", { code: saved.quoteCode }) : t("savedFromNoCode")}
         </Callout>
       ) : null}
       <div className="mt-6">

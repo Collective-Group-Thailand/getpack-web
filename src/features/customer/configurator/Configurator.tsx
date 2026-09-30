@@ -111,6 +111,7 @@ export function Configurator({
   const actions = useQuoteActions({
     configurator,
     state,
+    productName: name,
     signedIn: session,
     requestSignIn: (then) => setSignIn({ open: true, then }),
   });

@@ -13,7 +13,6 @@ export type PointsEntry = Schemas["PointsEntryDto"];
 export type Referral = Schemas["MyReferralDto"];
 export type StoreCredit = Schemas["StoreCreditDto"];
 export type PrivacyRequest = ResponseOf<Requests, "GET /v1/store/me/privacy-requests">["data"][number];
-export type Quotes = ResponseOf<Requests, "GET /v1/store/quotes">;
 
 /** Everything here is one customer's, so none of it is cached (`catalog/api.server.ts`). */
 export async function accountRequests() {
@@ -46,6 +45,12 @@ export async function getReferral(): Promise<Referral> {
 export async function getStoreCredit(): Promise<StoreCredit> {
   const { data } = await (await serverApi("customer")).GET("/v1/store/store-credit");
   return data!;
+}
+
+/** The customer's saved quotations, newest first as the API lists them (`store.quotes.list`). */
+export async function getSavedQuotes(): Promise<Schemas["SavedQuoteDto"][]> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/quotes", { params: { query: { perPage: 50 } } });
+  return data!.data;
 }
 
 /**

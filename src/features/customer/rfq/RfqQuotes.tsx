@@ -8,6 +8,7 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { RFQ_QUOTE_STATUS } from "@/domain/status";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
 import { browserRequests } from "@/lib/api/requests/browser";
 import type { ResponseOf } from "@/lib/api/requests/client";
@@ -18,6 +19,7 @@ import { Callout } from "@/ui/components/Callout";
 import { toast } from "@/ui/components/Toast";
 
 import { quantityBand } from "../analytics/bands";
+import { editCart } from "../cart/cart-client";
 
 type Rfq = ResponseOf<Requests, "GET /v1/store/rfqs/{rfqId}">;
 type Line = Rfq["quotes"][number]["lines"][number];
@@ -62,7 +64,18 @@ export function RfqQuotes({ rfq }: { rfq: Rfq }) {
   async function addToCart(quoteId: string) {
     setBusy("cart");
     try {
-      await browserRequests().call("POST /v1/store/cart/items", { body: { quoteId } });
+      // The cart takes the quotation's option (`store.cart.addItem`), which the accepted quote
+      // does not name — so it is read from the saved quotation first.
+      const api = browserApi();
+      const { data: saved } = await api.GET("/v1/store/quotes/{quoteId}", { params: { path: { quoteId } } });
+      const option =
+        saved!.options.find((candidate) => candidate.quantity === rfq.acceptedQuote?.quantity) ?? saved!.options[0]!;
+      await editCart((ifMatch) =>
+        api.POST("/v1/store/cart/items", {
+          params: { header: { "If-Match": ifMatch } },
+          body: { quoteId, quoteOptionId: option.id, designOption: "own_file" },
+        }),
+      );
       track("cart_item_added", {
         route: "/account/rfqs/[rfqId]",
         productType: rfq.productType.code,
