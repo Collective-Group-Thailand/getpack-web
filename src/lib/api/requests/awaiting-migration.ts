@@ -75,5 +75,4 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/store/rfqs",
   "POST /v1/store/rfqs/{rfqId}/messages",
   "PUT /v1/store/designs/{designId}",
-  "PUT /v1/store/orders/{orderId}/design-service/brief",
 ];

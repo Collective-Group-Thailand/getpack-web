@@ -35,3 +35,42 @@ export function orderActions(order: OrderFacts): NextAction[] {
   if (received) actions.push({ key: "order.reorder" });
   return actions;
 }
+
+/** What the storefront knows about an order's artwork when it decides what to offer. */
+export interface ArtworkFacts {
+  artworkStatus: Schemas["ArtworkStatus"];
+  designOption: Schemas["DesignOption"];
+  /** The newest submission's preflight and review, if there is one. */
+  latest: Pick<Schemas["ArtworkSubmissionDto"], "preflightStatus" | "status"> | null;
+  /** A proof waits for the customer's decision. */
+  proofPending: boolean;
+  designServiceStatus: Schemas["DesignServiceStatus"] | null;
+}
+
+/** What the artwork page offers (CONTRACT-GAP entity.next-actions — see `orderActions`). */
+export interface ArtworkActions {
+  upload: boolean;
+  reviewProof: boolean;
+  submitBrief: boolean;
+  /** Approve the delivered design, or ask for another round (D-071). */
+  reviewDesign: boolean;
+}
+
+/**
+ * The artwork a customer may send (D-070) and what they may decide on it (D-071, D-073): a new file
+ * while none is accepted — or the last was blocked or sent back — and no proof waits; a proof to
+ * review; the design brief, then the delivered design, for hired design.
+ */
+export function artworkActions(artwork: ArtworkFacts): ArtworkActions {
+  const hired = artwork.designOption === "hired_design";
+  const needsFile =
+    ["awaiting_upload", "changes_requested", "awaiting_template", "uploaded"].includes(artwork.artworkStatus) ||
+    artwork.latest?.preflightStatus === "blocked" ||
+    artwork.latest?.status === "rejected";
+  return {
+    upload: !hired && needsFile && !artwork.proofPending && artwork.artworkStatus !== "approved",
+    reviewProof: artwork.proofPending,
+    submitBrief: artwork.designServiceStatus === "brief_pending",
+    reviewDesign: artwork.designServiceStatus === "delivered" && artwork.proofPending,
+  };
+}

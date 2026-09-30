@@ -11,7 +11,7 @@ import { gotoHydrated, signInAsStaff } from "./helpers/session";
  * A signed-in design is created on its first autosave and keeps a version history; two tabs
  * saving the same design meet the conflict choice instead of overwriting each other; a guest's
  * browser designs are imported after sign-in; a design started from an order is sent to print as
- * that order's artwork and preflight answers; prepress opens a customer's design read-only and
+ * that order's artwork for prepress; prepress opens a customer's design read-only and
  * works on its own copy. All of it as the mock's `designer` persona (its own customer and orders),
  * so nothing here shares state with the other suites.
  */
@@ -105,9 +105,23 @@ test("a guest's browser design is imported into the account after sign-in", asyn
   await expect(offer).toBeHidden();
 });
 
-test("a design for an order is sent to print and preflight answers", async ({ page }) => {
+test("the order's artwork page opens the designer on its box", async ({ page }) => {
+  test.fixme(true, "CONTRACT-GAP store.artwork — the box's dieline key and dimensions are not published");
   await signInAsCustomer(page, `/account/orders/${DESIGN_ORDER}/artwork`, MOCK_DESIGNER_PHONE);
-  await page.getByRole("link", { name: "ออกแบบออนไลน์บนกล่องนี้" }).click();
+});
+
+test("a design for an order is sent to print and prepress takes it", async ({ page }) => {
+  // The link the artwork page used to build (see the fixme above); the designer still takes it.
+  const linked = new URLSearchParams({
+    style: "tuck-end",
+    l: "80",
+    w: "50",
+    h: "120",
+    order: DESIGN_ORDER,
+    item: DESIGN_ORDER,
+    orderCode: "PK-2569-00109",
+  });
+  await signInAsCustomer(page, `/design/new?${linked.toString()}`, MOCK_DESIGNER_PHONE);
   await startFromSetup(page);
   await expect(page).toHaveURL(UUID, { timeout: 15_000 });
 
@@ -116,8 +130,10 @@ test("a design for an order is sent to print and preflight answers", async ({ pa
   await expect(confirm).toBeVisible();
   await confirm.getByRole("button", { name: "ส่งเข้าผลิต" }).click();
 
+  // `store.designs.submitForOrder`: prepress exports the design, so preflight answers later.
   const result = page.getByRole("dialog", { name: /^ส่งไฟล์ของคำสั่งซื้อ .* แล้ว$/ });
   await expect(result).toBeVisible({ timeout: 30_000 });
+  await expect(result).toContainText("ทีมพรีเพรสกำลังจัดทำไฟล์");
   await result.getByRole("link", { name: "ไปหน้าไฟล์งานและพรูฟ" }).click();
   await expect(page).toHaveURL(new RegExp(`/account/orders/${DESIGN_ORDER}/artwork$`));
 });

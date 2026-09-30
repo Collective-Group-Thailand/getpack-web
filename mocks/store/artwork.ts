@@ -1,12 +1,19 @@
 /**
- * Artwork, proofs and design services from the customer's side, mocked (CONTRACT-REQUEST
- * store.artwork, store.proofs, store.design-service).
+ * Artwork, proofs and design services from the customer's side, at their published paths
+ * (`store.artwork.*`, `store.designServices.*`, `store.files.download`; U-F0.2).
  *
- * The rows are the prepress desk's (`../admin/prepress.ts`): an upload here is the submission
- * prepress checks, a proof prepress sends is the one the customer reviews, a comment is one
- * thread both reply to. Proof pages and the dieline template are drawn with `@packio/dieline`
- * from the order's box size — obviously fake artwork on the real outline — so the viewer has
- * something true-to-shape to zoom, overlay and annotate.
+ * The rows are the prepress desk's (`../admin/prepress.ts`), which keep the admin zone's request
+ * shape until U-F0.3: an upload here is the submission prepress checks, a proof prepress sends is
+ * the one the customer reviews, a comment is one thread both reply to. This file projects them onto
+ * the published DTOs.
+ *
+ * Proof pages and the dieline template are drawn with `@packio/dieline` from the order's box size —
+ * obviously fake artwork on the real outline — and served as SVG through `store.files.download`,
+ * so the viewer has something true-to-shape to zoom, overlay and annotate.
+ *
+ * As in packio-api, a designer's delivery (hired design, D-071) is a proof: approving it approves
+ * the design, asking for changes opens the next free round; a charged round is confirmed with the
+ * fee the customer saw.
  */
 
 import {
@@ -18,45 +25,49 @@ import {
   REFERENCE_MATERIALS,
   svgPathData,
 } from "@packio/dieline";
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import type { storeAnnotationThread, storeArtwork } from "@/lib/api/requests/store-artwork";
-import type { rfqField } from "@/lib/api/requests/store-rfq";
+import type { Schemas } from "@/lib/api/types";
 
 import { baht, orders, refreshOrder, satang } from "../admin/commerce";
 import {
   customerAnnotate,
   customerDecide,
   customerSubmit,
+  prepressIfAny,
   prepressOf,
   proofAnnotations,
   refreshPrepress,
-  type PrepressAnnotation,
   type PrepressDetail,
 } from "../admin/prepress";
 import { files } from "../admin/platform";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
 import { groupForOrder } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
 
-type Artwork = z.output<typeof storeArtwork>;
-type Thread = z.output<typeof storeAnnotationThread>;
+type Proof = PrepressDetail["proofs"][number];
+type Submission = PrepressDetail["submissions"][number];
+type Service = NonNullable<PrepressDetail["designService"]>;
 
 const DIELINE_KEYS: Record<string, string> = { "RTE-01": "reverse-tuck-end", "RSC-01": "rsc", "TRAY-01": "tray" };
 const BOARD = REFERENCE_MATERIALS["board-350"];
 const PALETTE = ["#1f6f5c", "#b4532a", "#3b5ba5", "#8a3f8f"];
+const TEAM = "ทีม Packio";
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
+const keyRequired = (request: Request) =>
+  request.headers.get("idempotency-key")
+    ? null
+    : problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key สำหรับคำสั่งนี้");
 
-function orderOf(customer: MockCustomer, orderId: string) {
-  const owner = ownerIdOf(customer);
-  return orders.find((order) => order.id === orderId && order.customer.id === owner);
-}
-
-const whoOf = (customer: MockCustomer, displayName: string) => ({ id: ownerIdOf(customer), displayName });
+const svgUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
+/** What `store.files.download` hands back for a file the mock drew (proof pages, overlays, templates). */
+const drawn = new Map<string, string>();
+/** A stable id for a file the mock draws for a row, in its own namespace. */
+const drawnId = (namespace: string, of: string) =>
+  mockId(namespace, Number.parseInt(of.replace(/-/g, "").slice(-6), 16) % 0x100000);
 
 function dimsOf(detail: PrepressDetail) {
   return {
@@ -66,9 +77,7 @@ function dimsOf(detail: PrepressDetail) {
   };
 }
 
-const svgUrl = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-
-/** A proof page: the dieline filled with obviously fake artwork, one colour per version. */
+/** A proof page and its dieline overlay: the dieline filled with fake artwork, one colour per version. */
 function proofPage(detail: PrepressDetail, versionNo: number) {
   const style = DIELINE_KEYS[detail.dieline.patternCode ?? ""] ?? "tuck-end";
   const dieline = buildStyle(style, dimsOf(detail), BOARD);
@@ -102,235 +111,306 @@ function proofPage(detail: PrepressDetail, versionNo: number) {
     )
     .join("")}</g>`;
   const overlay = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">${lines}</svg>`;
-  return { index: 0, imageUrl: svgUrl(page), widthPx: width, heightPx: height, dielineOverlayUrl: svgUrl(overlay) };
+  return { page: svgUrl(page), overlay: svgUrl(overlay) };
 }
 
-const CHECKLIST = [
-  { key: "text", label: "ตรวจข้อความ ตัวสะกด และตัวเลขทั้งหมดแล้ว" },
-  { key: "dieline", label: "ตรวจตำแหน่งงานเทียบเส้นไดคัทและระยะปลอดภัยแล้ว" },
-  { key: "colour", label: "เข้าใจว่าสีบนหน้าจออาจต่างจากงานพิมพ์จริงเล็กน้อย" },
-  { key: "size", label: "ตรวจขนาดกล่องและจำนวนที่สั่งแล้ว" },
-];
+/* -------------------------------------------------------------------------------- projections */
 
-const BRIEF_FIELDS: z.output<typeof rfqField>[] = [
-  {
-    key: "brand",
-    type: "text",
-    labelTh: "ชื่อแบรนด์และสินค้า",
-    labelEn: "Brand and product name",
-    helpTh: null,
-    helpEn: null,
-    unit: null,
-    required: true,
-    min: null,
-    max: null,
-    options: [],
-  },
-  {
-    key: "audience",
-    type: "text",
-    labelTh: "กลุ่มลูกค้า",
-    labelEn: "Who it is for",
-    helpTh: "เช่น ผู้หญิงอายุ 25–40 ปี",
-    helpEn: "e.g. women 25–40",
-    unit: null,
-    required: false,
-    min: null,
-    max: null,
-    options: [],
-  },
-  {
-    key: "style",
-    type: "select",
-    labelTh: "สไตล์ที่ต้องการ",
-    labelEn: "Style",
-    helpTh: null,
-    helpEn: null,
-    unit: null,
-    required: true,
-    min: null,
-    max: null,
-    options: [
-      { value: "minimal", labelTh: "เรียบ มินิมอล", labelEn: "Minimal" },
-      { value: "premium", labelTh: "หรู พรีเมียม", labelEn: "Premium" },
-      { value: "playful", labelTh: "สดใส สนุก", labelEn: "Playful" },
-      { value: "natural", labelTh: "ธรรมชาติ", labelEn: "Natural" },
-    ],
-  },
-  {
-    key: "colours",
-    type: "text",
-    labelTh: "โทนสี",
-    labelEn: "Colours",
-    helpTh: null,
-    helpEn: null,
-    unit: null,
-    required: false,
-    min: null,
-    max: null,
-    options: [],
-  },
-  {
-    key: "content",
-    type: "textarea",
-    labelTh: "ข้อความที่ต้องมีบนกล่อง",
-    labelEn: "Text that must be on the box",
-    helpTh: "เช่น ส่วนประกอบ เลข อย. วิธีใช้",
-    helpEn: "e.g. ingredients, FDA number, directions",
-    unit: null,
-    required: true,
-    min: null,
-    max: null,
-    options: [],
-  },
-];
+/** Designs sent to print: pending until prepress exports them, which the mock does a moment later. */
+const exporting = new Map<string, number>();
+const EXPORT_MS = 3_000;
 
-const feeLabel = (roundNo: number) => `ค่าแก้ไขแบบรอบที่ ${roundNo}`;
-
-function toArtwork(detail: PrepressDetail): Artwork {
-  const order = orders.find((candidate) => candidate.id === detail.orderId)!;
-  const style = DIELINE_KEYS[detail.dieline.patternCode ?? ""] ?? null;
-  const template = style ? dielineToSvg(buildStyle(style, dimsOf(detail), BOARD), { margin: 5 }) : null;
-  const group = groupForOrder(order);
-  const service = detail.designService;
-  const pendingRound = service?.rounds.find((round) => round.status === "awaiting_payment");
-  const feeEntry = pendingRound
-    ? group.instalments.find((entry) => entry.label === feeLabel(pendingRound.roundNo))
-    : undefined;
-  if (pendingRound && feeEntry?.paid) {
-    pendingRound.status = "in_progress";
-    pendingRound.startedAt = bangkokIso();
-    service!.status = "in_progress";
+function toSubmission(detail: PrepressDetail, submission: Submission): Schemas["ArtworkSubmissionDto"] {
+  const since = exporting.get(submission.id);
+  if (since !== undefined && Date.now() - since >= EXPORT_MS) {
+    exporting.delete(submission.id);
+    submission.preflightStatus = "passed";
+    submission.preflightCompletedAt = bangkokIso();
   }
-  const current = detail.proofs[0];
-  const actions: Artwork["nextActions"] = [];
-  const latest = detail.submissions[0];
-  if (
-    (["awaiting_upload", "changes_requested", "awaiting_template", "uploaded"].includes(detail.artworkStatus) ||
-      latest?.preflightStatus === "blocked" ||
-      latest?.status === "rejected") &&
-    detail.designOption !== "hired_design" &&
-    current?.status !== "pending_customer"
-  )
-    actions.push({ key: "artwork.upload" });
-  if (current?.status === "pending_customer")
-    actions.push({ key: "proof.approve", irreversible: true }, { key: "proof.request_changes" });
-  if (service?.status === "brief_pending") actions.push({ key: "design.submit_brief" });
-  if (service?.status === "delivered")
-    actions.push({ key: "design.approve", irreversible: true }, { key: "design.request_revision" });
-
+  const first = submission.files[0]?.file;
+  const block = submission.findings.filter((finding) => finding.severity === "block").length;
+  const warn = submission.findings.filter((finding) => finding.severity === "warn").length;
+  const dims = dimsOf(detail);
   return {
+    id: submission.id,
     orderId: detail.orderId,
     orderCode: detail.orderCode,
-    artworkStatus: detail.artworkStatus,
-    designOption: detail.designOption,
-    rules: {
-      accept: ".pdf,.ai,.psd,.png,.jpg,.jpeg,.zip",
-      maxBytes: 200 * 1024 * 1024,
-      maxFiles: 10,
-      bleedMm: 3,
-      safeMarginMm: 3,
-      minDpi: 300,
-      colourMode: "cmyk",
-    },
-    dieline: {
-      dielineKey: style,
-      lengthMm: detail.dieline.lengthMm,
-      widthMm: detail.dieline.widthMm,
-      heightMm: detail.dieline.heightMm,
-      templateUrl: template ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(template)}` : null,
-    },
-    submissions: detail.submissions.map((submission) => ({
-      id: submission.id,
-      versionNo: submission.versionNo,
-      status: submission.status,
-      preflightStatus: submission.preflightStatus,
-      findings: submission.findings.map(({ thumbnailUrl: _thumbnail, ...finding }) => finding),
-      files: submission.files,
-      note: null,
-      rejectionReason:
-        submission.status === "rejected"
-          ? submission.preflightStatus === "blocked"
-            ? "ไฟล์ไม่ผ่านการตรวจอัตโนมัติ กรุณาแก้ตามรายการด้านล่างแล้วส่งใหม่"
-            : "ทีมงานส่งไฟล์คืนให้แก้ไข"
-          : null,
-      submittedAt: submission.submittedAt,
+    versionNo: submission.versionNo,
+    channel: "web",
+    source: submission.source,
+    status: submission.status,
+    note: null,
+    files: submission.files.map((entry) => ({
+      id: entry.file.id,
+      fileId: entry.file.id,
+      role: entry.role,
+      originalName: entry.file.originalName,
+      mimeType: entry.file.mimeType,
+      sizeBytes: entry.file.sizeBytes,
+      linkUrl: null,
     })),
-    proofs: detail.proofs.map((proof) => ({
-      id: proof.id,
-      versionNo: proof.versionNo,
-      status: proof.status,
-      note: proof.note,
-      file: proof.proofFile,
-      pages: [proofPage(detail, proof.versionNo)],
-      sentAt: proof.sentAt,
-      decidedAt: proof.decidedAt,
-      decision:
-        proof.decidedAt && (proof.status === "approved" || proof.status === "changes_requested")
-          ? {
-              outcome: proof.status,
-              byName: proof.decidedBy?.displayName ?? "",
-              at: proof.decidedAt,
-              note: null,
-              fileSha256: proof.approvedFileSha256,
-              checklist: proof.status === "approved" ? CHECKLIST.map((item) => item.key) : [],
-            }
-          : null,
-      annotations: proof.annotations,
-    })),
-    checklist: CHECKLIST,
-    designService: service
-      ? {
-          status: service.status,
-          briefFields: BRIEF_FIELDS,
-          brief: service.status === "brief_pending" ? [] : service.brief,
-          briefSubmitted: service.status !== "brief_pending",
-          targetDueAt: service.targetDueAt,
-          maxDueAt: service.maxDueAt,
-          freeRounds: service.freeRounds,
-          rounds: service.rounds.map((round) => ({
-            roundNo: round.roundNo,
-            kind: round.kind,
-            chargeable: round.chargeable,
-            feeAmount: round.feeAmount,
-            status: round.status,
-            requestedAt: round.requestedAt,
-            deliveredAt: round.deliveredAt,
-            files: round.files,
-            note: round.note,
-          })),
-          nextRound: service.nextRound,
-          pendingFeeInstalment:
-            pendingRound && feeEntry && !feeEntry.paid
-              ? { id: feeEntry.id, label: feeEntry.label, grossAmount: baht(feeEntry.gross), activePaymentId: null }
-              : null,
-        }
-      : null,
-    nextActions: actions,
+    preflightStatus: submission.preflightStatus,
+    preflightCompletedAt: submission.preflightCompletedAt,
+    preflightReport:
+      submission.preflightStatus === "pending" || submission.preflightStatus === "running"
+        ? null
+        : {
+            run: 1,
+            blockCount: block,
+            warnCount: warn,
+            expectedSize: { widthMm: dims.length, heightMm: dims.height },
+            files: first
+              ? [
+                  {
+                    submissionFileId: first.id,
+                    kind: "pdf",
+                    name: first.originalName,
+                    pageCount: 1,
+                    thumbnailFileId: null,
+                    checks: submission.findings.map((finding) => ({
+                      check: finding.check,
+                      severity: finding.severity,
+                      outcome: "fail",
+                      page: finding.page,
+                      messageTh: finding.message,
+                      messageEn: finding.message,
+                      measurements: {},
+                    })),
+                  },
+                ]
+              : [],
+          },
+    rejectReason:
+      submission.status === "rejected"
+        ? submission.preflightStatus === "blocked"
+          ? "ไฟล์ไม่ผ่านการตรวจอัตโนมัติ กรุณาแก้ตามรายการด้านล่างแล้วส่งใหม่"
+          : "ทีมงานส่งไฟล์คืนให้แก้ไข"
+        : null,
+    reviewedAt: null,
+    submittedAt: submission.submittedAt,
   };
 }
 
-function threadsOf(proofId: string): Thread[] {
-  const list: PrepressAnnotation[] = proofAnnotations.get(proofId) ?? [];
-  return list
-    .filter((item) => !item.parentId)
-    .map((root) => ({
-      id: root.id,
-      proofId,
-      page: Math.max(0, root.page - 1),
-      kind: root.kind === "draw" ? "rect" : root.kind,
-      geometry: Object.fromEntries(
-        Object.entries(root.geometry).filter(([, value]) => typeof value === "number"),
-      ) as Record<string, number>,
-      resolved: Boolean(root.resolvedAt),
-      messages: [root, ...list.filter((item) => item.parentId === root.id)].map((item) => ({
-        id: item.id,
-        authorKind: item.authorKind,
-        authorName: item.authorKind === "staff" ? "ทีม Packio" : item.author.displayName,
-        body: item.comment,
-        createdAt: item.createdAt,
-      })),
-    }));
+/** What the customer wrote when asking for changes, per proof (the desk's row keeps no comment). */
+const decisionComments = new Map<string, string>();
+
+function toProof(detail: PrepressDetail, proof: Proof): Schemas["ProofDto"] {
+  const { page, overlay } = proofPage(detail, proof.versionNo);
+  const pageId = drawnId("prp", proof.id);
+  const overlayId = proof.dielineFile?.id ?? drawnId("prd", proof.id);
+  drawn.set(pageId, page);
+  drawn.set(overlayId, overlay);
+  const previous = detail.proofs.find((candidate) => candidate.versionNo === proof.versionNo - 1);
+  const annotations = proofAnnotations.get(proof.id) ?? [];
+  const submission = detail.submissions.find((candidate) => candidate.versionNo === proof.submissionVersionNo);
+  return {
+    id: proof.id,
+    orderId: detail.orderId,
+    orderCode: detail.orderCode,
+    versionNo: proof.versionNo,
+    status: proof.status,
+    submissionId: submission?.id ?? null,
+    // The mock's proof is a drawn SVG, so the viewer can show and point at it.
+    proofFile: {
+      id: pageId,
+      mimeType: "image/svg+xml",
+      originalName: `${detail.orderCode}-proof-v${proof.versionNo}.svg`,
+      pageCount: 1,
+    },
+    dielineFileId: overlayId,
+    changeNote: proof.note,
+    sentAt: proof.sentAt,
+    decidedAt: proof.decidedAt,
+    decisionChannel: proof.decisionChannel,
+    decisionComment: decisionComments.get(proof.id) ?? null,
+    onBehalfReason: proof.onBehalfReason,
+    approvedFileId: proof.status === "approved" ? pageId : null,
+    approvedFileSha256: proof.approvedFileSha256,
+    compare: previous
+      ? {
+          previousProofId: previous.id,
+          previousVersionNo: previous.versionNo,
+          previousStatus: previous.status,
+          previousProofFileId: drawnId("prp", previous.id),
+          previousDecisionComment: decisionComments.get(previous.id) ?? null,
+          openAnnotationsOnPrevious: (proofAnnotations.get(previous.id) ?? []).filter(
+            (item) => !item.parentId && !item.resolvedAt,
+          ).length,
+        }
+      : null,
+    annotations: annotations.map((item) => ({
+      id: item.id,
+      parentId: item.parentId,
+      page: item.page,
+      kind: item.kind,
+      geometry: item.geometry,
+      comment: item.comment,
+      // Staff appear as the team.
+      author: { kind: item.authorKind, displayName: item.authorKind === "staff" ? TEAM : item.author.displayName },
+      createdAt: item.createdAt,
+      resolvedAt: item.resolvedAt,
+    })),
+  };
+}
+
+/** The dieline templates sent for the order; one is drawn for a box the mock knows the shape of. */
+function toTemplates(detail: PrepressDetail): Schemas["DielineDeliveryDto"][] {
+  const style = DIELINE_KEYS[detail.dieline.patternCode ?? ""];
+  const sent = detail.templateDeliveries.map((delivery) => {
+    if (style)
+      drawn.set(delivery.file.id, svgUrl(dielineToSvg(buildStyle(style, dimsOf(detail), BOARD), { margin: 5 })));
+    return {
+      id: delivery.id,
+      fileId: delivery.file.id,
+      note: null,
+      sentAt: delivery.sentAt,
+      trigger: delivery.trigger,
+    };
+  });
+  if (sent.length > 0 || !style) return sent;
+  // D-072: the template goes out once the order is paid; the mock sends it with the first read.
+  const fileId = drawnId("dlt", detail.orderId);
+  drawn.set(fileId, svgUrl(dielineToSvg(buildStyle(style, dimsOf(detail), BOARD), { margin: 5 })));
+  return [
+    { id: drawnId("dld", detail.orderId), fileId, note: null, sentAt: bangkokIso(-60), trigger: "auto_after_payment" },
+  ];
+}
+
+/** The brief as the customer wrote it (fixed fields), per design service. */
+const briefs = new Map<string, Schemas["DesignBriefViewDto"]>();
+const feeLabel = (roundNo: number) => `ค่าแก้ไขแบบรอบที่ ${roundNo}`;
+const grossOf = (net: string) => baht(Math.round(satang(net) * 1.07));
+
+function briefOf(service: Service): Schemas["DesignBriefViewDto"] | null {
+  if (service.status === "brief_pending") return null;
+  const known = briefs.get(service.id);
+  if (known) return known;
+  // A seeded service carries the legacy label/value brief; its first answer is the brand.
+  return {
+    brandName: service.brief[0]?.value ?? "",
+    brandCategory: "",
+    description: service.brief
+      .slice(1)
+      .map((item) => `${item.label}: ${item.value}`)
+      .join("\n"),
+    attachmentFileIds: service.briefFiles.map((file) => file.id),
+  };
+}
+
+function toDesignService(detail: PrepressDetail, service: Service): Schemas["DesignServiceDto"] {
+  const order = orders.find((candidate) => candidate.id === detail.orderId)!;
+  const group = groupForOrder(order);
+  const next = service.nextRound;
+  // D-071 counts the first design as round 1 and charges from round 4: the free rounds used are
+  // the uncharged ones.
+  const used = service.rounds.filter((round) => !round.chargeable).length;
+  return {
+    id: service.id,
+    orderId: detail.orderId,
+    orderCode: detail.orderCode,
+    status: service.status,
+    assignee: service.designer,
+    brief: briefOf(service),
+    briefSubmittedAt: service.rounds[0]?.requestedAt ?? null,
+    closeReason: null,
+    designFeeNet: service.designFeeNet,
+    dueState: service.status === "approved" ? "closed" : service.rounds.length ? "on_track" : "not_started",
+    targetDueAt: service.targetDueAt,
+    maxDueAt: service.maxDueAt,
+    freeRounds: service.freeRounds,
+    revisionsUsed: used,
+    nextRevision:
+      service.status === "delivered"
+        ? {
+            revisionNo: next.roundNo - 1,
+            chargeable: next.chargeable,
+            feeNet: next.feeAmount,
+            feeGross: next.feeAmount ? grossOf(next.feeAmount) : null,
+          }
+        : null,
+    rounds: service.rounds.map((round) => ({
+      id: drawnId("drd", `${service.id.slice(-4)}${String(round.roundNo).padStart(2, "0")}`),
+      roundNo: round.roundNo,
+      kind: round.kind,
+      chargeable: round.chargeable,
+      feeNet: round.feeAmount,
+      status: round.status,
+      requestedAt: round.requestedAt,
+      startedAt: round.startedAt,
+      deliveredAt: round.deliveredAt,
+      changeRequest: round.note,
+      instalmentId: round.chargeable
+        ? (group.instalments.find((entry) => entry.label === feeLabel(round.roundNo))?.id ?? null)
+        : null,
+      submissionId: null,
+    })),
+  };
+}
+
+/* ------------------------------------------------------------------------------------ state */
+
+function orderOf(customer: MockCustomer, orderId: string) {
+  const owner = ownerIdOf(customer);
+  return orders.find((order) => order.id === orderId && order.customer.id === owner);
+}
+
+const whoOf = (customer: MockCustomer, displayName: string) => ({ id: ownerIdOf(customer), displayName });
+
+/** Which delivered design round a proof stands for, so a decision on it reaches the round. */
+const designProofs = new Map<string, { serviceId: string; roundNo: number }>();
+
+/**
+ * A delivered design round as the proof the customer decides on (packio-api: the delivery is a
+ * submission with source `design_service` that goes to a proof). Made once per delivered round.
+ */
+function syncDesign(detail: PrepressDetail): PrepressDetail {
+  const service = detail.designService;
+  const order = orders.find((candidate) => candidate.id === detail.orderId);
+  if (!service || !order) return detail;
+  // A charged round starts once its fee instalment is paid (D-071).
+  const waiting = service.rounds.find((round) => round.status === "awaiting_payment");
+  const fee = waiting && groupForOrder(order).instalments.find((entry) => entry.label === feeLabel(waiting.roundNo));
+  if (waiting && fee?.paid) {
+    waiting.status = "in_progress";
+    waiting.startedAt = bangkokIso();
+    service.status = "in_progress";
+  }
+  const delivered = service.rounds.at(-1);
+  if (service.status !== "delivered" || delivered?.status !== "delivered") return detail;
+  const known = [...designProofs.entries()].some(
+    ([, round]) => round.serviceId === service.id && round.roundNo === delivered.roundNo,
+  );
+  if (known) return detail;
+  for (const item of detail.proofs) if (item.status === "pending_customer") item.status = "superseded";
+  const versionNo = (detail.proofs[0]?.versionNo ?? 0) + 1;
+  const id = drawnId("prf", `${service.id.slice(-4)}${String(delivered.roundNo).padStart(2, "0")}`);
+  detail.proofs.unshift({
+    id,
+    versionNo,
+    submissionVersionNo: detail.submissions[0]?.versionNo ?? 0,
+    status: "pending_customer",
+    proofFile: delivered.files[0] ?? {
+      id,
+      originalName: `design-round-${delivered.roundNo}.pdf`,
+      mimeType: "application/pdf",
+      sizeBytes: 0,
+      thumbnailUrl: null,
+      url: null,
+    },
+    dielineFile: null,
+    note: delivered.note,
+    preparedBy: service.designer ?? { id: mockId("usr", 1), displayName: TEAM },
+    sentAt: delivered.deliveredAt ?? bangkokIso(),
+    decidedAt: null,
+    decidedBy: null,
+    decisionChannel: null,
+    onBehalfReason: null,
+    approvedFileSha256: null,
+    annotations: { open: 0, resolved: 0 },
+  });
+  designProofs.set(id, { serviceId: service.id, roundNo: delivered.roundNo });
+  detail.artworkStatus = "proof_sent";
+  return refreshPrepress(detail);
 }
 
 function context(request: Request, orderId: string) {
@@ -338,225 +418,285 @@ function context(request: Request, orderId: string) {
   if (!customer) return unauthenticated();
   const order = orderOf(customer, orderId);
   if (!order) return notFound();
-  const detail = prepressOf(order.id)!;
-  return { customer, order, detail };
+  return { customer, order, detail: syncDesign(prepressOf(order.id)!) };
 }
 
+/** A proof of one of the customer's orders, by its id alone (`/v1/store/proofs/{proofId}`). */
+function proofContext(request: Request, proofId: string) {
+  const customer = customerOf(request);
+  if (!customer) return unauthenticated();
+  const owner = ownerIdOf(customer);
+  for (const order of orders.filter((candidate) => candidate.customer.id === owner)) {
+    const detail = prepressIfAny(order.id);
+    const proof = detail?.proofs.find((candidate) => candidate.id === proofId);
+    if (detail && proof) return { customer, order, detail, proof };
+  }
+  return problem(404, "http.not_found", "ไม่พบปรู๊ฟนี้");
+}
+
+/** The next revision after a delivered design, free or charged (D-071): the desk's own bookkeeping. */
+function openRevision(service: Service, changeRequest: string) {
+  const next = service.nextRound;
+  const last = service.rounds.at(-1);
+  if (last) last.status = "changes_requested";
+  service.rounds.push({
+    roundNo: next.roundNo,
+    kind: "revision",
+    chargeable: next.chargeable,
+    feeAmount: next.feeAmount,
+    status: next.chargeable ? "awaiting_payment" : "in_progress",
+    requestedAt: bangkokIso(),
+    startedAt: next.chargeable ? null : bangkokIso(),
+    deliveredAt: null,
+    files: [],
+    note: changeRequest,
+  });
+  service.status = next.chargeable ? "revision_requested" : "in_progress";
+  const following = next.roundNo + 1;
+  const fee = baht(Math.max(50_000, Math.round(satang(service.designFeeNet) * 0.2)));
+  service.nextRound = {
+    roundNo: following,
+    chargeable: following > service.freeRounds,
+    feeAmount: following > service.freeRounds ? fee : null,
+  };
+  return next;
+}
+
+/* --------------------------------------------------------------------------------- handlers */
+
 export const storeArtworkHandlers = [
-  mockRequest("GET /v1/store/orders/{orderId}/artwork", ({ params, request }) => {
-    const found = context(request, params.orderId);
-    return found instanceof Response ? found : toArtwork(found.detail);
+  http.get("*/v1/store/orders/:orderId/artwork-submissions", ({ params, request }) => {
+    const found = context(request, String(params.orderId));
+    if (found instanceof Response) return found;
+    return HttpResponse.json(found.detail.submissions.map((submission) => toSubmission(found.detail, submission)));
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/artwork/submissions", ({ params, body, request }) => {
-    const found = context(request, params.orderId);
+  http.get("*/v1/store/orders/:orderId/artwork-submissions/:submissionId", ({ params, request }) => {
+    const found = context(request, String(params.orderId));
     if (found instanceof Response) return found;
-    if (body.files.length === 0 && !body.designDocumentId)
+    const submission = found.detail.submissions.find((candidate) => candidate.id === params.submissionId);
+    return submission ? HttpResponse.json(toSubmission(found.detail, submission)) : notFound();
+  }),
+
+  http.post("*/v1/store/orders/:orderId/artwork-submissions", async ({ params, request }) => {
+    const found = context(request, String(params.orderId));
+    if (found instanceof Response) return found;
+    const body = (await request.json()) as Schemas["SubmitArtworkDto"];
+    const given = body.files ?? [];
+    if (given.length === 0 && !(body.links ?? []).length)
       return problem(422, "validation.failed", "กรุณาแนบไฟล์งาน", [
         { path: "files", code: "min", message: "required" },
       ]);
-    const named = body.files.map((entry) => ({
-      ...entry,
+    if (found.detail.designOption === "hired_design" || found.detail.artworkStatus === "approved")
+      return problem(409, "artwork.not_accepting", "คำสั่งซื้อนี้ไม่ได้รอไฟล์งานแล้ว");
+    const named = given.map((entry) => ({
+      fileId: entry.fileId,
+      role: entry.role ?? ("artwork" as const),
       name: files.get(entry.fileId)?.originalName ?? "artwork.pdf",
     }));
+    customerSubmit(found.detail, named, whoOf(found.customer, found.order.customer.displayName), null);
+    return HttpResponse.json(toSubmission(found.detail, found.detail.submissions[0]!), { status: 201 });
+  }),
+
+  // store.designs.submitForOrder: the design's current version becomes the artwork, pending until
+  // prepress exports it (then the mock's preflight, by file name, has nothing to find).
+  http.post("*/v1/store/orders/:orderId/artwork-submissions/from-design", async ({ params, request }) => {
+    const found = context(request, String(params.orderId));
+    if (found instanceof Response) return found;
+    const body = (await request.json().catch(() => ({}))) as Schemas["SubmitFromDesignDto"];
     customerSubmit(
       found.detail,
-      named,
+      [],
       whoOf(found.customer, found.order.customer.displayName),
-      body.designDocumentId ?? null,
+      body.designId ?? mockId("dsg", 1),
     );
-    return toArtwork(found.detail);
+    const submission = found.detail.submissions[0]!;
+    submission.preflightStatus = "pending";
+    submission.preflightCompletedAt = null;
+    exporting.set(submission.id, Date.now());
+    return HttpResponse.json(toSubmission(found.detail, submission), { status: 201 });
   }),
 
-  mockRequest("GET /v1/store/orders/{orderId}/proofs/{proofId}/annotations", ({ params, request }) => {
-    const found = context(request, params.orderId);
+  http.get("*/v1/store/orders/:orderId/proofs", ({ params, request }) => {
+    const found = context(request, String(params.orderId));
     if (found instanceof Response) return found;
-    if (!found.detail.proofs.some((proof) => proof.id === params.proofId)) return notFound();
-    return { data: threadsOf(params.proofId) };
+    return HttpResponse.json(found.detail.proofs.map((proof) => toProof(found.detail, proof)));
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/proofs/{proofId}/annotations", ({ params, body, request }) => {
-    const found = context(request, params.orderId);
+  http.get("*/v1/store/orders/:orderId/templates", ({ params, request }) => {
+    const found = context(request, String(params.orderId));
     if (found instanceof Response) return found;
-    const proof = found.detail.proofs.find((candidate) => candidate.id === params.proofId);
-    if (!proof) return notFound();
-    if (proof.status !== "pending_customer") return problem(409, "proof.closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
-    const created = customerAnnotate(
-      proof.id,
-      { page: body.page + 1, kind: body.kind, geometry: body.geometry, body: body.body },
+    return HttpResponse.json(toTemplates(found.detail));
+  }),
+
+  http.get("*/v1/store/proofs/:proofId", ({ params, request }) => {
+    const found = proofContext(request, String(params.proofId));
+    if (found instanceof Response) return found;
+    return HttpResponse.json(toProof(found.detail, found.proof));
+  }),
+
+  http.post("*/v1/store/proofs/:proofId/annotations", async ({ params, request }) => {
+    const found = proofContext(request, String(params.proofId));
+    if (found instanceof Response) return found;
+    if (found.proof.status !== "pending_customer")
+      return problem(409, "proofs.annotation_closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
+    const body = (await request.json()) as Schemas["AnnotateProofDto"];
+    if (!body.comment?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ความเห็น");
+    customerAnnotate(
+      found.proof.id,
+      {
+        page: body.page,
+        kind: body.kind,
+        geometry: body.geometry as Record<string, unknown>,
+        body: body.comment,
+        ...(body.parentId ? { parentId: body.parentId } : {}),
+      },
       whoOf(found.customer, found.order.customer.displayName),
     );
     refreshPrepress(found.detail);
-    return threadsOf(proof.id).find((thread) => thread.id === created.id)!;
+    return HttpResponse.json(toProof(found.detail, found.proof), { status: 201 });
   }),
 
-  mockRequest(
-    "POST /v1/store/orders/{orderId}/proofs/{proofId}/annotations/{annotationId}/messages",
-    ({ params, body, request }) => {
-      const found = context(request, params.orderId);
-      if (found instanceof Response) return found;
-      const thread = threadsOf(params.proofId).find((candidate) => candidate.id === params.annotationId);
-      if (!thread) return notFound();
-      customerAnnotate(
-        params.proofId,
-        {
-          page: thread.page + 1,
-          kind: thread.kind === "rect" ? "rect" : "pin",
-          geometry: thread.geometry,
-          body: body.body,
-          parentId: thread.id,
-        },
-        whoOf(found.customer, found.order.customer.displayName),
-      );
-      return threadsOf(params.proofId).find((candidate) => candidate.id === thread.id)!;
-    },
-  ),
-
-  mockRequest("POST /v1/store/orders/{orderId}/proofs/{proofId}/actions/approve", ({ params, body, request }) => {
-    const found = context(request, params.orderId);
+  http.post("*/v1/store/proofs/:proofId/actions/approve", ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const found = proofContext(request, String(params.proofId));
     if (found instanceof Response) return found;
-    const missing = ["text", "dieline", "colour", "size"].filter((key) => !body.checklist.includes(key));
-    if (missing.length > 0)
-      return problem(422, "proof.checklist_incomplete", "กรุณายืนยันรายการตรวจสอบให้ครบก่อนอนุมัติ", [
-        { path: "checklist", code: "incomplete", message: missing.join(",") },
-      ]);
     const decided = customerDecide(
       found.detail,
-      params.proofId,
+      found.proof.id,
       "approved",
       whoOf(found.customer, found.order.customer.displayName),
     );
-    if (decided instanceof Response) return decided;
+    if (decided instanceof Response) return problem(409, "proofs.not_pending", "ปรู๊ฟฉบับนี้ไม่ได้รอการตรวจแล้ว");
+    // The approved design closes its round and the service (D-071, design-services onProofDecision).
+    const round = designProofs.get(found.proof.id);
+    const service = found.detail.designService;
+    if (round && service?.id === round.serviceId) {
+      service.status = "approved";
+      const delivered = service.rounds.find((entry) => entry.roundNo === round.roundNo);
+      if (delivered) delivered.status = "approved";
+    }
     refreshOrder(found.order);
-    return toArtwork(found.detail);
+    return HttpResponse.json(toProof(found.detail, found.proof));
   }),
 
-  mockRequest(
-    "POST /v1/store/orders/{orderId}/proofs/{proofId}/actions/request-changes",
-    ({ params, body, request }) => {
-      const found = context(request, params.orderId);
-      if (found instanceof Response) return found;
-      const decided = customerDecide(
-        found.detail,
-        params.proofId,
-        "changes_requested",
-        whoOf(found.customer, found.order.customer.displayName),
-      );
-      if (decided instanceof Response) return decided;
-      customerAnnotate(
-        params.proofId,
-        { page: 1, kind: "pin", geometry: { x: 0.5, y: 0.5 }, body: body.note },
-        whoOf(found.customer, found.order.customer.displayName),
-      );
-      return toArtwork(refreshPrepress(found.detail));
-    },
-  ),
+  http.post("*/v1/store/proofs/:proofId/actions/request-changes", async ({ params, request }) => {
+    const found = proofContext(request, String(params.proofId));
+    if (found instanceof Response) return found;
+    const body = (await request.json()) as Schemas["RequestChangesDto"];
+    const round = designProofs.get(found.proof.id);
+    const service = found.detail.designService;
+    // A charged round is confirmed with its fee, not asked for on the proof (D-071).
+    if (round && service?.nextRound.chargeable)
+      return problem(409, "design_services.invalid_status", "รอบถัดไปมีค่าใช้จ่าย กรุณายืนยันค่าแก้ไขก่อน");
+    const decided = customerDecide(
+      found.detail,
+      found.proof.id,
+      "changes_requested",
+      whoOf(found.customer, found.order.customer.displayName),
+    );
+    if (decided instanceof Response) return problem(409, "proofs.not_pending", "ปรู๊ฟฉบับนี้ไม่ได้รอการตรวจแล้ว");
+    decisionComments.set(found.proof.id, body.comment);
+    if (round && service) openRevision(service, body.comment);
+    return HttpResponse.json(toProof(refreshPrepress(found.detail), found.proof));
+  }),
 
-  mockRequest("PUT /v1/store/orders/{orderId}/design-service/brief", ({ params, body, request }) => {
-    const found = context(request, params.orderId);
+  http.get("*/v1/store/orders/:orderId/design-service", ({ params, request }) => {
+    const found = context(request, String(params.orderId));
     if (found instanceof Response) return found;
     const service = found.detail.designService;
-    if (!service) return problem(409, "design.not_hired", "คำสั่งซื้อนี้ไม่ได้จ้างออกแบบ");
-    const missing = BRIEF_FIELDS.filter((field) => field.required && !body.answers[field.key]);
+    return service
+      ? HttpResponse.json(toDesignService(found.detail, service))
+      : problem(404, "http.not_found", "คำสั่งซื้อนี้ไม่ได้จ้างออกแบบ");
+  }),
+
+  http.put("*/v1/store/orders/:orderId/design-service/brief", async ({ params, request }) => {
+    const found = context(request, String(params.orderId));
+    if (found instanceof Response) return found;
+    const service = found.detail.designService;
+    if (!service) return problem(404, "http.not_found", "คำสั่งซื้อนี้ไม่ได้จ้างออกแบบ");
+    if (service.status !== "brief_pending") return problem(409, "design_services.invalid_status", "ส่งบรีฟไปแล้ว");
+    const body = (await request.json()) as Schemas["DesignBriefDto"];
+    const missing = (["brandName", "brandCategory", "description"] as const).filter((key) => !body[key]?.trim());
     if (missing.length > 0)
       return problem(
         422,
         "validation.failed",
         "กรุณากรอกข้อมูลที่จำเป็น",
-        missing.map((field) => ({ path: `answers.${field.key}`, code: "required", message: "required" })),
+        missing.map((key) => ({ path: key, code: "required", message: "required" })),
       );
-    service.brief = BRIEF_FIELDS.filter((field) => body.answers[field.key] !== undefined).map((field) => {
-      const value = body.answers[field.key];
-      const option = field.options.find((candidate) => candidate.value === value);
-      return { label: field.labelTh, value: option ? option.labelTh : String(value) };
+    briefs.set(service.id, {
+      brandName: body.brandName,
+      brandCategory: body.brandCategory,
+      description: body.description,
+      attachmentFileIds: body.attachmentFileIds ?? [],
     });
-    if (service.status === "brief_pending") {
-      service.status = "in_progress";
-      service.rounds.push({
-        roundNo: 1,
-        kind: "initial",
-        chargeable: false,
-        feeAmount: null,
-        status: "in_progress",
-        requestedAt: bangkokIso(),
-        startedAt: bangkokIso(),
-        deliveredAt: null,
-        files: [],
-        note: null,
-      });
-      service.nextRound = { roundNo: 2, chargeable: service.freeRounds < 1, feeAmount: null };
-    }
-    return toArtwork(refreshPrepress(found.detail));
-  }),
-
-  mockRequest("POST /v1/store/orders/{orderId}/design-service/rounds", ({ params, body, request }) => {
-    const found = context(request, params.orderId);
-    if (found instanceof Response) return found;
-    const service = found.detail.designService;
-    if (!service || service.status !== "delivered")
-      return problem(409, "design.not_delivered", "ขอแก้ไขได้หลังนักออกแบบส่งงานแล้ว");
-    const next = service.nextRound;
-    if (next.chargeable && body.acceptedFee !== next.feeAmount)
-      return problem(
-        409,
-        "design.fee_not_accepted",
-        `รอบนี้มีค่าบริการ ${next.feeAmount} บาท กรุณายืนยันค่าบริการก่อน`,
-      );
-    const last = service.rounds.at(-1);
-    if (last) last.status = "changes_requested";
+    service.status = "in_progress";
     service.rounds.push({
-      roundNo: next.roundNo,
-      kind: "revision",
-      chargeable: next.chargeable,
-      feeAmount: next.feeAmount,
-      status: next.chargeable ? "awaiting_payment" : "in_progress",
+      roundNo: 1,
+      kind: "initial",
+      chargeable: false,
+      feeAmount: null,
+      status: "in_progress",
       requestedAt: bangkokIso(),
-      startedAt: next.chargeable ? null : bangkokIso(),
+      startedAt: bangkokIso(),
       deliveredAt: null,
       files: [],
-      note: body.note,
+      note: null,
     });
-    service.status = next.chargeable ? "revision_requested" : "in_progress";
-    const following = next.roundNo + 1;
-    const fee = baht(Math.max(50_000, Math.round(satang(service.designFeeNet) * 0.2)));
-    service.nextRound = {
-      roundNo: following,
-      chargeable: following > service.freeRounds,
-      feeAmount: following > service.freeRounds ? fee : null,
-    };
-    if (next.chargeable && next.feeAmount) {
-      // D-071: the customer pays the round's fee before it starts — an instalment of its own.
-      const group = groupForOrder(found.order);
-      group.instalments.push({
-        id: mockId("dfi", Number.parseInt(found.order.id.slice(-4), 16) * 10 + next.roundNo),
-        seq: group.instalments.length + 1,
-        label: feeLabel(next.roundNo),
-        dueTrigger: "at_checkout",
-        requiredBefore: "none",
-        gross: satang(next.feeAmount),
-        paid: false,
-        dueAt: bangkokIso(3 * 24 * 60),
-      });
-    }
-    return toArtwork(refreshPrepress(found.detail));
+    service.nextRound = { roundNo: 2, chargeable: service.freeRounds < 1, feeAmount: null };
+    return HttpResponse.json(toDesignService(refreshPrepress(found.detail), service));
   }),
 
-  mockRequest("POST /v1/store/orders/{orderId}/design-service/actions/approve", ({ params, request }) => {
-    const found = context(request, params.orderId);
+  http.post("*/v1/store/orders/:orderId/design-service/actions/confirm-extra-round", async ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
+    const found = context(request, String(params.orderId));
     if (found instanceof Response) return found;
     const service = found.detail.designService;
-    if (!service || service.status !== "delivered")
-      return problem(409, "design.not_delivered", "อนุมัติได้หลังนักออกแบบส่งงานแล้ว");
-    service.status = "approved";
-    const last = service.rounds.at(-1);
-    if (last) last.status = "approved";
-    // The approved design becomes the artwork prepress proofs.
-    customerSubmit(
-      found.detail,
-      (last?.files ?? []).map((file) => ({ fileId: file.id, role: "artwork" as const, name: file.originalName })),
-      whoOf(found.customer, found.order.customer.displayName),
-      null,
+    if (!service || service.status !== "delivered" || !service.nextRound.chargeable || !service.nextRound.feeAmount)
+      return problem(409, "design_services.invalid_status", "ยังไม่มีรอบแก้ไขที่มีค่าใช้จ่ายให้ยืนยัน");
+    const body = (await request.json()) as Schemas["ConfirmExtraRoundDto"];
+    const feeGross = grossOf(service.nextRound.feeAmount);
+    if (body.expectedFeeGross !== feeGross)
+      return problem(409, "design_services.fee_changed", `ค่าแก้ไขรอบนี้คือ ${feeGross} บาท กรุณาตรวจสอบอีกครั้ง`);
+    const pending = found.detail.proofs.find(
+      (proof) => proof.status === "pending_customer" && designProofs.has(proof.id),
     );
-    return toArtwork(refreshPrepress(found.detail));
+    if (pending)
+      customerDecide(
+        found.detail,
+        pending.id,
+        "changes_requested",
+        whoOf(found.customer, found.order.customer.displayName),
+      );
+    const round = openRevision(service, body.changeRequest);
+    // D-071: the customer pays the round's fee before it starts — an instalment of its own.
+    const group = groupForOrder(found.order);
+    group.instalments.push({
+      id: mockId("dfi", Number.parseInt(found.order.id.slice(-4), 16) * 10 + round.roundNo),
+      seq: group.instalments.length + 1,
+      label: feeLabel(round.roundNo),
+      dueTrigger: "at_checkout",
+      requiredBefore: "none",
+      gross: satang(feeGross),
+      paid: false,
+      dueAt: bangkokIso(3 * 24 * 60),
+    });
+    return HttpResponse.json(toDesignService(refreshPrepress(found.detail), service));
+  }),
+
+  // store.files.download: a file the mock drew, or one the customer uploaded, as a data URL.
+  http.get("*/v1/store/files/:fileId/download", ({ params, request }) => {
+    if (!customerOf(request)) return unauthenticated();
+    const fileId = String(params.fileId);
+    const url =
+      drawn.get(fileId) ??
+      (files.get(fileId)
+        ? `data:text/plain;charset=utf-8,${encodeURIComponent(`${files.get(fileId)!.originalName} (ข้อมูลจำลอง)`)}`
+        : null);
+    if (!url) return problem(404, "http.not_found", "ไม่พบไฟล์นี้");
+    return HttpResponse.json({ url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),
 ];

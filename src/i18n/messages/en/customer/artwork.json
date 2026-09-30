@@ -42,7 +42,12 @@
     "noteHint": "Which side is the front, or a colour that must match, for example",
     "failed": "Couldn't send the files. Please try again.",
     "submit": "Send for checking",
-    "notYet": "Wait for every file to finish uploading"
+    "notYet": "Wait for every file to finish uploading",
+    "checksIntro": "Every file is checked automatically (size, bleed, resolution, colour mode); what needs fixing shows below.",
+    "templateDownload": "Get the dieline link",
+    "templateOpen": "Open the dieline",
+    "templateFailed": "Couldn't get the dieline link. Please try again.",
+    "hintNoRules": "PDF, AI, PSD, PNG or JPG, up to {count} files at a time"
   },
   "versions": {
     "title": "Files sent",
@@ -79,6 +84,13 @@
     "approveTitle": "Approve this design?",
     "approveBody": "It becomes the artwork for order {code} and moves on to file checks and proofing. You can't ask for more revisions after approving.",
     "cancel": "Cancel",
-    "approved": "Design approved"
+    "approved": "Design approved",
+    "brief": {
+      "brandName": "Brand name",
+      "brandCategory": "Product category",
+      "description": "What you'd like",
+      "descriptionHint": "e.g. who it's for, the style, colours, and text that must be on the box"
+    },
+    "paidRoundNet": "Revision fee {fee} (before VAT)"
   }
 }
