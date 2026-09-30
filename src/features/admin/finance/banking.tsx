@@ -296,7 +296,6 @@ export function BankLines({ initial }: { initial: InitialPage<BankLine> | null }
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         empty={{ title: t("empty") }}
       />
       {openId ? <LineSheet lineId={openId} line={opened} onClose={() => setOpen(null)} /> : null}

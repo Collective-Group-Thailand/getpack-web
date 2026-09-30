@@ -1,6 +1,8 @@
 /**
  * Requests for the back-office building blocks (F2 2.1): saved views, global search, the
- * dashboard's queues, segregation-of-duties rules, and the Excel import / export pattern.
+ * dashboard's queues and segregation-of-duties rules. The Excel import is the published
+ * per-kind preview → confirm (`admin.catalogImports.*`); exports are per report
+ * (`admin.reports.export`) — a generic list export is CONTRACT-GAP admin.exports.
  */
 
 import { z } from "zod";
@@ -98,51 +100,6 @@ export const staffRef = z
   .object({ id: uuid(), displayName: z.string(), roles: z.array(z.string()) })
   .meta({ id: "StaffDirectoryEntryDto" });
 
-/* ---------------------------------------------------------------------------- import / export */
-
-export const importStatus = z
-  .enum(["validating", "ready", "failed", "applying", "applied", "cancelled"])
-  .meta({ id: "ImportStatus" });
-
-export const importRow = z.object({
-  rowNo: z.number().int(),
-  action: z.enum(["create", "update", "skip"]).meta({ id: "ImportRowAction" }),
-  /** The cells as the file had them, keyed by column. */
-  values: z.record(z.string(), z.string()),
-  errors: z.array(z.object({ column: z.string().nullable(), message: z.string() })),
-});
-
-export const importJob = z
-  .object({
-    id: uuid(),
-    resource: z.string(),
-    status: importStatus,
-    fileName: z.string(),
-    totals: z.object({
-      rows: z.number().int(),
-      create: z.number().int(),
-      update: z.number().int(),
-      invalid: z.number().int(),
-    }),
-    /** The first rows, errors first, so a bad file is obvious without paging. */
-    preview: z.array(importRow),
-    createdAt: dateTime(),
-    appliedAt: dateTime().nullable(),
-  })
-  .meta({ id: "ImportJobDto" });
-
-export const exportFormat = z.enum(["xlsx", "csv"]).meta({ id: "ExportFormat" });
-
-export const exportFile = z
-  .object({
-    fileId: uuid(),
-    url: z.string(),
-    expiresAt: dateTime(),
-    rows: z.number().int(),
-    truncated: z.boolean(),
-  })
-  .meta({ id: "ExportFileDto" });
-
 /* ----------------------------------------------------------------------------------- requests */
 
 export const adminConsoleRequests = {
@@ -192,29 +149,5 @@ export const adminConsoleRequests = {
     summary: "Segregation-of-duties rules, so a role grant can warn before it is refused",
     decisions: ["D-140", "D-168"],
     response: z.object({ data: z.array(sodRule) }),
-  }),
-  "POST /v1/admin/imports": request({
-    request: "admin.imports",
-    summary: "Validate an uploaded Excel file against a resource and return a preview",
-    body: z.object({ resource: z.string(), fileId: uuid() }),
-    response: importJob,
-    status: 201,
-  }),
-  "GET /v1/admin/imports/{importId}": request({
-    request: "admin.imports",
-    summary: "One import, while it validates or applies",
-    response: importJob,
-  }),
-  "POST /v1/admin/imports/{importId}/actions/apply": request({
-    request: "admin.imports",
-    summary: "Apply a validated import — writes every valid row",
-    response: importJob,
-    idempotent: true,
-  }),
-  "POST /v1/admin/exports": request({
-    request: "admin.exports",
-    summary: "Export a list with its current filters as xlsx or csv, via a short-lived signed URL",
-    body: z.object({ resource: z.string(), format: exportFormat, query: z.record(z.string(), z.string()) }),
-    response: exportFile,
   }),
 } as const;

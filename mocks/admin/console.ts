@@ -5,7 +5,7 @@
 
 import type { z } from "zod";
 
-import type { savedView, searchResult, importJob, queueSummary } from "@/lib/api/requests/admin-console";
+import type { queueSummary, savedView, searchResult } from "@/lib/api/requests/admin-console";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
@@ -15,7 +15,6 @@ import { approvals, mayDecide, SOD_RULES, users } from "./platform";
 
 type SavedView = z.output<typeof savedView>;
 type SearchResult = z.output<typeof searchResult>;
-type ImportJob = z.output<typeof importJob>;
 type Queue = z.output<typeof queueSummary>;
 
 /* --------------------------------------------------------------------------- search index */
@@ -71,33 +70,6 @@ registerQueue("approvals.act", (persona) => {
 /* ----------------------------------------------------------------------- saved views */
 
 const savedViews: SavedView[] = [];
-
-/* ------------------------------------------------------------------------------ imports */
-
-const imports = new Map<string, ImportJob>();
-
-function previewFor(resource: string): ImportJob["preview"] {
-  return [
-    {
-      rowNo: 4,
-      action: "skip",
-      values: { code: "", name: "แถวที่ไม่มีรหัส" },
-      errors: [{ column: "code", message: "ต้องระบุรหัส" }],
-    },
-    {
-      rowNo: 2,
-      action: "create",
-      values: { code: `${resource.toUpperCase()}-NEW-01`, name: "รายการใหม่ (ข้อมูลจำลอง)" },
-      errors: [],
-    },
-    {
-      rowNo: 3,
-      action: "update",
-      values: { code: `${resource.toUpperCase()}-0001`, name: "รายการเดิม ปรับราคา (ข้อมูลจำลอง)" },
-      errors: [],
-    },
-  ];
-}
 
 export const consoleHandlers = [
   mockRequest("GET /v1/admin/saved-views", ({ query, request }) => {
@@ -158,40 +130,6 @@ export const consoleHandlers = [
   }),
 
   mockRequest("GET /v1/admin/sod-rules", () => ({ data: SOD_RULES })),
-
-  mockRequest("POST /v1/admin/imports", ({ body }) => {
-    const job: ImportJob = {
-      id: mockId("imp", imports.size + 1),
-      resource: body.resource,
-      status: "ready",
-      fileName: "import.xlsx",
-      totals: { rows: 3, create: 1, update: 1, invalid: 1 },
-      preview: previewFor(body.resource),
-      createdAt: bangkokIso(),
-      appliedAt: null,
-    };
-    imports.set(job.id, job);
-    return job;
-  }),
-  mockRequest(
-    "GET /v1/admin/imports/{importId}",
-    ({ params }) => imports.get(params.importId!) ?? problem(404, "http.not_found", "ไม่พบงานนำเข้านี้"),
-  ),
-  mockRequest("POST /v1/admin/imports/{importId}/actions/apply", ({ params }) => {
-    const job = imports.get(params.importId!);
-    if (!job) return problem(404, "http.not_found", "ไม่พบงานนำเข้านี้");
-    if (job.status !== "ready") return problem(409, "import.not_ready", "งานนำเข้านี้ยังไม่พร้อมหรือถูกนำเข้าไปแล้ว");
-    Object.assign(job, { status: "applied", appliedAt: bangkokIso() });
-    return job;
-  }),
-
-  mockRequest("POST /v1/admin/exports", ({ body }) => ({
-    fileId: mockId("exp", 1),
-    url: `data:text/csv;charset=utf-8,${encodeURIComponent(`resource,${body.resource}\nfilters,${JSON.stringify(body.query).replaceAll(",", ";")}`)}`,
-    expiresAt: bangkokIso(5),
-    rows: 1,
-    truncated: false,
-  })),
 ];
 
 consoleHandlers.push(

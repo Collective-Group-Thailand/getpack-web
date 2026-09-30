@@ -150,7 +150,6 @@ export function ReceivablesList({ initial }: { initial: InitialPage<Receivable> 
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         filters={[
           {
             id: "status",
@@ -420,7 +419,6 @@ export function WhtCertificates({ initial }: { initial: InitialPage<WhtCertifica
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         empty={{ title: t("empty") }}
       />
       {recording ? <RecordCertificate certificate={recording} onClose={() => setRecording(null)} /> : null}

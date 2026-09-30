@@ -135,7 +135,6 @@ export function AssetRegister({ initial }: { initial: InitialPage<FixedAsset> | 
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
-        exportable
         filters={[
           {
             id: "status",
