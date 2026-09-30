@@ -9,7 +9,6 @@
  * is deleted — so the list only shrinks.
  */
 export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
-  "DELETE /v1/store/designs/{designId}",
   "GET /v1/admin/analytics/campaigns",
   "GET /v1/admin/analytics/demand",
   "GET /v1/admin/analytics/factories",
@@ -41,10 +40,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "GET /v1/partner/factories/{factoryId}/payouts",
   "GET /v1/partner/factories/{factoryId}/scorecards",
   "GET /v1/partner/factories/{factoryId}/users",
-  "GET /v1/store/designs",
-  "GET /v1/store/designs/{designId}",
-  "GET /v1/store/designs/{designId}/versions",
-  "GET /v1/store/designs/{designId}/versions/{versionNo}",
   "PATCH /v1/admin/campaigns/{campaignId}",
   "PATCH /v1/admin/promotions/{promotionId}",
   "POST /v1/admin/campaigns",
@@ -68,7 +63,4 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/admin/rfqs/{rfqId}/messages",
   "POST /v1/admin/shipments/{shipmentId}/actions/book-carrier",
   "POST /v1/partner/factories/{factoryId}/users",
-  "POST /v1/store/designs",
-  "POST /v1/store/designs/{designId}/assets",
-  "PUT /v1/store/designs/{designId}",
 ];

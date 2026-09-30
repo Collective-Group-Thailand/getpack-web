@@ -533,5 +533,8 @@
     "viewOnly": "View only",
     "viewOnlyBody": "Someone shared this design with you. To make a box of your own, start designing for free.",
     "start": "Design your own box"
+  },
+  "account": {
+    "browserOnly": "Saved in this browser (no product chosen yet)"
   }
 }

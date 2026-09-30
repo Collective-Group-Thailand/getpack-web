@@ -17,8 +17,11 @@ export interface VersionHistoryProps {
 }
 
 /**
- * The design's saved versions, newest first (`store.designs` versions). Restoring makes an old
+ * The design's saved versions, newest first (`store.designs.listVersions`). Restoring makes an old
  * version current again as a new version — nothing in the history is overwritten.
+ *
+ * CONTRACT-GAP store.designs — a version does not say whether it was an autosave, a manual save,
+ * a restore or an import, nor carry a label.
  */
 export function VersionHistory({ designId, open, onClose, onRestore }: VersionHistoryProps) {
   const t = useTranslations("designer.history");
@@ -32,7 +35,7 @@ export function VersionHistory({ designId, open, onClose, onRestore }: VersionHi
     let cancelled = false;
     storeDesigns
       .versions(designId)
-      .then((page) => !cancelled && setVersions(page.data))
+      .then((list) => !cancelled && setVersions(list))
       .catch(() => !cancelled && setFailed(true));
     return () => {
       cancelled = true;
@@ -59,10 +62,8 @@ export function VersionHistory({ designId, open, onClose, onRestore }: VersionHi
           {versions.map((version, index) => (
             <li key={version.versionNo} className="flex items-center justify-between gap-3 py-2">
               <div>
-                <p className="text-sm font-medium">
-                  {t("version", { version: version.versionNo })} · {t(`kind.${version.kind}`)}
-                </p>
-                <p className="text-muted text-xs">{version.label ?? formatDateTime(version.savedAt, locale)}</p>
+                <p className="text-sm font-medium">{t("version", { version: version.versionNo })}</p>
+                <p className="text-muted text-xs">{formatDateTime(version.createdAt, locale)}</p>
               </div>
               {index === 0 ? (
                 <span className="text-muted text-xs">{t("current")}</span>

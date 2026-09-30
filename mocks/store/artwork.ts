@@ -40,7 +40,7 @@ import {
   refreshPrepress,
   type PrepressDetail,
 } from "../admin/prepress";
-import { files } from "../admin/platform";
+import { fileDataUrl, files } from "../admin/platform";
 import { bangkokIso, mockId, problem } from "../support";
 import { groupForOrder } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
@@ -687,12 +687,14 @@ export const storeArtworkHandlers = [
     return HttpResponse.json(toDesignService(refreshPrepress(found.detail), service));
   }),
 
-  // store.files.download: a file the mock drew, or one the customer uploaded, as a data URL.
+  // store.files.download: a file the mock drew, or one the customer uploaded (its own bytes when the
+  // mock kept them, as for a design's images and thumbnails), as a data URL.
   http.get("*/v1/store/files/:fileId/download", ({ params, request }) => {
     if (!customerOf(request)) return unauthenticated();
     const fileId = String(params.fileId);
     const url =
       drawn.get(fileId) ??
+      fileDataUrl(fileId) ??
       (files.get(fileId)
         ? `data:text/plain;charset=utf-8,${encodeURIComponent(`${files.get(fileId)!.originalName} (ข้อมูลจำลอง)`)}`
         : null);
