@@ -2,14 +2,8 @@
   "shipments": {
     "title": "Shipments",
     "description": "The factory delivers; a fallback carrier where it cannot; POD always (D-013, D-114)",
-    "queuesLabel": "Logistics queues",
+    "statusesLabel": "Shipment statuses",
     "all": "All",
-    "queues": {
-      "awaiting_pickup": "Awaiting pick-up",
-      "in_transit": "In transit",
-      "exceptions": "Exceptions",
-      "pod_review": "POD to review"
-    },
     "search": "Search shipment, order or tracking number",
     "empty": "No shipments",
     "columns": {
@@ -38,7 +32,6 @@
     "split": "Split",
     "book": "Book a fallback carrier",
     "resolve": "Resolve",
-    "blockedByPayment": "A before-shipping instalment is unpaid: the API holds the shipment",
     "pod": "Proof of delivery",
     "podNote": "An accepted factory POD makes the payout eligible (D-013)",
     "acceptPod": "Accept POD",
@@ -51,19 +44,17 @@
       "factory_photo_signature": "Photo and signature",
       "carrier_pod": "Carrier POD"
     },
-    "reviewedBy": "Reviewed by",
     "reviewNote": "Review note",
     "tolerance": "Delivered against tolerance",
-    "toleranceNote": "The API's result against the tolerance fixed at quote time (D-021, D-080)",
+    "toleranceNote": "The order's result from the system, against the tolerance locked at quotation (D-021, D-080)",
     "outcomes": {
       "exact": "{delivered} of {ordered}: exact",
-      "short_within": "{delivered} of {ordered}: short within tolerance — pro-rata credit",
-      "over_within": "{delivered} of {ordered}: over within tolerance — not charged",
-      "short_outside": "{delivered} of {ordered}: short outside tolerance — claim opened",
-      "over_outside": "{delivered} of {ordered}: over outside tolerance — claim opened"
+      "shortage_within": "{delivered} of {ordered}: short within tolerance — pro-rata credit",
+      "overage_within": "{delivered} of {ordered}: over within tolerance — not charged",
+      "shortage_outside": "{delivered} of {ordered}: short outside tolerance — claim opened",
+      "overage_outside": "{delivered} of {ordered}: over outside tolerance — claim opened"
     },
     "toleranceBand": "Shortage {shortage}, overage {overage}",
-    "openClaim": "Open the claim",
     "events": "Events",
     "sources": {
       "factory": "Factory",
@@ -75,8 +66,7 @@
     "contents": "Contents",
     "cartons": "{count} cartons · about {weight} kg",
     "economics": "Shipping economics",
-    "economicsNote": "Customer charge against the factory payout or fallback cost (D-013)",
-    "customerCharge": "Customer charge",
+    "economicsNote": "What Packio pays the factory or the fallback carrier (D-013, D-141)",
     "factoryPayout": "Factory payout",
     "carrierCost": "Carrier cost",
     "splitTitle": "Split the shipment",
@@ -85,11 +75,10 @@
     "splitHint": "Less than {quantity}",
     "splitDone": "Split into {no}",
     "bookTitle": "Book a fallback carrier",
-    "bookBody": "{no} to {province}: choose a carrier quote",
+    "bookBody": "{no}: choose the fallback carrier; its price at booking is Packio's cost",
     "quoting": "Getting carrier quotes…",
-    "quotes": "Carrier quotes",
+    "quotes": "Fallback carrier",
     "quote": "{amount} · {days} days",
-    "bookHint": "e.g. the factory does not serve this area",
     "booked": "Booked — tracking {tracking}",
     "resolveTitle": "Resolve the exception",
     "resolveBody": "{no}",
@@ -111,24 +100,30 @@
     "reason": "Reason",
     "needReason": "Give a reason of at least 3 characters",
     "needQuantity": "Enter the quantity",
-    "needQuote": "Choose a quote",
-    "failed": "The action failed"
+    "failed": "The action failed",
+    "carrierPodRef": "Carrier reference",
+    "podPhotos": "Delivery photos",
+    "podSignature": "Receiver's signature",
+    "noSignature": "No signature",
+    "deliveredOf": "{quantity} delivered",
+    "credit": "credit {amount}",
+    "pricedAtBooking": "Priced at booking",
+    "needCarrier": "Choose a carrier"
   },
   "claims": {
     "title": "Claims",
     "description": "Within 7 days of receipt, with product and carton photos; liability by the D-083 rules",
     "statusesLabel": "Claim statuses",
     "all": "Open",
-    "search": "Search claim, order or customer",
+    "search": "Search claim or order",
     "empty": "No claims",
-    "origin": "Origin",
     "columns": {
       "claim": "Claim",
       "type": "Type",
       "status": "Status",
       "liability": "Liability",
       "requested": "Requested",
-      "sla": "Due",
+      "window": "Window ends",
       "submitted": "Submitted"
     },
     "types": {
@@ -162,26 +157,24 @@
     "pageTitle": "Claim",
     "breadcrumb": "Breadcrumb",
     "claims": "Claims",
-    "summary": "Order {order} · {customer}",
+    "summary": "Order {order} · factory {factory}",
     "resolve": "Resolve",
     "actions": {
-      "start-review": {
+      "review": {
         "label": "Start review",
         "title": "Start the review",
-        "body": "{no}, order {order}",
-        "reason": "Note"
+        "body": "{no}, order {order}"
       },
-      "request-info": {
+      "request_info": {
         "label": "Request information",
         "title": "Ask the customer",
         "body": "This message goes to the customer of {order}",
         "reason": "What is needed"
       },
-      "send-to-factory": {
+      "send_to_factory": {
         "label": "Send to the factory",
         "title": "Send to the factory",
-        "body": "The factory sees the evidence and this message, not the customer's details",
-        "reason": "Message to the factory"
+        "body": "The factory sees the evidence of {no}, never the customer"
       },
       "approve": {
         "label": "Approve",
@@ -198,8 +191,7 @@
       "close": {
         "label": "Close",
         "title": "Close the claim",
-        "body": "{no} is closed for good",
-        "reason": "Note"
+        "body": "{no} is closed for good"
       }
     },
     "claim": "Claim",
@@ -214,17 +206,10 @@
     "productPhotos": "Product photos",
     "cartonPhotos": "Carton photos",
     "noPhotos": "No photos",
-    "thread": "Thread",
-    "audiences": {
-      "customer": "customer sees it",
-      "factory": "factory sees it",
-      "internal": "internal only"
-    },
     "liability": "Liability",
     "override": "Override",
     "byRule": "By rule: {liability}",
-    "overridden": "Overridden by {by}",
-    "approvedProof": "Customer approved proof version {no} on",
+    "overridden": "Changed from the rule",
     "factoryResponse": "Factory response",
     "responses": {
       "accepted": "Accepted",
@@ -256,6 +241,24 @@
     "needReason": "Give a reason of at least 3 characters",
     "needResolution": "Choose a resolution",
     "needAmount": "Enter the amount",
-    "failed": "The action failed"
+    "failed": "The action failed",
+    "order": "Order",
+    "openShipment": "Open the shipment",
+    "job": "Production job",
+    "info": "More information",
+    "infoRequest": "The team asked",
+    "infoResponse": "The customer answered",
+    "noResponse": "No answer yet",
+    "pieces": "{quantity} pcs",
+    "overrideHint": "At least 10 characters",
+    "needOverrideReason": "Give a reason of at least 10 characters",
+    "reproduceQuantity": "Pieces to re-produce",
+    "optional": "Optional",
+    "needQuantity": "Enter a quantity"
+  },
+  "files": {
+    "none": "No files",
+    "file": "{label} {no}",
+    "failed": "Could not open the file"
   }
 }

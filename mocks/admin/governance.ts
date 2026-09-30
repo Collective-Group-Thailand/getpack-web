@@ -1,8 +1,8 @@
 /**
  * Price governance and the production floor, mocked: suggestions, simulations, index series and
- * the coverage map on the published B2.2 contract; the production board, inspections and
- * scorecards as contract requests (CONTRACT-REQUEST admin.production-board, admin.inspections,
- * admin.scorecards).
+ * the coverage map on the published B2.2 contract; inspections and factory scorecards on the
+ * published `admin.inspections.*` (U-F0.3). The production board reads `admin.production.list`,
+ * served by `./orders.ts` from the same commerce jobs.
  *
  * Suggestions follow packio-api's pricing service: a material line is suggested from its index
  * series (then → now ratio), a process rate from the factory's own history, a new line from
@@ -15,18 +15,17 @@ import type { z } from "zod";
 
 import { http, HttpResponse } from "msw";
 
-import type { boardJob, inspection } from "@/lib/api/requests/admin-partners";
 import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { PRODUCT_TYPES } from "./catalog";
 import { FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
 import { coverageOf, factoryTiers, proposals } from "./partners";
 import { settingValue } from "./platform";
+import type { boardJob, inspection } from "./production-model";
 
 type Suggestion = Schemas["PriceLineSuggestionDto"];
 type Simulation = Schemas["PriceSimulationDto"];
@@ -287,6 +286,30 @@ export const inspections: Inspection[] = boardJobs()
     };
   });
 
+/** An inspection as `admin.inspections.*` answers it (U-F0.3): refs become ids and codes. */
+export function toInspectionDto(item: Inspection): Schemas["InspectionDto"] {
+  return {
+    id: item.id,
+    jobId: item.job.id,
+    jobNo: item.job.jobNo,
+    factoryCode: item.factory.code,
+    reasons: item.reasons,
+    ratePct: item.reasons.includes("value_100_pct")
+      ? "100.0000"
+      : ((item.sampleSize / Math.max(1, item.lotSize)) * 100).toFixed(4),
+    selected: true,
+    lotSize: item.lotSize,
+    sampleSize: item.sampleSize,
+    accept: { ...item.acceptNumbers },
+    found: item.found ? { ...item.found } : null,
+    status: item.status,
+    inspector: item.inspector?.displayName ?? null,
+    scheduledAt: item.scheduledAt,
+    resultAt: item.resultAt,
+    notes: item.notes,
+  };
+}
+
 registerQueue("inspections.perform", () => {
   const open = inspections.filter((item) => item.status === "planned" || item.status === "in_progress");
   return {
@@ -440,70 +463,63 @@ export const governanceHandlers = [
     if (productTypeId && types.length === 0) return problem(404, "http.not_found", "ไม่พบประเภทสินค้านี้");
     return HttpResponse.json(types.map(coverageOf));
   }),
-  mockRequest("GET /v1/admin/production-board", ({ query, request }) => {
+  http.get("*/v1/admin/inspections", ({ request }) => {
     if (!can(staffPersonaOf(request), "production.read")) return forbidden();
-    const jobs = boardJobs()
-      .filter((job) => !query.factoryId || job.factory.id === query.factoryId)
-      .filter((job) => !query.productType || job.productType.code === query.productType)
-      .filter((job) => !query.atRisk || job.atRisk);
-    // The product type's route (D-075); the commerce mock's jobs all follow this one.
-    const route = ["รับงาน", "เตรียมวัตถุดิบ", "พิมพ์", "ไดคัท", "ตรวจคุณภาพ", "แพ็ก"];
-    return {
-      columns: route.map((name, index) => {
-        const key = `step_${index + 1}`;
-        const rows = jobs.filter((job) => job.milestone.key === key);
-        return { key, name, total: rows.length, atRisk: rows.filter((job) => job.atRisk).length, jobs: rows };
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const rows = inspections.filter((item) => !status || item.status === status).map(toInspectionDto);
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
       }),
-    };
-  }),
-  mockRequest("GET /v1/admin/inspections", ({ query, request }) => {
-    const who = staffPersonaOf(request);
-    if (!can(who, "inspections.perform") && !can(who, "production.read")) return forbidden();
-    return paginate(
-      inspections
-        .filter((item) => !query.status || item.status === query.status)
-        .filter((item) => !query.factoryId || item.factory.id === query.factoryId),
-      query,
     );
   }),
-  mockRequest("POST /v1/admin/inspections/{inspectionId}/actions/record", ({ params, body, request }) => {
+  http.post("*/v1/admin/inspections/:inspectionId/actions/record", async ({ params, request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "inspections.perform")) return forbidden();
     const item = inspections.find((candidate) => candidate.id === params.inspectionId);
     if (!item) return problem(404, "http.not_found", "ไม่พบงานตรวจนี้");
     if (!["planned", "in_progress"].includes(item.status))
-      return problem(409, "inspection.closed", "บันทึกผลงานตรวจนี้ไปแล้ว");
+      return problem(409, "production.invalid_status", "บันทึกผลงานตรวจนี้ไปแล้ว");
+    const body = (await request.json()) as Schemas["RecordInspectionDto"];
+    const found = { critical: body.foundCritical, major: body.foundMajor, minor: body.foundMinor };
+    if (Object.values(found).some((count) => !Number.isInteger(count) || count < 0))
+      return problem(422, "validation.failed", "จำนวนข้อบกพร่องไม่ถูกต้อง", [
+        { path: "foundCritical", code: "min", message: "ตั้งแต่ 0" },
+      ]);
+    // The API judges pass or fail against the accept numbers (D-076).
     const failed =
-      body.found.critical > item.acceptNumbers.critical ||
-      body.found.major > item.acceptNumbers.major ||
-      body.found.minor > item.acceptNumbers.minor;
+      found.critical > item.acceptNumbers.critical ||
+      found.major > item.acceptNumbers.major ||
+      found.minor > item.acceptNumbers.minor;
     Object.assign(item, {
-      found: body.found,
+      found,
       notes: body.notes ?? null,
       status: failed ? "failed" : "passed",
       resultAt: bangkokIso(),
       inspector: { id: who.id, displayName: who.displayName },
     });
-    return item;
+    return HttpResponse.json(toInspectionDto(item));
   }),
-  mockRequest("GET /v1/admin/scorecards", ({ query, request }) => {
-    if (!can(staffPersonaOf(request), "partners.read")) return forbidden();
-    const chosen = query.month ?? month(-1);
-    return {
-      month: chosen,
-      data: factoryTiers()
-        .filter((entry) => ["active", "trial", "suspended"].includes(entry.status))
-        .map((entry, index) => ({
-          factory: entry.factory,
-          month: chosen,
-          onTimeAcceptancePct: (98 - index * 3.5).toFixed(4),
-          onTimeShippingPct: (95 - index * 4.25).toFixed(4),
-          qcFirstPassPct: (97 - index * 2).toFixed(4),
-          claimRatePct: (0.8 + index * 0.9).toFixed(4),
-          onTimeUpdatesPct: (92 - index * 6).toFixed(4),
-          jobsCount: 40 - index * 8,
-          computedAt: bangkokIso(-60 * 24 * 2),
-        })),
-    };
+  // admin.inspections.scorecards: one factory's latest 12 months, newest first (D-155).
+  http.get("*/v1/admin/factories/:factoryId/scorecards", ({ params, request }) => {
+    if (!can(staffPersonaOf(request), "production.read")) return forbidden();
+    const index = factoryTiers().findIndex((entry) => entry.factory.id === params.factoryId);
+    if (index < 0) return problem(404, "http.not_found", "ไม่พบโรงงานนี้");
+    const cards = Array.from({ length: 12 }, (_, back): Schemas["ScorecardDto"] => {
+      const wobble = (back % 3) * 0.75;
+      return {
+        month: month(-1 - back),
+        onTimeAcceptancePct: (98 - index * 3.5 - wobble).toFixed(4),
+        onTimeShippingPct: (95 - index * 4.25 + wobble).toFixed(4),
+        qcFirstPassPct: (97 - index * 2 - wobble).toFixed(4),
+        claimRatePct: (0.8 + index * 0.9 + wobble / 2).toFixed(4),
+        onTimeUpdatesPct: (92 - index * 6 + wobble).toFixed(4),
+        jobsCount: Math.max(0, 40 - index * 8 - back),
+        computedAt: bangkokIso(-60 * 24 * (2 + back * 30)),
+      };
+    });
+    return HttpResponse.json(cards);
   }),
 ];
