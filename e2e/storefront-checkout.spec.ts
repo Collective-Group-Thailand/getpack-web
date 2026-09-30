@@ -94,20 +94,21 @@ test.describe("cart and checkout", () => {
     await page.locator("html[data-hydrated]").waitFor();
     // The split in the cart is the default: each line goes where it was set.
     await expect(page.getByRole("radio", { name: /ตามที่แบ่งไว้ในตะกร้า/ })).toBeChecked();
-    await expect(page.getByText(/600 ชิ้น → ผู้รับทดสอบ · เชียงใหม่/)).toBeVisible();
+    await expect(page.getByText(/600 → ผู้รับทดสอบ · เชียงใหม่/)).toBeVisible();
 
+    // A code is applied to the cart (store.cart.applyCode); the preview says what it took off.
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
     await page.getByLabel("โค้ดส่วนลด").fill("packio10");
     await page.getByRole("button", { name: "ใช้โค้ด" }).click();
-    await expect(page.getByText(/PACKIO10 · ลด 10% ค่าสินค้า/)).toBeVisible();
+    await expect(page.getByText(/ใช้โค้ด PACKIO10 แล้ว/)).toBeVisible();
     await expect(summary).toContainText("ส่วนลด");
 
-    await page.getByRole("button", { name: "ใช้สูงสุด" }).click();
-    await expect(page.getByText(/ใช้ [\d,]+ คะแนน ลด ฿/)).toBeVisible();
-    await expect(summary).toContainText("คะแนนสะสม");
+    await page.getByLabel(/^คะแนนที่ใช้/).fill("10");
+    await expect(summary.getByText(/ใช้ 10 คะแนน ลด ฿/)).toBeVisible();
 
-    // Above THB 20,000: 50/50 is offered and chosen; what is due today is half.
-    await expect(page.getByRole("radio", { name: /มัดจำ 50%/ })).toBeChecked();
+    // Above THB 20,000 the rules choose 50/50 (D-020); what is due today is the deposit.
+    // CONTRACT-GAP store.checkout: the schedule is shown, not chosen.
+    await expect(page.getByText(/มัดจำ 50%/).first()).toBeVisible();
     await expect(summary).toContainText("ชำระวันนี้");
     await page.evaluate(() => window.scrollTo(0, 0));
     await expectNoViolations(page);
@@ -226,6 +227,12 @@ test.describe("cart and checkout", () => {
     await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
     await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
     await expect(page).toHaveURL(/\/checkout\/pay\//);
+  });
+
+  test("the customer picks the payment schedule", async ({ page }) => {
+    test.fixme(true, "CONTRACT-GAP store.checkout — scheduleKey stays requested; v0.2.0 lets the rules choose");
+    await signInAsCustomer(page, "/checkout", MOCK_BUYER_PHONE);
+    await expect(page.getByRole("radio", { name: /มัดจำ 50%/ })).toBeChecked();
   });
 
   test("a new address is added from the cart", async ({ page }) => {

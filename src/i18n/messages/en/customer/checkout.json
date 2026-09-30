@@ -9,16 +9,6 @@
   "place": "Confirm and pay {amount}",
   "placeLoading": "Working out the price",
   "terms": "By confirming you accept the terms of service. All documents are issued by Collective Group (Thailand).",
-  "contact": {
-    "title": "Contact",
-    "hint": "For order updates and documents",
-    "name": "Contact name",
-    "nameRequired": "Please give a name",
-    "phone": "Mobile number",
-    "email": "E-mail",
-    "emailHint": "Receipts and tax invoices are sent here",
-    "emailInvalid": "That e-mail address does not look right"
-  },
   "delivery": {
     "title": "Delivery",
     "shared": "Everything to one address",
@@ -26,7 +16,7 @@
     "perItem": "As split in the cart",
     "perItemHint": "Each item goes where you set it",
     "address": "Delivery address",
-    "line": "{quantity} {unit} → {label}",
+    "line": "{quantity} → {label}",
     "newAddress": "New address"
   },
   "tax": {
@@ -50,42 +40,36 @@
     "code": "Promo code",
     "apply": "Apply",
     "remove": "Remove code {code}",
-    "rejected": "{code}: {message}"
+    "rejected": "{code}: {message}",
+    "accepted": "Code {code} applied — the discount shows in the summary"
   },
   "points": {
     "title": "Use your points",
-    "hint": "You have {balance} points (1 point = {value}); on this order you can use {min} to {max}.",
+    "hint": "You have {balance} points; the summary says how many this order can take",
     "redeem": "Points to use",
-    "unit": "pts",
-    "useMax": "Use the most",
-    "redeemed": "{points} points take off {amount}",
-    "toEarn": "You earn {points} points once this order is received and the claim window has passed"
+    "unit": "pts"
   },
   "schedule": {
-    "title": "How to pay"
+    "title": "How to pay",
+    "hint": "The payment plan is chosen by the order’s value and your account",
+    "none": "No instalments yet"
   },
   "method": {
-    "title": "Payment method"
-  },
-  "note": {
-    "title": "Notes",
-    "label": "Note for our team",
-    "hint": "Optional"
+    "title": "Payment method",
+    "hint": "How you’ll pay the first instalment"
   },
   "summary": {
     "title": "Order summary",
-    "items": "Items",
     "discount": "Discounts",
     "shipping": "Extra delivery",
-    "points": "Points",
     "vat": "VAT",
-    "vatHint": "Included in the total",
     "withholding": "Withholding tax",
     "withholdingHint": "Deducted when you pay, with a 50 Tawi certificate",
     "total": "Total",
     "payNow": "Pay today {amount}",
     "taxInvoice": "Tax invoice to {name} ({taxId}), {branch}",
-    "minus": "−{amount}"
+    "minus": "−{amount}",
+    "net": "Before VAT"
   },
   "repriced": {
     "title": "The price changed",
@@ -95,7 +79,8 @@
     "title": "Confirm your order",
     "body": "Total {total}; pay {now} today by {method}. Confirming creates the order and takes you to payment.",
     "yes": "Confirm and pay",
-    "no": "Go back"
+    "no": "Go back",
+    "bodyLater": "Total {total}; nothing to pay today — we’ll tell you when an instalment is due"
   },
   "methods": {
     "scb_qr": {
@@ -134,12 +119,24 @@
     "poRequired": "Your company requires a PO number on every order",
     "poOptional": "If you have one — it's printed on the tax invoice",
     "required": "(required)",
-    "approvalTitle": "Your company's approver approves this first",
-    "approval": "It's over your company's {threshold} threshold, so it goes to the approver and is produced once approved (the price shown is held)",
-    "creditBlockedTitle": "Credit terms are on hold",
-    "creditBlocked": "Your company has a balance more than 7 days overdue; prepaid orders still work (D-122)",
     "send": "Send to approver",
     "confirmTitle": "Send this order to your approver?",
     "confirmBody": "The {total} order for {name} waits for your company's approver. We'll tell you when it's approved."
+  },
+  "placeLater": "Place the order",
+  "notices": {
+    "promotion_applied": "{name}: {amount} off",
+    "promotion_capped": "The discount was capped by the promotion’s terms ({cappedAmount} less)",
+    "promotion_rejected": "Code {code} does not apply to this order",
+    "promotion_payment_method_required": "This promotion needs a particular payment method",
+    "discount_applied": "Special discount: {amount}",
+    "discount_capped": "The special discount was reduced by {cappedAmount} to keep the minimum margin",
+    "points_applied": "{points} points redeemed: {amount} off",
+    "points_capped": "This order can take {points} points (you asked for {requested})",
+    "points_rejected": "Points cannot be used on this order (minimum {minimumBaht})",
+    "company_approval_required": "Over the company’s {threshold} threshold: the order waits for your company’s approver and goes to production once approved",
+    "company_credit_order": "On a {termDays}-day credit term; {available} of credit left",
+    "company_credit_unavailable": "The credit term cannot be used for this order; you can pay in advance as usual",
+    "other": "A note from the system ({code})"
   }
 }

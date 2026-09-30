@@ -9,7 +9,18 @@
 
 import { z } from "zod";
 
-import { addressSnapshot, designOption, mockupOption, productTypeRef } from "@/lib/api/requests/admin-orders";
+import {
+  addressSnapshot,
+  designOption,
+  dueTrigger,
+  mockupOption,
+  paymentMethod,
+  paymentStatus,
+  productTypeRef,
+  requiredBefore,
+  slipStatus,
+} from "@/lib/api/requests/admin-orders";
+import { promotionKind } from "@/lib/api/requests/admin-marketing";
 import { quoteSource } from "@/lib/api/requests/admin-sales";
 import { currency, dateTime, money, uuid } from "@/lib/api/requests/define";
 
@@ -84,3 +95,207 @@ export const storeCart = z
 
 export type Cart = z.output<typeof storeCart>;
 export type Item = z.output<typeof cartItem>;
+
+/* --------------------------------------------------------------------------------- checkout */
+
+export const checkoutInput = z
+  .object({
+    contact: z.object({
+      name: z.string().trim().min(1).max(120),
+      phone: z.string().regex(/^0\d{8,9}$/),
+      email: z.string().email().max(254),
+    }),
+    /**
+     * `shared`: every item goes to `addressId`. `per_item`: each cart line's own destinations,
+     * split as the cart says (D-110).
+     */
+    delivery: z.discriminatedUnion("mode", [
+      z.object({ mode: z.literal("shared"), addressId: uuid() }),
+      z.object({ mode: z.literal("per_item") }),
+    ]),
+    /** `null`: a receipt in the contact's name (an abbreviated tax invoice). */
+    taxProfileId: uuid().nullable(),
+    couponCodes: z.array(z.string().trim().min(1).max(40)).max(3),
+    pointsToRedeem: z.number().int().min(0),
+    /** One of the preview's `schedule.options[].key`; omitted = the API's default. */
+    scheduleKey: z.string().optional(),
+    paymentMethod: paymentMethod.optional(),
+    poNumber: z.string().trim().max(60).optional(),
+    note: z.string().trim().max(1000).optional(),
+  })
+  .meta({ id: "CheckoutInputDto" });
+
+export const appliedPromotion = z
+  .object({
+    kind: promotionKind,
+    code: z.string().nullable(),
+    title: z.string(),
+    discountAmount: money(),
+    /** D-053 margin guard: the benefit was reduced; `cappedNote` says so in words. */
+    capped: z.boolean(),
+    cappedNote: z.string().nullable(),
+  })
+  .meta({ id: "AppliedPromotionDto" });
+
+export const rejectedCode = z
+  .object({
+    code: z.string(),
+    reason: z.enum(["not_found", "expired", "not_applicable", "used_up", "min_not_met", "not_combinable"]),
+    message: z.string(),
+  })
+  .meta({ id: "RejectedPromotionCodeDto" });
+
+export const scheduleInstalment = z
+  .object({
+    seq: z.number().int(),
+    label: z.string(),
+    dueTrigger,
+    requiredBefore,
+    grossAmount: money(),
+  })
+  .meta({ id: "ScheduleInstalmentDto" });
+
+export const scheduleOption = z
+  .object({
+    key: z.string(),
+    kind: z.enum(["full", "deposit", "template", "credit_term"]).meta({ id: "ScheduleKind" }),
+    label: z.string(),
+    description: z.string(),
+    instalments: z.array(scheduleInstalment),
+    /** B2B credit term: the number of days, when `kind = credit_term` (D-121). */
+    creditDays: z.number().int().nullable(),
+  })
+  .meta({ id: "ScheduleOptionDto" });
+
+export const paymentMethodOption = z
+  .object({
+    method: paymentMethod,
+    available: z.boolean(),
+    /** Why a method is not offered: over its limit, credit blocked (D-122)… */
+    unavailableReason: z.string().nullable(),
+    /** A fee the customer pays for this method, when there is one. */
+    feeAmount: money().nullable(),
+  })
+  .meta({ id: "PaymentMethodOptionDto" });
+
+export const checkoutPreview = z
+  .object({
+    /** The priced snapshot `POST /v1/store/checkout` places; it expires with `expiresAt`. */
+    previewToken: z.string(),
+    expiresAt: dateTime(),
+    items: z.array(
+      z.object({
+        cartItemId: uuid(),
+        name: z.string(),
+        quantity: z.number().int(),
+        unit: z.string(),
+        grossAmount: money(),
+        destinations: z.array(z.object({ label: z.string(), quantity: z.number().int() })),
+      }),
+    ),
+    promotions: z.object({ applied: z.array(appliedPromotion), rejected: z.array(rejectedCode) }),
+    points: z.object({
+      balance: z.number().int(),
+      /** D-133: at least THB 10 worth, at most 20 % of the order and never below the margin floor. */
+      min: z.number().int(),
+      max: z.number().int(),
+      /** D-131, shown as "1 คะแนน = ฿2.50" — never multiplied here. */
+      pointValue: money(),
+      redeemed: z.number().int(),
+      redeemedAmount: money(),
+      /** Earned on this order once it completes and the claim window passes (D-130, D-132). */
+      toEarn: z.number().int(),
+    }),
+    schedule: z.object({
+      options: z.array(scheduleOption),
+      selectedKey: z.string(),
+      /** Why these options, in words: "ยอดตั้งแต่ ฿20,000 แบ่งชำระได้" (D-020 threshold from settings). */
+      note: z.string().nullable(),
+    }),
+    paymentMethods: z.array(paymentMethodOption),
+    taxInvoice: z
+      .object({ name: z.string(), taxId: z.string(), branch: z.string(), withholdsTax: z.boolean() })
+      .nullable(),
+    totals: z.object({
+      itemsAmount: money(),
+      discountAmount: money(),
+      shippingAmount: money(),
+      pointsAmount: money(),
+      vatAmount: money(),
+      grossAmount: money(),
+      /** What a withholding customer deducts and certifies (50 ทวิ); `0.00` otherwise. */
+      withholdingAmount: money(),
+      /** The first instalment — what is paid today. */
+      payableNowAmount: money(),
+      currency: currency(),
+    }),
+    blockers: z.array(z.object({ code: z.string(), message: z.string() })),
+    /**
+     * The buyer's company, when they check out as a member (F3 3.7): its PO rule (D-125), whether
+     * this order goes to the approver first (D-123), and what credit is left (D-121, D-122).
+     */
+    company: z
+      .object({
+        companyCode: z.string(),
+        legalName: z.string(),
+        poNumberPolicy: z.enum(["required", "optional", "none"]),
+        approvalThreshold: money().nullable(),
+        needsApproval: z.boolean(),
+        creditAvailableAmount: money(),
+        creditBlocked: z.boolean(),
+      })
+      .nullable(),
+  })
+  .meta({ id: "CheckoutPreviewDto" });
+
+export const placedOrder = z
+  .object({
+    groupId: uuid(),
+    groupCode: z.string(),
+    orders: z.array(z.object({ id: uuid(), orderCode: z.string() })),
+    grossAmount: money(),
+    /** The instalment to pay now; `null` on a credit term (D-121). */
+    firstInstalment: z
+      .object({ id: uuid(), label: z.string(), grossAmount: money(), dueAt: dateTime().nullable() })
+      .nullable(),
+    /** D-060: unpaid orders expire at this time. */
+    expiresAt: dateTime().nullable(),
+  })
+  .meta({ id: "PlacedOrderDto" });
+
+/* ----------------------------------------------------------------------------------- payments */
+
+export const storePayment = z
+  .object({
+    id: uuid(),
+    instalmentId: uuid(),
+    orderGroupCode: z.string(),
+    method: paymentMethod,
+    status: paymentStatus,
+    amount: money(),
+    currency: currency(),
+    /** When a QR or a redirect stops being valid. */
+    expiresAt: dateTime().nullable(),
+    qr: z.object({ payload: z.string(), imageUrl: z.string() }).nullable(),
+    /** 2C2P: where to send the customer; they come back to `/checkout/return`. */
+    redirectUrl: z.string().nullable(),
+    /** Bank transfer: Collective Group (Thailand)'s account for this payment (D-093, from settings). */
+    bankAccount: z.object({ bank: z.string(), accountName: z.string(), accountNo: z.string() }).nullable(),
+    slips: z.array(
+      z.object({
+        id: uuid(),
+        status: slipStatus,
+        message: z.string().nullable(),
+        /** D-061: Finance reviews a failed check within 4 business hours. */
+        reviewDueAt: dateTime().nullable(),
+        uploadedAt: dateTime(),
+      }),
+    ),
+    paidAt: dateTime().nullable(),
+    failureReason: z.string().nullable(),
+  })
+  .meta({ id: "StorePaymentDto" });
+
+export type Input = z.output<typeof checkoutInput>;
+export type Preview = z.output<typeof checkoutPreview>;
+export type Payment = z.output<typeof storePayment>;

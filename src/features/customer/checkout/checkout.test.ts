@@ -70,51 +70,41 @@ describe("the checkout, against the mock", () => {
     });
   }
 
-  const input = {
-    contact: { name: "ทดสอบ", phone: "0812345678", email: "seed.customer@packio.invalid" },
-    delivery: { mode: "per_item" as const },
-    taxProfileId: null,
-    couponCodes: [],
-    pointsToRedeem: 0,
-  };
+  const preview = async (body: Schemas["CheckoutDto"] = { taxProfileId: null }) =>
+    (await api().POST("/v1/store/checkout/actions/preview", { body })).data!;
 
-  it("offers only full payment below the threshold, and 50/50 above it (D-020)", async () => {
+  it("pays in full below the threshold, and 50/50 above it (D-020) — the schedule the rules chose", async () => {
     await cartWith(500);
-    const small = await customer.call("POST /v1/store/checkout/actions/preview", { body: input });
-    expect(small.schedule.options.map((option) => option.key)).toEqual(["full"]);
-    expect(small.totals.payableNowAmount).toBe(small.totals.grossAmount);
+    const small = await preview();
+    expect(small.paymentSchedule!.instalments).toHaveLength(1);
+    expect(small.paymentSchedule!.instalments[0]).toMatchObject({ dueTrigger: "at_checkout" });
 
     await cartWith(5000);
-    const large = await customer.call("POST /v1/store/checkout/actions/preview", { body: input });
-    expect(large.schedule.selectedKey).toBe("deposit_50");
-    expect(large.schedule.options[0]!.instalments.map((instalment) => instalment.requiredBefore)).toEqual([
+    const large = await preview();
+    expect(large.paymentSchedule!.templateKey).toBe("deposit_50");
+    expect(large.paymentSchedule!.instalments.map((instalment) => instalment.requiredBefore)).toEqual([
       "production",
       "shipping",
     ]);
   });
 
-  it("keeps points within the D-133 limits and says so", async () => {
+  it("keeps points within the D-133 limits and says so in its notices", async () => {
     await cartWith(1000);
-    const preview = await customer.call("POST /v1/store/checkout/actions/preview", {
-      body: { ...input, pointsToRedeem: 999_999 },
-    });
-    expect(preview.points.redeemed).toBe(preview.points.max);
-    expect(preview.blockers.map((blocker) => blocker.code)).toContain("points_above_maximum");
-    const tooFew = await customer.call("POST /v1/store/checkout/actions/preview", {
-      body: { ...input, pointsToRedeem: 1 },
-    });
-    expect(tooFew.blockers.map((blocker) => blocker.code)).toContain("points_below_minimum");
+    const many = await preview({ taxProfileId: null, redeemPoints: 999_999 });
+    expect(many.notices.map((notice) => notice.code)).toContain("points.capped");
+    const one = await preview({ taxProfileId: null, redeemPoints: 1 });
+    expect(one.notices.map((notice) => notice.code)).toContain("points.rejected");
   });
 
-  it("refuses a placement whose cart changed after the preview", async () => {
+  it("refuses a placement whose total moved since the preview", async () => {
     await cartWith(1000);
-    const preview = await customer.call("POST /v1/store/checkout/actions/preview", { body: input });
+    const seen = await preview();
     await cartWith(2000);
     await expect(
-      customer.call("POST /v1/store/checkout", {
-        body: { ...input, previewToken: preview.previewToken },
-        idempotencyKey: "test-reprice",
+      api().POST("/v1/store/checkout", {
+        params: { header: { "Idempotency-Key": "test-reprice" } },
+        body: { taxProfileId: null, expectedGrossAmount: seen.totals.grossAmount },
       }),
-    ).rejects.toMatchObject({ status: 409, code: "checkout.repriced" });
+    ).rejects.toMatchObject({ status: 409, code: "checkout.total_changed" });
   });
 });

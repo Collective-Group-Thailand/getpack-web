@@ -91,9 +91,10 @@ test.describe("Packio for business", () => {
 
     await gotoHydrated(page, `${HOSTS.customer}/checkout`);
     const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
-    await expect(page.getByText("ต้องให้ผู้อนุมัติของบริษัทอนุมัติก่อน")).toBeVisible();
+    // Without the PO the company requires, the preview is refused (companies.po_required).
     await expect(summary).toContainText("กรุณาใส่เลขที่ใบสั่งซื้อ (PO) ของบริษัท");
     await page.getByLabel(/^เลขที่ใบสั่งซื้อ \(PO\)/).fill("PO-E2E-01");
+    await expect(summary).toContainText(/คำสั่งซื้อจะรอผู้อนุมัติของบริษัท/);
     const send = summary.getByRole("button", { name: "ส่งให้ผู้อนุมัติ" });
     await expect(send).toBeEnabled();
     await send.click();

@@ -63,15 +63,6 @@ async function cartWith(customer: typeof admin, quantity: number) {
   });
 }
 
-const input = (poNumber?: string) => ({
-  contact: { name: "ฝ่ายจัดซื้อ", phone: "0878901234", email: "seed.companybuyer@packio.invalid" },
-  delivery: { mode: "per_item" as const },
-  taxProfileId: null,
-  couponCodes: [],
-  pointsToRedeem: 0,
-  ...(poNumber ? { poNumber } : {}),
-});
-
 describe("the bulk reorder CSV", () => {
   it("reads order numbers and quantities, with or without a header, and says which lines are wrong", () => {
     const parsed = parseReorderCsv("order,quantity\nPK-2569-00101,2000\n\nPK-2569-00113\nPK-2569-00125,abc\n");
@@ -95,28 +86,30 @@ describe("business accounts, against the mock", () => {
     expect((await failure(buyer.call("GET /v1/store/me/company/statements")))?.status).toBe(403);
   });
 
-  it("sends a buyer's order over the threshold to the approver, who places it (D-123, D-125)", async () => {
+  it("places a buyer's order over the threshold as waiting for the approver, who places it (D-123, D-125)", async () => {
     await cartWith(buyer, 10_000);
-    const blocked = await buyer.call("POST /v1/store/checkout/actions/preview", { body: input() });
-    expect(blocked.company?.needsApproval).toBe(true);
-    expect(blocked.blockers.map((blocker) => blocker.code)).toContain("po_required");
-
-    const preview = await buyer.call("POST /v1/store/checkout/actions/preview", { body: input("PO-7788") });
-    expect(preview.blockers).toEqual([]);
-    const refused = await failure(
-      buyer.call("POST /v1/store/checkout", {
-        body: { ...input("PO-7788"), previewToken: preview.previewToken },
-        idempotencyKey: uuid(),
-      }),
-    );
-    expect(refused?.code).toBe("company.approval_required");
-
-    const sent = await buyer.call("POST /v1/store/me/company/approvals", {
-      body: { ...input("PO-7788"), previewToken: preview.previewToken },
-      idempotencyKey: uuid(),
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: buyer.token });
+    const [company] = (await api.GET("/v1/store/companies")).data!;
+    const body = (poNumber?: string): Schemas["CheckoutDto"] => ({
+      taxProfileId: null,
+      companyId: company!.id,
+      ...(poNumber ? { poNumber } : {}),
     });
-    expect(sent).toMatchObject({ status: "pending", poNumber: "PO-7788", grossAmount: preview.totals.grossAmount });
 
+    const withoutPo = await failure(api.POST("/v1/store/checkout/actions/preview", { body: body() }));
+    expect(withoutPo?.code).toBe("companies.po_required");
+    const { data: preview } = await api.POST("/v1/store/checkout/actions/preview", { body: body("PO-7788") });
+    expect(preview!.notices.map((notice) => notice.code)).toContain("company.approval_required");
+
+    const { data: group } = await api.POST("/v1/store/checkout", {
+      params: { header: { "Idempotency-Key": uuid() } },
+      body: { ...body("PO-7788"), expectedGrossAmount: preview!.totals.grossAmount },
+    });
+    expect(group).toMatchObject({ status: "pending_company_approval", poNumber: "PO-7788" });
+
+    const pending = await admin.call("GET /v1/store/me/company/approvals", { query: { status: "pending" } });
+    const sent = pending.data.find((approval) => approval.requestNo === group!.groupCode)!;
+    expect(sent.grossAmount).toBe(preview!.totals.grossAmount);
     expect(
       (
         await failure(
@@ -127,8 +120,6 @@ describe("business accounts, against the mock", () => {
         )
       )?.status,
     ).toBe(403);
-    const pending = await admin.call("GET /v1/store/me/company/approvals", { query: { status: "pending" } });
-    expect(pending.data.map((approval) => approval.requestNo)).toContain(sent.requestNo);
     const approved = await admin.call("POST /v1/store/me/company/approvals/{approvalId}/actions/approve", {
       path: { approvalId: sent.id },
       idempotencyKey: uuid(),
@@ -137,25 +128,22 @@ describe("business accounts, against the mock", () => {
     expect(approved.orders.length).toBeGreaterThan(0);
   });
 
-  it("offers the credit term within available credit, with nothing to pay today (D-121)", async () => {
+  it("puts a company with credit on its term by rule, with nothing to pay today (D-020, D-121)", async () => {
     await cartWith(admin, 1000);
-    const preview = await admin.call("POST /v1/store/checkout/actions/preview", { body: input("PO-1") });
-    const credit = preview.schedule.options.find((option) => option.kind === "credit_term");
-    expect(credit?.creditDays).toBe(30);
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: admin.token });
+    const [company] = (await api.GET("/v1/store/companies")).data!;
+    const body: Schemas["CheckoutDto"] = { taxProfileId: null, companyId: company!.id, poNumber: "PO-1" };
+    const { data: preview } = await api.POST("/v1/store/checkout/actions/preview", { body });
+    expect(preview!.paymentSchedule!.instalments.map((instalment) => instalment.dueTrigger)).toEqual([
+      "days_after_delivery",
+    ]);
+    expect(preview!.notices.map((notice) => notice.code)).toContain("company.credit_order");
     const before = await admin.call("GET /v1/store/me/company");
-    const chosen = await admin.call("POST /v1/store/checkout/actions/preview", {
-      body: { ...input("PO-1"), scheduleKey: credit!.key, paymentMethod: "credit_term_transfer" },
+    const { data: group } = await api.POST("/v1/store/checkout", {
+      params: { header: { "Idempotency-Key": uuid() } },
+      body: { ...body, expectedGrossAmount: preview!.totals.grossAmount },
     });
-    const placed = await admin.call("POST /v1/store/checkout", {
-      body: {
-        ...input("PO-1"),
-        scheduleKey: credit!.key,
-        paymentMethod: "credit_term_transfer",
-        previewToken: chosen.previewToken,
-      },
-      idempotencyKey: uuid(),
-    });
-    expect(placed.firstInstalment).toBeNull();
+    expect(group!.status).toBe("in_progress");
     const after = await admin.call("GET /v1/store/me/company");
     expect(Number(after.credit.availableAmount)).toBeLessThan(Number(before.credit.availableAmount));
   });

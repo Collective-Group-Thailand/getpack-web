@@ -20,7 +20,7 @@ import { bangkokIso, mockId, precondition, problem, versionTag, withEtag } from 
 import { bookOf, toAddressDto } from "./book";
 import { customerOf, type MockCustomer } from "./customers";
 import type { Cart, Item } from "./model";
-import { optionIdOf, quotesOf, type StoreQuote } from "./quotes";
+import { checkCode, optionIdOf, quotesOf, type StoreQuote } from "./quotes";
 
 interface Line {
   id: string;
@@ -142,6 +142,8 @@ export function cartOf(customer: MockCustomer): Cart {
 /** Empties the cart once its lines became an order (the checkout mock, F3 3.3). */
 export function clearCart(customer: MockCustomer, lineIds?: string[]): void {
   carts.set(customer.persona, lineIds ? linesOf(customer).filter((line) => !lineIds.includes(line.id)) : []);
+  // Placed: the codes were used on the order.
+  if (!lineIds) codes.delete(customer.persona);
 }
 
 export function cartLines(customer: MockCustomer): readonly Line[] {
@@ -362,6 +364,46 @@ export const storeCartHandlers = [
     line.repriceRequested = true;
     bump(customer);
     return HttpResponse.json(toCartDto(customer));
+  }),
+
+  // A code is applied to the cart (`store.cart.applyCode`) and checked against what is in it; the
+  // checkout prices the validated ones.
+  http.post("*/v1/store/cart/codes", async ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
+    const body = await bodyOf<Schemas["ApplyCodeDto"]>(request);
+    const code = body?.code?.trim().toUpperCase();
+    if (!code) return problem(422, "promotions.code_invalid", "กรุณาใส่โค้ด");
+    const types = [...new Set(cartOf(customer).items.map((item) => item.productType.code))];
+    const results = types.map((type) => checkCode(code, type));
+    const hit = results.find((result) => result.promotion);
+    const list = (codes.get(customer.persona) ?? []).filter((entry) => entry.code !== code);
+    list.push(
+      hit
+        ? { code, status: "validated", rejectReason: null }
+        : {
+            code,
+            status: "rejected",
+            rejectReason:
+              results[0]?.reason === "expired" ? "โค้ดนี้หมดอายุแล้ว" : "ไม่พบโค้ดนี้ หรือใช้กับสินค้าในตะกร้าไม่ได้",
+          },
+    );
+    codes.set(customer.persona, list);
+    return edited(customer, 201);
+  }),
+
+  http.delete("*/v1/store/cart/codes/:code", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const refused = precondition(request, cartTag(customer));
+    if (refused) return refused;
+    codes.set(
+      customer.persona,
+      (codes.get(customer.persona) ?? []).filter((entry) => entry.code !== String(params.code).toUpperCase()),
+    );
+    return edited(customer);
   }),
 
   http.post("*/v1/store/cart/items/:itemId/actions/confirm-reprice", ({ params, request }) => {
