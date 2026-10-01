@@ -13,7 +13,6 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { toast } from "@/ui/components/Toast";
 
-import { quantityBand } from "../analytics/bands";
 import { editCart } from "../cart/cart-client";
 import { buildCalculateBody } from "./build";
 import { saveQuote, type SavedQuote } from "./pricing";
@@ -119,7 +118,7 @@ export function useQuoteActions({
         track("cart_item_added", {
           route: "/configure/[slug]",
           productType: configurator.productTypeCode,
-          quantityBand: quantityBand(option.quantity),
+          quantity: option.quantity,
           quoteMode: "instant",
         });
         toast.success(t("addedToCart", { name: productName }), {

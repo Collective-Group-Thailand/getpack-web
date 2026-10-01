@@ -130,10 +130,12 @@ export function Configurator({
     const band = quantityBand(priced.quantity);
     if (shownFor.current === band) return;
     shownFor.current = band;
+    // Once per band, so typing a quantity does not send a quote per keystroke; packio-api takes the
+    // exact quantity and bands it itself.
     track("quote_shown", {
       route: "/configure/[slug]",
       productType: configurator.productTypeCode,
-      quantityBand: band,
+      quantity: priced.quantity,
       quoteMode: "instant",
     });
   }, [priced, configurator.productTypeCode]);
