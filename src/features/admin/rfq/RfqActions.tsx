@@ -1,13 +1,12 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import type { AdminRfqAction } from "@/domain/next-actions/admin";
 import { useFormat } from "@/features/shared/format";
-import { queryKeys } from "@/lib/api/query-keys";
-import { STALE_TIME } from "@/lib/query/defaults";
+import { newIdempotencyKey } from "@/lib/api/client";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -18,20 +17,19 @@ import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
-import { useSettleRfq, useUnmetDemandReasons } from "./data";
+import { useCandidateFactories, useSettleRfq, useUnmetDemandReasons } from "./data";
 import { draftOf, sentOf, type Rfq } from "./resources";
 
+/** The verbs of packio-api's RFQ actions (`rfq.<verb>`) this screen performs. */
 export type RfqActionKey =
   | "start_review"
   | "assign"
   | "request_info"
   | "request_factory_cost"
   | "compose_quote"
-  | "edit_quote"
   | "send_quote"
   | "record_acceptance"
-  | "decline"
-  | "create_order";
+  | "decline";
 
 const SUPPORTED = new Set<string>([
   "start_review",
@@ -39,29 +37,29 @@ const SUPPORTED = new Set<string>([
   "request_info",
   "request_factory_cost",
   "compose_quote",
-  "edit_quote",
   "send_quote",
   "record_acceptance",
   "decline",
-  "create_order",
 ]);
 
-/** The RFQ's actions as `adminRfqActions` offers them — see `NextActionBar`. */
-export function RfqActionBar({
-  actions,
-  onAction,
-}: {
-  actions: AdminRfqAction[];
-  onAction: (key: RfqActionKey) => void;
-}) {
+const CHANNELS: readonly Schemas["RfqAcceptanceChannel"][] = ["phone", "line", "email", "other"];
+
+/**
+ * A `disabledReason` is a message key from the API (a problem code such as `rfq.quote_empty`):
+ * this app's words for it when it has them, the key itself otherwise.
+ */
+export function useDisabledReason() {
+  const t = useTranslations("problems");
+  return (reason: string | null | undefined) => (reason ? (t.has(reason) ? t(reason) : reason) : null);
+}
+
+/** The RFQ's own `nextActions`, as the API offered them — see `NextActionBar`. */
+export function RfqActionBar({ rfq, onAction }: { rfq: Rfq; onAction: (key: RfqActionKey) => void }) {
   const t = useTranslations("rfq.actions");
+  const reasonOf = useDisabledReason();
   return (
     <NextActionBar
-      actions={actions.map(({ key, irreversible, blockedBy }) => ({
-        key,
-        irreversible,
-        disabledReason: blockedBy ? t(`blocked.${blockedBy}`) : null,
-      }))}
+      actions={rfq.nextActions.map((action) => ({ ...action, disabledReason: reasonOf(action.disabledReason) }))}
       supported={SUPPORTED}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
       onAction={(key) => onAction(key as RfqActionKey)}
@@ -78,7 +76,8 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
   const draft = draftOf(rfq);
   const sent = sentOf(rfq);
   const [reasonCode, setReasonCode] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [via, setVia] = useState<Schemas["RfqAcceptanceChannel"] | "">("");
+  const [quantities, setQuantities] = useState<number[] | null>(null);
   const reasons = useUnmetDemandReasons(open === "decline");
 
   const fail = (error: unknown): never => {
@@ -86,7 +85,7 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
     throw error;
   };
   const common = { open: true, onOpenChange: (next: boolean) => (next ? undefined : onClose()) };
-  const { contract, requests } = adminBrowserApis();
+  const { contract } = adminBrowserApis();
 
   switch (open) {
     case "assign":
@@ -97,10 +96,8 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           current={rfq.assignedTo}
           permission="rfqs.manage"
           personHint={t("assign.personHint")}
-          // CONTRACT-GAP admin.rfq-actions — `admin.rfqs.assign` takes a person; it cannot unassign.
-          clearable={false}
+          // `admin.rfqs.assign` with `userId: null` puts the request back with nobody on it.
           onAssign={async (userId) => {
-            if (!userId) return;
             const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/actions/assign", {
               params: { path: { rfqId } },
               body: { userId },
@@ -144,15 +141,14 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           tone="destructive"
           confirmationPhrase={rfq.rfqCode}
           reason={{ label: t("decline.note"), hint: t("decline.noteHint") }}
-          onConfirm={async ({ reason }) => {
+          onConfirm={async ({ idempotencyKey, reason }) => {
             if (!reasonCode) {
               toast.error(t("decline.needReason"));
               throw new Error("reason code required");
             }
             try {
-              // `admin.rfqs.decline` declares no Idempotency-Key.
               const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/actions/decline", {
-                params: { path: { rfqId } },
+                params: { path: { rfqId }, header: { "Idempotency-Key": idempotencyKey } },
                 body: { reasonCode, ...(reason ? { note: reason } : {}) },
               });
               settle(data);
@@ -167,7 +163,7 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
               value={reasonCode || undefined}
               onValueChange={setReasonCode}
               placeholder={t("decline.choose")}
-              options={(reasons.data?.data ?? []).map((reason) => ({ value: reason.code, label: reason.name }))}
+              options={reasons.reasons.map((reason) => ({ value: reason.code, label: reasons.nameOf(reason.code) }))}
             />
           </Field>
         </ConfirmAction>
@@ -195,11 +191,11 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           }
           confirmLabel={t("send.confirm")}
           confirmationPhrase={rfq.rfqCode}
-          onConfirm={async () => {
+          onConfirm={async ({ idempotencyKey }) => {
             try {
-              // `admin.rfqs.sendQuotation` declares no Idempotency-Key; the API sets the validity (D-051).
+              // The API sets the validity when the version is sent (D-051).
               const { data } = await contract.POST("/v1/admin/rfq-quotations/{rfqQuoteId}/actions/send", {
-                params: { path: { rfqQuoteId: draft.id } },
+                params: { path: { rfqQuoteId: draft.id }, header: { "Idempotency-Key": idempotencyKey } },
               });
               settle(data);
               toast.success(t("send.done"));
@@ -209,65 +205,88 @@ export function RfqActionDialogs({ rfq, open, onClose }: { rfq: Rfq; open: RfqAc
           }}
         />
       ) : null;
-    case "record_acceptance":
-      return sent ? (
+    case "record_acceptance": {
+      if (!sent) return null;
+      const chosen = quantities ?? sent.lines.map((line) => line.quantity);
+      return (
         <ConfirmAction
           {...common}
           title={t("accept.title", { version: sent.versionNo })}
           description={t("accept.body", { code: rfq.rfqCode, customer: rfq.customer.displayName })}
           confirmLabel={t("accept.confirm")}
           confirmationPhrase={rfq.rfqCode}
-          reason={{ label: t("accept.note"), required: true, minLength: 3, hint: t("accept.noteHint") }}
+          reason={{ label: t("accept.note"), hint: t("accept.noteHint") }}
           onConfirm={async ({ idempotencyKey, reason }) => {
-            const chosen = Number(quantity || (sent.lines.length === 1 ? sent.lines[0]!.quantity : 0));
-            if (!chosen) {
+            if (!via) {
+              toast.error(t("accept.needVia"));
+              throw new Error("channel required");
+            }
+            if (chosen.length === 0) {
               toast.error(t("accept.needQuantity"));
               throw new Error("quantity required");
             }
             try {
-              // Still a contract request (admin.rfq-quotes): its answer is not the published RFQ,
-              // so the RFQ is read again.
-              await requests.call("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance", {
-                path: { rfqId, quoteId: sent.id },
-                body: { quantity: chosen, note: reason },
-                idempotencyKey,
+              const { data } = await contract.POST("/v1/admin/rfq-quotations/{rfqQuoteId}/actions/record-acceptance", {
+                params: { path: { rfqQuoteId: sent.id }, header: { "Idempotency-Key": idempotencyKey } },
+                body: {
+                  via,
+                  // The API reads an omitted list as every quoted quantity.
+                  ...(chosen.length < sent.lines.length ? { quantities: chosen } : {}),
+                  ...(reason ? { note: reason } : {}),
+                },
               });
-              settle();
+              settle(data);
               toast.success(t("accept.done"));
             } catch (error) {
               fail(error);
             }
           }}
         >
-          <Field label={t("accept.quantity")} required>
+          <Field label={t("accept.via")} required>
             <Select
-              value={quantity || (sent.lines.length === 1 ? String(sent.lines[0]!.quantity) : undefined)}
-              onValueChange={setQuantity}
-              placeholder={t("accept.chooseQuantity")}
-              options={sent.lines.map((line) => ({
-                value: String(line.quantity),
-                label: t("accept.option", {
-                  quantity: format.number(line.quantity),
-                  amount: format.thb(line.grossAmount),
-                }),
-              }))}
+              value={via || undefined}
+              onValueChange={(value) => setVia(value as Schemas["RfqAcceptanceChannel"])}
+              placeholder={t("accept.chooseVia")}
+              options={CHANNELS.map((value) => ({ value, label: t(`accept.channels.${value}`) }))}
             />
           </Field>
+          <fieldset className="mt-3 space-y-2">
+            <legend className="mb-1 text-sm font-medium">{t("accept.quantities")}</legend>
+            {sent.lines.map((line) => (
+              <Checkbox
+                key={line.quantity}
+                label={t("accept.option", {
+                  quantity: format.number(line.quantity),
+                  amount: format.thb(line.grossAmount),
+                })}
+                checked={chosen.includes(line.quantity)}
+                onCheckedChange={(checked) =>
+                  setQuantities(
+                    checked
+                      ? [...chosen, line.quantity].sort((a, b) => a - b)
+                      : chosen.filter((quantity) => quantity !== line.quantity),
+                  )
+                }
+              />
+            ))}
+          </fieldset>
         </ConfirmAction>
-      ) : null;
+      );
+    }
     default:
       return null;
   }
 }
 
 /**
- * "Request cost from factory" (F2 2.3): the factories the API says could make this category,
- * with their D-043 tier and on-time rate; one that cannot says why and cannot be picked.
+ * "Request cost from factory" (F2 2.3): the factories the API says could make this category
+ * (`admin.rfqs.listCandidateFactories`), with their D-043 tier and on-time rate; one whose
+ * capability does not cover the quantities says why and cannot be picked.
  *
- * `admin.rfqs.requestConsultation` asks one factory per call and declares no Idempotency-Key, so
- * the dialog asks each chosen factory in turn (CONTRACT-GAP admin.rfq-consultations — no
- * multi-factory request). A failure stops the run; the factories already asked stay asked, and
- * the RFQ the last call answered shows them.
+ * `admin.rfqs.requestConsultation` asks one factory per call, so the dialog asks each chosen
+ * factory in turn, each with its own Idempotency-Key kept for the life of the dialog — a retry
+ * after a failure replays the factories already asked instead of asking them twice. A failure
+ * stops the run; the RFQ the last call answered shows the factories already asked.
  */
 function ConsultDialog({ rfq, onClose }: { rfq: Rfq; onClose: () => void }) {
   const t = useTranslations("rfq.actions.consult");
@@ -278,14 +297,8 @@ function ConsultDialog({ rfq, onClose }: { rfq: Rfq; onClose: () => void }) {
   const [dueAt, setDueAt] = useState("");
   const [note, setNote] = useState("");
   const [missing, setMissing] = useState(false);
-
-  const candidates = useQuery({
-    queryKey: queryKeys.related("admin", "rfq", rfq.id, "candidate_factories"),
-    // Still a contract request (admin.rfq-consultations).
-    queryFn: () =>
-      adminBrowserApis().requests.call("GET /v1/admin/rfqs/{rfqId}/candidate-factories", { path: { rfqId: rfq.id } }),
-    staleTime: STALE_TIME.transactional,
-  });
+  const [keys] = useState(() => new Map<string, string>());
+  const candidates = useCandidateFactories(rfq.id);
 
   const request = useMutation({
     mutationFn: async () => {
@@ -294,8 +307,9 @@ function ConsultDialog({ rfq, onClose }: { rfq: Rfq; onClose: () => void }) {
       let asked = 0;
       try {
         for (const factoryId of chosen) {
+          if (!keys.has(factoryId)) keys.set(factoryId, newIdempotencyKey());
           const { data } = await contract.POST("/v1/admin/rfqs/{rfqId}/consultations", {
-            params: { path: { rfqId: rfq.id } },
+            params: { path: { rfqId: rfq.id }, header: { "Idempotency-Key": keys.get(factoryId)! } },
             body: { factoryId, dueAt: `${dueAt}:00+07:00`, ...(note.trim() ? { note: note.trim() } : {}) },
           });
           latest = data;
@@ -346,31 +360,37 @@ function ConsultDialog({ rfq, onClose }: { rfq: Rfq; onClose: () => void }) {
         {candidates.isError ? (
           <p className="text-danger text-sm">{problemMessage(candidates.error, t("candidatesFailed"))}</p>
         ) : null}
-        {(candidates.data?.data ?? []).map((candidate) => (
+        {candidates.data && candidates.data.length === 0 ? (
+          <p className="text-muted text-sm">{t("noCandidates")}</p>
+        ) : null}
+        {(candidates.data ?? []).map((candidate) => (
           <div
-            key={candidate.factory.id}
+            key={candidate.factoryId}
             className="border-border flex flex-wrap items-start justify-between gap-2 rounded-md border p-3"
           >
             <Checkbox
-              label={candidate.factory.name}
+              label={`${candidate.name} (${candidate.code})`}
               description={
                 candidate.capable
                   ? candidate.alreadyConsulted
                     ? t("alreadyConsulted")
-                    : candidate.onTimeRatePct
-                      ? t("onTime", { pct: format.percent(candidate.onTimeRatePct) })
+                    : candidate.onTimeShippingPct
+                      ? t("onTime", { pct: format.percent(candidate.onTimeShippingPct) })
                       : undefined
-                  : (candidate.reason ?? t("notCapable"))
+                  : t(`reasons.${candidate.reason ?? "quantity_above_maximum"}`)
               }
               disabled={!candidate.capable || candidate.alreadyConsulted}
-              checked={chosen.includes(candidate.factory.id)}
+              checked={chosen.includes(candidate.factoryId)}
               onCheckedChange={(checked) =>
                 setChosen((current) =>
-                  checked ? [...current, candidate.factory.id] : current.filter((id) => id !== candidate.factory.id),
+                  checked ? [...current, candidate.factoryId] : current.filter((id) => id !== candidate.factoryId),
                 )
               }
             />
-            {candidate.tier ? <Badge size="sm">{t("tier", { tier: candidate.tier })}</Badge> : null}
+            <span className="flex flex-wrap gap-1">
+              {candidate.status === "trial" ? <Badge size="sm">{t("trial")}</Badge> : null}
+              {candidate.tier ? <Badge size="sm">{t("tier", { tier: candidate.tier })}</Badge> : null}
+            </span>
           </div>
         ))}
         {missing && chosen.length === 0 ? (

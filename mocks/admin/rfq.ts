@@ -1,34 +1,32 @@
 /**
- * The RFQ desk, mocked. The published surface (`admin.rfqs.*`, U-F0.3) is served at its own paths
- * with `StaffRfqDto`; what packio-api still has to build stays a contract request (`mockRequest`):
- * start-review, candidate factories, remind, the draft edit, record-acceptance and the
- * unmet-demand reasons (CONTRACT-REQUEST admin.rfq-actions, admin.rfq-consultations,
- * admin.rfq-quotes, admin.unmet-demand-reasons).
+ * The RFQ desk, mocked at packio-api's published paths (`admin.rfqs.*`, contract v0.6.0) with
+ * `StaffRfqDto` — list, detail with its ETag, thread, start-review, assign / unassign,
+ * request-info, decline, candidate factories, consultations and reminders, the quotation draft,
+ * its replacement under If-Match, discard, send and the acceptance CS records — and the
+ * unmet-demand reasons (D-102).
  *
  * State moves the way B2.5 describes: `submitted → in_review → need_info → quoted → accepted |
- * declined | expired`. A factory's answer arrives as a buy price per quantity; the mock derives
- * a suggested sell price from it with a flat mark-up standing in for the sell-margin table (kept
- * in the fixture; the published RFQ does not carry it), and computes line amounts in whole satang
- * — standing in for the backend, the only place money is computed. Cost and margin leave per
- * D-141, decided per actor on the way out.
+ * declined | expired`. A factory's answer arrives as a buy price per quantity; the fixture keeps
+ * a suggested sell price derived from it with a flat mark-up standing in for the sell-margin
+ * table (the published RFQ does not carry it), and computes line amounts in whole satang —
+ * standing in for the backend, the only place money is computed. Cost and margin leave per D-141,
+ * decided per actor on the way out, and `nextActions` follow packio-api's rule table
+ * (`src/modules/rfq/rfq-actions.ts` at v0.6.0) filtered by the reader's permissions.
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { candidateFactory } from "@/lib/api/requests/admin-rfq";
 import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
-import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, sortBy, versionTag } from "../support";
 import { lineSummaryOf, productTypeRef } from "./catalog";
 import { baht, customers, FACTORY } from "./commerce";
 import { indexForSearch, registerQueue } from "./console";
-import { PARTICIPATION } from "./partners";
-import { settings } from "./platform";
-import type { ConsultationRow, QuoteLineRow, QuoteRow, RfqMessageRow, RfqRow } from "./rfq-model";
+import { PARTICIPATION, stores } from "./partners";
+import { files as uploadedFiles, settings } from "./platform";
+import type { ConsultationRow, QuoteLineRow, QuoteRow, RfqActionRow, RfqMessageRow, RfqRow } from "./rfq-model";
 import { quotations } from "./sales";
 
 type Rfq = RfqRow;
@@ -36,7 +34,6 @@ type Consultation = ConsultationRow;
 type Quote = QuoteRow;
 type QuoteLine = QuoteLineRow;
 type Message = RfqMessageRow;
-type Candidate = z.output<typeof candidateFactory>;
 
 const HOUR = 60;
 const DAY = 24 * HOUR;
@@ -51,11 +48,12 @@ export const FACTORIES = [
   { id: mockId("fac", 4), code: "F004", name: "โรงงานสิ่งพิมพ์ ตัวอย่าง (ข้อมูลจำลอง)" },
 ];
 
+/** On-time shipping % of each factory's latest monthly scorecard (D-155), as the API rounds it. */
 const ON_TIME: Record<string, string> = {
-  [FACTORIES[0]!.id]: "96.5000",
-  [FACTORIES[1]!.id]: "91.0000",
-  [FACTORIES[2]!.id]: "88.2500",
-  [FACTORIES[3]!.id]: "93.7500",
+  [FACTORIES[0]!.id]: "96.50",
+  [FACTORIES[1]!.id]: "91.00",
+  [FACTORIES[2]!.id]: "88.25",
+  [FACTORIES[3]!.id]: "93.75",
 };
 
 const SLA_HOURS: Record<string, number> = {
@@ -69,14 +67,19 @@ const SLA_HOURS: Record<string, number> = {
   folding_carton: 8,
 };
 
-export const UNMET_REASONS = [
-  { code: "capability_missing", name: "ไม่มีโรงงานที่ผลิตได้" },
-  { code: "capacity_full", name: "กำลังการผลิตเต็มในช่วงที่ต้องการ" },
-  { code: "price_not_competitive", name: "ราคาสู้ไม่ได้" },
-  { code: "spec_not_feasible", name: "สเปกผลิตไม่ได้ในทางเทคนิค" },
-  { code: "customer_no_response", name: "ลูกค้าไม่ตอบกลับ" },
-  { code: "expired", name: "หมดอายุ" },
+/** The seeded `unmet_demand_reasons` (D-102), as `admin.rfqs.listUnmetDemandReasons` lists them. */
+export const UNMET_REASONS: Schemas["UnmetDemandReasonDto"][] = [
+  { code: "capability_missing", nameTh: "ไม่มีโรงงานที่ผลิตได้", nameEn: "No factory can make it" },
+  { code: "capacity_full", nameTh: "กำลังการผลิตเต็มในช่วงที่ต้องการ", nameEn: "Capacity is full for the dates" },
+  { code: "price_not_competitive", nameTh: "ราคาสู้ไม่ได้", nameEn: "Price not competitive" },
+  { code: "spec_not_feasible", nameTh: "สเปกผลิตไม่ได้ในทางเทคนิค", nameEn: "Spec not feasible" },
+  { code: "customer_no_response", nameTh: "ลูกค้าไม่ตอบกลับ", nameEn: "Customer did not respond" },
+  { code: "expired", nameTh: "หมดอายุ", nameEn: "Expired" },
 ];
+const reasonRow = (code: string) => {
+  const reason = UNMET_REASONS.find((candidate) => candidate.code === code);
+  return reason ? { code: reason.code, name: reason.nameTh } : null;
+};
 
 const persona = (key: string) => PERSONAS.find((candidate) => candidate.key === key)!;
 const refOf = (who: StaffPersona) => ({ id: who.id, displayName: who.displayName });
@@ -100,10 +103,13 @@ function priceLine(
     leadTimeDays: number;
     consultationId?: string | null;
     buyUnitPrice?: string | null;
+    shippingNetAmount?: string | null;
   },
   rfq: Rfq,
 ): QuoteLine {
-  const net = Math.round(Number(input.unitPrice) * input.quantity * 100);
+  // Pieces + shipping before VAT (`StaffRfqQuoteLineDto.netAmount`).
+  const shipping = Math.round(Number(input.shippingNetAmount ?? "0") * 100);
+  const net = Math.round(Number(input.unitPrice) * input.quantity * 100) + shipping;
   const vat = Math.round(net * 0.07);
   const source = rfq.consultations.find((item) => item.id === input.consultationId);
   const tier = source?.response?.tiers.find((item) => item.quantity === input.quantity);
@@ -122,6 +128,7 @@ function priceLine(
     ...(buy ? { buyUnitPrice: Number(buy).toFixed(6) } : {}),
     ...(margin !== null ? { marginPct: margin.toFixed(4) } : {}),
     belowMarginFloor: margin !== null && margin < numberSetting("pricing.margin_floor_pct", 10),
+    shippingNetAmount: baht(shipping),
   };
 }
 
@@ -468,7 +475,7 @@ function build(seed: Seed, index: number): Rfq {
     routedFrom: seed.routed
       ? { reason: "ไม่มีโรงงานที่ราคาครอบคลุมสเปกนี้ในเครื่องคำนวณ (D-043)", calculator: "folding" }
       : null,
-    declineReason: seed.declined ? (UNMET_REASONS.find((reason) => reason.code === seed.declined) ?? null) : null,
+    declineReason: seed.declined ? reasonRow(seed.declined) : null,
     declineNote: seed.declined ? "ยังไม่มีพาร์ตเนอร์ที่รับงานอะคริลิก" : null,
     acceptedQuotation: null,
     consultations,
@@ -505,7 +512,7 @@ function build(seed: Seed, index: number): Rfq {
   });
 
   const accepted = rfq.quotes.find((quote) => quote.status === "accepted");
-  if (accepted) rfq.acceptedQuotation = toQuotation(rfq, accepted, rfq.quantities[0]!, CS);
+  if (accepted) rfq.acceptedQuotation = toQuotation(rfq, accepted, [rfq.quantities[0]!], CS);
 
   rfq.events = [
     { id: `${id}:submitted`, at: rfq.submittedAt, kind: "rfq.submitted", title: "ลูกค้าส่งคำขอราคา", actor: null },
@@ -564,12 +571,16 @@ function build(seed: Seed, index: number): Rfq {
   return refresh(rfq);
 }
 
-/** Customer acceptance → a quotation (`quotes.source = rfq`), which CS create-order orders from. */
-function toQuotation(rfq: Rfq, quote: Quote, quantity: number, by: StaffPersona) {
-  const line = quote.lines.find((item) => item.quantity === quantity) ?? quote.lines[0]!;
+/**
+ * Acceptance → a quotation (`quotes.source = rfq`) with one option per accepted quantity, which
+ * CS create-order orders from — the customer's own path and the one CS records (`accept`).
+ */
+function toQuotation(rfq: Rfq, quote: Quote, quantities: readonly number[], by: StaffPersona) {
+  const accepted = quote.lines.filter((item) => quantities.includes(item.quantity));
+  const lines = accepted.length > 0 ? accepted : quote.lines;
   const id = mockId("quo", 700 + quotations.length);
   const quoteCode = `QT-2569-${String(700 + quotations.length).padStart(5, "0")}`;
-  // The published saved quotation (`AdminSavedQuoteDto`, U-F0.3) with the accepted line as its option.
+  // The published saved quotation (`AdminSavedQuoteDto`, U-F0.3) with the accepted lines as its options.
   quotations.unshift({
     id,
     quoteCode,
@@ -586,42 +597,86 @@ function toQuotation(rfq: Rfq, quote: Quote, quantity: number, by: StaffPersona)
     configuration: null,
     deliveryPostcode: null,
     currency: "THB",
-    options: [
-      {
-        id: mockId("qop", 7000 + quotations.length),
-        quantity: line.quantity,
-        unitPrice: line.unitPrice,
-        productAmount: line.grossAmount,
-        designFeeAmount: "0.00",
-        structureDesignFeeAmount: "0.00",
-        // RFQ quotes split no plates or die blocks out.
-        toolingAmount: null,
-        shippingAmount: null,
-        shippingPending: true,
-        shippingPendingReason: "no_postcode",
-        netAmount: line.netAmount,
-        vatAmount: line.vatAmount,
-        grossAmount: line.grossAmount,
-        leadTimeDays: line.leadTimeDays,
-        earliestShipDate: day(line.leadTimeDays * DAY),
-        earliestDeliveryDate: null,
-        toleranceShortagePct: "5.0000",
-        toleranceOveragePct: "5.0000",
-        internal: null,
-      },
-    ],
+    options: lines.map((line, at) => ({
+      id: mockId("qop", 7000 + quotations.length * 10 + at),
+      quantity: line.quantity,
+      unitPrice: line.unitPrice,
+      productAmount: line.grossAmount,
+      designFeeAmount: "0.00",
+      structureDesignFeeAmount: "0.00",
+      // RFQ quotes split no plates or die blocks out.
+      toolingAmount: null,
+      shippingAmount: null,
+      shippingPending: true,
+      shippingPendingReason: "no_postcode",
+      netAmount: line.netAmount,
+      vatAmount: line.vatAmount,
+      grossAmount: line.grossAmount,
+      leadTimeDays: line.leadTimeDays,
+      earliestShipDate: day(line.leadTimeDays * DAY),
+      earliestDeliveryDate: null,
+      toleranceShortagePct: "5.0000",
+      toleranceOveragePct: "5.0000",
+      internal: null,
+    })),
     priceLocked: true,
     pdfStatus: "none",
     sharedAt: null,
     validUntil: `${quote.validUntil}T23:59:59+07:00`,
     createdAt: bangkokIso(),
   });
-  return { id, quoteCode, versionNo: quote.versionNo, quantity: line.quantity };
+  return { id, quoteCode, versionNo: quote.versionNo, quantity: lines[0]!.quantity };
 }
 
-/** The derived columns and the actions offered — what the API recomputes on every change. */
+/* ------------------------------------------------------------------------- next actions */
+
+const OPEN: readonly Rfq["status"][] = ["submitted", "in_review", "need_info", "quoted"];
+const CLOSED: readonly Rfq["status"][] = ["accepted", "declined", "expired"];
+
+/** A version's validity as published: the end of its `validUntil` day in Bangkok. */
+const validityOf = (quote: Pick<Quote, "validUntil">) => `${quote.validUntil}T23:59:59+07:00`;
+
+const isOpen = (rfq: Rfq) => OPEN.includes(rfq.status);
+const draftOf = (rfq: Rfq) => rfq.quotes.find((quote) => quote.status === "draft");
+const acceptable = (rfq: Rfq) =>
+  rfq.status === "quoted" &&
+  rfq.quotes.some((quote) => quote.status === "sent" && Date.parse(validityOf(quote)) > Date.now());
+
+/**
+ * packio-api's `ADMIN_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0), in its order.
+ * Every rule needs `rfqs.manage`; `when` returns a string to offer the action disabled with it.
+ */
+const ADMIN_RFQ_RULES: { key: string; irreversible?: boolean; when: (rfq: Rfq) => boolean | string }[] = [
+  { key: "rfq.assign", when: isOpen },
+  { key: "rfq.start_review", when: (rfq) => rfq.status === "submitted" },
+  { key: "rfq.request_info", when: (rfq) => isOpen(rfq) && rfq.status !== "quoted" },
+  { key: "rfq.request_factory_cost", when: isOpen },
+  { key: "rfq.compose_quote", when: (rfq) => isOpen(rfq) && !draftOf(rfq) },
+  {
+    key: "rfq.send_quote",
+    when: (rfq) => isOpen(rfq) && draftOf(rfq) !== undefined && (draftOf(rfq)!.lines.length > 0 || "rfq.quote_empty"),
+  },
+  { key: "rfq.record_acceptance", irreversible: true, when: acceptable },
+  { key: "rfq.decline", irreversible: true, when: isOpen },
+];
+
+function actionsOf(rfq: Rfq): RfqActionRow[] {
+  return ADMIN_RFQ_RULES.flatMap((rule) => {
+    const verdict = rule.when(rfq);
+    if (verdict === false) return [];
+    return [
+      {
+        key: rule.key,
+        irreversible: rule.irreversible ?? false,
+        disabledReason: typeof verdict === "string" ? verdict : null,
+      },
+    ];
+  });
+}
+
+/** The derived columns and the rule table's verdict — what the API recomputes on every read. */
 function refresh(rfq: Rfq): Rfq {
-  const open = ["submitted", "in_review", "need_info"].includes(rfq.status);
+  const open = ["submitted", "in_review", "need_info", "quoted"].includes(rfq.status);
   const due = rfq.slaDueAt ? Date.parse(rfq.slaDueAt) : null;
   rfq.urgency =
     !open || rfq.firstResponseAt || due === null
@@ -639,93 +694,20 @@ function refresh(rfq: Rfq): Rfq {
   rfq.latestQuote = latest
     ? { id: latest.id, versionNo: latest.versionNo, status: latest.status, validUntil: latest.validUntil }
     : null;
-
-  const draft = rfq.quotes.find((quote) => quote.status === "draft");
-  const sent = rfq.quotes.find((quote) => quote.status === "sent");
-  const actions: Rfq["nextActions"] = [];
-  switch (rfq.status) {
-    case "submitted":
-      actions.push({ key: "rfq.start_review" }, { key: "rfq.assign" }, { key: "rfq.request_info" });
-      break;
-    case "in_review":
-    case "need_info":
-      if (draft) {
-        actions.push({
-          key: "rfq.send_quote",
-          irreversible: true,
-          disabledReason: draft.lines.some((line) => line.belowMarginFloor)
-            ? "มีรายการต่ำกว่า margin floor — ต้องได้รับอนุมัติจาก C-Level ก่อนส่ง (D-052)"
-            : null,
-        });
-      }
-      actions.push(
-        { key: "rfq.request_factory_cost" },
-        { key: draft ? "rfq.edit_quote" : "rfq.compose_quote" },
-        { key: "rfq.request_info" },
-        { key: "rfq.assign" },
-      );
-      break;
-    case "quoted":
-      if (sent) actions.push({ key: "rfq.record_acceptance", irreversible: true });
-      if (draft)
-        actions.push({
-          key: "rfq.send_quote",
-          irreversible: true,
-          disabledReason: draft.lines.some((line) => line.belowMarginFloor)
-            ? "มีรายการต่ำกว่า margin floor — ต้องได้รับอนุมัติจาก C-Level ก่อนส่ง (D-052)"
-            : null,
-        });
-      actions.push({ key: draft ? "rfq.edit_quote" : "rfq.compose_quote" }, { key: "rfq.assign" });
-      break;
-    case "accepted":
-      if (rfq.acceptedQuotation) actions.push({ key: "rfq.create_order" });
-      break;
-    default:
-      break;
-  }
-  if (open || rfq.status === "quoted") actions.push({ key: "rfq.decline", irreversible: true });
-  rfq.nextActions = actions;
+  rfq.nextActions = actionsOf(rfq);
   return rfq;
 }
 
 export const rfqs: Rfq[] = SEEDS.map(build);
 
-/* ---------------------------------------------------------------------------- per actor, D-141 */
+/* --------------------------------------------------------------------------------- ETag */
 
-function forActor(rfq: Rfq, who: StaffPersona | undefined): Rfq {
-  const cost = can(who, "factory_cost.read");
-  const margin = can(who, "margin.read");
-  const whenDiscounting = can(who, "margin.read_pct_when_discounting");
-  const manage = can(who, "rfqs.manage");
-  return {
-    ...rfq,
-    consultations: rfq.consultations.map((item) => ({
-      ...item,
-      response: item.response
-        ? {
-            ...item.response,
-            tiers: item.response.tiers.map(({ buyUnitPrice, ...tier }) => (cost ? { ...tier, buyUnitPrice } : tier)),
-          }
-        : null,
-    })),
-    quotes: rfq.quotes.map((quote) => ({
-      ...quote,
-      lines: quote.lines.map(({ buyUnitPrice, marginPct, factory, ...line }) => {
-        const discounted = line.suggestedUnitPrice !== null && Number(line.unitPrice) < Number(line.suggestedUnitPrice);
-        return {
-          ...line,
-          ...(cost ? { factory, buyUnitPrice } : {}),
-          ...(marginPct !== undefined && (margin || (whenDiscounting && discounted)) ? { marginPct } : {}),
-        };
-      }),
-    })),
-    nextActions: manage ? rfq.nextActions : [],
-  };
-}
+/** `rfqs.row_version`: bumped by every change, so `If-Match` on the draft PUT can refuse a stale edit. */
+const versions = new Map<string, number>();
+const touch = (rfq: Rfq) => versions.set(rfq.id, (versions.get(rfq.id) ?? 1) + 1);
+const etagOf = (rfq: Rfq) => versionTag(rfq.id, versions.get(rfq.id) ?? 1);
 
 /* ---------------------------------------------------------------------- the published StaffRfqDto */
-
-const CLOSED: readonly Rfq["status"][] = ["accepted", "declined", "expired"];
 
 /** When the request was closed: its acceptance or decline, as the log has it. */
 function closedAtOf(rfq: Rfq): string | null {
@@ -736,10 +718,32 @@ function closedAtOf(rfq: Rfq): string | null {
   return closing?.at ?? rfq.quotes.find((quote) => quote.acceptedAt)?.acceptedAt ?? rfq.submittedAt;
 }
 
+/** A file's name, type and size: the fixture's own, or an upload the platform mock holds. */
+function attached(fileId: string): Schemas["AttachedFileDto"] {
+  const own = rfqs.flatMap((rfq) => rfq.files).find((file) => file.id === fileId);
+  const uploaded = uploadedFiles.get(fileId);
+  return {
+    id: fileId,
+    originalName: own?.originalName ?? uploaded?.originalName ?? "file",
+    mimeType: own?.mimeType ?? uploaded?.mimeType ?? "application/octet-stream",
+    sizeBytes: own?.sizeBytes ?? uploaded?.sizeBytes ?? 0,
+  };
+}
+
+/** The fixture's spec words as the category form renders them (Thai only in the fixture). */
+const specLinesOf = (rfq: Rfq): Schemas["SpecLineDto"][] =>
+  rfq.spec.map((item, at) => ({
+    key: `line_${at + 1}`,
+    labelTh: item.label,
+    labelEn: item.label,
+    valueTh: item.value,
+    valueEn: item.value,
+  }));
+
 /**
  * A row as `admin.rfqs.get` publishes it. Buy prices need `factory_cost.read`, the margin
- * `margin.read` (D-141); the rest of the fixture (events, suggested prices, tiers) stays in the
- * mock (CONTRACT-GAP admin.rfqs).
+ * `margin.read` (D-141); `nextActions` keep what `rfqs.manage` allows. The suggested sell prices
+ * and the events stay in the fixture (`suggestedUnitPrice` is left out by the API).
  */
 export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas["StaffRfqDto"] {
   const rfq = refresh(row);
@@ -764,15 +768,20 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
     notes: rfq.notes ?? "",
     // The fixture keeps the spec in words; its labels stand in for the answer keys.
     spec: Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
-    // The words are Thai only: no rendered spec lines in both languages.
-    specLines: [],
+    specLines: specLinesOf(rfq),
     customerCode: rfq.customer.customerCode,
     contact: { ...rfq.contact },
-    files: rfq.files.map(({ id, originalName, mimeType, sizeBytes }) => ({ id, originalName, mimeType, sizeBytes })),
+    files: rfq.files.map((file) => attached(file.id)),
     routedFromCalculator: rfq.routedFromCalculator,
     slaTargetHours: rfq.slaTargetHours,
-    quoteDefaults: { validUntil: `${rfq.quoteDefaults.validUntil}T23:59:59+07:00` },
-    nextActions: [],
+    quoteDefaults: { validUntil: validityOf({ validUntil: validityFromToday() }) },
+    nextActions: can(who, "rfqs.manage")
+      ? rfq.nextActions.map((action) => ({
+          key: action.key,
+          irreversible: action.irreversible ?? false,
+          disabledReason: action.disabledReason ?? null,
+        }))
+      : [],
     submittedAt: rfq.submittedAt,
     firstResponseAt: rfq.firstResponseAt,
     slaDueAt: rfq.slaDueAt,
@@ -806,7 +815,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
       versionNo: quote.versionNo,
       status: quote.status,
       // A draft has no validity yet: the API sets it when the version is sent (D-051).
-      validUntil: quote.status === "draft" ? null : `${quote.validUntil}T23:59:59+07:00`,
+      validUntil: quote.status === "draft" ? null : validityOf(quote),
       sentAt: quote.sentAt,
       note: quote.customerNote ?? "",
       lines: quote.lines.map((line) => ({
@@ -816,7 +825,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
         vatAmount: line.vatAmount,
         grossAmount: line.grossAmount,
         leadTimeDays: line.leadTimeDays,
-        shippingNetAmount: "0.00",
+        shippingNetAmount: line.shippingNetAmount ?? "0.00",
         belowMarginFloor: line.belowMarginFloor,
         factoryId: line.factory?.id ?? null,
         buyUnitPrice: cost ? (line.buyUnitPrice ?? null) : null,
@@ -829,8 +838,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
       authorUser: message.author ?? customer,
       visibility: message.visibility,
       body: message.body,
-      // The thread's rows keep no attachments.
-      files: [],
+      files: (message.fileIds ?? []).map(attached),
       createdAt: message.createdAt,
     })),
   };
@@ -843,9 +851,10 @@ const QUEUES: Record<string, (rfq: Rfq, who: StaffPersona | undefined) => boolea
   new: (rfq) => rfq.status === "submitted",
   mine: (rfq, who) => rfq.assignee?.id === who?.id,
   overdue: (rfq) => refresh(rfq).urgency === "late",
+  awaiting_factory: (rfq) => rfq.consultations.some((item) => item.status === "requested"),
 };
 
-for (const queue of ["new", "mine", "overdue"] as const) {
+for (const queue of ["new", "mine", "overdue", "awaiting_factory"] as const) {
   registerQueue("rfqs.read", (who) => {
     const rows = rfqs.filter((rfq) => QUEUES[queue]!(rfq, who));
     const due = rows
@@ -879,10 +888,10 @@ indexForSearch(
 
 const find = (rfqId: unknown) => rfqs.find((rfq) => rfq.id === rfqId);
 const findByQuote = (quoteId: unknown) => rfqs.find((rfq) => rfq.quotes.some((quote) => quote.id === quoteId));
-const notFound = () => problem(404, "rfq.not_found", "ไม่พบคำขอราคานี้");
+const findByConsultation = (consultationId: unknown) =>
+  rfqs.find((rfq) => rfq.consultations.some((item) => item.id === consultationId));
 const httpNotFound = () => problem(404, "http.not_found", "ไม่พบคำขอราคานี้");
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
-const conflict = (detail: string) => problem(409, "rfq.invalid_state", detail);
 
 function log(rfq: Rfq, kind: string, title: string, who: StaffPersona | null) {
   rfq.events.push({
@@ -895,26 +904,12 @@ function log(rfq: Rfq, kind: string, title: string, who: StaffPersona | null) {
 }
 
 function offered(rfq: Rfq, key: string) {
-  return rfq.nextActions.some((action) => action.key === key && !action.disabledReason);
-}
-
-/** The RFQ and the actor for an action the RFQ currently offers — or the problem to answer with. */
-function manage(
-  request: Request,
-  rfqId: string | undefined,
-  action: string,
-): Response | { rfq: Rfq; who: StaffPersona } {
-  const who = staffPersonaOf(request);
-  if (!who || !can(who, "rfqs.manage")) return forbidden();
-  const rfq = find(rfqId);
-  if (!rfq) return notFound();
-  if (!offered(refresh(rfq), action)) return conflict("ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
-  return { rfq, who };
+  return refresh(rfq).nextActions.some((action) => action.key === key && !action.disabledReason);
 }
 
 /**
- * The same for a published operation (`rfqs.manage`), answering with the codes it documents:
- * `rfq.closed` on a closed request, `rfq.invalid_transition` for anything else it does not offer.
+ * The RFQ and the actor for an operation (`rfqs.manage`), answering with the codes it documents:
+ * `rfq.closed` on a closed request, `rfq.invalid_transition` for anything the rules do not offer.
  */
 function managePublished(
   request: Request,
@@ -925,46 +920,127 @@ function managePublished(
   if (!who || !can(who, "rfqs.manage")) return forbidden();
   if (!rfq) return httpNotFound();
   if (CLOSED.includes(rfq.status)) return problem(409, "rfq.closed", "คำขอราคานี้ปิดแล้ว");
-  if (!offered(refresh(rfq), action))
-    return problem(409, "rfq.invalid_transition", "ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
+  if (!offered(rfq, action)) return problem(409, "rfq.invalid_transition", "ทำรายการนี้กับคำขอราคาในสถานะนี้ไม่ได้");
   return { rfq, who };
 }
 
-function respond(rfq: Rfq, who: StaffPersona | undefined) {
-  return forActor(refresh(rfq), who);
-}
-
+/** The RFQ after a change, with its new ETag. */
 const published = (rfq: Rfq, who: StaffPersona | undefined, status = 200) =>
-  HttpResponse.json(toStaffRfqDto(rfq, who), { status });
+  HttpResponse.json(toStaffRfqDto(rfq, who), { status, headers: { ETag: etagOf(rfq) } });
+
+/** A change that moves the RFQ on: a new row version, then the published RFQ. */
+function changed(rfq: Rfq, who: StaffPersona, status = 200) {
+  touch(rfq);
+  return published(rfq, who, status);
+}
 
 async function bodyOf<T>(request: Request): Promise<T | null> {
   return (await request.json().catch(() => null)) as T | null;
 }
 
+/** An operation that declares `Idempotency-Key` refuses a key that is not a UUID. */
+function badKey(request: Request, required = false): Response | null {
+  const key = request.headers.get("idempotency-key");
+  if (!key)
+    return required ? problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key สำหรับคำสั่งนี้") : null;
+  return /^[0-9a-f-]{36}$/i.test(key) ? null : problem(400, "idempotency.key_invalid", "Idempotency-Key ไม่ถูกต้อง");
+}
+
+/** Answers already given, by Idempotency-Key: a replay gets the first answer back. */
+const replays = new Map<string, { status: number; body: unknown }>();
+async function once(request: Request, run: () => Promise<Response> | Response): Promise<Response> {
+  const key = request.headers.get("idempotency-key");
+  const seen = key ? replays.get(`${new URL(request.url).pathname}:${key}`) : undefined;
+  if (seen)
+    return HttpResponse.json(seen.body as never, { status: seen.status, headers: { "Idempotent-Replayed": "true" } });
+  const response = await run();
+  if (key && response.ok && response.status !== 204) {
+    replays.set(`${new URL(request.url).pathname}:${key}`, {
+      status: response.status,
+      body: await response.clone().json(),
+    });
+  }
+  return response;
+}
+
 /** The draft's lines priced by the "API", or the 422 it answers with. */
-function draftLines(
-  rfq: Rfq,
-  lines: {
-    quantity: number;
-    unitPrice: string;
-    leadTimeDays: number;
-    consultationId?: string | null;
-    buyUnitPrice?: string | null;
-  }[],
-): Response | QuoteLine[] {
+function draftLines(rfq: Rfq, lines: Schemas["RfqQuoteLineInputDto"][]): Response | QuoteLine[] {
   if (lines.length === 0)
     return problem(422, "validation.failed", "ต้องมีอย่างน้อยหนึ่งรายการ", [
       { path: "lines", code: "min", message: "ต้องมีอย่างน้อยหนึ่งรายการ" },
     ]);
   if (new Set(lines.map((line) => line.quantity)).size !== lines.length)
     return problem(422, "validation.failed", "จำนวนซ้ำกัน", [
-      { path: "lines", code: "unique", message: "จำนวนต้องไม่ซ้ำกัน" },
+      { path: "lines", code: "unique", message: "one line per quantity" },
     ]);
-  return lines.map((line) => priceLine(line, rfq));
+  const unknown = lines.findIndex((line) => line.factoryId && !FACTORIES.some((item) => item.id === line.factoryId));
+  if (unknown >= 0)
+    return problem(422, "validation.failed", "ไม่พบโรงงานนี้", [
+      { path: `lines[${unknown}].factoryId`, code: "exists", message: "unknown factory" },
+    ]);
+  return lines.map((line) =>
+    priceLine(
+      {
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+        leadTimeDays: line.leadTimeDays,
+        consultationId:
+          rfq.consultations.find((item) => item.factory.id === line.factoryId && item.status === "responded")?.id ??
+          null,
+        buyUnitPrice: line.buyUnitPrice ?? null,
+        shippingNetAmount: line.shippingNetAmount ?? null,
+      },
+      rfq,
+    ),
+  );
 }
 
 /** The validity a version gets when it is sent: `quotes.validity_days` from today (D-051). */
-const validityFromToday = () => day(numberSetting("quotes.validity_days", 15) * DAY);
+function validityFromToday() {
+  return day(numberSetting("quotes.validity_days", 15) * DAY);
+}
+
+/**
+ * The factories that could quote the request (D-043): an active capability for its category at an
+ * active or trial factory, the tier in force, whether every requested quantity fits the
+ * capability's range (the partners mock's own rows), and the on-time rate. No prices.
+ */
+function candidatesOf(rfq: Rfq): Schemas["CandidateFactoryDto"][] {
+  return FACTORIES.flatMap((factory) => {
+    const tier = PARTICIPATION[factory.id]?.[rfq.productType.code];
+    const store = stores.get(factory.id);
+    const capabilities = (store?.capabilities ?? []).filter(
+      (item) => item.productTypeCode === rfq.productType.code && item.status === "active",
+    );
+    if (!tier || !store || capabilities.length === 0) return [];
+    const fits = capabilities.some((item) =>
+      rfq.quantities.every(
+        (quantity) =>
+          (item.minOrderQty === null || quantity >= item.minOrderQty) &&
+          (item.maxOrderQty === null || quantity <= item.maxOrderQty),
+      ),
+    );
+    const below = capabilities.every(
+      (item) => item.minOrderQty !== null && rfq.quantities.some((quantity) => quantity < item.minOrderQty!),
+    );
+    return [
+      {
+        factoryId: factory.id,
+        code: factory.code,
+        name: factory.name,
+        status: store.factory.status === "trial" ? "trial" : "active",
+        tier,
+        capable: fits,
+        reason: fits ? null : below ? "quantity_below_minimum" : "quantity_above_maximum",
+        alreadyConsulted: rfq.consultations.some((item) => item.factory.id === factory.id),
+        onTimeShippingPct: ON_TIME[factory.id] ?? null,
+      } satisfies Schemas["CandidateFactoryDto"],
+    ];
+  });
+}
+
+/** Reminders sent, by consultation: once an hour at most (packio-api's anti-spam bound). */
+const reminded = new Map<string, number>();
 
 /* ------------------------------------------------------------ the customer's side (mocks/store) */
 
@@ -989,35 +1065,43 @@ export function customerAcceptQuote(
 ): Response | { id: string; quoteCode: string; quantity: number; line: QuoteLine } {
   const quote = rfq.quotes.find((candidate) => candidate.id === quoteId);
   if (!quote || quote.status !== "sent" || rfq.status !== "quoted")
-    return conflict("ตอบรับได้เฉพาะใบเสนอราคาฉบับล่าสุดที่ส่งให้แล้ว");
-  if (quote.validUntil < day(0)) return problem(409, "rfq.quote_expired", "ใบเสนอราคาฉบับนี้หมดอายุแล้ว");
+    return problem(409, "rfq.quote_not_open", "ตอบรับได้เฉพาะใบเสนอราคาฉบับล่าสุดที่ส่งให้แล้ว");
+  if (Date.parse(validityOf(quote)) <= Date.now())
+    return problem(409, "rfq.quote_not_open", "ใบเสนอราคาฉบับนี้หมดอายุแล้ว");
   const line = quote.lines.find((item) => item.quantity === quantity);
   if (!line)
     return problem(422, "validation.failed", "จำนวนนี้ไม่มีในใบเสนอราคา", [
-      { path: "quantity", code: "enum", message: "เลือกจำนวนจากใบเสนอราคา" },
+      { path: "quantities", code: "invalid", message: "no quoted quantity matches" },
     ]);
   quote.status = "accepted";
   quote.acceptedAt = bangkokIso();
   rfq.status = "accepted";
-  rfq.acceptedQuotation = toQuotation(rfq, quote, quantity, CS);
+  rfq.acceptedQuotation = toQuotation(rfq, quote, [quantity], CS);
   log(rfq, "rfq.accepted", `ลูกค้าตอบรับฉบับที่ ${quote.versionNo} ทางเว็บไซต์`, null);
+  touch(rfq);
   refresh(rfq);
   return { ...rfq.acceptedQuotation, line };
 }
 
-/** The published RFQ surface (`admin.rfqs.*`, contract v0.3.0). */
-const publishedHandlers = [
+/** The published RFQ surface (`admin.rfqs.*`, contract v0.6.0). */
+export const rfqHandlers = [
   // admin.rfqs.list (`rfqs.read`)
   http.get("*/v1/admin/rfqs", ({ request }) => {
     const who = staffPersonaOf(request);
     if (!can(who, "rfqs.read")) return forbidden();
     const url = new URL(request.url);
     const query = Object.fromEntries(url.searchParams);
+    const submittedDay = (rfq: Rfq) => rfq.submittedAt.slice(0, 10);
     const rows = rfqs
       .map(refresh)
       .filter((rfq) => !query.status || rfq.status === query.status)
       .filter((rfq) => !query.assignedToId || rfq.assignee?.id === query.assignedToId)
       .filter((rfq) => query.overdue !== "true" || rfq.urgency === "late")
+      .filter((rfq) => !query.productTypeCode || rfq.productType.code === query.productTypeCode)
+      .filter((rfq) => !query.channel || rfq.channel === query.channel)
+      .filter((rfq) => !query.submittedFrom || submittedDay(rfq) >= query.submittedFrom)
+      .filter((rfq) => !query.submittedTo || submittedDay(rfq) <= query.submittedTo)
+      .filter((rfq) => query.awaitingFactory !== "true" || QUEUES.awaiting_factory!(rfq, who))
       .filter((rfq) =>
         matchesQuery(query.q, rfq.rfqCode, rfq.customer.displayName, rfq.customer.companyName, rfq.contact.phone),
       )
@@ -1036,7 +1120,13 @@ const publishedHandlers = [
     );
   }),
 
-  // admin.rfqs.get (`rfqs.read`)
+  // admin.rfqs.listUnmetDemandReasons (`rfqs.read`)
+  http.get("*/v1/admin/unmet-demand-reasons", ({ request }) => {
+    if (!can(staffPersonaOf(request), "rfqs.read")) return forbidden();
+    return HttpResponse.json(UNMET_REASONS);
+  }),
+
+  // admin.rfqs.get (`rfqs.read`), with the ETag the draft PUT is matched against.
   http.get("*/v1/admin/rfqs/:rfqId", ({ params, request }) => {
     const who = staffPersonaOf(request);
     if (!can(who, "rfqs.read")) return forbidden();
@@ -1044,7 +1134,14 @@ const publishedHandlers = [
     return rfq ? published(rfq, who) : httpNotFound();
   }),
 
-  // admin.rfqs.postMessage (`rfqs.manage`): answers the whole RFQ.
+  // admin.rfqs.listCandidateFactories (`rfqs.read`)
+  http.get("*/v1/admin/rfqs/:rfqId/candidate-factories", ({ params, request }) => {
+    if (!can(staffPersonaOf(request), "rfqs.read")) return forbidden();
+    const rfq = find(params.rfqId);
+    return rfq ? HttpResponse.json(candidatesOf(rfq)) : httpNotFound();
+  }),
+
+  // admin.rfqs.postMessage (`rfqs.manage`): answers the whole RFQ; staff may attach files.
   http.post("*/v1/admin/rfqs/:rfqId/messages", async ({ params, request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "rfqs.manage")) return forbidden();
@@ -1053,39 +1150,55 @@ const publishedHandlers = [
     if (CLOSED.includes(rfq.status)) return problem(409, "rfq.closed", "คำขอราคานี้ปิดแล้ว");
     const body = await bodyOf<Schemas["StaffRfqMessageInputDto"]>(request);
     if (!body?.body?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ข้อความ");
+    if ((body.fileIds?.length ?? 0) > 10)
+      return problem(422, "validation.failed", "แนบไฟล์ได้ไม่เกิน 10 ไฟล์", [
+        { path: "fileIds", code: "max", message: "≤ 10" },
+      ]);
     const message: Message = {
       id: mockId("rms", 5000 + (messages.get(rfq.id)?.length ?? 0) + Math.floor(Math.random() * 1000)),
       authorKind: "staff",
       author: refOf(who),
       visibility: body.visibility,
       body: body.body,
+      fileIds: body.fileIds ?? [],
       createdAt: bangkokIso(),
     };
     messages.set(rfq.id, [...(messages.get(rfq.id) ?? []), message]);
     // The first customer-visible message records the first response (D-100).
     if (body.visibility === "customer" && !rfq.firstResponseAt) rfq.firstResponseAt = message.createdAt;
-    return published(rfq, who, 201);
+    return changed(rfq, who, 201);
   }),
 
-  // admin.rfqs.assign (`rfqs.manage`): a submitted request moves to in_review (D-100).
+  // admin.rfqs.startReview (`rfqs.manage`): submitted → in_review, without assigning (D-100).
+  http.post("*/v1/admin/rfqs/:rfqId/actions/start-review", ({ params, request }) => {
+    const found = managePublished(request, find(params.rfqId), "rfq.start_review");
+    if (found instanceof Response) return found;
+    const { rfq, who } = found;
+    rfq.status = "in_review";
+    log(rfq, "rfq.review_started", "เริ่มพิจารณาคำขอราคา", who);
+    return changed(rfq, who);
+  }),
+
+  // admin.rfqs.assign (`rfqs.manage`): `null` unassigns; a submitted request moves to in_review.
   http.post("*/v1/admin/rfqs/:rfqId/actions/assign", async ({ params, request }) => {
     const found = managePublished(request, find(params.rfqId), "rfq.assign");
     if (found instanceof Response) return found;
     const { rfq, who } = found;
     const body = await bodyOf<Schemas["AssignRfqDto"]>(request);
+    if (body?.userId === null) {
+      rfq.assignee = null;
+      log(rfq, "rfq.unassigned", "ยกเลิกผู้รับผิดชอบ", who);
+      return changed(rfq, who);
+    }
     const assignee = PERSONAS.find((candidate) => candidate.id === body?.userId);
     if (!assignee)
       return problem(422, "validation.failed", "ไม่พบพนักงานที่เลือก", [
-        { path: "userId", code: "exists", message: "ไม่พบพนักงานที่เลือก" },
-      ]);
-    if (!can(assignee, "rfqs.manage"))
-      return problem(422, "validation.failed", "พนักงานคนนี้ไม่มีสิทธิ์รับผิดชอบคำขอราคา", [
-        { path: "userId", code: "permission", message: "ไม่มีสิทธิ์ rfqs.manage" },
+        { path: "userId", code: "exists", message: "not an active staff user" },
       ]);
     rfq.assignee = refOf(assignee);
     if (rfq.status === "submitted") rfq.status = "in_review";
     log(rfq, "rfq.assigned", `มอบหมายให้ ${assignee.displayName}`, who);
-    return published(rfq, who);
+    return changed(rfq, who);
   }),
 
   // admin.rfqs.requestInfo (`rfqs.manage`): → need_info; the message goes to the customer.
@@ -1109,106 +1222,146 @@ const publishedHandlers = [
       },
     ]);
     log(rfq, "rfq.info_requested", "ขอข้อมูลเพิ่มเติมจากลูกค้า", who);
-    return published(rfq, who);
+    return changed(rfq, who);
   }),
 
-  // admin.rfqs.decline (`rfqs.manage`): an unmet-demand reason code (D-102).
+  // admin.rfqs.decline (`rfqs.manage`, optional Idempotency-Key): an unmet-demand reason (D-102).
   http.post("*/v1/admin/rfqs/:rfqId/actions/decline", async ({ params, request }) => {
-    const found = managePublished(request, find(params.rfqId), "rfq.decline");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    const body = await bodyOf<Schemas["StaffDeclineRfqDto"]>(request);
-    const reason = UNMET_REASONS.find((candidate) => candidate.code === body?.reasonCode);
-    if (!reason)
-      return problem(422, "validation.failed", "เหตุผลไม่ถูกต้อง", [
-        { path: "reasonCode", code: "enum", message: "ไม่รู้จักเหตุผลนี้" },
-      ]);
-    rfq.status = "declined";
-    rfq.declineReason = reason;
-    rfq.declineNote = body?.note ?? null;
-    rfq.firstResponseAt ??= bangkokIso();
-    for (const quote of rfq.quotes)
-      if (quote.status === "sent" || quote.status === "draft") quote.status = "superseded";
-    log(rfq, "rfq.declined", `ปฏิเสธคำขอราคา: ${reason.name} (บันทึกเป็นความต้องการที่ไม่ได้รับการตอบสนอง)`, who);
-    return published(rfq, who);
-  }),
-
-  // admin.rfqs.requestConsultation (`rfqs.manage`): one factory per call.
-  http.post("*/v1/admin/rfqs/:rfqId/consultations", async ({ params, request }) => {
-    const found = managePublished(request, find(params.rfqId), "rfq.request_factory_cost");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    const body = await bodyOf<Schemas["RequestConsultationDto"]>(request);
-    if (!body?.dueAt || Date.parse(body.dueAt) <= Date.now())
-      return problem(422, "validation.failed", "กำหนดตอบต้องเป็นเวลาในอนาคต", [
-        { path: "dueAt", code: "min", message: "ต้องเป็นเวลาในอนาคต" },
-      ]);
-    const factory = FACTORIES.find((candidate) => candidate.id === body.factoryId);
-    const tier = factory ? (PARTICIPATION[factory.id]?.[rfq.productType.code] ?? null) : null;
-    if (!factory || tier === null)
-      return problem(422, "validation.failed", "โรงงานที่เลือกผลิตประเภทนี้ไม่ได้", [
-        { path: "factoryId", code: "capability", message: factory?.name ?? String(body.factoryId) },
-      ]);
-    if (rfq.consultations.some((item) => item.factory.id === factory.id && item.status === "requested"))
-      return problem(409, "rfq.consultation_open", `ขอราคาจาก ${factory.name} ไว้แล้ว`);
-    const created: Consultation = {
-      id: mockId("rcn", 9000 + rfq.consultations.length + Math.floor(Math.random() * 500)),
-      factory,
-      tier,
-      status: "requested",
-      note: body.note ?? null,
-      requestedBy: refOf(who),
-      requestedAt: bangkokIso(),
-      dueAt: body.dueAt,
-      respondedAt: null,
-      response: null,
-      declineNote: null,
-    };
-    rfq.consultations.push(created);
-    if (rfq.status === "submitted") rfq.status = "in_review";
-    log(rfq, "rfq.consultation_requested", `ขอราคาจาก ${factory.name}`, who);
-    return published(rfq, who, 201);
-  }),
-
-  // admin.rfqs.draftQuotation (`rfqs.manage`): one draft at a time; validity is set at send (D-051).
-  http.post("*/v1/admin/rfqs/:rfqId/quotations", async ({ params, request }) => {
-    const found = managePublished(request, find(params.rfqId), "rfq.compose_quote");
-    if (found instanceof Response) {
-      const rfq = find(params.rfqId);
-      if (rfq?.quotes.some((quote) => quote.status === "draft"))
-        return problem(409, "rfq.draft_open", "มีฉบับร่างอยู่แล้ว แก้ไขหรือทิ้งฉบับร่างนั้นก่อน");
-      return found;
-    }
-    const { rfq, who } = found;
-    const body = await bodyOf<Schemas["DraftRfqQuoteDto"]>(request);
-    const lines = draftLines(
-      rfq,
-      (body?.lines ?? []).map((line) => ({
-        quantity: line.quantity,
-        unitPrice: line.unitPrice,
-        leadTimeDays: line.leadTimeDays,
-        consultationId:
-          rfq.consultations.find((item) => item.factory.id === line.factoryId && item.status === "responded")?.id ??
-          null,
-        buyUnitPrice: line.buyUnitPrice ?? null,
-      })),
-    );
-    if (lines instanceof Response) return lines;
-    rfq.quotes.unshift({
-      id: mockId("rqt", 9000 + rfq.quotes.length + Math.floor(Math.random() * 500)),
-      versionNo: rfq.quotes.length + 1,
-      status: "draft",
-      // Kept for the fixture only; the draft is published without a validity.
-      validUntil: validityFromToday(),
-      customerNote: body?.note?.trim() || null,
-      lines,
-      currency: "THB",
-      createdBy: refOf(who),
-      createdAt: bangkokIso(),
-      sentAt: null,
-      acceptedAt: null,
+    const refused = badKey(request);
+    if (refused) return refused;
+    return once(request, async () => {
+      const found = managePublished(request, find(params.rfqId), "rfq.decline");
+      if (found instanceof Response) return found;
+      const { rfq, who } = found;
+      const body = await bodyOf<Schemas["StaffDeclineRfqDto"]>(request);
+      const reason = body?.reasonCode ? reasonRow(body.reasonCode) : null;
+      if (!reason)
+        return problem(422, "validation.failed", "เหตุผลไม่ถูกต้อง", [
+          { path: "reasonCode", code: "enum", message: "ไม่รู้จักเหตุผลนี้" },
+        ]);
+      rfq.status = "declined";
+      rfq.declineReason = reason;
+      rfq.declineNote = body?.note ?? null;
+      rfq.firstResponseAt ??= bangkokIso();
+      for (const quote of rfq.quotes)
+        if (quote.status === "sent" || quote.status === "draft") quote.status = "superseded";
+      log(rfq, "rfq.declined", `ปฏิเสธคำขอราคา: ${reason.name} (บันทึกเป็นความต้องการที่ไม่ได้รับการตอบสนอง)`, who);
+      return changed(rfq, who);
     });
-    return published(rfq, who, 201);
+  }),
+
+  // admin.rfqs.requestConsultation (`rfqs.manage`, optional Idempotency-Key): one factory per call.
+  http.post("*/v1/admin/rfqs/:rfqId/consultations", async ({ params, request }) => {
+    const refused = badKey(request);
+    if (refused) return refused;
+    return once(request, async () => {
+      const found = managePublished(request, find(params.rfqId), "rfq.request_factory_cost");
+      if (found instanceof Response) return found;
+      const { rfq, who } = found;
+      const body = await bodyOf<Schemas["RequestConsultationDto"]>(request);
+      if (!body?.dueAt || Date.parse(body.dueAt) <= Date.now())
+        return problem(422, "validation.failed", "กำหนดตอบต้องเป็นเวลาในอนาคต", [
+          { path: "dueAt", code: "min", message: "ต้องเป็นเวลาในอนาคต" },
+        ]);
+      const factory = FACTORIES.find((candidate) => candidate.id === body.factoryId);
+      const candidate = candidatesOf(rfq).find((item) => item.factoryId === body.factoryId);
+      if (!factory || !candidate)
+        return problem(422, "validation.failed", "โรงงานที่เลือกผลิตประเภทนี้ไม่ได้", [
+          { path: "factoryId", code: "capability", message: factory?.name ?? String(body.factoryId) },
+        ]);
+      if (rfq.consultations.some((item) => item.factory.id === factory.id && item.status === "requested"))
+        return problem(409, "rfq.consultation_open", `ขอราคาจาก ${factory.name} ไว้แล้ว`);
+      rfq.consultations.push({
+        id: mockId("rcn", 9000 + rfq.consultations.length + Math.floor(Math.random() * 500)),
+        factory,
+        tier: candidate.tier,
+        status: "requested",
+        note: body.note ?? null,
+        requestedBy: refOf(who),
+        requestedAt: bangkokIso(),
+        dueAt: body.dueAt,
+        respondedAt: null,
+        response: null,
+        declineNote: null,
+      });
+      if (rfq.status === "submitted") rfq.status = "in_review";
+      log(rfq, "rfq.consultation_requested", `ขอราคาจาก ${factory.name}`, who);
+      return changed(rfq, who, 201);
+    });
+  }),
+
+  // admin.rfqs.remindConsultation (`rfqs.manage`, optional Idempotency-Key): once an hour at most.
+  http.post("*/v1/admin/rfq-consultations/:consultationId/actions/remind", ({ params, request }) => {
+    const refused = badKey(request);
+    if (refused) return refused;
+    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
+    const rfq = findByConsultation(params.consultationId);
+    const item = rfq?.consultations.find((candidate) => candidate.id === params.consultationId);
+    if (!rfq || !item) return httpNotFound();
+    if (item.status !== "requested") return problem(409, "rfq.consultation_not_open", "โรงงานตอบแล้ว ไม่ต้องเตือน");
+    const key = request.headers.get("idempotency-key");
+    if (key && replays.has(`remind:${key}`))
+      return new HttpResponse(null, { status: 204, headers: { "Idempotent-Replayed": "true" } });
+    const last = reminded.get(item.id);
+    if (last && Date.now() - last < 60 * 60_000)
+      return problem(409, "rfq.reminder_recent", "เพิ่งเตือนโรงงานนี้ไปเมื่อไม่ถึงชั่วโมงที่แล้ว");
+    reminded.set(item.id, Date.now());
+    if (key) replays.set(`remind:${key}`, { status: 204, body: null });
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // admin.rfqs.draftQuotation (`rfqs.manage`, optional Idempotency-Key): one draft at a time;
+  // validity is set at send (D-051).
+  http.post("*/v1/admin/rfqs/:rfqId/quotations", async ({ params, request }) => {
+    const refused = badKey(request);
+    if (refused) return refused;
+    return once(request, async () => {
+      const rfq = find(params.rfqId);
+      if (rfq && draftOf(rfq) && !CLOSED.includes(rfq.status) && can(staffPersonaOf(request), "rfqs.manage"))
+        return problem(409, "rfq.draft_open", "มีฉบับร่างอยู่แล้ว แก้ไขหรือทิ้งฉบับร่างนั้นก่อน");
+      const found = managePublished(request, rfq, "rfq.compose_quote");
+      if (found instanceof Response) return found;
+      const { who } = found;
+      const body = await bodyOf<Schemas["DraftRfqQuoteDto"]>(request);
+      const lines = draftLines(found.rfq, body?.lines ?? []);
+      if (lines instanceof Response) return lines;
+      found.rfq.quotes.unshift({
+        id: mockId("rqt", 9000 + found.rfq.quotes.length + Math.floor(Math.random() * 500)),
+        versionNo: found.rfq.quotes.length + 1,
+        status: "draft",
+        // Kept for the fixture only; the draft is published without a validity.
+        validUntil: validityFromToday(),
+        customerNote: body?.note?.trim() || null,
+        lines,
+        currency: "THB",
+        createdBy: refOf(who),
+        createdAt: bangkokIso(),
+        sentAt: null,
+        acceptedAt: null,
+      });
+      log(found.rfq, "rfq.quote_drafted", "จัดทำฉบับร่างใบเสนอราคา", who);
+      return changed(found.rfq, who, 201);
+    });
+  }),
+
+  // admin.rfqs.replaceDraftQuotation (`rfqs.manage`): the draft's lines and note, If-Match the
+  // RFQ's ETag; answers the RFQ with its new ETag.
+  http.put("*/v1/admin/rfq-quotations/:rfqQuoteId", async ({ params, request }) => {
+    const who = staffPersonaOf(request);
+    if (!who || !can(who, "rfqs.manage")) return forbidden();
+    const rfq = findByQuote(params.rfqQuoteId);
+    const quote = rfq?.quotes.find((candidate) => candidate.id === params.rfqQuoteId);
+    if (!rfq || !quote) return httpNotFound();
+    if (quote.status !== "draft") return problem(409, "rfq.quote_not_draft", "แก้ได้เฉพาะฉบับร่าง");
+    const stale = precondition(request, etagOf(rfq));
+    if (stale) return stale;
+    if (CLOSED.includes(rfq.status)) return problem(409, "rfq.closed", "คำขอราคานี้ปิดแล้ว");
+    const body = await bodyOf<Schemas["DraftRfqQuoteDto"]>(request);
+    const lines = draftLines(rfq, body?.lines ?? []);
+    if (lines instanceof Response) return lines;
+    Object.assign(quote, { customerNote: body?.note?.trim() || null, lines });
+    log(rfq, "rfq.quote_revised", `แก้ไขฉบับร่างที่ ${quote.versionNo}`, who);
+    return changed(rfq, who);
   }),
 
   // admin.rfqs.discardQuotation (`rfqs.manage`): drafts only.
@@ -1220,106 +1373,79 @@ const publishedHandlers = [
     const at = rfq.quotes.findIndex((candidate) => candidate.id === params.rfqQuoteId);
     if (rfq.quotes[at]?.status !== "draft") return problem(409, "rfq.quote_not_draft", "ทิ้งได้เฉพาะฉบับร่าง");
     rfq.quotes.splice(at, 1);
-    return published(rfq, who);
+    return changed(rfq, who);
   }),
 
-  // admin.rfqs.sendQuotation (`rfqs.manage`): supersedes the version before it; RFQ → quoted.
-  http.post("*/v1/admin/rfq-quotations/:rfqQuoteId/actions/send", ({ params, request }) => {
-    const rfq = findByQuote(params.rfqQuoteId);
-    const quote = rfq?.quotes.find((candidate) => candidate.id === params.rfqQuoteId);
-    if (quote && quote.status !== "draft") {
+  // admin.rfqs.sendQuotation (`rfqs.manage`, optional Idempotency-Key): supersedes the version
+  // before it; RFQ → quoted.
+  http.post("*/v1/admin/rfq-quotations/:rfqQuoteId/actions/send", async ({ params, request }) => {
+    const refused = badKey(request);
+    if (refused) return refused;
+    return once(request, () => {
+      const rfq = findByQuote(params.rfqQuoteId);
+      const quote = rfq?.quotes.find((candidate) => candidate.id === params.rfqQuoteId);
+      if (quote && quote.status !== "draft") {
+        const who = staffPersonaOf(request);
+        if (!who || !can(who, "rfqs.manage")) return forbidden();
+        return problem(409, "rfq.quote_not_draft", "ส่งได้เฉพาะฉบับร่าง");
+      }
+      if (quote && quote.lines.length === 0) return problem(422, "rfq.quote_empty", "ฉบับร่างยังไม่มีรายการ");
+      const found = managePublished(request, rfq, "rfq.send_quote");
+      if (found instanceof Response) return found;
+      const { who } = found;
+      for (const other of found.rfq.quotes) if (other.status === "sent") other.status = "superseded";
+      quote!.status = "sent";
+      quote!.sentAt = bangkokIso();
+      quote!.validUntil = validityFromToday();
+      found.rfq.status = "quoted";
+      found.rfq.firstResponseAt ??= quote!.sentAt;
+      log(found.rfq, "rfq.quote_sent", `ส่งใบเสนอราคาฉบับที่ ${quote!.versionNo} ให้ลูกค้า`, who);
+      return changed(found.rfq, who);
+    });
+  }),
+
+  // admin.rfqs.recordAcceptance (`rfqs.manage`, Idempotency-Key required): the customer's
+  // acceptance by phone, LINE or e-mail, the same path as the customer's own.
+  http.post("*/v1/admin/rfq-quotations/:rfqQuoteId/actions/record-acceptance", async ({ params, request }) => {
+    const refused = badKey(request, true);
+    if (refused) return refused;
+    return once(request, async () => {
       const who = staffPersonaOf(request);
       if (!who || !can(who, "rfqs.manage")) return forbidden();
-      return problem(409, "rfq.quote_not_draft", "ส่งได้เฉพาะฉบับร่าง");
-    }
-    const found = managePublished(request, rfq, "rfq.send_quote");
-    if (found instanceof Response) return found;
-    const { who } = found;
-    for (const other of found.rfq.quotes) if (other.status === "sent") other.status = "superseded";
-    quote!.status = "sent";
-    quote!.sentAt = bangkokIso();
-    quote!.validUntil = validityFromToday();
-    found.rfq.status = "quoted";
-    found.rfq.firstResponseAt ??= quote!.sentAt;
-    log(found.rfq, "rfq.quote_sent", `ส่งใบเสนอราคาฉบับที่ ${quote!.versionNo} ให้ลูกค้า`, who);
-    return published(found.rfq, who);
+      const rfq = findByQuote(params.rfqQuoteId);
+      const quote = rfq?.quotes.find((candidate) => candidate.id === params.rfqQuoteId);
+      if (!rfq || !quote) return httpNotFound();
+      if (rfq.status !== "quoted" || quote.status !== "sent" || Date.parse(validityOf(quote)) <= Date.now())
+        return problem(409, "rfq.quote_not_open", "บันทึกการตอบรับได้เฉพาะฉบับที่ส่งให้ลูกค้าแล้วและยังไม่หมดอายุ");
+      const body = await bodyOf<Schemas["RecordRfqAcceptanceDto"]>(request);
+      if (!body?.via)
+        return problem(422, "validation.failed", "กรุณาระบุช่องทางที่ลูกค้าตอบรับ", [
+          { path: "via", code: "required", message: "required" },
+        ]);
+      const quantities = body.quantities?.length ? body.quantities : quote.lines.map((line) => line.quantity);
+      if (!quote.lines.some((line) => quantities.includes(line.quantity)))
+        return problem(422, "validation.failed", "จำนวนนี้ไม่มีในใบเสนอราคา", [
+          { path: "quantities", code: "invalid", message: "no quoted quantity matches" },
+        ]);
+      quote.status = "accepted";
+      quote.acceptedAt = bangkokIso();
+      rfq.status = "accepted";
+      rfq.acceptedQuotation = toQuotation(rfq, quote, quantities, who);
+      log(
+        rfq,
+        "rfq.accepted",
+        `ลูกค้าตอบรับฉบับที่ ${quote.versionNo} (บันทึกโดย CS ทาง ${body.via}${body.note ? `: ${body.note}` : ""})`,
+        who,
+      );
+      return changed(rfq, who);
+    });
+  }),
+
+  // admin.files.download for the files sent with a request; any other falls through.
+  http.get("*/v1/admin/files/:fileId/download", ({ params, request }) => {
+    const file = rfqs.flatMap((rfq) => rfq.files).find((item) => item.id === params.fileId);
+    if (!file?.url) return undefined;
+    if (!can(staffPersonaOf(request), "rfqs.read")) return undefined;
+    return HttpResponse.json({ url: file.url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),
 ];
-
-/** What packio-api still has to build (verdict `implement`), as contract requests. */
-const requestHandlers = [
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/actions/start-review", ({ params, request }) => {
-    const found = manage(request, params.rfqId, "rfq.start_review");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    rfq.status = "in_review";
-    rfq.assignee ??= refOf(who);
-    log(rfq, "rfq.review_started", "เริ่มพิจารณาคำขอราคา", who);
-    return respond(rfq, who);
-  }),
-  mockRequest("GET /v1/admin/unmet-demand-reasons", () => ({ data: UNMET_REASONS })),
-  mockRequest("GET /v1/admin/rfqs/{rfqId}/candidate-factories", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
-    const rfq = find(params.rfqId);
-    if (!rfq) return notFound();
-    const data: Candidate[] = FACTORIES.map((factory) => {
-      const tier = PARTICIPATION[factory.id]?.[rfq.productType.code] ?? null;
-      return {
-        factory,
-        tier,
-        capable: tier !== null,
-        reason: tier === null ? "ไม่มีความสามารถผลิตประเภทนี้ในระบบ" : null,
-        alreadyConsulted: rfq.consultations.some(
-          (item) => item.factory.id === factory.id && ["requested", "responded"].includes(item.status),
-        ),
-        onTimeRatePct: ON_TIME[factory.id] ?? null,
-      };
-    }).sort((a, b) => Number(b.capable) - Number(a.capable));
-    return { data };
-  }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "rfqs.manage")) return forbidden();
-    const rfq = find(params.rfqId);
-    const item = rfq?.consultations.find((candidate) => candidate.id === params.consultationId);
-    if (!rfq || !item) return notFound();
-    if (item.status !== "requested") return conflict("โรงงานตอบแล้ว ไม่ต้องเตือน");
-    return new Response(null, { status: 204 });
-  }),
-  mockRequest("PUT /v1/admin/rfqs/{rfqId}/quotes/{quoteId}", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.edit_quote");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    const quote = rfq.quotes.find((candidate) => candidate.id === params.quoteId);
-    if (!quote) return notFound();
-    if (quote.status !== "draft") return conflict("แก้ได้เฉพาะฉบับร่าง");
-    if (body.validUntil < day(0))
-      return problem(422, "validation.failed", "วันหมดอายุต้องไม่อยู่ในอดีต", [
-        { path: "validUntil", code: "min", message: "ต้องไม่อยู่ในอดีต" },
-      ]);
-    const lines = draftLines(rfq, body.lines);
-    if (lines instanceof Response) return lines;
-    Object.assign(quote, { validUntil: body.validUntil, customerNote: body.customerNote ?? null, lines });
-    refresh(rfq);
-    return forActor(rfq, who).quotes.find((candidate) => candidate.id === quote.id)!;
-  }),
-  mockRequest("POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance", ({ params, body, request }) => {
-    const found = manage(request, params.rfqId, "rfq.record_acceptance");
-    if (found instanceof Response) return found;
-    const { rfq, who } = found;
-    const quote = rfq.quotes.find((candidate) => candidate.id === params.quoteId);
-    if (!quote || quote.status !== "sent") return conflict("บันทึกการตอบรับได้เฉพาะฉบับที่ส่งให้ลูกค้าแล้ว");
-    if (quote.validUntil < day(0)) return problem(409, "rfq.quote_expired", "ใบเสนอราคาฉบับนี้หมดอายุแล้ว");
-    if (!quote.lines.some((line) => line.quantity === body.quantity))
-      return problem(422, "validation.failed", "จำนวนนี้ไม่มีในใบเสนอราคา", [
-        { path: "quantity", code: "enum", message: "เลือกจำนวนจากใบเสนอราคา" },
-      ]);
-    quote.status = "accepted";
-    quote.acceptedAt = bangkokIso();
-    rfq.status = "accepted";
-    rfq.acceptedQuotation = toQuotation(rfq, quote, body.quantity, who);
-    log(rfq, "rfq.accepted", `ลูกค้าตอบรับฉบับที่ ${quote.versionNo} (บันทึกโดย CS: ${body.note})`, who);
-    return respond(rfq, who);
-  }),
-];
-
-export const rfqHandlers = [...publishedHandlers, ...requestHandlers];
