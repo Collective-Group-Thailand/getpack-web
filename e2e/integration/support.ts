@@ -20,6 +20,8 @@ export const API = process.env.INTEGRATION_API_URL ?? "http://localhost:3400";
 export const SEED_PASSWORD = process.env.IT_SEED_PASSWORD ?? "packio-it-password";
 /** The dev seed's factory (`prisma/seed/dev-folding.ts`). */
 export const DEV_FACTORY_CODE = "F9001";
+/** The dev seed's corrugated test product, priced online once the stack is prepared. */
+export const DEV_INSTANT_PRODUCT = "dev-rsc-carton";
 
 export type StaffRole =
   | "superadmin"
@@ -68,11 +70,12 @@ export class ApiCallError extends Error {
 export async function api<T>(
   method: string,
   path: string,
-  options: { token?: string; body?: unknown; idempotent?: boolean } = {},
+  options: { token?: string; body?: unknown; idempotent?: boolean; ifMatch?: string } = {},
 ): Promise<T> {
   const headers: Record<string, string> = { "content-type": "application/json", "accept-language": "th" };
   if (options.token) headers.authorization = `Bearer ${options.token}`;
   if (options.idempotent) headers["idempotency-key"] = crypto.randomUUID();
+  if (options.ifMatch) headers["if-match"] = options.ifMatch;
   const response = await fetch(`${API}${path}`, {
     method,
     headers,
@@ -84,6 +87,14 @@ export async function api<T>(
 }
 
 /** `TokenPairDto`: every sign-in answers this. */
+/** A read whose `ETag` the next write sends back as `If-Match`. */
+export async function apiWithEtag<T = unknown>(path: string, token: string): Promise<{ etag: string; body: T }> {
+  const response = await fetch(`${API}${path}`, { headers: { authorization: `Bearer ${token}` } });
+  const text = await response.text();
+  if (!response.ok) throw new ApiCallError(response.status, text, `GET ${path}`);
+  return { etag: response.headers.get("etag") ?? "", body: JSON.parse(text) as T };
+}
+
 interface Tokens {
   accessToken: string;
   accessTokenExpiresAt: string;

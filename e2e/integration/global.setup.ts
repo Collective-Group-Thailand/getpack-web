@@ -4,6 +4,7 @@ import {
   api,
   ApiCallError,
   DEV_FACTORY_CODE,
+  DEV_INSTANT_PRODUCT,
   FACTORY_ROLES,
   partnerToken,
   staffToken,
@@ -14,9 +15,11 @@ import {
 
 /**
  * Provisions what packio-api's dev seed lacks, through the API, before the integration specs:
- * a user per D-140 factory role at F9001. The owner is created by a Partner Manager
- * (`admin.factories.createOwnerAccount`, D-171) and creates the others
- * (`partner.factoryUsers.create`).
+ *
+ * - a user per D-140 factory role at F9001: the owner is created by a Partner Manager
+ *   (`admin.factories.createOwnerAccount`, D-171) and creates the others (`partner.factoryUsers.create`);
+ * - and it checks the launch product is priced online, which `scripts/integration-prepare.ts`
+ *   arranges when the stack starts.
  *
  * Idempotent on purpose. The accounts are deterministic, so a second run on the same database
  * finds them ("already exists") and goes on; `scripts/integration-stack.sh reset` gives a clean
@@ -77,4 +80,16 @@ setup("provision F9001's factory users", async () => {
   }
 
   writeState({ factoryId: factory.id, factory: accounts });
+});
+
+setup("the corrugated test product is priced online", async () => {
+  // Prepared by scripts/integration-stack.sh (scripts/integration-prepare.ts) before any web server
+  // reads the catalogue: the storefront caches it (5 minutes), so preparing it here would be too late.
+  const configurator = await api<{ instant: boolean }>(
+    "GET",
+    `/v1/store/catalog/products/${DEV_INSTANT_PRODUCT}/configurator`,
+  );
+  if (!configurator.instant) {
+    throw new Error(`${DEV_INSTANT_PRODUCT} is not priced online: run scripts/integration-stack.sh up (or reset)`);
+  }
 });
