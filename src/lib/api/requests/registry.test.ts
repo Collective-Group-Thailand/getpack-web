@@ -33,43 +33,55 @@ describe("the contract-request registry", () => {
   });
 
   it("keeps the published-awaiting-migration list shrinking", () => {
-    // Every entry must still be a request and still be published; a migrated one is deleted
-    // from the registry and then has to leave the list too.
+    // Every entry must still be a request and still be published — at its own path, or where the
+    // triage says it was published instead; a migrated one is deleted from the registry and then
+    // has to leave the list too.
     const stale = PUBLISHED_AWAITING_MIGRATION.filter((key) => {
       const [method, path] = key.split(" ") as [string, string];
-      return !(key in REQUESTS) || contract.paths[path]?.[method.toLowerCase()] === undefined;
+      const verdict = OPERATION_TRIAGE[key]?.verdict;
+      const published =
+        contract.paths[path]?.[method.toLowerCase()] !== undefined ||
+        verdict === "published" ||
+        verdict === "published_differently";
+      return !(key in REQUESTS) || !published;
     });
     expect(stale).toEqual([]);
-    // U-F0.2 migrated the customer zone, U-F0.3 the admin zone; left are the partner zone's four
-    // (U-F0.4) and the configurator parked for U2.F1.
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(5);
+    // Contract v0.6.0 published every request packio-api built in U-B0 (111, the configurator
+    // parked for U2.F1 among them); U-F0.4 moves the screens off them. Lower this as it goes.
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(111);
   });
 
-  it("keeps the customer zone on the published contract", () => {
-    // U-F0.2: a store request is only one packio-api still has to build (verdict `implement`, or
-    // written after the triage and awaiting it). Anything else is published and is called through
-    // serverApi/browserApi with the generated types — never through a request again.
-    const offContract = entries
+  /**
+   * A zone's requests are only what packio-api has not built — verdict `implement`, `deferred` by
+   * a decision, or written after the triage — plus the published ones still on the migration list.
+   * Anything else is called through serverApi/browserApi with the generated types.
+   */
+  function offContract(surface: "store" | "admin" | "partner"): string[] {
+    return entries
       .map(([key]) => key)
-      .filter((key) => key.includes(" /v1/store/"))
-      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key))
-      .filter((key) => !CUSTOMER_ZONE_PARKED.includes(key));
-    expect(offContract).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual(CUSTOMER_ZONE_PARKED);
+      .filter((key) => key.includes(` /v1/${surface}/`))
+      .filter(
+        (key) =>
+          !["implement", "deferred"].includes(OPERATION_TRIAGE[key]?.verdict ?? "") && !AWAITING_TRIAGE.includes(key),
+      )
+      .filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key));
+  }
+
+  it("keeps the customer zone on the published contract", () => {
+    // U-F0.2, re-opened by v0.4.0 (U-F0.4).
+    expect(offContract("store")).toEqual([]);
     // A parked operation is still a published one awaiting its screen, never a way to hide a new request.
     expect(CUSTOMER_ZONE_PARKED.filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key))).toEqual([]);
   });
 
   it("keeps the admin zone on the published contract", () => {
-    // U-F0.3: an admin request is only one packio-api still has to build (verdict `implement`, or
-    // written after the triage and awaiting it). Anything else is published and is called through
-    // serverApi/browserApi with the generated types — never through a request again.
-    const offContract = entries
-      .map(([key]) => key)
-      .filter((key) => key.includes(" /v1/admin/"))
-      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key));
-    expect(offContract).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/admin/"))).toEqual([]);
+    // U-F0.3, re-opened by v0.5.0 and v0.6.0 (U-F0.4).
+    expect(offContract("admin")).toEqual([]);
+  });
+
+  it("keeps the partner zone on the published contract", () => {
+    // U-F0.4.
+    expect(offContract("partner")).toEqual([]);
   });
 
   it("spells every key as a method and a surface path template", () => {
@@ -143,6 +155,7 @@ describe("packio-api's triage (U1 U-F0.1)", () => {
       published: "Published as ",
       published_differently: "Published differently (see mapping)",
       implement: "Open — packio-api ",
+      deferred: "Deferred by decision",
       mixed: "Mixed — ",
       reject: "Rejected",
     };
