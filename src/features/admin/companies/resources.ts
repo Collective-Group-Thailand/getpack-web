@@ -5,11 +5,20 @@ import type { Schemas } from "@/lib/api/types";
 import { defineList } from "../console/resource";
 
 export type Company = Schemas["AdminCompanyDto"];
-export type CompanyKyc = Schemas["CompanyKycDocumentDto"];
-export type CompanyMember = Schemas["CompanyMemberDto"];
+export type CompanyKyc = Schemas["AdminKycDocumentDto"];
+export type CompanyMember = Schemas["AdminCompanyMemberDto"];
 export type CompanyBranch = Schemas["CompanyBranchDto"];
-export type CompanyCredit = Schemas["CompanyCreditDto"];
+export type CompanyCredit = Schemas["AdminCompanyCreditDto"];
+export type CreditVersion = Schemas["CreditLimitVersionDto"];
 export type CompanyStatement = Schemas["CompanyStatementDto"];
+export type IssuedStatement = Schemas["IssuedStatementDto"];
+
+export const CREDIT_STATUSES = [
+  "prepaid",
+  "eligible",
+  "credit",
+  "blocked_overdue",
+] as const satisfies readonly Schemas["CreditStatus"][];
 
 export const COMPANY_STATUSES = [
   "applied",
@@ -29,6 +38,5 @@ export const companiesList = defineList<Company>({
     (await contract.GET("/v1/admin/companies", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.companyCode ?? row.legalName,
-  // CONTRACT-GAP admin.companies: no creditStatus filter on the published list.
-  defaults: { filterKeys: ["status"] },
+  defaults: { filterKeys: ["status", "creditStatus"] },
 });
