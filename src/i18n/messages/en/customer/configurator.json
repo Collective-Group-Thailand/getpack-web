@@ -139,11 +139,19 @@
       "expired": "This code has expired.",
       "not_applicable": "This code does not apply to this product.",
       "used_up": "This code has been fully used.",
-      "min_not_met": "The order is below this code's minimum.",
-      "sign_in_required": "Sign in to use this code."
+      "disabled": "This code has been disabled.",
+      "not_yours": "This code belongs to another account.",
+      "inactive": "This code is not active.",
+      "budget_exhausted": "This promotion has run out."
     },
     "promoTooMany": "Too many attempts. Please wait a moment and try again.",
-    "promoFailed": "We could not check the code. Please try again."
+    "promoFailed": "We could not check the code. Please try again.",
+    "promoBenefit": {
+      "percent": "{pct} off",
+      "fixed": "{amount} off",
+      "cap": " (up to {amount})"
+    },
+    "promoValidUntil": "Valid until {date}"
   },
   "preview": {
     "boxLabel": "{name}, {l} × {w} × {h} mm, {material}",

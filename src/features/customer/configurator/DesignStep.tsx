@@ -3,8 +3,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 
+import { useFormat } from "@/features/shared/format/useFormat";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
@@ -25,21 +27,34 @@ interface DesignStepProps {
  * How the artwork gets made, the physical mockup add-on (D-072), and a promotion code.
  *
  * The code is checked as soon as it is entered so the customer knows it works for this product
- * (CONTRACT-REQUEST store.promo-check); what it takes off is the quotation's and the checkout's
- * to compute, so this says what the code gives in the API's words, never an amount.
+ * (`store.promotions.checkCode`, D-053); what it takes off is the quotation's and the checkout's
+ * to compute, so this says what the code gives — the offer's own percent or amount — never what
+ * it would take off this order.
  */
 export function DesignStep({ configurator, state, onChange, designerAvailable }: DesignStepProps) {
   const t = useTranslations("configurator.design");
+  const format = useFormat();
   const designOptions = configurator.design.options.filter(
     (option) => option !== "online_designer" || designerAvailable,
   );
   const check = useMutation({
-    mutationFn: (code: string) =>
-      browserRequests().call("POST /v1/store/promotions/actions/check", {
-        body: { code, productTypeCode: configurator.productTypeCode, quantity: state.quantity },
-      }),
+    mutationFn: async (code: string) =>
+      (
+        await browserApi().POST("/v1/store/promotions/actions/check", {
+          body: { code, productTypeCode: configurator.productTypeCode, quantity: state.quantity },
+        })
+      ).data!,
   });
   const result = check.data;
+  const offer = result?.offer ?? null;
+
+  /** What the offer gives, in its own terms (the amount off this order is the cart's). */
+  const benefitText = (benefit: Schemas["OfferBenefitDto"]) => {
+    const cap = benefit.maxAmount ? t("promoBenefit.cap", { amount: format.thb(benefit.maxAmount) }) : "";
+    if (benefit.pct) return `${t("promoBenefit.percent", { pct: format.percent(benefit.pct) })}${cap}`;
+    if (benefit.amount) return `${t("promoBenefit.fixed", { amount: format.thb(benefit.amount) })}${cap}`;
+    return null;
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -102,8 +117,17 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
           </Button>
         </div>
         {result?.valid ? (
-          <Callout tone="success" live title={result.title ?? result.code}>
-            {result.benefit}
+          <Callout tone="success" live title={offer?.title ?? result.code}>
+            {offer ? (
+              <>
+                {offer.description ?? benefitText(offer.benefit)}
+                {offer.validUntil ? (
+                  <span className="text-muted block text-xs">
+                    {t("promoValidUntil", { date: format.dateTime(offer.validUntil) })}
+                  </span>
+                ) : null}
+              </>
+            ) : null}
           </Callout>
         ) : null}
         {result && !result.valid ? (

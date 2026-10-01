@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { getFormat } from "@/features/shared/format/server";
 
 import type { PriceHint } from "./api.server";
+import { pick } from "./localize";
 
 /**
  * "เริ่มต้น ฿3.50 / ชิ้น" and "ผลิต 7–10 วันทำการ" from a price hint, with the basis the figure
@@ -11,7 +12,7 @@ import type { PriceHint } from "./api.server";
  */
 export async function priceHintText(hint: PriceHint | undefined) {
   const [t, format] = await Promise.all([getTranslations("catalog"), getFormat()]);
-  if (!hint) return { price: null, basis: null, leadTime: null };
+  if (!hint) return { price: null, basis: null, leadTime: null, specs: null };
 
   const price = hint.startingFromPerPiece
     ? t("price.from", { price: format.thb(hint.startingFromPerPiece) })
@@ -32,5 +33,15 @@ export async function priceHintText(hint: PriceHint | undefined) {
       : t("price.leadTime", { min: range.min, max: range.max })
     : null;
 
-  return { price, basis, leadTime };
+  // The reference specification the figure was priced at, in the API's words (D-181).
+  const specs = hint.basis?.specs.length
+    ? hint.basis.specs
+        .map(
+          (line) =>
+            `${pick(format.locale, line.labelTh, line.labelEn)} ${pick(format.locale, line.valueTh, line.valueEn)}`,
+        )
+        .join(" · ")
+    : null;
+
+  return { price, basis, leadTime, specs };
 }

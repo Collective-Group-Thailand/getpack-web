@@ -77,7 +77,8 @@
       "phone": "That mobile number doesn't look right",
       "email": "That e-mail doesn't look right",
       "message": "Write at least 10 characters"
-    }
+    },
+    "openLine": "Continue in LINE"
   },
   "samples": {
     "title": "Sample kits",
@@ -166,8 +167,14 @@
     "phoneNeeded": "Enter a mobile number for the call back",
     "handedOff": "Passed to the team — reference {ticket}",
     "openLine": "Open LINE to continue",
-    "callbackSoon": "We'll call back within an hour during business hours",
     "failed": "That didn't work. Please try again.",
-    "rateLimited": "Too many requests — please wait a little"
+    "rateLimited": "Too many requests — please wait a little",
+    "replyBy": "The team will get back to you by {date}",
+    "nameNeeded": "Enter your name so the team can get back to you",
+    "name": "Name",
+    "guestPhone": "Mobile number",
+    "handoffPageBody": "The team sees which page you came from. Chat in LINE, or ask us to call you back.",
+    "chatTitle": "Talk to the Packio team",
+    "chatIntro": "Customer service helps you choose a box, answers questions about prices and follows up on your orders."
   }
 }

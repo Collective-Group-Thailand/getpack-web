@@ -11,7 +11,7 @@ import { CommandPalette, type CommandItem } from "@/ui/components/CommandPalette
 
 import { pick } from "../catalog/localize";
 import { articleHref, productHref, stockProductHref } from "../catalog/paths";
-import { matchFaqs, mightBeOrderCode, orderCodeOf } from "./match";
+import { faqHitsOf, mightBeOrderCode, orderCodeOf } from "./match";
 import { clearRecent, readRecent, rememberSearch } from "./recent";
 
 type Order = Pick<Schemas["OrderDto"], "id" | "orderCode" | "status">;
@@ -118,9 +118,9 @@ export default function SearchDialog({ open, onOpenChange }: { open: boolean; on
         });
       }
     }
-    matchFaqs(results.faqs, term, locale, 3).forEach((faq, index) =>
+    faqHitsOf(results.hits, results.faqs, locale, 3).forEach((faq) =>
       list.push({
-        id: `faq-${index}`,
+        id: `faq-${faq.key}`,
         label: faq.question,
         group: t("search.groups.faq"),
         icon: "help",

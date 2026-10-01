@@ -87,12 +87,12 @@ async function orFallback<T>(read: Promise<T>, fallback: T): Promise<T> {
 }
 
 export type ProductType = Schemas["StoreProductTypeDto"];
-export type ProductCategory = ResponseOf<Requests, "GET /v1/store/catalog/product-categories">[number];
+export type ProductCategory = Schemas["StoreProductCategoryDto"];
 export type ProductCard = Schemas["StoreProductCardDto"];
 export type ProductDetail = Schemas["StoreProductDetailDto"];
 export type StockProduct = Schemas["StoreStockProductDto"];
-export type PriceHint = ResponseOf<Requests, "GET /v1/store/catalog/price-hints">["data"][number];
-export type ProductFaq = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/faqs">[number];
+export type PriceHint = Schemas["PriceHintDto"];
+export type ProductFaq = Schemas["StoreFaqDto"];
 export type ArticleCard = Schemas["StoreArticleCardDto"];
 export type Article = Schemas["StoreArticleDto"];
 export type ArticleCategory = Schemas["StoreArticleCategoryDto"];
@@ -105,8 +105,9 @@ export type ShowcaseProduct = Schemas["StoreShowcaseProductDto"];
 export type Page<T> = { data: T[]; meta: Schemas["PageMeta"] };
 export type Configurator = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/configurator">;
 export type SharedQuote = Schemas["SavedQuoteDto"];
-export type SupportChannels = ResponseOf<Requests, "GET /v1/store/support-channels">;
-export type RfqForm = ResponseOf<Requests, "GET /v1/store/rfq-forms/{productTypeCode}">;
+export type SupportChannels = Schemas["StoreSupportChannelsDto"];
+export type RfqForm = Schemas["StoreRfqFormDto"];
+export type SitemapEntry = Schemas["StoreSitemapEntryDto"];
 
 /* ------------------------------------------------------------------------- catalogue */
 
@@ -121,8 +122,10 @@ export async function getProductTypeNames(locale: string): Promise<Record<string
   return Object.fromEntries(types.map((type) => [type.code, pick(locale, type.nameTh, type.nameEn)]));
 }
 
+/** Active categories that hold an active product type (`store.catalog.listProductCategories`, D-228). */
 export async function getProductCategories(): Promise<ProductCategory[]> {
-  return (await publicRequests("catalogue")).call("GET /v1/store/catalog/product-categories");
+  const { data } = await (await publicApi("catalogue")).GET("/v1/store/catalog/product-categories");
+  return data ?? [];
 }
 
 /** A category with the product types in it — the unit the catalogue is browsed by. */
@@ -143,6 +146,8 @@ export async function getCatalogueTree(): Promise<CatalogueCategory[]> {
 
 export interface ProductListQuery {
   productType?: string;
+  /** A category code; the API includes its sub-categories (D-228). */
+  category?: string;
   q?: string;
   sort?: string;
   order?: "asc" | "desc";
@@ -188,23 +193,30 @@ export async function getPriceHints(query: {
   skus?: string[];
 }): Promise<Map<string, PriceHint>> {
   if (query.slugs?.length === 0 && query.skus?.length === 0) return new Map();
-  const requests = await publicRequests("prices");
-  const response = await orFallback(
-    requests.call("GET /v1/store/catalog/price-hints", {
-      query: {
-        productType: query.productType,
-        slugs: query.slugs?.length ? query.slugs.join(",") : undefined,
-        skus: query.skus?.length ? query.skus.join(",") : undefined,
-      },
-    }),
-    { data: [] },
+  const api = await publicApi("prices");
+  const hints = await orFallback(
+    api
+      .GET("/v1/store/catalog/price-hints", {
+        params: {
+          query: {
+            productType: query.productType,
+            slugs: query.slugs?.length ? query.slugs : undefined,
+            skus: query.skus?.length ? query.skus : undefined,
+          },
+        },
+      })
+      .then(({ data }) => data ?? []),
+    [],
   );
-  return new Map(response.data.map((hint) => [hint.key, hint]));
+  return new Map(hints.map((hint) => [hint.key, hint]));
 }
 
 export async function getProductFaqs(slug: string): Promise<ProductFaq[]> {
-  const requests = await publicRequests("content");
-  return orFallback(requests.call("GET /v1/store/catalog/products/{slug}/faqs", { path: { slug } }), []);
+  const api = await publicApi("content");
+  return orFallback(
+    api.GET("/v1/store/catalog/products/{slug}/faqs", { params: { path: { slug } } }).then(({ data }) => data ?? []),
+    [],
+  );
 }
 
 export async function listShowcase(
@@ -232,16 +244,36 @@ export async function getSharedQuote(token: string): Promise<SharedQuote | null>
   );
 }
 
-/** Packio's CS channels (CONTRACT-REQUEST store.support-channels); `null` when unavailable. */
+/** Packio's CS channels (`store.support.getChannels`, D-221); `null` when unavailable. */
 export async function getSupportChannels(): Promise<SupportChannels | null> {
-  const requests = await publicRequests("content");
-  return orFallback(requests.call("GET /v1/store/support-channels"), null);
+  const api = await publicApi("content");
+  return orFallback(
+    api.GET("/v1/store/support-channels").then(({ data }) => data ?? null),
+    null,
+  );
 }
 
-/** A category's RFQ form (CONTRACT-REQUEST store.rfq-forms); `null` for an unknown type. */
+/** A category's RFQ form (`store.rfqs.getForm`); `null` for an unknown type. */
 export async function getRfqForm(productTypeCode: string): Promise<RfqForm | null> {
-  const requests = await publicRequests("catalogue");
-  return orNull(requests.call("GET /v1/store/rfq-forms/{productTypeCode}", { path: { productTypeCode } }));
+  const api = await publicApi("catalogue");
+  return orNull(
+    api
+      .GET("/v1/store/rfq-forms/{productTypeCode}", { params: { path: { productTypeCode } } })
+      .then(({ data }) => data!),
+  );
+}
+
+/**
+ * What the sitemap lists (`store.catalog.getSitemap`): categories, catalogue and stock products
+ * and articles, each with its last change; `noindex` pages are already left out. Empty when the
+ * API cannot answer — a short sitemap is honest, one listing pages that 404 is not.
+ */
+export async function getSitemapEntries(): Promise<SitemapEntry[]> {
+  const api = await publicApi("content");
+  return orFallback(
+    api.GET("/v1/store/sitemap").then(({ data }) => data ?? []),
+    [],
+  );
 }
 
 /* --------------------------------------------------------------------------- content */
@@ -281,7 +313,7 @@ export async function listFaqs(): Promise<FaqGroup[]> {
   return data ?? [];
 }
 
-/** Catalogue search (products, stock, showcase, articles). Short-lived: a query is not content. */
+/** Catalogue search (products, stock, showcase, articles, FAQs). Short-lived: a query is not content. */
 export async function searchCatalogue(q: string): Promise<SearchResult> {
   const { data } = await (await publicApi("prices")).GET("/v1/store/catalog/search", { params: { query: { q } } });
   return data!;

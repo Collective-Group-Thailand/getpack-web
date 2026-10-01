@@ -124,6 +124,9 @@ export async function ProductView({
           <div className="border-border bg-bg-subtle rounded-xl border p-4">
             {text.price ? <p className="text-2xl font-semibold tabular-nums">{text.price}</p> : null}
             {text.basis ? <p className="text-muted mt-1 text-sm">{text.basis}</p> : null}
+            {text.specs ? (
+              <p className="text-muted mt-1 text-sm">{t("product.priceBasisSpecs", { specs: text.specs })}</p>
+            ) : null}
             {text.leadTime ? (
               <p className="mt-3 flex items-center gap-2 text-sm">
                 <Icon name="clock" size={16} aria-hidden="true" />

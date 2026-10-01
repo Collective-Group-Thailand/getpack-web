@@ -7,7 +7,8 @@
  *   published  saved quotations (`store.quotes.save` / `.list` / `.get` / `.share` / `.getShared` /
  *              `.requestPdf` / `.getPdf`, U-F0.2) — projected from the records below, which the
  *              cart, checkout, RFQ and reorder mocks share
- *   requested  store.configurator, store.promo-check, store.support-channels
+ *   requested  store.configurator (parked for U2.F1)
+ *   published  the code check (`store.promotions.checkCode`) and the CS channels (`store.support.getChannels`)
  *
  * The configurator is built from the back office's own catalogue rows (`../admin/catalogue.ts`)
  * — patterns, materials, ink colours, finishes, die-cuts, assemblies — so an admin edit shows in
@@ -1130,28 +1131,53 @@ export const storeQuoteHandlers: HttpHandler[] = [
     return HttpResponse.json(pdf);
   }),
 
-  // CONTRACT-REQUEST store.promo-check
-  mockRequest("POST /v1/store/promotions/actions/check", ({ body, request }) => {
-    const { key, promotion, reason } = checkCode(body.code, body.productTypeCode);
+  // store.promotions.checkCode (public): the code's offer in its own terms; the amount is the cart's.
+  http.post("*/v1/store/promotions/actions/check", async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as Schemas["CheckCodeDto"] | null;
+    if (!body || !/^[A-Za-z0-9-]{3,40}$/.test(body.code ?? ""))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "code", code: "pattern", message: "code" },
+      ]);
+    const { key, promotion, reason } = checkCode(body.code, body.productTypeCode ?? "");
     const en = english(request);
-    return {
+    const known = PROMOTIONS[key];
+    const offer: Schemas["PromotionOfferDto"] | null = known
+      ? {
+          code: key,
+          title: en ? known.titleEn : known.title,
+          description: null,
+          status: promotion ? "usable" : "not_applicable",
+          validUntil: null,
+          benefit: {
+            type: "percent",
+            pct: `${known.pct}.0000`,
+            amount: null,
+            maxAmount: known.cap ? baht(known.cap) : null,
+          },
+          conditions: {
+            firstOrderOnly: key === "FIRSTBOX",
+            minOrderValue: null,
+            minQuantity: null,
+            paymentMethods: [],
+            productTypeCodes: known.types ?? [],
+          },
+        }
+      : null;
+    return HttpResponse.json({
       code: key,
       valid: Boolean(promotion),
       reason,
-      title: promotion ? (en ? promotion.titleEn : promotion.title) : null,
-      benefit: promotion
-        ? en
-          ? `${promotion.pct}% off the product price, applied to your quotation and at checkout`
-          : `ลด ${promotion.pct}% จากค่าสินค้า คำนวณในใบเสนอราคาและตอนชำระเงิน`
-        : null,
-    };
+      offer,
+    } satisfies Schemas["CodeCheckDto"]);
   }),
 
-  // CONTRACT-REQUEST store.support-channels
-  mockRequest("GET /v1/store/support-channels", ({ request }) => ({
-    lineOaId: "@packio.mock",
-    phone: "02-000-0000",
-    email: "support@packio.invalid",
-    hours: english(request) ? "Mon–Sat 09:00–18:00 (mock data)" : "จันทร์–เสาร์ 09:00–18:00 (ข้อมูลจำลอง)",
-  })),
+  // store.support.getChannels (D-221): the CS Lead's setting, obviously fake.
+  http.get("*/v1/store/support-channels", ({ request }) =>
+    HttpResponse.json({
+      lineOaId: "@packio.mock",
+      phone: "02-000-0000",
+      email: "support@packio.invalid",
+      hours: english(request) ? "Mon–Sat 09:00–18:00 (mock data)" : "จันทร์–เสาร์ 09:00–18:00 (ข้อมูลจำลอง)",
+    } satisfies Schemas["StoreSupportChannelsDto"]),
+  ),
 ];

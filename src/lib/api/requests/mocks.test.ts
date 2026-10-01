@@ -45,7 +45,6 @@ const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/saved-views": { resource: "order" },
   "GET /v1/admin/search": { q: "ตัวอย่าง" },
   "GET /v1/admin/analytics/journeys": { range: "7d", journey: "claims" },
-  "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
   "GET /v1/partner/factories/{factoryId}/jobs/lookup": { code: "J-2569-00300" },
   "GET /v1/admin/depreciation-runs/preview": { period: new Date().toISOString().slice(0, 7) },
   "GET /v1/admin/financial-reports/roll-forward": {
@@ -83,7 +82,7 @@ describe("the mock API answers every contract request in its requested shape", (
   it("answers a public store read without a session, and refuses a private one", async () => {
     const api = createApiClient({ baseUrl: "http://api.mock" });
     const anonymous = createRequestClient(REQUESTS, api as unknown as Client<never>);
-    await expect(anonymous.call("GET /v1/store/catalog/product-categories")).resolves.not.toHaveLength(0);
+    await expect(anonymous.call("GET /v1/store/sample-kits")).resolves.toMatchObject({ data: expect.any(Array) });
     await expect(anonymous.call("GET /v1/store/me/privacy-requests")).rejects.toMatchObject({ status: 401 });
   });
 
