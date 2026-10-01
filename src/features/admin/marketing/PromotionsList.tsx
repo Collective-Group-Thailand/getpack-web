@@ -2,13 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { PROMOTION_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
+import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
@@ -27,31 +27,18 @@ import {
 } from "../console";
 import { PROMOTION_KINDS, promotionsList, type Promotion } from "./resources";
 
-/** The campaigns a promotion can name, by id — the row carries only `campaignId`. */
-function useCampaignCodes() {
-  const campaigns = useQuery({
-    queryKey: queryKeys.list("admin", "campaign", { perPage: 100 }),
-    queryFn: async () =>
-      (await adminBrowserApis().contract.GET("/v1/admin/campaigns", { params: { query: { perPage: 100 } } })).data!,
-  });
-  return new Map((campaigns.data?.data ?? []).map((row) => [row.id, row.code]));
-}
-
 /**
  * Promotions (F2 2.7, D-053): coupons, automatic promotions and the referral discount, in the
- * priority order the engine applies them. The spend is what each has given away.
- *
- * CONTRACT-GAP admin.promotions — the row has no benefit summary (its benefit type names it), no
- * usage (redemptions, the margin guard's cap: the promotion's own page reads the report) and no
- * campaign ref (the campaign's code comes from the campaign list).
+ * priority order the engine applies them. Each row says its benefit in the API's words, its
+ * campaign, and what it has been used for (redemptions, discount given, what the margin guard
+ * took back, D-053).
  */
 export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | null }) {
   const t = useTranslations("marketing.promotions");
-  const tBenefits = useTranslations("marketing.promotion.benefits");
   const tStatus = useTranslations("status");
   const format = useFormat();
+  const en = useLocale() === "en";
   const canManage = useCan("promotions.manage");
-  const campaignCodes = useCampaignCodes();
   const [ordering, setOrdering] = useState(false);
 
   const columns: DataTableColumn<Promotion>[] = [
@@ -64,7 +51,7 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
           <Link href={`/marketing/promotions/${row.id}`} className="text-primary font-medium hover:underline">
             {row.name}
           </Link>
-          <p className="text-muted text-xs">{tBenefits(row.benefit.type)}</p>
+          <p className="text-muted text-xs">{en ? row.benefitSummaryEn : row.benefitSummaryTh}</p>
         </div>
       ),
     },
@@ -78,12 +65,13 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
       id: "campaign",
       header: t("columns.campaign"),
       cell: (row) =>
-        row.campaignId ? (
+        row.campaign ? (
           <Link
-            href={`/marketing/campaigns/${row.campaignId}`}
+            href={`/marketing/campaigns/${row.campaign.id}`}
             className="text-primary font-mono text-xs hover:underline"
+            title={row.campaign.name}
           >
-            {campaignCodes.get(row.campaignId) ?? t("campaignLink")}
+            {row.campaign.code}
           </Link>
         ) : (
           <span className="text-muted">–</span>
@@ -91,10 +79,26 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
     },
     { id: "stacking", header: t("columns.stacking"), hideable: true, cell: (row) => t(`stacking.${row.stacking}`) },
     {
-      id: "spent",
-      header: t("columns.spent"),
+      id: "usage",
+      header: t("columns.usage"),
       numeric: true,
-      cell: (row) => <span className="text-sm">{format.thb(row.spentAmount)}</span>,
+      cell: (row) => (
+        <div className="text-sm">
+          <p>{t("redemptions", { count: row.usage.redemptions })}</p>
+          <p className="text-muted text-xs">{format.thb(row.usage.discountAmount)}</p>
+          {Number(row.usage.cappedAmount) > 0 ? (
+            <p className="text-warning-subtle-fg text-xs">
+              {t("capped", { amount: format.thb(row.usage.cappedAmount) })}
+            </p>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      id: "updatedAt",
+      header: t("columns.updated"),
+      hideable: true,
+      cell: (row) => <When at={row.updatedAt} />,
     },
     {
       id: "window",
@@ -155,7 +159,11 @@ export function PromotionsList({ initial }: { initial: InitialPage<Promotion> | 
   );
 }
 
-/** Live promotions in the order the engine tries them; the first is tried first (D-053). */
+/**
+ * Live promotions in the order the engine tries them; the first is tried first (D-053). Saving
+ * rewrites their priorities 10, 20, … (`admin.promotions.reorder`). Referral promotions are
+ * system-managed (409 `promotions.system_managed`), so they are not offered.
+ */
 function PriorityDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("marketing.promotions.priority");
   const tList = useTranslations("marketing.promotions");
@@ -167,13 +175,21 @@ function PriorityDialog({ onClose }: { onClose: () => void }) {
       (await adminBrowserApis().contract.GET("/v1/admin/promotions", { params: { query: { perPage: 100 } } })).data!,
   });
   const [order, setOrder] = useState<Promotion[] | null>(null);
-  const rows = order ?? (live.data?.data ?? []).filter((row) => row.status === "active" || row.status === "paused");
+  const [key] = useState(newIdempotencyKey);
+  const rows =
+    order ??
+    (live.data?.data ?? [])
+      .filter((row) => row.kind !== "referral" && (row.status === "active" || row.status === "paused"))
+      .sort((a, b) => a.priority - b.priority);
 
   const save = useMutation({
-    mutationFn: () =>
-      browserRequests().call("PUT /v1/admin/promotions/priority", {
-        body: { promotionIds: rows.map((row) => row.id) },
-      }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.PUT("/v1/admin/promotions/priority", {
+          params: { header: { "Idempotency-Key": key } },
+          body: { promotionIds: rows.map((row) => row.id) },
+        })
+      ).data!,
     onSuccess: () => {
       toast.success(t("saved"));
       void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "promotion") });

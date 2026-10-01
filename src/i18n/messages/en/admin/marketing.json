@@ -10,7 +10,8 @@
     "text": "{spent} of {budget} spent · alert at {threshold}",
     "unlimited": "{spent} spent · no budget set",
     "alerted": "{threshold} of the budget used",
-    "exhausted": "Budget exhausted"
+    "exhausted": "Budget exhausted",
+    "gauge": "Budget spent"
   },
   "campaigns": {
     "title": "Campaigns",
@@ -27,7 +28,9 @@
       "status": "Status",
       "budget": "Budget used",
       "window": "Window",
-      "alert": "Budget alert"
+      "alert": "Budget alert",
+      "promotions": "Promotions",
+      "owner": "Created by"
     },
     "fields": {
       "name": "Name",
@@ -112,7 +115,12 @@
       "endsOnHint": "Empty = no end"
     },
     "noEnd": "no end date",
-    "performanceNote": "From the promotion report of this campaign"
+    "performanceNote": "From the promotion report of this campaign",
+    "usage": "Usage",
+    "usageValue": "{count, plural, one {# use} other {# uses}} · {amount}",
+    "createdBy": "Created by {name}",
+    "reason": "Reason",
+    "reasonHint": "Recorded in the audit log"
   },
   "promotions": {
     "title": "Promotions",
@@ -136,7 +144,9 @@
       "campaign": "Campaign",
       "stacking": "Stacking",
       "spent": "Discount given",
-      "window": "Window"
+      "window": "Window",
+      "usage": "Usage",
+      "updated": "Updated"
     },
     "stacking": {
       "exclusive": "Exclusive",
@@ -152,7 +162,9 @@
       "up": "Move {name} up",
       "down": "Move {name} down"
     },
-    "campaignLink": "View campaign"
+    "campaignLink": "View campaign",
+    "redemptions": "{count, plural, one {# use} other {# uses}}",
+    "capped": "Capped {amount}"
   },
   "promotion": {
     "pageTitle": "Promotion",
@@ -299,7 +311,10 @@
     "bases": {
       "value": "Order value (THB)",
       "quantity": "Quantity (pieces)"
-    }
+    },
+    "reason": "Reason",
+    "reasonHint": "Recorded in the audit log",
+    "systemManaged": "Referral promotions are managed by the system and cannot be changed here"
   },
   "coupons": {
     "title": "Coupon codes",
@@ -333,7 +348,9 @@
     "columns": {
       "code": "Code",
       "status": "Status",
-      "used": "Used"
+      "used": "Used",
+      "batch": "Batch",
+      "customer": "Customer"
     },
     "usedOf": "{used}/{limit}",
     "disable": "Disable",
@@ -346,7 +363,14 @@
     "enableCode": "Enable {code}",
     "enableTitle": "Enable {code} again",
     "enableBody": "{code} can be used again within the promotion's conditions",
-    "enabled": "Code enabled"
+    "enabled": "Code enabled",
+    "batchLabel": "{kind} · {date}",
+    "filterBatch": "Batch",
+    "allBatches": "All batches",
+    "filterStatus": "Status",
+    "allStatuses": "All statuses",
+    "disableReason": "Why the code is disabled",
+    "disableReasonHint": "E.g. the code leaked; recorded in the audit log"
   },
   "referrals": {
     "title": "Referrals",

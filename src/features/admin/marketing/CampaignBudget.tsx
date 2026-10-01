@@ -4,22 +4,21 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
+import { Meter } from "@/ui/components/Meter";
 
 import type { Campaign } from "./resources";
 
 /**
- * A campaign's budget as the API reports it (D-154): spent of budget, and the alert threshold in
- * force (setting `campaigns.budget_alert_pct`). Past the threshold the API stamps `alertedAt`, and
- * at the whole budget it stops the campaign (`exhausted`); the screen says which, in words.
- *
- * CONTRACT-GAP admin.campaigns — `CampaignDto` has no `spentPct`, so there is no gauge: the share
- * spent is the API's to compute, never the UI's (the UI does not divide money).
+ * A campaign's budget as the API reports it (D-154): spent of budget as the share the API computes
+ * (`spentPct` — the UI never divides money), against the alert threshold in force (setting
+ * `campaigns.budget_alert_pct`). Past the threshold the API stamps `alertedAt`, and at the whole
+ * budget it stops the campaign (`exhausted`); the screen says which, in words.
  */
 export function CampaignBudget({
   campaign,
   compact = false,
 }: {
-  campaign: Pick<Campaign, "budgetAmount" | "spentAmount" | "alertThresholdPct" | "alertedAt" | "status">;
+  campaign: Pick<Campaign, "budgetAmount" | "spentAmount" | "spentPct" | "alertThresholdPct" | "alertedAt" | "status">;
   compact?: boolean;
 }) {
   const t = useTranslations("marketing.budget");
@@ -41,8 +40,21 @@ export function CampaignBudget({
       </Badge>
     ) : null;
   return (
-    <div className="flex flex-col items-start gap-1">
-      <p className={compact ? "text-xs" : "text-sm"}>{text}</p>
+    <div className="flex w-full flex-col items-start gap-1">
+      {campaign.spentPct !== null ? (
+        <Meter
+          className="w-full"
+          label={t("gauge")}
+          value={Number(campaign.spentPct)}
+          marker={Number(campaign.alertThresholdPct)}
+          valueText={text}
+          tone={campaign.status === "exhausted" ? "danger" : campaign.alertedAt ? "warning" : "primary"}
+        />
+      ) : null}
+      <p className={compact ? "text-xs" : "text-sm"}>
+        {text}
+        {campaign.spentPct !== null ? ` · ${format.percent(campaign.spentPct)}` : null}
+      </p>
       {state}
     </div>
   );
