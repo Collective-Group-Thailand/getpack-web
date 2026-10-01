@@ -77,6 +77,7 @@ export function CompaniesList({ initial }: { initial: InitialPage<Company> | nul
       />
       <ResourceList
         resource={companiesList}
+        exportResource="companies"
         columns={columns}
         caption={t("title")}
         initial={initial}

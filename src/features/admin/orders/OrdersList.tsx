@@ -121,6 +121,7 @@ export function OrdersList({ initial }: { initial: InitialPage<OrderQueueItem> |
       />
       <ResourceList
         resource={ordersList}
+        exportResource="orders"
         columns={columns}
         caption={t("title")}
         initial={initial}
