@@ -8,8 +8,7 @@ import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { browserApi } from "@/lib/api/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
@@ -20,7 +19,7 @@ import { toast } from "@/ui/components/Toast";
 
 import { PhotoPicker, type PickedPhoto } from "./PhotoPicker";
 
-type Form = ResponseOf<Requests, "GET /v1/store/orders/{orderId}/claim-form">;
+type Form = Schemas["ClaimFormDto"];
 /** The claims funnel's route pattern — never the URL, which carries the order id (D-102). */
 const CLAIM_ROUTE = "/account/orders/[orderId]/claim";
 type ClaimType = Form["types"][number];
@@ -31,8 +30,9 @@ const newKey = () =>
 
 /**
  * Filing a claim (D-082): what went wrong, on which delivery and how many, what the customer
- * wants — and photos of the product **and** of the shipping carton, both required. The window and
- * the options are the API's; errors are listed at the top and next to each field (WCAG 3.3.1).
+ * wants — and photos of the product **and** of the shipping carton, both required. The window, the
+ * deliveries that can still be claimed, the options and the photo rules are the API's
+ * (`store.claims.getForm`); errors are listed at the top and next to each field (WCAG 3.3.1).
  */
 export function ClaimForm({ orderId, orderCode, form }: { orderId: string; orderCode: string; form: Form }) {
   const t = useTranslations("fulfilment.claim");
@@ -40,7 +40,8 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
   const format = useFormat();
   const router = useRouter();
   const [type, setType] = useState<ClaimType | undefined>();
-  const [shipmentId, setShipmentId] = useState(form.shipments[0]?.id);
+  const claimable = form.shipments.filter((shipment) => shipment.open);
+  const [shipmentId, setShipmentId] = useState(claimable[0]?.id);
   const [quantity, setQuantity] = useState("");
   const [description, setDescription] = useState("");
   const [resolution, setResolution] = useState<Resolution | undefined>();
@@ -60,10 +61,10 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
     if (description.trim().length < 10) found.description = t("errors.description");
     if (!resolution) found.resolution = t("errors.resolution");
     if (quantity && (!/^\d+$/.test(quantity) || Number(quantity) < 1)) found.quantity = t("errors.quantity");
-    if (uploaded(product).length < form.evidence.minProductPhotos)
-      found.product = t("errors.product", { min: form.evidence.minProductPhotos });
-    if (uploaded(carton).length < form.evidence.minCartonPhotos)
-      found.carton = t("errors.carton", { min: form.evidence.minCartonPhotos });
+    if (uploaded(product).length < form.evidence.productPhotosMin)
+      found.product = t("errors.product", { min: form.evidence.productPhotosMin });
+    if (uploaded(carton).length < form.evidence.cartonPhotosMin)
+      found.carton = t("errors.carton", { min: form.evidence.cartonPhotosMin });
     setErrors(found);
     if (Object.keys(found).length > 0) {
       document.getElementById("claim-errors")?.focus();
@@ -94,7 +95,9 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
   }
 
   if (!form.open)
-    return (
+    return form.closedReason === "not_delivered" || !form.windowEndsAt ? (
+      <Callout tone="info">{t("notYet")}</Callout>
+    ) : (
       <Callout tone="neutral" title={t("closedTitle")}>
         {t("closed", { date: format.dateTime(form.windowEndsAt) })}
       </Callout>
@@ -104,7 +107,9 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
 
   return (
     <form noValidate onSubmit={(event) => void submit(event)} className="flex max-w-2xl flex-col gap-6">
-      <Callout tone="info">{t("window", { code: orderCode, date: format.dateTime(form.windowEndsAt) })}</Callout>
+      {form.windowEndsAt ? (
+        <Callout tone="info">{t("window", { code: orderCode, date: format.dateTime(form.windowEndsAt) })}</Callout>
+      ) : null}
       {messages.length > 0 ? (
         <div id="claim-errors" tabIndex={-1} role="alert" className="outline-none">
           <Callout tone="danger" title={t("errors.title", { count: messages.length })}>
@@ -126,14 +131,18 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
         />
       </Field>
 
-      {form.shipments.length > 1 ? (
+      {claimable.length > 1 ? (
         <Field label={t("shipment")}>
           <Select
             value={shipmentId}
             onValueChange={setShipmentId}
-            options={form.shipments.map((shipment) => ({
+            options={claimable.map((shipment) => ({
               value: shipment.id,
-              label: t("shipmentOption", { shipment: shipment.shipmentNo, province: shipment.province }),
+              label: t("shipmentOption", {
+                shipment: shipment.shipmentNo,
+                quantity: format.number(shipment.deliveredQuantity ?? shipment.quantity),
+                date: format.date(shipment.deliveredAt),
+              }),
             }))}
           />
         </Field>
@@ -172,9 +181,10 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
         </p>
         <PhotoPicker
           id="claim-product"
-          accept={form.evidence.accept}
+          accept={form.evidence.accept.join(",")}
           maxBytes={form.evidence.maxBytes}
-          max={form.evidence.maxPhotos}
+          max={form.evidence.productPhotosMax}
+          purpose={form.evidence.purpose}
           photos={product}
           onChange={setProduct}
           invalid={Boolean(errors.product)}
@@ -191,9 +201,10 @@ export function ClaimForm({ orderId, orderCode, form }: { orderId: string; order
         </p>
         <PhotoPicker
           id="claim-carton"
-          accept={form.evidence.accept}
+          accept={form.evidence.accept.join(",")}
           maxBytes={form.evidence.maxBytes}
-          max={form.evidence.maxPhotos}
+          max={form.evidence.cartonPhotosMax}
+          purpose={form.evidence.purpose}
           photos={carton}
           onChange={setCarton}
           invalid={Boolean(errors.carton)}

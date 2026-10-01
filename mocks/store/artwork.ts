@@ -43,6 +43,7 @@ import {
   type PrepressDetail,
 } from "../admin/prepress";
 import { fileDataUrl, files } from "../admin/platform";
+import { rfqs } from "../admin/rfq";
 import { bangkokIso, mockId, problem } from "../support";
 import { groupForOrder } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
@@ -75,8 +76,24 @@ export function mockFileUrl(fileId: string): string | null {
     fileDataUrl(fileId) ??
     (files.get(fileId)
       ? `data:text/plain;charset=utf-8,${encodeURIComponent(`${files.get(fileId)!.originalName} (ข้อมูลจำลอง)`)}`
-      : null)
+      : null) ??
+    podPhotoUrl(fileId) ??
+    rfqs.flatMap((rfq) => rfq.files).find((file) => file.id === fileId)?.url ??
+    null
   );
+}
+
+/** A proof-of-delivery photo of a seeded delivery (the factory's upload, kept on the order row). */
+function podPhotoUrl(fileId: string): string | null {
+  for (const order of orders)
+    for (const shipment of order.shipments) {
+      const photo = shipment.pod?.photos.find((candidate) => candidate.id === fileId);
+      if (photo)
+        return (
+          photo.url ?? `data:text/plain;charset=utf-8,${encodeURIComponent(`${photo.originalName} (ข้อมูลจำลอง)`)}`
+        );
+    }
+  return null;
 }
 /** A stable id for a file the mock draws for a row, in its own namespace. */
 const drawnId = (namespace: string, of: string) =>

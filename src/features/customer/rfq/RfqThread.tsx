@@ -14,21 +14,27 @@ import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { cn } from "@/ui/lib/cn";
 
+import { FileLink } from "../files/FileLink";
+
 type Message = Schemas["RfqMessageDto"];
 
 /**
  * The conversation with CS about one RFQ, as the RFQ carries it (`RfqDto.messages`). Staff appear
  * as the team, never by name; an answer to a request for information puts the RFQ back in front
- * of CS (B2.5). The draft survives a failure.
+ * of CS (B2.5). The draft survives a failure; once the RFQ is closed it no longer offers
+ * `rfq.post_message` and the box goes away.
  */
 export function RfqThread({
   rfqId,
   messages,
   askedForInfo,
+  canPost,
 }: {
   rfqId: string;
   messages: Message[];
   askedForInfo: boolean;
+  /** The RFQ offers `rfq.post_message` (it is still open). */
+  canPost: boolean;
 }) {
   const t = useTranslations("quoteRequests.thread");
   const format = useFormat();
@@ -75,18 +81,34 @@ export function RfqThread({
                 {message.author === "customer" ? t("you") : t("team")} · {format.dateTime(message.createdAt)}
               </p>
               <p className="mt-1 whitespace-pre-line">{message.body}</p>
+              {message.files.length > 0 ? (
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {message.files.map((file) => (
+                    <li key={file.id}>
+                      <FileLink
+                        fileId={file.id}
+                        label={file.originalName}
+                        openLabel={t("openFile", { name: file.originalName })}
+                        failed={t("fileFailed")}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </li>
           ))}
         </ol>
       )}
-      <form onSubmit={(event) => void send(event)} className="flex flex-col gap-2">
-        <Field label={t("reply")} error={error ?? undefined}>
-          <Textarea rows={3} maxLength={4000} value={body} onChange={(event) => setBody(event.target.value)} />
-        </Field>
-        <Button type="submit" className="self-end" loading={sending} disabled={!body.trim()} iconStart="send">
-          {t("send")}
-        </Button>
-      </form>
+      {canPost ? (
+        <form onSubmit={(event) => void send(event)} className="flex flex-col gap-2">
+          <Field label={t("reply")} error={error ?? undefined}>
+            <Textarea rows={3} maxLength={4000} value={body} onChange={(event) => setBody(event.target.value)} />
+          </Field>
+          <Button type="submit" className="self-end" loading={sending} disabled={!body.trim()} iconStart="send">
+            {t("send")}
+          </Button>
+        </form>
+      ) : null}
     </div>
   );
 }

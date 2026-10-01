@@ -203,9 +203,10 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
               size="sm"
               instalment={{
                 id: artwork.feeInstalment.id,
+                groupId: artwork.feeInstalment.groupId,
                 label: pick(locale, artwork.feeInstalment.labelTh, artwork.feeInstalment.labelEn),
                 grossAmount: artwork.feeInstalment.openAmount,
-                activePaymentId: null,
+                activePaymentId: artwork.feeInstalment.activePaymentId,
               }}
               orderCode={order.orderCode}
             >

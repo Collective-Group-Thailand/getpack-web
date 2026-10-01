@@ -5,15 +5,14 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { SHIPMENT_STATUS } from "@/domain/status";
 import type { Schemas } from "@/lib/api/types";
 
+import { FileLink } from "../files/FileLink";
+
 type Shipment = Schemas["StoreShipmentDto"];
 
 /**
  * One delivery (F3 3.6): where it went, how many of this order, the carrier's progress and — once
  * delivered — who received it. The recipient's name is the customer's own data, shown here and
- * never on the public tracking page.
- *
- * CONTRACT-GAP store.orders — the proof of delivery names its photos by file id only, so the card
- * says how many there are.
+ * never on the public tracking page. The proof-of-delivery photos open through `store.files.download`.
  */
 export async function ShipmentCard({ shipment, orderCode }: { shipment: Shipment; orderCode: string }) {
   const [t, format] = await Promise.all([getTranslations("fulfilment.shipment"), getFormat()]);
@@ -74,9 +73,23 @@ export async function ShipmentCard({ shipment, orderCode }: { shipment: Shipment
             })}
           </p>
           {shipment.proofOfDelivery.photoFileIds.length > 0 ? (
-            <p className="text-muted mt-1 text-xs">
-              {t("podPhotos", { count: shipment.proofOfDelivery.photoFileIds.length })}
-            </p>
+            <>
+              <p className="text-muted mt-1 text-xs">
+                {t("podPhotos", { count: shipment.proofOfDelivery.photoFileIds.length })}
+              </p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {shipment.proofOfDelivery.photoFileIds.map((fileId, index) => (
+                  <li key={fileId}>
+                    <FileLink
+                      fileId={fileId}
+                      label={t("podPhoto", { index: index + 1 })}
+                      openLabel={t("podPhotoOpen", { index: index + 1 })}
+                      failed={t("podPhotoFailed")}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
           ) : null}
         </div>
       ) : null}

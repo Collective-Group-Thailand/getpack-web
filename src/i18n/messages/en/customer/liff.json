@@ -27,8 +27,7 @@
   "orders": {
     "title": "Orders",
     "empty": "No orders yet",
-    "row": "{code} · {quantity} {unit}",
-    "rowNoUnit": "{code} · qty {quantity}"
+    "row": "{code} · {quantity} {unit}"
   },
   "order": {
     "title": "Order",

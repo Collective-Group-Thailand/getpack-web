@@ -20,10 +20,8 @@ import { partnerBillingRequests } from "./partner-billing";
 import { partnerJobRequests } from "./partner-jobs";
 import { partnerOnboardingRequests } from "./partner-onboarding";
 import { partnerShipmentRequests } from "./partner-shipments";
-import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
-import { storeCheckoutRequests } from "./store-checkout";
 import { storeDesignRequests } from "./store-designs";
 import { storeQuoteRequests } from "./store-quotes";
 
@@ -38,8 +36,6 @@ export const REQUESTS = {
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,
   ...storeQuoteRequests,
-  ...storeCheckoutRequests,
-  ...storeFulfilmentRequests,
   ...storeSupportRequests,
   ...storeBusinessRequests,
   ...storeDesignRequests,

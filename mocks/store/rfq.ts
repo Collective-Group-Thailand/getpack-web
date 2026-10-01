@@ -13,6 +13,7 @@ import { http, HttpResponse } from "msw";
 import type { Schemas } from "@/lib/api/types";
 
 import { PRODUCT_TYPES } from "../admin/catalog";
+import { files } from "../admin/platform";
 import { customers as fakeCustomers } from "../admin/commerce";
 import { addCustomerRfq, customerAcceptQuote, rfqMessages, rfqs } from "../admin/rfq";
 import type { RfqRow } from "../admin/rfq-model";
@@ -196,6 +197,25 @@ const mine = (customer: MockCustomer) => rfqs.filter((rfq) => rfq.customer.id ==
 /** The answers as the customer sent them (the desk's row keeps them in words), per RFQ. */
 const rawSpecs = new Map<string, Record<string, unknown>>();
 
+const OPEN = ["submitted", "in_review", "need_info", "quoted"];
+
+/** packio-api's `STORE_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0) over the row. */
+function storeRfqActions(rfq: AdminRfq): Schemas["NextActionDto"][] {
+  const today = bangkokIso().slice(0, 10);
+  const acceptable =
+    rfq.status === "quoted" &&
+    rfq.quotes.some((quote) => quote.status === "sent" && quote.validUntil !== null && quote.validUntil >= today);
+  const open = OPEN.includes(rfq.status);
+  return [
+    ...(acceptable ? [{ key: "rfq.accept", irreversible: true, disabledReason: null }] : []),
+    ...(open ? [{ key: "rfq.post_message", irreversible: false, disabledReason: null }] : []),
+    ...(open ? [{ key: "rfq.decline", irreversible: true, disabledReason: null }] : []),
+  ];
+}
+
+/** The files a customer attached to a message (the desk's thread rows keep none of their own). */
+const messageFiles = new Map<string, Schemas["AttachedFileDto"][]>();
+
 /** The desk's row as the customer sees it (`RfqDto`): sent quotations only, the thread in words. */
 function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
   const closed = ["accepted", "declined", "expired"].includes(rfq.status);
@@ -215,7 +235,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
     // A seeded row has only the words; its labels stand in for the keys.
     spec: rawSpecs.get(rfq.id) ?? Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
     files: rfq.files.map(({ id, originalName, mimeType, sizeBytes }) => ({ id, originalName, mimeType, sizeBytes })),
-    nextActions: [],
+    nextActions: storeRfqActions(rfq),
     slaDueAt: rfq.slaDueAt,
     submittedAt: rfq.submittedAt,
     closedAt: closed ? (rfq.acceptedQuotation ? bangkokIso() : rfq.submittedAt) : null,
@@ -247,8 +267,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
         id: message.id,
         author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
         body: message.body,
-        // The thread's rows keep no attachments.
-        files: [],
+        files: messageFiles.get(message.id) ?? [],
         createdAt: message.createdAt,
       })),
   };
@@ -329,8 +348,8 @@ export const storeRfqHandlers = [
       urgency: "normal",
       consultationCounts: { requested: 0, responded: 0 },
       latestQuote: null,
-      // CONTRACT-GAP store.rfqs — the published submit does not say which product routed here.
-      routedFromCalculator: false,
+      // The calculation that routed this configuration here (D-102), when the configurator sent one.
+      routedFromCalculator: Boolean(body.routedFrom?.calculationId),
       submittedAt: now,
       contact: { phone: customer.phone, email: customer.email },
       spec: Object.entries(spec).map(([key, value]) => ({ label: labelOf(key), value: valueOf(key, value) })),
@@ -384,8 +403,9 @@ export const storeRfqHandlers = [
     if (!customer) return unauthenticated();
     const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
     if (!rfq) return notFound();
-    const body = (await request.json()) as Schemas["RfqMessageInputDto"];
+    const body = (await request.json()) as Schemas["StoreRfqMessageInputDto"];
     if (!body.body?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ข้อความ");
+    if (!OPEN.includes(rfq.status)) return problem(409, "rfq.invalid_status", "คำขอราคานี้ปิดแล้ว");
     const message = {
       id: mockId("rms", 8000 + (rfqMessages.get(rfq.id)?.length ?? 0) + Math.floor(Math.random() * 900)),
       authorKind: "customer" as const,
@@ -395,6 +415,16 @@ export const storeRfqHandlers = [
       createdAt: bangkokIso(),
     };
     rfqMessages.set(rfq.id, [...(rfqMessages.get(rfq.id) ?? []), message]);
+    if (body.fileIds?.length)
+      messageFiles.set(
+        message.id,
+        body.fileIds.map((id) => ({
+          id,
+          originalName: files.get(id)?.originalName ?? "file",
+          mimeType: files.get(id)?.mimeType ?? "application/octet-stream",
+          sizeBytes: files.get(id)?.sizeBytes ?? 0,
+        })),
+      );
     // Answering a request for information puts the RFQ back in front of CS (B2.5).
     if (rfq.status === "need_info") rfq.status = "in_review";
     return HttpResponse.json(toRfqDto(rfq), { status: 201 });
@@ -463,6 +493,21 @@ export const storeRfqHandlers = [
     quote.id = accepted.id;
     quote.quoteCode = accepted.quoteCode;
     quotesOf(customer.persona).unshift(quote);
+    return HttpResponse.json(toRfqDto(rfq));
+  }),
+  // store.rfqs.decline: the customer closes their own request (`customer_declined`, D-102).
+  http.post("*/v1/store/rfqs/:rfqId/actions/decline", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
+    if (!rfq) return notFound();
+    if (!OPEN.includes(rfq.status)) return problem(409, "rfq.invalid_status", "คำขอราคานี้ปิดแล้ว");
+    const body = (await request.json().catch(() => null)) as Schemas["OptionalNoteDto"] | null;
+    rfq.status = "declined";
+    rfq.declineReason = { code: "customer_declined", name: "ลูกค้ายกเลิกคำขอ" };
+    rfq.declineNote = body?.note ?? null;
+    for (const quote of rfq.quotes)
+      if (quote.status === "sent" || quote.status === "draft") quote.status = "superseded";
     return HttpResponse.json(toRfqDto(rfq));
   }),
 ];

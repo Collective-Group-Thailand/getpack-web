@@ -3,8 +3,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
-import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
+import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ORDER_STATUS } from "@/domain/status";
@@ -19,12 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   if (!(await liffCustomer())) return <LiffSignIn />;
   const locale = await getLocale();
-  const [t, format, active, completed, names] = await Promise.all([
+  const [t, tCatalog, format, active, completed] = await Promise.all([
     getTranslations("liff.orders"),
+    getTranslations("catalog"),
     getFormat(),
     listMyOrders("active"),
     listMyOrders("completed"),
-    getProductTypeNames(locale),
   ]);
   const rows = [...active, ...completed.slice(0, 10)].map((row) => row.order);
   return (
@@ -39,11 +39,13 @@ export default async function Page() {
               className="border-border flex items-center justify-between gap-3 rounded-xl border p-4"
             >
               <span className="min-w-0">
-                <span className="block truncate font-medium">
-                  {names[order.productTypeCode] ?? order.productTypeCode}
-                </span>
+                <span className="block truncate font-medium">{productNameOf(locale, order.summary)}</span>
                 <span className="text-muted block text-xs">
-                  {t("rowNoUnit", { code: order.orderCode, quantity: format.number(order.quantityOrdered) })}
+                  {t("row", {
+                    code: order.orderCode,
+                    quantity: format.number(order.quantityOrdered),
+                    unit: tCatalog(`stock.units.${order.summary.unit}`),
+                  })}
                 </span>
               </span>
               <StatusChip map={ORDER_STATUS} value={order.status} />

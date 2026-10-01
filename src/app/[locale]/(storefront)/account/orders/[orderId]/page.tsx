@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getProductTypes } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { PayInstalmentButton } from "@/features/customer/checkout/PayInstalmentButton";
 import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
@@ -11,6 +10,8 @@ import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { ToleranceOutcome } from "@/features/customer/orders/ToleranceOutcome";
+import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
 import { timelineTitle } from "@/features/customer/orders/timeline";
 import { TrackingLinkButton } from "@/features/customer/orders/TrackingLinkButton";
 import { getFormat } from "@/features/shared/format/server";
@@ -52,36 +53,37 @@ const SUCCESS = new Set(["payment.received", "proof.approved", "shipment.deliver
 
 /**
  * One order as the customer sees it (F3 3.4): where it stands and the next thing to do, then its
- * timeline, instalments, documents, deliveries, claims and what was ordered — each from its own
- * published read (`getMyOrder`). Nothing here computes; every figure and date is the API's.
- *
- * CONTRACT-GAP store.orders — the published order names its product type only (no product, specs
- * or unit), no receipt dates or tolerance outcome, no tax-invoice summary and no photos' URLs; the
- * page shows what the contract carries.
+ * timeline, instalments, documents, deliveries, claims and what was ordered — its product, spec
+ * lines and unit, the receipt stamps, how much arrived against what was ordered, the estimated
+ * delivery and why it was cancelled — each from its own published read (`getMyOrder`). Nothing here
+ * computes; every figure and date is the API's.
  */
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, format, locale, detail, types] = await Promise.all([
+  const [t, tCatalog, format, locale, detail] = await Promise.all([
     getTranslations("myOrders"),
+    getTranslations("catalog"),
     getFormat(),
     getLocale(),
     getMyOrder(orderId),
-    getProductTypes(),
   ]);
   if (!detail) notFound();
-  const { order, group, schedule } = detail;
-  const type = types.find((candidate) => candidate.code === order.productTypeCode);
-  const name = type ? pick(locale, type.nameTh, type.nameEn) : order.productTypeCode;
-  const due =
-    schedule?.instalments.find((instalment) => instalment.status === "due" || instalment.status === "overdue") ?? null;
-  const payable = due
-    ? {
-        id: due.id,
-        label: pick(locale, due.labelTh, due.labelEn),
-        grossAmount: due.openAmount,
-        activePaymentId: null,
-      }
+  const { order, group, instalments } = detail;
+  const name = productNameOf(locale, order.summary);
+  const unit = tCatalog(`stock.units.${order.summary.unit}`);
+  const payableOf = (instalment: (typeof instalments)[number]) => ({
+    id: instalment.id,
+    groupId: instalment.groupId,
+    label: pick(locale, instalment.labelTh, instalment.labelEn),
+    grossAmount: instalment.openAmount,
+    activePaymentId: instalment.activePaymentId,
+  });
+  const due = instalments.find((instalment) => instalment.payable) ?? null;
+  const payable = due ? payableOf(due) : null;
+  const { receipt } = order;
+  const cancelReason = order.cancelReasonNameTh
+    ? pick(locale, order.cancelReasonNameTh, order.cancelReasonNameEn)
     : null;
 
   return (
@@ -104,21 +106,34 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </>
           ) : null}
         </p>
-        {detail.actions.length > 0 ? (
-          <OrderActions
-            orderId={order.id}
-            orderCode={order.orderCode}
-            actions={detail.actions}
-            payable={payable}
-            groupId={group?.id ?? null}
-          />
+        {detail.actions.length > 0 || payable ? (
+          <OrderActions orderId={order.id} orderCode={order.orderCode} actions={detail.actions} payable={payable} />
         ) : null}
+        <p className="text-sm">
+          <Link
+            href={`/account/orders/${order.id}/artwork`}
+            className="text-primary underline-offset-4 hover:underline"
+          >
+            {t("detail.artworkLink")}
+          </Link>
+        </p>
         {group?.expiresAt && order.status === "waiting_payment" ? (
           <Callout tone="warning">{t("detail.expires", { date: format.dateTime(group.expiresAt) })}</Callout>
         ) : null}
         {order.cancelledAt ? (
-          <Callout tone="neutral" title={t("detail.cancelled", { date: format.date(order.cancelledAt) })} />
+          <Callout tone="neutral" title={t("detail.cancelled", { date: format.date(order.cancelledAt) })}>
+            {cancelReason ? t("detail.cancelReason", { reason: cancelReason }) : null}
+          </Callout>
         ) : null}
+        {receipt.deliveredAt && !receipt.completedAt && receipt.autoCompleteAt ? (
+          <Callout tone="info">
+            {t("detail.autoComplete", {
+              date: format.date(receipt.autoCompleteAt),
+              claim: format.date(receipt.claimWindowEndsAt),
+            })}
+          </Callout>
+        ) : null}
+        {order.toleranceOutcome ? <ToleranceOutcome outcome={order.toleranceOutcome} unit={unit} /> : null}
       </header>
 
       {detail.progress && detail.progress.steps.length > 0 ? (
@@ -151,13 +166,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             />
           </section>
 
-          {schedule ? (
+          {instalments.length > 0 ? (
             <section id="instalments" aria-labelledby="instalments-title">
               <h2 id="instalments-title" className="text-lg font-semibold">
                 {t("detail.instalments")}
               </h2>
               <ul className="mt-4 flex flex-col gap-2">
-                {schedule.instalments.map((instalment) => (
+                {instalments.map((instalment) => (
                   <li
                     key={instalment.id}
                     className="border-border flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"
@@ -173,19 +188,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                     <div className="flex items-center gap-3">
                       <span className="tabular-nums">{format.thb(instalment.grossAmount)}</span>
                       <StatusChip map={INSTALMENT_STATUS} value={instalment.status} />
-                      {instalment.status === "due" || instalment.status === "overdue" ? (
-                        <PayInstalmentButton
-                          size="sm"
-                          instalment={{
-                            id: instalment.id,
-                            label: pick(locale, instalment.labelTh, instalment.labelEn),
-                            grossAmount: instalment.openAmount,
-                            activePaymentId: null,
-                          }}
-                          orderCode={order.orderCode}
-                          groupId={group?.id ?? null}
-                        >
-                          {t("detail.pay")}
+                      {instalment.payable ? (
+                        <PayInstalmentButton size="sm" instalment={payableOf(instalment)} orderCode={order.orderCode}>
+                          {instalment.activePaymentId ? t("detail.continuePay") : t("detail.pay")}
                           <span className="sr-only"> {pick(locale, instalment.labelTh, instalment.labelEn)}</span>
                         </PayInstalmentButton>
                       ) : null}
@@ -288,7 +293,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             <DescriptionList
               className="mt-3"
               items={[
-                { term: t("detail.quantity"), description: format.number(order.quantityOrdered) },
+                ...specLinesOf(locale, order.summary),
+                {
+                  term: t("detail.quantity"),
+                  description: t("detail.quantityUnit", { quantity: format.number(order.quantityOrdered), unit }),
+                },
                 { term: t("detail.design"), description: t(`detail.designOptions.${order.designOption}`) },
                 ...(order.toleranceShortagePct && order.toleranceOveragePct
                   ? [
@@ -303,6 +312,25 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   : []),
                 ...(order.promisedShipDate
                   ? [{ term: t("detail.shipByTerm"), description: format.date(order.promisedShipDate) }]
+                  : []),
+                ...(order.estimatedDeliveryDate
+                  ? [{ term: t("detail.arrivesByTerm"), description: format.date(order.estimatedDeliveryDate) }]
+                  : []),
+                ...(receipt.deliveredAt
+                  ? [{ term: t("detail.deliveredTerm"), description: format.dateTime(receipt.deliveredAt) }]
+                  : []),
+                ...(receipt.completedAt
+                  ? [
+                      {
+                        term: t("detail.completedTerm"),
+                        description: t(
+                          receipt.completionMode === "customer_confirmed"
+                            ? "detail.completedByYou"
+                            : "detail.completedAuto",
+                          { date: format.dateTime(receipt.completedAt) },
+                        ),
+                      },
+                    ]
                   : []),
               ]}
             />
@@ -340,9 +368,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {order.destinations.map((destination) => (
                 <li key={destination.id}>
                   <p className="font-medium">
-                    {t("detail.destinationLineNoUnit", {
+                    {t("detail.destinationLine", {
                       name: destination.address.recipientName,
                       quantity: format.number(destination.quantity),
+                      unit,
                     })}
                   </p>
                   <p className="text-muted">
