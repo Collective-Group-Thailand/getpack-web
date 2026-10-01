@@ -93,3 +93,20 @@ export function productTypeOfCalculator(calculator: string): { code: string; nam
   const type = PRODUCT_TYPES.find((candidate) => candidate.calculatorKey === calculator);
   return type ? { code: type.code, name: type.nameTh } : { code: calculator, name: calculator };
 }
+
+/**
+ * The display summary (`LineSummaryDto`) of a line the rows know only by its product type: no
+ * catalogue product and no recorded spec lines. Every mock line sells by the piece (the commerce
+ * rows' product lines say ชิ้น).
+ */
+export function lineSummaryOf(code: string): Schemas["LineSummaryDto"] {
+  const type = PRODUCT_TYPES.find((candidate) => candidate.code === code);
+  return {
+    product: null,
+    productTypeCode: code,
+    productTypeNameTh: type?.nameTh ?? code,
+    productTypeNameEn: type?.nameEn ?? code,
+    unit: "piece",
+    specs: [],
+  };
+}

@@ -26,6 +26,7 @@ import type {
   CompanyRow,
   CompanyStatementRow,
 } from "./company-model";
+import { postcodeArea, provinceRefOf } from "../store/catalog";
 import { registerQueue } from "./console";
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
 
@@ -185,7 +186,13 @@ const stores = SEEDS.map((seed, index) => {
     },
     discount:
       index === 0
-        ? { pct: "3.0000", discountMemoId: mockId("dmo", 30), memoCode: "DM-2569-0030", validTo: null }
+        ? {
+            pct: "3.0000",
+            discountMemoId: mockId("dmo", 30),
+            memoCode: "DM-2569-0030",
+            effectiveFrom: bangkokIso(-60 * DAY),
+            validTo: null,
+          }
         : null,
     statusReason: null,
     updatedAt: bangkokIso(-3 * DAY),
@@ -333,16 +340,29 @@ const requiredKyc = (company: Company): Kyc["docType"][] =>
     ? ["company_certificate", "vat_registration_pp20", "signatory_id"]
     : ["company_certificate", "signatory_id"];
 
-export const toCompanyBranchDto = (branch: Branch): Schemas["CompanyBranchDto"] => ({
-  id: branch.id,
-  branchType: branch.branchType,
-  branchCode: branch.branchCode,
-  name: branch.name,
-  line1: branch.address,
-  line2: null,
-  postcode: branch.address.match(/(\d{5})\s*$/)?.[1] ?? "10110",
-  isDefault: branch.branchType === "head_office",
-});
+/** A branch, its area looked up from the postcode its one-line address ends with. */
+export function toCompanyBranchDto(branch: Branch): Schemas["CompanyBranchDto"] {
+  const postcode = branch.address.match(/(\d{5})\s*$/)?.[1] ?? "10110";
+  const area = postcodeArea(postcode);
+  const province = provinceRefOf(postcode, "");
+  return {
+    id: branch.id,
+    branchType: branch.branchType,
+    branchCode: branch.branchCode,
+    name: branch.name,
+    line1: branch.address,
+    line2: null,
+    subdistrictNameTh: null,
+    subdistrictNameEn: null,
+    districtNameTh: area?.district.nameTh ?? null,
+    districtNameEn: area?.district.nameEn ?? null,
+    provinceId: province.id,
+    provinceNameTh: province.nameTh,
+    provinceNameEn: province.nameEn,
+    postcode,
+    isDefault: branch.branchType === "head_office",
+  };
+}
 
 export const toCompanyKycDocumentDto = (doc: Kyc): Schemas["CompanyKycDocumentDto"] => ({
   id: doc.id,
@@ -352,6 +372,33 @@ export const toCompanyKycDocumentDto = (doc: Kyc): Schemas["CompanyKycDocumentDt
   note: doc.note,
   status: doc.status,
 });
+
+/** The back office's view of a KYC document: the file and the review stamps the row keeps. */
+const toAdminKycDocumentDto = (doc: Kyc): Schemas["AdminKycDocumentDto"] => ({
+  ...toCompanyKycDocumentDto(doc),
+  fileName: doc.file.originalName,
+  fileUrl: doc.file.url,
+  uploadedAt: doc.uploadedAt,
+  reviewedAt: doc.reviewedAt,
+  reviewedBy: doc.reviewedBy,
+});
+
+/** Whether the company may apply for credit (D-121), from the settings the backend reads. */
+export function toCreditEligibilityDto(store: (typeof stores)[number]): Schemas["CreditEligibilityDto"] {
+  const company = present(store);
+  const { allowedDays, defaultDays } = settingValue<{ allowedDays: number[]; defaultDays: number }>("b2b.credit_terms");
+  return {
+    eligible: company.credit.eligible,
+    reason: company.credit.eligibleReason === "not_yet" ? null : company.credit.eligibleReason,
+    paidOrdersCount: company.paidOrdersCount,
+    paidOrdersNeeded: settingValue<number>("b2b.credit_eligibility_paid_orders"),
+    financialStatementOnFile: store.kyc.some(
+      (doc) => doc.docType === "financial_statement" && ["pending", "verified"].includes(doc.status),
+    ),
+    allowedTermDays: allowedDays,
+    defaultTermDays: defaultDays,
+  };
+}
 
 /** A company as `admin.companies.*` answers it: members, branches and KYC documents inline. */
 export function toAdminCompanyDto(store: (typeof stores)[number]): Schemas["AdminCompanyDto"] {
@@ -375,16 +422,52 @@ export function toAdminCompanyDto(store: (typeof stores)[number]): Schemas["Admi
     createdAt: company.createdAt,
     members: store.members.map((member) => ({
       id: member.id,
-      user: { id: member.user.id, displayName: member.user.displayName },
+      user: {
+        id: member.user.id,
+        displayName: member.user.displayName,
+        email: member.user.email,
+        phone: member.user.phone,
+      },
       roles: member.roles,
       status: member.status,
       joinedAt: member.joinedAt,
     })),
     branches: store.branches.map(toCompanyBranchDto),
-    kycDocuments: store.kyc.map(toCompanyKycDocumentDto),
+    kycDocuments: store.kyc.map(toAdminKycDocumentDto),
     missingKyc: requiredKyc(company).filter(
       (type) => !store.kyc.some((doc) => doc.docType === type && ["pending", "verified"].includes(doc.status)),
     ),
+    membersCount: company.membersCount,
+    receivables: {
+      openAmount: company.receivables.openAmount,
+      overdueAmount: company.receivables.overdueAmount,
+      oldestOverdueDays: company.receivables.oldestOverdueDays,
+      nextDueAt: company.receivables.nextDueAt,
+      creditOrdersBlocked: company.receivables.creditOrdersBlocked,
+      currency: "THB",
+    },
+    discountPct: company.discount?.pct ?? null,
+    discount: company.discount
+      ? {
+          discountMemoId: company.discount.discountMemoId,
+          pct: company.discount.pct,
+          effectiveFrom: company.discount.effectiveFrom,
+          validTo: company.discount.validTo,
+        }
+      : null,
+    // The rows keep no contact phone or signatory (the signatory's ID is a KYC file only).
+    contactPhone: null,
+    signatory: null,
+    // A staff view: no company roles, nothing the roles allow.
+    myRoles: [],
+    can: {
+      order: false,
+      approveOrders: false,
+      manageMembers: false,
+      manageSettings: false,
+      manageAssets: false,
+      viewFinance: false,
+    },
   };
 }
 
@@ -399,6 +482,7 @@ function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["CompanyCre
     availableAmount: company.credit.availableAmount,
     exposureAmount: company.receivables.openAmount,
     currency: "THB",
+    eligibility: toCreditEligibilityDto(store),
     pendingRequest: pending
       ? { limitAmount: pending.limitAmount, termDays: pending.termDays, requestedAt: pending.createdAt }
       : null,

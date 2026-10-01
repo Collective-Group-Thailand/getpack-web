@@ -3,12 +3,13 @@
  * office's order rows (`../admin/commerce`), which stay in the admin zone's request shape until
  * U-F0.3. One adapter, so every store operation that answers an order answers the same one.
  *
- * The published order is lean: no product, no group, no next actions (CONTRACT-GAP store.orders,
- * store.order-group-ref, entity.next-actions). What it has is mapped; nothing is added.
+ * The published order is lean: no group (CONTRACT-GAP store.order-group-ref). What the rows have is
+ * mapped; what they lack is left empty (no spec lines, receipt stamps or next actions yet).
  */
 
 import type { Schemas } from "@/lib/api/types";
 
+import { lineSummaryOf } from "../admin/catalog";
 import { baht, satang, type MockOrder } from "../admin/commerce";
 import { mockId } from "../support";
 
@@ -27,6 +28,7 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
     status: order.status,
     artworkStatus: order.artwork.status,
     productTypeCode: order.productType.code,
+    summary: lineSummaryOf(order.productType.code),
     quoteId: sibling(order, "qte"),
     quantityOrdered: order.quantity,
     designOption: order.designOption,
@@ -79,6 +81,23 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
       },
     })),
     statusChangedAt: order.createdAt,
+    createdAt: order.createdAt,
     cancelledAt: order.cancelledAt,
+    // The rows keep the reason as text only, no reason code.
+    cancelReasonCode: null,
+    cancelReasonNameTh: order.cancelReason,
+    cancelReasonNameEn: null,
+    // The rows keep no delivery estimate, receipt stamps or tolerance result: only the delivery.
+    estimatedDeliveryDate: null,
+    receipt: {
+      deliveredAt: order.shipments.map((shipment) => shipment.deliveredAt).find(Boolean) ?? null,
+      confirmedAt: null,
+      completedAt: null,
+      completionMode: null,
+      autoCompleteAt: null,
+      claimWindowEndsAt: null,
+    },
+    toleranceOutcome: null,
+    nextActions: [],
   };
 }

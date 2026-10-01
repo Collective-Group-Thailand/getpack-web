@@ -34,7 +34,9 @@
     "session_revoked": "Session revoked",
     "token_expired": "Token expired",
     "unauthenticated": "Authentication required",
-    "wrong_audience": "Token not valid here"
+    "wrong_audience": "Token not valid here",
+    "identity_last_method": "Last sign-in method",
+    "identity_not_unlinkable": "Sign-in method cannot be removed"
   },
   "banking": {
     "duplicate_import": "Already imported",
@@ -99,7 +101,9 @@
     "invalid_status": "Wrong company status",
     "kyc_incomplete": "KYC incomplete",
     "po_required": "PO number required",
-    "tax_id_taken": "Tax id already registered"
+    "tax_id_taken": "Tax id already registered",
+    "asset_exists": "Asset exists",
+    "last_admin": "Last Company Admin"
   },
   "concurrency": {
     "precondition_required": "If-Match required",
@@ -119,7 +123,8 @@
   },
   "designs": {
     "document_too_large": "Design too large",
-    "template_without_design": "Template has no design"
+    "template_without_design": "Template has no design",
+    "read_only": "Read-only design"
   },
   "discount_memos": {
     "not_usable": "Memo cannot be used",
@@ -207,7 +212,9 @@
     "reprice_has_discounts": "Cannot re-price"
   },
   "orders": {
-    "reorder_unavailable": "Reorder unavailable"
+    "reorder_unavailable": "Reorder unavailable",
+    "reorder_preview_expired": "Preview expired",
+    "reorder_repriced": "Price changed"
   },
   "outbox": {
     "not_replayable": "Event not replayable"
@@ -253,7 +260,9 @@
     "schedule_has_payments": "Schedule already paid",
     "slip_duplicate": "Duplicate slip",
     "slip_not_in_review": "Slip not in review",
-    "slip_not_scanned": "File not scanned yet"
+    "slip_not_scanned": "File not scanned yet",
+    "nothing_due": "Nothing due",
+    "reminder_recent": "Reminder sent recently"
   },
   "payouts": {
     "bank_account_missing": "No company bank account",
@@ -286,7 +295,8 @@
     "no_codes": "No coupon codes",
     "not_a_coupon": "Not a coupon promotion",
     "payment_method_required": "Payment method not allowed",
-    "too_many_attempts": "Too many code attempts"
+    "too_many_attempts": "Too many code attempts",
+    "system_managed": "Managed by the system"
   },
   "proofs": {
     "annotation_closed": "Annotations closed",
@@ -336,7 +346,9 @@
     "invalid_transition": "Not allowed now",
     "quote_empty": "No lines",
     "quote_not_draft": "Not a draft",
-    "quote_not_open": "Quotation not open"
+    "quote_not_open": "Quotation not open",
+    "consultation_not_open": "Consultation not open",
+    "reminder_recent": "Reminder sent recently"
   },
   "service": {
     "unavailable": "Service unavailable"
@@ -384,5 +396,13 @@
     "origin_invalid": "Request refused for security",
     "origin_mismatch": "Request refused for security",
     "upstream_unreachable": "The service could not be reached"
+  },
+  "privacy": {
+    "deletion_blocked": "Data cannot be deleted yet",
+    "request_closed": "Request already answered",
+    "request_open": "Request already open"
+  },
+  "support": {
+    "contact_required": "Contact details required"
   }
 }

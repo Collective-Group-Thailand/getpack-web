@@ -164,6 +164,7 @@ export function issue(input: IssueInput): Doc {
     issuedAt: input.issuedAt ?? `${input.date}T10:00:00+07:00`,
     dueDate: input.dueDate ?? null,
     status: "issued",
+    nextActions: [],
     seller: SELLER,
     buyer: party,
     isFullForm: fullForm && input.docType !== "iv",
@@ -293,10 +294,14 @@ function paymentFrom(order: MockOrder, source: CommercePayment): Payment {
     redirectUrl: null,
     expiresAt: null,
     failureReason: null,
+    failureCode: null,
     paidAt: source.paidAt,
     createdAt: source.slips[0]?.uploadedAt ?? source.paidAt ?? order.createdAt,
+    // The commerce payment keeps no receiving accounts (empty until Finance sets them, D-061).
+    receiverAccounts: [],
     slips: source.slips.map((slip) => ({
       id: slip.id,
+      fileId: slip.file.id,
       declaredAmount: slip.declaredAmount,
       declaredTransferredAt: slip.declaredTransferredAt,
       status: slip.verificationStatus as Schemas["SlipStatus"],
@@ -522,9 +527,11 @@ export function collect(
     redirectUrl: null,
     expiresAt: null,
     failureReason: null,
+    failureCode: null,
     paidAt: input.at,
     createdAt: input.at,
     slips: [],
+    receiverAccounts: [],
   });
   const receipt = issue({
     docType: "rc",
@@ -957,9 +964,11 @@ for (const order of orders) {
       redirectUrl: null,
       expiresAt: null,
       failureReason: null,
+      failureCode: null,
       paidAt,
       createdAt: paidAt,
       slips: [],
+      receiverAccounts: [],
     });
     recordInstalment(order, { paymentId: id, method: "scb_qr", gross: satangOf(second.grossAmount), seq: 2, paidAt });
   }
@@ -1115,6 +1124,7 @@ export function pendingSlips(): SlipItem[] {
         .filter((slip) => slip.verificationStatus === "manual_review")
         .map((slip): SlipItem => ({
           id: slip.id,
+          fileId: slip.file.id,
           paymentId: payment.id,
           groupId: order.groupId,
           groupCode: order.groupCode,

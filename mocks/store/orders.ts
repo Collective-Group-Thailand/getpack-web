@@ -18,10 +18,11 @@ import type { privacyRequest } from "@/lib/api/requests/store-orders";
 import type { Schemas } from "@/lib/api/types";
 
 import { baht, customers as fakeCustomers, orders, satang, type MockOrder } from "../admin/commerce";
+import { settingValue } from "../admin/platform";
 import { mockRequest } from "../route";
 import { toOrderDto } from "./order-dto";
 import { bangkokIso, mockId, paginate, problem } from "../support";
-import { catalogProducts, imageUrl } from "./catalog";
+import { catalogProducts, imageUrl, provinceRefOf } from "./catalog";
 import { customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
 
@@ -119,6 +120,8 @@ export function stepsOf(order: MockOrder): Schemas["ProgressStepDto"][] {
           ? "skipped"
           : "pending",
     completedAt: done[key] ? (at[key] ?? null) : null,
+    // The mock keeps no factory plan dates (D-075).
+    promisedAt: null,
   }));
 }
 
@@ -131,6 +134,8 @@ export function toProgress(order: MockOrder): Schemas["OrderProgressDto"] {
     orderId: order.id,
     status: order.status,
     promisedShipDate: order.promisedShipDate,
+    // The mock order keeps no delivery estimate from its quotation.
+    estimatedDeliveryDate: null,
     paidForProductionAt: paidOf(order) ? when("paid") : null,
     artworkApprovedAt: when("artwork"),
     productionStartedAt: when("artwork"),
@@ -224,6 +229,7 @@ export function toShipments(order: MockOrder): Schemas["StoreShipmentDto"][] {
       line1: shipment.destination.line1,
       line2: shipment.destination.line2,
       postcode: shipment.destination.postcode,
+      province: provinceRefOf(shipment.destination.postcode, shipment.destination.province),
     },
     cartonsCount: shipment.cartons,
     pickedUpAt: bangkokIso(-DAY * 9),
@@ -280,6 +286,7 @@ export function toDocuments(order: MockOrder): Schemas["CustomerDocumentDto"][] 
         docKind: DOC_KIND[document.type] ?? "instalment",
         docNumber: document.number,
         status: document.status,
+        nextActions: [],
         documentDate: document.issuedAt.slice(0, 10),
         dueDate: null,
         isTaxInvoice: document.type === "tr" || document.type === "iv",
@@ -433,7 +440,9 @@ export const storeOrderHandlers = [
   http.get("*/v1/store/loyalty", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    const current = TIERS[TIERS.findLastIndex((tier) => spendOf(customer) >= tier.from)]!;
+    const at = TIERS.findLastIndex((tier) => spendOf(customer) >= tier.from);
+    const current = TIERS[at]!;
+    const next = TIERS[at + 1] ?? null;
     const summary: Schemas["LoyaltySummaryDto"] = {
       availablePoints: customer.points,
       availableValue: baht(customer.points * 250),
@@ -444,6 +453,10 @@ export const storeOrderHandlers = [
       pointValue: "2.50",
       spend12m: baht(spendOf(customer)),
       tier: current.tier,
+      // The next tier up (D-134) and the 12-month spend as a share of it; 100 at the top.
+      nextTier: next?.tier ?? null,
+      nextTierMinSpend12m: next ? baht(next.from) : null,
+      nextTierProgressPct: next ? Math.min(100, (spendOf(customer) / next.from) * 100).toFixed(2) : "100.00",
     };
     return HttpResponse.json(summary);
   }),
@@ -466,6 +479,7 @@ export const storeOrderHandlers = [
       status: "available",
       availableAt: bangkokIso(-createdMinutesAgo + DAY),
       expiresAt: bangkokIso(365 * DAY - createdMinutesAgo),
+      orderId: null,
       orderCode: null,
       groupCode: null,
       reason: null,
@@ -476,6 +490,7 @@ export const storeOrderHandlers = [
       .filter((order) => order.status === "completed")
       .map((order, index) =>
         entry(mockId("pte", index + 1), "earn_order", Math.floor(satang(order.netAmount) / 50_000), 2 * DAY, {
+          orderId: order.id,
           orderCode: order.orderCode,
         }),
       );
@@ -504,12 +519,32 @@ export const storeOrderHandlers = [
     if (!customer) return unauthenticated();
     const owner = customer.ownerIndex === null ? null : fakeCustomers[customer.ownerIndex]!;
     const code = owner?.referralCode ?? `PKNEW${customer.phone.slice(-4)}`;
+    // The rules are the `referral.rules` setting (D-136); the reward in points at the point value,
+    // rounded down (D-131).
+    const rules = settingValue<{
+      refereeDiscountPct: string;
+      refereeDiscountMaxBaht: string;
+      referrerRewardBaht: string;
+      maxRewardedReferralsPerMonth: number;
+    }>("referral.rules");
     const referral: Schemas["MyReferralDto"] = {
       code,
       link: `${MOCK_STOREFRONT}/r/${code}`,
       referrals: owner
         ? { pending: 1, underReview: 0, qualified: 0, rewarded: 1, rejected: 0 }
         : { pending: 0, underReview: 0, qualified: 0, rewarded: 0, rejected: 0 },
+      // The mock keeps counts only: no referral list, and none dated this month.
+      recent: [],
+      rewardedThisMonth: 0,
+      rules: {
+        refereeDiscountPct: rules.refereeDiscountPct,
+        refereeDiscountMaxAmount: rules.refereeDiscountMaxBaht,
+        referrerRewardAmount: rules.referrerRewardBaht,
+        referrerRewardPoints: Math.floor(
+          Number(rules.referrerRewardBaht) / Number(settingValue<string>("loyalty.point_value")),
+        ),
+        maxRewardedPerMonth: rules.maxRewardedReferralsPerMonth,
+      },
     };
     return HttpResponse.json(referral);
   }),

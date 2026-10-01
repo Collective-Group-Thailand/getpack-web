@@ -17,7 +17,13 @@ import type { brandAsset } from "@/lib/api/requests/store-business";
 import type { Schemas } from "@/lib/api/types";
 
 import { baht, orders, satang } from "../admin/commerce";
-import { companyStores, presentCompany, type CompanyStore } from "../admin/companies";
+import {
+  companyStores,
+  presentCompany,
+  toCompanyBranchDto,
+  toCreditEligibilityDto,
+  type CompanyStore,
+} from "../admin/companies";
 import { files, settingValue } from "../admin/platform";
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, precondition, problem, versionTag, withEtag } from "../support";
@@ -101,7 +107,12 @@ setCheckoutCompany(
     const found = membershipOf(customer);
     if (!found || found.store.company.status !== "active") return null;
     const presented = presentCompany(found.store);
+    const branch =
+      found.store.branches.find((candidate) => candidate.branchType === "head_office") ?? found.store.branches[0]!;
     return {
+      companyId: presented.id,
+      branchId: branch.id,
+      creditStatus: presented.creditStatus,
       companyCode: presented.companyCode,
       legalName: presented.legalName,
       poNumberPolicy: presented.poNumberPolicy,
@@ -138,8 +149,24 @@ const bulkPreviews = new Map<string, { persona: string; rows: { orderId: string;
 
 /* --------------------------------------------------------------------- the published company */
 
-/** A company as the published contract has it (`CompanyDto`), from the back office's row. */
-export function toCompanyDto(store: CompanyStore): Schemas["CompanyDto"] {
+/** What a member's roles allow, as the API answers `can` (D-140; brand assets D-227). */
+function capabilitiesOf(member: Member | undefined): Schemas["CompanyCapabilitiesDto"] {
+  const has = (...wanted: Role[]) => wanted.some((role) => member?.roles.includes(role) ?? false);
+  return {
+    order: has("company_admin", "company_buyer", "company_approver"),
+    approveOrders: has("company_approver"),
+    manageMembers: has("company_admin"),
+    manageSettings: has("company_admin"),
+    manageAssets: has("company_admin"),
+    viewFinance: has("company_admin", "company_accountant"),
+  };
+}
+
+/**
+ * A company as the published contract has it (`CompanyDto`), from the back office's row; `me` is
+ * the caller's membership, whose roles `myRoles` and `can` answer.
+ */
+export function toCompanyDto(store: CompanyStore, me?: Member): Schemas["CompanyDto"] {
   const presented = presentCompany(store);
   return {
     id: presented.id,
@@ -166,16 +193,7 @@ export function toCompanyDto(store: CompanyStore): Schemas["CompanyDto"] {
       status: member.status,
       joinedAt: member.joinedAt,
     })),
-    branches: store.branches.map((branch) => ({
-      id: branch.id,
-      branchType: branch.branchType,
-      branchCode: branch.branchCode,
-      name: branch.name,
-      line1: branch.address,
-      line2: null,
-      postcode: branch.address.match(/(\d{5})\s*$/)?.[1] ?? "10110",
-      isDefault: branch.branchType === "head_office",
-    })),
+    branches: store.branches.map(toCompanyBranchDto),
     kycDocuments: store.kyc.map((document) => ({
       id: document.id,
       docType: document.docType,
@@ -185,6 +203,12 @@ export function toCompanyDto(store: CompanyStore): Schemas["CompanyDto"] {
       status: document.status,
     })),
     missingKyc: [],
+    discountPct: presented.discount?.pct ?? null,
+    // The rows keep no contact phone or signatory (the signatory's ID is a KYC file only).
+    contactPhone: null,
+    signatory: null,
+    myRoles: me?.roles ?? [],
+    can: capabilitiesOf(me),
   };
 }
 
@@ -223,6 +247,14 @@ function toApprovalDto(view: Approval): Schemas["CompanyApprovalDto"] {
     currency: "THB",
     requester: view.requestedBy,
     requestedAt: view.requestedAt,
+    // Each priced cart item is one order of the group.
+    ordersCount: view.items.length,
+    branchName: view.branch,
+    threshold: view.threshold,
+    expiresAt: view.expiresAt,
+    decidedAt: view.decidedAt,
+    decidedBy: view.decidedBy,
+    decisionComment: view.reason,
   };
 }
 
@@ -269,12 +301,17 @@ export const storeBusinessHandlers = [
   http.get("*/v1/store/companies", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    return HttpResponse.json(companiesOf(customer).map(toCompanyDto));
+    const mine = membershipOf(customer);
+    return HttpResponse.json(
+      companiesOf(customer).map((store) => toCompanyDto(store, store === mine?.store ? mine.member : undefined)),
+    );
   }),
 
   http.get("*/v1/store/companies/:companyId", ({ params, request }) => {
     const found = companyContext(request, String(params.companyId));
-    return found instanceof Response ? found : withEtag(toCompanyDto(found.store), companyTag(found.store));
+    return found instanceof Response
+      ? found
+      : withEtag(toCompanyDto(found.store, found.member), companyTag(found.store));
   }),
 
   http.patch("*/v1/store/companies/:companyId", async ({ params, request }) => {
@@ -288,7 +325,7 @@ export const storeBusinessHandlers = [
     if (body.orderApprovalThreshold !== undefined) company.orderApprovalThreshold = body.orderApprovalThreshold;
     if (body.poNumberPolicy) company.poNumberPolicy = body.poNumberPolicy;
     company.updatedAt = bangkokIso();
-    return withEtag(toCompanyDto(found.store), companyTag(found.store));
+    return withEtag(toCompanyDto(found.store, found.member), companyTag(found.store));
   }),
 
   // An invitation goes to someone who already has a Packio account, found by phone (E.164).
@@ -310,7 +347,7 @@ export const storeBusinessHandlers = [
       status: "invited",
       joinedAt: null,
     });
-    return HttpResponse.json(toCompanyDto(found.store), { status: 201 });
+    return HttpResponse.json(toCompanyDto(found.store, found.member), { status: 201 });
   }),
 
   mockRequest("PATCH /v1/store/me/company/members/{memberId}", ({ params, body, request }) => {
@@ -341,7 +378,7 @@ export const storeBusinessHandlers = [
     if (member.id === found.member.id)
       return problem(409, "companies.cannot_remove_self", "นำตัวเองออกจากบริษัทไม่ได้");
     member.status = "removed";
-    return HttpResponse.json(toCompanyDto(found.store));
+    return HttpResponse.json(toCompanyDto(found.store, found.member));
   }),
 
   http.delete("*/v1/store/companies/:companyId/branches/:branchId", ({ params, request }) => {
@@ -353,7 +390,7 @@ export const storeBusinessHandlers = [
     if (branch.branchType === "head_office")
       return problem(409, "companies.head_office_required", "ลบสำนักงานใหญ่ไม่ได้");
     found.store.branches.splice(found.store.branches.indexOf(branch), 1);
-    return HttpResponse.json(toCompanyDto(found.store));
+    return HttpResponse.json(toCompanyDto(found.store, found.member));
   }),
 
   mockRequest("GET /v1/store/me/company/brand-assets", ({ request }) => {
@@ -490,6 +527,7 @@ export const storeBusinessHandlers = [
       exposureAmount: presented.receivables.openAmount,
       termDays: presented.credit.termDays,
       currency: "THB",
+      eligibility: toCreditEligibilityDto(found.store),
       pendingRequest:
         application?.status === "submitted"
           ? {

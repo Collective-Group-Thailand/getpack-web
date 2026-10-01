@@ -42,6 +42,12 @@ export function toAdminCustomerDto(customer: CustomerRow): Schemas["AdminCustome
     createdAt: customer.createdAt,
     status: "active",
     lastLoginAt: null,
+    companyName: customer.companyName,
+    ordersCount: customer.ordersCount,
+    lastOrderAt: customer.lastOrderAt,
+    referralCode: customer.referralCode,
+    // The rows keep no profile-save stamp.
+    profileCompletedAt: null,
   };
 }
 

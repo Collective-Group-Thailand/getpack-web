@@ -28,7 +28,7 @@ import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
-import { storeDesignDtoForStaff } from "../store/designs";
+import { designProductRefOf, storeDesignDtoForStaff } from "../store/designs";
 import { baht, orders, satang } from "./commerce";
 import { registerQueue } from "./console";
 
@@ -565,6 +565,10 @@ export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
         rows.push({
           orderId: detail.orderId,
           orderCode: detail.orderCode,
+          customer: { id: order.customer.id, displayName: order.customer.displayName },
+          productTypeCode: order.productType.code,
+          artworkStatus: detail.artworkStatus,
+          assignee: detail.assignee,
           kind,
           itemId: item.id,
           versionNo: item.versionNo,
@@ -588,6 +592,10 @@ export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
         rows.push({
           orderId: detail.orderId,
           orderCode: detail.orderCode,
+          customer: { id: order.customer.id, displayName: order.customer.displayName },
+          productTypeCode: order.productType.code,
+          artworkStatus: detail.artworkStatus,
+          assignee: detail.assignee,
           kind,
           itemId: item.id,
           versionNo: item.versionNo,
@@ -857,7 +865,14 @@ export function customerDecide(
 
 export function customerAnnotate(
   proofId: string,
-  input: { page: number; kind: Annotation["kind"]; geometry: Record<string, unknown>; body: string; parentId?: string },
+  // `page`, `kind` and `geometry` are a new annotation's own; a reply takes its parent's.
+  input: {
+    page?: number;
+    kind?: Annotation["kind"];
+    geometry?: Record<string, unknown>;
+    body: string;
+    parentId?: string;
+  },
   who: { id: string; displayName: string },
 ): Annotation {
   const list = annotations.get(proofId) ?? [];
@@ -865,9 +880,9 @@ export function customerAnnotate(
   const created: Annotation = {
     id: mockId("ann", 6000 + list.length + Math.floor(Math.random() * 900)),
     parentId: parent?.id ?? null,
-    page: parent?.page ?? input.page,
-    kind: parent?.kind ?? input.kind,
-    geometry: parent?.geometry ?? input.geometry,
+    page: parent?.page ?? input.page ?? 1,
+    kind: parent?.kind ?? input.kind ?? "pin",
+    geometry: parent?.geometry ?? input.geometry ?? {},
     comment: input.body,
     author: who,
     authorKind: "customer",
@@ -928,10 +943,12 @@ function toDesignDto(id: string): Schemas["DesignDocumentDto"] | null {
   if (saved && !staffCopies.has(id)) return saved;
   const view = staffCopies.get(id)?.view ?? onOrder(id);
   if (!view) return null;
+  const catalogProductId = mockId("cpr", 1);
   return {
     id: view.id,
     title: view.title,
-    catalogProductId: mockId("cpr", 1),
+    catalogProductId,
+    product: designProductRefOf(catalogProductId),
     patternId: null,
     materialId: null,
     semiDesignTemplateId: null,
@@ -942,7 +959,12 @@ function toDesignDto(id: string): Schemas["DesignDocumentDto"] | null {
     schemaVersion: view.schemaVersion,
     versionNo: view.versionNo,
     thumbnailFileId: null,
+    thumbnailUrl: view.thumbnailUrl,
     assets: [],
+    // A staff copy or an order's document: no order list or view link of its own, one time stamp.
+    orders: [],
+    share: null,
+    createdAt: view.updatedAt,
     updatedAt: view.updatedAt,
   };
 }

@@ -51,6 +51,8 @@ interface Priced {
   preview: Preview;
   fingerprint: string;
   gross: number;
+  /** The buyer's company as the business mock reported it, for the published preview. */
+  company: CheckoutCompany | null;
   schedule: {
     key: string;
     kind: string;
@@ -106,6 +108,10 @@ function split(total: number, shares: number[]): number[] {
 
 /** A buyer's company, as the business mock (F3 3.7) reports it to checkout. */
 export interface CheckoutCompany {
+  companyId: string;
+  /** The tax-invoice branch: the company's default (head office). */
+  branchId: string;
+  creditStatus: "prepaid" | "eligible" | "credit" | "blocked_overdue";
   companyCode: string;
   legalName: string;
   poNumberPolicy: "required" | "optional" | "none";
@@ -373,7 +379,7 @@ export function price(customer: MockCustomer, input: Input): Priced | Response {
         }
       : null,
   };
-  return { preview, fingerprint, gross, schedule: selected };
+  return { preview, fingerprint, gross, company, schedule: selected };
 }
 
 /* ------------------------------------------------------------------------------ placed groups */
@@ -873,6 +879,31 @@ function toPreviewDto(customer: MockCustomer, priced: Priced): Schemas["Checkout
     ),
     withholding: preview.taxInvoice?.withholdsTax ?? false,
     notices,
+    paymentMethods: preview.paymentMethods.map(({ method, available }) => ({ method, available })),
+    points: {
+      balance: preview.points.balance,
+      minimumPoints: preview.points.min,
+      maximumPoints: preview.points.max,
+      pointValue: preview.points.pointValue,
+      redeemedPoints: preview.points.redeemed,
+      toEarn: preview.points.toEarn,
+    },
+    company:
+      priced.company && preview.company
+        ? {
+            companyId: priced.company.companyId,
+            branchId: priced.company.branchId,
+            legalName: preview.company.legalName,
+            poNumberPolicy: preview.company.poNumberPolicy,
+            creditStatus: priced.company.creditStatus,
+            approvalThreshold: preview.company.approvalThreshold,
+            approvalRequired: preview.company.needsApproval,
+            // Credit left only for a company with a limit (D-121).
+            creditAvailableAmount: priced.company.creditActive ? preview.company.creditAvailableAmount : null,
+            creditTermDays: priced.company.termDays,
+            onCredit: schedule.kind === ("credit_term" as never),
+          }
+        : null,
   };
 }
 
@@ -932,8 +963,13 @@ export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
     expiresAt: shown.expiresAt,
     paidAt: shown.paidAt,
     createdAt: payment.createdAt,
+    // The mock keeps a failure as words only, and its transfer account without the provider's
+    // account type: no failure code, no receiving accounts.
+    failureCode: null,
+    receiverAccounts: [],
     slips: shown.slips.map((slip) => ({
       id: slip.id,
+      fileId: slipDeclared.get(slip.id)?.fileId ?? slip.id,
       status: slip.status,
       lastCheck: slip.status === "passed" ? "pass" : slip.status === "pending" ? null : "mismatch",
       slaDueAt: slip.reviewDueAt,
@@ -944,7 +980,8 @@ export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
   };
 }
 
-const slipDeclared = new Map<string, { amount: string; at: string }>();
+/** What the customer declared with a slip, and the uploaded slip file. */
+const slipDeclared = new Map<string, { amount: string; at: string; fileId: string }>();
 
 /** Company approval of a checkout over its threshold (D-123) — the business mock answers it. */
 let requestApproval: (
@@ -1190,7 +1227,7 @@ export const storeCheckoutHandlers = [
       reviewDueAt: matches ? null : bangkokIso(4 * 60),
       uploadedAt: bangkokIso(),
     };
-    slipDeclared.set(slip.id, { amount: body.declaredAmount, at: body.transferredAt });
+    slipDeclared.set(slip.id, { amount: body.declaredAmount, at: body.transferredAt, fileId: body.fileId });
     payment.slips.push(slip);
     if (matches) {
       succeed(payment);

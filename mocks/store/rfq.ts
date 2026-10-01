@@ -212,6 +212,8 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
     notes: rfq.notes ?? "",
     // A seeded row has only the words; its labels stand in for the keys.
     spec: rawSpecs.get(rfq.id) ?? Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
+    files: rfq.files.map(({ id, originalName, mimeType, sizeBytes }) => ({ id, originalName, mimeType, sizeBytes })),
+    nextActions: [],
     slaDueAt: rfq.slaDueAt,
     submittedAt: rfq.submittedAt,
     closedAt: closed ? (rfq.acceptedQuotation ? bangkokIso() : rfq.submittedAt) : null,
@@ -243,6 +245,8 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
         id: message.id,
         author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
         body: message.body,
+        // The thread's rows keep no attachments.
+        files: [],
         createdAt: message.createdAt,
       })),
   };

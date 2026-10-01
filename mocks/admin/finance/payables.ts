@@ -524,6 +524,9 @@ function statementsAll() {
 
 function toStatement({ store, statement }: ReturnType<typeof statementsAll>[number]): Statement {
   const registered = store.factory.isVatRegistered;
+  // Void tax invoices are left out of the statement (and of its tax-invoice status).
+  const invoices = statementInvoices({ store, statement }).filter((invoice) => invoice.status !== "void");
+  const latest = invoices.at(-1);
   return {
     id: statement.id,
     bsNumber: statement.bsNumber,
@@ -531,7 +534,29 @@ function toStatement({ store, statement }: ReturnType<typeof statementsAll>[numb
     periodFrom: statement.periodFrom,
     periodTo: statement.periodTo,
     status: STATEMENT_STATUS[statement.status] ?? "sent",
+    generatedAt: statement.generatedAt,
     confirmedAt: statement.confirmedAt,
+    confirmedBy: statement.confirmedBy,
+    // The partner model keeps the dispute note only, not the lines it named.
+    disputedLineNos: [],
+    currency: "THB",
+    totals: {
+      production: statement.totals.production,
+      shipping: statement.totals.shipping,
+      // The partner model has no mock-up, design or reproduction lines.
+      other: "0.00",
+      deductions: statement.totals.deductions,
+      advanceOffset: statement.totals.alreadyPaid,
+      net: statement.totals.net,
+      vat: statement.totals.vat,
+      gross: statement.totals.gross,
+      alreadyPaid: statement.totals.alreadyPaid,
+      remaining: statement.totals.remaining,
+    },
+    taxInvoices: [...invoices].reverse(),
+    taxInvoiceStatus: !latest || latest.status === "void" ? "none" : latest.status,
+    inputVatStatus: latest?.inputVatStatus ?? null,
+    nextActions: [],
     disputeNote: statement.disputeNote,
     netAmount: statement.totals.net,
     vatAmount: statement.totals.vat,
@@ -541,7 +566,11 @@ function toStatement({ store, statement }: ReturnType<typeof statementsAll>[numb
       const vat = vatOf(net, registered);
       return {
         lineNo: index + 1,
+        // The contract has no advance-offset kind: the partner model's offset is a deduction here.
+        kind: line.kind === "advance_offset" ? "deduction" : line.kind,
         description: line.description,
+        reference: line.reference,
+        quantity: line.quantity,
         netAmount: line.amount,
         vatAmount: baht(vat),
         grossAmount: baht(net + vat),
@@ -560,39 +589,42 @@ const INVOICE_STATUS: Record<string, Invoice["status"]> = {
 const bills: Invoice[] = [];
 
 function factoryInvoices(): Invoice[] {
-  return statementsAll().flatMap(({ store, statement }) =>
-    (statementStates.get(statement.id)?.invoices ?? []).map((invoice): Invoice => ({
-      id: invoice.id,
-      vendorId: store.factory.id,
-      vendorName: store.factory.legalName,
-      bsNumber: statement.bsNumber,
-      vendorInvoiceNo: invoice.invoiceNo,
-      invoiceDate: invoice.invoiceDate,
-      sellerTaxId: invoice.sellerTaxId,
-      sellerBranchCode: invoice.sellerBranchCode,
-      source: invoice.source,
-      fileId: invoice.file?.id ?? null,
-      isTaxInvoice: true,
-      status: INVOICE_STATUS[invoice.status] ?? "recorded",
-      rejectionReason: invoice.rejectReason,
-      inputVatStatus:
-        invoice.status === "validated"
-          ? "claimable"
-          : store.factory.isVatRegistered
-            ? "pending_document"
-            : "not_claimable",
-      netAmount: statement.totals.net,
-      vatAmount: statement.totals.vat,
-      grossAmount: statement.totals.gross,
-      lines: statement.lines.map((line) => ({
-        description: line.description,
-        netAmount: line.amount,
-        vatAmount: baht(vatOf(satangOf(line.amount), store.factory.isVatRegistered)),
-        whtCategory: line.kind === "shipping" ? "transport" : line.kind === "production" ? "hire_of_work" : "none",
-        accountCode: line.kind === "shipping" ? "5120" : line.kind === "production" ? "5110" : null,
-      })),
+  return statementsAll().flatMap(statementInvoices);
+}
+
+/** One statement's factory tax invoices, oldest first (as the partner billing state keeps them). */
+function statementInvoices({ store, statement }: ReturnType<typeof statementsAll>[number]): Invoice[] {
+  return (statementStates.get(statement.id)?.invoices ?? []).map((invoice): Invoice => ({
+    id: invoice.id,
+    vendorId: store.factory.id,
+    vendorName: store.factory.legalName,
+    bsNumber: statement.bsNumber,
+    vendorInvoiceNo: invoice.invoiceNo,
+    invoiceDate: invoice.invoiceDate,
+    sellerTaxId: invoice.sellerTaxId,
+    sellerBranchCode: invoice.sellerBranchCode,
+    source: invoice.source,
+    fileId: invoice.file?.id ?? null,
+    isTaxInvoice: true,
+    status: INVOICE_STATUS[invoice.status] ?? "recorded",
+    rejectionReason: invoice.rejectReason,
+    inputVatStatus:
+      invoice.status === "validated"
+        ? "claimable"
+        : store.factory.isVatRegistered
+          ? "pending_document"
+          : "not_claimable",
+    netAmount: statement.totals.net,
+    vatAmount: statement.totals.vat,
+    grossAmount: statement.totals.gross,
+    lines: statement.lines.map((line) => ({
+      description: line.description,
+      netAmount: line.amount,
+      vatAmount: baht(vatOf(satangOf(line.amount), store.factory.isVatRegistered)),
+      whtCategory: line.kind === "shipping" ? "transport" : line.kind === "production" ? "hire_of_work" : "none",
+      accountCode: line.kind === "shipping" ? "5120" : line.kind === "production" ? "5110" : null,
     })),
-  );
+  }));
 }
 
 export const invoicesAll = (): Invoice[] => [...factoryInvoices(), ...bills];

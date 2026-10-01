@@ -185,6 +185,7 @@ function createRun(input: {
     runNo,
     payOn: input.payOn,
     status: "draft",
+    nextActions: [],
     bankAccount: {
       id: account.id,
       bankCode: account.bankCode,

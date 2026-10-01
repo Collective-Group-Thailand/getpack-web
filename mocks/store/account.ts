@@ -98,5 +98,8 @@ function profileOf(customer: MockCustomer): Schemas["CustomerProfileDto"] {
     customerType: customer.customerType ?? "individual",
     createdVia: "self",
     createdAt: "2026-09-01T09:00:00+07:00",
+    // A persona without a customer type has not saved a profile yet (the newcomer); the others did
+    // when they signed up.
+    profileCompletedAt: customer.customerType === null ? null : "2026-09-01T09:00:00+07:00",
   };
 }

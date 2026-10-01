@@ -23,7 +23,7 @@ import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
-import { productTypeRef } from "./catalog";
+import { lineSummaryOf, productTypeRef } from "./catalog";
 import { baht, customers, FACTORY } from "./commerce";
 import { indexForSearch, registerQueue } from "./console";
 import { PARTICIPATION } from "./partners";
@@ -578,7 +578,11 @@ function toQuotation(rfq: Rfq, quote: Quote, quantity: number, by: StaffPersona)
     status: "saved",
     channel: "cs",
     customer: { id: rfq.customer.id, displayName: rfq.customer.displayName },
+    customerCode: rfq.customer.customerCode,
     createdBy: refOf(by),
+    note: null,
+    rfq: { id: rfq.id, rfqCode: rfq.rfqCode },
+    summary: lineSummaryOf(rfq.productType.code),
     configuration: null,
     deliveryPostcode: null,
     currency: "THB",
@@ -590,6 +594,8 @@ function toQuotation(rfq: Rfq, quote: Quote, quantity: number, by: StaffPersona)
         productAmount: line.grossAmount,
         designFeeAmount: "0.00",
         structureDesignFeeAmount: "0.00",
+        // RFQ quotes split no plates or die blocks out.
+        toolingAmount: null,
         shippingAmount: null,
         shippingPending: true,
         shippingPendingReason: "no_postcode",
@@ -732,8 +738,8 @@ function closedAtOf(rfq: Rfq): string | null {
 
 /**
  * A row as `admin.rfqs.get` publishes it. Buy prices need `factory_cost.read`, the margin
- * `margin.read` (D-141); the rest of the fixture (files, contact, events, SLA target, suggested
- * prices, tiers) stays in the mock (CONTRACT-GAP admin.rfqs).
+ * `margin.read` (D-141); the rest of the fixture (events, suggested prices, tiers) stays in the
+ * mock (CONTRACT-GAP admin.rfqs).
  */
 export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas["StaffRfqDto"] {
   const rfq = refresh(row);
@@ -758,6 +764,15 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
     notes: rfq.notes ?? "",
     // The fixture keeps the spec in words; its labels stand in for the answer keys.
     spec: Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
+    // The words are Thai only: no rendered spec lines in both languages.
+    specLines: [],
+    customerCode: rfq.customer.customerCode,
+    contact: { ...rfq.contact },
+    files: rfq.files.map(({ id, originalName, mimeType, sizeBytes }) => ({ id, originalName, mimeType, sizeBytes })),
+    routedFromCalculator: rfq.routedFromCalculator,
+    slaTargetHours: rfq.slaTargetHours,
+    quoteDefaults: { validUntil: `${rfq.quoteDefaults.validUntil}T23:59:59+07:00` },
+    nextActions: [],
     submittedAt: rfq.submittedAt,
     firstResponseAt: rfq.firstResponseAt,
     slaDueAt: rfq.slaDueAt,
@@ -772,6 +787,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
       status: item.status,
       dueAt: item.dueAt,
       note: item.note ?? "",
+      requestedBy: item.requestedBy,
       respondedAt: item.respondedAt,
       responseNote: item.response?.notes ?? item.declineNote ?? null,
       lines:
@@ -813,6 +829,8 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
       authorUser: message.author ?? customer,
       visibility: message.visibility,
       body: message.body,
+      // The thread's rows keep no attachments.
+      files: [],
       createdAt: message.createdAt,
     })),
   };

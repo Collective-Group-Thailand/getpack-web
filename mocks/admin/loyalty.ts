@@ -22,7 +22,7 @@ import { customers } from "./commerce";
 import { settingValue } from "./platform";
 
 /** A ledger line as the fixture keeps it (with the order it came from); served as `PointsEntryDto`. */
-type Entry = Omit<Schemas["PointsEntryDto"], "orderCode" | "groupCode" | "reason"> & {
+type Entry = Omit<Schemas["PointsEntryDto"], "orderId" | "orderCode" | "groupCode" | "reason"> & {
   order: { id: string; orderCode: string } | null;
   note: string | null;
 };
@@ -151,6 +151,9 @@ export const loyaltyHandlers = [
         Date.parse(entry.expiresAt) - Date.now() < reminderDaysBefore * DAY * 60_000,
     );
     const pending = entries.filter((entry) => entry.status === "pending").reduce((sum, entry) => sum + entry.points, 0);
+    // The next tier up from `loyalty.tiers` (D-134), and the 12-month spend as a share of it.
+    const tiers = settingValue<{ tier: Schemas["LoyaltyTier"]; minSpend12m: string }[]>("loyalty.tiers");
+    const next = tiers[tiers.findIndex((tier) => tier.tier === customer.loyalty.tier) + 1] ?? null;
     const body: Schemas["LoyaltySummaryDto"] = {
       tier: customer.loyalty.tier,
       availablePoints: customer.loyalty.availablePoints,
@@ -161,6 +164,11 @@ export const loyaltyHandlers = [
       pointValue: settingValue<string>("loyalty.point_value"),
       multiplier: customer.loyalty.tier === "silver" ? "1.25" : customer.loyalty.tier === "gold" ? "1.50" : "1.00",
       currency: "THB",
+      nextTier: next?.tier ?? null,
+      nextTierMinSpend12m: next?.minSpend12m ?? null,
+      nextTierProgressPct: next
+        ? Math.min(100, (Number(customer.loyalty.spend12m) / Number(next.minSpend12m)) * 100).toFixed(2)
+        : "100.00",
     };
     return HttpResponse.json(body);
   }),
@@ -170,6 +178,7 @@ export const loyaltyHandlers = [
     const url = new URL(request.url);
     const rows: Schemas["PointsEntryDto"][] = ledgerOf(index).map(({ order, note, ...entry }) => ({
       ...entry,
+      orderId: order?.id ?? null,
       orderCode: order?.orderCode ?? null,
       groupCode: null,
       reason: note,

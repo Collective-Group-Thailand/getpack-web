@@ -111,6 +111,7 @@ function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
       refundId: null,
       executedAt: resolution.executedAt,
     })),
+    nextActions: [],
   };
 }
 
@@ -252,6 +253,7 @@ export const storeFulfilmentHandlers = [
     return HttpResponse.json({
       status: order.status,
       promisedShipDate: order.promisedShipDate,
+      estimatedDeliveryDate: progress.estimatedDeliveryDate,
       shippedAt: progress.shippedAt,
       deliveredAt: progress.deliveredAt,
       steps: progress.steps,

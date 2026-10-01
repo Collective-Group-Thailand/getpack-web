@@ -104,6 +104,25 @@ function productOfId(id: string | null): StoreDesign["product"] {
   return row ? productOf(String(row.slug)) : null;
 }
 
+/**
+ * The catalogue product a published design names (`DesignProductRefDto`), by id. A design on an id
+ * the catalogue does not hold keeps the id, named by the request's shape it was saved under.
+ */
+export function designProductRefOf(
+  id: string,
+  fallback: StoreDesign["product"] = null,
+): Schemas["DesignProductRefDto"] {
+  const row = catalogueRows("catalogProducts").find((candidate) => String(candidate.id) === id);
+  const product = row ? productOf(String(row.slug)) : fallback;
+  return {
+    id,
+    slug: product?.slug ?? "",
+    nameTh: String(row?.nameTh ?? product?.name ?? ""),
+    nameEn: String(row?.nameEn ?? row?.nameTh ?? product?.name ?? ""),
+    productTypeCode: product?.productTypeCode ?? "",
+  };
+}
+
 function productOf(slug: string | undefined): StoreDesign["product"] {
   if (!slug) return null;
   const product = catalogueRows("catalogProducts").find((row) => row.slug === slug);
@@ -184,10 +203,12 @@ const sizeOfDocument = (document: DesignDocument) => {
 /** A design as `store.designs` answers it: the document opaque, its schema version beside it. */
 function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
   const { design } = row;
+  const share = shares.get(shareOf.get(design.id) ?? "");
   return {
     id: design.id,
     title: design.name,
     catalogProductId: row.catalogProductId,
+    product: designProductRefOf(row.catalogProductId, design.product),
     patternId: design.patternId,
     materialId: design.materialId,
     semiDesignTemplateId: row.semiDesignTemplateId,
@@ -196,7 +217,23 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     schemaVersion: design.document.schemaVersion,
     versionNo: design.versionNo,
     thumbnailFileId: row.thumbnailFileId,
-    assets: design.assets.map((asset) => ({ id: asset.id, fileId: asset.fileId, kind: "image" as const })),
+    thumbnailUrl: design.thumbnailUrl,
+    assets: design.assets.map((asset) => ({
+      id: asset.id,
+      fileId: asset.fileId,
+      kind: "image" as const,
+      url: asset.url,
+      urlExpiresAt: null,
+      mimeType: asset.mimeType,
+      widthPx: asset.widthPx,
+      heightPx: asset.heightPx,
+      sizeBytes: asset.sizeBytes,
+      createdAt: asset.createdAt,
+    })),
+    orders: design.link ? [{ orderId: design.link.orderId, orderCode: design.link.orderCode }] : [],
+    // The live view link; one made without an expiry has no published state (D-226 links expire).
+    share: share?.expiresAt ? { sharedAt: share.createdAt, expiresAt: share.expiresAt } : null,
+    createdAt: design.createdAt,
     updatedAt: design.updatedAt,
   };
 }
@@ -536,6 +573,11 @@ export const storeDesignHandlers = [
         schemaVersion: version.document.schemaVersion,
         contentSha256: fakeSha(version.versionNo, row.design.id),
         document: null,
+        kind: version.kind,
+        label: version.label,
+        // The versions keep no thumbnail of their own.
+        thumbnailFileId: null,
+        thumbnailUrl: null,
       })) satisfies Schemas["DesignVersionDto"][],
     );
   }),
@@ -551,6 +593,10 @@ export const storeDesignHandlers = [
       schemaVersion: version.document.schemaVersion,
       contentSha256: fakeSha(version.versionNo, row.design.id),
       document: { spec: version.document.spec, content: version.document.content },
+      kind: version.kind,
+      label: version.label,
+      thumbnailFileId: null,
+      thumbnailUrl: null,
     } satisfies Schemas["DesignVersionDto"]);
   }),
 

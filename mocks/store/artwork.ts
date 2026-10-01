@@ -241,6 +241,14 @@ export function toProof(
     sentAt: proof.sentAt,
     decidedAt: proof.decidedAt,
     decisionChannel: proof.decisionChannel,
+    // A decision CS made on the customer's behalf names the team to the customer.
+    decidedByName: proof.decidedBy
+      ? proof.decisionChannel === "cs_on_behalf" && audience === "customer"
+        ? TEAM
+        : proof.decidedBy.displayName
+      : null,
+    // The mock records no approval checklist (`artwork.approval_checklist`).
+    decisionChecklist: [],
     decisionComment: decisionComments.get(proof.id) ?? null,
     onBehalfReason: proof.onBehalfReason,
     approvedFileId: proof.status === "approved" ? pageId : null,
@@ -271,6 +279,10 @@ export function toProof(
       },
       createdAt: item.createdAt,
       resolvedAt: item.resolvedAt,
+      // Only staff resolve a thread (the back office's artwork mock); they appear as the team too.
+      resolvedBy: item.resolvedBy
+        ? { kind: "staff" as const, displayName: audience === "customer" ? TEAM : item.resolvedBy.displayName }
+        : null,
     })),
   };
 }
@@ -361,6 +373,8 @@ export function toDesignService(detail: PrepressDetail, service: Service): Schem
       startedAt: round.startedAt,
       deliveredAt: round.deliveredAt,
       changeRequest: round.note,
+      // The rounds keep the delivered files only, no reference files sent with a revision.
+      referenceFileIds: [],
       instalmentId: round.chargeable
         ? (group.instalments.find((entry) => entry.label === feeLabel(round.roundNo))?.id ?? null)
         : null,
@@ -564,12 +578,17 @@ export const storeArtworkHandlers = [
       return problem(409, "proofs.annotation_closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
     const body = (await request.json()) as Schemas["AnnotateProofDto"];
     if (!body.comment?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ความเห็น");
+    // A new annotation names its place; a reply takes its parent's.
+    if (!body.parentId && (body.page === undefined || body.kind === undefined || !body.geometry))
+      return problem(422, "validation.failed", "กรุณาระบุตำแหน่งของความเห็น", [
+        { path: "page", code: "required", message: "required" },
+      ]);
     customerAnnotate(
       found.proof.id,
       {
         page: body.page,
         kind: body.kind,
-        geometry: body.geometry as Record<string, unknown>,
+        geometry: body.geometry as Record<string, unknown> | undefined,
         body: body.comment,
         ...(body.parentId ? { parentId: body.parentId } : {}),
       },

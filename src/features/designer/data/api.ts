@@ -86,18 +86,25 @@ export const storeDesigns = {
     return { data: data!, etag: etagOf(response) };
   },
   /**
-   * Every save is a new version. CONTRACT-GAP store.designs — an autosave and a manual save are
-   * not told apart, and the material lives in the document's spec only.
+   * Every save is a new version, an autosave told apart from a save the customer made (`kind`).
+   * CONTRACT-GAP store.designs — the material lives in the document's spec only.
    */
   async save(
     designId: string,
-    input: { name: string; spec: DesignSpec; content: DesignContent; thumbnailFileId?: string },
+    input: {
+      name: string;
+      kind: Schemas["DesignSaveKind"];
+      spec: DesignSpec;
+      content: DesignContent;
+      thumbnailFileId?: string;
+    },
     etag: string | null,
   ): Promise<Saved<StoreDesign>> {
     const { data, response } = await browserApi().PUT("/v1/store/designs/{designId}", {
       params: { path: { designId }, header: { "If-Match": etag ?? "" } },
       body: {
         title: input.name,
+        kind: input.kind,
         ...published(input.spec, input.content),
         ...(input.thumbnailFileId ? { thumbnailFileId: input.thumbnailFileId } : {}),
       },
@@ -193,12 +200,12 @@ export const adminDocuments = {
   /** Only the staff author's own designs save (`catalog.manage`); anyone else's is refused. */
   async save(
     designId: string,
-    input: { title: string; spec: DesignSpec; content: DesignContent },
+    input: { title: string; kind: Schemas["DesignSaveKind"]; spec: DesignSpec; content: DesignContent },
     etag: string | null,
   ): Promise<Saved<AdminDesignDocument>> {
     const { data, response } = await browserApi().PUT("/v1/admin/designs/{designId}", {
       params: { path: { designId }, header: { "If-Match": etag ?? "" } },
-      body: { title: input.title, ...published(input.spec, input.content) },
+      body: { title: input.title, kind: input.kind, ...published(input.spec, input.content) },
     });
     return { data: data!, etag: etagOf(response) };
   },

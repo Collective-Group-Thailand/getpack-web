@@ -21,6 +21,7 @@ import { staffPersonaOf } from "../auth";
 import { can, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
+import { provinceRefOf } from "../store/catalog";
 import { baht, FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
 import type { claimDetail } from "./logistics-model";
@@ -261,6 +262,16 @@ const quotes = new Map<string, Quote[]>();
 
 /* ----------------------------------------------------------------------------------- claims */
 
+/** The D-083 rule key behind each type's liability (damage: the factory shipped, as `RULES` says). */
+const RULE_KEYS: Record<Claim["type"], Schemas["ClaimLiabilityRule"]> = {
+  damaged: "factory_fleet_transit",
+  wrong_spec: "factory_production",
+  print_defect: "factory_production",
+  quantity_short: "factory_short_delivery",
+  late: "staff_decides",
+  other: "staff_decides",
+};
+
 const RULES: Record<Claim["type"], [Claim["liability"], string]> = {
   damaged: ["factory", "สินค้าเสียหายระหว่างขนส่ง โรงงานเป็นผู้ส่ง (D-083)"],
   wrong_spec: ["factory", "ผลิตผิดสเปก (D-083)"],
@@ -488,6 +499,7 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
       line1: item.destination.line1,
       line2: item.destination.line2,
       postcode: item.destination.postcode,
+      province: provinceRefOf(item.destination.postcode, item.destination.province),
     },
     items: item.items.map((line, index) => ({
       jobId: job?.id ?? mockId("job", 700 + index),
@@ -496,8 +508,11 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
       destinationId: mockId("dst", 700 + index),
       quantity: line.quantity,
       deliveredQuantity: item.pod?.deliveredQuantity ?? null,
+      // The order's delivered-vs-ordered result is the API's to work out (D-021, D-080).
+      toleranceOutcome: null,
     })),
     cartonsCount: item.cartons,
+    cartons: item.cartonList.map((carton) => ({ ...carton })),
     weightG: item.weightG ?? 0,
     volumeCm3: null,
     events: item.events.map((event) => ({ ...event })),
@@ -521,6 +536,27 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
     deliveredAt: item.status === "delivered" ? (item.pod?.capturedAt ?? item.lastEvent?.occurredAt ?? null) : null,
     cancelledAt: item.status === "cancelled" ? item.updatedAt : null,
     cancelReason: null,
+    blockedByPayment: item.blockedByPayment,
+    // A failed or returned trip, from its latest such event (the rows record no resolution, D-230).
+    exception:
+      item.status === "failed" || item.status === "returned"
+        ? {
+            status: item.status,
+            note: item.exception,
+            occurredAt: item.events.findLast((event) => event.status === item.status)?.occurredAt ?? item.updatedAt,
+            resolution: null,
+            resolutionNote: null,
+            resolvedAt: null,
+            resolvedBy: null,
+          }
+        : null,
+    podReview: item.pod
+      ? { state: item.pod.review, reviewedBy: item.pod.reviewedBy, reviewedAt: null, note: item.pod.reviewNote }
+      : null,
+    // The rows keep no fallback-carrier request or split origin.
+    carrierRequest: null,
+    splitFrom: null,
+    nextActions: [],
   };
 }
 
@@ -546,9 +582,11 @@ export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
     status: item.status,
     orderId: item.order.id,
     orderCode: item.order.orderCode,
+    customer: item.customer,
     jobId: job?.id ?? null,
     jobNo: job?.jobNo ?? null,
     shipmentId: item.shipment?.id ?? null,
+    shipmentNo: item.shipment?.shipmentNo ?? null,
     factoryId: item.factory?.id ?? null,
     factoryCode: item.factory?.code ?? null,
     description: item.description,
@@ -557,7 +595,10 @@ export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
     claimedQuantity: item.claimedQuantity,
     liability: item.liability,
     liabilityByRule: item.liabilityByRule,
+    liabilityRule: RULE_KEYS[item.type],
+    liabilityOverriddenBy: item.liabilityOverride?.by ?? null,
     overrideReason: item.liabilityOverride?.reason ?? null,
+    approvedProof: item.approvedProof ? { ...item.approvedProof, approvedFileId: null, channel: null } : null,
     photos: {
       product: item.evidence.productPhotos.map((photo) => photo.id),
       carton: item.evidence.cartonPhotos.map((photo) => photo.id),
@@ -565,7 +606,10 @@ export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
     ...infoOf(item),
     factoryResponse: item.factoryResponse?.response ?? null,
     factoryResponseNote: item.factoryResponse?.note ?? null,
+    factoryRespondedAt: item.factoryResponse?.at ?? null,
+    factoryEvidenceFileIds: [],
     decidedAt: item.decision?.at ?? null,
+    decidedBy: item.decision?.by ?? null,
     decisionNote: item.decision?.reason ?? null,
     resolutions: item.resolutions.map((resolution) => ({
       action: resolution.action,
@@ -575,9 +619,13 @@ export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
       quantity: resolution.action === "reproduction_job" ? item.claimedQuantity : null,
       refundId: null,
     })),
+    // The rows keep no deduction records: none recovered until the claims slice adds them.
+    deductions: [],
+    deductionAmount: "0.00",
     submittedAt: item.submittedAt,
     receivedAt: item.receivedAt,
     windowEndsAt: item.windowEndsAt,
+    nextActions: [],
   };
 }
 
