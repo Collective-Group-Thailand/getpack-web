@@ -42,14 +42,16 @@ export function CampaignBudget({
   return (
     <div className="flex w-full flex-col items-start gap-1">
       {campaign.spentPct !== null ? (
-        <Meter
-          className="w-full"
-          label={t("gauge")}
-          value={Number(campaign.spentPct)}
-          marker={Number(campaign.alertThresholdPct)}
-          valueText={text}
-          tone={campaign.status === "exhausted" ? "danger" : campaign.alertedAt ? "warning" : "primary"}
-        />
+        // A block of its own: with a marker the gauge sits in a wrapper that would shrink to nothing.
+        <div className="w-full">
+          <Meter
+            label={t("gauge")}
+            value={Number(campaign.spentPct)}
+            marker={Number(campaign.alertThresholdPct)}
+            valueText={text}
+            tone={campaign.status === "exhausted" ? "danger" : campaign.alertedAt ? "warning" : "primary"}
+          />
+        </div>
       ) : null}
       <p className={compact ? "text-xs" : "text-sm"}>
         {text}
