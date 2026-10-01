@@ -28,7 +28,6 @@ export * from "./admin-rfq";
 export * from "./partner-account";
 export * from "./partner-billing";
 export * from "./partner-onboarding";
-export * from "./partner-shipments";
 export * from "./store-catalog";
 export * from "./store-checkout";
 export * from "./store-orders";

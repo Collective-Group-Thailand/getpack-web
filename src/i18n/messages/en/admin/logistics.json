@@ -2,7 +2,6 @@
   "shipments": {
     "title": "Shipments",
     "description": "The factory delivers; a fallback carrier where it cannot; POD always (D-013, D-114)",
-    "statusesLabel": "Shipment statuses",
     "all": "All",
     "search": "Search shipment, order or tracking number",
     "empty": "No shipments",
@@ -20,7 +19,17 @@
       "factory_fleet": "Factory fleet",
       "flash_express": "Flash Express",
       "deliveree": "Deliveree"
-    }
+    },
+    "queuesLabel": "Shipment queues",
+    "queues": {
+      "awaiting_pickup": "Awaiting pick-up",
+      "in_transit": "On the road",
+      "exceptions": "Exceptions",
+      "pod_review": "POD to review"
+    },
+    "paymentHold": "Payment due before shipping",
+    "carrierRequested": "Factory asked for a carrier",
+    "splitFrom": "Split from {no}"
   },
   "shipment": {
     "pageTitle": "Shipment",
@@ -29,9 +38,6 @@
     "summary": "Order {order} · factory {factory} · {quantity} pcs in {cartons} cartons",
     "packingList": "Packing list",
     "labels": "Carton labels",
-    "split": "Split",
-    "book": "Book a fallback carrier",
-    "resolve": "Resolve",
     "pod": "Proof of delivery",
     "podNote": "An accepted factory POD makes the payout eligible (D-013)",
     "acceptPod": "Accept POD",
@@ -70,7 +76,7 @@
     "factoryPayout": "Factory payout",
     "carrierCost": "Carrier cost",
     "splitTitle": "Split the shipment",
-    "splitBody": "{no} holds {quantity}; the part split off becomes a new shipment",
+    "splitBody": "{no} holds {quantity} pieces; what you split off becomes a new shipment (drafts only).",
     "splitQuantity": "Quantity to split off",
     "splitHint": "Less than {quantity}",
     "splitDone": "Split into {no}",
@@ -78,7 +84,6 @@
     "bookBody": "{no}: choose the fallback carrier; its price at booking is Packio's cost",
     "quoting": "Getting carrier quotes…",
     "quotes": "Fallback carrier",
-    "quote": "{amount} · {days} days",
     "booked": "Booked — tracking {tracking}",
     "resolveTitle": "Resolve the exception",
     "resolveBody": "{no}",
@@ -108,7 +113,32 @@
     "deliveredOf": "{quantity} delivered",
     "credit": "credit {amount}",
     "pricedAtBooking": "Priced at booking",
-    "needCarrier": "Choose a carrier"
+    "needCarrier": "Choose a carrier",
+    "verbs": {
+      "split": "Split",
+      "book_carrier": "Book a fallback carrier",
+      "resolve_exception": "Resolve",
+      "review_pod": "Review the POD",
+      "cancel": "Cancel the shipment"
+    },
+    "paymentHoldTitle": "Cannot be picked up yet",
+    "paymentHoldBody": "The order still owes an instalment due before shipping; pick-up is refused until it is paid (B3.2).",
+    "carrierRequestTitle": "The factory asked for a carrier",
+    "carrierRequestBody": "Asked {at}: {reason}",
+    "resolvedAs": "Resolved: {resolution} by {name} — {note}",
+    "splitFromLabel": "Split from",
+    "reviewedBy": "Reviewed by",
+    "cartonWeight": "{kg} kg",
+    "splitQuantityFor": "Quantity to split off ({jobNo})",
+    "splitCartons": "Cartons of the new shipment",
+    "splitWeight": "Weight of the new shipment (kg)",
+    "needCartons": "Enter the cartons and the weight",
+    "unavailable": "This carrier cannot take the trip",
+    "transitDays": "{days} days in transit",
+    "bookReason": "Why the fallback carrier",
+    "cancelTitle": "Cancel {no}",
+    "cancelBody": "{no} from {factory} is cancelled; this cannot be undone.",
+    "cancelled": "{no} cancelled"
   },
   "claims": {
     "title": "Claims",

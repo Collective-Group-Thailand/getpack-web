@@ -1,8 +1,5 @@
 /** The logistics and claims lists and types, in a plain module so Server Components can prefetch. */
 
-import type { z } from "zod";
-
-import type { carrierQuote } from "@/lib/api/requests/admin-logistics";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
@@ -10,8 +7,16 @@ import { defineList } from "../console/resource";
 
 export type Shipment = Schemas["AdminShipmentDto"];
 export type Claim = Schemas["AdminClaimDto"];
-/** A fallback carrier's price for one shipment (CONTRACT-REQUEST admin.shipments, carrier quotes). */
-export type CarrierQuote = z.output<typeof carrierQuote>;
+/** A fallback carrier's quote for one shipment (`admin.shipments.carrierQuotes`, D-114). */
+export type CarrierQuote = Schemas["ShipmentCarrierQuoteDto"];
+
+/** The logistics desk's queues (`admin.shipments.list?queue`, D-229, D-230). */
+export const SHIPMENT_QUEUES = [
+  "awaiting_pickup",
+  "in_transit",
+  "exceptions",
+  "pod_review",
+] as const satisfies readonly Schemas["ShipmentQueue"][];
 
 export const SHIPMENT_STATUSES = [
   "draft",
@@ -36,9 +41,8 @@ export const CLAIM_STATUSES = [
 ] as const satisfies readonly Schemas["ClaimStatus"][];
 
 /**
- * The logistics desk (`admin.shipments.list`). The published list filters by status, order and
- * `q` only — no queues (awaiting pick-up, exceptions, POD review), carrier or factory
- * (CONTRACT-GAP admin.shipments) — so the desk's tabs are the statuses.
+ * The logistics desk (`admin.shipments.list`): its queues, and filters by status, carrier and
+ * factory, searched by `q`.
  */
 export const shipmentsList = defineList<Shipment>({
   key: "shipment",
@@ -46,7 +50,7 @@ export const shipmentsList = defineList<Shipment>({
     (await contract.GET("/v1/admin/shipments", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.shipmentNo,
-  defaults: { filterKeys: ["status"] },
+  defaults: { filterKeys: ["queue", "status", "carrier", "factoryId"] },
   staleTime: STALE_TIME.live,
 });
 

@@ -21,6 +21,7 @@ import { platformHandlers } from "./platform";
 import { designContractHandlers, prepressHandlers } from "./prepress";
 import { rfqHandlers } from "./rfq";
 import { salesHandlers } from "./sales";
+import { shipmentHandlers } from "./shipments";
 
 export const adminHandlers = [
   ...consoleHandlers,
@@ -40,6 +41,7 @@ export const adminHandlers = [
   ...companyHandlers,
   ...financeHandlers,
   ...loyaltyHandlers,
+  ...shipmentHandlers,
   ...logisticsHandlers,
   ...analyticsContractHandlers,
   ...analyticsHandlers,
