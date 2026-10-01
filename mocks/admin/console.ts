@@ -81,8 +81,8 @@ export const DASHBOARD_QUEUES: readonly { key: string; path: string; permission:
 
 /**
  * The domain mocks' own queues, which hold the live counts. Each registers what it can count; the
- * dashboard takes the count of a packio-api queue from the provider with the same key (or the one
- * named in `COUNTED_AS`) and reports 0 for a queue no mock counts yet. A provider whose key is not
+ * dashboard takes the count of a packio-api queue from the provider with the same key and reports 0
+ * for a queue no mock counts yet. A provider whose key is not
  * one of packio-api's 21 feeds nothing: the API never sends it.
  */
 export const queueRegistry: { permission: string; queue: (persona: StaffPersona) => Queue | null }[] = [];
@@ -90,14 +90,6 @@ export const queueRegistry: { permission: string; queue: (persona: StaffPersona)
 export function registerQueue(permission: string, queue: (persona: StaffPersona) => Queue | null) {
   queueRegistry.push({ permission, queue });
 }
-
-/** Mock providers that count one of packio-api's queues under an older key. */
-const COUNTED_AS: Record<string, string> = {
-  "logistics.exceptions": "shipments.exceptions",
-  "logistics.pod_review": "shipments.pod_review",
-  // RFQs just submitted are the ones still waiting for a first response.
-  "rfq.new": "rfqs.awaiting_first_response",
-};
 
 /** Approvals waiting on this person: the inbox, which the dashboard page shows on its own. */
 registerQueue("approvals.act", (persona) => {
@@ -118,7 +110,7 @@ export function dashboardFor(persona: StaffPersona): Queue[] {
   const counted = new Map<string, Queue>();
   for (const entry of queueRegistry) {
     const queue = entry.queue(persona);
-    if (queue) counted.set(COUNTED_AS[queue.key] ?? queue.key, queue);
+    if (queue) counted.set(queue.key, queue);
   }
   return DASHBOARD_QUEUES.filter((definition) => can(persona, definition.permission)).map((definition) => {
     const live = counted.get(definition.key);

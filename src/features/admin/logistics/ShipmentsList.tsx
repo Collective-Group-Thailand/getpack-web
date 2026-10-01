@@ -20,8 +20,8 @@ const CARRIERS = ["factory_fleet", "flash_express", "deliveree"] as const;
 
 /** The dashboard queue each desk tab counts, where the dashboard has one. */
 const QUEUE_COUNTS: Partial<Record<(typeof SHIPMENT_QUEUES)[number], string>> = {
-  exceptions: "logistics.exceptions",
-  pod_review: "logistics.pod_review",
+  exceptions: "shipments.exceptions",
+  pod_review: "shipments.pod_review",
 };
 
 /**
