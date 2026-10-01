@@ -34,13 +34,12 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("..").locator("..");
 
 test.describe("the logistics desk (D-013, D-114)", () => {
-  test("the failed tab holds a failed attempt, with the shipment's note", async ({ page }) => {
+  test("the exceptions queue holds a failed attempt, with its note (D-230)", async ({ page }) => {
     await signInAsStaff(page, "logistics");
-    // CONTRACT-GAP admin.shipments — no exceptions queue: the published list filters by status only,
-    // so an area the factory cannot serve (a ready shipment) is not on this tab.
-    await gotoHydrated(page, `${HOSTS.admin}/shipments?status=failed`);
+    await gotoHydrated(page, `${HOSTS.admin}/shipments?queue=exceptions`);
     const table = page.getByRole("table", { name: "การจัดส่ง" });
     await expect(table).toContainText("ไม่มีผู้รับสินค้า โทรไม่ติด");
+    await expect(page.getByRole("link", { name: /^มีปัญหา/ })).toHaveAttribute("aria-current", "page");
     await expectAxeClean(page);
   });
 
@@ -52,8 +51,10 @@ test.describe("the logistics desk (D-013, D-114)", () => {
 
     await page.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     const dialog = page.getByRole("dialog", { name: "จองขนส่งสำรอง" });
-    // admin.shipments.bookCarrier takes the carrier; no reason is recorded (CONTRACT-GAP admin.shipments).
+    // The carriers' quotes come first (admin.shipments.carrierQuotes); the booking records a reason.
+    await expect(dialog.getByText(/ถึงใน 2 วัน/)).toBeVisible();
     await dialog.getByRole("radio", { name: /Flash Express/ }).click();
+    await dialog.getByLabel(/^เหตุผลที่ใช้ขนส่งสำรอง/).fill("โรงงานไม่ส่งในพื้นที่นี้");
     await dialog.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(header(page)).toContainText("Flash Express");
@@ -63,22 +64,21 @@ test.describe("the logistics desk (D-013, D-114)", () => {
   test("a shipment held by an unpaid instalment cannot be booked out", async ({ page }) => {
     await signInAsStaff(page, "logistics");
     await gotoHydrated(page, `${HOSTS.admin}/shipments/${shipment(62)}`);
-    // CONTRACT-GAP admin.shipments — no blockedByPayment on the shipment: the hold shows when the API
-    // refuses the booking (`shipments.payment_pending`).
-    await page.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
-    const dialog = page.getByRole("dialog", { name: "จองขนส่งสำรอง" });
-    await dialog.getByRole("radio", { name: /Deliveree/ }).click();
-    await dialog.getByRole("button", { name: "จองขนส่งสำรอง" }).click();
-    await expect(page.getByText("ยังมียอดที่ต้องชำระก่อนจัดส่ง ส่งของไม่ได้")).toBeVisible();
-    await expect(dialog).toBeVisible();
+    // The hold is on the shipment (`blockedByPayment`), and the API offers booking disabled with its reason.
+    await expect(page.getByText("ยังรับของไม่ได้")).toBeVisible();
+    await expect(page.getByRole("button", { name: "จองขนส่งสำรอง" })).toHaveCount(0);
+    await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
+    await expect(page.getByRole("menuitem", { name: /จองขนส่งสำรอง/ })).toBeDisabled();
   });
 
-  test("part of a shipment is split into a new one", async ({ page }) => {
+  test("part of a draft shipment is split into a new one (D-230)", async ({ page }) => {
     await signInAsStaff(page, "logistics");
     await gotoHydrated(page, `${HOSTS.admin}/shipments/${shipment(60)}`);
     await page.getByRole("button", { name: "แยกการจัดส่ง" }).click();
     const dialog = page.getByRole("dialog", { name: "แยกการจัดส่ง" });
     await dialog.getByLabel(/^จำนวนที่แยก/).fill("100");
+    await dialog.getByLabel(/^จำนวนกล่องของการจัดส่งใหม่/).fill("1");
+    await dialog.getByLabel(/^น้ำหนักของการจัดส่งใหม่/).fill("4");
     await dialog.getByLabel(/^เหตุผล/).fill("รถคันแรกบรรทุกไม่พอ");
     await dialog.getByRole("button", { name: "แยกการจัดส่ง" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -94,7 +94,9 @@ test.describe("the logistics desk (D-013, D-114)", () => {
     await dialog.getByRole("button", { name: "รับหลักฐาน", exact: true }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.getByText("รับหลักฐานแล้ว").first()).toBeVisible();
-    // The review is known in this session only (CONTRACT-GAP admin.shipments, no POD review state).
+    // The review is the shipment's own (`podReview`, D-229): after a reload it still says who accepted it.
+    await page.reload();
+    await expect(page.getByText("ตรวจโดย")).toBeVisible();
     await expect(page.getByRole("button", { name: "รับหลักฐาน", exact: true })).toHaveCount(0);
   });
 

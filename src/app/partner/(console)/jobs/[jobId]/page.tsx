@@ -9,7 +9,6 @@ import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame
 import {
   AcceptJob,
   CompleteMilestone,
-  needsQcForm,
   QcForm,
   RaiseIssue,
   RejectJob,
@@ -17,6 +16,7 @@ import {
   StartMilestone,
 } from "@/features/partner/jobs/actions";
 import { Countdown } from "@/features/partner/jobs/Countdown";
+import { needsQcForm } from "@/features/partner/jobs/evidence";
 import { stepName } from "@/features/partner/jobs/JobCard";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";

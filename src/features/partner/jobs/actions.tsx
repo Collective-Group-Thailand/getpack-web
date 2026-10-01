@@ -21,6 +21,8 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
+import { needsPhoto } from "./evidence";
+
 export type PartnerJob = Schemas["PartnerJobDto"];
 type Milestone = PartnerJob["milestones"][number];
 type Report = ReturnType<typeof newReport>;
@@ -58,12 +60,6 @@ function useCameraLabels() {
     processing: t("processing"),
   };
 }
-
-/** A step's evidence rule (`EvidenceRequirement`): a photo, the QC form, or both. */
-export const needsPhoto = (milestone: Pick<Milestone, "evidence">) =>
-  milestone.evidence === "photo" || milestone.evidence === "photo_and_qc_form";
-export const needsQcForm = (milestone: Pick<Milestone, "evidence">) =>
-  milestone.evidence === "qc_form" || milestone.evidence === "photo_and_qc_form";
 
 /* ----------------------------------------------------------------------- accept / reject */
 
