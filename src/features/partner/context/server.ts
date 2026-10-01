@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { serverApi } from "@/lib/api/server";
-import { serverRequests } from "@/lib/api/requests/server";
 import type { FactoryAccess, PartnerMe, Schemas } from "@/lib/api/types";
 import { signInUrl } from "@/features/shared/auth/guard";
 import { getActor } from "@/lib/auth/actor";
@@ -74,10 +73,9 @@ export function canAt(context: FactoryContext, permission: string): boolean {
   return context.actor.permissions.includes(permission);
 }
 
-/** Both clients a partner Server Component reads with. */
+/** The client a partner Server Component reads with: the published contract (no requests remain, U-F0.4). */
 export async function partnerServerApis() {
-  const [contract, requests] = await Promise.all([serverApi("partner"), serverRequests("partner")]);
-  return { contract, requests };
+  return { contract: await serverApi("partner") };
 }
 
 /**

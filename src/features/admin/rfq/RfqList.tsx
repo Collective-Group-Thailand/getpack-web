@@ -21,7 +21,8 @@ import {
 } from "../console";
 import { latestQuotation, RFQ_QUEUES, rfqList, type Rfq } from "./resources";
 
-const COUNTED = new Set<string>(["new", "mine", "awaiting_factory", "overdue"]);
+/** packio-api counts one RFQ queue on the dashboard: those still waiting for a first response, the "new" tab. */
+const COUNTED: Partial<Record<(typeof RFQ_QUEUES)[number], string>> = { new: "rfqs.awaiting_first_response" };
 const CHANNELS = ["web", "cs", "line", "b2b"] as const;
 
 /**
@@ -171,7 +172,7 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
           ...RFQ_QUEUES.map((queue) => ({
             value: queue,
             label: t(`queues.${queue}`),
-            ...(COUNTED.has(queue) ? { countKey: `rfq.${queue}` } : {}),
+            ...(COUNTED[queue] ? { countKey: COUNTED[queue] } : {}),
           })),
         ]}
       />

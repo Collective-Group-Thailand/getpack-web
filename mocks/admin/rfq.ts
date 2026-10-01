@@ -854,7 +854,8 @@ const QUEUES: Record<string, (rfq: Rfq, who: StaffPersona | undefined) => boolea
   awaiting_factory: (rfq) => rfq.consultations.some((item) => item.status === "requested"),
 };
 
-for (const queue of ["new", "mine", "overdue", "awaiting_factory"] as const) {
+// packio-api's one RFQ dashboard queue: submitted RFQs still waiting for a first response.
+for (const queue of ["new"] as const) {
   registerQueue("rfqs.read", (who) => {
     const rows = rfqs.filter((rfq) => QUEUES[queue]!(rfq, who));
     const due = rows
@@ -863,7 +864,7 @@ for (const queue of ["new", "mine", "overdue", "awaiting_factory"] as const) {
       .filter((at): at is string => Boolean(at))
       .sort();
     return {
-      key: `rfq.${queue}`,
+      key: "rfqs.awaiting_first_response",
       path: `/admin/rfq?queue=${queue}`,
       count: rows.length,
       overdueCount: due.filter((at) => Date.parse(at) < Date.now()).length,

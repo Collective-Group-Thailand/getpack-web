@@ -298,14 +298,14 @@ const QUEUES: Record<Schemas["ShipmentQueue"], (item: Shipment) => boolean> = {
 };
 
 registerQueue("shipments.read", () => ({
-  key: "logistics.exceptions",
+  key: "shipments.exceptions",
   path: "/admin/shipments?queue=exceptions",
   count: shipments.filter(QUEUES.exceptions).length,
   overdueCount: shipments.filter((item) => item.status === "failed").length,
   nextDueAt: null,
 }));
 registerQueue("shipments.read", () => ({
-  key: "logistics.pod_review",
+  key: "shipments.pod_review",
   path: "/admin/shipments?queue=pod_review",
   count: shipments.filter(QUEUES.pod_review).length,
   overdueCount: 0,
