@@ -18,11 +18,11 @@
     "passed": "Your file passed the automatic checks. Prepress will prepare a proof."
   },
   "rules": {
-    "bleed": "At least {mm} mm bleed around the dieline",
-    "safe": "Keep text and logos at least {mm} mm inside the cut line",
-    "dpi": "Images at least {dpi} dpi at full size",
-    "cmyk": "CMYK colour (RGB files may shift in print)",
-    "anyColour": "Any colour mode — we convert for the press"
+    "bleed": "{mm} mm bleed each side",
+    "safeZone": "Keep text {mm} mm inside the cut line",
+    "resolution": "At least {ppi} ppi",
+    "colour": "{mode} colour",
+    "box": "Box {l} × {w} × {h} mm"
   },
   "upload": {
     "title": "Upload artwork",
@@ -30,7 +30,7 @@
     "designOnline": "Design this box online",
     "drop": "Drop files here",
     "browse": "or choose files",
-    "hint": "PDF, AI, PSD, PNG or JPG, up to {max} each",
+    "hint": "Up to {count} files at a time, {size} each",
     "tooLarge": "{name} is too large",
     "wrongType": "{name} isn't a file type we accept",
     "files": "Files to send",
@@ -91,6 +91,8 @@
       "description": "What you'd like",
       "descriptionHint": "e.g. who it's for, the style, colours, and text that must be on the box"
     },
-    "paidRoundNet": "Revision fee {fee} (before VAT)"
+    "paidRoundNet": "Revision fee {fee} (before VAT)",
+    "checklist": "Check each before approving",
+    "approveType": "Type {code} to confirm"
   }
 }

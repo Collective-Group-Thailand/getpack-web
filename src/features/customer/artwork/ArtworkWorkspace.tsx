@@ -1,12 +1,13 @@
 "use client";
 
+import { resolveStyleId } from "@packio/dieline";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { pick } from "@/features/customer/catalog/localize";
 import { FileLink } from "@/features/customer/files/FileLink";
-import { uploadFile } from "@/features/shared/files/upload";
+import { uploadFile, type FilePurpose } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { PREFLIGHT_STATUS, PROOF_STATUS } from "@/domain/status";
@@ -98,8 +99,9 @@ function Findings({ submission }: { submission: Submission }) {
  * files, resumable, each with its progress — and every version's preflight, blocking findings
  * first (D-070), then the proofs, or the hired-design panel for an order that bought design (D-071).
  *
- * CONTRACT-GAP store.artwork — the file rules and the box's dieline and size are not published:
- * the page cannot list what preflight checks, nor open the online designer on this box.
+ * The rules are the order's (`store.artwork.getRules`): the files it takes, what preflight checks
+ * and whether each check blocks or warns (D-070), and the box's dieline and size, which open the
+ * online designer on this box for an order made with it.
  */
 export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
   const t = useTranslations("artwork");
@@ -126,13 +128,29 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
   const ready = pending.filter((file) => file.fileId);
   const latest = artwork.submissions[0];
   const template = artwork.templates.find((entry) => entry.fileId);
+  const { rules } = artwork;
+  const maxFiles = rules?.maxFiles ?? MAX_SUBMISSION_FILES;
+  const style = resolveStyleId(rules?.dieline?.dielineKey ?? rules?.dieline?.patternCode);
+  const designerHref =
+    rules?.dieline && style && (order.designOption === "online_designer" || order.designOption === "own_file")
+      ? `/design/new?${new URLSearchParams({
+          style,
+          l: String(rules.dieline.lengthMm),
+          w: String(rules.dieline.widthMm),
+          h: String(rules.dieline.depthMm),
+          ...(order.summary.product ? { product: order.summary.product.slug } : {}),
+          order: order.id,
+          item: order.id,
+          orderCode: order.orderCode,
+        }).toString()}`
+      : null;
 
   async function add(files: File[]) {
-    for (const file of files.slice(0, Math.max(0, MAX_SUBMISSION_FILES - pending.length))) {
+    for (const file of files.slice(0, Math.max(0, maxFiles - pending.length))) {
       const entry: Pending = { key: newKey(), name: file.name, sent: 0, total: file.size };
       setPending((current) => [...current, entry]);
       try {
-        const uploaded = await uploadFile("customer", file, "artwork", {
+        const uploaded = await uploadFile("customer", file, (rules?.purpose ?? "artwork") as FilePurpose, {
           onProgress: (sent, total) =>
             setPending((current) => current.map((item) => (item.key === entry.key ? { ...item, sent, total } : item))),
         });
@@ -208,6 +226,28 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
             {t("upload.title")}
           </h2>
           <p className="text-muted text-sm">{t("upload.checksIntro")}</p>
+          {rules ? (
+            <ul className="text-muted flex list-disc flex-col gap-1 ps-5 text-sm">
+              <li>{t("rules.bleed", { mm: rules.bleedMm })}</li>
+              <li>{t("rules.safeZone", { mm: rules.safeZoneMm })}</li>
+              <li>{t("rules.resolution", { ppi: format.number(rules.minEffectivePpi) })}</li>
+              <li>{t("rules.colour", { mode: rules.colourMode.toUpperCase() })}</li>
+              {rules.dieline ? (
+                <li>
+                  {t("rules.box", {
+                    l: format.number(rules.dieline.lengthMm),
+                    w: format.number(rules.dieline.widthMm),
+                    h: format.number(rules.dieline.depthMm),
+                  })}
+                </li>
+              ) : null}
+            </ul>
+          ) : null}
+          {designerHref ? (
+            <Button asChild variant="secondary" iconStart="palette" className="self-start">
+              <Link href={designerHref}>{t("upload.designOnline")}</Link>
+            </Button>
+          ) : null}
           {template?.fileId ? (
             <div className="flex flex-wrap gap-2">
               <FileLink
@@ -223,12 +263,15 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
             <div className="flex flex-col gap-3">
               <FileDropzone
                 multiple
-                disabled={pending.length >= MAX_SUBMISSION_FILES}
+                {...(rules ? { accept: rules.accept.join(","), maxBytes: rules.maxBytes } : {})}
+                disabled={pending.length >= maxFiles}
                 onFiles={(files) => void add(files)}
                 labels={{
                   prompt: t("upload.drop"),
                   browse: t("upload.browse"),
-                  hint: t("upload.hintNoRules", { count: MAX_SUBMISSION_FILES }),
+                  hint: rules
+                    ? t("upload.hint", { count: maxFiles, size: format.bytes(rules.maxBytes) })
+                    : t("upload.hintNoRules", { count: maxFiles }),
                   tooLarge: (name) => t("upload.tooLarge", { name }),
                   wrongType: (name) => t("upload.wrongType", { name }),
                 }}

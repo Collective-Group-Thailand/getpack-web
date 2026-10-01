@@ -154,7 +154,7 @@ test.describe("after production", () => {
 
     await page.getByLabel(/^จำนวน/).fill("2000");
     await expect(total.getByText(/^฿[\d,.]+$/).last()).not.toHaveText(before!);
-    await expect(total.getByText("กล่องกระดาษลูกฟูก 2,000 ชิ้น")).toBeVisible();
+    await expect(total.getByText("สินค้า 2,000 ชิ้น")).toBeVisible();
     const repriced = (await total
       .getByText(/^฿[\d,.]+$/)
       .last()
