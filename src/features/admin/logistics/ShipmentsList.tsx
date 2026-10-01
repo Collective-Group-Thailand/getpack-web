@@ -105,6 +105,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
       />
       <ResourceList
         resource={shipmentsList}
+        exportResource="shipments"
         columns={columns}
         caption={t("title")}
         initial={initial}

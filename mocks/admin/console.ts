@@ -132,6 +132,17 @@ export function dashboardFor(persona: StaffPersona): Queue[] {
   });
 }
 
+/* --------------------------------------------------------------------------- list exports */
+
+/** What each exportable list needs to be read, and which search records stand for its rows. */
+const LIST_EXPORTS: Record<Schemas["ListExportResource"], { permission: string; type: SearchResult["type"] }> = {
+  orders: { permission: "orders.read", type: "order" },
+  customers: { permission: "customers.read", type: "customer" },
+  companies: { permission: "companies.read", type: "company" },
+  shipments: { permission: "shipments.read", type: "shipment" },
+  claims: { permission: "claims.read", type: "claim" },
+};
+
 /* ----------------------------------------------------------------------- saved views */
 
 const savedViews: SavedView[] = [];
@@ -200,6 +211,25 @@ export const consoleHandlers = [
   })),
 
   published.get("/v1/admin/sod-rules", "users.read", () => [...SOD_RULES].sort((a, b) => a.key.localeCompare(b.key))),
+
+  // admin.exports.create (U-B0.3): the list's rows as a file, behind the list's read permission and
+  // `reports.export`; contact details are left out. The mock writes what search knows of each row.
+  published.post("/v1/admin/exports", { permission: "reports.export" }, ({ body, persona }) => {
+    const list = LIST_EXPORTS[body.resource];
+    if (!list) return problem(422, "validation.failed", "resource ไม่ถูกต้อง");
+    if (!can(persona, list.permission)) return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ดูรายการนี้");
+    const rows = searchIndex.filter((entry) => entry.type === list.type);
+    const csv = ["code,title", ...rows.map((row) => `"${row.code ?? ""}","${row.title.replace(/"/g, '""')}"`)].join(
+      "\n",
+    );
+    return {
+      fileId: mockId("export", rows.length + 1),
+      url: `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`,
+      rows: rows.length,
+      truncated: false,
+      expiresAt: bangkokIso(5),
+    };
+  }),
 
   published.get("/v1/admin/staff-directory", null, ({ query }) => {
     if (query.q !== undefined && String(query.q).length < 2)
