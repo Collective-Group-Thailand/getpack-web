@@ -13,7 +13,7 @@
 
 import type { Schemas } from "@/lib/api/types";
 
-import { mockRequest } from "../../route";
+import { can, type StaffPersona } from "../../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../../support";
 import { baht } from "../commerce";
 import { registerQueue } from "../console";
@@ -33,7 +33,7 @@ import {
   whtFormOf,
   type PayableRow,
 } from "./payables";
-import { finance, forbiddenUnless, invalid, notFound } from "./support";
+import { finance, invalid, notFound } from "./support";
 
 type Run = Schemas["PayoutRunDto"];
 type Item = Schemas["PayoutItemDto"];
@@ -411,6 +411,37 @@ const csvOf = (state: RunState) =>
 const vendorBank = (item: Item) =>
   stores.get(item.vendorId)?.banks.find((bank) => bank.status === "active")?.bankCode ?? "004";
 
+/**
+ * packio-api's `RUN_ACTIONS` (payouts/run-actions.ts, v0.6.0), filtered by the reader's
+ * permissions: propose a draft with something to pay, cancel before the bank file is confirmed,
+ * (re)generate the bank file once approved, confirm what the bank paid.
+ */
+export function runActions(run: Run, who: StaffPersona): Run["nextActions"] {
+  const actions: Run["nextActions"] = [];
+  if (can(who, "payouts.manage") && run.status === "draft")
+    actions.push({
+      key: "payout_run.propose",
+      irreversible: false,
+      disabledReason: run.items.some((item) => item.status === "included") ? null : "payouts.nothing_eligible",
+    });
+  if (can(who, "payouts.manage") && ["draft", "proposed", "approved"].includes(run.status))
+    actions.push({ key: "payout_run.cancel", irreversible: true, disabledReason: null });
+  if (can(who, "payouts.execute") && (run.status === "approved" || run.status === "file_generated"))
+    actions.push({ key: "payout_run.generate_bank_file", irreversible: false, disabledReason: null });
+  if (can(who, "payouts.execute") && run.status === "file_generated")
+    actions.push({ key: "payout_run.confirm", irreversible: true, disabledReason: null });
+  return actions;
+}
+
+const out = (run: Run, who: StaffPersona): Run => ({ ...run, nextActions: runActions(run, who) });
+
+/** The rate withheld for each category of income (PND 3 / 53), as packio-api's certificate states it. */
+const WHT_RATE_OF: Record<(typeof whtIssued)[number]["category"], string> = {
+  hire_of_work: "3.0000",
+  transport: "1.0000",
+  service: "3.0000",
+};
+
 export const payoutHandlers = [
   finance.get("/v1/admin/payouts/eligible", "payables.read", ({ query }) => {
     refreshPayables();
@@ -424,9 +455,10 @@ export const payoutHandlers = [
       )
       .map((row) => row.dto);
   }),
-  finance.get("/v1/admin/payout-runs", "payables.read", ({ query }) => {
+  finance.get("/v1/admin/payout-runs", "payables.read", ({ query, persona }) => {
     const rows = runs.map((state) => state.run).filter((run) => matchesQuery(query.q, run.runNo));
-    return paginate(sortBy(rows, query.sort ?? "payOn", query.order ?? "desc"), query);
+    const page = paginate(sortBy(rows, query.sort ?? "payOn", query.order ?? "desc"), query);
+    return { ...page, data: page.data.map((run) => out(run, persona)) };
   }),
   finance.post(
     "/v1/admin/payout-runs",
@@ -434,14 +466,13 @@ export const payoutHandlers = [
     ({ body, persona }) => {
       if (!body.payOn) return invalid([{ path: "payOn", code: "required", message: "เลือกวันที่จ่าย" }]);
       const created = createRun({ ...body, proposerId: persona.id });
-      return created instanceof Response ? created : created.run;
+      return created instanceof Response ? created : out(created.run, persona);
     },
   ),
-  finance.get(
-    "/v1/admin/payout-runs/{runId}",
-    "payables.read",
-    ({ params }) => runById(params.runId)?.run ?? notFound("รอบจ่ายเงิน"),
-  ),
+  finance.get("/v1/admin/payout-runs/{runId}", "payables.read", ({ params, persona }) => {
+    const state = runById(params.runId);
+    return state ? out(state.run, persona) : notFound("รอบจ่ายเงิน");
+  }),
   finance.post(
     "/v1/admin/payout-runs/{runId}/actions/propose",
     { permission: "payouts.manage", idempotent: true },
@@ -469,13 +500,13 @@ export const payoutHandlers = [
           retentionAmount: state.run.retentionAmount,
         },
       }).id;
-      return state.run;
+      return out(state.run, persona);
     },
   ),
   finance.post(
     "/v1/admin/payout-runs/{runId}/actions/cancel",
     { permission: "payouts.manage", idempotent: true },
-    ({ params, body }) => {
+    ({ params, body, persona }) => {
       const state = runById(params.runId);
       if (!state) return notFound("รอบจ่ายเงิน");
       if (!["draft", "proposed", "approved"].includes(state.run.status))
@@ -487,20 +518,21 @@ export const payoutHandlers = [
       if (approval?.status === "pending")
         Object.assign(approval, { status: "withdrawn", decidedAt: bangkokIso(), currentStepNo: null });
       state.run.status = "cancelled";
-      return state.run;
+      return out(state.run, persona);
     },
   ),
   finance.post(
     "/v1/admin/payout-runs/{runId}/actions/generate-bank-file",
     { permission: "payouts.execute", idempotent: true },
-    ({ params }) => {
+    ({ params, persona }) => {
       const state = runById(params.runId);
       if (!state) return notFound("รอบจ่ายเงิน");
-      if (state.run.status !== "approved")
+      // packio-api offers the file again once generated (a lost download), as `generate_bank_file` says.
+      if (state.run.status !== "approved" && state.run.status !== "file_generated")
         return problem(409, "payouts.run_invalid_status", "สร้างไฟล์ได้เฉพาะรอบที่อนุมัติแล้ว");
       state.bankFile = csvOf(state);
       Object.assign(state.run, { status: "file_generated", bankFileReady: true });
-      return state.run;
+      return out(state.run, persona);
     },
   ),
   finance.get("/v1/admin/payout-runs/{runId}/bank-file", "payouts.execute", ({ params }) => {
@@ -513,7 +545,7 @@ export const payoutHandlers = [
   finance.post(
     "/v1/admin/payout-runs/{runId}/actions/confirm",
     { permission: "payouts.execute", idempotent: true },
-    ({ params, body }) => {
+    ({ params, body, persona }) => {
       const state = runById(params.runId);
       if (!state) return notFound("รอบจ่ายเงิน");
       if (state.run.status !== "file_generated")
@@ -550,7 +582,7 @@ export const payoutHandlers = [
         }
       }
       state.run.status = state.run.items.some((item) => item.status === "failed") ? "partially_failed" : "confirmed";
-      return state.run;
+      return out(state.run, persona);
     },
   ),
   finance.get("/v1/admin/payout-exceptions", "payables.read", () =>
@@ -568,23 +600,24 @@ export const payoutHandlers = [
         })),
     ),
   ),
-  mockRequest("GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents", ({ params, request }) => {
-    const denied = forbiddenUnless(request, "payables.read");
-    if (denied) return denied;
+  finance.get("/v1/admin/payout-runs/{runId}/items/{itemId}/documents", "payables.read", ({ params }) => {
     const state = runById(params.runId);
     const item = state?.run.items.find((candidate) => candidate.id === params.itemId);
     if (!state || !item) return notFound("รายการจ่าย");
     if (item.status !== "paid") return problem(409, "payouts.item_not_paid", "เอกสารออกเมื่อจ่ายแล้วเท่านั้น");
     const certificates = whtIssued.filter((entry) => entry.pvNumber === item.pvNumber);
     return {
-      remittanceAdvice: { url: pdf(`ใบแจ้งการโอน ${item.pvNumber}`), expiresAt: bangkokIso(15) },
+      remittanceAdvice: { url: pdf(`ใบแจ้งการโอน ${item.pvNumber}`), expiresAt: bangkokIso(5) },
       whtCertificates: certificates.map((entry) => ({
+        id: entry.id,
         wtNumber: entry.wtNumber,
-        whtForm: entry.whtForm,
-        base: baht(entry.base),
-        amount: baht(entry.amount),
-        url: pdf(`50 ทวิ ${entry.wtNumber}`),
-        expiresAt: bangkokIso(15),
+        form: entry.whtForm,
+        paidOn: entry.paidOn,
+        paidAmount: baht(entry.base),
+        whtRatePct: WHT_RATE_OF[entry.category],
+        whtAmount: baht(entry.amount),
+        pdfReady: true,
+        download: { url: pdf(`50 ทวิ ${entry.wtNumber}`), expiresAt: bangkokIso(5) },
       })),
     };
   }),

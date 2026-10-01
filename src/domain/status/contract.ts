@@ -236,8 +236,11 @@ export type WhtCertificateStatus = Schemas["WhtCertStatus"];
 /** A credit note asked for, issued only once a Finance Manager approves (D-169). **Source: contract** (B5.2). */
 export type CreditNoteRequestStatus = Schemas["CreditNoteRequestStatus"];
 
-/** A payment reminder (D-122). **Proposed** in contract request `admin.dunning-log`. */
-export type DunningStatus = "sent" | "failed";
+/**
+ * What became of a notification packio-api sent: a payment reminder (D-122) or a customer document
+ * sent again (D-143). **Source: contract** (`NotificationStatus`, U-B0.3).
+ */
+export type DunningStatus = Schemas["NotificationStatus"];
 
 /** A factory purchase order, one per released job (§6, D-022). **Source: contract** (B5.3). */
 export type PurchaseOrderStatus = Schemas["PoStatus"];

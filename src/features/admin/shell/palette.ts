@@ -4,17 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import type { z } from "zod";
 
 import { queryKeys } from "@/lib/api/query-keys";
-import type { searchResultType } from "@/lib/api/requests/admin-console";
-import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import type { CommandItem } from "@/ui/components/CommandPalette";
 import type { IconName } from "@/ui/icons";
 
+import { adminBrowserApis } from "../console/api";
 import { menuLabel, type SidebarItem } from "./menu";
 
-type ResultType = z.output<typeof searchResultType>;
+type ResultType = Schemas["SearchResultType"];
 
 /** Where each kind of search hit opens, in this zone's own routes. */
 export const RESULT_ROUTES: Record<ResultType, { path: (id: string) => string; icon: IconName }> = {
@@ -30,7 +29,7 @@ export const RESULT_ROUTES: Record<ResultType, { path: (id: string) => string; i
   user: { path: (id) => `/users/${id}`, icon: "users" },
 };
 
-/** Characters before the API is asked — the request's own minimum (`admin.search`). */
+/** Characters before the API is asked — the operation's own minimum (`admin.search.find`, `q` ≥ 2). */
 const MIN_QUERY = 2;
 
 /**
@@ -57,7 +56,9 @@ export function usePaletteItems(
 
   const search = useQuery({
     queryKey: queryKeys.list("admin", "search", { q: debounced }),
-    queryFn: () => browserRequests().call("GET /v1/admin/search", { query: { q: debounced, limit: 10 } }),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/search", { params: { query: { q: debounced, limit: 10 } } }))
+        .data!,
     enabled: debounced.length >= MIN_QUERY,
     staleTime: 30_000,
   });

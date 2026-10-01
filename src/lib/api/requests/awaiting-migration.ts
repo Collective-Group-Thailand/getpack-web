@@ -43,26 +43,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/store/promotions/actions/check",
   "POST /v1/store/support/actions/contact",
   "POST /v1/store/support/actions/handoff",
-  // admin (U-F0.4)
-  "DELETE /v1/admin/saved-views/{viewId}",
-  "GET /v1/admin/bank-statement-lines/{lineId}/suggestions",
-  "GET /v1/admin/credit-note-reasons",
-  "GET /v1/admin/customer-documents/{documentId}/deliveries",
-  "GET /v1/admin/dashboard",
-  "GET /v1/admin/depreciation-runs/preview",
-  "GET /v1/admin/dunning-log",
-  "GET /v1/admin/financial-reports/roll-forward",
-  "GET /v1/admin/financial-reports/subledger-reconciliation",
-  "GET /v1/admin/gateway-settlements",
-  "GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents",
-  "GET /v1/admin/saved-views",
-  "GET /v1/admin/search",
-  "GET /v1/admin/slips/{slipId}/file",
-  "GET /v1/admin/sod-rules",
-  "GET /v1/admin/staff-directory",
-  "POST /v1/admin/bank-statement-lines/{lineId}/actions/split",
-  "POST /v1/admin/customer-documents/{documentId}/actions/resend",
-  "POST /v1/admin/saved-views",
 ];
 
 /**

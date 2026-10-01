@@ -94,6 +94,7 @@
     "marketing": "Marketing",
     "partner_manager": "Partner Manager",
     "auditor": "Auditor (read-only)",
+    "dpo": "Data Protection Officer",
     "factory_owner": "Factory Owner",
     "factory_planner": "Planner",
     "factory_operator": "Operator",

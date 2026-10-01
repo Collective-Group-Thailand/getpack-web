@@ -80,6 +80,7 @@ export function CustomersList({ initial }: { initial: InitialPage<Customer> | nu
   return (
     <ResourceList
       resource={customersList}
+      exportResource="customers"
       columns={columns}
       caption={t("title")}
       initial={initial}

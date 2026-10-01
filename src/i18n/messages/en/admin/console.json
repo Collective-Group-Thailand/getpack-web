@@ -41,6 +41,13 @@
     "linkCopied": "Link copied",
     "linkCopyFailed": "Could not copy — copy it from the address bar"
   },
+  "export": {
+    "label": "Export",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "failed": "Export failed",
+    "truncated": "Only the first {rows} rows were exported. Narrow the filters."
+  },
   "queues": {
     "overdue": "{count} overdue"
   },

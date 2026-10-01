@@ -16,9 +16,7 @@ export {
   type ResponseOf,
 } from "./client";
 export { REQUESTS, type RequestKey, type Requests } from "./registry";
-export * from "./admin-console";
 export * from "./admin-analytics";
-export * from "./admin-finance";
 export * from "./admin-logistics";
 export * from "./admin-orders";
 export * from "./store-catalog";

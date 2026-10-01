@@ -8,7 +8,6 @@ import { useState } from "react";
 import { APPROVAL_STATUS, statusMeta } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
@@ -36,6 +35,7 @@ import {
   useCan,
   useRoleLabel,
   useSlaFormat,
+  useStaffDirectory,
   type InitialPage,
 } from "../console";
 import { CRITICAL_FLAGS, currentStep, POLICY_ICONS, type Approval } from "./presentation";
@@ -337,12 +337,7 @@ function CreateDelegation({
   const [validTo, setValidTo] = useState("");
   const [reason, setReason] = useState("");
 
-  const people = useQuery({
-    queryKey: queryKeys.list("admin", "staff_directory", { q: query }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/staff-directory", { query: { q: query || undefined, limit: 20 } }),
-    staleTime: STALE_TIME.reference,
-  });
+  const people = useStaffDirectory({ q: query });
 
   const create = useMutation({
     mutationFn: async () =>
@@ -389,7 +384,7 @@ function CreateDelegation({
             query={query}
             onQueryChange={setQuery}
             loading={people.isFetching}
-            options={(people.data?.data ?? [])
+            options={(people.data ?? [])
               .filter((person) => person.id !== actor.id)
               .map((person) => ({
                 value: person.id,

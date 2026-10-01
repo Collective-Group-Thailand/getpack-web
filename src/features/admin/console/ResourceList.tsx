@@ -14,6 +14,7 @@ import { Pagination } from "@/ui/components/Pagination";
 import { Button } from "@/ui/components/Button";
 
 import { adminBrowserApis } from "./api";
+import { ExportButton, type ListExportResource } from "./ExportButton";
 import { FilterControl, ListSearch, type FilterDef } from "./filters";
 import { toApiQuery, viewQuery } from "./list-state";
 import { QueryError } from "./QueryError";
@@ -35,6 +36,8 @@ export interface ResourceListProps<TRow extends object> {
   bulkActions?: (ids: string[], clear: () => void) => React.ReactNode;
   rowTone?: (row: TRow) => RowTone | undefined;
   savedViews?: boolean;
+  /** The list's published export (`admin.exports.create`); omit for a list the API cannot export. */
+  exportResource?: ListExportResource;
   /** Extra controls at the end of the toolbar (import, create). */
   toolbarEnd?: React.ReactNode;
   empty?: { title: string; description?: string; action?: React.ReactNode };
@@ -48,8 +51,9 @@ export interface ResourceListProps<TRow extends object> {
  * definition and passes it as `initial`, and TanStack Query adopts it only if the query matches,
  * so a client-side filter change can never be answered with the server's stale page.
  *
- * There is no export button: the contract exports reports (`admin.reports.export`), the audit log
- * and the catalogue, not arbitrary lists (CONTRACT-GAP admin.exports).
+ * The export button appears on the lists `admin.exports.create` covers (orders, customers,
+ * companies, shipments, claims) and exports the list as it is filtered now. Other lists have no
+ * export (reports export through `admin.reports.export`, the audit log and catalogue their own).
  */
 export function ResourceList<TRow extends object>({
   resource,
@@ -62,6 +66,7 @@ export function ResourceList<TRow extends object>({
   bulkActions,
   rowTone,
   savedViews = true,
+  exportResource,
   toolbarEnd,
   empty,
 }: ResourceListProps<TRow>) {
@@ -129,6 +134,7 @@ export function ResourceList<TRow extends object>({
             hidden={state.hidden}
             onHiddenChange={(hidden) => update({ hidden })}
           />
+          {exportResource ? <ExportButton resource={exportResource} query={currentViewQuery} /> : null}
           {toolbarEnd}
         </div>
       </Toolbar>

@@ -246,6 +246,22 @@
     ]
   },
   {
+    "key": "dpo",
+    "audience": "staff",
+    "scopeType": "platform",
+    "nameTh": "เจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล",
+    "nameEn": "Data Protection Officer",
+    "permissions": [
+      "files.upload",
+      "files.read",
+      "calendars.read",
+      "approvals.read",
+      "approvals.delegate",
+      "privacy_requests.manage",
+      "customers.read"
+    ]
+  },
+  {
     "key": "factory_owner",
     "audience": "partner",
     "scopeType": "factory",

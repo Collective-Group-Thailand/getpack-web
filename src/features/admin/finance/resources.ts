@@ -1,12 +1,9 @@
 /**
  * The finance lists, in a plain module so Server Components can prefetch the first page with the
- * same fetcher the client refetches with. All of them are packio-api's published B5 surface
- * except the dunning log (CONTRACT-REQUEST `admin.dunning-log`).
+ * same fetcher the client refetches with. All of them are packio-api's published surface (B5,
+ * and U-B0.3 for the dunning log and the gateway settlements).
  */
 
-import type { z } from "zod";
-
-import type { dunningEntry, settlementSummary } from "@/lib/api/requests/admin-finance";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
@@ -19,7 +16,7 @@ export type CreditNoteRequest = Schemas["CreditNoteRequestDto"];
 export type Refund = Schemas["RefundDto"];
 export type Receivable = Schemas["ReceivableItemDto"];
 export type WhtCertificate = Schemas["WhtCertificateDto"];
-export type DunningEntry = z.output<typeof dunningEntry>;
+export type DunningEntry = Schemas["DunningEntryDto"];
 
 export const DOC_TYPES = ["tr", "iv", "rc", "cn", "dn"] as const satisfies readonly Schemas["CustomerDocumentType"][];
 export const CN_KINDS = [
@@ -120,8 +117,10 @@ export const whtCertificatesList = defineList<WhtCertificate>({
 
 export const dunningList = defineList<DunningEntry>({
   key: "dunning",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/dunning-log", { query: query as never }),
-  getRowId: (row) => row.id,
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/dunning-log", { params: { query: query as never } })).data!,
+  // A reminder fans out to one row per channel; the API sends no id of its own.
+  getRowId: (row) => `${row.documentId}:${row.stage}:${row.remindedAt}:${row.channel ?? "none"}`,
   defaults: { filterKeys: ["companyId", "customerId", "documentId"] },
 });
 
@@ -163,7 +162,7 @@ export type VendorInvoice = Schemas["VendorInvoiceDto"];
 export type Vendor = Schemas["VendorDto"];
 export type PayoutRun = Schemas["PayoutRunDto"];
 export type BankLine = Schemas["BankStatementLineDto"];
-export type SettlementSummary = z.output<typeof settlementSummary>;
+export type SettlementSummary = Schemas["SettlementDto"];
 
 export const PAYABLE_STATUSES = [
   "open",
@@ -260,7 +259,8 @@ export const bankLinesList = defineList<BankLine>({
 
 export const settlementsList = defineList<SettlementSummary>({
   key: "gateway-settlement",
-  fetch: ({ requests }, query) => requests.call("GET /v1/admin/gateway-settlements", { query: query as never }),
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/gateway-settlements", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   defaults: { filterKeys: ["status", "provider"], sort: "settlementDate", order: "desc" },
 });

@@ -6,8 +6,8 @@
  * last month takes the rounding), disposal and write-off (FA03), and the roll-forward with its
  * reconciliation of the register to the GL (§7 step 8).
  *
- * The monthly preview is a contract request (`admin.depreciation-preview`): the published run
- * posts at once, and Finance should see the lines before they do.
+ * The monthly preview (`admin.fixedAssets.previewRun`, U-B0.3) shares the run's lines, so what it
+ * shows is what posts.
  */
 
 import { HttpResponse } from "msw";
@@ -17,10 +17,9 @@ import type { Schemas } from "@/lib/api/types";
 import { bangkokIso, mockId, problem } from "../../support";
 import { baht } from "../commerce";
 import { settingValue } from "../platform";
-import { mockRequest } from "../../route";
 import { ACCOUNTS, fiscalYears, journals, post, previousMonth, satangOf } from "./books";
 import { invoicesAll } from "./payables";
-import { finance, forbiddenUnless, invalid, isMoney, notFound } from "./support";
+import { finance, invalid, isMoney, notFound } from "./support";
 
 type Category = Schemas["AssetCategoryDto"];
 type Asset = Schemas["FixedAssetDto"];
@@ -581,30 +580,28 @@ export const assetHandlers = [
       return invalid([{ path: "from", code: "pattern", message: "YYYY-MM ถึง YYYY-MM" }]);
     return rollForward(from, to);
   }),
-  // CONTRACT-REQUEST admin.depreciation-preview
-  mockRequest("GET /v1/admin/depreciation-runs/preview", ({ query, request }) => {
-    const denied = forbiddenUnless(request, "fixed_assets.read");
-    if (denied) return denied;
-    const month = String(query.period);
+  // admin.fixedAssets.previewRun (D-150): what the month's run would post; a month already run has no lines.
+  finance.get("/v1/admin/depreciation-runs/preview", "fixed_assets.read", ({ query }) => {
+    const month = String(query.period ?? "");
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))
+      return invalid([{ path: "period", code: "pattern", message: "YYYY-MM" }]);
     const period = periodOfMonth(month);
     if (!period) return notFound("งวดบัญชี");
-    const lines = dueLines(month);
-    return HttpResponse.json({
+    const alreadyRun = depreciationRuns.some((run) => run.period === month);
+    const lines = alreadyRun ? [] : dueLines(month);
+    return {
       period: month,
       periodStatus: period.status,
-      alreadyRun: depreciationRuns.some((run) => run.period === month),
+      alreadyRun,
       assetCount: lines.length,
       totalAmount: baht(lines.reduce((sum, line) => sum + line.amount, 0)),
       lines: lines.map(({ asset, amount, accumulatedAfter }) => ({
         assetId: asset.id,
         assetNo: asset.assetNo,
         name: asset.name,
-        categoryCode: asset.categoryCode,
         amount: baht(amount),
         accumulatedAfter: baht(accumulatedAfter),
-        netBookValueAfter: baht(satangOf(asset.cost) - accumulatedAfter),
-        fullyDepreciated: accumulatedAfter === satangOf(asset.cost) - satangOf(asset.residualValue),
       })),
-    });
+    };
   }),
 ];

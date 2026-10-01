@@ -88,10 +88,43 @@ test.describe("?mock= scenarios (U-F0.1)", () => {
 
 test.describe("dashboard", () => {
   test("opens on the queues this person may work", async ({ page }) => {
+    // packio-api's queues (admin.dashboard.get), each behind its working permission.
     await signInAsStaff(page, "finance");
     await expect(page.getByRole("heading", { level: 1, name: "ภาพรวมงาน" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /รอฉันอนุมัติ/ })).toBeVisible();
+    const queues = page.getByRole("region", { name: "คิวงานของคุณ" });
+    await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toBeVisible();
+    await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toHaveAttribute("href", "/finance/slips");
+    await expect(page.getByRole("heading", { name: "รอคุณอนุมัติ" })).toBeVisible();
     await expectAxeClean(page);
+  });
+
+  test("a CS agent's queues are the orders it works, not Finance's", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    const queues = page.getByRole("region", { name: "คิวงานของคุณ" });
+    await expect(queues.getByRole("link", { name: /รอชำระ/ })).toBeVisible();
+    await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toHaveCount(0);
+  });
+});
+
+test.describe("list exports (admin.exports.create)", () => {
+  test("the orders list exports as it is filtered, for whoever holds reports.export", async ({ page }) => {
+    await signInAsStaff(page, "cs_lead");
+    await gotoHydrated(page, `${HOSTS.admin}/orders`);
+    const exported = page.waitForResponse(
+      (response) => response.url().endsWith("/exports") && response.request().method() === "POST",
+    );
+    await page.getByRole("button", { name: "ส่งออก" }).click();
+    await page.getByRole("menuitem", { name: "CSV" }).click();
+    const response = await exported;
+    expect(response.ok()).toBe(true);
+    expect(response.request().postDataJSON()).toMatchObject({ resource: "orders", format: "csv" });
+  });
+
+  test("a CS agent, who cannot export, is not offered it", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/orders`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("button", { name: "ส่งออก" })).toHaveCount(0);
   });
 });
 

@@ -343,7 +343,9 @@
       "deliveries": "Sent to the customer",
       "noDeliveries": "Not sent yet",
       "sentAt": "Sent at",
+      "requestedAt": "Asked for",
       "deliveryKind": "Kind",
+      "deliveryStatus": "Status",
       "deliveryKinds": {
         "issued": "Sent on issue",
         "resent": "Resent"
@@ -351,7 +353,11 @@
       "channel": "Channel",
       "channels": {
         "email": "E-mail",
-        "line": "LINE"
+        "sms": "SMS",
+        "line": "LINE",
+        "web_push": "Browser notification",
+        "in_app": "In the app",
+        "teams": "Teams"
       },
       "to": "To",
       "voidTitle": "Void the document",
@@ -363,12 +369,7 @@
     "resend": {
       "title": "Send {number} to the customer again",
       "description": "Sends the same PDF; no new document is issued.",
-      "channels": "Send by",
-      "email": "E-mail",
-      "line": "LINE (when the customer has linked it)",
-      "otherAddress": "Another e-mail address (optional)",
-      "otherAddressHint": "For example the customer's accounts team. Leave empty to use the customer's own.",
-      "needChannel": "Choose at least one channel",
+      "how": "It goes by the customer's own channels: e-mail, and LINE when they have linked it. The log on the document shows where it went.",
       "send": "Send",
       "sent": "Document sent"
     },
@@ -599,6 +600,7 @@
     "dunning": {
       "title": "Payment reminders",
       "description": "Reminders sent to customers 7 days before the due date, on it, and after it (D-122).",
+      "remindedAt": "Reminded at",
       "sentAt": "Sent at",
       "document": "Document",
       "kind": "Reminder",
@@ -608,10 +610,14 @@
         "overdue": "After the due date"
       },
       "channel": "Channel",
+      "noRoute": "Not sent (no route)",
       "channels": {
         "email": "E-mail",
+        "sms": "SMS",
         "line": "LINE",
-        "sms": "SMS"
+        "web_push": "Browser notification",
+        "in_app": "In the app",
+        "teams": "Teams"
       },
       "recipient": "Recipient",
       "status": "Delivery",
@@ -890,6 +896,28 @@
         "net": "Net",
         "gross": "Incl. VAT",
         "confirmedAt": "Confirmed"
+      },
+      "generatedAt": "Generated",
+      "validate": "Validate the tax invoice",
+      "lineKind": "Kind",
+      "lineKinds": {
+        "production": "Production",
+        "shipping": "Shipping",
+        "mockup": "Mock-up",
+        "design": "Design",
+        "reproduction": "Reproduction",
+        "deduction": "Deduction"
+      },
+      "lineDisputed": "Disputed by the factory",
+      "quantity": "Quantity",
+      "totals": {
+        "production": "Production",
+        "shipping": "Shipping",
+        "other": "Other",
+        "deductions": "Deductions",
+        "advanceOffset": "Advance already paid",
+        "alreadyPaid": "Paid so far",
+        "remaining": "Still to pay"
       }
     },
     "capture": {
@@ -1254,12 +1282,13 @@
       "title": "Documents of {pv}",
       "remittance": "Remittance advice",
       "certificate": "Withholding tax certificate {number} ({form})",
-      "certificateAmounts": "Base {base} · tax {amount}",
+      "certificateAmounts": "Paid {paid} on {date} · withheld {rate} = {amount}",
       "forms": {
         "pnd3": "PND 3",
         "pnd53": "PND 53"
       },
-      "noWht": "Nothing was withheld on this item"
+      "noWht": "Nothing was withheld on this item",
+      "notRendered": "not rendered yet"
     },
     "exceptionsPage": {
       "title": "Payout exceptions",
@@ -2624,7 +2653,13 @@
       "closing": "Closing",
       "byRule": "By rule",
       "ruleLine": "{rule} +{up} −{down}",
-      "openGl": "Open the lines of {code}"
+      "openGl": "Open the lines of {code}",
+      "normalSide": "Amounts are on its {side} side.",
+      "sides": {
+        "debit": "debit",
+        "credit": "credit"
+      },
+      "manual": "manual journals"
     },
     "reconciliation": {
       "title": "Sub-ledger reconciliation",
@@ -2643,7 +2678,8 @@
         "retention": "Factory retention",
         "store_credit": "Customer store credit",
         "fixed_assets": "Fixed assets ({code})"
-      }
+      },
+      "asOf": "Sub-ledgers as of {at}."
     }
   },
   "audit": {
