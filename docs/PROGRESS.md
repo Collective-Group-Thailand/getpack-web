@@ -40,6 +40,234 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 
 | 2026-09-30 | **U-F0.2** — migrate the customer zone (`store.*`) | All 79 published store operations are called through `serverApi`/`browserApi` with the generated types (the user's call: migrate literally). Zod definitions and `mockRequest` overrides are deleted, and the mocks answer at the published paths with ETags. `awaiting-migration.ts` has no store entry (bound ≤ 54), and a gate keeps store requests to the 34 packio-api still builds. What v0.2.0 does not carry is marked `CONTRACT-GAP <id>` (gated) and left out of the screens; 14 e2e fixmes name their gap | Three defects raised (`store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`); the admin and partner zones (U-F0.3, U-F0.4) | See §U-F0.2 |
 | 2026-09-30 | **U-F0.3** — migrate the admin zone (`admin.*`) | Contract **`v0.3.0`** adopted (the storefront configurator parked for U2.F1). All published admin operations are called through `serverApi`/`browserApi`: customers, orders, the CS desk (folding and corrugate price for real; the other five calculators are RFQ-only; checkout through the customer's cart), RFQ, prepress and designs, production, logistics and claims, marketing, companies, analytics, reports and imports. Mock personas hold packio-api's role grants (`pnpm gen:rbac`, gated). Offered actions come from one module until entities carry `nextActions`. `awaiting-migration.ts` has no admin entry (bound ≤ 5), and a gate keeps admin requests to what packio-api still builds. Gaps are marked `CONTRACT-GAP`; 7 e2e fixmes name theirs | The partner zone (U-F0.4); `e2e:integration` (U-F0.5) | See §U-F0.3 |
+| 2026-10-01 | **U-F0.4** — the partner zone, and every zone onto v0.4–v0.6 | Contract **`v0.6.0`** adopted. `gen:triage` reads the triage at the tag and its shipped tables; `gen:rbac` imports the factory scope. Every published request in all three zones is on `serverApi` / `browserApi`: 115 request operations → 5 (the parked configurator, guided help and sample kits deferred by D-223, analytics journeys for U5.B6). `CONTRACT-GAP` markers 190 → 86, e2e fixmes 21 → 7. Entities render the API's `nextActions` (59 keys); notifications show the API's unread count and link; web vitals go to the API. Interim QC checklist `packio-web-v1` (user) | `e2e:integration` (U-F0.5); the gaps packio-api left out on purpose | See §U-F0.4 |
+---
+
+## U-F0.4 — The partner zone, and every zone onto v0.4–v0.6 — 2026-10-01
+
+`docs/prompts/U1-update-2026-09-29.md` §U-F0.4, on `feat/u-f0.4-migration` (worktree `../packio-web-u1`, from `main` at `bbcfdcd`). Gap table: `docs/update-2026-09-29-gap.md` §U-F0.4 (20 rows, all met).
+
+**What changed since U-F0.3:** packio-api tagged `v0.4.0` (U-B0.1 store), `v0.5.0` (U-B0.2 admin) and `v0.6.0` (U-B0.3 platform, finance, partner and cross-cutting). Together they add 124 operations and remove none. Every triage row is now published, except three deferred by decision:
+- guided help (D-223);
+- sample kits (D-223);
+- analytics journeys (U5.B6, D-219).
+
+**User decisions (2026-10-01):**
+1. Adopt `v0.6.0`.
+2. Do everything in this session: the partner zone, every store and admin request v0.4–v0.6 published, and every `CONTRACT-GAP` they closed.
+3. QC answers an interim checklist owned by the web (see below).
+
+The migration rule of U-F0.2 / U-F0.3 stands:
+- the screen follows the contract;
+- what it still lacks is `CONTRACT-GAP <id>`;
+- a test that needs it is a `test.fixme` naming the gap.
+
+Slice 0 was built first, on its own. Six slices were then built in parallel worktrees, each from one written brief, and merged: `feat/u-f0.4-{floor,partner-account,store,admin-sales,admin-ops,admin-platform}`, worktrees `../packio-web-u1-<slice>`, branches kept. The slices are cut by domain, not by zone, because partner and admin mocks share state (jobs, shipments, claims, statements).
+
+### Result
+- **Requests:** 115 request operations → **5**: the parked configurator (U2.F1), the three deferred ones, and `admin.analytics-journeys`.
+  - `PUBLISHED_AWAITING_MIGRATION` holds only the parked configurator (bound ≤ 1, pinned to `CUSTOMER_ZONE_PARKED`).
+  - No `/v1/partner/` request remains, and the partner zone builds no request client.
+- **Gap markers:** `CONTRACT-GAP` markers 190 → 86. Each names an open row or a gap packio-api left out on purpose.
+- **e2e fixmes:** 21 → 7.
+
+### Done
+- **Slice 0: contract, triage, permissions, shared pieces.**
+  - `decisions.md` (D-229–D-232) and `accounting-design.md` synced with packio-api `v0.6.0`.
+  - `gen:api --adopt --tag v0.6.0`. Mock converters fill each new required field from data the mock holds, else with the schema's empty value.
+  - `gen:triage`:
+    - reads the triage **at the lock's tag**, not packio-api's working tree;
+    - applies the new `U-B0.x shipped` tables over *Details*, whose headings still say "implement here";
+    - resolves each built operation to its published operationId: exact path, else the operationIds the shipped row names, else four prose-named mappings that must be among the row's own;
+    - adds the verdict `deferred`;
+    - fails on anything it cannot place.
+  - `gen:rbac` reads `rbac.md` at the tag and imports the factory-scope table. Partner personas hold `FACTORY_ROLE_GRANTS`, the proposed keys are renamed to packio-api's, and a new gate (`src/features/partner/permissions.test.ts`) fails on any other factory key.
+  - **Next actions:** presentation and th/en labels for packio-api's 59 action keys (`API_ACTION_KEYS`, tested). Screens render the entity's own `nextActions`.
+  - **Notifications:** the API's unread count, items that link to their `url`, read-all in one call.
+  - **Web vitals:** posted as `WebVitalDto`.
+  - th/en titles for the 16 new problem codes.
+- **Partner floor (floor slice).**
+  - Today on `partner.production.today`. Jobs by `?view`.
+  - The job page follows the job's `nextActions`:
+    - reject is typed, with `JobRejectReason`;
+    - milestones are updated by id, and `applied: false` reloads the job;
+    - QC answers the interim checklist;
+    - issues use the D-232 kinds, and the factory resolves its own;
+    - shows tolerance, inspection, destination provinces, and the PO from `listPurchaseOrders`.
+  - Capacity calendar with closures.
+  - Shipping is draft → **ready** (new: labels, packing list, `cartons[]`) → dispatch → POD per destination, plus the carrier request, cancel and transit updates.
+  - Admin:
+    - board on `admin.production.board`;
+    - inspections typed, with month scorecards;
+    - shipment queues, split (drafts only, D-230), carrier quotes, exception resolution (D-230), POD review (D-229), If-Match.
+- **Partner money and account; the claims desk (partner-account slice).**
+  - **Statements:** totals, line kinds, tax invoices, and dispute by line. Actions come only from `nextActions`, and confirm restates the BS number and gross.
+  - **Tax invoices:** the factory keys `netAmount` / `vatAmount` of its own invoice (backend wins; format check only).
+  - **Payouts:** schedule, list (`from` / `to`), detail, documents and statement of account.
+  - **Partner claims:** deductions, factory evidence, respond with `evidenceFileIds`. **Admin claims:** filters, D-083 rule, overrides, `nextActions`.
+  - **Users:** created with an initial password (owner hands it over out of band; no owner role, D-171); `setRoles` also reactivates.
+  - **Other:** notification choices (D-231), scorecard months, factory names from `partner.me.get`, change requests (owner-only), site visits, price references, proposal evidence.
+- **Customer zone (store slice).**
+  - **Catalogue and help:** price hints (D-220), product FAQs, categories with parents, FAQ search hits, and the sitemap from the API. The contact form and the CS hand-off are live; guided help and the samples topic are hidden (D-223).
+  - **RFQ:** the form sends `routedFrom` and files. The detail follows `nextActions` and adds decline.
+  - **Account:** tier progress, ledger links, referral rules, wallet codes, privacy requests (D-222), unlinking Google and Apple.
+  - **Address book:** addresses, tax profiles, branches and company sign-up **create again** on geography ids (`store.geo-ids` resolved).
+  - **Orders:** summary, `nextActions`, receipt, tolerance, promised dates, POD photos. Instalments are paid by group.
+  - **Claims and reorder:** the claim form from the API, `claim.answer_info`. The reorder preview carries a token.
+  - **Cart, checkout and payments:** cart line summaries; checkout payment methods, points bounds and company credit; payment receiver accounts and `failureCode`.
+  - **Artwork and proofs:** artwork rules; proof approval with its checklist and a typed confirmation; a 3D view.
+  - **Designer:** catalogue, duplicate / restore / import, version kinds, share expiry and unshare (D-226), `design_asset` uploads.
+  - **Business:** `myRoles` / `can`, member roles, brand assets (D-227), credit aging and statements, approval history, bulk reorder.
+- **Admin sales (admin-sales slice).**
+  - **Orders:** an all-orders tab with filters, actions from the order's `nextActions` (Idempotency-Key on cancel and manual start), staff cancel reasons, and payment reminders (hourly limit). The group shows customer, placedBy, company, `hasSlipToReview` and tax profile, and payments are listed by group.
+  - **CS desk:** size rules, catalogue products, the API's CS discount limit; quotation channel, RFQ link and note; memo evidence.
+  - **Customers:** filters, company, counts, referral code; the referrals tab is back; ledger lines link to their order; consent versions.
+  - **Companies:** credit-status filter, receivables, If-Match, KYC files, credit eligibility / versions / receivables / statement PDFs.
+- **Admin operations (admin-ops slice).**
+  - **RFQ:** filters and the awaiting-factory queue, SLA target, routed-from badge, `nextActions`, start review, candidate factories with tier and on-time %, remind, draft edit (If-Match), record acceptance, message files.
+  - **Prepress:** filters, assign owner, accept with a note, order drawings.
+  - **Designs:** owner, `editable`, copy.
+  - **Marketing:** spent gauge, reasons on actions, priority reorder, coupon batches. Referral promotions are read-only.
+- **Admin platform (admin-platform slice).**
+  - **Console:** the sidebar is packio-api's menu; a DPO persona (D-222); the dashboard's 21 queues; saved views; search; staff directory; SoD rules.
+  - **Finance:**
+    - documents: credit-note reasons, deliveries, resend, `?paymentId`, `nextActions`;
+    - dunning log; bank suggestions, split and settlements;
+    - payout runs and admin statements on `nextActions`;
+    - depreciation preview, roll-forward, sub-ledger reconciliation;
+    - the slip image from its `fileId`.
+  - **Reports and exports:** report totals, `generatedAt` and groups; analytics price sensitivity; exports on orders, customers, companies, shipments and claims.
+- **Close-out.**
+  - **Dashboard counts:** the shipment and RFQ tabs asked for queue keys packio-api never sends (`logistics.*`, `rfq.*`), which the mock aliased. They now use `shipments.exceptions`, `shipments.pod_review` and `rfqs.awaiting_first_response`, and the alias is gone.
+  - **Interim action rules:** the store module is deleted. The admin module keeps only campaigns, promotions, coupons, prepress and submissions, which have no `nextActions` in v0.6.0.
+  - `NextActionBar` leads with an action the screen can perform, never a destructive one while a constructive one is open, and shows `disabledReason` in the app's problem wording.
+
+### Interim QC checklist (user decision)
+- `recordQc` requires `checklist` and `checklistVersion` and stores what it is sent, but no partner response carries the route's checklist (packio-api: "no checklist invented").
+- The factory therefore answers `src/domain/qc/checklist.ts`, version `packio-web-v1`: the five items F5.2 showed, labelled in i18n.
+- A defect's `code` is the item key, and its severity comes from `DefectSeverity`.
+- New request `partner.job-qc-checklist` asks for `qcChecklist` on `PartnerJobDto`. When it ships, the list is replaced, not the form.
+
+### What the screens still lack (marked `CONTRACT-GAP`)
+- **Partner:**
+  - an "awaiting QC" view, job history and inspection reasons (`partner.jobs`);
+  - the ship plan's title and promised date, the POD review state and a per-carton public tracking URL (`partner.shipments`; the URL is left out on purpose);
+  - a job id on the payout schedule (`partner.payouts`);
+  - a claim answer-by time (`partner.claims`);
+  - a product type on change requests;
+  - site visits show date and result only;
+  - the price-column ↔ catalogue pairing (`partner.price-column-ref`, new).
+- **Store:**
+  - the configurator stays parked (`store.quotes`);
+  - an RFQ decline reason in words, and the spec in words (`store.rfqs`);
+  - timeline keys (`store.orders`), and the order's group ref (`store.order-group-ref`, still open);
+  - claims `respondBy` (U2.5);
+  - a cart line's allowed design options;
+  - the checkout contact block and note, and `scheduleKey` (proposed rejection, D-020);
+  - proof page images (A9);
+  - a catalogue for a blank design (`store.catalog-product-ref`).
+- **Admin:**
+  - order urgency and a group ref on `AdminOrderDto` (`admin.orders`);
+  - a memo code;
+  - company `allowedActions` (the rule lives in `features/admin/companies/actions.ts`);
+  - RFQ: `suggestedUnitPrice`, quote version author, events, decline note (`admin.rfqs`, `admin.rfq-quotes`);
+  - prepress: one queue across stages, owner read-back, stage / SLA, dieline size, submitter, proof preparer (`admin.prepress`);
+  - Prepress cannot save its own design copy, because `admin.designs.save` needs `catalog.manage` (`admin.design-documents`);
+  - campaign / promotion `allowedActions` and new-customer count;
+  - order id on shipment items, and a per-trip customer charge (`admin.shipments`);
+  - the factory name on inspections;
+  - claims `slaDueAt` (U2.5);
+  - a CMS menu entry (`admin.menu-cms`, new);
+  - the slip file name;
+  - a resend channel;
+  - depreciation preview category / NBV;
+  - report pagination beyond 200 rows;
+  - GMV / conversion per demand cell.
+- **Published, no screen yet** (not migrations):
+  - the admin privacy-requests screen (no menu entry in packio-api's catalogue);
+  - business calendar (`admin.calendar.*`);
+  - approval-policy versions (`admin.approvalPolicies.*`);
+  - admin job hold / resume / reassign controls (read-only on the board).
+
+### Decisions taken, with reasons
+- **Backend names win again:**
+  - factory permissions follow the backend: the shipping role reports milestones and raises issues; the accountant no longer reads shipments; QC answers claims;
+  - dashboard queue keys;
+  - `VendorInvoiceStatus` (`recorded`), `FactoryUserStatus`, `ChangeRequestStatus`, and `NotificationStatus` for the dunning log.
+- **Typed confirmations** (retype the code), all irreversible:
+  - job reject, shipment cancel (partner and admin), claim resolve, BS confirm;
+  - proof approval, design-service approval, RFQ decline (store).
+- **Stricter than the contract, for the audit trail:**
+  - a reason is required on campaign / promotion pause and end and on disabling a coupon;
+  - a note is required on a statement dispute and on a claim dispute.
+- **Offered actions not yet built** (`order.submit_artwork`, `add_mockup`, `reprice`) are shown disabled as unsupported rather than hidden.
+- **Payment reminder, record slip and slip review** are offered from the order's Payments tab, since packio-api has no order-group actions. A bug was fixed on the way: record slip now sends real uuid Idempotency-Keys.
+- **Blank designs** use the engine's default board, because the designer catalogue needs a product.
+- **Mocks:**
+  - mirror packio-api's `*-actions.ts` rule tables at v0.6.0 (`mocks/next-actions.ts`, `mocks/admin/floor-actions.ts`);
+  - the shared state between partner and admin is kept: jobs, shipments, claims, statements.
+- **Two date-dependent tests fixed** (both failed on 2026-10-01):
+  - the audit sample asks for `min(5, populationSize)`;
+  - the ภ.ง.ด.53 e2e reads the seeded payout run's month.
+  - Moving the seed into the current month instead broke the ภ.พ.30 reconciliation, so it was reverted.
+
+### For packio-api
+- **Orders:** `groupId` / `groupCode` on `OrderDto` and `AdminOrderDto`; a typed `AdminOrderGroupDto.taxProfile`.
+- **Store:**
+  - a catalogue for a blank design;
+  - a cart line's allowed design options;
+  - claims `respondBy`;
+  - the store timeline key list.
+- **Partner:**
+  - the route's QC checklist on the job (`partner.job-qc-checklist`);
+  - an "awaiting QC" job view;
+  - the partner shipment's POD review state;
+  - a job id on `PayoutScheduleJobDto`;
+  - a claim answer-by time;
+  - a product type on change requests;
+  - a `ref` on `PriceColumnDto`.
+- **Admin:**
+  - `allowedActions` on companies, campaigns, promotions and prepress;
+  - Prepress and `admin.designs.save` (`catalog.manage`);
+  - a prepress owner on the order and `q` on the queue;
+  - a factory name on `RfqConsultationDto` and `InspectionDto`;
+  - a decline note on `StaffRfqDto`;
+  - an order id on `ShipmentItemDto`;
+  - a CMS menu entry;
+  - a resend channel;
+  - depreciation preview fields;
+  - the slip file name;
+  - an admin-surface postcode lookup;
+  - problem copy for `receivables.document_settled`.
+
+### Verification
+- On the merged branch, all passing:
+  - `pnpm lint`, `pnpm typecheck`, `pnpm format:check`, `pnpm gen:api:check` (contract 0.6.0), `pnpm build`, `pnpm build-storybook`;
+  - unit tests: 98 files, 916 passed. Run `vitest run --testTimeout=60000` directly: `pnpm test:app -- --testTimeout` does not pass the flag through, and on this loaded machine (load average 25–35 from other work) a few files time out at the default 5 s.
+- `pnpm e2e` (chromium, mocks, 2 workers, one server): three full runs, which surfaced six cross-spec and date problems, all fixed:
+  - the storefront RFQ flow followed the old RFQ header;
+  - the payment reminder used an order another spec pays;
+  - the period close met a paper the books spec had already filed;
+  - the account's tax profile saved before the postcode lookup;
+  - the ภ.ง.ด.53 test was date-dependent;
+  - the audit sample test was date-dependent.
+- The third full run: 378 passed, 7 skipped (fixmes naming their gaps), 2 failed. Both failures are load timing: the `/users` axe scan caught a transient fade, and a journal combobox timed out. Both passed on re-run (34/34).
+- `pnpm e2e:journeys`: 11 passed, T6 pending, as before.
+- `pnpm lhci`: the same three script-size ratchets fail as on `main`, and nothing else.
+
+  | URL | budget | U-F0.3 | U-F0.4 |
+  |---|---|---|---|
+  | `/account/designs` | 293,000 | 309,255 | 308,504 |
+  | `/configure/tuck-end-box` | 293,000 | 319,366 | 319,080 |
+  | partner `/settings` | 300,000 | 300,946 | passes |
+  | partner `/jobs` | 300,000 | passes | 300,252 |
+
+  The partner breach moved from `/settings` to `/jobs` (252 bytes over); no new budget is breached.
+- Gates proven to bite:
+  - the partner permissions gate, on a planted `factory_jobs.accept`;
+  - the registry zone gates and the gap gate keep their U-F0.2 / U-F0.3 logic and are green. The migration list is pinned to the parked configurator.
+- Not run: `e2e:integration` against packio-api (U-F0.5, next).
+
 ---
 
 ## U-F0.3 — Migrate the admin zone (`admin.*`) — 2026-09-30
