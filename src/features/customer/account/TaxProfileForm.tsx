@@ -156,7 +156,6 @@ function CreateTaxProfile({ onSaved, onCancel }: { onSaved: (profile: TaxProfile
         <Input value={name} onChange={(event) => setName(event.target.value)} />
       </Field>
       <PostcodeAreaField
-        idPrefix="tax"
         postcode={postcode}
         subdistrictId={area?.subdistrictId ?? ""}
         errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}

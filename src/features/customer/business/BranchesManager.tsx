@@ -150,7 +150,6 @@ export function BranchesManager({
             </Field>
           </div>
           <PostcodeAreaField
-            idPrefix="branch"
             postcode={postcode}
             subdistrictId={area?.subdistrictId ?? ""}
             errors={{ subdistrict: errors.subdistrict }}
