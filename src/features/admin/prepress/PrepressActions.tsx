@@ -6,7 +6,6 @@ import { useState } from "react";
 import type { AdminPrepressAction, AdminSubmissionAction } from "@/domain/next-actions/admin";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Select } from "@/ui/components/Select";
@@ -32,7 +31,7 @@ const SUPPORTED = new Set<string>([
 const PDF = "application/pdf";
 const MAX_BYTES = 200 * 1024 * 1024;
 
-/** Who owns the order's prepress work, as the assign request last answered it. */
+/** Who owns the order's prepress work, as an assignment made on this page set it. */
 export type PrepressOwner = { id: string; displayName: string } | null;
 
 /** The workspace's actions as `adminPrepressActions` offers them — see `NextActionBar`. */
@@ -83,8 +82,9 @@ function Dropzone({
 }
 
 /**
- * The dialog for whichever workspace action is open. None of the published operations declares an
- * Idempotency-Key, so none is sent (`admin.prepress-proofs`, `-template`, `admin.design-services`).
+ * The dialog for whichever workspace action is open. Delivering a design round and requoting send
+ * the dialog's Idempotency-Key (`admin.design-services`); sending a proof or a template declares
+ * none, so none is sent.
  */
 export function PrepressActionDialogs({
   order,
@@ -130,7 +130,7 @@ export function PrepressActionDialogs({
 
   switch (open) {
     case "assign":
-      // Still a request (packio-api U-B0.2); it answers the aggregate it was asked with.
+      // `admin.artwork.assignPrepress` answers 204: the owner shown is the person picked here.
       return (
         <AssignDialog
           title={t("assign.title")}
@@ -138,12 +138,12 @@ export function PrepressActionDialogs({
           current={owner ?? null}
           permission="prepress.review"
           personHint={t("assign.personHint")}
-          onAssign={async (assigneeId) => {
-            const updated = await browserRequests().call("POST /v1/admin/prepress/{orderId}/actions/assign", {
-              path: { orderId },
+          onAssign={async (assigneeId, person) => {
+            await contract.POST("/v1/admin/orders/{orderId}/actions/assign-prepress", {
+              params: { path: { orderId } },
               body: { assigneeId },
             });
-            onAssigned(updated.assignee);
+            onAssigned(person);
             settle();
           }}
           onClose={onClose}
@@ -246,12 +246,12 @@ export function PrepressActionDialogs({
           description={t("deliver.body", { code: order.orderCode })}
           confirmLabel={t("deliver.confirm")}
           reason={{ label: t("deliver.note"), hint: t("deliver.noteHint") }}
-          onConfirm={async ({ reason }) => {
+          onConfirm={async ({ idempotencyKey, reason }) => {
             need(files.length > 0, t("deliver.needFiles"));
             try {
               const uploaded = await Promise.all(files.map((file) => uploadFile("admin", file, "artwork")));
               await contract.POST("/v1/admin/design-services/{designServiceId}/actions/deliver", {
-                params: { path: { designServiceId: designService.id } },
+                params: { path: { designServiceId: designService.id }, header: { "Idempotency-Key": idempotencyKey } },
                 body: { fileIds: uploaded.map((item) => item.id), ...(reason ? { note: reason } : {}) },
               });
               settle();
@@ -285,10 +285,10 @@ export function PrepressActionDialogs({
           tone="destructive"
           confirmationPhrase={order.orderCode}
           reason={{ label: t("requote.reason"), required: true, minLength: 3, hint: t("requote.reasonHint") }}
-          onConfirm={async ({ reason }) => {
+          onConfirm={async ({ idempotencyKey, reason }) => {
             try {
               await contract.POST("/v1/admin/design-services/{designServiceId}/actions/requote", {
-                params: { path: { designServiceId: designService.id } },
+                params: { path: { designServiceId: designService.id }, header: { "Idempotency-Key": idempotencyKey } },
                 body: { reason },
               });
               settle();
@@ -331,17 +331,24 @@ export function SubmissionDialogs({
       <ConfirmAction
         {...common}
         title={t("accept.title", { version: submission.versionNo })}
-        // CONTRACT-GAP admin.prepress-actions — accepting takes no body, so the acknowledgement of
-        // the warnings is not recorded; the dialog still names them.
+        // A file accepted with warnings carries prepress's note on why they are acceptable.
         description={
           warnings > 0
             ? t("accept.bodyWarnings", { code: order.orderCode, count: warnings })
             : t("accept.body", { code: order.orderCode })
         }
         confirmLabel={t("accept.confirm")}
-        onConfirm={async () => {
+        reason={
+          warnings > 0
+            ? { label: t("accept.note"), required: true, minLength: 3, hint: t("accept.noteHint") }
+            : { label: t("accept.note"), hint: t("accept.noteOptional") }
+        }
+        onConfirm={async ({ reason }) => {
           try {
-            await adminBrowserApis().contract.POST("/v1/admin/artwork-submissions/{submissionId}/actions/accept", path);
+            await adminBrowserApis().contract.POST("/v1/admin/artwork-submissions/{submissionId}/actions/accept", {
+              ...path,
+              body: reason ? { note: reason } : {},
+            });
             settle();
             toast.success(t("accept.done"));
           } catch (error) {

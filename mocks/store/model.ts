@@ -20,7 +20,6 @@ import {
   requiredBefore,
   slipStatus,
 } from "@/lib/api/requests/admin-orders";
-import { promotionKind } from "@/lib/api/requests/admin-marketing";
 import { quoteSource } from "@/lib/api/requests/store-quotes";
 import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
 import { companyRole, creditApplication } from "@/lib/api/requests/store-business";
@@ -35,6 +34,9 @@ import {
 } from "../admin/company-model";
 
 /* ------------------------------------------------------------------------------------- cart */
+
+/** `PromotionKind`, as the contract names it (the admin request that defined it is retired, U-F0.4). */
+const promotionKind = z.enum(["coupon", "automatic", "referral"]).meta({ id: "PromotionKind" });
 
 export const cartItemState = z.enum(["ok", "repriced", "unavailable"]).meta({ id: "CartItemState" });
 

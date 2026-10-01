@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { adminRfqActions } from "@/domain/next-actions/admin";
 import { RFQ_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -26,23 +25,24 @@ import { adminBrowserApis, problemMessage, QueryError, StatusChip, useActor, use
 import { useRfq, useSettleRfq, useUnmetDemandReasons } from "./data";
 import { RfqActionBar, RfqActionDialogs, type RfqActionKey } from "./RfqActions";
 import { FactoriesTab, MessagesTab, QuotesTab, RequestTab } from "./RfqTabs";
-import { draftOf, sentOf, type Rfq, type RfqTab } from "./resources";
+import { draftOf, type Rfq, type RfqTab } from "./resources";
 
 /**
  * One RFQ (F2 2.3): what the customer asked for, what the factories answered, the quote versions
  * and the conversation — with the SLA, the customer and the owner in the rail. The header
  * restates code, customer and category on every tab, and leads with the next action on offer.
  *
- * The published RFQ (`admin.rfqs.get`) carries no files, customer contact, events, routing
- * reason, SLA target or `nextActions` (CONTRACT-GAP admin.rfqs); what to offer comes from
- * `adminRfqActions`.
+ * What is offered is the RFQ's own `nextActions` (packio-api's rule table, filtered by what the
+ * actor may do). Editing or discarding the open draft goes with sending it: the API offers no
+ * separate key, so the draft is workable while `rfq.send_quote` is on offer. Ordering from an
+ * accepted request is CS create-order's own screen, for whoever may fill a customer's cart.
+ * CONTRACT-GAP admin.rfqs — no events and no routing reason (only that a calculator routed it).
  */
 export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq | null; tab: RfqTab }) {
   const t = useTranslations("rfq.detail");
   const format = useFormat();
   const pathname = usePathname();
   const router = useRouter();
-  const actor = useActor();
   const settle = useSettleRfq(rfqId);
   const [current, setCurrent] = useState<string>(tab);
   const [action, setAction] = useState<RfqActionKey | null>(null);
@@ -52,26 +52,17 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
   const query = useRfq(rfqId, initial);
   const rfq = query.data;
   const reasons = useUnmetDemandReasons(rfq?.status === "declined" && Boolean(rfq.declineReasonCode));
+  const canOrder = useCan("carts.manage_on_behalf");
 
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   if (!rfq) return null;
 
   const draft = draftOf(rfq);
-  const actions = adminRfqActions(
-    {
-      status: rfq.status,
-      hasDraft: Boolean(draft),
-      draftBelowMarginFloor: Boolean(draft?.lines.some((line) => line.belowMarginFloor)),
-      hasSent: Boolean(sentOf(rfq)),
-      hasAcceptedQuotation: Boolean(rfq.acceptedQuoteId),
-    },
-    (permission) => actor.permissions.includes(permission),
+  const offered = new Set(
+    rfq.nextActions.filter((item) => !item.disabledReason).map((item) => item.key.slice("rfq.".length)),
   );
-  const offered = new Set(actions.filter((item) => !item.blockedBy).map((item) => item.key.slice("rfq.".length)));
-  const sendBlocked = actions.find((item) => item.key === "rfq.send_quote")?.blockedBy;
-  const declineReason = rfq.declineReasonCode
-    ? (reasons.data?.data.find((reason) => reason.code === rfq.declineReasonCode)?.name ?? rfq.declineReasonCode)
-    : null;
+  const draftWorkable = rfq.nextActions.some((item) => item.key === "rfq.send_quote");
+  const declineReason = rfq.declineReasonCode ? reasons.nameOf(rfq.declineReasonCode) : null;
   const accepted = rfq.quotations.find((quote) => quote.status === "accepted");
 
   const go = (next: string) => {
@@ -83,24 +74,18 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
   const run = async (key: RfqActionKey) => {
     switch (key) {
       case "compose_quote":
-      case "edit_quote":
         setComposing(true);
         go("quotes");
         return;
-      case "create_order":
-        // The saved quotation names its quantity; CS create-order picks the option from it.
-        if (rfq.acceptedQuoteId) router.push(`/orders/new?quote=${rfq.acceptedQuoteId}`);
-        return;
       case "start_review":
-        // Reversible and routine: no confirmation, just the call. Still a contract request
-        // (admin.rfq-actions), so the RFQ is read again after it.
+        // Reversible and routine: no confirmation, just the call.
         setStarting(true);
         try {
-          await adminBrowserApis().requests.call("POST /v1/admin/rfqs/{rfqId}/actions/start-review", {
-            path: { rfqId },
+          const { data } = await adminBrowserApis().contract.POST("/v1/admin/rfqs/{rfqId}/actions/start-review", {
+            params: { path: { rfqId } },
           });
           toast.success(t("reviewStarted"));
-          settle();
+          settle(data);
         } catch (error) {
           toast.error(problemMessage(error, t("actionFailed")));
         } finally {
@@ -131,10 +116,9 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
         <QuotesTab
           rfq={rfq}
           composing={composing}
-          onCompose={offered.has("compose_quote") || offered.has("edit_quote") ? () => setComposing(true) : undefined}
+          onCompose={offered.has("compose_quote") || draftWorkable ? () => setComposing(true) : undefined}
           onCloseComposer={() => setComposing(false)}
           onSend={offered.has("send_quote") ? () => setAction("send_quote") : undefined}
-          sendBlocked={sendBlocked}
         />
       ),
     },
@@ -157,6 +141,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
                   {t("overdue")}
                 </Badge>
               ) : null}
+              {rfq.routedFromCalculator ? <Badge icon="calculator">{t("routed")}</Badge> : null}
             </>
           }
           description={t("headline", {
@@ -166,7 +151,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
           })}
           actions={
             <RfqActionBar
-              actions={actions}
+              rfq={rfq}
               onAction={(key) => {
                 if (!starting) void run(key);
               }}
@@ -176,7 +161,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
       </div>
 
       {rfq.status === "declined" && declineReason ? (
-        // CONTRACT-GAP admin.rfq-actions — the published RFQ keeps the reason code, not the note.
+        // CONTRACT-GAP admin.rfqs — the published RFQ keeps the reason code, not the decline note.
         <Callout tone="neutral" title={t("declinedTitle", { reason: declineReason })}>
           {t("declinedBody")}
         </Callout>
@@ -185,7 +170,11 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
         <AcceptedCallout
           quoteId={rfq.acceptedQuoteId}
           versionNo={accepted?.versionNo ?? null}
-          onCreateOrder={offered.has("create_order") ? () => void run("create_order") : undefined}
+          onCreateOrder={
+            canOrder && rfq.status === "accepted"
+              ? () => router.push(`/orders/new?quote=${rfq.acceptedQuoteId}`)
+              : undefined
+          }
         />
       ) : null}
 
@@ -268,7 +257,11 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
             absolute={rfq.slaDueAt ? format.dateTime(rfq.slaDueAt) : undefined}
           />
         )}
-        {/* CONTRACT-GAP admin.rfqs — the category's SLA target (business hours) is not published. */}
+        {rfq.slaTargetHours !== null ? (
+          <p className="text-muted mt-1 text-xs">
+            {t("target", { hours: rfq.slaTargetHours, type: rfq.productTypeName })}
+          </p>
+        ) : null}
         <p className="text-muted mt-1 text-xs">
           {t("submitted")} <When at={rfq.submittedAt} />
         </p>
@@ -300,7 +293,7 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
         <CardHeader>
           <CardTitle>{t("customer")}</CardTitle>
         </CardHeader>
-        {/* CONTRACT-GAP admin.rfqs — no customer code, company or contact on the published RFQ. */}
+        {/* CONTRACT-GAP admin.rfqs — no company name on the published RFQ. */}
         <DescriptionList
           columns={1}
           items={[
@@ -312,6 +305,11 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
                 </Link>
               ),
             },
+            ...(rfq.customerCode
+              ? [{ term: t("code"), description: <span className="font-mono">{rfq.customerCode}</span> }]
+              : []),
+            ...(rfq.contact.phone ? [{ term: t("phone"), description: rfq.contact.phone }] : []),
+            ...(rfq.contact.email ? [{ term: t("email"), description: rfq.contact.email }] : []),
           ]}
         />
       </Card>
