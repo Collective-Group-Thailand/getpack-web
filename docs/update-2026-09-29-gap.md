@@ -119,3 +119,190 @@ Sources: `docs/prompts/U1-update-2026-09-29.md` §U-F0.2–0.4; packio-api `docs
 Not here: the partner zone (U-F0.4) and `e2e:integration` (U-F0.5).
 
 Status after U-F0.3 (2026-09-30): every row met. Slices 5–11 were built in parallel worktrees and merged. What each screen lost, the e2e fixmes and the questions for packio-api are in `docs/PROGRESS.md` §U-F0.3.
+
+
+---
+
+## U-F0.4 — The partner zone, and every zone onto v0.4–v0.6 — 2026-10-01
+
+Sources:
+- `docs/prompts/U1-update-2026-09-29.md` §U-F0.2–0.4;
+- packio-api tags `v0.4.0` (U-B0.1 store), `v0.5.0` (U-B0.2 admin) and `v0.6.0` (U-B0.3 platform, finance, partner, cross-cutting; `18a675d`). Nothing was removed;
+- packio-api's `docs/contract-requests-triage.md` at `v0.6.0`, with its `U-B0.x shipped` tables.
+
+Evidence is from `main` at `bbcfdcd`.
+
+**User decisions (2026-10-01):**
+1. Adopt `v0.6.0`.
+2. Do everything in this session: the partner zone, the store and admin requests that are now published, and every `CONTRACT-GAP` v0.4–v0.6 closed.
+3. QC answers an interim checklist owned by the web (row P2).
+
+The U-F0.2/0.3 rule stands:
+- the screen follows the contract;
+- what it still lacks is `CONTRACT-GAP <id>`;
+- a test that needs it is a `test.fixme` naming the gap.
+
+**Scope.**
+- 115 request operations remain. 111 are published:
+  - partner 43;
+  - store 31, including the configurator parked for U2.F1;
+  - admin 37.
+- 4 stay requests:
+  - `admin.analytics-journeys` (U5.B6, D-219);
+  - guided help and sample kits (deferred, D-223).
+- About 190 `CONTRACT-GAP` markers name gaps the shipped groups say they added.
+- 21 e2e fixmes.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 0.1 | Lock on the latest tag | missing | `contract.lock.json` pins `v0.3.0` | `gen:api --adopt --tag v0.6.0` (+124 operations, 0 removed); mock compile fallout fixed |
+| 0.2 | Triage reflects the shipped groups | missing | `triage.ts` from `93d8d06`. In v0.6.0's triage, *Details* still says "implement here"; what shipped is only in the `U-B0.x shipped` tables | `gen:triage` reads the triage **at the lock's tag** and applies the shipped tables. A built operation resolves by exact path, else by the operationIds its row names, else by four prose-named mappings checked against the row. New verdict `deferred` |
+| 0.3 | Shared docs identical in both repos | partial | `decisions.md` lacks D-229–D-232; `accounting-design.md` differs (P15 `min()`, "price table") | Copied from packio-api `v0.6.0` |
+| 0.4 | Contract-defect narrowings removed | missing | `RateCardReview.tsx` (`CardLineAnswer`), the folding `AssemblyDto`, the simulation result | Use the generated types |
+| P1 | Factory-scope permissions are backend keys | missing | `factory_jobs.accept/update`, `factory_billing.*`, `factory_payouts.read` in UI and mocks; `gen:rbac` read only the staff table | `gen:rbac` imports `## Partner factory` at the tag. Personas take `FACTORY_ROLE_GRANTS`. Keys renamed (triage `partner.permissions`). Gate `src/features/partner/permissions.test.ts` |
+| P2 | Floor: today, jobs, lookup, accept / reject, milestones, QC, issues, capacity calendar | missing | 19 request call sites in `features/partner/jobs/*` and `app/partner/(console)/{page,jobs,capacity}` | `partner.production.*` on `/production-jobs` (token-scoped, D-044):<br>• `?view`<br>• `JobRejectReason`<br>• milestones by id, with `applied: false` reloading the job<br>• issues with D-232 kinds and self-resolve<br>• `partner.factories.capacityCalendar`<br>• job `nextActions`<br>QC answers `src/domain/qc` (`packio-web-v1`, `CONTRACT-GAP partner.job-qc-checklist`) |
+| P3 | Ship: ship plan, create, ready, dispatch, request carrier, POD, labels | missing | `features/partner/ship/*`, `app/partner/(console)/ship/**` | `partner.shipments.*`:<br>• `items[]` on create and POD<br>• the new `markReady` step, which makes labels and the packing list<br>• label sheet from `cartons[]`; no public tracking URL per carton (left out by the API)<br>• Idempotency-Key on writes |
+| P4 | Money: statements, tax invoices, payouts (schedule, list, detail, documents), statement of account | missing | `features/partner/billing/*`, `app/partner/(console)/{billing,payouts}/**` | `partner.payables.*`:<br>• statements: totals, line kinds, `taxInvoices`, dispute `lineNos`<br>• the factory keys `netAmount` / `vatAmount` on its tax invoice (backend wins)<br>• payouts: `from` / `to` without paging |
+| P5 | Claims, scorecard, users, notification choices, change requests, site visits, references, proposal evidence | missing | `features/partner/{account,requests,prices,onboarding}`, the settings, performance and claims pages | `partner.claims.*` (respond `evidenceFileIds`); `scorecards?months`.<br>Users: create with `initialPassword` (no owner role, D-171); `setRoles`, which also reactivates; deactivate.<br>`partner.me.notificationPreferences` (D-231).<br>`partner.changeRequests.*`, `listSiteVisits`, `priceReferences`, proposal evidence.<br>Factory names from `partner.me.get` |
+| P6 | Partner zone closed | missing | 43 partner operations on the migration list | Every `partner-*.ts` request file deleted. Gate: no `/v1/partner/` request |
+| S1 | Store requests now published | missing | 31 store operations (`store-*.ts`) | Migrated. Guided help and sample kits stay requests with their entry points hidden (D-223). The configurator stays parked (U2.F1) |
+| S2 | Store `CONTRACT-GAP`s the shipped group closed | missing | 58 markers in the customer zone and about 35 shared, e.g. `store.orders` (10), `store.geo-ids` (14), `store.cart`, `store.loyalty`, `store.artwork` | Each "Added in U-B0.1" field applied. Our own rows are re-checked against v0.6.0: `store.geo-ids` (subdistricts now carry `id`), `store.catalog-product-ref` (designs carry `product`; cards still no id), `store.order-group-ref` (`OrderDto` still has no group) |
+| A1 | Admin requests now published | missing | 37 admin operations (`admin-*.ts`) | Migrated. `admin.analytics-journeys` stays a request (U5.B6) |
+| A2 | Admin `CONTRACT-GAP`s the shipped groups closed | missing | 97 markers, e.g. `admin.shipments` (16), `admin.orders` (14), `admin.companies` (14), `admin.rfqs` (12), `admin.prepress` (11) | Each "Added in U-B0.2/0.3" field applied. The menu comes from `admin.me.get`. Exports return where `admin.exports.create` covers them. POD review and delivery exceptions follow D-229 / D-230 |
+| X1 | `nextActions` from the API | missing | Interim `src/domain/next-actions/{admin,store}.ts`; `entity.next-actions` markers | Presentation for packio-api's 59 action keys (`API_ACTION_KEYS`, test). Screens render the entity's own list, and the interim modules are deleted |
+| X2 | Notifications: unread count, link, read-all | partial | `features/shared/shell/notifications.ts` counted the first page | `meta.unreadCount`; items link to their `url`; `{surface}.notifications.markAllRead` |
+| X3 | RUM web vitals on the published operation | missing | `web-vitals.ts` was a contract request | `WebVitalDto`, with the customer zone reported as `store` |
+| X4 | e2e fixmes | partial | 21 `test.fixme` | Un-fixme each one whose gap closed; the rest keep their named gap |
+
+Met, not touched:
+- partner onboarding and price screens (already typed);
+- the parked `store.configurator` (U2.F1);
+- the CS calculators beyond folding and corrugate stay RFQ-only (U-B6; the label calculator is not tagged).
+
+### Appendix — every published request operation and where it went
+Generated from `triage.ts` and `awaiting-migration.ts` at the start of U-F0.4. "Gaps" counts the fields the shipped group added for the screen to apply.
+**partner** (43)
+
+| Request | Operation today | Published as | Shipped in | Gaps |
+|---|---|---|---|---|
+| `partner.billing-statements` | `GET /v1/partner/factories/{factoryId}/billing-statements` | `partner.payables.listStatements` (`GET /v1/partner/billing-statements`) | v0.6.0 | 4 |
+| `partner.billing-statements` | `GET /v1/partner/factories/{factoryId}/billing-statements/{statementId}` | `partner.payables.getStatement` (`GET /v1/partner/billing-statements/{statementId}`) | v0.6.0 | 4 |
+| `partner.billing-statements` | `POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm` | `partner.payables.confirmStatement` (`POST /v1/partner/billing-statements/{statementId}/actions/confirm`) | v0.6.0 | 0 |
+| `partner.billing-statements` | `POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/dispute` | `partner.payables.disputeStatement` (`POST /v1/partner/billing-statements/{statementId}/actions/dispute`) | v0.6.0 | 1 |
+| `partner.billing-statements` | `POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices` | `partner.payables.submitTaxInvoice` (`POST /v1/partner/billing-statements/{statementId}/tax-invoices`) | v0.6.0 | 1 |
+| `partner.capacity-calendar` | `GET /v1/partner/factories/{factoryId}/capacity-calendar` | `partner.factories.capacityCalendar` (same path) | v0.6.0 | 0 |
+| `partner.change-requests` | `GET /v1/partner/factories/{factoryId}/change-requests` | `partner.changeRequests.list` (same path) | v0.6.0 | 0 |
+| `partner.change-requests` | `POST /v1/partner/factories/{factoryId}/change-requests` | `partner.changeRequests.create` (same path) | v0.6.0 | 0 |
+| `partner.claims` | `GET /v1/partner/factories/{factoryId}/claims` | `partner.claims.list` (`GET /v1/partner/claims`) | v0.6.0 | 3 |
+| `partner.claims` | `GET /v1/partner/factories/{factoryId}/claims/{claimId}` | `partner.claims.get` (`GET /v1/partner/claims/{claimId}`) | v0.6.0 | 4 |
+| `partner.claims` | `POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond` | `partner.claims.respond` (`POST /v1/partner/claims/{claimId}/actions/respond`) | v0.6.0 | 1 |
+| `partner.job-issues` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/issues` | `partner.production.raiseIssue` (`POST /v1/partner/production-jobs/{jobId}/issues`) | v0.6.0 | 3 |
+| `partner.job-issues` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/issues/{issueId}/actions/resolve` | `partner.production.resolveIssue` (`POST /v1/partner/production-jobs/{jobId}/issues/{issueId}/actions/resolve`) | v0.6.0 | 0 |
+| `partner.job-milestones` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete` | `partner.production.updateMilestone` (`POST /v1/partner/production-jobs/{jobId}/milestones/{milestoneId}`) | v0.6.0 | 0 |
+| `partner.job-milestones` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/start` | `partner.production.updateMilestone` (`POST /v1/partner/production-jobs/{jobId}/milestones/{milestoneId}`) | v0.6.0 | 0 |
+| `partner.job-qc` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/qc-checks` | `partner.production.recordQc` (`POST /v1/partner/production-jobs/{jobId}/qc-checks`) | v0.6.0 | 2 |
+| `partner.jobs` | `GET /v1/partner/factories/{factoryId}/jobs` | `partner.production.list` (`GET /v1/partner/production-jobs`) | v0.6.0 | 4 |
+| `partner.jobs` | `GET /v1/partner/factories/{factoryId}/jobs/{jobId}` | `partner.production.get` (`GET /v1/partner/production-jobs/{jobId}`) | v0.6.0 | 1 |
+| `partner.jobs` | `GET /v1/partner/factories/{factoryId}/jobs/lookup` | `partner.production.lookup` (`GET /v1/partner/production-jobs/lookup`) | v0.6.0 | 0 |
+| `partner.jobs` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept` | `partner.production.accept` (`POST /v1/partner/production-jobs/{jobId}/actions/accept`) | v0.6.0 | 0 |
+| `partner.jobs` | `POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/reject` | `partner.production.reject` (`POST /v1/partner/production-jobs/{jobId}/actions/reject`) | v0.6.0 | 0 |
+| `partner.notification-preferences` | `GET /v1/partner/me/notification-preferences` | `partner.me.notificationPreferences` (same path) | v0.6.0 | 0 |
+| `partner.notification-preferences` | `PUT /v1/partner/me/notification-preferences` | `partner.me.setNotificationPreferences` (same path) | v0.6.0 | 0 |
+| `partner.payouts` | `GET /v1/partner/factories/{factoryId}/payout-schedule` | `partner.payables.payoutSchedule` (same path) | v0.6.0 | 0 |
+| `partner.payouts` | `GET /v1/partner/factories/{factoryId}/payouts` | `partner.payables.payoutStatement` (same path) | v0.6.0 | 3 |
+| `partner.payouts` | `GET /v1/partner/factories/{factoryId}/payouts/{payoutId}` | `partner.payables.getPayout` (same path) | v0.6.0 | 0 |
+| `partner.payouts` | `GET /v1/partner/factories/{factoryId}/statement-of-account` | `partner.payables.statementOfAccount` (same path) | v0.6.0 | 0 |
+| `partner.proposal-evidence` | `GET /v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence` | `partner.priceProposals.listEvidence` (same path) | v0.6.0 | 0 |
+| `partner.proposal-evidence` | `POST /v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence` | `partner.priceProposals.addEvidence` (same path) | v0.6.0 | 0 |
+| `partner.references` | `GET /v1/partner/factories/{factoryId}/references` | `partner.factories.priceReferences` (same path) | v0.6.0 | 0 |
+| `partner.scorecard` | `GET /v1/partner/factories/{factoryId}/scorecards` | `partner.production.scorecards` (same path) | v0.6.0 | 1 |
+| `partner.shipments` | `GET /v1/partner/factories/{factoryId}/ship-plan` | `partner.shipments.shipPlan` (same path) | v0.6.0 | 0 |
+| `partner.shipments` | `GET /v1/partner/factories/{factoryId}/shipments` | `partner.shipments.list` (`GET /v1/partner/shipments`) | v0.6.0 | 2 |
+| `partner.shipments` | `GET /v1/partner/factories/{factoryId}/shipments/{shipmentId}` | `partner.shipments.get` (`GET /v1/partner/shipments/{shipmentId}`) | v0.6.0 | 4 |
+| `partner.shipments` | `POST /v1/partner/factories/{factoryId}/shipments` | `partner.shipments.create` (`POST /v1/partner/shipments`) | v0.6.0 | 0 |
+| `partner.shipments` | `POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/dispatch` | `partner.shipments.dispatch` (`POST /v1/partner/shipments/{shipmentId}/actions/dispatch`) | v0.6.0 | 0 |
+| `partner.shipments` | `POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/request-carrier` | `partner.shipments.requestCarrier` (`POST /v1/partner/shipments/{shipmentId}/actions/request-carrier`) | v0.6.0 | 0 |
+| `partner.shipments` | `POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/pod` | `partner.shipments.recordPod` (`POST /v1/partner/shipments/{shipmentId}/proof-of-delivery`) | v0.6.0 | 0 |
+| `partner.site-visits` | `GET /v1/partner/factories/{factoryId}/site-visits` | `partner.factories.listSiteVisits` (same path) | v0.6.0 | 0 |
+| `partner.today` | `GET /v1/partner/factories/{factoryId}/today` | `partner.production.today` (same path) | v0.6.0 | 0 |
+| `partner.users` | `GET /v1/partner/factories/{factoryId}/users` | `partner.factoryUsers.list` (same path) | v0.6.0 | 3 |
+| `partner.users` | `PATCH /v1/partner/factories/{factoryId}/users/{userId}` | `partner.factoryUsers.deactivate` (`POST /v1/partner/factories/{factoryId}/users/{userId}/actions/deactivate`) | v0.6.0 | 1 |
+| `partner.users` | `POST /v1/partner/factories/{factoryId}/users` | `partner.factoryUsers.create` (same path) | v0.6.0 | 0 |
+
+**store** (31)
+
+| Request | Operation today | Published as | Shipped in | Gaps |
+|---|---|---|---|---|
+| `store.claims` | `GET /v1/store/orders/{orderId}/claim-form` | `store.claims.getForm` (same path) | v0.4.0 | 0 |
+| `store.company-assets` | `DELETE /v1/store/me/company/brand-assets/{assetId}` | `store.companyAssets.remove` (`DELETE /v1/store/companies/{companyId}/brand-assets/{assetId}`) | v0.4.0 | 0 |
+| `store.company-assets` | `GET /v1/store/me/company/brand-assets` | `store.companyAssets.list` (`GET /v1/store/companies/{companyId}/brand-assets`) | v0.4.0 | 0 |
+| `store.company-assets` | `POST /v1/store/me/company/brand-assets` | `store.companyAssets.add` (`POST /v1/store/companies/{companyId}/brand-assets`) | v0.4.0 | 0 |
+| `store.company-credit` | `POST /v1/store/me/company/credit-applications` | `store.companyCredit.apply` (`POST /v1/store/companies/{companyId}/credit-applications`) | v0.4.0 | 0 |
+| `store.company-members` | `PATCH /v1/store/me/company/members/{memberId}` | `store.companies.changeMemberRoles` (`PUT /v1/store/companies/{companyId}/members/{memberId}/roles`) | v0.4.0 | 0 |
+| `store.company-reorder` | `POST /v1/store/me/company/bulk-reorders` | `store.claims.bulkReorder` (`POST /v1/store/companies/{companyId}/bulk-reorders`) | v0.4.0 | 0 |
+| `store.company-reorder` | `POST /v1/store/me/company/bulk-reorders/actions/preview` | `store.claims.previewBulkReorder` (`POST /v1/store/companies/{companyId}/bulk-reorders/actions/preview`) | v0.4.0 | 0 |
+| `store.company-spend` | `GET /v1/store/me/company/spend` | `store.companies.spend` (`GET /v1/store/companies/{companyId}/spend`) | v0.4.0 | 0 |
+| `store.configurator` | `GET /v1/store/catalog/products/{slug}/configurator` | `store.catalog.getConfigurator` (same path) | v0.4.0 | 4 |
+| `store.design-share` | `DELETE /v1/store/designs/{designId}/share` | `store.designs.unshare` (same path) | v0.4.0 | 0 |
+| `store.design-share` | `GET /v1/store/shared-designs/{token}` | `store.designs.getShared` (same path) | v0.4.0 | 0 |
+| `store.design-share` | `POST /v1/store/designs/{designId}/actions/share` | `store.designs.share` (same path) | v0.4.0 | 0 |
+| `store.designer-catalog` | `GET /v1/store/designer/catalog` | `store.designer.getCatalog` (same path) | v0.4.0 | 0 |
+| `store.designer-catalog` | `GET /v1/store/designer/templates/{templateId}` | `store.designer.getTemplate` (same path) | v0.4.0 | 0 |
+| `store.designs` | `POST /v1/store/designs/{designId}/actions/duplicate` | `store.designs.duplicate` (same path) | v0.4.0 | 0 |
+| `store.designs` | `POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore` | `store.designs.restoreVersion` (same path) | v0.4.0 | 0 |
+| `store.designs` | `POST /v1/store/designs/actions/import` | `store.designs.import` (same path) | v0.4.0 | 0 |
+| `store.identities` | `DELETE /v1/store/me/identities/{provider}` | `store.me.unlinkIdentity` (same path) | v0.4.0 | 0 |
+| `store.instalments` | `GET /v1/store/instalments` | `store.paymentSchedules.listInstalments` (same path) | v0.4.0 | 0 |
+| `store.price-hints` | `GET /v1/store/catalog/price-hints` | `store.catalog.listPriceHints` (same path) | v0.4.0 | 0 |
+| `store.privacy` | `GET /v1/store/me/privacy-requests` | `store.me.listPrivacyRequests` (same path) | v0.4.0 | 0 |
+| `store.privacy` | `POST /v1/store/me/privacy-requests` | `store.me.createPrivacyRequest` (same path) | v0.4.0 | 0 |
+| `store.product-categories` | `GET /v1/store/catalog/product-categories` | `store.catalog.listProductCategories` (same path) | v0.4.0 | 0 |
+| `store.product-faqs` | `GET /v1/store/catalog/products/{slug}/faqs` | `store.catalog.listProductFaqs` (same path) | v0.4.0 | 0 |
+| `store.promo-check` | `POST /v1/store/promotions/actions/check` | `store.promotions.checkCode` (same path) | v0.4.0 | 0 |
+| `store.reorder` | `GET /v1/store/orders/{orderId}/reorder` | `store.claims.previewReorder` (same path) | v0.4.0 | 0 |
+| `store.rfq-forms` | `GET /v1/store/rfq-forms/{productTypeCode}` | `store.rfqs.getForm` (same path) | v0.4.0 | 0 |
+| `store.support-channels` | `GET /v1/store/support-channels` | `store.support.getChannels` (same path) | v0.4.0 | 0 |
+| `store.support` | `POST /v1/store/support/actions/contact` | `store.support.contact` (same path) | v0.4.0 | 0 |
+| `store.support` | `POST /v1/store/support/actions/handoff` | `store.support.handoff` (same path) | v0.4.0 | 0 |
+
+**admin** (37)
+
+| Request | Operation today | Published as | Shipped in | Gaps |
+|---|---|---|---|---|
+| `admin.account-roll-forward` | `GET /v1/admin/financial-reports/roll-forward` | `admin.financialReports.accountRollForward` (same path) | v0.6.0 | 0 |
+| `admin.bank-line-split` | `POST /v1/admin/bank-statement-lines/{lineId}/actions/split` | `admin.banking.splitLine` (same path) | v0.6.0 | 0 |
+| `admin.bank-line-suggestions` | `GET /v1/admin/bank-statement-lines/{lineId}/suggestions` | `admin.banking.suggestMatches` (same path) | v0.6.0 | 0 |
+| `admin.coupons` | `GET /v1/admin/promotions/{promotionId}/coupon-batches` | `admin.promotions.listCouponBatches` (same path) | v0.5.0 | 0 |
+| `admin.credit-note-reasons` | `GET /v1/admin/credit-note-reasons` | `admin.customerDocuments.listCreditNoteReasons` (same path) | v0.6.0 | 0 |
+| `admin.customer-consents` | `GET /v1/admin/customers/{customerId}/consents` | `admin.consentPurposes.customerConsents` (same path) | v0.5.0 | 0 |
+| `admin.dashboard` | `GET /v1/admin/dashboard` | `admin.dashboard.get` (same path) | v0.6.0 | 0 |
+| `admin.depreciation-preview` | `GET /v1/admin/depreciation-runs/preview` | `admin.fixedAssets.previewRun` (same path) | v0.6.0 | 0 |
+| `admin.design-documents` | `POST /v1/admin/design-documents/{documentId}/actions/copy` | `admin.designs.copy` (`POST /v1/admin/designs/{designId}/actions/copy`) | v0.5.0 | 0 |
+| `admin.document-resend` | `GET /v1/admin/customer-documents/{documentId}/deliveries` | `admin.customerDocuments.deliveries` (same path) | v0.6.0 | 0 |
+| `admin.document-resend` | `POST /v1/admin/customer-documents/{documentId}/actions/resend` | `admin.customerDocuments.resend` (same path) | v0.6.0 | 0 |
+| `admin.dunning-log` | `GET /v1/admin/dunning-log` | `admin.customerDocuments.dunningLog` (same path) | v0.6.0 | 0 |
+| `admin.gateway-settlements` | `GET /v1/admin/gateway-settlements` | `admin.banking.listSettlements` (same path) | v0.6.0 | 0 |
+| `admin.order-actions` | `GET /v1/admin/order-cancel-reasons` | `admin.orders.listCancelReasons` (same path) | v0.5.0 | 0 |
+| `admin.order-actions` | `POST /v1/admin/orders/{orderId}/actions/send-payment-reminder` | `admin.orders.sendPaymentReminder` (same path) | v0.5.0 | 0 |
+| `admin.order-actions` | `POST /v1/admin/orders/actions/send-payment-reminders` | `admin.orders.sendPaymentReminders` (same path) | v0.5.0 | 0 |
+| `admin.payout-documents` | `GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents` | `admin.payouts.itemDocuments` (same path) | v0.6.0 | 0 |
+| `admin.prepress-actions` | `POST /v1/admin/prepress/{orderId}/actions/assign` | `admin.artwork.assignPrepress` (`POST /v1/admin/orders/{orderId}/actions/assign-prepress`) | v0.5.0 | 0 |
+| `admin.promotions` | `PUT /v1/admin/promotions/priority` | `admin.promotions.reorder` (same path) | v0.5.0 | 0 |
+| `admin.rfq-actions` | `POST /v1/admin/rfqs/{rfqId}/actions/start-review` | `admin.rfqs.startReview` (same path) | v0.5.0 | 0 |
+| `admin.rfq-consultations` | `GET /v1/admin/rfqs/{rfqId}/candidate-factories` | `admin.rfqs.listCandidateFactories` (same path) | v0.5.0 | 0 |
+| `admin.rfq-consultations` | `POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind` | `admin.rfqs.remindConsultation` (`POST /v1/admin/rfq-consultations/{consultationId}/actions/remind`) | v0.5.0 | 0 |
+| `admin.rfq-quotes` | `POST /v1/admin/rfqs/{rfqId}/quotes/{quoteId}/actions/record-acceptance` | `admin.rfqs.recordAcceptance` (`POST /v1/admin/rfq-quotations/{rfqQuoteId}/actions/record-acceptance`) | v0.5.0 | 0 |
+| `admin.rfq-quotes` | `PUT /v1/admin/rfqs/{rfqId}/quotes/{quoteId}` | `admin.rfqs.replaceDraftQuotation` (`PUT /v1/admin/rfq-quotations/{rfqQuoteId}`) | v0.5.0 | 0 |
+| `admin.saved-views` | `DELETE /v1/admin/saved-views/{viewId}` | `admin.savedViews.delete` (same path) | v0.6.0 | 0 |
+| `admin.saved-views` | `GET /v1/admin/saved-views` | `admin.savedViews.list` (same path) | v0.6.0 | 0 |
+| `admin.saved-views` | `POST /v1/admin/saved-views` | `admin.savedViews.create` (same path) | v0.6.0 | 0 |
+| `admin.search` | `GET /v1/admin/search` | `admin.search.find` (same path) | v0.6.0 | 0 |
+| `admin.shipments` | `POST /v1/admin/shipments/{shipmentId}/actions/resolve-exception` | `admin.shipments.resolveException` (same path) | v0.5.0 | 0 |
+| `admin.shipments` | `POST /v1/admin/shipments/{shipmentId}/actions/split` | `admin.shipments.split` (same path) | v0.5.0 | 0 |
+| `admin.shipments` | `POST /v1/admin/shipments/{shipmentId}/carrier-quotes` | `admin.shipments.carrierQuotes` (same path) | v0.5.0 | 0 |
+| `admin.shipments` | `POST /v1/admin/shipments/{shipmentId}/pod/actions/{decision}` | `admin.shipments.reviewPod` (same path) | v0.5.0 | 0 |
+| `admin.slip-file` | `GET /v1/admin/slips/{slipId}/file` | `admin.files.download` (`GET /v1/admin/files/{fileId}/download`) | v0.6.0 | 0 |
+| `admin.sod-rules` | `GET /v1/admin/sod-rules` | `admin.sodRules.list` (same path) | v0.6.0 | 0 |
+| `admin.staff-directory` | `GET /v1/admin/staff-directory` | `admin.staffDirectory.list` (same path) | v0.6.0 | 0 |
+| `admin.subledger-reconciliation` | `GET /v1/admin/financial-reports/subledger-reconciliation` | `admin.financialReports.subledgerReconciliation` (same path) | v0.6.0 | 0 |
+| `admin.unmet-demand-reasons` | `GET /v1/admin/unmet-demand-reasons` | `admin.rfqs.listUnmetDemandReasons` (same path) | v0.5.0 | 0 |
