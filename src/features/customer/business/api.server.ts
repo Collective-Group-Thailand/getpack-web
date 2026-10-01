@@ -3,24 +3,22 @@ import "server-only";
 import { cache } from "react";
 
 import { isApiError } from "@/lib/api/problem";
-import { serverRequests } from "@/lib/api/requests/server";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 import { getActor } from "@/lib/auth/actor";
 
-import { capabilitiesOf, type CompanyCapabilities, type CompanyRole } from "./capabilities";
 import { findMyCompany } from "./companies.server";
 
 /**
  * The company the signed-in member acts for, as its pages need it: the published company
- * (`store.companies.get`, with the `ETag` a settings change is sent under), the member's own
- * roles and what they open, and its credit (`store.companyCredit.get`) when the API lets them see it.
+ * (`store.companies.get`, with the `ETag` a settings change is sent under, the member's own roles
+ * `myRoles` and what they open `can`), its credit (`store.companyCredit.get`) and receivables
+ * (`store.companyCredit.receivables`) when the API lets them see them.
  */
 export type Company = Schemas["CompanyDto"] & {
   etag: string;
-  myRoles: CompanyRole[];
-  can: CompanyCapabilities;
   credit: Schemas["CompanyCreditDto"] | null;
+  receivables: Schemas["CompanyReceivablesDto"] | null;
 };
 
 /** `null` for a 404 / 403 (not a member, or not this role's to see) — the page says so instead. */
@@ -37,49 +35,61 @@ async function orNull<T>(read: Promise<T>): Promise<T | null> {
 export const getMyCompany = cache(async (): Promise<Company | null> => {
   const [actor, found] = await Promise.all([getActor("customer"), findMyCompany()]);
   if (!actor || !found) return null;
+  // Only a member's roles open the company's pages; the API names them (`myRoles`).
   const api = await serverApi("customer");
   const read = await orNull(api.GET("/v1/store/companies/{companyId}", { params: { path: { companyId: found.id } } }));
   if (!read?.data) return null;
-  const member = read.data.members.find((candidate) => candidate.user.id === actor.id && candidate.status === "active");
-  if (!member) return null;
-  const can = capabilitiesOf(member.roles);
-  const credit = await orNull(
-    api
-      .GET("/v1/store/companies/{companyId}/credit", { params: { path: { companyId: found.id } } })
-      .then(({ data }) => data!),
-  );
-  return { ...read.data, etag: read.response.headers.get("etag") ?? "", myRoles: member.roles, can, credit };
+  if (read.data.myRoles.length === 0) return null;
+  const path = { params: { path: { companyId: found.id } } };
+  const [credit, receivables] = await Promise.all([
+    orNull(api.GET("/v1/store/companies/{companyId}/credit", path).then(({ data }) => data!)),
+    read.data.can.viewFinance
+      ? orNull(api.GET("/v1/store/companies/{companyId}/receivables", path).then(({ data }) => data!))
+      : Promise.resolve(null),
+  ]);
+  return { ...read.data, etag: read.response.headers.get("etag") ?? "", credit, receivables };
 });
 
-export async function getBrandAssets() {
-  return orNull((await serverRequests("customer")).call("GET /v1/store/me/company/brand-assets"));
-}
-
-/**
- * What waits for the company's approver (`store.companyApprovals.list`). CONTRACT-GAP
- * store.company-approvals — the published list has the pending ones only: no decided history.
- */
-export async function getApprovals(companyId: string): Promise<Schemas["CompanyApprovalDto"][] | null> {
+/** The company's shared brand assets, with signed URLs (`store.companyAssets.list`, D-227). */
+export async function getBrandAssets(companyId: string): Promise<Schemas["CompanyAssetDto"][] | null> {
   return orNull(
     (await serverApi("customer"))
-      .GET("/v1/store/companies/{companyId}/approvals", { params: { path: { companyId } } })
+      .GET("/v1/store/companies/{companyId}/brand-assets", { params: { path: { companyId } } })
       .then(({ data }) => data!),
   );
 }
 
 /**
- * One month's statement (`store.documents.companyStatement`, `month` = `YYYY-MM`). CONTRACT-GAP
- * store.company-credit — there is no list of issued statements or aging, so the page asks month
- * by month.
+ * What waits for the company's approver, or the decided history (`store.companyApprovals.list`
+ * with `status`), newest decided first.
  */
-export async function getStatement(companyId: string, month: string): Promise<Schemas["CompanyStatementDto"] | null> {
+export async function getApprovals(
+  companyId: string,
+  status: Schemas["CompanyApprovalStatusFilter"] = "pending",
+): Promise<Schemas["CompanyApprovalDto"][] | null> {
   return orNull(
     (await serverApi("customer"))
-      .GET("/v1/store/companies/{companyId}/statements", { params: { path: { companyId }, query: { month } } })
+      .GET("/v1/store/companies/{companyId}/approvals", {
+        params: { path: { companyId }, query: { status, limit: 50 } },
+      })
       .then(({ data }) => data!),
   );
 }
 
-export async function getSpend(months = 12) {
-  return orNull((await serverRequests("customer")).call("GET /v1/store/me/company/spend", { query: { months } }));
+/** The monthly statements issued so far, newest first (`store.companyCredit.listStatements`, D-125). */
+export async function getIssuedStatements(companyId: string): Promise<Schemas["IssuedStatementDto"][] | null> {
+  return orNull(
+    (await serverApi("customer"))
+      .GET("/v1/store/companies/{companyId}/issued-statements", { params: { path: { companyId } } })
+      .then(({ data }) => data!),
+  );
+}
+
+/** What the company spent, by month, member, branch and product type (`store.companies.spend`, D-125). */
+export async function getSpend(companyId: string, months = 12): Promise<Schemas["CompanySpendDto"] | null> {
+  return orNull(
+    (await serverApi("customer"))
+      .GET("/v1/store/companies/{companyId}/spend", { params: { path: { companyId }, query: { months } } })
+      .then(({ data }) => data!),
+  );
 }

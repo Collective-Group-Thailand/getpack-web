@@ -74,19 +74,19 @@
     "notices": {
       "due_soon": {
         "title": "Payment due soon",
-        "body": "Statement {period}: {amount} due {date}"
+        "body": "{group} {amount} is due on {date}"
       },
       "due_today": {
         "title": "Payment due today",
-        "body": "Statement {period}: {amount} is due today"
+        "body": "{group} {amount} is due today"
       },
       "overdue": {
         "title": "Payment overdue",
-        "body": "Statement {period}: {amount}, {days} days overdue"
+        "body": "{group} {amount} was due on {date}"
       },
       "credit_blocked": {
-        "title": "Credit orders on hold",
-        "body": "{amount} is {days} days overdue. Prepaid orders still work; no late fee (D-122)"
+        "title": "Credit orders paused",
+        "body": "{amount} is {days} days overdue. You can still order and pay first, with no penalty (D-122)."
       }
     },
     "seeStatements": "See statements",
@@ -107,16 +107,18 @@
     "threshold": "Approval above {amount}",
     "noThreshold": "No approval threshold set",
     "seeApprovals": "See approvals",
-    "spendTitle": "Spend, last {months} months",
     "spendTotal": "Total",
     "spendOrders": "Orders",
     "spend": {
       "byMonth": "By month",
       "byMember": "By buyer",
-      "byProductType": "By product type"
+      "byProductType": "By product type",
+      "byBranch": "By branch"
     },
     "spendNone": "No data yet",
-    "inReview": "Our finance team is reviewing your documents, usually within 1–2 business days. Meanwhile you can order and pay in advance."
+    "inReview": "Our finance team is reviewing your documents, usually within 1–2 business days. Meanwhile you can order and pay in advance.",
+    "spendRange": "Orders {from} – {to}",
+    "spendNet": "Before VAT"
   },
   "apply": {
     "title": "Open a company account",
@@ -300,9 +302,13 @@
     "approved": "{request} approved",
     "rejected": "{request} rejected",
     "failed": "That didn't work. Please try again.",
-    "decidedUnavailable": "Decided requests cannot be shown yet — only those waiting for approval",
     "metaShort": "Requested by {name} on {date}",
-    "poOnly": "PO {po}"
+    "poOnly": "PO {po}",
+    "orders": "{count, plural, one {# order} other {# orders}}",
+    "branch": "Branch {name}",
+    "over": "Over {amount}",
+    "expires": "Lapses {date}",
+    "decidedBy": "Decided by {name} on {date}"
   },
   "credit": {
     "title": "Credit & statements",
@@ -331,11 +337,11 @@
     "basis": "Based on",
     "bases": {
       "paid_orders": "Order history",
-      "financial_review": "Financial statements"
+      "financial_statement": "Financial statement"
     },
     "basisHints": {
-      "paid_orders": "3 or more paid orders",
-      "financial_review": "Attach the latest year's statements"
+      "paid_orders": "{needed} or more orders placed and paid",
+      "financial_statement": "Attach the latest financial statement; Finance reviews it first"
     },
     "statementDrop": "Drop the financial statements here",
     "browse": "or choose a file",
@@ -352,8 +358,7 @@
     "failed": "That didn't work. Please try again.",
     "errors": {
       "limit": "Enter the limit in whole baht, at least 1,000",
-      "statement": "Please attach the financial statements",
-      "term": "Please give the term as a number of days"
+      "statement": "Please attach the financial statements"
     },
     "statements": "Monthly statements",
     "aging": {
@@ -372,10 +377,13 @@
       "overdue": "Overdue"
     },
     "download": "Get download link",
-    "open": "Open file",
+    "open": "Open",
     "blockedShort": "The company has overdue amounts; you can order and pay in advance as usual (D-122)",
     "statementMetaShort": "Invoiced {invoiced} · paid {paid} · outstanding {balance}",
-    "termHint": "Days, e.g. 30"
+    "statementOnFile": "A financial statement is already on file",
+    "note": "Note to Finance (optional)",
+    "owedTitle": "Owed as of {date}",
+    "nextDueTerm": "Next due"
   },
   "reorder": {
     "title": "Bulk reorder",
@@ -396,7 +404,6 @@
     "columns": {
       "line": "Line",
       "order": "Order",
-      "product": "Product",
       "quantity": "Quantity",
       "amount": "Today's price",
       "status": "Check"
@@ -404,7 +411,17 @@
     "ok": "Ready",
     "total": "Total {amount}",
     "add": "Add {count} to the cart",
-    "failed": "That didn't work. Please try again."
+    "failed": "That didn't work. Please try again.",
+    "proofSkipped": "Approved artwork carries over",
+    "holds": "These prices hold until {date}",
+    "cartRefused": "The cart refused {count, plural, one {# row} other {# rows}}; the others are in it",
+    "toCart": "Go to the cart",
+    "refused": "This row cannot be reordered",
+    "reasons": {
+      "orders_not_found": "No such order in this company",
+      "orders_reorder_unavailable": "This order cannot be reordered",
+      "validation_failed": "The quantity is not valid"
+    }
   },
   "settings": {
     "title": "Company settings",

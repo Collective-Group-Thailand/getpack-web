@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Bulk reorder from a CSV (F3 3.7, D-153). */
 export default async function Page() {
-  await requireMember();
+  const company = await requireMember();
   const t = await getTranslations("business.reorder");
   return (
     <div className="flex flex-col gap-6">
@@ -19,7 +19,7 @@ export default async function Page() {
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
-      <BulkReorder />
+      <BulkReorder companyId={company.id} />
     </div>
   );
 }

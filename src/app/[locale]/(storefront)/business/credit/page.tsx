@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { getStatement } from "@/features/customer/business/api.server";
+import { getIssuedStatements } from "@/features/customer/business/api.server";
 import { CreditApplication, StatementLink } from "@/features/customer/business/CreditPanel";
 import { requireMember } from "@/features/customer/business/guard.server";
 import { getFormat } from "@/features/shared/format/server";
@@ -13,40 +13,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title"), robots: { index: false, follow: false } };
 }
 
-/** The last `count` calendar months in Bangkok, newest first, as `YYYY-MM`. */
-function recentMonths(count: number): string[] {
-  const [year, month] = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Bangkok",
-    year: "numeric",
-    month: "2-digit",
-  })
-    .format(new Date())
-    .split("-")
-    .map(Number) as [number, number];
-  return Array.from({ length: count }, (_, back) => {
-    const index = year * 12 + (month - 1) - back;
-    return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, "0")}`;
-  });
-}
-
 /**
- * Credit and monthly statements (F3 3.7; D-121, D-125).
- *
- * CONTRACT-GAP store.company-credit — there is no list of issued statements, their due dates or
- * status, and no aging or receivables summary: the page reads the last three months one by one.
+ * Credit and monthly statements (F3 3.7; D-121, D-122, D-125): the limit, what is open and overdue
+ * by age (`store.companyCredit.receivables`), applying for credit, and the statements issued so far
+ * (`store.companyCredit.listStatements`) with their PDFs.
  */
 export default async function Page() {
   const company = await requireMember();
-  const months = recentMonths(3);
   const [t, format, statements] = await Promise.all([
     getTranslations("business.credit"),
     getFormat(),
-    company.can.viewFinance ? Promise.all(months.map((month) => getStatement(company.id, month))) : Promise.resolve([]),
+    company.can.viewFinance ? getIssuedStatements(company.id) : Promise.resolve(null),
   ]);
+  const { receivables } = company;
   const credit = company.credit;
   const status = credit?.creditStatus ?? company.creditStatus;
   const hasCredit = status === "credit" || status === "blocked_overdue";
-  const issued = statements.filter((statement): statement is NonNullable<typeof statement> => statement !== null);
+  const issued = statements ?? [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -76,19 +59,46 @@ export default async function Page() {
               : []),
           ]}
         />
-        {status === "blocked_overdue" ? (
+        {status === "blocked_overdue" || receivables?.creditOrdersBlocked ? (
           <Callout tone="danger" className="mt-4" title={t("blockedTitle")}>
-            {t("blockedShort")}
+            {receivables?.oldestOverdueDays
+              ? t("blocked", {
+                  amount: format.thb(receivables.overdueAmount),
+                  days: receivables.oldestOverdueDays,
+                })
+              : t("blockedShort")}
           </Callout>
         ) : null}
       </section>
+
+      {receivables ? (
+        <section aria-labelledby="credit-aging">
+          <h2 id="credit-aging" className="text-lg font-semibold">
+            {t("owedTitle", { date: format.date(receivables.asOf) })}
+          </h2>
+          <DescriptionList
+            className="mt-3"
+            items={[
+              { term: t("open"), description: format.thb(receivables.openAmount) },
+              { term: t("aging.current"), description: format.thb(receivables.aging.current) },
+              { term: t("aging.days1to30"), description: format.thb(receivables.aging.d1_30) },
+              { term: t("aging.days31to60"), description: format.thb(receivables.aging.d31_60) },
+              { term: t("aging.days61to90"), description: format.thb(receivables.aging.d61_90) },
+              { term: t("aging.over90"), description: format.thb(receivables.aging.over_90) },
+              ...(receivables.nextDueAt
+                ? [{ term: t("nextDueTerm"), description: format.dateTime(receivables.nextDueAt) }]
+                : []),
+            ]}
+          />
+        </section>
+      ) : null}
 
       {!hasCredit && company.can.viewFinance && company.status === "active" ? (
         <section aria-labelledby="credit-apply">
           <h2 id="credit-apply" className="mb-3 text-lg font-semibold">
             {t("applyTitle")}
           </h2>
-          <CreditApplication credit={credit} />
+          <CreditApplication companyId={company.id} credit={credit} />
         </section>
       ) : null}
 
@@ -110,9 +120,9 @@ export default async function Page() {
                     <p className="font-medium">{t("period", { period: statement.month })}</p>
                     <p className="text-muted text-xs">
                       {t("statementMetaShort", {
-                        invoiced: format.thb(statement.invoiced),
-                        paid: format.thb(statement.paid),
-                        balance: format.thb(statement.closing),
+                        invoiced: format.thb(statement.invoicedAmount),
+                        paid: format.thb(statement.paidAmount),
+                        balance: format.thb(statement.closingAmount),
                       })}
                     </p>
                   </div>

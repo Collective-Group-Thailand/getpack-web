@@ -6,10 +6,11 @@ import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
-import type { Company } from "./api.server";
-import type { getSpend } from "./api.server";
+import type { Schemas } from "@/lib/api/types";
 
-type Spend = NonNullable<Awaited<ReturnType<typeof getSpend>>>;
+import type { Company } from "./api.server";
+
+type Spend = Schemas["CompanySpendDto"];
 
 const STATUS_TONE = {
   applied: "warning",
@@ -20,22 +21,23 @@ const STATUS_TONE = {
 } as const;
 
 /**
- * The company's overview (F3 3.7): who it is and its status, credit at a glance, what waits for
- * approval, and where the money went.
- *
- * CONTRACT-GAP store.companies — the published company has no receivables summary and no D-122
- * notices (due soon, overdue, credit blocked), so the overview shows neither.
+ * The company's overview (F3 3.7): who it is and its status, the D-122 notices (due soon, due today,
+ * overdue, credit orders blocked), credit and what it owes at a glance, what waits for approval,
+ * and where the money went (`store.companies.spend`, D-125). Every figure is the API's.
  */
 export async function BusinessDashboard({
   company,
   spend,
   pending,
   applied,
+  typeNames,
 }: {
   company: Company;
   spend: Spend | null;
   pending: number;
   applied: boolean;
+  /** Product type code → name, for the spend by type. */
+  typeNames: Record<string, string>;
 }) {
   const [t, format] = await Promise.all([getTranslations("business.dashboard"), getFormat()]);
   const roles = await getTranslations("business.members.roles");
@@ -64,8 +66,27 @@ export async function BusinessDashboard({
       {company.status === "kyc_review" || company.status === "applied" ? (
         <Callout tone="info">{t("inReview")}</Callout>
       ) : null}
+      {(company.receivables?.notices ?? []).map((notice, index) => (
+        <Callout
+          key={`${notice.code}-${notice.groupCode ?? index}`}
+          tone={notice.code === "due_soon" ? "info" : "warning"}
+          title={t(`notices.${notice.code}.title`)}
+        >
+          {t(`notices.${notice.code}.body`, {
+            group: notice.groupCode ?? "",
+            amount: format.thb(notice.amount),
+            date: format.date(notice.dueAt),
+            days: company.receivables?.oldestOverdueDays ?? 0,
+          })}
+          {company.can.viewFinance ? (
+            <Link href="/business/credit" className="ms-2 underline underline-offset-4">
+              {t("seeStatements")}
+            </Link>
+          ) : null}
+        </Callout>
+      ))}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <section aria-labelledby="dash-credit" className="border-border rounded-xl border p-5">
           <h2 id="dash-credit" className="text-muted text-sm font-medium">
             {t("credit")}
@@ -87,6 +108,24 @@ export async function BusinessDashboard({
             <p className="mt-1 text-2xl font-bold">{t(`creditStatus.${company.creditStatus}`)}</p>
           )}
         </section>
+        {company.receivables ? (
+          <section aria-labelledby="dash-owed" className="border-border rounded-xl border p-5">
+            <h2 id="dash-owed" className="text-muted text-sm font-medium">
+              {t("owed")}
+            </h2>
+            <p className="mt-1 text-2xl font-bold tabular-nums">{format.thb(company.receivables.openAmount)}</p>
+            <p className="text-muted text-sm">
+              {company.receivables.overdueAmount !== "0.00"
+                ? t("overdue", {
+                    amount: format.thb(company.receivables.overdueAmount),
+                    days: company.receivables.oldestOverdueDays ?? 0,
+                  })
+                : company.receivables.nextDueAt
+                  ? t("nextDue", { date: format.date(company.receivables.nextDueAt) })
+                  : t("nothingDue")}
+            </p>
+          </section>
+        ) : null}
         <section aria-labelledby="dash-approvals" className="border-border rounded-xl border p-5">
           <h2 id="dash-approvals" className="text-muted text-sm font-medium">
             {t("approvals")}
@@ -109,20 +148,31 @@ export async function BusinessDashboard({
       {spend ? (
         <section aria-labelledby="dash-spend" className="flex flex-col gap-4">
           <h2 id="dash-spend" className="text-lg font-semibold">
-            {t("spendTitle", { months: spend.months })}
+            {t("spendRange", { from: format.date(spend.from), to: format.date(spend.to) })}
           </h2>
           <DescriptionList
             items={[
-              { term: t("spendTotal"), description: format.thb(spend.total) },
-              { term: t("spendOrders"), description: format.number(spend.ordersCount) },
+              { term: t("spendTotal"), description: format.thb(spend.total.grossAmount) },
+              { term: t("spendNet"), description: format.thb(spend.total.netAmount) },
+              { term: t("spendOrders"), description: format.number(spend.total.orders) },
             ]}
           />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-2">
             {(
               [
-                ["byMonth", spend.byMonth.map((row) => ({ label: row.month, amount: row.amount }))],
-                ["byMember", spend.byMember.map((row) => ({ label: row.name, amount: row.amount }))],
-                ["byProductType", spend.byProductType.map((row) => ({ label: row.name, amount: row.amount }))],
+                ["byMonth", spend.byMonth.map((row) => ({ label: row.month, amount: row.grossAmount }))],
+                ["byMember", spend.byMember.map((row) => ({ label: row.user.displayName, amount: row.grossAmount }))],
+                [
+                  "byBranch",
+                  spend.byBranch.map((row) => ({ label: row.name ?? row.branchCode ?? "—", amount: row.grossAmount })),
+                ],
+                [
+                  "byProductType",
+                  spend.byProductType.map((row) => ({
+                    label: typeNames[row.productTypeCode] ?? row.productTypeCode,
+                    amount: row.grossAmount,
+                  })),
+                ],
               ] as const
             ).map(([key, rows]) => (
               <table key={key} className="w-full text-sm">
