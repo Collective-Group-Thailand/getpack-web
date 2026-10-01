@@ -41,7 +41,10 @@ describe("partner sign-in", () => {
     expect(me.roles).toEqual(["factory_operator"]);
     // packio-api's factory-scope grants for the role (`pnpm gen:rbac`, triage `partner.permissions`).
     expect([...me.permissions].sort()).toEqual([...FACTORY_ROLE_GRANTS.factory_operator!].sort());
-    expect(me.factories).toEqual([{ factoryId: F001, roles: ["factory_operator"] }]);
+    // `partner.me.get` names the factory (U-B0.3, `partner.factory-name`).
+    expect(me.factories).toEqual([
+      { factoryId: F001, code: "F001", name: expect.any(String), roles: ["factory_operator"] },
+    ]);
   });
 });
 
@@ -56,7 +59,13 @@ describe("the partner surface's scope rules", () => {
       });
     }
     await expect(
-      requestsAs("owner").call("GET /v1/partner/factories/{factoryId}/change-requests", { path: { factoryId: F006 } }),
+      partner("owner").GET("/v1/partner/factories/{factoryId}/change-requests", {
+        params: { path: { factoryId: F006 } },
+      }),
+    ).rejects.toMatchObject({ status: 404 });
+    // Token-scoped paths take a factory as an optional filter: another factory's is a 404 too.
+    await expect(
+      partner("owner").GET("/v1/partner/billing-statements", { params: { query: { factoryId: F006 } } }),
     ).rejects.toMatchObject({ status: 404 });
   });
 
@@ -399,111 +408,188 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
 
 describe("the factory's money and account (F001, F5 5.3)", () => {
   const path = { factoryId: F001 };
+  const key = (name: string) => ({ "Idempotency-Key": `00000000-0000-4000-8000-${name.padStart(12, "0")}` });
 
-  it("confirms a statement once, then takes the factory's own tax invoice", async () => {
-    const floor = requestsAs("accountant");
-    const { data } = await floor.call("GET /v1/partner/factories/{factoryId}/billing-statements", { path });
-    const open = data.find((item) => item.status === "sent")!;
+  it("disputes and confirms a statement once, then takes the factory's own tax invoice with its amounts", async () => {
+    const api = partner("accountant");
+    const { data } = await api.GET("/v1/partner/billing-statements", {});
+    const open = data!.data.find((item) => item.status === "sent")!;
     expect(open).toBeDefined();
-    const confirm = () =>
-      floor.call("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm", {
-        path: { ...path, statementId: open.id },
-        body: {},
-        idempotencyKey: "k-bs-confirm",
+    expect(open.nextActions.map((action) => action.key)).toEqual([
+      "billing_statement.confirm",
+      "billing_statement.dispute",
+      "billing_statement.submit_tax_invoice",
+    ]);
+    expect(open.nextActions[0]).toMatchObject({ irreversible: true, disabledReason: null });
+    // A dispute names its lines (U-B0.3) — one not on the statement is refused — and a disputed
+    // statement can still be confirmed (D-090).
+    const dispute = (lineNos: number[], name: string) =>
+      api.POST("/v1/partner/billing-statements/{statementId}/actions/dispute", {
+        params: { path: { statementId: open.id }, header: key(name) },
+        body: { note: "ค่าขนส่งไม่ถูกต้อง", lineNos },
       });
+    await expect(dispute([open.lines.length + 1], "bd0")).rejects.toMatchObject({ status: 422 });
+    const named = open.lines.slice(0, 1).map((line) => line.lineNo);
+    const disputed = (await dispute(named, "bd1")).data!;
+    expect(disputed).toMatchObject({ status: "disputed", disputedLineNos: named });
+    const confirm = async () =>
+      (
+        await api.POST("/v1/partner/billing-statements/{statementId}/actions/confirm", {
+          params: { path: { statementId: open.id }, header: key("bc1") },
+        })
+      ).data!;
     const confirmed = await confirm();
     expect(confirmed.status).toBe("confirmed");
+    expect(confirmed.confirmedBy?.displayName).toBeTruthy();
     expect((await confirm()).confirmedAt).toBe(confirmed.confirmedAt);
-    expect(confirmed.nextActions).toEqual(["submit_tax_invoice"]);
+    expect(confirmed.nextActions.map((action) => action.key)).toEqual(["billing_statement.submit_tax_invoice"]);
 
-    const invoice = (sellerTaxId: string, key: string) =>
-      floor.call("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices", {
-        path: { ...path, statementId: open.id },
+    const factory = (await api.GET("/v1/partner/factories/{factoryId}", { params: { path } })).data!;
+    const invoice = (netAmount: string, name: string) =>
+      api.POST("/v1/partner/billing-statements/{statementId}/tax-invoices", {
+        params: { path: { statementId: open.id }, header: key(name) },
         body: {
-          invoiceNo: "INV-TEST-1",
+          vendorInvoiceNo: "INV-TEST-1",
           invoiceDate: "2026-09-27",
-          sellerTaxId,
+          sellerTaxId: factory.taxId,
           sellerBranchCode: "00000",
+          netAmount,
+          vatAmount: "70.00",
           source: "e_tax",
-          eTaxReference: "ETAX-0001",
         },
-        idempotencyKey: key,
       });
-    await expect(invoice("0105555555554", "k-inv-bad")).rejects.toMatchObject({ status: 422 });
-    const factory = (await partner("accountant").GET("/v1/partner/factories/{factoryId}", { params: { path } })).data!;
-    const withInvoice = await invoice(factory.taxId, "k-inv-good");
-    expect(withInvoice.taxInvoiceStatus).toBe("submitted");
-    expect(withInvoice.inputVatStatus).toBe("pending_document");
-
-    const account = await floor.call("GET /v1/partner/factories/{factoryId}/statement-of-account", { path, query: {} });
-    expect(account.entries.some((entry) => entry.reference === open.bsNumber)).toBe(true);
+    // The factory keys its own amounts as decimal strings; the format is checked, never computed.
+    await expect(invoice("1000", "bi1")).rejects.toMatchObject({ status: 422 });
+    const recorded = (await invoice("1000.00", "bi2")).data!;
+    expect(recorded).toMatchObject({
+      status: "recorded",
+      netAmount: "1000.00",
+      vatAmount: "70.00",
+      grossAmount: "1070.00",
+    });
+    const after = (
+      await api.GET("/v1/partner/billing-statements/{statementId}", { params: { path: { statementId: open.id } } })
+    ).data!;
+    expect(after.taxInvoiceStatus).toBe("recorded");
+    expect(after.nextActions).toEqual([]);
+    await expect(invoice("1000.00", "bi3")).rejects.toMatchObject({ status: 409, code: "payables.invoice_duplicate" });
   });
 
   it("schedules each job's payouts by the payout policy (D-022, D-164) and documents paid ones", async () => {
-    const floor = requestsAs("owner");
-    const schedule = await floor.call("GET /v1/partner/factories/{factoryId}/payout-schedule", { path });
+    const api = partner("owner");
+    const schedule = (await api.GET("/v1/partner/factories/{factoryId}/payout-schedule", { params: { path } })).data!
+      .data;
     const job = schedule[0]!;
-    expect(job.items.map((item) => [item.kind, item.pct])).toEqual([
-      ["advance", "30.0000"],
-      ["balance", "65.0000"],
-      ["retention", "5.0000"],
-    ]);
-    const { data: paid } = await floor.call("GET /v1/partner/factories/{factoryId}/payouts", { path });
+    expect(job.terms).toMatchObject({ advancePct: "30.0000", retentionPct: "5.0000" });
+    expect(job.items[0]!.source).toBe("advance");
+    const paid = (await api.GET("/v1/partner/factories/{factoryId}/payouts", { params: { path } })).data!;
+    expect(Array.isArray(paid)).toBe(true);
     expect(paid.length).toBeGreaterThan(0);
-    const detail = await floor.call("GET /v1/partner/factories/{factoryId}/payouts/{payoutId}", {
-      path: { ...path, payoutId: paid[0]!.id },
-    });
-    expect(detail.whtCertificate?.url).toMatch(/^data:application\/pdf/);
+    const detail = (
+      await api.GET("/v1/partner/factories/{factoryId}/payouts/{payoutId}", {
+        params: { path: { ...path, payoutId: paid[0]!.id } },
+      })
+    ).data!;
+    expect(detail.allocations.length).toBeGreaterThan(0);
+    const documents = (
+      await api.GET("/v1/partner/factories/{factoryId}/payouts/{payoutId}/documents", {
+        params: { path: { ...path, payoutId: paid[0]!.id } },
+      })
+    ).data!;
+    expect(documents.whtCertificates[0]?.download?.url).toMatch(/^data:application\/pdf/);
+    const account = (await api.GET("/v1/partner/factories/{factoryId}/statement-of-account", { params: { path } }))
+      .data!;
+    expect(account.entries.some((entry) => entry.reference === detail.pvNumber)).toBe(true);
   });
 
-  it("answers a claim back to the claims desk, and keeps users and prices to their roles", async () => {
-    const owner = requestsAs("owner");
-    const { data } = await owner.call("GET /v1/partner/factories/{factoryId}/claims", { path });
-    const waiting = data.find((item) => item.responseDueAt)!;
-    const answered = await owner.call("POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond", {
-      path: { ...path, claimId: waiting.id },
-      body: { response: "disputed", note: "ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ" },
-      idempotencyKey: "k-claim-1",
-    });
-    expect(answered.factoryResponse).toBe("disputed");
-    expect(answered.status).toBe("under_review");
+  it("answers a claim back to the claims desk, and keeps users to their roles", async () => {
+    const owner = partner("owner");
+    const { data } = await owner.GET("/v1/partner/claims", {});
+    const waiting = data!.data.find((item) => item.nextActions.some((action) => action.key === "claim.respond"))!;
+    expect(waiting).toBeDefined();
+    const answered = (
+      await owner.POST("/v1/partner/claims/{claimId}/actions/respond", {
+        params: { path: { claimId: waiting.id }, header: key("cr1") },
+        body: { response: "disputed", note: "ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ" },
+      })
+    ).data!;
+    expect(answered).toMatchObject({ factoryResponse: "disputed", status: "under_review", nextActions: [] });
+    const desk = (
+      await staff("cs_lead").GET("/v1/admin/claims/{claimId}", { params: { path: { claimId: waiting.id } } })
+    ).data!;
+    expect(desk.factoryResponseNote).toBe("ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ");
 
     await expect(
-      requestsAs("operator").call("GET /v1/partner/factories/{factoryId}/users", { path }),
-    ).rejects.toMatchObject({
-      status: 403,
-    });
-    await expect(
-      requestsAs("operator").call("GET /v1/partner/factories/{factoryId}/billing-statements", { path }),
+      partner("operator").GET("/v1/partner/factories/{factoryId}/users", { params: { path } }),
     ).rejects.toMatchObject({ status: 403 });
-    const users = await owner.call("GET /v1/partner/factories/{factoryId}/users", { path });
+    await expect(partner("operator").GET("/v1/partner/billing-statements", {})).rejects.toMatchObject({ status: 403 });
+    const users = (await owner.GET("/v1/partner/factories/{factoryId}/users", { params: { path } })).data!;
     const self = users.find((user) => user.isSelf)!;
     await expect(
-      owner.call("PATCH /v1/partner/factories/{factoryId}/users/{userId}", {
-        path: { ...path, userId: self.id },
+      owner.PUT("/v1/partner/factories/{factoryId}/users/{userId}/roles", {
+        params: { path: { ...path, userId: self.id } },
         body: { roles: ["factory_planner"] },
       }),
-    ).rejects.toMatchObject({ status: 409 });
-    const invited = await owner.call("POST /v1/partner/factories/{factoryId}/users", {
-      path,
-      body: { email: "new.qc@factory.invalid", displayName: "ฝ่าย QC ใหม่", roles: ["factory_qc"] },
+    ).rejects.toMatchObject({ status: 403, code: "iam.self_grant" });
+    await expect(
+      owner.POST("/v1/partner/factories/{factoryId}/users", {
+        params: { path },
+        body: {
+          email: "new.owner@factory.invalid",
+          displayName: "เจ้าของใหม่",
+          initialPassword: "a-long-first-password",
+          roles: ["factory_owner" as never],
+        },
+      }),
+    ).rejects.toMatchObject({ status: 422, code: "factory_users.role_not_allowed" });
+    const created = (
+      await owner.POST("/v1/partner/factories/{factoryId}/users", {
+        params: { path },
+        body: {
+          email: "new.qc@factory.invalid",
+          displayName: "ฝ่าย QC ใหม่",
+          initialPassword: "a-long-first-password",
+          roles: ["factory_qc"],
+        },
+      })
+    ).data!;
+    expect(created).toMatchObject({ status: "active", roles: ["factory_qc"], isSelf: false });
+    expect(JSON.stringify(created)).not.toContain("a-long-first-password");
+    await owner.POST("/v1/partner/factories/{factoryId}/users/{userId}/actions/deactivate", {
+      params: { path: { ...path, userId: created.id } },
     });
-    expect(invited.status).toBe("invited");
+    const deactivated = (
+      await owner.GET("/v1/partner/factories/{factoryId}/users", {
+        params: { path, query: { status: "deactivated" } },
+      })
+    ).data!;
+    expect(deactivated.map((user) => user.id)).toContain(created.id);
+    // Setting roles reactivates (U-B0.3).
+    const back = (
+      await owner.PUT("/v1/partner/factories/{factoryId}/users/{userId}/roles", {
+        params: { path: { ...path, userId: created.id } },
+        body: { roles: ["factory_qc", "factory_shipping"] },
+      })
+    ).data!;
+    expect(back).toMatchObject({ status: "active", roles: ["factory_qc", "factory_shipping"] });
   });
 
-  it("keeps a locked notification on", async () => {
-    const me = requestsAs("owner");
-    const saved = await me.call("PUT /v1/partner/me/notification-preferences", {
-      body: {
-        preferences: [
-          { category: "jobs", channel: "email", enabled: false },
-          { category: "prices", channel: "email", enabled: false },
-        ],
-      },
-    });
-    const row = (category: string) =>
-      saved.preferences.find((item) => item.category === category && item.channel === "email")!;
-    expect(row("jobs").enabled).toBe(true);
-    expect(row("prices").enabled).toBe(false);
+  it("keeps a locked notification on (D-231)", async () => {
+    const me = partner("owner");
+    await expect(
+      me.PUT("/v1/partner/me/notification-preferences", {
+        body: { preferences: [{ category: "transactional", channel: "email", enabled: false }] },
+      }),
+    ).rejects.toMatchObject({ status: 422 });
+    const saved = (
+      await me.PUT("/v1/partner/me/notification-preferences", {
+        body: { preferences: [{ category: "transactional", channel: "line", enabled: false }] },
+      })
+    ).data!;
+    const row = (category: string, channel: string) =>
+      saved.preferences.find((item) => item.category === category && item.channel === channel)!;
+    expect(row("transactional", "email")).toMatchObject({ enabled: true, locked: true });
+    expect(row("transactional", "line")).toMatchObject({ enabled: false, locked: false });
+    expect(row("security", "web_push").locked).toBe(true);
   });
 });
