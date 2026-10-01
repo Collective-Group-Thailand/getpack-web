@@ -30,3 +30,6 @@ storybook-static/
 
 # Lighthouse CI run output (reports are uploaded as a CI artifact instead)
 .lighthouseci/
+
+# U-F0.5: accounts the integration setup provisions on the local packio-api
+e2e/integration/.state/
