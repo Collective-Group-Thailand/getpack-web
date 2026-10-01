@@ -75,7 +75,9 @@ export default async function ShipPage({ searchParams }: Props) {
                         .map((destination) => (
                           <li key={destination.id} className="border-border rounded-lg border p-3">
                             <p className="font-medium">{destination.recipientName}</p>
-                            <p className="text-muted text-sm">{addressLine(destination)}</p>
+                            <p className="text-muted text-sm">
+                              {addressLine({ ...destination, line1: destination.address })}
+                            </p>
                             <p className="mb-3 text-sm">
                               {t("plan.left", {
                                 left: format.number(destination.quantity - destination.shippedQuantity),

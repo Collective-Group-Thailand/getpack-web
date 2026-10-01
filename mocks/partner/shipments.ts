@@ -80,8 +80,8 @@ function rowOf(shipment: Shipment): Row | null {
     id: shaped.id,
     recipientName: shaped.recipientName,
     phone: shaped.phone,
-    address: shaped.address,
-    province: shaped.province,
+    address: shaped.line1,
+    province: shaped.provinceNameTh,
     postcode: shaped.postcode,
   };
   return {
@@ -197,7 +197,11 @@ export const shipmentRequestHandlers = [
           productType: order.productType,
           quantityGood: last ?? order.quantity,
           promisedShipDate: job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso().slice(0, 10),
-          destinations: destinationsOf(order),
+          destinations: destinationsOf(order).map((item) => ({
+            ...item,
+            address: item.line1,
+            province: item.provinceNameTh,
+          })),
           blockedReason: inspectionHold(job.id)
             ? "inspection_pending"
             : blockedByPayment(order)

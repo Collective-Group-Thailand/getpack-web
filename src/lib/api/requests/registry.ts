@@ -17,7 +17,6 @@ import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
 import { partnerAccountRequests } from "./partner-account";
 import { partnerBillingRequests } from "./partner-billing";
-import { partnerJobRequests } from "./partner-jobs";
 import { partnerOnboardingRequests } from "./partner-onboarding";
 import { partnerShipmentRequests } from "./partner-shipments";
 import { storeFulfilmentRequests } from "./store-fulfilment";
@@ -50,7 +49,6 @@ export const REQUESTS = {
   ...storeBusinessRequests,
   ...storeDesignRequests,
   ...partnerOnboardingRequests,
-  ...partnerJobRequests,
   ...partnerShipmentRequests,
   ...partnerBillingRequests,
   ...partnerAccountRequests,
