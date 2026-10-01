@@ -112,6 +112,7 @@ export default async function PartnerHomePage() {
       title: t("tasks.statement", { no: statement.bsNumber }),
       body: t("tasks.statementBody"),
     });
+  // The ones the API offers the factory an answer on (`claim.respond`).
   for (const claim of (claims?.data?.data ?? []).filter((item) =>
     item.nextActions.some((action) => action.key === "claim.respond"),
   ))

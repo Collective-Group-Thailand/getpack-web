@@ -18,7 +18,6 @@
       "pricing_arrangement": "Pricing arrangement",
       "payout_policy": "Payout policy",
       "site_visit": "Site visit",
-      "profile": "Company details",
       "other": "Something else"
     },
     "productType": "Product type",
@@ -30,6 +29,9 @@
     "dateRequired": "Pick at least one day",
     "send": "Send request",
     "sent": "Request sent — the Partner team will answer",
-    "failed": "Could not send the request"
-  }
+    "failed": "Could not send the request",
+    "aboutType": "[{type}] {message}",
+    "ownerOnly": "The factory owner sends requests to the Partner team"
+  },
+  "answeredBy": "Answered by {by} on {date}"
 }

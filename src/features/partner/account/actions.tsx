@@ -8,17 +8,15 @@ import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { useRefresh } from "@/features/partner/client";
 import { uploadPhotos } from "@/features/partner/floor";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { usePushSubscription } from "@/lib/push";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { Select } from "@/ui/components/Select";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
@@ -26,21 +24,23 @@ import { toast } from "@/ui/components/Toast";
 /* -------------------------------------------------------------------------------- claims */
 
 /**
- * The factory's answer to a claim that names it (D-083): accept it, or dispute it with what
- * happened and its own photos. The claim goes back to Packio's claims desk either way.
+ * The factory's answer to a claim that names it (D-083, `partner.claims.respond`): accept it, or
+ * dispute it with what happened and its own photos (uploaded first, then named by id). The note is
+ * optional to the API; a dispute asks for one, since Packio decides on it. The claim goes back to
+ * Packio's claims desk either way.
  */
 export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: string }) {
   const t = useTranslations("partnerAccount.claims.respond");
   const tCamera = useTranslations("partnerJobs.camera");
   const tCommon = useTranslations("common");
-  const { factoryId, can } = useFactory();
+  const { factoryId } = useFactory();
   const [refresh] = useRefresh();
-  const [response, setResponse] = useState<"accepted" | "disputed">("accepted");
+  const [response, setResponse] = useState<Schemas["FactoryClaimResponse"]>("accepted");
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  if (!can("factory_claims.respond")) return <p className="text-muted">{t("ownerOnly")}</p>;
+  const disputing = response === "disputed";
 
   return (
     <div className="flex flex-col gap-4">
@@ -56,14 +56,14 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
       />
       <Field
         label={t("note")}
-        hint={response === "disputed" ? t("disputeHint") : t("acceptHint")}
-        required
+        hint={disputing ? t("disputeHint") : t("acceptHint")}
+        required={disputing}
         requiredLabel={tCommon("state.required")}
         error={error ?? undefined}
       >
         <Textarea rows={4} value={note} maxLength={2000} onChange={(event) => setNote(event.target.value)} />
       </Field>
-      {response === "disputed" ? (
+      {disputing ? (
         <Field label={t("photos")}>
           <CameraCapture
             photos={photos}
@@ -82,7 +82,9 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
       <Button
         size="xl"
         iconStart="send"
-        onClick={() => (note.trim().length < 3 ? setError(t("noteRequired")) : (setError(null), setOpen(true)))}
+        onClick={() =>
+          disputing && note.trim().length < 3 ? setError(t("noteRequired")) : (setError(null), setOpen(true))
+        }
         className="self-start"
       >
         {t("send")}
@@ -90,17 +92,20 @@ export function RespondClaim({ claimId, claimNo }: { claimId: string; claimNo: s
       <ConfirmAction
         open={open}
         onOpenChange={setOpen}
-        tone={response === "accepted" ? "primary" : "destructive"}
-        title={t(response === "accepted" ? "acceptTitle" : "disputeTitle", { no: claimNo })}
-        description={t(response === "accepted" ? "acceptBody" : "disputeBody", { no: claimNo })}
+        tone={disputing ? "destructive" : "primary"}
+        title={t(disputing ? "disputeTitle" : "acceptTitle", { no: claimNo })}
+        description={t(disputing ? "disputeBody" : "acceptBody", { no: claimNo })}
         confirmLabel={t("send")}
         onConfirm={async ({ idempotencyKey }) => {
           try {
-            const evidenceFileIds = photos.length ? await uploadPhotos(photos, factoryId) : [];
-            await browserRequests().call("POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond", {
-              path: { factoryId, claimId },
-              body: { response, note: note.trim(), ...(evidenceFileIds.length ? { evidenceFileIds } : {}) },
-              idempotencyKey,
+            const evidenceFileIds = disputing && photos.length ? await uploadPhotos(photos, factoryId) : [];
+            await browserApi().POST("/v1/partner/claims/{claimId}/actions/respond", {
+              params: { path: { claimId }, header: { "Idempotency-Key": idempotencyKey } },
+              body: {
+                response,
+                ...(note.trim() ? { note: note.trim() } : {}),
+                ...(evidenceFileIds.length ? { evidenceFileIds } : {}),
+              },
             });
             toast.success(t("done", { no: claimNo }));
             refresh();
@@ -121,7 +126,7 @@ const Chart = dynamic(() => import("@/ui/components/Chart").then((module) => mod
   loading: () => <Skeleton className="h-64 w-full" />,
 });
 
-type Scorecard = ResponseOf<Requests, "GET /v1/partner/factories/{factoryId}/scorecards">[number];
+type Scorecard = Schemas["ScorecardDto"];
 
 /** The scorecard's months as a line chart with its data table (D-155), loaded on demand. */
 export function ScoreChart({ months, monthLabels }: { months: Scorecard[]; monthLabels: Record<string, string> }) {
@@ -155,152 +160,238 @@ export function ScoreChart({ months, monthLabels }: { months: Scorecard[]; month
 
 /* ------------------------------------------------------------------------------ settings */
 
-const ROLES = [
-  "factory_owner",
+/** The roles an owner may give (`FactoryStaffRole`): never the owner role, which Packio grants (D-171). */
+const STAFF_ROLES = [
   "factory_planner",
   "factory_operator",
   "factory_qc",
   "factory_shipping",
   "factory_accountant",
-] as const;
-type Role = (typeof ROLES)[number];
-type User = ResponseOf<Requests, "GET /v1/partner/factories/{factoryId}/users">[number];
+] as const satisfies readonly Schemas["FactoryStaffRole"][];
+type StaffRole = (typeof STAFF_ROLES)[number];
+type User = Schemas["FactoryUserDto"];
 
-/** Invite someone to act for the factory, with the roles they need (D-140, Owner only). */
-export function InviteUser() {
+function RolePicker({ roles, onChange }: { roles: StaffRole[]; onChange: (roles: StaffRole[]) => void }) {
   const t = useTranslations("partnerAccount.users");
   const tRoles = useTranslations("partner.shell.roles");
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="font-medium">{t("roles")}</legend>
+      {STAFF_ROLES.map((role) => (
+        <Checkbox
+          key={role}
+          label={tRoles(role)}
+          description={t(`roleHints.${role}`)}
+          checked={roles.includes(role)}
+          onCheckedChange={(checked) => onChange(checked ? [...roles, role] : roles.filter((item) => item !== role))}
+        />
+      ))}
+    </fieldset>
+  );
+}
+
+/**
+ * Add someone who acts for the factory (D-140, Owner only, `partner.factoryUsers.create`). There is
+ * no invitation e-mail: the owner sets a first password and hands it over in person or by phone, and
+ * the person changes it at first sign-in. The password is never shown back, kept or logged.
+ */
+export function CreateUser() {
+  const t = useTranslations("partnerAccount.users");
   const tCommon = useTranslations("common");
   const { factoryId } = useFactory();
   const [refresh] = useRefresh();
-  const [value, setValue] = useState({ email: "", displayName: "" });
-  const [roles, setRoles] = useState<Role[]>(["factory_operator"]);
-  const [error, setError] = useState<string | null>(null);
+  const [value, setValue] = useState({ email: "", displayName: "", initialPassword: "" });
+  const [roles, setRoles] = useState<StaffRole[]>(["factory_operator"]);
+  const [errors, setErrors] = useState<{
+    email?: string;
+    displayName?: string;
+    initialPassword?: string;
+    form?: string;
+  }>({});
   const [busy, setBusy] = useState(false);
 
-  async function invite(event: React.FormEvent) {
+  async function create(event: React.FormEvent) {
     event.preventDefault();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email)) return setError(t("emailInvalid"));
-    if (value.displayName.trim().length < 2) return setError(t("nameRequired"));
-    if (!roles.length) return setError(t("roleRequired"));
+    const next: typeof errors = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.email.trim())) next.email = t("emailInvalid");
+    if (!value.displayName.trim()) next.displayName = t("nameRequired");
+    if (value.initialPassword.length < 12) next.initialPassword = t("passwordTooShort");
+    if (!roles.length) next.form = t("roleRequired");
+    setErrors(next);
+    if (Object.keys(next).length) return;
     setBusy(true);
-    setError(null);
     try {
-      await browserRequests().call("POST /v1/partner/factories/{factoryId}/users", {
-        path: { factoryId },
-        body: { email: value.email.trim(), displayName: value.displayName.trim(), roles },
+      await browserApi().POST("/v1/partner/factories/{factoryId}/users", {
+        params: { path: { factoryId } },
+        body: {
+          email: value.email.trim(),
+          displayName: value.displayName.trim(),
+          initialPassword: value.initialPassword,
+          roles,
+        },
       });
-      setValue({ email: "", displayName: "" });
-      toast.success(t("invited"));
+      setValue({ email: "", displayName: "", initialPassword: "" });
+      toast.success(t("created"));
       refresh();
     } catch (failure) {
-      setError(problemMessage(failure, t("failed")));
+      setErrors({ form: problemMessage(failure, t("failed")) });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <form onSubmit={(event) => void invite(event)} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={(event) => void create(event)} className="flex flex-col gap-4" noValidate>
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("name")} required requiredLabel={tCommon("state.required")}>
+        <Field label={t("name")} required requiredLabel={tCommon("state.required")} error={errors.displayName}>
           <Input
             inputSize="lg"
             autoComplete="off"
+            maxLength={120}
             value={value.displayName}
             onChange={(event) => setValue({ ...value, displayName: event.target.value })}
           />
         </Field>
-        <Field label={t("email")} required requiredLabel={tCommon("state.required")} error={error ?? undefined}>
+        <Field label={t("email")} required requiredLabel={tCommon("state.required")} error={errors.email}>
           <Input
             inputSize="lg"
             type="email"
             autoComplete="off"
+            maxLength={254}
             value={value.email}
             onChange={(event) => setValue({ ...value, email: event.target.value })}
           />
         </Field>
-      </div>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="font-medium">{t("roles")}</legend>
-        {ROLES.map((role) => (
-          <Checkbox
-            key={role}
-            label={tRoles(role)}
-            description={t(`roleHints.${role}`)}
-            checked={roles.includes(role)}
-            onCheckedChange={(checked) => setRoles(checked ? [...roles, role] : roles.filter((item) => item !== role))}
+        <Field
+          label={t("password")}
+          hint={t("passwordHint")}
+          required
+          requiredLabel={tCommon("state.required")}
+          error={errors.initialPassword}
+          className="md:col-span-2"
+        >
+          <Input
+            inputSize="lg"
+            type="password"
+            autoComplete="new-password"
+            minLength={12}
+            maxLength={200}
+            value={value.initialPassword}
+            onChange={(event) => setValue({ ...value, initialPassword: event.target.value })}
           />
-        ))}
-      </fieldset>
+        </Field>
+      </div>
+      <RolePicker roles={roles} onChange={setRoles} />
+      {errors.form ? (
+        <p role="alert" className="text-danger text-sm">
+          {errors.form}
+        </p>
+      ) : null}
       <Button type="submit" size="xl" iconStart="user-plus" loading={busy} className="self-start">
-        {t("invite")}
+        {t("create")}
       </Button>
     </form>
   );
 }
 
-/** One user's roles and whether they may sign in; the owner cannot demote themselves. */
+/**
+ * One user's roles and whether they may sign in (`partner.factoryUsers.setRoles` / `deactivate`).
+ * Setting roles on a deactivated user reactivates them. The owner cannot change themselves, and
+ * owners are Packio's to manage (D-171).
+ */
 export function EditUser({ user }: { user: User }) {
   const t = useTranslations("partnerAccount.users");
-  const tRoles = useTranslations("partner.shell.roles");
   const { factoryId } = useFactory();
   const [refresh] = useRefresh();
-  const [role, setRole] = useState<Role>(user.roles[0] ?? "factory_operator");
-  const [confirm, setConfirm] = useState<"deactivated" | "active" | null>(null);
-
-  async function patch(body: { roles?: Role[]; status?: "active" | "deactivated" }, done: string) {
-    try {
-      await browserRequests().call("PATCH /v1/partner/factories/{factoryId}/users/{userId}", {
-        path: { factoryId, userId: user.id },
-        body,
-      });
-      toast.success(done);
-      refresh();
-    } catch (error) {
-      toast.error(problemMessage(error, t("failed")));
-      throw error;
-    }
-  }
+  const held = user.roles.filter((role): role is StaffRole => (STAFF_ROLES as readonly string[]).includes(role));
+  const [roles, setRoles] = useState<StaffRole[]>(held.length ? held : ["factory_operator"]);
+  const [confirm, setConfirm] = useState<"deactivate" | "reactivate" | null>(null);
+  const [busy, setBusy] = useState(false);
 
   if (user.isSelf) return <p className="text-muted text-sm">{t("self")}</p>;
+  if (user.roles.includes("factory_owner")) return <p className="text-muted text-sm">{t("ownerManaged")}</p>;
+
+  const setUserRoles = async (next: StaffRole[], done: string) => {
+    await browserApi().PUT("/v1/partner/factories/{factoryId}/users/{userId}/roles", {
+      params: { path: { factoryId, userId: user.id } },
+      body: { roles: next },
+    });
+    toast.success(done);
+    refresh();
+  };
+  const active = user.status === "active";
+
   return (
-    <div className="flex flex-wrap items-end gap-2">
-      <Field label={t("roleFor", { name: user.displayName })} className="min-w-48 flex-1">
-        <Select
-          value={role}
-          onValueChange={(next) => {
-            setRole(next);
-            void patch({ roles: [next] }, t("rolesSaved", { name: user.displayName })).catch(() => {});
-          }}
-          options={ROLES.map((key) => ({ value: key, label: tRoles(key) }))}
-        />
-      </Field>
-      <Button
-        size="lg"
-        variant="secondary"
-        onClick={() => setConfirm(user.status === "deactivated" ? "active" : "deactivated")}
-      >
-        {user.status === "deactivated" ? t("reactivate") : t("deactivate")}
-      </Button>
+    <div className="flex flex-col gap-3">
+      {active ? (
+        <>
+          <RolePicker roles={roles} onChange={setRoles} />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="lg"
+              loading={busy}
+              disabled={!roles.length}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await setUserRoles(roles, t("rolesSaved", { name: user.displayName }));
+                } catch (error) {
+                  toast.error(problemMessage(error, t("failed")));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {t("saveRoles")}
+            </Button>
+            <Button size="lg" variant="secondary" onClick={() => setConfirm("deactivate")}>
+              {t("deactivate")}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button size="lg" variant="secondary" className="self-start" onClick={() => setConfirm("reactivate")}>
+          {t("reactivate")}
+        </Button>
+      )}
       <ConfirmAction
         open={confirm !== null}
         onOpenChange={(open) => (open ? undefined : setConfirm(null))}
-        tone={confirm === "deactivated" ? "destructive" : "primary"}
-        title={t(confirm === "deactivated" ? "deactivateTitle" : "reactivateTitle", { name: user.displayName })}
-        description={t(confirm === "deactivated" ? "deactivateBody" : "reactivateBody", { name: user.displayName })}
-        confirmLabel={confirm === "deactivated" ? t("deactivate") : t("reactivate")}
-        onConfirm={() => patch({ status: confirm! }, t("statusSaved", { name: user.displayName }))}
+        tone={confirm === "deactivate" ? "destructive" : "primary"}
+        title={t(confirm === "deactivate" ? "deactivateTitle" : "reactivateTitle", { name: user.displayName })}
+        description={t(confirm === "deactivate" ? "deactivateBody" : "reactivateBody", { name: user.displayName })}
+        confirmLabel={confirm === "deactivate" ? t("deactivate") : t("reactivate")}
+        onConfirm={async () => {
+          try {
+            if (confirm === "deactivate") {
+              await browserApi().POST("/v1/partner/factories/{factoryId}/users/{userId}/actions/deactivate", {
+                params: { path: { factoryId, userId: user.id } },
+              });
+              toast.success(t("statusSaved", { name: user.displayName }));
+              refresh();
+            } else {
+              // Reactivation is setting the roles the user held when deactivated (U-B0.3).
+              await setUserRoles(roles, t("statusSaved", { name: user.displayName }));
+            }
+          } catch (error) {
+            toast.error(problemMessage(error, t("failed")));
+            throw error;
+          }
+        }}
       />
     </div>
   );
 }
 
-type Preference = ResponseOf<Requests, "GET /v1/partner/me/notification-preferences">["preferences"][number];
-const CATEGORIES = ["jobs", "shipping", "prices", "billing", "claims", "account"] as const;
-const CHANNELS = ["web_push", "line", "email"] as const;
+type Preference = Schemas["PartnerNotificationPreferenceDto"];
+const CATEGORIES = ["transactional", "security"] as const satisfies readonly Schemas["PartnerNotificationCategory"][];
+const CHANNELS = ["web_push", "line", "email"] as const satisfies readonly Schemas["PartnerNotificationChannel"][];
 
-/** Which channel each kind of factory notice arrives on (D-143); locked ones always do. */
+/**
+ * Which channel each kind of factory notice arrives on (D-143, D-231): jobs, shipments, billing and
+ * claims (transactional), and security. E-mail of transactional notices and every security notice
+ * are locked on — read-only here, and refused by the API.
+ */
 export function NotificationMatrix({ initial, lineLinked }: { initial: Preference[]; lineLinked: boolean }) {
   const t = useTranslations("partnerAccount.notifications");
   const [rows, setRows] = useState(initial);
@@ -308,16 +399,14 @@ export function NotificationMatrix({ initial, lineLinked }: { initial: Preferenc
     const next = rows.map((row) => (row.category === category && row.channel === channel ? { ...row, enabled } : row));
     setRows(next);
     try {
-      const saved = await browserRequests().call("PUT /v1/partner/me/notification-preferences", {
+      const { data } = await browserApi().PUT("/v1/partner/me/notification-preferences", {
         body: {
-          preferences: next.map(({ category: c, channel: ch, enabled: e }) => ({
-            category: c,
-            channel: ch,
-            enabled: e,
-          })),
+          preferences: next
+            .filter((row) => !row.locked)
+            .map(({ category: c, channel: ch, enabled: e }) => ({ category: c, channel: ch, enabled: e })),
         },
       });
-      setRows(saved.preferences);
+      setRows(data!.preferences);
       toast.success(t("saved"));
     } catch (error) {
       setRows(rows);
@@ -330,6 +419,7 @@ export function NotificationMatrix({ initial, lineLinked }: { initial: Preferenc
       {CATEGORIES.map((category) => (
         <fieldset key={category} className="border-border flex flex-col gap-2 rounded-lg border p-3">
           <legend className="px-1 font-medium">{t(`categories.${category}`)}</legend>
+          <p className="text-muted text-sm">{t(`categoryHints.${category}`)}</p>
           {CHANNELS.map((channel) => {
             const row = rows.find((item) => item.category === category && item.channel === channel);
             if (!row) return null;

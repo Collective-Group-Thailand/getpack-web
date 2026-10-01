@@ -154,7 +154,8 @@
       "liability": "Liability",
       "requested": "Requested",
       "window": "Window ends",
-      "submitted": "Submitted"
+      "submitted": "Submitted",
+      "customer": "Customer"
     },
     "types": {
       "damaged": "Damaged",
@@ -181,6 +182,10 @@
       "partial_refund": "Partial refund",
       "full_refund": "Full refund",
       "credit": "Credit"
+    },
+    "filters": {
+      "type": "Type",
+      "origin": "Origin"
     }
   },
   "claim": {
@@ -188,7 +193,6 @@
     "breadcrumb": "Breadcrumb",
     "claims": "Claims",
     "summary": "Order {order} · factory {factory}",
-    "resolve": "Resolve",
     "actions": {
       "review": {
         "label": "Start review",
@@ -237,7 +241,6 @@
     "cartonPhotos": "Carton photos",
     "noPhotos": "No photos",
     "liability": "Liability",
-    "override": "Override",
     "byRule": "By rule: {liability}",
     "overridden": "Changed from the rule",
     "factoryResponse": "Factory response",
@@ -284,7 +287,49 @@
     "needOverrideReason": "Give a reason of at least 10 characters",
     "reproduceQuantity": "Pieces to re-produce",
     "optional": "Optional",
-    "needQuantity": "Enter a quantity"
+    "needQuantity": "Enter a quantity",
+    "verbs": {
+      "review": "Start review",
+      "request_info": "Ask for more",
+      "send_to_factory": "Send to the factory",
+      "override_liability": "Change liability",
+      "approve": "Approve claim",
+      "reject": "Reject",
+      "resolve": "Resolve",
+      "close": "Close claim"
+    },
+    "customer": "Customer",
+    "approvedProof": "Proof the customer approved",
+    "approvedProofBody": "Version {version}",
+    "approvedFile": "Approved file",
+    "channels": {
+      "web": "Approved on the web",
+      "line_liff": "Approved on LINE",
+      "cs_on_behalf": "Approved by CS on their behalf"
+    },
+    "rules": {
+      "factory_production": "Rule: wrong spec or print defect — the factory",
+      "factory_short_delivery": "Rule: short beyond tolerance — the factory",
+      "factory_fleet_transit": "Rule: damaged on the factory's own delivery — the factory",
+      "carrier_transit": "Rule: damaged in a carrier's transit — the carrier",
+      "staff_decides": "Rule: the team decides case by case"
+    },
+    "overriddenBy": "Changed by {name}",
+    "factoryEvidence": "The factory's evidence",
+    "decidedBy": "Decided by {name}",
+    "deductions": "Recovered from the factory",
+    "deductionTotal": "In all {amount}",
+    "deductionStatus": {
+      "pending": "To deduct",
+      "applied": "Deducted",
+      "cancelled": "Cancelled"
+    },
+    "offsets": {
+      "payable": "From the factory's payouts",
+      "receivable": "Charged to the factory"
+    },
+    "retype": "Type {no} to confirm",
+    "retypeMismatch": "Type {no} exactly to confirm"
   },
   "files": {
     "none": "No files",

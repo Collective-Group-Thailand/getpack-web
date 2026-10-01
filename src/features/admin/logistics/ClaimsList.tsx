@@ -9,12 +9,13 @@ import { Badge } from "@/ui/components/Badge";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { QueueTabs, ResourceList, StatusChip, type InitialPage } from "../console";
-import { CLAIM_STATUSES, claimsList, type Claim } from "./resources";
+import { CLAIM_ORIGINS, CLAIM_STATUSES, CLAIM_TYPES, claimsList, type Claim } from "./resources";
 
 /**
- * Claims (F2 2.8, D-082, D-083): by status, with the liability the rule gave and whether the claim
- * came from the customer or from a tolerance breach (D-080). The published row names no customer
- * and no SLA, and the list does not filter by type or origin (CONTRACT-GAP admin.claims).
+ * Claims (F2 2.8, D-082, D-083): by status, type and origin, with the customer, the liability the rule
+ * gave and whether the claim came from the customer or from a tolerance breach (D-080). A customer's
+ * or factory's claims open from their pages (`?customerId`, `?factoryId`). The published row has no
+ * SLA (CONTRACT-GAP admin.claims — `slaDueAt` is U2.5).
  */
 export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) {
   const t = useTranslations("logistics.claims");
@@ -34,6 +35,16 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
             {row.orderCode}
             {row.factoryCode ? ` · ${row.factoryCode}` : null}
           </p>
+        </div>
+      ),
+    },
+    {
+      id: "customer",
+      header: t("columns.customer"),
+      cell: (row) => (
+        <div className="min-w-0 text-sm">
+          {row.customer.displayName}
+          {row.customer.companyName ? <p className="text-muted text-xs">{row.customer.companyName}</p> : null}
         </div>
       ),
     },
@@ -83,6 +94,20 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
+        filters={[
+          {
+            id: "type",
+            label: t("filters.type"),
+            kind: "select",
+            options: CLAIM_TYPES.map((value) => ({ value, label: t(`types.${value}`) })),
+          },
+          {
+            id: "origin",
+            label: t("filters.origin"),
+            kind: "select",
+            options: CLAIM_ORIGINS.map((value) => ({ value, label: t(`origins.${value}`) })),
+          },
+        ]}
         empty={{ title: t("empty") }}
       />
     </div>

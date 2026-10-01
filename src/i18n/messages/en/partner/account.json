@@ -15,7 +15,6 @@
     "empty": "No claims",
     "metaTitle": "Claim",
     "back": "Back to claims",
-    "answerBy": "Answer by {date}",
     "answerBody": "Accept it, or explain with evidence; Packio decides once you answer.",
     "reported": "Reported",
     "resolution": "Asked for",
@@ -37,7 +36,6 @@
     },
     "submitted": "Submitted",
     "evidence": "Evidence",
-    "photoAlt": "{role}, photo {n}",
     "roles": {
       "product": "Product",
       "carton": "Shipping carton",
@@ -50,8 +48,6 @@
     },
     "decision": "Packio's decision",
     "deductions": "Deductions",
-    "appliedOn": "Deducted {date}",
-    "pending": "Pending",
     "respondTitle": "Answer the claim",
     "respond": {
       "ownerOnly": "The factory owner answers claims.",
@@ -70,6 +66,29 @@
       "disputeBody": "Send your side of {no} for Packio to decide.",
       "done": "Answer to {no} sent",
       "failed": "Could not send the answer"
+    },
+    "answerTitle": "Packio asks for your answer",
+    "received": "Received by the customer",
+    "infoRequest": "Packio asked for more information",
+    "resolutionsTitle": "What was done",
+    "actions": {
+      "reproduction_job": "Reproduction",
+      "refund": "Refund to the customer",
+      "credit_note": "Credit note",
+      "store_credit": "Store credit",
+      "factory_deduction": "Deduction from the factory",
+      "carrier_recovery": "Recovered from the carrier"
+    },
+    "pieces": "{quantity} pcs",
+    "deductionTotal": "Deducted from the factory in all {amount}",
+    "deductionStatus": {
+      "pending": "To deduct",
+      "applied": "Deducted",
+      "cancelled": "Cancelled"
+    },
+    "offsets": {
+      "payable": "From payouts",
+      "receivable": "Charged to the factory"
     }
   },
   "performance": {
@@ -97,7 +116,8 @@
       "updates": "Steps reported on time"
     },
     "currentNote": "{month} is still running; its numbers settle at month end",
-    "trend": "Trend"
+    "trend": "Trend",
+    "computedAt": "(computed {date})"
   },
   "users": {
     "title": "Users and roles",
@@ -105,22 +125,18 @@
     "emailInvalid": "This email is not valid",
     "nameRequired": "Enter a name",
     "roleRequired": "Pick at least one role",
-    "invited": "Invitation sent",
     "failed": "Could not save",
     "name": "Name",
     "email": "Email",
     "roles": "Roles",
     "roleHints": {
-      "factory_owner": "Everything, including users, prices and agreements",
       "factory_planner": "Accepts and plans jobs; sees the scorecard",
       "factory_operator": "Reports production steps",
       "factory_qc": "Records QC",
       "factory_shipping": "Ships and records delivery",
       "factory_accountant": "Billing, tax invoices and payouts"
     },
-    "invite": "Send invitation",
     "self": "This is you",
-    "roleFor": "Role of {name}",
     "rolesSaved": "{name}'s role changed",
     "reactivate": "Reactivate",
     "deactivate": "Deactivate",
@@ -130,19 +146,23 @@
     "reactivateBody": "{name} can sign in for your factory again.",
     "statusSaved": "{name} updated",
     "lastSeen": "Last seen {date}",
-    "inviteTitle": "Invite someone"
+    "created": "User added. Give them their first password yourself",
+    "password": "First password",
+    "passwordHint": "At least 12 characters. Hand it over by phone or in person, and have them change it at first sign-in",
+    "passwordTooShort": "The password needs at least 12 characters",
+    "create": "Add user",
+    "createTitle": "Add a user",
+    "createBody": "A new user can sign in at once with the first password you set; no invitation e-mail is sent.",
+    "ownerManaged": "Owners are managed by Packio's partner team",
+    "saveRoles": "Save roles"
   },
   "notifications": {
     "saved": "Saved",
     "failed": "Could not save",
     "lineNotLinked": "LINE is not linked — LINE notices turn on once it is.",
     "categories": {
-      "jobs": "Jobs",
-      "shipping": "Shipping",
-      "prices": "Prices",
-      "billing": "Billing and payouts",
-      "claims": "Claims",
-      "account": "Account and security"
+      "transactional": "Jobs, shipping, billing and claims",
+      "security": "Account security"
     },
     "channels": {
       "web_push": "On this device",
@@ -158,6 +178,10 @@
       "enabled": "Notices turned on",
       "failed": "Could not turn notices on",
       "enable": "Get notices on this device"
+    },
+    "categoryHints": {
+      "transactional": "New jobs, shipments, statements, payouts and claims — e-mail stays on",
+      "security": "Sign-ins and role changes — always on, on every channel"
     }
   },
   "device": {
@@ -178,5 +202,9 @@
     "language": "Language",
     "theme": "Theme",
     "themeHint": "Use high contrast where the floor is bright"
+  },
+  "files": {
+    "failed": "Could not open the file",
+    "file": "{label} {no}"
   }
 }

@@ -8,10 +8,12 @@ import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { uploadFile } from "@/features/shared/files/upload";
+import { browserApi } from "@/lib/api/browser";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
@@ -20,7 +22,8 @@ import { toast } from "@/ui/components/Toast";
 
 /**
  * Confirming a statement makes it the basis of the factory's bill to Packio (D-090) — a
- * financial act, so the BS number is typed to confirm and the amount restated (00-master-plan §8).
+ * financial act the API marks irreversible, so the BS number is typed to confirm and the gross
+ * amount restated (00-master-plan §8). One `Idempotency-Key` per intent.
  */
 export function ConfirmStatement({
   statementId,
@@ -32,10 +35,8 @@ export function ConfirmStatement({
   gross: string;
 }) {
   const t = useTranslations("partnerBilling.confirm");
-  const { factoryId, can } = useFactory();
   const [refresh] = useRefresh();
   const [open, setOpen] = useState(false);
-  if (!can("factory_payables.manage")) return null;
   return (
     <>
       <Button size="xl" block iconStart="check" onClick={() => setOpen(true)}>
@@ -50,10 +51,9 @@ export function ConfirmStatement({
         confirmationPhrase={bsNumber}
         onConfirm={async ({ idempotencyKey }) => {
           try {
-            await browserRequests().call(
-              "POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm",
-              { path: { factoryId, statementId }, body: {}, idempotencyKey },
-            );
+            await browserApi().POST("/v1/partner/billing-statements/{statementId}/actions/confirm", {
+              params: { path: { statementId }, header: { "Idempotency-Key": idempotencyKey } },
+            });
             toast.success(t("done", { no: bsNumber }));
             refresh();
           } catch (error) {
@@ -66,15 +66,35 @@ export function ConfirmStatement({
   );
 }
 
-export function DisputeStatement({ statementId, bsNumber }: { statementId: string; bsNumber: string }) {
+/**
+ * Disputing says what is wrong (D-090): a note, and — when the factory can name them — the lines
+ * (`lineNos`, U-B0.3). Finance answers with a new version.
+ */
+export function DisputeStatement({
+  statementId,
+  bsNumber,
+  lines,
+}: {
+  statementId: string;
+  bsNumber: string;
+  lines: { lineNo: number; label: string }[];
+}) {
   const t = useTranslations("partnerBilling.dispute");
-  const { factoryId, can } = useFactory();
   const [refresh] = useRefresh();
   const [open, setOpen] = useState(false);
-  if (!can("factory_payables.manage")) return null;
+  const [picked, setPicked] = useState<number[]>([]);
   return (
     <>
-      <Button size="xl" block variant="secondary" iconStart="flag" onClick={() => setOpen(true)}>
+      <Button
+        size="xl"
+        block
+        variant="secondary"
+        iconStart="flag"
+        onClick={() => {
+          setPicked([]);
+          setOpen(true);
+        }}
+      >
         {t("action")}
       </Button>
       <ConfirmAction
@@ -87,10 +107,10 @@ export function DisputeStatement({ statementId, bsNumber }: { statementId: strin
         reason={{ label: t("note"), required: true, minLength: 3, hint: t("noteHint") }}
         onConfirm={async ({ idempotencyKey, reason }) => {
           try {
-            await browserRequests().call(
-              "POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/dispute",
-              { path: { factoryId, statementId }, body: { note: reason }, idempotencyKey },
-            );
+            await browserApi().POST("/v1/partner/billing-statements/{statementId}/actions/dispute", {
+              params: { path: { statementId }, header: { "Idempotency-Key": idempotencyKey } },
+              body: { note: reason, ...(picked.length ? { lineNos: [...picked].sort((a, b) => a - b) } : {}) },
+            });
             toast.success(t("done"));
             refresh();
           } catch (error) {
@@ -98,15 +118,36 @@ export function DisputeStatement({ statementId, bsNumber }: { statementId: strin
             throw error;
           }
         }}
-      />
+      >
+        {lines.length ? (
+          <fieldset className="mt-4 flex max-h-56 flex-col gap-2 overflow-y-auto">
+            <legend className="mb-1 font-medium">{t("lines")}</legend>
+            {lines.map((line) => (
+              <Checkbox
+                key={line.lineNo}
+                label={line.label}
+                checked={picked.includes(line.lineNo)}
+                onCheckedChange={(checked) =>
+                  setPicked(checked ? [...picked, line.lineNo] : picked.filter((no) => no !== line.lineNo))
+                }
+              />
+            ))}
+          </fieldset>
+        ) : null}
+      </ConfirmAction>
     </>
   );
 }
 
+type Source = Schemas["TaxInvoiceCaptureSource"];
+/** The format `CaptureTaxInvoiceDto` takes for an amount: a decimal string, two places. */
+const AMOUNT = /^\d{1,12}\.\d{2}$/;
+
 /**
- * The factory's own tax invoice against a confirmed statement (D-090, accounting-design §2):
- * its number and date, the seller's tax id and branch, and the invoice itself — a PDF, or the
- * reference of an e-Tax invoice already sent through the Revenue Department's system.
+ * The factory's own tax invoice against a statement (D-090, accounting-design §2): its number and
+ * date, the seller's tax id and branch, the net and VAT **as printed on the factory's invoice** —
+ * keyed by the factory and checked by Finance against the statement, never worked out here — and the
+ * file: a PDF, or the e-Tax Invoice document, whose reference is the invoice number.
  */
 export function TaxInvoiceForm({
   statementId,
@@ -119,52 +160,49 @@ export function TaxInvoiceForm({
 }) {
   const t = useTranslations("partnerBilling.invoice");
   const tCommon = useTranslations("common");
-  const { factoryId, can } = useFactory();
+  const { factoryId } = useFactory();
   const [refresh] = useRefresh();
   const [value, setValue] = useState({
     invoiceNo: "",
     invoiceDate: bangkokToday(),
     sellerTaxId: taxId,
     sellerBranchCode: branchCode,
-    eTaxReference: "",
+    netAmount: "",
+    vatAmount: "",
   });
-  const [source, setSource] = useState<"pdf_upload" | "e_tax">("pdf_upload");
+  const [source, setSource] = useState<Source>("pdf_upload");
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
-  if (!can("factory_payables.manage")) return null;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     const next: Record<string, string> = {};
-    if (!value.invoiceNo.trim()) next.invoiceNo = t("noRequired");
+    if (!value.invoiceNo.trim()) next.vendorInvoiceNo = t("noRequired");
     if (!isValidThaiTaxId(value.sellerTaxId)) next.sellerTaxId = t("taxIdInvalid");
     if (!/^\d{5}$/.test(value.sellerBranchCode)) next.sellerBranchCode = t("branchInvalid");
+    if (!AMOUNT.test(value.netAmount.trim())) next.netAmount = t("amountFormat");
+    if (!AMOUNT.test(value.vatAmount.trim())) next.vatAmount = t("amountFormat");
     if (source === "pdf_upload" && !file) next.fileId = t("fileRequired");
-    if (source === "e_tax" && !value.eTaxReference.trim()) next.eTaxReference = t("referenceRequired");
     setErrors(next);
     if (Object.keys(next).length) return;
     setBusy(true);
     try {
-      const uploaded =
-        source === "pdf_upload" && file ? await uploadFile("partner", file, "document", { factoryId }) : null;
-      await browserRequests().call(
-        "POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices",
-        {
-          path: { factoryId, statementId },
-          body: {
-            invoiceNo: value.invoiceNo.trim(),
-            invoiceDate: value.invoiceDate,
-            sellerTaxId: value.sellerTaxId,
-            sellerBranchCode: value.sellerBranchCode,
-            source,
-            ...(uploaded ? { fileId: uploaded.id } : {}),
-            ...(source === "e_tax" ? { eTaxReference: value.eTaxReference.trim() } : {}),
-          },
-          idempotencyKey: key,
+      const uploaded = file ? await uploadFile("partner", file, "document", { factoryId }) : null;
+      await browserApi().POST("/v1/partner/billing-statements/{statementId}/tax-invoices", {
+        params: { path: { statementId }, header: { "Idempotency-Key": key } },
+        body: {
+          vendorInvoiceNo: value.invoiceNo.trim(),
+          invoiceDate: value.invoiceDate,
+          sellerTaxId: value.sellerTaxId,
+          sellerBranchCode: value.sellerBranchCode,
+          netAmount: value.netAmount.trim(),
+          vatAmount: value.vatAmount.trim(),
+          source,
+          ...(uploaded ? { fileId: uploaded.id } : {}),
         },
-      );
+      });
       setKey(newIdempotencyKey());
       toast.success(t("done"));
       refresh();
@@ -180,14 +218,21 @@ export function TaxInvoiceForm({
   return (
     <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4" noValidate>
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label={t("no")} required requiredLabel={tCommon("state.required")} error={errors.invoiceNo}>
+        <Field
+          label={t("no")}
+          hint={source === "e_tax" ? t("eTaxNoHint") : undefined}
+          required
+          requiredLabel={tCommon("state.required")}
+          error={errors.vendorInvoiceNo}
+        >
           <Input
             inputSize="lg"
+            maxLength={64}
             value={value.invoiceNo}
             onChange={(event) => setValue({ ...value, invoiceNo: event.target.value })}
           />
         </Field>
-        <Field label={t("date")} required requiredLabel={tCommon("state.required")}>
+        <Field label={t("date")} required requiredLabel={tCommon("state.required")} error={errors.invoiceDate}>
           <Input
             type="date"
             inputSize="lg"
@@ -214,6 +259,36 @@ export function TaxInvoiceForm({
             onChange={(event) => setValue({ ...value, sellerBranchCode: event.target.value.replace(/\D/g, "") })}
           />
         </Field>
+        <Field
+          label={t("netAmount")}
+          hint={t("amountHint")}
+          required
+          requiredLabel={tCommon("state.required")}
+          error={errors.netAmount}
+        >
+          <Input
+            inputSize="lg"
+            inputMode="decimal"
+            placeholder={t("amountPlaceholder")}
+            value={value.netAmount}
+            onChange={(event) => setValue({ ...value, netAmount: event.target.value })}
+          />
+        </Field>
+        <Field
+          label={t("vatAmount")}
+          hint={t("amountHint")}
+          required
+          requiredLabel={tCommon("state.required")}
+          error={errors.vatAmount}
+        >
+          <Input
+            inputSize="lg"
+            inputMode="decimal"
+            placeholder={t("amountPlaceholder")}
+            value={value.vatAmount}
+            onChange={(event) => setValue({ ...value, vatAmount: event.target.value })}
+          />
+        </Field>
       </div>
       <SegmentedControl
         label={t("source")}
@@ -225,31 +300,21 @@ export function TaxInvoiceForm({
           { value: "e_tax", label: t("eTax"), icon: "send" },
         ]}
       />
-      {source === "pdf_upload" ? (
-        <Field label={t("file")} error={errors.fileId}>
-          <FileDropzone
-            accept="application/pdf"
-            maxBytes={20 * 1024 * 1024}
-            onFiles={(files) => setFile(files[0] ?? null)}
-            labels={{
-              prompt: t("drop"),
-              browse: t("browse"),
-              hint: t("rules"),
-              tooLarge: (name) => t("tooLarge", { name }),
-              wrongType: (name) => t("wrongType", { name }),
-            }}
-          />
-        </Field>
-      ) : (
-        <Field label={t("reference")} hint={t("referenceHint")} error={errors.eTaxReference}>
-          <Input
-            inputSize="lg"
-            value={value.eTaxReference}
-            onChange={(event) => setValue({ ...value, eTaxReference: event.target.value })}
-          />
-        </Field>
-      )}
-      {file && source === "pdf_upload" ? <p className="text-sm">{t("chosen", { name: file.name })}</p> : null}
+      <Field label={source === "e_tax" ? t("eTaxFile") : t("file")} error={errors.fileId}>
+        <FileDropzone
+          accept={source === "e_tax" ? "application/pdf,application/xml,text/xml" : "application/pdf"}
+          maxBytes={20 * 1024 * 1024}
+          onFiles={(files) => setFile(files[0] ?? null)}
+          labels={{
+            prompt: t("drop"),
+            browse: t("browse"),
+            hint: source === "e_tax" ? t("eTaxRules") : t("rules"),
+            tooLarge: (name) => t("tooLarge", { name }),
+            wrongType: (name) => t("wrongType", { name }),
+          }}
+        />
+      </Field>
+      {file ? <p className="text-sm">{t("chosen", { name: file.name })}</p> : null}
       <Button type="submit" size="xl" iconStart="upload" loading={busy} className="self-start">
         {t("submit")}
       </Button>

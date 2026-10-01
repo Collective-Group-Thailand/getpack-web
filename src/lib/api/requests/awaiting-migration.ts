@@ -11,31 +11,6 @@
 export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   // Contract v0.4.0–v0.6.0 (2026-10-01) published every request packio-api's U-B0 groups built.
   // U-F0.4 migrates all three zones off them; each zone's block empties as its screens move.
-  // partner (U-F0.4)
-  "GET /v1/partner/factories/{factoryId}/billing-statements",
-  "GET /v1/partner/factories/{factoryId}/billing-statements/{statementId}",
-  "GET /v1/partner/factories/{factoryId}/change-requests",
-  "GET /v1/partner/factories/{factoryId}/claims",
-  "GET /v1/partner/factories/{factoryId}/claims/{claimId}",
-  "GET /v1/partner/factories/{factoryId}/payout-schedule",
-  "GET /v1/partner/factories/{factoryId}/payouts",
-  "GET /v1/partner/factories/{factoryId}/payouts/{payoutId}",
-  "GET /v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence",
-  "GET /v1/partner/factories/{factoryId}/references",
-  "GET /v1/partner/factories/{factoryId}/scorecards",
-  "GET /v1/partner/factories/{factoryId}/site-visits",
-  "GET /v1/partner/factories/{factoryId}/statement-of-account",
-  "GET /v1/partner/factories/{factoryId}/users",
-  "GET /v1/partner/me/notification-preferences",
-  "PATCH /v1/partner/factories/{factoryId}/users/{userId}",
-  "POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm",
-  "POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/dispute",
-  "POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices",
-  "POST /v1/partner/factories/{factoryId}/change-requests",
-  "POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond",
-  "POST /v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence",
-  "POST /v1/partner/factories/{factoryId}/users",
-  "PUT /v1/partner/me/notification-preferences",
   // store (U-F0.4)
   "DELETE /v1/store/designs/{designId}/share",
   "DELETE /v1/store/me/company/brand-assets/{assetId}",
