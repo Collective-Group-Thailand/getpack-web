@@ -6,10 +6,9 @@ import { useState } from "react";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
@@ -18,12 +17,23 @@ import { Input } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
-type Asset = ResponseOf<Requests, "GET /v1/store/me/company/brand-assets">["data"][number];
+type Asset = Schemas["CompanyAssetDto"];
 type Kind = Asset["kind"];
 const KINDS: Kind[] = ["logo", "guideline", "font", "artwork", "other"];
 
-/** Brand assets every member shares (F3 3.7): logos, guidelines and approved artwork to reuse. */
-export function BrandAssets({ assets }: { assets: Asset[] }) {
+/**
+ * Brand assets every member shares (F3 3.7, `store.companyAssets.*`): logos, guidelines, fonts and
+ * approved artwork to reuse. The Company Admin adds and removes them (D-227); everyone downloads.
+ */
+export function BrandAssets({
+  companyId,
+  assets,
+  canManage,
+}: {
+  companyId: string;
+  assets: Asset[];
+  canManage: boolean;
+}) {
   const t = useTranslations("business.assets");
   const format = useFormat();
   const router = useRouter();
@@ -34,8 +44,9 @@ export function BrandAssets({ assets }: { assets: Asset[] }) {
   async function add(file: File) {
     setBusy(true);
     try {
-      const uploaded = await uploadFile("customer", file, "artwork");
-      await browserRequests().call("POST /v1/store/me/company/brand-assets", {
+      const uploaded = await uploadFile("customer", file, "artwork", { companyId });
+      await browserApi().POST("/v1/store/companies/{companyId}/brand-assets", {
+        params: { path: { companyId }, header: { "Idempotency-Key": crypto.randomUUID() } },
         body: { fileId: uploaded.id, kind, name: name.trim() || file.name },
       });
       toast.success(t("added", { name: name.trim() || file.name }));
@@ -50,8 +61,8 @@ export function BrandAssets({ assets }: { assets: Asset[] }) {
 
   async function remove(asset: Asset) {
     try {
-      await browserRequests().call("DELETE /v1/store/me/company/brand-assets/{assetId}", {
-        path: { assetId: asset.id },
+      await browserApi().DELETE("/v1/store/companies/{companyId}/brand-assets/{assetId}", {
+        params: { path: { companyId, assetId: asset.id } },
       });
       toast.success(t("removed", { name: asset.name }));
       router.refresh();
@@ -75,58 +86,65 @@ export function BrandAssets({ assets }: { assets: Asset[] }) {
               </p>
               <p className="text-muted text-xs">
                 {t("meta", {
-                  file: asset.file.originalName,
-                  by: asset.uploadedBy,
-                  date: format.date(asset.uploadedAt),
+                  file: asset.fileName,
+                  by: asset.addedBy.displayName,
+                  date: format.date(asset.addedAt),
                 })}
               </p>
             </div>
             <div className="flex gap-2">
-              {asset.file.url ? (
+              {asset.url ? (
                 <Button asChild size="sm" variant="secondary" iconStart="download">
-                  <a href={asset.file.url} target="_blank" rel="noopener noreferrer">
+                  <a href={asset.url} target="_blank" rel="noopener noreferrer">
                     {t("download")}
                     <span className="sr-only"> {asset.name}</span>
                   </a>
                 </Button>
               ) : null}
-              <Button size="sm" variant="ghost" onClick={() => void remove(asset)}>
-                {t("remove")}
-                <span className="sr-only"> {asset.name}</span>
-              </Button>
+              {canManage ? (
+                <Button size="sm" variant="ghost" onClick={() => void remove(asset)}>
+                  {t("remove")}
+                  <span className="sr-only"> {asset.name}</span>
+                </Button>
+              ) : null}
             </div>
           </li>
         ))}
       </ul>
-      <section aria-labelledby="asset-add" className="border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5">
-        <h2 id="asset-add" className="text-lg font-semibold">
-          {t("addTitle")}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("kind")}>
-            <Select
-              value={kind}
-              onValueChange={setKind}
-              options={KINDS.map((value) => ({ value, label: t(`kinds.${value}`) }))}
-            />
-          </Field>
-          <Field label={t("name")} hint={t("nameHint")}>
-            <Input value={name} onChange={(event) => setName(event.target.value)} />
-          </Field>
-        </div>
-        <FileDropzone
-          disabled={busy}
-          maxBytes={100_000_000}
-          onFiles={(files) => files[0] && void add(files[0])}
-          labels={{
-            prompt: t("drop"),
-            browse: t("browse"),
-            hint: t("hint"),
-            tooLarge: (file) => t("tooLarge", { name: file }),
-            wrongType: (file) => t("wrongType", { name: file }),
-          }}
-        />
-      </section>
+      {canManage ? (
+        <section
+          aria-labelledby="asset-add"
+          className="border-border flex max-w-xl flex-col gap-4 rounded-xl border p-5"
+        >
+          <h2 id="asset-add" className="text-lg font-semibold">
+            {t("addTitle")}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("kind")}>
+              <Select
+                value={kind}
+                onValueChange={setKind}
+                options={KINDS.map((value) => ({ value, label: t(`kinds.${value}`) }))}
+              />
+            </Field>
+            <Field label={t("name")} hint={t("nameHint")}>
+              <Input value={name} onChange={(event) => setName(event.target.value)} />
+            </Field>
+          </div>
+          <FileDropzone
+            disabled={busy}
+            maxBytes={100_000_000}
+            onFiles={(files) => files[0] && void add(files[0])}
+            labels={{
+              prompt: t("drop"),
+              browse: t("browse"),
+              hint: t("hint"),
+              tooLarge: (file) => t("tooLarge", { name: file }),
+              wrongType: (file) => t("wrongType", { name: file }),
+            }}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }

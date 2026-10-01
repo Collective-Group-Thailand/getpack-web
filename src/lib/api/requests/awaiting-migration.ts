@@ -56,15 +56,7 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/partner/factories/{factoryId}/users",
   "PUT /v1/partner/me/notification-preferences",
   // store (U-F0.4)
-  "DELETE /v1/store/me/company/brand-assets/{assetId}",
   "GET /v1/store/catalog/products/{slug}/configurator",
-  "GET /v1/store/me/company/brand-assets",
-  "GET /v1/store/me/company/spend",
-  "PATCH /v1/store/me/company/members/{memberId}",
-  "POST /v1/store/me/company/brand-assets",
-  "POST /v1/store/me/company/bulk-reorders",
-  "POST /v1/store/me/company/bulk-reorders/actions/preview",
-  "POST /v1/store/me/company/credit-applications",
   // admin (U-F0.4)
   "DELETE /v1/admin/saved-views/{viewId}",
   "GET /v1/admin/bank-statement-lines/{lineId}/suggestions",

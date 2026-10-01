@@ -66,7 +66,7 @@ test("a signed-in design is saved in the account, autosaved, and keeps its versi
   await page.getByRole("button", { name: "แชร์ลิงก์ดูแบบ" }).click();
   const share = page.getByRole("dialog", { name: "แชร์ลิงก์ดูแบบ" });
   const link = share.getByRole("textbox", { name: "ลิงก์" });
-  await expect(link).toHaveValue(/\/design\/shared\/[0-9a-f]{32}$/);
+  await expect(link).toHaveValue(/\/design\/shared\/[A-Za-z0-9_-]{43}$/);
   const url = await link.inputValue();
   await page.keyboard.press("Escape");
   const viewer = await page.context().browser()!.newPage();

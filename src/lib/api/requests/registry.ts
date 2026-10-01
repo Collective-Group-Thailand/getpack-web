@@ -21,7 +21,6 @@ import { partnerJobRequests } from "./partner-jobs";
 import { partnerOnboardingRequests } from "./partner-onboarding";
 import { partnerShipmentRequests } from "./partner-shipments";
 import { storeSupportRequests } from "./store-support";
-import { storeBusinessRequests } from "./store-business";
 import { storeQuoteRequests } from "./store-quotes";
 
 export const REQUESTS = {
@@ -36,7 +35,6 @@ export const REQUESTS = {
   ...adminFinanceRequests,
   ...storeQuoteRequests,
   ...storeSupportRequests,
-  ...storeBusinessRequests,
   ...partnerOnboardingRequests,
   ...partnerJobRequests,
   ...partnerShipmentRequests,

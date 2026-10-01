@@ -127,15 +127,12 @@ test.describe("Packio for business", () => {
     await other.close();
   });
 
-  test("a decided approval lists the orders it placed", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.company-approvals — the published list has the pending ones only");
+  test("a decided approval says who decided, when, and how many orders it placed", async ({ page }) => {
     await signInAsCustomer(page, "/business/approvals?view=decided", PHONES.admin);
-    await expect(
-      page
-        .getByRole("article")
-        .first()
-        .getByRole("link", { name: /^PK-2569-/ }),
-    ).toHaveCount(2);
+    const decided = page.getByRole("article").first();
+    await expect(decided).toContainText("อนุมัติแล้ว");
+    await expect(decided).toContainText(/ตัดสินเมื่อ/);
+    await expect(decided).toContainText("2 คำสั่งซื้อ");
   });
 
   test("the admin sees credit and statements, invites a member, and reorders in bulk (D-121, D-153)", async ({
@@ -148,8 +145,9 @@ test.describe("Packio for business", () => {
     await expectNoViolations(page);
 
     await gotoHydrated(page, `${HOSTS.customer}/business/credit`);
-    // CONTRACT-GAP store.company-credit: statements month by month, no status or aging.
+    // The statements issued so far, and what is owed by age (D-122, D-125).
     await expect(page.getByText(/ยอดวางบิล/).first()).toBeVisible();
+    await expect(page.getByText("ยังไม่ถึงกำหนด")).toBeVisible();
     await page
       .getByRole("button", { name: /^ขอลิงก์ดาวน์โหลด/ })
       .first()
@@ -247,5 +245,4 @@ test.describe("help", () => {
     await expect(done).toBeVisible();
     await expect(done).toContainText("ทีมจะติดต่อกลับภายใน");
   });
-
 });
