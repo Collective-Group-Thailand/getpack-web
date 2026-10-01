@@ -10,20 +10,24 @@
  * (RC, P08). Everything posts through `books.post`, so the ledger, the tax papers and the AR
  * control account agree by construction.
  *
- * What the contract does not carry is a contract request (`admin-finance.ts`): the slip image,
- * resending a document and its delivery log, the dunning log.
+ * The slip image is the slip's own file (`SlipDto.fileId`, through `admin.files.download`), and
+ * resending a document, its delivery log, the dunning log and the credit-note reasons are the
+ * operations packio-api published in U-B0.3 (v0.6.0).
  */
+
+import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
-import { mockRequest } from "../../route";
+import { staffPersonaOf } from "../../auth";
+import { can, type StaffPersona } from "../../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../../support";
 import { baht, customers, decideSlip, onPaymentSettled, orders, slipUploadedBy, type MockOrder } from "../commerce";
 import { companyOfCustomer } from "../companies";
 import { registerQueue } from "../console";
 import { approvals, onApprovalDecided, openApproval } from "../platform";
 import { journalsOf, movement, post, satangOf, SELLER, today, type PostLine } from "./books";
-import { finance, forbiddenUnless, invalid, isMoney, notFound, persona } from "./support";
+import { finance, invalid, isMoney, notFound, persona } from "./support";
 
 type Doc = Schemas["CustomerDocumentDto"];
 type DocLine = Schemas["CustomerDocumentLineDto"];
@@ -101,23 +105,45 @@ export const taxedVat = new Map<string, { vat: number; base: number }>();
 /** Who asked for each refund: they cannot record its payout (§8). */
 const refundRequesters = new Map<string, string>();
 
-export interface DunningEntry {
-  id: string;
-  documentId: string;
-  docNumber: string;
-  customerId: string;
-  companyId: string | null;
-  kind: "before_due" | "on_due" | "overdue";
-  channel: "email" | "line" | "sms";
-  recipient: string;
-  sentAt: string;
-  status: "sent" | "failed";
-}
+/** A D-122 reminder as `admin.customerDocuments.dunningLog` lists it; `id` orders the mock's own rows. */
+export type DunningEntry = Schemas["DunningEntryDto"] & { id: string };
 export const dunning: DunningEntry[] = [];
-const deliveries = new Map<
-  string,
-  { channel: "email" | "line"; to: string; sentAt: string; kind: "issued" | "resent" }[]
->();
+/** Where each document went (`admin.customerDocuments.deliveries`), oldest first. */
+const deliveries = new Map<string, Schemas["DocumentDeliveryDto"][]>();
+
+/** An address as packio-api shows it to staff (PDPA): `s***@example.com`, or a LINE name's first letter. */
+export function masked(address: string): string {
+  const at = address.indexOf("@");
+  return at > 0 ? `${address[0]}***${address.slice(at)}` : `${[...address][0] ?? ""}***`;
+}
+
+/**
+ * packio-api's `ADMIN_DOCUMENT_ACTIONS` (receivables/document-actions.ts, v0.6.0): resend while
+ * not void; void an IV or DN nothing was collected on. Filtered by the reader's permissions.
+ */
+function untouched(doc: Doc): boolean {
+  const item = receivables.find((row) => row.document.id === doc.id);
+  return !item || (item.status === "open" && satangOf(item.openAmount) === satangOf(item.amount));
+}
+
+export function documentActions(doc: Doc, who: StaffPersona | null | undefined): Doc["nextActions"] {
+  if (!can(who ?? undefined, "receivables.manage")) return [];
+  const actions: Doc["nextActions"] = [];
+  if (doc.status !== "void")
+    actions.push({ key: "customer_document.resend", irreversible: false, disabledReason: null });
+  if (doc.status !== "void" && ["iv", "dn"].includes(doc.docType))
+    actions.push({
+      key: "customer_document.void",
+      irreversible: true,
+      disabledReason: untouched(doc) ? null : "receivables.document_settled",
+    });
+  return actions;
+}
+
+const withActions = (doc: Doc, who: StaffPersona | null | undefined): Doc => ({
+  ...doc,
+  nextActions: documentActions(doc, who),
+});
 
 const docById = (id: string | null | undefined) => documents.find((doc) => doc.id === id);
 const orderOf = (id: string | null | undefined) => orders.find((order) => order.id === id);
@@ -206,7 +232,14 @@ export function issue(input: IssueInput): Doc {
   documents.push(doc);
   taxedVat.set(doc.id, input.taxed ?? { vat: input.vat, base: net });
   deliveries.set(doc.id, [
-    { channel: "email", to: customer.email ?? customer.displayName, sentAt: doc.issuedAt, kind: "issued" },
+    {
+      channel: "email",
+      recipient: masked(customer.email ?? customer.displayName),
+      status: "delivered",
+      sentAt: doc.issuedAt,
+      kind: "issued",
+      requestedAt: doc.issuedAt,
+    },
   ]);
   return doc;
 }
@@ -598,7 +631,7 @@ export const CN_REASONS: Record<CnKind, string> = {
   discount: "post_sale_discount",
 };
 
-/** packio-api's seeded reason list (`prisma/seed/data/receivables.ts`), CONTRACT-REQUEST admin.credit-note-reasons. */
+/** packio-api's seeded reason list (`prisma/seed/data/receivables.ts`), as `admin.customerDocuments.listCreditNoteReasons` returns it. */
 export const REASONS = [
   [
     "cancellation_before_production",
@@ -1024,19 +1057,23 @@ for (const item of receivables.filter((row) => row.status === "open" && row.comp
     { kind: "overdue" as const, at: due + 7 * 86_400_000 },
   ].filter((reminder) => reminder.at < Date.now());
   for (const reminder of reminders)
-    for (const channel of ["email", "line"] as const)
+    for (const channel of ["email", "line"] as const) {
+      const remindedAt = `${new Date(reminder.at + 7 * 3_600_000).toISOString().slice(0, 19)}+07:00`;
+      const failed = channel === "line" && reminder.kind === "overdue";
       dunning.push({
         id: mockId("dun", dunning.length + 1),
         documentId: doc.id,
         docNumber: doc.docNumber,
         customerId: item.customerId,
         companyId: item.companyId,
-        kind: reminder.kind,
+        stage: reminder.kind,
+        remindedAt,
         channel,
-        recipient: channel === "email" ? (customer.email ?? customer.displayName) : customer.displayName,
-        sentAt: `${new Date(reminder.at + 7 * 3_600_000).toISOString().slice(0, 19)}+07:00`,
-        status: channel === "line" && reminder.kind === "overdue" ? "failed" : "sent",
+        recipient: masked(channel === "email" ? (customer.email ?? customer.displayName) : customer.displayName),
+        status: failed ? "failed" : channel === "email" ? "delivered" : "sent",
+        sentAt: failed ? null : remindedAt,
       });
+    }
 }
 
 /* A shortage within tolerance credited to the customer's balance (D-080, P19), and a claim credit waiting. */
@@ -1222,12 +1259,16 @@ export const receivableHandlers = [
       query,
     ),
   ),
-  mockRequest("GET /v1/admin/slips/{slipId}/file", ({ params, request }) => {
-    const denied = forbiddenUnless(request, "payments.read");
-    if (denied) return denied;
-    const slip = orders.flatMap((o) => o.payments.flatMap((p) => p.slips)).find((s) => s.id === params.slipId);
-    if (!slip) return notFound("สลิป");
-    return { file: { ...slip.file, url: SLIP_IMAGE, thumbnailUrl: SLIP_IMAGE }, expiresAt: bangkokIso(15) };
+  // admin.files.download for a slip's file (SlipDto.fileId): whoever reviews slips may read it
+  // (packio-api's file policy, D-061). Any other file falls through to the next handler.
+  http.get("*/v1/admin/files/:fileId/download", ({ params, request }) => {
+    const slip = orders.flatMap((o) => o.payments.flatMap((p) => p.slips)).find((s) => s.file.id === params.fileId);
+    if (!slip) return undefined;
+    const who = staffPersonaOf(request);
+    if (!who) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+    if (!can(who, "payments.verify_slip") && !can(who, "payments.read"))
+      return problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
+    return HttpResponse.json({ url: SLIP_IMAGE, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),
   finance.post(
     "/v1/admin/slips/{slipId}/actions/review",
@@ -1322,16 +1363,12 @@ export const receivableHandlers = [
   ),
 
   /* Customer documents (§4) */
-  finance.get("/v1/admin/customer-documents", "receivables.read", ({ query }) => {
+  finance.get("/v1/admin/customer-documents", "receivables.read", ({ query, persona: who }) => {
     const rows = documents
       .filter((doc) => !query.docType || doc.docType === query.docType)
       .filter((doc) => !query.status || doc.status === query.status)
       .filter((doc) => !query.orderId || doc.orderId === query.orderId)
-      // CONTRACT-REQUEST admin.document-payment-filter
-      .filter(
-        (doc) =>
-          !(query as { paymentId?: string }).paymentId || doc.paymentId === (query as { paymentId?: string }).paymentId,
-      )
+      .filter((doc) => !query.paymentId || doc.paymentId === query.paymentId)
       .filter((doc) => !query.customerId || customerOfDoc(doc) === query.customerId)
       .filter((doc) => !query.companyId || companyOfCustomer(customerOfDoc(doc))?.id === query.companyId)
       .filter((doc) => !query.from || doc.documentDate >= query.from)
@@ -1339,13 +1376,13 @@ export const receivableHandlers = [
       .filter((doc) =>
         matchesQuery(query.q, doc.docNumber, doc.orderCode, doc.groupCode, doc.buyer.name, doc.buyer.taxId),
       );
-    return paginate(sort(rows, query, "issuedAt", "desc"), query);
+    const page = paginate(sort(rows, query, "issuedAt", "desc"), query);
+    return { ...page, data: page.data.map((doc) => withActions(doc, who)) };
   }),
-  finance.get(
-    "/v1/admin/customer-documents/{documentId}",
-    "receivables.read",
-    ({ params }) => docById(params.documentId) ?? notFound("เอกสาร"),
-  ),
+  finance.get("/v1/admin/customer-documents/{documentId}", "receivables.read", ({ params, persona: who }) => {
+    const doc = docById(params.documentId);
+    return doc ? withActions(doc, who) : notFound("เอกสาร");
+  }),
   finance.get("/v1/admin/customer-documents/{documentId}/pdf", "receivables.read", ({ params }) =>
     docById(params.documentId) ? { url: PDF, expiresAt: bangkokIso(15) } : notFound("เอกสาร"),
   ),
@@ -1355,10 +1392,7 @@ export const receivableHandlers = [
     ({ params, body, persona: who }) => {
       const doc = docById(params.documentId);
       if (!doc) return notFound("เอกสาร");
-      const collected = receivables.some(
-        (item) => item.document.id === doc.id && satangOf(item.openAmount) < satangOf(item.amount),
-      );
-      if (!["iv", "dn"].includes(doc.docType) || doc.status === "void" || collected)
+      if (!["iv", "dn"].includes(doc.docType) || doc.status === "void" || !untouched(doc))
         return problem(
           409,
           "receivables.document_not_voidable",
@@ -1395,31 +1429,38 @@ export const receivableHandlers = [
         Object.assign(item, { status: "cancelled", openAmount: "0.00" });
         syncReceivable(item);
       }
-      return doc;
+      return withActions(doc, who);
     },
   ),
-  mockRequest("POST /v1/admin/customer-documents/{documentId}/actions/resend", ({ params, body, request }) => {
-    const denied = forbiddenUnless(request, "receivables.read");
-    if (denied) return denied;
-    const doc = docById(params.documentId);
-    if (!doc) return notFound("เอกสาร");
-    if (doc.status === "void") return problem(409, "receivables.document_void", "เอกสารที่ยกเลิกแล้วส่งซ้ำไม่ได้");
-    const customer = buyerOf(customerOfDoc(doc)).customer;
-    const sent = body.channels.map((channel) => ({
-      channel,
-      to: channel === "email" ? (body.email ?? customer.email ?? customer.displayName) : customer.displayName,
-      sentAt: bangkokIso(),
-      kind: "resent" as const,
-    }));
-    deliveries.set(doc.id, [...(deliveries.get(doc.id) ?? []), ...sent]);
-    return { documentId: doc.id, sent: sent.map(({ channel, to, sentAt }) => ({ channel, to, sentAt })) };
-  }),
-  mockRequest("GET /v1/admin/customer-documents/{documentId}/deliveries", ({ params, request }) => {
-    const denied = forbiddenUnless(request, "receivables.read");
-    if (denied) return denied;
-    if (!docById(params.documentId)) return notFound("เอกสาร");
-    return { data: [...(deliveries.get(params.documentId) ?? [])].reverse() };
-  }),
+  // admin.customerDocuments.resend (D-143): `customer_document.sent`, routed by the notification
+  // matrix to the customer's own e-mail (and LINE when linked). Audited; 409 for a void document.
+  finance.post(
+    "/v1/admin/customer-documents/{documentId}/actions/resend",
+    { permission: "receivables.manage", idempotent: true, status: 202 },
+    ({ params }) => {
+      const doc = docById(params.documentId);
+      if (!doc) return notFound("เอกสาร");
+      if (doc.status === "void")
+        return problem(409, "receivables.document_not_voidable", "เอกสารที่ยกเลิกแล้วส่งซ้ำไม่ได้");
+      const customer = buyerOf(customerOfDoc(doc)).customer;
+      const requestedAt = bangkokIso();
+      deliveries.set(doc.id, [
+        ...(deliveries.get(doc.id) ?? []),
+        {
+          channel: "email",
+          recipient: masked(customer.email ?? customer.displayName),
+          status: "sent",
+          sentAt: requestedAt,
+          kind: "resent",
+          requestedAt,
+        },
+      ]);
+      return { documentId: doc.id, requestedAt };
+    },
+  ),
+  finance.get("/v1/admin/customer-documents/{documentId}/deliveries", "receivables.read", ({ params }) =>
+    docById(params.documentId) ? [...(deliveries.get(params.documentId) ?? [])].reverse() : notFound("เอกสาร"),
+  ),
   finance.get("/v1/admin/credit-note-requests", "receivables.read", ({ query }) =>
     paginate(
       sort(
@@ -1457,10 +1498,7 @@ export const receivableHandlers = [
     },
   ),
 
-  mockRequest(
-    "GET /v1/admin/credit-note-reasons",
-    ({ request }) => forbiddenUnless(request, "receivables.read") ?? REASONS,
-  ),
+  finance.get("/v1/admin/credit-note-reasons", "receivables.read", () => REASONS),
   finance.post(
     "/v1/admin/orders/{orderId}/debit-notes",
     { permission: "receivables.debit_notes.issue", idempotent: true, status: 201 },
@@ -1702,15 +1740,16 @@ export const receivableHandlers = [
       openBalance: baht(lines.reduce((s, l) => s + satangOf(l.openAmount), 0)),
     };
   }),
-  mockRequest("GET /v1/admin/dunning-log", ({ query, request }) => {
-    const denied = forbiddenUnless(request, "receivables.read");
-    if (denied) return denied;
+  finance.get("/v1/admin/dunning-log", "receivables.read", ({ query }) => {
     const rows = dunning
       .filter((row) => !query.companyId || row.companyId === query.companyId)
       .filter((row) => !query.customerId || row.customerId === query.customerId)
       .filter((row) => !query.documentId || row.documentId === query.documentId)
-      .sort((a, b) => b.sentAt.localeCompare(a.sentAt));
-    return paginate(rows, query);
+      .filter((row) => !query.from || row.remindedAt.slice(0, 10) >= query.from)
+      .filter((row) => matchesQuery(query.q, row.docNumber))
+      .sort((a, b) => b.remindedAt.localeCompare(a.remindedAt) || a.id.localeCompare(b.id));
+    const page = paginate(rows, query);
+    return { ...page, data: page.data.map(({ id, ...entry }) => (void id, entry)) };
   }),
 ];
 

@@ -8,7 +8,6 @@ import { useState } from "react";
 import { moneyText } from "@/domain/money";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { type DataTableColumn } from "@/ui/components/DataTable";
@@ -158,10 +157,19 @@ export function SlipReview({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirming, setConfirming] = useState(false);
 
+  // The slip image is the slip's own file (`SlipQueueItemDto.fileId`), read through the generic
+  // signed download (`admin.files.download`, five minutes; each download is audited, D-061).
+  const fileId = slip.fileId;
   const image = useQuery({
     queryKey: queryKeys.related("admin", "slip", slip.id, "file"),
-    queryFn: () => browserRequests().call("GET /v1/admin/slips/{slipId}/file", { path: { slipId: slip.id } }),
-    staleTime: 10 * 60_000,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/files/{fileId}/download", {
+          params: { path: { fileId: fileId! } },
+        })
+      ).data!,
+    enabled: Boolean(fileId),
+    staleTime: 4 * 60_000,
   });
   const code = slip.groupCode ?? slip.paymentId.slice(0, 8);
 
@@ -258,15 +266,15 @@ export function SlipReview({
         />
 
         <figure className="border-border bg-surface-subtle flex flex-col items-center gap-2 rounded-md border p-3">
-          {image.isPending ? (
+          {fileId && image.isPending ? (
             <Skeleton className="h-80 w-52" />
-          ) : image.data?.file.url ? (
+          ) : image.data?.url ? (
             // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL, not an optimisable asset
-            <img src={image.data.file.url} alt={t("imageAlt", { code })} className="max-h-80 w-auto rounded" />
+            <img src={image.data.url} alt={t("imageAlt", { code })} className="max-h-80 w-auto rounded" />
           ) : (
             <p className="text-muted text-sm">{t("noImage")}</p>
           )}
-          <figcaption className="text-muted text-xs">{image.data?.file.originalName}</figcaption>
+          {/* CONTRACT-GAP admin.slip-file — the slip carries its file id only, so the file's name is not shown. */}
         </figure>
 
         {canVerify ? (
