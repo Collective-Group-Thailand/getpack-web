@@ -203,7 +203,7 @@ export function StatementLink({ companyId, month }: { companyId: string; month: 
     return (
       <Button asChild size="sm" variant="secondary" iconStart="external">
         <a href={url} target="_blank" rel="noopener noreferrer">
-          {t("open")}
+          {t("openFile")}
           <span className="sr-only"> {month}</span>
         </a>
       </Button>
