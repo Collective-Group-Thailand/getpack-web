@@ -4,7 +4,6 @@
   "views": {
     "to_accept": "To accept",
     "in_production": "In production",
-    "awaiting_qc": "Awaiting QC",
     "ready_to_ship": "Ready to ship",
     "late": "Late",
     "all": "All"
@@ -15,7 +14,6 @@
   "empty": {
     "to_accept": "Nothing to accept",
     "in_production": "Nothing in production",
-    "awaiting_qc": "Nothing awaiting QC",
     "ready_to_ship": "Nothing ready to ship",
     "late": "Nothing late",
     "all": "No jobs yet"
@@ -34,13 +32,14 @@
     "processing": "Preparing photos…"
   },
   "accept": {
-    "plannerOnly": "The planner or owner accepts jobs.",
     "action": "Accept the job",
     "hint": "Accept by {due}",
     "title": "Accept {jobNo}",
-    "body": "You take {jobNo}: {quantity} pieces, ready to ship by {date}, at the PO's {amount}.",
+    "body": "You take {jobNo}: {quantity} pieces",
     "confirm": "Accept",
-    "done": "{jobNo} accepted"
+    "done": "{jobNo} accepted",
+    "bodyDate": "ready to ship by {date}",
+    "bodyPo": "at the PO's {amount}."
   },
   "reject": {
     "action": "Reject the job",
@@ -53,21 +52,19 @@
     "reason": "Reason",
     "reasons": {
       "capacity": "Not enough capacity",
-      "material": "Material not available",
-      "machine": "Machine unavailable",
+      "material_unavailable": "Material not available",
+      "artwork_issue": "Problem with the artwork",
       "spec_not_feasible": "Spec cannot be made",
       "price": "Price does not match",
       "other": "Other reason"
     }
   },
   "milestone": {
-    "noPermission": "Your role cannot update steps.",
     "start": "Start {name}",
     "started": "{name} started",
     "photoRequired": "This step needs at least one photo",
     "uploadFailed": "Could not upload the photos — try again",
     "completed": "{name} completed",
-    "qcFirst": "Record a passing QC first, then complete this step.",
     "in": "In",
     "good": "Good",
     "overflow": "Good plus scrap is more than went in",
@@ -77,7 +74,13 @@
     "photosHint": "Photograph the work at this step; the time taken is kept",
     "note": "Note",
     "complete": "Complete {name}",
-    "completeHint": "Good {good} · scrap {scrap}"
+    "completeHint": "Good {good} · scrap {scrap}",
+    "outcomes": {
+      "duplicate": "This report was already sent; the page shows the latest",
+      "already_started": "Another device already started this step; the page shows the latest",
+      "already_completed": "Another device already completed this step; the page shows the latest",
+      "skipped": "Packio skipped this step"
+    }
   },
   "qc": {
     "qcOnly": "QC records the result.",
@@ -94,10 +97,7 @@
       "conditional": "Conditional",
       "fail": "Fail"
     },
-    "defects": "Defects found",
-    "defectLabel": "Defect {n}",
-    "defectCount": "Count for defect {n}",
-    "addDefect": "Add a defect",
+    "defectCount": "Count",
     "photos": "Photos of the checked work",
     "photosHint": "At least one (D-076)",
     "notes": "Notes",
@@ -113,16 +113,17 @@
       "critical": "Critical",
       "major": "Major",
       "minor": "Minor"
-    }
+    },
+    "severityFor": "Severity for {item}"
   },
   "issue": {
     "tooShort": "Describe the issue in at least 3 characters",
     "raised": "Issue raised — Packio sees it on the board",
     "kind": "Kind",
     "kinds": {
-      "material": "Material",
-      "machine": "Machine",
-      "artwork": "Artwork",
+      "material_shortage": "Material shortage",
+      "machine_down": "Machine down",
+      "artwork_question": "Artwork question",
       "quantity": "Quantity",
       "quality": "Quality",
       "delay": "Delay",
@@ -131,7 +132,10 @@
     "description": "Details",
     "submit": "Raise the issue",
     "resolved": "Resolved",
-    "resolve": "Mark resolved"
+    "resolve": "Mark resolved",
+    "resolveTitle": "Close this issue",
+    "resolveNote": "How it was fixed",
+    "resolveNoteHint": "E.g. the press is repaired, the material arrived"
   },
   "scan": {
     "open": "Scan",
@@ -169,8 +173,8 @@
     "rejectedTitle": "You rejected this job",
     "rejectReasons": {
       "capacity": "Not enough capacity",
-      "material": "Material not available",
-      "machine": "Machine unavailable",
+      "material_unavailable": "Material not available",
+      "artwork_issue": "Problem with the artwork",
       "spec_not_feasible": "Spec cannot be made",
       "price": "Price does not match",
       "other": "Other reason"
@@ -184,7 +188,6 @@
     "toShip": "Finished — go to shipping",
     "spec": "Spec",
     "artwork": "Approved artwork",
-    "proofAlt": "Approved proof, version {version}",
     "watermark": "APPROVED v{version}",
     "approvedOn": "Version {version}, approved {date} — produce this version only",
     "openProof": "Open the proof",
@@ -204,14 +207,30 @@
     "inspection": "Packio inspects this job",
     "inspectionOn": "On {date}",
     "issues": "Issues",
-    "history": "History"
+    "summaryNoDate": "{title} · {quantity} pcs",
+    "plannerOnly": "The planner or owner accepts jobs.",
+    "noMilestonePermission": "Your role cannot update steps.",
+    "qcFirst": "Record a passing QC first, then complete this step.",
+    "riskReasons": {
+      "step_overdue": "The current step is past due",
+      "late_plan": "The plan ends after the promised date"
+    },
+    "approvedVersion": "Version {version} — produce this version only",
+    "qcRecorded": "QC recorded",
+    "defect": "{item} ({severity}) {count}",
+    "inspectionSample": "Sample of {count} pieces",
+    "issueResolved": "Resolved: {note} · {name}"
   },
   "capacity": {
     "title": "Weekly capacity",
     "body": "Capacity against the jobs you took; send the Partner team a request to change it.",
     "closures": "Closures",
-    "closure": "{date} · {name}",
     "week": "Week of {date}",
-    "load": "{booked} of {capacity} {unit} booked"
+    "load": "{booked} of {capacity} {unit} booked",
+    "dayKinds": {
+      "holiday": "{date} · {name}",
+      "closure": "{date} · {name} (factory closed)",
+      "extra_working_day": "{date} · {name} (extra working day)"
+    }
   }
 }

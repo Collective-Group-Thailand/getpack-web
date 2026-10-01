@@ -3,13 +3,14 @@
   "plan": {
     "title": "Ready to ship",
     "body": "Create a shipment per destination; split it across several if needed.",
-    "meta": "{good} good · ship by {date}",
+    "meta": "{good} good of {ordered} ordered",
     "blocked": {
       "inspection_pending": "Waiting for Packio's inspection before shipping",
       "payment_pending": "The customer has not paid the before-shipping instalment: you can prepare, not dispatch"
     },
     "left": "{left} of {total} still to ship",
-    "empty": "No finished jobs waiting to ship"
+    "empty": "No finished jobs waiting to ship",
+    "metaOrdered": "{ordered} ordered"
   },
   "list": {
     "title": "Your shipments",
@@ -18,6 +19,7 @@
       "open": "To dispatch",
       "in_transit": "On the road",
       "delivered": "Delivered",
+      "exceptions": "Exceptions",
       "all": "All"
     },
     "meta": "{jobNo} · {quantity} pcs · {cartons} cartons",
@@ -26,6 +28,7 @@
       "open": "Nothing to dispatch",
       "in_transit": "Nothing on the road",
       "delivered": "Nothing delivered yet",
+      "exceptions": "No failed or returned trips",
       "all": "No shipments yet"
     }
   },
@@ -38,7 +41,8 @@
     "cartons": "Cartons",
     "weight": "Weight",
     "kg": "kg",
-    "action": "Ship to {name}"
+    "action": "Ship to {name}",
+    "weightRequired": "Enter the total weight"
   },
   "dispatch": {
     "action": "Dispatch",
@@ -74,7 +78,8 @@
     "typedName": "Receiver's name",
     "signatureMode": "How to sign",
     "submit": "Record the delivery",
-    "submitHint": "Evidence of delivery; the tolerance is judged on it"
+    "submitHint": "Evidence of delivery; the tolerance is judged on it",
+    "deliveredFor": "Delivered ({jobNo})"
   },
   "detail": {
     "metaTitle": "Shipment",
@@ -83,7 +88,7 @@
     "blockedTitle": "Cannot dispatch yet",
     "blockedBody": "The customer has not paid the before-shipping instalment; Packio tells you when it can go.",
     "carrierRequestedTitle": "Carrier requested",
-    "carrierRequestedBody": "Packio is booking the carrier and will confirm the pickup.",
+    "carrierRequestedBody": "Asked {at}: {reason} — Packio is booking the carrier and will confirm the pickup.",
     "printLabels": "Print carton labels ({count})",
     "podTitle": "Proof of delivery",
     "podBody": "Required for every delivery by your own fleet",
@@ -91,20 +96,24 @@
     "receiver": "Received by",
     "delivered": "Delivered",
     "at": "At",
-    "review": "Packio's review",
     "photoAlt": "Delivery photo {n}",
     "recipient": "Recipient",
     "recipientNote": "Recipient name, address and phone only",
     "packing": "Packing list",
-    "events": "Tracking"
+    "events": "Tracking",
+    "labelsPdf": "Open the carton labels (PDF)",
+    "packingPdf": "Open the packing list (PDF)",
+    "transitTitle": "Report from the road",
+    "itemDelivered": "{delivered} of {quantity} delivered",
+    "weight": "{kg} kg · {cartons} cartons"
   },
   "tolerance": {
     "exact": "Delivered in full",
-    "short_within": "Short, within tolerance",
-    "over_within": "Over, within tolerance",
-    "short_outside": "Short beyond tolerance — Packio opens a claim",
-    "over_outside": "Over beyond tolerance",
-    "detail": "Ordered {ordered} · delivered {delivered} · tolerance short {shortage}, over {overage}"
+    "shortage_within": "Short, within tolerance",
+    "overage_within": "Over, within tolerance",
+    "shortage_outside": "Short beyond tolerance — Packio opens a claim",
+    "overage_outside": "Over beyond tolerance",
+    "detail": "The whole order's result, once every trip of it is delivered"
   },
   "labels": {
     "title": "Carton labels",
@@ -113,10 +122,30 @@
     "print": "Print",
     "sheet": "Labels for {no}",
     "carton": "Carton {n} of {total}",
-    "job": "{jobNo} · {title}",
+    "job": "{jobNo}",
     "to": "To",
     "weight": "{kg} kg",
-    "scan": "Scan to track",
-    "qr": "Tracking QR, carton {n}"
+    "scan": "Carton code",
+    "qr": "Carton code QR, carton {n}",
+    "notPacked": "Not packed yet: the labels come when the shipment is ready"
+  },
+  "ready": {
+    "action": "Packed — make labels and packing list",
+    "hint": "Packio makes the carton labels and packing list for {no}",
+    "done": "{no} is ready"
+  },
+  "cancel": {
+    "action": "Cancel the shipment",
+    "title": "Cancel {no}",
+    "body": "{no} is cancelled and its pieces go back to be shipped; this cannot be undone.",
+    "confirm": "Cancel the shipment",
+    "reason": "Reason",
+    "done": "{no} cancelled"
+  },
+  "transit": {
+    "status": "Status",
+    "note": "Note",
+    "submit": "Report the status",
+    "done": "Status reported"
   }
 }

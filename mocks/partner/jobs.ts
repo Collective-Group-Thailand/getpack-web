@@ -1,39 +1,46 @@
 /**
- * CONTRACT-REQUEST partner.today, partner.jobs, partner.job-milestones, partner.job-qc,
- * partner.job-issues, partner.capacity-calendar — the factory's production floor (F5 5.2) over
- * **the commerce mock's own orders and jobs**: what the factory accepts, starts and completes here
- * is what the back office's order screen and production board show.
+ * The factory's production floor on the published contract (U-F0.4): `partner.production.*`
+ * (today, list by view, lookup, get, accept, reject, milestone updates, QC, issues),
+ * `partner.factories.capacityCalendar` and the factory's purchase orders — over **the commerce
+ * mock's own orders and jobs**, so what the factory accepts, starts and completes here is what the
+ * back office's order screen and production board show (`../admin/production.ts`).
+ *
+ * Jobs are token-scoped (`/v1/partner/production-jobs`): the signed-in user's factory only, and
+ * another factory's job is a 404 (D-044). Every write the contract declares an `Idempotency-Key`
+ * on is replayed by key (`once`).
  *
  * At start, two of the launch factory's in-production jobs are put back to `released` — jobs
  * waiting for acceptance, one due within hours (D-074) — and the second's order is split across
  * two delivery addresses (D-110), so a flow can accept, produce and ship to both.
  *
- * Rules the API states (B4.2): acceptance within its window; milestones in order; quantities
- * out + scrap ≤ in, in ≤ what the previous step put out; photos where the route asks for them; QC
- * recorded before the QC step completes; `clientRef` answers a replay, a different device's
- * report on the same step is a `409` and the server's state stands.
+ * Rules mirrored from packio-api (`milestones.service.ts` at v0.6.0): milestones in route order;
+ * a repeated `clientRef`, or a step another device already moved, answers `applied: false` with
+ * the current job (server wins); out + scrap of a tracked step never exceed what came in; photos
+ * and a passing QC form where the step's evidence asks for them; QC needs a photo.
  */
 
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import type { jobIssue, partnerJob, partnerJobSummary, partnerToday, qcCheck } from "@/lib/api/requests/partner-jobs";
+import type { Schemas } from "@/lib/api/types";
 
 import { orders, type MockOrder } from "../admin/commerce";
+import { partnerJobActions } from "../admin/floor-actions";
 import { inspections } from "../admin/governance";
+import { PRODUCT_TYPES } from "../admin/catalog";
 import { stores } from "../admin/partners";
 import { fileDataUrl, files } from "../admin/platform";
-import { mockRequest, type MockContext } from "../route";
+import { partnerPersonaOf } from "../auth";
+import { provinceRefOf } from "../store/catalog";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
-import type { RequestKey } from "@/lib/api/requests/registry";
-
-import { own } from "./support";
+import { permissionsOf, type PartnerPersona } from "./personas";
+import { once, own, type Own } from "./support";
 
 type Job = MockOrder["jobs"][number];
-type JobDto = z.output<typeof partnerJob>;
-type Summary = z.output<typeof partnerJobSummary>;
-type QcCheck = z.output<typeof qcCheck>;
-type Issue = z.output<typeof jobIssue>;
-type View = Summary["views"][number];
+type JobDto = Schemas["PartnerJobDto"];
+type Milestone = Schemas["MilestoneDto"];
+type QcCheck = Schemas["QcCheckDto"];
+type Issue = Schemas["JobIssueDto"];
+type UserRef = Schemas["UserRefDto"];
 
 const DAY = 24 * 60;
 const HOUR = 60;
@@ -41,21 +48,19 @@ const now = () => bangkokIso();
 
 /** The route every mock job follows (B4.2: editable data per product type in the API). */
 export const ROUTE = [
-  { key: "step_1", name: "รับงาน", photo: false, qc: false },
-  { key: "step_2", name: "เตรียมวัตถุดิบ", photo: false, qc: false },
-  { key: "step_3", name: "พิมพ์", photo: true, qc: false },
-  { key: "step_4", name: "ไดคัท", photo: true, qc: false },
-  { key: "step_5", name: "ตรวจคุณภาพ", photo: false, qc: true },
-  { key: "step_6", name: "แพ็ก", photo: true, qc: false },
-] as const;
-
-const QC_CHECKLIST = [
-  { key: "colour", label: "สีตรงตามปรู๊ฟที่อนุมัติ" },
-  { key: "registration", label: "งานพิมพ์ไม่เหลื่อม" },
-  { key: "diecut", label: "ไดคัทและรอยพับตรงเส้น" },
-  { key: "count", label: "นับจำนวนครบตามใบสั่ง" },
-  { key: "clean", label: "ไม่มีรอยเปื้อนหรือเสียหาย" },
-];
+  { key: "step_1", nameTh: "รับงาน", nameEn: "Accept", evidence: "none", tracksQuantity: false },
+  { key: "step_2", nameTh: "เตรียมวัตถุดิบ", nameEn: "Materials", evidence: "none", tracksQuantity: false },
+  { key: "step_3", nameTh: "พิมพ์", nameEn: "Printing", evidence: "photo", tracksQuantity: true },
+  { key: "step_4", nameTh: "ไดคัท", nameEn: "Die-cutting", evidence: "photo", tracksQuantity: true },
+  { key: "step_5", nameTh: "ตรวจคุณภาพ", nameEn: "Quality check", evidence: "qc_form", tracksQuantity: true },
+  { key: "step_6", nameTh: "แพ็ก", nameEn: "Packing", evidence: "photo", tracksQuantity: true },
+] as const satisfies readonly {
+  key: string;
+  nameTh: string;
+  nameEn: string;
+  evidence: Schemas["EvidenceRequirement"];
+  tracksQuantity: boolean;
+}[];
 
 interface StepExtra {
   startedAt: string | null;
@@ -64,17 +69,20 @@ interface StepExtra {
   quantityScrap: number | null;
   photoIds: string[];
   note: string | null;
-  reportedBy: { id: string; displayName: string } | null;
+  reportedBy: UserRef | null;
   clientRef: string | null;
 }
 
+/** What the floor reports about a job beyond the commerce row (a mock-only model). */
 interface Extra {
   steps: Map<number, StepExtra>;
   qcChecks: QcCheck[];
   issues: Issue[];
-  history: JobDto["history"];
-  rejectedReason: JobDto["rejectedReason"];
+  /** The job's activity, newest last; the billing mock reads when it was accepted from it. */
+  history: { at: string; text: string; actor: UserRef | null }[];
+  rejected: { reasonCode: Schemas["JobRejectReason"]; note: string | null; at: string } | null;
   releasedAt: string;
+  acceptedAt: string | null;
 }
 
 const extras = new Map<string, Extra>();
@@ -107,8 +115,9 @@ export function extraOf(job: Job): Extra {
       qcChecks: [],
       issues: [],
       history: [],
-      rejectedReason: null,
+      rejected: null,
       releasedAt: bangkokIso(-DAY),
+      acceptedAt: job.status === "released" ? null : bangkokIso(-DAY),
     };
     extras.set(job.id, extra);
   }
@@ -120,17 +129,18 @@ export function extraOf(job: Job): Extra {
 function seed() {
   const F001 = "00000000-0000-4000-8000-0000000000f1";
   const jobs = factoryJobs(F001);
-  // Completed steps of a seeded job carry quantities, so a report on the next step is checked.
+  // Completed tracked steps of a seeded job carry quantities, so a report on the next step is checked.
   for (const { order, job } of jobs) {
     const extra = extraOf(job);
     // Released (and accepted) a while back, so their advances have been paid (D-022).
     extra.releasedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7));
+    extra.acceptedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7) + HOUR * 3);
     let quantity = Math.round(order.quantity * 1.04);
     job.milestones.forEach((milestone) => {
       const step = blankStep();
       if (milestone.status !== "pending") step.startedAt = bangkokIso(-DAY * (7 - milestone.seq));
-      if (milestone.status === "completed") {
-        const scrap = milestone.seq >= 3 ? Math.round(quantity * 0.01) : 0;
+      if (milestone.status === "completed" && ROUTE[milestone.seq - 1]?.tracksQuantity) {
+        const scrap = Math.round(quantity * 0.01);
         Object.assign(step, { quantityIn: quantity, quantityScrap: scrap, quantityOut: quantity - scrap });
         quantity -= scrap;
       }
@@ -157,6 +167,7 @@ function seed() {
       });
       const extra = extraOf(job);
       extra.steps.clear();
+      extra.acceptedAt = null;
       extra.releasedAt = bangkokIso(index === 0 ? -HOUR * 4 : -HOUR * 21);
       extra.history = [{ at: extra.releasedAt, text: "Packio ส่งงานให้โรงงาน", actor: null }];
       if (index === 1 && order.destinations.length === 1) {
@@ -189,190 +200,188 @@ export const titleOf = (order: MockOrder) => {
   return first && first !== order.productType.name ? `${order.productType.name} ${first}` : order.productType.name;
 };
 
-const fileRefOf = (id: string) => {
-  const file = files.get(id);
-  return {
-    id,
-    originalName: file?.originalName ?? "photo.jpg",
-    mimeType: file?.mimeType ?? "image/jpeg",
-    sizeBytes: file?.sizeBytes ?? 0,
-    thumbnailUrl: fileDataUrl(id),
-    url: fileDataUrl(id),
-  };
-};
+/** A milestone's id: stable per job and step, the same one the back office's job carries. */
+export const milestoneIdOf = (job: Pick<Job, "id">, seq: number) =>
+  mockId("mls", (Number.parseInt(job.id.slice(-6), 16) % 0x1000) * 16 + seq);
 
-function milestonesOf(job: Job): JobDto["milestones"] {
+/** The job's steps as `MilestoneDto`: the commerce row's status and dates, the floor's reports. */
+export function milestonesOf(job: Job): Milestone[] {
   const extra = extraOf(job);
   return job.milestones.map((milestone) => {
     const step = extra.steps.get(milestone.seq) ?? blankStep();
     const route = ROUTE[milestone.seq - 1] ?? ROUTE[0];
     return {
+      id: milestoneIdOf(job, milestone.seq),
       seq: milestone.seq,
       key: milestone.key,
-      name: milestone.name,
+      nameTh: route.nameTh,
+      nameEn: route.nameEn,
       status: milestone.status,
       dueAt: milestone.dueAt,
       startedAt: step.startedAt,
       completedAt: milestone.completedAt,
-      requiresPhoto: route.photo,
-      requiresQc: route.qc,
+      onTime: milestone.onTime,
+      customerVisible: true,
+      evidence: route.evidence,
+      tracksQuantity: route.tracksQuantity,
       quantityIn: step.quantityIn,
       quantityOut: step.quantityOut,
       quantityScrap: step.quantityScrap,
-      photos: step.photoIds.map(fileRefOf),
+      photoFileIds: [...step.photoIds],
       note: step.note,
-      reportedBy: step.reportedBy,
-      onTime: milestone.onTime,
     };
   });
 }
 
-/** What each destination still needs, against the shipments made for it. */
+/** What each destination already has on a live shipment (the shipments mock answers it). */
 export type ShippedCounter = (order: MockOrder, destinationId: string) => number;
 let shippedOf: ShippedCounter = () => 0;
 export const setShippedCounter = (counter: ShippedCounter) => {
   shippedOf = counter;
 };
 
-export function destinationsOf(order: MockOrder): JobDto["destinations"] {
-  return order.destinations.map((destination) => ({
-    id: destination.id,
-    recipientName: destination.recipientName,
-    phone: destination.phone,
-    address: [destination.line1, destination.line2, destination.subdistrict, destination.district]
-      .filter(Boolean)
-      .join(" "),
-    province: destination.province,
-    postcode: destination.postcode,
-    quantity: destination.quantity,
-    shippedQuantity: shippedOf(order, destination.id),
-  }));
+/** A carton label code → the job it carries (the shipments mock answers it, for the scanner). */
+let cartonJob: (code: string) => string | null = () => null;
+export const setCartonLookup = (lookup: (code: string) => string | null) => {
+  cartonJob = lookup;
+};
+
+/** D-142: the recipient's name, delivery address and phone — nothing else about the customer. */
+export function destinationsOf(order: MockOrder): Schemas["JobDestinationDto"][] {
+  return order.destinations.map((destination) => {
+    const province = provinceRefOf(destination.postcode, destination.province);
+    return {
+      id: destination.id,
+      recipientName: destination.recipientName,
+      phone: destination.phone,
+      line1: [destination.line1, destination.subdistrict, destination.district].filter(Boolean).join(" "),
+      line2: destination.line2,
+      provinceNameTh: province.nameTh,
+      provinceNameEn: province.nameEn,
+      postcode: destination.postcode,
+      quantity: destination.quantity,
+      shippedQuantity: shippedOf(order, destination.id),
+    };
+  });
 }
 
 export const jobDone = (job: Job) =>
   job.status === "completed" || (job.milestones.length > 0 && job.milestones.every((m) => m.status === "completed"));
 
-function viewsOf(order: MockOrder, job: Job): View[] {
-  const current = job.milestones.find((milestone) => milestone.status !== "completed");
-  const late =
-    job.atRisk ||
-    (job.status === "released" && !!job.acceptDueAt && Date.parse(job.acceptDueAt) < Date.now()) ||
-    (!!current?.dueAt && current.status !== "completed" && Date.parse(current.dueAt) < Date.now());
-  const remaining = destinationsOf(order).some((destination) => destination.shippedQuantity < destination.quantity);
-  const views: View[] = [];
-  if (job.status === "released") views.push("to_accept");
-  else if (["accepted", "in_progress", "on_hold"].includes(job.status) && !jobDone(job))
-    views.push(current && ROUTE[current.seq - 1]?.qc ? "awaiting_qc" : "in_production");
-  if (jobDone(job) && remaining) views.push("ready_to_ship");
-  if (late && !jobDone(job) && job.status !== "rejected") views.push("late");
-  return views;
+const current = (job: Job) => job.milestones.find((m) => m.status !== "completed" && m.status !== "skipped");
+
+/** The step overdue, or the plan past the promise (D-075) — only while the job is predicted late. */
+function riskOf(job: Job): Schemas["JobRiskReason"] | null {
+  if (!job.atRisk) return null;
+  const step = current(job);
+  return step?.dueAt && Date.parse(step.dueAt) < Date.now() ? "step_overdue" : "late_plan";
 }
 
-export function summaryOf(order: MockOrder, job: Job): Summary {
-  const current = job.milestones.find((milestone) => milestone.status !== "completed") ?? null;
+/** The good pieces the last tracked step put out, and the scrap of every tracked step. */
+export function quantitiesOf(job: Job): { good: number | null; scrap: number | null } {
+  const tracked = [...extraOf(job).steps.entries()]
+    .sort(([a], [b]) => a - b)
+    .filter(([seq, step]) => ROUTE[seq - 1]?.tracksQuantity && step.quantityOut !== null)
+    .map(([, step]) => step);
+  if (tracked.length === 0) return { good: null, scrap: null };
+  return {
+    good: tracked.at(-1)!.quantityOut,
+    scrap: tracked.reduce((total, step) => total + (step.quantityScrap ?? 0), 0),
+  };
+}
+
+/** Packio's inspection of the job, as far as the factory sees it (D-076). */
+export function inspectionOf(job: Pick<Job, "id">): Schemas["JobInspectionDto"] | null {
+  const found = inspections.find((item) => item.job.id === job.id);
+  return found
+    ? { status: found.status, sampleSize: found.sampleSize, scheduledAt: found.scheduledAt, resultAt: found.resultAt }
+    : null;
+}
+
+/** The approved proof the job prints (approved version only, B4.2). */
+export const approvedProofOf = (order: MockOrder) => order.artwork.proofs.find((proof) => proof.status === "approved");
+
+/** The parts of a job both surfaces read the same way (`PartnerJobDto` and `AdminJobDto` share them). */
+export function jobCore(order: MockOrder, job: Job) {
+  const extra = extraOf(job);
+  const proof = approvedProofOf(order);
+  const { good, scrap } = quantitiesOf(job);
+  const step = current(job);
   return {
     id: job.id,
     jobNo: job.jobNo,
     kind: job.kind,
     status: job.status,
-    productType: order.productType,
-    title: titleOf(order),
-    quantity: order.quantity,
-    acceptDueAt: job.status === "released" ? job.acceptDueAt : null,
-    promisedShipDate: job.promisedShipDate ?? order.promisedShipDate ?? bangkokIso(DAY * 10).slice(0, 10),
-    atRisk: job.atRisk,
-    riskReason: job.atRisk ? "งานพิมพ์ช้ากว่าแผน" : null,
-    current: current
-      ? { seq: current.seq, key: current.key, name: current.name, status: current.status, dueAt: current.dueAt }
-      : null,
-    inspectionRequired: Number(order.grossAmount) >= 100_000,
-    views: viewsOf(order, job),
-  };
-}
-
-function nextActionsOf(order: MockOrder, job: Job): JobDto["nextActions"] {
-  if (job.status === "released") return ["accept", "reject"];
-  if (["rejected", "cancelled"].includes(job.status)) return [];
-  const actions: JobDto["nextActions"] = [];
-  const current = job.milestones.find((milestone) => milestone.status !== "completed");
-  if (current?.status === "pending") actions.push("start_milestone");
-  if (current?.status === "in_progress") {
-    if (ROUTE[current.seq - 1]?.qc) actions.push("record_qc");
-    actions.push("complete_milestone");
-  }
-  if (jobDone(job) && destinationsOf(order).some((d) => d.shippedQuantity < d.quantity)) actions.push("ship");
-  actions.push("raise_issue");
-  return actions;
-}
-
-export function detailOf(order: MockOrder, job: Job): JobDto {
-  const extra = extraOf(job);
-  const proof = order.artwork.proofs.find((item) => item.status === "approved");
-  return {
-    ...summaryOf(order, job),
-    spec: order.specs,
+    productTypeCode: order.productType.code,
+    productTypeNameTh: order.productType.name,
+    title: `${titleOf(order)} · ${order.quantity.toLocaleString("th-TH")} ชิ้น`,
+    // A snapshot of what to make, without the selling price (the order's spec lines).
+    spec: Object.fromEntries(order.specs.map((line) => [line.label, line.value])),
+    tolerance: { ...order.tolerance },
     artwork: proof
-      ? { versionNo: proof.versionNo, approvedAt: proof.decidedAt ?? proof.sentAt, proof: proof.file, dieline: null }
+      ? { proofId: proof.id, versionNo: proof.versionNo, approvedAt: proof.decidedAt ?? proof.sentAt }
       : null,
-    purchaseOrder: {
-      poNumber: `PO-F-${job.jobNo.slice(2)}`,
-      issuedAt: extra.releasedAt,
-      buyAmount: buyAmountOf(order),
-      currency: "THB",
-    },
-    tolerance: order.tolerance,
+    approvedFileId: proof?.file.id ?? null,
+    dielineFileId: null,
+    inspection: inspectionOf(job),
+    inspectionRequired: Number(order.grossAmount) >= 100_000,
+    currentMilestoneKey: step?.key ?? null,
+    atRisk: job.atRisk,
+    riskReason: riskOf(job),
+    releasedAt: extra.releasedAt,
+    acceptDueAt: job.acceptDueAt ?? bangkokIso(DAY),
+    acceptedAt: extra.acceptedAt,
+    rejectedAt: extra.rejected?.at ?? null,
+    rejectReasonCode: extra.rejected?.reasonCode ?? null,
+    rejectNote: extra.rejected?.note ?? null,
+    holdReason: null,
+    promisedShipDate: job.promisedShipDate ?? order.promisedShipDate,
+    plannedStartOn: null,
+    plannedFinishOn: job.promisedShipDate ?? order.promisedShipDate,
+    quantityOrdered: order.quantity,
+    quantityGood: good,
+    quantityScrap: scrap,
+    lotNo: null,
     destinations: destinationsOf(order),
     milestones: milestonesOf(job),
-    qcChecklist: QC_CHECKLIST,
-    qcChecks: extra.qcChecks,
-    inspections: inspections
-      .filter((item) => item.job.id === job.id)
-      .map((item) => ({
-        id: item.id,
-        status: item.status,
-        reasons: item.reasons.map((reason) =>
-          reason === "value_100_pct"
-            ? "มูลค่างานสูง ตรวจทุกงาน"
-            : reason === "trial_factory"
-              ? "งานช่วงทดลองของโรงงาน"
-              : reason === "special_finish_or_food"
-                ? "งานตกแต่งพิเศษหรือบรรจุภัณฑ์อาหาร"
-                : "สุ่มตรวจตามมูลค่างาน",
-        ),
-        plannedFor: item.scheduledAt ? item.scheduledAt.slice(0, 10) : null,
-        resultAt: item.resultAt,
-        notes: item.notes,
-      })),
-    issues: extra.issues,
-    history: [...extra.history].sort((a, b) => b.at.localeCompare(a.at)),
-    nextActions: nextActionsOf(order, job),
-    rejectedReason: extra.rejectedReason,
+  } satisfies Partial<JobDto>;
+}
+
+export function toPartnerJobDto(order: MockOrder, job: Job, who: PartnerPersona): JobDto {
+  return {
+    ...jobCore(order, job),
+    nextActions: partnerJobActions({ status: job.status, jobKind: job.kind }, new Set(permissionsOf(who))),
   };
 }
 
 /* ----------------------------------------------------------------------------- helpers */
 
-type Ctx = Pick<MockContext<RequestKey>, "request" | "params">;
+/** The signed-in factory user on their own factory (the token's scope, D-044). */
+export function mine(request: Request, permission?: string): Response | Own {
+  return own(request, partnerPersonaOf(request)?.factoryId, permission);
+}
 
-function jobFor(context: Ctx, permission?: string) {
-  const ok = own(context.request, context.params.factoryId, permission);
+function jobFor(request: Request, jobId: unknown, permission: string) {
+  const ok = mine(request, permission);
   if (ok instanceof Response) return ok;
-  const found = factoryJobs(ok.store.factory.id).find(({ job }) => job.id === context.params.jobId);
-  // Another factory's job is not found (D-044), exactly like another factory.
-  if (!found) return problem(404, "jobs.not_found", "ไม่พบงานนี้");
+  const found = factoryJobs(ok.store.factory.id).find(({ job }) => job.id === jobId);
+  // Another factory's job is not found (D-044), exactly like a job that does not exist.
+  if (!found) return problem(404, "http.not_found", "ไม่พบงานนี้");
   return { ...ok, ...found, extra: extraOf(found.job) };
 }
 
-const who = (persona: { id: string; displayName: string }) => ({ id: persona.id, displayName: persona.displayName });
+const who = (persona: { id: string; displayName: string }): UserRef => ({
+  id: persona.id,
+  displayName: persona.displayName,
+});
 const invalid = (path: string, message: string, detail = "ข้อมูลไม่ถูกต้อง") =>
   problem(422, "validation.failed", detail, [{ path, code: "invalid", message }]);
-const conflict = (detail: string) => problem(409, "job.conflict", detail);
+const notWorking = (job: Job) =>
+  problem(409, "production.invalid_status", `งานนี้อยู่ในสถานะ ${job.status} ทำรายการนี้ไม่ได้`);
 
-function photosExist(ids: string[]) {
-  return ids.every((id) => files.has(id));
-}
+const photosExist = (ids: readonly string[]) => ids.every((id) => files.has(id));
 
-function log(extra: Extra, text: string, actor: { id: string; displayName: string } | null) {
+function log(extra: Extra, text: string, actor: UserRef | null) {
   extra.history.push({ at: now(), text, actor });
 }
 
@@ -386,7 +395,7 @@ function routeFor(job: Job, order: MockOrder): Job["milestones"] {
   return ROUTE.map((step, index) => ({
     seq: index + 1,
     key: step.key,
-    name: step.name,
+    name: step.nameTh,
     status: index === 0 ? "completed" : "pending",
     dueAt: bangkokIso(Math.round((span * (index + 1)) / ROUTE.length / 60_000)),
     completedAt: index === 0 ? now() : null,
@@ -394,345 +403,519 @@ function routeFor(job: Job, order: MockOrder): Job["milestones"] {
   }));
 }
 
+const WORKING = ["accepted", "in_progress"];
+const JOB_VIEWS = new Set<string>([
+  "to_accept",
+  "in_production",
+  "ready_to_ship",
+  "late",
+] satisfies Schemas["JobView"][]);
+const ISSUE_KINDS = new Set<string>([
+  "material_shortage",
+  "machine_down",
+  "artwork_question",
+  "quantity",
+  "quality",
+  "delay",
+  "other",
+] satisfies Schemas["JobIssueKind"][]);
+const REJECT_REASONS = new Set<string>([
+  "capacity",
+  "spec_not_feasible",
+  "material_unavailable",
+  "artwork_issue",
+  "price",
+  "other",
+] satisfies Schemas["JobRejectReason"][]);
+
+/** `?view=` (D-074): to accept, in production, ready to ship (something left to send), late. */
+function inView(order: MockOrder, job: Job, view: string): boolean {
+  const remaining = destinationsOf(order).some((item) => item.shippedQuantity < item.quantity);
+  const late =
+    job.atRisk || (job.status === "released" && !!job.acceptDueAt && Date.parse(job.acceptDueAt) < Date.now());
+  switch (view) {
+    case "to_accept":
+      return job.status === "released";
+    case "in_production":
+      return ["accepted", "in_progress", "on_hold"].includes(job.status) && !jobDone(job);
+    case "ready_to_ship":
+      return jobDone(job) && remaining;
+    case "late":
+      return late && !jobDone(job) && !["rejected", "cancelled"].includes(job.status);
+    default:
+      return true;
+  }
+}
+
+/** The floor's order: acceptance first, then the predicted-late, then the soonest due. */
+function dueOf(order: MockOrder, job: Job): string {
+  return (
+    (job.status === "released" ? job.acceptDueAt : null) ??
+    current(job)?.dueAt ??
+    `${job.promisedShipDate ?? order.promisedShipDate ?? "9999-12-31"}T23:59:59+07:00`
+  );
+}
+const rank = (job: Job) => (job.status === "released" ? 0 : job.atRisk ? 1 : 2);
+
 /* -------------------------------------------------------------------------------- handlers */
 
 const perm = {
   read: "factory_jobs.read",
+  respond: "factory_jobs.respond",
   update: "factory_milestones.update",
-  accept: "factory_jobs.respond",
   qc: "factory_qc.record",
+  issues: "factory_issues.raise",
+  capacity: "factory_capacity.read",
+  payables: "factory_payables.read",
 };
 
-export const jobRequestHandlers = [
-  mockRequest("GET /v1/partner/factories/{factoryId}/today", (context) => {
-    const ok = own(context.request, context.params.factoryId, perm.read);
+export const jobHandlers = [
+  // partner.production.today: counters, the queue in the order to work it, and alerts (D-074, D-076).
+  http.get("*/v1/partner/factories/:factoryId/today", ({ request, params }) => {
+    const ok = own(request, params.factoryId, perm.read);
     if (ok instanceof Response) return ok;
     const all = factoryJobs(ok.store.factory.id).filter(({ job }) => !["rejected", "cancelled"].includes(job.status));
-    const summaries = all.map(({ order, job }) => summaryOf(order, job));
     const today = bangkokIso().slice(0, 10);
-    const dueToday = summaries.filter(
-      (item) => item.current?.dueAt?.slice(0, 10) === today || item.acceptDueAt?.slice(0, 10) === today,
-    );
-    const queue = summaries
-      .filter((item) => item.views.some((view) => view !== "ready_to_ship") || item.views.includes("ready_to_ship"))
-      .filter((item) => item.views.length > 0)
-      .sort((a, b) => {
-        const rank = (item: Summary) => (item.views.includes("to_accept") ? 0 : item.views.includes("late") ? 1 : 2);
-        const due = (item: Summary) =>
-          item.acceptDueAt ?? item.current?.dueAt ?? `${item.promisedShipDate}T23:59:59+07:00`;
-        return rank(a) - rank(b) || due(a).localeCompare(due(b));
-      })
-      .slice(0, 10);
-    type Alert = z.output<typeof partnerToday>["alerts"][number];
-    const alerts = all.flatMap(({ job }): Alert[] => {
+    const released = all.filter(({ job }) => job.status === "released");
+    const working = all.filter(({ job }) => WORKING.includes(job.status));
+    const queue = all
+      .filter(({ order, job }) => !jobDone(job) || inView(order, job, "ready_to_ship"))
+      .sort((a, b) => rank(a.job) - rank(b.job) || dueOf(a.order, a.job).localeCompare(dueOf(b.order, b.job)))
+      .slice(0, 10)
+      .map(({ order, job }) => toPartnerJobDto(order, job, ok.who));
+    const alerts = all.flatMap(({ job }): Schemas["FactoryTodayAlertDto"][] => {
       if (job.status === "released" && job.acceptDueAt) {
         const overdue = Date.parse(job.acceptDueAt) < Date.now();
         const soon = Date.parse(job.acceptDueAt) - Date.now() < 6 * 3_600_000;
-        if (overdue || soon)
-          return [
-            {
-              kind: overdue ? ("accept_overdue" as const) : ("accept_due_soon" as const),
-              jobId: job.id,
-              jobNo: job.jobNo,
-              text: overdue ? "เลยเวลารับงานแล้ว Packio อาจย้ายงาน" : "ใกล้หมดเวลารับงาน",
-              at: job.acceptDueAt,
-            },
-          ];
+        return overdue || soon
+          ? [
+              {
+                kind: overdue ? "acceptance_overdue" : "acceptance_due_soon",
+                jobId: job.id,
+                jobNo: job.jobNo,
+                dueAt: job.acceptDueAt,
+              },
+            ]
+          : [];
       }
+      const step = current(job);
+      if (WORKING.includes(job.status) && job.atRisk && step?.dueAt && Date.parse(step.dueAt) < Date.now())
+        return [{ kind: "step_overdue", jobId: job.id, jobNo: job.jobNo, dueAt: step.dueAt }];
       const inspection = inspections.find((item) => item.job.id === job.id && item.status === "planned");
       return inspection
-        ? [
-            {
-              kind: "inspection_planned" as const,
-              jobId: job.id,
-              jobNo: job.jobNo,
-              text: "Packio นัดตรวจคุณภาพงานนี้",
-              at: inspection.scheduledAt,
-            },
-          ]
+        ? [{ kind: "inspection_planned", jobId: job.id, jobNo: job.jobNo, dueAt: inspection.scheduledAt }]
         : [];
     });
-    return {
+    return HttpResponse.json({
       counters: {
-        toAccept: summaries.filter((item) => item.views.includes("to_accept")).length,
-        dueToday: dueToday.length,
-        atRisk: summaries.filter((item) => item.views.includes("late")).length,
+        awaitingAcceptance: released.length,
+        acceptanceOverdue: released.filter(({ job }) => job.acceptDueAt && Date.parse(job.acceptDueAt) < Date.now())
+          .length,
+        milestonesDueToday: working.filter(({ job }) => current(job)?.dueAt?.slice(0, 10) === today).length,
+        atRisk: working.filter(({ job }) => job.atRisk).length,
         onHold: all.filter(({ job }) => job.status === "on_hold").length,
+        inspectionsPlanned: all.filter(({ job }) =>
+          inspections.some((item) => item.job.id === job.id && item.status === "planned"),
+        ).length,
       },
       queue,
       alerts,
-    };
+    } satisfies Schemas["FactoryTodayDto"]);
   }),
 
-  mockRequest("GET /v1/partner/factories/{factoryId}/jobs", (context) => {
-    const ok = own(context.request, context.params.factoryId, perm.read);
+  // partner.production.lookup: a job traveller's or carton label's code → the job, this factory only.
+  http.get("*/v1/partner/production-jobs/lookup", ({ request }) => {
+    const ok = mine(request, perm.read);
     if (ok instanceof Response) return ok;
-    const view = context.query.view ?? "all";
-    const rows = factoryJobs(ok.store.factory.id)
-      .map(({ order, job }) => summaryOf(order, job))
-      .filter((item) => view === "all" || item.views.includes(view))
-      .filter((item) => matchesQuery(context.query.q, item.jobNo, item.title, item.productType.name))
-      .sort((a, b) =>
-        (a.acceptDueAt ?? a.current?.dueAt ?? a.promisedShipDate).localeCompare(
-          b.acceptDueAt ?? b.current?.dueAt ?? b.promisedShipDate,
-        ),
-      );
-    return paginate(rows, context.query);
-  }),
-
-  mockRequest("GET /v1/partner/factories/{factoryId}/jobs/lookup", (context) => {
-    const ok = own(context.request, context.params.factoryId, perm.read);
-    if (ok instanceof Response) return ok;
-    const code = context.query.code.trim().toUpperCase();
-    const found = factoryJobs(ok.store.factory.id).find(
+    const code = (new URL(request.url).searchParams.get("code") ?? "").trim().toUpperCase();
+    if (code.length < 3) return invalid("code", "อย่างน้อย 3 ตัวอักษร");
+    const jobs = factoryJobs(ok.store.factory.id);
+    const byCarton = cartonJob(code);
+    const found = jobs.find(
       ({ job }) =>
+        job.id === byCarton ||
         job.jobNo.toUpperCase() === code ||
         code.endsWith(job.jobNo.toUpperCase()) ||
         code.includes(job.id.toUpperCase()),
     );
     return found
-      ? { jobId: found.job.id, jobNo: found.job.jobNo }
-      : problem(404, "jobs.not_found", "ไม่พบงานของโรงงานจากรหัสนี้");
+      ? HttpResponse.json({ jobId: found.job.id, jobNo: found.job.jobNo } satisfies Schemas["JobLookupDto"])
+      : problem(404, "http.not_found", "ไม่พบงานของโรงงานจากรหัสนี้");
   }),
 
-  mockRequest("GET /v1/partner/factories/{factoryId}/jobs/{jobId}", (context) => {
-    const found = jobFor(context, perm.read);
-    return found instanceof Response ? found : detailOf(found.order, found.job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", (context) => {
-    const found = jobFor(context, perm.accept);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    if (job.status !== "released") {
-      // The same device asking again is a replay; anything else lost the race.
-      return job.status === "accepted" || job.status === "in_progress"
-        ? detailOf(order, job)
-        : conflict("งานนี้ไม่ได้รอรับแล้ว");
-    }
-    Object.assign(job, { status: "accepted", milestones: routeFor(job, order) });
-    extra.steps = new Map(ROUTE.map((_, index) => [index + 1, blankStep()]));
-    Object.assign(extra.steps.get(1)!, { startedAt: now(), reportedBy: who(actor), clientRef: context.body.clientRef });
-    const late = job.acceptDueAt && Date.parse(job.acceptDueAt) < Date.now();
-    log(extra, late ? "โรงงานรับงาน (เลยเวลารับงาน)" : "โรงงานรับงาน", who(actor));
-    return detailOf(order, job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/reject", (context) => {
-    const found = jobFor(context, perm.accept);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    if (job.status !== "released") return conflict("ปฏิเสธได้เฉพาะงานที่รอรับ");
-    job.status = "rejected";
-    extra.rejectedReason = context.body.reason;
-    log(extra, `โรงงานปฏิเสธงาน${context.body.note ? `: ${context.body.note}` : ""}`, who(actor));
-    return detailOf(order, job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/start", (context) => {
-    const found = jobFor(context, perm.update);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    const seq = Number(context.params.seq);
-    const milestone = job.milestones.find((item) => item.seq === seq);
-    if (!milestone) return problem(404, "jobs.milestone_not_found", "ไม่พบขั้นตอนนี้");
-    const step = extra.steps.get(seq) ?? blankStep();
-    if (milestone.status !== "pending") {
-      return step.clientRef === context.body.clientRef
-        ? detailOf(order, job)
-        : conflict("ขั้นตอนนี้มีการอัปเดตจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด");
-    }
-    const previous = job.milestones.find((item) => item.seq === seq - 1);
-    if (previous && previous.status !== "completed") return conflict("ต้องจบขั้นตอนก่อนหน้าก่อน");
-    milestone.status = "in_progress";
-    Object.assign(step, { startedAt: now(), reportedBy: who(actor), clientRef: context.body.clientRef });
-    extra.steps.set(seq, step);
-    if (job.status === "accepted") job.status = "in_progress";
-    log(extra, `เริ่ม${milestone.name}`, who(actor));
-    return detailOf(order, job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", (context) => {
-    const found = jobFor(context, perm.update);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    const seq = Number(context.params.seq);
-    const milestone = job.milestones.find((item) => item.seq === seq);
-    if (!milestone) return problem(404, "jobs.milestone_not_found", "ไม่พบขั้นตอนนี้");
-    const step = extra.steps.get(seq) ?? blankStep();
-    if (milestone.status === "completed") {
-      return step.clientRef === context.body.clientRef
-        ? detailOf(order, job)
-        : conflict("ขั้นตอนนี้บันทึกเสร็จจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด");
-    }
-    if (milestone.status !== "in_progress") return conflict("ต้องเริ่มขั้นตอนนี้ก่อน");
-    const { quantityIn, quantityOut, quantityScrap, photoFileIds } = context.body;
-    const route = ROUTE[seq - 1]!;
-    const before = [...extra.steps.entries()]
-      .filter(([at]) => at < seq)
-      .map(([, value]) => value.quantityOut)
-      .filter((value) => value !== null)
-      .at(-1);
-    const ceiling = before ?? Math.ceil(order.quantity * (1 + Number(order.tolerance.overagePct) / 100) * 1.1);
-    const errors: { path: string; code: string; message: string }[] = [];
-    if (quantityOut + quantityScrap > quantityIn)
-      errors.push({ path: "quantityOut", code: "max", message: "จำนวนดีรวมของเสียต้องไม่เกินจำนวนที่รับเข้า" });
-    if (quantityIn > ceiling)
-      errors.push({
-        path: "quantityIn",
-        code: "max",
-        message: `รับเข้าได้ไม่เกิน ${ceiling.toLocaleString("th-TH")} ชิ้น`,
-      });
-    if (route.photo && photoFileIds.length === 0)
-      errors.push({ path: "photoFileIds", code: "required", message: "ขั้นตอนนี้ต้องแนบรูปถ่ายอย่างน้อยหนึ่งรูป" });
-    if (!photosExist(photoFileIds)) errors.push({ path: "photoFileIds", code: "ref", message: "ไม่พบไฟล์รูป" });
-    if (errors.length) return problem(422, "validation.failed", "ตรวจจำนวนและรูปอีกครั้ง", errors);
-    if (route.qc && !extra.qcChecks.some((check) => check.result !== "fail"))
-      return problem(409, "jobs.qc_required", "บันทึกผลตรวจคุณภาพที่ผ่านก่อนจบขั้นตอนนี้");
-    Object.assign(step, {
-      quantityIn,
-      quantityOut,
-      quantityScrap,
-      photoIds: photoFileIds,
-      note: context.body.note ?? null,
-      reportedBy: who(actor),
-      clientRef: context.body.clientRef,
-    });
-    extra.steps.set(seq, step);
-    Object.assign(milestone, {
-      status: "completed",
-      completedAt: now(),
-      onTime: !milestone.dueAt || Date.parse(milestone.dueAt) >= Date.now(),
-    });
-    log(
-      extra,
-      `จบ${milestone.name}: ดี ${quantityOut.toLocaleString("th-TH")} เสีย ${quantityScrap.toLocaleString("th-TH")}`,
-      who(actor),
-    );
-    if (job.milestones.every((item) => item.status === "completed")) {
-      job.status = "completed";
-      job.atRisk = false;
-      log(extra, "ผลิตเสร็จ พร้อมส่ง", who(actor));
-    }
-    return detailOf(order, job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/qc-checks", (context) => {
-    const found = jobFor(context, perm.qc);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    const current = job.milestones.find((item) => item.status !== "completed");
-    if (!current || !ROUTE[current.seq - 1]?.qc || current.status !== "in_progress")
-      return conflict("บันทึกผลตรวจได้ระหว่างขั้นตอนตรวจคุณภาพ");
-    if (extra.qcChecks.some((check) => check.id === mockId("qcc", hash(context.body.clientRef))))
-      return detailOf(order, job);
-    if (!photosExist(context.body.photoFileIds)) return invalid("photoFileIds", "ไม่พบไฟล์รูป");
-    const labels = new Map(QC_CHECKLIST.map((item) => [item.key, item.label]));
-    extra.qcChecks.push({
-      id: mockId("qcc", hash(context.body.clientRef)),
-      result: context.body.result,
-      isFirstPass: extra.qcChecks.length === 0 && context.body.result === "pass",
-      checklist: context.body.checklist.map((item) => ({
-        key: item.key,
-        label: labels.get(item.key) ?? item.key,
-        pass: item.pass,
-        note: item.note ?? null,
-      })),
-      defects: context.body.defects,
-      photos: context.body.photoFileIds.map(fileRefOf),
-      notes: context.body.notes ?? null,
-      performedBy: who(actor),
-      performedAt: now(),
-    });
-    log(
-      extra,
-      `บันทึกผลตรวจคุณภาพ: ${context.body.result === "pass" ? "ผ่าน" : context.body.result === "fail" ? "ไม่ผ่าน" : "ผ่านแบบมีเงื่อนไข"}`,
-      who(actor),
-    );
-    return detailOf(order, job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/issues", (context) => {
-    const found = jobFor(context, perm.read);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    const id = mockId("iss", hash(context.body.clientRef));
-    if (!extra.issues.some((issue) => issue.id === id)) {
-      extra.issues.unshift({
-        id,
-        kind: context.body.kind,
-        description: context.body.description,
-        status: "open",
-        photos: (context.body.photoFileIds ?? []).map(fileRefOf),
-        raisedBy: who(actor),
-        raisedAt: now(),
-        resolvedAt: null,
-      });
-      log(extra, `แจ้งปัญหา: ${context.body.description}`, who(actor));
-    }
-    return detailOf(order, job);
-  }),
-
-  mockRequest("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/issues/{issueId}/actions/resolve", (context) => {
-    const found = jobFor(context, perm.read);
-    if (found instanceof Response) return found;
-    const { order, job, extra, who: actor } = found;
-    const issue = extra.issues.find((item) => item.id === context.params.issueId);
-    if (!issue) return problem(404, "jobs.issue_not_found", "ไม่พบปัญหานี้");
-    if (issue.status === "open") {
-      Object.assign(issue, { status: "resolved", resolvedAt: now() });
-      log(extra, `แก้ปัญหาแล้ว${context.body.note ? `: ${context.body.note}` : ""}`, who(actor));
-    }
-    return detailOf(order, job);
-  }),
-
-  mockRequest("GET /v1/partner/factories/{factoryId}/capacity-calendar", (context) => {
-    const ok = own(context.request, context.params.factoryId, perm.read);
+  // partner.production.list: the factory's jobs by `?view` / `?status` / `?queue`, searched by `q`.
+  http.get("*/v1/partner/production-jobs", ({ request }) => {
+    const ok = mine(request, perm.read);
     if (ok instanceof Response) return ok;
-    const weeks = context.query.weeks ?? 6;
+    const url = new URL(request.url);
+    const view = url.searchParams.get("view");
+    if (view && !JOB_VIEWS.has(view)) return invalid("view", "ไม่รู้จักมุมมองนี้");
+    const status = url.searchParams.get("status");
+    const queue = url.searchParams.get("queue");
+    const orderId = url.searchParams.get("orderId");
+    const productTypeCode = url.searchParams.get("productTypeCode");
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = factoryJobs(ok.store.factory.id)
+      .filter(({ order, job }) => !view || inView(order, job, view))
+      .filter(({ job }) => !status || job.status === status)
+      .filter(
+        ({ job }) =>
+          !queue ||
+          (queue === "awaiting_acceptance" && job.status === "released") ||
+          (queue === "at_risk" && job.atRisk),
+      )
+      .filter(({ order }) => !orderId || order.id === orderId)
+      .filter(({ order }) => !productTypeCode || order.productType.code === productTypeCode)
+      .filter(({ order, job }) => matchesQuery(q, job.jobNo, titleOf(order), order.productType.name))
+      .sort((a, b) => dueOf(a.order, a.job).localeCompare(dueOf(b.order, b.job)))
+      .map(({ order, job }) => toPartnerJobDto(order, job, ok.who));
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
+    );
+  }),
+
+  http.get("*/v1/partner/production-jobs/:jobId", ({ request, params }) => {
+    const found = jobFor(request, params.jobId, perm.read);
+    return found instanceof Response ? found : HttpResponse.json(toPartnerJobDto(found.order, found.job, found.who));
+  }),
+
+  // partner.production.accept: within the window (D-074); the route's first step is the acceptance.
+  http.post("*/v1/partner/production-jobs/:jobId/actions/accept", ({ request, params }) =>
+    once(request, `job-accept:${String(params.jobId)}`, () => {
+      const found = jobFor(request, params.jobId, perm.respond);
+      if (found instanceof Response) return found;
+      const { order, job, extra } = found;
+      if (job.status !== "released") return notWorking(job);
+      Object.assign(job, { status: "accepted", milestones: routeFor(job, order) });
+      extra.steps = new Map(ROUTE.map((_, index) => [index + 1, blankStep()]));
+      Object.assign(extra.steps.get(1)!, { startedAt: now(), reportedBy: who(found.who) });
+      extra.acceptedAt = now();
+      const late = job.acceptDueAt && Date.parse(job.acceptDueAt) < Date.now();
+      log(extra, late ? "โรงงานรับงาน (เลยเวลารับงาน)" : "โรงงานรับงาน", who(found.who));
+      return HttpResponse.json(toPartnerJobDto(order, job, found.who));
+    }),
+  ),
+
+  // partner.production.reject: with a reason; Packio reassigns or escalates (D-012, D-101).
+  http.post("*/v1/partner/production-jobs/:jobId/actions/reject", ({ request, params }) =>
+    once(request, `job-reject:${String(params.jobId)}`, async () => {
+      const found = jobFor(request, params.jobId, perm.respond);
+      if (found instanceof Response) return found;
+      const { order, job, extra } = found;
+      const body = (await request.json().catch(() => null)) as Schemas["RejectJobDto"] | null;
+      if (!body || !REJECT_REASONS.has(body.reasonCode)) return invalid("reasonCode", "เลือกเหตุผล");
+      if (job.status !== "released") return notWorking(job);
+      job.status = "rejected";
+      extra.rejected = { reasonCode: body.reasonCode, note: body.note?.trim() || null, at: now() };
+      log(extra, `โรงงานปฏิเสธงาน${body.note ? `: ${body.note}` : ""}`, who(found.who));
+      return HttpResponse.json(toPartnerJobDto(order, job, found.who));
+    }),
+  ),
+
+  // partner.production.updateMilestone: start or complete one step; the server wins (`applied: false`).
+  http.post("*/v1/partner/production-jobs/:jobId/milestones/:milestoneId", ({ request, params }) =>
+    once(request, `milestone:${String(params.milestoneId)}`, async () => {
+      const found = jobFor(request, params.jobId, perm.update);
+      if (found instanceof Response) return found;
+      const { order, job, extra } = found;
+      const body = (await request.json().catch(() => null)) as Schemas["UpdateMilestoneDto"] | null;
+      if (!body || !["start", "complete"].includes(body.action)) return invalid("action", "start หรือ complete");
+      if (!body.clientRef) return invalid("clientRef", "จำเป็น");
+      const milestone = job.milestones.find((item) => milestoneIdOf(job, item.seq) === params.milestoneId);
+      if (!milestone) return problem(404, "http.not_found", "ไม่พบขั้นตอนนี้");
+      const step = extra.steps.get(milestone.seq) ?? blankStep();
+      const answer = (applied: boolean, reason: Schemas["MilestoneUpdateOutcome"] | null) =>
+        HttpResponse.json({
+          applied,
+          reason,
+          job: toPartnerJobDto(order, job, found.who),
+        } satisfies Schemas["MilestoneUpdateResultDto"]);
+      if (step.clientRef === body.clientRef) return answer(false, "duplicate");
+      if (!WORKING.includes(job.status)) return notWorking(job);
+      if (milestone.status === "skipped") return answer(false, "skipped");
+      if (body.action === "start" && milestone.status !== "pending") return answer(false, "already_started");
+      if (body.action === "complete" && milestone.status === "completed") return answer(false, "already_completed");
+      if (job.milestones.some((item) => item.seq < milestone.seq && item.status === "pending"))
+        return problem(409, "production.milestone_out_of_order", "ต้องทำขั้นตอนก่อนหน้าก่อน");
+      const photoIds = body.photoFileIds ?? [];
+      if (!photosExist(photoIds)) return problem(422, "artwork.file_not_usable", "ไม่พบไฟล์รูปที่อัปโหลด");
+      const route = ROUTE[milestone.seq - 1]!;
+      const reportedBy = who(found.who);
+      if (body.action === "start") {
+        milestone.status = "in_progress";
+        Object.assign(step, {
+          startedAt: now(),
+          quantityIn: body.quantityIn ?? null,
+          note: body.note ?? step.note,
+          reportedBy,
+          clientRef: body.clientRef,
+        });
+        step.photoIds.push(...photoIds);
+        log(extra, `เริ่ม${route.nameTh}`, reportedBy);
+      } else {
+        const needsPhoto = route.evidence === "photo";
+        const needsQc = route.evidence === "qc_form";
+        if (needsPhoto && step.photoIds.length + photoIds.length === 0)
+          return problem(409, "production.evidence_missing", "ขั้นตอนนี้ต้องแนบรูปถ่ายอย่างน้อยหนึ่งรูป");
+        const latest = [...extra.qcChecks].sort((a, b) => b.performedAt.localeCompare(a.performedAt))[0];
+        if (needsQc && (!latest || latest.result === "fail"))
+          return problem(409, "production.evidence_missing", "บันทึกผลตรวจคุณภาพที่ผ่านก่อนจบขั้นตอนนี้");
+        if (route.tracksQuantity) {
+          if (body.quantityOut === undefined)
+            return problem(422, "validation.failed", "ขั้นตอนนี้ต้องระบุจำนวน", [
+              { path: "quantityOut", code: "required", message: "ระบุจำนวนดี" },
+            ]);
+          const previous = [...extra.steps.entries()]
+            .sort(([a], [b]) => b - a)
+            .find(([seq, item]) => seq < milestone.seq && ROUTE[seq - 1]?.tracksQuantity && item.quantityOut !== null);
+          const ceiling =
+            body.quantityIn ??
+            step.quantityIn ??
+            previous?.[1].quantityOut ??
+            Math.floor(order.quantity * (1 + Number(order.tolerance.overagePct) / 100) + 1e-9);
+          const scrap = body.quantityScrap ?? 0;
+          if (body.quantityOut + scrap > ceiling)
+            return problem(
+              422,
+              "production.quantity_invalid",
+              `ดีรวมเสียได้ไม่เกิน ${ceiling.toLocaleString("th-TH")} ชิ้น`,
+            );
+          Object.assign(step, {
+            quantityIn: body.quantityIn ?? step.quantityIn ?? previous?.[1].quantityOut ?? null,
+            quantityOut: body.quantityOut,
+            quantityScrap: scrap,
+          });
+        }
+        step.photoIds.push(...photoIds);
+        Object.assign(step, {
+          startedAt: step.startedAt ?? now(),
+          note: body.note ?? step.note,
+          reportedBy,
+          clientRef: body.clientRef,
+        });
+        Object.assign(milestone, {
+          status: "completed",
+          completedAt: now(),
+          onTime: milestone.dueAt ? Date.parse(milestone.dueAt) >= Date.now() : null,
+        });
+        log(
+          extra,
+          route.tracksQuantity
+            ? `จบ${route.nameTh}: ดี ${(step.quantityOut ?? 0).toLocaleString("th-TH")} เสีย ${(step.quantityScrap ?? 0).toLocaleString("th-TH")}`
+            : `จบ${route.nameTh}`,
+          reportedBy,
+        );
+      }
+      extra.steps.set(milestone.seq, step);
+      if (job.status === "accepted") job.status = "in_progress";
+      if (job.milestones.every((item) => item.status === "completed" || item.status === "skipped")) {
+        job.status = "completed";
+        job.atRisk = false;
+        log(extra, "ผลิตเสร็จ พร้อมส่ง", reportedBy);
+      }
+      return answer(true, null);
+    }),
+  ),
+
+  // partner.production.recordQc: against the checklist the factory answered (D-076); a photo is required.
+  http.post("*/v1/partner/production-jobs/:jobId/qc-checks", ({ request, params }) =>
+    once(request, `qc:${String(params.jobId)}`, async () => {
+      const found = jobFor(request, params.jobId, perm.qc);
+      if (found instanceof Response) return found;
+      const { job, extra } = found;
+      const body = (await request.json().catch(() => null)) as Schemas["RecordQcDto"] | null;
+      if (!body?.checklistVersion) return invalid("checklistVersion", "จำเป็น");
+      if (!body.checklist || typeof body.checklist !== "object") return invalid("checklist", "จำเป็น");
+      if (!["pass", "fail", "conditional"].includes(body.result)) return invalid("result", "เลือกผลรวม");
+      const defects = body.defects ?? [];
+      if (defects.some((item) => !["critical", "major", "minor"].includes(item.severity) || item.count < 1))
+        return invalid("defects", "ระบุระดับและจำนวนของข้อบกพร่อง");
+      if (!WORKING.includes(job.status)) return notWorking(job);
+      if (!body.photoFileIds?.length) return problem(409, "production.evidence_missing", "แนบรูปอย่างน้อยหนึ่งรูป");
+      if (!photosExist(body.photoFileIds)) return problem(422, "artwork.file_not_usable", "ไม่พบไฟล์รูปที่อัปโหลด");
+      const check: QcCheck = {
+        id: mockId("qcc", 100 + extra.qcChecks.length + Number.parseInt(job.id.slice(-4), 16) * 8),
+        result: body.result,
+        isFirstPass: extra.qcChecks.length === 0 && body.result === "pass",
+        checklist: body.checklist,
+        checklistVersion: body.checklistVersion,
+        defects,
+        photoFileIds: [...body.photoFileIds],
+        note: body.note ?? null,
+        quantityChecked: body.quantityChecked ?? null,
+        quantityDefective: body.quantityDefective ?? null,
+        performedAt: now(),
+        performedBy: who(found.who),
+      };
+      extra.qcChecks.push(check);
+      log(
+        extra,
+        `บันทึกผลตรวจคุณภาพ: ${body.result === "pass" ? "ผ่าน" : body.result === "fail" ? "ไม่ผ่าน" : "ผ่านแบบมีเงื่อนไข"}`,
+        who(found.who),
+      );
+      return HttpResponse.json(check, { status: 201 });
+    }),
+  ),
+  http.get("*/v1/partner/production-jobs/:jobId/qc-checks", ({ request, params }) => {
+    const found = jobFor(request, params.jobId, perm.read);
+    return found instanceof Response ? found : HttpResponse.json(found.extra.qcChecks);
+  }),
+
+  // partner.production.raiseIssue (D-232): the kinds are named; Packio sees it on the board.
+  http.post("*/v1/partner/production-jobs/:jobId/issues", async ({ request, params }) => {
+    const act = async () => {
+      const found = jobFor(request, params.jobId, perm.issues);
+      if (found instanceof Response) return found;
+      const { job, extra } = found;
+      const body = (await request.json().catch(() => null)) as Schemas["RaiseIssueDto"] | null;
+      if (!body || !ISSUE_KINDS.has(body.kind)) return invalid("kind", "เลือกประเภทปัญหา");
+      if (!body.description || body.description.trim().length < 3)
+        return invalid("description", "อย่างน้อย 3 ตัวอักษร");
+      const photoIds = body.photoFileIds ?? [];
+      if (!photosExist(photoIds)) return problem(422, "artwork.file_not_usable", "ไม่พบไฟล์รูปที่อัปโหลด");
+      const issue: Issue = {
+        id: mockId("iss", 100 + extra.issues.length + Number.parseInt(job.id.slice(-4), 16) * 8),
+        kind: body.kind,
+        description: body.description.trim(),
+        status: "open",
+        photoFileIds: [...photoIds],
+        raisedBy: who(found.who),
+        createdAt: now(),
+        resolutionNote: null,
+        resolvedAt: null,
+        resolvedBy: null,
+      };
+      extra.issues.push(issue);
+      log(extra, `แจ้งปัญหา: ${issue.description}`, who(found.who));
+      return HttpResponse.json(issue, { status: 201 });
+    };
+    // The key is optional here (contract v0.6.0): a replay by key answers the first issue.
+    return request.headers.get("idempotency-key") ? once(request, `issue:${String(params.jobId)}`, act) : act();
+  }),
+  http.get("*/v1/partner/production-jobs/:jobId/issues", ({ request, params }) => {
+    const found = jobFor(request, params.jobId, perm.read);
+    return found instanceof Response ? found : HttpResponse.json(found.extra.issues);
+  }),
+
+  // partner.production.resolveIssue (D-232): the factory closes an issue its own people raised.
+  http.post("*/v1/partner/production-jobs/:jobId/issues/:issueId/actions/resolve", async ({ request, params }) => {
+    const act = async () => {
+      const found = jobFor(request, params.jobId, perm.issues);
+      if (found instanceof Response) return found;
+      const body = (await request.json().catch(() => null)) as Schemas["ResolveIssueDto"] | null;
+      if (!body?.note?.trim()) return invalid("note", "บอกว่าแก้อย่างไร");
+      const issue = found.extra.issues.find((item) => item.id === params.issueId);
+      if (!issue) return problem(404, "http.not_found", "ไม่พบปัญหานี้");
+      if (issue.status === "resolved") return problem(409, "production.invalid_status", "ปัญหานี้แก้แล้ว");
+      Object.assign(issue, {
+        status: "resolved",
+        resolvedAt: now(),
+        resolvedBy: who(found.who),
+        resolutionNote: body.note.trim(),
+      });
+      log(found.extra, `แก้ปัญหาแล้ว: ${body.note.trim()}`, who(found.who));
+      return HttpResponse.json(issue);
+    };
+    return request.headers.get("idempotency-key") ? once(request, `resolve:${String(params.issueId)}`, act) : act();
+  }),
+
+  // partner.factories.capacityCalendar: weeks × product types against the booked load (D-101), and
+  // the days the factory does not work — the national calendar's and its own (D-161).
+  http.get("*/v1/partner/factories/:factoryId/capacity-calendar", ({ request, params }) => {
+    const ok = own(request, params.factoryId, perm.capacity);
+    if (ok instanceof Response) return ok;
+    const url = new URL(request.url);
+    const weeks = Math.min(26, Math.max(1, Number(url.searchParams.get("weeks") ?? 6)));
     const monday = new Date(Date.now() + 7 * 3_600_000);
     monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
     const store = stores.get(ok.store.factory.id)!;
-    return {
-      weeks: Array.from({ length: weeks }, (_, index) => {
-        const weekStart = new Date(monday.getTime() + index * 7 * 86_400_000).toISOString().slice(0, 10);
-        return {
-          weekStart,
-          types: store.config.capacities
-            .filter((capacity) => capacity.current)
-            .map((capacity) => {
-              const cap = Number(capacity.current!.weeklyCapacity);
-              const override = store.overrides.get(`${capacity.productTypeId}:${weekStart}`);
-              const total = override ?? cap;
+    const weekStart = (index: number) => new Date(monday.getTime() + index * 7 * 86_400_000).toISOString().slice(0, 10);
+    return HttpResponse.json({
+      from: weekStart(0),
+      to: new Date(monday.getTime() + (weeks * 7 - 1) * 86_400_000).toISOString().slice(0, 10),
+      productTypes: store.config.capacities
+        .filter((capacity) => capacity.current)
+        .map((capacity) => {
+          const type = PRODUCT_TYPES.find((item) => item.id === capacity.productTypeId);
+          return {
+            productTypeId: capacity.productTypeId,
+            productTypeCode: capacity.productTypeCode,
+            productTypeNameTh: type?.nameTh ?? capacity.productTypeCode,
+            unit: capacity.current!.capacityUnit,
+            weeks: Array.from({ length: weeks }, (_, index) => {
+              const start = weekStart(index);
+              const override = store.overrides.get(`${capacity.productTypeId}:${start}`);
+              const total = override ?? Number(capacity.current!.weeklyCapacity);
               const booked = Math.round(total * Math.max(0, 0.9 - index * 0.15));
               return {
-                productTypeId: capacity.productTypeId,
-                productType: { code: capacity.productTypeCode, name: capacity.productTypeCode },
-                unit: capacity.current!.capacityUnit,
+                weekStart: start,
                 capacity: total.toFixed(3),
                 booked: booked.toFixed(3),
                 free: (total - booked).toFixed(3),
+                source: override === undefined ? ("version" as const) : ("override" as const),
               };
             }),
-        };
-      }),
-      closures: [
+          };
+        }),
+      days: [
         {
-          date: bangkokIso(DAY * 9).slice(0, 10),
-          name: "วันหยุดประจำปีของโรงงาน (ข้อมูลจำลอง)",
-          kind: "factory" as const,
+          day: bangkokIso(DAY * 9).slice(0, 10),
+          kind: "closure",
+          nameTh: "วันหยุดประจำปีของโรงงาน (ข้อมูลจำลอง)",
+          nameEn: "Factory annual closure (mock)",
+          source: "factory",
         },
-        { date: bangkokIso(DAY * 16).slice(0, 10), name: "วันหยุดนักขัตฤกษ์ (ข้อมูลจำลอง)", kind: "national" as const },
+        {
+          day: bangkokIso(DAY * 16).slice(0, 10),
+          kind: "holiday",
+          nameTh: "วันหยุดนักขัตฤกษ์ (ข้อมูลจำลอง)",
+          nameEn: "Public holiday (mock)",
+          source: "national",
+        },
       ],
-    };
+    } satisfies Schemas["CapacityCalendarDto"]);
+  }),
+
+  // partner.payables.listPurchaseOrders: the factory's own POs — the same rows Finance keeps
+  // (`../admin/finance/payables.ts`), read lazily to keep the module graph acyclic.
+  http.get("*/v1/partner/purchase-orders", async ({ request }) => {
+    const ok = mine(request, perm.payables);
+    if (ok instanceof Response) return ok;
+    const { purchaseOrders } = await import("../admin/finance/payables");
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = purchaseOrders()
+      .filter((row) => row.factoryId === ok.store.factory.id)
+      .map((row) => row.po)
+      .filter((po) => matchesQuery(q, po.poNumber, po.jobNo, po.orderCode));
+    return HttpResponse.json(
+      paginate(rows, {
+        page: Number(url.searchParams.get("page") ?? 1),
+        perPage: Number(url.searchParams.get("perPage") ?? 25),
+      }),
+    );
+  }),
+
+  // partner.files.download for what the floor reads: the approved proof and the factory's own
+  // uploads (step photos, QC photos). Anything else falls through to the next handler.
+  http.get("*/v1/partner/files/:fileId/download", ({ request, params }) => {
+    const fileId = String(params.fileId);
+    const ok = mine(request);
+    if (ok instanceof Response) return undefined;
+    const proof = factoryJobs(ok.store.factory.id)
+      .map(({ order }) => approvedProofOf(order))
+      .find((item) => item?.file.id === fileId);
+    const url = proof
+      ? (proof.file.url ??
+        `data:text/plain;charset=utf-8,${encodeURIComponent(`${proof.file.originalName} (ข้อมูลจำลอง)`)}`)
+      : files.has(fileId)
+        ? (fileDataUrl(fileId) ??
+          `data:text/plain;charset=utf-8,${encodeURIComponent(files.get(fileId)!.originalName)}`)
+        : null;
+    if (!url) return undefined;
+    return HttpResponse.json({ url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),
 ];
-
-/** A stable small number from a client reference, for deterministic ids of replayed reports. */
-function hash(value: string): number {
-  let result = 0;
-  for (const char of value) result = (result * 31 + char.charCodeAt(0)) % 0xffffff;
-  return result;
-}
-
-export { QC_CHECKLIST };

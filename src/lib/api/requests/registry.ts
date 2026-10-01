@@ -10,16 +10,13 @@ import { adminAnalyticsRequests } from "./admin-analytics";
 import { adminConsoleRequests } from "./admin-console";
 import { adminCustomerRequests } from "./admin-customers";
 import { adminFinanceRequests } from "./admin-finance";
-import { adminLogisticsRequests } from "./admin-logistics";
 import { adminMarketingRequests } from "./admin-marketing";
 import { adminOrderRequests } from "./admin-orders";
 import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
 import { partnerAccountRequests } from "./partner-account";
 import { partnerBillingRequests } from "./partner-billing";
-import { partnerJobRequests } from "./partner-jobs";
 import { partnerOnboardingRequests } from "./partner-onboarding";
-import { partnerShipmentRequests } from "./partner-shipments";
 import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
@@ -37,7 +34,6 @@ export const REQUESTS = {
   ...adminRfqRequests,
   ...adminPrepressRequests,
   ...adminMarketingRequests,
-  ...adminLogisticsRequests,
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,
   ...storeCatalogRequests,
@@ -50,8 +46,6 @@ export const REQUESTS = {
   ...storeBusinessRequests,
   ...storeDesignRequests,
   ...partnerOnboardingRequests,
-  ...partnerJobRequests,
-  ...partnerShipmentRequests,
   ...partnerBillingRequests,
   ...partnerAccountRequests,
 } as const;

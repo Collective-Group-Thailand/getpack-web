@@ -1,30 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
-import { SHIPMENT_STATUS } from "@/domain/status";
+import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { QueueTabs, ResourceList, StatusChip, type InitialPage } from "../console";
-import { SHIPMENT_STATUSES, shipmentsList, type Shipment } from "./resources";
+import { useFactoryOptions } from "../production/factories";
+import { SHIPMENT_QUEUES, SHIPMENT_STATUSES, shipmentsList, type Shipment } from "./resources";
 
 /** Pieces in the shipment, over its items — a count, never money. */
 export const piecesOf = (shipment: Pick<Shipment, "items">) =>
   shipment.items.reduce((sum, item) => sum + item.quantity, 0);
 
+const CARRIERS = ["factory_fleet", "flash_express", "deliveree"] as const;
+
+/** The dashboard queue each desk tab counts, where the dashboard has one. */
+const QUEUE_COUNTS: Partial<Record<(typeof SHIPMENT_QUEUES)[number], string>> = {
+  exceptions: "logistics.exceptions",
+  pod_review: "logistics.pod_review",
+};
+
 /**
- * The logistics desk (F2 2.8, D-013, D-114): shipments by status. The published list has no
- * queues (awaiting pick-up, exceptions, POD review), no carrier or factory filter, no exception
- * text or POD review state and no province on the destination (CONTRACT-GAP admin.shipments), so
- * the tabs are the statuses and the row shows the shipment's own note.
+ * The logistics desk (F2 2.8, D-013, D-114, D-229, D-230): shipments by queue — awaiting pick-up,
+ * on the road, exceptions, POD to review — filtered by status, carrier and factory. A row shows
+ * the destination's province, the trip's note, the before-shipping hold, a failed or returned
+ * trip and the POD's review state.
  */
 export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | null }) {
   const t = useTranslations("logistics.shipments");
   const tStatus = useTranslations("status");
   const format = useFormat();
+  const locale = useLocale();
+  const factories = useFactoryOptions();
 
   const columns: DataTableColumn<Shipment>[] = [
     {
@@ -36,13 +47,26 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
             {row.shipmentNo}
           </Link>
           <p className="text-muted text-xs">{[...new Set(row.items.map((item) => item.orderCode))].join(", ")}</p>
+          {row.splitFrom ? (
+            <p className="text-muted text-xs">{t("splitFrom", { no: row.splitFrom.shipmentNo })}</p>
+          ) : null}
         </div>
       ),
     },
     {
       id: "status",
       header: t("columns.status"),
-      cell: (row) => <StatusChip map={SHIPMENT_STATUS} value={row.status} />,
+      cell: (row) => (
+        <div className="flex flex-col items-start gap-1">
+          <StatusChip map={SHIPMENT_STATUS} value={row.status} />
+          {row.podReview ? <StatusChip map={POD_REVIEW_STATUS} value={row.podReview.state} /> : null}
+          {row.blockedByPayment ? (
+            <Badge size="sm" tone="warning" icon="hourglass">
+              {t("paymentHold")}
+            </Badge>
+          ) : null}
+        </div>
+      ),
     },
     {
       id: "carrier",
@@ -53,6 +77,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
             {t(`carriers.${row.carrier}`)}
           </Badge>
           {row.trackingNo ? <p className="text-muted mt-1 font-mono text-xs">{row.trackingNo}</p> : null}
+          {row.carrierRequest ? <p className="text-warning-subtle-fg mt-1 text-xs">{t("carrierRequested")}</p> : null}
         </div>
       ),
     },
@@ -62,7 +87,10 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
       cell: (row) => (
         <div className="text-sm">
           <p>{row.destination.recipientName}</p>
-          <p className="text-muted text-xs">{row.destination.postcode}</p>
+          <p className="text-muted text-xs">
+            {locale === "en" ? row.destination.province.nameEn : row.destination.province.nameTh}{" "}
+            {row.destination.postcode}
+          </p>
         </div>
       ),
     },
@@ -86,7 +114,11 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
           <span className="text-sm">
             {last ? <When at={last.occurredAt} /> : "–"}
             {last?.location ? <span className="text-muted block text-xs">{last.location}</span> : null}
-            {row.note ? <span className="text-warning-subtle-fg block text-xs">{row.note}</span> : null}
+            {row.exception?.note ? (
+              <span className="text-danger block text-xs">{row.exception.note}</span>
+            ) : row.note ? (
+              <span className="text-warning-subtle-fg block text-xs">{row.note}</span>
+            ) : null}
           </span>
         );
       },
@@ -96,11 +128,15 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
   return (
     <div className="flex flex-col gap-4">
       <QueueTabs
-        label={t("statusesLabel")}
-        param="status"
+        label={t("queuesLabel")}
+        param="queue"
         tabs={[
           { value: null, label: t("all") },
-          ...SHIPMENT_STATUSES.map((status) => ({ value: status, label: tStatus(SHIPMENT_STATUS[status].labelKey) })),
+          ...SHIPMENT_QUEUES.map((queue) => ({
+            value: queue,
+            label: t(`queues.${queue}`),
+            countKey: QUEUE_COUNTS[queue],
+          })),
         ]}
       />
       <ResourceList
@@ -109,6 +145,26 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
         caption={t("title")}
         initial={initial}
         searchLabel={t("search")}
+        filters={[
+          {
+            id: "status",
+            label: t("columns.status"),
+            kind: "select",
+            options: SHIPMENT_STATUSES.map((status) => ({
+              value: status,
+              label: tStatus(SHIPMENT_STATUS[status].labelKey),
+            })),
+          },
+          {
+            id: "carrier",
+            label: t("columns.carrier"),
+            kind: "select",
+            options: CARRIERS.map((carrier) => ({ value: carrier, label: t(`carriers.${carrier}`) })),
+          },
+          ...(factories.length
+            ? [{ id: "factoryId", label: t("columns.factory"), kind: "select" as const, options: factories }]
+            : []),
+        ]}
         rowTone={(row) => (row.status === "failed" || row.status === "returned" ? "danger" : undefined)}
         empty={{ title: t("empty") }}
       />
