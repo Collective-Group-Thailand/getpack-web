@@ -8,7 +8,9 @@ import { defineList } from "../console/resource";
 export type Order = Schemas["AdminOrderDto"];
 export type OrderGroup = Schemas["AdminOrderGroupDto"];
 export type OrderQueueItem = Schemas["OrderQueueItemDto"];
+export type OrderListItem = Schemas["AdminOrderListItemDto"];
 export type OrderQueue = Schemas["OrderQueue"];
+export type CancelReason = Schemas["CancelReasonDto"];
 export type Quotation = Schemas["AdminSavedQuoteDto"];
 export type DiscountMemo = Schemas["DiscountMemoDto"];
 
@@ -21,10 +23,13 @@ export const ORDER_QUEUES = [
   "late",
 ] as const satisfies readonly OrderQueue[];
 
+/** The tab of the desk that is every order (`admin.orders.list`) rather than one of the queues. */
+export const ALL_ORDERS = "all";
+
 /**
- * The order desk is its queues (`admin.orderOperations.queue`). There is no all-orders list with
- * filters on the published contract (CONTRACT-GAP admin.orders), so `?queue=` picks one and the
- * desk opens on the first; `q` searches within it.
+ * The order desk is its queues (`admin.orderOperations.queue`): `?queue=` picks one and the desk
+ * opens on the first; `q` searches within it. `?queue=all` is every order instead
+ * (`allOrdersList`).
  */
 export const ordersList = defineList<OrderQueueItem>({
   key: "order",
@@ -42,6 +47,23 @@ export const ordersList = defineList<OrderQueueItem>({
   getRowName: (row) => row.orderCode,
   defaults: { filterKeys: ["queue"] },
   // A queue with SLA timers on it.
+  staleTime: STALE_TIME.live,
+});
+
+/**
+ * Every order, newest placed first (`admin.orders.list`, v0.5.0), with the desk's filters. Its rows
+ * carry what a queue row does not: the customer and factory refs, the quantity, the group's next
+ * unpaid instalment and a slip waiting for Finance with its review due time (D-061, D-175).
+ */
+export const allOrdersList = defineList<OrderListItem>({
+  key: "order",
+  resourceName: "order_all",
+  fetch: async ({ contract }, query) =>
+    (await contract.GET("/v1/admin/orders", { params: { query: query as never } })).data!,
+  getRowId: (row) => row.orderId,
+  getRowName: (row) => row.orderCode,
+  // `?queue=all` is the page's tab, not a filter: the list keeps it in the URL and never sends it.
+  defaults: { filterKeys: ["status", "artworkStatus", "channel", "productTypeCode", "placedFrom", "placedTo"] },
   staleTime: STALE_TIME.live,
 });
 
