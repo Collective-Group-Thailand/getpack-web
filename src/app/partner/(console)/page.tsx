@@ -50,19 +50,19 @@ export default async function PartnerHomePage() {
   ]);
   const [statements, claims] = await Promise.all([
     canAt(context, "factory_payables.manage")
-      ? attempt(() =>
-          requests.call("GET /v1/partner/factories/{factoryId}/billing-statements", {
-            path: { factoryId: context.factoryId },
-            query: { status: "sent" },
-          }),
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/billing-statements", {
+                params: { query: { factoryId: context.factoryId, status: "sent" } },
+              })
+            ).data!,
         )
       : null,
     canAt(context, "factory_claims.respond")
-      ? attempt(() =>
-          requests.call("GET /v1/partner/factories/{factoryId}/claims", {
-            path: { factoryId: context.factoryId },
-            query: { status: "factory_review" },
-          }),
+      ? attempt(
+          async () =>
+            (await contract.GET("/v1/partner/claims", { params: { query: { status: "factory_review" } } })).data!,
         )
       : null,
   ]);
@@ -104,7 +104,10 @@ export default async function PartnerHomePage() {
       title: t("tasks.statement", { no: statement.bsNumber }),
       body: t("tasks.statementBody"),
     });
-  for (const claim of (claims?.data?.data ?? []).filter((item) => item.responseDueAt))
+  // The ones the API offers the factory an answer on (`claim.respond`).
+  for (const claim of (claims?.data?.data ?? []).filter((item) =>
+    item.nextActions.some((action) => action.key === "claim.respond"),
+  ))
     tasks.push({
       key: claim.id,
       href: `/claims/${claim.id}`,

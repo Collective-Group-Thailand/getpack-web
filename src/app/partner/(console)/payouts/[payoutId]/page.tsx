@@ -17,18 +17,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerBilling.payout"))("metaTitle") };
 }
 
-/** One payout: what it paid for, what was withheld and deducted, and its documents. */
+/**
+ * One payout (`partner.payables.getPayout`): what it paid for, what was withheld and deducted, the
+ * bank's reference, and — once paid — its documents (`partner.payables.payoutDocuments`): the
+ * remittance advice and the WHT certificates (50 ทวิ), as short-lived links.
+ */
 export default async function PayoutPage({ params }: Props) {
   const { payoutId } = await params;
   const t = await getTranslations("partnerBilling.payout");
-  const tKinds = await getTranslations("partnerBilling.payouts.allocations");
+  const tSources = await getTranslations("partnerBilling.payouts.sources");
+  const tKinds = await getTranslations("partnerBilling.payouts.kinds");
   const format = await getFormat();
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
-  const found = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/payouts/{payoutId}", {
-      path: { factoryId: context.factoryId, payoutId },
-    }),
+  const { contract } = await partnerServerApis();
+  const path = { factoryId: context.factoryId, payoutId };
+  const found = await attempt(
+    async () =>
+      (await contract.GET("/v1/partner/factories/{factoryId}/payouts/{payoutId}", { params: { path } })).data!,
   );
   const back = { href: "/payouts", label: t("back") };
   if (!found.data)
@@ -38,19 +43,42 @@ export default async function PayoutPage({ params }: Props) {
       </PartnerPage>
     );
   const payout = found.data;
-  const documents = [
-    payout.remittanceAdvice ? { key: "remittance", file: payout.remittanceAdvice } : null,
-    payout.whtCertificate ? { key: "wht", file: payout.whtCertificate } : null,
-  ].filter(
-    (item): item is { key: "remittance" | "wht"; file: NonNullable<typeof payout.whtCertificate> } => item !== null,
-  );
+  const documents =
+    payout.status === "paid" && payout.remittanceAdviceAvailable
+      ? await attempt(
+          async () =>
+            (await contract.GET("/v1/partner/factories/{factoryId}/payouts/{payoutId}/documents", { params: { path } }))
+              .data!,
+        )
+      : null;
+  const money = (amount: string, className = "tabular-nums") => <span className={className}>{format.thb(amount)}</span>;
+  const links = documents?.data
+    ? [
+        { key: "remittance", label: t("docs.remittance"), url: documents.data.remittanceAdvice.url },
+        ...documents.data.whtCertificates.flatMap((certificate) =>
+          certificate.download
+            ? [
+                {
+                  key: certificate.id,
+                  label: t("docs.wht", { no: certificate.wtNumber }),
+                  url: certificate.download.url,
+                },
+              ]
+            : [],
+        ),
+      ]
+    : [];
 
   return (
     <PartnerPage
-      title={payout.pvNumber}
+      title={payout.pvNumber ?? t("metaTitle")}
       back={back}
       meta={<StatusChip map={PAYOUT_ITEM_STATUS} value={payout.status} size="md" />}
-      description={t("paidTo", { date: format.date(payout.paidOn), last4: payout.bankLast4 })}
+      description={`${tKinds(payout.kind)} · ${
+        payout.paidOn
+          ? t("paidTo", { date: format.date(payout.paidOn), last4: payout.bankAccountLast4 ?? "—" })
+          : t("payOn", { date: format.date(payout.payOn) })
+      }`}
     >
       {payout.failureReason ? (
         <Callout tone="danger" title={t("failed")}>
@@ -61,46 +89,68 @@ export default async function PayoutPage({ params }: Props) {
         <DescriptionList
           columns={1}
           items={[
-            { term: t("gross"), description: <span className="tabular-nums">{format.thb(payout.gross)}</span> },
-            { term: t("wht"), description: <span className="tabular-nums">{format.thb(payout.wht)}</span> },
-            {
-              term: t("deductions"),
-              description: <span className="tabular-nums">{format.thb(payout.deductions)}</span>,
-            },
-            {
-              term: t("net"),
-              description: <span className="text-lg font-semibold tabular-nums">{format.thb(payout.net)}</span>,
-            },
+            { term: t("apNet"), description: money(payout.apNetAmount) },
+            { term: t("vat"), description: money(payout.vatAmount) },
+            { term: t("wht"), description: money(payout.whtAmount) },
+            ...(payout.retentionAmount !== "0.00"
+              ? [{ term: t("retention"), description: money(payout.retentionAmount) }]
+              : []),
+            { term: t("deductions"), description: money(payout.claimDeductionAmount) },
+            { term: t("net"), description: money(payout.cashAmount, "text-lg font-semibold tabular-nums") },
+            ...(payout.bankRef ? [{ term: t("bankRef"), description: payout.bankRef }] : []),
           ]}
         />
       </Card>
       <PartnerSection title={t("allocations")}>
         <ul className="border-border divide-border divide-y rounded-xl border">
-          {payout.allocations.map((item, index) => (
-            <li key={`${item.reference}-${index}`} className="flex flex-wrap items-baseline gap-2 p-3">
-              <span className="flex-1">{tKinds(item.kind, { ref: item.reference })}</span>
-              <span className="font-medium tabular-nums">{format.thb(item.amount)}</span>
+          {payout.allocations.map((item) => (
+            <li key={item.payableId} className="flex flex-wrap items-baseline gap-2 p-3">
+              <span className="min-w-0 flex-1">
+                <span className="block">{tSources(item.source)}</span>
+                <span className="text-muted text-sm">
+                  {[item.jobNo, item.poNumber, item.grNumber, item.bsNumber, item.orderCode]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </span>
+              <span className="font-medium tabular-nums">{format.thb(item.netAmount)}</span>
             </li>
           ))}
         </ul>
       </PartnerSection>
-      {documents.length ? (
-        <PartnerSection title={t("documents")}>
-          <ul className="flex flex-col gap-2">
-            {documents.map((item) => (
-              <li key={item.key}>
-                <a
-                  href={item.file.url ?? undefined}
-                  download={item.file.originalName}
-                  className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 items-center gap-3 rounded-xl border p-3"
-                >
-                  <Icon name="download" size={24} className="text-primary" />
-                  <span className="flex-1 font-medium">{t(`docs.${item.key}`)}</span>
-                  <span className="text-muted text-sm">{item.file.originalName}</span>
-                </a>
+      {payout.claimDeductions.length ? (
+        <PartnerSection title={t("claimDeductions")}>
+          <ul className="flex flex-col gap-1">
+            {payout.claimDeductions.map((item, index) => (
+              <li key={`${item.claimNo}-${index}`} className="flex justify-between gap-2 tabular-nums">
+                <span>{item.claimNo ?? "—"}</span>
+                <span className="font-medium">{format.thb(item.amount)}</span>
               </li>
             ))}
           </ul>
+        </PartnerSection>
+      ) : null}
+      {documents ? (
+        <PartnerSection title={t("documents")} description={t("documentsBody")}>
+          {documents.data ? (
+            <ul className="flex flex-col gap-2">
+              {links.map((item) => (
+                <li key={item.key}>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-border bg-surface hover:bg-surface-subtle flex min-h-16 items-center gap-3 rounded-xl border p-3"
+                  >
+                    <Icon name="download" size={24} className="text-primary" />
+                    <span className="flex-1 font-medium">{item.label}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <PageError error={documents.error} />
+          )}
         </PartnerSection>
       ) : null}
     </PartnerPage>
