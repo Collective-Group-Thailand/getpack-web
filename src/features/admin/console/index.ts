@@ -25,5 +25,6 @@ export { SectionNav } from "./SectionNav";
 export { useListState } from "./useListState";
 export { useProductTypes } from "./useProductTypes";
 export { useSlaFormat } from "./useSlaFormat";
+export { useStaffDirectory } from "./useStaffDirectory";
 export { useRoleLabel } from "./roles";
 export { StatusChip } from "./StatusChip";

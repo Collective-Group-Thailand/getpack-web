@@ -3,11 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import type { z } from "zod";
 
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { dashboard } from "@/lib/api/requests/admin-console";
+import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -25,7 +24,7 @@ import { useQueues } from "../console/queues";
 import { useSlaFormat } from "../console/useSlaFormat";
 import { browserPath } from "../shell/menu";
 
-type Dashboard = z.output<typeof dashboard>;
+type Dashboard = Schemas["AdminDashboardDto"];
 
 /** Icons by queue prefix; the queue itself is whatever the API says this person may work. */
 const QUEUE_ICONS: Record<string, IconName> = {
@@ -33,6 +32,7 @@ const QUEUE_ICONS: Record<string, IconName> = {
   orders: "package",
   payments: "receipt",
   rfq: "chat",
+  rfqs: "chat",
   prepress: "image",
   production: "factory",
   shipments: "truck",
@@ -40,13 +40,14 @@ const QUEUE_ICONS: Record<string, IconName> = {
   partners: "handshake",
   referrals: "gift",
   companies: "building",
+  finance: "wallet",
 };
 
 /**
  * The back-office home (F2 A.2.8): work queues first — the actionable queues this person may
  * work, with counts and SLA state, then what is waiting for their approval.
  *
- * Which queues appear is the API's decision (`admin.dashboard`), not a role check here; a key
+ * Which queues appear is the API's decision (`admin.dashboard.get`), not a role check here; a key
  * the UI has no label for still shows, as itself.
  */
 export function Dashboard({ initial }: { initial: Dashboard | null }) {

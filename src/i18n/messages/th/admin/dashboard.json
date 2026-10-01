@@ -19,13 +19,18 @@
       "awaiting_artwork": "รอไฟล์",
       "ready_to_produce": "รอเริ่มผลิต",
       "due_soon": "ใกล้ครบกำหนดส่ง",
-      "late": "ล่าช้า"
+      "late": "ล่าช้า",
+      "artwork_review": "รอตรวจไฟล์งาน",
+      "waiting_production": "รอเข้าผลิต"
     },
     "rfq": {
       "new": "คำขอราคาใหม่",
       "awaiting_factory": "รอราคาจากโรงงาน",
       "mine": "คำขอราคาของฉัน",
       "overdue": "คำขอราคาเกิน SLA"
+    },
+    "rfqs": {
+      "awaiting_first_response": "คำขอราคารอตอบครั้งแรก"
     },
     "prepress": {
       "queue": "งานก่อนพิมพ์",
