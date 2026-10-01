@@ -33,6 +33,7 @@ import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { byId, catalogProducts, imageUrl, live, typeCodeOf, type Row } from "./catalog";
 import { customerOf } from "./customers";
+import { unitOf } from "./order-dto";
 
 type Configurator = z.output<typeof storeConfigurator>;
 type Group = Configurator["groups"][number];
@@ -951,6 +952,14 @@ export function quoteSummaryOf(quote: StoreQuote): Schemas["LineSummaryDto"] {
   const product = productOfSlug(quote.product.slug);
   return {
     ...lineSummaryOf(quote.productType.code),
+    unit: unitOf(quote.unit),
+    specs: quote.specs.map((spec, index) => ({
+      key: `spec_${index + 1}`,
+      labelTh: spec.label,
+      labelEn: spec.label,
+      valueTh: spec.value,
+      valueEn: spec.value,
+    })),
     product: product
       ? {
           slug: quote.product.slug,

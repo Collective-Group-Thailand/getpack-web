@@ -50,10 +50,8 @@ function useCountdown(until: string | null): number | null {
  * the page watches), the 2C2P redirect for card and online banking, or a transfer and its slip,
  * verified at once or by Finance within 4 business hours (D-061). Another method is one tap away —
  * a new payment on the same order group (`store.payments.initiate`).
- *
- * CONTRACT-GAP store.payments — the published payment has no receiver bank account for a transfer
- * and no failure reason, so the page asks for the slip without showing where to transfer, and a
- * failure says so in general words.
+ * A transfer shows the accounts Finance set (`receiverAccounts`); a failure says why
+ * (`failureCode`: declined, or the provider's error).
  */
 export function PaymentPanel({ initial }: { initial: Payment }) {
   const t = useTranslations("payment");
@@ -138,7 +136,7 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
       {header}
       {data.status === "failed" ? (
         <Callout tone="danger" live title={t("failedTitle")}>
-          {t("failedBody")}
+          {data.failureCode ? t(`failure.${data.failureCode}`) : t("failedBody")}
         </Callout>
       ) : null}
       {data.status === "expired" ? (
@@ -271,7 +269,21 @@ function SlipSection({ payment, onChange }: { payment: Payment; onChange: () => 
       <h2 id="pay-transfer" className="font-semibold">
         {t("title")}
       </h2>
-      <p className="text-muted text-sm">{t("accountElsewhere")}</p>
+      {payment.receiverAccounts.length > 0 ? (
+        <dl className="bg-bg-subtle flex flex-col gap-2 rounded-lg p-3 text-sm">
+          {payment.receiverAccounts.map((account) => (
+            <div key={account.accountNumber}>
+              <dt className="text-muted text-xs">{t("transferTo")}</dt>
+              <dd className="font-medium">
+                <span className="font-mono tabular-nums">{account.accountNumber}</span>
+                {account.accountName ? <span className="block">{account.accountName}</span> : null}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className="text-muted text-sm">{t("accountElsewhere")}</p>
+      )}
 
       {latest?.status === "manual_review" ? (
         <Callout tone="info" live title={t("reviewTitle")}>

@@ -1002,10 +1002,19 @@ export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
     expiresAt: shown.expiresAt,
     paidAt: shown.paidAt,
     createdAt: payment.createdAt,
-    // The mock keeps a failure as words only, and its transfer account without the provider's
-    // account type: no failure code, no receiving accounts.
-    failureCode: null,
-    receiverAccounts: [],
+    // A failure in the mock is the gateway declining it.
+    failureCode: shown.status === "failed" ? "declined" : null,
+    // The account Finance set for transfers (D-061); obviously fake.
+    receiverAccounts:
+      shown.method === "bank_transfer_slip"
+        ? [
+            {
+              accountType: "scb_current",
+              accountNumber: "000-0-00000-0",
+              accountName: "บริษัท คอลเลกทีฟ กรุ๊ป (ประเทศไทย) จำกัด (ข้อมูลจำลอง)",
+            },
+          ]
+        : [],
     slips: shown.slips.map((slip) => ({
       id: slip.id,
       fileId: slipDeclared.get(slip.id)?.fileId ?? slip.id,

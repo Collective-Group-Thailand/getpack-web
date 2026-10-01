@@ -52,6 +52,9 @@ export function productOf(order: MockOrder): {
   };
 }
 
+/** The sales unit a row's word stands for (`ProductUnit`). */
+export const unitOf = (word: string): Schemas["ProductUnit"] => UNITS[word] ?? "piece";
+
 const UNITS: Record<string, Schemas["ProductUnit"]> = {
   ชิ้น: "piece",
   ใบ: "piece",
@@ -70,7 +73,7 @@ function summaryOf(order: MockOrder): Schemas["LineSummaryDto"] {
     product: product.slug
       ? { slug: product.slug, nameTh: product.name, nameEn: product.nameEn, imageUrl: product.imageUrl }
       : null,
-    unit: UNITS[order.unit] ?? "piece",
+    unit: unitOf(order.unit),
     specs: order.specs.map((spec, index) => ({
       key: `spec_${index + 1}`,
       labelTh: spec.label,
