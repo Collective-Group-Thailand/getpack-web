@@ -2,14 +2,8 @@ import type { Schemas } from "@/lib/api/types";
 
 export type CompanyRole = Schemas["CompanyRole"];
 
-/** What a member's roles open in the company's pages. */
-export interface CompanyCapabilities {
-  manageMembers: boolean;
-  manageSettings: boolean;
-  approveOrders: boolean;
-  viewFinance: boolean;
-  order: boolean;
-}
+/** What a member's roles open in the company's pages (the published `can` map). */
+export type CompanyCapabilities = Schemas["CompanyCapabilitiesDto"];
 
 /**
  * The company pages a member's roles open (D-140: Company Admin, Buyer, Approver, Accountant).
@@ -24,6 +18,8 @@ export function capabilitiesOf(roles: readonly CompanyRole[]): CompanyCapabiliti
   return {
     manageMembers: has("company_admin"),
     manageSettings: has("company_admin"),
+    // D-227: brand assets are added and removed by the Company Admin only.
+    manageAssets: has("company_admin"),
     approveOrders: has("company_approver"),
     viewFinance: has("company_admin", "company_accountant"),
     order: has("company_admin", "company_buyer", "company_approver"),

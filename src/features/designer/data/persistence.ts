@@ -126,7 +126,7 @@ export function usePersistence(config: PersistenceConfig) {
               if (png) thumbnailFileId = await storeDesigns.uploadThumbnail(png, name).catch(() => undefined);
               const saved = await storeDesigns.save(
                 serverId.current,
-                { name, spec, content, thumbnailFileId },
+                { name, kind, spec, content, thumbnailFileId },
                 etag.current,
               );
               etag.current = saved.etag;
@@ -134,7 +134,11 @@ export function usePersistence(config: PersistenceConfig) {
               setLastSavedAt(saved.data.updatedAt);
             }
           } else if (serverId.current) {
-            const saved = await adminDocuments.save(serverId.current, { title: name, spec, content }, etag.current);
+            const saved = await adminDocuments.save(
+              serverId.current,
+              { title: name, kind, spec, content },
+              etag.current,
+            );
             etag.current = saved.etag;
             versionNo.current = saved.data.versionNo;
             setLastSavedAt(saved.data.updatedAt);

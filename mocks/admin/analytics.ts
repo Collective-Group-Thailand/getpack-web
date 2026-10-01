@@ -462,11 +462,19 @@ const CLAIM_STATUSES = [
 
 type Column = Schemas["ReportColumnDto"];
 type FilterDef = Schemas["ReportFilterDefDto"];
-const col = (key: string, labelTh: string, labelEn: string, type: ColumnType = "text"): Column => ({
+/** `total` as packio-api: money and integer columns are summed unless the column says not to. */
+const col = (
+  key: string,
+  labelTh: string,
+  labelEn: string,
+  type: ColumnType = "text",
+  total = type === "money" || type === "integer",
+): Column => ({
   key,
   labelTh,
   labelEn,
   type,
+  total,
 });
 
 interface MockReport extends Omit<Schemas["ReportDefinitionDto"], "formats"> {
@@ -495,6 +503,7 @@ const uuidOf = (key: "productTypeId" | "factoryId"): FilterDef => ({
 const REPORTS: MockReport[] = [
   {
     key: "sales",
+    group: "sales",
     nameTh: "รายงานยอดขาย",
     nameEn: "Sales register",
     description: "Every order of the order groups placed in the period, with its amounts.",
@@ -513,6 +522,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "sales_tax",
+    group: "finance",
     nameTh: "รายงานภาษีขาย",
     nameEn: "Sales tax report",
     description: "One line per document with output VAT posted in the month.",
@@ -520,7 +530,7 @@ const REPORTS: MockReport[] = [
     permission: "tax.read",
     filters: [month],
     columns: [
-      col("seq", "ลำดับ", "No.", "integer"),
+      col("seq", "ลำดับ", "No.", "integer", false),
       col("documentDate", "วันที่", "Date", "date"),
       col("documentNo", "เลขที่เอกสาร", "Document no."),
       col("partyTaxId", "เลขประจำตัวผู้เสียภาษี", "Tax id"),
@@ -531,6 +541,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "payments_by_channel",
+    group: "finance",
     nameTh: "รายงานรับชำระตามช่องทาง",
     nameEn: "Payments by channel",
     description: "Successful payments of the period with fees, withholding, net and settlement date.",
@@ -549,6 +560,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "orders",
+    group: "sales",
     nameTh: "รายงานสถานะคำสั่งซื้อ",
     nameEn: "Orders pipeline",
     description: "Orders placed in the period with their status and milestone dates.",
@@ -566,6 +578,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "quotations",
+    group: "sales",
     nameTh: "รายงานใบเสนอราคา",
     nameEn: "Quotations",
     description: "Quotations saved in the period (instant and from RFQs).",
@@ -581,6 +594,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "campaign_usage",
+    group: "marketing",
     nameTh: "รายงานการใช้แคมเปญและโปรโมชั่น",
     nameEn: "Campaign & promotion usage",
     description: "Per campaign and promotion: redemptions, discount given and the amount capped.",
@@ -597,6 +611,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "points_liability",
+    group: "finance",
     nameTh: "รายงานภาระคะแนนสะสม",
     nameEn: "Points liability roll-forward",
     description: "Per month of the period: opening, earned, redeemed, expired and closing points.",
@@ -614,6 +629,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "ar_aging",
+    group: "finance",
     nameTh: "รายงานอายุลูกหนี้",
     nameEn: "AR aging",
     description: "Open receivables at a date per customer or company, by days past due.",
@@ -631,6 +647,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "ap_aging",
+    group: "finance",
     nameTh: "รายงานอายุเจ้าหนี้",
     nameEn: "AP aging",
     description: "Open payables at a date per vendor.",
@@ -647,6 +664,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "payout_history",
+    group: "finance",
     nameTh: "ประวัติการจ่ายเงินโรงงานและผู้ขาย",
     nameEn: "Payout history",
     description: "Items of the payout runs with a pay date in the period.",
@@ -664,6 +682,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "factory_scorecards",
+    group: "operations",
     nameTh: "ประวัติคะแนนโรงงาน",
     nameEn: "Factory scorecard history",
     description: "Monthly scorecards per factory for the months of the period.",
@@ -680,6 +699,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "claims",
+    group: "operations",
     nameTh: "รายงานเคลม",
     nameEn: "Claims register",
     description: "Claims submitted in the period with their liability, amount and resolution.",
@@ -986,6 +1006,9 @@ export const analyticsContractHandlers = [
       filters,
       rows: rows.slice(0, PREVIEW_ROWS),
       truncated: rows.length > PREVIEW_ROWS,
+      // The mock adds up no money: an empty totals row until the analytics slice sums the rows.
+      totals: {},
+      generatedAt: bangkokIso(),
     } satisfies Schemas["ReportPreviewDto"]);
   }),
   http.post("*/v1/admin/reports/:reportKey/exports", async ({ params, request }) => {

@@ -36,7 +36,7 @@ interface Referral {
   attributedAt: string;
   firstOrder: { id: string; orderCode: string; grossAmount: string; claimWindowEndsAt: string | null } | null;
   status: Schemas["ReferralStatus"];
-  fraudFlags: string[];
+  fraudFlags: Schemas["ReferralFraudFlag"][];
   approvalRequestId: string | null;
   rewardPoints: number | null;
 }
@@ -134,7 +134,15 @@ function toCampaignDto(row: CampaignRow): Schemas["CampaignDto"] {
     spentAmount: row.spentAmount,
     alertThresholdPct: Number(alertPct()).toFixed(4),
     alertedAt: row.alertedAt,
+    // Spent as a share of the budget, as `crossed` reads it (D-154); none without a budget.
+    spentPct:
+      row.budgetAmount === null || Number(row.budgetAmount) <= 0
+        ? null
+        : ((Number(row.spentAmount) * 100) / Number(row.budgetAmount)).toFixed(2),
     goals: row.goals,
+    promotionsCount: promotions.filter((promotion) => promotion.campaignId === row.id).length,
+    owner: row.owner,
+    createdAt: row.createdAt,
     currency: "THB",
   };
 }
@@ -268,10 +276,17 @@ const promotions: PromotionRow[] = [
 ];
 
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
-  const { usage, updatedAt, ...dto } = row;
-  void updatedAt;
+  const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
-  return { ...dto, spentAmount: usage.discountAmount };
+  return {
+    ...row,
+    usage: { ...row.usage },
+    spentAmount: row.usage.discountAmount,
+    campaign: campaign ? { id: campaign.id, code: campaign.code, name: campaign.name } : null,
+    // The mock words no benefits; the API renders them.
+    benefitSummaryTh: "",
+    benefitSummaryEn: "",
+  };
 }
 
 /** What a benefit of each type must carry, so a half-filled form is refused like the API would. */
@@ -367,6 +382,7 @@ const randomTail = (seed: number) =>
   Array.from({ length: 6 }, (_, index) => ALPHABET[(seed * 7919 + index * 104729) % ALPHABET.length]).join("");
 
 function toCouponCodeDto(row: CouponCodeRow): Schemas["CouponCodeDto"] {
+  const assigned = customers.find((customer) => customer.id === row.assignedCustomerId);
   return {
     id: row.id,
     code: row.code,
@@ -374,6 +390,8 @@ function toCouponCodeDto(row: CouponCodeRow): Schemas["CouponCodeDto"] {
     usageLimit: row.usageLimit,
     usedCount: row.usedCount,
     assignedCustomerId: row.assignedCustomerId,
+    assignedCustomer: assigned ? { id: assigned.id, displayName: assigned.displayName } : null,
+    batchId: row.batchId,
   };
 }
 
@@ -390,7 +408,7 @@ const referrals: Referral[] = [
   [2, 5, "under_review", ["phone_match"]],
   [2, 6, "under_review", ["address_match", "device_match"]],
   [7, 8, "pending", []],
-  [9, 10, "rejected_fraud", ["card_match"]],
+  [9, 10, "rejected_fraud", ["card_token_match"]],
 ].map(([from, to, status, flags], index) => ({
   id: mockId("ref", index + 1),
   referrer: customerRef(from as number),
@@ -407,7 +425,7 @@ const referrals: Referral[] = [
           claimWindowEndsAt: bangkokIso(-(3 - index) * DAY),
         },
   status: status as Referral["status"],
-  fraudFlags: flags as string[],
+  fraudFlags: flags as Schemas["ReferralFraudFlag"][],
   approvalRequestId: null,
   rewardPoints: status === "rewarded" || status === "qualified" || status === "under_review" ? REFERRER_POINTS : null,
 }));
@@ -422,6 +440,9 @@ function toReferralDto(item: Referral): Schemas["AdminReferralDto"] {
     attributedAt: item.attributedAt,
     firstOrderGroupId: item.firstOrder ? mockId("grp", 900 + referrals.indexOf(item)) : null,
     firstOrderGroupCode: item.firstOrder?.orderCode.replace(/^PK/, "PG") ?? null,
+    firstOrderGrossAmount: item.firstOrder?.grossAmount ?? null,
+    firstOrderClaimWindowEndsAt: item.firstOrder?.claimWindowEndsAt ?? null,
+    rewardPoints: item.rewardPoints ?? 0,
     status: item.status,
     fraudFlags: item.fraudFlags,
     approvalId: item.approvalRequestId,
@@ -730,7 +751,15 @@ export const marketingContractHandlers = [
         status: "active",
       });
     }
-    const result: Schemas["CouponBatchResultDto"] = { batchId: batch.id, count };
+    const result: Schemas["CouponBatchResultDto"] = {
+      batchId: batch.id,
+      count,
+      kind: batch.kind,
+      prefix: batch.prefix,
+      usageLimit: batch.usageLimitPerCode,
+      generatedAt: batch.generatedAt,
+      generatedBy: batch.generatedBy,
+    };
     generated.set(`${row.id}:${key}`, result);
     return HttpResponse.json(result, { status: 201 });
   }),

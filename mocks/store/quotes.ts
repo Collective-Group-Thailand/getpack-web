@@ -25,6 +25,7 @@ import type { z } from "zod";
 import type { storeConfigurator, storeGenericConfiguration, storeQuote } from "@/lib/api/requests/store-quotes";
 import type { Schemas } from "@/lib/api/types";
 
+import { lineSummaryOf } from "../admin/catalog";
 import { catalogueRows } from "../admin/catalogue";
 import { baht } from "../admin/commerce";
 import { mockRequest } from "../route";
@@ -921,6 +922,25 @@ export const optionIdOf = (quote: StoreQuote) => quote.id.replace("-8000-", "-90
 const netOf = (quote: StoreQuote, lineType: StoreQuote["lines"][number]["lineType"]) =>
   quote.lines.find((line) => line.lineType === lineType)?.netAmount ?? "0.00";
 
+/**
+ * A saved quote's display summary. The quote keeps its spec lines in one language only, so none
+ * are published; its catalogue product is named in both from the catalogue row.
+ */
+export function quoteSummaryOf(quote: StoreQuote): Schemas["LineSummaryDto"] {
+  const product = productOfSlug(quote.product.slug);
+  return {
+    ...lineSummaryOf(quote.productType.code),
+    product: product
+      ? {
+          slug: quote.product.slug,
+          nameTh: String(product.nameTh ?? quote.product.name),
+          nameEn: String(product.nameEn ?? quote.product.name),
+          imageUrl: quote.product.imageUrl,
+        }
+      : null,
+  };
+}
+
 export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
   const expired = Date.parse(quote.validUntil) < Date.now();
   const shipping = quote.lines.find((line) => line.lineType === "shipping");
@@ -930,6 +950,7 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
     status: expired ? "expired" : quote.status,
     source: quote.source,
     productTypeCode: quote.productType.code,
+    summary: quoteSummaryOf(quote),
     configuration: quote.configuration as unknown as Schemas["FoldingConfigurationDto"],
     deliveryPostcode: quote.deliveryPostcode,
     options: [
@@ -940,6 +961,8 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
         productAmount: netOf(quote, "product"),
         designFeeAmount: netOf(quote, "design_fee"),
         structureDesignFeeAmount: netOf(quote, "structure_design_fee"),
+        // The mock prices no plates or die blocks apart.
+        toolingAmount: null,
         shippingAmount: shipping ? shipping.netAmount : null,
         shippingPending: !shipping,
         shippingPendingReason: shipping ? null : "no_postcode",
@@ -981,6 +1004,8 @@ export const storeQuoteHandlers: HttpHandler[] = [
     if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
       return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
     const result: Schemas["QuoteCalculationDto"] = {
+      // The mock records no calculations.
+      calculationId: null,
       calculatorVersion: "mock-0.0.0",
       steps: inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode)),
     };

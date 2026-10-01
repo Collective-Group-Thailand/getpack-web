@@ -30,6 +30,7 @@ import {
   timelineOf,
 } from "./commerce";
 import type { MockOrder } from "./commerce";
+import { inspections } from "./governance";
 
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
 const notFound = () => problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
@@ -69,6 +70,11 @@ export function toGroupDto(groupId: string, who: StaffPersona | null): Schemas["
   const first = members[0];
   if (!first) return null;
   const dtos = members.map((order) => toAdminOrderDto(order, who));
+  const cs = PERSONAS.find((persona) => persona.key === "cs")!;
+  const placedBy =
+    first.channel === "cs"
+      ? { id: cs.id, displayName: cs.displayName }
+      : { id: first.customer.id, displayName: first.customer.displayName };
   const sum = (pick: (dto: Schemas["AdminOrderDto"]) => string) =>
     (dtos.reduce((total, dto) => total + Math.round(Number(pick(dto)) * 100), 0) / 100).toFixed(2);
   return {
@@ -77,7 +83,22 @@ export function toGroupDto(groupId: string, who: StaffPersona | null): Schemas["
     status: first.group.status,
     channel: first.channel,
     customerId: first.customer.id,
-    placedById: first.channel === "cs" ? PERSONAS.find((persona) => persona.key === "cs")!.id : first.customer.id,
+    customer: { ...first.customer },
+    placedById: placedBy.id,
+    placedBy,
+    hasSlipToReview: members.some((order) =>
+      order.payments.some((payment) => payment.slips.some((slip) => slip.verificationStatus === "manual_review")),
+    ),
+    // The tax profile as the order row keeps it.
+    taxProfile: first.taxProfile
+      ? {
+          name: first.taxProfile.name,
+          taxId: first.taxProfile.taxId,
+          branchCode: first.taxProfile.branch,
+          address: first.taxProfile.address,
+          withholdsTax: first.taxProfile.withholdsTax,
+        }
+      : null,
     placedAt: first.createdAt,
     poNumber: first.poNumber,
     ccEmails: first.ccEmails,
@@ -154,11 +175,15 @@ function toTimelineEntry(entry: ReturnType<typeof timelineOf>[number]): Schemas[
     mentions: [],
     photoFileIds: [],
     shipment: null,
+    // The mock keeps no factory plan dates (D-075).
+    promisedAt: null,
   };
 }
 
 function toJobDto(order: MockOrder, job: MockOrder["jobs"][number]): Schemas["AdminJobDto"] {
   const factory = job.factory ?? FACTORY;
+  const proof = order.artwork.proofs.find((candidate) => candidate.status === "approved");
+  const inspection = inspections.find((candidate) => candidate.job.id === job.id);
   return {
     id: job.id,
     jobNo: job.jobNo,
@@ -166,6 +191,24 @@ function toJobDto(order: MockOrder, job: MockOrder["jobs"][number]): Schemas["Ad
     status: job.status,
     orderId: order.id,
     orderCode: order.orderCode,
+    productTypeCode: order.productType.code,
+    productTypeNameTh: order.productType.name,
+    title: `${order.productType.name} · ${order.quantity.toLocaleString("th-TH")} ชิ้น`,
+    tolerance: { ...order.tolerance },
+    artwork: proof ? { proofId: proof.id, versionNo: proof.versionNo, approvedAt: proof.decidedAt } : null,
+    inspection: inspection
+      ? {
+          status: inspection.status,
+          sampleSize: inspection.sampleSize,
+          scheduledAt: inspection.scheduledAt,
+          resultAt: inspection.resultAt,
+        }
+      : null,
+    currentMilestoneKey:
+      job.milestones.find((step) => step.status !== "completed" && step.status !== "skipped")?.key ?? null,
+    // At risk means the plan already ends after the promise (`predictedFinishOn` below).
+    riskReason: job.atRisk ? "late_plan" : null,
+    nextActions: [],
     factoryId: factory.id,
     factoryCode: factory.code,
     releaseMode: order.startMode ?? "auto",
@@ -312,7 +355,7 @@ export const orderHandlers = [
     if (!allowed(request, "orders.read")) return forbidden();
     const rows: Schemas["OrderNoteDto"][] = [...(notes.get(params.orderId as string) ?? [])]
       .reverse()
-      .map(({ id, author, body, createdAt }) => ({ id, author, body, createdAt }));
+      .map(({ id, author, body, mentions, createdAt }) => ({ id, author, body, mentions, createdAt }));
     return HttpResponse.json(paginate(rows, pageOf(new URL(request.url))));
   }),
 
@@ -338,6 +381,7 @@ export const orderHandlers = [
       id: note.id,
       author: note.author,
       body: note.body,
+      mentions: note.mentions,
       createdAt: note.createdAt,
     };
     return HttpResponse.json(dto, { status: 201 });
@@ -525,10 +569,13 @@ function paymentDto(order: MockOrder, payment: MockOrder["payments"][number]): S
     redirectUrl: null,
     expiresAt: null,
     failureReason: null,
+    failureCode: null,
     paidAt: payment.paidAt,
     createdAt: payment.slips[0]?.uploadedAt ?? order.createdAt,
+    receiverAccounts: [],
     slips: payment.slips.map((slip) => ({
       id: slip.id,
+      fileId: slip.file.id,
       declaredAmount: slip.declaredAmount,
       declaredTransferredAt: slip.declaredTransferredAt,
       status: slip.verificationStatus as Schemas["SlipStatus"],

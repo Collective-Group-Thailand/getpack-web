@@ -17,7 +17,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { catalogueRows } from "../admin/catalogue";
 import { mockRequest } from "../route";
-import { bangkokIso, matchesQuery, paginate, problem, sortBy } from "../support";
+import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
 
 export type Row = ReturnType<typeof catalogueRows>[number];
 
@@ -96,6 +96,11 @@ function optionGroups(): Schemas["StoreOptionGroupDto"][] {
           code: String(row.code),
           nameTh: String(row.nameTh ?? row.code),
           nameEn: String(row.nameEn ?? row.code),
+          // Whatever the option row holds; null where the table keeps no description, image or swatch.
+          descriptionTh: str(row.descriptionTh),
+          descriptionEn: str(row.descriptionEn),
+          imageUrl: imageUrl(row.imageFileId),
+          swatchHex: str(row.swatchHex),
           isDefault: index === 0,
           attributes: {},
         })),
@@ -276,18 +281,50 @@ const POSTCODE_AREAS: Record<string, [province: [string, string, string], distri
     ["40", "ขอนแก่น", "Khon Kaen"],
     ["4001", "เมืองขอนแก่น", "Mueang Khon Kaen"],
   ],
+  "10260": [
+    ["10", "กรุงเทพมหานคร", "Bangkok"],
+    ["1047", "บางนา", "Bang Na"],
+  ],
 };
+
+/** A known postcode's province and district (the company branches' addresses use them too). */
+export function postcodeArea(postcode: string) {
+  const known = POSTCODE_AREAS[postcode];
+  if (!known) return undefined;
+  const [province, district] = known.map(([code, nameTh, nameEn]) => ({ code, nameTh, nameEn }));
+  return { province: province!, district: district! };
+}
+
+/**
+ * A postcode's province as a geography ref (`gpv` + code, the admin geography mock's ids). A
+ * postcode the short list lacks keeps the Thai name the row holds, in both languages.
+ */
+export function provinceRefOf(postcode: string, nameTh: string): Schemas["GeoRefDto"] {
+  const province = postcodeArea(postcode)?.province;
+  return province
+    ? { id: mockId("gpv", Number(province.code)), nameTh: province.nameTh, nameEn: province.nameEn }
+    : { id: mockId("gpv", 0), nameTh, nameEn: nameTh };
+}
 
 export const storeCatalogHandlers: HttpHandler[] = [
   http.get("*/v1/store/catalog/geo/postcodes/:postcode", ({ params }) => {
     const known = POSTCODE_AREAS[String(params.postcode)];
-    const area = (code: string, nameTh: string, nameEn: string) => ({ code, nameTh, nameEn });
+    // Ids in the admin geography mock's namespaces (`gpv` / `gdt` / `gsd` + code).
+    const area = (code: string, nameTh: string, nameEn: string, ns = "gdt") => ({
+      id: mockId(ns, Number(code)),
+      code,
+      nameTh,
+      nameEn,
+    });
     const body: Schemas["StorePostcodeAreaDto"][] = known
       ? [
           {
-            province: area(...known[0]),
+            province: area(...known[0], "gpv"),
             district: area(...known[1]),
-            subdistrict: { ...area(`${known[1][0]}01`, known[1][1], known[1][2]), postcode: String(params.postcode) },
+            subdistrict: {
+              ...area(`${known[1][0]}01`, known[1][1], known[1][2], "gsd"),
+              postcode: String(params.postcode),
+            },
           },
         ]
       : [];

@@ -20,7 +20,7 @@ import { bangkokIso, mockId, precondition, problem, versionTag, withEtag } from 
 import { bookOf, toAddressDto } from "./book";
 import { customerOf, type MockCustomer } from "./customers";
 import type { Cart, Item } from "./model";
-import { checkCode, optionIdOf, quotesOf, type StoreQuote } from "./quotes";
+import { checkCode, optionIdOf, quoteSummaryOf, quotesOf, type StoreQuote } from "./quotes";
 
 interface Line {
   id: string;
@@ -207,6 +207,7 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         quoteCode: quote.quoteCode,
         source: quote.source,
         productTypeCode: quote.productType.code,
+        summary: quoteSummaryOf(quote),
         quantity: item.quantity,
         unitPrice: pending || line.confirmedReprice ? item.unitPrice : quote.unitPrice,
         productGrossAmount: line.confirmedReprice ? item.grossAmount : quote.grossAmount,

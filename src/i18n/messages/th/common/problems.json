@@ -34,7 +34,9 @@
     "session_revoked": "เซสชันถูกยกเลิก",
     "token_expired": "โทเค็นหมดอายุ",
     "unauthenticated": "ต้องเข้าสู่ระบบ",
-    "wrong_audience": "โทเค็นใช้กับส่วนนี้ไม่ได้"
+    "wrong_audience": "โทเค็นใช้กับส่วนนี้ไม่ได้",
+    "identity_last_method": "เป็นช่องทางเข้าสู่ระบบสุดท้าย",
+    "identity_not_unlinkable": "ยกเลิกช่องทางนี้ไม่ได้"
   },
   "banking": {
     "duplicate_import": "นำเข้าไฟล์ซ้ำ",
@@ -99,7 +101,9 @@
     "invalid_status": "สถานะบริษัทไม่ถูกต้อง",
     "kyc_incomplete": "เอกสารไม่ครบ",
     "po_required": "ต้องระบุเลขที่ PO",
-    "tax_id_taken": "เลขผู้เสียภาษีนี้มีบริษัทแล้ว"
+    "tax_id_taken": "เลขผู้เสียภาษีนี้มีบริษัทแล้ว",
+    "asset_exists": "มีไฟล์นี้แล้ว",
+    "last_admin": "ต้องมีผู้ดูแลบัญชีบริษัท"
   },
   "concurrency": {
     "precondition_required": "ต้องระบุ If-Match",
@@ -119,7 +123,8 @@
   },
   "designs": {
     "document_too_large": "ไฟล์ออกแบบใหญ่เกินไป",
-    "template_without_design": "เทมเพลตยังไม่มีแบบ"
+    "template_without_design": "เทมเพลตยังไม่มีแบบ",
+    "read_only": "แก้ไขไม่ได้"
   },
   "discount_memos": {
     "not_usable": "ใช้บันทึกส่วนลดนี้ไม่ได้",
@@ -207,7 +212,9 @@
     "reprice_has_discounts": "คำนวณราคาใหม่ไม่ได้"
   },
   "orders": {
-    "reorder_unavailable": "สั่งซ้ำไม่ได้"
+    "reorder_unavailable": "สั่งซ้ำไม่ได้",
+    "reorder_preview_expired": "ตัวอย่างหมดอายุ",
+    "reorder_repriced": "ราคาเปลี่ยนแล้ว"
   },
   "outbox": {
     "not_replayable": "ส่งเหตุการณ์ซ้ำไม่ได้"
@@ -253,7 +260,9 @@
     "schedule_has_payments": "เปลี่ยนรูปแบบการชำระไม่ได้",
     "slip_duplicate": "สลิปซ้ำ",
     "slip_not_in_review": "สลิปไม่ได้รอตรวจ",
-    "slip_not_scanned": "ไฟล์ยังตรวจไม่เสร็จ"
+    "slip_not_scanned": "ไฟล์ยังตรวจไม่เสร็จ",
+    "nothing_due": "ไม่มียอดค้างชำระ",
+    "reminder_recent": "เพิ่งส่งการแจ้งเตือน"
   },
   "payouts": {
     "bank_account_missing": "ไม่มีบัญชีธนาคารสำหรับจ่าย",
@@ -286,7 +295,8 @@
     "no_codes": "ยังไม่มีรหัสคูปอง",
     "not_a_coupon": "ไม่ใช่โปรโมชันแบบคูปอง",
     "payment_method_required": "ช่องทางชำระไม่ตรงเงื่อนไข",
-    "too_many_attempts": "ลองใส่รหัสบ่อยเกินไป"
+    "too_many_attempts": "ลองใส่รหัสบ่อยเกินไป",
+    "system_managed": "แก้ไขไม่ได้"
   },
   "proofs": {
     "annotation_closed": "ปิดรับความเห็นแล้ว",
@@ -336,7 +346,9 @@
     "invalid_transition": "ทำรายการนี้ไม่ได้",
     "quote_empty": "ยังไม่มีรายการ",
     "quote_not_draft": "ไม่ใช่ฉบับร่าง",
-    "quote_not_open": "ใบเสนอราคาไม่พร้อมให้ยืนยัน"
+    "quote_not_open": "ใบเสนอราคาไม่พร้อมให้ยืนยัน",
+    "consultation_not_open": "ไม่ได้รอคำตอบ",
+    "reminder_recent": "เพิ่งส่งการแจ้งเตือน"
   },
   "service": {
     "unavailable": "ระบบไม่พร้อมให้บริการ"
@@ -384,5 +396,13 @@
     "origin_invalid": "คำขอถูกปฏิเสธเพื่อความปลอดภัย",
     "origin_mismatch": "คำขอถูกปฏิเสธเพื่อความปลอดภัย",
     "upstream_unreachable": "ติดต่อระบบไม่ได้ชั่วคราว"
+  },
+  "privacy": {
+    "deletion_blocked": "ยังลบข้อมูลไม่ได้",
+    "request_closed": "คำขอได้รับการตอบแล้ว",
+    "request_open": "มีคำขออยู่แล้ว"
+  },
+  "support": {
+    "contact_required": "ต้องมีช่องทางติดต่อ"
   }
 }

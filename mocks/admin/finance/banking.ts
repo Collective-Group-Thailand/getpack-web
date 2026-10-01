@@ -682,9 +682,11 @@ export const bankingHandlers = [
         redirectUrl: null,
         expiresAt: null,
         failureReason: null,
+        failureCode: null,
         paidAt,
         createdAt: paidAt,
         slips: [],
+        receiverAccounts: [],
       });
       Object.assign(due, { status: "paid", paidAmount: due.grossAmount });
       if (order.status === "waiting_payment") order.status = "paid_for_production";
@@ -726,6 +728,7 @@ export const bankingHandlers = [
         lineCount: created.lineCount,
         unmatchedLines: created.unmatchedLines,
         status: created.status,
+        companyBankAccountId: created.companyBankAccountId,
       };
     },
   ),

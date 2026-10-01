@@ -625,7 +625,10 @@ describe("audit support (§8)", () => {
     };
     const { data: first } = await auditor.POST("/v1/admin/audit/samples", { params: { header: key() }, body });
     const { data: again } = await auditor.POST("/v1/admin/audit/samples", { params: { header: key() }, body });
-    expect(first!.selected.length).toBe(5);
+    // The seeded documents are dated relative to today, so early in a month the period may hold
+    // fewer than the five asked for; the sample is then the whole population.
+    expect(first!.populationSize).toBeGreaterThan(0);
+    expect(first!.selected.length).toBe(Math.min(5, first!.populationSize));
     expect(again!.selected.map((item) => item.id)).toEqual(first!.selected.map((item) => item.id));
     const { data: exceptions } = await auditor.GET("/v1/admin/audit/exceptions", {
       params: { query: { period: currentMonth() } },

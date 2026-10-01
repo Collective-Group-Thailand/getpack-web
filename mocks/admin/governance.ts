@@ -292,6 +292,9 @@ export function toInspectionDto(item: Inspection): Schemas["InspectionDto"] {
     id: item.id,
     jobId: item.job.id,
     jobNo: item.job.jobNo,
+    orderId: item.order.id,
+    orderCode: item.order.orderCode,
+    productTypeCode: item.productType.code,
     factoryCode: item.factory.code,
     reasons: item.reasons,
     ratePct: item.reasons.includes("value_100_pct")
@@ -304,6 +307,8 @@ export function toInspectionDto(item: Inspection): Schemas["InspectionDto"] {
     found: item.found ? { ...item.found } : null,
     status: item.status,
     inspector: item.inspector?.displayName ?? null,
+    inspectorUser: item.inspector,
+    aql: { ...item.aql },
     scheduledAt: item.scheduledAt,
     resultAt: item.resultAt,
     notes: item.notes,

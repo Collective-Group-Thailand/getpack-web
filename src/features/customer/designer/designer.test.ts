@@ -73,7 +73,7 @@ describe("store.designs (mock)", () => {
 
     const saved = await api().PUT("/v1/store/designs/{designId}", {
       params: { path: { designId: id }, header: { "If-Match": first } },
-      body: { title: "กล่องทดสอบ", ...published },
+      body: { title: "กล่องทดสอบ", kind: "manual", ...published },
     });
     expect(saved.data!.versionNo).toBe(2);
     const second = saved.response.headers.get("etag")!;
@@ -83,7 +83,7 @@ describe("store.designs (mock)", () => {
     const stale = await failure(
       api().PUT("/v1/store/designs/{designId}", {
         params: { path: { designId: id }, header: { "If-Match": first } },
-        body: { title: "จากแท็บอื่น", ...published },
+        body: { title: "จากแท็บอื่น", kind: "manual", ...published },
       }),
     );
     expect(stale?.status).toBe(412);
