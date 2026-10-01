@@ -175,6 +175,8 @@ export function Configurator({
     }
     if (step === "delivery")
       return state.postcode === "" ? "upcoming" : POSTCODE.test(state.postcode) ? "complete" : "error";
+    // A product without a default quantity (packio-api's may have none) starts with this step open.
+    if (step === "quantity") return state.quantities.length === 0 ? "upcoming" : "complete";
     return "complete";
   };
 

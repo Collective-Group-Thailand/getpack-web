@@ -26,7 +26,7 @@ test("a customer asks, CS quotes on the desk, and the customer accepts into the 
   await customer.getByLabel("หมายเหตุถึงทีมงาน").fill("กล่องใส่ขวดเซรั่ม (integration)");
   await customer.getByRole("button", { name: "ส่งคำขอใบเสนอราคา" }).click();
 
-  await expect(customer.getByText(/ส่งคำขอ RFQ-\d{4}-\d+ แล้ว/)).toBeVisible({ timeout: 30_000 });
+  await expect(customer.getByText(/ส่งคำขอ \S*RFQ-\d{4}-\d+ แล้ว/)).toBeVisible({ timeout: 30_000 });
   const code = (await customer.locator("p.font-mono").first().textContent())!.trim();
   const rfqUrl = customer.url().split("?")[0]!;
   const rfqId = rfqUrl.split("/").at(-1)!;
@@ -57,6 +57,8 @@ test("a customer asks, CS quotes on the desk, and the customer accepts into the 
   const confirm = customer.getByRole("alertdialog", { name: "ยืนยันการยอมรับใบเสนอราคา" });
   await expect(confirm).toContainText(code);
   await confirm.getByRole("button", { name: "ยืนยัน" }).click();
-  await customer.goto(`${HOSTS.customer}/cart`);
+  await expect(customer.getByText(/ยอมรับแล้ว — ใบเสนอราคา/)).toBeVisible();
+  await customer.getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
+  await expect(customer).toHaveURL(`${HOSTS.customer}/cart`);
   await expect(customer.getByText(/1,000/).first()).toBeVisible();
 });

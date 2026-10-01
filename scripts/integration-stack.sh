@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The local packio-api that `pnpm e2e:integration` runs against (U1 U-F0.5, docs/integration.md).
 #
-#   scripts/integration-stack.sh up      worktree at the lock's tag, .env, database, migrate, dev seed, API + worker
+#   scripts/integration-stack.sh up      worktree at the lock's tag, .env, database, migrate, dev seed, API + worker,
+#                                        and the catalogue prepared for the launch path (scripts/integration-prepare.ts)
 #   scripts/integration-stack.sh reset   drop and re-seed the database, restart API + worker (a clean run)
 #   scripts/integration-stack.sh down    stop API + worker (the database and the worktree stay)
 #   scripts/integration-stack.sh status
@@ -111,6 +112,7 @@ start() {
   for _ in $(seq 1 90); do
     if curl -s -m 2 "http://localhost:$PORT/health" | grep -q '"status":"ok"'; then
       log "API healthy at http://localhost:$PORT ($TAG)"
+      (cd "$ROOT" && INTEGRATION_API_URL="http://localhost:$PORT" IT_SEED_PASSWORD="$PASSWORD" pnpm -s exec tsx scripts/integration-prepare.ts)
       return 0
     fi
     sleep 2
