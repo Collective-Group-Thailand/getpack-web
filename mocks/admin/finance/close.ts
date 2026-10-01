@@ -6,18 +6,15 @@
  * reproducible samples, exception reports and prepared-by-client pack.
  *
  * Every figure is a sum over the same posted journals the other finance mocks write, so a zero
- * difference is a property of the data (the month simulation in the e2e relies on it). Two
- * contract requests fill gaps: `admin.account-roll-forward` (points liability 2330, retention
- * 2130) and `admin.subledger-reconciliation` (the §7 step 8 comparison outside a checklist).
+ * difference is a property of the data (the month simulation in the e2e relies on it). The
+ * roll-forwards of 2330 / 2130 and the §7 step 8 comparison outside a checklist are packio-api's
+ * U-B0.3 operations (`admin.financialReports.accountRollForward`, `.subledgerReconciliation`).
  */
-
-import { HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
 import { PERSONAS } from "../../personas";
 import { bangkokIso, mockId, problem } from "../../support";
-import { mockRequest } from "../../route";
 import { baht, customers } from "../commerce";
 import { fileNameOf, settingValue } from "../platform";
 import { rollForward } from "./assets";
@@ -28,7 +25,7 @@ import { invoicesAll, payables, vendorOf, vendorsAll, banksOf } from "./payables
 import { runs, whtIssued } from "./payouts";
 import { documents, pendingSlips, receivables, storeCreditBalance } from "./receivables";
 import { reports as taxReports } from "./tax";
-import { finance, forbiddenUnless, invalid, notFound } from "./support";
+import { finance, invalid, notFound } from "./support";
 
 type Checklist = Schemas["CloseChecklistDto"];
 type Task = Schemas["CloseTaskDto"];
@@ -660,17 +657,10 @@ function glDetail(
 }
 
 /** A control account month by month (points liability 2330, retention 2130), in its normal direction. */
-export function accountRollForward(accountCode: string, from: string, to: string) {
+export function accountRollForward(accountCode: string, from: string, to: string): Schemas["AccountRollForwardDto"] {
   const account = accountOf(accountCode);
   const sign = account.normalSide === "debit" ? 1 : -1;
-  const months: {
-    month: string;
-    opening: string;
-    increases: string;
-    decreases: string;
-    closing: string;
-    byRule: { rule: string; increases: string; decreases: string }[];
-  }[] = [];
+  const months: Schemas["RollForwardMonthDto"][] = [];
   for (
     let month = from;
     month <= to;
@@ -689,7 +679,8 @@ export function accountRollForward(accountCode: string, from: string, to: string
           opening += amount;
           continue;
         }
-        const rule = journal.postingRule ?? journal.kind;
+        // packio-api names a journal without a posting rule `manual`.
+        const rule = journal.postingRule ?? "manual";
         const entry = rules.get(rule) ?? { increases: 0, decreases: 0 };
         if (amount >= 0) {
           increases += amount;
@@ -708,10 +699,10 @@ export function accountRollForward(accountCode: string, from: string, to: string
       closing: signed(opening + increases - decreases),
       byRule: [...rules.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([rule, entry]) => ({ rule, increases: baht(entry.increases), decreases: baht(entry.decreases) })),
+        .map(([rule, entry]) => ({ ruleKey: rule, increase: baht(entry.increases), decrease: baht(entry.decreases) })),
     });
   }
-  return { accountCode, nameTh: account.nameTh, nameEn: account.nameEn, from, to, months };
+  return { accountCode, nameTh: account.nameTh, normalSide: account.normalSide, months };
 }
 
 /* ------------------------------------------------------------------------------ audit support */
@@ -1326,19 +1317,17 @@ export const closeHandlers = [
       ? cashFlow(String(query.from), String(query.to))
       : invalid([{ path: "from", code: "range", message: "YYYY-MM ถึง YYYY-MM" }]),
   ),
-  // CONTRACT-REQUEST admin.account-roll-forward
-  mockRequest("GET /v1/admin/financial-reports/roll-forward", ({ query, request }) => {
-    const denied = forbiddenUnless(request, "ledger.read");
-    if (denied) return denied;
-    if (!["2330", "2130"].includes(query.accountCode) || !range(query.from, query.to))
+  // admin.financialReports.accountRollForward: the roll-forward accounts only (2330, 2130).
+  finance.get("/v1/admin/financial-reports/roll-forward", "ledger.read", ({ query }) => {
+    const accountCode = String(query.accountCode ?? "");
+    if (!["2330", "2130"].includes(accountCode) || !range(query.from, query.to))
       return invalid([{ path: "accountCode", code: "enum", message: "2330 หรือ 2130 และช่วงเดือน" }]);
-    return HttpResponse.json(accountRollForward(query.accountCode, query.from, query.to));
+    return accountRollForward(accountCode, String(query.from), String(query.to));
   }),
-  // CONTRACT-REQUEST admin.subledger-reconciliation
-  mockRequest("GET /v1/admin/financial-reports/subledger-reconciliation", ({ request, query }) => {
-    const denied = forbiddenUnless(request, "ledger.read");
-    if (denied) return denied;
-    return HttpResponse.json({ asOf: bangkokIso(), rows: subledgerRows(query.period ?? previousMonth()) });
+  // admin.financialReports.subledgerReconciliation: the sub-ledgers as of now; `period` moves the fixed-asset row.
+  finance.get("/v1/admin/financial-reports/subledger-reconciliation", "ledger.read", ({ query }) => {
+    const period = query.period ?? previousMonth();
+    return { asOf: bangkokIso(), period, rows: subledgerRows(period) };
   }),
 
   finance.get("/v1/admin/audit/exceptions", "audit_support.read", ({ query }) =>

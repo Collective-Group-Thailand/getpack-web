@@ -517,8 +517,14 @@
     "withdrawn": "ถอนคำขอ"
   },
   "dunning": {
+    "queued": "รอส่ง",
+    "deferredQuietHours": "รอพ้นช่วงงดส่ง",
+    "suppressedNoConsent": "ไม่ได้ส่ง (ไม่มีความยินยอม)",
     "sent": "ส่งแล้ว",
-    "failed": "ส่งไม่สำเร็จ"
+    "delivered": "ถึงผู้รับแล้ว",
+    "read": "อ่านแล้ว",
+    "failed": "ส่งไม่สำเร็จ",
+    "bounced": "ตีกลับ"
   },
   "purchaseOrder": {
     "issued": "ส่งโรงงานแล้ว",

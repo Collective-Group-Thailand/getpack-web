@@ -10,7 +10,6 @@ import { isZeroMoney } from "@/domain/money";
 import { ASSET_STATUS, PERIOD_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -539,7 +538,11 @@ export function DepreciationView() {
   const preview = useQuery({
     queryKey: queryKeys.detail("admin", "depreciation-preview", month),
     queryFn: async () =>
-      browserRequests().call("GET /v1/admin/depreciation-runs/preview", { query: { period: month } }),
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/depreciation-runs/preview", {
+          params: { query: { period: month } },
+        })
+      ).data!,
   });
   const runs = useQuery({
     queryKey: queryKeys.list("admin", "depreciation-run"),
@@ -615,24 +618,14 @@ export function DepreciationView() {
                 </Link>
               ),
             },
-            { id: "category", header: t("category"), cell: (row) => row.categoryCode },
+            // CONTRACT-GAP admin.depreciation-preview — a preview line carries no category, net book value or
+            // "fully depreciated" flag, so those columns are left out (the asset page shows them).
             { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.amount) },
             {
               id: "after",
               header: t("accumulatedAfter"),
               numeric: true,
               cell: (row) => format.thb(row.accumulatedAfter),
-            },
-            { id: "nbv", header: t("nbvAfter"), numeric: true, cell: (row) => format.thb(row.netBookValueAfter) },
-            {
-              id: "last",
-              header: t("last"),
-              cell: (row) =>
-                row.fullyDepreciated ? (
-                  <Badge tone="info" size="sm">
-                    {t("fully")}
-                  </Badge>
-                ) : null,
             },
           ]}
         />

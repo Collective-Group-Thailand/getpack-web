@@ -44,10 +44,16 @@ export const CREDIT_NOTE_REQUEST_STATUS = defineStatusMap<CreditNoteRequestStatu
   withdrawn: { tone: "neutral", icon: "undo", labelKey: "creditNoteRequest.withdrawn" },
 });
 
-/** A payment reminder (D-122). */
+/** A payment reminder (D-122) or a document sent to the customer (D-143): its notification's state. */
 export const DUNNING_STATUS = defineStatusMap<DunningStatus>({
-  sent: { tone: "success", icon: "send", labelKey: "dunning.sent" },
+  queued: { tone: "neutral", icon: "hourglass", labelKey: "dunning.queued" },
+  deferred_quiet_hours: { tone: "neutral", icon: "clock", labelKey: "dunning.deferredQuietHours" },
+  suppressed_no_consent: { tone: "warning", icon: "ban", labelKey: "dunning.suppressedNoConsent" },
+  sent: { tone: "info", icon: "send", labelKey: "dunning.sent" },
+  delivered: { tone: "success", icon: "check", labelKey: "dunning.delivered" },
+  read: { tone: "success", icon: "eye", labelKey: "dunning.read" },
   failed: { tone: "danger", icon: "warning", labelKey: "dunning.failed" },
+  bounced: { tone: "danger", icon: "warning", labelKey: "dunning.bounced" },
 });
 
 /** A factory purchase order (§6). */

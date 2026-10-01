@@ -14,6 +14,7 @@
 
 import type { Schemas } from "@/lib/api/types";
 
+import { can, type StaffPersona } from "../../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../../support";
 import { acceptedOn, deliveries, policyOf, statementStates, statementsOf, type Delivery } from "../../partner/billing";
 import { buyAmountOf, extraOf, factoryJobs, titleOf } from "../../partner/jobs";
@@ -522,7 +523,27 @@ function statementsAll() {
   return factoryStores().flatMap((store) => statementsOf(store.factory.id).map((statement) => ({ store, statement })));
 }
 
-function toStatement({ store, statement }: ReturnType<typeof statementsAll>[number]): Statement {
+/**
+ * packio-api's `ADMIN_STATEMENT_ACTIONS` (payables/statement-actions.ts, v0.6.0): capture a tax
+ * invoice while none is recorded or validated (a rejected one is replaced), validate a recorded one.
+ */
+function statementActions(dto: Omit<Statement, "nextActions">, who: StaffPersona | null): Statement["nextActions"] {
+  if (!can(who ?? undefined, "payables.manage")) return [];
+  const statuses = dto.taxInvoices.map((invoice) => invoice.status);
+  const actions: Statement["nextActions"] = [];
+  if (dto.status !== "superseded" && !statuses.some((status) => status === "recorded" || status === "validated"))
+    actions.push({ key: "billing_statement.capture_tax_invoice", irreversible: false, disabledReason: null });
+  if (statuses.includes("recorded"))
+    actions.push({ key: "billing_statement.validate_tax_invoice", irreversible: false, disabledReason: null });
+  return actions;
+}
+
+function toStatement(found: ReturnType<typeof statementsAll>[number], who: StaffPersona | null): Statement {
+  const dto = statementOf(found);
+  return { ...dto, nextActions: statementActions(dto, who) };
+}
+
+function statementOf({ store, statement }: ReturnType<typeof statementsAll>[number]): Statement {
   const registered = store.factory.isVatRegistered;
   // Void tax invoices are left out of the statement (and of its tax-invoice status).
   const invoices = statementInvoices({ store, statement }).filter((invoice) => invoice.status !== "void");
@@ -976,27 +997,28 @@ export const payableHandlers = [
       .filter((gr) => matchesQuery(query.q, gr.grNumber, gr.poNumber));
     return paginate(sort(rows, query, "receivedOn", "desc"), query);
   }),
-  finance.get("/v1/admin/billing-statements", "payables.read", ({ query }) => {
+  finance.get("/v1/admin/billing-statements", "payables.read", ({ query, persona }) => {
     const rows = statementsAll()
-      .map(toStatement)
+      .map((found) => toStatement(found, persona))
       .filter((statement) => !query.factoryId || statement.factoryId === query.factoryId)
       .filter((statement) => !query.status || statement.status === query.status)
       .filter((statement) => matchesQuery(query.q, statement.bsNumber));
     return paginate(sort(rows, query, "periodTo", "desc"), query);
   }),
-  finance.get("/v1/admin/billing-statements/{statementId}", "payables.read", ({ params }) => {
+  finance.get("/v1/admin/billing-statements/{statementId}", "payables.read", ({ params, persona }) => {
     const found = statementsAll().find(({ statement }) => statement.id === params.statementId);
-    return found ? toStatement(found) : notFound("ใบวางบิล");
+    return found ? toStatement(found, persona) : notFound("ใบวางบิล");
   }),
   finance.post(
     "/v1/admin/billing-statements/{statementId}/tax-invoices",
     { permission: "payables.manage", idempotent: true, status: 201 },
-    ({ params, body }) => {
+    ({ params, body, persona }) => {
       const found = statementsAll().find(({ statement }) => statement.id === params.statementId);
       if (!found) return notFound("ใบวางบิล");
       const state = statementStates.get(found.statement.id)!;
-      if (found.statement.status !== "confirmed")
-        return problem(409, "payables.statement_not_confirmed", "โรงงานต้องยืนยันใบวางบิลก่อนจึงบันทึกใบกำกับภาษีได้");
+      // The same check `billing_statement.capture_tax_invoice` offers on (ADMIN_STATEMENT_ACTIONS).
+      if (!statementActions(statementOf(found), persona).some((a) => a.key === "billing_statement.capture_tax_invoice"))
+        return problem(409, "payables.invoice_duplicate", "ใบวางบิลนี้มีใบกำกับภาษีที่บันทึกหรือตรวจรับแล้ว");
       const errors = [
         ...(!body.vendorInvoiceNo?.trim()
           ? [{ path: "vendorInvoiceNo", code: "required", message: "กรอกเลขที่ใบกำกับภาษีของโรงงาน" }]

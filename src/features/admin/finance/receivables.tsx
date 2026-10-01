@@ -10,7 +10,6 @@ import { isZeroMoney, moneyText } from "@/domain/money";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -608,7 +607,10 @@ export function CompanyStatements() {
   );
 }
 
-/** Reminders sent for what is owed (D-122; CONTRACT-REQUEST admin.dunning-log), newest first. */
+/**
+ * Reminders sent for what is owed (D-122; `admin.customerDocuments.dunningLog`), newest first: one
+ * row per channel each reminder went out on, the recipient masked (PDPA), and what became of it.
+ */
 export function DunningLog({
   initial,
   customerId,
@@ -618,20 +620,30 @@ export function DunningLog({
 }) {
   const t = useTranslations("finance.receivables.dunning");
   const columns: DataTableColumn<DunningEntry>[] = [
-    { id: "sentAt", header: t("sentAt"), cell: (row) => <When at={row.sentAt} /> },
+    { id: "remindedAt", header: t("remindedAt"), cell: (row) => <When at={row.remindedAt} /> },
     {
       id: "document",
       header: t("document"),
       cell: (row) => <DocumentLink document={{ id: row.documentId, docNumber: row.docNumber }} />,
     },
-    { id: "kind", header: t("kind"), cell: (row) => t(`kinds.${row.kind}`) },
-    { id: "channel", header: t("channel"), cell: (row) => t(`channels.${row.channel}`) },
-    { id: "recipient", header: t("recipient"), cell: (row) => row.recipient },
-    { id: "status", header: t("status"), cell: (row) => <StatusChip map={DUNNING_STATUS} value={row.status} /> },
+    { id: "kind", header: t("kind"), cell: (row) => t(`kinds.${row.stage}`) },
+    { id: "channel", header: t("channel"), cell: (row) => (row.channel ? t(`channels.${row.channel}`) : t("noRoute")) },
+    { id: "recipient", header: t("recipient"), cell: (row) => row.recipient ?? "—" },
+    {
+      id: "status",
+      header: t("status"),
+      cell: (row) => (row.status ? <StatusChip map={DUNNING_STATUS} value={row.status} /> : "—"),
+    },
+    { id: "sentAt", header: t("sentAt"), cell: (row) => (row.sentAt ? <When at={row.sentAt} /> : "—") },
   ];
   const scoped = useQuery({
     queryKey: queryKeys.list("admin", "dunning", { customerId }),
-    queryFn: () => browserRequests().call("GET /v1/admin/dunning-log", { query: { customerId, perPage: 50 } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/dunning-log", {
+          params: { query: { customerId, perPage: 50 } },
+        })
+      ).data!,
     enabled: Boolean(customerId),
   });
   if (customerId)
@@ -641,7 +653,7 @@ export function DunningLog({
         columns={columns}
         rows={scoped.data?.data ?? []}
         loading={scoped.isPending}
-        getRowId={(row) => row.id}
+        getRowId={dunningList.getRowId}
         density="compact"
         empty={<EmptyState icon="send" title={t("empty")} />}
       />
@@ -652,7 +664,7 @@ export function DunningLog({
       columns={columns}
       caption={t("title")}
       initial={initial}
-      rowTone={(row) => (row.status === "failed" ? "warning" : undefined)}
+      rowTone={(row) => (row.status === "failed" || row.status === "bounced" ? "warning" : undefined)}
       empty={{ title: t("empty") }}
     />
   );

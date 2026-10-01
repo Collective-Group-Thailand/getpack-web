@@ -517,8 +517,14 @@
     "withdrawn": "Withdrawn"
   },
   "dunning": {
+    "queued": "Queued",
+    "deferredQuietHours": "Waiting for quiet hours to end",
+    "suppressedNoConsent": "Not sent (no consent)",
     "sent": "Sent",
-    "failed": "Failed"
+    "delivered": "Delivered",
+    "read": "Read",
+    "failed": "Failed",
+    "bounced": "Bounced"
   },
   "purchaseOrder": {
     "issued": "Sent to the factory",

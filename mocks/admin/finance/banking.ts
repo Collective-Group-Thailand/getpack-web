@@ -13,7 +13,6 @@
 
 import type { Schemas } from "@/lib/api/types";
 
-import { mockRequest } from "../../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../../support";
 import { baht, orders } from "../commerce";
 import { registerQueue } from "../console";
@@ -22,7 +21,7 @@ import { companyAccounts } from "./accounts";
 import { journals, movement, post, satangOf, today } from "./books";
 import { runs } from "./payouts";
 import { payments, recordInstalment, refunds } from "./receivables";
-import { finance, forbiddenUnless, invalid, isMoney, notFound } from "./support";
+import { finance, invalid, isMoney, notFound } from "./support";
 
 type Line = Schemas["BankStatementLineDto"];
 type Settlement = Schemas["SettlementDto"] & { companyBankAccountId: string; providerRefs: string[]; posted: boolean };
@@ -531,9 +530,7 @@ export const bankingHandlers = [
       .filter((line) => matchesQuery(query.q, line.description, line.reference, line.amount));
     return paginate(sortBy(rows, query.sort ?? "txnDate", query.order ?? "desc"), query);
   }),
-  mockRequest("GET /v1/admin/bank-statement-lines/{lineId}/suggestions", ({ params, request }) => {
-    const denied = forbiddenUnless(request, "banking.read");
-    if (denied) return denied;
+  finance.get("/v1/admin/bank-statement-lines/{lineId}/suggestions", "banking.read", ({ params }) => {
     const line = lines.find((item) => item.id === params.lineId);
     if (!line) return notFound("รายการธนาคาร");
     return suggestionsFor(line).map(({ candidate, reasons }) => ({
@@ -568,31 +565,34 @@ export const bankingHandlers = [
       return line;
     },
   ),
-  mockRequest("POST /v1/admin/bank-statement-lines/{lineId}/actions/split", ({ params, body, request }) => {
-    const denied = forbiddenUnless(request, "banking.manage");
-    if (denied) return denied;
-    const line = lines.find((item) => item.id === params.lineId);
-    if (!line) return notFound("รายการธนาคาร");
-    if (line.matchStatus !== "unmatched")
-      return problem(409, "banking.line_already_matched", "รายการนี้จับคู่หรือจัดการไปแล้ว");
-    const total = body.parts.reduce((sum, part) => sum + satangOf(part.amount), 0);
-    if (total !== satangOf(line.amount))
-      return problem(
-        422,
-        "banking.amount_mismatch",
-        `ยอดรวมของส่วนที่แบ่ง ${baht(total)} ไม่เท่ากับรายการธนาคาร ${line.amount}`,
-      );
-    const open = candidates();
-    const picked = body.parts.map((part) => ({
-      part,
-      candidate: open.find((item) => item.targetType === part.targetType && item.targetId === part.targetId),
-    }));
-    if (picked.some(({ candidate, part }) => !candidate || candidate.amount !== satangOf(part.amount)))
-      return problem(422, "banking.target_invalid", "ส่วนที่แบ่งต้องตรงกับยอดของรายการที่เลือกแต่ละรายการ");
-    for (const { candidate, part } of picked) applyMatch(line, candidate!, satangOf(part.amount), false, null);
-    line.matchStatus = "matched";
-    return { id: line.id, matchStatus: line.matchStatus };
-  }),
+  finance.post(
+    "/v1/admin/bank-statement-lines/{lineId}/actions/split",
+    { permission: "banking.manage", idempotent: true },
+    ({ params, body, persona }) => {
+      const line = lines.find((item) => item.id === params.lineId);
+      if (!line) return notFound("รายการธนาคาร");
+      if (line.matchStatus !== "unmatched")
+        return problem(409, "banking.line_already_matched", "รายการนี้จับคู่หรือจัดการไปแล้ว");
+      const total = body.parts.reduce((sum, part) => sum + satangOf(part.amount), 0);
+      if (total !== satangOf(line.amount))
+        return problem(
+          422,
+          "banking.amount_mismatch",
+          `ยอดรวมของส่วนที่แบ่ง ${baht(total)} ไม่เท่ากับรายการธนาคาร ${line.amount}`,
+        );
+      const open = candidates();
+      const picked = body.parts.map((part) => ({
+        part,
+        candidate: open.find((item) => item.targetType === part.targetType && item.targetId === part.targetId),
+      }));
+      if (picked.some(({ candidate, part }) => !candidate || candidate.amount !== satangOf(part.amount)))
+        return problem(422, "banking.target_invalid", "ส่วนที่แบ่งต้องตรงกับยอดของรายการที่เลือกแต่ละรายการ");
+      for (const { candidate, part } of picked) applyMatch(line, candidate!, satangOf(part.amount), false, persona.id);
+      line.matchStatus = "matched";
+      // The published answer is the line itself, with its matches (as `admin.banking.matchLine`).
+      return line;
+    },
+  ),
   finance.post(
     "/v1/admin/bank-statement-lines/{lineId}/actions/ignore",
     { permission: "banking.manage", idempotent: true },
@@ -732,12 +732,11 @@ export const bankingHandlers = [
       };
     },
   ),
-  mockRequest("GET /v1/admin/gateway-settlements", ({ query, request }) => {
-    const denied = forbiddenUnless(request, "banking.read");
-    if (denied) return denied;
+  finance.get("/v1/admin/gateway-settlements", "banking.read", ({ query }) => {
     const rows = settlements
       .filter((item) => !query.status || item.status === query.status)
       .filter((item) => !query.provider || item.provider === query.provider)
+      .filter((item) => matchesQuery(query.q, item.settlementDate, item.grossAmount, item.netAmount))
       .map((item) => ({
         id: item.id,
         provider: item.provider,
