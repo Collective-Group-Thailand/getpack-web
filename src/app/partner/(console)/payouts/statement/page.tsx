@@ -17,21 +17,28 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const isDay = (value: string | undefined) => (value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined);
 
-/** The factory's account with Packio between two dates: confirmed statements, payouts, deductions. */
+/**
+ * The factory's account with Packio between two dates (`partner.payables.statementOfAccount`): goods
+ * received raise what Packio owes, payouts and deductions lower it, with the running balance and the
+ * period's totals as the API gives them.
+ */
 export default async function StatementOfAccountPage({ searchParams }: Props) {
   const query = await searchParams;
   const t = await getTranslations("partnerBilling.account");
   const format = await getFormat();
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
+  const { contract } = await partnerServerApis();
   const range = { ...(isDay(query.from) ? { from: query.from } : {}), ...(isDay(query.to) ? { to: query.to } : {}) };
-  const account = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/statement-of-account", {
-      path: { factoryId: context.factoryId },
-      query: range,
-    }),
+  const account = await attempt(
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/statement-of-account", {
+          params: { path: { factoryId: context.factoryId }, query: range },
+        })
+      ).data!,
   );
   const back = { href: "/payouts", label: t("back") };
+  const amount = (value: string) => (/^-?0+(\.0+)?$/.test(value) ? "" : format.thb(value));
 
   return (
     <PartnerPage title={t("title")} back={back} description={t("body")} wide>
@@ -89,18 +96,20 @@ export default async function StatementOfAccountPage({ searchParams }: Props) {
                 <tr key={`${entry.reference}-${index}`} className="border-border border-t">
                   <td className="p-3 whitespace-nowrap">{format.date(entry.date)}</td>
                   <td className="p-3">
-                    <span className="block font-mono">{entry.reference}</span>
-                    <span className="text-muted">{entry.description}</span>
+                    {entry.reference ? <span className="block font-mono">{entry.reference}</span> : null}
+                    <span className="text-muted">{t(`kinds.${entry.kind}`)}</span>
                   </td>
-                  <td className="p-3 text-end">{entry.credit === "0.00" ? "" : format.thb(entry.credit)}</td>
-                  <td className="p-3 text-end">{entry.debit === "0.00" ? "" : format.thb(entry.debit)}</td>
+                  <td className="p-3 text-end">{amount(entry.credit)}</td>
+                  <td className="p-3 text-end">{amount(entry.debit)}</td>
                   <td className="p-3 text-end">{format.thb(entry.balance)}</td>
                 </tr>
               ))}
               <tr className="border-border border-t font-semibold">
-                <td className="p-3" colSpan={4}>
+                <td className="p-3" colSpan={2}>
                   {t("closing")}
                 </td>
+                <td className="p-3 text-end">{format.thb(account.data.totalCredit)}</td>
+                <td className="p-3 text-end">{format.thb(account.data.totalDebit)}</td>
                 <td className="p-3 text-end">{format.thb(account.data.closing)}</td>
               </tr>
             </tbody>

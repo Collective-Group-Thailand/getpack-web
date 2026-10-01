@@ -20,19 +20,21 @@ const METRICS = [
 ] as const;
 
 /**
- * The factory's own monthly scorecard (D-155) — the same numbers Packio's allocation weighs
- * (D-075): this month so far, the last full month, and the trend.
+ * The factory's own monthly scorecard (D-155, `partner.production.scorecards`) — the same numbers
+ * Packio's allocation weighs (D-075): this month so far, the last full month, and the trend.
  */
 export default async function PerformancePage() {
   const t = await getTranslations("partnerAccount.performance");
   const format = await getFormat();
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
-  const cards = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/scorecards", {
-      path: { factoryId: context.factoryId },
-      query: { months: 6 },
-    }),
+  const { contract } = await partnerServerApis();
+  const cards = await attempt(
+    async () =>
+      (
+        await contract.GET("/v1/partner/factories/{factoryId}/scorecards", {
+          params: { path: { factoryId: context.factoryId }, query: { months: 6 } },
+        })
+      ).data ?? [],
   );
   if (!cards.data)
     return (
@@ -41,7 +43,8 @@ export default async function PerformancePage() {
       </PartnerPage>
     );
   const [current, last] = cards.data;
-  const monthLabel = (month: string) => format.date(`${month}-15`, { style: "month" });
+  // `month` is the first day of the month (`ScorecardDto`); mid-month keeps every zone in the same month.
+  const monthLabel = (month: string) => format.date(`${month.slice(0, 7)}-15`, { style: "month" });
   const shown = last ?? current;
 
   return (
@@ -75,7 +78,10 @@ export default async function PerformancePage() {
         </PartnerSection>
       ) : null}
       {current && last ? (
-        <p className="text-muted text-sm">{t("currentNote", { month: monthLabel(current.month) })}</p>
+        <p className="text-muted text-sm">
+          {t("currentNote", { month: monthLabel(current.month) })}{" "}
+          {t("computedAt", { date: format.dateTime(current.computedAt) })}
+        </p>
       ) : null}
       <PartnerSection title={t("trend")}>
         <ScoreChart
