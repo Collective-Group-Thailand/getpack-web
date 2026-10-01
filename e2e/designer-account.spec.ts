@@ -115,12 +115,15 @@ test("a guest's browser design is imported into the account after sign-in", asyn
 });
 
 test("the order's artwork page opens the designer on its box", async ({ page }) => {
-  test.fixme(true, "CONTRACT-GAP store.artwork — the box's dieline key and dimensions are not published");
   await signInAsCustomer(page, `/account/orders/${DESIGN_ORDER}/artwork`, MOCK_DESIGNER_PHONE);
+  // The order's dieline and size (`store.artwork.getRules`) and its product (`OrderDto.summary`).
+  await page.getByRole("link", { name: "ออกแบบออนไลน์บนกล่องนี้" }).click();
+  await expect(page).toHaveURL(/\/design\/new\?style=[a-z-]+&l=\d+&w=\d+&h=\d+/);
+  await expect(page).toHaveURL(new RegExp(`order=${DESIGN_ORDER}`));
 });
 
 test("a design for an order is sent to print and prepress takes it", async ({ page }) => {
-  // The link the artwork page used to build (see the fixme above); the designer still takes it.
+  // The link the artwork page builds (see the test above), with the product the order names.
   const linked = new URLSearchParams({
     // A published design needs its product (store.catalog-product-ref).
     product: "tuck-end-box",

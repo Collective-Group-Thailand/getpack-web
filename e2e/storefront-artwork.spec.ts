@@ -43,8 +43,9 @@ test.describe("artwork and proofs", () => {
       .click();
     await expect(page).toHaveURL(new RegExp(`/account/orders/${ARTIST_ORDER}/artwork$`));
     await expect(page.getByRole("heading", { level: 1, name: "ไฟล์งานพิมพ์" })).toBeVisible();
-    // CONTRACT-GAP store.artwork — the file rules are not published; the page says what is checked.
+    // The order's rules: what preflight checks, and the box it is laid out on.
     await expect(page.getByText(/ผ่านการตรวจอัตโนมัติ/)).toBeVisible();
+    await expect(page.getByText("ระยะตัดตกด้านละ 3 มม.")).toBeVisible();
     await page.getByRole("button", { name: "ขอลิงก์แบบไดคัท" }).click();
     await expect(page.getByRole("link", { name: "เปิดแบบไดคัท" })).toHaveAttribute("href", /^data:image\/svg/);
     await expectNoViolations(page);
@@ -98,10 +99,16 @@ test.describe("artwork and proofs", () => {
     await expect(page.getByRole("heading", { name: "ความเห็น (2)" })).toBeVisible();
     await expectNoViolations(page);
 
-    // Approval restates what is being approved (the checklist is not published: see below).
-    await page.getByRole("button", { name: "อนุมัติเพื่อผลิต" }).click();
+    // Approval waits for every checklist item (`artwork.approval_checklist`), then restates what is
+    // being approved and asks for the order code (irreversible, D-073).
+    const approve = page.getByRole("button", { name: "อนุมัติเพื่อผลิต" });
+    await expect(approve).toBeDisabled();
+    const checklist = page.getByRole("group", { name: "ตรวจทุกข้อก่อนอนุมัติ" });
+    for (const box of await checklist.getByRole("checkbox").all()) await box.click();
+    await approve.click();
     const dialog = page.getByRole("alertdialog", { name: "อนุมัติปรู๊ฟฉบับที่ 1?" });
     await expect(dialog).toContainText(ARTIST_CODE);
+    await dialog.getByRole("textbox").fill(ARTIST_CODE);
     await dialog.getByRole("button", { name: "อนุมัติเพื่อผลิต" }).click();
     await expect(page.getByText("อนุมัติแล้ว", { exact: true }).first()).toBeVisible();
     await expect(page.getByRole("complementary", { name: "ความเห็นและการอนุมัติ" })).toContainText(
@@ -110,17 +117,17 @@ test.describe("artwork and proofs", () => {
     await expect(page.getByRole("button", { name: "อนุมัติเพื่อผลิต" })).toHaveCount(0);
   });
 
-  test("approval waits for every checklist item, and the record names who approved", async ({ page }) => {
-    test.fixme(
-      true,
-      "CONTRACT-GAP store.proofs — no approval checklist or approver's name is published (approveProof takes no body)",
-    );
+  test("the approval record names who approved and what they confirmed", async ({ page }) => {
     await signInAsCustomer(page, `/account/orders/${ARTIST_ORDER}/proof`, MOCK_ARTIST_PHONE);
+    const record = page.getByRole("complementary", { name: "ความเห็นและการอนุมัติ" });
+    await expect(record).toContainText(/ตัดสินใจเมื่อ/);
+    await expect(record).toContainText("ตรวจตัวสะกดและข้อความครบแล้ว");
   });
 
   test("the proof opens as the box in 3D", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.artwork — the box's dieline key and dimensions are not published");
     await signInAsCustomer(page, `/account/orders/${ARTIST_ORDER}/proof`, MOCK_ARTIST_PHONE);
+    await page.getByRole("radio", { name: "กล่อง 3D" }).click();
+    await expect(page.getByRole("img", { name: /ตัวอย่างกล่อง 3 มิติ ขนาด 80 × 50 × 120 มม\./ })).toBeVisible();
   });
 });
 

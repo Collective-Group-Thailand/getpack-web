@@ -1,6 +1,5 @@
 import type { Client } from "openapi-fetch";
 
-import { artworkActions, type ArtworkActions } from "@/domain/next-actions/store";
 import { isApiError } from "@/lib/api/problem";
 import type { ApiPaths, Schemas } from "@/lib/api/types";
 
@@ -15,11 +14,9 @@ export type Instalment = Schemas["StoreInstalmentDto"];
 /**
  * One order's artwork as its pages show it, composed from the published reads (the backend has
  * no single aggregate): the order, its submissions, proofs, dieline templates and — for hired
- * design — the design service, each newest first.
- *
- * CONTRACT-GAP store.artwork — the file rules (bleed, safe margin, resolution, colour, accepted
- * types and sizes), the approval checklist, the dieline key and the box's dimensions are not
- * published, so the pages say what preflight answers rather than what it will check.
+ * design — the design service, each newest first — and the order's artwork rules
+ * (`store.artwork.getRules`: what files it takes, what preflight checks, the approval checklist, the
+ * dieline and the box's size). What may be done is the order's own `nextActions`.
  */
 export interface Artwork {
   order: Order;
@@ -29,8 +26,24 @@ export interface Artwork {
   designService: DesignService | null;
   /** The instalment a charged design round waits on (D-071), with its group (`store.paymentSchedules.listInstalments`). */
   feeInstalment: Instalment | null;
+  /** `null` when the API cannot answer; the page then says what preflight answers. */
+  rules: Rules | null;
   actions: ArtworkActions;
 }
+
+export type Rules = Schemas["ArtworkRulesDto"];
+
+/** What the artwork pages offer: from the order's `nextActions`, and hired design's own status (D-071). */
+export interface ArtworkActions {
+  upload: boolean;
+  reviewProof: boolean;
+  submitBrief: boolean;
+  /** Approve the delivered design, or ask for another round (D-071). */
+  reviewDesign: boolean;
+}
+
+const offers = (order: Order, key: string) =>
+  order.nextActions.some((action) => action.key === key && !action.disabledReason);
 
 /** Most files one submission takes (`SubmitArtworkDto.files`, maxItems in the contract). */
 export const MAX_SUBMISSION_FILES = 20;
@@ -74,7 +87,7 @@ export async function loadArtwork(api: Client<ApiPaths>, orderId: string): Promi
   const path = { params: { path: { orderId } } };
   const order = await orNull(api.GET("/v1/store/orders/{orderId}", path).then(({ data }) => data!));
   if (!order) return null;
-  const [submissions, proofs, templates, designService] = await Promise.all([
+  const [submissions, proofs, templates, designService, rules] = await Promise.all([
     api.GET("/v1/store/orders/{orderId}/artwork-submissions", path).then(({ data }) => newestFirst(data!)),
     api.GET("/v1/store/orders/{orderId}/proofs", path).then(({ data }) => newestFirst(data!)),
     api
@@ -83,8 +96,9 @@ export async function loadArtwork(api: Client<ApiPaths>, orderId: string): Promi
     order.designOption === "hired_design"
       ? orNull(api.GET("/v1/store/orders/{orderId}/design-service", path).then(({ data }) => data!))
       : Promise.resolve(null),
+    orNull(api.GET("/v1/store/orders/{orderId}/artwork-rules", path).then(({ data }) => data!)),
   ]);
-  const latest = submissions[0] ?? null;
+  const proofPending = Boolean(pendingProof(proofs));
   return {
     order,
     submissions,
@@ -92,13 +106,13 @@ export async function loadArtwork(api: Client<ApiPaths>, orderId: string): Promi
     templates,
     designService,
     feeInstalment: await feeInstalmentOf(api, order, designService),
-    actions: artworkActions({
-      artworkStatus: order.artworkStatus,
-      designOption: order.designOption,
-      latest,
-      proofPending: Boolean(pendingProof(proofs)),
-      designServiceStatus: designService?.status ?? null,
-    }),
+    rules,
+    actions: {
+      upload: offers(order, "order.upload_artwork"),
+      reviewProof: offers(order, "order.approve_proof") || proofPending,
+      submitBrief: designService?.status === "brief_pending",
+      reviewDesign: designService?.status === "delivered" && proofPending,
+    },
   };
 }
 

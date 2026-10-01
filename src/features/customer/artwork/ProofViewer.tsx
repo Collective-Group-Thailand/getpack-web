@@ -1,10 +1,13 @@
 "use client";
 
+import { resolveStyleId } from "@packio/dieline";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
+import { pick } from "@/features/customer/catalog/localize";
 import { FileLink } from "@/features/customer/files/FileLink";
+import { BoxPreview3D } from "@/features/designer/components/BoxPreview3D";
 import { useFileUrl } from "@/features/customer/files/files";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -15,6 +18,7 @@ import { isApiError } from "@/lib/api/problem";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Textarea } from "@/ui/components/Input";
@@ -271,12 +275,16 @@ function Slider({ proof, other, slider }: { proof: Proof; other: Proof; slider: 
  * Placing a comment by pointer is the quick way, never the only one: "comment on the whole page"
  * needs no pointing (WCAG 2.5.7), and every marker is a button in the tab order.
  *
- * CONTRACT-GAP store.proofs — no approval checklist, no approver's name and no rasterised pages
- * are published, and the box's size is not (store.artwork), so there is no 3D view of it here.
+ * Approving confirms every item of the approval checklist the API sets (`artwork.approval_checklist`)
+ * and may carry a note; the record names who decided and what they confirmed. The box can be seen
+ * in 3D from the order's dieline and size.
+ *
+ * CONTRACT-GAP store.proofs — page rasterisation is deferred (A9): a PDF proof opens as a file.
  */
 export function ProofViewer({ initial, version }: { initial: Artwork; version: number | null }) {
   const t = useTranslations("proof");
   const format = useFormat();
+  const locale = useLocale();
   const router = useRouter();
   const queryClient = useQueryClient();
   const orderId = initial.order.id;
@@ -289,7 +297,14 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
   const proofs = artwork.proofs;
   const [versionNo, setVersionNo] = useState(version ?? proofs[0]?.versionNo ?? 1);
   const proof = proofs.find((candidate) => candidate.versionNo === versionNo) ?? proofs[0]!;
-  const [view, setView] = useState<"proof" | "compare">("proof");
+  const [view, setView] = useState<"proof" | "compare" | "3d">("proof");
+  // The box in 3D from the order's dieline and size (`store.artwork.getRules`, U-B0.1).
+  const dieline = artwork.rules?.dieline ?? null;
+  const style = resolveStyleId(dieline?.dielineKey ?? dieline?.patternCode);
+  const checklist = artwork.rules?.approvalChecklist ?? [];
+  const [checked, setChecked] = useState<string[]>([]);
+  const [approvalNote, setApprovalNote] = useState("");
+  const complete = checklist.every((item) => checked.includes(item.key));
   const [compareMode, setCompareMode] = useState<"side" | "slider">("side");
   const [against, setAgainst] = useState<number>(
     proofs.find((candidate) => candidate.versionNo !== proof.versionNo)?.versionNo ?? proof.versionNo,
@@ -360,6 +375,10 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
       if (outcome === "approve")
         await browserApi().POST("/v1/store/proofs/{proofId}/actions/approve", {
           params: { path: { proofId: proof.id }, header: { "Idempotency-Key": key.current } },
+          body: {
+            ...(checklist.length > 0 ? { checklist: checked } : {}),
+            ...(approvalNote.trim() ? { note: approvalNote.trim() } : {}),
+          },
         });
       else
         await browserApi().POST("/v1/store/proofs/{proofId}/actions/request-changes", {
@@ -403,7 +422,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
           </div>
         ) : null}
         <StatusChip map={PROOF_STATUS} value={proof.status} size="md" />
-        {proofs.length > 1 && pointable ? (
+        {(proofs.length > 1 && pointable) || style ? (
           <SegmentedControl
             label={t("view")}
             value={view}
@@ -414,7 +433,8 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
             }}
             options={[
               { value: "proof", label: t("views.proof") },
-              { value: "compare" as const, label: t("views.compare") },
+              ...(proofs.length > 1 && pointable ? [{ value: "compare" as const, label: t("views.compare") }] : []),
+              ...(style ? [{ value: "3d" as const, label: t("views.3d") }] : []),
             ]}
           />
         ) : null}
@@ -501,7 +521,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 label={t("canvas", { version: proof.versionNo })}
               />
             </>
-          ) : (
+          ) : view === "compare" ? (
             <>
               <div className="flex flex-wrap items-center gap-3">
                 <div className="w-48">
@@ -562,7 +582,22 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 </div>
               )}
             </>
-          )}
+          ) : style && dieline ? (
+            <BoxPreview3D
+              style={style}
+              dims={{ length: dieline.lengthMm, width: dieline.widthMm, height: dieline.depthMm }}
+              colour="#e9e3d8"
+              printed
+              label={t("box3d", { l: dieline.lengthMm, w: dieline.widthMm, h: dieline.depthMm })}
+              labels={{
+                rotateLeft: t("rotateLeft"),
+                rotateRight: t("rotateRight"),
+                tiltUp: t("tiltUp"),
+                tiltDown: t("tiltDown"),
+                reset: t("reset"),
+              }}
+            />
+          ) : null}
         </div>
 
         <aside aria-label={t("panel")} className="flex flex-col gap-6">
@@ -666,9 +701,35 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                 {t("decide")}
               </h2>
               <p className="text-muted text-sm">{t("approveIntro")}</p>
-              <Button onClick={() => setConfirming(true)} iconStart="check">
+              {checklist.length > 0 ? (
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="mb-1 text-sm font-medium">{t("checklist")}</legend>
+                  {checklist.map((item) => (
+                    <Checkbox
+                      key={item.key}
+                      checked={checked.includes(item.key)}
+                      onCheckedChange={(value) =>
+                        setChecked((current) =>
+                          value === true ? [...current, item.key] : current.filter((key) => key !== item.key),
+                        )
+                      }
+                      label={pick(locale, item.labelTh, item.labelEn)}
+                    />
+                  ))}
+                </fieldset>
+              ) : null}
+              <Field label={t("approvalNote")}>
+                <Textarea
+                  rows={2}
+                  maxLength={2000}
+                  value={approvalNote}
+                  onChange={(event) => setApprovalNote(event.target.value)}
+                />
+              </Field>
+              <Button onClick={() => setConfirming(true)} iconStart="check" disabled={!complete}>
                 {t("approve")}
               </Button>
+              {!complete ? <p className="text-muted text-xs">{t("checklistHint")}</p> : null}
               <Field label={t("changesLabel")} hint={t("changesHint")}>
                 <Textarea
                   rows={3}
@@ -688,7 +749,17 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
             </section>
           ) : decided && proof.decidedAt ? (
             <Callout tone={decided === "approved" ? "success" : "warning"} title={t(`decision.${decided}`)}>
-              {t("decisionAt", { date: format.dateTime(proof.decidedAt) })}
+              {proof.decidedByName
+                ? t("decisionBy", { date: format.dateTime(proof.decidedAt), name: proof.decidedByName })
+                : t("decisionAt", { date: format.dateTime(proof.decidedAt) })}
+              {proof.decisionChecklist.length > 0 ? (
+                <ul className="mt-1 list-disc ps-5 text-xs">
+                  {proof.decisionChecklist.map((key) => {
+                    const item = checklist.find((entry) => entry.key === key);
+                    return <li key={key}>{item ? pick(locale, item.labelTh, item.labelEn) : key}</li>;
+                  })}
+                </ul>
+              ) : null}
               {proof.decisionComment ? <span className="mt-1 block">{proof.decisionComment}</span> : null}
               {proof.approvedFileSha256 ? (
                 <span className="mt-1 block font-mono text-xs break-all">
@@ -708,6 +779,8 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
         confirmLabel={t("approve")}
         cancelLabel={t("cancel")}
         loading={busy}
+        confirmationPhrase={artwork.order.orderCode}
+        confirmationLabel={t("approveType", { code: artwork.order.orderCode })}
         onConfirm={() => void decide("approve")}
       />
     </div>
