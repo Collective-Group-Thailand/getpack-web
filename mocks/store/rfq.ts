@@ -1,6 +1,6 @@
 /**
- * Requests for quotation from the storefront: the form stays mocked (CONTRACT-REQUEST
- * store.rfq-forms), the RFQs are at their published paths (`store.rfqs.*`, U-F0.2).
+ * Requests for quotation from the storefront: the category's form (`store.rfqs.getForm`) and the
+ * RFQs (`store.rfqs.*`), at their published paths.
  *
  * The customer's RFQs are the **same rows** the RFQ desk works on (`../admin/rfq.ts`): what a
  * customer submits here lands in the desk's "new" queue, the quote CS sends there shows here,
@@ -9,23 +9,20 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { storeRfqForm } from "@/lib/api/requests/store-rfq";
 import type { Schemas } from "@/lib/api/types";
 
 import { PRODUCT_TYPES } from "../admin/catalog";
 import { customers as fakeCustomers } from "../admin/commerce";
 import { addCustomerRfq, customerAcceptQuote, rfqMessages, rfqs } from "../admin/rfq";
 import type { RfqRow } from "../admin/rfq-model";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 import { nextQuoteId, quotesOf, QUOTE_VALIDITY_DAYS, type StoreQuote } from "./quotes";
 
 type AdminRfq = RfqRow;
-type Form = z.output<typeof storeRfqForm>;
-type Field = Form["fields"][number];
+type Form = Schemas["StoreRfqFormDto"];
+type Field = Schemas["RfqFormFieldDto"];
 
 const english = (request: Request) => request.headers.get("accept-language")?.startsWith("en") ?? false;
 const DAY = 24 * 60;
@@ -174,7 +171,12 @@ function formOf(code: string): Form | null {
       height: code !== "custom_tape",
     },
     quantity: { min: 100, maxTiers: 4 },
-    files: { accept: ".pdf,.ai,.psd,.png,.jpg,.jpeg,.zip", maxBytes: 50 * 1024 * 1024, maxFiles: 10 },
+    files: {
+      accept: [".pdf", ".ai", ".psd", ".png", ".jpg", ".jpeg", ".zip"],
+      maxBytes: 50 * 1024 * 1024,
+      maxFiles: 10,
+      purpose: "artwork",
+    },
     slaTargetHours: ["rigid_box", "pop_display"].includes(code) ? 16 : 8,
   };
 }
@@ -263,11 +265,11 @@ const notFound = () => problem(404, "rfq.not_found", "ไม่พบคำข�
 let submitted = 0;
 
 export const storeRfqHandlers = [
-  // CONTRACT-REQUEST store.rfq-forms
-  mockRequest(
-    "GET /v1/store/rfq-forms/{productTypeCode}",
-    ({ params }) => formOf(params.productTypeCode) ?? notFound(),
-  ),
+  // store.rfqs.getForm (public): any active type has one (D-043).
+  http.get("*/v1/store/rfq-forms/:productTypeCode", ({ params }) => {
+    const form = formOf(String(params.productTypeCode));
+    return form ? HttpResponse.json(form) : problem(404, "http.not_found", "ไม่พบแบบฟอร์มนี้");
+  }),
 
   // store.rfqs.submit (published, U-F0.2): lands in the desk's "new" queue.
   http.post("*/v1/store/rfqs", async ({ request }) => {
@@ -321,8 +323,8 @@ export const storeRfqHandlers = [
       targetDate: body.targetDate ?? null,
       province: null,
       assignee: null,
-      slaTargetHours: form.slaTargetHours,
-      slaDueAt: bangkokIso(form.slaTargetHours * 60),
+      slaTargetHours: form.slaTargetHours ?? 8,
+      slaDueAt: bangkokIso((form.slaTargetHours ?? 8) * 60),
       firstResponseAt: null,
       urgency: "normal",
       consultationCounts: { requested: 0, responded: 0 },

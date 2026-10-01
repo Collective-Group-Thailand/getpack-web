@@ -23,12 +23,10 @@ import { partnerShipmentRequests } from "./partner-shipments";
 import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
-import { storeCatalogRequests } from "./store-catalog";
 import { storeCheckoutRequests } from "./store-checkout";
 import { storeDesignRequests } from "./store-designs";
 import { storeOrderRequests } from "./store-orders";
 import { storeQuoteRequests } from "./store-quotes";
-import { storeRfqRequests } from "./store-rfq";
 
 export const REQUESTS = {
   ...adminConsoleRequests,
@@ -40,9 +38,7 @@ export const REQUESTS = {
   ...adminLogisticsRequests,
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,
-  ...storeCatalogRequests,
   ...storeQuoteRequests,
-  ...storeRfqRequests,
   ...storeCheckoutRequests,
   ...storeOrderRequests,
   ...storeFulfilmentRequests,

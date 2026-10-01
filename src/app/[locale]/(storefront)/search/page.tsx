@@ -5,7 +5,7 @@ import { listFaqs, searchCatalogue, type SearchResult } from "@/features/custome
 import { pick } from "@/features/customer/catalog/localize";
 import { articleHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { findOwnOrder } from "@/features/customer/search/lookup.server";
-import { matchFaqs } from "@/features/customer/search/match";
+import { faqHitsOf } from "@/features/customer/search/match";
 import { ORDER_STATUS, statusMeta } from "@/domain/status";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -26,8 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
 type Hit = { key: string; label: string; href: string; icon: IconName; hint?: string };
 
 /**
- * Global search (F3 3.1): products, stock products and articles from the catalogue search, the
- * FAQs whose question matches, and — for a signed-in customer typing an order code — their
+ * Global search (F3 3.1): products, stock products, articles and FAQs from the catalogue search
+ * (the FAQ's answer from the FAQ list), and — for a signed-in customer typing an order code — their
  * order. A plain GET page, so it works without JavaScript and is the target of the header's
  * instant search.
  */
@@ -95,12 +95,12 @@ export default async function SearchPage({
     {
       key: "faq",
       title: t("search.groups.faq"),
-      hits: matchFaqs(faqs, q, currentLocale).map((faq, index): Hit => ({
-        key: `faq-${index}`,
+      hits: faqHitsOf(result?.hits ?? [], faqs, currentLocale).map((faq): Hit => ({
+        key: `faq-${faq.key}`,
         label: faq.question,
         href: faq.href,
         icon: "help",
-        hint: faq.answer,
+        ...(faq.answer ? { hint: faq.answer } : {}),
       })),
     },
   ].filter((group) => group.hits.length > 0);

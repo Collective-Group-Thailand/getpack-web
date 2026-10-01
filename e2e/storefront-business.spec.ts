@@ -11,7 +11,8 @@ import { gotoHydrated } from "./helpers/session";
  * A founder signs a company up with its KYC documents; a company buyer's order over the
  * threshold waits for the approver, who places it (D-123); the admin invites a member and
  * reorders in bulk from CSV lines; LIFF shows orders and points in LINE's frame; the contact
- * form, the sample kit and the guided help hand-off each come back with a reference. The B2B
+ * form, the sample kit and the hand-off to CS each come back with a reference (guided help and
+ * sample kits wait for U2.2 / U2.4, D-223: the kit page is reached by its address only). The B2B
  * personas (`companyadmin`, `companybuyer`, `founder`) are this spec's alone.
  */
 
@@ -228,22 +229,23 @@ test.describe("help", () => {
     await expect(page.getByRole("status").filter({ hasText: /SK-2569-/ })).toBeVisible();
   });
 
-  test("the guided help recommends styles and hands off to CS with the context", async ({ page }) => {
-    await acceptCookies(page);
-    await gotoHydrated(page, `${HOSTS.customer}/products`);
-    await page.getByRole("button", { name: "ให้ช่วยเลือกกล่อง" }).click();
-    const sheet = page.getByRole("dialog", { name: "ผู้ช่วยเลือกกล่อง" });
-    await sheet.getByRole("radio", { name: "เครื่องสำอาง" }).click();
-    await sheet.getByRole("radio", { name: /^เล็ก/ }).click();
-    await sheet.getByRole("radio", { name: "500–2,000" }).click();
-    await sheet.getByRole("radio", { name: "ดูพรีเมียม" }).click();
-    await sheet.getByRole("button", { name: "ดูคำแนะนำ" }).click();
-    await expect(sheet.getByRole("heading", { name: /^แนะนำสำหรับ/ })).toBeVisible();
-    await expect(sheet.getByRole("link").first()).toHaveAttribute("href", /\/configure\//);
-    await expectNoViolations(page);
-
-    await sheet.getByLabel(/^เบอร์ให้โทรกลับ/).fill("0801234567");
-    await sheet.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
-    await expect(sheet.getByRole("status").filter({ hasText: /ส่งต่อให้ทีมแล้ว เลขเรื่อง CS-2569-/ })).toBeVisible();
+  test("the guided help recommends styles and hands off to CS with the context", async () => {
+    // Not a contract gap: guided help waits for the Structure Advisor (U2.2), and D-223 hides it.
+    test.fixme(true, "D-223 — guided help is deferred to U2.2; the storefront offers the hand-off alone");
   });
+
+  test("a guest asks CS to call back, and the ticket comes back with the reply target", async ({ page }) => {
+    await acceptCookies(page);
+    await gotoHydrated(page, `${HOSTS.customer}/help/chat`);
+    await page.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
+    await expect(page.getByRole("region", { name: "คุยกับทีม" }).getByRole("alert")).toContainText("ใส่ชื่อ");
+    await page.getByLabel(/^ชื่อ/).fill("ผู้ติดต่อทดสอบ");
+    await page.getByLabel(/^เบอร์มือถือ/).fill("0801234567");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
+    const done = page.getByRole("status").filter({ hasText: /ส่งต่อให้ทีมแล้ว เลขเรื่อง CS-2569-/ });
+    await expect(done).toBeVisible();
+    await expect(done).toContainText("ทีมจะติดต่อกลับภายใน");
+  });
+
 });
