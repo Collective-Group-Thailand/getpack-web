@@ -5,31 +5,34 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { POINTS_STATUS } from "@/domain/status";
+import Link from "next/link";
+
+import { POINTS_STATUS, REFERRAL_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Field } from "@/ui/components/Field";
 import { PageHeader } from "@/ui/components/PageHeader";
+import { Select } from "@/ui/components/Select";
 import { Tabs } from "@/ui/components/Tabs";
 
-import { adminBrowserApis, QueryError, Section, StatusChip } from "../console";
+import { adminBrowserApis, QueryError, Section, StatusChip, useCan } from "../console";
 import { PartyOrders } from "../orders";
 import { useGeoName } from "./geo";
-import type { Customer, CustomerConsent, CustomerTab, Loyalty, PointsEntry } from "./resources";
+import type { Customer, CustomerConsent, CustomerTab, Loyalty, PointsEntry, Referral } from "./resources";
 
 /**
  * One customer (F2 2.7): profile with addresses and tax profiles, orders, points (balance and
  * the append-only ledger, D-130…D-135) and consents (PDPA) — all read-only here: the customer
  * changes their own details and consents in the store.
  *
- * Composed from the published customer, its addresses, tax profiles and loyalty summary. The
- * customer carries no company, order count, last order or referral code, and the referrals it
- * made cannot be listed (CONTRACT-GAP admin.customers, admin.referrals).
+ * Composed from the published customer (with its company, order count, last order and referral
+ * code, v0.5.0), its addresses, tax profiles, loyalty summary, the referrals it made
+ * (`admin.referrals.list?referrerId`) and its consents (`admin.consentPurposes.customerConsents`).
  */
 export function CustomerDetail({
   customerId,
@@ -99,6 +102,7 @@ export function CustomerDetail({
           },
           { value: "orders", label: t("tabs.orders"), content: <PartyOrders customer={customer} /> },
           { value: "points", label: t("tabs.points"), content: <Points customerId={customer.id} /> },
+          { value: "referrals", label: t("tabs.referrals"), content: <Referrals customer={customer} /> },
           { value: "consents", label: t("tabs.consents"), content: <Consents customer={customer} /> },
         ]}
       />
@@ -151,9 +155,19 @@ function Profile({ customer, loyalty }: { customer: Customer; loyalty: Loyalty |
           items={[
             { term: t("phone"), description: customer.phone ?? "–" },
             { term: t("email"), description: customer.email ?? "–" },
+            ...(customer.companyName ? [{ term: t("company"), description: customer.companyName }] : []),
             { term: t("via"), description: t(`channels.${customer.createdVia}`) },
             { term: t("since"), description: <When at={customer.createdAt} absoluteOnly /> },
+            { term: t("orders"), description: format.number(customer.ordersCount) },
+            {
+              term: t("lastOrder"),
+              description: customer.lastOrderAt ? <When at={customer.lastOrderAt} absoluteOnly /> : t("never"),
+            },
             { term: t("spend12m"), description: loyalty ? format.thb(loyalty.spend12m) : "–" },
+            {
+              term: t("referralCode"),
+              description: <span className="font-mono">{customer.referralCode ?? "–"}</span>,
+            },
           ]}
         />
       </Section>
@@ -221,16 +235,32 @@ function Profile({ customer, loyalty }: { customer: Customer; loyalty: Loyalty |
   );
 }
 
+const ENTRY_TYPES: PointsEntry["entryType"][] = [
+  "earn_order",
+  "earn_signup",
+  "earn_line_link",
+  "earn_review",
+  "earn_referral",
+  "earn_bonus",
+  "redeem",
+  "redeem_reversal",
+  "reversal_claim_refund",
+  "expire",
+  "adjust",
+];
+
 function Points({ customerId }: { customerId: string }) {
   const t = useTranslations("customers.points");
+  const tFilters = useTranslations("console.filters");
   const format = useFormat();
   const loyalty = useLoyalty(customerId);
+  const [entryType, setEntryType] = useState<PointsEntry["entryType"] | null>(null);
   const ledger = useQuery({
-    queryKey: queryKeys.related("admin", "customer", customerId, "points"),
+    queryKey: queryKeys.related("admin", "customer", customerId, `points:${entryType ?? "all"}`),
     queryFn: async () =>
       (
         await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/loyalty/ledger", {
-          params: { path: { customerId }, query: { perPage: 100 } },
+          params: { path: { customerId }, query: { perPage: 100, ...(entryType ? { entryType } : {}) } },
         })
       ).data!,
   });
@@ -247,8 +277,14 @@ function Points({ customerId }: { customerId: string }) {
     {
       id: "order",
       header: t("order"),
-      // The entry names its order by code only, so it is shown, not linked (CONTRACT-GAP admin.customer-loyalty).
-      cell: (row) => <span className="font-mono">{row.orderCode ?? row.groupCode ?? "–"}</span>,
+      cell: (row) =>
+        row.orderId && row.orderCode ? (
+          <Link href={`/orders/${row.orderId}`} className="text-primary font-mono hover:underline">
+            {row.orderCode}
+          </Link>
+        ) : (
+          <span className="font-mono">{row.orderCode ?? row.groupCode ?? "–"}</span>
+        ),
     },
     {
       id: "points",
@@ -315,6 +351,17 @@ function Points({ customerId }: { customerId: string }) {
           </div>
         </dl>
       ) : null}
+      <Field label={t("entryFilter")} className="w-60">
+        <Select
+          value={entryType ?? ANY}
+          onValueChange={(next) => setEntryType(next === ANY ? null : (next as PointsEntry["entryType"]))}
+          options={[
+            { value: ANY, label: tFilters("any") },
+            ...ENTRY_TYPES.map((value) => ({ value, label: t(`types.${value}`) })),
+          ]}
+          className="h-9 text-sm"
+        />
+      </Field>
       <DataTable
         caption={t("ledger")}
         columns={columns}
@@ -328,12 +375,102 @@ function Points({ customerId }: { customerId: string }) {
   );
 }
 
+/** Radix Select cannot hold an empty value: "any" is a sentinel that never reaches the API. */
+const ANY = "__any";
+
+/**
+ * The friends this customer referred (`admin.referrals.list?referrerId`, D-136), with the reward
+ * and the fraud flags the API raised. The list needs `promotions.read`; a role without it is told so.
+ */
+function Referrals({ customer }: { customer: Customer }) {
+  const t = useTranslations("customers.referrals");
+  const format = useFormat();
+  const allowed = useCan("promotions.read");
+  const referrals = useQuery({
+    queryKey: queryKeys.list("admin", "referral", { referrerId: customer.id }),
+    enabled: allowed,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/referrals", {
+          params: { query: { referrerId: customer.id, perPage: 100 } },
+        })
+      ).data!,
+  });
+  if (!allowed) return <EmptyState icon="users" title={t("unreadable")} />;
+  if (referrals.isError) return <QueryError error={referrals.error} onRetry={() => void referrals.refetch()} />;
+  const columns: DataTableColumn<Referral>[] = [
+    { id: "referee", header: t("referee"), cell: (row) => row.referee.displayName },
+    { id: "attributedAt", header: t("when"), cell: (row) => <When at={row.attributedAt} absoluteOnly /> },
+    {
+      id: "firstOrder",
+      header: t("firstOrder"),
+      cell: (row) =>
+        row.firstOrderGroupCode ? (
+          <div className="text-sm">
+            <p className="font-mono">{row.firstOrderGroupCode}</p>
+            <p className="text-muted text-xs tabular-nums">
+              {format.thb(row.firstOrderGrossAmount)}
+              {row.firstOrderClaimWindowEndsAt ? (
+                <>
+                  {" · "}
+                  {t("claimWindow")} <When at={row.firstOrderClaimWindowEndsAt} absoluteOnly />
+                </>
+              ) : null}
+            </p>
+          </div>
+        ) : (
+          "–"
+        ),
+    },
+    { id: "reward", header: t("reward"), numeric: true, cell: (row) => format.number(row.rewardPoints) },
+    {
+      id: "status",
+      header: t("status"),
+      cell: (row) => (
+        <div className="flex flex-wrap gap-1">
+          <StatusChip map={REFERRAL_STATUS} value={row.status} />
+          {row.fraudFlags.map((flag) => (
+            <Badge key={flag} size="sm" tone="warning">
+              {t(`flags.${flag}`)}
+            </Badge>
+          ))}
+        </div>
+      ),
+    },
+  ];
+  return (
+    <Section
+      title={t("title", { code: customer.referralCode ?? "–" })}
+      description={t("note")}
+      actions={
+        <Link href="/marketing/referrals?status=under_review" className="text-primary text-sm hover:underline">
+          {t("queue")}
+        </Link>
+      }
+    >
+      <DataTable
+        caption={t("title", { code: customer.referralCode ?? "–" })}
+        columns={columns}
+        rows={referrals.data?.data ?? []}
+        getRowId={(row) => row.id}
+        loading={referrals.isPending}
+        density="compact"
+        empty={<EmptyState icon="users" title={t("empty")} />}
+      />
+    </Section>
+  );
+}
+
 function Consents({ customer }: { customer: Customer }) {
   const t = useTranslations("customers.consents");
   const consents = useQuery({
     queryKey: queryKeys.related("admin", "customer", customer.id, "consents"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/customers/{customerId}/consents", { path: { customerId: customer.id } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}/consents", {
+          params: { path: { customerId: customer.id } },
+        })
+      ).data!,
   });
   if (consents.isError) return <QueryError error={consents.error} onRetry={() => void consents.refetch()} />;
 
@@ -367,15 +504,16 @@ function Consents({ customer }: { customer: Customer }) {
     {
       id: "version",
       header: t("version"),
+      // The version the decision was for, and the one in force when a newer text supersedes it.
       cell: (row) =>
-        row.versionNo === null ? (
+        row.decidedVersionNo === null ? (
           "–"
         ) : (
           <span>
-            {t("versionNo", { no: row.versionNo })}
+            {t("versionNo", { no: row.decidedVersionNo })}
             {row.outdated ? (
               <Badge tone="warning" size="sm" className="ms-2">
-                {t("outdated")}
+                {row.versionNo === null ? t("outdated") : t("outdatedVersion", { no: row.versionNo })}
               </Badge>
             ) : null}
           </span>

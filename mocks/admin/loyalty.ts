@@ -1,6 +1,6 @@
 /**
- * A customer's points on the published contract (`admin.loyalty.get`, `admin.loyalty.ledger`,
- * U-F0.3) and consents (CONTRACT-REQUEST admin.customer-consents).
+ * A customer's points (`admin.loyalty.get`, `admin.loyalty.ledger`) and consents
+ * (`admin.consentPurposes.customerConsents`, v0.5.0) on the published contract.
  *
  * The ledger is append-only and adds up to the balance the customer detail reports; baht values
  * use the point value in force (`loyalty.point_value`, D-131), and earnings wait for completion
@@ -9,24 +9,21 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { customerConsent } from "@/lib/api/requests/admin-customers";
 import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
-import { customers } from "./commerce";
+import { customers, orders } from "./commerce";
 import { settingValue } from "./platform";
 
 /** A ledger line as the fixture keeps it (with the order it came from); served as `PointsEntryDto`. */
 type Entry = Omit<Schemas["PointsEntryDto"], "orderId" | "orderCode" | "groupCode" | "reason"> & {
-  order: { id: string; orderCode: string } | null;
+  order: { id: string; orderCode: string; groupCode: string } | null;
   note: string | null;
 };
-type Consent = z.output<typeof customerConsent>;
+type Consent = Schemas["AdminConsentDto"];
 
 const DAY = 24 * 60;
 const CONSENT_PURPOSES = [
@@ -46,10 +43,14 @@ function ledgerOf(index: number): Entry[] {
   const customer = customers[index]!;
   const available = customer.loyalty.availablePoints;
   const id = (n: number) => mockId("pts", index * 100 + n);
-  const order = (n: number) => ({
-    id: mockId("ord", 700 + index * 10 + n),
-    orderCode: `PK2569${String(3000 + index * 10 + n).padStart(6, "0")}`,
-  });
+  // The customer's own orders, oldest first, so a ledger line opens the order it came from.
+  const own = orders
+    .filter((candidate) => candidate.customer.id === customer.id)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const order = (n: number) => {
+    const found = own[(n - 1) % Math.max(own.length, 1)];
+    return found ? { id: found.id, orderCode: found.orderCode, groupCode: found.groupCode } : null;
+  };
   const entries: Entry[] = [
     {
       id: id(1),
@@ -117,7 +118,15 @@ function consentsOf(index: number): Consent[] {
       purpose: purpose.key,
       required: purpose.required,
       granted: asked ? purpose.required || (index + at) % 3 !== 0 : null,
-      versionNo: asked ? 1 : null,
+      // The text in force; privacy notice v2 is newer than what some customers decided on.
+      versionNo: purpose.key === "privacy_notice" ? 2 : 1,
+      decidedVersionNo: asked
+        ? purpose.key === "privacy_notice" && index % 4 === 2
+          ? 1
+          : purpose.key === "privacy_notice"
+            ? 2
+            : 1
+        : null,
       outdated: asked && purpose.key === "privacy_notice" && index % 4 === 2,
       source: asked ? (customer.createdVia === "cs" ? "cs" : "web") : null,
       recordedAt: asked ? customer.createdAt : null,
@@ -176,13 +185,16 @@ export const loyaltyHandlers = [
     const index = customerIndex(request, params.customerId as string, "loyalty.read");
     if (index instanceof Response) return index;
     const url = new URL(request.url);
-    const rows: Schemas["PointsEntryDto"][] = ledgerOf(index).map(({ order, note, ...entry }) => ({
-      ...entry,
-      orderId: order?.id ?? null,
-      orderCode: order?.orderCode ?? null,
-      groupCode: null,
-      reason: note,
-    }));
+    const rows: Schemas["PointsEntryDto"][] = ledgerOf(index)
+      .map(({ order, note, ...entry }) => ({
+        ...entry,
+        orderId: order?.id ?? null,
+        orderCode: order?.orderCode ?? null,
+        groupCode: order?.groupCode ?? null,
+        reason: note,
+      }))
+      // `?entryType` (v0.5.0).
+      .filter((entry) => !url.searchParams.get("entryType") || entry.entryType === url.searchParams.get("entryType"));
     return HttpResponse.json(
       paginate(rows, {
         page: Number(url.searchParams.get("page") ?? 1),
@@ -190,8 +202,8 @@ export const loyaltyHandlers = [
       }),
     );
   }),
-  mockRequest("GET /v1/admin/customers/{customerId}/consents", ({ params, request }) => {
-    const index = customerIndex(request, params.customerId);
-    return index instanceof Response ? index : consentsOf(index);
+  http.get("*/v1/admin/customers/:customerId/consents", ({ params, request }) => {
+    const index = customerIndex(request, params.customerId as string);
+    return index instanceof Response ? index : HttpResponse.json(consentsOf(index));
   }),
 ];
