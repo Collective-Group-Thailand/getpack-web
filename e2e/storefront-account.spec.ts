@@ -137,11 +137,13 @@ test.describe("the account", () => {
     await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
     await page.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท อีทูอี จำกัด");
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("50200");
+    // Saving before the postcode lookup has named the area is refused (the API needs its ids).
+    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ }).last()).toContainText("เมืองเชียงใหม่");
     await page.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
     await page.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(page.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
-    // A valid one (its check digit is 7).
-    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
+    // A valid one (its check digit is 5), not the one the checkout spec adds for the same customer.
+    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000025");
     await page.getByRole("button", { name: "บันทึก", exact: true }).click();
     const profile = page.getByRole("listitem").filter({ hasText: "บริษัท อีทูอี จำกัด" });
     await expect(profile).toContainText("เชียงใหม่");

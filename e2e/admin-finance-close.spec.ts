@@ -139,7 +139,8 @@ test.describe("the period close (§7, §8)", () => {
         await finalise.click();
         await confirm(finance, "ปิดรายงาน", month);
       }
-      await expect(finance.getByText("ปิดแล้ว").first()).toBeVisible();
+      // Final or later: in a month's first days the books spec files last month's ภ.ง.ด.53 first.
+      await expect(finance.getByText(/^(ปิดแล้ว|ยื่นแล้ว)$/).first()).toBeVisible();
     }
 
     await gotoHydrated(finance, `${HOSTS.admin}/finance/close`);
