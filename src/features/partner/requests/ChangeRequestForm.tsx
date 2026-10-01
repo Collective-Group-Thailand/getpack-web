@@ -6,14 +6,16 @@ import { useState } from "react";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { bangkokToday, useRefresh } from "@/features/partner/client";
 import { problemMessage } from "@/features/shared/actions";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import { browserApi } from "@/lib/api/browser";
+import { newIdempotencyKey } from "@/lib/api/client";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
+
+export type ChangeRequestTopic = Schemas["FactoryChangeRequestTopic"];
 
 const TOPICS = [
   "capability",
@@ -24,19 +26,13 @@ const TOPICS = [
   "pricing_arrangement",
   "payout_policy",
   "site_visit",
-  "profile",
   "other",
 ] as const satisfies readonly ChangeRequestTopic[];
 
-export type ChangeRequestTopic = ResponseOf<
-  Requests,
-  "POST /v1/partner/factories/{factoryId}/change-requests"
->["topic"];
-
 /**
- * "Please change this" to the Partner team (contract request `partner.change-requests`). The
- * factory never edits what Packio records — capability, capacity, zones, tolerance, tier, visits
- * (D-011, D-171) — it asks, and the answer comes back on the requests list.
+ * "Please change this" to the Partner team (`partner.changeRequests.create`). The factory never
+ * edits what Packio records — capability, capacity, zones, tolerance, tier, visits (D-011, D-171) —
+ * it asks, and the answer comes back on the requests list.
  *
  * `productTypes` offers a product type when the topic is about one (a tier, a capacity, a
  * tolerance override); `visit` asks for up to three dates the factory can host a site visit.
@@ -61,7 +57,7 @@ export function ChangeRequestForm({
 }) {
   const t = useTranslations("partnerRequests.form");
   const tCommon = useTranslations("common");
-  const { factoryId } = useFactory();
+  const { factoryId, can } = useFactory();
   const [refresh] = useRefresh();
   const [topic, setTopic] = useState<ChangeRequestTopic>(initialTopic);
   const [type, setType] = useState(productTypeId ?? productTypes[0]?.id ?? "");
@@ -69,6 +65,9 @@ export function ChangeRequestForm({
   const [dates, setDates] = useState(["", "", ""]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [key, setKey] = useState(newIdempotencyKey);
+  // Asking is the owner's (`factory_profile.manage`); everyone at the factory reads the answers.
+  if (!can("factory_profile.manage")) return <p className="text-muted text-sm">{t("ownerOnly")}</p>;
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -77,18 +76,18 @@ export function ChangeRequestForm({
     if (visit && preferredDates.length === 0) return setError(t("dateRequired"));
     setBusy(true);
     setError(null);
+    // CONTRACT-GAP partner.change-requests — a request names no product type, so the one it is about
+    // leads the message, in the factory's own words.
+    const typeName = productTypes.find((item) => item.id === type)?.name;
+    const text = typeName ? t("aboutType", { type: typeName, message: message.trim() }) : message.trim();
     try {
-      await browserRequests().call("POST /v1/partner/factories/{factoryId}/change-requests", {
-        path: { factoryId },
-        body: {
-          topic,
-          message: message.trim(),
-          ...(type && (productTypes.length || productTypeId) ? { productTypeId: type } : {}),
-          ...(visit ? { preferredDates } : {}),
-        },
+      await browserApi().POST("/v1/partner/factories/{factoryId}/change-requests", {
+        params: { path: { factoryId }, header: { "Idempotency-Key": key } },
+        body: { topic, message: text.slice(0, 2000), ...(visit ? { preferredDates } : {}) },
       });
       setMessage("");
       setDates(["", "", ""]);
+      setKey(newIdempotencyKey());
       toast.success(t("sent"));
       refresh();
     } catch (failure) {
@@ -146,7 +145,7 @@ export function ChangeRequestForm({
           value={message}
           placeholder={placeholder}
           onChange={(event) => setMessage(event.target.value)}
-          maxLength={2000}
+          maxLength={1900}
         />
       </Field>
       <Button type="submit" size="xl" variant="secondary" iconStart="send" loading={busy} className="self-start">
