@@ -9,7 +9,7 @@ import { bangkokDay, bangkokToday, useRefresh } from "@/features/partner/client"
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { uploadFile } from "@/features/shared/files/upload";
 import { browserApi } from "@/lib/api/browser";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { newIdempotencyKey } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
@@ -286,7 +286,10 @@ export function CounterAnswers({ proposalId, lines }: { proposalId: string; line
 
 /* ------------------------------------------------------------------------ evidence */
 
-/** A price letter or invoice attached to the proposal (contract request `partner.proposal-evidence`). */
+/**
+ * A price letter or invoice attached to the proposal (`partner.priceProposals.addEvidence`, D-040): the
+ * file is uploaded and completed first (the presign flow), then attached by id under one key.
+ */
 export function EvidenceUpload({ proposalId }: { proposalId: string }) {
   const t = useTranslations("partnerPrices.evidence");
   const { factoryId, can } = useFactory();
@@ -294,6 +297,7 @@ export function EvidenceUpload({ proposalId }: { proposalId: string }) {
   const [file, setFile] = useState<File | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [key, setKey] = useState(newIdempotencyKey);
   if (!can("factory_prices.propose")) return null;
 
   async function send(event: React.FormEvent) {
@@ -302,12 +306,13 @@ export function EvidenceUpload({ proposalId }: { proposalId: string }) {
     setBusy(true);
     try {
       const uploaded = await uploadFile("partner", file, "evidence", { factoryId });
-      await browserRequests().call("POST /v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence", {
-        path: { factoryId, proposalId },
+      await browserApi().POST("/v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence", {
+        params: { path: { factoryId, proposalId }, header: { "Idempotency-Key": key } },
         body: { fileId: uploaded.id, ...(note.trim() ? { note: note.trim() } : {}) },
       });
       setFile(null);
       setNote("");
+      setKey(newIdempotencyKey());
       toast.success(t("added"));
       refresh();
     } catch (error) {

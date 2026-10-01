@@ -15,10 +15,7 @@ import { adminMarketingRequests } from "./admin-marketing";
 import { adminOrderRequests } from "./admin-orders";
 import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
-import { partnerAccountRequests } from "./partner-account";
-import { partnerBillingRequests } from "./partner-billing";
 import { partnerJobRequests } from "./partner-jobs";
-import { partnerOnboardingRequests } from "./partner-onboarding";
 import { partnerShipmentRequests } from "./partner-shipments";
 import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
@@ -49,11 +46,8 @@ export const REQUESTS = {
   ...storeSupportRequests,
   ...storeBusinessRequests,
   ...storeDesignRequests,
-  ...partnerOnboardingRequests,
   ...partnerJobRequests,
   ...partnerShipmentRequests,
-  ...partnerBillingRequests,
-  ...partnerAccountRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;
