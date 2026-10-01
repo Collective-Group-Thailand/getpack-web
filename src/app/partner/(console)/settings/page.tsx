@@ -4,8 +4,8 @@ import { getTranslations } from "next-intl/server";
 
 import { FACTORY_USER_STATUS } from "@/domain/status";
 import {
+  CreateUser,
   EditUser,
-  InviteUser,
   LabelSize,
   NotificationMatrix,
   PushOnThisDevice,
@@ -24,8 +24,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Settings (F5 5.3): the factory's users and roles (Owner only, D-140), this user's notification
- * channels — partner-zone push, LINE, e-mail (D-143) — and this device's label size, language and
+ * Settings (F5 5.3): the factory's users and roles (Owner only, D-140, `partner.factoryUsers.*`) —
+ * active and deactivated —, this user's notification channels — partner-zone push, LINE, e-mail
+ * (D-143, D-231, `partner.me.notificationPreferences`) — and this device's label size, language and
  * theme (high contrast for a bright shop floor).
  */
 export default async function SettingsPage() {
@@ -35,16 +36,25 @@ export default async function SettingsPage() {
   const tCommon = await getTranslations("common");
   const format = await getFormat();
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
+  const { contract } = await partnerServerApis();
   const owner = canAt(context, "factory_users.manage");
-  const [users, preferences] = await Promise.all([
-    owner
-      ? attempt(() =>
-          requests.call("GET /v1/partner/factories/{factoryId}/users", { path: { factoryId: context.factoryId } }),
-        )
-      : null,
-    attempt(() => requests.call("GET /v1/partner/me/notification-preferences", {})),
+  const listUsers = (status: "active" | "deactivated") =>
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/users", {
+            params: { path: { factoryId: context.factoryId }, query: { status } },
+          })
+        ).data ?? [],
+    );
+  const [active, deactivated, preferences] = await Promise.all([
+    owner ? listUsers("active") : null,
+    owner ? listUsers("deactivated") : null,
+    attempt(async () => (await contract.GET("/v1/partner/me/notification-preferences", {})).data!),
   ]);
+  const users = active?.data
+    ? { data: [...active.data, ...(deactivated?.data ?? [])], error: deactivated?.error ?? null }
+    : active;
   const labelSize = (await cookies()).get("pk_label")?.value === "4x6" ? "4x6" : "100x150";
   const roleName = (role: string) =>
     [
@@ -95,8 +105,9 @@ export default async function SettingsPage() {
             <PageError error={users?.error} />
           )}
           <Card padding="lg">
-            <h3 className="mb-3 text-lg font-semibold">{tUsers("inviteTitle")}</h3>
-            <InviteUser />
+            <h3 className="mb-1 text-lg font-semibold">{tUsers("createTitle")}</h3>
+            <p className="text-muted mb-3 text-sm">{tUsers("createBody")}</p>
+            <CreateUser />
           </Card>
         </PartnerSection>
       ) : null}
