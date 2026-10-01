@@ -173,7 +173,7 @@ describe("after production, against the mock", () => {
       params: { path: { orderId: COMPLETED }, header: { "Idempotency-Key": uuid() } },
       body: { quantity: 2000, reuseArtwork: true, previewToken: preview!.previewToken },
     });
-    const item = cart!.items.find((entry) => entry.quantity === 2000 && entry.reorderOf === null);
+    const item = cart!.items.find((entry) => entry.quantity === 2000 && entry.reorderOf?.orderId === COMPLETED);
     expect(item?.productGrossAmount).toBe(preview!.grossAmount);
   });
 });

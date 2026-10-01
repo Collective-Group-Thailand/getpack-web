@@ -41,8 +41,7 @@ test.describe("the account", () => {
     const todo = page
       .getByRole("region", { name: "สิ่งที่ต้องทำ" })
       .or(page.locator("section[aria-labelledby=account-todo]"));
-    // CONTRACT-GAP entity.next-actions — without the order's own list, what needs doing is read from
-    // its status and its group's: a blocked preflight or a design brief is not visible from a list.
+    // What needs doing: the orders' own actions, and a group waiting for its payment.
     await expect(todo.getByRole("link", { name: "มีงวดที่ต้องชำระ — ไปชำระ" }).first()).toBeVisible();
     await expectNoViolations(page);
 
@@ -60,7 +59,6 @@ test.describe("the account", () => {
     await signInAsCustomer(page, `/account/orders/${COMPLETED_ORDER}`);
     await expect(page.getByText("PK-2569-00136").first()).toBeVisible();
     await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText("ส่งถึงแล้ว")).toBeVisible();
-    // CONTRACT-GAP store.tracking — the published timeline has no promised dates to show beside it.
     await expect(page.getByText(/รับสินค้า จำนวน 500 เมื่อ/)).toBeVisible();
     await expect(page.getByRole("link", { name: "สั่งซ้ำ PK-2569-00136" })).toBeVisible();
 

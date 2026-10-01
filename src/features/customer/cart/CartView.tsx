@@ -24,6 +24,7 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
 import { geoName, type Address } from "../account/address";
+import { productNameOf, specLinesOf } from "../orders/summary";
 import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
 
 const AddressSheet = dynamic(() => import("./AddressSheet").then((module) => module.AddressSheet), { ssr: false });
@@ -167,21 +168,16 @@ function Destinations({
  * (`store.cart.repriceItem`) and shows the difference until they confirm it (confirm-reprice,
  * D-051, design-system.md §1.3). Every edit goes through `editCart`, under the cart's `ETag`.
  *
- * CONTRACT-GAP store.cart — a published line names its product type only: no product name, image,
- * specs or unit, no list of the design options it may switch to, and the cart has no VAT split or
- * `readyForCheckout`. The type's name comes from the catalogue; what else is missing is not shown.
+ * A line says what it is (`summary`: product, spec lines, unit) and, for a reorder, which order it
+ * repeats. Whether the cart can go to checkout is the checkout preview's to say (U-B0.1); the page
+ * asks only for what a line itself shows is missing.
+ *
+ * CONTRACT-GAP store.cart — a line does not list the design options it may switch to.
  */
-export function CartView({
-  initialCart,
-  initialAddresses,
-  typeNames,
-}: {
-  initialCart: Cart;
-  initialAddresses: Address[];
-  /** Product type code → its name, from the public catalogue. */
-  typeNames: Record<string, string>;
-}) {
+export function CartView({ initialCart, initialAddresses }: { initialCart: Cart; initialAddresses: Address[] }) {
   const t = useTranslations("cart");
+  const tUnits = useTranslations("catalog.stock.units");
+  const locale = useLocale();
   const tDesign = useTranslations("configurator.design.options");
   const format = useFormat();
   const queryClient = useQueryClient();
@@ -204,7 +200,7 @@ export function CartView({
     },
   });
   const api = browserApi();
-  const nameOf = (item: Item) => typeNames[item.productTypeCode] ?? item.productTypeCode;
+  const nameOf = (item: Item) => productNameOf(locale, item.summary);
   const blocked = cart.items.flatMap((item) => lineBlockers(item).map((kind) => ({ item, kind })));
 
   if (cart.items.length === 0) {
@@ -231,12 +227,31 @@ export function CartView({
             <article aria-labelledby={`cart-item-${item.id}`} className="flex flex-col gap-4">
               <div className="flex items-start gap-4">
                 <div className="bg-bg-subtle flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-                  <Icon name="box" size={24} aria-hidden="true" className="text-muted" />
+                  {item.summary.product?.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- catalogue image from the API
+                    <img src={item.summary.product.imageUrl} alt="" className="size-full object-cover" />
+                  ) : (
+                    <Icon name="box" size={24} aria-hidden="true" className="text-muted" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 id={`cart-item-${item.id}`} className="font-semibold">
                     {nameOf(item)}
                   </h2>
+                  {item.summary.specs.length > 0 ? (
+                    <p className="text-muted mt-1 text-sm">
+                      {specLinesOf(locale, item.summary)
+                        .map((line) => `${line.term} ${line.description}`)
+                        .join(" · ")}
+                    </p>
+                  ) : null}
+                  {item.reorderOf ? (
+                    <p className="text-muted mt-1 text-xs">
+                      {t(item.reusesApprovedArtwork ? "reorderOfReused" : "reorderOf", {
+                        code: item.reorderOf.orderCode,
+                      })}
+                    </p>
+                  ) : null}
                   <p className="text-muted mt-1 text-xs">
                     {item.quoteCode
                       ? t("quote", { code: item.quoteCode, date: format.date(item.priceLockedUntil) })
@@ -246,7 +261,11 @@ export function CartView({
                 <div className="text-end">
                   <p className="font-semibold tabular-nums">{format.thb(item.productGrossAmount)}</p>
                   <p className="text-muted text-xs tabular-nums">
-                    {t("perUnit", { price: format.thb(item.unitPrice), quantity: format.number(item.quantity) })}
+                    {t("perUnitOf", {
+                      price: format.thb(item.unitPrice),
+                      quantity: format.number(item.quantity),
+                      unit: tUnits(item.summary.unit),
+                    })}
                   </p>
                 </div>
               </div>

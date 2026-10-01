@@ -47,7 +47,8 @@
     "title": "Use your points",
     "hint": "You have {balance} points; the summary says how many this order can take",
     "redeem": "Points to use",
-    "unit": "pts"
+    "unit": "pts",
+    "bounds": "{min}–{max} points on this order"
   },
   "schedule": {
     "title": "How to pay",
@@ -69,7 +70,8 @@
     "payNow": "Pay today {amount}",
     "taxInvoice": "Tax invoice to {name} ({taxId}), {branch}",
     "minus": "−{amount}",
-    "net": "Before VAT"
+    "net": "Before VAT",
+    "pointsToEarn": "Earns {points} points once completed"
   },
   "repriced": {
     "title": "The price changed",
@@ -121,7 +123,10 @@
     "required": "(required)",
     "send": "Send to approver",
     "confirmTitle": "Send this order to your approver?",
-    "confirmBody": "The {total} order for {name} waits for your company's approver. We'll tell you when it's approved."
+    "confirmBody": "The {total} order for {name} waits for your company's approver. We'll tell you when it's approved.",
+    "onCredit": "On {days}-day credit · {available} credit left",
+    "prepaid": "Paid before production",
+    "approval": "Over {amount} it waits for the company's approver"
   },
   "placeLater": "Place the order",
   "notices": {

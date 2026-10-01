@@ -82,7 +82,6 @@ test.describe("cart and checkout", () => {
     await first.getByRole("combobox", { name: "ที่อยู่ที่ 2" }).click();
     await page.getByRole("option", { name: /โกดังเชียงใหม่/ }).click();
     await first.getByRole("spinbutton", { name: "จำนวน" }).nth(1).fill("600");
-    // CONTRACT-GAP store.cart — a published cart line has no unit, so quantities stand alone.
     await expect(first.getByText("รวม 1,000 จาก 1,000")).toBeVisible();
     await first.getByRole("button", { name: "บันทึกการแบ่งส่ง" }).click();
     await expect(first.getByText(/400 → ผู้รับ/)).toBeVisible();
@@ -239,7 +238,10 @@ test.describe("cart and checkout", () => {
   });
 
   test("the customer picks the payment schedule", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.checkout — scheduleKey stays requested; v0.2.0 lets the rules choose");
+    test.fixme(
+      true,
+      "CONTRACT-GAP store.checkout — scheduleKey stays requested (proposed rejection); the rules choose",
+    );
     await signInAsCustomer(page, "/checkout", MOCK_BUYER_PHONE);
     await expect(page.getByRole("radio", { name: /มัดจำ 50%/ })).toBeChecked();
   });
