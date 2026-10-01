@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { adminCampaignActions, type AdminLifecycleAction } from "@/domain/next-actions/admin";
@@ -47,13 +47,14 @@ export async function readCampaign(campaignId: string) {
  * promotion report of its promotions), the promotions it groups, and the actions its status
  * allows. Ending a campaign ends its promotions, so it restates the code and needs it retyped.
  *
- * CONTRACT-GAP admin.campaigns — no `allowedActions` (`adminCampaignActions` decides), no owner, no
- * reason on pause or end, and no new-customer count in the report.
+ * Pausing or ending records the reason given (`OptionalReasonDto`, asked for both).
+ * CONTRACT-GAP admin.campaigns — no `allowedActions` (`adminCampaignActions` decides) and no
+ * new-customer count in the report.
  */
 export function CampaignDetail({ campaignId }: { campaignId: string }) {
   const t = useTranslations("marketing.campaign");
-  const tBenefits = useTranslations("marketing.promotion.benefits");
   const format = useFormat();
+  const en = useLocale() === "en";
   const queryClient = useQueryClient();
   const actor = useActor();
   const can = (permission: string) => actor.permissions.includes(permission);
@@ -109,15 +110,22 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
       ),
     },
     { id: "kind", header: t("kind"), cell: (row) => t(`kinds.${row.kind}`) },
-    // CONTRACT-GAP admin.promotions — no benefit summary written by the API; the benefit's type names it.
-    { id: "benefit", header: t("benefit"), cell: (row) => tBenefits(row.benefit.type) },
+    { id: "benefit", header: t("benefit"), cell: (row) => (en ? row.benefitSummaryEn : row.benefitSummaryTh) },
     {
       id: "status",
       header: t("status"),
       cell: (row) => <StatusChip map={PROMOTION_STATUS} value={row.status} />,
     },
-    // CONTRACT-GAP admin.promotions — no usage on the row; its spend is the discount it has given.
-    { id: "spent", header: t("spent"), numeric: true, cell: (row) => format.thb(row.spentAmount) },
+    {
+      id: "usage",
+      header: t("usage"),
+      numeric: true,
+      cell: (row) => (
+        <span className="text-sm">
+          {t("usageValue", { count: row.usage.redemptions, amount: format.thb(row.usage.discountAmount) })}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -134,6 +142,11 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
           <>
             <span className="text-muted font-mono text-sm">{campaign.code}</span>
             <StatusChip map={CAMPAIGN_STATUS} value={campaign.status} size="md" />
+            {campaign.owner ? (
+              <span className="text-muted text-sm">
+                {t("createdBy", { name: campaign.owner.displayName })} · <When at={campaign.createdAt} />
+              </span>
+            ) : null}
           </>
         }
         description={t("window", {
@@ -257,12 +270,19 @@ export function CampaignDetail({ campaignId }: { campaignId: string }) {
           confirmLabel={t(`actions.${wording(action)}.label`)}
           tone={action.action === "end" ? "destructive" : "primary"}
           confirmationPhrase={action.action === "end" ? campaign.code : undefined}
-          onConfirm={async () => {
-            // CONTRACT-GAP admin.campaigns — the published action takes no reason, and no If-Match.
+          reason={
+            action.action === "activate"
+              ? undefined
+              : { label: t("reason"), required: true, minLength: 3, hint: t("reasonHint") }
+          }
+          onConfirm={async ({ reason }) => {
             try {
               const { data } = await adminBrowserApis().contract.POST(
                 "/v1/admin/campaigns/{campaignId}/actions/{action}",
-                { params: { path: { campaignId, action: action.action } } },
+                {
+                  params: { path: { campaignId, action: action.action } },
+                  body: reason ? { reason } : {},
+                },
               );
               settle(data!);
               toast.success(t("changed"));

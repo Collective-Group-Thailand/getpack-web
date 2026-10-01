@@ -63,8 +63,8 @@ const config = defineResource<Campaign, Values>({
  * the budget spent and the alert threshold the API reports — the setting
  * `campaigns.budget_alert_pct` — and the API stops a campaign whose budget runs out.
  *
- * CONTRACT-GAP admin.campaigns — no owner, `spentPct` or `promotionsCount` on the row, so the list
- * has no gauge and no promotion count.
+ * Each row has the spend gauge (`spentPct`), how many promotions the campaign holds, who created
+ * it and when.
  */
 export function CampaignsList({ initial }: { initial: InitialPage<Campaign> | null }) {
   const t = useTranslations("marketing.campaigns");
@@ -95,6 +95,29 @@ export function CampaignsList({ initial }: { initial: InitialPage<Campaign> | nu
       cell: (row) => (
         <div className="w-56">
           <CampaignBudget campaign={row} compact />
+        </div>
+      ),
+    },
+    {
+      id: "promotions",
+      header: t("columns.promotions"),
+      numeric: true,
+      cell: (row) => (
+        <Link href={`/marketing/promotions?campaignId=${row.id}`} className="text-primary hover:underline">
+          {format.number(row.promotionsCount)}
+        </Link>
+      ),
+    },
+    {
+      id: "owner",
+      header: t("columns.owner"),
+      hideable: true,
+      cell: (row) => (
+        <div className="min-w-0 text-sm">
+          <p className="truncate">{row.owner?.displayName ?? "–"}</p>
+          <p className="text-muted text-xs">
+            <When at={row.createdAt} />
+          </p>
         </div>
       ),
     },

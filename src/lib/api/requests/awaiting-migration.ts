@@ -101,7 +101,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "GET /v1/admin/gateway-settlements",
   "GET /v1/admin/order-cancel-reasons",
   "GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents",
-  "GET /v1/admin/promotions/{promotionId}/coupon-batches",
   "GET /v1/admin/saved-views",
   "GET /v1/admin/search",
   "GET /v1/admin/slips/{slipId}/file",
@@ -116,7 +115,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/admin/shipments/{shipmentId}/actions/split",
   "POST /v1/admin/shipments/{shipmentId}/carrier-quotes",
   "POST /v1/admin/shipments/{shipmentId}/pod/actions/{decision}",
-  "PUT /v1/admin/promotions/priority",
 ];
 
 /**

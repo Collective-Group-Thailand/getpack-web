@@ -38,13 +38,15 @@ const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("
 
 test.describe("campaigns (D-154)", () => {
   test("each budget reads against the alert threshold the API reports", async ({ page }) => {
-    // CONTRACT-GAP admin.campaigns — no spentPct, so no gauge: the spend, the budget and the threshold in words.
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing`);
     const table = page.getByRole("table", { name: "แคมเปญ" });
     const yearEnd = table.getByRole("row", { name: /ส่งท้ายปี 2569/ });
     await expect(yearEnd).toContainText("ใช้ไป ฿126,300.00 จาก ฿150,000.00 · แจ้งเตือนที่ 80%");
     await expect(yearEnd).toContainText("ใช้งบถึง 80% แล้ว");
+    // The gauge is the API's `spentPct`; the row also counts the campaign's promotions.
+    await expect(yearEnd.getByRole("meter", { name: "งบที่ใช้ไป" })).toBeVisible();
+    await expect(yearEnd).toContainText("84.2%");
     await expect(table.getByRole("row", { name: /หน้าฝน 2569/ })).toContainText("งบหมดแล้ว");
     await expectAxeClean(page);
   });
@@ -61,8 +63,7 @@ test.describe("campaigns (D-154)", () => {
     await expect(sheet).not.toContainText(/\brequired\b/);
   });
 
-  test("pausing restates the spend, and a paused campaign is resumed", async ({ page }) => {
-    // CONTRACT-GAP admin.campaigns — the published action takes no reason, so none is asked.
+  test("pausing restates the spend and asks why, and a paused campaign is resumed", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing/campaigns/${campaign(2)}`);
     await expect(page.getByText("ผลของแคมเปญ")).toBeVisible();
@@ -71,6 +72,10 @@ test.describe("campaigns (D-154)", () => {
     await page.getByRole("button", { name: "พักแคมเปญ" }).click();
     const dialog = page.getByRole("alertdialog", { name: "พักแคมเปญ" });
     await expect(dialog).toContainText("฿21,450.00");
+    await dialog.getByRole("button", { name: "พักแคมเปญ" }).click();
+    // The reason is recorded with the action (`OptionalReasonDto`), so it is asked for.
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel(/^เหตุผล/).fill("รอปรับข้อความโฆษณา");
     await dialog.getByRole("button", { name: "พักแคมเปญ" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(header(page)).toContainText("หยุดชั่วคราว");
@@ -91,10 +96,9 @@ test.describe("promotions (D-053)", () => {
     await page.getByRole("button", { name: "สร้างโปรโมชัน" }).click();
     await expect(page).toHaveURL(/\/marketing\/promotions\/[0-9a-f-]{36}$/);
     await expect(header(page)).toContainText("ฉบับร่าง");
-    // CONTRACT-GAP admin.promotions — no benefit summary from the API: the header names the benefit's type.
-    await expect(header(page)).toContainText("ลดเป็นเปอร์เซ็นต์");
+    // The header says the benefit in the API's words (`benefitSummaryTh`).
+    await expect(header(page)).toContainText("ลด 7%");
 
-    // CONTRACT-GAP admin.promotions — the published action takes no reason.
     await page.getByRole("button", { name: "เปิดใช้" }).click();
     let dialog = page.getByRole("alertdialog", { name: "เปิดใช้โปรโมชัน" });
     await dialog.getByRole("button", { name: "เปิดใช้" }).click();
@@ -125,16 +129,37 @@ test.describe("promotions (D-053)", () => {
     await expectAxeClean(page);
   });
 
-  test("a leaked code is disabled", async ({ page }) => {
-    // CONTRACT-GAP admin.coupons — disabling records no reason on the published operation.
+  test("a leaked code is disabled with the reason, and codes filter by status", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing/promotions/${promotion(4)}`);
     const codes = page.getByRole("table", { name: "โค้ดคูปอง" });
     await codes.getByRole("button", { name: "ปิดโค้ด FAIR9MXD" }).click();
     const dialog = page.getByRole("alertdialog", { name: "ปิดโค้ด FAIR9MXD" });
+    await dialog.getByLabel(/^เหตุผลที่ปิดโค้ด/).fill("โค้ดหลุดในกลุ่มสาธารณะ");
     await dialog.getByRole("button", { name: "ปิดโค้ด" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(codes.getByRole("row", { name: /FAIR9MXD/ })).toContainText("ปิดใช้");
+    // Each code names its batch.
+    await expect(codes.getByRole("row", { name: /FAIR9MXD/ })).toContainText("ชุดโค้ดไม่ซ้ำ");
+
+    await choose(page, /^สถานะ$/, "ใช้ครบแล้ว");
+    await expect(codes.getByRole("row")).toHaveCount(2);
+    await expect(codes).toContainText("FAIR7K2Q");
+  });
+
+  test("each row says its benefit, campaign and usage in the API's words", async ({ page }) => {
+    await signInAsStaff(page, "marketing");
+    await gotoHydrated(page, `${HOSTS.admin}/marketing/promotions`);
+    const table = page.getByRole("table", { name: "โปรโมชัน" });
+    await expect(table).toContainText("ใช้แล้ว");
+    await expect(table.getByRole("link", { name: /^[a-z0-9_-]+$/ }).first()).toBeVisible();
+  });
+
+  test("a referral promotion is the system's, so it is read-only", async ({ page }) => {
+    await signInAsStaff(page, "marketing");
+    await gotoHydrated(page, `${HOSTS.admin}/marketing/promotions/${promotion(5)}`);
+    await expect(page.getByText("โปรโมชันชวนเพื่อนจัดการโดยระบบ")).toBeVisible();
+    await expect(page.getByRole("button", { name: "บันทึก" })).toHaveCount(0);
   });
 
   test("the engine's order is changed and saved", async ({ page }) => {

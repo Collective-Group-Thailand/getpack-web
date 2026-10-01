@@ -21,7 +21,6 @@ export * from "./admin-analytics";
 export * from "./admin-customers";
 export * from "./admin-finance";
 export * from "./admin-logistics";
-export * from "./admin-marketing";
 export * from "./admin-orders";
 export * from "./partner-account";
 export * from "./partner-billing";
