@@ -35,7 +35,7 @@ export default async function BillingPage() {
       title={t("title")}
       description={t("body")}
       actions={
-        canAt(context, "factory_payouts.read") ? (
+        canAt(context, "factory_payables.read") ? (
           <Link href="/payouts" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
             <Icon name="coins" size={20} />
             {t("payoutsLink")}

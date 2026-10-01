@@ -61,7 +61,7 @@ export function AcceptJob({ job }: { job: PartnerJob }) {
   const report = useReport();
   const { run, busy } = useFloorAction();
   const [open, setOpen] = useState(false);
-  if (!can("factory_jobs.accept")) return <p className="text-muted">{t("plannerOnly")}</p>;
+  if (!can("factory_jobs.respond")) return <p className="text-muted">{t("plannerOnly")}</p>;
   return (
     <>
       <BigActionButton
@@ -110,7 +110,7 @@ export function RejectJob({ job }: { job: PartnerJob }) {
   const { run } = useFloorAction();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<(typeof REJECT_REASONS)[number]>("capacity");
-  if (!can("factory_jobs.accept")) return null;
+  if (!can("factory_jobs.respond")) return null;
   return (
     <>
       <Button size="xl" variant="secondary" iconStart="ban" onClick={() => setOpen(true)}>
@@ -158,7 +158,7 @@ export function StartMilestone({ job, milestone }: { job: PartnerJob; milestone:
   const { factoryId, can } = useFactory();
   const report = useReport();
   const { run, busy } = useFloorAction();
-  if (!can("factory_jobs.update")) return <p className="text-muted">{t("noPermission")}</p>;
+  if (!can("factory_milestones.update")) return <p className="text-muted">{t("noPermission")}</p>;
   return (
     <BigActionButton
       title={t("start", { name: milestone.name })}
@@ -205,7 +205,7 @@ export function CompleteMilestone({ job, milestone }: { job: PartnerJob; milesto
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
-  if (!can("factory_jobs.update")) return <p className="text-muted">{t("noPermission")}</p>;
+  if (!can("factory_milestones.update")) return <p className="text-muted">{t("noPermission")}</p>;
   const needsQc = milestone.requiresQc && !job.qcChecks.some((check) => check.result !== "fail");
   const numbers = [quantityIn, quantityOut, quantityScrap].map(Number);
   const invalid = numbers.some((value) => !Number.isInteger(value) || value < 0);

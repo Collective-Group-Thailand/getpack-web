@@ -516,9 +516,9 @@ function preferencesOf(userId: string): Preference[] {
 
 const ownOf = (context: Ctx, permission?: string) => own(context.request, context.params.factoryId, permission);
 const perm = {
-  billing: "factory_billing.read",
-  confirm: "factory_billing.confirm",
-  payouts: "factory_payouts.read",
+  billing: "factory_payables.read",
+  confirm: "factory_payables.manage",
+  payouts: "factory_payables.read",
   claims: "factory_claims.read",
   respond: "factory_claims.respond",
   scorecard: "factory_scorecard.read",
