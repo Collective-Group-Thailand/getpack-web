@@ -1,12 +1,9 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
 import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
 import { Dialog } from "@/ui/components/Dialog";
@@ -16,6 +13,7 @@ import { toast } from "@/ui/components/Toast";
 import { useActor } from "./actor";
 import { problemMessage } from "./QueryError";
 import { useRoleLabel } from "./roles";
+import { useStaffDirectory } from "./useStaffDirectory";
 
 export interface AssignDialogProps {
   title: string;
@@ -55,14 +53,7 @@ export function AssignDialog({
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<ComboboxOption | null>(null);
 
-  const people = useQuery({
-    queryKey: queryKeys.list("admin", "staff_directory", { q: query, permission }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/staff-directory", {
-        query: { q: query || undefined, permission, limit: 20 },
-      }),
-    staleTime: STALE_TIME.reference,
-  });
+  const people = useStaffDirectory({ q: query, permission });
 
   const assign = useMutation({
     mutationFn: onAssign,
@@ -114,7 +105,7 @@ export function AssignDialog({
           query={query}
           onQueryChange={setQuery}
           loading={people.isFetching}
-          options={(people.data?.data ?? []).map((person) => ({
+          options={(people.data ?? []).map((person) => ({
             value: person.id,
             label: person.displayName,
             description: person.roles.map(roleLabel).join(", "),

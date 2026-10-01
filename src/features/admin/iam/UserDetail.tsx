@@ -7,7 +7,6 @@ import { useState } from "react";
 import { statusMeta, USER_STATUS } from "@/domain/status";
 import { When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -271,19 +270,24 @@ function GrantRole({
   });
   const rules = useQuery({
     queryKey: queryKeys.list("admin", "sod_rule"),
-    queryFn: () => browserRequests().call("GET /v1/admin/sod-rules"),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/sod-rules")).data!,
     staleTime: STALE_TIME.stable,
   });
 
   const options = grantableRoles(roles.data ?? [], user);
   const role: Role | undefined = options.find((candidate) => candidate.key === roleKey);
-  const conflicts = role ? sodConflicts(rules.data?.data ?? [], user, role.key) : [];
+  const conflicts = role ? sodConflicts(rules.data ?? [], user, role.key) : [];
   const missing = role ? missingPermissions(role, actor.permissions) : [];
   const scoped = role && role.scopeType !== "platform";
 
   const scopes = useQuery({
     queryKey: queryKeys.list("admin", "search", { q: scopeQuery, type: role?.scopeType }),
-    queryFn: () => browserRequests().call("GET /v1/admin/search", { query: { q: scopeQuery, limit: 10 } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/search", {
+          params: { query: { q: scopeQuery.trim(), limit: 10 } },
+        })
+      ).data!,
     enabled: Boolean(scoped) && scopeQuery.trim().length >= 2,
   });
 
@@ -360,7 +364,7 @@ function GrantRole({
               loading={scopes.isFetching}
               options={(scopes.data?.data ?? [])
                 .filter((hit) => hit.type === role!.scopeType)
-                .map((hit) => ({ value: hit.id, label: hit.title, description: hit.code }))}
+                .map((hit) => ({ value: hit.id, label: hit.title, description: hit.code ?? undefined }))}
               placeholder={t("scopePlaceholder")}
               labels={{ loading: tCommon("state.loading"), empty: t("noScope"), clear: t("clearScope") }}
             />
