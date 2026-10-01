@@ -189,14 +189,16 @@ test.describe("the account", () => {
   });
 
   test("the wallet lists the promotion codes a customer holds", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.wallet — v0.2.0 has no customer-facing list of held codes");
     await signInAsCustomer(page, "/account/wallet");
-    await expect(page.getByText("PACKIO10")).toBeVisible();
+    const codes = page.getByRole("region", { name: "โค้ดของฉัน" });
+    await expect(codes.getByText("PACKIO10")).toBeVisible();
+    await expect(codes.getByText(/ลด 10%/).first()).toBeVisible();
   });
 
-  test("the referral page names each friend it brought", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.loyalty — store.referral.get gives counts, not the friends");
+  test("the referral page names each friend it brought, with the rules and the monthly cap", async ({ page }) => {
     await signInAsCustomer(page, "/account/referral");
-    await expect(page.getByText("ส*** ต***")).toBeVisible();
+    // The masked name the API gives (PDPA), never a phone or an e-mail.
+    await expect(page.getByRole("cell", { name: "ม***า ร." })).toBeVisible();
+    await expect(page.getByText(/ได้รางวัลสูงสุด \d+ ครั้งต่อเดือน/)).toBeVisible();
   });
 });

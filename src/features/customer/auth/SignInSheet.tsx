@@ -75,11 +75,11 @@ export function SignInSheet({ open, onOpenChange, onSignedIn, resume, lineReturn
 
   /** After the API issued a session: ask for what is missing, or finish. */
   async function afterSession(source: ConsentSource) {
-    const { consents, me } = await loadOnboarding();
+    const { consents, profile } = await loadOnboarding();
     const ask = consentsToAsk(consents);
-    const askProfile = needsProfile(me);
-    const displayName = me?.displayName ?? "";
-    const customerId = me?.id ?? "";
+    const askProfile = needsProfile(profile);
+    const displayName = profile?.displayName ?? "";
+    const customerId = profile?.id ?? "";
     if (ask.length > 0) setStep({ kind: "consent", consents: ask, source, displayName, customerId, askProfile });
     else if (askProfile) setStep({ kind: "profile", displayName, customerId });
     else onSignedIn?.();

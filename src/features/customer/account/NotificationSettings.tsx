@@ -7,7 +7,6 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -22,7 +21,7 @@ type Channel = "email" | "sms" | "line" | "web_push";
 type Category = "transactional" | "marketing";
 const CHANNELS: Channel[] = ["email", "sms", "line", "web_push"];
 const CATEGORIES: Category[] = ["transactional", "marketing"];
-const PROVIDERS = ["phone_otp", "line", "google", "apple"] as const;
+const PROVIDERS: Schemas["IdentityProvider"][] = ["phone_otp", "line", "firebase_google", "firebase_apple"];
 
 /**
  * Which messages arrive where (D-143, D-144): order and payment messages on every channel the
@@ -97,9 +96,11 @@ export function NotificationSettings({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on the way back from LINE
   }, []);
 
-  async function unlink(provider: string) {
+  /** `store.me.unlinkIdentity`: never the account phone or the last method (409, the API's words). */
+  async function unlink(provider: Schemas["IdentityProvider"]) {
     try {
-      await browserRequests().call("DELETE /v1/store/me/identities/{provider}", { path: { provider } });
+      await browserApi().DELETE("/v1/store/me/identities/{provider}", { params: { path: { provider } } });
+      toast.success(t("unlinked", { provider: t(`providers.${provider}`) }));
       router.refresh();
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));

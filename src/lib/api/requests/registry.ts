@@ -25,7 +25,6 @@ import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
 import { storeCheckoutRequests } from "./store-checkout";
 import { storeDesignRequests } from "./store-designs";
-import { storeOrderRequests } from "./store-orders";
 import { storeQuoteRequests } from "./store-quotes";
 
 export const REQUESTS = {
@@ -40,7 +39,6 @@ export const REQUESTS = {
   ...adminFinanceRequests,
   ...storeQuoteRequests,
   ...storeCheckoutRequests,
-  ...storeOrderRequests,
   ...storeFulfilmentRequests,
   ...storeSupportRequests,
   ...storeBusinessRequests,

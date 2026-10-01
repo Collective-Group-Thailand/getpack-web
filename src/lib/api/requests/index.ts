@@ -31,5 +31,4 @@ export * from "./partner-jobs";
 export * from "./partner-onboarding";
 export * from "./partner-shipments";
 export * from "./store-checkout";
-export * from "./store-orders";
 export * from "./store-quotes";
