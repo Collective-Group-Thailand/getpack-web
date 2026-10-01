@@ -262,15 +262,16 @@ export function ReportView({ reportKey }: { reportKey: string }) {
       {filters !== null && !data && !preview.isError ? <Skeleton className="h-64 w-full" /> : null}
       {data ? (
         <>
-          {data.filters.from && data.filters.to ? (
-            <p className="text-muted text-sm">
-              {t("resolved", {
-                from: format.date(`${data.filters.from}T00:00:00+07:00`),
-                to: format.date(`${data.filters.to}T00:00:00+07:00`),
-              })}
-            </p>
-          ) : null}
-          {/* CONTRACT-GAP admin.reports — no totals row, no pagination past the preview, no generatedAt. */}
+          <p className="text-muted text-sm">
+            {data.filters.from && data.filters.to
+              ? `${t("resolved", {
+                  from: format.date(`${data.filters.from}T00:00:00+07:00`),
+                  to: format.date(`${data.filters.to}T00:00:00+07:00`),
+                })} · `
+              : null}
+            {t("generatedAt", { at: format.dateTime(data.generatedAt) })}
+          </p>
+          {/* CONTRACT-GAP admin.reports — no pagination past the 200-row preview; the export has every row. */}
           <div className="bg-surface overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
               <caption className="sr-only">{name}</caption>
@@ -309,6 +310,21 @@ export function ReportView({ reportKey }: { reportKey: string }) {
                   ))
                 )}
               </tbody>
+              {/* The API's totals over every row of the report, not only the previewed ones; nothing is added up here. */}
+              {data.columns.some((item) => item.total) ? (
+                <tfoot className="bg-surface-subtle border-t font-semibold">
+                  <tr>
+                    {data.columns.map((item, at) => (
+                      <td
+                        key={item.key}
+                        className={`px-3 py-2 ${NUMERIC.includes(item.type) ? "text-right tabular-nums" : ""}`}
+                      >
+                        {item.total ? cell(item.type, data.totals[item.key] ?? null) : at === 0 ? t("totals") : null}
+                      </td>
+                    ))}
+                  </tr>
+                </tfoot>
+              ) : null}
             </table>
           </div>
           {data.truncated ? (

@@ -196,6 +196,7 @@ function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null 
   return (
     <ResourceList
       resource={ordersList}
+      exportResource="orders"
       columns={columns}
       caption={t("title")}
       initial={initial}
@@ -333,6 +334,7 @@ function AllOrders({ initial }: { initial: InitialPage<OrderListItem> | null }) 
   return (
     <ResourceList
       resource={allOrdersList}
+      exportResource="orders"
       columns={columns}
       caption={t("title")}
       initial={initial}

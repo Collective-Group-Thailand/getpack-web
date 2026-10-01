@@ -7,8 +7,6 @@
  */
 
 import { adminAnalyticsRequests } from "./admin-analytics";
-import { adminConsoleRequests } from "./admin-console";
-import { adminFinanceRequests } from "./admin-finance";
 import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
@@ -20,9 +18,7 @@ import { storeQuoteRequests } from "./store-quotes";
 import { storeRfqRequests } from "./store-rfq";
 
 export const REQUESTS = {
-  ...adminConsoleRequests,
   ...adminAnalyticsRequests,
-  ...adminFinanceRequests,
   ...storeCatalogRequests,
   ...storeQuoteRequests,
   ...storeRfqRequests,

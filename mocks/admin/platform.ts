@@ -44,15 +44,17 @@ export const ROLES: Schemas["RoleDto"][] = roleCatalogue.map((role) => ({
 export const SENSITIVE_PERMISSIONS = new Set(["factory_cost.read", "margin.read", "margin.read_pct_when_discounting"]);
 export const PERMISSION_DESCRIPTIONS = Object.fromEntries(permissionCatalogue.map((p) => [p.key, p.description]));
 
-/** Role-pair SoD rules as the `admin.sod-rules` request shapes them. */
-export const SOD_RULES = sodRuleSeeds.map((rule, index) => ({
+/** The SoD rules as `admin.sodRules.list` returns them (packio-api `SodRulesController`, v0.6.0). */
+export const SOD_RULES: Schemas["SodRuleDto"][] = sodRuleSeeds.map((rule, index) => ({
   id: mockId("sod", index + 1),
-  kind: rule.kind as "role_pair" | "action_pair",
+  key: rule.key,
+  kind: rule.kind as Schemas["SodRuleKind"],
   left:
     rule.kind === "role_pair" ? (rule as { roles: string[] }).roles[0]! : (rule as { actions: string[] }).actions[0]!,
   right:
     rule.kind === "role_pair" ? (rule as { roles: string[] }).roles[1]! : (rule as { actions: string[] }).actions[1]!,
-  enforcement: "block" as const,
+  subjectMatch: ((rule as { subjectMatch?: string }).subjectMatch ?? null) as Schemas["SodSubjectMatch"] | null,
+  enforcement: "block",
   description: rule.description,
   decisions: rule.decisions,
 }));

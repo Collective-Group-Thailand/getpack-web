@@ -65,6 +65,8 @@
   "no": "ไม่",
   "chooseFilters": "เลือกตัวกรองที่จำเป็นแล้วกดแสดงรายงาน",
   "resolved": "ข้อมูล {from} – {to}",
+  "generatedAt": "สร้างเมื่อ {at}",
+  "totals": "รวม",
   "truncated": "แสดง {rows} แถวแรกเท่านั้น",
   "truncatedExport": "ส่งออกเป็นไฟล์เพื่อดูทุกแถว",
   "export": {

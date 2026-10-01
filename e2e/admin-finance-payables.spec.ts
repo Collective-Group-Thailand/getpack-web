@@ -89,7 +89,9 @@ test.describe("payout runs (D-022, D-166)", () => {
     await finance.getByRole("button", { name: "ดาวน์โหลดไฟล์ธนาคาร" }).click();
     expect((await download).suggestedFilename()).toContain(runNo);
 
-    await finance.getByRole("button", { name: "บันทึกผลการโอน" }).click();
+    // The run now offers the file again and the bank's result; the result is behind "more".
+    await finance.getByRole("button", { name: "การดำเนินการอื่น" }).click();
+    await finance.getByRole("menuitem", { name: "บันทึกผลการโอน" }).click();
     const result = finance.getByRole("dialog", { name: `บันทึกผลการโอนของ ${runNo}` });
     await result.getByRole("button", { name: "ตรวจทาน" }).click();
     await confirmTyped(finance, "บันทึกผล", runNo);

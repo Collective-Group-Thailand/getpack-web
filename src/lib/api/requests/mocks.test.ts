@@ -42,16 +42,8 @@ function asSurface(key: RequestKey) {
 
 /** A valid query for each GET that needs one. */
 const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
-  "GET /v1/admin/saved-views": { resource: "order" },
-  "GET /v1/admin/search": { q: "ตัวอย่าง" },
   "GET /v1/admin/analytics/journeys": { range: "7d", journey: "claims" },
   "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
-  "GET /v1/admin/depreciation-runs/preview": { period: new Date().toISOString().slice(0, 7) },
-  "GET /v1/admin/financial-reports/roll-forward": {
-    accountCode: "2330",
-    from: `${new Date().getFullYear()}-01`,
-    to: new Date().toISOString().slice(0, 7),
-  },
 };
 
 /** The partner zone's own factory: every partner read is under `/factories/{factoryId}`. */
@@ -89,13 +81,8 @@ describe("the mock API answers every contract request in its requested shape", (
   it("refuses a staff request without a session, like the API", async () => {
     const api = createApiClient({ baseUrl: "http://api.mock" });
     const requests = createRequestClient(REQUESTS, api as unknown as Client<never>);
-    await expect(requests.call("GET /v1/admin/dashboard")).rejects.toMatchObject({ status: 401 });
-  });
-
-  it("builds the dashboard per role: a CS agent does not see Finance's queues", async () => {
-    const cs = await asPersona("cs").call("GET /v1/admin/dashboard");
-    const finance = await asPersona("finance").call("GET /v1/admin/dashboard");
-    const keys = (dashboard: typeof cs) => dashboard.queues.map((queue) => queue.key);
-    expect(keys(cs)).not.toEqual(keys(finance));
+    await expect(
+      requests.call("GET /v1/admin/analytics/journeys", { query: { range: "7d", journey: "claims" } }),
+    ).rejects.toMatchObject({ status: 401 });
   });
 });

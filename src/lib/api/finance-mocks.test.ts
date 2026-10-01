@@ -1,6 +1,5 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { assets } from "../../../mocks/admin/finance/assets";
@@ -18,8 +17,6 @@ import { documents, receivables, taxedVat } from "../../../mocks/admin/finance/r
 import { handlers } from "../../../mocks/handlers";
 import { accessToken } from "../../../mocks/support";
 import { createApiClient } from "./client";
-import { createRequestClient } from "./requests/client";
-import { REQUESTS } from "./requests/registry";
 
 /**
  * The finance mocks behave like the B5 surface they stand in for (F6): every event posts a
@@ -33,7 +30,6 @@ afterAll(() => server.close());
 
 const staff = (persona: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("staff", persona) });
-const requestsAs = (persona: string) => createRequestClient(REQUESTS, staff(persona) as unknown as Client<never>);
 const key = () => ({ "Idempotency-Key": crypto.randomUUID() });
 
 describe("the books", () => {
@@ -163,13 +159,42 @@ describe("credit notes and refunds (§8 maker-checker)", () => {
   });
 });
 
-describe("the contract requests F6.1 raised", () => {
-  it("hand out the slip image and the dunning log", async () => {
-    const slip = (await staff("finance").GET("/v1/admin/slips", {})).data!.data[0]!;
-    const file = await requestsAs("finance").call("GET /v1/admin/slips/{slipId}/file", { path: { slipId: slip.id } });
-    expect(file.file.url).toMatch(/^data:image\//);
-    const log = await requestsAs("finance").call("GET /v1/admin/dunning-log", { query: {} });
-    expect(log.data.some((entry) => entry.kind === "overdue")).toBe(true);
+describe("what U-B0.3 published for F6.1", () => {
+  it("hands out the slip image through its file, and the dunning log with masked recipients", async () => {
+    const finance = staff("finance");
+    const slip = (await finance.GET("/v1/admin/slips", {})).data!.data[0]!;
+    const { data: file } = await finance.GET("/v1/admin/files/{fileId}/download", {
+      params: { path: { fileId: slip.fileId! } },
+    });
+    expect(file!.url).toMatch(/^data:image\//);
+    await expect(
+      staff("marketing").GET("/v1/admin/files/{fileId}/download", { params: { path: { fileId: slip.fileId! } } }),
+    ).rejects.toMatchObject({ status: 403 });
+    const { data: log } = await finance.GET("/v1/admin/dunning-log", {});
+    expect(log!.data.some((entry) => entry.stage === "overdue")).toBe(true);
+    expect(log!.data.every((entry) => !entry.recipient || entry.recipient.includes("***"))).toBe(true);
+  });
+
+  it("resends a document by the customer's own route, and offers only what the reader may do", async () => {
+    const finance = staff("finance");
+    const issued = documents.find((doc) => doc.status === "issued" && doc.docType === "tr")!;
+    const { data: read } = await finance.GET("/v1/admin/customer-documents/{documentId}", {
+      params: { path: { documentId: issued.id } },
+    });
+    expect(read!.nextActions.map((action) => action.key)).toContain("customer_document.resend");
+    const { data: forAuditor } = await staff("auditor").GET("/v1/admin/customer-documents/{documentId}", {
+      params: { path: { documentId: issued.id } },
+    });
+    expect(forAuditor!.nextActions).toEqual([]);
+    await finance.POST("/v1/admin/customer-documents/{documentId}/actions/resend", {
+      params: { path: { documentId: issued.id }, header: key() },
+    });
+    const { data: sent } = await finance.GET("/v1/admin/customer-documents/{documentId}/deliveries", {
+      params: { path: { documentId: issued.id } },
+    });
+    expect(sent![0]!.kind).toBe("resent");
+    const { data: reasons } = await finance.GET("/v1/admin/credit-note-reasons");
+    expect(reasons!.some((reason) => reason.direction === "debit")).toBe(true);
   });
 });
 
@@ -255,10 +280,10 @@ describe("cash and bank (§6)", () => {
     const finance = staff("finance");
     const unmatched = lines.filter((line) => line.matchStatus === "unmatched");
     const noReference = unmatched.find((line) => line.description.includes("ไม่มีเลขอ้างอิง"))!;
-    const suggestions = await requestsAs("finance").call("GET /v1/admin/bank-statement-lines/{lineId}/suggestions", {
-      path: { lineId: noReference.id },
+    const { data: suggestions } = await finance.GET("/v1/admin/bank-statement-lines/{lineId}/suggestions", {
+      params: { path: { lineId: noReference.id } },
     });
-    const pick = suggestions.find((item) => item.reasons.includes("amount"))!;
+    const pick = suggestions!.find((item) => item.reasons.includes("amount"))!;
     const { data: matched } = await finance.POST("/v1/admin/bank-statement-lines/{lineId}/actions/match", {
       params: { path: { lineId: noReference.id }, header: key() },
       body: { targetType: pick.targetType, targetId: pick.targetId },
@@ -450,15 +475,15 @@ describe("fixed assets (D-150)", () => {
   it("posts what the preview showed, once, and keeps the register equal to the GL", async () => {
     const finance = staff("finance");
     const month = currentMonth();
-    const preview = await requestsAs("finance").call("GET /v1/admin/depreciation-runs/preview", {
-      query: { period: month },
+    const { data: preview } = await finance.GET("/v1/admin/depreciation-runs/preview", {
+      params: { query: { period: month } },
     });
-    expect(preview.assetCount).toBeGreaterThan(0);
+    expect(preview!.assetCount).toBeGreaterThan(0);
     const { data: run } = await finance.POST("/v1/admin/depreciation-runs", {
       params: { header: key() },
       body: { period: month },
     });
-    expect(run!.totalAmount).toBe(preview.totalAmount);
+    expect(run!.totalAmount).toBe(preview!.totalAmount);
     await expect(
       finance.POST("/v1/admin/depreciation-runs", { params: { header: key() }, body: { period: month } }),
     ).rejects.toMatchObject({ status: 409, code: "fixed_assets.run_exists" });
@@ -493,14 +518,12 @@ describe("the financial reports (§6, §1.7)", () => {
       params: { query: { from: `${year}-01`, to: currentMonth(), dimension: "cost_centre" } },
     });
     expect(pl!.lines.some((line) => line.dimension === "ADMIN")).toBe(true);
-    const recon = await requestsAs("auditor").call("GET /v1/admin/financial-reports/subledger-reconciliation", {
-      query: {},
+    const { data: recon } = await auditor.GET("/v1/admin/financial-reports/subledger-reconciliation", {});
+    for (const row of recon!.rows) expect(row.difference, row.key).toBe("0.00");
+    const { data: points } = await auditor.GET("/v1/admin/financial-reports/roll-forward", {
+      params: { query: { accountCode: "2330", from: `${year}-01`, to: currentMonth() } },
     });
-    for (const row of recon.rows) expect(row.difference, row.key).toBe("0.00");
-    const points = await requestsAs("auditor").call("GET /v1/admin/financial-reports/roll-forward", {
-      query: { accountCode: "2330", from: `${year}-01`, to: currentMonth() },
-    });
-    const last = points.months.at(-1)!;
+    const last = points!.months.at(-1)!;
     expect(satangOf(last.closing)).toBe(-movement("2330"));
   });
 });

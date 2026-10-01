@@ -6,7 +6,6 @@ import { useState } from "react";
 
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
@@ -20,7 +19,7 @@ import { toast } from "@/ui/components/Toast";
 import type { IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { adminBrowserApis, problemMessage, useRoleLabel } from "../console";
+import { adminBrowserApis, problemMessage, useRoleLabel, useStaffDirectory } from "../console";
 
 type Entry = Schemas["StaffTimelineEntryDto"];
 
@@ -188,12 +187,7 @@ function Notes({ orderId }: { orderId: string }) {
         })
       ).data!,
   });
-  const people = useQuery({
-    queryKey: queryKeys.list("admin", "staff_directory", { q: query }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/staff-directory", { query: { q: query || undefined, limit: 10 } }),
-    staleTime: STALE_TIME.reference,
-  });
+  const people = useStaffDirectory({ q: query, limit: 10 });
 
   const add = useMutation({
     mutationFn: async () =>
@@ -244,7 +238,7 @@ function Notes({ orderId }: { orderId: string }) {
             query={query}
             onQueryChange={setQuery}
             loading={people.isFetching}
-            options={(people.data?.data ?? []).map((person) => ({
+            options={(people.data ?? []).map((person) => ({
               value: person.id,
               label: person.displayName,
               description: person.roles.map(roleLabel).join(", "),

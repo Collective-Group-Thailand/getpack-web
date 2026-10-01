@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AdminHomePage() {
   let initial = null;
   try {
-    initial = await (await adminServerApis()).requests.call("GET /v1/admin/dashboard");
+    initial = (await (await adminServerApis()).contract.GET("/v1/admin/dashboard")).data ?? null;
   } catch {
     // The client asks again; a missing endpoint shows as an error state with a request id.
   }

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import type { z } from "zod";
 
 import { isNegativeMoney, moneyText } from "@/domain/money";
 import {
@@ -17,8 +16,6 @@ import {
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import type { bankLineSuggestion } from "@/lib/api/requests/admin-finance";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -50,7 +47,7 @@ import { bankLinesList, settlementsList, type BankLine, type SettlementSummary }
 import { AccountNo, fieldErrorsOf } from "./shared";
 import { invalidateMoney } from "./slips";
 
-type Suggestion = z.output<typeof bankLineSuggestion>;
+type Suggestion = Schemas["BankLineSuggestionDto"];
 
 const bangkokToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
 
@@ -327,8 +324,12 @@ function LineSheet({ lineId, line: known, onClose }: { lineId: string; line: Ban
   });
   const suggestions = useQuery({
     queryKey: queryKeys.related("admin", "bank-line", lineId, "suggestions"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/bank-statement-lines/{lineId}/suggestions", { path: { lineId } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/bank-statement-lines/{lineId}/suggestions", {
+          params: { path: { lineId } },
+        })
+      ).data!,
     enabled: line.data?.matchStatus === "unmatched",
   });
   const data = line.data;
@@ -351,9 +352,8 @@ function LineSheet({ lineId, line: known, onClose }: { lineId: string; line: Ban
           body: { targetType: action.suggestion.targetType, targetId: action.suggestion.targetId },
         });
       else if (action.kind === "split")
-        await browserRequests().call("POST /v1/admin/bank-statement-lines/{lineId}/actions/split", {
-          path,
-          idempotencyKey,
+        await adminBrowserApis().contract.POST("/v1/admin/bank-statement-lines/{lineId}/actions/split", {
+          params: { path, header: { "Idempotency-Key": idempotencyKey } },
           body: {
             parts: picked.map((item) => ({
               targetType: item.targetType,

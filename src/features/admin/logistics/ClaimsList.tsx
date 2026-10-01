@@ -90,6 +90,7 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
       />
       <ResourceList
         resource={claimsList}
+        exportResource="claims"
         columns={columns}
         caption={t("title")}
         initial={initial}

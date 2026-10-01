@@ -10,7 +10,6 @@ import { PAYABLE_STATUS, PAYOUT_ITEM_STATUS, PAYOUT_RUN_STATUS } from "@/domain/
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
@@ -30,6 +29,7 @@ import { toast } from "@/ui/components/Toast";
 import { useActor, useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
 import { ConfirmAction } from "../console/ConfirmAction";
+import { NextActionBar } from "../console/NextActionBar";
 import { Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
@@ -264,6 +264,15 @@ function NewRun({ onClose }: { onClose: () => void }) {
 
 type Action = "propose" | "cancel" | "file" | "confirm";
 
+/** The verbs of `payout_run.*` this page performs, and the page's own words for them. */
+const RUN_VERBS: ReadonlySet<string> = new Set(["propose", "cancel", "generate_bank_file", "confirm"]);
+const RUN_LABELS: Record<string, "propose" | "cancel" | "generate" | "importConfirmation"> = {
+  propose: "propose",
+  cancel: "cancel",
+  generate_bank_file: "generate",
+  confirm: "importConfirmation",
+};
+
 /**
  * One payout run: what it pays each vendor (net, VAT, WHT and its form, retention held, cash) and
  * the step it is at. Every step that moves money restates the run number and the cash total, and
@@ -275,7 +284,6 @@ export function PayoutRunDetail({ runId }: { runId: string }) {
   const format = useFormat();
   const queryClient = useQueryClient();
   const actor = useActor();
-  const canManage = useCan("payouts.manage");
   const canExecute = useCan("payouts.execute");
   const [action, setAction] = useState<Action | null>(null);
   const [documentsOf, setDocumentsOf] = useState<Item | null>(null);
@@ -428,25 +436,18 @@ export function PayoutRunDetail({ runId }: { runId: string }) {
         description={t("description", { payOn: format.date(data.payOn), format: data.bankFormat })}
         actions={
           <>
-            {canManage && ["draft", "proposed", "approved"].includes(data.status) ? (
-              <Button variant="ghost" onClick={() => setAction("cancel")}>
-                {t("cancel")}
-              </Button>
-            ) : null}
-            {canManage && data.status === "draft" ? (
-              <Button onClick={() => setAction("propose")}>{t("propose")}</Button>
-            ) : null}
-            {canExecute && data.status === "approved" ? (
-              <Button onClick={() => setAction("file")}>{t("generate")}</Button>
-            ) : null}
             {canExecute && data.bankFileReady ? (
               <Button variant="secondary" iconStart="download" onClick={() => void downloadFile()}>
                 {t("download")}
               </Button>
             ) : null}
-            {canExecute && data.status === "file_generated" ? (
-              <Button onClick={() => setAction("confirm")}>{t("importConfirmation")}</Button>
-            ) : null}
+            {/* What the API offers on this run, for this person (`nextActions`, D-093). */}
+            <NextActionBar
+              actions={data.nextActions}
+              supported={RUN_VERBS}
+              labelOf={(verb) => RUN_LABELS[verb] && t(RUN_LABELS[verb])}
+              onAction={(verb) => setAction(verb === "generate_bank_file" ? "file" : (verb as Action))}
+            />
           </>
         }
       />
@@ -722,17 +723,19 @@ function ImportConfirmation({
   );
 }
 
-/** A paid item's remittance advice and 50 ทวิ (CONTRACT-REQUEST admin.payout-documents). */
+/** A paid item's remittance advice and 50 ทวิ (`admin.payouts.itemDocuments`, D-022), as signed URLs. */
 function ItemDocuments({ run, item, onClose }: { run: PayoutRun; item: Item; onClose: () => void }) {
   const t = useTranslations("finance.payouts.itemDocuments");
   const tCommon = useTranslations("common");
   const format = useFormat();
   const docs = useQuery({
     queryKey: queryKeys.related("admin", "payout-run", run.id, `documents:${item.id}`),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/payout-runs/{runId}/items/{itemId}/documents", {
-        path: { runId: run.id, itemId: item.id },
-      }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/payout-runs/{runId}/items/{itemId}/documents", {
+          params: { path: { runId: run.id, itemId: item.id } },
+        })
+      ).data!,
   });
   return (
     <Dialog
@@ -756,18 +759,27 @@ function ItemDocuments({ run, item, onClose }: { run: PayoutRun; item: Item; onC
             </a>
           </li>
           {docs.data.whtCertificates.map((certificate) => (
-            <li key={certificate.wtNumber}>
-              <a
-                href={certificate.url}
-                download={`${certificate.wtNumber}.pdf`}
-                className="text-primary hover:underline"
-              >
-                {t("certificate", { number: certificate.wtNumber, form: t(`forms.${certificate.whtForm}`) })}
-              </a>
+            <li key={certificate.id}>
+              {certificate.download ? (
+                <a
+                  href={certificate.download.url}
+                  download={`${certificate.wtNumber}.pdf`}
+                  className="text-primary hover:underline"
+                >
+                  {t("certificate", { number: certificate.wtNumber, form: t(`forms.${certificate.form}`) })}
+                </a>
+              ) : (
+                <span>
+                  {t("certificate", { number: certificate.wtNumber, form: t(`forms.${certificate.form}`) })}
+                  <span className="text-muted"> · {t("notRendered")}</span>
+                </span>
+              )}
               <span className="text-muted block text-sm tabular-nums">
                 {t("certificateAmounts", {
-                  base: format.thb(certificate.base),
-                  amount: format.thb(certificate.amount),
+                  paid: format.thb(certificate.paidAmount),
+                  rate: format.percent(certificate.whtRatePct),
+                  amount: format.thb(certificate.whtAmount),
+                  date: format.date(certificate.paidOn),
                 })}
               </span>
             </li>
