@@ -124,7 +124,8 @@
       "liability": "ผู้รับผิดชอบ",
       "requested": "ลูกค้าขอ",
       "window": "แจ้งได้ถึง",
-      "submitted": "แจ้งเมื่อ"
+      "submitted": "แจ้งเมื่อ",
+      "customer": "ลูกค้า"
     },
     "types": {
       "damaged": "สินค้าชำรุด",
@@ -151,6 +152,10 @@
       "partial_refund": "คืนเงินบางส่วน",
       "full_refund": "คืนเงินเต็ม",
       "credit": "เครดิต"
+    },
+    "filters": {
+      "type": "ประเภท",
+      "origin": "ที่มา"
     }
   },
   "claim": {
@@ -158,7 +163,6 @@
     "breadcrumb": "เส้นทางหน้า",
     "claims": "เคลม",
     "summary": "คำสั่งซื้อ {order} · โรงงาน {factory}",
-    "resolve": "ดำเนินการแก้ไข",
     "actions": {
       "review": {
         "label": "เริ่มตรวจสอบ",
@@ -207,7 +211,6 @@
     "cartonPhotos": "รูปกล่องขนส่ง",
     "noPhotos": "ไม่มีรูป",
     "liability": "ผู้รับผิดชอบ",
-    "override": "เปลี่ยน",
     "byRule": "ตามกฎ: {liability}",
     "overridden": "เปลี่ยนจากที่กฎกำหนด",
     "factoryResponse": "คำตอบของโรงงาน",
@@ -254,7 +257,49 @@
     "needOverrideReason": "กรุณาระบุเหตุผลอย่างน้อย 10 ตัวอักษร",
     "reproduceQuantity": "จำนวนที่ผลิตใหม่",
     "optional": "ไม่บังคับ",
-    "needQuantity": "กรุณาระบุจำนวน"
+    "needQuantity": "กรุณาระบุจำนวน",
+    "verbs": {
+      "review": "เริ่มตรวจสอบ",
+      "request_info": "ขอข้อมูลเพิ่ม",
+      "send_to_factory": "ส่งให้โรงงานตอบ",
+      "override_liability": "เปลี่ยนผู้รับผิดชอบ",
+      "approve": "อนุมัติเคลม",
+      "reject": "ไม่อนุมัติ",
+      "resolve": "ดำเนินการแก้ไข",
+      "close": "ปิดเคลม"
+    },
+    "customer": "ลูกค้า",
+    "approvedProof": "ปรู๊ฟที่ลูกค้าอนุมัติ",
+    "approvedProofBody": "ฉบับที่ {version}",
+    "approvedFile": "ไฟล์ที่อนุมัติ",
+    "channels": {
+      "web": "อนุมัติทางเว็บ",
+      "line_liff": "อนุมัติทาง LINE",
+      "cs_on_behalf": "CS อนุมัติแทน"
+    },
+    "rules": {
+      "factory_production": "กฎ: ผลิตผิดหรือพิมพ์บกพร่อง — โรงงาน",
+      "factory_short_delivery": "กฎ: ส่งขาดเกินค่าเผื่อ — โรงงาน",
+      "factory_fleet_transit": "กฎ: เสียหายระหว่างโรงงานส่ง — โรงงาน",
+      "carrier_transit": "กฎ: เสียหายระหว่างขนส่ง — บริษัทขนส่ง",
+      "staff_decides": "กฎ: ทีมงานพิจารณาเป็นกรณี"
+    },
+    "overriddenBy": "เปลี่ยนโดย {name}",
+    "factoryEvidence": "หลักฐานจากโรงงาน",
+    "decidedBy": "ตัดสินโดย {name}",
+    "deductions": "หักจากโรงงาน",
+    "deductionTotal": "รวม {amount}",
+    "deductionStatus": {
+      "pending": "รอหัก",
+      "applied": "หักแล้ว",
+      "cancelled": "ยกเลิก"
+    },
+    "offsets": {
+      "payable": "หักจากยอดจ่ายโรงงาน",
+      "receivable": "เรียกเก็บจากโรงงาน"
+    },
+    "retype": "พิมพ์ {no} เพื่อยืนยัน",
+    "retypeMismatch": "พิมพ์ {no} ให้ตรงเพื่อยืนยัน"
   },
   "files": {
     "none": "ไม่มีไฟล์",

@@ -3,10 +3,12 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { CLAIM_STATUS } from "@/domain/status";
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
+import { offered } from "@/features/partner/account/offered";
+import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
@@ -15,19 +17,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerAccount.claims"))("title") };
 }
 
-/** Claims that name the factory (D-082, D-083), the ones waiting for its answer first. */
+/**
+ * Claims that name the factory (D-082, D-083, `partner.claims.list`, token-scoped — D-044), the ones
+ * the API asks the factory to answer (`claim.respond`) first.
+ */
 export default async function ClaimsPage() {
   const t = await getTranslations("partnerAccount.claims");
   const format = await getFormat();
-  const context = await factoryContext();
-  const { requests } = await partnerServerApis();
-  const list = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/claims", {
-      path: { factoryId: context.factoryId },
-      query: { perPage: 50 },
-    }),
+  const { contract } = await partnerServerApis();
+  const list = await attempt(
+    async () => (await contract.GET("/v1/partner/claims", { params: { query: { perPage: 50 } } })).data!,
   );
-  const rows = [...(list.data?.data ?? [])].sort((a, b) => Number(!!b.responseDueAt) - Number(!!a.responseDueAt));
+  const waiting = (claim: Schemas["PartnerClaimDto"]) => Boolean(offered(claim.nextActions, "claim.respond"));
+  const rows = [...(list.data?.data ?? [])].sort((a, b) => Number(waiting(b)) - Number(waiting(a)));
 
   return (
     <PartnerPage title={t("title")} description={t("body")}>
@@ -43,7 +45,7 @@ export default async function ClaimsPage() {
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="font-mono font-semibold">{claim.claimNo}</span>
                     <StatusChip map={CLAIM_STATUS} value={claim.status} />
-                    {claim.responseDueAt ? (
+                    {waiting(claim) ? (
                       <Badge tone="warning" size="sm" icon="warning">
                         {t("awaitingYou")}
                       </Badge>
@@ -52,8 +54,11 @@ export default async function ClaimsPage() {
                   </span>
                   <span>{t(`types.${claim.type}`)}</span>
                   <span className="text-muted text-sm">
-                    {[claim.job.jobNo, claim.shipmentNo, format.date(claim.submittedAt)].filter(Boolean).join(" · ")}
-                    {claim.deduction ? ` · ${t("deduction", { amount: format.thb(claim.deduction) })}` : ""}
+                    {[claim.jobNo, claim.shipmentNo, format.date(claim.submittedAt)].filter(Boolean).join(" · ")}
+                    {/* The API names a recovered amount even when it is zero: show one only once there is a deduction. */}
+                    {claim.deductions.length
+                      ? ` · ${t("deduction", { amount: format.thb(claim.deductionAmount) })}`
+                      : ""}
                   </span>
                 </Link>
               </li>

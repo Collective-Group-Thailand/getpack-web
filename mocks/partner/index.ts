@@ -5,16 +5,18 @@
  * `./support.ts` for the rules every handler applies (own factory only, roles from rbac.md).
  */
 
-import { billingRequestHandlers } from "./billing";
+import { accountHandlers } from "./account";
+import { billingHandlers } from "./billing";
 import { factoryHandlers } from "./factories";
 import { jobRequestHandlers } from "./jobs";
-import { onboardingRequestHandlers } from "./onboarding";
+import { onboardingHandlers } from "./onboarding";
 import { shipmentRequestHandlers } from "./shipments";
 
 export const partnerZoneHandlers = [
-  ...onboardingRequestHandlers,
+  ...onboardingHandlers,
   ...jobRequestHandlers,
   ...shipmentRequestHandlers,
-  ...billingRequestHandlers,
+  ...billingHandlers,
+  ...accountHandlers,
   ...factoryHandlers,
 ];
