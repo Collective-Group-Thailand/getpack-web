@@ -58,14 +58,12 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   // store (U-F0.4)
   "DELETE /v1/store/designs/{designId}/share",
   "DELETE /v1/store/me/company/brand-assets/{assetId}",
-  "DELETE /v1/store/me/identities/{provider}",
   "GET /v1/store/catalog/products/{slug}/configurator",
   "GET /v1/store/designer/catalog",
   "GET /v1/store/designer/templates/{templateId}",
   "GET /v1/store/instalments",
   "GET /v1/store/me/company/brand-assets",
   "GET /v1/store/me/company/spend",
-  "GET /v1/store/me/privacy-requests",
   "GET /v1/store/orders/{orderId}/claim-form",
   "GET /v1/store/orders/{orderId}/reorder",
   "GET /v1/store/shared-designs/{token}",
@@ -78,7 +76,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "POST /v1/store/me/company/bulk-reorders",
   "POST /v1/store/me/company/bulk-reorders/actions/preview",
   "POST /v1/store/me/company/credit-applications",
-  "POST /v1/store/me/privacy-requests",
   // admin (U-F0.4)
   "DELETE /v1/admin/saved-views/{viewId}",
   "GET /v1/admin/bank-statement-lines/{lineId}/suggestions",

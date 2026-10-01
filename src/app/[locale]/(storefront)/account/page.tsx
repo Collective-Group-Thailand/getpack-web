@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPoints } from "@/features/customer/account/api.server";
+import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
@@ -86,10 +87,10 @@ export default async function Page() {
             {t("points", { points: format.number(points.availablePoints) })}
           </p>
           <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
-          {/* CONTRACT-GAP store.loyalty — no next tier or threshold, so the tier stands without a progress bar. */}
           <p className="mt-3 text-sm">
             {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
           </p>
+          <TierProgress points={points} className="mt-2 text-sm" />
           <Button asChild variant="link" className="mt-2 px-0">
             <Link href="/account/points">{t("seePoints")}</Link>
           </Button>

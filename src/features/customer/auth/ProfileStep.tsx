@@ -16,10 +16,9 @@ type CustomerType = "individual" | "juristic" | "government";
 /**
  * Progressive profiling (F3 3.1): asked once, right after a first sign-in, and skippable — a
  * name, and whether they buy as a person or an organisation (the payment schedule depends on it,
- * D-020). Nothing here is required to use the shop.
- *
- * CONTRACT-GAP store.profile — `store.customerProfile.update` does not take an e-mail, so the step
- * no longer asks for one.
+ * D-020). Nothing here is required to use the shop. The e-mail is not asked: it comes from a
+ * verified sign-in identity (D-224). Saving records `profileCompletedAt`; skipping is remembered on
+ * this browser only.
  */
 export function ProfileStep({
   displayName,
@@ -42,7 +41,6 @@ export function ProfileStep({
     startTransition(async () => {
       try {
         await saveProfile({ displayName: name.trim() || undefined, customerType: type });
-        rememberProfileAsked(customerId);
         onDone();
       } catch {
         setError(t("failed"));

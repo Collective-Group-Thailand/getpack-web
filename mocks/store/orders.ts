@@ -1,7 +1,7 @@
 /**
- * The customer's orders and account, mocked (CONTRACT-REQUEST store.orders, store.privacy,
- * store.identities; published: notification preferences, B1.3, and loyalty, referral and store
- * credit, U-F0.2).
+ * The customer's orders and account, mocked at the published paths: orders, notification
+ * preferences (B1.3), loyalty, referral and store credit (U-F0.2), and the PDPA requests and
+ * sign-in methods (`store.me.*PrivacyRequest*`, `store.me.unlinkIdentity`, U-B0.1).
  *
  * Orders are the back office's own rows (`../admin/commerce`) seen from the customer's side: no
  * factory, no cost or margin, no internal timeline entry, and the actions the customer can take
@@ -12,21 +12,18 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { privacyRequest } from "@/lib/api/requests/store-orders";
 import type { Schemas } from "@/lib/api/types";
 
 import { baht, customers as fakeCustomers, orders, satang, type MockOrder } from "../admin/commerce";
 import { settingValue } from "../admin/platform";
-import { mockRequest } from "../route";
 import { toOrderDto } from "./order-dto";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { catalogProducts, imageUrl, provinceRefOf } from "./catalog";
-import { customerOf, type MockCustomer } from "./customers";
+import { customerMe, customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
 
-type PrivacyRequest = z.output<typeof privacyRequest>;
+type PrivacyRequest = Schemas["PrivacyRequestDto"];
 
 const DAY = 24 * 60;
 /** Where the mock pretends the storefront lives, for links the API builds (`STOREFRONT_BASE_URL`). */
@@ -513,7 +510,7 @@ export const storeOrderHandlers = [
     );
   }),
 
-  // store.referral.get (published, U-F0.2): the code, its link and counts by status only.
+  // store.referral.get: the code, its link, the rules, the monthly cap and the recent friends.
   http.get("*/v1/store/referral", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
@@ -533,8 +530,25 @@ export const storeOrderHandlers = [
       referrals: owner
         ? { pending: 1, underReview: 0, qualified: 0, rewarded: 1, rejected: 0 }
         : { pending: 0, underReview: 0, qualified: 0, rewarded: 0, rejected: 0 },
-      // The mock keeps counts only: no referral list, and none dated this month.
-      recent: [],
+      // The friends behind those counts, by the masked name the API gives (PDPA), newest first.
+      recent: owner
+        ? [
+            {
+              id: mockId("ref", 2),
+              refereeName: "ส***ย ก.",
+              status: "pending",
+              rewardPoints: 0,
+              joinedAt: bangkokIso(-3 * DAY),
+            },
+            {
+              id: mockId("ref", 1),
+              refereeName: "ม***า ร.",
+              status: "rewarded",
+              rewardPoints: 40,
+              joinedAt: bangkokIso(-45 * DAY),
+            },
+          ]
+        : [],
       rewardedThisMonth: 0,
       rules: {
         refereeDiscountPct: rules.refereeDiscountPct,
@@ -574,43 +588,53 @@ export const storeOrderHandlers = [
     return HttpResponse.json(credit);
   }),
 
-  mockRequest("GET /v1/store/me/privacy-requests", ({ request }) => {
+  // store.me.listPrivacyRequests (D-222): newest first.
+  http.get("*/v1/store/me/privacy-requests", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
-    return { data: privacy.get(customer.persona) ?? [] };
+    return HttpResponse.json(privacy.get(customer.persona) ?? []);
   }),
 
-  mockRequest("POST /v1/store/me/privacy-requests", ({ body, request }) => {
+  // store.me.createPrivacyRequest: one open request per kind; answered by the DPO within 30 days.
+  http.post("*/v1/store/me/privacy-requests", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    if (!request.headers.get("idempotency-key"))
+      return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key สำหรับคำสั่งนี้");
+    const body = (await request.json().catch(() => null)) as Schemas["CreatePrivacyRequestDto"] | null;
+    if (!body || !["export", "deletion"].includes(body.kind))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [{ path: "kind", code: "enum", message: "kind" }]);
     const list = privacy.get(customer.persona) ?? [];
-    if (list.some((entry) => entry.kind === body.kind && ["received", "in_progress"].includes(entry.status)))
+    if (list.some((entry) => entry.kind === body.kind && entry.status === "submitted"))
       return problem(409, "privacy.request_open", "มีคำขอประเภทนี้ที่กำลังดำเนินการอยู่แล้ว");
     const created: PrivacyRequest = {
       id: mockId("prv", list.length + 1 + (customer.ownerIndex ?? 7) * 10),
       kind: body.kind,
-      status: "received",
-      note:
-        body.kind === "delete" && ordersOf(customer).some((order) => !["completed", "cancelled"].includes(order.status))
-          ? "มีคำสั่งซื้อที่ยังไม่เสร็จสิ้น ข้อมูลที่เกี่ยวข้องจะถูกลบหลังคำสั่งซื้อเสร็จ และเอกสารภาษีต้องเก็บตามกฎหมาย"
-          : null,
-      download: null,
+      status: "submitted",
+      note: body.note ?? null,
+      answer: null,
+      decidedAt: null,
+      export: null,
       requestedAt: bangkokIso(),
+      // `privacy.response_days` (30).
       dueAt: bangkokIso(30 * DAY),
     };
     privacy.set(customer.persona, [created, ...list]);
-    return created;
+    return HttpResponse.json(created, { status: 201 });
   }),
 
-  mockRequest("DELETE /v1/store/me/identities/{provider}", ({ params, request }) => {
+  // store.me.unlinkIdentity: never the account phone, never the last method; answers `/me`.
+  http.delete("*/v1/store/me/identities/:provider", ({ params, request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    if (params.provider === "phone_otp")
+      return problem(409, "auth.identity_not_unlinkable", "เลิกเชื่อมเบอร์มือถือของบัญชีไม่ได้");
     if (customer.identities.length <= 1)
-      return problem(409, "identity.last_method", "ต้องเหลือวิธีเข้าสู่ระบบอย่างน้อยหนึ่งวิธี");
+      return problem(409, "auth.identity_last_method", "ต้องเหลือวิธีเข้าสู่ระบบอย่างน้อยหนึ่งวิธี");
     const before = customer.identities.length;
     customer.identities = customer.identities.filter((identity) => identity.provider !== params.provider);
     if (customer.identities.length === before) return problem(404, "http.not_found", "ไม่ได้เชื่อมต่อบัญชีนี้");
-    return undefined;
+    return HttpResponse.json(customerMe(customer));
   }),
 
   // Published (B1.3): notification preferences per channel and category, stateful per persona.

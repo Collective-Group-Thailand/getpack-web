@@ -79,11 +79,10 @@ describe("the mock API answers every contract request in its requested shape", (
     expect(errors.mock.calls.filter(([message]) => String(message).includes("[mock drift]"))).toEqual([]);
   });
 
-  it("answers a public store read without a session, and refuses a private one", async () => {
+  it("answers a public store read without a session", async () => {
     const api = createApiClient({ baseUrl: "http://api.mock" });
     const anonymous = createRequestClient(REQUESTS, api as unknown as Client<never>);
     await expect(anonymous.call("GET /v1/store/sample-kits")).resolves.toMatchObject({ data: expect.any(Array) });
-    await expect(anonymous.call("GET /v1/store/me/privacy-requests")).rejects.toMatchObject({ status: 401 });
   });
 
   it("refuses a staff request without a session, like the API", async () => {

@@ -699,6 +699,26 @@ export function checkCode(code: string, productTypeCode: string) {
   return { key, promotion, reason: null };
 }
 
+/** A mock promotion as the customer sees it (`PromotionOfferDto`); the amount off is the cart's. */
+function offerOf(key: string, status: Schemas["PromotionOfferStatus"], en: boolean): Schemas["PromotionOfferDto"] {
+  const known = PROMOTIONS[key]!;
+  return {
+    code: key,
+    title: en ? known.titleEn : known.title,
+    description: null,
+    status,
+    validUntil: null,
+    benefit: { type: "percent", pct: `${known.pct}.0000`, amount: null, maxAmount: known.cap ? baht(known.cap) : null },
+    conditions: {
+      firstOrderOnly: key === "FIRSTBOX",
+      minOrderValue: null,
+      minQuantity: null,
+      paymentMethods: [],
+      productTypeCodes: known.types ?? [],
+    },
+  };
+}
+
 /** Each persona's saved quotations, newest first. */
 const quotesByPersona = new Map<string, StoreQuote[]>();
 /** Share token → quotation id. */
@@ -1140,35 +1160,25 @@ export const storeQuoteHandlers: HttpHandler[] = [
       ]);
     const { key, promotion, reason } = checkCode(body.code, body.productTypeCode ?? "");
     const en = english(request);
-    const known = PROMOTIONS[key];
-    const offer: Schemas["PromotionOfferDto"] | null = known
-      ? {
-          code: key,
-          title: en ? known.titleEn : known.title,
-          description: null,
-          status: promotion ? "usable" : "not_applicable",
-          validUntil: null,
-          benefit: {
-            type: "percent",
-            pct: `${known.pct}.0000`,
-            amount: null,
-            maxAmount: known.cap ? baht(known.cap) : null,
-          },
-          conditions: {
-            firstOrderOnly: key === "FIRSTBOX",
-            minOrderValue: null,
-            minQuantity: null,
-            paymentMethods: [],
-            productTypeCodes: known.types ?? [],
-          },
-        }
-      : null;
+    const offer = PROMOTIONS[key] ? offerOf(key, promotion ? "usable" : "not_applicable", en) : null;
     return HttpResponse.json({
       code: key,
       valid: Boolean(promotion),
       reason,
       offer,
     } satisfies Schemas["CodeCheckDto"]);
+  }),
+
+  // store.promotions.listMine: the codes a signed-in customer holds — a returning customer has two.
+  http.get("*/v1/store/promotions/mine", ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const en = english(request);
+    const held: Schemas["PromotionOfferDto"][] =
+      customer.ownerIndex === null
+        ? [offerOf("FIRSTBOX", "usable", en)]
+        : [offerOf("PACKIO10", "usable", en), offerOf("CORRUGATE5", "usable", en)];
+    return HttpResponse.json(held);
   }),
 
   // store.support.getChannels (D-221): the CS Lead's setting, obviously fake.
