@@ -1,7 +1,7 @@
 /**
  * Checkout and payments, on the published contract (`store.checkout.*`, `store.payments.*`,
- * `store.orders.listGroups`, U-F0.2), and the instalment centre (CONTRACT-REQUEST
- * store.instalments). The pricing below is the mock's own (`./model.ts` records), projected to
+ * `store.orders.listGroups`, U-F0.2), and the instalment centre
+ * (`store.paymentSchedules.listInstalments`). The pricing below is the mock's own (`./model.ts` records), projected to
  * the published shapes by `toPreviewDto`, `toGroupDto` and `toPaymentDto`.
  *
  * Placing an order creates **the back office's own order rows** (`../admin/commerce`): one order
@@ -17,23 +17,19 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { storeInstalment } from "@/lib/api/requests/store-checkout";
 import type { Schemas } from "@/lib/api/types";
 
 import { baht, customers as fakeCustomers, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { bookOf } from "./book";
 import { cartLines, cartOf, clearCart, codes as cartCodes } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
 import type { Input, Payment, Preview } from "./model";
-import { toOrderDto } from "./order-dto";
+import { toStoreOrderDto } from "./order-dto";
 import { ownerIdOf } from "./owner";
 import { checkCode, PROMOTIONS, quotesOf, type StoreQuote } from "./quotes";
 
-type Instalment = z.output<typeof storeInstalment>;
 /** The mock's record of a payment: its own view plus what the published one adds. */
 type StoredPayment = Payment & { groupId: string; persona: string; orderPaymentId: string | null; createdAt: string };
 
@@ -640,6 +636,49 @@ export function paymentsOfInstalment(instalmentId: string): Payment[] {
     .map(view);
 }
 
+function membersOf(group: Group): MockOrder[] {
+  return group.orderIds
+    .map((id) => orders.find((order) => order.id === id))
+    .filter((order): order is MockOrder => Boolean(order));
+}
+
+/** A group's instalments as the schedule shows them (`InstalmentDto`), status from its orders' facts. */
+function instalmentsOf(group: Group): Schemas["InstalmentDto"][] {
+  const members = membersOf(group);
+  const first = members[0];
+  const cancelled = members.length > 0 && members.every((order) => order.status === "cancelled");
+  const total = group.instalments.reduce((sum, entry) => sum + entry.gross, 0);
+  const statusOf = (entry: Group["instalments"][number]): Schemas["InstalmentStatus"] => {
+    if (entry.paid) return "paid";
+    if (cancelled) return "cancelled";
+    const share = members.flatMap((order) => order.instalments).find((candidate) => candidate.seq === entry.seq);
+    const status = (share?.status as Schemas["InstalmentStatus"] | undefined) ?? "pending";
+    // An instalment the group has not called yet falls due by its trigger.
+    return status === "pending" &&
+      (entry.dueTrigger === "at_checkout" ||
+        (entry.dueTrigger === "before_shipping" && first?.status === "in_production"))
+      ? "due"
+      : status;
+  };
+  return group.instalments.map((entry) => ({
+    id: entry.id,
+    seq: entry.seq,
+    labelTh: entry.label,
+    labelEn: entry.label,
+    pct: total ? ((entry.gross / total) * 100).toFixed(4) : "0.0000",
+    dueTrigger: entry.dueTrigger as Schemas["DueTrigger"],
+    requiredBefore: entry.requiredBefore as Schemas["RequiredBefore"],
+    dueAt: entry.dueAt,
+    grossAmount: baht(entry.gross),
+    whtAmount: "0.00",
+    cashAmount: baht(entry.gross),
+    paidAmount: entry.paid ? baht(entry.gross) : "0.00",
+    openAmount: entry.paid ? "0.00" : baht(entry.gross),
+    paidAt: entry.paid ? (first?.payments.find((payment) => payment.paidAt)?.paidAt ?? null) : null,
+    status: statusOf(entry),
+  }));
+}
+
 /** Whether the customer owns the group's orders. */
 function owns(customer: MockCustomer, group: Group): boolean {
   const owner = ownerIdOf(customer);
@@ -941,7 +980,7 @@ function toGroupDto(
     orders: group.orderIds
       .map((id) => orders.find((order) => order.id === id))
       .filter((order): order is MockOrder => Boolean(order))
-      .map(toOrderDto),
+      .map(toStoreOrderDto),
   };
 }
 
@@ -963,10 +1002,19 @@ export function toPaymentDto(payment: StoredPayment): Schemas["PaymentDto"] {
     expiresAt: shown.expiresAt,
     paidAt: shown.paidAt,
     createdAt: payment.createdAt,
-    // The mock keeps a failure as words only, and its transfer account without the provider's
-    // account type: no failure code, no receiving accounts.
-    failureCode: null,
-    receiverAccounts: [],
+    // A failure in the mock is the gateway declining it.
+    failureCode: shown.status === "failed" ? "declined" : null,
+    // The account Finance set for transfers (D-061); obviously fake.
+    receiverAccounts:
+      shown.method === "bank_transfer_slip"
+        ? [
+            {
+              accountType: "scb_current",
+              accountNumber: "000-0-00000-0",
+              accountName: "บริษัท คอลเลกทีฟ กรุ๊ป (ประเทศไทย) จำกัด (ข้อมูลจำลอง)",
+            },
+          ]
+        : [],
     slips: shown.slips.map((slip) => ({
       id: slip.id,
       fileId: slipDeclared.get(slip.id)?.fileId ?? slip.id,
@@ -1074,7 +1122,7 @@ export const storeCheckoutHandlers = [
             cashAmount: baht(gross),
             currency: "THB",
           },
-          orders: list.map(toOrderDto),
+          orders: list.map(toStoreOrderDto),
         };
         return dto;
       })
@@ -1099,17 +1147,6 @@ export const storeCheckoutHandlers = [
     const seeded = orders.find((order) => order.groupId === params.groupId);
     const group = groups.get(String(params.groupId)) ?? (seeded ? groupForOrder(seeded) : undefined);
     if (!group || !owns(customer, group)) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const members = group.orderIds
-      .map((id) => orders.find((order) => order.id === id))
-      .filter((order): order is MockOrder => Boolean(order));
-    const cancelled = members.length > 0 && members.every((order) => order.status === "cancelled");
-    const total = group.instalments.reduce((sum, entry) => sum + entry.gross, 0);
-    const statusOf = (entry: Group["instalments"][number]): Schemas["InstalmentStatus"] => {
-      if (entry.paid) return "paid";
-      if (cancelled) return "cancelled";
-      const share = members.flatMap((order) => order.instalments).find((candidate) => candidate.seq === entry.seq);
-      return (share?.status as Schemas["InstalmentStatus"] | undefined) ?? "pending";
-    };
     const gateOpen = (gate: string) =>
       group.instalments.filter((entry) => entry.requiredBefore === gate).every((entry) => entry.paid);
     const schedule: Schemas["PaymentScheduleDto"] = {
@@ -1121,23 +1158,7 @@ export const storeCheckoutHandlers = [
       productionGateOpen: gateOpen("production"),
       shippingGateOpen: gateOpen("shipping"),
       openAmount: baht(group.instalments.filter((entry) => !entry.paid).reduce((sum, entry) => sum + entry.gross, 0)),
-      instalments: group.instalments.map((entry) => ({
-        id: entry.id,
-        seq: entry.seq,
-        labelTh: entry.label,
-        labelEn: entry.label,
-        pct: total ? ((entry.gross / total) * 100).toFixed(4) : "0.0000",
-        dueTrigger: entry.dueTrigger as Schemas["DueTrigger"],
-        requiredBefore: entry.requiredBefore as Schemas["RequiredBefore"],
-        dueAt: entry.dueAt,
-        grossAmount: baht(entry.gross),
-        whtAmount: "0.00",
-        cashAmount: baht(entry.gross),
-        paidAmount: entry.paid ? baht(entry.gross) : "0.00",
-        openAmount: entry.paid ? "0.00" : baht(entry.gross),
-        paidAt: entry.paid ? (members[0]?.payments.find((payment) => payment.paidAt)?.paidAt ?? null) : null,
-        status: statusOf(entry),
-      })),
+      instalments: instalmentsOf(group),
     };
     return HttpResponse.json(schedule);
   }),
@@ -1276,60 +1297,36 @@ export const storeCheckoutHandlers = [
     return HttpResponse.json(toPaymentDto(payment), { status: 201 });
   }),
 
-  mockRequest("GET /v1/store/instalments", ({ query, request }) => {
+  // store.paymentSchedules.listInstalments: every instalment of the customer's groups, newest group
+  // first, each with the orders it pays for, whether it can be paid now and a payment already started.
+  http.get("*/v1/store/instalments", ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
+    const query = Object.fromEntries(new URL(request.url).searchParams);
     const owner = ownerIdOf(customer);
     for (const order of orders.filter((candidate) => candidate.customer.id === owner)) groupForOrder(order);
-    const rows: Instalment[] = [...groups.values()]
+    const rows: Schemas["StoreInstalmentDto"][] = [...groups.values()]
       .filter((group) => owns(customer, group))
       .flatMap((group) => {
-        const first = orders.find((order) => order.id === group.orderIds[0]);
-        return group.instalments.map((entry) => {
+        const members = membersOf(group);
+        return instalmentsOf(group).map((entry) => {
           const active = [...payments.values()].find(
             (payment) =>
               payment.instalmentId === entry.id &&
               ["pending", "awaiting_verification", "initiated"].includes(payment.status),
           );
-          const cancelled = first?.status === "cancelled";
-          const status: Instalment["status"] = entry.paid
-            ? "paid"
-            : cancelled
-              ? "cancelled"
-              : entry.dueTrigger === "at_checkout" ||
-                  (entry.dueTrigger === "before_shipping" && first?.status === "in_production")
-                ? "due"
-                : "pending";
           return {
-            id: entry.id,
-            order: { id: first?.id ?? group.orderIds[0]!, orderCode: first?.orderCode ?? "" },
+            ...entry,
+            groupId: group.id,
             groupCode: group.code,
-            seq: entry.seq,
-            label: entry.label,
-            dueTrigger: entry.dueTrigger as never,
-            requiredBefore: entry.requiredBefore as never,
-            dueAt: entry.dueAt,
-            grossAmount: baht(entry.gross),
-            paidAmount: entry.paid ? baht(entry.gross) : "0.00",
-            currency: "THB" as const,
-            status,
-            receipt: entry.paid
-              ? {
-                  id: mockId("wrc", entry.seq),
-                  originalName: `receipt-${group.code}-${entry.seq}.pdf`,
-                  mimeType: "application/pdf",
-                  sizeBytes: 48_000,
-                  thumbnailUrl: null,
-                  url: `data:text/plain;charset=utf-8,${encodeURIComponent(`ใบเสร็จรับเงิน/ใบกำกับภาษี ${group.code} งวดที่ ${entry.seq} (ข้อมูลจำลอง)`)}`,
-                }
-              : null,
+            orders: members.map((order) => ({ orderId: order.id, orderCode: order.orderCode })),
             activePaymentId: active?.id ?? null,
-            payable: !entry.paid && !cancelled && status === "due",
+            payable: ["due", "overdue", "partially_paid"].includes(entry.status),
           };
         });
       })
-      .filter((row) => !query.status || row.status === query.status);
-    return paginate(rows, query);
+      .filter((row) => (query.status ? row.status === query.status : row.status !== "cancelled"));
+    return HttpResponse.json(paginate(rows, { page: Number(query.page ?? 1), perPage: Number(query.perPage ?? 25) }));
   }),
 
   // Mock only: the 2C2P page. It approves the payment and sends the customer back to the store's

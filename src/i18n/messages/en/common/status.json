@@ -614,5 +614,16 @@
     "ok": "OK",
     "alert": "Over threshold",
     "unknown": "Could not read"
+  },
+  "promotionOffer": {
+    "usable": "Usable",
+    "notStarted": "Not started",
+    "notApplicable": "Conditions not met",
+    "usedUp": "Used up",
+    "expired": "Expired",
+    "budgetExhausted": "Run out",
+    "inactive": "Not active",
+    "disabled": "Disabled",
+    "notYours": "Another account's code"
   }
 }

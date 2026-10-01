@@ -91,7 +91,7 @@ export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], 
         isDefault: true,
       },
       // A second site for the company the B2B personas share, so the storefront can split a line
-      // across two addresses: a customer cannot add one there yet (CONTRACT-GAP store.geo-ids).
+      // across two addresses from the start.
       ...(index === 1
         ? [
             {

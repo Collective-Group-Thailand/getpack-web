@@ -41,11 +41,13 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         </Link>
         <h1 className="text-2xl font-bold">{t("title")}</h1>
       </header>
-      {form ? (
+      {form?.open ? (
         <>
           <TrackOnView name="claim_started" properties={{ route: "/account/orders/[orderId]/claim" }} />
           <ClaimForm orderId={order.id} orderCode={order.orderCode} form={form} />
         </>
+      ) : form ? (
+        <ClaimForm orderId={order.id} orderCode={order.orderCode} form={form} />
       ) : (
         <Callout tone="info">{t("notYet")}</Callout>
       )}

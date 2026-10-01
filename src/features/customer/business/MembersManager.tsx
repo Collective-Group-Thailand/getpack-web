@@ -7,7 +7,6 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
@@ -47,10 +46,9 @@ function RoleBoxes({ value, onChange, legend }: { value: Role[]; onChange: (role
 /**
  * Members and their roles (F3 3.7): Company Admin, Buyer, Approver, Accountant. An admin invites
  * someone who already has a Packio account by their phone (`store.companies.inviteMember`), edits
- * roles and removes people (`store.companies.removeMember`); everyone else reads the list.
- *
- * CONTRACT-GAP store.company-members — a published member is a name only (no phone or e-mail to
- * show), an invitation takes no name, and changing roles is still being built (its request stays).
+ * roles (`store.companies.changeMemberRoles`; the last Company Admin keeps the role, 409
+ * `companies.last_admin`) and removes people (`store.companies.removeMember`); everyone else reads
+ * the list. Members are shown by name and role only: their e-mail and phone stay private (D-224).
  */
 export function MembersManager({
   companyId,
@@ -164,8 +162,8 @@ export function MembersManager({
                     onClick={async () => {
                       const ok = await run(
                         () =>
-                          browserRequests().call("PATCH /v1/store/me/company/members/{memberId}", {
-                            path: { memberId: member.id },
+                          browserApi().PUT("/v1/store/companies/{companyId}/members/{memberId}/roles", {
+                            params: { path: { companyId, memberId: member.id } },
                             body: { roles: editing.roles },
                           }),
                         t("saved"),

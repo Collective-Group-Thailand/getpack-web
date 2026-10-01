@@ -1,6 +1,6 @@
 /**
- * Requests for quotation from the storefront: the form stays mocked (CONTRACT-REQUEST
- * store.rfq-forms), the RFQs are at their published paths (`store.rfqs.*`, U-F0.2).
+ * Requests for quotation from the storefront: the category's form (`store.rfqs.getForm`) and the
+ * RFQs (`store.rfqs.*`), at their published paths.
  *
  * The customer's RFQs are the **same rows** the RFQ desk works on (`../admin/rfq.ts`): what a
  * customer submits here lands in the desk's "new" queue, the quote CS sends there shows here,
@@ -9,23 +9,21 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { storeRfqForm } from "@/lib/api/requests/store-rfq";
 import type { Schemas } from "@/lib/api/types";
 
 import { PRODUCT_TYPES } from "../admin/catalog";
+import { files } from "../admin/platform";
 import { customers as fakeCustomers } from "../admin/commerce";
 import { addCustomerRfq, customerAcceptQuote, rfqMessages, rfqs } from "../admin/rfq";
 import type { RfqRow } from "../admin/rfq-model";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 import { nextQuoteId, quotesOf, QUOTE_VALIDITY_DAYS, type StoreQuote } from "./quotes";
 
 type AdminRfq = RfqRow;
-type Form = z.output<typeof storeRfqForm>;
-type Field = Form["fields"][number];
+type Form = Schemas["StoreRfqFormDto"];
+type Field = Schemas["RfqFormFieldDto"];
 
 const english = (request: Request) => request.headers.get("accept-language")?.startsWith("en") ?? false;
 const DAY = 24 * 60;
@@ -174,7 +172,12 @@ function formOf(code: string): Form | null {
       height: code !== "custom_tape",
     },
     quantity: { min: 100, maxTiers: 4 },
-    files: { accept: ".pdf,.ai,.psd,.png,.jpg,.jpeg,.zip", maxBytes: 50 * 1024 * 1024, maxFiles: 10 },
+    files: {
+      accept: [".pdf", ".ai", ".psd", ".png", ".jpg", ".jpeg", ".zip"],
+      maxBytes: 50 * 1024 * 1024,
+      maxFiles: 10,
+      purpose: "artwork",
+    },
     slaTargetHours: ["rigid_box", "pop_display"].includes(code) ? 16 : 8,
   };
 }
@@ -193,6 +196,25 @@ const mine = (customer: MockCustomer) => rfqs.filter((rfq) => rfq.customer.id ==
 
 /** The answers as the customer sent them (the desk's row keeps them in words), per RFQ. */
 const rawSpecs = new Map<string, Record<string, unknown>>();
+
+const OPEN = ["submitted", "in_review", "need_info", "quoted"];
+
+/** packio-api's `STORE_RFQ_ACTIONS` (`src/modules/rfq/rfq-actions.ts` at v0.6.0) over the row. */
+function storeRfqActions(rfq: AdminRfq): Schemas["NextActionDto"][] {
+  const today = bangkokIso().slice(0, 10);
+  const acceptable =
+    rfq.status === "quoted" &&
+    rfq.quotes.some((quote) => quote.status === "sent" && quote.validUntil !== null && quote.validUntil >= today);
+  const open = OPEN.includes(rfq.status);
+  return [
+    ...(acceptable ? [{ key: "rfq.accept", irreversible: true, disabledReason: null }] : []),
+    ...(open ? [{ key: "rfq.post_message", irreversible: false, disabledReason: null }] : []),
+    ...(open ? [{ key: "rfq.decline", irreversible: true, disabledReason: null }] : []),
+  ];
+}
+
+/** The files a customer attached to a message (the desk's thread rows keep none of their own). */
+const messageFiles = new Map<string, Schemas["AttachedFileDto"][]>();
 
 /** The desk's row as the customer sees it (`RfqDto`): sent quotations only, the thread in words. */
 function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
@@ -213,7 +235,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
     // A seeded row has only the words; its labels stand in for the keys.
     spec: rawSpecs.get(rfq.id) ?? Object.fromEntries(rfq.spec.map((item) => [item.label, item.value])),
     files: rfq.files.map(({ id, originalName, mimeType, sizeBytes }) => ({ id, originalName, mimeType, sizeBytes })),
-    nextActions: [],
+    nextActions: storeRfqActions(rfq),
     slaDueAt: rfq.slaDueAt,
     submittedAt: rfq.submittedAt,
     closedAt: closed ? (rfq.acceptedQuotation ? bangkokIso() : rfq.submittedAt) : null,
@@ -245,8 +267,7 @@ function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
         id: message.id,
         author: message.authorKind === "staff" ? ("packio" as const) : ("customer" as const),
         body: message.body,
-        // The thread's rows keep no attachments.
-        files: [],
+        files: messageFiles.get(message.id) ?? [],
         createdAt: message.createdAt,
       })),
   };
@@ -263,11 +284,11 @@ const notFound = () => problem(404, "rfq.not_found", "ไม่พบคำข�
 let submitted = 0;
 
 export const storeRfqHandlers = [
-  // CONTRACT-REQUEST store.rfq-forms
-  mockRequest(
-    "GET /v1/store/rfq-forms/{productTypeCode}",
-    ({ params }) => formOf(params.productTypeCode) ?? notFound(),
-  ),
+  // store.rfqs.getForm (public): any active type has one (D-043).
+  http.get("*/v1/store/rfq-forms/:productTypeCode", ({ params }) => {
+    const form = formOf(String(params.productTypeCode));
+    return form ? HttpResponse.json(form) : problem(404, "http.not_found", "ไม่พบแบบฟอร์มนี้");
+  }),
 
   // store.rfqs.submit (published, U-F0.2): lands in the desk's "new" queue.
   http.post("*/v1/store/rfqs", async ({ request }) => {
@@ -321,14 +342,14 @@ export const storeRfqHandlers = [
       targetDate: body.targetDate ?? null,
       province: null,
       assignee: null,
-      slaTargetHours: form.slaTargetHours,
-      slaDueAt: bangkokIso(form.slaTargetHours * 60),
+      slaTargetHours: form.slaTargetHours ?? 8,
+      slaDueAt: bangkokIso((form.slaTargetHours ?? 8) * 60),
       firstResponseAt: null,
       urgency: "normal",
       consultationCounts: { requested: 0, responded: 0 },
       latestQuote: null,
-      // CONTRACT-GAP store.rfqs — the published submit does not say which product routed here.
-      routedFromCalculator: false,
+      // The calculation that routed this configuration here (D-102), when the configurator sent one.
+      routedFromCalculator: Boolean(body.routedFrom?.calculationId),
       submittedAt: now,
       contact: { phone: customer.phone, email: customer.email },
       spec: Object.entries(spec).map(([key, value]) => ({ label: labelOf(key), value: valueOf(key, value) })),
@@ -382,8 +403,9 @@ export const storeRfqHandlers = [
     if (!customer) return unauthenticated();
     const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
     if (!rfq) return notFound();
-    const body = (await request.json()) as Schemas["RfqMessageInputDto"];
+    const body = (await request.json()) as Schemas["StoreRfqMessageInputDto"];
     if (!body.body?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ข้อความ");
+    if (!OPEN.includes(rfq.status)) return problem(409, "rfq.invalid_status", "คำขอราคานี้ปิดแล้ว");
     const message = {
       id: mockId("rms", 8000 + (rfqMessages.get(rfq.id)?.length ?? 0) + Math.floor(Math.random() * 900)),
       authorKind: "customer" as const,
@@ -393,6 +415,16 @@ export const storeRfqHandlers = [
       createdAt: bangkokIso(),
     };
     rfqMessages.set(rfq.id, [...(rfqMessages.get(rfq.id) ?? []), message]);
+    if (body.fileIds?.length)
+      messageFiles.set(
+        message.id,
+        body.fileIds.map((id) => ({
+          id,
+          originalName: files.get(id)?.originalName ?? "file",
+          mimeType: files.get(id)?.mimeType ?? "application/octet-stream",
+          sizeBytes: files.get(id)?.sizeBytes ?? 0,
+        })),
+      );
     // Answering a request for information puts the RFQ back in front of CS (B2.5).
     if (rfq.status === "need_info") rfq.status = "in_review";
     return HttpResponse.json(toRfqDto(rfq), { status: 201 });
@@ -461,6 +493,21 @@ export const storeRfqHandlers = [
     quote.id = accepted.id;
     quote.quoteCode = accepted.quoteCode;
     quotesOf(customer.persona).unshift(quote);
+    return HttpResponse.json(toRfqDto(rfq));
+  }),
+  // store.rfqs.decline: the customer closes their own request (`customer_declined`, D-102).
+  http.post("*/v1/store/rfqs/:rfqId/actions/decline", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
+    if (!rfq) return notFound();
+    if (!OPEN.includes(rfq.status)) return problem(409, "rfq.invalid_status", "คำขอราคานี้ปิดแล้ว");
+    const body = (await request.json().catch(() => null)) as Schemas["OptionalNoteDto"] | null;
+    rfq.status = "declined";
+    rfq.declineReason = { code: "customer_declined", name: "ลูกค้ายกเลิกคำขอ" };
+    rfq.declineNote = body?.note ?? null;
+    for (const quote of rfq.quotes)
+      if (quote.status === "sent" || quote.status === "draft") quote.status = "superseded";
     return HttpResponse.json(toRfqDto(rfq));
   }),
 ];

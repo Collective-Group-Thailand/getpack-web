@@ -6,8 +6,8 @@
  * The returning customer's book **is** the first fake commerce customer's (`../admin/commerce`),
  * the same arrays the back office's customer screen reads (`../admin/customers.ts`), so an address
  * edited here is one CS sees. The newcomer starts with an empty book on
- * every sign-in. Create is left to the generated example: the web cannot send a province id yet
- * (CONTRACT-GAP store.geo-ids).
+ * every sign-in. A create takes the province and sub-district ids the postcode lookup returned
+ * (`./catalog`) and files the names they stand for.
  */
 
 import { http, HttpResponse } from "msw";
@@ -16,6 +16,7 @@ import type { Schemas } from "@/lib/api/types";
 import { customers as fakeCustomers } from "../admin/commerce";
 import type { CustomerAddressRow, TaxProfileRow } from "../admin/customer-model";
 import { mockId, paginate, precondition, problem, versionTag, withEtag } from "../support";
+import { areaOfIds } from "./catalog";
 import { customerOf, type MockCustomer } from "./customers";
 
 type Address = CustomerAddressRow;
@@ -95,6 +96,12 @@ export function toTaxProfileDto(profile: TaxProfile): Schemas["TaxProfileDto"] {
 
 const PROVINCES = ["กรุงเทพมหานคร", "เชียงใหม่", "ชลบุรี", "สงขลา", "ขอนแก่น"];
 
+/** The API's answer to ids that are not the postcode's (`validation.failed` on `postcode`). */
+const mismatch = () =>
+  problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+    { path: "postcode", code: "invalid", message: "does not match the subdistrict" },
+  ]);
+
 const perPageOf = (request: Request) => ({
   page: Number(new URL(request.url).searchParams.get("page") ?? 1),
   perPage: Number(new URL(request.url).searchParams.get("perPage") ?? 25),
@@ -105,6 +112,32 @@ export const storeBookHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     return HttpResponse.json(paginate(bookOf(customer).addresses.map(toAddressDto), perPageOf(request)));
+  }),
+  http.post("*/v1/store/addresses", async ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const book = bookOf(customer);
+    const body = (await request.json().catch(() => ({}))) as Schemas["AddressInputDto"];
+    const area = areaOfIds(body.postcode, body.provinceId, body.subdistrictId);
+    if (!area) return mismatch();
+    const first = !book.addresses.some((address) => address.kind === body.kind);
+    if (body.isDefault) for (const other of book.addresses) if (other.kind === body.kind) other.isDefault = false;
+    const address: Address = {
+      id: mockId("adr", Date.now() % 0xfffff),
+      kind: body.kind,
+      label: body.label,
+      recipientName: body.recipientName,
+      phone: body.phone,
+      line1: body.line1,
+      line2: body.line2 ?? null,
+      subdistrict: body.subdistrictId ? area.subdistrict : null,
+      district: area.district,
+      province: area.province,
+      postcode: body.postcode,
+      isDefault: body.isDefault === true || first,
+    };
+    book.addresses.push(address);
+    return withEtag(toAddressDto(address), tagOf(address.id), 201);
   }),
   http.get("*/v1/store/addresses/:addressId", ({ params, request }) => {
     const customer = customerOf(request);
@@ -154,6 +187,30 @@ export const storeBookHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     return HttpResponse.json(paginate(bookOf(customer).taxProfiles.map(toTaxProfileDto), perPageOf(request)));
+  }),
+  http.post("*/v1/store/tax-profiles", async ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const book = bookOf(customer);
+    const body = (await request.json().catch(() => ({}))) as Schemas["TaxProfileInputDto"];
+    const area = areaOfIds(body.postcode, body.provinceId, body.subdistrictId);
+    if (!area) return mismatch();
+    const first = book.taxProfiles.length === 0;
+    if (body.isDefault) for (const other of book.taxProfiles) other.isDefault = false;
+    const profile: TaxProfile = {
+      id: mockId("txp", Date.now() % 0xfffff),
+      taxType: body.taxType,
+      name: body.name,
+      taxId: body.taxId,
+      branchType: body.branchType,
+      branchCode: body.branchType === "head_office" ? "00000" : (body.branchCode ?? "00000"),
+      address: [body.line1, body.line2, area.province, body.postcode].filter(Boolean).join(" "),
+      withholdsTax: body.withholdsTax ?? false,
+      isDefault: body.isDefault === true || first,
+    };
+    if (body.documentEmail) documentEmails.set(profile.id, body.documentEmail);
+    book.taxProfiles.push(profile);
+    return withEtag(toTaxProfileDto(profile), tagOf(profile.id), 201);
   }),
   http.get("*/v1/store/tax-profiles/:taxProfileId", ({ params, request }) => {
     const customer = customerOf(request);

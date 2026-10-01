@@ -55,7 +55,7 @@ test.describe("after production", () => {
     const visitor = await guest.newPage();
     await acceptCookies(visitor);
     await gotoHydrated(visitor, `${HOSTS.customer}${href}`);
-    // CONTRACT-GAP store.tracking — the public page names neither the order nor where it goes.
+    // By decision the public page names neither the order nor where it goes (D-224).
     await expect(visitor.getByRole("heading", { level: 1, name: "ติดตามคำสั่งซื้อ" })).toBeVisible();
     await expect(visitor.getByRole("list", { name: "ความคืบหน้าของคำสั่งซื้อ" })).toContainText("จัดส่ง · เสร็จแล้ว");
     const text = await visitor.locator("main").innerText();
@@ -72,14 +72,14 @@ test.describe("after production", () => {
       .first()
       .click();
     await expect(page.getByRole("heading", { level: 1, name: "รับสินค้า" })).toBeVisible();
-    // CONTRACT-GAP store.orders — no tolerance outcome is published, so the credit for the shortage
-    // is not shown here; the delivery says how many arrived.
     await expect(page.getByText(/รับสินค้า จำนวน 970 เมื่อ/)).toBeVisible();
+    // How that compares with the order, as the API evaluated it (D-021, D-080).
+    await expect(page.getByText(/ได้รับ 970 จาก/).first()).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("button", { name: "ยืนยันรับสินค้า" }).click();
     const dialog = page.getByRole("alertdialog", { name: `ยืนยันรับสินค้า ${CODE}?` });
-    await expect(dialog).toContainText("7 วัน");
+    await expect(dialog).toContainText("แจ้งได้ถึง");
     await dialog.getByRole("button", { name: "ยืนยันรับสินค้า" }).click();
     await expect(page.getByText("ยืนยันรับสินค้าแล้ว", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "ยืนยันรับสินค้า" })).toHaveCount(0);
@@ -115,9 +115,10 @@ test.describe("after production", () => {
     await expect(heading).toBeVisible();
     const claimNo = (await heading.textContent())!.replace("เคลม ", "").trim();
     const claimId = page.url().split("/").at(-1)!;
-    // CONTRACT-GAP store.claims — the published claim names its photos by id only, and there is no
-    // free thread: the customer answers only when the team asks (`respondInfo`, status need_info).
+    // The photos open as signed files; there is no free thread (D-225): the customer answers only
+    // when the claim offers `claim.answer_info`.
     await expect(page.getByText("2 รูป", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "รูปที่ 2" })).toBeVisible();
     await expect(page.getByLabel("ตอบกลับ")).toHaveCount(0);
     // The "received" toast animates over the header; axe reads it mid-fade.
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
@@ -135,7 +136,7 @@ test.describe("after production", () => {
   test("the customer writes to the team in the claim's thread", async ({ page }) => {
     test.fixme(
       true,
-      "CONTRACT-GAP store.claims — no free claim thread is published; a reply is only `respondInfo` while the claim is need_info",
+      "D-225 — claims have no free thread by decision; the customer answers CS's request for information only",
     );
     await signInAsCustomer(page, `/account/orders/${ORDER}`, MOCK_RECEIVER_PHONE);
   });
@@ -153,7 +154,7 @@ test.describe("after production", () => {
 
     await page.getByLabel(/^จำนวน/).fill("2000");
     await expect(total.getByText(/^฿[\d,.]+$/).last()).not.toHaveText(before!);
-    await expect(total.getByText("กล่องกระดาษลูกฟูก 2,000 ชิ้น")).toBeVisible();
+    await expect(total.getByText("สินค้า 2,000 ชิ้น")).toBeVisible();
     const repriced = (await total
       .getByText(/^฿[\d,.]+$/)
       .last()

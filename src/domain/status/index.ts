@@ -78,6 +78,7 @@ export type {
   BankMatchStatus,
   SettlementStatus,
   UnidentifiedReceiptStatus,
+  PromotionOfferStatus,
 } from "./contract";
 
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
@@ -166,6 +167,7 @@ import {
 import { PROOF_STATUS } from "./proof";
 import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS, RFQ_STATUS } from "./rfq";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "./shipment";
+import { PROMOTION_OFFER_STATUS } from "./promotion-offer";
 
 export {
   ASSET_STATUS,
@@ -248,6 +250,7 @@ export {
   SLIP_STATUS,
   STATEMENT_STATUS,
   USER_STATUS,
+  PROMOTION_OFFER_STATUS,
 };
 
 export { nextActionMeta, primaryAction, UNKNOWN_ACTION, type NextAction, type NextActionMeta } from "./next-action";
@@ -338,4 +341,5 @@ export const STATUS_MAPS = {
   asset: ASSET_STATUS,
   close: CLOSE_STATUS,
   closeTask: CLOSE_TASK_STATUS,
+  promotionOffer: PROMOTION_OFFER_STATUS,
 } as const;

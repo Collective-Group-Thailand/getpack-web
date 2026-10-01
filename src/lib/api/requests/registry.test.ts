@@ -48,9 +48,12 @@ describe("the contract-request registry", () => {
       return !(key in REQUESTS) || !published;
     });
     expect(stale).toEqual([]);
-    // Contract v0.6.0 published every request packio-api built in U-B0 (111, the configurator
-    // parked for U2.F1 among them); U-F0.4 moves the screens off them. Lower this as it goes.
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(111);
+    // U-F0.4 moved every zone onto contract v0.6.0; only the configurator parked for U2.F1 is left.
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(1);
+  });
+
+  it("leaves nothing published on a request but what is parked on purpose", () => {
+    expect([...PUBLISHED_AWAITING_MIGRATION].sort()).toEqual([...CUSTOMER_ZONE_PARKED].sort());
   });
 
   /**

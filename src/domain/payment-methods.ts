@@ -8,9 +8,8 @@ export type PaymentMethod = Schemas["PaymentMethod"];
  * instalments and SCB direct debit, which are R2 (D-111), and store credit and a company's credit
  * term, which are not picked at the payment step.
  *
- * CONTRACT-GAP store.checkout — the published preview does not say which methods an order may use
- * or what each costs, so the list is the launch scope; the API still refuses one it does not allow,
- * and the page shows its problem.
+ * The checkout preview says which methods are offered now (`paymentMethods[].available`, D-176,
+ * no surcharge); the storefront offers the ones of those it has a payment page for, in this order.
  */
 export const ONLINE_PAYMENT_METHODS: readonly PaymentMethod[] = [
   "scb_qr",

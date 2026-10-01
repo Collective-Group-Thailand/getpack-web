@@ -219,11 +219,11 @@ describe("keeping the price", () => {
   });
 
   it("checks a promotion code without a session", async () => {
-    const valid = await requests().call("POST /v1/store/promotions/actions/check", {
+    const { data: valid } = await anonymous().POST("/v1/store/promotions/actions/check", {
       body: { code: "packio10", productTypeCode: "folding_carton" },
     });
-    expect(valid).toMatchObject({ code: "PACKIO10", valid: true });
-    const wrongType = await requests().call("POST /v1/store/promotions/actions/check", {
+    expect(valid).toMatchObject({ code: "PACKIO10", valid: true, offer: { benefit: { pct: "10.0000" } } });
+    const { data: wrongType } = await anonymous().POST("/v1/store/promotions/actions/check", {
       body: { code: "CORRUGATE5", productTypeCode: "folding_carton" },
     });
     expect(wrongType).toMatchObject({ valid: false, reason: "not_applicable" });

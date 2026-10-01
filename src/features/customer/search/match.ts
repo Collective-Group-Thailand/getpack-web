@@ -4,35 +4,37 @@
 
 type Faq = { questionTh: string; questionEn: string | null; answerTh: string; answerEn: string | null };
 type FaqGroup = { categoryCode: string | null; faqs: Faq[] };
+type Hit = { kind: string; key: string; titleTh: string; titleEn: string | null };
 
 export interface FaqMatch {
+  key: string;
   question: string;
-  answer: string;
-  /** `/faq#<group>` — the group's anchor on the FAQ page. */
+  /** The answer, when the FAQ list carries the same question; `null` otherwise. */
+  answer: string | null;
+  /** `/faq#<group>` — the group's anchor on the FAQ page, or the page itself. */
   href: string;
 }
 
 /**
- * FAQs whose question contains the query, in the page's language.
+ * The search's own FAQ hits (`kind: "faq"`, U-B0.1), in the page's language and the API's rank.
  *
- * CONTRACT-REQUEST `store.search-faq-hits`: the catalogue search has no FAQ hit kind, so the
- * question text of the list the API returned is matched here — selecting from API data, not
- * computing anything — until it does.
+ * A hit names its question only, so the answer and the group's anchor come from the FAQ list, by
+ * the question's text — selecting from what the API sent, not matching on our own.
  */
-export function matchFaqs(groups: readonly FaqGroup[], q: string, locale: string, limit = 5): FaqMatch[] {
-  const needle = q.trim().toLocaleLowerCase(locale);
-  if (needle.length < 2) return [];
-  const hits: FaqMatch[] = [];
-  for (const group of groups) {
-    for (const faq of group.faqs) {
-      const question = locale === "en" && faq.questionEn ? faq.questionEn : faq.questionTh;
-      const answer = locale === "en" && faq.answerEn ? faq.answerEn : faq.answerTh;
-      if (question.toLocaleLowerCase(locale).includes(needle)) {
-        hits.push({ question, answer, href: `/faq#${group.categoryCode ?? "other"}` });
-      }
-    }
-  }
-  return hits.slice(0, limit);
+export function faqHitsOf(hits: readonly Hit[], groups: readonly FaqGroup[], locale: string, limit = 5): FaqMatch[] {
+  return hits
+    .filter((hit) => hit.kind === "faq")
+    .slice(0, limit)
+    .map((hit) => {
+      const group = groups.find((candidate) => candidate.faqs.some((faq) => faq.questionTh === hit.titleTh));
+      const faq = group?.faqs.find((candidate) => candidate.questionTh === hit.titleTh);
+      return {
+        key: hit.key,
+        question: locale === "en" && hit.titleEn ? hit.titleEn : hit.titleTh,
+        answer: faq ? (locale === "en" && faq.answerEn ? faq.answerEn : faq.answerTh) : null,
+        href: group ? `/faq#${group.categoryCode ?? "other"}` : "/faq",
+      };
+    });
 }
 
 /**

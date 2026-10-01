@@ -36,7 +36,8 @@ export interface PersistenceConfig {
   updatedAt: string | null;
   /**
    * How a new store design is created (its product, pattern, material, template). Without it a
-   * store design cannot be created — the product is required (CONTRACT-GAP store.catalog-product-ref).
+   * store design cannot be created — the product is required; a guest's design keeps the product
+   * id too, for its import.
    */
   create?: Omit<CreateInput, "name" | "spec" | "content">;
   /** Called once a new design has its server (or local) id — the page swaps `/design/new` for it. */
@@ -105,6 +106,8 @@ export function usePersistence(config: PersistenceConfig) {
               spec,
               content,
               thumbnail: cfg.thumbnail() ?? previous?.thumbnail,
+              // The product it was opened with, so importing it into an account can name it.
+              catalogProductId: cfg.create?.catalogProductId ?? previous?.catalogProductId,
               createdAt: previous?.createdAt ?? now,
               updatedAt: now,
             });
@@ -294,10 +297,11 @@ export function usePersistence(config: PersistenceConfig) {
       if (!id) return false;
       try {
         const restored = await storeDesigns.restore(id, version, etag.current);
-        const read = readDesign(restored.data.document.spec, restored.data.document.content);
+        const restoredDocument = documentOf(restored.data);
+        const read = restoredDocument ? readDesign(restoredDocument.spec, restoredDocument.content) : null;
         const editor = useEditor.getState();
         if (read)
-          editor.load({ id: editor.designId, name: restored.data.name, spec: read.spec, content: read.content });
+          editor.load({ id: editor.designId, name: restored.data.title, spec: read.spec, content: read.content });
         etag.current = restored.etag;
         versionNo.current = restored.data.versionNo;
         setLastSavedAt(restored.data.updatedAt);

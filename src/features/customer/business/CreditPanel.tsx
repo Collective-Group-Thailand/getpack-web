@@ -8,37 +8,41 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
-import { Input } from "@/ui/components/Input";
+import { Input, Textarea } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
+import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
 type Credit = Schemas["CompanyCreditDto"];
+type Basis = Schemas["CreditEligibilityBasis"];
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
 /**
- * Applying for credit (D-121): the limit and term wanted, on the strength of paid orders or a
- * financial statement. Eligibility, the terms on offer and who decides are the API's.
- *
- * CONTRACT-GAP store.company-credit — the published credit says only whether a request is pending,
- * not whether the company is eligible or which terms are on offer, so the form offers both bases
- * and takes the term in days; the API refuses what it does not allow.
+ * Applying for credit (D-121, `store.companyCredit.apply`): the limit wanted and one of the terms
+ * on offer, on the strength of the paid orders once the company is eligible, or of a financial
+ * statement it adds as a KYC document (Finance reviews it). Eligibility, the terms on offer and
+ * who decides are the API's.
  */
-export function CreditApplication({ credit }: { credit: Credit | null }) {
+export function CreditApplication({ companyId, credit }: { companyId: string; credit: Credit | null }) {
   const t = useTranslations("business.credit");
   const format = useFormat();
   const router = useRouter();
+  const eligibility = credit?.eligibility ?? null;
+  const terms = eligibility?.allowedTermDays ?? [];
   const [limit, setLimit] = useState("");
-  const [term, setTerm] = useState("30");
-  const [basis, setBasis] = useState<"paid_orders" | "financial_review">("paid_orders");
+  const [term, setTerm] = useState(String(eligibility?.defaultTermDays ?? terms[0] ?? 30));
+  const [basis, setBasis] = useState<Basis>(
+    eligibility?.reason === "financial_statement" || !eligibility?.eligible ? "financial_statement" : "paid_orders",
+  );
   const [statement, setStatement] = useState<{ name: string; fileId?: string } | null>(null);
+  const [note, setNote] = useState("");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const key = useRef(newKey());
@@ -55,24 +59,31 @@ export function CreditApplication({ credit }: { credit: Credit | null }) {
       </Callout>
     );
 
+  const statementOnFile = eligibility?.financialStatementOnFile ?? false;
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!/^\d{4,9}$/.test(limit)) return setError(t("errors.limit"));
-    if (!/^\d{1,3}$/.test(term)) return setError(t("errors.term"));
-    if (basis === "financial_review" && !statement?.fileId) return setError(t("errors.statement"));
+    if (basis === "financial_statement" && !statementOnFile && !statement?.fileId)
+      return setError(t("errors.statement"));
     setError(undefined);
     setBusy(true);
     try {
-      await browserRequests().call("POST /v1/store/me/company/credit-applications", {
+      const api = browserApi();
+      // A financial statement is a KYC document of the company (D-120); Finance reviews it.
+      if (basis === "financial_statement" && statement?.fileId)
+        await api.POST("/v1/store/companies/{companyId}/kyc-documents", {
+          params: { path: { companyId } },
+          body: { docType: "financial_statement", fileId: statement.fileId },
+        });
+      await api.POST("/v1/store/companies/{companyId}/credit-applications", {
+        params: { path: { companyId }, header: { "Idempotency-Key": key.current } },
         body: {
-          requestedLimit: `${limit}.00`,
-          termDays: Number(term),
+          limitAmount: limit,
+          ...(terms.length > 0 ? { termDays: Number(term) } : {}),
           basis,
-          ...(basis === "financial_review" && statement?.fileId
-            ? { financialStatementFileIds: [statement.fileId] }
-            : {}),
+          note: note.trim(),
         },
-        idempotencyKey: key.current,
       });
       toast.success(t("sent"));
       router.refresh();
@@ -86,6 +97,16 @@ export function CreditApplication({ credit }: { credit: Credit | null }) {
 
   return (
     <form noValidate onSubmit={(event) => void submit(event)} className="flex max-w-xl flex-col gap-4">
+      {eligibility ? (
+        <p className="text-muted text-sm">
+          {eligibility.eligible
+            ? t("eligible", { count: format.number(eligibility.paidOrdersCount) })
+            : t("notEligible", {
+                count: format.number(eligibility.paidOrdersCount),
+                needed: format.number(eligibility.paidOrdersNeeded),
+              })}
+        </p>
+      ) : null}
       {error ? (
         <Callout tone="danger" role="alert">
           {error}
@@ -99,33 +120,36 @@ export function CreditApplication({ credit }: { credit: Credit | null }) {
             onChange={(event) => setLimit(event.target.value.replace(/\D/g, ""))}
           />
         </Field>
-        <Field label={t("term")} hint={t("termHint")}>
-          <Input
-            inputMode="numeric"
-            value={term}
-            onChange={(event) => setTerm(event.target.value.replace(/\D/g, ""))}
-          />
-        </Field>
+        {terms.length > 0 ? (
+          <Field label={t("term")}>
+            <Select
+              value={term}
+              onValueChange={setTerm}
+              options={terms.map((days) => ({ value: String(days), label: t("days", { days }) }))}
+            />
+          </Field>
+        ) : null}
       </div>
       <Field label={t("basis")}>
         <RadioCards
           value={basis}
-          onValueChange={setBasis}
+          onValueChange={(value) => setBasis(value as Basis)}
           options={[
             {
               value: "paid_orders",
               label: t("bases.paid_orders"),
-              description: t("basisHints.paid_orders"),
+              description: t("basisHints.paid_orders", { needed: eligibility?.paidOrdersNeeded ?? 0 }),
+              disabled: eligibility ? !eligibility.eligible || eligibility.reason !== "paid_orders" : false,
             },
             {
-              value: "financial_review",
-              label: t("bases.financial_review"),
-              description: t("basisHints.financial_review"),
+              value: "financial_statement",
+              label: t("bases.financial_statement"),
+              description: statementOnFile ? t("statementOnFile") : t("basisHints.financial_statement"),
             },
           ]}
         />
       </Field>
-      {basis === "financial_review" ? (
+      {basis === "financial_statement" && !statementOnFile ? (
         <div className="flex flex-col gap-2">
           <FileDropzone
             accept="application/pdf"
@@ -135,7 +159,7 @@ export function CreditApplication({ credit }: { credit: Credit | null }) {
               if (!file) return;
               setStatement({ name: file.name });
               try {
-                const uploaded = await uploadFile("customer", file, "document");
+                const uploaded = await uploadFile("customer", file, "evidence", { companyId });
                 setStatement({ name: file.name, fileId: uploaded.id });
               } catch {
                 setStatement(null);
@@ -157,6 +181,9 @@ export function CreditApplication({ credit }: { credit: Credit | null }) {
           ) : null}
         </div>
       ) : null}
+      <Field label={t("note")}>
+        <Textarea rows={2} maxLength={1000} value={note} onChange={(event) => setNote(event.target.value)} />
+      </Field>
       <Button type="submit" className="self-start" loading={busy}>
         {t("apply")}
       </Button>
@@ -176,7 +203,7 @@ export function StatementLink({ companyId, month }: { companyId: string; month: 
     return (
       <Button asChild size="sm" variant="secondary" iconStart="external">
         <a href={url} target="_blank" rel="noopener noreferrer">
-          {t("open")}
+          {t("openFile")}
           <span className="sr-only"> {month}</span>
         </a>
       </Button>

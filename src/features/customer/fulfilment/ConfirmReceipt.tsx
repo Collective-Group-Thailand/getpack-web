@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
+import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { isApiError } from "@/lib/api/problem";
 import { browserApi } from "@/lib/api/browser";
@@ -15,10 +16,20 @@ const newKey = () =>
 
 /**
  * Confirming receipt (D-081): the dialog restates the order and what confirming means — the order
- * completes and the 7-day claim window (D-082) runs from now. One key per intent.
+ * completes, and a problem can still be reported until the claim window the API gives ends (D-082).
+ * One key per intent.
  */
-export function ConfirmReceipt({ orderId, orderCode }: { orderId: string; orderCode: string }) {
+export function ConfirmReceipt({
+  orderId,
+  orderCode,
+  claimWindowEndsAt,
+}: {
+  orderId: string;
+  orderCode: string;
+  claimWindowEndsAt: string | null;
+}) {
   const t = useTranslations("fulfilment.receipt");
+  const format = useFormat();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -50,7 +61,9 @@ export function ConfirmReceipt({ orderId, orderCode }: { orderId: string; orderC
         open={open}
         onOpenChange={setOpen}
         title={t("confirmTitle", { code: orderCode })}
-        description={t("confirmBody")}
+        description={
+          claimWindowEndsAt ? t("confirmBody", { date: format.dateTime(claimWindowEndsAt) }) : t("confirmBodyNoDate")
+        }
         confirmLabel={t("confirm")}
         cancelLabel={t("cancel")}
         loading={busy}

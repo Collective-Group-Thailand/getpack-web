@@ -25,12 +25,9 @@ const ORDER_STATUSES = new Set<string>(Object.keys(ORDER_STATUS));
 
 /**
  * The public tracking page (F3 3.6, `store.tracking.get`): for whoever holds the link or the
- * carton's QR — the order's stages and each delivery's progress, with no name, address, amount or
- * photo.
- *
- * CONTRACT-GAP store.tracking — the published page carries neither the order code nor what was
- * ordered (on purpose, for the product; the code is an open ask) and no location, so the page shows
- * the stages and the deliveries only.
+ * carton's QR — the order's stages with their planned dates, the expected arrival and each
+ * delivery's progress. By decision it names no order code, product, quantity or location, and no
+ * name, address, amount or photo (D-224).
  */
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { token } = await params;
@@ -54,6 +51,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         </div>
         {tracking.promisedShipDate && !tracking.shippedAt ? (
           <p className="text-sm">{t("shipBy", { date: format.date(tracking.promisedShipDate) })}</p>
+        ) : null}
+        {tracking.deliveredAt ? (
+          <p className="text-sm">{t("delivered", { date: format.dateTime(tracking.deliveredAt) })}</p>
+        ) : tracking.estimatedDeliveryDate ? (
+          <p className="text-sm">{t("arrivesBy", { date: format.date(tracking.estimatedDeliveryDate) })}</p>
         ) : null}
       </header>
 

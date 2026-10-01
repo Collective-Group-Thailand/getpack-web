@@ -43,7 +43,13 @@ export async function uploadFile(
   zone: Zone,
   file: File,
   purpose: FilePurpose,
-  options: { onProgress?: (sent: number, total: number) => void; signal?: AbortSignal; factoryId?: string } = {},
+  options: {
+    onProgress?: (sent: number, total: number) => void;
+    signal?: AbortSignal;
+    factoryId?: string;
+    /** A file uploaded for a B2B company (its brand assets, D-227). */
+    companyId?: string;
+  } = {},
 ): Promise<UploadedFile> {
   const api = browserApi();
   const body: Schemas["PresignFileDto"] = {
@@ -52,6 +58,7 @@ export async function uploadFile(
     sizeBytes: file.size,
     purpose,
     ...(options.factoryId ? { factoryId: options.factoryId } : {}),
+    ...(options.companyId ? { companyId: options.companyId } : {}),
   };
 
   const presigned =

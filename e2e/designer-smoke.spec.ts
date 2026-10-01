@@ -14,10 +14,13 @@ import { addHeading } from "./helpers/designer";
 const HOME = "/";
 const MY_DESIGNS = "/account/designs";
 
-async function startNewDesign(page: Page) {
-  await page.goto(HOME);
-  await page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click();
-  await expect(page).toHaveURL(/\/design\/new$/);
+async function startNewDesign(page: Page, product?: string) {
+  if (product) await page.goto(`/design/new?product=${product}`);
+  else {
+    await page.goto(HOME);
+    await page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click();
+    await expect(page).toHaveURL(/\/design\/new$/);
+  }
 
   // The setup dialog opens by itself for a new design.
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
@@ -58,7 +61,9 @@ test("designs a box, saves it, finds it again and exports the dieline", async ({
 });
 
 test("keeps the dieline in step with the box dimensions chosen in setup", async ({ page }) => {
-  await startNewDesign(page);
+  // The catalogue is a product's (`store.designer.getCatalog` takes `product`): a blank design has
+  // none and draws on the engine's own board (CONTRACT-GAP store.catalog-product-ref).
+  await startNewDesign(page, "shipping-box");
 
   // Default style is RSC with its first preset, 150 x 100 x 80 mm inside, on the catalogue's
   // thinnest board for it: E-flute (t = 1.6, make-up allowances col_a 1.14, col_c 1.18).

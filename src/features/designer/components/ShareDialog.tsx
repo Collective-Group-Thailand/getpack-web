@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { browserRequests } from "@/lib/api/requests/browser";
+import { useFormat } from "@/features/shared/format/useFormat";
+import { browserApi } from "@/lib/api/browser";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Dialog } from "@/ui/components/Dialog";
@@ -13,28 +14,27 @@ import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
 /**
- * A view-only link to the design (`store.design-share`): anyone with it sees the design, nobody
- * can edit it, and revoking it ends it. Comments on a shared design are deferred (PROGRESS).
+ * A view-only link to the design (`store.designs.share`, D-226): anyone with it sees the current
+ * version, nobody can edit it, it expires (`configurations.share_link_days`) and revoking it ends
+ * it. Sharing again replaces the previous link. Comments on a shared design are U4.B6.
  */
 export function ShareDialog({ designId, open, onClose }: { designId: string; open: boolean; onClose: () => void }) {
   const t = useTranslations("designer.share");
   const tCommon = useTranslations("common");
-  const [state, setState] = useState<{ url: string } | "loading" | "error" | "revoked">("loading");
-  const key = useRef(crypto.randomUUID());
+  const format = useFormat();
+  const [state, setState] = useState<{ url: string; expiresAt: string } | "loading" | "error" | "revoked">("loading");
+  const asked = useRef(false);
 
   useEffect(() => {
-    let live = true;
-    browserRequests()
-      .call("POST /v1/store/designs/{designId}/actions/share", {
-        path: { designId },
-        body: {},
-        idempotencyKey: key.current,
-      })
-      .then((share) => live && setState({ url: `${window.location.origin}/design/shared/${share.token}` }))
-      .catch(() => live && setState("error"));
-    return () => {
-      live = false;
-    };
+    // One link per opening: the share call replaces the previous link, so it is not repeated.
+    if (asked.current) return;
+    asked.current = true;
+    browserApi()
+      .POST("/v1/store/designs/{designId}/actions/share", { params: { path: { designId } } })
+      .then(({ data }) =>
+        setState({ url: `${window.location.origin}/design/shared/${data!.shareToken}`, expiresAt: data!.expiresAt }),
+      )
+      .catch(() => setState("error"));
   }, [designId]);
 
   const copy = async (url: string) => {
@@ -48,7 +48,7 @@ export function ShareDialog({ designId, open, onClose }: { designId: string; ope
 
   const revoke = async () => {
     try {
-      await browserRequests().call("DELETE /v1/store/designs/{designId}/share", { path: { designId } });
+      await browserApi().DELETE("/v1/store/designs/{designId}/share", { params: { path: { designId } } });
       setState("revoked");
     } catch {
       toast.error(t("revokeFailed"));
@@ -69,7 +69,7 @@ export function ShareDialog({ designId, open, onClose }: { designId: string; ope
       {state === "revoked" ? <Callout tone="info" title={t("revoked")} /> : null}
       {typeof state === "object" ? (
         <div className="space-y-4">
-          <Field label={t("link")}>
+          <Field label={t("link")} hint={t("expires", { date: format.dateTime(state.expiresAt) })}>
             <Input readOnly value={state.url} onFocus={(event) => event.target.select()} />
           </Field>
           <div className="flex flex-wrap gap-2">

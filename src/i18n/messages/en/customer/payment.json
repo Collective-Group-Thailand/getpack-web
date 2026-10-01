@@ -40,6 +40,11 @@
     "transferredAt": "Date and time of the transfer",
     "incomplete": "Attach the slip and give the amount and time",
     "failed": "We could not send the slip. Please try again.",
-    "send": "Send slip"
+    "send": "Send slip",
+    "transferTo": "Transfer to"
+  },
+  "failure": {
+    "declined": "Your bank or card issuer declined it. Try another method, or contact your bank.",
+    "provider_error": "The payment provider had a problem; nothing was charged. Please try again."
   }
 }
