@@ -182,14 +182,19 @@ test("prepress opens a customer's design read-only and copies it", async ({ page
     page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name: "ข้อความ", exact: true }),
   ).toHaveCount(0);
 
+  // The owner is published (`owner`): the customer's design says whose it is.
+  await expect(page.getByText(/^แบบของลูกค้า /)).toBeVisible();
+
   await page.getByRole("button", { name: "ทำสำเนาเพื่อแก้ไข" }).click();
   await expect(page).toHaveURL(/\/designs\/[0-9a-f-]{36}\?from=/);
+  // `admin.designs.copy` makes a copy prepress owns.
+  await expect(page.getByText(/^แบบของพนักงาน /)).toBeVisible();
 });
 
 test("prepress works on its own copy and saves it", async ({ page }) => {
   test.fixme(
     true,
-    "CONTRACT-GAP admin.design-documents — admin.designs.save needs catalog.manage, which prepress lacks, and a design carries no editable flag",
+    "CONTRACT-GAP admin.design-documents — admin.designs.save needs catalog.manage, which prepress lacks, so even its own copy (editable) opens read-only",
   );
   await signInAsStaff(page, "prepress");
   await addHeading(page);
