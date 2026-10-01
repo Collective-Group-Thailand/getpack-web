@@ -28,8 +28,11 @@ export interface AssignDialogProps {
   personHint: string;
   /** Whether the item can be put back with nobody on it (default true); some APIs cannot unassign. */
   clearable?: boolean;
-  /** Calls the API; the dialog closes when it resolves and stays open when it throws. */
-  onAssign: (assigneeId: string | null) => Promise<void>;
+  /**
+   * Calls the API; the dialog closes when it resolves and stays open when it throws. `person` names
+   * who was picked, for an operation that answers nothing to show the new owner from.
+   */
+  onAssign: (assigneeId: string | null, person: { id: string; displayName: string } | null) => Promise<void>;
   onClose: () => void;
 }
 
@@ -65,7 +68,15 @@ export function AssignDialog({
   });
 
   const assign = useMutation({
-    mutationFn: onAssign,
+    mutationFn: (assigneeId: string | null) =>
+      onAssign(
+        assigneeId,
+        assigneeId === null
+          ? null
+          : assigneeId === actor.id
+            ? { id: actor.id, displayName: actor.displayName }
+            : { id: assigneeId, displayName: picked?.value === assigneeId ? picked.label : assigneeId },
+      ),
     onSuccess: (_, assigneeId) => {
       toast.success(assigneeId ? t("done") : t("cleared"));
       onClose();

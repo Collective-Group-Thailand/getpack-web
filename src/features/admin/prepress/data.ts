@@ -67,6 +67,19 @@ export function useTemplates(orderId: string) {
   });
 }
 
+/** The order's dieline drawings, newest first (`admin.designs.listOrderDrawings`). */
+export function useDrawings(orderId: string) {
+  return useQuery({
+    queryKey: queryKeys.related("admin", "order", orderId, "drawings"),
+    queryFn: async () =>
+      [
+        ...(await adminBrowserApis().contract.GET("/v1/admin/orders/{orderId}/drawings", { params: path(orderId) }))
+          .data!,
+      ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)),
+    staleTime: STALE_TIME.transactional,
+  });
+}
+
 const PER_PAGE = 100;
 const MAX_PAGES = 10;
 

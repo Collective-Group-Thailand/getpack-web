@@ -192,6 +192,11 @@ export function storeDesignDtoForStaff(id: string): Schemas["DesignDocumentDto"]
   return row ? toDto(row) : null;
 }
 
+/** Whose design it is (the owning customer's id), for the back office's `owner` (admin.designs.get). */
+export function storeDesignOwnerForStaff(id: string): string | null {
+  return designs.get(id)?.owner ?? null;
+}
+
 /* ---------------------------------------------------------------------------- published */
 
 const sizeOfDocument = (document: DesignDocument) => {

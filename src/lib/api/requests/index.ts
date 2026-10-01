@@ -23,7 +23,6 @@ export * from "./admin-finance";
 export * from "./admin-logistics";
 export * from "./admin-marketing";
 export * from "./admin-orders";
-export * from "./admin-prepress";
 export * from "./partner-account";
 export * from "./partner-billing";
 export * from "./partner-jobs";
