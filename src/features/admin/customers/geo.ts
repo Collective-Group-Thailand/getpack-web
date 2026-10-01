@@ -22,10 +22,11 @@ export interface PostcodeArea {
 
 /**
  * The areas a five-digit postcode covers, from the admin-maintained geography (D-161, D-170),
- * with the uuids `admin.customers.createAddress` takes. There is no single lookup that answers
- * with ids (CONTRACT-GAP admin.geo — the store's lookup has codes only and is not on the admin
- * surface), so the subdistricts of the postcode are read, then their districts and provinces.
- * Needs `catalog.read`, which every role that enters addresses holds.
+ * with the uuids `admin.customers.createAddress` takes. packio-api answers `admin.geo` with the
+ * store's postcode lookup, which carries ids since v0.5.0 (`CodeNameRefDto`) — but it is a
+ * `/v1/store` path, and the admin zone's BFF serves the admin surface only. So the desk reads the
+ * admin geography, which carries the same ids: the postcode's subdistricts, then their districts
+ * and provinces. Needs `catalog.read`, which every role that enters addresses holds.
  */
 export function usePostcodeAreas(postcode: string) {
   const valid = /^\d{5}$/.test(postcode);

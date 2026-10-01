@@ -4,76 +4,76 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { ORDER_STATUS } from "@/domain/status";
+import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
+import { Badge } from "@/ui/components/Badge";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 import { adminBrowserApis, QueryError, StatusChip, useProductTypes } from "../console";
-import type { Order, OrderGroup } from "./resources";
-
-type Row = { order: Order; group: OrderGroup };
+import type { OrderListItem } from "./resources";
 
 /**
- * The orders of one customer, newest first — the "orders" tab of the customer screen (F2 2.7).
- *
- * The published contract has no orders filter by customer or company (CONTRACT-GAP admin.orders).
- * The group list's `q` matches a customer code, so a customer's orders are its groups' orders,
- * kept to the groups that are really theirs. A company's orders cannot be listed yet.
+ * The orders of one customer or one company, newest placed first — the "orders" tab of the
+ * customer and company screens (F2 2.7), from `admin.orders.list?customerId` / `?companyId`
+ * (v0.5.0). The latest 50; the order desk's "all orders" tab pages through the rest.
  */
-export function PartyOrders({
-  customer,
-  companyId,
-}: {
-  customer?: { id: string; customerCode: string | null };
-  companyId?: string;
-}) {
+export function PartyOrders({ customer, companyId }: { customer?: { id: string }; companyId?: string }) {
   const t = useTranslations("orders.party");
   const format = useFormat();
   const { labelOf } = useProductTypes();
-  const code = customer?.customerCode ?? null;
-  const groups = useQuery({
-    queryKey: queryKeys.list("admin", "order_group", { q: code, perPage: 50 }),
-    enabled: Boolean(code),
+  const party = customer ? { customerId: customer.id } : companyId ? { companyId } : null;
+  const orders = useQuery({
+    queryKey: queryKeys.list("admin", "order", { ...party, perPage: 50 }),
+    enabled: Boolean(party),
     queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/order-groups", {
-          params: { query: { q: code!, perPage: 50 } },
-        })
-      ).data!,
+      (await adminBrowserApis().contract.GET("/v1/admin/orders", { params: { query: { ...party, perPage: 50 } } }))
+        .data!,
   });
-  if (companyId || !code)
-    return <EmptyState icon="package" title={t("unavailable")} description={t("unavailableBody")} />;
-  if (groups.isError) return <QueryError error={groups.error} onRetry={() => void groups.refetch()} />;
+  if (orders.isError) return <QueryError error={orders.error} onRetry={() => void orders.refetch()} />;
 
-  const rows: Row[] = (groups.data?.data ?? [])
-    .filter((group) => group.customerId === customer!.id)
-    .flatMap((group) => group.orders.map((order) => ({ order, group })));
-
-  const columns: DataTableColumn<Row>[] = [
+  const columns: DataTableColumn<OrderListItem>[] = [
     {
       id: "orderCode",
       header: t("order"),
-      cell: ({ order }) => (
-        <Link href={`/orders/${order.id}`} className="text-primary font-mono hover:underline">
-          {order.orderCode}
+      cell: (row) => (
+        <Link href={`/orders/${row.orderId}`} className="text-primary font-mono hover:underline">
+          {row.orderCode}
         </Link>
       ),
     },
-    { id: "productType", header: t("productType"), cell: ({ order }) => labelOf(order.productTypeCode) },
-    { id: "status", header: t("status"), cell: ({ order }) => <StatusChip map={ORDER_STATUS} value={order.status} /> },
-    { id: "amount", header: t("amount"), numeric: true, cell: ({ order }) => format.thb(order.totals.grossAmount) },
-    { id: "created", header: t("created"), cell: ({ group }) => <When at={group.placedAt} /> },
+    // A company's orders are its members' (D-120): say who placed each.
+    ...(companyId
+      ? [{ id: "customer", header: t("placedBy"), cell: (row: OrderListItem) => row.customer.displayName }]
+      : []),
+    { id: "productType", header: t("productType"), cell: (row) => labelOf(row.productTypeCode) },
+    {
+      id: "status",
+      header: t("status"),
+      cell: (row) => (
+        <div className="flex flex-wrap gap-1">
+          <StatusChip map={ORDER_STATUS} value={row.status} />
+          <StatusChip map={ARTWORK_STATUS} value={row.artworkStatus} />
+          {row.hasSlipToReview ? (
+            <Badge size="sm" tone="warning" icon="receipt">
+              {t("slipWaiting")}
+            </Badge>
+          ) : null}
+        </div>
+      ),
+    },
+    { id: "amount", header: t("amount"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
+    { id: "created", header: t("created"), cell: (row) => <When at={row.placedAt} /> },
   ];
 
   return (
     <DataTable
       caption={t("title")}
       columns={columns}
-      rows={rows}
-      getRowId={({ order }) => order.id}
-      loading={groups.isPending}
+      rows={orders.data?.data ?? []}
+      getRowId={(row) => row.orderId}
+      loading={orders.isPending}
       density="compact"
       empty={<EmptyState icon="package" title={t("empty")} />}
     />

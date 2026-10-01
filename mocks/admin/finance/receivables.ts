@@ -1259,6 +1259,9 @@ export const receivableHandlers = [
     const rows = payments
       .filter((p) => !query.status || p.status === query.status)
       .filter((p) => !query.method || p.method === query.method)
+      // `?groupId&orderId` (admin.payments.list, v0.5.0): a payment belongs to its group's orders.
+      .filter((p) => !query.groupId || p.groupId === query.groupId)
+      .filter((p) => !query.orderId || orders.some((o) => o.id === query.orderId && o.groupId === p.groupId))
       .filter((p) =>
         matchesQuery(
           query.q,

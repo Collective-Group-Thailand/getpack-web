@@ -11,6 +11,7 @@ import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
+import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
@@ -23,8 +24,9 @@ import { Select } from "@/ui/components/Select";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 
-import { adminBrowserApis, problemMessage, QueryError, StatusChip, useCan } from "../console";
+import { adminBrowserApis, problemMessage, QueryError, StatusChip, useCan, useProductTypes } from "../console";
 import { useGeoName, usePostcodeAreas } from "../customers/geo";
+import { isPublished, type CalculatorKey } from "./calculators";
 
 type DesignOption = Schemas["DesignOption"];
 type MockupOption = Schemas["MockupOption"];
@@ -34,9 +36,9 @@ type Memo = Schemas["DiscountMemoDto"];
  * CS places an order for a customer (F2 2.2) the way packio-api publishes it (`admin.cart.*`,
  * `admin.checkout.place`): the quotation's option goes into the customer's cart with its
  * destinations, and the cart is checked out. A discount is given at checkout — up to the CS limit
- * on CS's own, above it through a discount memo that prices the cart (D-052, D-162); the API says
- * which, since the limit is its setting (`discounts.cs_limit_pct`, not in the input data —
- * CONTRACT-GAP admin.cs-calculators).
+ * on CS's own, above it through a discount memo that prices the cart (D-052, D-162). The limit is
+ * the API's setting (`discounts.cs_limit_pct`): the page shows it as the calculator's input data
+ * states it (`discountPolicy.directLimitPct`, v0.5.0), and the API decides at checkout.
  *
  * Checkout takes the customer's whole cart, so the page will not place while the cart holds
  * anything else: CS removes it first, or the customer checks it out themselves.
@@ -114,6 +116,20 @@ export function CreateOrder({
     enabled: Boolean(customerId),
   });
   const geoName = useGeoName();
+  // The CS limit, from the input data of the calculator that priced this quotation's type.
+  const { types } = useProductTypes();
+  const calculator = types.find((type) => type.code === quote.data?.productTypeCode)?.calculatorKey as
+    CalculatorKey | null | undefined;
+  const policy = useQuery({
+    queryKey: queryKeys.detail("admin", "cs_input", calculator ?? ""),
+    enabled: Boolean(calculator && isPublished(calculator)),
+    queryFn: async () =>
+      calculator === "folding"
+        ? (await adminBrowserApis().contract.GET("/v1/admin/cs/folding/input-data")).data!
+        : (await adminBrowserApis().contract.GET("/v1/admin/cs/corrugate/input-data")).data!,
+    staleTime: STALE_TIME.reference,
+  });
+  const limitPct = policy.data?.discountPolicy.directLimitPct ?? null;
 
   const option =
     quote.data?.options.find((candidate) => candidate.id === optionId) ??
@@ -342,7 +358,7 @@ export function CreateOrder({
             </Field>
             <Field
               label={t("discount")}
-              hint={t("discountHint")}
+              hint={limitPct ? t("discountHintLimit", { pct: format.percent(limitPct) }) : t("discountHint")}
               error={discountValid ? undefined : t("discountFormat")}
               className="w-44"
             >

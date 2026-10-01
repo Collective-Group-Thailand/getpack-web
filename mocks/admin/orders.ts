@@ -30,6 +30,8 @@ import {
   timelineOf,
 } from "./commerce";
 import type { MockOrder } from "./commerce";
+import { companyStores } from "./companies";
+import { lineSummaryOf } from "./catalog";
 import { toAdminJobDto } from "./production";
 
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
@@ -45,12 +47,137 @@ function allowed(request: Request, permission: string): StaffPersona | null {
   return who && can(who, permission) ? who : null;
 }
 
+/* ------------------------------------------------------------------------------ next actions */
+
+const PRE_PRODUCTION = ["waiting_payment", "paid_for_production", "artwork_approved"];
+
+/** The facts packio-api's order action guards read (`OrderFacts`, `src/modules/orders/order-actions.ts`). */
+function factsOf(order: MockOrder) {
+  return {
+    status: order.status,
+    artworkStatus: order.artwork.status,
+    productionStarted: order.jobs.length > 0 || ["in_production", "shipping", "completed"].includes(order.status),
+    paidForProduction: order.status !== "waiting_payment" && order.payments.some((p) => p.status === "succeeded"),
+    cancelled: order.cancelledAt !== null || order.status === "cancelled",
+    completed: order.status === "completed",
+    hasAddOns: order.lines.some((line) => line.lineType === "extra_revision" || line.lineType === "mockup"),
+    hasMockup: order.mockupOption !== "none" || order.lines.some((line) => line.lineType === "mockup"),
+    discounted: order.discountAmount !== "0.00",
+  };
+}
+
+type ActionRule = {
+  key: string;
+  permissions: string[];
+  irreversible?: boolean;
+  /** `true` offers it, `false` hides it, a string offers it disabled with that reason (a message key). */
+  when: (facts: ReturnType<typeof factsOf>) => boolean | string;
+};
+
+/** packio-api's `ADMIN_ORDER_ACTIONS` at v0.6.0, in its order (D-051, D-060, D-073, D-074). */
+const ADMIN_ORDER_ACTIONS: ActionRule[] = [
+  {
+    key: "order.start_production",
+    permissions: ["production.start_manual"],
+    irreversible: true,
+    when: (o) => !o.productionStarted && !o.cancelled && o.paidForProduction,
+  },
+  {
+    key: "order.submit_artwork",
+    permissions: ["artwork.submit_on_behalf"],
+    when: (o) => PRE_PRODUCTION.includes(o.status) && o.artworkStatus !== "approved",
+  },
+  { key: "order.add_mockup", permissions: ["mockups.manage"], when: (o) => !o.hasMockup },
+  {
+    key: "order.reprice",
+    permissions: ["orders.reprice"],
+    when: (o) =>
+      PRE_PRODUCTION.includes(o.status) &&
+      !o.productionStarted &&
+      (o.hasAddOns ? "order.reprice_has_add_ons" : o.discounted ? "order.reprice_has_discounts" : true),
+  },
+  {
+    key: "order.cancel",
+    permissions: ["orders.cancel"],
+    irreversible: true,
+    when: (o) => !o.cancelled && !o.completed && !o.productionStarted,
+  },
+];
+
+/** What packio-api offers this reader on this order: the rule's own state check and its permissions. */
+export function adminOrderActionsOf(order: MockOrder, who: StaffPersona | null): Schemas["NextActionDto"][] {
+  const facts = factsOf(order);
+  return ADMIN_ORDER_ACTIONS.flatMap((rule) => {
+    if (!who || !rule.permissions.every((permission) => can(who, permission))) return [];
+    const verdict = rule.when(facts);
+    if (verdict === false) return [];
+    return [
+      {
+        key: rule.key,
+        irreversible: rule.irreversible ?? false,
+        disabledReason: typeof verdict === "string" ? verdict : null,
+      },
+    ];
+  });
+}
+
+/** The rule a write is guarded by: the same check the offered action came from. */
+const offered = (order: MockOrder, who: StaffPersona, key: string) =>
+  adminOrderActionsOf(order, who).some((action) => action.key === key && !action.disabledReason);
+
+/**
+ * An optional `Idempotency-Key` (the order desk's writes, v0.5.0): a replay of the same key answers
+ * what the first call did, with `Idempotent-Replayed`.
+ */
+const replays = new Map<string, { status: number; body: unknown }>();
+async function replayable(request: Request, run: () => Promise<Response> | Response): Promise<Response> {
+  const key = request.headers.get("idempotency-key");
+  const scoped = key ? `${new URL(request.url).pathname} ${key}` : null;
+  const seen = scoped ? replays.get(scoped) : undefined;
+  if (seen)
+    return seen.status === 204
+      ? new HttpResponse(null, { status: 204, headers: { "Idempotent-Replayed": "true" } })
+      : HttpResponse.json(seen.body as never, { status: seen.status, headers: { "Idempotent-Replayed": "true" } });
+  const response = await run();
+  if (scoped && response.ok)
+    replays.set(scoped, {
+      status: response.status,
+      body: response.status === 204 ? null : await response.clone().json(),
+    });
+  return response;
+}
+
+/* ------------------------------------------------------------------------------------- DTOs */
+
 /** The lean staff order: the storefront's `OrderDto` plus `internal`, masked by D-141. */
 export function toAdminOrderDto(order: MockOrder, who: StaffPersona | null): Schemas["AdminOrderDto"] {
   const seesCost = Boolean(who && can(who, "factory_cost.read"));
   const seesMargin = Boolean(who && can(who, "margin.read"));
+  const base = toOrderDto(order);
   return {
-    ...toOrderDto(order),
+    ...base,
+    // The spec in words, from the row's own lines when the shared adapter leaves it empty.
+    summary:
+      base.summary.specs.length > 0
+        ? base.summary
+        : {
+            ...base.summary,
+            specs: order.specs.map((spec, index) => ({
+              key: `spec_${index + 1}`,
+              labelTh: spec.label,
+              labelEn: spec.label,
+              valueTh: spec.value,
+              valueEn: spec.value,
+            })),
+          },
+    ...(cancelledWith.has(order.id)
+      ? {
+          cancelReasonCode: cancelledWith.get(order.id)!.code,
+          cancelReasonNameTh: cancelledWith.get(order.id)!.nameTh,
+          cancelReasonNameEn: cancelledWith.get(order.id)!.nameEn,
+        }
+      : {}),
+    nextActions: adminOrderActionsOf(order, who),
     internal: {
       buyCostNet: seesCost ? (order.margin?.buyCostNet ?? null) : null,
       marginAmount: seesMargin ? (order.margin?.marginAmount ?? null) : null,
@@ -162,22 +289,137 @@ function toSchedule(order: MockOrder): Schemas["AdminPaymentScheduleDto"] {
 }
 
 function toTimelineEntry(entry: ReturnType<typeof timelineOf>[number]): Schemas["StaffTimelineEntryDto"] {
+  // A production step names itself; packio-api sends it as `production.milestone_reached`.
+  const milestone = entry.kind === "milestone.completed";
   return {
     id: entry.id,
     occurredAt: entry.at,
-    type: entry.kind,
-    messageKey: `timeline.${entry.kind}`,
-    params: {},
+    type: milestone ? "production.milestone_reached" : entry.kind,
+    messageKey: milestone ? "timeline.production.milestone_reached" : `timeline.${entry.kind}`,
+    params: milestone ? { labelTh: entry.title, labelEn: entry.title } : {},
     body: entry.detail,
-    source: "order",
+    source: milestone ? "production_job" : "order",
     visibility: entry.visibility === "customer" ? ["customer", "internal"] : [entry.visibility],
     actor: entry.actor ? { type: "user", displayName: entry.actor.displayName } : { type: "system", displayName: null },
     mentions: [],
     photoFileIds: [],
     shipment: null,
-    // The mock keeps no factory plan dates (D-075).
-    promisedAt: null,
+    // When the factory's plan had the step due (D-075): promised against actual.
+    promisedAt: entry.promisedAt,
   };
+}
+
+/** The customers a company's orders come from: its members (D-120). */
+const companyOrders = (companyId: string) =>
+  new Set(
+    companyStores
+      .find((store) => store.company.id === companyId)
+      ?.members.filter((member) => member.status !== "removed")
+      .map((member) => member.user.id) ?? [],
+  );
+
+/** A row of `admin.orders.list`: refs, the group's next unpaid instalment and a slip waiting for Finance. */
+function toListItem(order: MockOrder, who: StaffPersona | null): Schemas["AdminOrderListItemDto"] {
+  const next = order.instalments.find((item) => !["paid", "cancelled", "refunded"].includes(item.status)) ?? null;
+  const waiting = order.payments.flatMap((payment) =>
+    payment.slips.filter((slip) => slip.verificationStatus === "manual_review"),
+  );
+  return {
+    orderId: order.id,
+    orderCode: order.orderCode,
+    groupId: order.groupId,
+    groupCode: order.groupCode,
+    channel: order.channel,
+    customer: { ...order.customer },
+    // Staff only (D-050): the factory the order went to, once it has one.
+    factory: who && order.factory ? { id: order.factory.id, code: order.factory.code, name: order.factory.name } : null,
+    productTypeCode: order.productType.code,
+    quantity: order.quantity,
+    unit: lineSummaryOf(order.productType.code).unit,
+    grossAmount: order.grossAmount,
+    currency: "THB",
+    status: order.status,
+    artworkStatus: order.artwork.status,
+    nextInstalment: next
+      ? {
+          seq: next.seq,
+          dueAt: next.dueAt,
+          openAmount: (Math.round((Number(next.grossAmount) - Number(next.paidAmount)) * 100) / 100).toFixed(2),
+        }
+      : null,
+    hasSlipToReview: waiting.length > 0,
+    slipReviewDueAt:
+      waiting
+        .map((slip) => slip.slaDueAt)
+        .filter((at): at is string => Boolean(at))
+        .sort()[0] ?? null,
+    promisedShipDate: order.promisedShipDate,
+    placedAt: order.createdAt,
+  };
+}
+
+/** packio-api's seeded `order_cancel_reasons` (D-060), as `admin.orders.listCancelReasons` answers them. */
+export const CANCEL_REASONS: Schemas["CancelReasonDto"][] = [
+  {
+    code: "customer_request",
+    nameTh: "ลูกค้าขอยกเลิก",
+    nameEn: "Customer asked to cancel",
+    appliesTo: "staff",
+    requiresCreditNote: false,
+  },
+  {
+    code: "payment_expired",
+    nameTh: "เกินกำหนดชำระเงิน",
+    nameEn: "Payment window expired",
+    appliesTo: "system",
+    requiresCreditNote: false,
+  },
+  {
+    code: "cannot_produce",
+    nameTh: "โรงงานผลิตไม่ได้ตามสเปก",
+    nameEn: "Cannot be produced to spec",
+    appliesTo: "staff",
+    requiresCreditNote: true,
+  },
+  {
+    code: "duplicate",
+    nameTh: "คำสั่งซื้อซ้ำ",
+    nameEn: "Duplicate order",
+    appliesTo: "staff",
+    requiresCreditNote: false,
+  },
+  {
+    code: "changed_mind",
+    nameTh: "เปลี่ยนใจ",
+    nameEn: "Changed my mind",
+    appliesTo: "customer",
+    requiresCreditNote: false,
+  },
+];
+
+/** The reason each order was cancelled with on this desk, by order id (the rows keep the name only). */
+const cancelledWith = new Map<string, Schemas["CancelReasonDto"]>();
+
+/** When each group was last reminded: one reminder per group per hour (v0.5.0). */
+const remindedAt = new Map<string, number>();
+
+/** `admin.orders.sendPaymentReminder`'s checks: something due, and no reminder in the last hour. */
+function reminderRefusal(order: MockOrder): "payments.nothing_due" | "payments.reminder_recent" | null {
+  const due = order.instalments.some((item) => ["due", "overdue", "partially_paid"].includes(item.status));
+  if (!due || order.status === "cancelled") return "payments.nothing_due";
+  const last = remindedAt.get(order.groupId);
+  if (last && Date.now() - last < 60 * 60 * 1000) return "payments.reminder_recent";
+  return null;
+}
+
+const REMINDER_REFUSALS = {
+  "payments.nothing_due": "ไม่มีงวดที่ถึงกำหนดชำระ",
+  "payments.reminder_recent": "เพิ่งส่งข้อความเตือนไปเมื่อไม่ถึงหนึ่งชั่วโมงที่แล้ว",
+} as const;
+
+function remind(order: MockOrder, who: StaffPersona) {
+  remindedAt.set(order.groupId, Date.now());
+  logEvent(order, "payment.reminder_sent", "ส่งข้อความเตือนชำระเงิน", { id: who.id, displayName: who.displayName });
 }
 
 export const orderHandlers = [
@@ -210,6 +452,76 @@ export const orderHandlers = [
       (url.searchParams.get("order") as "asc" | "desc" | null) ?? (params.queue === "waiting_payment" ? "asc" : "desc");
     return HttpResponse.json(paginate(sortBy(rows, sort, order), pageOf(url)));
   }),
+
+  // admin.orders.list: every order, newest placed first, with the desk's filters (v0.5.0).
+  http.get("*/v1/admin/orders", ({ request }) => {
+    const who = allowed(request, "orders.read");
+    if (!who) return forbidden();
+    const url = new URL(request.url);
+    const get = (name: string) => url.searchParams.get(name);
+    const q = get("q")?.toUpperCase();
+    const from = get("placedFrom");
+    const to = get("placedTo");
+    const companyId = get("companyId");
+    const rows = orders
+      .filter((order) => !get("status") || order.status === get("status"))
+      .filter((order) => !get("artworkStatus") || order.artwork.status === get("artworkStatus"))
+      .filter((order) => !get("channel") || order.channel === get("channel"))
+      .filter((order) => !get("productTypeCode") || order.productType.code === get("productTypeCode"))
+      .filter((order) => !get("factoryId") || order.factory?.id === get("factoryId"))
+      .filter((order) => !get("customerId") || order.customer.id === get("customerId"))
+      // A company's orders are those its members placed (D-120): the mock's B2B company is customer 2's.
+      .filter((order) => !companyId || companyOrders(companyId).has(order.customer.id))
+      .filter((order) => !from || order.createdAt.slice(0, 10) >= from)
+      .filter((order) => !to || order.createdAt.slice(0, 10) <= to)
+      // `q` is a prefix of the order or group code.
+      .filter((order) => !q || order.orderCode.startsWith(q) || order.groupCode.startsWith(q))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((order) => toListItem(order, who));
+    const sort = get("sort");
+    return HttpResponse.json(
+      paginate(sort ? sortBy(rows, sort, (get("order") as "asc" | "desc" | null) ?? "desc") : rows, pageOf(url)),
+    );
+  }),
+
+  http.get("*/v1/admin/order-cancel-reasons", ({ request }) => {
+    if (!allowed(request, "orders.read")) return forbidden();
+    const appliesTo = new URL(request.url).searchParams.get("appliesTo");
+    return HttpResponse.json(CANCEL_REASONS.filter((reason) => !appliesTo || reason.appliesTo === appliesTo));
+  }),
+
+  http.post("*/v1/admin/orders/actions/send-payment-reminders", ({ request }) =>
+    replayable(request, async () => {
+      const who = allowed(request, "orders.manage");
+      if (!who) return forbidden();
+      const body = (await request.json().catch(() => null)) as Schemas["BulkPaymentReminderDto"] | null;
+      if (!body?.orderIds?.length || body.orderIds.length > 100)
+        return problem(422, "validation.failed", "เลือกคำสั่งซื้อ 1–100 รายการ");
+      const result: Schemas["PaymentReminderResultDto"] = { sent: 0, skipped: [] };
+      for (const orderId of body.orderIds) {
+        const order = find(orderId);
+        const refusal = order ? reminderRefusal(order) : "http.not_found";
+        if (order && !refusal) {
+          remind(order, who);
+          result.sent += 1;
+        } else result.skipped.push({ orderId, reason: refusal ?? "http.not_found" });
+      }
+      return HttpResponse.json(result);
+    }),
+  ),
+
+  http.post("*/v1/admin/orders/:orderId/actions/send-payment-reminder", ({ params, request }) =>
+    replayable(request, () => {
+      const who = allowed(request, "orders.manage");
+      if (!who) return forbidden();
+      const order = find(params.orderId as string);
+      if (!order) return notFound();
+      const refusal = reminderRefusal(order);
+      if (refusal) return problem(409, refusal, REMINDER_REFUSALS[refusal]);
+      remind(order, who);
+      return new HttpResponse(null, { status: 204 });
+    }),
+  ),
 
   http.get("*/v1/admin/orders/:orderId", ({ params, request }) => {
     const who = allowed(request, "orders.read");
@@ -304,69 +616,75 @@ export const orderHandlers = [
     return HttpResponse.json(dto, { status: 201 });
   }),
 
-  http.post("*/v1/admin/orders/:orderId/actions/cancel", async ({ params, request }) => {
-    const who = allowed(request, "orders.cancel");
-    if (!who) return forbidden();
-    const order = find(params.orderId as string);
-    if (!order) return notFound();
-    const body = (await request.json().catch(() => null)) as Schemas["CancelOrderDto"] | null;
-    if (!body?.reasonCode) return problem(422, "validation.failed", "เลือกเหตุผลก่อน");
-    if (!["waiting_payment", "paid_for_production", "artwork_approved"].includes(order.status))
-      return problem(409, "order.invalid_transition", "ยกเลิกคำสั่งซื้อที่เริ่มผลิตแล้วไม่ได้");
-    Object.assign(order, {
-      status: "cancelled",
-      cancelledAt: bangkokIso(),
-      cancelReason: body.note ?? body.reasonCode,
-      hasSlipToReview: false,
-      slaDueAt: null,
-    });
-    order.group.status = "cancelled";
-    logEvent(
-      order,
-      "order.cancelled",
-      "ยกเลิกคำสั่งซื้อ",
-      { id: who.id, displayName: who.displayName },
-      body.note ?? body.reasonCode,
-    );
-    refreshOrder(order);
-    return HttpResponse.json(toAdminOrderDto(order, who));
-  }),
+  http.post("*/v1/admin/orders/:orderId/actions/cancel", ({ params, request }) =>
+    replayable(request, async () => {
+      const who = allowed(request, "orders.cancel");
+      if (!who) return forbidden();
+      const order = find(params.orderId as string);
+      if (!order) return notFound();
+      const body = (await request.json().catch(() => null)) as Schemas["CancelOrderDto"] | null;
+      const reason = CANCEL_REASONS.find((candidate) => candidate.code === body?.reasonCode);
+      if (!reason) return problem(422, "validation.failed", "เลือกเหตุผลก่อน");
+      if (!offered(order, who, "order.cancel"))
+        return problem(409, "order.invalid_transition", "ยกเลิกคำสั่งซื้อที่เริ่มผลิตแล้วไม่ได้");
+      Object.assign(order, {
+        status: "cancelled",
+        cancelledAt: bangkokIso(),
+        cancelReason: reason.nameTh,
+        hasSlipToReview: false,
+        slaDueAt: null,
+      });
+      cancelledWith.set(order.id, reason);
+      order.group.status = "cancelled";
+      logEvent(
+        order,
+        "order.cancelled",
+        "ยกเลิกคำสั่งซื้อ",
+        { id: who.id, displayName: who.displayName },
+        body?.note ?? reason.nameTh,
+      );
+      refreshOrder(order);
+      return HttpResponse.json(toAdminOrderDto(order, who));
+    }),
+  ),
 
-  http.post("*/v1/admin/orders/:orderId/actions/start-production", async ({ params, request }) => {
-    const who = allowed(request, "production.start_manual");
-    if (!who) return forbidden();
-    const order = find(params.orderId as string);
-    if (!order) return notFound();
-    const body = (await request.json().catch(() => null)) as Schemas["StartProductionDto"] | null;
-    if (!body?.reason || body.reason.trim().length < 3) return problem(422, "validation.failed", "ระบุเหตุผล");
-    if (!["paid_for_production", "artwork_approved"].includes(order.status))
-      return problem(409, "order.invalid_transition", "คำสั่งซื้อนี้เริ่มผลิตไม่ได้ในสถานะปัจจุบัน");
-    order.status = "in_production";
-    order.startMode = "manual_exception";
-    order.confirmedProductionDate = bangkokIso().slice(0, 10);
-    order.jobs = [
-      {
-        id: mockId("job", 900 + orders.indexOf(order)),
-        jobNo: `J-2569-${String(900 + orders.indexOf(order))}`,
-        kind: "production",
-        factory: FACTORY,
-        status: "released",
-        acceptDueAt: bangkokIso(60 * 24),
-        promisedShipDate: order.promisedShipDate,
-        atRisk: false,
-        milestones: [],
-      },
-    ];
-    logEvent(
-      order,
-      "production.started_manually",
-      "เริ่มผลิตด้วยมือ (กรณียกเว้น)",
-      { id: who.id, displayName: who.displayName },
-      body.reason,
-    );
-    refreshOrder(order);
-    return HttpResponse.json(toAdminJobDto(order, order.jobs[0]!, who));
-  }),
+  http.post("*/v1/admin/orders/:orderId/actions/start-production", ({ params, request }) =>
+    replayable(request, async () => {
+      const who = allowed(request, "production.start_manual");
+      if (!who) return forbidden();
+      const order = find(params.orderId as string);
+      if (!order) return notFound();
+      const body = (await request.json().catch(() => null)) as Schemas["StartProductionDto"] | null;
+      if (!body?.reason || body.reason.trim().length < 3) return problem(422, "validation.failed", "ระบุเหตุผล");
+      if (!offered(order, who, "order.start_production"))
+        return problem(409, "order.invalid_transition", "คำสั่งซื้อนี้เริ่มผลิตไม่ได้ในสถานะปัจจุบัน");
+      order.status = "in_production";
+      order.startMode = "manual_exception";
+      order.confirmedProductionDate = bangkokIso().slice(0, 10);
+      order.jobs = [
+        {
+          id: mockId("job", 900 + orders.indexOf(order)),
+          jobNo: `J-2569-${String(900 + orders.indexOf(order))}`,
+          kind: "production",
+          factory: FACTORY,
+          status: "released",
+          acceptDueAt: bangkokIso(60 * 24),
+          promisedShipDate: order.promisedShipDate,
+          atRisk: false,
+          milestones: [],
+        },
+      ];
+      logEvent(
+        order,
+        "production.started_manually",
+        "เริ่มผลิตด้วยมือ (กรณียกเว้น)",
+        { id: who.id, displayName: who.displayName },
+        body.reason,
+      );
+      refreshOrder(order);
+      return HttpResponse.json(toAdminJobDto(order, order.jobs[0]!, who));
+    }),
+  ),
 
   // CS records a slip (D-061): a bank-transfer payment for the instalments, then the slip on it.
   http.post("*/v1/admin/order-groups/:groupId/payments", async ({ params, request }) => {

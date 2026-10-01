@@ -11,9 +11,11 @@
       "status": "Status",
       "credit": "Credit",
       "members": "Members",
-      "paidOrders": "Paid orders"
+      "paidOrders": "Paid orders",
+      "receivables": "Receivables"
     },
-    "noCode": "No code yet"
+    "noCode": "No code yet",
+    "overdue": "{amount} overdue · {days} days"
   },
   "detail": {
     "title": "Company",
@@ -63,7 +65,8 @@
       }
     },
     "noCode": "No company code yet",
-    "statusReason": "Why the company has this status"
+    "statusReason": "Why the company has this status",
+    "blockedDays": "Credit orders blocked: {days} days overdue"
   },
   "overview": {
     "terms": "Terms",
@@ -87,7 +90,19 @@
     "withholdsTax": "Withholds tax",
     "withholdsYes": "Yes",
     "withholdsNo": "No",
-    "none": "–"
+    "none": "–",
+    "receivables": "Receivables and discount",
+    "receivablesNote": "What the open invoices owe (D-122) and the company discount in force (D-124)",
+    "open": "Open",
+    "overdue": "Overdue",
+    "oldestDays": "oldest {days} days",
+    "nextDue": "Next due",
+    "discount": "Company discount",
+    "discountUntil": "until",
+    "discountOpen": "no end date",
+    "contactPhone": "Contact phone",
+    "signatory": "Signatory",
+    "signatoryValue": "{name} ({position})"
   },
   "kyc": {
     "title": "KYC documents",
@@ -110,7 +125,7 @@
     "save": "Save",
     "needNote": "Say what to fix",
     "failed": "Could not save the review",
-    "reviewed": "Review saved",
+    "reviewed": "Reviewed by",
     "outcome": "Outcome",
     "verify": "Verified",
     "reject": "Rejected",
@@ -120,7 +135,8 @@
     "missing": "Required documents still missing",
     "download": "Get the file",
     "open": "Open the file",
-    "downloadFailed": "Could not open the file"
+    "downloadFailed": "Could not open the file",
+    "uploadedAt": "Uploaded"
   },
   "members": {
     "title": "Members",
@@ -134,7 +150,8 @@
       "company_buyer": "Buyer",
       "company_approver": "Approver",
       "company_accountant": "Accountant"
-    }
+    },
+    "contact": "Contact"
   },
   "branches": {
     "title": "Branches",
@@ -171,15 +188,44 @@
     "failed": "Could not send the request",
     "routing": "Routed by the credit-limit approval policy; the approver depends on the amount",
     "limitHint": "THB",
-    "termHint": "The allowed terms come from the setting b2b.credit_terms; none chosen = the default",
+    "termHint": "The terms the settings allow; none chosen = the default",
     "termHidden": "Your role cannot read the credit-term setting",
     "chooseTerm": "Choose a term",
     "exposure": "Exposure",
     "noLimit": "No limit yet",
-    "pendingBody": "{limit} over {days} days, requested"
+    "pendingBody": "{limit} over {days} days, requested",
+    "eligibleBy": "May apply for credit: {basis}",
+    "notEligible": "Not yet eligible for credit",
+    "eligibilityBody": "{paid} of the {needed} paid orders needed.",
+    "statementOnFile": "A financial statement is on file.",
+    "noStatementOnFile": "No financial statement on file.",
+    "pendingVersion": "Version {no}: {limit} on {days} days, requested",
+    "openApproval": "Open the approval",
+    "approval": "Approval",
+    "history": "Limit history",
+    "noHistory": "No limit requested yet",
+    "version": "Version",
+    "versionStatus": "Status",
+    "requested": "Requested by",
+    "receivables": "Receivables by age",
+    "receivablesNote": "Overdue amounts block credit orders by the system's rule (D-122)",
+    "aging": {
+      "current": "Not yet due",
+      "d1_30": "1–30 days over",
+      "d31_60": "31–60 days over",
+      "d61_90": "61–90 days over",
+      "over_90": "Over 90 days"
+    },
+    "notices": {
+      "due_soon": "Due soon",
+      "due_today": "Due today",
+      "overdue": "Overdue",
+      "credit_blocked": "Credit orders blocked"
+    },
+    "asOf": "As of"
   },
   "statements": {
-    "title": "Monthly statements",
+    "title": "Monthly figures",
     "note": "For consolidated payment; tax invoices are still per order (D-125)",
     "opening": "Opening",
     "invoiced": "Invoiced",
@@ -187,6 +233,12 @@
     "closing": "Closing",
     "month": "Month",
     "credited": "Credited",
-    "noAccess": "Your role cannot read receivables statements"
+    "noAccess": "Your role cannot read receivables statements",
+    "issued": "Issued statements",
+    "noneIssued": "No statement issued yet",
+    "sentAt": "Sent",
+    "pdf": "PDF",
+    "pdfOf": "Download the {month} statement PDF",
+    "pdfFailed": "Could not open the PDF"
   }
 }

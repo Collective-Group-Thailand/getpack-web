@@ -29,7 +29,8 @@ export interface NextActionBarProps {
 export function NextActionBar({ actions, supported, labelOf, onAction }: NextActionBarProps) {
   const t = useTranslations("status");
   const tConsole = useTranslations("console.actions");
-  const lead = primaryAction(actions);
+  // The lead is one this screen can perform: an offered verb it has no flow for stays in "more".
+  const lead = primaryAction(actions.filter((action) => supported.has(actionVerb(action.key))));
   const rest = actions.filter((action) => action !== lead);
 
   const label = (action: NextAction) => labelOf?.(actionVerb(action.key)) ?? t(nextActionMeta(action.key).labelKey);

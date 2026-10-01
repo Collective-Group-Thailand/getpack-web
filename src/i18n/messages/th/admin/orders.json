@@ -8,7 +8,8 @@
       "artwork_review": "รอตรวจไฟล์",
       "waiting_production": "รอเริ่มผลิต",
       "due_soon": "ใกล้ครบกำหนดส่ง",
-      "late": "ล่าช้า"
+      "late": "ล่าช้า",
+      "all": "ทั้งหมด"
     },
     "search": "ค้นหาคำสั่งซื้อ",
     "searchPlaceholder": "รหัสคำสั่งซื้อ ชื่อ หรือเบอร์โทร",
@@ -22,7 +23,8 @@
       "ship": "กำหนดส่ง",
       "sla": "SLA",
       "created": "สร้างเมื่อ",
-      "expires": "หมดอายุการชำระ"
+      "expires": "หมดอายุการชำระ",
+      "nextInstalment": "งวดถัดไป"
     },
     "slipWaiting": "มีสลิปรอตรวจ",
     "noFactory": "ยังไม่มอบหมาย",
@@ -41,11 +43,28 @@
     "createdTo": "สร้างถึง",
     "sendReminders": "ส่งข้อความเตือนชำระ",
     "remindersSent": "ส่งข้อความเตือนแล้ว {count} รายการ",
-    "remindersSkipped": "ข้าม {count} รายการที่ไม่ได้รอชำระแล้ว",
+    "remindersSkipped": "ข้าม {count} รายการ",
     "remindersFailed": "ส่งข้อความเตือนไม่สำเร็จ",
     "create": "สร้างคำสั่งซื้อแทนลูกค้า",
     "emptyTitle": "ไม่มีคำสั่งซื้อในคิวนี้",
-    "emptyBody": "งานใหม่จะขึ้นที่นี่ทันทีที่เข้าคิว"
+    "emptyBody": "งานใหม่จะขึ้นที่นี่ทันทีที่เข้าคิว",
+    "searchPrefix": "รหัสคำสั่งซื้อหรือกลุ่ม (ขึ้นต้นด้วย)",
+    "artworkStatus": "สถานะไฟล์งาน",
+    "productType": "ประเภทสินค้า",
+    "quantityValue": "{quantity} {unit}",
+    "instalmentValue": "งวด {seq} · ค้าง {amount}",
+    "units": {
+      "piece": "ชิ้น",
+      "box": "กล่อง",
+      "pouch": "ซอง",
+      "tube": "หลอด",
+      "set": "ชุด",
+      "job": "งาน",
+      "round": "รอบ",
+      "trip": "เที่ยว"
+    },
+    "emptyAllTitle": "ไม่พบคำสั่งซื้อ",
+    "emptyAllBody": "ลองเปลี่ยนตัวกรองหรือคำค้นหา"
   },
   "detail": {
     "title": "คำสั่งซื้อ",
@@ -115,7 +134,32 @@
       "withholds": "หักภาษี ณ ที่จ่าย",
       "taxAddress": "ที่อยู่",
       "yes": "ใช่",
-      "no": "ไม่ใช่"
+      "no": "ไม่ใช่",
+      "company": "บริษัท",
+      "placedBy": "ผู้สั่ง",
+      "quantityValue": "{quantity} {unit}",
+      "estimatedDelivery": "คาดว่าจะได้รับ",
+      "receipt": {
+        "title": "การส่งมอบและรับของ",
+        "delivered": "ส่งถึงเมื่อ",
+        "confirmed": "ลูกค้ายืนยันรับของ",
+        "completed": "ปิดคำสั่งซื้อ",
+        "autoComplete": "ปิดอัตโนมัติเมื่อ",
+        "claimWindow": "แจ้งเคลมได้ถึง",
+        "tolerance": "จำนวนที่ส่งเทียบค่าเผื่อ",
+        "credit": "เครดิตคืน {amount}",
+        "modes": {
+          "auto_after_days": "ปิดอัตโนมัติ",
+          "customer_confirmed": "ลูกค้ายืนยัน"
+        },
+        "outcomes": {
+          "exact": "ส่งครบ {delivered} จาก {ordered}",
+          "shortage_within": "ส่ง {delivered} จาก {ordered} ขาดในค่าเผื่อ ลูกค้าได้เครดิตตามสัดส่วน",
+          "overage_within": "ส่ง {delivered} จาก {ordered} เกินในค่าเผื่อ ไม่คิดเงินเพิ่ม",
+          "shortage_outside": "ส่ง {delivered} จาก {ordered} ขาดเกินค่าเผื่อ เปิดเคลมอัตโนมัติ",
+          "overage_outside": "ส่ง {delivered} จาก {ordered} เกินค่าเผื่อ เปิดเคลมอัตโนมัติ"
+        }
+      }
     },
     "items": {
       "parts": "ส่วนประกอบและราคา",
@@ -204,7 +248,10 @@
       "expected": "ยอดที่ต้องชำระ {amount}",
       "slipsWaiting": "สลิปที่รอการเงินตรวจ",
       "paymentsElsewhere": "รายการชำระเงินของคำสั่งซื้อดูได้ที่หน้าการเงิน",
-      "openPayments": "เปิดรายการชำระเงินของกลุ่มนี้"
+      "openPayments": "เปิดรายการชำระเงินของกลุ่มนี้",
+      "open": "ค้างชำระ",
+      "method": "วิธีชำระ",
+      "slips": "สลิป"
     },
     "artwork": {
       "title": "ไฟล์งาน",
@@ -254,7 +301,11 @@
       "noMilestones": "ยังไม่มีความคืบหน้า",
       "doneAt": "เสร็จ {at}",
       "dueAt": "กำหนด {at}",
-      "late": "ช้ากว่ากำหนด"
+      "late": "ช้ากว่ากำหนด",
+      "risks": {
+        "step_overdue": "ขั้นตอนเลยกำหนด",
+        "late_plan": "แผนเลยกำหนดส่ง"
+      }
     },
     "shipments": {
       "none": "ยังไม่มีการจัดส่ง",
@@ -304,7 +355,17 @@
         "other": "อื่น ๆ"
       }
     },
-    "unreadable": "บทบาทของคุณไม่มีสิทธิ์ดูส่วนนี้"
+    "unreadable": "บทบาทของคุณไม่มีสิทธิ์ดูส่วนนี้",
+    "units": {
+      "piece": "ชิ้น",
+      "box": "กล่อง",
+      "pouch": "ซอง",
+      "tube": "หลอด",
+      "set": "ชุด",
+      "job": "งาน",
+      "round": "รอบ",
+      "trip": "เที่ยว"
+    }
   },
   "actions": {
     "failed": "ทำรายการไม่สำเร็จ",
@@ -398,7 +459,9 @@
       "shipment_in_transit": "กำลังขนส่ง",
       "shipment_delivered": "ส่งถึงแล้ว",
       "other": "อัปเดตคำสั่งซื้อ"
-    }
+    },
+    "promisedOnTime": "ตามแผนกำหนด {at}",
+    "promisedLate": "ช้ากว่าแผน (กำหนด {at})"
   },
   "group": {
     "title": "กลุ่มคำสั่งซื้อ",
@@ -417,7 +480,12 @@
     "status": "สถานะ",
     "schedule": "งวดการชำระเงิน",
     "instalment": "งวด",
-    "paid": "ชำระแล้ว"
+    "paid": "ชำระแล้ว",
+    "slipWaiting": "มีสลิปของกลุ่มนี้รอการเงินตรวจ",
+    "customer": "ลูกค้า",
+    "customerCode": "รหัสลูกค้า",
+    "company": "บริษัท",
+    "placedBy": "ผู้สั่ง"
   },
   "party": {
     "title": "คำสั่งซื้อ",
@@ -428,6 +496,8 @@
     "created": "สั่งเมื่อ",
     "empty": "ยังไม่มีคำสั่งซื้อ",
     "unavailable": "ยังแสดงคำสั่งซื้อที่นี่ไม่ได้",
-    "unavailableBody": "ระบบยังไม่มีรายการคำสั่งซื้อแยกตามบริษัทหรือลูกค้าที่ไม่มีรหัสลูกค้า ค้นหาด้วยรหัสคำสั่งซื้อในหน้าคำสั่งซื้อแทน"
+    "unavailableBody": "ระบบยังไม่มีรายการคำสั่งซื้อแยกตามบริษัทหรือลูกค้าที่ไม่มีรหัสลูกค้า ค้นหาด้วยรหัสคำสั่งซื้อในหน้าคำสั่งซื้อแทน",
+    "placedBy": "ผู้สั่ง",
+    "slipWaiting": "มีสลิปรอตรวจ"
   }
 }

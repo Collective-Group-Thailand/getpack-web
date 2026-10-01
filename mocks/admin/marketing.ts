@@ -799,15 +799,17 @@ export const marketingHandlers = [
     return batches.filter((batch) => batch.promotionId === params.promotionId);
   }),
 
-  // admin.referrals.list (U-F0.3): no referrerId filter, the first order as its group.
+  // admin.referrals.list: `?referrerId` (v0.5.0) for the customer screen, the first order as its group.
   http.get("*/v1/admin/referrals", ({ request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "promotions.read")) return forbidden();
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
+    const referrerId = url.searchParams.get("referrerId");
     const q = url.searchParams.get("q") ?? undefined;
     const rows = referrals
       .filter((item) => !status || item.status === status)
+      .filter((item) => !referrerId || item.referrer.id === referrerId)
       .filter((item) => matchesQuery(q, item.referralCode, item.referrer.displayName, item.referee.displayName))
       .map(toReferralDto);
     return HttpResponse.json(
