@@ -141,7 +141,8 @@ test.describe("order actions", () => {
     await dialog.getByRole("button", { name: "ยกเลิกคำสั่งซื้อ" }).click();
 
     await expect(page.getByRole("heading", { level: 1 }).locator("..")).toContainText("ยกเลิกแล้ว");
-    await expect(page.getByText("ลูกค้าขอยกเลิก")).toBeVisible();
+    // The reason, as the API names it, on the summary (and in the timeline).
+    await expect(page.getByText("ลูกค้าขอยกเลิก").first()).toBeVisible();
   });
 
   test("a payment reminder goes once, and a second within the hour is refused", async ({ page }) => {
