@@ -193,13 +193,15 @@ test.describe("requests for quotation", () => {
     const rfqId = rfqUrl.split("/").at(-1)!;
     await gotoHydrated(staff, `${HOSTS.admin}/rfq/${rfqId}?tab=quotes`);
     await expect(staff.getByRole("heading", { level: 1 })).toHaveText(code);
-    await staff.getByRole("button", { name: "เริ่มพิจารณา" }).click();
+    // The RFQ header leads with the API's first action (assign); start review is under "more".
+    await staff.getByRole("button", { name: "การดำเนินการอื่น" }).click();
+    await staff.getByRole("menuitem", { name: "เริ่มพิจารณา" }).click();
     await expect(staff.getByText("กำลังพิจารณาคำขอ").first()).toBeVisible();
     await staff.getByRole("tabpanel").getByRole("button", { name: "จัดทำใบเสนอราคา" }).click();
     for (const input of await staff.getByLabel(/^ราคาขายต่อชิ้น/).all()) await input.fill("42.50");
     for (const input of await staff.getByLabel(/^ระยะเวลาผลิต/).all()) await input.fill("15");
     await staff.getByRole("button", { name: "บันทึกฉบับร่าง" }).click();
-    await staff.getByRole("button", { name: "ส่งใบเสนอราคา" }).first().click();
+    await staff.getByRole("tabpanel").getByRole("button", { name: "ส่งฉบับที่ 1 ให้ลูกค้า" }).click();
     const send = staff.getByRole("alertdialog", { name: "ส่งใบเสนอราคาฉบับที่ 1" });
     await send.getByLabel(new RegExp(`พิมพ์ ${code}`)).fill(code);
     await send.getByRole("button", { name: "ส่งให้ลูกค้า" }).click();
