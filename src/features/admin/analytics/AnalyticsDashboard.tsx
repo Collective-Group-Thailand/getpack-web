@@ -13,6 +13,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DataTable } from "@/ui/components/DataTable";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
@@ -101,6 +102,12 @@ export function AnalyticsDashboard() {
     period,
     async (query) => (await contract().GET("/v1/admin/analytics/factories", { params: { query } })).data!,
     canFactories,
+  );
+  // Price shown → not carted (`admin.analytics.sensitivity`, U-B0.3): drop-off by lead-time band and price quartile.
+  const sensitivity = useRollup(
+    "sensitivity",
+    period,
+    async (query) => (await contract().GET("/v1/admin/analytics/sensitivity", { params: { query } })).data!,
   );
   const campaigns = useRollup(
     "campaigns",
@@ -361,7 +368,7 @@ export function AnalyticsDashboard() {
               formatValue={(value) => format.number(value)}
               labels={labels}
             />
-            {/* CONTRACT-GAP admin.analytics — no GMV, conversion or "priced but not taken" per cell. */}
+            {/* CONTRACT-GAP admin.analytics — no GMV or conversion per cell; "priced but not taken" is the sensitivity block below. */}
             <DataTable<DemandRow>
               className="mt-4"
               caption={t("demand.table")}
@@ -435,6 +442,56 @@ export function AnalyticsDashboard() {
       </Section>
 
       <div className="grid gap-5 xl:grid-cols-2">
+        <Section title={t("sensitivity.title")} description={t("sensitivity.note")}>
+          {sensitivity.isError ? (
+            <QueryError error={sensitivity.error} onRetry={() => void sensitivity.refetch()} />
+          ) : sensitivity.data ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {(["byLeadTime", "byPriceQuartile"] as const).map((part) => (
+                <DataTable<Schemas["SensitivityRowDto"]>
+                  key={part}
+                  caption={t(`sensitivity.${part}`)}
+                  showCaption
+                  columns={[
+                    {
+                      id: "band",
+                      header: t(`sensitivity.${part}Band`),
+                      cell: (row) =>
+                        part === "byLeadTime"
+                          ? t("sensitivity.days", { band: row.band })
+                          : t("sensitivity.quartile", { band: row.band }),
+                    },
+                    {
+                      id: "shown",
+                      header: t("sensitivity.shown"),
+                      numeric: true,
+                      cell: (row) => format.number(row.shown),
+                    },
+                    {
+                      id: "carted",
+                      header: t("sensitivity.carted"),
+                      numeric: true,
+                      cell: (row) => format.number(row.carted),
+                    },
+                    {
+                      id: "dropOff",
+                      header: t("sensitivity.dropOff"),
+                      numeric: true,
+                      cell: (row) => format.percent(row.dropOffPct),
+                    },
+                  ]}
+                  rows={sensitivity.data[part]}
+                  getRowId={(row) => row.band}
+                  density="compact"
+                  empty={<EmptyState icon="chart" title={t("sensitivity.empty")} />}
+                />
+              ))}
+            </div>
+          ) : period ? (
+            <Skeleton className="h-40 w-full" />
+          ) : null}
+        </Section>
+
         <Section title={t("unmet.title")} description={t("unmet.note")}>
           {unmet.isError ? <QueryError error={unmet.error} onRetry={() => void unmet.refetch()} /> : null}
           {unmet.data ? (

@@ -311,6 +311,32 @@ function groupByOf(url: URL): Dimension[] | Response {
   return values.length ? (values as Dimension[]) : ["product_type"];
 }
 
+/**
+ * `admin.analytics.sensitivity` (U-B0.3): sessions shown a price per lead-time band and per price
+ * quartile, and how many carted the product type. The drop-off is worked out here, as the API does.
+ */
+function sensitivity(from: string, to: string): Schemas["SensitivityReportDto"] {
+  const scale = days(from, to);
+  const row = (band: string, shown: number, cartedShare: number): Schemas["SensitivityRowDto"] => {
+    const carted = Math.round(shown * cartedShare);
+    return { band, shown, carted, dropOffPct: shown ? ((1 - carted / shown) * 100).toFixed(2) : null };
+  };
+  return {
+    byLeadTime: [
+      row("1-7", scale * 9, 0.34),
+      row("8-14", scale * 14, 0.27),
+      row("15-21", scale * 6, 0.18),
+      row("22+", scale * 2, 0.09),
+    ],
+    byPriceQuartile: [
+      row("1", scale * 8, 0.36),
+      row("2", scale * 8, 0.29),
+      row("3", scale * 8, 0.21),
+      row("4", scale * 7, 0.12),
+    ],
+  };
+}
+
 function unmet(from: string, to: string): Schemas["UnmetDemandReportDto"] {
   const scale = days(from, to);
   const n = (factor: number) => Math.max(1, Math.round(scale * factor));
@@ -498,6 +524,21 @@ const uuidOf = (key: "productTypeId" | "factoryId"): FilterDef => ({
   required: false,
   values: null,
 });
+
+/** The totals row packio-api adds (U-B0.3): money in satang, then back to a decimal string; counts as numbers. */
+function totalsOf(
+  columns: readonly Column[],
+  rows: readonly Record<string, unknown>[],
+): Record<string, string | number> {
+  const totals: Record<string, string | number> = {};
+  for (const column of columns.filter((item) => item.total)) {
+    const values = rows.map((row) => row[column.key]);
+    if (column.type === "money")
+      totals[column.key] = baht(values.reduce<number>((sum, value) => sum + Math.round(Number(value ?? 0) * 100), 0));
+    else totals[column.key] = values.reduce<number>((sum, value) => sum + Number(value ?? 0), 0);
+  }
+  return totals;
+}
 
 /** packio-api's R1 reports (B6.2, D-111), in its order. */
 const REPORTS: MockReport[] = [
@@ -937,6 +978,7 @@ export const analyticsContractHandlers = [
     }),
   ),
   http.get("*/v1/admin/analytics/unmet-demand", dashboard(["analytics.read"], unmet)),
+  http.get("*/v1/admin/analytics/sensitivity", dashboard(["analytics.read"], sensitivity)),
   http.get("*/v1/admin/analytics/factories", dashboard(["analytics.read", "analytics.read_factories"], factories)),
   http.get("*/v1/admin/analytics/campaigns", dashboard(["analytics.read"], campaigns)),
 
@@ -1006,8 +1048,8 @@ export const analyticsContractHandlers = [
       filters,
       rows: rows.slice(0, PREVIEW_ROWS),
       truncated: rows.length > PREVIEW_ROWS,
-      // The mock adds up no money: an empty totals row until the analytics slice sums the rows.
-      totals: {},
+      // As packio-api: the sum of every row of the report, not only the previewed ones.
+      totals: totalsOf(report.columns, rows),
       generatedAt: bangkokIso(),
     } satisfies Schemas["ReportPreviewDto"]);
   }),

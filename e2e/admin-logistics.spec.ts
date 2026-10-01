@@ -246,12 +246,19 @@ test.describe("operational reports (B6.2)", () => {
     expect((await file).ok()).toBe(true);
   });
 
-  // CONTRACT-GAP admin.reports — ReportPreviewDto has no totals row (columns[].total + totals, packio-api U-B0.3).
-  test.fixme("a report ends with the API's totals row", async ({ page }) => {
+  // `columns[].total` + `totals` (U-B0.3): the API adds up every row; the screen only prints it.
+  test("a report ends with the API's totals row", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/reports/sales`);
+    await page.getByRole("combobox", { name: "ช่วงเวลา" }).click();
+    await page.getByRole("option", { name: "กำหนดเอง", exact: true }).click();
+    await page.getByLabel(/^ตั้งแต่/).fill("2026-09-01");
+    await page.getByLabel(/^ถึง/).fill("2026-09-03");
+    await page.getByRole("button", { name: "แสดงรายงาน" }).click();
     const table = page.getByRole("table", { name: "รายงานยอดขาย" });
     await expect(table.locator("tfoot")).toContainText("รวม");
+    await expect(table.locator("tfoot")).toContainText("฿");
+    await expect(page.getByText(/สร้างเมื่อ/)).toBeVisible();
   });
 
   test("a report outside the role is not offered", async ({ page }) => {

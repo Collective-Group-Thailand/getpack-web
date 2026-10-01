@@ -65,6 +65,8 @@
   "no": "No",
   "chooseFilters": "Choose the required filters, then run the report",
   "resolved": "Figures for {from} – {to}",
+  "generatedAt": "Generated {at}",
+  "totals": "Total",
   "truncated": "Showing the first {rows} rows only",
   "truncatedExport": "Export the file for all of them",
   "export": {
