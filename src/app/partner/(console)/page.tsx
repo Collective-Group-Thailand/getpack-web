@@ -49,7 +49,7 @@ export default async function PartnerHomePage() {
       : null,
   ]);
   const [statements, claims] = await Promise.all([
-    canAt(context, "factory_billing.confirm")
+    canAt(context, "factory_payables.manage")
       ? attempt(() =>
           requests.call("GET /v1/partner/factories/{factoryId}/billing-statements", {
             path: { factoryId: context.factoryId },

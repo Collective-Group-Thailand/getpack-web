@@ -35,7 +35,7 @@ export function ConfirmStatement({
   const { factoryId, can } = useFactory();
   const [refresh] = useRefresh();
   const [open, setOpen] = useState(false);
-  if (!can("factory_billing.confirm")) return null;
+  if (!can("factory_payables.manage")) return null;
   return (
     <>
       <Button size="xl" block iconStart="check" onClick={() => setOpen(true)}>
@@ -71,7 +71,7 @@ export function DisputeStatement({ statementId, bsNumber }: { statementId: strin
   const { factoryId, can } = useFactory();
   const [refresh] = useRefresh();
   const [open, setOpen] = useState(false);
-  if (!can("factory_billing.confirm")) return null;
+  if (!can("factory_payables.manage")) return null;
   return (
     <>
       <Button size="xl" block variant="secondary" iconStart="flag" onClick={() => setOpen(true)}>
@@ -133,7 +133,7 @@ export function TaxInvoiceForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [key, setKey] = useState(newIdempotencyKey);
-  if (!can("factory_billing.confirm")) return null;
+  if (!can("factory_payables.manage")) return null;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();

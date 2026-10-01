@@ -22,7 +22,7 @@ const ITEMS: Record<PartnerNavKey, PartnerNavItem> = {
 const PERMISSION: Partial<Record<PartnerNavKey, string>> = {
   jobs: "factory_jobs.read",
   ship: "factory_shipments.read",
-  billing: "factory_billing.read",
+  billing: "factory_payables.read",
 };
 
 /**

@@ -398,8 +398,8 @@ function routeFor(job: Job, order: MockOrder): Job["milestones"] {
 
 const perm = {
   read: "factory_jobs.read",
-  update: "factory_jobs.update",
-  accept: "factory_jobs.accept",
+  update: "factory_milestones.update",
+  accept: "factory_jobs.respond",
   qc: "factory_qc.record",
 };
 
