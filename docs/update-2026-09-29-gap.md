@@ -179,6 +179,14 @@ Met, not touched:
 - the parked `store.configurator` (U2.F1);
 - the CS calculators beyond folding and corrugate stay RFQ-only (U-B6; the label calculator is not tagged).
 
+Status after U-F0.4 (2026-10-01): every row met.
+- Request operations went from 115 to 5:
+  - the parked configurator;
+  - guided help and sample kits, deferred (D-223);
+  - analytics journeys (U5.B6).
+- `CONTRACT-GAP` markers went from 190 to 86; each names a gap packio-api left out or a row still open.
+- The migration slices are listed in `docs/PROGRESS.md` §U-F0.4, with what each screen still lacks.
+
 ### Appendix — every published request operation and where it went
 Generated from `triage.ts` and `awaiting-migration.ts` at the start of U-F0.4. "Gaps" counts the fields the shipped group added for the screen to apply.
 **partner** (43)
