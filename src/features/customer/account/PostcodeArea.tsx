@@ -50,13 +50,11 @@ export function PostcodeAreaField({
   subdistrictId,
   onChange,
   errors,
-  idPrefix,
 }: {
   postcode: string;
   subdistrictId: string;
   onChange: (next: { postcode: string; area: ChosenArea | null }) => void;
   errors?: { postcode?: string; subdistrict?: string };
-  idPrefix: string;
 }) {
   const t = useTranslations("account.area");
   const locale = useLocale();
@@ -91,7 +89,6 @@ export function PostcodeAreaField({
         requiredLabel={t("requiredMark")}
       >
         <Input
-          id={`${idPrefix}-postcode`}
           inputMode="numeric"
           autoComplete="postal-code"
           maxLength={5}

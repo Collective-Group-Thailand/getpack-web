@@ -223,7 +223,6 @@ export function CompanySignup({ phone: initialPhone }: { phone: string }) {
 
       <FormSection title={t("address")} description={t("addressIntro")}>
         <PostcodeAreaField
-          idPrefix="head-office"
           postcode={postcode}
           subdistrictId={area?.subdistrictId ?? ""}
           errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}

@@ -127,7 +127,6 @@ function CreateAddress({ onSaved, onCancel }: { onSaved: (address: Address) => v
         </Field>
       </div>
       <PostcodeAreaField
-        idPrefix="address"
         postcode={postcode}
         subdistrictId={area?.subdistrictId ?? ""}
         errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}
