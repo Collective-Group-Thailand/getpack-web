@@ -60,11 +60,11 @@ export const JOURNEY_ANNOTATION = "journey";
 const ENFORCE = process.env.STEP_BUDGETS === "enforce";
 
 /**
- * Records the funnel events the app sends, from inside the page.
+ * Records the app's funnel steps, from inside the page.
  *
- * `track()` uses `sendBeacon` with a Blob body, which Playwright's request events do not expose,
- * so the counter wraps the two ways an event can leave (`sendBeacon`, `fetch`) before any page
- * script runs, and reads the name out of the body. The events still go to the mock API.
+ * `track()` raises `packio:funnel-step` with the app's own step name (`src/lib/analytics/track.ts`)
+ * before mapping it onto packio-api's five ingest names, so the journeys count what the app did —
+ * including steps the API derives on its side instead of receiving (`docs/ux/funnels.md`).
  */
 async function captureEvents(context: BrowserContext, into: string[]): Promise<void> {
   await context.exposeBinding("__journeyEvent", (_source, name: string) => {
@@ -72,28 +72,10 @@ async function captureEvents(context: BrowserContext, into: string[]): Promise<v
   });
   await context.addInitScript(() => {
     const report = (window as unknown as { __journeyEvent: (name: string) => void }).__journeyEvent;
-    const read = async (url: string, body: unknown) => {
-      if (!url.includes("/analytics/events")) return;
-      try {
-        const text = typeof body === "string" ? body : body instanceof Blob ? await body.text() : "";
-        const parsed = JSON.parse(text) as { name?: string; events?: { name?: string }[] };
-        for (const name of parsed.events?.map((event) => event.name) ?? [parsed.name]) if (name) report(name);
-      } catch {
-        // Not an event body the counter can read; the journey is judged without it.
-      }
-    };
-    const beacon = navigator.sendBeacon?.bind(navigator);
-    if (beacon) {
-      navigator.sendBeacon = (url, data) => {
-        void read(String(url), data);
-        return beacon(url, data);
-      };
-    }
-    const send = window.fetch.bind(window);
-    window.fetch = (input, init) => {
-      void read(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, init?.body);
-      return send(input, init);
-    };
+    window.addEventListener("packio:funnel-step", (event) => {
+      const name = (event as CustomEvent<string>).detail;
+      if (typeof name === "string") report(name);
+    });
   });
 }
 
