@@ -1,12 +1,9 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
-import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
 import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
 import { Dialog } from "@/ui/components/Dialog";
@@ -16,6 +13,7 @@ import { toast } from "@/ui/components/Toast";
 import { useActor } from "./actor";
 import { problemMessage } from "./QueryError";
 import { useRoleLabel } from "./roles";
+import { useStaffDirectory } from "./useStaffDirectory";
 
 export interface AssignDialogProps {
   title: string;
@@ -28,8 +26,11 @@ export interface AssignDialogProps {
   personHint: string;
   /** Whether the item can be put back with nobody on it (default true); some APIs cannot unassign. */
   clearable?: boolean;
-  /** Calls the API; the dialog closes when it resolves and stays open when it throws. */
-  onAssign: (assigneeId: string | null) => Promise<void>;
+  /**
+   * Calls the API; the dialog closes when it resolves and stays open when it throws. `person` names
+   * who was picked, for an operation that answers nothing to show the new owner from.
+   */
+  onAssign: (assigneeId: string | null, person: { id: string; displayName: string } | null) => Promise<void>;
   onClose: () => void;
 }
 
@@ -55,17 +56,18 @@ export function AssignDialog({
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<ComboboxOption | null>(null);
 
-  const people = useQuery({
-    queryKey: queryKeys.list("admin", "staff_directory", { q: query, permission }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/staff-directory", {
-        query: { q: query || undefined, permission, limit: 20 },
-      }),
-    staleTime: STALE_TIME.reference,
-  });
+  const people = useStaffDirectory({ q: query, permission });
 
   const assign = useMutation({
-    mutationFn: onAssign,
+    mutationFn: (assigneeId: string | null) =>
+      onAssign(
+        assigneeId,
+        assigneeId === null
+          ? null
+          : assigneeId === actor.id
+            ? { id: actor.id, displayName: actor.displayName }
+            : { id: assigneeId, displayName: picked?.value === assigneeId ? picked.label : assigneeId },
+      ),
     onSuccess: (_, assigneeId) => {
       toast.success(assigneeId ? t("done") : t("cleared"));
       onClose();
@@ -114,7 +116,7 @@ export function AssignDialog({
           query={query}
           onQueryChange={setQuery}
           loading={people.isFetching}
-          options={(people.data?.data ?? []).map((person) => ({
+          options={(people.data ?? []).map((person) => ({
             value: person.id,
             label: person.displayName,
             description: person.roles.map(roleLabel).join(", "),

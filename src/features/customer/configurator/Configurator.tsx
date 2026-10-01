@@ -268,7 +268,9 @@ export function Configurator({
   const lineHref = lineOaId
     ? lineChatUrl(lineOaId, configurationSummary(t("lineMessage", { name }), facts, pageUrl))
     : null;
-  const rfqHref = `${rfqPath}?from=${encodeURIComponent(configurator.slug)}`;
+  // The calculation that routed this configuration to RFQ travels with it (D-102, `routedFrom`).
+  const calculationId = price.data?.calculationId;
+  const rfqHref = `${rfqPath}?from=${encodeURIComponent(configurator.slug)}${calculationId ? `&calc=${calculationId}` : ""}`;
 
   return (
     <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_20rem] lg:grid-cols-[minmax(0,1fr)_22rem]">

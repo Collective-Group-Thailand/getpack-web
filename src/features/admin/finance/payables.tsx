@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -38,6 +39,7 @@ import { Icon } from "@/ui/icons";
 import { useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
 import { ConfirmAction } from "../console/ConfirmAction";
+import { NextActionBar } from "../console/NextActionBar";
 import { FormDialog, FormError, Section } from "../console/FormDialog";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { ResourceList } from "../console/ResourceList";
@@ -438,15 +440,19 @@ export function BillingStatementsList({ initial }: { initial: InitialPage<Billin
   );
 }
 
+/** The verbs of `billing_statement.*` Finance performs here (packio-api `ADMIN_STATEMENT_ACTIONS`). */
+const STATEMENT_VERBS: ReadonlySet<string> = new Set(["capture_tax_invoice", "validate_tax_invoice"]);
+
 /**
- * One billing statement: its lines (production, shipping, deductions, the advance already paid),
- * whether the factory confirmed it, and the factory's own tax invoices against it. Finance keys in
- * a tax invoice the factory sent by other means; it is then validated like any other.
+ * One billing statement: its lines (production, shipping, deductions, the advance already paid)
+ * and the API's totals, whether and by whom the factory confirmed it, and the factory's own tax
+ * invoices against it. Finance keys in a tax invoice the factory sent by other means; it is then
+ * validated like any other. What may be done next is the statement's own `nextActions`.
  */
 export function BillingStatementDetail({ statementId }: { statementId: string }) {
   const t = useTranslations("finance.payables.statements");
   const format = useFormat();
-  const canManage = useCan("payables.manage");
+  const router = useRouter();
   const [capturing, setCapturing] = useState(false);
   const statement = useQuery({
     queryKey: queryKeys.detail("admin", "billing-statement", statementId),
@@ -457,20 +463,11 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
         })
       ).data!,
   });
-  const invoices = useQuery({
-    queryKey: queryKeys.list("admin", "vendor-invoice", { q: statement.data?.bsNumber }),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/vendor-invoices", {
-          params: { query: { q: statement.data!.bsNumber, perPage: 20 } },
-        })
-      ).data!,
-    enabled: Boolean(statement.data),
-  });
   if (statement.isError) return <QueryError error={statement.error} onRetry={() => void statement.refetch()} />;
   const data = statement.data;
   if (!data) return null;
-  const hasValid = (invoices.data?.data ?? []).some((invoice) => invoice.status === "validated");
+  const recorded = data.taxInvoices.find((invoice) => invoice.status === "recorded");
+  const disputed = new Set(data.disputedLineNos);
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
@@ -484,11 +481,21 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
         meta={<StatusChip map={BILLING_STATEMENT_STATUS} value={data.status} size="md" />}
         description={t("period", { from: format.date(data.periodFrom), to: format.date(data.periodTo) })}
         actions={
-          canManage && data.status === "confirmed" && !hasValid ? (
-            <Button iconStart="plus" onClick={() => setCapturing(true)}>
-              {t("capture")}
-            </Button>
-          ) : null
+          <NextActionBar
+            actions={data.nextActions}
+            supported={STATEMENT_VERBS}
+            labelOf={(verb) =>
+              verb === "capture_tax_invoice"
+                ? t("capture")
+                : verb === "validate_tax_invoice"
+                  ? t("validate")
+                  : undefined
+            }
+            onAction={(verb) => {
+              if (verb === "capture_tax_invoice") setCapturing(true);
+              else if (recorded) router.push(`/finance/payables/invoices/${recorded.id}`);
+            }}
+          />
         }
       />
       {data.status === "disputed" && data.disputeNote ? (
@@ -496,7 +503,7 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
           {data.disputeNote}
         </Callout>
       ) : null}
-      {data.status === "confirmed" && !hasValid ? (
+      {data.status === "confirmed" && data.taxInvoiceStatus !== "validated" ? (
         <Callout tone="warning" title={t("missingInvoice")}>
           {t("missingInvoiceBody")}
         </Callout>
@@ -506,10 +513,28 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
           columns={3}
           items={[
             { term: t("columns.factory"), description: <VendorLink id={data.factoryId} /> },
-            { term: t("columns.confirmedAt"), description: <When at={data.confirmedAt} absoluteOnly /> },
-            { term: t("columns.net"), description: format.thb(data.netAmount) },
-            { term: t("vat"), description: format.thb(data.vatAmount) },
-            { term: t("columns.gross"), description: format.thb(data.grossAmount) },
+            {
+              term: t("columns.confirmedAt"),
+              description: data.confirmedAt ? (
+                <>
+                  <When at={data.confirmedAt} absoluteOnly />
+                  {data.confirmedBy ? <span className="text-muted"> · {data.confirmedBy.displayName}</span> : null}
+                </>
+              ) : (
+                "—"
+              ),
+            },
+            { term: t("generatedAt"), description: <When at={data.generatedAt} absoluteOnly /> },
+            { term: t("totals.production"), description: format.thb(data.totals.production) },
+            { term: t("totals.shipping"), description: format.thb(data.totals.shipping) },
+            { term: t("totals.other"), description: format.thb(data.totals.other) },
+            { term: t("totals.deductions"), description: format.thb(data.totals.deductions) },
+            { term: t("totals.advanceOffset"), description: format.thb(data.totals.advanceOffset) },
+            { term: t("columns.net"), description: format.thb(data.totals.net) },
+            { term: t("vat"), description: format.thb(data.totals.vat) },
+            { term: t("columns.gross"), description: format.thb(data.totals.gross) },
+            { term: t("totals.alreadyPaid"), description: format.thb(data.totals.alreadyPaid) },
+            { term: t("totals.remaining"), description: format.thb(data.totals.remaining) },
           ]}
         />
       </Section>
@@ -519,9 +544,29 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
           density="compact"
           rows={data.lines}
           getRowId={(row) => String(row.lineNo)}
+          rowTone={(row) => (disputed.has(row.lineNo) ? "danger" : undefined)}
           empty={<EmptyState icon="document" title={t("noLines")} />}
           columns={[
-            { id: "description", header: t("lineDescription"), cell: (row) => row.description },
+            { id: "kind", header: t("lineKind"), cell: (row) => t(`lineKinds.${row.kind}`) },
+            {
+              id: "description",
+              header: t("lineDescription"),
+              cell: (row) => (
+                <>
+                  {row.description}
+                  {row.reference ? <span className="text-muted block font-mono text-xs">{row.reference}</span> : null}
+                  {disputed.has(row.lineNo) ? (
+                    <span className="text-danger block text-xs">{t("lineDisputed")}</span>
+                  ) : null}
+                </>
+              ),
+            },
+            {
+              id: "quantity",
+              header: t("quantity"),
+              numeric: true,
+              cell: (row) => (row.quantity === null ? "—" : format.number(row.quantity)),
+            },
             { id: "net", header: t("columns.net"), numeric: true, cell: (row) => format.thb(row.netAmount) },
             { id: "vat", header: t("vat"), numeric: true, cell: (row) => format.thb(row.vatAmount) },
             { id: "gross", header: t("columns.gross"), numeric: true, cell: (row) => format.thb(row.grossAmount) },
@@ -529,7 +574,7 @@ export function BillingStatementDetail({ statementId }: { statementId: string })
         />
       </Section>
       <Section title={t("taxInvoices")}>
-        <InvoiceRows rows={invoices.data?.data ?? []} loading={invoices.isPending} />
+        <InvoiceRows rows={data.taxInvoices} />
       </Section>
       {capturing ? <CaptureInvoice statement={data} onClose={() => setCapturing(false)} /> : null}
     </div>

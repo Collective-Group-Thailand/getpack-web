@@ -9,7 +9,6 @@ import { useState } from "react";
 import { isZeroMoney } from "@/domain/money";
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
@@ -673,7 +672,11 @@ export function CashFlowView() {
 
 /* ----------------------------------------------------------------------------- roll-forwards */
 
-/** Points liability (2330) and factory retention (2130), month by month. */
+/**
+ * Points liability (2330) and factory retention (2130), month by month
+ * (`admin.financialReports.accountRollForward`): the API's figures in the account's normal
+ * direction, split by posting rule.
+ */
 export function RollForwardsView() {
   const t = useTranslations("finance.reports.rollForwards");
   const format = useFormat();
@@ -681,16 +684,21 @@ export function RollForwardsView() {
   const options = (accountCode: "2330" | "2130") => ({
     queryKey: queryKeys.detail("admin", "account-roll-forward", `${accountCode}:${params.from}:${params.to}`),
     queryFn: async () =>
-      browserRequests().call("GET /v1/admin/financial-reports/roll-forward", {
-        query: { accountCode, from: params.from!, to: params.to! },
-      }),
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/financial-reports/roll-forward", {
+          params: { query: { accountCode, from: params.from!, to: params.to! } },
+        })
+      ).data!,
   });
   const points = useQuery(options("2330"));
   const retention = useQuery(options("2130"));
   const table = (title: string, note: string, query: typeof points) => {
     const data = query.data;
     return (
-      <Section title={title} description={note}>
+      <Section
+        title={title}
+        description={data ? `${note} ${t("normalSide", { side: t(`sides.${data.normalSide}`) })}` : note}
+      >
         {query.isError ? <QueryError error={query.error} onRetry={() => void query.refetch()} /> : null}
         <DataTable
           caption={title}
@@ -717,9 +725,9 @@ export function RollForwardsView() {
                   {row.byRule
                     .map((item) =>
                       t("ruleLine", {
-                        rule: item.rule,
-                        up: format.thb(item.increases),
-                        down: format.thb(item.decreases),
+                        rule: item.ruleKey === "manual" ? t("manual") : item.ruleKey,
+                        up: format.thb(item.increase),
+                        down: format.thb(item.decrease),
                       }),
                     )
                     .join(" · ")}
@@ -752,7 +760,10 @@ export function RollForwardsView() {
 
 /* ----------------------------------------------------------------------------- reconciliation */
 
-/** Each sub-ledger against its control account (§7 step 8): every difference must be zero. */
+/**
+ * Each sub-ledger against its control account (§7 step 8, `admin.financialReports.subledgerReconciliation`):
+ * every difference must be zero. The sub-ledgers are as of now; the month moves the fixed-asset row only.
+ */
 export function ReconciliationView() {
   const t = useTranslations("finance.reports.reconciliation");
   const format = useFormat();
@@ -761,13 +772,17 @@ export function ReconciliationView() {
   const report = useQuery({
     queryKey: queryKeys.detail("admin", "subledger-reconciliation", shown),
     queryFn: async () =>
-      browserRequests().call("GET /v1/admin/financial-reports/subledger-reconciliation", { query: { period: shown } }),
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/financial-reports/subledger-reconciliation", {
+          params: { query: { period: shown } },
+        })
+      ).data!,
   });
   const data = report.data;
   return (
     <Section
       title={t("title")}
-      description={t("description")}
+      description={data ? `${t("description")} ${t("asOf", { at: format.dateTime(data.asOf) })}` : t("description")}
       actions={
         <Field label={t("assetsMonth")} className="w-40">
           <Input type="month" value={shown} onChange={(event) => event.target.value && setShown(event.target.value)} />

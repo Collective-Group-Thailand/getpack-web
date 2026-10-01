@@ -88,7 +88,13 @@ export interface CompanyRow {
     eligibleReason: "paid_orders" | "financial_statement" | "not_yet";
     versions: CreditLimitVersionRow[];
   };
-  discount: { pct: string; discountMemoId: string; memoCode: string; validTo: string | null } | null;
+  discount: {
+    pct: string;
+    discountMemoId: string;
+    memoCode: string;
+    effectiveFrom: string;
+    validTo: string | null;
+  } | null;
   updatedAt: string;
 }
 

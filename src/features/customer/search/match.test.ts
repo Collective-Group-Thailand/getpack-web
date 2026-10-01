@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { matchFaqs, mightBeOrderCode, orderCodeOf } from "./match";
+import { faqHitsOf, mightBeOrderCode, orderCodeOf } from "./match";
 
 const groups = [
   {
@@ -17,17 +17,25 @@ const groups = [
   },
 ];
 
-describe("matchFaqs", () => {
-  it("matches the question in the page's language and links to its group", () => {
-    expect(matchFaqs(groups, "ขั้นต่ำ", "th")).toEqual([
-      { question: "สั่งขั้นต่ำกี่ชิ้น", answer: "ขึ้นอยู่กับสินค้า", href: "/faq#ordering" },
+describe("faqHitsOf", () => {
+  const hits = [
+    { kind: "catalog_product", key: "mailer-box", titleTh: "กล่องไปรษณีย์", titleEn: "Mailer box" },
+    { kind: "faq", key: "f-1", titleTh: "สั่งขั้นต่ำกี่ชิ้น", titleEn: "What is the minimum order?" },
+    { kind: "faq", key: "f-2", titleTh: "ส่งต่างประเทศไหม", titleEn: null },
+  ];
+
+  it("keeps the search's FAQ hits, with the answer and group the FAQ list has", () => {
+    expect(faqHitsOf(hits, groups, "th")).toEqual([
+      { key: "f-1", question: "สั่งขั้นต่ำกี่ชิ้น", answer: "ขึ้นอยู่กับสินค้า", href: "/faq#ordering" },
+      { key: "f-2", question: "ส่งต่างประเทศไหม", answer: null, href: "/faq" },
     ]);
-    expect(matchFaqs(groups, "MINIMUM", "en")[0]?.question).toBe("What is the minimum order?");
   });
 
-  it("falls back to Thai where there is no English, and ignores one letter", () => {
-    expect(matchFaqs(groups, "ผลิต", "en")[0]?.question).toBe("ผลิตกี่วัน");
-    expect(matchFaqs(groups, "ส", "th")).toEqual([]);
+  it("reads the page's language and falls back to Thai", () => {
+    const [first, second] = faqHitsOf(hits, groups, "en");
+    expect(first).toMatchObject({ question: "What is the minimum order?", answer: "It depends" });
+    expect(second?.question).toBe("ส่งต่างประเทศไหม");
+    expect(faqHitsOf(hits, groups, "th", 1)).toHaveLength(1);
   });
 });
 

@@ -12,29 +12,25 @@
  * free, then a paid round the customer settles first (D-071); a mockup job (D-072). Drawing the
  * dieline answers 501 `drawing.engine_unavailable`, exactly as B4.1 does until the engine ships.
  *
- * The rows keep the aggregate's shape the prepress requests asked for (`admin-prepress.ts`),
- * because assigning an order is still a request that answers it. Two requests stay mocked here:
- * assign and copy (CONTRACT-REQUEST admin.prepress-actions, admin.design-documents).
+ * The rows keep the per-order aggregate the desk once asked for (`./prepress-model.ts`); every
+ * operation is published since U-F0.4 and projects them onto the contract's DTOs.
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import type { designRound, prepressDetail, proofDetail } from "@/lib/api/requests/admin-prepress";
-import type { designDocumentView } from "@/lib/api/requests/admin-prepress";
 import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
-import { storeDesignDtoForStaff } from "../store/designs";
-import { baht, orders, satang } from "./commerce";
+import { designProductRefOf, storeDesignDtoForStaff, storeDesignOwnerForStaff } from "../store/designs";
+import { baht, customers, orders, satang } from "./commerce";
 import { registerQueue } from "./console";
+import type { DesignDocumentRow, DesignRoundRow, PrepressRow, ProofRow } from "./prepress-model";
 
-type Detail = z.output<typeof prepressDetail>;
-type Proof = z.output<typeof proofDetail>;
-type Round = z.output<typeof designRound>;
+type Detail = PrepressRow;
+type Proof = ProofRow;
+type Round = DesignRoundRow;
 
 /** One annotation as the desk keeps it; replies carry `parentId` (the old request's shape, mock-only). */
 interface Annotation {
@@ -565,6 +561,10 @@ export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
         rows.push({
           orderId: detail.orderId,
           orderCode: detail.orderCode,
+          customer: { id: order.customer.id, displayName: order.customer.displayName },
+          productTypeCode: order.productType.code,
+          artworkStatus: detail.artworkStatus,
+          assignee: detail.assignee,
           kind,
           itemId: item.id,
           versionNo: item.versionNo,
@@ -588,6 +588,10 @@ export function queueItems(kind: QueueKind): Schemas["PrepressQueueItemDto"][] {
         rows.push({
           orderId: detail.orderId,
           orderCode: detail.orderCode,
+          customer: { id: order.customer.id, displayName: order.customer.displayName },
+          productTypeCode: order.productType.code,
+          artworkStatus: detail.artworkStatus,
+          assignee: detail.assignee,
           kind,
           itemId: item.id,
           versionNo: item.versionNo,
@@ -624,24 +628,8 @@ for (const kind of ["submissions", "changes_requested", "proofs_waiting"] as con
   });
 }
 
-const notFound = () => problem(404, "prepress.not_found", "ไม่พบงานก่อนพิมพ์ของคำสั่งซื้อนี้");
 const forbidden = () => problem(403, "auth.forbidden", "คุณไม่มีสิทธิ์ทำรายการนี้");
 const conflict = (detail: string) => problem(409, "prepress.invalid_state", detail);
-
-function manage(
-  request: Request,
-  orderId: string | undefined,
-  action?: string,
-): Response | { detail: Detail; who: StaffPersona } {
-  const who = staffPersonaOf(request);
-  if (!who || !can(who, "prepress.review")) return forbidden();
-  const detail = orderId ? prepressOf(orderId) : undefined;
-  if (!detail) return notFound();
-  if (action && !refresh(detail).nextActions.some((item) => item.key === action && !item.disabledReason)) {
-    return conflict("ทำรายการนี้ในขั้นตอนนี้ไม่ได้");
-  }
-  return { detail, who };
-}
 
 export function bySubmission(submissionId: string | undefined) {
   for (const detail of details.values()) {
@@ -857,7 +845,14 @@ export function customerDecide(
 
 export function customerAnnotate(
   proofId: string,
-  input: { page: number; kind: Annotation["kind"]; geometry: Record<string, unknown>; body: string; parentId?: string },
+  // `page`, `kind` and `geometry` are a new annotation's own; a reply takes its parent's.
+  input: {
+    page?: number;
+    kind?: Annotation["kind"];
+    geometry?: Record<string, unknown>;
+    body: string;
+    parentId?: string;
+  },
   who: { id: string; displayName: string },
 ): Annotation {
   const list = annotations.get(proofId) ?? [];
@@ -865,9 +860,9 @@ export function customerAnnotate(
   const created: Annotation = {
     id: mockId("ann", 6000 + list.length + Math.floor(Math.random() * 900)),
     parentId: parent?.id ?? null,
-    page: parent?.page ?? input.page,
-    kind: parent?.kind ?? input.kind,
-    geometry: parent?.geometry ?? input.geometry,
+    page: parent?.page ?? input.page ?? 1,
+    kind: parent?.kind ?? input.kind ?? "pin",
+    geometry: parent?.geometry ?? input.geometry ?? {},
     comment: input.body,
     author: who,
     authorKind: "customer",
@@ -889,7 +884,7 @@ export function refreshPrepress(detail: Detail): Detail {
   return refresh(detail);
 }
 
-type DesignDocumentView = z.output<typeof designDocumentView>;
+type DesignDocumentView = DesignDocumentRow;
 
 /** Copies prepress made to work on (F2 2.4, F4 C.2): only the staff member who made one saves it. */
 const staffCopies = new Map<string, { ownerId: string; view: DesignDocumentView }>();
@@ -922,16 +917,37 @@ function documentFor(id: string, staffId: string): DesignDocumentView | null {
   };
 }
 
-/** The published design (`admin.designs.get`): the document opaque, no owner and no editable flag. */
-function toDesignDto(id: string): Schemas["DesignDocumentDto"] | null {
+/** Who owns a design, as `DesignOwnerDto` names them: the staff author of a copy, or the customer. */
+function ownerOf(id: string): Schemas["DesignOwnerDto"] {
+  const copy = staffCopies.get(id);
+  if (copy) {
+    const staff = PERSONAS.find((persona) => persona.id === copy.ownerId);
+    return { id: copy.ownerId, kind: "staff", displayName: staff?.displayName ?? copy.view.owner.displayName };
+  }
+  const onOrderDetail = [...details.values()].find((detail) => detail.designDocument?.id === id);
+  if (onOrderDetail) return { ...onOrderDetail.customer, kind: "customer" };
+  const customerId = storeDesignOwnerForStaff(id);
+  const customer = customers.find((candidate) => candidate.id === customerId);
+  return { id: customerId ?? mockId("cus", 0), kind: "customer", displayName: customer?.displayName ?? "ลูกค้า" };
+}
+
+/**
+ * The published design (`admin.designs.get`, `AdminDesignDocumentDto`): the document opaque, its
+ * owner, and `editable` only for the reader's own copy — a customer's design is copied first.
+ */
+function toDesignDto(id: string, readerId: string | undefined): Schemas["AdminDesignDocumentDto"] | null {
+  const owner = ownerOf(id);
+  const editable = owner.kind === "staff" && owner.id === readerId;
   const saved = storeDesignDtoForStaff(id);
-  if (saved && !staffCopies.has(id)) return saved;
+  if (saved && !staffCopies.has(id)) return { ...saved, owner, editable };
   const view = staffCopies.get(id)?.view ?? onOrder(id);
   if (!view) return null;
+  const catalogProductId = mockId("cpr", 1);
   return {
     id: view.id,
     title: view.title,
-    catalogProductId: mockId("cpr", 1),
+    catalogProductId,
+    product: designProductRefOf(catalogProductId),
     patternId: null,
     materialId: null,
     semiDesignTemplateId: null,
@@ -942,18 +958,29 @@ function toDesignDto(id: string): Schemas["DesignDocumentDto"] | null {
     schemaVersion: view.schemaVersion,
     versionNo: view.versionNo,
     thumbnailFileId: null,
+    thumbnailUrl: view.thumbnailUrl,
     assets: [],
+    // A staff copy or an order's document: no order list or view link of its own, one time stamp.
+    orders: [],
+    share: null,
+    owner,
+    editable,
+    createdAt: view.updatedAt,
     updatedAt: view.updatedAt,
   };
 }
 
 const etagOf = (versionNo: number | null) => `"v${versionNo ?? 0}"`;
 
-/** The published design surface of the back office (`admin.designs.get` / `.save`, If-Match). */
+/** Answers already given to `admin.designs.copy`, by Idempotency-Key. */
+const copyReplays = new Map<string, string>();
+
+/** The published design surface of the back office (`admin.designs.*`, If-Match on save). */
 export const designContractHandlers = [
   http.get("*/v1/admin/designs/:designId", ({ params, request }) => {
-    if (!can(staffPersonaOf(request), "artwork.read")) return forbidden();
-    const found = toDesignDto(String(params.designId));
+    const who = staffPersonaOf(request);
+    if (!can(who, "artwork.read")) return forbidden();
+    const found = toDesignDto(String(params.designId), who?.id);
     if (!found) return problem(404, "http.not_found", "ไม่พบแบบนี้");
     return HttpResponse.json(found, { headers: { ETag: etagOf(found.versionNo) } });
   }),
@@ -961,9 +988,12 @@ export const designContractHandlers = [
   http.put("*/v1/admin/designs/:designId", async ({ params, request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "catalog.manage")) return forbidden();
-    const copy = staffCopies.get(String(params.designId));
-    // Only the staff author's own designs save; anyone else's is not found, as packio-api answers.
-    if (!copy || copy.ownerId !== who.id) return problem(404, "http.not_found", "ไม่พบแบบนี้");
+    const id = String(params.designId);
+    const copy = staffCopies.get(id);
+    if (!copy && !toDesignDto(id, who.id)) return problem(404, "http.not_found", "ไม่พบแบบนี้");
+    // Only the staff author's own copy saves; a customer's design is copied first.
+    if (!copy || copy.ownerId !== who.id)
+      return problem(409, "designs.read_only", "แบบนี้เป็นของคนอื่น ทำสำเนาก่อนแก้ไข");
     const match = request.headers.get("if-match");
     if (!match) return problem(428, "concurrency.precondition_required", "ต้องส่ง If-Match");
     if (match !== etagOf(copy.view.versionNo))
@@ -982,38 +1012,63 @@ export const designContractHandlers = [
       versionNo: copy.view.versionNo + 1,
       updatedAt: bangkokIso(),
     };
-    const saved = toDesignDto(copy.view.id)!;
+    const saved = toDesignDto(copy.view.id, who.id)!;
     return HttpResponse.json(saved, { headers: { ETag: etagOf(saved.versionNo) } });
   }),
-];
 
-/** What is still a request (CONTRACT-REQUEST admin.prepress-actions, admin.design-documents). */
-export const prepressHandlers = [
-  mockRequest("POST /v1/admin/prepress/{orderId}/actions/assign", ({ params, body, request }) => {
-    const found = manage(request, params.orderId, "prepress.assign");
-    if (found instanceof Response) return found;
-    const person = body.assigneeId ? PERSONAS.find((candidate) => candidate.id === body.assigneeId) : null;
-    if (body.assigneeId && (!person || !can(person, "prepress.review")))
-      return problem(422, "prepress.assignee_not_eligible", "พนักงานคนนี้ไม่มีสิทธิ์ทำงานก่อนพิมพ์");
-    found.detail.assignee = person ? refOf(person) : null;
-    return refresh(found.detail);
-  }),
-  mockRequest("POST /v1/admin/design-documents/{documentId}/actions/copy", ({ params, body, request }) => {
+  // admin.designs.copy (`prepress.review`, optional Idempotency-Key): a staff-owned editable copy;
+  // the customer's own document is never changed (F4 C.2).
+  http.post("*/v1/admin/designs/:designId/actions/copy", async ({ params, request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "prepress.review")) return forbidden();
-    const source = documentFor(params.documentId, who.id);
-    if (!source) return problem(404, "design.not_found", "ไม่พบแบบนี้");
+    const key = request.headers.get("idempotency-key");
+    const replayed = key ? copyReplays.get(key) : undefined;
+    if (replayed) {
+      const dto = toDesignDto(replayed, who.id)!;
+      return HttpResponse.json(dto, {
+        status: 201,
+        headers: { ETag: etagOf(dto.versionNo), "Idempotent-Replayed": "true" },
+      });
+    }
+    const source = documentFor(String(params.designId), who.id);
+    if (!source) return problem(404, "http.not_found", "ไม่พบแบบนี้");
+    const body = (await request.json().catch(() => null)) as Schemas["DuplicateDesignDto"] | null;
+    if (!body?.title?.trim())
+      return problem(422, "validation.failed", "กรุณาตั้งชื่อสำเนา", [
+        { path: "title", code: "required", message: "required" },
+      ]);
     copyCounter += 1;
     const view: DesignDocumentView = {
       ...source,
       id: mockId("ddc", 5000 + copyCounter),
-      title: body.title,
+      title: body.title.trim(),
       versionNo: 1,
       owner: { displayName: who.displayName },
       editable: true,
       updatedAt: bangkokIso(),
     };
     staffCopies.set(view.id, { ownerId: who.id, view });
-    return view;
+    if (key) copyReplays.set(key, view.id);
+    const dto = toDesignDto(view.id, who.id)!;
+    return HttpResponse.json(dto, { status: 201, headers: { ETag: etagOf(dto.versionNo) } });
+  }),
+];
+
+/** admin.artwork.assignPrepress (`prepress.review`): the order's Prepress owner, `null` unassigns; 204. */
+export const prepressHandlers = [
+  http.post("*/v1/admin/orders/:orderId/actions/assign-prepress", async ({ params, request }) => {
+    const who = staffPersonaOf(request);
+    if (!who || !can(who, "prepress.review")) return forbidden();
+    const detail = prepressOf(String(params.orderId));
+    if (!detail) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
+    const body = (await request.json().catch(() => null)) as Schemas["AssignPrepressDto"] | null;
+    const person = body?.assigneeId ? PERSONAS.find((candidate) => candidate.id === body.assigneeId) : null;
+    if (body?.assigneeId && !person)
+      return problem(422, "validation.failed", "ไม่พบพนักงานที่เลือก", [
+        { path: "assigneeId", code: "exists", message: "not an active staff user" },
+      ]);
+    detail.assignee = person ? refOf(person) : null;
+    refresh(detail);
+    return new HttpResponse(null, { status: 204 });
   }),
 ];

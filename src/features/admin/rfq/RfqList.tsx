@@ -7,21 +7,32 @@ import { RFQ_STATUS, RFQ_QUOTE_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { SlaTimer } from "@/ui/components/SlaTimer";
+import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { QueueTabs, ResourceList, StatusChip, useActor, useSlaFormat, type InitialPage } from "../console";
+import {
+  QueueTabs,
+  ResourceList,
+  StatusChip,
+  useActor,
+  useProductTypes,
+  useSlaFormat,
+  type InitialPage,
+} from "../console";
 import { latestQuotation, RFQ_QUEUES, rfqList, type Rfq } from "./resources";
 
-const COUNTED = new Set<string>(["new", "mine", "overdue"]);
+/** packio-api counts one RFQ queue on the dashboard: those still waiting for a first response, the "new" tab. */
+const COUNTED: Partial<Record<(typeof RFQ_QUEUES)[number], string>> = { new: "rfqs.awaiting_first_response" };
+const CHANNELS = ["web", "cs", "line", "b2b"] as const;
 
 /**
  * The RFQ desk (F2 2.3, D-100): queues first, each a URL with its SLA state. Each row runs a timer
  * to the first-response deadline the API computed, until the first response stops it.
  *
  * The published row (`admin.rfqs.list`) is the whole RFQ; the factories' answers and the latest
- * quotation are read from its consultations and quotations. CONTRACT-GAP admin.rfqs — no SLA target
- * per category, no "due soon" urgency, no company, province or calculator routing, and no product
- * type, channel or date filters.
+ * quotation are read from its consultations and quotations. Each row says its category's SLA
+ * target and whether a calculator routed it here (D-102). CONTRACT-GAP admin.rfqs — no "due soon"
+ * urgency (only `overdue`), and no company or province.
  */
 export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
   const t = useTranslations("rfq.list");
@@ -29,6 +40,7 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
   const format = useFormat();
   const sla = useSlaFormat();
   const actor = useActor();
+  const productTypes = useProductTypes();
 
   const columns: DataTableColumn<Rfq>[] = [
     {
@@ -50,7 +62,12 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
     {
       id: "customer",
       header: t("columns.customer"),
-      cell: (row) => <p className="truncate">{row.customer.displayName}</p>,
+      cell: (row) => (
+        <div className="min-w-0">
+          <p className="truncate">{row.customer.displayName}</p>
+          {row.customerCode ? <p className="text-muted truncate font-mono text-xs">{row.customerCode}</p> : null}
+        </div>
+      ),
     },
     {
       id: "status",
@@ -61,6 +78,12 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
           <div className="flex flex-wrap items-center gap-1">
             <StatusChip map={RFQ_STATUS} value={row.status} />
             {latest ? <StatusChip map={RFQ_QUOTE_STATUS} value={latest.status} /> : null}
+            {row.routedFromCalculator ? (
+              <span className="text-muted inline-flex items-center gap-1 text-xs">
+                <Icon name="calculator" size={14} />
+                {t("routed")}
+              </span>
+            ) : null}
           </div>
         );
       },
@@ -79,11 +102,16 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
             )}
           </span>
         ) : (
-          <SlaTimer
-            dueAt={row.slaDueAt}
-            format={sla}
-            absolute={row.slaDueAt ? format.dateTime(row.slaDueAt) : undefined}
-          />
+          <div>
+            <SlaTimer
+              dueAt={row.slaDueAt}
+              format={sla}
+              absolute={row.slaDueAt ? format.dateTime(row.slaDueAt) : undefined}
+            />
+            {row.slaTargetHours !== null ? (
+              <p className="text-muted text-xs whitespace-nowrap">{t("slaTarget", { hours: row.slaTargetHours })}</p>
+            ) : null}
+          </div>
         ),
     },
     {
@@ -144,7 +172,7 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
           ...RFQ_QUEUES.map((queue) => ({
             value: queue,
             label: t(`queues.${queue}`),
-            ...(COUNTED.has(queue) ? { countKey: `rfq.${queue}` } : {}),
+            ...(COUNTED[queue] ? { countKey: COUNTED[queue] } : {}),
           })),
         ]}
       />
@@ -162,6 +190,24 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
             kind: "select",
             options: Object.entries(RFQ_STATUS).map(([value, meta]) => ({ value, label: tStatus(meta.labelKey) })),
           },
+          ...(productTypes.options.length > 0
+            ? [
+                {
+                  id: "productTypeCode",
+                  label: t("productType"),
+                  kind: "select" as const,
+                  options: productTypes.options,
+                },
+              ]
+            : []),
+          {
+            id: "channel",
+            label: t("channel"),
+            kind: "select",
+            options: CHANNELS.map((value) => ({ value, label: t(`channels.${value}`) })),
+          },
+          { id: "submittedFrom", label: t("submittedFrom"), kind: "date" },
+          { id: "submittedTo", label: t("submittedTo"), kind: "date" },
         ]}
         rowTone={(row) => (row.overdue ? "danger" : undefined)}
         empty={{ title: t("emptyTitle"), description: t("emptyBody") }}

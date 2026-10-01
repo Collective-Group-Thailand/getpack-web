@@ -60,8 +60,7 @@
     },
     "markAllRead": "Mark all read",
     "loading": "Loading notifications",
-    "unread": "(unread)",
-    "countAtLeast": "{count}+"
+    "unread": "(unread)"
   },
   "locale": {
     "label": "Language",

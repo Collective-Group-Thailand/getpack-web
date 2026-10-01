@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
@@ -28,11 +28,10 @@ const TONE = {
 
 /**
  * Orders waiting for the company's approver (D-123), each an order group placed as
- * `pending_company_approval`. Approving restates the amount and releases the orders; rejecting
- * needs a reason the buyer reads (`store.companyApprovals.decide`).
- *
- * CONTRACT-GAP store.company-approvals — the published approval names the group, its amount, PO and
- * requester only: no lines, threshold or payment plan, and the decision carries no idempotency key.
+ * `pending_company_approval`, or the decided history: the group, its amount, orders, branch, PO,
+ * the threshold it was above and when the request lapses; once decided, who decided, when and why.
+ * Approving restates the amount and releases the orders; rejecting needs a reason the buyer reads
+ * (`store.companyApprovals.decide`, with an idempotency key).
  */
 export function ApprovalsList({
   companyId,
@@ -50,12 +49,16 @@ export function ApprovalsList({
   const [rejecting, setRejecting] = useState<Approval | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const key = useRef(crypto.randomUUID());
 
   async function decide(approval: Approval, outcome: "approve" | "reject") {
     setBusy(true);
     try {
       await browserApi().POST("/v1/store/companies/{companyId}/approvals/{approvalId}/actions/{decision}", {
-        params: { path: { companyId, approvalId: approval.id, decision: outcome } },
+        params: {
+          path: { companyId, approvalId: approval.id, decision: outcome },
+          header: { "Idempotency-Key": key.current },
+        },
         body: outcome === "reject" ? { comment: reason.trim() } : {},
       });
       toast.success(
@@ -66,6 +69,7 @@ export function ApprovalsList({
       setApproving(null);
       setRejecting(null);
       setReason("");
+      key.current = crypto.randomUUID();
       router.refresh();
     } catch (error) {
       toast.error(isApiError(error) ? error.detail : t("failed"));
@@ -99,7 +103,28 @@ export function ApprovalsList({
                 </div>
                 <Badge tone={TONE[approval.status]}>{t(`status.${approval.status}`)}</Badge>
               </div>
-              <p className="text-muted text-xs">{t("poOnly", { po: approval.poNumber ?? t("noPo") })}</p>
+              <p className="text-muted text-xs">
+                {[
+                  t("orders", { count: approval.ordersCount }),
+                  approval.branchName ? t("branch", { name: approval.branchName }) : null,
+                  t("poOnly", { po: approval.poNumber ?? t("noPo") }),
+                  approval.threshold ? t("over", { amount: format.thb(approval.threshold) }) : null,
+                  approval.status === "pending" && approval.expiresAt
+                    ? t("expires", { date: format.dateTime(approval.expiresAt) })
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+              {approval.decidedAt ? (
+                <p className="text-sm">
+                  {t("decidedBy", {
+                    name: approval.decidedBy?.displayName ?? "",
+                    date: format.dateTime(approval.decidedAt),
+                  })}
+                  {approval.decisionComment ? ` — ${approval.decisionComment}` : ""}
+                </p>
+              ) : null}
               {canApprove && approval.status === "pending" ? (
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={() => setApproving(approval)}>

@@ -12,15 +12,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Shared brand assets (F3 3.7). */
 export default async function Page() {
-  await requireMember();
-  const [t, assets] = await Promise.all([getTranslations("business.assets"), getBrandAssets()]);
+  const company = await requireMember();
+  const [t, assets] = await Promise.all([getTranslations("business.assets"), getBrandAssets(company.id)]);
   return (
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
-      <BrandAssets assets={assets?.data ?? []} />
+      <BrandAssets companyId={company.id} assets={assets ?? []} canManage={company.can.manageAssets} />
     </div>
   );
 }

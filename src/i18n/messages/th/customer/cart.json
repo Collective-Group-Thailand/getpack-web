@@ -6,7 +6,6 @@
   "itemsLabel": "รายการในตะกร้า",
   "quote": "ใบเสนอราคา {code} · ราคาคงที่ถึง {date}",
   "quoteNoCode": "ราคาคงที่ถึง {date}",
-  "perUnit": "{price} ต่อหน่วย · จำนวน {quantity}",
   "repricedTitle": "ราคาเปลี่ยนแปลง",
   "repriced": "ราคาปัจจุบันคือ {after} (เดิม {before}) กรุณายืนยันก่อนชำระเงิน",
   "acceptReprice": "ยืนยันราคาใหม่",
@@ -44,5 +43,8 @@
     "addRow": "เพิ่มที่อยู่ปลายทาง",
     "newAddress": "เพิ่มที่อยู่ใหม่",
     "save": "บันทึกการแบ่งส่ง"
-  }
+  },
+  "perUnitOf": "{price} ต่อหน่วย · {quantity} {unit}",
+  "reorderOf": "สั่งซ้ำจาก {code} ส่งไฟล์งานใหม่",
+  "reorderOfReused": "สั่งซ้ำจาก {code} ใช้ไฟล์งานที่อนุมัติแล้ว ไม่ต้องตรวจปรู๊ฟใหม่"
 }

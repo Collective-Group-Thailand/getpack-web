@@ -39,18 +39,22 @@ const user = (kind: User["kind"], roles: string[]): User => ({
 const AUDITOR_RULES: SodRule[] = [
   {
     id: "1",
+    key: "auditor_vs_finance",
     kind: "role_pair",
     left: "auditor",
     right: "finance",
+    subjectMatch: null,
     enforcement: "block",
     description: "D-168",
     decisions: ["D-168"],
   },
   {
     id: "2",
+    key: "refund_maker_checker",
     kind: "action_pair",
     left: "refund.request",
     right: "refund.approve",
+    subjectMatch: "same_subject",
     enforcement: "block",
     description: "§8",
     decisions: [],

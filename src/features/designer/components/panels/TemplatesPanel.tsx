@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { allFaces, faceBounds } from "@packio/dieline";
 
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { toast } from "@/ui/components/Toast";
 
@@ -25,15 +25,17 @@ export function TemplatesPanel() {
   const spec = useEditor((s) => s.spec);
   const hasContent = useEditor((s) => s.content.elements.length > 0);
   const [pending, setPending] = useState<DesignerTemplate | null>(null);
-  const templates = catalog?.templates ?? [];
+  const templates = (catalog?.templates ?? []).filter((template) => template.hasDesign);
 
   const apply = async (template: DesignerTemplate) => {
     setPending(null);
     try {
-      const detail = await browserRequests().call("GET /v1/store/designer/templates/{templateId}", {
-        path: { templateId: template.id },
+      const { data: detail } = await browserApi().GET("/v1/store/designer/templates/{templateId}", {
+        params: { path: { templateId: template.id } },
       });
-      const read = readDesign(detail.document.spec, detail.document.content);
+      // `document` is null until staff set one (`hasDesign`); the panel offers only those that have it.
+      const document = detail?.document as { spec?: unknown; content?: unknown } | null | undefined;
+      const read = document ? readDesign(document.spec, document.content) : null;
       if (!read || !spec) return;
       const from = dielineOf(read.spec);
       const to = dielineOf(spec);

@@ -389,7 +389,45 @@
     "reviewProof": "ตรวจและอนุมัติปรู๊ฟ",
     "openClaim": "แจ้งปัญหาสินค้า",
     "designBrief": "ส่งบรีฟงานออกแบบ",
-    "reviewDesign": "ตรวจงานออกแบบ"
+    "reviewDesign": "ตรวจงานออกแบบ",
+    "submitArtwork": "ส่งไฟล์งานแทนลูกค้า",
+    "addMockup": "เพิ่มม็อกอัป",
+    "reprice": "คำนวณราคาใหม่",
+    "acceptJob": "รับงาน",
+    "rejectJob": "ปฏิเสธงาน",
+    "updateMilestone": "อัปเดตขั้นตอนการผลิต",
+    "recordQc": "บันทึกผลตรวจคุณภาพ",
+    "raiseIssue": "แจ้งปัญหาการผลิต",
+    "reassign": "ย้ายงานไปโรงงานอื่น",
+    "hold": "พักงาน",
+    "resume": "ผลิตต่อ",
+    "markReady": "พร้อมส่ง พิมพ์ฉลาก",
+    "dispatch": "ออกรถส่งของ",
+    "requestCarrier": "ขอให้ Packio จัดหาขนส่ง",
+    "updateStatus": "อัปเดตสถานะการส่ง",
+    "recordPod": "บันทึกหลักฐานการส่งมอบ",
+    "bookCarrier": "จองขนส่ง",
+    "split": "แยกรอบจัดส่ง",
+    "resolveException": "จัดการปัญหาการจัดส่ง",
+    "reviewPod": "ตรวจหลักฐานการส่งมอบ",
+    "answerInfo": "ส่งข้อมูลที่ขอ",
+    "respondClaim": "ตอบกลับเคลม",
+    "sendToFactory": "ส่งให้โรงงานพิจารณา",
+    "overrideLiability": "เปลี่ยนผู้รับผิดชอบ",
+    "resolve": "ดำเนินการแก้ไข",
+    "close": "ปิดเรื่อง",
+    "confirmStatement": "ยืนยันใบวางบิล",
+    "dispute": "โต้แย้ง",
+    "submitTaxInvoice": "ส่งใบกำกับภาษี",
+    "captureTaxInvoice": "บันทึกใบกำกับภาษี",
+    "validateTaxInvoice": "ตรวจใบกำกับภาษี",
+    "propose": "เสนออนุมัติ",
+    "generateBankFile": "สร้างไฟล์โอนเงิน",
+    "confirmPayout": "ยืนยันการโอนเงิน",
+    "resend": "ส่งเอกสารอีกครั้ง",
+    "void": "ยกเลิกเอกสาร",
+    "acceptQuote": "ตอบรับใบเสนอราคา",
+    "postMessage": "ส่งข้อความ"
   },
   "points": {
     "pending": "รอเข้าบัญชี",
@@ -440,9 +478,10 @@
     "superseded": "มีฉบับใหม่แทน"
   },
   "vendorInvoice": {
-    "submitted": "รอฝ่ายการเงินตรวจ",
+    "recorded": "รอฝ่ายการเงินตรวจ",
     "validated": "ตรวจแล้ว",
-    "rejected": "ไม่ผ่าน"
+    "rejected": "ไม่ผ่าน",
+    "void": "ยกเลิกแล้ว"
   },
   "inputVat": {
     "claimable": "มีใบกำกับภาษีครบ",
@@ -456,7 +495,6 @@
     "excluded": "ไม่รวมในรอบนี้"
   },
   "factoryUser": {
-    "invited": "รอตอบรับคำเชิญ",
     "active": "ใช้งาน",
     "deactivated": "ปิดการใช้งาน"
   },
@@ -479,8 +517,14 @@
     "withdrawn": "ถอนคำขอ"
   },
   "dunning": {
+    "queued": "รอส่ง",
+    "deferredQuietHours": "รอพ้นช่วงงดส่ง",
+    "suppressedNoConsent": "ไม่ได้ส่ง (ไม่มีความยินยอม)",
     "sent": "ส่งแล้ว",
-    "failed": "ส่งไม่สำเร็จ"
+    "delivered": "ถึงผู้รับแล้ว",
+    "read": "อ่านแล้ว",
+    "failed": "ส่งไม่สำเร็จ",
+    "bounced": "ตีกลับ"
   },
   "purchaseOrder": {
     "issued": "ส่งโรงงานแล้ว",
@@ -570,5 +614,16 @@
     "ok": "ปกติ",
     "alert": "เกินเกณฑ์",
     "unknown": "อ่านค่าไม่ได้"
+  },
+  "promotionOffer": {
+    "usable": "ใช้ได้",
+    "notStarted": "ยังไม่เริ่ม",
+    "notApplicable": "ไม่ตรงเงื่อนไข",
+    "usedUp": "ใช้ครบแล้ว",
+    "expired": "หมดอายุ",
+    "budgetExhausted": "สิทธิ์หมดแล้ว",
+    "inactive": "ยังไม่เปิดใช้",
+    "disabled": "ปิดใช้งาน",
+    "notYours": "ไม่ใช่โค้ดของบัญชีนี้"
   }
 }

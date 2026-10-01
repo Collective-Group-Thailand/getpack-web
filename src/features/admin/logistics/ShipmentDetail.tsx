@@ -2,16 +2,14 @@
 
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { adminShipmentActions } from "@/domain/next-actions/admin";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -28,30 +26,32 @@ import { toast } from "@/ui/components/Toast";
 
 import {
   adminBrowserApis,
+  ConfirmAction,
   FormDialog,
   FormError,
+  NextActionBar,
   problemMessage,
   QueryError,
   Section,
   StatusChip,
-  useActor,
   useCan,
 } from "../console";
 import { FileButton, FileList } from "./files";
 import type { Shipment } from "./resources";
 import { piecesOf } from "./ShipmentsList";
 
-type Dialog = { kind: "split" | "book" | "exception" | "pod"; key: string; decision?: "accept" | "reject" };
+type Verb = "split" | "book_carrier" | "resolve_exception" | "review_pod" | "cancel";
+type Dialog = { kind: Verb; key: string; decision?: "accept" | "reject" };
 type Carrier = Schemas["FallbackCarrier"];
-type PodReview = "accepted" | "rejected" | "pending";
+type Resolution = Schemas["ShipmentExceptionResolution"];
 
+const SUPPORTED = new Set<string>(["split", "book_carrier", "resolve_exception", "review_pod", "cancel"]);
 const FALLBACK_CARRIERS = ["flash_express", "deliveree"] as const satisfies readonly Carrier[];
 
 async function readShipment(shipmentId: string) {
   const { data, response } = await adminBrowserApis().contract.GET("/v1/admin/shipments/{shipmentId}", {
     params: { path: { shipmentId } },
   });
-  // CONTRACT-GAP admin.shipments — the shipment declares no ETag; one is passed on if it comes.
   return { shipment: data!, etag: response.headers.get("ETag") };
 }
 
@@ -96,72 +96,82 @@ function useReconciliation(orderId: string | undefined, delivered: boolean) {
 }
 
 /**
- * One shipment (F2 2.8): where it goes, what is in it, every event, the POD, the order's delivery
- * reconciliation (D-080), and the actions the desk takes — split, book a fallback carrier (D-114),
- * resolve an exception, review the POD that unlocks the factory's payout.
+ * One shipment (F2 2.8, `admin.shipments.*`): where it goes, what is in it and its cartons, every
+ * event, the POD and its review (D-229), the order's delivery reconciliation (D-080), a failed or
+ * returned trip and its resolution (D-230), the before-shipping hold, the factory's carrier
+ * request, and the actions the API offers on it (`nextActions`): split a draft, book a fallback
+ * carrier from the carriers' quotes (D-114), resolve an exception, review the POD that unlocks the
+ * factory's payout, cancel. Each action sends the ETag it read (`If-Match`).
  *
- * Not on the published shipment (CONTRACT-GAP admin.shipments): `allowedActions` (offered from the
- * status, `adminShipmentActions`), the before-shipping payment hold (the API refuses a booking with
- * `shipments.payment_pending`), the carton list, the province and district of the destination, the
- * customer charge, the POD review state and file names.
+ * CONTRACT-GAP admin.shipments — no per-trip customer charge (left out by the API).
  */
 export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
   const t = useTranslations("logistics.shipment");
   const tList = useTranslations("logistics.shipments");
   const tStatus = useTranslations("status");
+  const tProblems = useTranslations("problems");
   const format = useFormat();
+  const locale = useLocale();
   const queryClient = useQueryClient();
-  const actor = useActor();
   const key = queryKeys.detail("admin", "shipment", shipmentId);
   const [dialog, setDialog] = useState<Dialog | null>(null);
-  const [quantity, setQuantity] = useState("");
+  const [quantities, setQuantities] = useState<Record<string, string>>({});
+  const [cartons, setCartons] = useState("1");
+  const [weight, setWeight] = useState("");
   const [reason, setReason] = useState("");
   const [carrier, setCarrier] = useState<Carrier | "">("");
-  const [resolution, setResolution] = useState<"retry" | "return" | "cancel">("retry");
-  // The review answered in this session — the published shipment does not say (CONTRACT-GAP admin.shipments).
-  const [podReview, setPodReview] = useState<PodReview | null>(null);
+  const [resolution, setResolution] = useState<Resolution>("retry");
 
-  const query = useQuery({ queryKey: key, queryFn: async () => (await readShipment(shipmentId)).shipment });
-  const shipment = query.data;
+  const query = useQuery({ queryKey: key, queryFn: () => readShipment(shipmentId) });
+  const shipment = query.data?.shipment;
+  const etag = query.data?.etag ?? undefined;
   const itemOrders = useItemOrders(shipment);
   const firstOrderId = shipment?.items[0] ? itemOrders.get(shipment.items[0].jobId) : undefined;
   const reconciliation = useReconciliation(firstOrderId, shipment?.status === "delivered");
   const quotes = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/shipments/{shipmentId}/carrier-quotes", { path: { shipmentId } }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/shipments/{shipmentId}/carrier-quotes", {
+          params: { path: { shipmentId } },
+        })
+      ).data!,
     onError: (error) => toast.error(problemMessage(error, t("failed"))),
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   if (!shipment) return null;
 
-  const settle = () => {
+  const settle = (updated?: Shipment, nextEtag?: string | null) => {
+    if (updated) queryClient.setQueryData(key, { shipment: updated, etag: nextEtag ?? null });
     void queryClient.invalidateQueries({ queryKey: key });
     void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "shipment") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
   };
-  const open = (kind: Dialog["kind"], decision?: Dialog["decision"]) => {
-    setQuantity("");
+  const open = (kind: Verb, decision?: Dialog["decision"]) => {
+    setQuantities({});
+    setCartons("1");
+    setWeight("");
     setReason("");
     setCarrier("");
-    setResolution("retry");
+    setResolution(shipment.status === "returned" ? "retry" : "retry");
     setDialog({ kind, key: newIdempotencyKey(), decision });
-    if (kind === "book") quotes.mutate();
+    if (kind === "book_carrier") quotes.mutate();
   };
-  const offered = new Set(
-    adminShipmentActions(
-      {
-        status: shipment.status,
-        carrier: shipment.carrier,
-        hasPod: shipment.proofOfDelivery !== null,
-        podReviewed: podReview !== null && podReview !== "pending",
-      },
-      (permission) => actor.permissions.includes(permission),
-    ).map((action) => action.key),
-  );
+  // A blocked action says why in words: its reason is a problem code when the API has one.
+  const actions = shipment.nextActions.map((action) => ({
+    ...action,
+    disabledReason: action.disabledReason
+      ? tProblems.has(action.disabledReason)
+        ? tProblems(action.disabledReason)
+        : action.disabledReason
+      : null,
+  }));
+  const reviewable = actions.some((action) => action.key === "shipment.review_pod" && !action.disabledReason);
   const pieces = piecesOf(shipment);
   const orderCodes = [...new Set(shipment.items.map((item) => item.orderCode))];
   const pod = shipment.proofOfDelivery;
   const outcome = reconciliation.data?.outcome;
+  const resolutions: Resolution[] = shipment.status === "returned" ? ["retry", "cancel"] : ["retry", "return"];
+  const province = locale === "en" ? shipment.destination.province.nameEn : shipment.destination.province.nameTh;
   const costs = [
     ...(shipment.payoutAmount !== null
       ? [{ term: t("factoryPayout"), description: format.thb(shipment.payoutAmount) }]
@@ -204,21 +214,60 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
             <FileButton variant="secondary" iconStart="tag" fileId={shipment.labelFileId}>
               {t("labels")}
             </FileButton>
-            {offered.has("shipment.split") ? (
-              <Button variant="secondary" onClick={() => open("split")}>
-                {t("split")}
-              </Button>
-            ) : null}
-            {offered.has("shipment.book_carrier") ? <Button onClick={() => open("book")}>{t("book")}</Button> : null}
-            {offered.has("shipment.resolve_exception") ? (
-              <Button onClick={() => open("exception")}>{t("resolve")}</Button>
-            ) : null}
+            <NextActionBar
+              actions={actions}
+              supported={SUPPORTED}
+              labelOf={(verb) => (t.has(`verbs.${verb}`) ? t(`verbs.${verb}`) : undefined)}
+              onAction={(verb) => open(verb as Verb, verb === "review_pod" ? "accept" : undefined)}
+            />
           </>
         }
       />
 
-      {shipment.note ? <Callout tone="warning" title={shipment.note} /> : null}
+      {shipment.blockedByPayment ? (
+        <Callout tone="warning" icon="hourglass" title={t("paymentHoldTitle")}>
+          {t("paymentHoldBody")}
+        </Callout>
+      ) : null}
+      {shipment.carrierRequest ? (
+        <Callout tone="info" icon="route" title={t("carrierRequestTitle")}>
+          {t("carrierRequestBody", {
+            reason: shipment.carrierRequest.reason,
+            at: format.dateTime(shipment.carrierRequest.requestedAt),
+          })}
+        </Callout>
+      ) : null}
+      {shipment.exception ? (
+        <Callout
+          tone={shipment.exception.resolution ? "neutral" : "danger"}
+          title={tStatus(SHIPMENT_STATUS[shipment.exception.status].labelKey)}
+        >
+          {[
+            shipment.exception.note,
+            format.dateTime(shipment.exception.occurredAt),
+            shipment.exception.resolution
+              ? t("resolvedAs", {
+                  resolution: t(`resolutions.${shipment.exception.resolution}`),
+                  name: shipment.exception.resolvedBy?.displayName ?? "",
+                  note: shipment.exception.resolutionNote ?? "",
+                })
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Callout>
+      ) : shipment.note ? (
+        <Callout tone="warning" title={shipment.note} />
+      ) : null}
       {shipment.cancelReason ? <Callout tone="neutral" title={shipment.cancelReason} /> : null}
+      {shipment.splitFrom ? (
+        <p className="text-sm">
+          {t("splitFromLabel")}{" "}
+          <Link href={`/shipments/${shipment.splitFrom.id}`} className="text-primary font-mono hover:underline">
+            {shipment.splitFrom.shipmentNo}
+          </Link>
+        </p>
+      ) : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-5">
@@ -227,17 +276,17 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
               title={
                 <>
                   {t("pod")}
-                  {podReview ? <StatusChip map={POD_REVIEW_STATUS} value={podReview} /> : null}
+                  {shipment.podReview ? <StatusChip map={POD_REVIEW_STATUS} value={shipment.podReview.state} /> : null}
                 </>
               }
               description={t("podNote")}
               actions={
-                offered.has("shipment.accept_pod") ? (
+                reviewable ? (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => open("pod", "reject")}>
+                    <Button size="sm" variant="ghost" onClick={() => open("review_pod", "reject")}>
                       {t("rejectPod")}
                     </Button>
-                    <Button size="sm" onClick={() => open("pod", "accept")}>
+                    <Button size="sm" onClick={() => open("review_pod", "accept")}>
                       {t("acceptPod")}
                     </Button>
                   </div>
@@ -252,6 +301,20 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
                   { term: t("capturedAt"), description: <When at={pod.capturedAt} /> },
                   { term: t("podKind"), description: t(`podKinds.${pod.kind}`) },
                   ...(pod.carrierPodRef ? [{ term: t("carrierPodRef"), description: pod.carrierPodRef }] : []),
+                  ...(shipment.podReview?.reviewedBy
+                    ? [
+                        {
+                          term: t("reviewedBy"),
+                          description: [
+                            shipment.podReview.reviewedBy.displayName,
+                            shipment.podReview.reviewedAt ? format.dateTime(shipment.podReview.reviewedAt) : null,
+                            shipment.podReview.note,
+                          ]
+                            .filter(Boolean)
+                            .join(" · "),
+                        },
+                      ]
+                    : []),
                 ]}
               />
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -307,7 +370,7 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
               <p className="font-medium">{shipment.destination.recipientName}</p>
               <p>{shipment.destination.phone}</p>
               <p className="text-muted">
-                {[shipment.destination.line1, shipment.destination.line2, shipment.destination.postcode]
+                {[shipment.destination.line1, shipment.destination.line2, province, shipment.destination.postcode]
                   .filter(Boolean)
                   .join(" ")}
               </p>
@@ -347,6 +410,20 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
                 weight: format.number(Math.round(shipment.weightG / 1000)),
               })}
             </p>
+            {shipment.cartons.length ? (
+              <ul className="mt-2 flex flex-col gap-1 text-xs">
+                {shipment.cartons.map((carton) => (
+                  <li key={carton.seq} className="flex justify-between gap-2">
+                    <span className="font-mono">{carton.labelCode}</span>
+                    {carton.weightG ? (
+                      <span className="text-muted tabular-nums">
+                        {t("cartonWeight", { kg: format.number(carton.weightG / 1000) })}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </Section>
           {costs.length > 0 ? (
             <Section title={t("economics")} description={t("economicsNote")}>
@@ -360,60 +437,88 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
         <FormDialog
           title={t("splitTitle")}
           description={t("splitBody", { no: shipment.shipmentNo, quantity: format.number(pieces) })}
-          submitLabel={t("split")}
+          submitLabel={t("verbs.split")}
           onClose={() => setDialog(null)}
           onSubmit={async () => {
-            if (!quantity || Number(quantity) <= 0) throw new FormError(t("needQuantity"));
+            const items = shipment.items
+              .map((item) => ({
+                destinationId: item.destinationId,
+                quantity: Math.trunc(Number(quantities[item.destinationId])),
+              }))
+              .filter((item) => item.quantity > 0);
+            if (items.length === 0) throw new FormError(t("needQuantity"));
+            const grams = Math.round(Number(weight) * 1000);
+            if (!(Number(cartons) >= 1) || !(grams >= 1)) throw new FormError(t("needCartons"));
             if (reason.trim().length < 3) throw new FormError(t("needReason"));
             try {
-              const { etag } = await readShipment(shipmentId);
-              const result = await browserRequests().call("POST /v1/admin/shipments/{shipmentId}/actions/split", {
-                path: { shipmentId },
-                body: { quantity: Math.trunc(Number(quantity)), reason: reason.trim() },
-                etag: etag ?? undefined,
-                idempotencyKey: dialog.key,
-              });
-              settle();
-              toast.success(t("splitDone", { no: result.created.shipmentNo }));
+              const { data, response } = await adminBrowserApis().contract.POST(
+                "/v1/admin/shipments/{shipmentId}/actions/split",
+                {
+                  params: {
+                    path: { shipmentId },
+                    header: { "Idempotency-Key": dialog.key, ...(etag ? { "If-Match": etag } : {}) },
+                  },
+                  body: { items, cartonsCount: Math.trunc(Number(cartons)), weightG: grams, reason: reason.trim() },
+                },
+              );
+              settle(data!.shipment, response.headers.get("ETag"));
+              toast.success(t("splitDone", { no: data!.created.shipmentNo }));
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
             }
           }}
         >
-          <Field label={t("splitQuantity")} hint={t("splitHint", { quantity: format.number(pieces) })} required>
-            <NumberInput
-              min={1}
-              max={pieces - 1}
-              value={quantity}
-              onChange={(event) => setQuantity(event.target.value)}
-            />
-          </Field>
+          {shipment.items.map((item) => (
+            <Field
+              key={item.destinationId}
+              label={shipment.items.length > 1 ? t("splitQuantityFor", { jobNo: item.jobNo }) : t("splitQuantity")}
+              hint={t("splitHint", { quantity: format.number(item.quantity) })}
+              required
+            >
+              <NumberInput
+                min={1}
+                max={item.quantity - 1}
+                value={quantities[item.destinationId] ?? ""}
+                onChange={(event) => setQuantities({ ...quantities, [item.destinationId]: event.target.value })}
+              />
+            </Field>
+          ))}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={t("splitCartons")} required>
+              <NumberInput min={1} value={cartons} onChange={(event) => setCartons(event.target.value)} />
+            </Field>
+            <Field label={t("splitWeight")} required>
+              <NumberInput min={0} value={weight} onChange={(event) => setWeight(event.target.value)} />
+            </Field>
+          </div>
           <Field label={t("reason")} required>
             <Textarea rows={2} value={reason} onChange={(event) => setReason(event.target.value)} />
           </Field>
         </FormDialog>
       ) : null}
 
-      {dialog?.kind === "book" ? (
+      {dialog?.kind === "book_carrier" ? (
         <FormDialog
           title={t("bookTitle")}
           description={t("bookBody", { no: shipment.shipmentNo })}
-          submitLabel={t("book")}
+          submitLabel={t("verbs.book_carrier")}
           onClose={() => setDialog(null)}
           onSubmit={async () => {
             if (!carrier) throw new FormError(t("needCarrier"));
             try {
-              // admin.shipments.bookCarrier takes the carrier; its price at booking is Packio's cost
-              // (D-114). No reason is recorded (CONTRACT-GAP admin.shipments).
-              const updated = (
-                await adminBrowserApis().contract.POST("/v1/admin/shipments/{shipmentId}/actions/book-carrier", {
-                  params: { path: { shipmentId }, header: { "Idempotency-Key": dialog.key } },
-                  body: { carrier },
-                })
-              ).data!;
-              queryClient.setQueryData(key, updated);
-              settle();
-              toast.success(t("booked", { tracking: updated.trackingNo ?? "" }));
+              // The carrier's price at booking is Packio's cost (D-114).
+              const { data, response } = await adminBrowserApis().contract.POST(
+                "/v1/admin/shipments/{shipmentId}/actions/book-carrier",
+                {
+                  params: {
+                    path: { shipmentId },
+                    header: { "Idempotency-Key": dialog.key, ...(etag ? { "If-Match": etag } : {}) },
+                  },
+                  body: { carrier, ...(reason.trim() ? { reason: reason.trim() } : {}) },
+                },
+              );
+              settle(data!, response.headers.get("ETag"));
+              toast.success(t("booked", { tracking: data!.trackingNo ?? "" }));
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
             }
@@ -429,33 +534,48 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
               const quote = quotes.data?.find((candidate) => candidate.carrier === value);
               return {
                 value,
-                label: quote ? `${tList(`carriers.${value}`)} · ${quote.service}` : tList(`carriers.${value}`),
+                label: tList(`carriers.${value}`),
+                disabled: quote ? !quote.available : false,
                 description: quote
-                  ? t("quote", { amount: format.thb(quote.amount), days: quote.etaDays })
+                  ? !quote.available
+                    ? (quote.reason ?? t("unavailable"))
+                    : [
+                        quote.amount ? format.thb(quote.amount) : t("pricedAtBooking"),
+                        quote.transitDays !== null ? t("transitDays", { days: quote.transitDays }) : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")
                   : t("pricedAtBooking"),
               };
             })}
           />
+          <Field label={t("bookReason")} hint={t("optional")}>
+            <Textarea rows={2} value={reason} onChange={(event) => setReason(event.target.value)} />
+          </Field>
         </FormDialog>
       ) : null}
 
-      {dialog?.kind === "exception" ? (
+      {dialog?.kind === "resolve_exception" ? (
         <FormDialog
           title={t("resolveTitle")}
           description={t("resolveBody", { no: shipment.shipmentNo })}
-          submitLabel={t("resolve")}
+          submitLabel={t("verbs.resolve_exception")}
           destructive={resolution === "cancel"}
           onClose={() => setDialog(null)}
           onSubmit={async () => {
             if (reason.trim().length < 3) throw new FormError(t("needReason"));
             try {
-              const { etag } = await readShipment(shipmentId);
-              await browserRequests().call("POST /v1/admin/shipments/{shipmentId}/actions/resolve-exception", {
-                path: { shipmentId },
-                body: { resolution, reason: reason.trim() },
-                etag: etag ?? undefined,
-              });
-              settle();
+              const { data, response } = await adminBrowserApis().contract.POST(
+                "/v1/admin/shipments/{shipmentId}/actions/resolve-exception",
+                {
+                  params: {
+                    path: { shipmentId },
+                    header: { "Idempotency-Key": dialog.key, ...(etag ? { "If-Match": etag } : {}) },
+                  },
+                  body: { resolution, reason: reason.trim() },
+                },
+              );
+              settle(data!, response.headers.get("ETag"));
               toast.success(t("resolved"));
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
@@ -465,11 +585,8 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
           <SegmentedControl
             label={t("resolution")}
             value={resolution}
-            onValueChange={(value) => setResolution(value as typeof resolution)}
-            options={(["retry", "return", "cancel"] as const).map((value) => ({
-              value,
-              label: t(`resolutions.${value}`),
-            }))}
+            onValueChange={(value) => setResolution(value as Resolution)}
+            options={resolutions.map((value) => ({ value, label: t(`resolutions.${value}`) }))}
           />
           <Field label={t("reason")} required>
             <Textarea rows={2} value={reason} onChange={(event) => setReason(event.target.value)} />
@@ -477,7 +594,7 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
         </FormDialog>
       ) : null}
 
-      {dialog?.kind === "pod" && dialog.decision ? (
+      {dialog?.kind === "review_pod" && dialog.decision ? (
         <FormDialog
           title={t(dialog.decision === "accept" ? "acceptTitle" : "rejectTitle")}
           description={t(dialog.decision === "accept" ? "acceptBody" : "rejectBody", {
@@ -488,17 +605,20 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
           destructive={dialog.decision === "reject"}
           onClose={() => setDialog(null)}
           onSubmit={async () => {
+            // D-229: a rejection says why; the factory sees it.
             if (dialog.decision === "reject" && reason.trim().length < 3) throw new FormError(t("needReason"));
             try {
-              const reviewed = await browserRequests().call(
-                "POST /v1/admin/shipments/{shipmentId}/pod/actions/{decision}",
+              const { data, response } = await adminBrowserApis().contract.POST(
+                "/v1/admin/shipments/{shipmentId}/pod/actions/{decision}",
                 {
-                  path: { shipmentId, decision: dialog.decision! },
-                  body: { note: reason.trim() || null },
+                  params: {
+                    path: { shipmentId, decision: dialog.decision! },
+                    header: etag ? { "If-Match": etag } : {},
+                  },
+                  body: reason.trim() ? { note: reason.trim() } : {},
                 },
               );
-              setPodReview(reviewed.pod?.review ?? null);
-              settle();
+              settle(data!, response.headers.get("ETag"));
               toast.success(t(dialog.decision === "accept" ? "podAccepted" : "podRejected"));
             } catch (error) {
               throw new FormError(problemMessage(error, t("failed")));
@@ -510,6 +630,33 @@ export function ShipmentDetail({ shipmentId }: { shipmentId: string }) {
           </Field>
         </FormDialog>
       ) : null}
+
+      <ConfirmAction
+        open={dialog?.kind === "cancel"}
+        onOpenChange={(next) => (next ? undefined : setDialog(null))}
+        tone="destructive"
+        title={t("cancelTitle", { no: shipment.shipmentNo })}
+        description={t("cancelBody", { no: shipment.shipmentNo, factory: shipment.factoryCode })}
+        confirmLabel={t("verbs.cancel")}
+        confirmationPhrase={shipment.shipmentNo}
+        reason={{ label: t("reason"), required: true, minLength: 3 }}
+        onConfirm={async ({ idempotencyKey, reason: why }) => {
+          try {
+            const { data, response } = await adminBrowserApis().contract.POST(
+              "/v1/admin/shipments/{shipmentId}/actions/cancel",
+              {
+                params: { path: { shipmentId }, header: { "Idempotency-Key": idempotencyKey } },
+                body: { reason: why },
+              },
+            );
+            settle(data!, response.headers.get("ETag"));
+            toast.success(t("cancelled", { no: shipment.shipmentNo }));
+          } catch (error) {
+            toast.error(problemMessage(error, t("failed")));
+            throw error;
+          }
+        }}
+      />
     </div>
   );
 }

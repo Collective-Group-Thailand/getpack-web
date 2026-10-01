@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { adminPromotionActions, type AdminLifecycleAction } from "@/domain/next-actions/admin";
@@ -244,14 +245,16 @@ export async function readPromotion(promotionId: string) {
  * One promotion (F2 2.7, D-053): who it is for (conditions), what it gives (benefit), how often
  * (limits), and — for a coupon — its codes. The engine evaluating it is the API's; a benefit
  * already redeemed is not sent again (the API refuses to change it), a new promotion is the way.
- * Usage is the promotion report (`admin.promotions.report?promotionId=`).
- *
- * CONTRACT-GAP admin.promotions — no `allowedActions` (`adminPromotionActions` decides), no benefit
- * summary written by the API, no reason on an action, and the campaign is fixed once created.
+ * The header says the benefit in the API's words; usage is the promotion's own (`usage`). Pausing or
+ * ending records the reason given. A referral promotion is system-managed (409
+ * `promotions.system_managed`), so it is shown read-only.
+ * CONTRACT-GAP admin.promotions — no `allowedActions` (`adminPromotionActions` decides), and the
+ * campaign is fixed once created.
  */
 export function PromotionEditor({ promotionId, campaignId }: { promotionId?: string; campaignId?: string | null }) {
   const t = useTranslations("marketing.promotion");
   const format = useFormat();
+  const en = useLocale() === "en";
   const router = useRouter();
   const queryClient = useQueryClient();
   const actor = useActor();
@@ -265,16 +268,6 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const query = useQuery({
     queryKey: key,
     queryFn: async () => (await readPromotion(promotionId!)).data,
-    enabled: Boolean(promotionId),
-  });
-  const report = useQuery({
-    queryKey: queryKeys.related("admin", "promotion", promotionId ?? "new", "report"),
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/promotions/report", {
-          params: { query: { promotionId: promotionId! } },
-        })
-      ).data!,
     enabled: Boolean(promotionId),
   });
   const campaigns = useQuery({
@@ -291,9 +284,10 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
   const setBenefit = (patch: Partial<Draft["benefit"]>) => set({ benefit: { ...form.benefit, ...patch } });
   const toggle = <T extends string>(values: readonly T[], value: T, on: boolean) =>
     on ? [...values, value] : values.filter((entry) => entry !== value);
-  const editable = can("promotions.manage") && (!item || item.status !== "ended");
-  const redeemed = (report.data?.redemptions ?? 0) > 0;
-  const actions = item ? adminPromotionActions(item.status, can) : [];
+  const systemManaged = item?.kind === "referral";
+  const editable = can("promotions.manage") && (!item || item.status !== "ended") && !systemManaged;
+  const redeemed = (item?.usage.redemptions ?? 0) > 0;
+  const actions = item && !systemManaged ? adminPromotionActions(item.status, can) : [];
   const wording = (next: AdminLifecycleAction) => (next.resumes ? "resume" : next.action);
 
   const save = async () => {
@@ -383,7 +377,15 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
           item ? (
             <>
               <StatusChip map={PROMOTION_STATUS} value={item.status} size="md" />
-              <span className="text-muted text-sm">{t(`benefits.${item.benefit.type}`)}</span>
+              <span className="text-muted text-sm">{en ? item.benefitSummaryEn : item.benefitSummaryTh}</span>
+              {item.campaign ? (
+                <Link
+                  href={`/marketing/campaigns/${item.campaign.id}`}
+                  className="text-primary font-mono text-sm hover:underline"
+                >
+                  {item.campaign.code}
+                </Link>
+              ) : null}
             </>
           ) : undefined
         }
@@ -408,25 +410,22 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
       />
 
       {item ? (
-        report.isError ? (
-          <QueryError error={report.error} onRetry={() => void report.refetch()} />
-        ) : (
-          <dl className="grid gap-3 sm:grid-cols-3">
-            {(
-              [
-                ["redemptions", report.data ? format.number(report.data.redemptions) : "–"],
-                ["discount", report.data ? format.thb(report.data.discountAmount) : "–"],
-                ["capped", report.data ? format.thb(report.data.cappedAmount) : "–"],
-              ] as const
-            ).map(([name, value]) => (
-              <div key={name} className="bg-surface rounded-md border p-3">
-                <dt className="text-muted text-xs">{t(`usage.${name}`)}</dt>
-                <dd className="text-lg font-semibold tabular-nums">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        )
+        <dl className="grid gap-3 sm:grid-cols-3">
+          {(
+            [
+              ["redemptions", format.number(item.usage.redemptions)],
+              ["discount", format.thb(item.usage.discountAmount)],
+              ["capped", format.thb(item.usage.cappedAmount)],
+            ] as const
+          ).map(([name, value]) => (
+            <div key={name} className="bg-surface rounded-md border p-3">
+              <dt className="text-muted text-xs">{t(`usage.${name}`)}</dt>
+              <dd className="text-lg font-semibold tabular-nums">{value}</dd>
+            </div>
+          ))}
+        </dl>
       ) : null}
+      {systemManaged ? <Callout tone="info" title={t("systemManaged")} /> : null}
 
       <Section title={t("basics")}>
         <div className="grid gap-3 md:grid-cols-2">
@@ -746,12 +745,19 @@ export function PromotionEditor({ promotionId, campaignId }: { promotionId?: str
           description={t(`actions.${wording(action)}.body`, { name: item.name })}
           confirmLabel={t(`actions.${wording(action)}.label`)}
           tone={action.action === "end" ? "destructive" : "primary"}
-          onConfirm={async () => {
-            // CONTRACT-GAP admin.promotions — the published action takes no reason, and no If-Match.
+          reason={
+            action.action === "activate"
+              ? undefined
+              : { label: t("reason"), required: true, minLength: 3, hint: t("reasonHint") }
+          }
+          onConfirm={async ({ reason }) => {
             try {
               const { data: updated } = await adminBrowserApis().contract.POST(
                 "/v1/admin/promotions/{promotionId}/actions/{action}",
-                { params: { path: { promotionId: item.id, action: action.action } } },
+                {
+                  params: { path: { promotionId: item.id, action: action.action } },
+                  body: reason ? { reason } : {},
+                },
               );
               queryClient.setQueryData(key, updated);
               void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "promotion") });

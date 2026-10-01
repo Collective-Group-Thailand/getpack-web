@@ -4,91 +4,29 @@
  * own application) and F006 (under review, with data Packio entered for it to sign off — the
  * assisted onboarding of the D-100 note).
  *
- * Permissions are packio-api `docs/rbac.md` § "Partner factory (factory scope)". The keys that
- * matrix does not have yet — jobs, QC, shipping, billing — are proposed in
- * `docs/contract-requests.md` with the requests that need them, and added here when those
- * screens are built. All obviously fake.
+ * Permissions are packio-api `docs/rbac.md` § "Partner factory (factory scope)", imported verbatim
+ * by `pnpm gen:rbac`. All obviously fake.
  */
 
+import { FACTORY_ROLE_GRANTS, type FactoryPermission } from "../generated/rbac";
 import { mockId } from "../support";
 
 export type PartnerRole =
   "factory_owner" | "factory_planner" | "factory_operator" | "factory_qc" | "factory_shipping" | "factory_accountant";
 
-/** rbac.md's matrix, role by role. */
-export const ROLE_PERMISSIONS: Record<PartnerRole, readonly string[]> = {
-  factory_owner: [
-    "factory_profile.read",
-    "factory_users.manage",
-    "factory_profile.manage",
-    "factory_onboarding.sign_off",
-    "factory_prices.read",
-    "factory_prices.propose",
-    "factory_rate_card.accept",
-    "factory_agreements.accept",
-    "factory_bank_account.propose",
-    "factory_capacity.read",
-    "factory_rfq.read",
-    "factory_rfq.respond",
-  ],
-  factory_planner: ["factory_profile.read", "factory_capacity.read", "factory_rfq.read", "factory_rfq.respond"],
-  factory_operator: ["factory_profile.read"],
-  factory_qc: ["factory_profile.read"],
-  factory_shipping: ["factory_profile.read"],
-  factory_accountant: ["factory_profile.read", "factory_prices.read", "factory_bank_account.propose"],
-};
-
 /**
- * Proposed in docs/contract-requests.md (`partner.jobs`, `partner.shipments`) — rbac.md has no
- * production or shipping keys yet. The shop floor splits the way B4.2 describes it: the planner
- * accepts and plans, operators report milestones, QC records checks, shipping ships.
+ * packio-api's factory-scope grants, role by role (`pnpm gen:rbac`, triage `partner.permissions`):
+ * the planner accepts and plans, operators report milestones and raise issues, QC records checks
+ * and answers claims with the owner, shipping ships, the accountant keeps the books.
  */
-const FLOOR: Record<PartnerRole, readonly string[]> = {
-  factory_owner: [
-    "factory_jobs.read",
-    "factory_jobs.accept",
-    "factory_jobs.update",
-    "factory_qc.record",
-    "factory_shipments.read",
-    "factory_shipments.manage",
-  ],
-  factory_planner: ["factory_jobs.read", "factory_jobs.accept", "factory_jobs.update", "factory_shipments.read"],
-  factory_operator: ["factory_jobs.read", "factory_jobs.update"],
-  factory_qc: ["factory_jobs.read", "factory_jobs.update", "factory_qc.record"],
-  factory_shipping: ["factory_jobs.read", "factory_shipments.read", "factory_shipments.manage"],
-  factory_accountant: ["factory_jobs.read", "factory_shipments.read"],
+export const ROLE_PERMISSIONS: Record<PartnerRole, readonly FactoryPermission[]> = {
+  factory_owner: FACTORY_ROLE_GRANTS.factory_owner!,
+  factory_planner: FACTORY_ROLE_GRANTS.factory_planner!,
+  factory_operator: FACTORY_ROLE_GRANTS.factory_operator!,
+  factory_qc: FACTORY_ROLE_GRANTS.factory_qc!,
+  factory_shipping: FACTORY_ROLE_GRANTS.factory_shipping!,
+  factory_accountant: FACTORY_ROLE_GRANTS.factory_accountant!,
 };
-/**
- * Money and account keys, proposed with `partner.billing-statements`, `partner.payouts`,
- * `partner.claims`, `partner.scorecard` (rbac.md has none): the accountant keeps the books, the
- * owner answers claims and manages users, the planner sees the scorecard.
- */
-const ACCOUNT: Record<PartnerRole, readonly string[]> = {
-  factory_owner: [
-    "factory_billing.read",
-    "factory_billing.confirm",
-    "factory_payouts.read",
-    "factory_claims.read",
-    "factory_claims.respond",
-    "factory_scorecard.read",
-  ],
-  factory_planner: ["factory_claims.read", "factory_scorecard.read"],
-  factory_operator: [],
-  factory_qc: ["factory_claims.read"],
-  factory_shipping: [],
-  factory_accountant: [
-    "factory_billing.read",
-    "factory_billing.confirm",
-    "factory_payouts.read",
-    "factory_claims.read",
-  ],
-};
-for (const role of Object.keys(FLOOR) as PartnerRole[]) {
-  ROLE_PERMISSIONS[role] = [...ROLE_PERMISSIONS[role], ...ACCOUNT[role]];
-}
-for (const role of Object.keys(FLOOR) as PartnerRole[]) {
-  ROLE_PERMISSIONS[role] = [...ROLE_PERMISSIONS[role], ...FLOOR[role]];
-}
 
 export interface PartnerPersona {
   key: string;

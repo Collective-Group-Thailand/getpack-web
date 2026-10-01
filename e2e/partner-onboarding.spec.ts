@@ -185,9 +185,15 @@ test.describe("the partner zone's permissions", () => {
   });
 
   test("the requests screen asks the Partner team and lists the answers", async ({ page }) => {
+    // Everyone at the factory reads the answers; only the owner asks (`factory_profile.manage`).
     await signInAsPartner(page, "planner");
     await gotoHydrated(page, `${HOSTS.partner}/requests`);
     await expect(page.getByText("ปรับกำลังผลิตให้แล้ว มีผลตั้งแต่สัปดาห์หน้า")).toBeVisible();
+    await expect(page.getByText("เจ้าของโรงงานเป็นผู้ส่งคำขอถึงทีมพาร์ตเนอร์")).toBeVisible();
+
+    await signInAsPartner(page, "owner");
+    await gotoHydrated(page, `${HOSTS.partner}/requests`);
+    await expect(page.getByText(/^ตอบโดย /).first()).toBeVisible();
     await choose(page, "เรื่อง", "กำลังผลิต");
     await page.getByLabel(/^รายละเอียด/).fill("ปิดซ่อมเครื่องพิมพ์ 2 วันสัปดาห์หน้า");
     await page.getByRole("button", { name: "ส่งคำขอ" }).click();

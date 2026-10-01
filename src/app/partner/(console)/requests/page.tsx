@@ -16,20 +16,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Everything the factory asked the Partner team (contract request `partner.change-requests`)
- * and the answers, plus a way to ask something new.
+ * Everything the factory asked the Partner team (`partner.changeRequests.list`, newest first) and
+ * the answers — who answered and when — plus a way to ask something new.
  */
 export default async function RequestsPage() {
   const t = await getTranslations("partnerRequests");
   const tForm = await getTranslations("partnerRequests.form");
   const format = await getFormat();
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
+  const { contract } = await partnerServerApis();
   const [asks, references] = await Promise.all([
-    attempt(() =>
-      requests.call("GET /v1/partner/factories/{factoryId}/change-requests", {
-        path: { factoryId: context.factoryId },
-      }),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/change-requests", {
+            params: { path: { factoryId: context.factoryId }, query: { perPage: 50 } },
+          })
+        ).data!,
     ),
     factoryReferences(context.factoryId),
   ]);
@@ -43,16 +46,13 @@ export default async function RequestsPage() {
       </PartnerSection>
       <PartnerSection title={t("listTitle")}>
         {asks.data ? (
-          asks.data.length ? (
+          asks.data.data.length ? (
             <ul className="flex flex-col gap-2">
-              {asks.data.map((ask) => (
+              {asks.data.data.map((ask) => (
                 <li key={ask.id}>
                   <Card padding="md" className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex-1 font-medium">
-                        {tForm(`topics.${ask.topic}`)}
-                        {ask.productTypeId ? ` · ${references.typeName(ask.productTypeId)}` : ""}
-                      </span>
+                      <span className="flex-1 font-medium">{tForm(`topics.${ask.topic}`)}</span>
                       <StatusChip map={CHANGE_REQUEST_STATUS} value={ask.status} size="md" />
                     </div>
                     <p className="whitespace-pre-wrap">{ask.message}</p>
@@ -64,6 +64,14 @@ export default async function RequestsPage() {
                     {ask.response ? (
                       <p className="bg-surface-subtle rounded-md p-2 text-sm">
                         {t("response", { response: ask.response })}
+                        {ask.respondedBy && ask.respondedAt ? (
+                          <span className="text-muted mt-1 block">
+                            {t("answeredBy", {
+                              by: ask.respondedBy.displayName,
+                              date: format.dateTime(ask.respondedAt),
+                            })}
+                          </span>
+                        ) : null}
                       </p>
                     ) : null}
                     <p className="text-muted text-sm">

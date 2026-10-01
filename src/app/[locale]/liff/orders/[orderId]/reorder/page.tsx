@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { getReorder } from "@/features/customer/fulfilment/api.server";
 import { ReorderView } from "@/features/customer/fulfilment/ReorderView";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
+import { getMyOrder } from "@/features/customer/orders/api.server";
+import { specLinesOf } from "@/features/customer/orders/summary";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
@@ -17,14 +19,29 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page({ params }: { params: Promise<{ orderId: string }> }) {
   if (!(await liffCustomer())) return <LiffSignIn />;
   const { orderId } = await params;
-  const [t, preview] = await Promise.all([getTranslations("fulfilment.reorder"), getReorder(orderId)]);
+  const [t, tCatalog, locale, preview, detail] = await Promise.all([
+    getTranslations("fulfilment.reorder"),
+    getTranslations("catalog"),
+    getLocale(),
+    getReorder(orderId),
+    getMyOrder(orderId),
+  ]);
+  const summary = detail?.order.summary;
   return (
     <div className="flex flex-col gap-4">
       <Link href={`/liff/orders/${orderId}`} className="text-primary text-sm">
-        {preview ? t("back", { code: preview.source.orderCode }) : t("title")}
+        {preview ? t("back", { code: preview.orderCode }) : t("title")}
       </Link>
-      <h1 className="text-xl font-bold">{preview ? t("titleFor", { code: preview.source.orderCode }) : t("title")}</h1>
-      {preview ? <ReorderView initial={preview} /> : <Callout tone="info">{t("notAllowed")}</Callout>}
+      <h1 className="text-xl font-bold">{preview ? t("titleFor", { code: preview.orderCode }) : t("title")}</h1>
+      {preview && summary ? (
+        <ReorderView
+          initial={preview}
+          specs={specLinesOf(locale, summary)}
+          unit={tCatalog(`stock.units.${summary.unit}`)}
+        />
+      ) : (
+        <Callout tone="info">{t("notAllowed")}</Callout>
+      )}
     </div>
   );
 }

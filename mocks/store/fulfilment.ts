@@ -1,7 +1,6 @@
 /**
- * After production, from the customer's side: tracking, receipt, claims and reorder at their
- * published paths (U-F0.2); the claim form and the reorder preview stay CONTRACT-REQUEST
- * (store.claims, store.reorder).
+ * After production, from the customer's side: tracking, receipt, the claim form, claims, the
+ * reorder preview and the reorder, all at their published paths.
  *
  * Orders are the back office's rows (`../admin/commerce`) and claims the logistics desk's
  * (`../admin/logistics`, F2 2.8): a claim filed here is on the desk's queue, and what the desk
@@ -20,7 +19,6 @@ import type { StoreQuote } from "./quotes";
 import { baht, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
 import { adoptClaim, claimRow, customerClaimReply, fileCustomerClaim, type LogisticsClaim } from "../admin/logistics";
 import { files } from "../admin/platform";
-import { mockRequest } from "../route";
 import { bangkokIso, paginate, problem } from "../support";
 import { addToCart, edited } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
@@ -35,7 +33,7 @@ import {
   toShipments,
   trackingTokenOf,
 } from "./orders";
-import { toOrderDto } from "./order-dto";
+import { toStoreOrderDto } from "./order-dto";
 import { nextQuoteId, quotesOf } from "./quotes";
 
 const DAY = 24 * 60;
@@ -74,8 +72,8 @@ const isDelivered = (order: MockOrder) =>
 
 /**
  * A desk row as the customer sees it (`StoreClaimDto`): what they filed, what the team asked for
- * and decided, what was done. Liability, the factory and internal notes stay behind; the free
- * message thread is not published (CONTRACT-GAP store.claims).
+ * and decided, what was done, and what they may do now (packio-api's `STORE_CLAIM_ACTIONS`).
+ * Liability, the factory and internal notes stay behind; there is no free thread (D-225).
  */
 function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
   const order = orders.find((candidate) => candidate.id === row.order.id);
@@ -111,6 +109,8 @@ function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
       refundId: null,
       executedAt: resolution.executedAt,
     })),
+    nextActions:
+      row.status === "need_info" ? [{ key: "claim.answer_info", irreversible: false, disabledReason: null }] : [],
   };
 }
 
@@ -194,7 +194,44 @@ export function reorderOf(order: MockOrder, quantity: number) {
   return { lines, net, vatAmount, unitPrice, originalUnit };
 }
 
-const tokenOf = (order: MockOrder, quantity: number) => `rop.${order.id.slice(-6)}.${quantity}`;
+/** The catalogue's minimum quantity for a reorder, in the mock. */
+const REORDER_MIN = 500;
+
+/** Previews handed out, by token (30 minutes, D-153). */
+const previews = new Map<string, { quantity: number; reuse: boolean; grossAmount: string; expiresAt: number }>();
+
+/** `ReorderPreviewDto`: the same spec at today's price; the approved artwork carries over when kept. */
+function previewOf(order: MockOrder, quantity: number, reuse: boolean): Schemas["ReorderPreviewDto"] {
+  const priced = reorderOf(order, quantity);
+  const proofSkipped = reuse && order.artworkStatus === "approved";
+  const lead = Math.max(5, order.leadTimeDays - (proofSkipped ? 2 : 0));
+  const previewToken = `rop.${order.id.slice(-6)}.${quantity}.${reuse ? 1 : 0}`;
+  const grossAmount = baht(priced.net + priced.vatAmount);
+  const expiresAt = Date.now() + 30 * 60_000;
+  previews.set(previewToken, { quantity, reuse, grossAmount, expiresAt });
+  return {
+    orderId: order.id,
+    orderCode: order.orderCode,
+    previousQuantity: order.quantity,
+    quantity,
+    quantityLimits: { min: REORDER_MIN, max: 1_000_000 },
+    proofSkipped,
+    unitPrice: priced.unitPrice.toFixed(6),
+    productAmount: baht(priced.net),
+    designFeeAmount: "0.00",
+    // Plate and die-block reuse waits for the tooling register (D-205).
+    toolingAmount: null,
+    shippingAmount: null,
+    vatAmount: baht(priced.vatAmount),
+    grossAmount,
+    currency: "THB",
+    leadTimeDays: lead,
+    earliestShipDate: bangkokIso(DAY * lead).slice(0, 10),
+    earliestDeliveryDate: bangkokIso(DAY * (lead + 2)).slice(0, 10),
+    previewToken,
+    previewExpiresAt: new Date(expiresAt + 7 * 3_600_000).toISOString().replace("Z", "+07:00"),
+  };
+}
 
 /** A reorder as a quotation in the customer's cart (D-153); bulk reorders (F3 3.7) add theirs here too. */
 export function addReorderToCart(customer: MockCustomer, order: MockOrder, quantity: number) {
@@ -244,7 +281,8 @@ export function addReorderToCart(customer: MockCustomer, order: MockOrder, quant
 
 export const storeFulfilmentHandlers = [
   // store.timeline.track (published, U-F0.2): anyone with the token sees the steps and the
-  // carriers' progress — no order code, product, name or place (CONTRACT-GAP store.tracking).
+  // carriers' progress, the promised and estimated dates — no order code, product, name or place
+  // (D-143).
   http.get("*/v1/store/track/:token", ({ params }) => {
     const order = orders.find((candidate) => trackingTokenOf(candidate) === params.token);
     if (!order || order.status === "cancelled") return problem(404, "http.not_found", "ไม่พบข้อมูลการติดตามนี้");
@@ -252,6 +290,7 @@ export const storeFulfilmentHandlers = [
     return HttpResponse.json({
       status: order.status,
       promisedShipDate: order.promisedShipDate,
+      estimatedDeliveryDate: progress.estimatedDeliveryDate,
       shippedAt: progress.shippedAt,
       deliveredAt: progress.deliveredAt,
       steps: progress.steps,
@@ -284,36 +323,47 @@ export const storeFulfilmentHandlers = [
       if (order.status === "shipping") order.status = "completed";
       refreshOrder(order);
     }
-    return HttpResponse.json(toOrderDto(order));
+    return HttpResponse.json(toStoreOrderDto(order));
   }),
 
-  mockRequest("GET /v1/store/orders/{orderId}/claim-form", ({ params, request }) => {
-    const found = mine(request, params.orderId);
+  // store.claims.getForm (D-082): whether a claim can be filed now, the deliveries, the photo rules.
+  http.get("*/v1/store/orders/:orderId/claim-form", ({ params, request }) => {
+    const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { order } = found;
     const windowEndsAt = claimWindowEnd(order);
-    if (!windowEndsAt || !deliveredAt(order))
-      return problem(409, "claim.not_delivered", "เปิดเคลมได้หลังได้รับสินค้าแล้ว");
-    return {
+    const delivered = order.shipments.filter((shipment) => shipment.deliveredAt);
+    const open = Boolean(windowEndsAt && Date.parse(windowEndsAt) > Date.now());
+    const form: Schemas["ClaimFormDto"] = {
+      orderId: order.id,
+      orderCode: order.orderCode,
+      quantityOrdered: order.quantity,
+      deliveredAt: deliveredAt(order),
       windowEndsAt,
-      open: Date.parse(windowEndsAt) > Date.now(),
+      open,
+      closedReason: !windowEndsAt ? "not_delivered" : open ? null : "window_closed",
       types: ["damaged", "wrong_spec", "print_defect", "quantity_short", "late", "other"],
       resolutions: ["reprint", "partial_refund", "full_refund", "credit"],
-      shipments: order.shipments.map((shipment) => ({
+      shipments: delivered.map((shipment) => ({
         id: shipment.id,
         shipmentNo: shipment.shipmentNo,
-        province: shipment.destination.province,
+        quantity: shipment.quantity,
         deliveredQuantity: shipment.pod?.deliveredQuantity ?? null,
-        deliveredAt: shipment.deliveredAt,
+        deliveredAt: shipment.deliveredAt!,
+        windowEndsAt: windowEndsAt!,
+        open,
       })),
       evidence: {
-        accept: "image/jpeg,image/png,image/webp,image/heic",
+        accept: ["image/jpeg", "image/png", "image/webp", "image/heic"],
         maxBytes: 15_000_000,
-        minProductPhotos: 1,
-        minCartonPhotos: 1,
-        maxPhotos: 10,
+        productPhotosMin: 1,
+        productPhotosMax: 10,
+        cartonPhotosMin: 1,
+        cartonPhotosMax: 10,
+        purpose: "evidence",
       },
     };
+    return HttpResponse.json(form);
   }),
 
   // store.claims.submit (published, U-F0.2).
@@ -378,56 +428,42 @@ export const storeFulfilmentHandlers = [
     return HttpResponse.json(toClaim(customerClaimReply(row, order.customer.displayName, body.response)));
   }),
 
-  mockRequest("GET /v1/store/orders/{orderId}/reorder", ({ params, query, request }) => {
-    const found = mine(request, params.orderId);
+  // store.claims.previewReorder (D-153): today's price for a quantity; nothing is saved.
+  http.get("*/v1/store/orders/:orderId/reorder", ({ params, request }) => {
+    const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { order } = found;
-    if (order.status === "cancelled") return problem(409, "reorder.not_allowed", "สั่งซ้ำจากคำสั่งซื้อที่ยกเลิกไม่ได้");
-    const minQuantity = 500;
-    const quantity = Math.max(minQuantity, query.quantity ?? order.quantity);
-    const priced = reorderOf(order, quantity);
-    const approved = order.artworkStatus === "approved";
-    return {
-      source: {
-        orderId: order.id,
-        orderCode: order.orderCode,
-        quantity: order.quantity,
-        unitPrice: priced.originalUnit.toFixed(6),
-      },
-      product: productOf(order),
-      specs: order.specs,
-      artwork: {
-        reused: approved,
-        proofSkipped: approved,
-        approvedProofVersion: approved ? Math.max(1, order.artwork.proofs.length) : null,
-        note: approved ? null : "คำสั่งซื้อเดิมยังไม่มีไฟล์งานที่อนุมัติ ต้องส่งไฟล์และตรวจปรู๊ฟใหม่",
-      },
-      quantity,
-      minQuantity,
-      maxQuantity: 1_000_000,
-      unit: order.unit,
-      lines: priced.lines,
-      unitPrice: priced.unitPrice.toFixed(6),
-      netAmount: baht(priced.net),
-      vatAmount: baht(priced.vatAmount),
-      grossAmount: baht(priced.net + priced.vatAmount),
-      priceChanged: priced.unitPrice.toFixed(2) !== priced.originalUnit.toFixed(2),
-      leadTimeDays: Math.max(5, order.leadTimeDays - (approved ? 2 : 0)),
-      earliestShipDate: bangkokIso(DAY * Math.max(5, order.leadTimeDays - (approved ? 2 : 0))).slice(0, 10),
-      previewToken: tokenOf(order, quantity),
-      expiresAt: bangkokIso(30),
-    };
+    if (order.status === "cancelled")
+      return problem(409, "orders.invalid_status", "สั่งซ้ำจากคำสั่งซื้อที่ยกเลิกไม่ได้");
+    const url = new URL(request.url);
+    const reuse = url.searchParams.get("reuseArtwork") !== "false";
+    const asked = Number(url.searchParams.get("quantity") ?? order.quantity);
+    const quantity = Math.max(REORDER_MIN, Number.isFinite(asked) && asked > 0 ? Math.round(asked) : order.quantity);
+    return HttpResponse.json(previewOf(order, quantity, reuse));
   }),
 
-  // Published (U-F0.2): `store.claims.reorder` puts the order again in the cart at today's price
-  // and answers with the cart. There is no preview token to hold the price to (CONTRACT-GAP
-  // store.reorder); the cart shows what it costs.
+  // store.claims.reorder: today's price into the cart, held to the preview when one is sent.
   http.post("*/v1/store/orders/:orderId/actions/reorder", async ({ params, request }) => {
+    const refused = keyRequired(request);
+    if (refused) return refused;
     const found = mine(request, String(params.orderId));
     if (found instanceof Response) return found;
     const { customer, order } = found;
     const body = (await request.json().catch(() => ({}))) as Schemas["ReorderOrderDto"];
-    addReorderToCart(customer, order, body.quantity ?? order.quantity);
+    const quantity = body.quantity ?? order.quantity;
+    if (body.previewToken) {
+      const preview = previews.get(body.previewToken);
+      if (
+        !preview ||
+        preview.quantity !== quantity ||
+        preview.reuse !== (body.reuseArtwork ?? true) ||
+        preview.expiresAt < Date.now()
+      )
+        return problem(409, "orders.reorder_preview_expired", "ราคาที่แสดงหมดอายุแล้ว กรุณาดูราคาใหม่");
+      if (preview.grossAmount !== previewOf(order, quantity, preview.reuse).grossAmount)
+        return problem(409, "orders.reorder_repriced", "ราคาวันนี้เปลี่ยนจากที่แสดง กรุณาดูราคาใหม่");
+    }
+    addReorderToCart(customer, order, quantity);
     return edited(customer, 201);
   }),
 ];

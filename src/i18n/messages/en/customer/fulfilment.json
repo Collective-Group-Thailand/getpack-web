@@ -34,10 +34,12 @@
       "cancelled": "Shipment cancelled"
     },
     "pod": "{name} received {quantity} {unit} on {date}",
-    "podPhoto": "Proof-of-delivery photo {name}",
+    "podPhoto": "Photo {index}",
     "toNoUnit": "Qty {quantity} to {name} ({postcode})",
     "podNoUnit": "{name} received qty {quantity} on {date}",
-    "podPhotos": "{count, plural, one {# proof-of-delivery photo} other {# proof-of-delivery photos}}"
+    "podPhotos": "{count, plural, one {# proof-of-delivery photo} other {# proof-of-delivery photos}}",
+    "podPhotoOpen": "Open photo {index}",
+    "podPhotoFailed": "Could not open the photo"
   },
   "receipt": {
     "title": "Receiving your order",
@@ -52,14 +54,15 @@
     "auto": "If you don't confirm, the order completes automatically on {date}",
     "confirm": "Confirm receipt",
     "confirmTitle": "Confirm receipt of {code}?",
-    "confirmBody": "The order completes. You can still report a problem within 7 days from now, with photos of the product and the shipping carton.",
+    "confirmBody": "The order will be completed. You can still report a problem until {date}, with photos of the product and the shipping cartons.",
     "cancel": "Cancel",
     "done": "Receipt confirmed — thank you",
     "failed": "Couldn't confirm. Please try again.",
     "problem": "Something wrong? Report it by {date}.",
     "openClaim": "Report a problem",
-    "completedBody": "This order is complete. If something is wrong, you can report it within 7 days of receiving it.",
-    "problemNoDate": "Something wrong?"
+    "problemNoDate": "Something wrong?",
+    "confirmBodyNoDate": "The order will be completed. You can still report a problem within the claim window, with photos of the product and the shipping cartons.",
+    "completedAutoBody": "Receipt was confirmed automatically on {date}"
   },
   "photos": {
     "drop": "Drop photos here",
@@ -84,7 +87,7 @@
     "type": "What went wrong",
     "required": "(required)",
     "shipment": "Delivery",
-    "shipmentOption": "{shipment} · {province}",
+    "shipmentOption": "{shipment} · {quantity} · delivered {date}",
     "quantity": "How many are affected",
     "quantityHint": "If you know — e.g. 20 damaged boxes",
     "description": "Details",
@@ -164,27 +167,26 @@
       "factory_deduction": "Deducted from the factory",
       "carrier_recovery": "Recovered from the carrier"
     },
-    "photoCount": "{count, plural, one {# photo} other {# photos}}"
+    "photoCount": "{count, plural, one {# photo} other {# photos}}",
+    "photo": "Photo {index}",
+    "photoOpen": "Open photo {index}"
   },
   "reorder": {
     "title": "Reorder",
     "titleFor": "Reorder {code}",
     "back": "Back to order {code}",
-    "intro": "{product} — same spec, same artwork, priced at today's cost",
+    "intro": "{product}: the same specification, priced at today's cost",
     "notAllowed": "This order can't be reordered.",
     "what": "Same spec",
     "artworkReused": "Same artwork",
     "artworkNew": "New artwork needed",
-    "proofSkipped": "Unchanged file — no new proof; produced as proof version {version} you approved",
     "proofAgain": "We'll send a proof to check again before production",
     "quantity": "Quantity ({unit})",
     "quantityHint": "Last time {original}; minimum {min}",
     "price": "Today's price",
-    "waived": "No charge",
-    "vat": "Incl. 7% VAT",
+    "vat": "VAT",
     "total": "Total",
     "perUnit": "{price} / {unit}",
-    "priceChanged": "The unit price has moved since last time ({before} on {code}) with current costs",
     "lead": "About {days} business days; ships from {date}",
     "checkout": "Reorder and check out",
     "toCart": "Add to cart for now",
@@ -193,7 +195,18 @@
       "number": "Enter a number",
       "min": "Minimum {min}",
       "max": "Maximum {max}"
-    }
+    },
+    "proofSkippedNoVersion": "The artwork is unchanged, so there is no new proof: it is made to the proof you approved",
+    "newArtwork": "Send new artwork",
+    "newArtworkHint": "The team checks it and sends a proof to approve before production",
+    "quantityHintNoMin": "Last time: {original}",
+    "product": "Product, {quantity} {unit}",
+    "designFee": "Design",
+    "tooling": "Plates and die blocks",
+    "shipping": "Delivery",
+    "shippingAtCheckout": "Priced at checkout",
+    "arrives": "Earliest delivery {date}",
+    "holds": "This price holds until {date}"
   },
   "track": {
     "title": "Track an order",
@@ -212,6 +225,8 @@
     "updated": "Last updated {date}",
     "owner": "Own this order? See everything in your account",
     "shipBy": "Ships from the factory by {date}",
-    "shipmentNo": "Delivery {shipment}"
+    "shipmentNo": "Delivery {shipment}",
+    "arrivesBy": "Expected by {date}",
+    "delivered": "Delivered on {date}"
   }
 }

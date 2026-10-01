@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getProductTypes } from "@/features/customer/catalog/api.server";
-import { pick } from "@/features/customer/catalog/localize";
 import { listMyOrders, type OrderView } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
@@ -25,27 +24,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /**
  * The customer's orders by where they stand (F3 3.4), group by group as the API lists them
- * (`store.orders.listGroups`), each with what the customer can do on it now.
- *
- * CONTRACT-GAP store.orders / entity.next-actions — a listed order names its product type only and
- * carries no actions: they come from `listMyOrders`, and paying (a group's instalment) is on the
- * order's page, linked from the row.
+ * (`store.orders.listGroups`), each with its product, its estimated delivery and what the customer
+ * can do on it now (`nextActions`). Paying a group's instalment is on the order's page, linked from
+ * the row.
  */
 export default async function Page({ searchParams }: { searchParams: Promise<{ view?: string; placed?: string }> }) {
   await requireCustomer();
   const { view: raw, placed } = await searchParams;
   const view = VIEWS.includes(raw as OrderView) ? (raw as OrderView) : "active";
-  const [t, format, locale, rows, types] = await Promise.all([
+  const [t, tCatalog, format, locale, rows] = await Promise.all([
     getTranslations("myOrders"),
+    getTranslations("catalog"),
     getFormat(),
     getLocale(),
     listMyOrders(view),
-    getProductTypes(),
   ]);
-  const typeName = (code: string) => {
-    const type = types.find((candidate) => candidate.code === code);
-    return type ? pick(locale, type.nameTh, type.nameEn) : code;
-  };
 
   return (
     <div>
@@ -95,13 +88,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                   <div className="min-w-0">
                     <h2 id={`order-${order.id}`} className="font-semibold">
                       <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
-                        {typeName(order.productTypeCode)}
+                        {productNameOf(locale, order.summary)}
                       </Link>
                     </h2>
                     <p className="text-muted font-mono text-sm">{order.orderCode}</p>
                     <p className="text-muted mt-1 text-sm">
-                      {t("rowNoUnit", {
+                      {t("row", {
                         quantity: format.number(order.quantityOrdered),
+                        unit: tCatalog(`stock.units.${order.summary.unit}`),
                         date: format.date(group.placedAt),
                       })}
                     </p>
@@ -118,15 +112,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
                   <p className="text-muted flex items-center gap-2 text-sm">
                     <Icon name="truck" size={16} aria-hidden="true" />
                     {t("shipBy", { date: format.date(order.promisedShipDate) })}
+                    {order.estimatedDeliveryDate
+                      ? ` · ${t("arrivesBy", { date: format.date(order.estimatedDeliveryDate) })}`
+                      : null}
                   </p>
                 ) : null}
-                {actions.some((action) => action.key !== "order.pay_instalment") ? (
-                  <OrderActions
-                    orderId={order.id}
-                    orderCode={order.orderCode}
-                    size="sm"
-                    actions={actions.filter((action) => action.key !== "order.pay_instalment")}
-                  />
+                {actions.length > 0 ? (
+                  <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
                 ) : null}
                 {group.status === "waiting_payment" ? (
                   <p className="text-sm">

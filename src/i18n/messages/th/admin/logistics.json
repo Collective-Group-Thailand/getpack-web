@@ -2,7 +2,6 @@
   "shipments": {
     "title": "การจัดส่ง",
     "description": "โรงงานส่งเอง ขนส่งสำรองเมื่อโรงงานส่งไม่ได้ ต้องมีหลักฐานการส่งมอบทุกครั้ง (D-013, D-114)",
-    "statusesLabel": "สถานะการจัดส่ง",
     "all": "ทั้งหมด",
     "search": "ค้นหาเลขจัดส่ง คำสั่งซื้อ หรือเลขพัสดุ",
     "empty": "ไม่มีการจัดส่ง",
@@ -20,7 +19,17 @@
       "factory_fleet": "รถของโรงงาน",
       "flash_express": "Flash Express",
       "deliveree": "Deliveree"
-    }
+    },
+    "queuesLabel": "คิวงานจัดส่ง",
+    "queues": {
+      "awaiting_pickup": "รอรับของ",
+      "in_transit": "ระหว่างทาง",
+      "exceptions": "มีปัญหา",
+      "pod_review": "รอตรวจหลักฐาน"
+    },
+    "paymentHold": "รอชำระก่อนส่ง",
+    "carrierRequested": "โรงงานขอขนส่งสำรอง",
+    "splitFrom": "แยกจาก {no}"
   },
   "shipment": {
     "pageTitle": "การจัดส่ง",
@@ -29,9 +38,6 @@
     "summary": "คำสั่งซื้อ {order} · โรงงาน {factory} · {quantity} ชิ้น {cartons} กล่อง",
     "packingList": "ใบรายการสินค้า",
     "labels": "ป้ายกล่อง",
-    "split": "แยกการจัดส่ง",
-    "book": "จองขนส่งสำรอง",
-    "resolve": "แก้ปัญหาการจัดส่ง",
     "pod": "หลักฐานการส่งมอบ (POD)",
     "podNote": "POD ของโรงงานที่รับแล้วทำให้จ่ายเงินโรงงานได้ (D-013)",
     "acceptPod": "รับหลักฐาน",
@@ -70,7 +76,7 @@
     "factoryPayout": "จ่ายโรงงาน",
     "carrierCost": "ค่าขนส่งสำรอง",
     "splitTitle": "แยกการจัดส่ง",
-    "splitBody": "{no} มี {quantity} ชิ้น ส่วนที่แยกจะเป็นการจัดส่งใหม่",
+    "splitBody": "{no} มี {quantity} ชิ้น ส่วนที่แยกจะเป็นการจัดส่งใหม่ (แยกได้เฉพาะร่าง)",
     "splitQuantity": "จำนวนที่แยก",
     "splitHint": "น้อยกว่า {quantity}",
     "splitDone": "แยกเป็น {no} แล้ว",
@@ -78,7 +84,6 @@
     "bookBody": "{no} เลือกขนส่งสำรอง ราคาขนส่งตอนจองเป็นต้นทุนของ Packio",
     "quoting": "กำลังขอราคาขนส่ง…",
     "quotes": "ขนส่งสำรอง",
-    "quote": "{amount} · ถึงใน {days} วัน",
     "booked": "จองขนส่งแล้ว เลขพัสดุ {tracking}",
     "resolveTitle": "แก้ปัญหาการจัดส่ง",
     "resolveBody": "{no}",
@@ -108,7 +113,32 @@
     "deliveredOf": "ส่งมอบ {quantity}",
     "credit": "เครดิต {amount}",
     "pricedAtBooking": "คิดราคาตอนจอง",
-    "needCarrier": "กรุณาเลือกขนส่ง"
+    "needCarrier": "กรุณาเลือกขนส่ง",
+    "verbs": {
+      "split": "แยกการจัดส่ง",
+      "book_carrier": "จองขนส่งสำรอง",
+      "resolve_exception": "แก้ปัญหาการจัดส่ง",
+      "review_pod": "ตรวจหลักฐานการส่งมอบ",
+      "cancel": "ยกเลิกการจัดส่ง"
+    },
+    "paymentHoldTitle": "ยังรับของไม่ได้",
+    "paymentHoldBody": "คำสั่งซื้อยังมีงวดที่ต้องชำระก่อนจัดส่ง ระบบจะไม่ให้รับของจนกว่าจะชำระ (B3.2)",
+    "carrierRequestTitle": "โรงงานขอขนส่งสำรอง",
+    "carrierRequestBody": "ขอเมื่อ {at}: {reason}",
+    "resolvedAs": "แก้แล้ว: {resolution} โดย {name} — {note}",
+    "splitFromLabel": "แยกมาจาก",
+    "reviewedBy": "ตรวจโดย",
+    "cartonWeight": "{kg} กก.",
+    "splitQuantityFor": "จำนวนที่แยก ({jobNo})",
+    "splitCartons": "จำนวนกล่องของการจัดส่งใหม่",
+    "splitWeight": "น้ำหนักของการจัดส่งใหม่ (กก.)",
+    "needCartons": "กรุณาระบุจำนวนกล่องและน้ำหนัก",
+    "unavailable": "ขนส่งนี้ไม่รับงานนี้",
+    "transitDays": "ถึงใน {days} วัน",
+    "bookReason": "เหตุผลที่ใช้ขนส่งสำรอง",
+    "cancelTitle": "ยกเลิก {no}",
+    "cancelBody": "การจัดส่ง {no} ของโรงงาน {factory} จะถูกยกเลิก ย้อนกลับไม่ได้",
+    "cancelled": "ยกเลิก {no} แล้ว"
   },
   "claims": {
     "title": "เคลม",
@@ -124,7 +154,8 @@
       "liability": "ผู้รับผิดชอบ",
       "requested": "ลูกค้าขอ",
       "window": "แจ้งได้ถึง",
-      "submitted": "แจ้งเมื่อ"
+      "submitted": "แจ้งเมื่อ",
+      "customer": "ลูกค้า"
     },
     "types": {
       "damaged": "สินค้าชำรุด",
@@ -151,6 +182,10 @@
       "partial_refund": "คืนเงินบางส่วน",
       "full_refund": "คืนเงินเต็ม",
       "credit": "เครดิต"
+    },
+    "filters": {
+      "type": "ประเภท",
+      "origin": "ที่มา"
     }
   },
   "claim": {
@@ -158,7 +193,6 @@
     "breadcrumb": "เส้นทางหน้า",
     "claims": "เคลม",
     "summary": "คำสั่งซื้อ {order} · โรงงาน {factory}",
-    "resolve": "ดำเนินการแก้ไข",
     "actions": {
       "review": {
         "label": "เริ่มตรวจสอบ",
@@ -207,7 +241,6 @@
     "cartonPhotos": "รูปกล่องขนส่ง",
     "noPhotos": "ไม่มีรูป",
     "liability": "ผู้รับผิดชอบ",
-    "override": "เปลี่ยน",
     "byRule": "ตามกฎ: {liability}",
     "overridden": "เปลี่ยนจากที่กฎกำหนด",
     "factoryResponse": "คำตอบของโรงงาน",
@@ -254,7 +287,49 @@
     "needOverrideReason": "กรุณาระบุเหตุผลอย่างน้อย 10 ตัวอักษร",
     "reproduceQuantity": "จำนวนที่ผลิตใหม่",
     "optional": "ไม่บังคับ",
-    "needQuantity": "กรุณาระบุจำนวน"
+    "needQuantity": "กรุณาระบุจำนวน",
+    "verbs": {
+      "review": "เริ่มตรวจสอบ",
+      "request_info": "ขอข้อมูลเพิ่ม",
+      "send_to_factory": "ส่งให้โรงงานตอบ",
+      "override_liability": "เปลี่ยนผู้รับผิดชอบ",
+      "approve": "อนุมัติเคลม",
+      "reject": "ไม่อนุมัติ",
+      "resolve": "ดำเนินการแก้ไข",
+      "close": "ปิดเคลม"
+    },
+    "customer": "ลูกค้า",
+    "approvedProof": "ปรู๊ฟที่ลูกค้าอนุมัติ",
+    "approvedProofBody": "ฉบับที่ {version}",
+    "approvedFile": "ไฟล์ที่อนุมัติ",
+    "channels": {
+      "web": "อนุมัติทางเว็บ",
+      "line_liff": "อนุมัติทาง LINE",
+      "cs_on_behalf": "CS อนุมัติแทน"
+    },
+    "rules": {
+      "factory_production": "กฎ: ผลิตผิดหรือพิมพ์บกพร่อง — โรงงาน",
+      "factory_short_delivery": "กฎ: ส่งขาดเกินค่าเผื่อ — โรงงาน",
+      "factory_fleet_transit": "กฎ: เสียหายระหว่างโรงงานส่ง — โรงงาน",
+      "carrier_transit": "กฎ: เสียหายระหว่างขนส่ง — บริษัทขนส่ง",
+      "staff_decides": "กฎ: ทีมงานพิจารณาเป็นกรณี"
+    },
+    "overriddenBy": "เปลี่ยนโดย {name}",
+    "factoryEvidence": "หลักฐานจากโรงงาน",
+    "decidedBy": "ตัดสินโดย {name}",
+    "deductions": "หักจากโรงงาน",
+    "deductionTotal": "รวม {amount}",
+    "deductionStatus": {
+      "pending": "รอหัก",
+      "applied": "หักแล้ว",
+      "cancelled": "ยกเลิก"
+    },
+    "offsets": {
+      "payable": "หักจากยอดจ่ายโรงงาน",
+      "receivable": "เรียกเก็บจากโรงงาน"
+    },
+    "retype": "พิมพ์ {no} เพื่อยืนยัน",
+    "retypeMismatch": "พิมพ์ {no} ให้ตรงเพื่อยืนยัน"
   },
   "files": {
     "none": "ไม่มีไฟล์",

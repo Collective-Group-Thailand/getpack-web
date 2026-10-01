@@ -6,7 +6,7 @@ import { useParams, useSelectedLayoutSegments } from "next/navigation";
 import { browserBffUrl, type Zone } from "@/lib/zones";
 
 import { routePattern } from "./route-pattern";
-import { sendReport, shouldReport } from "./web-vitals";
+import { rumZone, sendReport, shouldReport } from "./web-vitals";
 
 /**
  * Reports field Web Vitals for the zone it is mounted in.
@@ -21,15 +21,16 @@ export function WebVitals({ zone }: { zone: Zone }) {
   const route = routePattern(useSelectedLayoutSegments(), useParams());
 
   useReportWebVitals((metric) => {
-    if (!shouldReport(metric.name)) return;
+    const { name } = metric;
+    if (!shouldReport(name)) return;
 
     sendReport(rumEndpoint(zone), {
-      name: metric.name,
+      name,
       value: metric.value,
       rating: metric.rating,
       id: metric.id,
       route,
-      zone,
+      zone: rumZone(zone),
     });
   });
 

@@ -15,9 +15,8 @@
     "save": "Save address",
     "cancel": "Cancel",
     "newTitle": "New address",
-    "createBlockedTitle": "New addresses cannot be added yet",
-    "createBlocked": "Adding a new address on the website is not open yet. Your saved addresses work as usual, or ask our team to add one for you.",
-    "areaFixed": "Sub-district, province and postcode"
+    "areaFixed": "Sub-district, province and postcode",
+    "postcodeInvalid": "A five-digit postcode"
   },
   "taxForm": {
     "required": "Please fill this in",
@@ -32,8 +31,6 @@
     "save": "Save",
     "cancel": "Cancel",
     "newTitle": "New tax-invoice details",
-    "createBlockedTitle": "New tax-invoice details cannot be added yet",
-    "createBlocked": "Adding new tax-invoice details on the website is not open yet. Your saved details work as usual, or ask our team to add them for you.",
     "areaFixed": "Province and postcode",
     "name": "Name on the tax invoice",
     "line1": "Registered address",
@@ -47,7 +44,12 @@
       "individual": "Individual",
       "juristic": "Company",
       "government": "Government body"
-    }
+    },
+    "taxIdInvalid": "This 13-digit tax id is not valid",
+    "branchCodeInvalid": "A five-digit branch number",
+    "branchLabel": "Branch",
+    "branchCode": "Branch number",
+    "postcodeInvalid": "A five-digit postcode"
   },
   "nav": {
     "label": "My account",
@@ -80,7 +82,10 @@
       "gold": "Gold"
     },
     "seePoints": "See your points",
-    "shortcuts": "Shortcuts"
+    "shortcuts": "Shortcuts",
+    "tierTop": "You are at {tier}, the top tier",
+    "tierProgress": "12-month spend {spend} of the {needed} {tier} needs",
+    "tierProgressLabel": "Progress to {tier}"
   },
   "quotes": {
     "title": "Saved quotations",
@@ -90,7 +95,8 @@
     "browse": "Browse products",
     "validUntil": "Price holds until {date}",
     "row": "{code} · quantity {quantity} · {amount}",
-    "rowNoCode": "Quantity {quantity} · {amount}"
+    "rowNoCode": "Quantity {quantity} · {amount}",
+    "reopen": "Reopen"
   },
   "book": {
     "title": "Addresses and tax invoices",
@@ -144,8 +150,8 @@
     "providers": {
       "phone_otp": "Mobile number",
       "line": "LINE",
-      "google": "Google",
-      "apple": "Apple"
+      "firebase_google": "Google",
+      "firebase_apple": "Apple"
     },
     "linkedAt": "Linked on {date}",
     "notLinked": "Not linked",
@@ -154,7 +160,8 @@
     "lineUnavailable": "LINE linking is not enabled here yet.",
     "lineLinked": "LINE linked",
     "lineFailed": "We could not link LINE. Please try again.",
-    "failed": "We could not save it. Please try again."
+    "failed": "We could not save it. Please try again.",
+    "unlinked": "{provider} is no longer linked"
   },
   "privacy": {
     "title": "Privacy",
@@ -174,12 +181,11 @@
     "delete": "Delete my data",
     "kinds": {
       "export": "Copy of my data",
-      "delete": "Deletion"
+      "deletion": "Deletion request"
     },
     "statuses": {
-      "received": "Received",
-      "in_progress": "In progress",
-      "completed": "Done",
+      "submitted": "Received",
+      "completed": "Completed",
       "rejected": "Could not be done"
     },
     "requestedAt": "Requested {date} · answer by {due}",
@@ -193,7 +199,11 @@
     "cancel": "Cancel",
     "reason": "Reason (optional)",
     "reasonHint": "It helps us improve",
-    "requestSent": "Request sent"
+    "requestSent": "Request sent",
+    "yourNote": "Your note: {note}",
+    "answeredAt": "The Data Protection Officer answered ({date}): {answer}",
+    "openExport": "Open the copy",
+    "exportUntil": "Available until {date}"
   },
   "points": {
     "title": "Points",
@@ -236,7 +246,17 @@
     "friends": "Friends you invited",
     "noFriends": "No friends invited yet",
     "noFriendsBody": "Share your code with friends who need packaging.",
-    "count": "{count, plural, one {# friend} other {# friends}}"
+    "count": "{count, plural, one {# friend} other {# friends}}",
+    "rules": "How it works",
+    "ruleFriend": "Your friend gets {pct} off their first order, up to {max}",
+    "ruleReward": "You get {amount} ({points} points) once your friend's order is past its claim window",
+    "ruleCap": "Up to {max} rewards a month · {used} this month",
+    "recent": "Friends who used your code",
+    "friend": "Friend",
+    "joined": "Joined",
+    "status": "Status",
+    "reward": "Reward",
+    "rewardPoints": "{points} points"
   },
   "wallet": {
     "title": "Store credit",
@@ -252,9 +272,26 @@
       "applied_to_order": "Used on an order",
       "manual": "Adjusted by Packio staff",
       "refunded": "Paid out as a refund"
-    }
+    },
+    "codes": "My codes",
+    "codesHint": "Enter a code in the cart to use it; the discount is worked out at checkout",
+    "noCodes": "No codes yet",
+    "validUntil": "Valid until {date}",
+    "benefitPercent": "{pct} off",
+    "benefitFixed": "{amount} off",
+    "benefitCap": " (up to {amount})",
+    "minOrder": "Minimum order {amount}",
+    "firstOrder": "First order only"
   },
   "copy": {
     "copied": "Copied"
+  },
+  "area": {
+    "postcode": "Postcode",
+    "postcodeHint": "Enter it first, then choose the sub-district",
+    "requiredMark": "required",
+    "subdistrict": "Sub-district",
+    "choose": "Choose a sub-district",
+    "unknown": "We do not know this postcode"
   }
 }

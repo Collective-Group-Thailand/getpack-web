@@ -43,9 +43,10 @@ export const BILLING_STATEMENT_STATUS = defineStatusMap<BillingStatementStatus>(
 
 /** The factory's tax invoice as Finance checks it (accounting-design §2). */
 export const VENDOR_INVOICE_STATUS = defineStatusMap<VendorInvoiceStatus>({
-  submitted: { tone: "info", icon: "hourglass", labelKey: "vendorInvoice.submitted" },
+  recorded: { tone: "info", icon: "hourglass", labelKey: "vendorInvoice.recorded" },
   validated: { tone: "success", icon: "check", labelKey: "vendorInvoice.validated" },
   rejected: { tone: "danger", icon: "ban", labelKey: "vendorInvoice.rejected" },
+  void: { tone: "neutral", icon: "archive", labelKey: "vendorInvoice.void" },
 });
 
 /** Input VAT on the factory's bill: claimable only with a valid tax invoice (accounting-design §2). */
@@ -65,7 +66,6 @@ export const PAYOUT_ITEM_STATUS = defineStatusMap<PayoutItemStatus>({
 
 /** A factory's user, as the owner manages them (D-140). */
 export const FACTORY_USER_STATUS = defineStatusMap<FactoryUserStatus>({
-  invited: { tone: "info", icon: "mail", labelKey: "factoryUser.invited" },
   active: { tone: "success", icon: "check", labelKey: "factoryUser.active" },
   deactivated: { tone: "neutral", icon: "pause", labelKey: "factoryUser.deactivated" },
 });

@@ -116,7 +116,11 @@
     "declinedBody": "Chat with us to find another way, such as a different spec or quantity.",
     "yes": "Yes",
     "no": "No",
-    "acceptedTitleNoCode": "Quotation accepted"
+    "acceptedTitleNoCode": "Quotation accepted",
+    "openFile": "Open {name}",
+    "fileFailed": "Could not open the file",
+    "withdrawnTitle": "You withdrew this request",
+    "withdrawnBody": "You can send a new one from any product page"
   },
   "thread": {
     "askedForInfo": "Our team needs more information. Reply below so we can carry on pricing it.",
@@ -125,6 +129,19 @@
     "send": "Send",
     "failed": "We could not send the message. It is still here — please try again.",
     "you": "You",
-    "team": "Packio team"
+    "team": "Packio team",
+    "openFile": "Open {name}",
+    "fileFailed": "Could not open the file"
+  },
+  "decline": {
+    "open": "Withdraw request",
+    "title": "Withdraw {code}?",
+    "body": "The team stops pricing it and any quotation sent can no longer be accepted. A withdrawn request cannot be reopened.",
+    "confirm": "Withdraw",
+    "cancel": "Back",
+    "typeCode": "Type {code} to confirm",
+    "note": "Reason (optional)",
+    "done": "{code} withdrawn",
+    "failed": "Could not withdraw it. Please try again."
   }
 }

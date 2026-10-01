@@ -10,7 +10,8 @@
     "text": "ใช้ไป {spent} จาก {budget} · แจ้งเตือนที่ {threshold}",
     "unlimited": "ใช้ไป {spent} · ไม่กำหนดงบ",
     "alerted": "ใช้งบถึง {threshold} แล้ว",
-    "exhausted": "งบหมดแล้ว"
+    "exhausted": "งบหมดแล้ว",
+    "gauge": "งบที่ใช้ไป"
   },
   "campaigns": {
     "title": "แคมเปญ",
@@ -27,7 +28,9 @@
       "status": "สถานะ",
       "budget": "งบที่ใช้",
       "window": "ช่วงเวลา",
-      "alert": "แจ้งเตือนงบ"
+      "alert": "แจ้งเตือนงบ",
+      "promotions": "โปรโมชัน",
+      "owner": "สร้างโดย"
     },
     "fields": {
       "name": "ชื่อแคมเปญ",
@@ -112,7 +115,12 @@
       "endsOnHint": "เว้นว่าง = ไม่มีวันสิ้นสุด"
     },
     "noEnd": "ไม่กำหนดวันสิ้นสุด",
-    "performanceNote": "จากรายงานโปรโมชันของแคมเปญนี้"
+    "performanceNote": "จากรายงานโปรโมชันของแคมเปญนี้",
+    "usage": "การใช้งาน",
+    "usageValue": "{count, number} ครั้ง · {amount}",
+    "createdBy": "สร้างโดย {name}",
+    "reason": "เหตุผล",
+    "reasonHint": "บันทึกไว้ในประวัติการแก้ไข"
   },
   "promotions": {
     "title": "โปรโมชัน",
@@ -136,7 +144,9 @@
       "campaign": "แคมเปญ",
       "stacking": "การใช้ร่วม",
       "spent": "ส่วนลดที่ให้ไป",
-      "window": "ช่วงเวลา"
+      "window": "ช่วงเวลา",
+      "usage": "การใช้งาน",
+      "updated": "แก้ไขล่าสุด"
     },
     "stacking": {
       "exclusive": "ใช้ร่วมไม่ได้",
@@ -152,7 +162,9 @@
       "up": "เลื่อน {name} ขึ้น",
       "down": "เลื่อน {name} ลง"
     },
-    "campaignLink": "ดูแคมเปญ"
+    "campaignLink": "ดูแคมเปญ",
+    "redemptions": "ใช้แล้ว {count, number} ครั้ง",
+    "capped": "ลดเพดาน {amount}"
   },
   "promotion": {
     "pageTitle": "โปรโมชัน",
@@ -299,7 +311,10 @@
     "bases": {
       "value": "ยอดสั่งซื้อ (บาท)",
       "quantity": "จำนวนชิ้น"
-    }
+    },
+    "reason": "เหตุผล",
+    "reasonHint": "บันทึกไว้ในประวัติการแก้ไข",
+    "systemManaged": "โปรโมชันชวนเพื่อนจัดการโดยระบบ แก้ไขหรือเปลี่ยนสถานะที่นี่ไม่ได้"
   },
   "coupons": {
     "title": "โค้ดคูปอง",
@@ -333,7 +348,9 @@
     "columns": {
       "code": "โค้ด",
       "status": "สถานะ",
-      "used": "ใช้แล้ว"
+      "used": "ใช้แล้ว",
+      "batch": "ชุด",
+      "customer": "ลูกค้า"
     },
     "usedOf": "{used}/{limit}",
     "disable": "ปิดโค้ด",
@@ -346,7 +363,14 @@
     "enableCode": "เปิดโค้ด {code}",
     "enableTitle": "เปิดโค้ด {code} อีกครั้ง",
     "enableBody": "{code} กลับมาใช้ได้ตามเงื่อนไขของโปรโมชัน",
-    "enabled": "เปิดโค้ดแล้ว"
+    "enabled": "เปิดโค้ดแล้ว",
+    "batchLabel": "{kind} · {date}",
+    "filterBatch": "ชุดโค้ด",
+    "allBatches": "ทุกชุด",
+    "filterStatus": "สถานะ",
+    "allStatuses": "ทุกสถานะ",
+    "disableReason": "เหตุผลที่ปิดโค้ด",
+    "disableReasonHint": "เช่น โค้ดหลุดสู่สาธารณะ บันทึกไว้ในประวัติ"
   },
   "referrals": {
     "title": "เพื่อนแนะนำ",

@@ -60,8 +60,7 @@
     },
     "markAllRead": "อ่านทั้งหมดแล้ว",
     "loading": "กำลังโหลดการแจ้งเตือน",
-    "unread": "(ยังไม่ได้อ่าน)",
-    "countAtLeast": "{count}+"
+    "unread": "(ยังไม่ได้อ่าน)"
   },
   "locale": {
     "label": "ภาษา",

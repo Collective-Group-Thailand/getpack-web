@@ -16,22 +16,7 @@ export {
   type ResponseOf,
 } from "./client";
 export { REQUESTS, type RequestKey, type Requests } from "./registry";
-export * from "./admin-console";
 export * from "./admin-analytics";
-export * from "./admin-customers";
-export * from "./admin-finance";
 export * from "./admin-logistics";
-export * from "./admin-marketing";
 export * from "./admin-orders";
-export * from "./admin-prepress";
-export * from "./admin-rfq";
-export * from "./partner-account";
-export * from "./partner-billing";
-export * from "./partner-jobs";
-export * from "./partner-onboarding";
-export * from "./partner-shipments";
-export * from "./store-catalog";
-export * from "./store-checkout";
-export * from "./store-orders";
 export * from "./store-quotes";
-export * from "./store-rfq";

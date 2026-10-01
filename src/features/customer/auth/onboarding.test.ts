@@ -33,23 +33,25 @@ describe("what a sign-in asks for", () => {
     expect(consentsToAsk([consent("terms_of_service", true, true, true)])).toHaveLength(1);
   });
 
-  it("asks for a profile only when there is no e-mail and this customer was not asked before", () => {
-    const me = {
+  it("asks for a profile until one is saved, and not again after a skip on this browser", () => {
+    const profile = {
       id: "x",
+      customerCode: null,
       displayName: "ลูกค้า",
-      phone: "0812345678",
-      locale: "th" as const,
-      roles: [],
-      permissions: [],
-      scopes: [],
-      identities: [],
+      firstName: null,
+      lastName: null,
+      email: null,
+      phone: "+66812345678",
+      customerType: "individual" as const,
+      createdVia: "self" as const,
+      createdAt: "2026-09-01T09:00:00+07:00",
+      profileCompletedAt: null,
     };
-    expect(needsProfile({ ...me, email: null }, undefined)).toBe(true);
-    expect(needsProfile({ ...me, email: "a@b.invalid" }, undefined)).toBe(false);
+    expect(needsProfile(profile, undefined)).toBe(true);
+    expect(needsProfile({ ...profile, profileCompletedAt: "2026-09-02T09:00:00+07:00" }, undefined)).toBe(false);
     expect(needsProfile(null, undefined)).toBe(false);
-    // Saved or skipped once: the e-mail cannot be set there (CONTRACT-GAP store.profile), so the
-    // step would otherwise come back at every sign-in.
-    expect(needsProfile({ ...me, email: null }, "x")).toBe(false);
-    expect(needsProfile({ ...me, email: null }, "someone-else")).toBe(true);
+    // Skipped once on this browser: not asked again for this customer, still for another.
+    expect(needsProfile(profile, "x")).toBe(false);
+    expect(needsProfile(profile, "someone-else")).toBe(true);
   });
 });

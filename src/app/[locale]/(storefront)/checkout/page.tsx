@@ -18,9 +18,9 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Checkout (F3 3.3). The preview refuses a cart that is not ready; the page says so first. */
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const [, { locale }] = await Promise.all([requireCustomer(), params]);
-  const [t, { cart, addresses, taxProfiles, typeNames }, points, company] = await Promise.all([
+  const [t, { cart, addresses, taxProfiles }, points, company] = await Promise.all([
     getTranslations("checkout"),
-    getCartAndBook(locale),
+    getCartAndBook(),
     getPoints(),
     findMyCompany(),
   ]);
@@ -43,7 +43,6 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         taxProfiles={taxProfiles}
         pointsBalance={points.availablePoints}
         company={company?.status === "active" ? company : null}
-        typeNames={typeNames}
       />
     </div>
   );

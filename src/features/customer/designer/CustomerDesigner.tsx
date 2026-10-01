@@ -26,7 +26,7 @@ export interface CustomerDesignerProps {
   link: OrderLink | null;
   /** The product the design is for, as the page was opened (`?product=`). */
   productSlug: string | null;
-  /** That product's id, which a new account design needs (from the configurator request). */
+  /** That product's id, which a new account design needs (`DesignerCatalogDto.product.id`). */
   catalogProductId: string | null;
   templateId?: string | null;
 }
@@ -37,11 +37,11 @@ export interface CustomerDesignerProps {
  * carries the live price for the design's product and the one next step — send to print for a
  * design that belongs to an order, order it otherwise.
  *
- * CONTRACT-GAP store.catalog-product-ref — a design names its product by id, which no catalogue
- * read resolves, and a design names no order (store.designs). So the product and the order line
- * the page was opened with are carried in its address when `/design/new` becomes the design's
- * own; a design reopened from the list has neither. A new design with no product cannot be made
- * in the account and stays in this browser.
+ * A saved design names its product, and the product's designer catalogue its id. The order line
+ * the page was opened with is carried in the address when `/design/new` becomes the design's own.
+ *
+ * CONTRACT-GAP store.catalog-product-ref — a design opened without a product (a blank one) has no
+ * product id: it cannot be made in the account and stays in this browser.
  */
 export function CustomerDesigner({
   id,
@@ -88,6 +88,7 @@ export function CustomerDesigner({
 
   const session: EditorSession = {
     mode,
+    // A guest's design keeps its product in the browser too, so sign-in can import it.
     editable: true,
     design,
     create: catalogProductId

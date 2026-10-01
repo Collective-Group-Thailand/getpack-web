@@ -5,6 +5,7 @@ import { BANK_ACCOUNT_STATUS, CHANGE_REQUEST_STATUS, KYC_STATUS, SITE_VISIT_RESU
 import { formatTaxId } from "@/domain/tax-id";
 import { attempt, canAt, partnerServerApis, type FactoryContext } from "@/features/partner/context/server";
 import { PageError, PartnerSection } from "@/features/partner/frame";
+import { productTypeName, toPriceReferences } from "@/features/partner/prices/values";
 import { ChangeRequestForm } from "@/features/partner/requests/ChangeRequestForm";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -28,19 +29,28 @@ import type { OnboardingStep } from "./steps";
 
 type Props = { context: FactoryContext };
 
-/** The factory's own catalogue names: product types and price references (`partner.references`). */
+/**
+ * The factory's own catalogue names (`partner.factories.priceReferences`, D-044 — names only, never a
+ * price): its product types, and the catalogue rows its price lines refer to.
+ */
 export async function factoryReferences(factoryId: string) {
-  const { requests } = await partnerServerApis();
-  const { data } = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/references", { path: { factoryId } }),
+  const [{ contract }, locale] = await Promise.all([partnerServerApis(), getLocale()]);
+  const { data } = await attempt(
+    async () =>
+      (await contract.GET("/v1/partner/factories/{factoryId}/references", { params: { path: { factoryId } } })).data!,
   );
-  const types = new Map((data?.productTypes ?? []).map((type) => [type.id, type]));
-  const byCode = new Map((data?.productTypes ?? []).map((type) => [type.code, type]));
+  const productTypes = (data?.productTypes ?? []).map((type) => ({
+    id: type.id,
+    code: type.code,
+    name: productTypeName(type, locale),
+  }));
+  const types = new Map(productTypes.map((type) => [type.id, type]));
+  const byCode = new Map(productTypes.map((type) => [type.code, type]));
   return {
-    productTypes: data?.productTypes ?? [],
+    productTypes,
     typeName: (idOrCode: string | null | undefined) =>
       (idOrCode && (types.get(idOrCode)?.name ?? byCode.get(idOrCode)?.name)) || idOrCode || "—",
-    columns: data?.columns ?? [],
+    columns: toPriceReferences(data?.items ?? [], locale),
   };
 }
 
@@ -744,13 +754,22 @@ async function Agreements({ context }: Props) {
 async function SiteVisits({ context }: Props) {
   const t = await getTranslations("partnerOnboarding.visit");
   const format = await getFormat();
-  const { requests } = await partnerServerApis();
+  const { contract } = await partnerServerApis();
   const path = { path: { factoryId: context.factoryId } };
   const [visits, asks] = await Promise.all([
-    attempt(() => requests.call("GET /v1/partner/factories/{factoryId}/site-visits", path)),
-    attempt(() => requests.call("GET /v1/partner/factories/{factoryId}/change-requests", path)),
+    attempt(
+      async () => (await contract.GET("/v1/partner/factories/{factoryId}/site-visits", { params: path })).data ?? [],
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/change-requests", {
+            params: { ...path, query: { perPage: 100 } },
+          })
+        ).data!,
+    ),
   ]);
-  const scheduled = (asks.data ?? []).filter((ask) => ask.topic === "site_visit");
+  const scheduled = (asks.data?.data ?? []).filter((ask) => ask.topic === "site_visit");
   return (
     <>
       <PartnerSection title={t("title")} description={t("body")}>
@@ -761,7 +780,7 @@ async function SiteVisits({ context }: Props) {
                 <Card padding="md" className="flex flex-wrap items-center gap-2">
                   <span className="flex-1 font-medium">{format.date(visit.visitedOn)}</span>
                   <StatusChip map={SITE_VISIT_RESULT} value={visit.result} size="md" />
-                  {visit.notes ? <p className="w-full text-sm">{visit.notes}</p> : null}
+                  {/* CONTRACT-GAP partner.site-visits — date and result only: Packio's notes stay with the Partner team. */}
                 </Card>
               </li>
             ))}

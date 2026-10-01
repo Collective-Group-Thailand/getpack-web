@@ -1,85 +1,61 @@
 /**
- * CONTRACT-REQUEST partner.billing-statements, partner.payouts, partner.claims,
- * partner.scorecard, partner.users, partner.notification-preferences — the factory's money and
- * account (F5 5.3), derived from the rows the other mocks already hold: the factory's jobs and
- * their POs (`./jobs.ts`), the logistics desk's delivered shipments and claims, and the payout
- * policy version in the factory's configuration (D-022, D-164).
+ * The factory's money with Packio (F5 5.3) on the published partner surface, `partner.payables.*`
+ * (contract v0.6.0): billing statements on the token-scoped `/v1/partner/billing-statements` (D-044),
+ * the factory's own tax invoice against one, the payout schedule per job (D-022, D-164), payouts with
+ * their remittance advice and 50 ทวิ, and the statement of account.
  *
- * Money is computed here, in satang, and handed out as decimal strings — the zone only formats
- * it (CLAUDE.md). The statement generated last period is confirmed with a validated tax invoice;
- * this period's is sent and waiting, and picks up every POD the factory records until it is
- * confirmed (then it is frozen).
+ * Derived from the rows the other mocks hold: the factory's jobs (`./jobs.ts`), the logistics desk's
+ * delivered shipments and claims, and the payout policy in the factory's configuration. The statement
+ * model below is mock-only and is also what the back office's payables mock reads
+ * (`mocks/admin/finance/payables.ts`), so a statement the factory confirms is confirmed there; it is
+ * turned into `BillingStatementDto` on the way out. Money is computed here, in satang, and handed out
+ * as decimal strings — the zone only formats it (CLAUDE.md).
  */
 
-import type { z } from "zod";
+import { http, HttpResponse } from "msw";
 
-import {
-  billingStatementSummary,
-  payoutSummary,
-  type billingStatement,
-  type payoutDetail,
-  type payoutScheduleJob,
-  type statementOfAccount,
-  type vendorInvoice,
-} from "@/lib/api/requests/partner-billing";
-import {
-  partnerClaimSummary,
-  type factoryUser,
-  type partnerClaim,
-  type partnerNotificationPreference,
-  type partnerScorecard,
-} from "@/lib/api/requests/partner-account";
-import type { RequestKey } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 
 import { orders, type MockOrder } from "../admin/commerce";
-import { claims, shipments, type Claim, type Shipment } from "../admin/logistics";
-import { stores } from "../admin/partners";
+import { claims, shipments, type Shipment } from "../admin/logistics";
+import { stores, type Store } from "../admin/partners";
 import { files } from "../admin/platform";
-import { mockRequest, type MockContext } from "../route";
-import { bangkokIso, mockId, paginate, problem } from "../support";
+import { nextActions, type ActionRule } from "../next-actions";
+import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { buyAmountOf, extraOf, factoryJobs, titleOf } from "./jobs";
-import { PARTNER_PERSONAS, type PartnerRole } from "./personas";
-import { own } from "./support";
+import { canPartner, PARTNER_PERSONAS, type PartnerPersona } from "./personas";
+import { once, own, ownScope } from "./support";
 
-type Statement = z.output<typeof billingStatement>;
-type Invoice = z.output<typeof vendorInvoice>;
-type ScheduleJob = z.output<typeof payoutScheduleJob>;
-type Payout = z.output<typeof payoutDetail>;
-type Account = z.output<typeof statementOfAccount>;
-type PartnerClaim = z.output<typeof partnerClaim>;
-type Scorecard = z.output<typeof partnerScorecard>;
-type User = z.output<typeof factoryUser>;
-type Preference = z.output<typeof partnerNotificationPreference>;
-type Ctx = Pick<MockContext<RequestKey>, "request" | "params">;
+type StatementDto = Schemas["BillingStatementDto"];
+type InvoiceDto = Schemas["VendorInvoiceDto"];
+type ScheduleJobDto = Schemas["PayoutScheduleJobDto"];
+type PayoutDto = Schemas["PartnerPayoutDetailDto"];
+type AccountDto = Schemas["StatementOfAccountDto"];
 
 const DAY = 24 * 60;
 const now = () => bangkokIso();
 const today = () => bangkokIso().slice(0, 10);
-const addDays = (day: string, days: number) =>
+export const addDays = (day: string, days: number) =>
   new Date(Date.parse(`${day}T12:00:00+07:00`) + days * 86_400_000 + 7 * 3_600_000).toISOString().slice(0, 10);
+const startOf = (day: string) => `${day}T00:00:00+07:00`;
 
 /* ---------------------------------------------------------------------------- satang */
 
-const satang = (amount: string) => Math.round(Number(amount) * 100);
-const baht = (value: number) => {
+export const satang = (amount: string) => Math.round(Number(amount) * 100);
+export const baht = (value: number) => {
   const sign = value < 0 ? "-" : "";
   const abs = Math.abs(Math.round(value));
   return `${sign}${Math.floor(abs / 100)}.${String(abs % 100).padStart(2, "0")}`;
 };
 const share = (amount: string, pct: string) => Math.round((satang(amount) * Number(pct)) / 100);
+const vatOf = (net: number, registered: boolean) => (registered ? Math.round(net * 0.07) : 0);
+const MONEY = /^\d{1,12}\.\d{2}$/;
 
 /** A tiny, valid PDF: what a mock returns where the API returns a short-lived signed URL. */
-const PDF = `data:application/pdf;base64,${Buffer.from(
+export const PDF = `data:application/pdf;base64,${Buffer.from(
   "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF",
 ).toString("base64")}`;
-const document = (id: string, name: string) => ({
-  id,
-  originalName: name,
-  mimeType: "application/pdf",
-  sizeBytes: 1024,
-  thumbnailUrl: null,
-  url: PDF,
-});
+export const signed = (url: string): Schemas["DownloadUrlDto"] => ({ url, expiresAt: bangkokIso(5) });
 
 /* ------------------------------------------------------------------------ deliveries */
 
@@ -105,124 +81,84 @@ export function deliveries(factoryId: string): Delivery[] {
 
 export const policyOf = (factoryId: string) => stores.get(factoryId)?.config.payoutPolicy.current ?? null;
 
-/* ------------------------------------------------------------------- payout schedule */
-
 export function acceptedOn(jobId: string, fallback: string) {
   const job = orders.flatMap((order) => order.jobs).find((item) => item.id === jobId);
   const entry = job ? extraOf(job).history.find((item) => item.text.startsWith("โรงงานรับงาน")) : undefined;
   return (entry?.at ?? fallback).slice(0, 10);
 }
 
-function schedule(factoryId: string): ScheduleJob[] {
-  const policy = policyOf(factoryId);
-  const advancePct = policy?.advancePct ?? "30.0000";
-  const retentionPct = policy?.retentionPct ?? "0.0000";
-  const balancePct = (100 - Number(advancePct) - Number(retentionPct)).toFixed(4);
-  const claimWindow = policy?.claimWindowDays ?? 7;
-  const release = policy?.retentionReleaseDays ?? 30;
-  const delivered = deliveries(factoryId);
-  return factoryJobs(factoryId)
-    .filter(({ job }) => ["accepted", "in_progress", "completed", "on_hold"].includes(job.status))
-    .map(({ order, job }) => {
-      const po = buyAmountOf(order);
-      const accepted = acceptedOn(job.id, extraOf(job).releasedAt);
-      const mine = delivered.filter((item) => item.order.id === order.id);
-      const shippedAll = mine.reduce((total, item) => total + item.quantity, 0) >= order.quantity * 0.95;
-      const lastPod =
-        mine
-          .map((item) => item.deliveredOn)
-          .sort()
-          .at(-1) ?? null;
-      const balanceOn = shippedAll && lastPod ? addDays(lastPod, claimWindow) : null;
-      const retentionOn = balanceOn ? addDays(balanceOn, release) : null;
-      const state = (on: string | null) =>
-        on === null
-          ? ("open" as const)
-          : on <= addDays(today(), -3)
-            ? ("paid" as const)
-            : on <= today()
-              ? ("eligible" as const)
-              : ("open" as const);
-      const paid = (on: string | null) => (state(on) === "paid" ? addDays(on!, 2) : null);
-      const item = (
-        kind: "advance" | "balance" | "retention",
-        pct: string,
-        on: string | null,
-        waiting: ScheduleJob["items"][number]["waitingFor"],
-      ) => ({
-        kind,
-        pct,
-        amount: baht(share(po, pct)),
-        eligibleAt: on,
-        waitingFor: on ? null : waiting,
-        status: state(on),
-        paidOn: paid(on),
-        payoutId: paid(on) ? mockId("pvo", Number(paid(on)!.replace(/-/g, "")) % 1_000_000) : null,
-      });
-      return {
-        job: { id: job.id, jobNo: job.jobNo, title: titleOf(order) },
-        poAmount: po,
-        items: [
-          item("advance", advancePct, accepted, "acceptance"),
-          item("balance", balancePct, balanceOn, lastPod ? "claim_window" : "pod"),
-          ...(Number(retentionPct) > 0 ? [item("retention", retentionPct, retentionOn, "retention_period")] : []),
-        ],
-      };
-    });
+/* ------------------------------------------------------------------ the statement model */
+
+interface FileModel {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  thumbnailUrl: string | null;
+  url: string | null;
 }
 
-/* --------------------------------------------------------------------------- payouts */
-
-const WHT_PCT = "3.0000"; // ⚖ hire of work — the auditor confirms (D-022); the API decides.
-
-function payouts(factoryId: string): Payout[] {
-  const byDay = new Map<string, { kind: "advance" | "balance" | "retention"; reference: string; amount: string }[]>();
-  for (const job of schedule(factoryId))
-    for (const item of job.items)
-      if (item.paidOn)
-        byDay.set(item.paidOn, [
-          ...(byDay.get(item.paidOn) ?? []),
-          { kind: item.kind, reference: job.job.jobNo, amount: item.amount },
-        ]);
-  const bank = stores.get(factoryId)?.banks.find((item) => item.status === "active")?.accountNoLast4 ?? "0000";
-  return [...byDay.entries()]
-    .sort(([a], [b]) => b.localeCompare(a))
-    .map(([paidOn, allocations]) => {
-      const gross = allocations.reduce((total, item) => total + satang(item.amount), 0);
-      const wht = Math.round((gross * Number(WHT_PCT)) / 100);
-      const id = mockId("pvo", Number(paidOn.replace(/-/g, "")) % 1_000_000);
-      return {
-        id,
-        pvNumber: `PV-2569-${paidOn.slice(5).replace("-", "")}`,
-        paidOn,
-        status: "paid" as const,
-        gross: baht(gross),
-        wht: baht(wht),
-        deductions: "0.00",
-        net: baht(gross - wht),
-        currency: "THB" as const,
-        bankLast4: bank,
-        allocations,
-        remittanceAdvice: document(
-          mockId("rma", Number(paidOn.replace(/-/g, "")) % 1_000_000),
-          `remittance-${paidOn}.pdf`,
-        ),
-        whtCertificate: document(mockId("wht", Number(paidOn.replace(/-/g, "")) % 1_000_000), `50-tawi-${paidOn}.pdf`),
-        failureReason: null,
-      };
-    });
+/** The factory's own tax invoice, as both zones' mocks keep it (`submitted` = the API's `recorded`). */
+export interface InvoiceModel {
+  id: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  sellerTaxId: string;
+  sellerBranchCode: string;
+  source: "pdf_upload" | "e_tax" | "manual";
+  file: FileModel | null;
+  eTaxReference: string | null;
+  status: "submitted" | "validated" | "rejected";
+  rejectReason: string | null;
+  recordedAt: string;
+  /** The amounts the factory keyed from its own invoice (`CaptureTaxInvoiceDto`); Finance checks them. */
+  netAmount?: string;
+  vatAmount?: string;
 }
 
-/* ------------------------------------------------------------------ billing statements */
+export interface StatementLineModel {
+  id: string;
+  kind: "production" | "shipping" | "deduction" | "advance_offset";
+  description: string;
+  reference: string | null;
+  quantity: number | null;
+  amount: string;
+}
 
-export interface StatementState {
-  frozen: Statement | null;
-  status: Statement["status"];
-  confirmedBy: Statement["confirmedBy"];
+export interface StatementModel {
+  id: string;
+  bsNumber: string;
+  periodFrom: string;
+  periodTo: string;
+  status: Schemas["BillingStatementStatus"];
+  generatedAt: string;
+  totals: {
+    production: string;
+    shipping: string;
+    deductions: string;
+    net: string;
+    vat: string;
+    gross: string;
+    alreadyPaid: string;
+    remaining: string;
+  };
+  currency: "THB";
+  lines: StatementLineModel[];
+  confirmedBy: { id: string; displayName: string } | null;
   confirmedAt: string | null;
   disputeNote: string | null;
-  invoices: Invoice[];
-  replays: Set<string>;
+  disputedLineNos: number[];
+  taxInvoices: InvoiceModel[];
+}
+
+export interface StatementState {
+  frozen: StatementModel | null;
+  status: StatementModel["status"];
+  confirmedBy: StatementModel["confirmedBy"];
+  confirmedAt: string | null;
+  disputeNote: string | null;
+  disputedLineNos: number[];
+  invoices: InvoiceModel[];
 }
 
 export const statementStates = new Map<string, StatementState>();
@@ -236,8 +172,8 @@ function stateOf(id: string, seeded: Partial<StatementState> = {}): StatementSta
       confirmedBy: null,
       confirmedAt: null,
       disputeNote: null,
+      disputedLineNos: [],
       invoices: [],
-      replays: new Set(),
       ...seeded,
     };
     statementStates.set(id, state);
@@ -255,7 +191,16 @@ function deductionsOf(factoryId: string, orderIds: Set<string>) {
     );
 }
 
-function buildStatement(factoryId: string, index: 0 | 1): Statement {
+const fileModel = (id: string, name: string): FileModel => ({
+  id,
+  originalName: name,
+  mimeType: "application/pdf",
+  sizeBytes: 1024,
+  thumbnailUrl: null,
+  url: PDF,
+});
+
+function buildStatement(factoryId: string, index: 0 | 1): StatementModel {
   const store = stores.get(factoryId)!;
   const id = mockId("bst", Number.parseInt(store.factory.code.slice(1), 10) * 10 + index);
   const monthStart = `${today().slice(0, 7)}-01`;
@@ -281,7 +226,7 @@ function buildStatement(factoryId: string, index: 0 | 1): Statement {
               sellerTaxId: store.factory.taxId,
               sellerBranchCode: store.factory.branchCode,
               source: "pdf_upload",
-              file: document(mockId("vif", 1), "invoice-INV-6909-0012.pdf"),
+              file: fileModel(mockId("vif", 1), "invoice-INV-6909-0012.pdf"),
               eTaxReference: null,
               status: "validated",
               rejectReason: null,
@@ -291,17 +236,16 @@ function buildStatement(factoryId: string, index: 0 | 1): Statement {
         }
       : {},
   );
-  if (state.frozen)
-    return {
-      ...state.frozen,
-      status: state.status,
-      confirmedBy: state.confirmedBy,
-      confirmedAt: state.confirmedAt,
-      disputeNote: state.disputeNote,
-      taxInvoices: state.invoices,
-      ...derivedOf(state),
-    };
-  const lines: Statement["lines"] = [];
+  const live = {
+    status: state.status,
+    confirmedBy: state.confirmedBy,
+    confirmedAt: state.confirmedAt,
+    disputeNote: state.disputeNote,
+    disputedLineNos: state.disputedLineNos,
+    taxInvoices: state.invoices,
+  };
+  if (state.frozen) return { ...state.frozen, ...live };
+  const lines: StatementLineModel[] = [];
   let production = 0;
   let shipping = 0;
   let advance = 0;
@@ -353,13 +297,12 @@ function buildStatement(factoryId: string, index: 0 | 1): Statement {
     });
   const deducted = deductions.reduce((total, item) => total + item.amount, 0);
   const net = production + shipping - deducted;
-  const vat = store.factory.isVatRegistered ? Math.round(net * 0.07) : 0;
-  const statement: Statement = {
+  const vat = vatOf(net, store.factory.isVatRegistered);
+  return {
     id,
     bsNumber: `BS-${store.factory.code}-${periodFrom.slice(0, 7).replace("-", "")}`,
     periodFrom,
     periodTo,
-    status: state.status,
     generatedAt: index === 0 ? `${monthStart}T08:00:00+07:00` : bangkokIso(-60),
     totals: {
       production: baht(production),
@@ -372,442 +315,649 @@ function buildStatement(factoryId: string, index: 0 | 1): Statement {
       remaining: baht(net + vat - advance),
     },
     currency: "THB",
-    taxInvoiceStatus: null,
-    inputVatStatus: "pending_document",
     lines,
-    confirmedBy: state.confirmedBy,
-    confirmedAt: state.confirmedAt,
-    disputeNote: state.disputeNote,
-    taxInvoices: state.invoices,
-    nextActions: [],
-  };
-  return { ...statement, ...derivedOf(state) };
-}
-
-function derivedOf(state: StatementState): Pick<Statement, "taxInvoiceStatus" | "inputVatStatus" | "nextActions"> {
-  const latest = state.invoices.at(-1) ?? null;
-  const validated = state.invoices.some((item) => item.status === "validated");
-  return {
-    taxInvoiceStatus: latest?.status ?? null,
-    // Input VAT is claimable only with a valid tax invoice (accounting-design §2).
-    inputVatStatus: validated ? "claimable" : "pending_document",
-    nextActions:
-      state.status === "sent" || state.status === "generated"
-        ? ["confirm", "dispute"]
-        : state.status === "confirmed" && !validated && latest?.status !== "submitted"
-          ? ["submit_tax_invoice"]
-          : [],
+    ...live,
   };
 }
 
-export const statementsOf = (factoryId: string): Statement[] =>
+export const statementsOf = (factoryId: string): StatementModel[] =>
   deliveries(factoryId).length ? [buildStatement(factoryId, 1), buildStatement(factoryId, 0)] : [];
 
-/* ------------------------------------------------------------------------------- claims */
+/* ------------------------------------------------------------------- the published shapes */
 
-const claimEvidence = new Map<string, PartnerClaim["evidence"]>();
+const INVOICE_STATUS: Record<InvoiceModel["status"], Schemas["VendorInvoiceStatus"]> = {
+  submitted: "recorded",
+  validated: "validated",
+  rejected: "rejected",
+};
 
-function claimOf(claim: Claim): PartnerClaim {
-  const order = orders.find((item) => item.id === claim.order.id);
-  const job = order?.jobs[0];
-  const deductions = claim.resolutions
-    .filter((item) => item.action === "factory_deduction" && item.amount)
-    .map((item, index) => ({
-      id: mockId("vdd", index + 1),
-      amount: item.amount!,
-      status: "applied" as const,
-      appliedOn: item.executedAt.slice(0, 10),
-    }));
+export function toVendorInvoiceDto(store: Store, statement: StatementModel, invoice: InvoiceModel): InvoiceDto {
+  const registered = store.factory.isVatRegistered;
+  const net = invoice.netAmount ?? statement.totals.net;
+  const vat = invoice.vatAmount ?? statement.totals.vat;
   return {
-    id: claim.id,
-    claimNo: claim.claimNo,
-    type: claim.type,
-    status: claim.status,
-    job: { id: job?.id ?? null, jobNo: job?.jobNo ?? null },
-    shipmentNo: claim.shipment?.shipmentNo ?? null,
-    submittedAt: claim.submittedAt,
-    liability: claim.liability,
-    factoryResponse: claim.factoryResponse?.response ?? null,
-    responseDueAt: claim.status === "factory_review" && !claim.factoryResponse ? claim.slaDueAt : null,
-    deduction: deductions.length ? baht(deductions.reduce((total, item) => total + satang(item.amount), 0)) : null,
-    // D-142: what the customer wrote about the goods, never who they are.
-    description: claim.description,
-    requestedResolution: claim.requestedResolution,
-    claimedQuantity: claim.claimedQuantity,
-    evidence: [
-      ...claim.evidence.productPhotos.map((file) => ({ role: "product" as const, file })),
-      ...claim.evidence.cartonPhotos.map((file) => ({ role: "carton" as const, file })),
-      ...(claimEvidence.get(claim.id) ?? []),
-    ],
-    factoryNote: claim.factoryResponse?.note ?? null,
-    factoryRespondedAt: claim.factoryResponse?.at ?? null,
-    decision: claim.decision?.reason ?? null,
-    deductions,
-    nextActions: claim.status === "factory_review" && !claim.factoryResponse ? ["respond"] : [],
+    id: invoice.id,
+    vendorId: store.factory.id,
+    vendorName: store.factory.legalName,
+    bsNumber: statement.bsNumber,
+    vendorInvoiceNo: invoice.invoiceNo,
+    invoiceDate: invoice.invoiceDate,
+    sellerTaxId: invoice.sellerTaxId,
+    sellerBranchCode: invoice.sellerBranchCode,
+    source: invoice.source,
+    fileId: invoice.file?.id ?? null,
+    isTaxInvoice: registered,
+    status: INVOICE_STATUS[invoice.status],
+    rejectionReason: invoice.rejectReason,
+    inputVatStatus:
+      invoice.status === "validated" ? "claimable" : satang(vat) > 0 ? "pending_document" : "not_claimable",
+    netAmount: net,
+    vatAmount: vat,
+    grossAmount: baht(satang(net) + satang(vat)),
+    lines: statement.lines.map((line) => ({
+      description: line.description,
+      netAmount: line.amount,
+      vatAmount: baht(vatOf(satang(line.amount), registered)),
+      whtCategory: line.kind === "shipping" ? "transport" : line.kind === "production" ? "hire_of_work" : "none",
+      accountCode: line.kind === "shipping" ? "5120" : line.kind === "production" ? "5110" : null,
+    })),
   };
 }
 
-/* -------------------------------------------------------------------------- scorecards */
-
-function scorecards(factoryId: string, months: number): Scorecard[] {
-  const jobs = factoryJobs(factoryId).length;
-  const seed = Number.parseInt(stores.get(factoryId)?.factory.code.slice(1) ?? "1", 10);
-  const start = new Date(Date.now() + 7 * 3_600_000);
-  return Array.from({ length: months }, (_, index) => {
-    const at = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() - index, 1));
-    const wobble = ((index * 7 + seed * 3) % 9) - 4;
-    return {
-      month: at.toISOString().slice(0, 7),
-      jobsCount: Math.max(0, jobs - index),
-      onTimeAcceptancePct: (94 + wobble / 2).toFixed(1),
-      onTimeShippingPct: (88 + wobble).toFixed(1),
-      qcFirstPassPct: (96 - Math.abs(wobble) / 2).toFixed(1),
-      claimRatePct: (1.5 + Math.abs(wobble) / 4).toFixed(1),
-      onTimeUpdatesPct: (90 + wobble).toFixed(1),
-      computedAt: index === 0 ? null : `${at.toISOString().slice(0, 7)}-01T02:00:00+07:00`,
-    };
-  });
+interface StatementFacts {
+  status: string;
+  invoiceStatuses: string[];
 }
 
-/* ------------------------------------------------------------------------------- users */
+const DECIDABLE = ["generated", "sent", "disputed"];
+/** A tax invoice is still wanted while none is recorded or validated (a rejected one is replaced). */
+const wantsInvoice = (s: StatementFacts) => !s.invoiceStatuses.some((i) => i === "recorded" || i === "validated");
 
-const invited = new Map<string, User[]>();
-const roleChanges = new Map<string, Partial<Pick<User, "roles" | "status">>>();
+/** packio-api `src/modules/payables/statement-actions.ts` (v0.6.0), the factory's rules. */
+const PARTNER_STATEMENT_ACTIONS: ActionRule<StatementFacts>[] = [
+  {
+    key: "billing_statement.confirm",
+    permissions: ["factory_payables.manage"],
+    irreversible: true,
+    when: (s) => DECIDABLE.includes(s.status),
+  },
+  {
+    key: "billing_statement.dispute",
+    permissions: ["factory_payables.manage"],
+    when: (s) => DECIDABLE.includes(s.status),
+  },
+  {
+    key: "billing_statement.submit_tax_invoice",
+    permissions: ["factory_payables.manage"],
+    when: (s) => s.status !== "superseded" && wantsInvoice(s),
+  },
+];
 
-function usersOf(factoryId: string, selfId: string): User[] {
-  const people = PARTNER_PERSONAS.filter((persona) => persona.factoryId === factoryId).map((persona, index): User => ({
-    id: persona.id,
-    displayName: persona.displayName,
-    email: persona.email,
-    roles: persona.roles,
-    status: "active",
-    lastSignInAt: bangkokIso(-60 * (index + 1) * 5),
-    isSelf: persona.id === selfId,
-  }));
-  return [...people, ...(invited.get(factoryId) ?? [])].map((user) => ({
-    ...user,
-    ...roleChanges.get(user.id),
-    isSelf: user.id === selfId,
-  }));
+/** A statement as `partner.payables.*` answers it, for the signed-in factory user. */
+export function toStatementDto(store: Store, statement: StatementModel, who: PartnerPersona): StatementDto {
+  const registered = store.factory.isVatRegistered;
+  const invoices = statement.taxInvoices.map((invoice) => toVendorInvoiceDto(store, statement, invoice));
+  const latest = invoices.at(-1);
+  return {
+    id: statement.id,
+    bsNumber: statement.bsNumber,
+    factoryId: store.factory.id,
+    periodFrom: statement.periodFrom,
+    periodTo: statement.periodTo,
+    status: statement.status,
+    generatedAt: statement.generatedAt,
+    confirmedAt: statement.confirmedAt,
+    confirmedBy: statement.confirmedBy,
+    disputeNote: statement.disputeNote,
+    disputedLineNos: statement.disputedLineNos,
+    currency: "THB",
+    totals: {
+      production: statement.totals.production,
+      shipping: statement.totals.shipping,
+      // The mock has no mock-up, design or reproduction lines.
+      other: "0.00",
+      deductions: statement.totals.deductions,
+      advanceOffset: statement.totals.alreadyPaid,
+      net: statement.totals.net,
+      vat: statement.totals.vat,
+      gross: statement.totals.gross,
+      alreadyPaid: statement.totals.alreadyPaid,
+      remaining: statement.totals.remaining,
+    },
+    netAmount: statement.totals.net,
+    vatAmount: statement.totals.vat,
+    grossAmount: statement.totals.gross,
+    lines: statement.lines.map((line, index) => {
+      const net = satang(line.amount);
+      const vat = vatOf(net, registered);
+      return {
+        lineNo: index + 1,
+        // The contract has no advance-offset kind: as on the back office's statement, it is a deduction.
+        kind: line.kind === "advance_offset" ? "deduction" : line.kind,
+        description: line.description,
+        reference: line.reference,
+        quantity: line.quantity,
+        netAmount: line.amount,
+        vatAmount: baht(vat),
+        grossAmount: baht(net + vat),
+      };
+    }),
+    // Newest first, as the contract lists them.
+    taxInvoices: [...invoices].reverse(),
+    taxInvoiceStatus: !latest || latest.status === "void" ? "none" : latest.status,
+    inputVatStatus: latest?.inputVatStatus ?? null,
+    nextActions: nextActions(
+      { status: statement.status, invoiceStatuses: invoices.map((invoice) => invoice.status) },
+      PARTNER_STATEMENT_ACTIONS,
+      (permission) => canPartner(who, permission),
+    ),
+  };
 }
 
-/* ----------------------------------------------------------------------- notifications */
+/* ------------------------------------------------------------------- payout schedule */
 
-const CATEGORIES: Preference["category"][] = ["jobs", "shipping", "prices", "billing", "claims", "account"];
-const CHANNELS: Preference["channel"][] = ["web_push", "line", "email"];
-const preferences = new Map<string, Preference[]>();
+interface ScheduleItem {
+  id: string;
+  source: "advance" | "goods_receipt" | "retention";
+  net: number;
+  vat: number;
+  eligibleOn: string | null;
+  status: Schemas["PayableStatus"];
+  paidOn: string | null;
+}
 
-function preferencesOf(userId: string): Preference[] {
-  let list = preferences.get(userId);
-  if (!list) {
-    list = CATEGORIES.flatMap((category) =>
-      CHANNELS.map((channel) => {
-        // A job to accept and an account notice always reach the user (D-074, security).
-        const locked = (category === "jobs" && channel === "email") || (category === "account" && channel === "email");
-        return { category, channel, enabled: channel !== "line", locked };
-      }),
-    );
-    preferences.set(userId, list);
+interface ScheduleRow {
+  order: MockOrder;
+  jobNo: string;
+  poNumber: string;
+  purchaseOrderId: string;
+  poStatus: Schemas["PoStatus"];
+  balancePending: boolean;
+  items: ScheduleItem[];
+}
+
+const PO_STATUS: Record<string, Schemas["PoStatus"]> = {
+  accepted: "accepted",
+  in_progress: "accepted",
+  on_hold: "accepted",
+  completed: "received",
+};
+const SOURCES: ScheduleItem["source"][] = ["advance", "goods_receipt", "retention"];
+
+const dayNumber = (day: string) => Number(day.replace(/-/g, "")) % 1_000_000;
+const payoutIdOf = (paidOn: string, source: ScheduleItem["source"]) =>
+  mockId("pvo", dayNumber(paidOn) * 4 + SOURCES.indexOf(source));
+
+function scheduleRows(factoryId: string): ScheduleRow[] {
+  const policy = policyOf(factoryId);
+  const registered = stores.get(factoryId)?.factory.isVatRegistered ?? true;
+  const advancePct = policy?.advancePct ?? "30.0000";
+  const retentionPct = policy?.retentionPct ?? "0.0000";
+  const balancePct = (100 - Number(advancePct) - Number(retentionPct)).toFixed(4);
+  const claimWindow = policy?.claimWindowDays ?? 7;
+  const release = policy?.retentionReleaseDays ?? 30;
+  const delivered = deliveries(factoryId);
+  return factoryJobs(factoryId)
+    .filter(({ job }) => ["accepted", "in_progress", "completed", "on_hold"].includes(job.status))
+    .map(({ order, job }, index) => {
+      const po = buyAmountOf(order);
+      const accepted = acceptedOn(job.id, extraOf(job).releasedAt);
+      const lastPod =
+        delivered
+          .filter((item) => item.order.id === order.id)
+          .map((item) => item.deliveredOn)
+          .sort()
+          .at(-1) ?? null;
+      const balanceOn = lastPod ? addDays(lastPod, claimWindow) : null;
+      const retentionOn = balanceOn ? addDays(balanceOn, release) : null;
+      const state = (on: string | null): Schemas["PayableStatus"] =>
+        on === null ? "open" : on <= addDays(today(), -3) ? "paid" : on <= today() ? "eligible" : "open";
+      const item = (source: ScheduleItem["source"], pct: string, on: string | null): ScheduleItem => {
+        const net = share(po, pct);
+        const status = state(on);
+        return {
+          id: mockId("pay", index * 4 + SOURCES.indexOf(source) + 1),
+          source,
+          net,
+          vat: vatOf(net, registered),
+          eligibleOn: on,
+          status,
+          paidOn: status === "paid" ? addDays(on!, 2) : null,
+        };
+      };
+      return {
+        order,
+        jobNo: job.jobNo,
+        poNumber: `PO2569-${job.jobNo.replace(/\D/g, "").slice(-5).padStart(5, "0")}`,
+        purchaseOrderId: mockId("po", index + 900),
+        poStatus: PO_STATUS[job.status] ?? "issued",
+        // The balance (and the retention with it) opens with the goods receipt at POD (D-165).
+        balancePending: lastPod === null,
+        items: [
+          item("advance", advancePct, accepted),
+          ...(lastPod ? [item("goods_receipt", balancePct, balanceOn)] : []),
+          ...(lastPod && Number(retentionPct) > 0 ? [item("retention", retentionPct, retentionOn)] : []),
+        ],
+      };
+    });
+}
+
+function toScheduleJobDto(factoryId: string, row: ScheduleRow): ScheduleJobDto {
+  const policy = policyOf(factoryId);
+  return {
+    purchaseOrderId: row.purchaseOrderId,
+    poNumber: row.poNumber,
+    poStatus: row.poStatus,
+    jobNo: row.jobNo,
+    orderCode: row.order.orderCode,
+    balancePending: row.balancePending,
+    terms: {
+      advancePct: policy?.advancePct ?? "30.0000",
+      advanceTrigger: policy?.advanceTrigger ?? "job_accepted",
+      balanceTrigger: policy?.balanceTrigger ?? "after_pod_and_claim_window",
+      claimWindowDays: policy?.claimWindowDays ?? 7,
+      paymentTermsDays: policy?.paymentTermsDays ?? 0,
+      retentionPct: policy?.retentionPct ?? "0.0000",
+      retentionReleaseDays: policy?.retentionReleaseDays ?? 30,
+    },
+    items: row.items.map((item) => {
+      const open = item.status === "paid" || item.status === "cancelled" ? 0 : 1;
+      return {
+        id: item.id,
+        source: item.source,
+        netAmount: baht(item.net),
+        vatAmount: baht(item.vat),
+        openNetAmount: baht(item.net * open),
+        openVatAmount: baht(item.vat * open),
+        eligibleAt: item.eligibleOn ? startOf(item.eligibleOn) : null,
+        status: item.status,
+        paidOn: item.paidOn,
+        payoutId: item.paidOn ? payoutIdOf(item.paidOn, item.source) : null,
+        waitingFor:
+          item.status === "open"
+            ? "eligibility_date"
+            : item.status === "eligible"
+              ? "payout_run"
+              : item.status === "in_run"
+                ? "bank_confirmation"
+                : null,
+      };
+    }),
+  };
+}
+
+/* --------------------------------------------------------------------------- payouts */
+
+const WHT_PCT = "3.0000"; // ⚖ hire of work — the auditor confirms (D-022); the API decides.
+const KIND_OF: Record<ScheduleItem["source"], Schemas["PayoutKind"]> = {
+  advance: "advance",
+  goods_receipt: "balance",
+  retention: "retention_release",
+};
+
+/** The payouts made to a factory: one per day and kind of payable paid (the runs are Finance's). */
+function payouts(factoryId: string): PayoutDto[] {
+  const groups = new Map<string, { row: ScheduleRow; item: ScheduleItem }[]>();
+  for (const row of scheduleRows(factoryId))
+    for (const item of row.items)
+      if (item.paidOn) {
+        const key = `${item.paidOn}|${item.source}`;
+        groups.set(key, [...(groups.get(key) ?? []), { row, item }]);
+      }
+  const store = stores.get(factoryId);
+  const bank = store?.banks.find((item) => item.status === "active")?.accountNoLast4 ?? null;
+  return [...groups.entries()]
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([key, paid]): PayoutDto => {
+      const [paidOn, source] = key.split("|") as [string, ScheduleItem["source"]];
+      const net = paid.reduce((total, { item }) => total + item.net, 0);
+      const vat = paid.reduce((total, { item }) => total + item.vat, 0);
+      const wht = Math.round((net * Number(WHT_PCT)) / 100);
+      const pv = `PV-2569-${paidOn.slice(5).replace("-", "")}${"ABR"[SOURCES.indexOf(source)]}`;
+      return {
+        id: payoutIdOf(paidOn, source),
+        pvNumber: pv,
+        kind: KIND_OF[source],
+        status: "paid",
+        payOn: paidOn,
+        paidOn,
+        apNetAmount: baht(net),
+        vatAmount: baht(vat),
+        whtAmount: baht(wht),
+        retentionAmount: "0.00",
+        claimDeductionAmount: "0.00",
+        cashAmount: baht(net + vat - wht),
+        currency: "THB",
+        bankAccountLast4: bank,
+        bankRef: `KTB${dayNumber(paidOn)}`,
+        failureReason: null,
+        remittanceAdviceAvailable: true,
+        whtCertificates: [
+          {
+            id: mockId("wtc", dayNumber(paidOn) * 4 + SOURCES.indexOf(source)),
+            wtNumber: `WT2569-${pv.slice(-5)}`,
+            form: "pnd53",
+            whtRatePct: WHT_PCT,
+            paidAmount: baht(net),
+            whtAmount: baht(wht),
+            paidOn,
+            pdfReady: true,
+          },
+        ],
+        allocations: paid.map(({ row, item }) => ({
+          payableId: item.id,
+          source: item.source,
+          netAmount: baht(item.net),
+          vatAmount: baht(item.vat),
+          jobNo: row.jobNo,
+          orderCode: row.order.orderCode,
+          poNumber: row.poNumber,
+          grNumber: item.source === "advance" ? null : `GR-${row.jobNo}`,
+          bsNumber: null,
+        })),
+        claimDeductions: [],
+      };
+    });
+}
+
+function toPayoutSummary(payout: PayoutDto): Schemas["PartnerPayoutDto"] {
+  return {
+    id: payout.id,
+    pvNumber: payout.pvNumber,
+    kind: payout.kind,
+    status: payout.status,
+    payOn: payout.payOn,
+    paidOn: payout.paidOn,
+    apNetAmount: payout.apNetAmount,
+    vatAmount: payout.vatAmount,
+    whtAmount: payout.whtAmount,
+    retentionAmount: payout.retentionAmount,
+    claimDeductionAmount: payout.claimDeductionAmount,
+    cashAmount: payout.cashAmount,
+    currency: payout.currency,
+    bankAccountLast4: payout.bankAccountLast4,
+    whtCertificates: payout.whtCertificates,
+  };
+}
+
+/* ----------------------------------------------------------------- statement of account */
+
+function account(factoryId: string, from: string, to: string): AccountDto {
+  const registered = stores.get(factoryId)?.factory.isVatRegistered ?? true;
+  const events: Omit<AccountDto["entries"][number], "balance">[] = [
+    ...deliveries(factoryId).map((item) => {
+      const production = Math.round((satang(buyAmountOf(item.order)) * item.quantity) / item.order.quantity);
+      const net = production + 25_000 + item.shipment.cartons * 5_000;
+      return {
+        date: item.deliveredOn,
+        kind: "goods_receipt" as const,
+        reference: `GR-${item.shipment.shipmentNo}`,
+        credit: baht(net + vatOf(net, registered)),
+        debit: "0.00",
+      };
+    }),
+    ...payouts(factoryId).map((item) => ({
+      date: item.paidOn!,
+      kind: "payout" as const,
+      reference: item.pvNumber,
+      credit: "0.00",
+      // What Packio paid, with the tax it withheld for the factory.
+      debit: baht(satang(item.cashAmount) + satang(item.whtAmount)),
+    })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  let balance = 0;
+  let opening = 0;
+  let credit = 0;
+  let debit = 0;
+  const entries: AccountDto["entries"] = [];
+  for (const event of events) {
+    const change = satang(event.credit) - satang(event.debit);
+    if (event.date < from) {
+      opening += change;
+      balance += change;
+      continue;
+    }
+    if (event.date > to) continue;
+    balance += change;
+    credit += satang(event.credit);
+    debit += satang(event.debit);
+    entries.push({ ...event, balance: baht(balance) });
   }
-  return list;
+  return {
+    factoryId,
+    from,
+    to,
+    opening: baht(opening),
+    entries,
+    closing: baht(balance),
+    totalCredit: baht(credit),
+    totalDebit: baht(debit),
+    currency: "THB",
+  };
 }
 
 /* ----------------------------------------------------------------------------- handlers */
 
-const ownOf = (context: Ctx, permission?: string) => own(context.request, context.params.factoryId, permission);
-const perm = {
-  billing: "factory_billing.read",
-  confirm: "factory_billing.confirm",
-  payouts: "factory_payouts.read",
-  claims: "factory_claims.read",
-  respond: "factory_claims.respond",
-  scorecard: "factory_scorecard.read",
-  users: "factory_users.manage",
-};
+const invalid = (errors: { path: string; code: string; message: string }[]) =>
+  problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", errors);
+const noStatement = () => problem(404, "http.not_found", "ไม่พบใบวางบิลนี้");
+const noPayout = () => problem(404, "http.not_found", "ไม่พบรายการจ่ายนี้");
+export const pageQuery = (url: URL) => ({
+  page: Number(url.searchParams.get("page") ?? 1),
+  perPage: Number(url.searchParams.get("perPage") ?? 25),
+});
+const isDay = (value: string | null | undefined): value is string => !!value && /^\d{4}-\d{2}-\d{2}$/.test(value);
 
-function statementFor(context: Ctx, permission: string) {
-  const ok = ownOf(context, permission);
+function statementFor(request: Request, statementId: unknown, permission: string) {
+  const ok = ownScope(request, permission);
   if (ok instanceof Response) return ok;
-  const statement = statementsOf(ok.store.factory.id).find((item) => item.id === context.params.statementId);
-  return statement
-    ? { ...ok, statement, state: stateOf(statement.id) }
-    : problem(404, "billing.not_found", "ไม่พบใบวางบิลนี้");
+  const statement = statementsOf(ok.store.factory.id).find((item) => item.id === statementId);
+  return statement ? { ...ok, statement, state: stateOf(statement.id) } : noStatement();
 }
 
-const replayed = (state: StatementState, request: Request) => {
-  const key = request.headers.get("idempotency-key") ?? "";
-  if (state.replays.has(key)) return true;
-  state.replays.add(key);
-  return false;
-};
+const freshDto = (store: Store, statementId: string, who: PartnerPersona) =>
+  toStatementDto(
+    store,
+    statementsOf(store.factory.id).find((item) => item.id === statementId)!,
+    who,
+  );
 
-export const billingRequestHandlers = [
-  mockRequest("GET /v1/partner/factories/{factoryId}/billing-statements", (context) => {
-    const ok = ownOf(context, perm.billing);
+export const billingHandlers = [
+  /* ------------------------------------------------------------ billing statements (D-090) */
+  http.get("*/v1/partner/billing-statements", ({ request }) => {
+    const ok = ownScope(request, "factory_payables.read");
     if (ok instanceof Response) return ok;
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    const q = url.searchParams.get("q") ?? undefined;
     const rows = statementsOf(ok.store.factory.id)
-      .filter((item) => !context.query.status || item.status === context.query.status)
-      .map((item) => billingStatementSummary.parse(item));
-    return paginate(rows, context.query);
+      .filter((item) => !status || item.status === status)
+      .filter((item) => matchesQuery(q, item.bsNumber))
+      .map((item) => toStatementDto(ok.store, item, ok.who));
+    return HttpResponse.json(paginate(rows, pageQuery(url)));
   }),
-  mockRequest("GET /v1/partner/factories/{factoryId}/billing-statements/{statementId}", (context) => {
-    const found = statementFor(context, perm.billing);
-    return found instanceof Response ? found : found.statement;
+  http.get("*/v1/partner/billing-statements/:statementId", ({ request, params }) => {
+    const found = statementFor(request, params.statementId, "factory_payables.read");
+    return found instanceof Response
+      ? found
+      : HttpResponse.json(toStatementDto(found.store, found.statement, found.who));
   }),
-  mockRequest("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm", (context) => {
-    const found = statementFor(context, perm.confirm);
-    if (found instanceof Response) return found;
-    const { statement, state, who } = found;
-    if (replayed(state, context.request) || state.status === "confirmed")
-      return buildStatementById(found.store.factory.id, statement.id);
-    if (!["sent", "generated"].includes(state.status))
-      return problem(409, "billing.invalid_transition", "ยืนยันได้เฉพาะใบวางบิลที่รอโรงงานตรวจ");
-    Object.assign(state, {
-      status: "confirmed",
-      confirmedBy: { id: who.id, displayName: who.displayName },
-      confirmedAt: now(),
-      frozen: statement,
+  http.post("*/v1/partner/billing-statements/:statementId/actions/confirm", ({ request, params }) =>
+    once(request, `bs-confirm:${String(params.statementId)}`, () => {
+      const found = statementFor(request, params.statementId, "factory_payables.manage");
+      if (found instanceof Response) return found;
+      const { statement, state, who, store } = found;
+      if (!DECIDABLE.includes(state.status))
+        return problem(409, "payables.statement_not_confirmable", "ยืนยันได้เฉพาะใบวางบิลที่รอโรงงานตรวจ");
+      Object.assign(state, {
+        status: "confirmed",
+        confirmedBy: { id: who.id, displayName: who.displayName },
+        confirmedAt: now(),
+        frozen: state.frozen ?? statement,
+      });
+      return HttpResponse.json(freshDto(store, statement.id, who));
+    }),
+  ),
+  http.post("*/v1/partner/billing-statements/:statementId/actions/dispute", async ({ request, params }) => {
+    const body = (await request
+      .clone()
+      .json()
+      .catch(() => ({}))) as Partial<Schemas["DisputeStatementDto"]>;
+    return once(request, `bs-dispute:${String(params.statementId)}`, () => {
+      const found = statementFor(request, params.statementId, "factory_payables.manage");
+      if (found instanceof Response) return found;
+      const { statement, state, who, store } = found;
+      const note = body.note?.trim() ?? "";
+      if (note.length < 3 || note.length > 1000)
+        return invalid([{ path: "note", code: "too_small", message: "อย่างน้อย 3 ตัวอักษร" }]);
+      const lineNos = [...new Set(body.lineNos ?? [])].sort((a, b) => a - b);
+      const unknown = lineNos.filter((n) => !Number.isInteger(n) || n < 1 || n > statement.lines.length);
+      if (unknown.length)
+        return invalid([{ path: "lineNos", code: "unknown_line", message: `ไม่มีรายการ ${unknown.join(", ")}` }]);
+      if (!DECIDABLE.includes(state.status))
+        return problem(409, "payables.statement_not_confirmable", "โต้แย้งได้เฉพาะใบวางบิลที่รอโรงงานตรวจ");
+      Object.assign(state, {
+        status: "disputed",
+        disputeNote: note,
+        disputedLineNos: lineNos,
+        frozen: state.frozen ?? statement,
+      });
+      return HttpResponse.json(freshDto(store, statement.id, who));
     });
-    return buildStatementById(found.store.factory.id, statement.id);
   }),
-  mockRequest("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/dispute", (context) => {
-    const found = statementFor(context, perm.confirm);
-    if (found instanceof Response) return found;
-    const { statement, state } = found;
-    if (replayed(state, context.request)) return buildStatementById(found.store.factory.id, statement.id);
-    if (!["sent", "generated"].includes(state.status))
-      return problem(409, "billing.invalid_transition", "โต้แย้งได้เฉพาะใบวางบิลที่รอโรงงานตรวจ");
-    Object.assign(state, { status: "disputed", disputeNote: context.body.note, frozen: statement });
-    return buildStatementById(found.store.factory.id, statement.id);
-  }),
-  mockRequest("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices", (context) => {
-    const found = statementFor(context, perm.confirm);
-    if (found instanceof Response) return found;
-    const { statement, state, store } = found;
-    const { body } = context;
-    if (replayed(state, context.request)) return buildStatementById(store.factory.id, statement.id);
-    if (state.status !== "confirmed")
-      return problem(409, "billing.not_confirmed", "ยืนยันใบวางบิลก่อน แล้วจึงบันทึกใบกำกับภาษี");
-    const errors: { path: string; code: string; message: string }[] = [];
-    if (body.sellerTaxId !== store.factory.taxId)
-      errors.push({ path: "sellerTaxId", code: "mismatch", message: "เลขประจำตัวผู้เสียภาษีไม่ตรงกับของโรงงาน" });
-    if (body.source === "pdf_upload" && (!body.fileId || !files.has(body.fileId)))
-      errors.push({ path: "fileId", code: "required", message: "แนบไฟล์ใบกำกับภาษี (PDF)" });
-    if (body.source === "e_tax" && !body.eTaxReference)
-      errors.push({ path: "eTaxReference", code: "required", message: "ระบุเลขอ้างอิง e-Tax" });
-    if (state.invoices.some((item) => item.invoiceNo === body.invoiceNo && item.status !== "rejected"))
-      errors.push({ path: "invoiceNo", code: "unique", message: "ใบกำกับภาษีเลขนี้บันทึกไปแล้ว" });
-    if (errors.length) return problem(422, "validation.failed", "ตรวจข้อมูลใบกำกับภาษีอีกครั้ง", errors);
-    const file = body.fileId ? files.get(body.fileId) : null;
-    state.invoices.push({
-      id: mockId("vin", 100 + state.invoices.length),
-      invoiceNo: body.invoiceNo,
-      invoiceDate: body.invoiceDate,
-      sellerTaxId: body.sellerTaxId,
-      sellerBranchCode: body.sellerBranchCode,
-      source: body.source,
-      file: file
-        ? {
-            id: file.id,
-            originalName: file.originalName,
-            mimeType: file.mimeType,
-            sizeBytes: file.sizeBytes,
-            thumbnailUrl: null,
-            url: null,
-          }
-        : null,
-      eTaxReference: body.eTaxReference ?? null,
-      // Finance validates it against the statement (D-090); until then input VAT is pending.
-      status: "submitted",
-      rejectReason: null,
-      recordedAt: now(),
-    });
-    return buildStatementById(store.factory.id, statement.id);
-  }),
-
-  mockRequest("GET /v1/partner/factories/{factoryId}/payout-schedule", (context) => {
-    const ok = ownOf(context, perm.payouts);
-    return ok instanceof Response ? ok : schedule(ok.store.factory.id);
-  }),
-  mockRequest("GET /v1/partner/factories/{factoryId}/payouts", (context) => {
-    const ok = ownOf(context, perm.payouts);
-    if (ok instanceof Response) return ok;
-    const rows = payouts(ok.store.factory.id).map((item) => payoutSummary.parse(item));
-    return paginate(rows, context.query);
-  }),
-  mockRequest("GET /v1/partner/factories/{factoryId}/payouts/{payoutId}", (context) => {
-    const ok = ownOf(context, perm.payouts);
-    if (ok instanceof Response) return ok;
-    const payout = payouts(ok.store.factory.id).find((item) => item.id === context.params.payoutId);
-    return payout ?? problem(404, "payouts.not_found", "ไม่พบรายการจ่ายนี้");
-  }),
-  mockRequest("GET /v1/partner/factories/{factoryId}/statement-of-account", (context) => {
-    const ok = ownOf(context, perm.payouts);
-    if (ok instanceof Response) return ok;
-    const factoryId = ok.store.factory.id;
-    const from = context.query.from ?? addDays(today(), -90);
-    const to = context.query.to ?? today();
-    const events: Omit<Account["entries"][number], "balance">[] = [
-      ...statementsOf(factoryId)
-        .filter((item) => item.status === "confirmed")
-        .map((item) => ({
-          date: (item.confirmedAt ?? item.generatedAt).slice(0, 10),
-          kind: "statement" as const,
-          reference: item.bsNumber,
-          description: "ใบวางบิลที่ยืนยันแล้ว",
-          credit: item.totals.gross,
-          debit: "0.00",
-        })),
-      ...payouts(factoryId).map((item) => ({
-        date: item.paidOn!,
-        kind: "payout" as const,
-        reference: item.pvNumber,
-        description: "Packio โอนเงิน (รวมภาษีหัก ณ ที่จ่าย)",
-        credit: "0.00",
-        debit: item.gross,
-      })),
-    ].sort((a, b) => a.date.localeCompare(b.date));
-    let balance = 0;
-    let opening = 0;
-    const entries: Account["entries"] = [];
-    for (const event of events) {
-      const change = satang(event.credit) - satang(event.debit);
-      if (event.date < from) {
-        opening += change;
-        balance += change;
-        continue;
-      }
-      if (event.date > to) continue;
-      balance += change;
-      entries.push({ ...event, balance: baht(balance) });
-    }
-    return { from, to, opening: baht(opening), entries, closing: baht(balance), currency: "THB" };
-  }),
-
-  mockRequest("GET /v1/partner/factories/{factoryId}/claims", (context) => {
-    const ok = ownOf(context, perm.claims);
-    if (ok instanceof Response) return ok;
-    const rows = claims
-      .filter((claim) => claim.factory?.id === ok.store.factory.id)
-      .filter((claim) => !context.query.status || claim.status === context.query.status)
-      .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
-      .map((claim) => partnerClaimSummary.parse(claimOf(claim)));
-    return paginate(rows, context.query);
-  }),
-  mockRequest("GET /v1/partner/factories/{factoryId}/claims/{claimId}", (context) => {
-    const ok = ownOf(context, perm.claims);
-    if (ok instanceof Response) return ok;
-    const claim = claims.find((item) => item.id === context.params.claimId && item.factory?.id === ok.store.factory.id);
-    return claim ? claimOf(claim) : problem(404, "claims.not_found", "ไม่พบเคลมนี้");
-  }),
-  mockRequest("POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond", (context) => {
-    const ok = ownOf(context, perm.respond);
-    if (ok instanceof Response) return ok;
-    const claim = claims.find((item) => item.id === context.params.claimId && item.factory?.id === ok.store.factory.id);
-    if (!claim) return problem(404, "claims.not_found", "ไม่พบเคลมนี้");
-    if (claim.factoryResponse) return claimOf(claim);
-    if (claim.status !== "factory_review")
-      return problem(409, "claims.not_awaiting_factory", "เคลมนี้ไม่ได้รอคำตอบจากโรงงาน");
-    const { body } = context;
-    claim.factoryResponse = { response: body.response, note: body.note, at: now() };
-    // Back to the claims desk, with the factory's word on it (D-083).
-    claim.status = "under_review";
-    claim.messages.push({ at: now(), author: ok.who.displayName, audience: "factory", body: body.note });
-    claim.updatedAt = now();
-    if (body.evidenceFileIds?.length)
-      claimEvidence.set(
-        claim.id,
-        body.evidenceFileIds.map((id) => {
-          const file = files.get(id);
-          return {
-            role: "factory" as const,
-            file: {
-              id,
-              originalName: file?.originalName ?? "evidence.jpg",
-              mimeType: file?.mimeType ?? "image/jpeg",
-              sizeBytes: file?.sizeBytes ?? 0,
+  http.post("*/v1/partner/billing-statements/:statementId/tax-invoices", async ({ request, params }) => {
+    const body = (await request
+      .clone()
+      .json()
+      .catch(() => ({}))) as Partial<Schemas["CaptureTaxInvoiceDto"]>;
+    return once(request, `bs-invoice:${String(params.statementId)}`, () => {
+      const found = statementFor(request, params.statementId, "factory_payables.manage");
+      if (found instanceof Response) return found;
+      const { statement, state, store } = found;
+      const number = body.vendorInvoiceNo?.trim() ?? "";
+      const errors = [
+        ...(!number || number.length > 64
+          ? [{ path: "vendorInvoiceNo", code: "required", message: "ระบุเลขที่ใบกำกับภาษี" }]
+          : []),
+        ...(!isDay(body.invoiceDate) ? [{ path: "invoiceDate", code: "date", message: "YYYY-MM-DD" }] : []),
+        ...(!/^\d{13}$/.test(body.sellerTaxId ?? "")
+          ? [{ path: "sellerTaxId", code: "pattern", message: "เลขประจำตัวผู้เสียภาษี 13 หลัก" }]
+          : []),
+        ...(!/^\d{5}$/.test(body.sellerBranchCode ?? "")
+          ? [{ path: "sellerBranchCode", code: "pattern", message: "รหัสสาขา 5 หลัก" }]
+          : []),
+        ...(!MONEY.test(body.netAmount ?? "")
+          ? [{ path: "netAmount", code: "pattern", message: "จำนวนเงินไม่ถูกต้อง" }]
+          : []),
+        ...(!MONEY.test(body.vatAmount ?? "")
+          ? [{ path: "vatAmount", code: "pattern", message: "จำนวนเงินไม่ถูกต้อง" }]
+          : []),
+        ...(body.source !== "pdf_upload" && body.source !== "e_tax"
+          ? [{ path: "source", code: "enum", message: "pdf_upload | e_tax" }]
+          : []),
+      ];
+      if (errors.length) return invalid(errors);
+      if (state.invoices.some((item) => item.invoiceNo === number))
+        return problem(409, "payables.invoice_duplicate", "บันทึกใบกำกับภาษีเลขนี้ไปแล้ว");
+      const file = body.fileId ? files.get(body.fileId) : null;
+      if (body.fileId && (!file || file.uploadStatus !== "uploaded"))
+        return problem(409, "file.not_ready", "ไฟล์ยังอัปโหลดไม่เสร็จ");
+      const invoice: InvoiceModel = {
+        id: mockId("vin", 200 + [...statementStates.values()].reduce((n, item) => n + item.invoices.length, 0)),
+        invoiceNo: number,
+        invoiceDate: body.invoiceDate!,
+        sellerTaxId: body.sellerTaxId!,
+        sellerBranchCode: body.sellerBranchCode!,
+        source: body.source!,
+        file: file
+          ? {
+              id: file.id,
+              originalName: file.originalName,
+              mimeType: file.mimeType,
+              sizeBytes: file.sizeBytes,
               thumbnailUrl: null,
               url: null,
-            },
-          };
-        }),
-      );
-    return claimOf(claim);
-  }),
-
-  mockRequest("GET /v1/partner/factories/{factoryId}/scorecards", (context) => {
-    const ok = ownOf(context, perm.scorecard);
-    return ok instanceof Response ? ok : scorecards(ok.store.factory.id, context.query.months ?? 6);
-  }),
-
-  mockRequest("GET /v1/partner/factories/{factoryId}/users", (context) => {
-    const ok = ownOf(context, perm.users);
-    return ok instanceof Response ? ok : usersOf(ok.store.factory.id, ok.who.id);
-  }),
-  mockRequest("POST /v1/partner/factories/{factoryId}/users", (context) => {
-    const ok = ownOf(context, perm.users);
-    if (ok instanceof Response) return ok;
-    const { body } = context;
-    const factoryId = ok.store.factory.id;
-    if (usersOf(factoryId, ok.who.id).some((user) => user.email?.toLowerCase() === body.email.toLowerCase()))
-      return problem(409, "users.exists", "มีผู้ใช้อีเมลนี้ในโรงงานแล้ว", [
-        { path: "email", code: "unique", message: "ซ้ำ" },
-      ]);
-    const created: User = {
-      id: mockId("pui", (invited.get(factoryId)?.length ?? 0) + 1),
-      displayName: body.displayName,
-      email: body.email,
-      roles: body.roles,
-      status: "invited",
-      lastSignInAt: null,
-      isSelf: false,
-    };
-    invited.set(factoryId, [...(invited.get(factoryId) ?? []), created]);
-    return created;
-  }),
-  mockRequest("PATCH /v1/partner/factories/{factoryId}/users/{userId}", (context) => {
-    const ok = ownOf(context, perm.users);
-    if (ok instanceof Response) return ok;
-    const user = usersOf(ok.store.factory.id, ok.who.id).find((item) => item.id === context.params.userId);
-    if (!user) return problem(404, "users.not_found", "ไม่พบผู้ใช้นี้");
-    const { body } = context;
-    if (
-      user.isSelf &&
-      (body.status === "deactivated" || (body.roles && !body.roles.includes("factory_owner" as PartnerRole)))
-    )
-      return problem(409, "users.last_owner", "โรงงานต้องมีเจ้าของอย่างน้อยหนึ่งคน — เปลี่ยนสิทธิ์ของตัวเองไม่ได้");
-    roleChanges.set(user.id, {
-      ...roleChanges.get(user.id),
-      ...(body.roles ? { roles: body.roles } : {}),
-      ...(body.status ? { status: body.status } : {}),
+            }
+          : null,
+        // An e-Tax invoice's reference is its number; the file is the e-Tax document (`CaptureTaxInvoiceDto`).
+        eTaxReference: body.source === "e_tax" ? number : null,
+        // Finance validates it against the statement (D-090); until then input VAT is pending.
+        status: "submitted",
+        rejectReason: null,
+        recordedAt: now(),
+        netAmount: body.netAmount!,
+        vatAmount: body.vatAmount!,
+      };
+      state.invoices.push(invoice);
+      return HttpResponse.json(toVendorInvoiceDto(store, statement, invoice), { status: 201 });
     });
-    return usersOf(ok.store.factory.id, ok.who.id).find((item) => item.id === user.id)!;
   }),
 
-  mockRequest("GET /v1/partner/me/notification-preferences", (context) => {
-    const ok = own(context.request, partnerFactory(context.request));
+  /* ------------------------------------------------------------- payouts (D-022, D-164) */
+  http.get("*/v1/partner/factories/:factoryId/payout-schedule", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
     if (ok instanceof Response) return ok;
-    return { preferences: preferencesOf(ok.who.id), lineLinked: false };
+    const factoryId = ok.store.factory.id;
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q") ?? undefined;
+    const rows = scheduleRows(factoryId)
+      .filter((row) => matchesQuery(q, row.jobNo, row.poNumber, row.order.orderCode))
+      .map((row) => toScheduleJobDto(factoryId, row));
+    return HttpResponse.json(paginate(rows, pageQuery(url)));
   }),
-  mockRequest("PUT /v1/partner/me/notification-preferences", (context) => {
-    const ok = own(context.request, partnerFactory(context.request));
+  http.get("*/v1/partner/factories/:factoryId/payouts", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
     if (ok instanceof Response) return ok;
-    const list = preferencesOf(ok.who.id);
-    for (const change of context.body.preferences) {
-      const row = list.find((item) => item.category === change.category && item.channel === change.channel);
-      if (row && !row.locked) row.enabled = change.enabled;
-    }
-    return { preferences: list, lineLinked: false };
+    const url = new URL(request.url);
+    const from = url.searchParams.get("from");
+    const to = url.searchParams.get("to");
+    const status = url.searchParams.get("status");
+    const rows = payouts(ok.store.factory.id)
+      .filter((item) => !isDay(from) || item.payOn >= from)
+      .filter((item) => !isDay(to) || item.payOn <= to)
+      .filter((item) => !status || item.status === status)
+      .map(toPayoutSummary);
+    return HttpResponse.json(rows);
+  }),
+  http.get("*/v1/partner/factories/:factoryId/payouts/:payoutId", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
+    if (ok instanceof Response) return ok;
+    const payout = payouts(ok.store.factory.id).find((item) => item.id === params.payoutId);
+    return payout ? HttpResponse.json(payout) : noPayout();
+  }),
+  http.get("*/v1/partner/factories/:factoryId/payouts/:payoutId/documents", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
+    if (ok instanceof Response) return ok;
+    const payout = payouts(ok.store.factory.id).find((item) => item.id === params.payoutId);
+    if (!payout) return noPayout();
+    if (payout.status !== "paid")
+      return problem(409, "payouts.run_invalid_status", "เอกสารการจ่ายเงินออกได้เมื่อโอนสำเร็จแล้ว");
+    return HttpResponse.json({
+      remittanceAdvice: signed(PDF),
+      whtCertificates: payout.whtCertificates.map((certificate) => ({
+        ...certificate,
+        download: certificate.pdfReady ? signed(PDF) : null,
+      })),
+    } satisfies Schemas["PayoutItemDocumentsDto"]);
+  }),
+  http.get("*/v1/partner/factories/:factoryId/wht-certificates/:certificateId/pdf", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
+    if (ok instanceof Response) return ok;
+    const found = payouts(ok.store.factory.id)
+      .flatMap((item) => item.whtCertificates)
+      .some((item) => item.id === params.certificateId);
+    return found
+      ? HttpResponse.json(signed(PDF))
+      : problem(404, "http.not_found", "ไม่พบหนังสือรับรองการหักภาษี ณ ที่จ่าย");
+  }),
+  http.get("*/v1/partner/factories/:factoryId/statement-of-account", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
+    if (ok instanceof Response) return ok;
+    const url = new URL(request.url);
+    const from = url.searchParams.get("from");
+    const to = url.searchParams.get("to");
+    return HttpResponse.json(
+      account(ok.store.factory.id, isDay(from) ? from : addDays(today(), -90), isDay(to) ? to : today()),
+    );
   }),
 ];
-
-function buildStatementById(factoryId: string, id: string): Statement {
-  return statementsOf(factoryId).find((item) => item.id === id)!;
-}
-
-/** The factory the signed-in user acts for, for `/me` requests that carry no factory id. */
-function partnerFactory(request: Request): string {
-  const token = request.headers.get("authorization") ?? "";
-  const key = token.match(/partner\.([a-z_]+)$/)?.[1] ?? "planner";
-  return PARTNER_PERSONAS.find((persona) => persona.key === key)?.factoryId ?? "";
-}

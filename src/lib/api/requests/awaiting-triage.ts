@@ -12,10 +12,11 @@ export const AWAITING_TRIAGE: readonly string[] = [];
 
 /**
  * Whether packio-api still has to build this operation — the ones `contract-requests.openapi.json`
- * carries. A published operation (as asked or in another shape) is the backend's contract now,
- * even while a screen still calls it through its request definition.
+ * carries: still to implement, or deferred by a decision until it is taken. A published operation
+ * (as asked or in another shape) is the backend's contract now, even while a screen still calls it
+ * through its request definition.
  */
 export function isStillOpen(key: string): boolean {
   const triage = OPERATION_TRIAGE[key];
-  return triage ? triage.verdict === "implement" : AWAITING_TRIAGE.includes(key);
+  return triage ? triage.verdict === "implement" || triage.verdict === "deferred" : AWAITING_TRIAGE.includes(key);
 }

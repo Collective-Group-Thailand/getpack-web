@@ -43,6 +43,7 @@ import {
   type PrepressDetail,
 } from "../admin/prepress";
 import { fileDataUrl, files } from "../admin/platform";
+import { rfqs } from "../admin/rfq";
 import { bangkokIso, mockId, problem } from "../support";
 import { groupForOrder } from "./checkout";
 import { customerOf, type MockCustomer } from "./customers";
@@ -53,6 +54,18 @@ type Submission = PrepressDetail["submissions"][number];
 type Service = NonNullable<PrepressDetail["designService"]>;
 
 const DIELINE_KEYS: Record<string, string> = { "RTE-01": "reverse-tuck-end", "RSC-01": "rsc", "TRAY-01": "tray" };
+/** The `artwork.approval_checklist` setting, as the mock has it. */
+const APPROVAL_CHECKLIST: Schemas["ArtworkChecklistItemDto"][] = [
+  { key: "text_spelling", labelTh: "ตรวจตัวสะกดและข้อความครบแล้ว", labelEn: "Spelling and text checked" },
+  {
+    key: "colours",
+    labelTh: "สีบนจอใช้อ้างอิงเท่านั้น สีพิมพ์จริงอาจต่างเล็กน้อย",
+    labelEn: "Screen colours are a guide only",
+  },
+  { key: "size_and_cut", labelTh: "ขนาดกล่องและเส้นไดคัทถูกต้อง", labelEn: "Box size and cut lines are right" },
+];
+/** What the customer confirmed when approving, per proof. */
+const decisionChecklists = new Map<string, string[]>();
 const BOARD = REFERENCE_MATERIALS["board-350"];
 const PALETTE = ["#1f6f5c", "#b4532a", "#3b5ba5", "#8a3f8f"];
 const TEAM = "ทีม Packio";
@@ -75,8 +88,24 @@ export function mockFileUrl(fileId: string): string | null {
     fileDataUrl(fileId) ??
     (files.get(fileId)
       ? `data:text/plain;charset=utf-8,${encodeURIComponent(`${files.get(fileId)!.originalName} (ข้อมูลจำลอง)`)}`
-      : null)
+      : null) ??
+    podPhotoUrl(fileId) ??
+    rfqs.flatMap((rfq) => rfq.files).find((file) => file.id === fileId)?.url ??
+    null
   );
+}
+
+/** A proof-of-delivery photo of a seeded delivery (the factory's upload, kept on the order row). */
+function podPhotoUrl(fileId: string): string | null {
+  for (const order of orders)
+    for (const shipment of order.shipments) {
+      const photo = shipment.pod?.photos.find((candidate) => candidate.id === fileId);
+      if (photo)
+        return (
+          photo.url ?? `data:text/plain;charset=utf-8,${encodeURIComponent(`${photo.originalName} (ข้อมูลจำลอง)`)}`
+        );
+    }
+  return null;
 }
 /** A stable id for a file the mock draws for a row, in its own namespace. */
 const drawnId = (namespace: string, of: string) =>
@@ -241,6 +270,13 @@ export function toProof(
     sentAt: proof.sentAt,
     decidedAt: proof.decidedAt,
     decisionChannel: proof.decisionChannel,
+    // A decision CS made on the customer's behalf names the team to the customer.
+    decidedByName: proof.decidedBy
+      ? proof.decisionChannel === "cs_on_behalf" && audience === "customer"
+        ? TEAM
+        : proof.decidedBy.displayName
+      : null,
+    decisionChecklist: decisionChecklists.get(proof.id) ?? [],
     decisionComment: decisionComments.get(proof.id) ?? null,
     onBehalfReason: proof.onBehalfReason,
     approvedFileId: proof.status === "approved" ? pageId : null,
@@ -271,6 +307,10 @@ export function toProof(
       },
       createdAt: item.createdAt,
       resolvedAt: item.resolvedAt,
+      // Only staff resolve a thread (the back office's artwork mock); they appear as the team too.
+      resolvedBy: item.resolvedBy
+        ? { kind: "staff" as const, displayName: audience === "customer" ? TEAM : item.resolvedBy.displayName }
+        : null,
     })),
   };
 }
@@ -361,6 +401,8 @@ export function toDesignService(detail: PrepressDetail, service: Service): Schem
       startedAt: round.startedAt,
       deliveredAt: round.deliveredAt,
       changeRequest: round.note,
+      // The rounds keep the delivered files only, no reference files sent with a revision.
+      referenceFileIds: [],
       instalmentId: round.chargeable
         ? (group.instalments.find((entry) => entry.label === feeLabel(round.roundNo))?.id ?? null)
         : null,
@@ -564,12 +606,17 @@ export const storeArtworkHandlers = [
       return problem(409, "proofs.annotation_closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
     const body = (await request.json()) as Schemas["AnnotateProofDto"];
     if (!body.comment?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ความเห็น");
+    // A new annotation names its place; a reply takes its parent's.
+    if (!body.parentId && (body.page === undefined || body.kind === undefined || !body.geometry))
+      return problem(422, "validation.failed", "กรุณาระบุตำแหน่งของความเห็น", [
+        { path: "page", code: "required", message: "required" },
+      ]);
     customerAnnotate(
       found.proof.id,
       {
         page: body.page,
         kind: body.kind,
-        geometry: body.geometry as Record<string, unknown>,
+        geometry: body.geometry as Record<string, unknown> | undefined,
         body: body.comment,
         ...(body.parentId ? { parentId: body.parentId } : {}),
       },
@@ -579,11 +626,54 @@ export const storeArtworkHandlers = [
     return HttpResponse.json(toProof(found.detail, found.proof), { status: 201 });
   }),
 
-  http.post("*/v1/store/proofs/:proofId/actions/approve", ({ params, request }) => {
+  // store.artwork.getRules (D-070, D-073): what the upload takes and checks, the approval checklist,
+  // the order's dieline and box size.
+  http.get("*/v1/store/orders/:orderId/artwork-rules", ({ params, request }) => {
+    const found = context(request, String(params.orderId));
+    if (found instanceof Response) return found;
+    const { dieline } = found.detail;
+    const rules: Schemas["ArtworkRulesDto"] = {
+      accept: [".pdf", ".ai", ".psd", ".png", ".jpg", ".jpeg"],
+      maxBytes: 200 * 1024 * 1024,
+      maxFiles: 20,
+      maxLinks: 5,
+      purpose: "artwork",
+      bleedMm: "3",
+      safeZoneMm: "3",
+      minEffectivePpi: 300,
+      colourMode: "cmyk",
+      checks: [
+        { check: "missing_bleed", severity: "block" },
+        { check: "low_resolution", severity: "warn" },
+        { check: "rgb_colour", severity: "warn" },
+        { check: "text_in_safe_zone", severity: "info" },
+      ],
+      approvalChecklist: APPROVAL_CHECKLIST,
+      dieline: dieline.patternCode
+        ? {
+            patternCode: dieline.patternCode,
+            dielineKey: DIELINE_KEYS[dieline.patternCode] ?? null,
+            lengthMm: dieline.lengthMm ?? 80,
+            widthMm: dieline.widthMm ?? 50,
+            depthMm: dieline.heightMm ?? 120,
+          }
+        : null,
+    };
+    return HttpResponse.json(rules);
+  }),
+
+  http.post("*/v1/store/proofs/:proofId/actions/approve", async ({ params, request }) => {
     const refused = keyRequired(request);
     if (refused) return refused;
     const found = proofContext(request, String(params.proofId));
     if (found instanceof Response) return found;
+    const body = (await request.json().catch(() => ({}))) as Schemas["ApproveProofDto"];
+    // Every checklist item must be confirmed once the checklist is set.
+    const missing = APPROVAL_CHECKLIST.filter((item) => !(body.checklist ?? []).includes(item.key));
+    if (missing.length > 0)
+      return problem(422, "validation.failed", "กรุณายืนยันรายการตรวจให้ครบ", [
+        { path: "checklist", code: "required", message: missing.map((item) => item.key).join(",") },
+      ]);
     const decided = customerDecide(
       found.detail,
       found.proof.id,
@@ -599,6 +689,8 @@ export const storeArtworkHandlers = [
       const delivered = service.rounds.find((entry) => entry.roundNo === round.roundNo);
       if (delivered) delivered.status = "approved";
     }
+    decisionChecklists.set(found.proof.id, body.checklist ?? []);
+    if (body.note) decisionComments.set(found.proof.id, body.note);
     refreshOrder(found.order);
     return HttpResponse.json(toProof(found.detail, found.proof));
   }),

@@ -1,10 +1,13 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format";
+import { newIdempotencyKey } from "@/lib/api/client";
+import { isApiError } from "@/lib/api/problem";
+import { queryKeys } from "@/lib/api/query-keys";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
@@ -29,7 +32,6 @@ type LineDraft = {
 const PRICE = /^\d+(\.\d{1,6})?$/;
 const ZERO = /^0+(\.0+)?$/;
 const WHOLE = /^[1-9]\d*$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** `"54.600000"` → `"54.60"`: fewer trailing zeros to read, the same decimal text. */
 const trimPrice = (value: string) => value.replace(/(\.\d{2}\d*?)0+$/, "$1");
@@ -72,17 +74,31 @@ function lineErrors(line: LineDraft, all: LineDraft[]) {
  * the API publishes no suggested sell price, so CS always types the price. The browser checks only
  * the shape of what is typed; the API prices the amounts, and those figures are what show.
  *
- * A new draft is `admin.rfqs.draftQuotation`; its validity is set by the API when it is sent
- * (D-051). Editing a draft is still a contract request (admin.rfq-quotes, PUT), which asks for a
- * validity date and links a line to its consultation — so the edit form keeps that field.
+ * A new draft is `admin.rfqs.draftQuotation` (with an Idempotency-Key for this composer); editing
+ * one is `admin.rfqs.replaceDraftQuotation`, sent under `If-Match` with the RFQ's ETag as it was
+ * when the editor opened — so an edit made meanwhile by someone else is refused (412), not lost.
+ * Either way the validity is set by the API when the version is sent (D-051).
  */
 export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuote | undefined; onClose: () => void }) {
   const t = useTranslations("rfq.composer");
   const format = useFormat();
   const settle = useSettleRfq(rfq.id);
   const [lines, setLines] = useState<LineDraft[]>(() => initialLines(rfq, draft));
-  const [validUntil, setValidUntil] = useState(draft?.validUntil?.slice(0, 10) ?? "");
   const [note, setNote] = useState(draft?.note ?? "");
+  const [draftKey] = useState(newIdempotencyKey);
+  // The RFQ's ETag as this editor saw it (`admin.rfqs.get`); the draft PUT is matched against it.
+  const etag = useQuery({
+    queryKey: queryKeys.related("admin", "rfq", rfq.id, `etag:${draft?.id ?? "new"}`),
+    enabled: Boolean(draft),
+    queryFn: async () => {
+      const { response } = await adminBrowserApis().contract.GET("/v1/admin/rfqs/{rfqId}", {
+        params: { path: { rfqId: rfq.id } },
+      });
+      return response.headers.get("ETag") ?? "";
+    },
+    staleTime: Infinity,
+    gcTime: 0,
+  });
   const [touched, setTouched] = useState(false);
   const answered = rfq.consultations.filter(
     (item) => item.status === "responded" && item.lines !== null && item.lines.length > 0,
@@ -90,40 +106,29 @@ export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuo
 
   const save = useMutation({
     mutationFn: async () => {
-      const { contract, requests } = adminBrowserApis();
+      const { contract } = adminBrowserApis();
+      const body = {
+        ...(note.trim() ? { note: note.trim() } : {}),
+        lines: lines.map((line) => ({
+          quantity: Number(line.quantity),
+          unitPrice: line.unitPrice,
+          leadTimeDays: Number(line.leadTimeDays),
+          ...(line.factoryId ? { factoryId: line.factoryId } : {}),
+          ...(line.factoryId && line.buyUnitPrice ? { buyUnitPrice: line.buyUnitPrice } : {}),
+        })),
+      };
       if (draft) {
-        // Still a contract request: its answer is not the published RFQ, so the RFQ is read again.
-        await requests.call("PUT /v1/admin/rfqs/{rfqId}/quotes/{quoteId}", {
-          path: { rfqId: rfq.id, quoteId: draft.id },
-          body: {
-            validUntil,
-            ...(note.trim() ? { customerNote: note.trim() } : {}),
-            lines: lines.map((line) => {
-              const consultation = rfq.consultations.find((item) => item.factoryId === line.factoryId);
-              return {
-                quantity: Number(line.quantity),
-                unitPrice: line.unitPrice,
-                leadTimeDays: Number(line.leadTimeDays),
-                ...(consultation ? { consultationId: consultation.id } : {}),
-              };
-            }),
-          },
-        });
-        return undefined;
+        return (
+          await contract.PUT("/v1/admin/rfq-quotations/{rfqQuoteId}", {
+            params: { path: { rfqQuoteId: draft.id }, header: { "If-Match": etag.data ?? "" } },
+            body,
+          })
+        ).data;
       }
       return (
         await contract.POST("/v1/admin/rfqs/{rfqId}/quotations", {
-          params: { path: { rfqId: rfq.id } },
-          body: {
-            ...(note.trim() ? { note: note.trim() } : {}),
-            lines: lines.map((line) => ({
-              quantity: Number(line.quantity),
-              unitPrice: line.unitPrice,
-              leadTimeDays: Number(line.leadTimeDays),
-              ...(line.factoryId ? { factoryId: line.factoryId } : {}),
-              ...(line.factoryId && line.buyUnitPrice ? { buyUnitPrice: line.buyUnitPrice } : {}),
-            })),
-          },
+          params: { path: { rfqId: rfq.id }, header: { "Idempotency-Key": draftKey } },
+          body,
         })
       ).data;
     },
@@ -131,7 +136,15 @@ export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuo
       toast.success(t("saved"));
       settle(updated);
     },
-    onError: (error) => toast.error(problemMessage(error, t("saveFailed"))),
+    onError: (error) => {
+      if (isApiError(error) && error.status === 412) {
+        // Someone changed the RFQ since this editor opened: show theirs, keep nothing stale.
+        toast.error(t("stale"));
+        settle();
+        return;
+      }
+      toast.error(problemMessage(error, t("saveFailed")));
+    },
   });
 
   const discard = useMutation({
@@ -150,9 +163,7 @@ export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuo
   });
 
   const errors = lines.map((line) => lineErrors(line, lines));
-  const invalid =
-    errors.some((error) => error.quantity || error.unitPrice || error.leadTimeDays) ||
-    (Boolean(draft) && !DATE.test(validUntil));
+  const invalid = errors.some((error) => error.quantity || error.unitPrice || error.leadTimeDays);
   const saved = draft ? JSON.stringify(initialLines(rfq, draft)) === JSON.stringify(lines) : false;
 
   const update = (index: number, patch: Partial<LineDraft>) =>
@@ -281,20 +292,7 @@ export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuo
           </Button>
         </div>
 
-        {draft ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field
-              label={t("validUntil")}
-              hint={t("validUntilHint")}
-              error={touched && !DATE.test(validUntil) ? t("errors.validUntil") : undefined}
-              required
-            >
-              <Input type="date" value={validUntil} onChange={(event) => setValidUntil(event.target.value)} />
-            </Field>
-          </div>
-        ) : (
-          <p className="text-muted text-sm">{t("validityAtSend")}</p>
-        )}
+        <p className="text-muted text-sm">{t("validityAtSend")}</p>
         <Field label={t("customerNote")} hint={t("customerNoteHint")}>
           <Textarea rows={3} value={note} onChange={(event) => setNote(event.target.value)} />
         </Field>
@@ -311,7 +309,7 @@ export function QuoteComposer({ rfq, draft, onClose }: { rfq: Rfq; draft: RfqQuo
               {t("cancel")}
             </Button>
           )}
-          <Button type="submit" iconStart="save" loading={save.isPending}>
+          <Button type="submit" iconStart="save" loading={save.isPending} disabled={Boolean(draft) && etag.isPending}>
             {t("save")}
           </Button>
         </div>

@@ -29,11 +29,11 @@ import {
   versionTag,
   withEtag,
 } from "../support";
-import { PRODUCT_TYPES } from "./catalog";
+import { lineSummaryOf, PRODUCT_TYPES } from "./catalog";
 import { catalogueRows } from "./catalogue";
 import { customers, orders } from "./commerce";
 import { toGroupDto } from "./orders";
-import { approvals, openApproval, settings } from "./platform";
+import { approvals, files, openApproval, settings } from "./platform";
 
 type Quote = Schemas["AdminSavedQuoteDto"];
 type Memo = Schemas["DiscountMemoDto"];
@@ -60,8 +60,24 @@ const str = (value: unknown) => String(value ?? "");
 
 /* ---------------------------------------------------------------------------- input data */
 
-function named(row: Record<string, unknown>): Schemas["InputNamedDto"] {
+function named(row: Record<string, unknown>): Schemas["CodeNameRefDto"] {
   return { id: str(row.id), code: str(row.code), nameTh: str(row.nameTh), nameEn: str(row.nameEn ?? row.nameTh) };
+}
+
+/** A pattern's size rules from the catalogue row's `constraints`; none (null, false) where it sets none. */
+function sizeRulesOf(row: Record<string, unknown>): Schemas["StoreSizeRulesDto"] {
+  const limits = (row.constraints as Record<string, number | undefined> | undefined) ?? {};
+  return {
+    minLMm: limits.minL ?? null,
+    maxLMm: limits.maxL ?? null,
+    minWMm: limits.minW ?? null,
+    maxWMm: limits.maxW ?? null,
+    minHMm: limits.minH ?? null,
+    maxHMm: limits.maxH ?? null,
+    lengthMustExceedWidth: false,
+    lengthMustExceedHeight: false,
+    widthMustExceedHeight: false,
+  };
 }
 
 function subPatternsOf(patternId: unknown) {
@@ -95,6 +111,7 @@ function foldingInputData(): Schemas["FoldingInputDataDto"] {
       code: str(row.code),
       name: str(row.name),
       geometryFormula: str(row.geometryFormula ?? row.dielineKey ?? "rsc"),
+      rules: sizeRulesOf(row),
       subPatterns: subPatternsOf(row.id),
     })),
     materials: live(catalogueRows("materials"))
@@ -112,7 +129,43 @@ function foldingInputData(): Schemas["FoldingInputDataDto"] {
     diecutTypes: live(catalogueRows("diecutTypes")).map(named),
     assemblies: assemblies(),
     difficultyLevels: live(catalogueRows("difficultyLevels")).map(named),
+    ...calculatorPolicy("folding"),
   };
+}
+
+/**
+ * What both calculators' input data add: CS's own discount limit (`discounts.cs_limit_pct`,
+ * D-052), and the calculator's catalogue products, each with its standard sizes and quantity
+ * presets (v0.5.0) — the catalogue mock's own rows, as the storefront configurator reads them.
+ */
+function calculatorPolicy(
+  calculator: "folding" | "corrugate",
+): Pick<Schemas["FoldingInputDataDto"], "catalogProducts" | "discountPolicy"> {
+  const types = new Set(
+    live(catalogueRows("productTypes"))
+      .filter((row) => row.calculatorKey === calculator)
+      .map((row) => str(row.id)),
+  );
+  const catalogProducts = live(catalogueRows("catalogProducts"))
+    .filter((row) => row.status !== "draft" && types.has(str(row.productTypeId)))
+    .map((product) => ({
+      id: str(product.id),
+      slug: str(product.slug),
+      nameTh: str(product.nameTh),
+      nameEn: str(product.nameEn ?? product.nameTh),
+      quantity: { presets: [500, 1000, 2000, 3000, 5000, 10000], min: 100, max: 500_000, default: 1000, maxTiers: 5 },
+      standardSizes: live(catalogueRows("standardSizes"))
+        .filter((size) => size.catalogProductId === product.id)
+        .map((size) => ({
+          id: str(size.id),
+          code: str(size.code),
+          name: str(size.name),
+          lengthMm: Number(size.lengthMm),
+          widthMm: Number(size.widthMm),
+          heightMm: Number(size.heightMm),
+        })),
+    }));
+  return { catalogProducts, discountPolicy: { directLimitPct: String(csLimit()) } };
 }
 
 function corrugateInputData(): Schemas["CorrugateInputDataDto"] {
@@ -125,6 +178,7 @@ function corrugateInputData(): Schemas["CorrugateInputDataDto"] {
       name: str(row.name),
       corrugateFormula: (row.corrugateFormula as Schemas["CorrugateFormula"] | null) ?? "rsc",
       fluteTypeIds: flutes.map((flute) => str(flute.id)),
+      rules: sizeRulesOf(row),
       subPatterns: subPatternsOf(row.id).map((sub) => ({ ...sub, corrugateFormula: null })),
     })),
     boards: live(catalogueRows("materials"))
@@ -146,6 +200,7 @@ function corrugateInputData(): Schemas["CorrugateInputDataDto"] {
     assemblies: assemblies(),
     difficultyLevels: live(catalogueRows("difficultyLevels")).map(named),
     printAreas: ["top", "side", "top_side", "all_round"],
+    ...calculatorPolicy("corrugate"),
   };
 }
 
@@ -239,6 +294,8 @@ function option(quantity: number, unit: string, lead: number): Schemas["AdminSav
     productAmount: ((net + vat) / 100).toFixed(2),
     designFeeAmount: "0.00",
     structureDesignFeeAmount: "0.00",
+    // The seeded quotes split no plates or die blocks out.
+    toolingAmount: null,
     shippingAmount: null,
     shippingPending: true,
     shippingPendingReason: "no_postcode",
@@ -263,7 +320,11 @@ export const quotations: Quote[] = [
     status: "saved",
     channel: "cs",
     customer: customerRef(1),
+    customerCode: customers[1]!.customerCode,
     createdBy: { id: CS, displayName: "สมชาย ตัวอย่าง (ข้อมูลจำลอง)" },
+    note: null,
+    rfq: null,
+    summary: lineSummaryOf("folding_carton"),
     configuration: null,
     deliveryPostcode: null,
     currency: "THB",
@@ -282,7 +343,11 @@ export const quotations: Quote[] = [
     status: "expired",
     channel: "web",
     customer: customerRef(0),
+    customerCode: customers[0]!.customerCode,
     createdBy: null,
+    note: null,
+    rfq: null,
+    summary: lineSummaryOf("label_sticker"),
     configuration: null,
     deliveryPostcode: null,
     currency: "THB",
@@ -348,6 +413,14 @@ const memos: Memo[] = [
     reason: "ลูกค้าเทียบราคากับคู่แข่ง ขอส่วนลดเพื่อปิดการขาย",
     approvalId: mockId("appr", 1),
     appliedGroupCode: null,
+    evidence: [
+      {
+        id: mockId("fil", 9101),
+        originalName: "ราคาคู่แข่ง-ข้อมูลจำลอง.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 182_400,
+      },
+    ],
     validUntil: bangkokIso(DAY * 14),
     createdAt: bangkokIso(-53),
   },
@@ -367,6 +440,7 @@ const memos: Memo[] = [
     reason: "ลูกค้าประจำ สั่งซ้ำทุกเดือน",
     approvalId: mockId("appr", 2),
     appliedGroupCode: null,
+    evidence: [],
     validUntil: bangkokIso(DAY * 14),
     createdAt: bangkokIso(-106),
   },
@@ -429,6 +503,7 @@ export const salesHandlers = [
     const rows = quotations
       .filter((quote) => !status || quote.status === status)
       .filter((quote) => !customerId || quote.customer?.id === customerId)
+      .filter((quote) => !url.searchParams.get("channel") || quote.channel === url.searchParams.get("channel"))
       .filter((quote) => matchesQuery(q, quote.quoteCode, quote.customer?.displayName));
     const sort = url.searchParams.get("sort") ?? "createdAt";
     const order = (url.searchParams.get("order") as "asc" | "desc" | null) ?? "desc";
@@ -457,7 +532,11 @@ export const salesHandlers = [
       status: "saved",
       channel: "cs",
       customer: customer ? { id: customer.id, displayName: customer.displayName } : null,
+      customerCode: customer?.customerCode ?? null,
       createdBy: { id: who.id, displayName: who.displayName },
+      note: body.note?.trim() || null,
+      rfq: null,
+      summary: lineSummaryOf(body.productTypeCode),
       configuration: config,
       deliveryPostcode: body.deliveryPostcode ?? null,
       currency: "THB",
@@ -468,6 +547,7 @@ export const salesHandlers = [
         productAmount: step.productAmount!,
         designFeeAmount: step.designFeeAmount ?? "0.00",
         structureDesignFeeAmount: step.structureDesignFeeAmount ?? "0.00",
+        toolingAmount: step.toolingAmount,
         shippingAmount: step.shippingAmount,
         shippingPending: step.shippingPending,
         shippingPendingReason: step.shippingPendingReason,
@@ -571,6 +651,7 @@ export const salesHandlers = [
       quoteOptionId: chosen.id,
       quoteCode: quote.quoteCode,
       productTypeCode: quote.productTypeCode,
+      summary: quote.summary,
       source: "instant",
       quantity: chosen.quantity,
       unitPrice: chosen.unitPrice,
@@ -607,10 +688,12 @@ export const salesHandlers = [
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const customerId = url.searchParams.get("customerId");
+    const requestedBy = url.searchParams.get("requestedBy");
     const q = url.searchParams.get("q") ?? undefined;
     const rows = memos
       .filter((memo) => !status || memo.status === status)
       .filter((memo) => !customerId || memo.customer?.id === customerId)
+      .filter((memo) => !requestedBy || memo.requestedBy.id === requestedBy)
       .filter((memo) => matchesQuery(q, memo.customer?.displayName, memo.reason));
     return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
@@ -656,6 +739,13 @@ export const salesHandlers = [
       reason: body.reason,
       approvalId: null,
       appliedGroupCode: null,
+      // The files the memo was raised with, as the uploads mock keeps them (D-052).
+      evidence: (body.evidenceFileIds ?? []).flatMap((id) => {
+        const file = files.get(id);
+        return file
+          ? [{ id: file.id, originalName: file.originalName, mimeType: file.mimeType, sizeBytes: file.sizeBytes }]
+          : [];
+      }),
       validUntil: bangkokIso(DAY * 15),
       createdAt: bangkokIso(),
     };

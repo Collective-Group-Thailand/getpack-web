@@ -21,14 +21,14 @@
     "note": "สิ่งที่ไม่ถูกต้อง",
     "noteHint": "เช่น ค่าขนส่ง S-2569-00801 ควรเป็น 650 บาท",
     "done": "ส่งข้อโต้แย้งแล้ว",
-    "failed": "ส่งไม่สำเร็จ"
+    "failed": "ส่งไม่สำเร็จ",
+    "lines": "รายการที่ไม่ถูกต้อง (ถ้าระบุได้)"
   },
   "invoice": {
     "noRequired": "ระบุเลขที่ใบกำกับภาษี",
     "taxIdInvalid": "เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง",
     "branchInvalid": "รหัสสาขาเป็นตัวเลข 5 หลัก",
     "fileRequired": "แนบไฟล์ใบกำกับภาษี",
-    "referenceRequired": "ระบุเลขอ้างอิง e-Tax",
     "done": "บันทึกใบกำกับภาษีแล้ว รอฝ่ายการเงินตรวจ",
     "failed": "บันทึกไม่สำเร็จ",
     "no": "เลขที่ใบกำกับภาษี",
@@ -45,10 +45,16 @@
     "rules": "PDF ไม่เกิน 20 MB",
     "tooLarge": "{name} ใหญ่เกิน 20 MB",
     "wrongType": "{name} ไม่ใช่ไฟล์ PDF",
-    "reference": "เลขอ้างอิง e-Tax",
-    "referenceHint": "จากระบบ e-Tax Invoice ของกรมสรรพากร",
     "chosen": "เลือกไฟล์ {name} แล้ว",
-    "submit": "บันทึกใบกำกับภาษี"
+    "submit": "บันทึกใบกำกับภาษี",
+    "amountFormat": "ใส่ตัวเลขทศนิยม 2 ตำแหน่ง เช่น 12500.00",
+    "netAmount": "มูลค่าก่อน VAT ตามใบกำกับภาษี",
+    "vatAmount": "VAT ตามใบกำกับภาษี",
+    "amountHint": "พิมพ์ตามที่ระบุในใบกำกับภาษีของโรงงาน ฝ่ายการเงินจะตรวจกับใบวางบิล",
+    "eTaxNoHint": "เลขที่ใบกำกับภาษีอิเล็กทรอนิกส์คือเลขอ้างอิงของ e-Tax",
+    "eTaxFile": "ไฟล์ e-Tax Invoice",
+    "eTaxRules": "PDF หรือ XML ไม่เกิน 20 MB",
+    "amountPlaceholder": "0.00"
   },
   "detail": {
     "metaTitle": "ใบวางบิล",
@@ -71,54 +77,74 @@
     "invoiceBody": "ออกใบกำกับภาษีตามยอดที่ยืนยัน Packio ขอคืนภาษีซื้อได้เมื่อมีใบกำกับภาษีถูกต้อง",
     "invoices": "ใบกำกับภาษีที่บันทึก",
     "invoiceLine": "เลขที่ {no} · {date}",
-    "eTaxRef": "e-Tax อ้างอิง {ref}",
     "download": "ดาวน์โหลด",
     "kinds": {
       "production": "ค่าผลิต",
       "shipping": "ค่าจัดส่ง",
-      "deduction": "หักค่าเคลม",
-      "advance_offset": "หักเงินล่วงหน้า"
+      "mockup": "ค่าม็อกอัป",
+      "design": "ค่าออกแบบ",
+      "reproduction": "ผลิตซ้ำ",
+      "deduction": "รายการหัก"
     },
-    "qty": "{quantity} ชิ้น"
+    "qty": "{quantity} ชิ้น",
+    "generatedAt": "Packio สร้างเมื่อ {date}",
+    "disputedLines": "รายการที่โต้แย้ง {lines}",
+    "disputedBadge": "โต้แย้ง",
+    "other": "ค่าม็อกอัป ออกแบบ และผลิตซ้ำ",
+    "lineLabel": "#{no} {description}",
+    "lineVat": "VAT {vat}",
+    "invoiceAmounts": "ก่อน VAT {net} · VAT {vat} · รวม {gross}",
+    "sources": {
+      "pdf_upload": "ไฟล์ PDF",
+      "e_tax": "e-Tax Invoice",
+      "manual": "บันทึกโดยฝ่ายการเงิน"
+    }
   },
   "payouts": {
     "title": "การจ่ายเงิน",
     "body": "Packio จ่ายเงินล่วงหน้าเมื่อรับงาน ยอดคงเหลือหลังส่งมอบและพ้นระยะเคลม และคืนเงินประกันผลงานภายหลัง",
     "back": "กลับไปที่วางบิล",
     "statementLink": "รายการเดินบัญชี",
-    "scheduleTitle": "กำหนดจ่ายรายงาน",
+    "scheduleTitle": "กำหนดจ่ายตามใบสั่งซื้อ",
     "scheduleBody": "ตามเงื่อนไขการจ่ายเงินของโรงงาน",
-    "po": "ใบสั่งซื้อ {amount}",
+    "po": "ใบสั่งซื้อ {no}",
     "kinds": {
-      "advance": "ล่วงหน้า {pct}",
-      "balance": "คงเหลือ {pct}",
-      "retention": "เงินประกัน {pct}"
+      "advance": "เงินล่วงหน้า",
+      "balance": "ยอดคงเหลือ",
+      "retention_release": "คืนเงินประกัน",
+      "vendor_bill": "ตามใบแจ้งหนี้"
     },
     "paidOn": "จ่ายแล้ว {date}",
     "eligibleOn": "ถึงกำหนด {date}",
     "waiting": {
-      "acceptance": "รอรับงาน",
-      "pod": "รอหลักฐานการส่งมอบ",
-      "claim_window": "รอพ้นระยะเคลม",
-      "retention_period": "รอครบกำหนดคืนเงินประกัน"
+      "eligibility_date": "รอถึงกำหนด",
+      "payout_run": "รอรอบจ่าย",
+      "bank_confirmation": "รอธนาคารยืนยัน"
     },
     "scheduleEmpty": "ยังไม่มีงานที่มีกำหนดจ่าย",
     "historyTitle": "การจ่ายเงินที่ผ่านมา",
     "paidTo": "โอน {date} เข้าบัญชีลงท้าย {last4}",
     "historyEmpty": "ยังไม่มีการจ่ายเงิน",
-    "allocations": {
-      "advance": "เงินล่วงหน้า {ref}",
-      "balance": "ยอดคงเหลือ {ref}",
-      "retention": "คืนเงินประกัน {ref}",
-      "deduction": "หักค่าเคลม {ref}"
-    }
+    "terms": {
+      "advance": "ล่วงหน้า {pct} เมื่อรับงาน",
+      "retention": "เงินประกัน {pct} คืนหลัง {days} วัน",
+      "claimWindow": "ระยะเคลม {days} วัน"
+    },
+    "sources": {
+      "advance": "เงินล่วงหน้า",
+      "goods_receipt": "ยอดคงเหลือ",
+      "vendor_invoice": "ตามใบแจ้งหนี้",
+      "retention": "เงินประกันผลงาน"
+    },
+    "balancePending": "ยอดคงเหลือและเงินประกันจะตั้งเมื่อมีหลักฐานการส่งมอบ",
+    "payOn": "กำหนดโอน {date}",
+    "noPv": "ยังไม่มีเลขที่ใบสำคัญจ่าย"
   },
   "payout": {
     "metaTitle": "การจ่ายเงิน",
     "back": "กลับไปที่การจ่ายเงิน",
     "paidTo": "โอน {date} เข้าบัญชีลงท้าย {last4}",
     "failed": "โอนไม่สำเร็จ",
-    "gross": "ยอดจ่าย",
     "wht": "ภาษีหัก ณ ที่จ่าย",
     "deductions": "หักค่าเคลม",
     "net": "ยอดโอนสุทธิ",
@@ -126,13 +152,20 @@
     "documents": "เอกสาร",
     "docs": {
       "remittance": "ใบแจ้งการโอนเงิน",
-      "wht": "หนังสือรับรองการหักภาษี ณ ที่จ่าย (50 ทวิ)"
-    }
+      "wht": "หนังสือรับรองการหักภาษี ณ ที่จ่าย (50 ทวิ) {no}"
+    },
+    "apNet": "ยอดก่อน VAT",
+    "vat": "VAT",
+    "retention": "หักเงินประกัน",
+    "bankRef": "เลขอ้างอิงธนาคาร",
+    "payOn": "กำหนดโอน {date}",
+    "claimDeductions": "หักค่าเคลม",
+    "documentsBody": "ลิงก์ใช้ได้ชั่วคราว หากหมดอายุให้โหลดหน้านี้ใหม่"
   },
   "account": {
     "title": "รายการเดินบัญชี",
     "back": "กลับไปที่การจ่ายเงิน",
-    "body": "ยอดที่ Packio ต้องจ่ายโรงงาน ตามใบวางบิลที่ยืนยันและการโอนเงิน",
+    "body": "ยอดที่ Packio ต้องจ่ายโรงงาน ตามการรับสินค้าและการโอนเงิน",
     "from": "ตั้งแต่",
     "to": "ถึง",
     "show": "แสดง",
@@ -143,6 +176,13 @@
     "debit": "Packio จ่ายแล้ว",
     "balance": "คงเหลือ",
     "opening": "ยอดยกมา",
-    "closing": "ยอดคงเหลือ"
+    "closing": "รวมและยอดคงเหลือ",
+    "kinds": {
+      "goods_receipt": "รับสินค้า",
+      "advance_offset": "หักเงินล่วงหน้า",
+      "payout": "Packio โอนเงิน (รวมภาษีหัก ณ ที่จ่าย)",
+      "deduction": "หักค่าเคลม",
+      "adjustment": "ปรับปรุงรายการ"
+    }
   }
 }

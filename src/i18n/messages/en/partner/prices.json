@@ -349,6 +349,7 @@
     "evidenceBody": "E.g. a mill's price letter or a supplier invoice",
     "evidenceItem": "{name} · by {by} · {date}",
     "evidenceEmpty": "No evidence yet",
-    "withdrawTitle": "No longer needed?"
+    "withdrawTitle": "No longer needed?",
+    "evidenceOpen": "Open"
   }
 }

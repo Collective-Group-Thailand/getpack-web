@@ -22,14 +22,30 @@ export interface NextActionBarProps {
 
 /**
  * An entity's actions as the API offered them (ADR-0005): the first unblocked one leads
- * (design-system.md §4 "the single next best action"), the rest sit behind "more", and a
- * blocked one says why. An action key this version cannot perform is shown disabled rather than
+ * (design-system.md §4 "the single next best action") unless it is destructive and another is
+ * open, the rest sit behind "more", and a blocked one says why (its `disabledReason`, in this
+ * app's words when the problem code has them). An action key this version cannot perform is shown disabled rather than
  * hidden, so a new backend capability is visible, not lost.
  */
 export function NextActionBar({ actions, supported, labelOf, onAction }: NextActionBarProps) {
   const t = useTranslations("status");
   const tConsole = useTranslations("console.actions");
-  const lead = primaryAction(actions);
+  const tProblems = useTranslations("problems");
+  // `disabledReason` is a message key from the API (a problem code): this app's words for it when
+  // it has them, else the key as given.
+  const reasonOf = (action: NextAction) =>
+    action.disabledReason
+      ? tProblems.has(action.disabledReason)
+        ? tProblems(action.disabledReason)
+        : action.disabledReason
+      : null;
+  // The lead is one this screen can perform (an offered verb it has no flow for stays in "more"),
+  // in the API's order — but a destructive action (cancel, void) never leads while a constructive
+  // one is open: it sits behind "more", one deliberate step away.
+  const performable = actions.filter((action) => supported.has(actionVerb(action.key)));
+  const lead =
+    performable.find((action) => !action.disabledReason && nextActionMeta(action.key).tone !== "danger") ??
+    primaryAction(performable);
   const rest = actions.filter((action) => action !== lead);
 
   const label = (action: NextAction) => labelOf?.(actionVerb(action.key)) ?? t(nextActionMeta(action.key).labelKey);
@@ -50,7 +66,7 @@ export function NextActionBar({ actions, supported, labelOf, onAction }: NextAct
             id: action.key,
             label: label(action),
             description:
-              action.disabledReason ?? (supported.has(actionVerb(action.key)) ? undefined : tConsole("unsupported")),
+              reasonOf(action) ?? (supported.has(actionVerb(action.key)) ? undefined : tConsole("unsupported")),
             icon: nextActionMeta(action.key).icon,
             tone: nextActionMeta(action.key).tone === "danger" ? "destructive" : "default",
             disabled: Boolean(action.disabledReason) || !supported.has(actionVerb(action.key)),
@@ -65,7 +81,7 @@ export function NextActionBar({ actions, supported, labelOf, onAction }: NextAct
       ) : null}
       {lead ? (
         lead.disabledReason ? (
-          <Tooltip content={lead.disabledReason}>
+          <Tooltip content={reasonOf(lead)}>
             <span tabIndex={0}>
               <Button disabled iconStart={nextActionMeta(lead.key).icon}>
                 {label(lead)}

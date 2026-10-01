@@ -8,9 +8,7 @@ import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
 
 import { QueryError, Section } from "../console";
-import { REPORT_GROUP, useReportCatalogue, type ReportGroup } from "./data";
-
-const GROUPS: readonly ReportGroup[] = ["sales", "finance", "marketing", "operations"];
+import { REPORT_GROUPS, useReportCatalogue } from "./data";
 
 /** The operational reports this role may run (F2 2.8, B6.2), by area. */
 export function ReportsIndex() {
@@ -20,8 +18,8 @@ export function ReportsIndex() {
   if (reports.isError) return <QueryError error={reports.error} onRetry={() => void reports.refetch()} />;
   return (
     <div className="flex flex-col gap-5">
-      {GROUPS.map((group) => {
-        const items = (reports.data ?? []).filter((report) => REPORT_GROUP[report.key] === group);
+      {REPORT_GROUPS.map((group) => {
+        const items = (reports.data ?? []).filter((report) => report.group === group);
         if (items.length === 0) return null;
         return (
           <Section key={group} title={t(`groups.${group}`)}>

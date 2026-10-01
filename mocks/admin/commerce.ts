@@ -1,7 +1,6 @@
 /**
- * Commerce mocks: customers, orders and groups, the CS queues, order actions, notes and
- * timelines (CONTRACT-REQUEST admin.orders, admin.order-notes, admin.order-actions,
- * admin.customers, admin.geo).
+ * Commerce fixtures: customers, orders and groups, notes and timelines, and the slip decision
+ * every screen shares. The published order desk that serves them is `./orders.ts`.
  *
  * The seed is deterministic and obviously fake. Amounts are computed here in whole satang —
  * the mock stands in for the backend, which is the only place money is ever computed — and
@@ -11,9 +10,7 @@
 
 import type { z } from "zod";
 
-import { staffPersonaOf } from "../auth";
 import type { StaffPersona } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
 import { productTypeRef } from "./catalog";
 import type { CustomerRow } from "./customer-model";
@@ -94,7 +91,7 @@ export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], 
         isDefault: true,
       },
       // A second site for the company the B2B personas share, so the storefront can split a line
-      // across two addresses: a customer cannot add one there yet (CONTRACT-GAP store.geo-ids).
+      // across two addresses from the start.
       ...(index === 1
         ? [
             {
@@ -623,35 +620,8 @@ function buildOrder(seed: Seed, index: number): Order {
     expiresAt: seed.status === "waiting_payment" ? bangkokIso(60 * 24 * 6) : null,
     cancelledAt: seed.status === "cancelled" ? bangkokIso(-60 * 24) : null,
     cancelReason: seed.status === "cancelled" ? "ลูกค้าขอยกเลิกก่อนชำระเงิน" : null,
-    nextActions: [],
   };
-  order.nextActions = nextActionsOf(order);
   return order;
-}
-
-/** What the API would offer on an order in this state (entity.next-actions). */
-export function nextActionsOf(order: Order): Order["nextActions"] {
-  const actions: Order["nextActions"] = [];
-  if (order.hasSlipToReview) {
-    actions.push({ key: "order.approve_slip", irreversible: true }, { key: "order.reject_slip" });
-  }
-  if (order.status === "waiting_payment") {
-    actions.push({ key: "order.send_payment_reminder" }, { key: "order.record_slip", irreversible: true });
-  }
-  if (order.status === "paid_for_production" || order.status === "artwork_approved") {
-    actions.push({
-      key: "order.start_production",
-      irreversible: true,
-      disabledReason:
-        order.artworkStatus === "approved"
-          ? null
-          : "ไฟล์งานยังไม่ได้รับการอนุมัติ — เริ่มผลิตด้วยมือได้เฉพาะกรณียกเว้น",
-    });
-  }
-  if (["waiting_payment", "paid_for_production", "artwork_approved"].includes(order.status)) {
-    actions.push({ key: "order.cancel", irreversible: true });
-  }
-  return actions;
 }
 
 export const orders: Order[] = SEEDS.map(buildOrder);
@@ -877,34 +847,6 @@ export const find = (orderId: string | undefined) => orders.find((order) => orde
 /** Recomputes the derived columns after the storefront mock changed an order (mocks/store). */
 export const refreshOrder = (order: Order) => refresh(order);
 const refresh = (order: Order) => {
-  order.nextActions = nextActionsOf(order);
   order.nextInstalment = order.instalments.find((item) => item.status !== "paid") ?? null;
   return order;
 };
-
-/** The order-desk requests packio-api still builds (U-B0.2); the published surface is `./orders.ts`. */
-export const commerceHandlers = [
-  mockRequest("GET /v1/admin/order-cancel-reasons", () => ({
-    data: [
-      { code: "customer_request", name: "ลูกค้าขอยกเลิก", requiresCreditNote: false },
-      { code: "payment_expired", name: "เกินกำหนดชำระเงิน", requiresCreditNote: false },
-      { code: "cannot_produce", name: "โรงงานผลิตไม่ได้ตามสเปก", requiresCreditNote: true },
-      { code: "duplicate", name: "คำสั่งซื้อซ้ำ", requiresCreditNote: false },
-    ],
-  })),
-  mockRequest("POST /v1/admin/orders/{orderId}/actions/send-payment-reminder", ({ params, request }) => {
-    const order = find(params.orderId);
-    if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    const persona = staffPersonaOf(request)!;
-    logEvent(order, "payment.reminder_sent", "ส่งข้อความเตือนชำระเงิน", {
-      id: persona.id,
-      displayName: persona.displayName,
-    });
-  }),
-  mockRequest("POST /v1/admin/orders/actions/send-payment-reminders", ({ body }) => {
-    const skipped = body.orderIds
-      .filter((id) => find(id)?.status !== "waiting_payment")
-      .map((orderId) => ({ orderId, reason: "คำสั่งซื้อไม่ได้รอชำระเงินแล้ว" }));
-    return { sent: body.orderIds.length - skipped.length, skipped };
-  }),
-];

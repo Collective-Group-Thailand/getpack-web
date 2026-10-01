@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { adminPrepressActions } from "@/domain/next-actions/admin";
@@ -20,7 +20,7 @@ import { toast } from "@/ui/components/Toast";
 import { adminBrowserApis, problemMessage, QueryError, StatusChip, useActor, useProductTypes } from "../console";
 import { useOrder } from "../orders/data";
 import type { Order } from "../orders/resources";
-import { useOrderDesignService, usePrepressSettle, useProofs, useSubmissions, useTemplates } from "./data";
+import { useDrawings, useOrderDesignService, usePrepressSettle, useProofs, useSubmissions, useTemplates } from "./data";
 import {
   PrepressActionBar,
   PrepressActionDialogs,
@@ -28,7 +28,7 @@ import {
   type PrepressOwner,
 } from "./PrepressActions";
 import { ArtworkTab, DesignTab, ProofsTab, TemplateTab } from "./PrepressTabs";
-import type { DrawingJob, PrepressTab } from "./resources";
+import type { PrepressTab } from "./resources";
 
 /**
  * One order's prepress workspace (F2 2.4): the customer's files and their preflight, the proof
@@ -36,12 +36,13 @@ import type { DrawingJob, PrepressTab } from "./resources";
  * order in the rail. The header restates the order code on every tab and leads with what
  * `adminPrepressActions` offers.
  *
- * Composed (U-F0.3) from the lean order (`admin.orders.get`) and its artwork resources
- * (`admin.artwork.list`, `.listProofs`, `.listTemplates`, `admin.designServices.list`).
- * CONTRACT-GAP admin.prepress — no workspace aggregate: no stage or its SLA (they are on the desk's
- * queue rows), no customer, specs or dieline size, no assignee (assigning is still a request, and
- * the owner shown is the one it last answered), and no design document. The mockup job is not
- * here: D-192 replaces it with the sample, which comes to this page with U2.F.
+ * Composed from the lean order (`admin.orders.get`) and its artwork resources (`admin.artwork.list`,
+ * `.listProofs`, `.listTemplates`, `admin.designs.listOrderDrawings`, `admin.designServices.list`);
+ * no workspace aggregate is published, by packio-api's decision. CONTRACT-GAP admin.prepress — no
+ * stage or its SLA here (they are on the desk's queue rows, with the owner), no dieline size of the
+ * order's own, no owner on the order (the owner shown is the one assigned on this page,
+ * `admin.artwork.assignPrepress` answers 204), and no design document. The mockup job is not here:
+ * D-192 replaces it with the sample, which comes to this page with U2.F.
  */
 export function PrepressWorkspace({
   orderId,
@@ -59,7 +60,6 @@ export function PrepressWorkspace({
   const [current, setCurrent] = useState<string>(tab);
   const [action, setAction] = useState<PrepressActionKey | null>(null);
   const [drawing, setDrawing] = useState(false);
-  const [drawings, setDrawings] = useState<DrawingJob[]>([]);
   const [owner, setOwner] = useState<PrepressOwner | undefined>(undefined);
   const settle = usePrepressSettle(orderId);
 
@@ -67,6 +67,7 @@ export function PrepressWorkspace({
   const submissions = useSubmissions(orderId);
   const proofs = useProofs(orderId);
   const templates = useTemplates(orderId);
+  const drawings = useDrawings(orderId);
   const design = useOrderDesignService(query.data);
 
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
@@ -97,11 +98,10 @@ export function PrepressWorkspace({
   const draw = async () => {
     setDrawing(true);
     try {
-      const { data } = await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/drawings", {
+      await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/drawings", {
         params: { path: { orderId } },
         body: { format: "pdf" },
       });
-      setDrawings((jobs) => [data!, ...jobs]);
       toast.success(t("drawQueued"));
       settle();
     } catch (error) {
@@ -145,7 +145,7 @@ export function PrepressWorkspace({
       content: (
         <TemplateTab
           deliveries={templates.data ?? []}
-          drawings={drawings}
+          drawings={drawings.data ?? []}
           drawing={drawing}
           onDraw={offered.has("draw_dieline") ? () => void draw() : undefined}
           onSend={offered.has("send_template") ? () => setAction("send_template") : undefined}
@@ -221,6 +221,8 @@ function PrepressRail({
   const t = useTranslations("prepress.detail.rail");
   const format = useFormat();
   const actor = useActor();
+  const en = useLocale() === "en";
+  const specs = order.summary.specs;
 
   return (
     <div className="flex flex-col gap-4">
@@ -267,6 +269,23 @@ function PrepressRail({
             { term: t("promised"), description: format.date(order.promisedShipDate) },
           ]}
         />
+      </Card>
+
+      <Card padding="md">
+        <CardHeader>
+          <CardTitle>{t("specs")}</CardTitle>
+        </CardHeader>
+        {specs.length > 0 ? (
+          <DescriptionList
+            columns={1}
+            items={specs.map((line) => ({
+              term: en ? line.labelEn : line.labelTh,
+              description: en ? line.valueEn : line.valueTh,
+            }))}
+          />
+        ) : (
+          <p className="text-muted text-sm">{t("noSpecs")}</p>
+        )}
       </Card>
     </div>
   );

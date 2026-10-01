@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Button } from "@/ui/components/Button";
 import { Dialog } from "@/ui/components/Dialog";
@@ -16,14 +15,16 @@ import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 
 import { useActor } from "./actor";
+import { adminBrowserApis } from "./api";
 import { problemMessage } from "./QueryError";
 
 /**
  * Saved views (F2 A.3): per-user presets stored server-side, optionally shared, and a link that
  * reproduces the current view for anyone who may open the list.
  *
- * CONTRACT-REQUEST `admin.saved-views`. A view *is* its URL query, so applying one is navigation
- * and the list needs no second notion of state.
+ * `admin.savedViews.*` (U-B0.3). A view *is* its URL query, so applying one is navigation and the
+ * list needs no second notion of state. The API lists my views first, then colleagues' shared ones;
+ * only the owner may delete one.
  */
 export function SavedViews({
   resource,
@@ -47,15 +48,22 @@ export function SavedViews({
 
   const views = useQuery({
     queryKey: key,
-    queryFn: () => browserRequests().call("GET /v1/admin/saved-views", { query: { resource } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/saved-views", {
+          params: { query: { resource, perPage: 100 } },
+        })
+      ).data!,
     staleTime: STALE_TIME.stable,
   });
 
   const save = useMutation({
-    mutationFn: () =>
-      browserRequests().call("POST /v1/admin/saved-views", {
-        body: { resource, name: name.trim(), query: currentQuery, columns, shared },
-      }),
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/saved-views", {
+          body: { resource, name: name.trim(), query: currentQuery, columns, shared },
+        })
+      ).data!,
     onSuccess: () => {
       toast.success(t("saved"));
       setSaving(false);
@@ -66,8 +74,9 @@ export function SavedViews({
   });
 
   const remove = useMutation({
-    mutationFn: (viewId: string) =>
-      browserRequests().call("DELETE /v1/admin/saved-views/{viewId}", { path: { viewId } }),
+    mutationFn: async (viewId: string) => {
+      await adminBrowserApis().contract.DELETE("/v1/admin/saved-views/{viewId}", { params: { path: { viewId } } });
+    },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: key }),
     onError: (error) => toast.error(problemMessage(error, t("deleteFailed"))),
   });
@@ -135,7 +144,7 @@ export function SavedViews({
       >
         <div className="space-y-4">
           <Field label={t("name")} required requiredLabel={tCommon("state.required")}>
-            <Input value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
+            <Input value={name} maxLength={100} onChange={(event) => setName(event.target.value)} />
           </Field>
           <Switch label={t("share")} description={t("shareHint")} checked={shared} onCheckedChange={setShared} />
         </div>

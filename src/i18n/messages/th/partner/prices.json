@@ -349,6 +349,7 @@
     "evidenceBody": "เช่น ใบแจ้งราคาจากโรงกระดาษ หรือใบกำกับภาษีค่าวัตถุดิบ",
     "evidenceItem": "{name} · แนบโดย {by} · {date}",
     "evidenceEmpty": "ยังไม่มีหลักฐาน",
-    "withdrawTitle": "ไม่ต้องการเสนอแล้ว"
+    "withdrawTitle": "ไม่ต้องการเสนอแล้ว",
+    "evidenceOpen": "เปิดไฟล์"
   }
 }

@@ -1,13 +1,12 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { handlers } from "../../../mocks/handlers";
 import { accessToken, mockId } from "../../../mocks/support";
 import { createApiClient } from "./client";
-import { createRequestClient } from "./requests/client";
-import { REQUESTS } from "./requests/registry";
+import type { Schemas } from "./types";
+import { FACTORY_ROLE_GRANTS } from "../../../mocks/generated/rbac";
 
 /**
  * The partner surface's mock behaves like the API it stands in for (F5 5.1): a factory reaches
@@ -26,7 +25,6 @@ const partner = (persona?: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("partner", persona) });
 const staff = (persona: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("staff", persona) });
-const requestsAs = (persona: string) => createRequestClient(REQUESTS, partner(persona) as unknown as Client<never>);
 
 describe("partner sign-in", () => {
   it("signs each factory role in as itself, with rbac.md's permissions", async () => {
@@ -38,9 +36,12 @@ describe("partner sign-in", () => {
       await createApiClient({ baseUrl: "http://api.mock", accessToken: data!.accessToken }).GET("/v1/partner/me")
     ).data!;
     expect(me.roles).toEqual(["factory_operator"]);
-    // rbac.md's key plus the floor keys proposed in docs/contract-requests.md (partner.permissions).
-    expect(me.permissions).toEqual(["factory_profile.read", "factory_jobs.read", "factory_jobs.update"]);
-    expect(me.factories).toEqual([{ factoryId: F001, roles: ["factory_operator"] }]);
+    // packio-api's factory-scope grants for the role (`pnpm gen:rbac`, triage `partner.permissions`).
+    expect([...me.permissions].sort()).toEqual([...FACTORY_ROLE_GRANTS.factory_operator!].sort());
+    // `partner.me.get` names the factory (U-B0.3, `partner.factory-name`).
+    expect(me.factories).toEqual([
+      { factoryId: F001, code: "F001", name: expect.any(String), roles: ["factory_operator"] },
+    ]);
   });
 });
 
@@ -55,7 +56,13 @@ describe("the partner surface's scope rules", () => {
       });
     }
     await expect(
-      requestsAs("owner").call("GET /v1/partner/factories/{factoryId}/change-requests", { path: { factoryId: F006 } }),
+      partner("owner").GET("/v1/partner/factories/{factoryId}/change-requests", {
+        params: { path: { factoryId: F006 } },
+      }),
+    ).rejects.toMatchObject({ status: 404 });
+    // Token-scoped paths take a factory as an optional filter: another factory's is a 404 too.
+    await expect(
+      partner("owner").GET("/v1/partner/billing-statements", { params: { query: { factoryId: F006 } } }),
     ).rejects.toMatchObject({ status: 404 });
   });
 
@@ -222,7 +229,6 @@ describe("a factory price-list proposal (F001)", () => {
 });
 
 describe("the production floor and shipping (F001, F5 5.2)", () => {
-  const stamp = (clientRef: string) => ({ clientRef, clientReportedAt: "2026-09-27T10:00:00+07:00" });
   const uuid = (n: number) => `00000000-0000-4000-8000-${n.toString(16).padStart(12, "0")}`;
   const path = { factoryId: F001 };
 
@@ -235,274 +241,413 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
 
   it("accepts a released job, reports every step with the rules B4.2 states, and ships it split", async () => {
     const api = partner("owner");
-    const floor = requestsAs("owner");
-    const today = await floor.call("GET /v1/partner/factories/{factoryId}/today", { path });
-    expect(today.counters.toAccept).toBeGreaterThanOrEqual(2);
-    const { data: toAccept } = await floor.call("GET /v1/partner/factories/{factoryId}/jobs", {
-      path,
-      query: { view: "to_accept" },
-    });
+    const key = (n: number) => ({ "Idempotency-Key": uuid(n) });
+    const today = (await api.GET("/v1/partner/factories/{factoryId}/today", { params: { path } })).data!;
+    expect(today.counters.awaitingAcceptance).toBeGreaterThanOrEqual(2);
+    const toAccept = (await api.GET("/v1/partner/production-jobs", { params: { query: { view: "to_accept" } } })).data!
+      .data;
     // The one split across two addresses (D-110).
-    const released = toAccept.find(
-      (job) => job.acceptDueAt && Date.parse(job.acceptDueAt) - Date.now() < 6 * 3_600_000,
-    )!;
-    const jobPath = { ...path, jobId: released.id };
-    let job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
-      path: jobPath,
-      body: stamp(uuid(1)),
-      idempotencyKey: uuid(1),
-    });
+    const released = toAccept.find((job) => Date.parse(job.acceptDueAt) - Date.now() < 6 * 3_600_000)!;
+    expect(released.nextActions.map((action) => action.key)).toEqual(["job.accept", "job.reject", "job.raise_issue"]);
+    expect(released.nextActions.find((action) => action.key === "job.reject")?.irreversible).toBe(true);
+    const jobPath = { jobId: released.id };
+    let job = (
+      await api.POST("/v1/partner/production-jobs/{jobId}/actions/accept", {
+        params: { path: jobPath, header: key(1) },
+      })
+    ).data!;
     expect(job.status).toBe("accepted");
     expect(job.destinations).toHaveLength(2);
 
     for (const milestone of job.milestones.filter((item) => item.status !== "completed")) {
-      const seq = String(milestone.seq);
-      job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/start", {
-        path: { ...jobPath, seq },
-        body: stamp(uuid(100 + milestone.seq)),
-        idempotencyKey: uuid(100 + milestone.seq),
-      });
-      if (milestone.requiresQc) {
-        job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/qc-checks", {
-          path: jobPath,
-          body: {
-            ...stamp(uuid(300)),
-            checklist: job.qcChecklist.map((item) => ({ key: item.key, pass: true })),
-            result: "pass",
-            defects: [],
-            photoFileIds: [await photo(api)],
-          },
-          idempotencyKey: uuid(300),
+      const update = (body: Omit<Schemas["UpdateMilestoneDto"], "clientRef">, n: number) =>
+        api.POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+          params: { path: { ...jobPath, milestoneId: milestone.id }, header: key(n) },
+          body: { clientRef: uuid(n), ...body },
         });
-        expect(job.qcChecks[0]).toMatchObject({ result: "pass", isFirstPass: true });
-      }
-      const complete = (quantityOut: number, ref: number, photos: string[]) =>
-        floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", {
-          path: { ...jobPath, seq },
-          body: {
-            ...stamp(uuid(ref)),
-            quantityIn: released.quantity,
-            quantityOut,
-            quantityScrap: 0,
-            photoFileIds: photos,
-          },
-          idempotencyKey: uuid(ref),
-        });
-      if (milestone.requiresPhoto) {
-        // No photo where the route asks for one: a 422 the form shows beside the field.
-        await expect(complete(released.quantity, 200 + milestone.seq, [])).rejects.toMatchObject({ status: 422 });
-      }
-      // Good plus scrap above what went in is refused by the API, not only by the form.
-      await expect(complete(released.quantity + 1, 250 + milestone.seq, [await photo(api)])).rejects.toMatchObject({
-        status: 422,
+      const started = (await update({ action: "start" }, 100 + milestone.seq)).data!;
+      expect(started.applied).toBe(true);
+      job = started.job;
+      // The same report sent again changes nothing (server wins).
+      const replayed = await api.POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+        params: { path: { ...jobPath, milestoneId: milestone.id }, header: key(150 + milestone.seq) },
+        body: { action: "start", clientRef: uuid(100 + milestone.seq) },
       });
-      job = await complete(released.quantity, 200 + milestone.seq, milestone.requiresPhoto ? [await photo(api)] : []);
+      expect(replayed.data).toMatchObject({ applied: false, reason: "duplicate" });
+      if (milestone.evidence === "qc_form") {
+        // Completing before a passing QC is refused.
+        await expect(update({ action: "complete", quantityOut: 1 }, 260 + milestone.seq)).rejects.toMatchObject({
+          status: 409,
+          code: "production.evidence_missing",
+        });
+        const check = (
+          await api.POST("/v1/partner/production-jobs/{jobId}/qc-checks", {
+            params: { path: jobPath, header: key(300) },
+            body: {
+              checklistVersion: "packio-web-v1",
+              checklist: { colour: "pass", registration: "pass", diecut: "pass", count: "pass", clean: "pass" },
+              result: "pass",
+              defects: [],
+              photoFileIds: [await photo(api)],
+            },
+          })
+        ).data!;
+        expect(check).toMatchObject({ result: "pass", isFirstPass: true, checklistVersion: "packio-web-v1" });
+      }
+      const quantities = milestone.tracksQuantity
+        ? { quantityIn: released.quantityOrdered, quantityOut: released.quantityOrdered, quantityScrap: 0 }
+        : {};
+      if (milestone.evidence === "photo") {
+        // No photo where the step asks for one.
+        await expect(update({ action: "complete", ...quantities }, 200 + milestone.seq)).rejects.toMatchObject({
+          status: 409,
+          code: "production.evidence_missing",
+        });
+      }
+      if (milestone.tracksQuantity) {
+        // Good plus scrap above what went in is refused by the API, not only by the form.
+        await expect(
+          update(
+            {
+              action: "complete",
+              ...quantities,
+              quantityOut: released.quantityOrdered + 1,
+              photoFileIds: [await photo(api)],
+            },
+            250 + milestone.seq,
+          ),
+        ).rejects.toMatchObject({ status: 422, code: "production.quantity_invalid" });
+      }
+      const done = (
+        await update(
+          {
+            action: "complete",
+            ...quantities,
+            ...(milestone.evidence === "photo" ? { photoFileIds: [await photo(api)] } : {}),
+          },
+          200 + milestone.seq + 20,
+        )
+      ).data!;
+      expect(done.applied).toBe(true);
+      job = done.job;
     }
     expect(job.status).toBe("completed");
-    expect(job.nextActions).toContain("ship");
+    expect(job.quantityGood).toBe(released.quantityOrdered);
+    expect(job.nextActions.map((action) => action.key)).toContain("job.ship");
 
-    // Another device completing the last step again with its own report: the server's state stands.
-    const last = String(job.milestones.at(-1)!.seq);
+    // Another device completing the last step of a finished job: refused, the server's state stands.
+    const last = job.milestones.at(-1)!;
     await expect(
-      floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", {
-        path: { ...jobPath, seq: last },
-        body: {
-          ...stamp(uuid(999)),
-          quantityIn: 1,
-          quantityOut: 1,
-          quantityScrap: 0,
-          photoFileIds: [await photo(api)],
-        },
-        idempotencyKey: uuid(999),
+      api.POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+        params: { path: { ...jobPath, milestoneId: last.id }, header: key(999) },
+        body: { action: "complete", clientRef: uuid(999), quantityOut: 1 },
       }),
-    ).rejects.toMatchObject({ status: 409 });
+    ).rejects.toMatchObject({ status: 409, code: "production.invalid_status" });
 
-    const plan = await floor.call("GET /v1/partner/factories/{factoryId}/ship-plan", { path });
-    const ready = plan.find((item) => item.id === released.id)!;
+    const plan = (await api.GET("/v1/partner/factories/{factoryId}/ship-plan", { params: { path } })).data!;
+    const ready = plan.find((item) => item.jobId === released.id)!;
     expect(ready.destinations).toHaveLength(2);
+    expect(ready.blockedReason).toBeNull();
     const shipmentIds: string[] = [];
     for (const [index, destination] of ready.destinations.entries()) {
-      const created = await floor.call("POST /v1/partner/factories/{factoryId}/shipments", {
-        path,
-        body: {
-          ...stamp(uuid(400 + index)),
-          jobId: ready.id,
-          destinationId: destination.id,
-          quantity: destination.quantity,
-          cartons: 2,
-        },
-        idempotencyKey: uuid(400 + index),
-      });
-      expect(created.cartonList).toHaveLength(2);
+      const created = (
+        await api.POST("/v1/partner/shipments", {
+          params: { header: key(400 + index) },
+          body: {
+            items: [
+              { jobId: ready.jobId, destinationId: destination.destinationId, quantity: destination.remainingQuantity },
+            ],
+            cartonsCount: 2,
+            weightG: 12_000,
+          },
+        })
+      ).data!;
+      // A draft: the labels come when it is packed.
+      expect(created).toMatchObject({ status: "draft", cartons: [], labelFileId: null });
+      expect(created.nextActions.map((action) => action.key)).toContain("shipment.mark_ready");
       shipmentIds.push(created.id);
     }
     // A replay of the first create is the same shipment, not a third one.
-    const replay = await floor.call("POST /v1/partner/factories/{factoryId}/shipments", {
-      path,
-      body: { ...stamp(uuid(400)), jobId: ready.id, destinationId: ready.destinations[0]!.id, quantity: 1, cartons: 1 },
-      idempotencyKey: uuid(400),
+    const replay = await api.POST("/v1/partner/shipments", {
+      params: { header: key(400) },
+      body: {
+        items: [{ jobId: ready.jobId, destinationId: ready.destinations[0]!.destinationId, quantity: 1 }],
+        cartonsCount: 1,
+        weightG: 1,
+      },
     });
-    expect(replay.id).toBe(shipmentIds[0]);
+    expect(replay.data!.id).toBe(shipmentIds[0]);
+    // Nothing is left to ship to either destination.
+    await expect(
+      api.POST("/v1/partner/shipments", {
+        params: { header: key(450) },
+        body: {
+          items: [{ jobId: ready.jobId, destinationId: ready.destinations[0]!.destinationId, quantity: 1 }],
+          cartonsCount: 1,
+          weightG: 1,
+        },
+      }),
+    ).rejects.toMatchObject({ status: 422, code: "shipments.quantity_exceeds" });
 
     for (const [index, shipmentId] of shipmentIds.entries()) {
-      const shipment = await floor.call(
-        "POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/dispatch",
-        {
-          path: { ...path, shipmentId },
-          body: stamp(uuid(500 + index)),
-          idempotencyKey: uuid(500 + index),
-        },
-      );
-      const delivered = await floor.call("POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/pod", {
-        path: { ...path, shipmentId },
-        body: {
-          ...stamp(uuid(600 + index)),
-          receiverName: "คุณผู้รับ ทดสอบ",
-          deliveredQuantity: shipment.quantity,
-          capturedAt: "2026-09-27T15:00:00+07:00",
-          photoFileIds: [await photo(api)],
-          signatureFileId: await photo(api),
-        },
-        idempotencyKey: uuid(600 + index),
-      });
+      const packed = (
+        await api.POST("/v1/partner/shipments/{shipmentId}/actions/ready", {
+          params: { path: { shipmentId }, header: key(480 + index) },
+        })
+      ).data!;
+      expect(packed.cartons).toHaveLength(2);
+      expect(packed.labelFileId).not.toBeNull();
+      const labels = (
+        await api.GET("/v1/partner/files/{fileId}/download", { params: { path: { fileId: packed.labelFileId! } } })
+      ).data!;
+      expect(labels.url).toMatch(/^data:/);
+      const shipment = (
+        await api.POST("/v1/partner/shipments/{shipmentId}/actions/dispatch", {
+          params: { path: { shipmentId }, header: key(500 + index) },
+        })
+      ).data!;
+      expect(shipment.status).toBe("in_transit");
+      // A factory delivery needs a photo and a signature (D-013).
+      await expect(
+        api.POST("/v1/partner/shipments/{shipmentId}/proof-of-delivery", {
+          params: { path: { shipmentId }, header: key(590 + index) },
+          body: {
+            receiverName: "คุณผู้รับ ทดสอบ",
+            items: shipment.items.map((item) => ({
+              destinationId: item.destinationId,
+              deliveredQuantity: item.quantity,
+            })),
+          },
+        }),
+      ).rejects.toMatchObject({ status: 409, code: "shipments.pod_required" });
+      const delivered = (
+        await api.POST("/v1/partner/shipments/{shipmentId}/proof-of-delivery", {
+          params: { path: { shipmentId }, header: key(600 + index) },
+          body: {
+            receiverName: "คุณผู้รับ ทดสอบ",
+            items: shipment.items.map((item) => ({
+              destinationId: item.destinationId,
+              deliveredQuantity: item.quantity,
+            })),
+            capturedAt: "2026-09-27T15:00:00+07:00",
+            photoFileIds: [await photo(api)],
+            signatureFileId: await photo(api),
+          },
+        })
+      ).data!;
       expect(delivered.status).toBe("delivered");
-      expect(delivered.tolerance?.outcome).toBe("exact");
+      // The order's result comes once every trip of it is delivered (D-021, D-080).
+      expect(delivered.items[0]!.toleranceOutcome).toBe(index === shipmentIds.length - 1 ? "exact" : null);
     }
-    // The logistics desk sees both delivered, with their POD (D-013). The published list has no
-    // POD-review queue (CONTRACT-GAP admin.shipments), so it is the delivered status.
-    const delivered = (
-      await staff("logistics").GET("/v1/admin/shipments", { params: { query: { status: "delivered", perPage: 100 } } })
+    // The logistics desk sees both PODs waiting for review (D-229).
+    const waiting = (
+      await staff("logistics").GET("/v1/admin/shipments", { params: { query: { queue: "pod_review", perPage: 100 } } })
     ).data!.data;
-    expect(delivered.filter((row) => shipmentIds.includes(row.id)).every((row) => row.proofOfDelivery)).toBe(true);
-    const numbers = delivered.map((row) => row.id);
-    expect(shipmentIds.every((id) => numbers.includes(id))).toBe(true);
+    const mine = waiting.filter((row) => shipmentIds.includes(row.id));
+    expect(mine).toHaveLength(2);
+    expect(mine.every((row) => row.podReview?.state === "pending")).toBe(true);
+    expect(mine[0]!.nextActions.map((action) => action.key)).toContain("shipment.review_pod");
   });
 
   it("keeps an operator from accepting jobs, and another factory's job is not found", async () => {
-    const floor = requestsAs("operator");
-    const { data } = await floor.call("GET /v1/partner/factories/{factoryId}/jobs", { path, query: { view: "all" } });
+    const api = partner("operator");
+    const { data } = (await api.GET("/v1/partner/production-jobs", {})).data!;
+    expect(data[0]!.nextActions.map((action) => action.key)).not.toContain("job.accept");
     await expect(
-      floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
-        path: { ...path, jobId: data[0]!.id },
-        body: stamp(uuid(700)),
-        idempotencyKey: uuid(700),
+      api.POST("/v1/partner/production-jobs/{jobId}/actions/accept", {
+        params: { path: { jobId: data[0]!.id }, header: { "Idempotency-Key": uuid(700) } },
       }),
     ).rejects.toMatchObject({ status: 403 });
     await expect(
-      requestsAs("assisted").call("GET /v1/partner/factories/{factoryId}/jobs/{jobId}", {
-        path: { factoryId: F006, jobId: data[0]!.id },
-      }),
+      partner("assisted").GET("/v1/partner/production-jobs/{jobId}", { params: { path: { jobId: data[0]!.id } } }),
     ).rejects.toMatchObject({ status: 404 });
   });
 });
 
 describe("the factory's money and account (F001, F5 5.3)", () => {
   const path = { factoryId: F001 };
+  const key = (name: string) => ({ "Idempotency-Key": `00000000-0000-4000-8000-${name.padStart(12, "0")}` });
 
-  it("confirms a statement once, then takes the factory's own tax invoice", async () => {
-    const floor = requestsAs("accountant");
-    const { data } = await floor.call("GET /v1/partner/factories/{factoryId}/billing-statements", { path });
-    const open = data.find((item) => item.status === "sent")!;
+  it("disputes and confirms a statement once, then takes the factory's own tax invoice with its amounts", async () => {
+    const api = partner("accountant");
+    const { data } = await api.GET("/v1/partner/billing-statements", {});
+    const open = data!.data.find((item) => item.status === "sent")!;
     expect(open).toBeDefined();
-    const confirm = () =>
-      floor.call("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/actions/confirm", {
-        path: { ...path, statementId: open.id },
-        body: {},
-        idempotencyKey: "k-bs-confirm",
+    expect(open.nextActions.map((action) => action.key)).toEqual([
+      "billing_statement.confirm",
+      "billing_statement.dispute",
+      "billing_statement.submit_tax_invoice",
+    ]);
+    expect(open.nextActions[0]).toMatchObject({ irreversible: true, disabledReason: null });
+    // A dispute names its lines (U-B0.3) — one not on the statement is refused — and a disputed
+    // statement can still be confirmed (D-090).
+    const dispute = (lineNos: number[], name: string) =>
+      api.POST("/v1/partner/billing-statements/{statementId}/actions/dispute", {
+        params: { path: { statementId: open.id }, header: key(name) },
+        body: { note: "ค่าขนส่งไม่ถูกต้อง", lineNos },
       });
+    await expect(dispute([open.lines.length + 1], "bd0")).rejects.toMatchObject({ status: 422 });
+    const named = open.lines.slice(0, 1).map((line) => line.lineNo);
+    const disputed = (await dispute(named, "bd1")).data!;
+    expect(disputed).toMatchObject({ status: "disputed", disputedLineNos: named });
+    const confirm = async () =>
+      (
+        await api.POST("/v1/partner/billing-statements/{statementId}/actions/confirm", {
+          params: { path: { statementId: open.id }, header: key("bc1") },
+        })
+      ).data!;
     const confirmed = await confirm();
     expect(confirmed.status).toBe("confirmed");
+    expect(confirmed.confirmedBy?.displayName).toBeTruthy();
     expect((await confirm()).confirmedAt).toBe(confirmed.confirmedAt);
-    expect(confirmed.nextActions).toEqual(["submit_tax_invoice"]);
+    expect(confirmed.nextActions.map((action) => action.key)).toEqual(["billing_statement.submit_tax_invoice"]);
 
-    const invoice = (sellerTaxId: string, key: string) =>
-      floor.call("POST /v1/partner/factories/{factoryId}/billing-statements/{statementId}/tax-invoices", {
-        path: { ...path, statementId: open.id },
+    const factory = (await api.GET("/v1/partner/factories/{factoryId}", { params: { path } })).data!;
+    const invoice = (netAmount: string, name: string) =>
+      api.POST("/v1/partner/billing-statements/{statementId}/tax-invoices", {
+        params: { path: { statementId: open.id }, header: key(name) },
         body: {
-          invoiceNo: "INV-TEST-1",
+          vendorInvoiceNo: "INV-TEST-1",
           invoiceDate: "2026-09-27",
-          sellerTaxId,
+          sellerTaxId: factory.taxId,
           sellerBranchCode: "00000",
+          netAmount,
+          vatAmount: "70.00",
           source: "e_tax",
-          eTaxReference: "ETAX-0001",
         },
-        idempotencyKey: key,
       });
-    await expect(invoice("0105555555554", "k-inv-bad")).rejects.toMatchObject({ status: 422 });
-    const factory = (await partner("accountant").GET("/v1/partner/factories/{factoryId}", { params: { path } })).data!;
-    const withInvoice = await invoice(factory.taxId, "k-inv-good");
-    expect(withInvoice.taxInvoiceStatus).toBe("submitted");
-    expect(withInvoice.inputVatStatus).toBe("pending_document");
-
-    const account = await floor.call("GET /v1/partner/factories/{factoryId}/statement-of-account", { path, query: {} });
-    expect(account.entries.some((entry) => entry.reference === open.bsNumber)).toBe(true);
+    // The factory keys its own amounts as decimal strings; the format is checked, never computed.
+    await expect(invoice("1000", "bi1")).rejects.toMatchObject({ status: 422 });
+    const recorded = (await invoice("1000.00", "bi2")).data!;
+    expect(recorded).toMatchObject({
+      status: "recorded",
+      netAmount: "1000.00",
+      vatAmount: "70.00",
+      grossAmount: "1070.00",
+    });
+    const after = (
+      await api.GET("/v1/partner/billing-statements/{statementId}", { params: { path: { statementId: open.id } } })
+    ).data!;
+    expect(after.taxInvoiceStatus).toBe("recorded");
+    expect(after.nextActions).toEqual([]);
+    await expect(invoice("1000.00", "bi3")).rejects.toMatchObject({ status: 409, code: "payables.invoice_duplicate" });
   });
 
   it("schedules each job's payouts by the payout policy (D-022, D-164) and documents paid ones", async () => {
-    const floor = requestsAs("owner");
-    const schedule = await floor.call("GET /v1/partner/factories/{factoryId}/payout-schedule", { path });
+    const api = partner("owner");
+    const schedule = (await api.GET("/v1/partner/factories/{factoryId}/payout-schedule", { params: { path } })).data!
+      .data;
     const job = schedule[0]!;
-    expect(job.items.map((item) => [item.kind, item.pct])).toEqual([
-      ["advance", "30.0000"],
-      ["balance", "65.0000"],
-      ["retention", "5.0000"],
-    ]);
-    const { data: paid } = await floor.call("GET /v1/partner/factories/{factoryId}/payouts", { path });
+    expect(job.terms).toMatchObject({ advancePct: "30.0000", retentionPct: "5.0000" });
+    expect(job.items[0]!.source).toBe("advance");
+    const paid = (await api.GET("/v1/partner/factories/{factoryId}/payouts", { params: { path } })).data!;
+    expect(Array.isArray(paid)).toBe(true);
     expect(paid.length).toBeGreaterThan(0);
-    const detail = await floor.call("GET /v1/partner/factories/{factoryId}/payouts/{payoutId}", {
-      path: { ...path, payoutId: paid[0]!.id },
-    });
-    expect(detail.whtCertificate?.url).toMatch(/^data:application\/pdf/);
+    const detail = (
+      await api.GET("/v1/partner/factories/{factoryId}/payouts/{payoutId}", {
+        params: { path: { ...path, payoutId: paid[0]!.id } },
+      })
+    ).data!;
+    expect(detail.allocations.length).toBeGreaterThan(0);
+    const documents = (
+      await api.GET("/v1/partner/factories/{factoryId}/payouts/{payoutId}/documents", {
+        params: { path: { ...path, payoutId: paid[0]!.id } },
+      })
+    ).data!;
+    expect(documents.whtCertificates[0]?.download?.url).toMatch(/^data:application\/pdf/);
+    const account = (await api.GET("/v1/partner/factories/{factoryId}/statement-of-account", { params: { path } }))
+      .data!;
+    expect(account.entries.some((entry) => entry.reference === detail.pvNumber)).toBe(true);
   });
 
-  it("answers a claim back to the claims desk, and keeps users and prices to their roles", async () => {
-    const owner = requestsAs("owner");
-    const { data } = await owner.call("GET /v1/partner/factories/{factoryId}/claims", { path });
-    const waiting = data.find((item) => item.responseDueAt)!;
-    const answered = await owner.call("POST /v1/partner/factories/{factoryId}/claims/{claimId}/actions/respond", {
-      path: { ...path, claimId: waiting.id },
-      body: { response: "disputed", note: "ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ" },
-      idempotencyKey: "k-claim-1",
-    });
-    expect(answered.factoryResponse).toBe("disputed");
-    expect(answered.status).toBe("under_review");
+  it("answers a claim back to the claims desk, and keeps users to their roles", async () => {
+    const owner = partner("owner");
+    const { data } = await owner.GET("/v1/partner/claims", {});
+    const waiting = data!.data.find((item) => item.nextActions.some((action) => action.key === "claim.respond"))!;
+    expect(waiting).toBeDefined();
+    const answered = (
+      await owner.POST("/v1/partner/claims/{claimId}/actions/respond", {
+        params: { path: { claimId: waiting.id }, header: key("cr1") },
+        body: { response: "disputed", note: "ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ" },
+      })
+    ).data!;
+    expect(answered).toMatchObject({ factoryResponse: "disputed", status: "under_review", nextActions: [] });
+    const desk = (
+      await staff("cs_lead").GET("/v1/admin/claims/{claimId}", { params: { path: { claimId: waiting.id } } })
+    ).data!;
+    expect(desk.factoryResponseNote).toBe("ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ");
 
     await expect(
-      requestsAs("operator").call("GET /v1/partner/factories/{factoryId}/users", { path }),
-    ).rejects.toMatchObject({
-      status: 403,
-    });
-    await expect(
-      requestsAs("operator").call("GET /v1/partner/factories/{factoryId}/billing-statements", { path }),
+      partner("operator").GET("/v1/partner/factories/{factoryId}/users", { params: { path } }),
     ).rejects.toMatchObject({ status: 403 });
-    const users = await owner.call("GET /v1/partner/factories/{factoryId}/users", { path });
+    await expect(partner("operator").GET("/v1/partner/billing-statements", {})).rejects.toMatchObject({ status: 403 });
+    const users = (await owner.GET("/v1/partner/factories/{factoryId}/users", { params: { path } })).data!;
     const self = users.find((user) => user.isSelf)!;
     await expect(
-      owner.call("PATCH /v1/partner/factories/{factoryId}/users/{userId}", {
-        path: { ...path, userId: self.id },
+      owner.PUT("/v1/partner/factories/{factoryId}/users/{userId}/roles", {
+        params: { path: { ...path, userId: self.id } },
         body: { roles: ["factory_planner"] },
       }),
-    ).rejects.toMatchObject({ status: 409 });
-    const invited = await owner.call("POST /v1/partner/factories/{factoryId}/users", {
-      path,
-      body: { email: "new.qc@factory.invalid", displayName: "ฝ่าย QC ใหม่", roles: ["factory_qc"] },
+    ).rejects.toMatchObject({ status: 403, code: "iam.self_grant" });
+    await expect(
+      owner.POST("/v1/partner/factories/{factoryId}/users", {
+        params: { path },
+        body: {
+          email: "new.owner@factory.invalid",
+          displayName: "เจ้าของใหม่",
+          initialPassword: "a-long-first-password",
+          roles: ["factory_owner" as never],
+        },
+      }),
+    ).rejects.toMatchObject({ status: 422, code: "factory_users.role_not_allowed" });
+    const created = (
+      await owner.POST("/v1/partner/factories/{factoryId}/users", {
+        params: { path },
+        body: {
+          email: "new.qc@factory.invalid",
+          displayName: "ฝ่าย QC ใหม่",
+          initialPassword: "a-long-first-password",
+          roles: ["factory_qc"],
+        },
+      })
+    ).data!;
+    expect(created).toMatchObject({ status: "active", roles: ["factory_qc"], isSelf: false });
+    expect(JSON.stringify(created)).not.toContain("a-long-first-password");
+    await owner.POST("/v1/partner/factories/{factoryId}/users/{userId}/actions/deactivate", {
+      params: { path: { ...path, userId: created.id } },
     });
-    expect(invited.status).toBe("invited");
+    const deactivated = (
+      await owner.GET("/v1/partner/factories/{factoryId}/users", {
+        params: { path, query: { status: "deactivated" } },
+      })
+    ).data!;
+    expect(deactivated.map((user) => user.id)).toContain(created.id);
+    // Setting roles reactivates (U-B0.3).
+    const back = (
+      await owner.PUT("/v1/partner/factories/{factoryId}/users/{userId}/roles", {
+        params: { path: { ...path, userId: created.id } },
+        body: { roles: ["factory_qc", "factory_shipping"] },
+      })
+    ).data!;
+    expect(back).toMatchObject({ status: "active", roles: ["factory_qc", "factory_shipping"] });
   });
 
-  it("keeps a locked notification on", async () => {
-    const me = requestsAs("owner");
-    const saved = await me.call("PUT /v1/partner/me/notification-preferences", {
-      body: {
-        preferences: [
-          { category: "jobs", channel: "email", enabled: false },
-          { category: "prices", channel: "email", enabled: false },
-        ],
-      },
-    });
-    const row = (category: string) =>
-      saved.preferences.find((item) => item.category === category && item.channel === "email")!;
-    expect(row("jobs").enabled).toBe(true);
-    expect(row("prices").enabled).toBe(false);
+  it("keeps a locked notification on (D-231)", async () => {
+    const me = partner("owner");
+    await expect(
+      me.PUT("/v1/partner/me/notification-preferences", {
+        body: { preferences: [{ category: "transactional", channel: "email", enabled: false }] },
+      }),
+    ).rejects.toMatchObject({ status: 422 });
+    const saved = (
+      await me.PUT("/v1/partner/me/notification-preferences", {
+        body: { preferences: [{ category: "transactional", channel: "line", enabled: false }] },
+      })
+    ).data!;
+    const row = (category: string, channel: string) =>
+      saved.preferences.find((item) => item.category === category && item.channel === channel)!;
+    expect(row("transactional", "email")).toMatchObject({ enabled: true, locked: true });
+    expect(row("transactional", "line")).toMatchObject({ enabled: false, locked: false });
+    expect(row("security", "web_push").locked).toBe(true);
   });
 });

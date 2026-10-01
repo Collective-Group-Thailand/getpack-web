@@ -14,6 +14,7 @@
 
 import type { Schemas } from "@/lib/api/types";
 
+import { can, type StaffPersona } from "../../personas";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../../support";
 import { acceptedOn, deliveries, policyOf, statementStates, statementsOf, type Delivery } from "../../partner/billing";
 import { buyAmountOf, extraOf, factoryJobs, titleOf } from "../../partner/jobs";
@@ -522,8 +523,31 @@ function statementsAll() {
   return factoryStores().flatMap((store) => statementsOf(store.factory.id).map((statement) => ({ store, statement })));
 }
 
-function toStatement({ store, statement }: ReturnType<typeof statementsAll>[number]): Statement {
+/**
+ * packio-api's `ADMIN_STATEMENT_ACTIONS` (payables/statement-actions.ts, v0.6.0): capture a tax
+ * invoice while none is recorded or validated (a rejected one is replaced), validate a recorded one.
+ */
+function statementActions(dto: Omit<Statement, "nextActions">, who: StaffPersona | null): Statement["nextActions"] {
+  if (!can(who ?? undefined, "payables.manage")) return [];
+  const statuses = dto.taxInvoices.map((invoice) => invoice.status);
+  const actions: Statement["nextActions"] = [];
+  if (dto.status !== "superseded" && !statuses.some((status) => status === "recorded" || status === "validated"))
+    actions.push({ key: "billing_statement.capture_tax_invoice", irreversible: false, disabledReason: null });
+  if (statuses.includes("recorded"))
+    actions.push({ key: "billing_statement.validate_tax_invoice", irreversible: false, disabledReason: null });
+  return actions;
+}
+
+function toStatement(found: ReturnType<typeof statementsAll>[number], who: StaffPersona | null): Statement {
+  const dto = statementOf(found);
+  return { ...dto, nextActions: statementActions(dto, who) };
+}
+
+function statementOf({ store, statement }: ReturnType<typeof statementsAll>[number]): Statement {
   const registered = store.factory.isVatRegistered;
+  // Void tax invoices are left out of the statement (and of its tax-invoice status).
+  const invoices = statementInvoices({ store, statement }).filter((invoice) => invoice.status !== "void");
+  const latest = invoices.at(-1);
   return {
     id: statement.id,
     bsNumber: statement.bsNumber,
@@ -531,7 +555,29 @@ function toStatement({ store, statement }: ReturnType<typeof statementsAll>[numb
     periodFrom: statement.periodFrom,
     periodTo: statement.periodTo,
     status: STATEMENT_STATUS[statement.status] ?? "sent",
+    generatedAt: statement.generatedAt,
     confirmedAt: statement.confirmedAt,
+    confirmedBy: statement.confirmedBy,
+    // The partner model keeps the dispute note only, not the lines it named.
+    disputedLineNos: [],
+    currency: "THB",
+    totals: {
+      production: statement.totals.production,
+      shipping: statement.totals.shipping,
+      // The partner model has no mock-up, design or reproduction lines.
+      other: "0.00",
+      deductions: statement.totals.deductions,
+      advanceOffset: statement.totals.alreadyPaid,
+      net: statement.totals.net,
+      vat: statement.totals.vat,
+      gross: statement.totals.gross,
+      alreadyPaid: statement.totals.alreadyPaid,
+      remaining: statement.totals.remaining,
+    },
+    taxInvoices: [...invoices].reverse(),
+    taxInvoiceStatus: !latest || latest.status === "void" ? "none" : latest.status,
+    inputVatStatus: latest?.inputVatStatus ?? null,
+    nextActions: [],
     disputeNote: statement.disputeNote,
     netAmount: statement.totals.net,
     vatAmount: statement.totals.vat,
@@ -541,7 +587,11 @@ function toStatement({ store, statement }: ReturnType<typeof statementsAll>[numb
       const vat = vatOf(net, registered);
       return {
         lineNo: index + 1,
+        // The contract has no advance-offset kind: the partner model's offset is a deduction here.
+        kind: line.kind === "advance_offset" ? "deduction" : line.kind,
         description: line.description,
+        reference: line.reference,
+        quantity: line.quantity,
         netAmount: line.amount,
         vatAmount: baht(vat),
         grossAmount: baht(net + vat),
@@ -560,39 +610,42 @@ const INVOICE_STATUS: Record<string, Invoice["status"]> = {
 const bills: Invoice[] = [];
 
 function factoryInvoices(): Invoice[] {
-  return statementsAll().flatMap(({ store, statement }) =>
-    (statementStates.get(statement.id)?.invoices ?? []).map((invoice): Invoice => ({
-      id: invoice.id,
-      vendorId: store.factory.id,
-      vendorName: store.factory.legalName,
-      bsNumber: statement.bsNumber,
-      vendorInvoiceNo: invoice.invoiceNo,
-      invoiceDate: invoice.invoiceDate,
-      sellerTaxId: invoice.sellerTaxId,
-      sellerBranchCode: invoice.sellerBranchCode,
-      source: invoice.source,
-      fileId: invoice.file?.id ?? null,
-      isTaxInvoice: true,
-      status: INVOICE_STATUS[invoice.status] ?? "recorded",
-      rejectionReason: invoice.rejectReason,
-      inputVatStatus:
-        invoice.status === "validated"
-          ? "claimable"
-          : store.factory.isVatRegistered
-            ? "pending_document"
-            : "not_claimable",
-      netAmount: statement.totals.net,
-      vatAmount: statement.totals.vat,
-      grossAmount: statement.totals.gross,
-      lines: statement.lines.map((line) => ({
-        description: line.description,
-        netAmount: line.amount,
-        vatAmount: baht(vatOf(satangOf(line.amount), store.factory.isVatRegistered)),
-        whtCategory: line.kind === "shipping" ? "transport" : line.kind === "production" ? "hire_of_work" : "none",
-        accountCode: line.kind === "shipping" ? "5120" : line.kind === "production" ? "5110" : null,
-      })),
+  return statementsAll().flatMap(statementInvoices);
+}
+
+/** One statement's factory tax invoices, oldest first (as the partner billing state keeps them). */
+function statementInvoices({ store, statement }: ReturnType<typeof statementsAll>[number]): Invoice[] {
+  return (statementStates.get(statement.id)?.invoices ?? []).map((invoice): Invoice => ({
+    id: invoice.id,
+    vendorId: store.factory.id,
+    vendorName: store.factory.legalName,
+    bsNumber: statement.bsNumber,
+    vendorInvoiceNo: invoice.invoiceNo,
+    invoiceDate: invoice.invoiceDate,
+    sellerTaxId: invoice.sellerTaxId,
+    sellerBranchCode: invoice.sellerBranchCode,
+    source: invoice.source,
+    fileId: invoice.file?.id ?? null,
+    isTaxInvoice: true,
+    status: INVOICE_STATUS[invoice.status] ?? "recorded",
+    rejectionReason: invoice.rejectReason,
+    inputVatStatus:
+      invoice.status === "validated"
+        ? "claimable"
+        : store.factory.isVatRegistered
+          ? "pending_document"
+          : "not_claimable",
+    netAmount: statement.totals.net,
+    vatAmount: statement.totals.vat,
+    grossAmount: statement.totals.gross,
+    lines: statement.lines.map((line) => ({
+      description: line.description,
+      netAmount: line.amount,
+      vatAmount: baht(vatOf(satangOf(line.amount), store.factory.isVatRegistered)),
+      whtCategory: line.kind === "shipping" ? "transport" : line.kind === "production" ? "hire_of_work" : "none",
+      accountCode: line.kind === "shipping" ? "5120" : line.kind === "production" ? "5110" : null,
     })),
-  );
+  }));
 }
 
 export const invoicesAll = (): Invoice[] => [...factoryInvoices(), ...bills];
@@ -944,27 +997,28 @@ export const payableHandlers = [
       .filter((gr) => matchesQuery(query.q, gr.grNumber, gr.poNumber));
     return paginate(sort(rows, query, "receivedOn", "desc"), query);
   }),
-  finance.get("/v1/admin/billing-statements", "payables.read", ({ query }) => {
+  finance.get("/v1/admin/billing-statements", "payables.read", ({ query, persona }) => {
     const rows = statementsAll()
-      .map(toStatement)
+      .map((found) => toStatement(found, persona))
       .filter((statement) => !query.factoryId || statement.factoryId === query.factoryId)
       .filter((statement) => !query.status || statement.status === query.status)
       .filter((statement) => matchesQuery(query.q, statement.bsNumber));
     return paginate(sort(rows, query, "periodTo", "desc"), query);
   }),
-  finance.get("/v1/admin/billing-statements/{statementId}", "payables.read", ({ params }) => {
+  finance.get("/v1/admin/billing-statements/{statementId}", "payables.read", ({ params, persona }) => {
     const found = statementsAll().find(({ statement }) => statement.id === params.statementId);
-    return found ? toStatement(found) : notFound("ใบวางบิล");
+    return found ? toStatement(found, persona) : notFound("ใบวางบิล");
   }),
   finance.post(
     "/v1/admin/billing-statements/{statementId}/tax-invoices",
     { permission: "payables.manage", idempotent: true, status: 201 },
-    ({ params, body }) => {
+    ({ params, body, persona }) => {
       const found = statementsAll().find(({ statement }) => statement.id === params.statementId);
       if (!found) return notFound("ใบวางบิล");
       const state = statementStates.get(found.statement.id)!;
-      if (found.statement.status !== "confirmed")
-        return problem(409, "payables.statement_not_confirmed", "โรงงานต้องยืนยันใบวางบิลก่อนจึงบันทึกใบกำกับภาษีได้");
+      // The same check `billing_statement.capture_tax_invoice` offers on (ADMIN_STATEMENT_ACTIONS).
+      if (!statementActions(statementOf(found), persona).some((a) => a.key === "billing_statement.capture_tax_invoice"))
+        return problem(409, "payables.invoice_duplicate", "ใบวางบิลนี้มีใบกำกับภาษีที่บันทึกหรือตรวจรับแล้ว");
       const errors = [
         ...(!body.vendorInvoiceNo?.trim()
           ? [{ path: "vendorInvoiceNo", code: "required", message: "กรอกเลขที่ใบกำกับภาษีของโรงงาน" }]

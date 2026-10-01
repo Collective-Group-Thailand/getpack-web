@@ -1,9 +1,8 @@
 /**
- * The customer's designs (F4 Part C): list, create, get, save, delete, versions and assets at their
- * published paths (`store.designs.*`, U-F0.2); duplicate, restore, import, sharing, the designer's
- * catalogue and templates are still CONTRACT-REQUEST (store.designs, store.design-share,
- * store.designer-catalog). One store serves both: its rows keep the request's shape, and the
- * published handlers answer `DesignDocumentDto` from them.
+ * The customer's designs (F4 Part C), all at their published paths: list, create, get, save, delete,
+ * versions and assets (U-F0.2), and duplicate, restore, import, sharing (D-226), the designer's
+ * catalogue and its templates (U-B0.1). The rows keep a mock-only model, answered as
+ * `DesignDocumentDto` on the way out (`toDto`).
  *
  * A stateful designs store: every save is a version, the version number is the ETag, and a save
  * with a stale `If-Match` answers `412 concurrency.stale` — so the designer's autosave and its
@@ -16,21 +15,48 @@
  */
 
 import { http, HttpResponse } from "msw";
-import type { z } from "zod";
 
-import { REQUESTS, type RequestKey } from "@/lib/api/requests/registry";
-import type { designDocument, storeDesign } from "@/lib/api/requests/store-designs";
 import type { Schemas } from "@/lib/api/types";
 
 import { catalogueRows } from "../admin/catalogue";
 import { fileDataUrl, files } from "../admin/platform";
-import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { customerOf } from "./customers";
 import { ownerIdOf } from "./owner";
 
-type StoreDesign = z.infer<typeof storeDesign>;
-type DesignDocument = z.infer<typeof designDocument>;
+/** The designer's document as the rows keep it: the opaque `{ spec, content }` and its schema version. */
+interface DesignDocument {
+  schemaVersion: number;
+  spec: Record<string, unknown>;
+  content: Record<string, unknown>;
+}
+
+/** The mock-only design row (what the API's `designs` table holds, as far as the mock needs). */
+interface StoreDesign {
+  id: string;
+  name: string;
+  styleId: string | null;
+  thumbnailUrl: string | null;
+  product: { slug: string; name: string; productTypeCode: string } | null;
+  link: { orderId: string; orderCode: string; itemId: string; itemName: string } | null;
+  versionNo: number;
+  createdAt: string;
+  updatedAt: string;
+  source: "blank" | "product" | "order_item" | "template" | "import" | "copy";
+  document: DesignDocument;
+  patternId: string | null;
+  materialId: string | null;
+  assets: {
+    id: string;
+    fileId: string;
+    url: string;
+    mimeType: string;
+    widthPx: number | null;
+    heightPx: number | null;
+    sizeBytes: number;
+    createdAt: string;
+  }[];
+}
 
 interface Version {
   versionNo: number;
@@ -52,23 +78,14 @@ interface Row {
 
 const designs = new Map<string, Row>();
 const importedLocalIds = new Map<string, string>();
-/** View links: token → design id, and each design's live token. // CONTRACT-REQUEST store.design-share */
+/** View links (D-226): token → design id, and each design's live token. */
 const shares = new Map<string, { designId: string; createdAt: string; expiresAt: string | null }>();
 const shareOf = new Map<string, string>();
 let counter = 0;
+/** `configurations.share_link_days` (D-185, D-226). */
+const SHARE_LINK_DAYS = 15;
 
 const etagOf = (design: StoreDesign) => `"v${design.versionNo}"`;
-
-/** Answers with the design and its ETag, the body checked against the request like `mockRequest` does. */
-function withEtag(key: RequestKey, design: StoreDesign, status = 200): Response {
-  const schema = REQUESTS[key].response;
-  const checked = schema?.safeParse(design);
-  if (schema && !checked?.success) {
-    console.error(`[mock drift] ${key}`, checked?.error.issues.slice(0, 5));
-    return problem(500, "mock.drift", `The mock for ${key} returned a shape its request does not describe.`);
-  }
-  return HttpResponse.json(design, { status, headers: { ETag: etagOf(design) } });
-}
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "design.not_found", "ไม่พบแบบนี้");
@@ -102,6 +119,25 @@ const styleOf = (document: DesignDocument): string | null =>
 function productOfId(id: string | null): StoreDesign["product"] {
   const row = id ? catalogueRows("catalogProducts").find((candidate) => String(candidate.id) === id) : undefined;
   return row ? productOf(String(row.slug)) : null;
+}
+
+/**
+ * The catalogue product a published design names (`DesignProductRefDto`), by id. A design on an id
+ * the catalogue does not hold keeps the id, named by the request's shape it was saved under.
+ */
+export function designProductRefOf(
+  id: string,
+  fallback: StoreDesign["product"] = null,
+): Schemas["DesignProductRefDto"] {
+  const row = catalogueRows("catalogProducts").find((candidate) => String(candidate.id) === id);
+  const product = row ? productOf(String(row.slug)) : fallback;
+  return {
+    id,
+    slug: product?.slug ?? "",
+    nameTh: String(row?.nameTh ?? product?.name ?? ""),
+    nameEn: String(row?.nameEn ?? row?.nameTh ?? product?.name ?? ""),
+    productTypeCode: product?.productTypeCode ?? "",
+  };
 }
 
 function productOf(slug: string | undefined): StoreDesign["product"] {
@@ -151,7 +187,6 @@ function create(
     patternId: input.patternId ?? null,
     materialId: input.materialId ?? null,
     assets: [],
-    nextActions: input.link ? [{ key: "design.submit_for_print" }] : [],
   };
   const row: Row = {
     owner,
@@ -173,6 +208,11 @@ export function storeDesignDtoForStaff(id: string): Schemas["DesignDocumentDto"]
   return row ? toDto(row) : null;
 }
 
+/** Whose design it is (the owning customer's id), for the back office's `owner` (admin.designs.get). */
+export function storeDesignOwnerForStaff(id: string): string | null {
+  return designs.get(id)?.owner ?? null;
+}
+
 /* ---------------------------------------------------------------------------- published */
 
 const sizeOfDocument = (document: DesignDocument) => {
@@ -184,10 +224,12 @@ const sizeOfDocument = (document: DesignDocument) => {
 /** A design as `store.designs` answers it: the document opaque, its schema version beside it. */
 function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
   const { design } = row;
+  const share = shares.get(shareOf.get(design.id) ?? "");
   return {
     id: design.id,
     title: design.name,
     catalogProductId: row.catalogProductId,
+    product: designProductRefOf(row.catalogProductId, design.product),
     patternId: design.patternId,
     materialId: design.materialId,
     semiDesignTemplateId: row.semiDesignTemplateId,
@@ -196,7 +238,23 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     schemaVersion: design.document.schemaVersion,
     versionNo: design.versionNo,
     thumbnailFileId: row.thumbnailFileId,
-    assets: design.assets.map((asset) => ({ id: asset.id, fileId: asset.fileId, kind: "image" as const })),
+    thumbnailUrl: design.thumbnailUrl,
+    assets: design.assets.map((asset) => ({
+      id: asset.id,
+      fileId: asset.fileId,
+      kind: "image" as const,
+      url: asset.url,
+      urlExpiresAt: null,
+      mimeType: asset.mimeType,
+      widthPx: asset.widthPx,
+      heightPx: asset.heightPx,
+      sizeBytes: asset.sizeBytes,
+      createdAt: asset.createdAt,
+    })),
+    orders: design.link ? [{ orderId: design.link.orderId, orderCode: design.link.orderCode }] : [],
+    // The live view link; one made without an expiry has no published state (D-226 links expire).
+    share: share?.expiresAt ? { sharedAt: share.createdAt, expiresAt: share.expiresAt } : null,
+    createdAt: design.createdAt,
     updatedAt: design.updatedAt,
   };
 }
@@ -222,48 +280,45 @@ const fakeSha = (versionNo: number, id: string) =>
 
 const FLUTE_CALIPER: Record<string, number> = { E: 1.6, B: 3, C: 4, F: 1.2, BC: 6.5, EB: 4.6 };
 
-function designerCatalog(productSlug: string | undefined) {
+/** `DesignerCatalogDto` for one catalogue product, from the back office's own rows. */
+function designerCatalog(productSlug: string): Schemas["DesignerCatalogDto"] | null {
+  const product = catalogueRows("catalogProducts").find((row) => row.slug === productSlug);
+  if (!product) return null;
   const live = (rows: Record<string, unknown>[]) =>
     rows.filter((row) => row.status !== "archived" && row.status !== "draft");
-  const materials = [
+  const flutes = live(catalogueRows("fluteTypes"));
+  const materials: Schemas["DesignerMaterialDto"][] = [
     ...live(catalogueRows("materials")).map((row) => {
       const gsm = typeof row.gsm === "number" ? row.gsm : null;
-      const micron = typeof row.micron === "number" ? row.micron : gsm ? gsm * 1.3 : 100;
-      const kind =
-        row.kind === "film" || row.kind === "foil" ? "flexible" : row.kind === "label_stock" ? "label" : "paperboard";
       return {
         id: String(row.id),
         code: String(row.code),
         nameTh: String(row.nameTh),
-        nameEn: row.nameEn ? String(row.nameEn) : null,
-        kind: kind as "paperboard" | "flexible" | "label",
-        caliperMm: Math.round(micron) / 1000,
+        nameEn: row.nameEn ? String(row.nameEn) : String(row.nameTh),
+        kind: String(row.kind ?? "paper"),
+        micron: typeof row.micron === "number" ? row.micron : gsm ? Math.round(gsm * 1.3) : 100,
         flute: null,
-        allowances: null,
-        swatchHex: row.paperGroup === "kraft" ? "#c8a47e" : "#fbfaf6",
-        printable: true,
-        isFoodGrade: row.isFoodGrade === true,
       };
     }),
-    ...live(catalogueRows("fluteTypes")).map((row) => ({
+    ...flutes.map((row) => ({
       id: String(row.id),
       code: String(row.code),
       nameTh: String(row.name),
       nameEn: `${String(row.code)} flute`,
-      kind: "corrugated" as const,
-      caliperMm: FLUTE_CALIPER[String(row.code)] ?? 3,
-      flute: String(row.code),
-      allowances: {
-        panel: typeof row.colA === "number" ? row.colA : null,
-        flap: typeof row.colC === "number" ? row.colC : null,
-        depth: typeof row.colDd === "number" ? row.colDd : null,
+      kind: "corrugated",
+      micron: (FLUTE_CALIPER[String(row.code)] ?? 3) * 1000,
+      flute: {
+        id: String(row.id),
+        code: String(row.code),
+        name: String(row.name),
+        layers: String(row.code).length > 1 ? 5 : 3,
+        allowanceAMm: typeof row.colA === "number" ? row.colA : null,
+        allowanceCMm: typeof row.colC === "number" ? row.colC : null,
+        allowanceDdMm: typeof row.colDd === "number" ? row.colDd : null,
       },
-      swatchHex: "#c9a57a",
-      printable: true,
-      isFoodGrade: false,
     })),
   ];
-  const patterns = live(catalogueRows("patterns")).map((row) => {
+  const patterns: Schemas["DesignerPatternDto"][] = live(catalogueRows("patterns")).map((row) => {
     const c = (row.constraints ?? {}) as Record<string, unknown>;
     const n = (key: string) => (typeof c[key] === "number" ? (c[key] as number) : null);
     return {
@@ -271,41 +326,60 @@ function designerCatalog(productSlug: string | undefined) {
       code: String(row.code),
       name: String(row.name),
       dielineKey: row.dielineKey ? String(row.dielineKey) : null,
+      fluteTypeIds: [],
       rules: {
-        minLengthMm: n("minL"),
-        maxLengthMm: n("maxL"),
-        minWidthMm: n("minW"),
-        maxWidthMm: n("maxW"),
-        minHeightMm: n("minD"),
-        maxHeightMm: n("maxD"),
+        minLMm: n("minL"),
+        maxLMm: n("maxL"),
+        minWMm: n("minW"),
+        maxWMm: n("maxW"),
+        minHMm: n("minD"),
+        maxHMm: n("maxD"),
         lengthMustExceedWidth: false,
+        lengthMustExceedHeight: false,
+        widthMustExceedHeight: false,
       },
-      materialIds: [],
-      standardSizes: [],
     };
   });
   return {
-    product: productOf(productSlug),
+    product: designProductRefOf(String(product.id)),
     patterns,
     materials,
-    templates: TEMPLATES.map(({ document: _document, ...template }) => {
-      void _document;
-      return template;
-    }),
-    colours: [
-      { hex: "#0f5f58", name: "Packio teal" },
-      { hex: "#1f2933", name: "Ink" },
-      { hex: "#ffffff", name: "White" },
-      { hex: "#e8b04b", name: "Mustard" },
-      { hex: "#d9534f", name: "Coral" },
-      { hex: "#3b5ba5", name: "Blue" },
-    ],
+    templates: TEMPLATES.map((template) => toTemplate(template, String(product.id))),
     fonts: [
-      { family: "Noto Sans Thai", fileUrl: null, licenceNote: "SIL OFL 1.1" },
-      { family: "Anuphan", fileUrl: null, licenceNote: "SIL OFL 1.1" },
+      { id: mockId("fnt", 1), name: "Noto Sans Thai", url: "/fonts/noto-sans-thai.woff2" },
+      { id: mockId("fnt", 2), name: "Anuphan", url: "/fonts/anuphan.woff2" },
     ],
     // Mirrors the artwork rules the artwork page shows (settings, D-070).
-    rules: { bleedMm: 3, safeMarginMm: 3, minDpi: 300 },
+    rules: {
+      bleedMm: "3",
+      safeZoneMm: "3",
+      minEffectivePpi: 300,
+      colourMode: "cmyk",
+      assetAccept: ["image/png", "image/jpeg", "image/svg+xml"],
+      assetMaxBytes: 20 * 1024 * 1024,
+      assetPurpose: "design_asset",
+    },
+  };
+}
+
+type MockTemplate = (typeof TEMPLATES)[number];
+
+/** A template as the catalogue lists it (`DesignerTemplateDto`): no document, its size and palette. */
+function toTemplate(template: MockTemplate, _productId: string): Schemas["DesignerTemplateDto"] {
+  void _productId;
+  const values = (template.document.spec.values ?? {}) as Record<string, number>;
+  return {
+    id: template.id,
+    semiDesignId: template.semiDesignId,
+    name: template.name,
+    sizeCode: template.sizeCode,
+    thumbnailUrl: template.thumbnailUrl,
+    colours: template.colours,
+    fontIds: [],
+    hasDesign: true,
+    lengthMm: values.length ?? 0,
+    widthMm: values.width ?? 0,
+    heightMm: values.height ?? 0,
   };
 }
 
@@ -389,45 +463,62 @@ const TEMPLATES = [
 /* ------------------------------------------------------------------------------- handlers */
 
 export const storeDesignHandlers = [
-  // CONTRACT-REQUEST store.design-share
-  mockRequest("POST /v1/store/designs/{designId}/actions/share", ({ params, body, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.share (D-226): a new view-only link; sharing again replaces the previous one.
+  http.post("*/v1/store/designs/:designId/actions/share", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
-    const live = shareOf.get(row.design.id);
-    const current = live ? shares.get(live) : undefined;
-    if (live && current && (!current.expiresAt || current.expiresAt > new Date().toISOString())) {
-      return { token: live, createdAt: current.createdAt, expiresAt: current.expiresAt };
-    }
-    const token = crypto.randomUUID().replace(/-/g, "");
-    const createdAt = new Date().toISOString();
-    const expiresAt = body.expiresInDays ? new Date(Date.now() + body.expiresInDays * 86_400_000).toISOString() : null;
+    const previous = shareOf.get(row.design.id);
+    if (previous) shares.delete(previous);
+    // 43 characters of base64url, as the API's tokens are.
+    const token = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "").slice(0, 43);
+    const createdAt = bangkokIso();
+    const expiresAt = bangkokIso(SHARE_LINK_DAYS * 24 * 60);
     shares.set(token, { designId: row.design.id, createdAt, expiresAt });
     shareOf.set(row.design.id, token);
-    return { token, createdAt, expiresAt };
+    return HttpResponse.json(
+      {
+        shareToken: token,
+        sharePath: `/v1/store/shared-designs/${token}`,
+        sharedAt: createdAt,
+        expiresAt,
+      } satisfies Schemas["ShareDesignResultDto"],
+      { status: 201 },
+    );
   }),
 
-  mockRequest("DELETE /v1/store/designs/{designId}/share", ({ params, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.unshare: the link stops opening at once; 404 when not shared.
+  http.delete("*/v1/store/designs/:designId/share", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
     const token = shareOf.get(row.design.id);
-    if (token) shares.delete(token);
+    if (!token) return problem(404, "http.not_found", "แบบนี้ไม่ได้แชร์อยู่");
+    shares.delete(token);
     shareOf.delete(row.design.id);
-    return undefined as never;
+    return new HttpResponse(null, { status: 204 });
   }),
 
-  mockRequest("GET /v1/store/shared-designs/{token}", ({ params }) => {
-    const share = shares.get(params.token);
+  // store.designs.getShared (public): the current version, never its owner; 404 once revoked or expired.
+  http.get("*/v1/store/shared-designs/:token", ({ params }) => {
+    const share = shares.get(String(params.token));
     const row = share ? designs.get(share.designId) : undefined;
-    if (!share || !row || (share.expiresAt && share.expiresAt < new Date().toISOString())) {
-      return problem(404, "design.share_not_found", "ลิงก์นี้ไม่มีอยู่หรือหมดอายุแล้ว");
-    }
-    return {
-      name: row.design.name,
-      styleId: row.design.styleId,
-      document: row.design.document,
-      assets: row.design.assets.map((a) => ({ id: a.id, url: a.url })),
+    if (!share || !row || (share.expiresAt && share.expiresAt < bangkokIso()))
+      return problem(404, "http.not_found", "ลิงก์นี้ไม่มีอยู่หรือหมดอายุแล้ว");
+    const dto = toDto(row);
+    return HttpResponse.json({
+      title: dto.title,
+      product: dto.product,
+      dielineKey: row.design.styleId,
+      document: dto.document,
+      schemaVersion: dto.schemaVersion,
+      versionNo: dto.versionNo,
+      lengthMm: dto.lengthMm,
+      widthMm: dto.widthMm,
+      heightMm: dto.heightMm,
+      thumbnailUrl: dto.thumbnailUrl,
+      assets: dto.assets,
       sharedAt: share.createdAt,
-    };
+      expiresAt: share.expiresAt ?? bangkokIso(SHARE_LINK_DAYS * 24 * 60),
+    } satisfies Schemas["SharedDesignDto"]);
   }),
 
   // store.designs.list (published, U-F0.2): newest first; bodies are left out of a list.
@@ -491,8 +582,10 @@ export const storeDesignHandlers = [
     const body = (await request.json()) as Schemas["SaveDesignDto"];
     const document = documentFrom(body);
     if (!document) return problem(422, "validation.failed", "เอกสารแบบไม่ถูกต้อง");
-    saveVersion(row, "manual", document);
+    saveVersion(row, body.kind ?? "manual", document, body.label ?? null);
     if (body.title) row.design = { ...row.design, name: body.title };
+    if (body.materialId) row.design = { ...row.design, materialId: body.materialId };
+    if (body.patternId) row.design = { ...row.design, patternId: body.patternId };
     if (body.thumbnailFileId) {
       row.thumbnailFileId = body.thumbnailFileId;
       row.design = { ...row.design, thumbnailUrl: fileDataUrl(body.thumbnailFileId) };
@@ -508,11 +601,14 @@ export const storeDesignHandlers = [
     return new HttpResponse(null, { status: 204 });
   }),
 
-  mockRequest("POST /v1/store/designs/{designId}/actions/duplicate", ({ params, body, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.duplicate: the current version and the assets, under a new title, unlinked.
+  http.post("*/v1/store/designs/:designId/actions/duplicate", async ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
+    const body = (await request.json().catch(() => null)) as Schemas["DuplicateDesignDto"] | null;
+    if (!body?.title?.trim()) return problem(422, "validation.failed", "กรุณาตั้งชื่อแบบ");
     const copy = create(row.owner, {
-      name: body.name,
+      name: body.title,
       document: structuredClone(row.design.document),
       source: "copy",
       product: row.design.product,
@@ -522,7 +618,7 @@ export const storeDesignHandlers = [
       semiDesignTemplateId: row.semiDesignTemplateId,
     });
     copy.design.assets = [...row.design.assets];
-    return withEtag("POST /v1/store/designs/{designId}/actions/duplicate", copy.design, 201);
+    return withDesignEtag(copy, 201);
   }),
 
   // store.designs.listVersions / getVersion (published, U-F0.2): bodies only on the one version.
@@ -536,6 +632,11 @@ export const storeDesignHandlers = [
         schemaVersion: version.document.schemaVersion,
         contentSha256: fakeSha(version.versionNo, row.design.id),
         document: null,
+        kind: version.kind,
+        label: version.label,
+        // The versions keep no thumbnail of their own.
+        thumbnailFileId: null,
+        thumbnailUrl: null,
       })) satisfies Schemas["DesignVersionDto"][],
     );
   }),
@@ -551,18 +652,23 @@ export const storeDesignHandlers = [
       schemaVersion: version.document.schemaVersion,
       contentSha256: fakeSha(version.versionNo, row.design.id),
       document: { spec: version.document.spec, content: version.document.content },
+      kind: version.kind,
+      label: version.label,
+      thumbnailFileId: null,
+      thumbnailUrl: null,
     } satisfies Schemas["DesignVersionDto"]);
   }),
 
-  mockRequest("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", ({ params, request }) => {
-    const row = rowOf(request, params.designId);
+  // store.designs.restoreVersion: a new version (kind `restore`), under If-Match.
+  http.post("*/v1/store/designs/:designId/versions/:versionNo/actions/restore", ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
     const stale = checkMatch(request, row);
     if (stale) return stale;
     const version = row.versions.find((candidate) => candidate.versionNo === Number(params.versionNo));
-    if (!version) return problem(404, "design.version_not_found", "ไม่พบเวอร์ชันนี้");
+    if (!version) return problem(404, "http.not_found", "ไม่พบเวอร์ชันนี้");
     saveVersion(row, "restore", structuredClone(version.document), `คืนค่าจากเวอร์ชัน ${version.versionNo}`);
-    return withEtag("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", row.design);
+    return withDesignEtag(row);
   }),
 
   // store.designs.addAsset (published, U-F0.2): answers with the whole design.
@@ -585,36 +691,64 @@ export const storeDesignHandlers = [
     return HttpResponse.json(toDto(row), { status: 201 });
   }),
 
-  mockRequest("POST /v1/store/designs/actions/import", ({ body, request }) => {
+  // store.designs.import: the browser's designs, each as version 1; a row without a product is skipped.
+  http.post("*/v1/store/designs/actions/import", async ({ request }) => {
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const owner = ownerIdOf(customer);
-    const imported: { localId: string; designId: string }[] = [];
-    const skipped: { localId: string; reason: string }[] = [];
+    const body = (await request.json().catch(() => null)) as Schemas["ImportDesignsDto"] | null;
+    if (!body?.designs) return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง");
+    const imported: Schemas["ImportedDesignDto"][] = [];
+    const skipped: Schemas["SkippedDesignDto"][] = [];
     for (const item of body.designs) {
       const key = `${owner}:${item.localId}`;
       const already = importedLocalIds.get(key);
       if (already) {
-        imported.push({ localId: item.localId, designId: already });
+        if (designs.has(already)) imported.push({ localId: item.localId, designId: already });
+        else skipped.push({ localId: item.localId, reason: "deleted" });
         continue;
       }
-      if (typeof item.document.spec !== "object") {
-        skipped.push({ localId: item.localId, reason: "unreadable" });
+      const product = item.catalogProductId ? productOfId(item.catalogProductId) : null;
+      const document = documentFrom(item);
+      if (!product || !document) {
+        skipped.push({ localId: item.localId, reason: "product_not_found" });
         continue;
       }
-      const row = create(owner, { name: item.name, document: item.document, source: "import" });
-      row.design.createdAt = item.createdAt;
+      const row = create(owner, {
+        name: item.title,
+        document,
+        source: "import",
+        product,
+        catalogProductId: item.catalogProductId,
+      });
       row.versions[0]!.kind = "import";
       importedLocalIds.set(key, row.design.id);
       imported.push({ localId: item.localId, designId: row.design.id });
     }
-    return { imported, skipped };
+    return HttpResponse.json({ imported, skipped } satisfies Schemas["ImportDesignsResultDto"]);
   }),
 
-  mockRequest("GET /v1/store/designer/catalog", ({ query }) => designerCatalog(query.product)),
+  // store.designer.getCatalog (public): one product's styles, boards, templates, fonts and rules.
+  http.get("*/v1/store/designer/catalog", ({ request }) => {
+    const product = new URL(request.url).searchParams.get("product");
+    if (!product)
+      return problem(422, "validation.failed", "ต้องระบุสินค้า", [
+        { path: "product", code: "required", message: "required" },
+      ]);
+    const catalog = designerCatalog(product);
+    return catalog ? HttpResponse.json(catalog) : problem(404, "http.not_found", "ไม่พบสินค้านี้");
+  }),
 
-  mockRequest("GET /v1/store/designer/templates/{templateId}", ({ params }) => {
+  // store.designer.getTemplate (public): one template with the document a design starts from.
+  http.get("*/v1/store/designer/templates/:templateId", ({ params }) => {
     const template = TEMPLATES.find((candidate) => candidate.id === params.templateId);
-    return template ?? problem(404, "template.not_found", "ไม่พบเทมเพลตนี้");
+    if (!template) return problem(404, "http.not_found", "ไม่พบเทมเพลตนี้");
+    const productId = String(catalogueRows("catalogProducts")[0]?.id ?? mockId("cpr", 1));
+    return HttpResponse.json({
+      ...toTemplate(template, productId),
+      product: designProductRefOf(productId),
+      document: { spec: template.document.spec, content: template.document.content },
+      schemaVersion: template.document.schemaVersion,
+    } satisfies Schemas["DesignerTemplateDetailDto"]);
   }),
 ];

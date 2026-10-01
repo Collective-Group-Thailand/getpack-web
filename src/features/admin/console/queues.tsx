@@ -7,15 +7,20 @@ import { useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { cn } from "@/ui/lib/cn";
 
-/** The dashboard's queue summaries (CONTRACT-REQUEST `admin.dashboard`), shared by every queue tab. */
+import { adminBrowserApis } from "./api";
+
+/**
+ * The dashboard's queue summaries (`admin.dashboard.get`): only the queues this person may work,
+ * with their counts and SLA state, shared by every queue tab. A tab whose key the API does not
+ * send shows no count.
+ */
 export function useQueues() {
   return useQuery({
     queryKey: queryKeys.list("admin", "dashboard"),
-    queryFn: () => browserRequests().call("GET /v1/admin/dashboard"),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/dashboard")).data!,
     staleTime: STALE_TIME.live,
     refetchInterval: 60_000,
   });

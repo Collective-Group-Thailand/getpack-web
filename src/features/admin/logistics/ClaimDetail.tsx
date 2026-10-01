@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { adminClaimActions, adminClaimResolutions, type AdminClaimActionKey } from "@/domain/next-actions/admin";
 import { CLAIM_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
@@ -13,11 +12,10 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
-import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
-import { NumberInput, Textarea } from "@/ui/components/Input";
+import { Input, NumberInput, Textarea } from "@/ui/components/Input";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
@@ -27,19 +25,22 @@ import {
   ConfirmAction,
   FormDialog,
   FormError,
+  NextActionBar,
   problemMessage,
   QueryError,
   Section,
   StatusChip,
-  useActor,
 } from "../console";
 import { FileList } from "./files";
 import type { Claim } from "./resources";
 
 type Resolution = Schemas["ClaimAction"];
 /** The steps confirmed in one dialog; resolving and overriding have their own forms. */
-type Step = Exclude<AdminClaimActionKey, "claim.resolve" | "claim.override_liability">;
+type Step = "review" | "request_info" | "send_to_factory" | "approve" | "reject" | "close";
 
+const STEPS = new Set<string>(["review", "request_info", "send_to_factory", "approve", "reject", "close"]);
+/** Every verb of `claim.*` this screen performs (packio-api's `ADMIN_CLAIM_ACTIONS`). */
+const SUPPORTED = new Set<string>([...STEPS, "override_liability", "resolve"]);
 const LIABILITIES = [
   "factory",
   "customer",
@@ -47,6 +48,14 @@ const LIABILITIES = [
   "packio",
   "undetermined",
 ] as const satisfies readonly Schemas["ClaimLiability"][];
+/** The resolutions D-083 allows for a liability (`claims.action_not_allowed` refuses the rest). */
+const RESOLUTIONS: Record<Schemas["ClaimLiability"], Resolution[]> = {
+  factory: ["reproduction_job", "refund", "credit_note", "factory_deduction"],
+  carrier: ["refund", "credit_note", "carrier_recovery"],
+  customer: ["refund", "credit_note", "store_credit"],
+  packio: ["refund", "credit_note", "store_credit"],
+  undetermined: ["refund", "credit_note", "store_credit"],
+};
 const WITH_AMOUNT = new Set<Resolution>([
   "refund",
   "credit_note",
@@ -55,59 +64,52 @@ const WITH_AMOUNT = new Set<Resolution>([
   "carrier_recovery",
 ]);
 /** The steps that carry a note (`ClaimNoteDto`, `DecideClaimDto`, 3–2000 characters). */
-const WITH_NOTE = new Set<Step>(["claim.request_info", "claim.approve", "claim.reject"]);
-/** The copy key of each step, under `logistics.claim.actions`. */
-const COPY: Record<Step, string> = {
-  "claim.review": "review",
-  "claim.request_info": "request_info",
-  "claim.send_to_factory": "send_to_factory",
-  "claim.approve": "approve",
-  "claim.reject": "reject",
-  "claim.close": "close",
-};
+const WITH_NOTE = new Set<Step>(["request_info", "approve", "reject"]);
+/** An amount as `ResolutionActionDto` takes it: a decimal string, at most two places. */
+const AMOUNT = /^\d{1,12}(\.\d{1,2})?$/;
 
 /** One published operation per step, each under its own Idempotency-Key (`admin.claims.*`). */
 async function runStep(claimId: string, step: Step, idempotencyKey: string, note: string): Promise<Claim> {
   const { contract } = adminBrowserApis();
   const params = { path: { claimId }, header: { "Idempotency-Key": idempotencyKey } };
   switch (step) {
-    case "claim.review":
+    case "review":
       return (await contract.POST("/v1/admin/claims/{claimId}/actions/review", { params })).data!;
-    case "claim.request_info":
+    case "request_info":
       return (await contract.POST("/v1/admin/claims/{claimId}/actions/request-info", { params, body: { note } })).data!;
-    case "claim.send_to_factory":
+    case "send_to_factory":
       return (await contract.POST("/v1/admin/claims/{claimId}/actions/send-to-factory", { params })).data!;
-    case "claim.approve":
-    case "claim.reject":
+    case "approve":
+    case "reject":
       return (
         await contract.POST("/v1/admin/claims/{claimId}/actions/decide", {
           params,
-          body: { decision: step === "claim.approve" ? "approved" : "rejected", note },
+          body: { decision: step === "approve" ? "approved" : "rejected", note },
         })
       ).data!;
-    case "claim.close":
+    case "close":
       return (await contract.POST("/v1/admin/claims/{claimId}/actions/close", { params })).data!;
   }
 }
 
 /**
- * One claim (F2 2.8, D-082, D-083): the evidence the customer had to give (product and carton
- * photos), the liability the rule gave — overridden only with its own permission and a reason —
- * what the team asked and the factory answered, and the resolution, which runs an existing
- * mechanism (re-production, refund, credit note, deduction from the factory) under one
- * idempotency key.
+ * One claim (F2 2.8, D-082, D-083): who claimed and the evidence they had to give (product and carton
+ * photos), the liability the rule gave and the rule behind it — overridden only with its own
+ * permission and a reason, and the overrider named — what the team asked and the factory answered
+ * (with its own evidence), who decided, the resolution, which runs an existing mechanism under one
+ * idempotency key, and what was recovered from the factory.
  *
- * Not on the published claim (CONTRACT-GAP admin.claims): `allowedActions` / `allowedResolutions`
- * (offered from the status and liability, `src/domain/next-actions/admin.ts`), the message thread,
- * the rule's explanation, the approved proof (D-083), the customer, who decided or overrode, and
- * each resolution's document reference and executor.
+ * The actions are the claim's own `nextActions` (U-B0.3), each a published operation; an
+ * irreversible one is retyped to confirm. Not published (CONTRACT-GAP admin.claims): the claim SLA
+ * (`slaDueAt`, U2.5) and each resolution's document reference and executor; there is no message
+ * thread (D-225).
  */
 export function ClaimDetail({ claimId }: { claimId: string }) {
   const t = useTranslations("logistics.claim");
   const tClaims = useTranslations("logistics.claims");
+  const tProblems = useTranslations("problems");
   const format = useFormat();
   const queryClient = useQueryClient();
-  const actor = useActor();
   const key = queryKeys.detail("admin", "claim", claimId);
   const [step, setStep] = useState<Step | null>(null);
   const [overriding, setOverriding] = useState<{ key: string } | null>(null);
@@ -118,6 +120,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
   const [amount, setAmount] = useState("");
   const [quantity, setQuantity] = useState("");
   const [note, setNote] = useState("");
+  const [retyped, setRetyped] = useState("");
 
   const query = useQuery({
     queryKey: key,
@@ -133,10 +136,10 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
     void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "claim") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
   };
-  const offered = adminClaimActions({ status: claim.status }, (permission) => actor.permissions.includes(permission));
-  const has = (action: AdminClaimActionKey) => offered.some((item) => item.key === action);
-  const steps = offered.map((item) => item.key).filter((item): item is Step => item in COPY);
-  const resolutions = adminClaimResolutions(claim.liability);
+  const actionOf = (verb: string) => claim.nextActions.find((action) => action.key === `claim.${verb}`);
+  const reasonText = (code: string | null) => (code ? (tProblems.has(code) ? tProblems(code) : code) : null);
+  const resolutions = RESOLUTIONS[claim.liability];
+  const stepAction = step ? actionOf(step) : undefined;
 
   return (
     <div className="flex flex-col gap-5">
@@ -157,30 +160,28 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
         }
         description={t("summary", { order: claim.orderCode, factory: claim.factoryCode ?? "–" })}
         actions={
-          <>
-            {has("claim.resolve") ? (
-              <Button
-                onClick={() => {
-                  setResolution(resolutions[0] ?? "");
-                  setAmount(claim.claimedAmount ?? "");
-                  setQuantity(claim.claimedQuantity === null ? "" : String(claim.claimedQuantity));
-                  setNote("");
-                  setResolving({ key: newIdempotencyKey() });
-                }}
-              >
-                {t("resolve")}
-              </Button>
-            ) : null}
-            {steps.map((item) => (
-              <Button
-                key={item}
-                variant={item === "claim.reject" ? "ghost" : item === "claim.approve" ? "primary" : "secondary"}
-                onClick={() => setStep(item)}
-              >
-                {t(`actions.${COPY[item]}.label`)}
-              </Button>
-            ))}
-          </>
+          <NextActionBar
+            actions={claim.nextActions.map((action) => ({
+              ...action,
+              disabledReason: reasonText(action.disabledReason),
+            }))}
+            supported={SUPPORTED}
+            labelOf={(verb) => (t.has(`verbs.${verb}`) ? t(`verbs.${verb}`) : undefined)}
+            onAction={(verb) => {
+              if (verb === "resolve") {
+                setResolution(resolutions[0] ?? "");
+                setAmount(claim.claimedAmount ?? "");
+                setQuantity(claim.claimedQuantity === null ? "" : String(claim.claimedQuantity));
+                setNote("");
+                setRetyped("");
+                setResolving({ key: newIdempotencyKey() });
+              } else if (verb === "override_liability") {
+                setLiability(claim.liability);
+                setReason("");
+                setOverriding({ key: newIdempotencyKey() });
+              } else if (STEPS.has(verb)) setStep(verb as Step);
+            }}
+          />
         }
       />
 
@@ -191,6 +192,20 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
             <DescriptionList
               columns={3}
               items={[
+                {
+                  term: t("customer"),
+                  description: (
+                    <span>
+                      {claim.customer.displayName}
+                      {claim.customer.companyName ? (
+                        <span className="text-muted block text-xs">{claim.customer.companyName}</span>
+                      ) : null}
+                      {claim.customer.customerCode ? (
+                        <span className="text-muted block font-mono text-xs">{claim.customer.customerCode}</span>
+                      ) : null}
+                    </span>
+                  ),
+                },
                 {
                   term: t("order"),
                   description: (
@@ -210,8 +225,8 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                 {
                   term: t("shipment"),
                   description: claim.shipmentId ? (
-                    <Link href={`/shipments/${claim.shipmentId}`} className="text-primary hover:underline">
-                      {t("openShipment")}
+                    <Link href={`/shipments/${claim.shipmentId}`} className="text-primary font-mono hover:underline">
+                      {claim.shipmentNo ?? t("openShipment")}
                     </Link>
                   ) : (
                     "–"
@@ -229,6 +244,26 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
             </div>
           </Section>
 
+          {claim.approvedProof ? (
+            <Section title={t("approvedProof")}>
+              <p className="text-sm">
+                {t("approvedProofBody", { version: claim.approvedProof.versionNo })}
+                {claim.approvedProof.approvedAt ? (
+                  <>
+                    {" · "}
+                    <When at={claim.approvedProof.approvedAt} absoluteOnly />
+                  </>
+                ) : null}
+                {claim.approvedProof.channel ? ` · ${t(`channels.${claim.approvedProof.channel}`)}` : null}
+              </p>
+              {claim.approvedProof.approvedFileId ? (
+                <div className="mt-2">
+                  <FileList fileIds={[claim.approvedProof.approvedFileId]} label={t("approvedFile")} />
+                </div>
+              ) : null}
+            </Section>
+          ) : null}
+
           {claim.infoRequest ? (
             <Section title={t("info")}>
               <DescriptionList
@@ -242,31 +277,20 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
         </div>
 
         <div className="flex flex-col gap-5">
-          <Section
-            title={t("liability")}
-            actions={
-              has("claim.override_liability") ? (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => {
-                    setLiability(claim.liability);
-                    setReason("");
-                    setOverriding({ key: newIdempotencyKey() });
-                  }}
-                >
-                  {t("override")}
-                </Button>
-              ) : null
-            }
-          >
+          <Section title={t("liability")}>
             <p className="text-lg font-semibold">{tClaims(`liabilities.${claim.liability}`)}</p>
             <p className="text-muted text-sm">
               {t("byRule", { liability: tClaims(`liabilities.${claim.liabilityByRule}`) })}
             </p>
+            <p className="text-muted text-sm">{t(`rules.${claim.liabilityRule}`)}</p>
             {claim.overrideReason ? (
               <Callout tone="warning" className="mt-3" title={t("overridden")}>
                 {claim.overrideReason}
+                {claim.liabilityOverriddenBy ? (
+                  <span className="text-muted mt-1 block text-xs">
+                    {t("overriddenBy", { name: claim.liabilityOverriddenBy.displayName })}
+                  </span>
+                ) : null}
               </Callout>
             ) : null}
           </Section>
@@ -276,12 +300,23 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                 {t(`responses.${claim.factoryResponse}`)}
               </Badge>
               {claim.factoryResponseNote ? <p className="mt-2 text-sm">{claim.factoryResponseNote}</p> : null}
+              {claim.factoryRespondedAt ? (
+                <p className="text-muted text-xs">
+                  <When at={claim.factoryRespondedAt} />
+                </p>
+              ) : null}
+              {claim.factoryEvidenceFileIds.length ? (
+                <div className="mt-2">
+                  <FileList fileIds={claim.factoryEvidenceFileIds} label={t("factoryEvidence")} />
+                </div>
+              ) : null}
             </Section>
           ) : null}
           {claim.decidedAt ? (
             <Section title={t("decision")}>
               {claim.decisionNote ? <p className="text-sm">{claim.decisionNote}</p> : null}
               <p className="text-muted text-xs">
+                {claim.decidedBy ? `${t("decidedBy", { name: claim.decidedBy.displayName })} · ` : null}
                 <When at={claim.decidedAt} />
               </p>
             </Section>
@@ -305,6 +340,23 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
               </ul>
             </Section>
           ) : null}
+          {claim.deductions.length > 0 ? (
+            <Section
+              title={t("deductions")}
+              description={t("deductionTotal", { amount: format.thb(claim.deductionAmount) })}
+            >
+              <ul className="divide-border divide-y text-sm">
+                {claim.deductions.map((item) => (
+                  <li key={item.id} className="flex flex-wrap justify-between gap-2 py-2">
+                    <span>
+                      {t(`deductionStatus.${item.status}`)} · {t(`offsets.${item.offsetAgainst}`)}
+                    </span>
+                    <span className="font-medium tabular-nums">{format.thb(item.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
         </div>
       </div>
 
@@ -312,12 +364,13 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
         <ConfirmAction
           open
           onOpenChange={(open) => (open ? undefined : setStep(null))}
-          title={t(`actions.${COPY[step]}.title`)}
-          description={t(`actions.${COPY[step]}.body`, { no: claim.claimNo, order: claim.orderCode })}
-          confirmLabel={t(`actions.${COPY[step]}.label`)}
-          tone={step === "claim.reject" ? "destructive" : "primary"}
+          title={t(`actions.${step}.title`)}
+          description={t(`actions.${step}.body`, { no: claim.claimNo, order: claim.orderCode })}
+          confirmLabel={t(`actions.${step}.label`)}
+          tone={step === "reject" ? "destructive" : "primary"}
+          confirmationPhrase={stepAction?.irreversible ? claim.claimNo : undefined}
           reason={
-            WITH_NOTE.has(step) ? { label: t(`actions.${COPY[step]}.reason`), required: true, minLength: 3 } : undefined
+            WITH_NOTE.has(step) ? { label: t(`actions.${step}.reason`), required: true, minLength: 3 } : undefined
           }
           onConfirm={async ({ idempotencyKey, reason: text }) => {
             try {
@@ -375,9 +428,14 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           onClose={() => setResolving(null)}
           onSubmit={async () => {
             if (!resolution) throw new FormError(t("needResolution"));
-            if (WITH_AMOUNT.has(resolution) && !(Number(amount) > 0)) throw new FormError(t("needAmount"));
+            const money = amount.trim();
+            if (WITH_AMOUNT.has(resolution) && (!AMOUNT.test(money) || /^0+(\.0+)?$/.test(money)))
+              throw new FormError(t("needAmount"));
             const pieces = resolution === "reproduction_job" && quantity ? Math.trunc(Number(quantity)) : undefined;
             if (pieces !== undefined && !(pieces >= 1)) throw new FormError(t("needQuantity"));
+            // An irreversible act (`claim.resolve`): the claim number is retyped, as every such dialog asks.
+            if (actionOf("resolve")?.irreversible && retyped.trim() !== claim.claimNo)
+              throw new FormError(t("retypeMismatch", { no: claim.claimNo }));
             try {
               // One action per run here; `ResolveClaimDto` takes up to six in one transaction. A refund
               // names no payment — the order's payments are not listed by order (CONTRACT-GAP admin.orders).
@@ -388,7 +446,7 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
                     actions: [
                       {
                         action: resolution,
-                        ...(WITH_AMOUNT.has(resolution) ? { amount: Number(amount).toFixed(2) } : {}),
+                        ...(WITH_AMOUNT.has(resolution) ? { amount: money.includes(".") ? money : `${money}.00` } : {}),
                         ...(pieces !== undefined ? { quantity: pieces } : {}),
                         ...(note.trim() ? { note: note.trim() } : {}),
                       },
@@ -429,6 +487,11 @@ export function ClaimDetail({ claimId }: { claimId: string }) {
           <Field label={t("note")} hint={t("optional")}>
             <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
           </Field>
+          {actionOf("resolve")?.irreversible ? (
+            <Field label={t("retype", { no: claim.claimNo })} required>
+              <Input value={retyped} autoComplete="off" onChange={(event) => setRetyped(event.target.value)} />
+            </Field>
+          ) : null}
         </FormDialog>
       ) : null}
     </div>

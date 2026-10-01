@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { InstalmentList } from "@/features/customer/checkout/InstalmentList";
-import { serverRequests } from "@/lib/api/requests/server";
+import { serverApi } from "@/lib/api/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("instalments");
@@ -15,13 +15,15 @@ export default async function Page() {
   await requireCustomer();
   const [t, instalments] = await Promise.all([
     getTranslations("instalments"),
-    (await serverRequests("customer")).call("GET /v1/store/instalments", { query: { perPage: 100 } }),
+    (await serverApi("customer"))
+      .GET("/v1/store/instalments", { params: { query: { perPage: 100 } } })
+      .then(({ data }) => data!.data),
   ]);
   return (
     <div>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
-      <InstalmentList instalments={instalments.data} />
+      <InstalmentList instalments={instalments} />
     </div>
   );
 }

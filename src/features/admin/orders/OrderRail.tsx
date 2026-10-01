@@ -4,9 +4,8 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { When } from "@/features/shared/format";
+import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
@@ -18,8 +17,9 @@ import { Textarea } from "@/ui/components/Input";
 import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
 import type { IconName } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
-import { adminBrowserApis, problemMessage, useRoleLabel } from "../console";
+import { adminBrowserApis, problemMessage, useRoleLabel, useStaffDirectory } from "../console";
 
 type Entry = Schemas["StaffTimelineEntryDto"];
 
@@ -57,7 +57,8 @@ const KIND_ICONS: Record<string, IconName> = {
 
 /**
  * The right rail (F2 A.3): the unified timeline — customer-visible and internal events alike,
- * with promised against actual for milestones — and the team's internal notes.
+ * with promised against actual for production steps (`promisedAt`, v0.5.0) — and the team's
+ * internal notes.
  */
 export function OrderRail({ orderId }: { orderId: string }) {
   return (
@@ -89,6 +90,7 @@ function useEntryTitle() {
 
 function OrderTimeline({ orderId }: { orderId: string }) {
   const t = useTranslations("orders.rail");
+  const format = useFormat();
   const title = useEntryTitle();
   const feed = useInfiniteQuery({
     queryKey: queryKeys.related("admin", "order", orderId, "timeline"),
@@ -110,7 +112,6 @@ function OrderTimeline({ orderId }: { orderId: string }) {
         <CardTitle>{t("timeline")}</CardTitle>
       </CardHeader>
       {feed.isError ? <p className="text-danger text-sm">{problemMessage(feed.error, t("timelineFailed"))}</p> : null}
-      {/* Promised against actual per milestone is not on the published entry (CONTRACT-GAP admin.orders). */}
       <Timeline
         label={t("timeline")}
         items={entries.map((entry) => ({
@@ -127,7 +128,28 @@ function OrderTimeline({ orderId }: { orderId: string }) {
           actor: entry.actor?.displayName ?? undefined,
           icon: KIND_ICONS[entry.type.split(".")[0] ?? ""] ?? "circle",
           tone: entry.type.endsWith("rejected") || entry.type.endsWith("cancelled") ? "danger" : undefined,
-          description: entry.body ?? undefined,
+          // A production step says when the factory's plan had it due: promised against actual (D-075).
+          description:
+            entry.body || entry.promisedAt ? (
+              <>
+                {entry.body ? <span className="block">{entry.body}</span> : null}
+                {entry.promisedAt ? (
+                  <span
+                    className={cn(
+                      "block text-xs",
+                      Date.parse(entry.occurredAt) > Date.parse(entry.promisedAt) ? "text-danger" : "text-muted",
+                    )}
+                  >
+                    {t(
+                      Date.parse(entry.occurredAt) > Date.parse(entry.promisedAt) ? "promisedLate" : "promisedOnTime",
+                      {
+                        at: format.dateTime(entry.promisedAt),
+                      },
+                    )}
+                  </span>
+                ) : null}
+              </>
+            ) : undefined,
         }))}
       />
       {feed.hasNextPage ? (
@@ -165,12 +187,7 @@ function Notes({ orderId }: { orderId: string }) {
         })
       ).data!,
   });
-  const people = useQuery({
-    queryKey: queryKeys.list("admin", "staff_directory", { q: query }),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/staff-directory", { query: { q: query || undefined, limit: 10 } }),
-    staleTime: STALE_TIME.reference,
-  });
+  const people = useStaffDirectory({ q: query, limit: 10 });
 
   const add = useMutation({
     mutationFn: async () =>
@@ -221,7 +238,7 @@ function Notes({ orderId }: { orderId: string }) {
             query={query}
             onQueryChange={setQuery}
             loading={people.isFetching}
-            options={(people.data?.data ?? []).map((person) => ({
+            options={(people.data ?? []).map((person) => ({
               value: person.id,
               label: person.displayName,
               description: person.roles.map(roleLabel).join(", "),

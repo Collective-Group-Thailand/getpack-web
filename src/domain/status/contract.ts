@@ -60,6 +60,9 @@ export type PromotionStatus = Schemas["PromotionStatus"];
 /** One coupon code (D-053). **Source: contract** (U-F0.3). */
 export type CouponStatus = Schemas["CouponStatus"];
 
+/** Whether a promotion code a customer holds or checks can be used now (D-053). **Source: contract** (U-F0.4). */
+export type PromotionOfferStatus = Schemas["PromotionOfferStatus"];
+
 /** One line of the points ledger (D-132): pending until completion + claim window. **Source: contract** (U-F0.2). */
 export type PointsStatus = Schemas["PointsStatus"];
 
@@ -200,8 +203,8 @@ export type BankAccountStatus = Schemas["BankAccountStatus"];
 /** The outcome of a site visit, required before activation (D-041). **Source: contract** (B2.2). */
 export type SiteVisitResult = Schemas["SiteVisitResult"];
 
-/** A factory's request to the Partner team. **Proposed** in contract request `partner.change-requests`. */
-export type ChangeRequestStatus = "open" | "in_progress" | "done" | "declined";
+/** A factory's request to the Partner team. **Source: contract** (U-B0.3). */
+export type ChangeRequestStatus = Schemas["FactoryChangeRequestStatus"];
 
 /** A factory's answer to one line of a shipping payout card (D-013, D-042). **Source: contract** (B2.2). */
 export type RateLineAcceptance = Schemas["RateLineAcceptance"];
@@ -215,8 +218,8 @@ export type JobIssueStatus = "open" | "resolved";
 /** A factory billing statement (D-090). **Source: schema** (`billing_statement_status`); proposed in contract request `partner.billing-statements`. */
 export type BillingStatementStatus = Schemas["BillingStatementStatus"];
 
-/** The factory's own tax invoice against a statement. **Proposed** in contract request `partner.billing-statements`. */
-export type VendorInvoiceStatus = "submitted" | "validated" | "rejected";
+/** The factory's own tax invoice against a statement, as the factory sees it. **Source: contract** (U-B0.3). */
+export type VendorInvoiceStatus = Schemas["VendorInvoiceStatus"];
 
 /** Whether Packio can claim the input VAT of a factory bill. **Source: contract** (B5.3). */
 export type InputVatStatus = Schemas["InputVatStatus"];
@@ -224,8 +227,8 @@ export type InputVatStatus = Schemas["InputVatStatus"];
 /** One payout to a factory in a payout run. **Source: contract** (B5.3). */
 export type PayoutItemStatus = Schemas["PayoutItemStatus"];
 
-/** A person who acts for a factory. **Proposed** in contract request `partner.users`. */
-export type FactoryUserStatus = "invited" | "active" | "deactivated";
+/** A person who acts for a factory; created active, with no invitation step. **Source: contract** (U-B0.3). */
+export type FactoryUserStatus = Schemas["FactoryUserStatus"];
 
 /** An open item of customer AR: one invoice or final tax invoice still owed (accounting-design §6). **Source: contract** (B5.2). */
 export type ReceivableStatus = Schemas["ArItemStatus"];
@@ -236,8 +239,11 @@ export type WhtCertificateStatus = Schemas["WhtCertStatus"];
 /** A credit note asked for, issued only once a Finance Manager approves (D-169). **Source: contract** (B5.2). */
 export type CreditNoteRequestStatus = Schemas["CreditNoteRequestStatus"];
 
-/** A payment reminder (D-122). **Proposed** in contract request `admin.dunning-log`. */
-export type DunningStatus = "sent" | "failed";
+/**
+ * What became of a notification packio-api sent: a payment reminder (D-122) or a customer document
+ * sent again (D-143). **Source: contract** (`NotificationStatus`, U-B0.3).
+ */
+export type DunningStatus = Schemas["NotificationStatus"];
 
 /** A factory purchase order, one per released job (§6, D-022). **Source: contract** (B5.3). */
 export type PurchaseOrderStatus = Schemas["PoStatus"];

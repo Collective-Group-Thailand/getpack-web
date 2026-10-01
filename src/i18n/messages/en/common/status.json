@@ -389,7 +389,45 @@
     "reviewProof": "Review the proof",
     "openClaim": "Report a problem",
     "designBrief": "Send the design brief",
-    "reviewDesign": "Review the design"
+    "reviewDesign": "Review the design",
+    "submitArtwork": "Submit artwork",
+    "addMockup": "Add a mockup",
+    "reprice": "Re-price",
+    "acceptJob": "Accept the job",
+    "rejectJob": "Turn the job down",
+    "updateMilestone": "Update progress",
+    "recordQc": "Record QC",
+    "raiseIssue": "Report an issue",
+    "reassign": "Move to another factory",
+    "hold": "Put on hold",
+    "resume": "Resume",
+    "markReady": "Mark ready and print labels",
+    "dispatch": "Dispatch",
+    "requestCarrier": "Ask Packio for a carrier",
+    "updateStatus": "Update delivery status",
+    "recordPod": "Record proof of delivery",
+    "bookCarrier": "Book a carrier",
+    "split": "Split the shipment",
+    "resolveException": "Resolve the delivery problem",
+    "reviewPod": "Review proof of delivery",
+    "answerInfo": "Send the requested information",
+    "respondClaim": "Respond to the claim",
+    "sendToFactory": "Send to the factory",
+    "overrideLiability": "Override liability",
+    "resolve": "Resolve",
+    "close": "Close",
+    "confirmStatement": "Confirm the statement",
+    "dispute": "Dispute",
+    "submitTaxInvoice": "Submit the tax invoice",
+    "captureTaxInvoice": "Record the tax invoice",
+    "validateTaxInvoice": "Validate the tax invoice",
+    "propose": "Propose for approval",
+    "generateBankFile": "Generate the bank file",
+    "confirmPayout": "Confirm the transfer",
+    "resend": "Resend",
+    "void": "Void",
+    "acceptQuote": "Accept the quote",
+    "postMessage": "Send a message"
   },
   "points": {
     "pending": "Pending",
@@ -440,9 +478,10 @@
     "superseded": "Superseded"
   },
   "vendorInvoice": {
-    "submitted": "Waiting for Finance",
+    "recorded": "Waiting for Finance",
     "validated": "Validated",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "void": "Voided"
   },
   "inputVat": {
     "claimable": "Tax invoice in",
@@ -456,7 +495,6 @@
     "excluded": "Excluded"
   },
   "factoryUser": {
-    "invited": "Invited",
     "active": "Active",
     "deactivated": "Deactivated"
   },
@@ -479,8 +517,14 @@
     "withdrawn": "Withdrawn"
   },
   "dunning": {
+    "queued": "Queued",
+    "deferredQuietHours": "Waiting for quiet hours to end",
+    "suppressedNoConsent": "Not sent (no consent)",
     "sent": "Sent",
-    "failed": "Failed"
+    "delivered": "Delivered",
+    "read": "Read",
+    "failed": "Failed",
+    "bounced": "Bounced"
   },
   "purchaseOrder": {
     "issued": "Sent to the factory",
@@ -570,5 +614,16 @@
     "ok": "OK",
     "alert": "Over threshold",
     "unknown": "Could not read"
+  },
+  "promotionOffer": {
+    "usable": "Usable",
+    "notStarted": "Not started",
+    "notApplicable": "Conditions not met",
+    "usedUp": "Used up",
+    "expired": "Expired",
+    "budgetExhausted": "Run out",
+    "inactive": "Not active",
+    "disabled": "Disabled",
+    "notYours": "Another account's code"
   }
 }

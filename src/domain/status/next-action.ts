@@ -12,9 +12,10 @@
  * than showing one that reads awkwardly. `pnpm typecheck` cannot catch a missing entry here —
  * the keys are data, not a union — so the fallback is the safety net.
  *
- * CONTRACT-REQUEST `entity.next-actions`: no endpoint publishes this list yet. The shape below
- * is what the UI needs and what `docs/contract-requests.md` asks for; F2–F6 wire it to real
- * responses as their screens arrive.
+ * Since contract v0.6.0 (`entity.next-actions`) the list is `NextActionDto[]` on orders, jobs, RFQs,
+ * shipments, claims, billing statements, payout runs and customer documents. The keys are a plain
+ * string in the contract, so `API_ACTION_KEYS` copies packio-api's vocabulary and a test holds
+ * every one of them to a presentation of its own.
  */
 
 import type { IconName } from "@/ui/icons";
@@ -85,7 +86,120 @@ const ACTION_META: Record<string, NextActionMeta> = {
   "order.open_claim": { tone: "warning", icon: "flag", labelKey: "action.openClaim" },
   "order.design_brief": { tone: "primary", icon: "edit", labelKey: "action.designBrief" },
   "order.review_design": { tone: "primary", icon: "palette", labelKey: "action.reviewDesign" },
+  // packio-api's keys (contract v0.6.0) whose verb has no presentation above, or reads wrongly
+  // for the entity ("reject" a job is turning it down, not refusing an approval).
+  "order.submit_artwork": { tone: "primary", icon: "upload", labelKey: "action.submitArtwork" },
+  "order.add_mockup": { tone: "neutral", icon: "plus", labelKey: "action.addMockup" },
+  "order.reprice": { tone: "warning", icon: "refresh", labelKey: "action.reprice" },
+  "job.accept": { tone: "success", icon: "check", labelKey: "action.acceptJob" },
+  "job.reject": { tone: "danger", icon: "ban", labelKey: "action.rejectJob" },
+  "job.update_milestone": { tone: "primary", icon: "checklist", labelKey: "action.updateMilestone" },
+  "job.record_qc": { tone: "primary", icon: "clipboard-check", labelKey: "action.recordQc" },
+  "job.raise_issue": { tone: "warning", icon: "flag", labelKey: "action.raiseIssue" },
+  "job.reassign": { tone: "warning", icon: "factory", labelKey: "action.reassign" },
+  "job.hold": { tone: "warning", icon: "pause", labelKey: "action.hold" },
+  "job.resume": { tone: "primary", icon: "play", labelKey: "action.resume" },
+  "shipment.mark_ready": { tone: "primary", icon: "printer", labelKey: "action.markReady" },
+  "shipment.dispatch": { tone: "primary", icon: "truck", labelKey: "action.dispatch" },
+  "shipment.request_carrier": { tone: "neutral", icon: "truck", labelKey: "action.requestCarrier" },
+  "shipment.update_status": { tone: "neutral", icon: "route", labelKey: "action.updateStatus" },
+  "shipment.record_pod": { tone: "primary", icon: "package-check", labelKey: "action.recordPod" },
+  "shipment.book_carrier": { tone: "primary", icon: "truck", labelKey: "action.bookCarrier" },
+  "shipment.split": { tone: "neutral", icon: "split", labelKey: "action.split" },
+  "shipment.resolve_exception": { tone: "warning", icon: "shield-alert", labelKey: "action.resolveException" },
+  "shipment.review_pod": { tone: "primary", icon: "eye", labelKey: "action.reviewPod" },
+  "claim.answer_info": { tone: "primary", icon: "send", labelKey: "action.answerInfo" },
+  "claim.respond": { tone: "primary", icon: "send", labelKey: "action.respondClaim" },
+  "claim.review": { tone: "primary", icon: "eye", labelKey: "action.startReview" },
+  "claim.send_to_factory": { tone: "primary", icon: "factory", labelKey: "action.sendToFactory" },
+  "claim.override_liability": { tone: "warning", icon: "scale", labelKey: "action.overrideLiability" },
+  "claim.resolve": { tone: "success", icon: "check", labelKey: "action.resolve" },
+  "claim.close": { tone: "neutral", icon: "archive", labelKey: "action.close" },
+  "billing_statement.confirm": { tone: "success", icon: "check", labelKey: "action.confirmStatement" },
+  "billing_statement.dispute": { tone: "warning", icon: "flag", labelKey: "action.dispute" },
+  "billing_statement.submit_tax_invoice": { tone: "primary", icon: "upload", labelKey: "action.submitTaxInvoice" },
+  "billing_statement.capture_tax_invoice": { tone: "primary", icon: "edit", labelKey: "action.captureTaxInvoice" },
+  "billing_statement.validate_tax_invoice": {
+    tone: "primary",
+    icon: "file-check",
+    labelKey: "action.validateTaxInvoice",
+  },
+  "payout_run.propose": { tone: "primary", icon: "send", labelKey: "action.propose" },
+  "payout_run.generate_bank_file": { tone: "primary", icon: "download", labelKey: "action.generateBankFile" },
+  "payout_run.confirm": { tone: "success", icon: "check", labelKey: "action.confirmPayout" },
+  "customer_document.resend": { tone: "neutral", icon: "send", labelKey: "action.resend" },
+  "customer_document.void": { tone: "danger", icon: "ban", labelKey: "action.void" },
+  "rfq.accept": { tone: "success", icon: "check", labelKey: "action.acceptQuote" },
+  "rfq.post_message": { tone: "neutral", icon: "chat", labelKey: "action.postMessage" },
 };
+
+/**
+ * Every action key packio-api offers (contract v0.6.0; the `*-actions.ts` rule tables under `src/modules` at the tag).
+ * The contract types `NextActionDto.key` as a string, so this list is the vocabulary: the test
+ * beside it fails when one of them falls back to `UNKNOWN_ACTION`. Re-check it on each adopt.
+ */
+export const API_ACTION_KEYS = [
+  "order.upload_artwork",
+  "order.approve_proof",
+  "order.confirm_receipt",
+  "order.open_claim",
+  "order.reorder",
+  "order.start_production",
+  "order.submit_artwork",
+  "order.add_mockup",
+  "order.reprice",
+  "order.cancel",
+  "job.accept",
+  "job.reject",
+  "job.update_milestone",
+  "job.record_qc",
+  "job.raise_issue",
+  "job.ship",
+  "job.reassign",
+  "job.hold",
+  "job.resume",
+  "shipment.mark_ready",
+  "shipment.dispatch",
+  "shipment.request_carrier",
+  "shipment.update_status",
+  "shipment.record_pod",
+  "shipment.cancel",
+  "shipment.book_carrier",
+  "shipment.split",
+  "shipment.resolve_exception",
+  "shipment.review_pod",
+  "claim.answer_info",
+  "claim.respond",
+  "claim.review",
+  "claim.request_info",
+  "claim.send_to_factory",
+  "claim.override_liability",
+  "claim.approve",
+  "claim.reject",
+  "claim.resolve",
+  "claim.close",
+  "billing_statement.confirm",
+  "billing_statement.dispute",
+  "billing_statement.submit_tax_invoice",
+  "billing_statement.capture_tax_invoice",
+  "billing_statement.validate_tax_invoice",
+  "payout_run.propose",
+  "payout_run.cancel",
+  "payout_run.generate_bank_file",
+  "payout_run.confirm",
+  "customer_document.resend",
+  "customer_document.void",
+  "rfq.accept",
+  "rfq.post_message",
+  "rfq.decline",
+  "rfq.assign",
+  "rfq.start_review",
+  "rfq.request_info",
+  "rfq.request_factory_cost",
+  "rfq.compose_quote",
+  "rfq.send_quote",
+  "rfq.record_acceptance",
+] as const;
 
 /** Falls back to something visible and pressable rather than dropping the action. */
 export const UNKNOWN_ACTION: NextActionMeta = {

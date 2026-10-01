@@ -311,6 +311,32 @@ function groupByOf(url: URL): Dimension[] | Response {
   return values.length ? (values as Dimension[]) : ["product_type"];
 }
 
+/**
+ * `admin.analytics.sensitivity` (U-B0.3): sessions shown a price per lead-time band and per price
+ * quartile, and how many carted the product type. The drop-off is worked out here, as the API does.
+ */
+function sensitivity(from: string, to: string): Schemas["SensitivityReportDto"] {
+  const scale = days(from, to);
+  const row = (band: string, shown: number, cartedShare: number): Schemas["SensitivityRowDto"] => {
+    const carted = Math.round(shown * cartedShare);
+    return { band, shown, carted, dropOffPct: shown ? ((1 - carted / shown) * 100).toFixed(2) : null };
+  };
+  return {
+    byLeadTime: [
+      row("1-7", scale * 9, 0.34),
+      row("8-14", scale * 14, 0.27),
+      row("15-21", scale * 6, 0.18),
+      row("22+", scale * 2, 0.09),
+    ],
+    byPriceQuartile: [
+      row("1", scale * 8, 0.36),
+      row("2", scale * 8, 0.29),
+      row("3", scale * 8, 0.21),
+      row("4", scale * 7, 0.12),
+    ],
+  };
+}
+
 function unmet(from: string, to: string): Schemas["UnmetDemandReportDto"] {
   const scale = days(from, to);
   const n = (factor: number) => Math.max(1, Math.round(scale * factor));
@@ -462,11 +488,19 @@ const CLAIM_STATUSES = [
 
 type Column = Schemas["ReportColumnDto"];
 type FilterDef = Schemas["ReportFilterDefDto"];
-const col = (key: string, labelTh: string, labelEn: string, type: ColumnType = "text"): Column => ({
+/** `total` as packio-api: money and integer columns are summed unless the column says not to. */
+const col = (
+  key: string,
+  labelTh: string,
+  labelEn: string,
+  type: ColumnType = "text",
+  total = type === "money" || type === "integer",
+): Column => ({
   key,
   labelTh,
   labelEn,
   type,
+  total,
 });
 
 interface MockReport extends Omit<Schemas["ReportDefinitionDto"], "formats"> {
@@ -491,10 +525,26 @@ const uuidOf = (key: "productTypeId" | "factoryId"): FilterDef => ({
   values: null,
 });
 
+/** The totals row packio-api adds (U-B0.3): money in satang, then back to a decimal string; counts as numbers. */
+function totalsOf(
+  columns: readonly Column[],
+  rows: readonly Record<string, unknown>[],
+): Record<string, string | number> {
+  const totals: Record<string, string | number> = {};
+  for (const column of columns.filter((item) => item.total)) {
+    const values = rows.map((row) => row[column.key]);
+    if (column.type === "money")
+      totals[column.key] = baht(values.reduce<number>((sum, value) => sum + Math.round(Number(value ?? 0) * 100), 0));
+    else totals[column.key] = values.reduce<number>((sum, value) => sum + Number(value ?? 0), 0);
+  }
+  return totals;
+}
+
 /** packio-api's R1 reports (B6.2, D-111), in its order. */
 const REPORTS: MockReport[] = [
   {
     key: "sales",
+    group: "sales",
     nameTh: "รายงานยอดขาย",
     nameEn: "Sales register",
     description: "Every order of the order groups placed in the period, with its amounts.",
@@ -513,6 +563,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "sales_tax",
+    group: "finance",
     nameTh: "รายงานภาษีขาย",
     nameEn: "Sales tax report",
     description: "One line per document with output VAT posted in the month.",
@@ -520,7 +571,7 @@ const REPORTS: MockReport[] = [
     permission: "tax.read",
     filters: [month],
     columns: [
-      col("seq", "ลำดับ", "No.", "integer"),
+      col("seq", "ลำดับ", "No.", "integer", false),
       col("documentDate", "วันที่", "Date", "date"),
       col("documentNo", "เลขที่เอกสาร", "Document no."),
       col("partyTaxId", "เลขประจำตัวผู้เสียภาษี", "Tax id"),
@@ -531,6 +582,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "payments_by_channel",
+    group: "finance",
     nameTh: "รายงานรับชำระตามช่องทาง",
     nameEn: "Payments by channel",
     description: "Successful payments of the period with fees, withholding, net and settlement date.",
@@ -549,6 +601,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "orders",
+    group: "sales",
     nameTh: "รายงานสถานะคำสั่งซื้อ",
     nameEn: "Orders pipeline",
     description: "Orders placed in the period with their status and milestone dates.",
@@ -566,6 +619,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "quotations",
+    group: "sales",
     nameTh: "รายงานใบเสนอราคา",
     nameEn: "Quotations",
     description: "Quotations saved in the period (instant and from RFQs).",
@@ -581,6 +635,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "campaign_usage",
+    group: "marketing",
     nameTh: "รายงานการใช้แคมเปญและโปรโมชั่น",
     nameEn: "Campaign & promotion usage",
     description: "Per campaign and promotion: redemptions, discount given and the amount capped.",
@@ -597,6 +652,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "points_liability",
+    group: "finance",
     nameTh: "รายงานภาระคะแนนสะสม",
     nameEn: "Points liability roll-forward",
     description: "Per month of the period: opening, earned, redeemed, expired and closing points.",
@@ -614,6 +670,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "ar_aging",
+    group: "finance",
     nameTh: "รายงานอายุลูกหนี้",
     nameEn: "AR aging",
     description: "Open receivables at a date per customer or company, by days past due.",
@@ -631,6 +688,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "ap_aging",
+    group: "finance",
     nameTh: "รายงานอายุเจ้าหนี้",
     nameEn: "AP aging",
     description: "Open payables at a date per vendor.",
@@ -647,6 +705,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "payout_history",
+    group: "finance",
     nameTh: "ประวัติการจ่ายเงินโรงงานและผู้ขาย",
     nameEn: "Payout history",
     description: "Items of the payout runs with a pay date in the period.",
@@ -664,6 +723,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "factory_scorecards",
+    group: "operations",
     nameTh: "ประวัติคะแนนโรงงาน",
     nameEn: "Factory scorecard history",
     description: "Monthly scorecards per factory for the months of the period.",
@@ -680,6 +740,7 @@ const REPORTS: MockReport[] = [
   },
   {
     key: "claims",
+    group: "operations",
     nameTh: "รายงานเคลม",
     nameEn: "Claims register",
     description: "Claims submitted in the period with their liability, amount and resolution.",
@@ -917,6 +978,7 @@ export const analyticsContractHandlers = [
     }),
   ),
   http.get("*/v1/admin/analytics/unmet-demand", dashboard(["analytics.read"], unmet)),
+  http.get("*/v1/admin/analytics/sensitivity", dashboard(["analytics.read"], sensitivity)),
   http.get("*/v1/admin/analytics/factories", dashboard(["analytics.read", "analytics.read_factories"], factories)),
   http.get("*/v1/admin/analytics/campaigns", dashboard(["analytics.read"], campaigns)),
 
@@ -986,6 +1048,9 @@ export const analyticsContractHandlers = [
       filters,
       rows: rows.slice(0, PREVIEW_ROWS),
       truncated: rows.length > PREVIEW_ROWS,
+      // As packio-api: the sum of every row of the report, not only the previewed ones.
+      totals: totalsOf(report.columns, rows),
+      generatedAt: bangkokIso(),
     } satisfies Schemas["ReportPreviewDto"]);
   }),
   http.post("*/v1/admin/reports/:reportKey/exports", async ({ params, request }) => {

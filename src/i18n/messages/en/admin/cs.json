@@ -91,7 +91,14 @@
       "all_round": "All round"
     },
     "designGraphic": "Graphic design by Packio",
-    "designStructure": "Structure design by Packio"
+    "designStructure": "Structure design by Packio",
+    "rangeMin": "At least {min} mm",
+    "rangeMax": "At most {max} mm",
+    "tooSmall": "Must be at least {min} mm",
+    "tooLarge": "Must be at most {max} mm",
+    "lengthMustExceedHeight": "Length must be greater than height for this pattern",
+    "widthMustExceedHeight": "Width must be greater than height for this pattern",
+    "catalogProduct": "Catalogue product"
   },
   "workspace": {
     "steps": {
@@ -121,7 +128,8 @@
       "material": "material",
       "difficulty": "difficulty",
       "dimensions": "size",
-      "quantities": "quantities"
+      "quantities": "quantities",
+      "size": "a size within the pattern's limits"
     },
     "noResultsTitle": "Nothing calculated yet",
     "noResultsBody": "Fill in the spec and calculate: the system picks the factory and print type for each quantity",
@@ -170,7 +178,13 @@
       "no_band": "No band for this weight"
     },
     "tooling": "Plates and dies {amount}",
-    "discountAtCheckout": "Discounts are given when the order is placed; above the CS limit the system asks for approval (D-052)"
+    "discountAtCheckout": "Discounts are given when the order is placed; above the CS limit the system asks for approval (D-052)",
+    "presets": "Common quantities",
+    "quantityRange": "Orderable {min}–{max}",
+    "quantityOutside": "This quantity is outside what this product can be ordered in",
+    "discountAtCheckoutLimit": "Discounts are given when the order is created. CS may give up to {pct} on its own; above that it needs approval (D-052).",
+    "note": "Internal note",
+    "noteHint": "Never shown to the customer or on the PDF"
   },
   "memo": {
     "title": "Request a discount",
@@ -260,7 +274,8 @@
     "requestMemo": "Ask for approval",
     "memoState": "Discount memo {pct}",
     "openApproval": "Open the approval",
-    "refreshMemo": "Check again"
+    "refreshMemo": "Check again",
+    "discountHintLimit": "CS may give up to {pct} on its own; checked when the order is placed (D-052)"
   },
   "address": {
     "title": "Add a delivery address",
@@ -296,7 +311,8 @@
       "net": "Net",
       "vat": "VAT",
       "lead": "Lead time",
-      "actions": "Actions"
+      "actions": "Actions",
+      "channel": "Channel"
     },
     "empty": "No quotations yet",
     "emptyBody": "Quotations saved by CS or by customers appear here.",
@@ -305,7 +321,18 @@
     "exportFailed": "Could not create the PDF",
     "options": "Prices by quantity",
     "leadDays": "{days} working days",
-    "createOrder": "Create order"
+    "createOrder": "Create order",
+    "channels": {
+      "web": "Web",
+      "cs": "CS",
+      "line": "LINE",
+      "b2b": "B2B"
+    },
+    "customerCode": "Customer code",
+    "rfq": "From RFQ",
+    "createdBy": "Created by",
+    "note": "Internal note",
+    "specs": "Specification"
   },
   "memos": {
     "title": "Discount memos",
@@ -319,9 +346,11 @@
       "status": "Status",
       "requestedBy": "Requested by",
       "validUntil": "Valid until",
-      "approval": "Approval"
+      "approval": "Approval",
+      "evidence": "Evidence"
     },
     "openApproval": "Open approval",
-    "empty": "No discount memos"
+    "empty": "No discount memos",
+    "mine": "Mine"
   }
 }

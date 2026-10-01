@@ -19,7 +19,16 @@
     "empty": "No jobs",
     "awaiting": "Awaiting acceptance",
     "pieces": "{quantity} pcs",
-    "truncated": "Showing the first {count} jobs"
+    "truncated": "Showing the first {count} jobs",
+    "factory": "Factory",
+    "productType": "Product type",
+    "allFactories": "All factories",
+    "allProductTypes": "All types",
+    "totals": "{total} jobs · {atRisk} at risk",
+    "riskReasons": {
+      "step_overdue": "The current step is past due",
+      "late_plan": "The plan ends after the promise"
+    }
   },
   "inspections": {
     "title": "QC inspections",
@@ -30,7 +39,8 @@
       "sample": "Sample",
       "found": "Defects found",
       "status": "Status",
-      "when": "When"
+      "when": "When",
+      "factory": "Factory"
     },
     "reasons": {
       "value_100_pct": "Value ≥ THB 300,000: 100 %",
@@ -55,7 +65,8 @@
     "passed": "Passed",
     "failed": "Failed",
     "recordFailed": "Could not record",
-    "empty": "No inspections"
+    "empty": "No inspections",
+    "aql": "AQL critical {critical} · major {major} · minor {minor}"
   },
   "scorecards": {
     "title": "Factory scorecards",
@@ -71,6 +82,9 @@
     },
     "monthColumn": "Month",
     "openFactory": "Open factory {code}",
-    "caption": "Scorecards of {code}"
+    "caption": "Scorecards of {code}",
+    "byMonth": "Every factory in one month",
+    "month": "Month",
+    "monthCaption": "All factories' scorecards {month}"
   }
 }

@@ -38,13 +38,15 @@ const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("
 
 test.describe("campaigns (D-154)", () => {
   test("each budget reads against the alert threshold the API reports", async ({ page }) => {
-    // CONTRACT-GAP admin.campaigns — no spentPct, so no gauge: the spend, the budget and the threshold in words.
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing`);
     const table = page.getByRole("table", { name: "แคมเปญ" });
     const yearEnd = table.getByRole("row", { name: /ส่งท้ายปี 2569/ });
     await expect(yearEnd).toContainText("ใช้ไป ฿126,300.00 จาก ฿150,000.00 · แจ้งเตือนที่ 80%");
     await expect(yearEnd).toContainText("ใช้งบถึง 80% แล้ว");
+    // The gauge is the API's `spentPct`; the row also counts the campaign's promotions.
+    await expect(yearEnd.getByRole("meter", { name: "งบที่ใช้ไป" })).toBeVisible();
+    await expect(yearEnd).toContainText("84.2%");
     await expect(table.getByRole("row", { name: /หน้าฝน 2569/ })).toContainText("งบหมดแล้ว");
     await expectAxeClean(page);
   });
@@ -61,8 +63,7 @@ test.describe("campaigns (D-154)", () => {
     await expect(sheet).not.toContainText(/\brequired\b/);
   });
 
-  test("pausing restates the spend, and a paused campaign is resumed", async ({ page }) => {
-    // CONTRACT-GAP admin.campaigns — the published action takes no reason, so none is asked.
+  test("pausing restates the spend and asks why, and a paused campaign is resumed", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing/campaigns/${campaign(2)}`);
     await expect(page.getByText("ผลของแคมเปญ")).toBeVisible();
@@ -71,6 +72,10 @@ test.describe("campaigns (D-154)", () => {
     await page.getByRole("button", { name: "พักแคมเปญ" }).click();
     const dialog = page.getByRole("alertdialog", { name: "พักแคมเปญ" });
     await expect(dialog).toContainText("฿21,450.00");
+    await dialog.getByRole("button", { name: "พักแคมเปญ" }).click();
+    // The reason is recorded with the action (`OptionalReasonDto`), so it is asked for.
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel(/^เหตุผล/).fill("รอปรับข้อความโฆษณา");
     await dialog.getByRole("button", { name: "พักแคมเปญ" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(header(page)).toContainText("หยุดชั่วคราว");
@@ -91,10 +96,9 @@ test.describe("promotions (D-053)", () => {
     await page.getByRole("button", { name: "สร้างโปรโมชัน" }).click();
     await expect(page).toHaveURL(/\/marketing\/promotions\/[0-9a-f-]{36}$/);
     await expect(header(page)).toContainText("ฉบับร่าง");
-    // CONTRACT-GAP admin.promotions — no benefit summary from the API: the header names the benefit's type.
-    await expect(header(page)).toContainText("ลดเป็นเปอร์เซ็นต์");
+    // The header says the benefit in the API's words (`benefitSummaryTh`).
+    await expect(header(page)).toContainText("ลด 7%");
 
-    // CONTRACT-GAP admin.promotions — the published action takes no reason.
     await page.getByRole("button", { name: "เปิดใช้" }).click();
     let dialog = page.getByRole("alertdialog", { name: "เปิดใช้โปรโมชัน" });
     await dialog.getByRole("button", { name: "เปิดใช้" }).click();
@@ -125,16 +129,37 @@ test.describe("promotions (D-053)", () => {
     await expectAxeClean(page);
   });
 
-  test("a leaked code is disabled", async ({ page }) => {
-    // CONTRACT-GAP admin.coupons — disabling records no reason on the published operation.
+  test("a leaked code is disabled with the reason, and codes filter by status", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/marketing/promotions/${promotion(4)}`);
     const codes = page.getByRole("table", { name: "โค้ดคูปอง" });
     await codes.getByRole("button", { name: "ปิดโค้ด FAIR9MXD" }).click();
     const dialog = page.getByRole("alertdialog", { name: "ปิดโค้ด FAIR9MXD" });
+    await dialog.getByLabel(/^เหตุผลที่ปิดโค้ด/).fill("โค้ดหลุดในกลุ่มสาธารณะ");
     await dialog.getByRole("button", { name: "ปิดโค้ด" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(codes.getByRole("row", { name: /FAIR9MXD/ })).toContainText("ปิดใช้");
+    // Each code names its batch.
+    await expect(codes.getByRole("row", { name: /FAIR9MXD/ })).toContainText("ชุดโค้ดไม่ซ้ำ");
+
+    await choose(page, /^สถานะ$/, "ใช้ครบแล้ว");
+    await expect(codes.getByRole("row")).toHaveCount(2);
+    await expect(codes).toContainText("FAIR7K2Q");
+  });
+
+  test("each row says its benefit, campaign and usage in the API's words", async ({ page }) => {
+    await signInAsStaff(page, "marketing");
+    await gotoHydrated(page, `${HOSTS.admin}/marketing/promotions`);
+    const table = page.getByRole("table", { name: "โปรโมชัน" });
+    await expect(table).toContainText("ใช้แล้ว");
+    await expect(table.getByRole("link", { name: /^[a-z0-9_-]+$/ }).first()).toBeVisible();
+  });
+
+  test("a referral promotion is the system's, so it is read-only", async ({ page }) => {
+    await signInAsStaff(page, "marketing");
+    await gotoHydrated(page, `${HOSTS.admin}/marketing/promotions/${promotion(5)}`);
+    await expect(page.getByText("โปรโมชันชวนเพื่อนจัดการโดยระบบ")).toBeVisible();
+    await expect(page.getByRole("button", { name: "บันทึก" })).toHaveCount(0);
   });
 
   test("the engine's order is changed and saved", async ({ page }) => {
@@ -205,18 +230,39 @@ test.describe("customers", () => {
     // packio-api grants customers.read to CS, not to Marketing (docs/rbac.md).
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/customers`);
-    await expect(page.getByRole("table", { name: "ลูกค้า" })).toContainText("บริษัท ตัวอย่างขนม จำกัด");
+    const list = page.getByRole("table", { name: "ลูกค้า" });
+    await expect(list).toContainText("บริษัท ตัวอย่างขนม จำกัด");
     await expectAxeClean(page);
+    // The API filters by type (v0.5.0): no individual is left on the juristic page.
+    await choose(page, /^ประเภท$/, "นิติบุคคล");
+    await expect(page).toHaveURL(/customerType=juristic/);
+    await expect(list).not.toContainText("ร้านกาแฟตัวอย่าง");
 
     await gotoHydrated(page, `${HOSTS.admin}/customers/${customer(2)}?tab=points`);
     await expect(page.getByText("แต้มที่ใช้ได้")).toBeVisible();
     await expect(page.getByRole("table", { name: "รายการแต้ม" })).toContainText("รอเข้าบัญชี");
     await expectAxeClean(page);
 
+    // A ledger line opens the order it came from (`orderId`, v0.5.0).
+    await expect(page.getByRole("table", { name: "รายการแต้ม" }).getByRole("link").first()).toHaveAttribute(
+      "href",
+      /\/orders\/[0-9a-f-]{36}$/,
+    );
+
     await page.getByRole("tab", { name: "ความยินยอม" }).click();
     const consents = page.getByRole("table", { name: "ความยินยอม" });
     await expect(consents).toContainText("ประกาศความเป็นส่วนตัว");
     await expect(consents.getByRole("button")).toHaveCount(0);
+  });
+
+  test("the friends a customer referred are listed with the API's fraud flags (D-136)", async ({ page }) => {
+    // The referral list needs promotions.read, which the CS Lead holds (docs/rbac.md).
+    await signInAsStaff(page, "cs_lead");
+    await gotoHydrated(page, `${HOSTS.admin}/customers/${customer(3)}?tab=referrals`);
+    const table = page.getByRole("table", { name: /^เพื่อนที่แนะนำด้วยรหัส/ });
+    await expect(table.getByRole("row")).toHaveCount(3);
+    await expect(table).toContainText("ที่อยู่ซ้ำ");
+    await expectAxeClean(page);
   });
 });
 
@@ -261,8 +307,9 @@ test.describe("B2B companies (D-120…D-125)", () => {
   test("a credit limit is requested with a term the setting allows (D-121)", async ({ page }) => {
     await signInAsStaff(page, "finance");
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(2)}?tab=credit`);
-    // CONTRACT-GAP admin.companies — no eligibility reason; the credit status says it is eligible.
     await expect(header(page)).toContainText("มีสิทธิ์ขอเครดิต");
+    // The eligibility and its reason come with the credit (v0.5.0).
+    await expect(page.getByText(/^ขอเครดิตได้: /)).toBeVisible();
     await page.getByRole("button", { name: "ขอวงเงิน" }).click();
     const dialog = page.getByRole("dialog", { name: "ขอวงเงินเครดิต" });
     await dialog.getByLabel(/^วงเงิน/).fill("80000");
@@ -270,24 +317,34 @@ test.describe("B2B companies (D-120…D-125)", () => {
     await dialog.getByLabel(/^เหตุผล/).fill("สั่งซื้อสม่ำเสมอ ชำระตรงเวลา");
     await dialog.getByRole("button", { name: "ส่งขออนุมัติ" }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    // The request answers the credit with its pending request. CONTRACT-GAP admin.company-credit —
-    // no limit history and no approval id, so there is no link to the approval.
+    // The request answers the credit with its pending version, its approval and the history.
     await expect(page.getByText("มีคำขอวงเงินที่รออนุมัติ")).toBeVisible();
     await expect(page.getByText(/฿80,000\.00 ระยะ 30 วัน/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "ดูคำขออนุมัติ" }).first()).toHaveAttribute(
+      "href",
+      /\/approvals\/[0-9a-f-]{36}$/,
+    );
+    await expect(page.getByRole("table", { name: "ประวัติวงเงิน" })).toContainText("80,000.00");
     await expect(page.getByRole("button", { name: "ขอวงเงิน" })).toBeDisabled();
   });
 
   test("an overdue company is blocked from credit orders (D-122)", async ({ page }) => {
     await signInAsStaff(page, "finance");
-    // CONTRACT-GAP admin.companies — no creditStatus filter on the list; the row carries the status.
-    await gotoHydrated(page, `${HOSTS.admin}/companies`);
+    // The list filters by credit standing (v0.5.0) and the row carries the receivables.
+    await gotoHydrated(page, `${HOSTS.admin}/companies?creditStatus=blocked_overdue`);
     const table = page.getByRole("table", { name: "บริษัท (B2B)" });
-    await expect(table.getByRole("row", { name: /อาหารเสริม/ })).toContainText("ระงับเครดิต (ค้างชำระ)");
+    const row = table.getByRole("row", { name: /อาหารเสริม/ });
+    await expect(row).toContainText("ระงับเครดิต (ค้างชำระ)");
+    await expect(row).toContainText(/เกินกำหนด ฿[\d,.]+ · \d+ วัน/);
+    await expect(table.getByRole("row")).toHaveCount(2);
     await gotoHydrated(page, `${HOSTS.admin}/companies/${company(4)}`);
-    // CONTRACT-GAP admin.companies — no receivables on the company, so the block names no day count.
-    await expect(page.getByText("ระงับการสั่งแบบเครดิต: ค้างชำระเกินกำหนด")).toBeVisible();
+    // The block names its day count from the company's receivables (D-122).
+    await expect(page.getByText(/^ระงับการสั่งแบบเครดิต: ค้างชำระเกินกำหนด \d+ วัน$/)).toBeVisible();
     await page.getByRole("tab", { name: "ใบแจ้งยอด" }).click();
-    // CONTRACT-GAP admin.company-credit — a statement is one month's figures, with no status or due date.
+    // The issued months, each with its PDF (D-125); a statement keeps no due date of its own.
+    const issued = page.getByRole("table", { name: "ใบแจ้งยอดที่ออกแล้ว" });
+    await expect(issued.getByRole("row")).toHaveCount(4);
+    await expect(issued.getByRole("button", { name: /^ดาวน์โหลด PDF ใบแจ้งยอดเดือน/ }).first()).toBeEnabled();
     await expect(page.getByRole("tabpanel")).toContainText("ยกมา");
     await expect(page.getByRole("tabpanel")).toContainText("คงค้าง");
     await expectAxeClean(page);

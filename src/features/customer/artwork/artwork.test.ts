@@ -81,10 +81,21 @@ describe("artwork and proofs, against the mock", () => {
       }),
     );
     expect(unkeyed?.status).toBe(400);
+    // Every item of the approval checklist the rules set must be confirmed.
+    const keys = artwork.rules!.approvalChecklist.map((item) => item.key);
+    const partial = await failure(
+      api().POST("/v1/store/proofs/{proofId}/actions/approve", {
+        params: { path: { proofId: proof.id }, header: { "Idempotency-Key": uuid() } },
+        body: { checklist: keys.slice(1) },
+      }),
+    );
+    expect(partial?.status).toBe(422);
     const { data: approved } = await api().POST("/v1/store/proofs/{proofId}/actions/approve", {
       params: { path: { proofId: proof.id }, header: { "Idempotency-Key": uuid() } },
+      body: { checklist: keys, note: "สีโลโก้ตรงแล้ว" },
     });
-    expect(approved).toMatchObject({ status: "approved", decisionChannel: "web" });
+    expect(approved).toMatchObject({ status: "approved", decisionChannel: "web", decisionChecklist: keys });
+    expect(approved!.decidedByName).toBeTruthy();
     expect(approved!.approvedFileSha256).toBeTruthy();
 
     const closed = await failure(

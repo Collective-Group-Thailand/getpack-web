@@ -42,6 +42,17 @@ test.describe("the prepress desk", () => {
     await expect(table).toContainText("ผ่านแต่มีคำเตือน");
     await expectAxeClean(page);
   });
+
+  test("each row names the customer and the owner, and the desk filters by owner", async ({ page }) => {
+    await signInAsStaff(page, "prepress");
+    await gotoHydrated(page, `${HOSTS.admin}/prepress?assigneeId=none`);
+    const table = page.getByRole("table", { name: "งานก่อนพิมพ์" });
+    await expect(table.getByRole("row")).not.toHaveCount(1);
+    // Every data row (the first row is the header) is work nobody owns yet.
+    for (const row of (await table.getByRole("row").all()).slice(1)) {
+      await expect(row).toContainText("ยังไม่มีผู้รับผิดชอบ");
+    }
+  });
 });
 
 test.describe("preflight (D-070)", () => {
@@ -63,21 +74,29 @@ test.describe("preflight (D-070)", () => {
     await expect(header(page)).toContainText("ขอให้แก้ไขไฟล์");
   });
 
-  test("accepting a file with warnings names them, then a proof is offered", async ({ page }) => {
+  test("accepting a file with warnings names them and asks why they are acceptable", async ({ page }) => {
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(14)}`);
     await page.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
     const dialog = page.getByRole("alertdialog", { name: "รับไฟล์ฉบับที่ 1 ไปทำปรู๊ฟ" });
     await expect(dialog).toContainText("ข้อควรระวัง 2 ข้อ");
+    // The note is the acknowledgement `admin.artwork.accept` records: refused in place without it.
+    await dialog.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel(/^เหตุผลที่ยอมรับข้อควรระวัง/).fill("ลูกค้ายืนยันใช้ภาพนี้ทางโทรศัพท์");
     await dialog.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "อัปโหลดและส่งปรู๊ฟ" })).toBeVisible();
   });
 
-  test("accepting a file with warnings asks why it is acceptable", async ({ page }) => {
-    // CONTRACT-GAP admin.prepress-actions — admin.artwork.accept takes no body, so no acknowledgement note.
-    test.fixme(true, "CONTRACT-GAP admin.prepress-actions — accepting records no acknowledgement of the warnings");
+  test("the order's owner is assigned from the workspace", async ({ page }) => {
     await signInAsStaff(page, "prepress");
+    await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(19)}`);
+    await page.getByRole("button", { name: "มอบหมาย" }).first().click();
+    const dialog = page.getByRole("dialog", { name: /มอบหมาย/ });
+    await dialog.getByRole("button", { name: "รับเอง" }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByText("คุณ", { exact: true })).toBeVisible();
   });
 });
 
@@ -113,6 +132,8 @@ test.describe("proofs", () => {
 
     await page.getByRole("button", { name: "ทำเครื่องหมายแก้แล้ว (2)" }).click();
     await expect(page.getByText("แก้ไขแล้ว", { exact: true })).toBeVisible();
+    // Who resolved it is published (`resolvedBy`).
+    await expect(page.getByText(/^แก้โดย /).first()).toBeVisible();
   });
 });
 

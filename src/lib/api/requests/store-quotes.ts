@@ -314,19 +314,6 @@ export const storeQuote = z
 
 export const signedUrl = z.object({ url: z.string(), expiresAt: dateTime() }).meta({ id: "SignedUrlDto" });
 
-/* ---------------------------------------------------------------------- support channels */
-
-export const supportChannels = z
-  .object({
-    /** The LINE Official Account id, for `line.me/R/oaMessage/{id}` deep links. */
-    lineOaId: z.string().nullable(),
-    phone: z.string().nullable(),
-    email: z.string().nullable(),
-    /** Opening hours in words, in the request's language. */
-    hours: z.string().nullable(),
-  })
-  .meta({ id: "StoreSupportChannelsDto" });
-
 /* ----------------------------------------------------------------------------------- requests */
 
 export const storeQuoteRequests = {
@@ -337,33 +324,5 @@ export const storeQuoteRequests = {
     decisions: ["D-100", "D-043", "D-051", "D-072"],
     public: true,
     response: storeConfigurator,
-  }),
-  "POST /v1/store/promotions/actions/check": request({
-    request: "store.promo-check",
-    summary:
-      "Is this code valid for this product, and what does it give — the amount is applied on the quote and at checkout",
-    decisions: ["D-053"],
-    public: true,
-    body: z.object({
-      code: z.string().trim().min(1).max(40),
-      productTypeCode: z.string(),
-      quantity: z.number().int().positive().optional(),
-    }),
-    response: z
-      .object({
-        code: z.string(),
-        valid: z.boolean(),
-        reason: promotionCheckReason.nullable(),
-        title: z.string().nullable(),
-        benefit: z.string().nullable(),
-      })
-      .meta({ id: "PromotionCheckDto" }),
-  }),
-  "GET /v1/store/support-channels": request({
-    request: "store.support-channels",
-    summary: "How a customer reaches CS: the LINE Official Account, phone, e-mail and opening hours",
-    decisions: ["D-143"],
-    public: true,
-    response: supportChannels,
   }),
 } as const;

@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPoints } from "@/features/customer/account/api.server";
+import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ORDER_STATUS } from "@/domain/status";
@@ -21,15 +22,15 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, active, points, names] = await Promise.all([
+  const [t, tNav, format, active, points] = await Promise.all([
     getTranslations("account.home"),
     getTranslations("account.nav"),
     getFormat(),
     listMyOrders("active"),
     getPoints(),
-    getProductTypeNames(locale),
   ]);
-  const todo = active.filter((row) => row.actions.length > 0);
+  // What needs doing: the orders' own actions, and a group waiting for its payment.
+  const todo = active.filter((row) => row.actions.length > 0 || row.group.status === "waiting_payment");
 
   return (
     <div className="flex flex-col gap-8">
@@ -46,24 +47,21 @@ export default async function Page() {
           <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-3">
-            {todo.map(({ order, actions }) => (
+            {todo.map(({ order, group, actions }) => (
               <li key={order.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-medium">
                     <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
-                      {names[order.productTypeCode] ?? order.productTypeCode}
+                      {productNameOf(locale, order.summary)}
                     </Link>
                     <span className="text-muted ms-2 font-mono text-sm">{order.orderCode}</span>
                   </p>
                   <StatusChip map={ORDER_STATUS} value={order.status} />
                 </div>
-                <OrderActions
-                  orderId={order.id}
-                  orderCode={order.orderCode}
-                  size="sm"
-                  actions={actions.filter((action) => action.key !== "order.pay_instalment")}
-                />
-                {actions.some((action) => action.key === "order.pay_instalment") ? (
+                {actions.length > 0 ? (
+                  <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
+                ) : null}
+                {group.status === "waiting_payment" ? (
                   <Link
                     href={`/account/orders/${order.id}#instalments`}
                     className="text-primary text-sm font-medium underline-offset-4 hover:underline"
@@ -86,10 +84,10 @@ export default async function Page() {
             {t("points", { points: format.number(points.availablePoints) })}
           </p>
           <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
-          {/* CONTRACT-GAP store.loyalty — no next tier or threshold, so the tier stands without a progress bar. */}
           <p className="mt-3 text-sm">
             {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
           </p>
+          <TierProgress points={points} className="mt-2 text-sm" />
           <Button asChild variant="link" className="mt-2 px-0">
             <Link href="/account/points">{t("seePoints")}</Link>
           </Button>

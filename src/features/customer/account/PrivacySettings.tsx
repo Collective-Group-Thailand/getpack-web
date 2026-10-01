@@ -7,9 +7,6 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
 import type { Schemas } from "@/lib/api/types";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
@@ -20,8 +17,11 @@ import { Switch } from "@/ui/components/Switch";
 import { Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
+import { FileLink } from "../files/FileLink";
+
 type Consent = Schemas["ConsentDto"];
-type PrivacyRequest = ResponseOf<Requests, "GET /v1/store/me/privacy-requests">["data"][number];
+type PrivacyRequest = Schemas["PrivacyRequestDto"];
+type Kind = Schemas["PrivacyRequestKind"];
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
@@ -29,7 +29,8 @@ const newKey = () =>
 /**
  * PDPA in the account (F3 3.4): every consent purpose with the text it was given for, the optional
  * ones withdrawable at once (published `store.me.consents`); a copy of one's data or its deletion
- * as a request the privacy team answers by a deadline (CONTRACT-REQUEST store.privacy).
+ * as a request the Data Protection Officer answers by a deadline (`store.me.*PrivacyRequest*`,
+ * D-222): the deadline, the answer and — for an export — the file while it can be downloaded.
  */
 export function PrivacySettings({
   consents: initialConsents,
@@ -42,7 +43,7 @@ export function PrivacySettings({
   const format = useFormat();
   const router = useRouter();
   const [consents, setConsents] = useState(initialConsents);
-  const [asking, setAsking] = useState<"export" | "delete" | null>(null);
+  const [asking, setAsking] = useState<Kind | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const key = useRef(newKey());
@@ -61,9 +62,9 @@ export function PrivacySettings({
     if (!asking) return;
     setBusy(true);
     try {
-      await browserRequests().call("POST /v1/store/me/privacy-requests", {
-        body: { kind: asking, ...(reason.trim() ? { reason: reason.trim() } : {}) },
-        idempotencyKey: key.current,
+      await browserApi().POST("/v1/store/me/privacy-requests", {
+        params: { header: { "Idempotency-Key": key.current } },
+        body: { kind: asking, ...(reason.trim() ? { note: reason.trim() } : {}) },
       });
       key.current = newKey();
       setAsking(null);
@@ -118,7 +119,7 @@ export function PrivacySettings({
           <Button variant="secondary" iconStart="download" onClick={() => setAsking("export")}>
             {t("export")}
           </Button>
-          <Button variant="ghost" iconStart="trash" onClick={() => setAsking("delete")}>
+          <Button variant="ghost" iconStart="trash" onClick={() => setAsking("deletion")}>
             {t("delete")}
           </Button>
         </div>
@@ -132,14 +133,26 @@ export function PrivacySettings({
                 <p className="text-muted text-xs">
                   {t("requestedAt", { date: format.date(request.requestedAt), due: format.date(request.dueAt) })}
                 </p>
-                {request.note ? <p className="mt-1">{request.note}</p> : null}
-                {request.download ? (
-                  <a
-                    href={request.download.url}
-                    className="text-primary mt-1 inline-block underline-offset-4 hover:underline"
-                  >
-                    {t("downloadExport")}
-                  </a>
+                {request.note ? <p className="text-muted mt-1">{t("yourNote", { note: request.note })}</p> : null}
+                {request.answer ? (
+                  <p className="mt-1">
+                    {request.decidedAt
+                      ? t("answeredAt", { date: format.date(request.decidedAt), answer: request.answer })
+                      : request.answer}
+                  </p>
+                ) : null}
+                {request.export ? (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <FileLink
+                      fileId={request.export.fileId}
+                      label={t("downloadExport")}
+                      openLabel={t("openExport")}
+                      failed={t("failed")}
+                    />
+                    <span className="text-muted text-xs">
+                      {t("exportUntil", { date: format.dateTime(request.export.expiresAt) })}
+                    </span>
+                  </div>
                 ) : null}
               </li>
             ))}
@@ -150,11 +163,11 @@ export function PrivacySettings({
       <AlertDialog
         open={asking !== null}
         onOpenChange={(open) => !open && setAsking(null)}
-        title={asking === "delete" ? t("deleteTitle") : t("exportTitle")}
-        description={asking === "delete" ? t("deleteBody") : t("exportBody")}
-        confirmLabel={asking === "delete" ? t("deleteConfirm") : t("exportConfirm")}
+        title={asking === "deletion" ? t("deleteTitle") : t("exportTitle")}
+        description={asking === "deletion" ? t("deleteBody") : t("exportBody")}
+        confirmLabel={asking === "deletion" ? t("deleteConfirm") : t("exportConfirm")}
         cancelLabel={t("cancel")}
-        tone={asking === "delete" ? "destructive" : "primary"}
+        tone={asking === "deletion" ? "destructive" : "primary"}
         loading={busy}
         onConfirm={() => void submit()}
       >

@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 
 import { describe, expect, expectTypeOf, it } from "vitest";
+import { z } from "zod";
 
 import { createApiClient } from "../client";
 import { createRequestClient } from "./client";
+import { request } from "./define";
 import { CUSTOMER_ZONE_PARKED, PUBLISHED_AWAITING_MIGRATION } from "./awaiting-migration";
 import { AWAITING_TRIAGE, isStillOpen } from "./awaiting-triage";
 import { REQUESTS, type RequestKey } from "./registry";
@@ -33,43 +35,58 @@ describe("the contract-request registry", () => {
   });
 
   it("keeps the published-awaiting-migration list shrinking", () => {
-    // Every entry must still be a request and still be published; a migrated one is deleted
-    // from the registry and then has to leave the list too.
+    // Every entry must still be a request and still be published — at its own path, or where the
+    // triage says it was published instead; a migrated one is deleted from the registry and then
+    // has to leave the list too.
     const stale = PUBLISHED_AWAITING_MIGRATION.filter((key) => {
       const [method, path] = key.split(" ") as [string, string];
-      return !(key in REQUESTS) || contract.paths[path]?.[method.toLowerCase()] === undefined;
+      const verdict = OPERATION_TRIAGE[key]?.verdict;
+      const published =
+        contract.paths[path]?.[method.toLowerCase()] !== undefined ||
+        verdict === "published" ||
+        verdict === "published_differently";
+      return !(key in REQUESTS) || !published;
     });
     expect(stale).toEqual([]);
-    // U-F0.2 migrated the customer zone, U-F0.3 the admin zone; left are the partner zone's four
-    // (U-F0.4) and the configurator parked for U2.F1.
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(5);
+    // U-F0.4 moved every zone onto contract v0.6.0; only the configurator parked for U2.F1 is left.
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(1);
   });
 
-  it("keeps the customer zone on the published contract", () => {
-    // U-F0.2: a store request is only one packio-api still has to build (verdict `implement`, or
-    // written after the triage and awaiting it). Anything else is published and is called through
-    // serverApi/browserApi with the generated types — never through a request again.
-    const offContract = entries
+  it("leaves nothing published on a request but what is parked on purpose", () => {
+    expect([...PUBLISHED_AWAITING_MIGRATION].sort()).toEqual([...CUSTOMER_ZONE_PARKED].sort());
+  });
+
+  /**
+   * A zone's requests are only what packio-api has not built — verdict `implement`, `deferred` by
+   * a decision, or written after the triage — plus the published ones still on the migration list.
+   * Anything else is called through serverApi/browserApi with the generated types.
+   */
+  function offContract(surface: "store" | "admin" | "partner"): string[] {
+    return entries
       .map(([key]) => key)
-      .filter((key) => key.includes(" /v1/store/"))
-      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key))
-      .filter((key) => !CUSTOMER_ZONE_PARKED.includes(key));
-    expect(offContract).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/store/"))).toEqual(CUSTOMER_ZONE_PARKED);
+      .filter((key) => key.includes(` /v1/${surface}/`))
+      .filter(
+        (key) =>
+          !["implement", "deferred"].includes(OPERATION_TRIAGE[key]?.verdict ?? "") && !AWAITING_TRIAGE.includes(key),
+      )
+      .filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key));
+  }
+
+  it("keeps the customer zone on the published contract", () => {
+    // U-F0.2, re-opened by v0.4.0 (U-F0.4).
+    expect(offContract("store")).toEqual([]);
     // A parked operation is still a published one awaiting its screen, never a way to hide a new request.
     expect(CUSTOMER_ZONE_PARKED.filter((key) => !PUBLISHED_AWAITING_MIGRATION.includes(key))).toEqual([]);
   });
 
   it("keeps the admin zone on the published contract", () => {
-    // U-F0.3: an admin request is only one packio-api still has to build (verdict `implement`, or
-    // written after the triage and awaiting it). Anything else is published and is called through
-    // serverApi/browserApi with the generated types — never through a request again.
-    const offContract = entries
-      .map(([key]) => key)
-      .filter((key) => key.includes(" /v1/admin/"))
-      .filter((key) => OPERATION_TRIAGE[key]?.verdict !== "implement" && !AWAITING_TRIAGE.includes(key));
-    expect(offContract).toEqual([]);
-    expect(PUBLISHED_AWAITING_MIGRATION.filter((key) => key.includes(" /v1/admin/"))).toEqual([]);
+    // U-F0.3, re-opened by v0.5.0 and v0.6.0 (U-F0.4).
+    expect(offContract("admin")).toEqual([]);
+  });
+
+  it("keeps the partner zone on the published contract", () => {
+    // U-F0.4.
+    expect(offContract("partner")).toEqual([]);
   });
 
   it("spells every key as a method and a surface path template", () => {
@@ -143,6 +160,7 @@ describe("packio-api's triage (U1 U-F0.1)", () => {
       published: "Published as ",
       published_differently: "Published differently (see mapping)",
       implement: "Open — packio-api ",
+      deferred: "Deferred by decision",
       mixed: "Mixed — ",
       reject: "Rejected",
     };
@@ -171,6 +189,46 @@ describe("packio-api's triage (U1 U-F0.1)", () => {
   });
 });
 
+/**
+ * The client's own behaviour, against a fixture registry rather than the live one: the live
+ * registry only shrinks as packio-api ships (U-F0.4 leaves almost nothing in it), and these
+ * properties hold for any request.
+ */
+const FIXTURE = {
+  "POST /v1/admin/fixture-documents/{documentId}/actions/send": request({
+    request: "fixture",
+    summary: "An irreversible action with a path parameter",
+    body: z.object({ channels: z.array(z.enum(["email", "line"])).min(1) }),
+    response: z.object({ documentId: z.string() }),
+    idempotent: true,
+  }),
+  "GET /v1/admin/fixture-views": request({
+    request: "fixture",
+    summary: "A read with filters",
+    query: z.object({ resource: z.string(), q: z.string().optional(), limit: z.coerce.number().int().optional() }),
+    response: z.object({ data: z.array(z.object({ id: z.string(), name: z.string() })) }),
+  }),
+  "POST /v1/admin/fixture-views": request({
+    request: "fixture",
+    summary: "A create with a body",
+    body: z.object({ name: z.string() }),
+    response: z.object({ id: z.string() }),
+    status: 201,
+  }),
+  "PUT /v1/admin/fixture-views/{viewId}": request({
+    request: "fixture",
+    summary: "An edit of an aggregate, with If-Match",
+    body: z.object({ name: z.string() }),
+    response: z.object({ id: z.string() }),
+    concurrency: true,
+  }),
+  "DELETE /v1/admin/fixture-views/{viewId}": request({
+    request: "fixture",
+    summary: "A delete",
+    status: 204,
+  }),
+} as const;
+
 describe("the request client", () => {
   function recorder() {
     const seen: Request[] = [];
@@ -184,66 +242,67 @@ describe("the request client", () => {
         });
       },
     });
-    return { seen, requests: createRequestClient(REQUESTS, client as unknown as Client<never>) };
+    return { seen, requests: createRequestClient(FIXTURE, client as unknown as Client<never>) };
   }
 
   it("fills path parameters and sends the idempotency key it was given", async () => {
     const { seen, requests } = recorder();
-    await requests.call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
+    await requests.call("POST /v1/admin/fixture-documents/{documentId}/actions/send", {
       path: { documentId: "0192f3a0-7c1e-7d2a-9b1f-00000000a001" },
       body: { channels: ["email"] },
       idempotencyKey: "k-1",
     });
 
     expect(seen[0]?.url).toBe(
-      "https://api.example/v1/admin/customer-documents/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/resend",
+      "https://api.example/v1/admin/fixture-documents/0192f3a0-7c1e-7d2a-9b1f-00000000a001/actions/send",
     );
     expect(seen[0]?.headers.get("Idempotency-Key")).toBe("k-1");
   });
 
   it("reads the ETag for an edit and sends it back as If-Match", async () => {
     const { seen, requests } = recorder();
-    const designId = "0192f3a0-7c1e-7d2a-9b1f-00000000a002";
-    const { etag } = await requests.read("GET /v1/admin/saved-views", { query: { resource: "order" } });
-    await requests.call("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", {
-      path: { designId, versionNo: "3" },
+    const viewId = "0192f3a0-7c1e-7d2a-9b1f-00000000a002";
+    const { etag } = await requests.read("GET /v1/admin/fixture-views", { query: { resource: "order" } });
+    await requests.call("PUT /v1/admin/fixture-views/{viewId}", {
+      path: { viewId },
+      body: { name: "mine" },
       etag: etag!,
     });
 
     expect(etag).toBe('W/"v1"');
-    expect(seen[1]?.url).toBe(`https://api.example/v1/store/designs/${designId}/versions/3/actions/restore`);
+    expect(seen[1]?.url).toBe(`https://api.example/v1/admin/fixture-views/${viewId}`);
     expect(seen[1]?.headers.get("If-Match")).toBe('W/"v1"');
   });
 
   it("drops empty filters instead of sending them as empty strings", async () => {
     const { seen, requests } = recorder();
-    await requests.call("GET /v1/admin/saved-views", { query: { resource: "order" } });
-    await requests.call("GET /v1/admin/search", { query: { q: "PK", limit: undefined } });
+    await requests.call("GET /v1/admin/fixture-views", { query: { resource: "order" } });
+    await requests.call("GET /v1/admin/fixture-views", { query: { resource: "order", q: "PK", limit: undefined } });
 
     expect(new URL(seen[0]!.url).search).toBe("?resource=order");
-    expect(new URL(seen[1]!.url).search).toBe("?q=PK");
+    expect(new URL(seen[1]!.url).search).toBe("?resource=order&q=PK");
   });
 
   it("is typed by the registry", () => {
     const { requests } = recorder();
-    type Views = Awaited<ReturnType<typeof requests.call<"GET /v1/admin/saved-views">>>;
+    type Views = Awaited<ReturnType<typeof requests.call<"GET /v1/admin/fixture-views">>>;
     expectTypeOf<Views["data"][number]["name"]>().toEqualTypeOf<string>();
-    type Deleted = Awaited<ReturnType<typeof requests.call<"DELETE /v1/admin/saved-views/{viewId}">>>;
+    type Deleted = Awaited<ReturnType<typeof requests.call<"DELETE /v1/admin/fixture-views/{viewId}">>>;
     expectTypeOf<Deleted>().toEqualTypeOf<void>();
 
     // Compile-time guarantees, checked by `pnpm typecheck` rather than at runtime:
     const never = () => {
       // @ts-expect-error — an irreversible action needs the caller's idempotency key
-      void requests.call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
+      void requests.call("POST /v1/admin/fixture-documents/{documentId}/actions/send", {
         path: { documentId: "x" },
         body: { channels: ["email"] },
       });
       // @ts-expect-error — a path parameter cannot be forgotten
-      void requests.call("GET /v1/admin/customers/{customerId}/consents");
+      void requests.call("DELETE /v1/admin/fixture-views/{viewId}");
       // @ts-expect-error — neither can a body
-      void requests.call("POST /v1/admin/saved-views");
+      void requests.call("POST /v1/admin/fixture-views");
       // @ts-expect-error — nor can a key be misspelt
-      void requests.call("GET /v1/admin/saved-view");
+      void requests.call("GET /v1/admin/fixture-view");
     };
     expect(typeof never).toBe("function");
   });

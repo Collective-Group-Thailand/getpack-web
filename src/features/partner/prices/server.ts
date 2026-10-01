@@ -1,11 +1,12 @@
 import "server-only";
 
+import { getLocale } from "next-intl/server";
 import { cache } from "react";
 
 import { attempt, partnerServerApis } from "@/features/partner/context/server";
 import type { Schemas } from "@/lib/api/types";
 
-import type { PriceReference } from "./values";
+import { productTypeName, toPriceReferences } from "./values";
 
 type Proposal = Schemas["PriceProposalSummaryDto"];
 
@@ -19,13 +20,13 @@ export const OPEN_PROPOSAL: readonly Proposal["status"][] = ["draft", "submitted
  * DTOs have no field for one.
  */
 export const loadPrices = cache(async (factoryId: string) => {
-  const { contract, requests } = await partnerServerApis();
+  const [{ contract }, locale] = await Promise.all([partnerServerApis(), getLocale()]);
   const path = { params: { path: { factoryId } } };
   const [lists, config, components, references, proposals] = await Promise.all([
     attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/price-lists", path)).data ?? []),
     attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/configuration", path)).data!),
     attempt(async () => (await contract.GET("/v1/partner/price-components", {})).data ?? []),
-    attempt(() => requests.call("GET /v1/partner/factories/{factoryId}/references", { path: { factoryId } })),
+    attempt(async () => (await contract.GET("/v1/partner/factories/{factoryId}/references", path)).data!),
     attempt(
       async () =>
         (
@@ -35,12 +36,16 @@ export const loadPrices = cache(async (factoryId: string) => {
         ).data?.data ?? [],
     ),
   ]);
-  const productTypes = references.data?.productTypes ?? [];
+  const productTypes = (references.data?.productTypes ?? []).map((type) => ({
+    id: type.id,
+    code: type.code,
+    name: productTypeName(type, locale),
+  }));
   return {
     lists,
     config,
     components: components.data ?? [],
-    references: (references.data?.columns ?? []) as PriceReference[],
+    references: toPriceReferences(references.data?.items ?? [], locale),
     proposals: proposals.data ?? [],
     productTypes,
     typeName: (idOrCode: string) =>
