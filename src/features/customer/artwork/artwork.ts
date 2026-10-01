@@ -10,7 +10,7 @@ export type Proof = Schemas["ProofDto"];
 export type Annotation = Schemas["AnnotationDto"];
 export type Template = Schemas["DielineDeliveryDto"];
 export type DesignService = Schemas["DesignServiceDto"];
-export type Instalment = Schemas["InstalmentDto"];
+export type Instalment = Schemas["StoreInstalmentDto"];
 
 /**
  * One order's artwork as its pages show it, composed from the published reads (the backend has
@@ -27,7 +27,7 @@ export interface Artwork {
   proofs: Proof[];
   templates: Template[];
   designService: DesignService | null;
-  /** The instalment a charged design round waits on (D-071), from the group's payment schedule. */
+  /** The instalment a charged design round waits on (D-071), with its group (`store.paymentSchedules.listInstalments`). */
   feeInstalment: Instalment | null;
   actions: ArtworkActions;
 }
@@ -50,10 +50,7 @@ const newestFirst = <T extends { versionNo: number }>(rows: readonly T[]) =>
 /** The proof waiting for the customer's decision, if one is. */
 export const pendingProof = (proofs: readonly Proof[]) => proofs.find((proof) => proof.status === "pending_customer");
 
-/**
- * The instalment a charged round waits on. The round names it; its amount is on the group's
- * schedule, and the group is found by the order's code (CONTRACT-GAP store.order-group-ref).
- */
+/** The instalment a charged round waits on: the round names it, the customer's instalments carry it with its group. */
 async function feeInstalmentOf(
   api: Client<ApiPaths>,
   order: Order,
@@ -61,15 +58,15 @@ async function feeInstalmentOf(
 ): Promise<Instalment | null> {
   const waiting = service?.rounds.find((round) => round.status === "awaiting_payment" && round.instalmentId);
   if (!waiting) return null;
-  const { data: groups } = await api.GET("/v1/store/order-groups", { params: { query: { q: order.orderCode } } });
-  const group = groups?.data.find((candidate) => candidate.orders.some((entry) => entry.id === order.id));
-  if (!group) return null;
-  const schedule = await orNull(
-    api
-      .GET("/v1/store/order-groups/{groupId}/payment-schedule", { params: { path: { groupId: group.id } } })
-      .then(({ data }) => data!),
+  const instalments = await orNull(
+    api.GET("/v1/store/instalments", { params: { query: { perPage: 100 } } }).then(({ data }) => data!.data),
   );
-  return schedule?.instalments.find((instalment) => instalment.id === waiting.instalmentId) ?? null;
+  return (
+    instalments?.find(
+      (instalment) =>
+        instalment.id === waiting.instalmentId && instalment.orders.some((ref) => ref.orderId === order.id),
+    ) ?? null
+  );
 }
 
 /** One of the customer's orders' artwork; `null` for anyone else's (the API's 404). */

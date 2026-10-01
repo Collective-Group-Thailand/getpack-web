@@ -11,7 +11,7 @@ import type { Schemas } from "@/lib/api/types";
 import { customers as fakeCustomers, orders } from "../admin/commerce";
 import { precondition, problem, versionTag, withEtag } from "../support";
 import { CONSENT_PURPOSES, consentsOf, customerMe, customerOf, type MockCustomer } from "./customers";
-import { toOrderDto } from "./order-dto";
+import { toStoreOrderDto } from "./order-dto";
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 
@@ -74,7 +74,7 @@ export const storeAccountHandlers: HttpHandler[] = [
       (candidate) => candidate.orderCode === params.orderCode && candidate.customer.id === owner,
     );
     if (!order) return problem(404, "http.not_found", "ไม่พบคำสั่งซื้อนี้");
-    return HttpResponse.json(toOrderDto(order));
+    return HttpResponse.json(toStoreOrderDto(order));
   }),
 ];
 

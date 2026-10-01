@@ -5,10 +5,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
 import { LiffSignIn } from "@/features/customer/liff/LiffSignIn";
 import { liffCustomer } from "@/features/customer/liff/liff.server";
-import { getProductTypeNames } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ORDER_STATUS } from "@/domain/status";
@@ -25,23 +25,22 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
   if (!(await liffCustomer())) return <LiffSignIn />;
   const { orderId } = await params;
   const locale = await getLocale();
-  const [t, format, detail, names] = await Promise.all([
+  const [t, tCatalog, format, detail] = await Promise.all([
     getTranslations("liff.order"),
+    getTranslations("catalog"),
     getFormat(),
     getMyOrder(orderId),
-    getProductTypeNames(locale),
   ]);
   if (!detail) notFound();
   const { order } = detail;
-  const next = detail.schedule?.instalments.find(
-    (instalment) => instalment.status === "due" || instalment.status === "overdue",
-  );
+  const next = detail.instalments.find((instalment) => instalment.payable);
   const due = next
     ? {
         id: next.id,
+        groupId: next.groupId,
         label: pick(locale, next.labelTh, next.labelEn),
         grossAmount: next.openAmount,
-        activePaymentId: null,
+        activePaymentId: next.activePaymentId,
       }
     : null;
 
@@ -51,19 +50,18 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
         {t("back")}
       </Link>
       <header className="flex flex-col gap-2">
-        <h1 className="text-xl font-bold">{names[order.productTypeCode] ?? order.productTypeCode}</h1>
+        <h1 className="text-xl font-bold">{productNameOf(locale, order.summary)}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-muted font-mono text-sm">{order.orderCode}</span>
           <StatusChip map={ORDER_STATUS} value={order.status} />
         </div>
       </header>
-      {detail.actions.length > 0 ? (
+      {detail.actions.length > 0 || due ? (
         <OrderActions
           orderId={order.id}
           orderCode={order.orderCode}
           actions={detail.actions}
           payable={due}
-          groupId={detail.group?.id ?? null}
           surface="liff"
         />
       ) : null}
@@ -75,10 +73,15 @@ export default async function Page({ params }: { params: Promise<{ orderId: stri
       </section>
       <DescriptionList
         items={[
-          { term: t("quantity"), description: format.number(order.quantityOrdered) },
+          {
+            term: t("quantity"),
+            description: `${format.number(order.quantityOrdered)} ${tCatalog(`stock.units.${order.summary.unit}`)}`,
+          },
           { term: t("total"), description: format.thb(order.totals.grossAmount) },
-          // CONTRACT-GAP store.orders — no estimated delivery is published; the promised ship date is.
           ...(order.promisedShipDate ? [{ term: t("shipBy"), description: format.date(order.promisedShipDate) }] : []),
+          ...(order.estimatedDeliveryDate
+            ? [{ term: t("eta"), description: format.date(order.estimatedDeliveryDate) }]
+            : []),
         ]}
       />
       <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline underline-offset-4">

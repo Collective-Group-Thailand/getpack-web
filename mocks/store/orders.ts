@@ -17,9 +17,9 @@ import type { Schemas } from "@/lib/api/types";
 
 import { baht, customers as fakeCustomers, orders, satang, type MockOrder } from "../admin/commerce";
 import { settingValue } from "../admin/platform";
-import { toOrderDto } from "./order-dto";
+import { deliveredAt, receipts, toOrderDto, toStoreOrderDto } from "./order-dto";
 import { bangkokIso, mockId, paginate, problem } from "../support";
-import { catalogProducts, imageUrl, provinceRefOf } from "./catalog";
+import { provinceRefOf } from "./catalog";
 import { customerMe, customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
 
@@ -40,32 +40,13 @@ export function orderOf(customer: MockCustomer, orderId: string): MockOrder | un
   return ordersOf(customer).find((order) => order.id === orderId);
 }
 
-/** Receipt confirmed by the customer (D-081) — the fulfilment mock (3.6) writes here too. */
-export const receipts = new Map<string, { confirmedAt: string }>();
-
 export const trackingTokenOf = (order: MockOrder) => `trk${order.id.replace(/-/g, "").slice(-16)}`;
 
-export function deliveredAt(order: MockOrder): string | null {
-  return order.shipments.map((shipment) => shipment.deliveredAt).find(Boolean) ?? null;
-}
+export { claimWindowEnd, deliveredAt, productOf, receipts } from "./order-dto";
 
-export function claimWindowEnd(order: MockOrder): string | null {
-  const confirmed = receipts.get(order.id)?.confirmedAt;
-  const base = confirmed ?? deliveredAt(order);
-  return base ? new Date(Date.parse(base) + 7 * 86_400_000).toISOString().replace("Z", "+00:00") : null;
-}
-
-/** The product an order was made from, as far as its row tells (the published order names only a type). */
-export function productOf(order: MockOrder): { slug: string | null; name: string; imageUrl: string | null } {
-  // Web orders carry their quotation's product in the first line; seeded ones only a type.
-  const slug = catalogProducts().find((row) => order.lines[0]?.description.startsWith(String(row.nameTh)))?.slug;
-  const row = catalogProducts().find((candidate) => candidate.slug === slug);
-  return {
-    slug: slug ? String(slug) : null,
-    name: row ? String(row.nameTh) : order.productType.name,
-    imageUrl: row ? imageUrl(((row.images as { fileId: string }[] | undefined) ?? [])[0]?.fileId) : null,
-  };
-}
+/** The start of the Bangkok day `days` after `date` (`YYYY-MM-DD`), as an ISO timestamp. */
+const bangkokDate = (date: string, days: number) =>
+  `${new Date(Date.parse(`${date}T00:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10)}T18:00:00+07:00`;
 
 const STEPS = {
   ordered: ["สั่งซื้อ", "Ordered"],
@@ -103,6 +84,14 @@ export function stepsOf(order: MockOrder): Schemas["ProgressStepDto"][] {
     shipping: deliveredAt(order),
     completed: receipts.get(order.id)?.confirmedAt ?? deliveredAt(order),
   };
+  const ship = order.promisedShipDate;
+  const planned: Partial<Record<StepKey, string>> = ship
+    ? {
+        production: bangkokDate(ship, -1),
+        shipping: bangkokDate(ship, 0),
+        completed: bangkokDate(ship, 2),
+      }
+    : {};
   const keys = Object.keys(STEPS) as StepKey[];
   const current = order.status === "cancelled" ? null : (keys.find((key) => !done[key]) ?? null);
   return keys.map((key) => ({
@@ -117,8 +106,9 @@ export function stepsOf(order: MockOrder): Schemas["ProgressStepDto"][] {
           ? "skipped"
           : "pending",
     completedAt: done[key] ? (at[key] ?? null) : null,
-    // The mock keeps no factory plan dates (D-075).
-    promisedAt: null,
+    // The factory's plan (D-075), as far as the row has one: production finishes the day before the
+    // promised ship date, delivery is the estimate.
+    promisedAt: planned[key] ?? null,
   }));
 }
 
@@ -131,8 +121,7 @@ export function toProgress(order: MockOrder): Schemas["OrderProgressDto"] {
     orderId: order.id,
     status: order.status,
     promisedShipDate: order.promisedShipDate,
-    // The mock order keeps no delivery estimate from its quotation.
-    estimatedDeliveryDate: null,
+    estimatedDeliveryDate: toOrderDto(order).estimatedDeliveryDate,
     paidForProductionAt: paidOf(order) ? when("paid") : null,
     artworkApprovedAt: when("artwork"),
     productionStartedAt: when("artwork"),
@@ -376,7 +365,7 @@ export const storeOrderHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const order = orderOf(customer, String(params.orderId));
-    return order ? HttpResponse.json(toOrderDto(order)) : notFound();
+    return order ? HttpResponse.json(toStoreOrderDto(order)) : notFound();
   }),
 
   // store.timeline.get / progress / shipments (published, U-F0.2).

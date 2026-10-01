@@ -35,6 +35,8 @@ export interface RfqFormProps {
   signedIn: boolean;
   /** The catalogue product the customer came from, when the configurator sent them (D-043). */
   fromProduct: { slug: string; name: string } | null;
+  /** The configurator's calculation that routed here (D-102), sent as `routedFrom`. */
+  calculationId?: string | null;
 }
 
 interface Attached {
@@ -56,7 +58,7 @@ const newKey = () =>
  * who is asked to sign in at the end submits the same answers straight after. The submit carries
  * one idempotency key per attempt, so a double tap files one request.
  */
-export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
+export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
   const locale = useLocale();
   const format = useFormat();
@@ -117,12 +119,14 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
     setSubmitting(true);
     setFailure(null);
     try {
-      // `store.rfqs.submit`: the server stamps the spec's schema version itself.
-      // CONTRACT-GAP store.rfqs — nothing carries which product routed the customer here (D-102).
+      // `store.rfqs.submit`, with the form version it was filled in and, from the configurator, the
+      // calculation that routed it here (D-102).
       const { data: rfq } = await browserApi().POST("/v1/store/rfqs", {
         params: { header: { "Idempotency-Key": idempotencyKey.current } },
         body: {
           productTypeCode: form.productTypeCode,
+          specSchemaVersion: form.specSchemaVersion,
+          ...(calculationId ? { routedFrom: { calculationId } } : {}),
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
             ? {

@@ -15,7 +15,10 @@ import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
 
 type Params = { category: string };
-type Search = { type?: string; from?: string };
+/** A calculation id from the configurator, checked for its shape only — the API decides the rest. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type Search = { type?: string; from?: string; calc?: string };
 
 async function resolve(segment: string) {
   const tree = await getCatalogueTree();
@@ -117,6 +120,7 @@ export default async function Page({
               form={form!}
               signedIn={Boolean(readAccessToken(jar))}
               fromProduct={product ? { slug: product.slug, name: pick(locale, product.nameTh, product.nameEn) } : null}
+              calculationId={product && UUID.test(query.calc ?? "") ? query.calc! : null}
             />
           </div>
         </section>

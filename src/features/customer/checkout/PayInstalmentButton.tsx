@@ -16,36 +16,32 @@ import { toast } from "@/ui/components/Toast";
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
+/** What paying an instalment needs (`StoreInstalmentDto`): its group, what is left and a payment already started. */
+export interface PayableInstalment {
+  id: string;
+  groupId: string;
+  label: string;
+  /** What is left to pay. */
+  grossAmount: string;
+  activePaymentId: string | null;
+}
+
 export interface PayInstalmentButtonProps extends Omit<ButtonProps, "onClick" | "children"> {
-  instalment: { id: string; label: string; grossAmount: string; activePaymentId: string | null };
+  instalment: PayableInstalment;
   orderCode: string;
-  /** The order group the instalment belongs to, when the caller knows it. */
-  groupId?: string | null;
   children: React.ReactNode;
   /** Inside LINE's LIFF (D-151) the payment page is LIFF's too. */
   surface?: "account" | "liff";
 }
 
 /**
- * The order group an order belongs to, found from its code (`store.orders.listGroups?q=`).
- *
- * CONTRACT-GAP store.order-group-ref — a payment starts on the group (`store.payments.initiate`) but
- * `OrderDto` does not say which group it is in, so a screen that knows only the order looks the
- * group up by the order's code and checks the group really holds it.
- */
-async function groupOf(orderCode: string): Promise<string | null> {
-  const { data } = await browserApi().GET("/v1/store/order-groups", { params: { query: { q: orderCode } } });
-  return data?.data.find((group) => group.orders.some((order) => order.orderCode === orderCode))?.id ?? null;
-}
-
-/**
  * Pays one instalment (D-020) from anywhere in the account: choose a method, then the payment
- * page. A payment already started is continued rather than duplicated.
+ * page. A payment already started is continued rather than duplicated. A payment starts on the
+ * instalment's group (`store.payments.initiate`), which the instalment names (`groupId`).
  */
 export function PayInstalmentButton({
   instalment,
   orderCode,
-  groupId,
   children,
   surface = "account",
   ...button
@@ -65,10 +61,8 @@ export function PayInstalmentButton({
         router.push(`${surface === "liff" ? "/liff/pay" : "/checkout/pay"}/${instalment.activePaymentId}`);
         return;
       }
-      const group = groupId ?? (await groupOf(orderCode));
-      if (!group) throw new Error("group.unknown");
       const { data: payment } = await browserApi().POST("/v1/store/order-groups/{groupId}/payments", {
-        params: { path: { groupId: group }, header: { "Idempotency-Key": newKey() } },
+        params: { path: { groupId: instalment.groupId }, header: { "Idempotency-Key": newKey() } },
         body: { method, instalmentIds: [instalment.id] },
       });
       router.push(`${surface === "liff" ? "/liff/pay" : "/checkout/pay"}/${payment!.id}`);
