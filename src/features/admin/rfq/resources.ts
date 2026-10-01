@@ -11,23 +11,28 @@ export type RfqQuote = Schemas["StaffRfqQuotationDto"];
 export type RfqQuoteLine = Schemas["StaffRfqQuoteLineDto"];
 export type RfqConsultation = Schemas["RfqConsultationDto"];
 export type RfqMessage = Schemas["StaffRfqMessageDto"];
+export type CandidateFactory = Schemas["CandidateFactoryDto"];
+export type UnmetDemandReason = Schemas["UnmetDemandReasonDto"];
 
 /**
  * The desk's queues, each a filter of `admin.rfqs.list`: `new` is `status=submitted`, `mine` is
- * `assignedToId=<me>`, `overdue` is `overdue=true`. CONTRACT-GAP admin.rfqs — there is no
- * "awaiting a factory" filter, and "new" cannot say "nobody owns it yet".
+ * `assignedToId=<me>`, `awaiting_factory` is `awaitingFactory=true` (an open consultation),
+ * `overdue` is `overdue=true`. CONTRACT-GAP admin.rfqs — there is no "unassigned" filter, so
+ * "new" is every submitted request (assigning one moves it to review, D-100).
  */
-export const RFQ_QUEUES = ["new", "mine", "need_info", "quoted", "overdue"] as const;
+export const RFQ_QUEUES = ["new", "mine", "need_info", "awaiting_factory", "quoted", "overdue"] as const;
 export type RfqQueue = (typeof RFQ_QUEUES)[number];
 
 /** The detail's tabs, for the page to validate `?tab=` against. */
 export const RFQ_TABS = ["request", "factories", "quotes", "messages"] as const;
 export type RfqTab = (typeof RFQ_TABS)[number];
 
+/** The list's own filters, as `admin.rfqs.list` names them. */
+export const RFQ_FILTERS = ["status", "productTypeCode", "channel", "submittedFrom", "submittedTo"] as const;
+
 /**
  * `admin.rfqs.list`. A queue is turned into the published filters here, so the server and the
  * browser ask the same thing; `mine` needs the actor's id, read from `/v1/admin/me`.
- * CONTRACT-GAP admin.rfqs — no product type, channel or submitted-date filters.
  */
 export const rfqList = defineList<Rfq>({
   key: "rfq",
@@ -44,6 +49,9 @@ export const rfqList = defineList<Rfq>({
       case "overdue":
         filters.overdue = true;
         break;
+      case "awaiting_factory":
+        filters.awaitingFactory = true;
+        break;
       case "mine": {
         const me = (await contract.GET("/v1/admin/me")).data;
         if (me) filters.assignedToId = me.id;
@@ -56,7 +64,7 @@ export const rfqList = defineList<Rfq>({
   },
   getRowId: (row) => row.id,
   getRowName: (row) => row.rfqCode,
-  defaults: { filterKeys: ["queue", "status"] },
+  defaults: { filterKeys: ["queue", ...RFQ_FILTERS] },
   // A queue with SLA timers on it.
   staleTime: STALE_TIME.live,
 });

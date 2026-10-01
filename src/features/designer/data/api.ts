@@ -17,8 +17,8 @@ import { DOCUMENT_SCHEMA_VERSION } from "../document";
  * path from a URL — the session says which it is.
  *
  * The published design keeps the document opaque (`{ spec, content }`, with `schemaVersion` beside
- * it). Duplicate, restore and import are still requests (`store.designs`, packio-api U-B0.1), as is
- * a staff copy (`admin.design-documents`, U-B0.2), and answer in the request's shape.
+ * it). Duplicate, restore and import are still requests (`store.designs`, packio-api U-B0.1), and
+ * answer in the request's shape. A staff copy is `admin.designs.copy`.
  */
 
 export type StoreDesign = Schemas["DesignDocumentDto"];
@@ -27,7 +27,8 @@ export type DesignerCatalog = ResponseOf<Requests, "GET /v1/store/designer/catal
 export type DesignerMaterial = DesignerCatalog["materials"][number];
 export type DesignerTemplate = DesignerCatalog["templates"][number];
 export type DesignerPattern = DesignerCatalog["patterns"][number];
-export type AdminDesignDocument = Schemas["DesignDocumentDto"];
+/** A design as the back office reads it: the document, its `owner` and whether the reader may edit it. */
+export type AdminDesignDocument = Schemas["AdminDesignDocumentDto"];
 
 export interface Saved<T> {
   data: T;
@@ -197,7 +198,7 @@ export const adminDocuments = {
     });
     return { data: data!, etag: etagOf(response) };
   },
-  /** Only the staff author's own designs save (`catalog.manage`); anyone else's is refused. */
+  /** Only the staff author's own designs save (`catalog.manage`); anyone else's is 409 `designs.read_only`. */
   async save(
     designId: string,
     input: { title: string; kind: Schemas["DesignSaveKind"]; spec: DesignSpec; content: DesignContent },
@@ -209,10 +210,12 @@ export const adminDocuments = {
     });
     return { data: data!, etag: etagOf(response) };
   },
-  async copy(documentId: string, title: string) {
-    return browserRequests().call("POST /v1/admin/design-documents/{documentId}/actions/copy", {
-      path: { documentId },
+  /** A staff-owned editable copy (`admin.designs.copy`); the customer's own document never changes. */
+  async copy(designId: string, title: string, idempotencyKey: string): Promise<Saved<AdminDesignDocument>> {
+    const { data, response } = await browserApi().POST("/v1/admin/designs/{designId}/actions/copy", {
+      params: { path: { designId }, header: { "Idempotency-Key": idempotencyKey } },
       body: { title },
     });
+    return { data: data!, etag: etagOf(response) };
   },
 };

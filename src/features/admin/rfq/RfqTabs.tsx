@@ -1,20 +1,21 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import type { AdminRfqBlock } from "@/domain/next-actions/admin";
 import { CONSULTATION_STATUS, RFQ_QUOTE_STATUS } from "@/domain/status";
+import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat, When } from "@/features/shared/format";
+import { newIdempotencyKey } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
+import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { SlaTimer } from "@/ui/components/SlaTimer";
@@ -22,7 +23,8 @@ import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, problemMessage, StatusChip, useCan, useSlaFormat } from "../console";
-import { useSettleRfq } from "./data";
+import { FileItem } from "../prepress/FileItem";
+import { useCandidateFactories, useSettleRfq } from "./data";
 import { QuoteComposer } from "./QuoteComposer";
 import { byVersionDesc, draftOf, type Rfq, type RfqConsultation, type RfqQuote, type RfqQuoteLine } from "./resources";
 
@@ -46,7 +48,7 @@ function Section({
   );
 }
 
-/** A spec answer as text: the API sends the customer's raw values (CONTRACT-GAP admin.rfqs). */
+/** A raw spec answer as text, for a request whose category form rendered no lines. */
 function specValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "–";
   if (Array.isArray(value)) return value.map(specValue).join(", ");
@@ -59,8 +61,17 @@ function specValue(value: unknown): string {
 export function RequestTab({ rfq }: { rfq: Rfq }) {
   const t = useTranslations("rfq.detail.request");
   const format = useFormat();
-  const spec = Object.entries(rfq.spec);
+  const locale = useLocale();
+  const en = locale === "en";
   const sized = rfq.lengthMm !== null || rfq.widthMm !== null || rfq.heightMm !== null;
+  // The spec as the category form renders it (`specLines`); the raw answers only when it rendered none.
+  const spec =
+    rfq.specLines.length > 0
+      ? rfq.specLines.map((line) => ({
+          term: en ? line.labelEn : line.labelTh,
+          description: en ? line.valueEn : line.valueTh,
+        }))
+      : Object.entries(rfq.spec).map(([key, value]) => ({ term: key, description: specValue(value) }));
   return (
     <div className="flex flex-col gap-4">
       <Section title={t("title")}>
@@ -91,18 +102,25 @@ export function RequestTab({ rfq }: { rfq: Rfq }) {
         />
       </Section>
       <Section title={t("spec")}>
-        {/* CONTRACT-GAP admin.rfqs — the spec comes as the raw answers, not rendered as label/value
-            from the category's rfqSpecSchema, and without its version. */}
         {spec.length > 0 ? (
-          <DescriptionList
-            columns={2}
-            items={spec.map(([key, value]) => ({ term: key, description: specValue(value) }))}
-          />
+          <DescriptionList columns={2} items={spec} />
         ) : (
           <p className="text-muted text-sm">{t("noSpec")}</p>
         )}
       </Section>
-      {/* CONTRACT-GAP admin.rfqs — the request's files are not published. */}
+      <Section title={t("files")}>
+        {rfq.files.length === 0 ? (
+          <p className="text-muted text-sm">{t("noFiles")}</p>
+        ) : (
+          <ul className="space-y-2">
+            {rfq.files.map((file) => (
+              <li key={file.id}>
+                <FileItem fileId={file.id} name={file.originalName} sizeBytes={file.sizeBytes} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
     </div>
   );
 }
@@ -110,22 +128,26 @@ export function RequestTab({ rfq }: { rfq: Rfq }) {
 /* ---------------------------------------------------------------------------------- factories */
 
 /**
- * The factories asked and what they answered. A factory's buy prices are published only to
- * `factory_cost.read` (D-141); nobody sees a suggested sell price (CONTRACT-GAP
- * admin.rfq-consultations), nor the factory's name, tier or who asked.
+ * The factories asked and what they answered, and who asked. A consultation names its factory by
+ * code; the name comes from the RFQ's candidate factories (`admin.rfqs.listCandidateFactories`).
+ * A factory's buy prices are published only to `factory_cost.read` (D-141). CONTRACT-GAP
+ * admin.rfq-consultations — nobody sees a suggested sell price derived from the answer.
  */
 export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => void }) {
   const t = useTranslations("rfq.detail.factories");
   const format = useFormat();
   const sla = useSlaFormat();
   const canManage = useCan("rfqs.manage");
+  const candidates = useCandidateFactories(rfq.id, rfq.consultations.length > 0);
+  const nameOf = (factoryId: string) => candidates.data?.find((item) => item.factoryId === factoryId)?.name;
 
   const remind = useMutation({
-    // Still a contract request (admin.rfq-consultations).
-    mutationFn: (consultationId: string) =>
-      adminBrowserApis().requests.call("POST /v1/admin/rfqs/{rfqId}/consultations/{consultationId}/actions/remind", {
-        path: { rfqId: rfq.id, consultationId },
-      }),
+    // One reminder an hour at most; the API says so (`rfq.reminder_recent`).
+    mutationFn: async (consultationId: string) => {
+      await adminBrowserApis().contract.POST("/v1/admin/rfq-consultations/{consultationId}/actions/remind", {
+        params: { path: { consultationId }, header: { "Idempotency-Key": newIdempotencyKey() } },
+      });
+    },
     onSuccess: () => toast.success(t("reminded")),
     onError: (error) => toast.error(problemMessage(error, t("remindFailed"))),
   });
@@ -136,7 +158,13 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
     {
       id: "factory",
       header: t("factory"),
-      cell: (row) => <p className="font-mono font-medium">{row.factoryCode}</p>,
+      cell: (row) => (
+        <div className="min-w-0">
+          <p className="truncate font-medium">{nameOf(row.factoryId) ?? row.factoryCode}</p>
+          <p className="text-muted font-mono text-xs">{row.factoryCode}</p>
+          <p className="text-muted text-xs">{t("requestedBy", { name: row.requestedBy.displayName })}</p>
+        </div>
+      ),
     },
     { id: "status", header: t("status"), cell: (row) => <StatusChip map={CONSULTATION_STATUS} value={row.status} /> },
     {
@@ -218,7 +246,7 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
         <ul className="mt-3 space-y-1 text-sm">
           {notes.map((item) => (
             <li key={item.id}>
-              <span className="font-mono font-medium">{item.factoryCode}:</span> {item.responseNote}
+              <span className="font-medium">{nameOf(item.factoryId) ?? item.factoryCode}:</span> {item.responseNote}
             </li>
           ))}
         </ul>
@@ -231,8 +259,9 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
 
 /**
  * One quotation version as the API priced it. The buy price shows to `factory_cost.read`, the
- * margin to `margin.read` (D-141). CONTRACT-GAP admin.rfq-quotes — no suggested price per line,
- * no author or creation time, no acceptance time.
+ * margin to `margin.read` (D-141); a line below the margin floor is flagged (D-012), and the API
+ * still lets it be sent. CONTRACT-GAP admin.rfq-quotes — no suggested price per line, no author or
+ * creation time, no acceptance time.
  */
 function QuoteVersion({ quote }: { quote: RfqQuote }) {
   const t = useTranslations("rfq.detail.quotes");
@@ -323,17 +352,14 @@ export function QuotesTab({
   onCompose,
   onCloseComposer,
   onSend,
-  sendBlocked,
 }: {
   rfq: Rfq;
   composing: boolean;
   onCompose?: () => void;
   onCloseComposer: () => void;
   onSend?: () => void;
-  sendBlocked?: AdminRfqBlock;
 }) {
   const t = useTranslations("rfq.detail.quotes");
-  const tActions = useTranslations("rfq.actions");
   const draft = draftOf(rfq);
   const others = byVersionDesc(rfq.quotations.filter((quote) => quote !== draft));
   const showComposer = composing || Boolean(draft && onCompose);
@@ -352,7 +378,6 @@ export function QuotesTab({
           {draft ? (
             <>
               <QuoteVersion quote={draft} />
-              {sendBlocked ? <Callout tone="danger" title={tActions(`blocked.${sendBlocked}`)} /> : null}
               {onSend ? (
                 <div className="flex justify-end">
                   <Button iconStart="send" onClick={onSend}>
@@ -384,9 +409,14 @@ export function QuotesTab({
 
 /* ----------------------------------------------------------------------------------- messages */
 
+/** Files staff may attach to one message (`StaffRfqMessageInputDto.fileIds`, ≤ 10, purpose `artwork`). */
+const MAX_FILES = 10;
+const MAX_BYTES = 50 * 1024 * 1024;
+
 /**
- * The thread, inline on the RFQ (`admin.rfqs.get`); posting answers the whole RFQ, which replaces
- * the cached one. CONTRACT-GAP admin.rfq-messages — no attachments.
+ * The thread, inline on the RFQ (`admin.rfqs.get`), with each message's files; posting answers
+ * the whole RFQ, which replaces the cached one. Staff attach files uploaded first through the
+ * file flow (presign → upload → complete).
  */
 export function MessagesTab({ rfq }: { rfq: Rfq }) {
   const t = useTranslations("rfq.detail.messages");
@@ -394,17 +424,25 @@ export function MessagesTab({ rfq }: { rfq: Rfq }) {
   const settle = useSettleRfq(rfq.id);
   const [body, setBody] = useState("");
   const [visibility, setVisibility] = useState<"customer" | "internal">("internal");
+  const [files, setFiles] = useState<File[]>([]);
 
   const send = useMutation({
-    mutationFn: async () =>
-      (
+    mutationFn: async () => {
+      const uploaded = await Promise.all(files.map((file) => uploadFile("admin", file, "artwork")));
+      return (
         await adminBrowserApis().contract.POST("/v1/admin/rfqs/{rfqId}/messages", {
           params: { path: { rfqId: rfq.id } },
-          body: { body: body.trim(), visibility },
+          body: {
+            body: body.trim(),
+            visibility,
+            ...(uploaded.length > 0 ? { fileIds: uploaded.map((file) => file.id) } : {}),
+          },
         })
-      ).data!,
+      ).data!;
+    },
     onSuccess: (updated) => {
       setBody("");
+      setFiles([]);
       toast.success(visibility === "customer" ? t("sentToCustomer") : t("noted"));
       settle(updated);
     },
@@ -430,6 +468,15 @@ export function MessagesTab({ rfq }: { rfq: Rfq }) {
               <When at={message.createdAt} />
             </p>
             <p className="mt-1 whitespace-pre-wrap">{message.body}</p>
+            {message.files.length > 0 ? (
+              <ul className="mt-2 space-y-1">
+                {message.files.map((file) => (
+                  <li key={file.id}>
+                    <FileItem fileId={file.id} name={file.originalName} sizeBytes={file.sizeBytes} />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </li>
         ))}
       </ol>
@@ -455,6 +502,19 @@ export function MessagesTab({ rfq }: { rfq: Rfq }) {
             hint={visibility === "customer" ? t("customerHint") : t("teamHint")}
           >
             <Textarea rows={3} value={body} onChange={(event) => setBody(event.target.value)} />
+          </Field>
+          <Field label={t("attach")} hint={t("attachHint", { count: MAX_FILES })}>
+            <FileDropzone
+              multiple
+              maxBytes={MAX_BYTES}
+              onFiles={(picked) => setFiles((current) => [...current, ...picked].slice(0, MAX_FILES))}
+              labels={{
+                prompt: files.length ? t("chosen", { names: files.map((file) => file.name).join(", ") }) : t("drop"),
+                browse: t("browse"),
+                tooLarge: (name) => t("tooLarge", { name }),
+                wrongType: (name) => t("wrongType", { name }),
+              }}
+            />
           </Field>
           <div className="flex justify-end">
             <Button type="submit" size="sm" iconStart="send" loading={send.isPending} disabled={!body.trim()}>

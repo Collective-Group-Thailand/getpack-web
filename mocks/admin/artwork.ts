@@ -83,6 +83,27 @@ function withNextRevision(detail: PrepressDetail): Schemas["DesignServiceDto"] {
   };
 }
 
+/** The note prepress gave when it accepted a file with warnings (`admin.artwork.accept`). */
+export const acceptNotes = new Map<string, string>();
+
+/** Answers already given by Idempotency-Key, so a retried delivery or requote replays the first. */
+const replays = new Map<string, unknown>();
+const keyOf = (request: Request) => {
+  const key = request.headers.get("idempotency-key");
+  return key ? `${new URL(request.url).pathname}:${key}` : null;
+};
+function replayed(request: Request): Response | null {
+  const key = keyOf(request);
+  return key && replays.has(key)
+    ? HttpResponse.json(replays.get(key) as never, { headers: { "Idempotent-Replayed": "true" } })
+    : null;
+}
+function remember(request: Request, body: Schemas["DesignServiceDto"]): Response {
+  const key = keyOf(request);
+  if (key) replays.set(key, body);
+  return HttpResponse.json(body);
+}
+
 export const artworkContractHandlers = [
   http.get("*/v1/admin/prepress/queue", ({ request }) => {
     if (!allowed(request, "artwork.read")) return forbidden();
@@ -91,7 +112,17 @@ export const artworkContractHandlers = [
     if (!QUEUE_KINDS.includes(asked as QueueKind))
       return problem(422, "validation.failed", "ไม่รู้จักคิวนี้", [{ path: "kind", code: "enum", message: asked }]);
     const q = url.searchParams.get("q") ?? undefined;
-    const rows = queueItems(asked as QueueKind).filter((row) => matchesQuery(q, row.orderCode));
+    const assigneeId = url.searchParams.get("assigneeId");
+    const productTypeCode = url.searchParams.get("productTypeCode");
+    const artworkStatus = url.searchParams.get("artworkStatus");
+    const rows = queueItems(asked as QueueKind)
+      .filter((row) => matchesQuery(q, row.orderCode))
+      // `none` is the unassigned work, as packio-api reads it.
+      .filter((row) =>
+        !assigneeId ? true : assigneeId === "none" ? row.assignee === null : row.assignee?.id === assigneeId,
+      )
+      .filter((row) => !productTypeCode || row.productTypeCode === productTypeCode)
+      .filter((row) => !artworkStatus || row.artworkStatus === artworkStatus);
     return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
 
@@ -102,7 +133,8 @@ export const artworkContractHandlers = [
     return HttpResponse.json(detail.submissions.map((submission) => toSubmission(detail, submission)));
   }),
 
-  http.post("*/v1/admin/artwork-submissions/:submissionId/actions/accept", ({ params, request }) => {
+  // admin.artwork.accept (`prepress.review`): an optional note acknowledges the warnings accepted.
+  http.post("*/v1/admin/artwork-submissions/:submissionId/actions/accept", async ({ params, request }) => {
     if (!allowed(request, "prepress.review")) return forbidden();
     const found = bySubmission(String(params.submissionId));
     if (!found) return notFound();
@@ -114,7 +146,9 @@ export const artworkContractHandlers = [
     if (submission.preflightStatus === "blocked")
       return problem(409, "artwork.preflight_blocked", "ไฟล์มีจุดที่ต้องแก้ก่อนทำปรู๊ฟ (D-070)");
     if (notAccepting(detail)) return problem(409, "artwork.not_accepting", "คำสั่งซื้อนี้ไม่รับไฟล์งานแล้ว");
+    const body = (await request.json().catch(() => null)) as Schemas["OptionalNoteDto"] | null;
     submission.status = "accepted_for_proof";
+    if (body?.note?.trim()) acceptNotes.set(submission.id, body.note.trim());
     detail.artworkStatus = "in_review";
     refreshPrepress(detail);
     return HttpResponse.json(toSubmission(detail, submission));
@@ -204,20 +238,25 @@ export const artworkContractHandlers = [
     if (found.proof.status !== "pending_customer" && found.proof.status !== "changes_requested")
       return problem(409, "proofs.annotation_closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
     const body = (await request.json()) as Schemas["AnnotateProofDto"];
-    if (!body.comment?.trim() || !body.kind || !body.geometry || !body.page)
-      return problem(422, "validation.failed", "กรุณาพิมพ์ความเห็น", [
-        { path: "comment", code: "required", message: "required" },
-      ]);
     const list = proofAnnotations.get(found.proof.id) ?? [];
-    if (body.parentId && !list.some((item) => item.id === body.parentId)) return notFound("ไม่พบความเห็นที่ตอบกลับ");
+    // A reply takes its parent's kind, page and geometry; a new annotation must give them.
+    const parent = body.parentId ? list.find((item) => item.id === body.parentId) : undefined;
+    if (body.parentId && !parent) return notFound("ไม่พบความเห็นที่ตอบกลับ");
+    const kind = parent?.kind ?? body.kind;
+    const page = parent?.page ?? body.page;
+    const geometry = parent?.geometry ?? (body.geometry as Record<string, unknown> | undefined);
+    if (!body.comment?.trim() || !kind || !geometry || !page)
+      return problem(422, "validation.failed", "กรุณาพิมพ์ความเห็น", [
+        { path: body.comment?.trim() ? "geometry" : "comment", code: "required", message: "required" },
+      ]);
     proofAnnotations.set(found.proof.id, [
       ...list,
       {
         id: mockId("ann", 9000 + list.length + Math.floor(Math.random() * 900)),
-        parentId: body.parentId ?? null,
-        page: body.page,
-        kind: body.kind,
-        geometry: body.geometry as Record<string, unknown>,
+        parentId: parent?.id ?? null,
+        page,
+        kind,
+        geometry,
         comment: body.comment.trim(),
         author: { id: who.id, displayName: who.displayName },
         authorKind: "staff",
@@ -284,6 +323,41 @@ export const artworkContractHandlers = [
     );
   }),
 
+  // admin.designs.listOrderDrawings (`artwork.read`): the order's drawings, newest first.
+  http.get("*/v1/admin/orders/:orderId/drawings", ({ params, request }) => {
+    if (!allowed(request, "artwork.read")) return forbidden();
+    const detail = rowOf(String(params.orderId));
+    if (!detail) return notFound("ไม่พบคำสั่งซื้อนี้");
+    return HttpResponse.json(
+      detail.drawingJobs.map(
+        (job) =>
+          ({
+            id: job.id,
+            orderId: detail.orderId,
+            format: job.format,
+            status: job.status,
+            engineVersion: job.engineVersion,
+            error: job.error,
+            patternId: mockId("pat", 1),
+            lengthMm: detail.dieline.lengthMm ?? 0,
+            widthMm: detail.dieline.widthMm ?? 0,
+            heightMm: detail.dieline.heightMm ?? 0,
+            outputFileId: job.outputFile?.id ?? null,
+            outputFile: job.outputFile
+              ? {
+                  id: job.outputFile.id,
+                  originalName: job.outputFile.originalName,
+                  mimeType: job.outputFile.mimeType,
+                  sizeBytes: job.outputFile.sizeBytes,
+                }
+              : null,
+            createdAt: job.createdAt,
+            completedAt: job.status === "succeeded" ? job.createdAt : null,
+          }) satisfies Schemas["DrawingJobDto"],
+      ),
+    );
+  }),
+
   http.post("*/v1/admin/orders/:orderId/drawings", ({ params, request }) => {
     if (!allowed(request, "drawings.generate")) return forbidden();
     if (!rowOf(String(params.orderId))) return notFound("ไม่พบคำสั่งซื้อนี้");
@@ -312,8 +386,11 @@ export const artworkContractHandlers = [
     return HttpResponse.json(withNextRevision(syncDesign(found.detail)));
   }),
 
+  // admin.designServices.deliver (`design_services.manage`, optional Idempotency-Key).
   http.post("*/v1/admin/design-services/:designServiceId/actions/deliver", async ({ params, request }) => {
     if (!allowed(request, "design_services.manage")) return forbidden();
+    const replay = replayed(request);
+    if (replay) return replay;
     const found = byDesignService(String(params.designServiceId));
     if (!found) return notFound("ไม่พบงานออกแบบนี้");
     const body = (await request.json()) as Schemas["DeliverDesignDto"];
@@ -330,11 +407,14 @@ export const artworkContractHandlers = [
     round.note = body.note ?? null;
     found.service.status = "delivered";
     // The delivery becomes the proof the customer decides on (D-071).
-    return HttpResponse.json(withNextRevision(syncDesign(refreshPrepress(found.detail))));
+    return remember(request, withNextRevision(syncDesign(refreshPrepress(found.detail))));
   }),
 
+  // admin.designServices.requote (`design_services.manage`, optional Idempotency-Key).
   http.post("*/v1/admin/design-services/:designServiceId/actions/requote", async ({ params, request }) => {
     if (!allowed(request, "design_services.manage")) return forbidden();
+    const replay = replayed(request);
+    if (replay) return replay;
     const found = byDesignService(String(params.designServiceId));
     if (!found) return notFound("ไม่พบงานออกแบบนี้");
     const body = (await request.json()) as Schemas["CloseDesignServiceDto"];
@@ -346,7 +426,7 @@ export const artworkContractHandlers = [
       return problem(409, "design_services.invalid_status", "เสนอราคาใหม่ไม่ได้ในขั้นตอนนี้");
     found.service.status = "requoted";
     const dto = withNextRevision(refreshPrepress(found.detail));
-    return HttpResponse.json({ ...dto, closeReason: body.reason.trim() });
+    return remember(request, { ...dto, closeReason: body.reason.trim() });
   }),
 
   // admin.files.download: a file the mock drew or keeps; any other falls through to the example.

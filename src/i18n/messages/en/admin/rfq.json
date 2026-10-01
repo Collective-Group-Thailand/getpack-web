@@ -8,6 +8,7 @@
       "new": "New, unassigned",
       "mine": "Mine",
       "need_info": "Waiting on customer",
+      "awaiting_factory": "Waiting on factory",
       "quoted": "Quoted",
       "overdue": "Past SLA"
     },
@@ -32,7 +33,19 @@
     "search": "Search RFQs",
     "searchPlaceholder": "RFQ code, customer or phone",
     "emptyTitle": "No RFQs in this queue",
-    "emptyBody": "Try another queue or clear the filters."
+    "emptyBody": "Try another queue or clear the filters.",
+    "routed": "Routed from calculator",
+    "slaTarget": "Target {hours} business hours",
+    "productType": "Product type",
+    "channel": "Channel",
+    "channels": {
+      "web": "Website",
+      "cs": "CS",
+      "line": "LINE",
+      "b2b": "B2B"
+    },
+    "submittedFrom": "Submitted from",
+    "submittedTo": "Submitted to"
   },
   "actions": {
     "labels": {
@@ -41,11 +54,9 @@
       "request_info": "Ask for information",
       "request_factory_cost": "Request factory cost",
       "compose_quote": "Compose quote",
-      "edit_quote": "Edit draft",
       "send_quote": "Send quote",
       "record_acceptance": "Record acceptance",
-      "decline": "Decline",
-      "create_order": "Create order"
+      "decline": "Decline"
     },
     "failed": "The action failed",
     "requestInfo": {
@@ -78,15 +89,23 @@
     },
     "accept": {
       "title": "Record acceptance of version {version}",
-      "body": "{customer} accepted {code} by phone or LINE. A quotation to order from will be created.",
+      "body": "{customer} accepted {code} by phone, LINE or e-mail. A quotation to order from is created.",
       "confirm": "Record acceptance",
-      "quantity": "Quantity chosen",
-      "chooseQuantity": "Choose a quantity",
       "option": "{quantity} pcs · {amount}",
       "note": "How the customer accepted",
-      "noteHint": "e.g. confirmed by phone at 10:30",
-      "needQuantity": "Choose a quantity",
-      "done": "Acceptance recorded"
+      "noteHint": "Optional, e.g. confirmed by phone with Khun Somchai at 10:30",
+      "needQuantity": "Choose at least one quantity",
+      "done": "Acceptance recorded",
+      "via": "How the customer accepted",
+      "chooseVia": "Choose a channel",
+      "channels": {
+        "phone": "Phone",
+        "line": "LINE",
+        "email": "E-mail",
+        "other": "Other"
+      },
+      "quantities": "Quantities the customer took",
+      "needVia": "Choose how the customer accepted"
     },
     "assign": {
       "title": "Assign an owner",
@@ -100,7 +119,6 @@
       "candidatesFailed": "Could not load the factories",
       "alreadyConsulted": "Already asked",
       "onTime": "On time {pct}",
-      "notCapable": "Cannot make this category",
       "tier": "Tier {tier}",
       "pickOne": "Choose at least one factory",
       "dueAt": "Answer by",
@@ -110,10 +128,13 @@
       "noteHint": "Optional, e.g. include the die cost",
       "confirm": "Request ({count})",
       "done": "Requests sent ({count})",
-      "failed": "Could not send the requests"
-    },
-    "blocked": {
-      "below_margin_floor": "A line is below the margin floor — it needs approval before it is sent (D-012)"
+      "failed": "Could not send the requests",
+      "reasons": {
+        "quantity_below_minimum": "Below the factory's minimum order",
+        "quantity_above_maximum": "Above what the factory can take"
+      },
+      "trial": "Trial",
+      "noCandidates": "No factory makes this category yet"
     }
   },
   "composer": {
@@ -130,8 +151,6 @@
     "days": "days",
     "removeLine": "Remove line {no}",
     "addLine": "Add a quantity",
-    "validUntil": "Valid until",
-    "validUntilHint": "Editing a draft still asks for a validity date; a sent version gets the policy validity (D-051).",
     "customerNote": "Note to the customer",
     "customerNoteHint": "Shown on the quote.",
     "unsaved": "You have unsaved changes. The amounts below are the last saved version's.",
@@ -146,11 +165,11 @@
       "quantity": "Enter a whole number above 0",
       "duplicate": "This quantity is already listed",
       "price": "Enter a price above 0, up to 6 decimals",
-      "leadTime": "Enter 1–365 days",
-      "validUntil": "Enter the date the price holds until"
+      "leadTime": "Enter 1–365 days"
     },
     "buyPrice": "Factory cost {price}",
-    "validityAtSend": "The price holds for the policy period (D-051) from the day it is sent."
+    "validityAtSend": "The price holds for the policy period (D-051) from the day it is sent.",
+    "stale": "Someone changed this request meanwhile. The latest is shown; check it and save again."
   },
   "detail": {
     "title": "Request for quote",
@@ -181,7 +200,11 @@
       "you": "You",
       "unassigned": "Unassigned",
       "customer": "Customer",
-      "name": "Name"
+      "name": "Name",
+      "target": "{type} target: {hours} business hours",
+      "code": "Customer code",
+      "phone": "Phone",
+      "email": "Email"
     },
     "request": {
       "title": "What was asked",
@@ -202,7 +225,9 @@
       },
       "notes": "Customer's notes",
       "spec": "Specification",
-      "noSpec": "No specification given"
+      "noSpec": "No specification given",
+      "files": "Files",
+      "noFiles": "No files"
     },
     "factories": {
       "title": "Factory costs",
@@ -224,7 +249,8 @@
       "noneBody": "Ask the factories that make this category, then quote from their answers.",
       "noCostNote": "Factory cost is shown only to the roles allowed to see it (D-141). Set the sell price in the quote.",
       "answered": "Answered",
-      "reply": "Factory's answer"
+      "reply": "Factory's answer",
+      "requestedBy": "Asked by {name}"
     },
     "quotes": {
       "version": "Version {version}",
@@ -265,10 +291,18 @@
       "sendCustomer": "Send to customer",
       "noted": "Note added",
       "sentToCustomer": "Message sent to the customer",
-      "failed": "Could not send the message"
+      "failed": "Could not send the message",
+      "attach": "Attach files",
+      "attachHint": "Up to {count} files",
+      "drop": "Drop files here",
+      "browse": "Choose files",
+      "chosen": "Chosen: {names}",
+      "tooLarge": "{name} is too large",
+      "wrongType": "{name} is not a supported file"
     },
     "overdue": "Past SLA",
     "acceptedTitleNoVersion": "The customer accepted the quote",
-    "openQuotation": "Open the quotation"
+    "openQuotation": "Open the quotation",
+    "routed": "Routed from calculator"
   }
 }

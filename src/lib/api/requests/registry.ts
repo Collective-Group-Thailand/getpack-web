@@ -9,9 +9,6 @@
 import { adminAnalyticsRequests } from "./admin-analytics";
 import { adminConsoleRequests } from "./admin-console";
 import { adminFinanceRequests } from "./admin-finance";
-import { adminMarketingRequests } from "./admin-marketing";
-import { adminPrepressRequests } from "./admin-prepress";
-import { adminRfqRequests } from "./admin-rfq";
 import { storeFulfilmentRequests } from "./store-fulfilment";
 import { storeSupportRequests } from "./store-support";
 import { storeBusinessRequests } from "./store-business";
@@ -24,9 +21,6 @@ import { storeRfqRequests } from "./store-rfq";
 
 export const REQUESTS = {
   ...adminConsoleRequests,
-  ...adminRfqRequests,
-  ...adminPrepressRequests,
-  ...adminMarketingRequests,
   ...adminAnalyticsRequests,
   ...adminFinanceRequests,
   ...storeCatalogRequests,

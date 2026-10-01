@@ -30,6 +30,12 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 
 const header = (page: Page) => page.getByRole("heading", { level: 1 }).locator("..");
 
+/** An action the RFQ offers behind the header's "more" menu (the API's first action leads). */
+async function moreAction(page: Page, name: string | RegExp) {
+  await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
+  await page.getByRole("menuitem", { name }).click();
+}
+
 test.describe("the RFQ desk", () => {
   test("opens on a queue with its SLA timers", async ({ page }) => {
     await signInAsStaff(page, "cs");
@@ -44,9 +50,7 @@ test.describe("the RFQ desk", () => {
     await expectAxeClean(page);
   });
 
-  // CONTRACT-GAP admin.rfqs — the published RFQ carries no SLA target per category
-  // (slaTargetHours) and no routedFromCalculator flag.
-  test.fixme("each row says its category's SLA target and whether a calculator routed it", async ({ page }) => {
+  test("each row says its category's SLA target and whether a calculator routed it", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await gotoHydrated(page, `${HOSTS.admin}/rfq?queue=new`);
     const table = page.getByRole("table", { name: "คำขอใบเสนอราคา (RFQ)" });
@@ -54,13 +58,32 @@ test.describe("the RFQ desk", () => {
     await expect(table).toContainText("ส่งต่อจากเครื่องคำนวณ");
   });
 
-  test("starting a review takes the RFQ and stops nobody owning it", async ({ page }) => {
+  test("the list filters by product type and channel", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/rfq?channel=line`);
+    const table = page.getByRole("table", { name: "คำขอใบเสนอราคา (RFQ)" });
+    await expect(table.getByRole("row")).toHaveCount(2);
+    await expect(table).toContainText("RFQ-2569-00014");
+  });
+
+  test("starting a review moves the RFQ into review, still with nobody on it (D-100)", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(1)}`);
     await expect(page.getByText("ยังไม่มีผู้รับผิดชอบ").first()).toBeVisible();
-    await page.getByRole("button", { name: "เริ่มพิจารณา" }).click();
+    // The API offers assigning first; starting a review without taking it is the next action.
+    await moreAction(page, "เริ่มพิจารณา");
     await expect(header(page)).toContainText("กำลังพิจารณาคำขอ");
-    await expect(page.getByText("คุณ", { exact: true })).toBeVisible();
+    await expect(page.getByText("ยังไม่มีผู้รับผิดชอบ").first()).toBeVisible();
+  });
+
+  test("the rail names the customer's code and contact, and the request's files", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(2)}`);
+    await expect(page.getByText("รหัสลูกค้า")).toBeVisible();
+    await expect(page.getByText("ชม.ทำการ")).toBeVisible();
+    await expect(page.getByText("paper_bag-brief.pdf")).toBeVisible();
+    await page.getByRole("button", { name: /ดาวน์โหลด paper_bag-brief\.pdf/ }).click();
+    await expect(page.getByRole("link", { name: /เปิดไฟล์ paper_bag-brief\.pdf/ })).toBeVisible();
   });
 });
 
@@ -70,10 +93,10 @@ test.describe("factory consultation", () => {
     await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(13)}?tab=factories`);
     await expectAxeClean(page);
 
-    await page.getByRole("main").getByRole("button", { name: "ขอราคาจากโรงงาน" }).first().click();
+    await page.getByRole("tabpanel").getByRole("button", { name: "ขอราคาจากโรงงาน" }).click();
     const dialog = page.getByRole("dialog", { name: "ขอราคาจากโรงงาน" });
-    // F002 has no food-packaging capability (D-043): shown, with the reason, and not pickable.
-    await expect(dialog.getByRole("checkbox", { name: /โรงงานกล่องแข็ง/ })).toBeDisabled();
+    // F002 has no food-packaging capability (D-043): the API does not offer it at all.
+    await expect(dialog.getByRole("checkbox", { name: /โรงงานกล่องแข็ง/ })).toHaveCount(0);
     await dialog.getByRole("checkbox", { name: /โรงงานบรรจุภัณฑ์อาหาร/ }).check();
 
     // No deadline yet: refused in place, nothing sent.
@@ -86,9 +109,20 @@ test.describe("factory consultation", () => {
 
     await expect(page.getByRole("dialog")).toHaveCount(0);
     const table = page.getByRole("table", { name: "ราคาจากโรงงาน" });
-    // CONTRACT-GAP admin.rfq-consultations — the consultation names its factory by code only.
+    // The consultation names its factory by code; the name comes from the candidate factories.
+    await expect(table).toContainText("โรงงานบรรจุภัณฑ์อาหาร");
     await expect(table).toContainText("F003");
     await expect(table).toContainText("รอโรงงานตอบ");
+  });
+
+  test("a factory whose range does not cover the quantities says why and cannot be picked", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    // 200 rolls of tape: below every tape factory's minimum order.
+    await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(7)}?tab=factories`);
+    await page.getByRole("tabpanel").getByRole("button", { name: "ขอราคาจากโรงงาน" }).click();
+    const dialog = page.getByRole("dialog", { name: "ขอราคาจากโรงงาน" });
+    await expect(dialog.getByRole("checkbox").first()).toBeDisabled();
+    await expect(dialog).toContainText("จำนวนต่ำกว่าขั้นต่ำที่โรงงานรับ");
   });
 
   test("CS never sees the factory's cost (D-141)", async ({ page }) => {
@@ -110,8 +144,9 @@ test.describe("factory consultation", () => {
     await signInAsStaff(page, "partner_manager");
     await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(5)}?tab=factories`);
     await expect(page.getByRole("table", { name: "ราคาจากโรงงาน" })).toContainText("ทุน ฿");
-    // Read-only for this role: no action is offered.
+    // Read-only for this role: the API offers no action.
     await expect(page.getByRole("button", { name: "ขอราคาจากโรงงาน" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "การดำเนินการอื่น" })).toHaveCount(0);
   });
 });
 
@@ -142,7 +177,7 @@ test.describe("quoting", () => {
     // At the top: axe counts content scrolled under the sticky header as crowding its links.
     await page.evaluate(() => window.scrollTo(0, 0));
     await expectAxeClean(page);
-    await page.getByRole("button", { name: "ส่งใบเสนอราคา" }).first().click();
+    await page.getByRole("tabpanel").getByRole("button", { name: "ส่งฉบับที่ 1 ให้ลูกค้า" }).click();
 
     const dialog = page.getByRole("alertdialog", { name: "ส่งใบเสนอราคาฉบับที่ 1" });
     await expect(dialog).toContainText(code);
@@ -152,6 +187,25 @@ test.describe("quoting", () => {
 
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(header(page)).toContainText("เสนอราคาแล้ว");
+  });
+
+  test("editing the draft replaces its lines under If-Match", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(4)}?tab=quotes`);
+    await page.getByRole("tabpanel").getByRole("button", { name: "จัดทำใบเสนอราคา" }).click();
+    for (const input of await page.getByLabel(/^ราคาขายต่อชิ้น/).all()) await input.fill("10");
+    for (const input of await page.getByLabel(/^ระยะเวลาผลิต/).all()) await input.fill("15");
+    await page.getByRole("button", { name: "บันทึกฉบับร่าง" }).click();
+    const draft = page.getByRole("table", { name: "ฉบับที่ 1" });
+    // 5,000 × ฿10 + 7 % VAT.
+    await expect(draft).toContainText("฿53,500.00");
+
+    await page
+      .getByLabel(/^ราคาขายต่อชิ้น/)
+      .first()
+      .fill("12");
+    await page.getByRole("button", { name: "บันทึกฉบับร่าง" }).click();
+    await expect(draft).toContainText("฿64,200.00");
   });
 
   test("a price typed with the wrong shape is refused before it is sent", async ({ page }) => {
@@ -172,9 +226,11 @@ test.describe("quoting", () => {
     await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(8)}?tab=quotes`);
     const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
 
-    await page.getByRole("button", { name: "บันทึกว่าลูกค้าตอบรับ" }).click();
+    await moreAction(page, "บันทึกว่าลูกค้าตอบรับ");
     const dialog = page.getByRole("alertdialog", { name: "บันทึกว่าลูกค้าตอบรับฉบับที่ 1" });
-    await choose(page, "จำนวนที่ลูกค้าเลือก", /^20 ชิ้น/);
+    await choose(page, /^ลูกค้าตอบรับทางช่องทางใด/, "โทรศัพท์");
+    // Both quantities start chosen; the customer took 20.
+    await dialog.getByRole("checkbox", { name: /^50 ชิ้น/ }).uncheck();
     await dialog.getByLabel(/^ลูกค้าตอบรับอย่างไร/).fill("โทรยืนยันกับลูกค้า (ทดสอบ)");
     await dialog.getByLabel(new RegExp(`พิมพ์ ${code}`)).fill(code);
     await dialog.getByRole("button", { name: "บันทึกการตอบรับ" }).click();
@@ -196,8 +252,7 @@ test.describe("closing an RFQ", () => {
     await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(14)}`);
     const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
 
-    await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
-    await page.getByRole("menuitem", { name: /ปฏิเสธคำขอ/ }).click();
+    await moreAction(page, /ปฏิเสธคำขอ/);
     const dialog = page.getByRole("alertdialog", { name: "ปฏิเสธคำขอราคา" });
     await expect(dialog).toContainText("D-102");
     await choose(page, /^เหตุผล/, "กำลังการผลิตเต็มในช่วงที่ต้องการ");
@@ -218,6 +273,20 @@ test.describe("closing an RFQ", () => {
     const item = page.getByRole("listitem").filter({ hasText: note });
     await expect(item).toBeVisible();
     await expect(item).toContainText("ภายในทีม");
+  });
+
+  test("a message carries the files staff attach", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/rfq/${rfq(9)}?tab=messages`);
+    const note = `แนบสเปกจากโรงงาน ${Date.now()}`;
+    await page.getByLabel(/^บันทึกภายในทีม/).fill(note);
+    await page
+      .getByRole("tabpanel")
+      .locator('input[type="file"]')
+      .setInputFiles({ name: "spec-sheet.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.4") });
+    await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+    const item = page.getByRole("listitem").filter({ hasText: note });
+    await expect(item).toContainText("spec-sheet.pdf");
   });
 });
 

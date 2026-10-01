@@ -1,8 +1,5 @@
 /** The marketing lists and types, in a plain module so Server Components can prefetch. */
 
-import type { z } from "zod";
-
-import type { couponBatch } from "@/lib/api/requests/admin-marketing";
 import type { Schemas } from "@/lib/api/types";
 import { STALE_TIME } from "@/lib/query/defaults";
 
@@ -12,7 +9,7 @@ export type Campaign = Schemas["CampaignDto"];
 export type Promotion = Schemas["PromotionDto"];
 export type PromotionReport = Schemas["PromotionReportDto"];
 export type CouponCode = Schemas["CouponCodeDto"];
-export type CouponBatch = z.output<typeof couponBatch>;
+export type CouponBatch = Schemas["CouponBatchDto"];
 export type Referral = Schemas["AdminReferralDto"];
 
 export const CAMPAIGN_STATUSES = [

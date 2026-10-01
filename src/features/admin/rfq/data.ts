@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 
 import { queryKeys } from "@/lib/api/query-keys";
 import { STALE_TIME } from "@/lib/query/defaults";
@@ -21,9 +22,9 @@ export function useRfq(rfqId: string, initial?: Rfq | null) {
 }
 
 /**
- * Keeps the screen, the queues and the dashboard counts in step after an action. Every published
- * RFQ action answers the whole `StaffRfqDto`, which goes straight into the cache; an action that
- * is still a contract request (start review, record acceptance, the draft edit) refetches instead.
+ * Keeps the screen, the queues and the dashboard counts in step after an action. Every RFQ action
+ * answers the whole `StaffRfqDto`, which goes straight into the cache; one that answers nothing
+ * (a reminder) refetches instead.
  */
 export function useSettleRfq(rfqId: string) {
   const queryClient = useQueryClient();
@@ -36,15 +37,46 @@ export function useSettleRfq(rfqId: string) {
 }
 
 /**
- * The unmet-demand reasons (D-102), a contract request (`admin.unmet-demand-reasons`): the decline
- * dialog offers them, and a declined RFQ names its reason by looking its code up here.
+ * The unmet-demand reasons (D-102, `admin.rfqs.listUnmetDemandReasons`): the decline dialog offers
+ * them, and a declined RFQ names its reason by looking its code up here. `nameOf` reads the name
+ * in the screen's language.
  */
 export function useUnmetDemandReasons(enabled: boolean) {
   const allowed = useCan("rfqs.read");
-  return useQuery({
+  const locale = useLocale();
+  const query = useQuery({
     queryKey: queryKeys.list("admin", "unmet_demand_reason", {}),
-    queryFn: () => adminBrowserApis().requests.call("GET /v1/admin/unmet-demand-reasons"),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/unmet-demand-reasons")).data!,
     staleTime: STALE_TIME.reference,
+    enabled: enabled && allowed,
+  });
+  const reasons = query.data ?? [];
+  return {
+    ...query,
+    reasons,
+    nameOf: (code: string) => {
+      const reason = reasons.find((candidate) => candidate.code === code);
+      return reason ? (locale === "en" ? reason.nameEn : reason.nameTh) : code;
+    },
+  };
+}
+
+/**
+ * The factories that could quote the RFQ (`admin.rfqs.listCandidateFactories`, D-043): the
+ * consultation dialog picks from them, and the factories tab names a consulted factory by them —
+ * a consultation itself carries the factory's code only.
+ */
+export function useCandidateFactories(rfqId: string, enabled = true) {
+  const allowed = useCan("rfqs.read");
+  return useQuery({
+    queryKey: queryKeys.related("admin", "rfq", rfqId, "candidate_factories"),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/rfqs/{rfqId}/candidate-factories", {
+          params: { path: { rfqId } },
+        })
+      ).data!,
+    staleTime: STALE_TIME.transactional,
     enabled: enabled && allowed,
   });
 }
