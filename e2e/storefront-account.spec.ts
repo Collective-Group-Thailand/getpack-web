@@ -41,8 +41,7 @@ test.describe("the account", () => {
     const todo = page
       .getByRole("region", { name: "สิ่งที่ต้องทำ" })
       .or(page.locator("section[aria-labelledby=account-todo]"));
-    // CONTRACT-GAP entity.next-actions — without the order's own list, what needs doing is read from
-    // its status and its group's: a blocked preflight or a design brief is not visible from a list.
+    // What needs doing: the orders' own actions, and a group waiting for its payment.
     await expect(todo.getByRole("link", { name: "มีงวดที่ต้องชำระ — ไปชำระ" }).first()).toBeVisible();
     await expectNoViolations(page);
 
@@ -60,7 +59,6 @@ test.describe("the account", () => {
     await signInAsCustomer(page, `/account/orders/${COMPLETED_ORDER}`);
     await expect(page.getByText("PK-2569-00136").first()).toBeVisible();
     await expect(page.getByRole("list", { name: "ความคืบหน้า" }).getByText("ส่งถึงแล้ว")).toBeVisible();
-    // CONTRACT-GAP store.tracking — the published timeline has no promised dates to show beside it.
     await expect(page.getByText(/รับสินค้า จำนวน 500 เมื่อ/)).toBeVisible();
     await expect(page.getByRole("link", { name: "สั่งซ้ำ PK-2569-00136" })).toBeVisible();
 
@@ -100,10 +98,7 @@ test.describe("the account", () => {
   });
 
   test("a saved quotation reopens in the configurator", async ({ page }) => {
-    test.fixme(
-      true,
-      "CONTRACT-GAP store.catalog-product-ref — a saved quote names its product by id, and the catalogue has no read by id",
-    );
+    // A saved quotation names its product (`summary.product`), so it reopens in that configurator.
     await signInAsCustomer(page, "/account/quotes");
     await page
       .getByRole("link", { name: /เปิดอีกครั้ง/ })
@@ -112,7 +107,7 @@ test.describe("the account", () => {
     await expect(page).toHaveURL(/\/configure\/tuck-end-box\?quote=/);
   });
 
-  test("a saved address is edited under its ETag; a new one cannot be added yet", async ({ page }) => {
+  test("a saved address is edited under its ETag", async ({ page }) => {
     await signInAsCustomer(page, "/account/addresses");
     const card = page.getByRole("listitem").filter({ hasText: "ที่อยู่หลัก" }).first();
     await card.getByRole("button", { name: /แก้ไข/ }).click();
@@ -120,17 +115,43 @@ test.describe("the account", () => {
     await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
     await expect(page.getByRole("listitem").filter({ hasText: "ชั้น 2 (e2e)" })).toBeVisible();
     await expectNoViolations(page);
-
-    // CONTRACT-GAP store.geo-ids: the form says why instead of offering fields it cannot save.
-    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
-    await expect(page.getByText("ยังเพิ่มที่อยู่ใหม่ไม่ได้")).toBeVisible();
   });
 
-  test("addresses and tax profiles are added and removed", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.geo-ids — no store geo read gives the province id an address needs");
+  test("addresses and tax profiles are added from the postcode, and removed", async ({ page }) => {
     await signInAsCustomer(page, "/account/addresses");
     await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
+    await page.getByLabel(/^ชื่อที่อยู่/).fill("โกดัง e2e");
+    await page.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับ e2e");
+    await page.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
+    // The postcode names the area: one sub-district is chosen at once.
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("10400");
+    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("พญาไท");
+    await page.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("9 ถนนทดสอบ");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
+    const added = page.getByRole("listitem").filter({ hasText: "โกดัง e2e" });
+    await expect(added).toContainText("กรุงเทพมหานคร");
+    await expect(added).toContainText("10400");
+
+    await page.getByRole("button", { name: "เพิ่มข้อมูลใบกำกับภาษี" }).click();
+    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
+    await page.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท อีทูอี จำกัด");
+    await page.getByLabel(/^รหัสไปรษณีย์/).fill("50200");
+    await page.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
+    await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+    await expect(page.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
+    // A valid one (its check digit is 7).
+    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
+    await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+    const profile = page.getByRole("listitem").filter({ hasText: "บริษัท อีทูอี จำกัด" });
+    await expect(profile).toContainText("เชียงใหม่");
+
+    await profile.getByRole("button", { name: /^ลบ/ }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "ลบ", exact: true }).click();
+    await expect(profile).toHaveCount(0);
+    await added.getByRole("button", { name: /^ลบ/ }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "ลบ", exact: true }).click();
+    await expect(added).toHaveCount(0);
   });
 
   test("notification preferences: order e-mail stays on, marketing is the customer's choice", async ({ page }) => {
@@ -189,14 +210,16 @@ test.describe("the account", () => {
   });
 
   test("the wallet lists the promotion codes a customer holds", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.wallet — v0.2.0 has no customer-facing list of held codes");
     await signInAsCustomer(page, "/account/wallet");
-    await expect(page.getByText("PACKIO10")).toBeVisible();
+    const codes = page.getByRole("region", { name: "โค้ดของฉัน" });
+    await expect(codes.getByText("PACKIO10")).toBeVisible();
+    await expect(codes.getByText(/ลด 10%/).first()).toBeVisible();
   });
 
-  test("the referral page names each friend it brought", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.loyalty — store.referral.get gives counts, not the friends");
+  test("the referral page names each friend it brought, with the rules and the monthly cap", async ({ page }) => {
     await signInAsCustomer(page, "/account/referral");
-    await expect(page.getByText("ส*** ต***")).toBeVisible();
+    // The masked name the API gives (PDPA), never a phone or an e-mail.
+    await expect(page.getByRole("cell", { name: "ม***า ร." })).toBeVisible();
+    await expect(page.getByText(/ได้รางวัลสูงสุด \d+ ครั้งต่อเดือน/)).toBeVisible();
   });
 });

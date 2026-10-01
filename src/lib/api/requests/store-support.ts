@@ -1,30 +1,16 @@
 /**
- * Help from the storefront (F3 3.7): contacting the team, ordering a sample kit, and the guided
- * help widget that recommends styles and hands the conversation to customer service with what
- * it already knows.
+ * Help from the storefront that packio-api has deferred by decision (D-223): ordering a sample kit
+ * (U2.4) and guided help's recommendation (the Structure Advisor, U2.2). The storefront hides both
+ * entry points until then. Contacting the team and the hand-off to CS are published
+ * (`store.support.contact` / `.handoff`).
  *
- * All four are open to guests (`public`) and rate-limited by the API (429 with `Retry-After`,
- * api-conventions §7). A hand-off becomes a CS ticket with the context attached, so nobody has to
- * explain twice; the LINE link carries only the ticket number, never the context itself.
+ * Both are open to guests (`public`) and rate-limited by the API (429 with `Retry-After`,
+ * api-conventions §7).
  */
 
 import { z } from "zod";
 
 import { dateTime, money, request } from "./define";
-
-export const contactTopic = z
-  .enum(["order", "quote", "artwork", "payment", "delivery", "business", "partnership", "other"])
-  .meta({ id: "ContactTopic" });
-
-export const supportTicket = z
-  .object({
-    ticketNo: z.string(),
-    /** When the team replies by, on the business calendar. */
-    respondBy: dateTime(),
-    /** Opens the LINE OA chat with the ticket number prefilled, when LINE is a channel. */
-    lineUrl: z.string().nullable(),
-  })
-  .meta({ id: "SupportTicketDto" });
 
 export const sampleKit = z
   .object({
@@ -79,47 +65,6 @@ export const guidedRecommendation = z
   .meta({ id: "GuidedRecommendationDto" });
 
 export const storeSupportRequests = {
-  "POST /v1/store/support/actions/contact": request({
-    request: "store.support",
-    summary: "Send the team a message from the contact page; a CS ticket comes back with when to expect a reply",
-    body: z.object({
-      name: z.string().trim().min(1).max(120),
-      phone: z
-        .string()
-        .regex(/^0\d{8,9}$/)
-        .optional(),
-      email: z.string().email().max(254).optional(),
-      topic: contactTopic,
-      orderCode: z.string().max(40).optional(),
-      message: z.string().trim().min(10).max(3000),
-    }),
-    response: supportTicket,
-    status: 201,
-    idempotent: true,
-    public: true,
-  }),
-  "POST /v1/store/support/actions/handoff": request({
-    request: "store.support",
-    summary: "Hand the guided help conversation to CS with its context (page, answers, recommendations)",
-    body: z.object({
-      channel: z.enum(["line", "callback"]).meta({ id: "HandoffChannel" }),
-      name: z.string().trim().max(120).optional(),
-      phone: z
-        .string()
-        .regex(/^0\d{8,9}$/)
-        .optional(),
-      context: z.object({
-        page: z.string().max(300),
-        answers: guidedAnswers.optional(),
-        recommended: z.array(z.string()).max(10).optional(),
-        note: z.string().max(1000).optional(),
-      }),
-    }),
-    response: supportTicket,
-    status: 201,
-    idempotent: true,
-    public: true,
-  }),
   "POST /v1/store/guided-help/actions/recommend": request({
     request: "store.guided-help",
     summary: "Recommend box styles from four answers — use, size, quantity, what matters most",

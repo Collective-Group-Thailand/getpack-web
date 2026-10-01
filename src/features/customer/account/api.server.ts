@@ -1,8 +1,5 @@
 import "server-only";
 
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
-import { serverRequests } from "@/lib/api/requests/server";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
@@ -12,11 +9,12 @@ export type Points = Schemas["LoyaltySummaryDto"];
 export type PointsEntry = Schemas["PointsEntryDto"];
 export type Referral = Schemas["MyReferralDto"];
 export type StoreCredit = Schemas["StoreCreditDto"];
-export type PrivacyRequest = ResponseOf<Requests, "GET /v1/store/me/privacy-requests">["data"][number];
+export type PrivacyRequest = Schemas["PrivacyRequestDto"];
 
-/** Everything here is one customer's, so none of it is cached (`catalog/api.server.ts`). */
-export async function accountRequests() {
-  return serverRequests("customer");
+/** The customer's export and deletion requests, newest first (`store.me.listPrivacyRequests`, D-222). */
+export async function getPrivacyRequests(): Promise<PrivacyRequest[]> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/me/privacy-requests");
+  return data ?? [];
 }
 
 /** Balance, what expires soon and the tier (`store.loyalty.get`, D-130–D-134). */
@@ -45,6 +43,12 @@ export async function getReferral(): Promise<Referral> {
 export async function getStoreCredit(): Promise<StoreCredit> {
   const { data } = await (await serverApi("customer")).GET("/v1/store/store-credit");
   return data!;
+}
+
+/** The promotion codes the customer holds — assigned or saved — with whether each is usable (`store.promotions.listMine`). */
+export async function getMyCodes(): Promise<Schemas["PromotionOfferDto"][]> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/promotions/mine");
+  return data ?? [];
 }
 
 /** The customer's saved quotations, newest first as the API lists them (`store.quotes.list`). */

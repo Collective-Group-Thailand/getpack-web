@@ -34,7 +34,7 @@ export interface MyRfq {
   accepted: Schemas["SavedQuoteDto"] | null;
   /**
    * The category's form, to put the answers in words. CONTRACT-GAP store.rfqs — the RFQ's `spec`
-   * is the raw answers by key; their labels are the form's (`store.rfq-forms`).
+   * is the raw answers by key; their labels are the form's (`store.rfqs.getForm`).
    */
   form: RfqForm | null;
 }

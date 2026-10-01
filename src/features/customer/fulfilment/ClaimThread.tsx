@@ -16,6 +16,8 @@ import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 
+import { FileLink } from "../files/FileLink";
+
 type Claim = Schemas["StoreClaimDto"];
 
 /** What a claim's resolution did that the customer is told of — not how Packio recovers it (D-083). */
@@ -27,11 +29,11 @@ const newKey = () =>
 
 /**
  * One claim as the customer follows it (F3 3.6, `store.claims.get`): what they reported, where it
- * stands, what the team asked for and the outcome in words. While the team needs more information
- * the customer answers it (`store.claims.respondInfo`).
+ * stands, what the team asked for, the photos sent and the outcome in words. When the API offers
+ * `claim.answer_info` the customer answers it (`store.claims.respondInfo`). There is no free thread
+ * by decision (D-225): anything else goes to the CS conversation.
  *
- * CONTRACT-GAP store.claims — the published claim has no message thread and no date the team
- * answers by, and its photos are file ids only; the page shows the request and the answer.
+ * CONTRACT-GAP store.claims — no date the team answers by (`respondBy`, U2.5 per D-199).
  */
 export function ClaimThread({ initial }: { initial: Claim }) {
   const t = useTranslations("fulfilment.claimView");
@@ -64,7 +66,8 @@ export function ClaimThread({ initial }: { initial: Claim }) {
   }
 
   const shown = claim.resolutions.filter((resolution) => CUSTOMER_ACTIONS.has(resolution.action));
-  const photos = claim.photos.product.length + claim.photos.carton.length;
+  const photos = [...claim.photos.product, ...claim.photos.carton];
+  const canAnswer = claim.nextActions.some((action) => action.key === "claim.answer_info" && !action.disabledReason);
 
   return (
     <div className="flex flex-col gap-8">
@@ -107,13 +110,29 @@ export function ClaimThread({ initial }: { initial: Claim }) {
             { term: t("wanted"), description: resolutions(claim.requestedResolution) },
             { term: t("submitted"), description: format.dateTime(claim.submittedAt) },
             ...(claim.origin === "tolerance_auto" ? [{ term: t("origin"), description: t("automatic") }] : []),
-            ...(photos > 0 ? [{ term: t("evidence"), description: t("photoCount", { count: photos }) }] : []),
+            ...(photos.length > 0
+              ? [{ term: t("evidence"), description: t("photoCount", { count: photos.length }) }]
+              : []),
           ]}
         />
         <p className="mt-3 text-sm whitespace-pre-line">{claim.description}</p>
+        {photos.length > 0 ? (
+          <ul className="mt-3 flex flex-wrap gap-2" aria-label={t("evidence")}>
+            {photos.map((fileId, index) => (
+              <li key={fileId}>
+                <FileLink
+                  fileId={fileId}
+                  label={t("photo", { index: index + 1 })}
+                  openLabel={t("photoOpen", { index: index + 1 })}
+                  failed={t("failed")}
+                />
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
 
-      {claim.status === "need_info" ? (
+      {canAnswer ? (
         <form onSubmit={(event) => void send(event)} className="flex max-w-xl flex-col gap-2">
           <Field label={t("reply")}>
             <Textarea rows={3} maxLength={2000} value={reply} onChange={(event) => setReply(event.target.value)} />

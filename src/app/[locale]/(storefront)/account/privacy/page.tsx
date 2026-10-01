@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
-import { accountRequests, getPreferences } from "@/features/customer/account/api.server";
+import { getPreferences, getPrivacyRequests } from "@/features/customer/account/api.server";
 import { PrivacySettings } from "@/features/customer/account/PrivacySettings";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { Link } from "@/i18n/navigation";
@@ -17,7 +17,7 @@ export default async function Page() {
   const [t, { consents }, requests] = await Promise.all([
     getTranslations("account.privacy"),
     getPreferences(),
-    (await accountRequests()).call("GET /v1/store/me/privacy-requests"),
+    getPrivacyRequests(),
   ]);
   return (
     <div>
@@ -28,7 +28,7 @@ export default async function Page() {
           {t("notice")}
         </Link>
       </p>
-      <PrivacySettings consents={consents} requests={requests.data} />
+      <PrivacySettings consents={consents} requests={requests} />
     </div>
   );
 }

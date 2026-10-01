@@ -1,27 +1,30 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { INSTALMENT_STATUS } from "@/domain/status";
+import { pick } from "@/features/customer/catalog/localize";
 import { Link } from "@/i18n/navigation";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
 import { PayInstalmentButton } from "./PayInstalmentButton";
 
-type Instalment = ResponseOf<Requests, "GET /v1/store/instalments">["data"][number];
+type Instalment = Schemas["StoreInstalmentDto"];
 
 /**
  * The instalment centre (F3 3.3, D-020): every instalment across the customer's orders, when it is
- * due, what is paid, the receipt for each one paid, and paying the next one.
+ * due, what is paid and what is left, the orders it pays for, paying the next one
+ * (`store.paymentSchedules.listInstalments`). The receipt of a paid one is among its order's
+ * documents, linked from the row.
  */
 export function InstalmentList({ instalments }: { instalments: Instalment[] }) {
   const t = useTranslations("instalments");
   const format = useFormat();
+  const locale = useLocale();
 
   if (instalments.length === 0) {
     return <EmptyState className="mt-8" icon="wallet" title={t("emptyTitle")} description={t("emptyBody")} />;
@@ -51,52 +54,77 @@ export function InstalmentList({ instalments }: { instalments: Instalment[] }) {
           </tr>
         </thead>
         <tbody>
-          {instalments.map((instalment) => (
-            <tr key={instalment.id} className="border-border border-t">
-              <th scope="row" className="px-4 py-3 text-start font-medium">
-                <Link
-                  href={`/account/orders/${instalment.order.id}`}
-                  className="text-primary underline-offset-4 hover:underline"
-                >
-                  {instalment.order.orderCode}
-                </Link>
-                <span className="text-muted block text-xs font-normal">{instalment.groupCode}</span>
-              </th>
-              <td className="px-4 py-3">
-                {instalment.label}
-                <span className="text-muted block text-xs">
-                  {instalment.dueAt
-                    ? t("dueBy", { date: format.date(instalment.dueAt) })
-                    : t(`trigger.${instalment.dueTrigger}`)}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-end tabular-nums">{format.thb(instalment.grossAmount)}</td>
-              <td className="px-4 py-3">
-                <StatusChip map={INSTALMENT_STATUS} value={instalment.status} />
-              </td>
-              <td className="px-4 py-3 text-end">
-                {instalment.payable ? (
-                  <PayInstalmentButton size="sm" instalment={instalment} orderCode={instalment.order.orderCode}>
-                    {instalment.activePaymentId ? t("continue") : t("pay")}
-                    <span className="sr-only">
-                      {" "}
-                      {instalment.order.orderCode} {instalment.label}
+          {instalments.map((instalment) => {
+            const order = instalment.orders[0];
+            const label = pick(locale, instalment.labelTh, instalment.labelEn);
+            const code = order?.orderCode ?? instalment.groupCode;
+            return (
+              <tr key={instalment.id} className="border-border border-t">
+                <th scope="row" className="px-4 py-3 text-start font-medium">
+                  {instalment.orders.map((ref) => (
+                    <Link
+                      key={ref.orderId}
+                      href={`/account/orders/${ref.orderId}`}
+                      className="text-primary block underline-offset-4 hover:underline"
+                    >
+                      {ref.orderCode}
+                    </Link>
+                  ))}
+                  <span className="text-muted block text-xs font-normal">{instalment.groupCode}</span>
+                </th>
+                <td className="px-4 py-3">
+                  {label}
+                  <span className="text-muted block text-xs">
+                    {instalment.dueAt
+                      ? t("dueBy", { date: format.date(instalment.dueAt) })
+                      : t(`trigger.${instalment.dueTrigger}`)}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-end tabular-nums">
+                  {format.thb(instalment.grossAmount)}
+                  {instalment.status === "partially_paid" ? (
+                    <span className="text-muted block text-xs">
+                      {t("open", { amount: format.thb(instalment.openAmount) })}
                     </span>
-                  </PayInstalmentButton>
-                ) : instalment.receipt?.url ? (
-                  <Button size="sm" variant="ghost" asChild iconStart="download">
-                    <a href={instalment.receipt.url} target="_blank" rel="noopener noreferrer">
-                      {t("receipt")}
+                  ) : null}
+                </td>
+                <td className="px-4 py-3">
+                  <StatusChip map={INSTALMENT_STATUS} value={instalment.status} />
+                </td>
+                <td className="px-4 py-3 text-end">
+                  {instalment.payable ? (
+                    <PayInstalmentButton
+                      size="sm"
+                      instalment={{
+                        id: instalment.id,
+                        groupId: instalment.groupId,
+                        label,
+                        grossAmount: instalment.openAmount,
+                        activePaymentId: instalment.activePaymentId,
+                      }}
+                      orderCode={code}
+                    >
+                      {instalment.activePaymentId ? t("continue") : t("pay")}
                       <span className="sr-only">
                         {" "}
-                        {instalment.order.orderCode} {instalment.label}
+                        {code} {label}
                       </span>
-                    </a>
-                  </Button>
-                ) : null}
-              </td>
-            </tr>
-          ))}
+                    </PayInstalmentButton>
+                  ) : instalment.status === "paid" && order ? (
+                    <Button size="sm" variant="ghost" asChild iconStart="file-check">
+                      <Link href={`/account/orders/${order.orderId}#order-documents`}>
+                        {t("receipt")}
+                        <span className="sr-only">
+                          {" "}
+                          {code} {label}
+                        </span>
+                      </Link>
+                    </Button>
+                  ) : null}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

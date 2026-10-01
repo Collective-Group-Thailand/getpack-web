@@ -1,13 +1,7 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
-import {
-  getCatalogueTree,
-  listArticles,
-  listProducts,
-  listStockProducts,
-  type Page,
-} from "@/features/customer/catalog/api.server";
+import { getSitemapEntries, type SitemapEntry } from "@/features/customer/catalog/api.server";
 import { articleHref, categoryHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { routing } from "@/i18n/routing";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
@@ -16,11 +10,10 @@ import { ZONE_CONFIG, ZONE_HEADER, isZone } from "@/lib/zones";
 /**
  * `/sitemap.xml`, for the storefront.
  *
- * CONTRACT-REQUEST `store.sitemap`: there is no endpoint for sitemap data yet (F1 1.3 asks
- * for one). Until there is, the static routes are listed here and the catalogue is walked
- * through its public list reads — categories, catalogue products, stock products and articles, each at
- * the path `catalog/paths.ts` gives it. A read that fails leaves its part out: a short
- * sitemap is honest, one listing pages that 404 is not.
+ * The static routes are listed here; the catalogue comes from `store.catalog.getSitemap` —
+ * categories, catalogue and stock products and articles, with their last change and `noindex`
+ * pages already left out — each at the path `catalog/paths.ts` gives it. A read that fails leaves
+ * the catalogue out: a short sitemap is honest, one listing pages that 404 is not.
  *
  * Every entry carries its `alternates`, which is the half of hreflang a sitemap is responsible
  * for; the other half is the `<link rel="alternate">` tags next-intl emits per page.
@@ -50,42 +43,36 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // The proxy 404s this on a non-indexed zone; an empty sitemap is the safe second answer.
   if (!ZONE_CONFIG[zone].indexable) return [];
 
-  const origin = await publicOrigin();
-  const [tree, products, stock, articles] = await Promise.all([
-    getCatalogueTree(),
-    everyPage((page) => listProducts({ page, perPage: 100 })),
-    everyPage((page) => listStockProducts({ page, perPage: 100 })),
-    everyPage((page) => listArticles({ page, perPage: 100 })),
-  ]);
+  const [origin, catalogue] = await Promise.all([publicOrigin(), getSitemapEntries()]);
 
-  const entries = [
+  const entries: { path: string; priority: number; changeFrequency: Frequency; lastModified?: string }[] = [
     ...STATIC_ROUTES,
-    ...tree.map((category) => ({ path: categoryHref(category.code), priority: 0.8, changeFrequency: WEEKLY })),
-    ...products.map((product) => ({ path: productHref(product.slug), priority: 0.8, changeFrequency: WEEKLY })),
-    ...stock.map((product) => ({ path: stockProductHref(product.sku), priority: 0.6, changeFrequency: WEEKLY })),
-    ...articles.map((article) => ({ path: articleHref(article.slug), priority: 0.5, changeFrequency: MONTHLY })),
+    ...catalogue
+      .filter((entry) => entry.kind in ENTRY)
+      .map((entry) => ({ ...ENTRY[entry.kind](entry), lastModified: entry.lastModified })),
   ];
 
-  return entries.map(({ path, priority, changeFrequency }) => {
+  return entries.map(({ path, priority, changeFrequency, lastModified }) => {
     const { canonical, languages } = alternateUrls(origin, path, routing.defaultLocale);
-    return { url: canonical, priority, changeFrequency, alternates: { languages } };
+    return {
+      url: canonical,
+      priority,
+      changeFrequency,
+      ...(lastModified ? { lastModified } : {}),
+      alternates: { languages },
+    };
   });
 }
 
-const WEEKLY = "weekly" as const;
-const MONTHLY = "monthly" as const;
+type Frequency = MetadataRoute.Sitemap[number]["changeFrequency"];
 
-/** Every row of a paged public list, up to a bound, or none when the API cannot be read. */
-async function everyPage<T>(read: (page: number) => Promise<Page<T>>, maxPages = 50): Promise<T[]> {
-  const rows: T[] = [];
-  try {
-    for (let page = 1; page <= maxPages; page++) {
-      const { data, meta } = await read(page);
-      rows.push(...data);
-      if (page * meta.perPage >= meta.total || data.length === 0) break;
-    }
-  } catch {
-    return rows;
-  }
-  return rows;
-}
+/** Where each kind of entry lives, and how a crawler should weigh it. */
+const ENTRY: Record<
+  SitemapEntry["kind"],
+  (entry: SitemapEntry) => { path: string; priority: number; changeFrequency: Frequency }
+> = {
+  category: (entry) => ({ path: categoryHref(entry.key), priority: 0.8, changeFrequency: "weekly" }),
+  catalog_product: (entry) => ({ path: productHref(entry.key), priority: 0.8, changeFrequency: "weekly" }),
+  stock_product: (entry) => ({ path: stockProductHref(entry.key), priority: 0.6, changeFrequency: "weekly" }),
+  article: (entry) => ({ path: articleHref(entry.key), priority: 0.5, changeFrequency: "monthly" }),
+};

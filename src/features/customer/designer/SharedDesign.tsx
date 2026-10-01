@@ -10,11 +10,12 @@ import { BrandMark } from "@/ui/brand";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 
+import { pick } from "../catalog/localize";
 import type { SharedDesignData } from "./api.server";
 
 /** Image sources from the assets' signed URLs (ids are kept in the document; URLs expire). */
 function withAssets(content: DesignContent, assets: SharedDesignData["assets"]): DesignContent {
-  const urls = new Map(assets.map((a) => [a.id, a.url]));
+  const urls = new Map(assets.flatMap((a) => (a.url ? [[a.id, a.url] as const] : [])));
   return {
     ...content,
     elements: content.elements.map((el) =>
@@ -27,7 +28,11 @@ function withAssets(content: DesignContent, assets: SharedDesignData["assets"]):
 export async function SharedDesign({ shared }: { shared: SharedDesignData }) {
   const t = await getTranslations("designer.shared");
   const locale = (await getLocale()) as "th" | "en";
-  const read = readDesignDocument(shared.document);
+  // The document is opaque in the contract: `{ spec, content }` as the designer saved it.
+  const document = shared.document as { spec?: Record<string, unknown>; content?: Record<string, unknown> } | null;
+  const read =
+    document?.spec && document.content ? readDesignDocument({ spec: document.spec, content: document.content }) : null;
+  const product = pick(locale, shared.product.nameTh, shared.product.nameEn);
 
   return (
     <div className="bg-canvas text-fg flex min-h-dvh flex-col">
@@ -39,20 +44,22 @@ export async function SharedDesign({ shared }: { shared: SharedDesignData }) {
       </header>
       <main id="main" className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-6">
         <div>
-          <h1 className="text-xl font-semibold">{shared.name}</h1>
+          <h1 className="text-xl font-semibold">{shared.title}</h1>
           <p className="text-muted text-sm">
             {read && isStyleId(read.spec.styleId)
               ? `${getStyle(read.spec.styleId).name[locale]} · ${sizeOf(read.spec).text} ${t("mm")} · `
               : ""}
+            {product ? `${product} · ` : ""}
             {t("sharedAt", { time: formatDateTime(shared.sharedAt, locale) })}
           </p>
+          <p className="text-muted text-xs">{t("expiresAt", { time: formatDateTime(shared.expiresAt, locale) })}</p>
         </div>
         {read ? (
           <div className="bg-surface border-border aspect-[4/3] w-full rounded-xl border p-4">
             <DesignViewer
               spec={read.spec}
               content={withAssets(read.content, shared.assets)}
-              label={shared.name}
+              label={shared.title}
               idPrefix="shared"
             />
           </div>
@@ -64,7 +71,13 @@ export async function SharedDesign({ shared }: { shared: SharedDesignData }) {
         </Callout>
         <div>
           <Button asChild>
-            <Link href="/design/new">{t("start")}</Link>
+            <Link
+              href={
+                shared.product.slug ? `/design/new?product=${encodeURIComponent(shared.product.slug)}` : "/design/new"
+              }
+            >
+              {t("start")}
+            </Link>
           </Button>
         </div>
       </main>

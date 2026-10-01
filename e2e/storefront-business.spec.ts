@@ -11,7 +11,8 @@ import { gotoHydrated } from "./helpers/session";
  * A founder signs a company up with its KYC documents; a company buyer's order over the
  * threshold waits for the approver, who places it (D-123); the admin invites a member and
  * reorders in bulk from CSV lines; LIFF shows orders and points in LINE's frame; the contact
- * form, the sample kit and the guided help hand-off each come back with a reference. The B2B
+ * form, the sample kit and the hand-off to CS each come back with a reference (guided help and
+ * sample kits wait for U2.2 / U2.4, D-223: the kit page is reached by its address only). The B2B
  * personas (`companyadmin`, `companybuyer`, `founder`) are this spec's alone.
  */
 
@@ -45,15 +46,7 @@ test.describe("Packio for business", () => {
     await expectNoViolations(page);
   });
 
-  test("company sign-up says it is not open on the website yet", async ({ page }) => {
-    // CONTRACT-GAP store.geo-ids: store.companies.apply files the head office under a province id.
-    await signInAsCustomer(page, "/business/apply", PHONES.founder);
-    await expect(page.getByText("ยังสมัครบัญชีบริษัททางหน้าเว็บไม่ได้")).toBeVisible();
-    await expectNoViolations(page);
-  });
-
   test("a company signs up with its KYC documents and waits for review (D-120)", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.geo-ids — store.companies.apply needs the head office's province id");
     await signInAsCustomer(page, "/business/apply", PHONES.founder);
     await expect(page.getByRole("heading", { level: 1, name: "เปิดบัญชีบริษัท" })).toBeVisible();
     await page.getByRole("button", { name: "ส่งใบสมัคร" }).click();
@@ -61,7 +54,10 @@ test.describe("Packio for business", () => {
 
     await page.getByLabel(/^ชื่อนิติบุคคล/).fill("บริษัท ทดสอบอีทูอี จำกัด");
     await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
-    await page.getByLabel(/^ที่อยู่สำนักงานใหญ่/).fill("1 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพมหานคร 10110");
+    // The head office starts from its postcode, which gives the area it is filed under.
+    await page.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
+    await page.getByLabel(/^เลขที่ อาคาร ถนน/).fill("1 ถนนทดสอบ");
     await page.getByLabel(/^ชื่อ-นามสกุล/).fill("สมใจ ทดสอบ");
     await page.getByLabel(/^ตำแหน่ง/).fill("กรรมการผู้จัดการ");
     await page.getByLabel(/^วันที่ออกหนังสือรับรอง/).fill(new Date().toISOString().slice(0, 10));
@@ -126,15 +122,12 @@ test.describe("Packio for business", () => {
     await other.close();
   });
 
-  test("a decided approval lists the orders it placed", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.company-approvals — the published list has the pending ones only");
+  test("a decided approval says who decided, when, and how many orders it placed", async ({ page }) => {
     await signInAsCustomer(page, "/business/approvals?view=decided", PHONES.admin);
-    await expect(
-      page
-        .getByRole("article")
-        .first()
-        .getByRole("link", { name: /^PK-2569-/ }),
-    ).toHaveCount(2);
+    const decided = page.getByRole("article").first();
+    await expect(decided).toContainText("อนุมัติแล้ว");
+    await expect(decided).toContainText(/ตัดสินเมื่อ/);
+    await expect(decided).toContainText("2 คำสั่งซื้อ");
   });
 
   test("the admin sees credit and statements, invites a member, and reorders in bulk (D-121, D-153)", async ({
@@ -147,8 +140,9 @@ test.describe("Packio for business", () => {
     await expectNoViolations(page);
 
     await gotoHydrated(page, `${HOSTS.customer}/business/credit`);
-    // CONTRACT-GAP store.company-credit: statements month by month, no status or aging.
+    // The statements issued so far, and what is owed by age (D-122, D-125).
     await expect(page.getByText(/ยอดวางบิล/).first()).toBeVisible();
+    await expect(page.getByText("ยังไม่ถึงกำหนด")).toBeVisible();
     await page
       .getByRole("button", { name: /^ขอลิงก์ดาวน์โหลด/ })
       .first()
@@ -228,22 +222,22 @@ test.describe("help", () => {
     await expect(page.getByRole("status").filter({ hasText: /SK-2569-/ })).toBeVisible();
   });
 
-  test("the guided help recommends styles and hands off to CS with the context", async ({ page }) => {
-    await acceptCookies(page);
-    await gotoHydrated(page, `${HOSTS.customer}/products`);
-    await page.getByRole("button", { name: "ให้ช่วยเลือกกล่อง" }).click();
-    const sheet = page.getByRole("dialog", { name: "ผู้ช่วยเลือกกล่อง" });
-    await sheet.getByRole("radio", { name: "เครื่องสำอาง" }).click();
-    await sheet.getByRole("radio", { name: /^เล็ก/ }).click();
-    await sheet.getByRole("radio", { name: "500–2,000" }).click();
-    await sheet.getByRole("radio", { name: "ดูพรีเมียม" }).click();
-    await sheet.getByRole("button", { name: "ดูคำแนะนำ" }).click();
-    await expect(sheet.getByRole("heading", { name: /^แนะนำสำหรับ/ })).toBeVisible();
-    await expect(sheet.getByRole("link").first()).toHaveAttribute("href", /\/configure\//);
-    await expectNoViolations(page);
+  test("the guided help recommends styles and hands off to CS with the context", async () => {
+    // Not a contract gap: guided help waits for the Structure Advisor (U2.2), and D-223 hides it.
+    test.fixme(true, "D-223 — guided help is deferred to U2.2; the storefront offers the hand-off alone");
+  });
 
-    await sheet.getByLabel(/^เบอร์ให้โทรกลับ/).fill("0801234567");
-    await sheet.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
-    await expect(sheet.getByRole("status").filter({ hasText: /ส่งต่อให้ทีมแล้ว เลขเรื่อง CS-2569-/ })).toBeVisible();
+  test("a guest asks CS to call back, and the ticket comes back with the reply target", async ({ page }) => {
+    await acceptCookies(page);
+    await gotoHydrated(page, `${HOSTS.customer}/help/chat`);
+    await page.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
+    await expect(page.getByRole("region", { name: "คุยกับทีม" }).getByRole("alert")).toContainText("ใส่ชื่อ");
+    await page.getByLabel(/^ชื่อ/).fill("ผู้ติดต่อทดสอบ");
+    await page.getByLabel(/^เบอร์มือถือ/).fill("0801234567");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "ให้ทีมโทรกลับ" }).click();
+    const done = page.getByRole("status").filter({ hasText: /ส่งต่อให้ทีมแล้ว เลขเรื่อง CS-2569-/ });
+    await expect(done).toBeVisible();
+    await expect(done).toContainText("ทีมจะติดต่อกลับภายใน");
   });
 });

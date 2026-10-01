@@ -22,9 +22,8 @@ const PER_PAGE = 24;
 /**
  * One category: its product types as filters, and every product in them.
  *
- * CONTRACT-REQUEST `store.catalog-category-filter`: the catalogue lists filter by one product
- * type, so a category reads each of its types (usually one to three) and pages the merged list
- * here. Correct against the real API today; one call once the filter exists.
+ * The catalogue lists filter by category, sub-categories included (D-228), so a category is one
+ * read of each list — narrowed to a type when one is chosen — and the two are paged together here.
  */
 export async function CategoryView({
   category,
@@ -39,21 +38,13 @@ export async function CategoryView({
 }) {
   const [t, locale, origin] = await Promise.all([getTranslations("catalog"), getLocale(), publicOrigin()]);
   const selected = category.types.find((type) => type.code === typeCode);
-  const scope = selected ? [selected] : category.types;
+  const filter = { category: category.code, ...(selected ? { productType: selected.code } : {}), perPage: 100 };
 
-  const lists = await Promise.all(
-    scope.map(async (type) => {
-      const [products, stock] = await Promise.all([
-        listProducts({ productType: type.code, perPage: 100 }),
-        listStockProducts({ productType: type.code, perPage: 100 }),
-      ]);
-      return [
-        ...products.data.map((product): GridItem => ({ kind: "catalog", product })),
-        ...stock.data.map((product): GridItem => ({ kind: "stock", product })),
-      ];
-    }),
-  );
-  const all = lists.flat();
+  const [products, stock] = await Promise.all([listProducts(filter), listStockProducts(filter)]);
+  const all = [
+    ...products.data.map((product): GridItem => ({ kind: "catalog", product })),
+    ...stock.data.map((product): GridItem => ({ kind: "stock", product })),
+  ];
   const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
   const current = Math.min(page, pages);
   const items = all.slice((current - 1) * PER_PAGE, current * PER_PAGE);

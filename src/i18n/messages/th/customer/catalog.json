@@ -79,7 +79,8 @@
       "assembly": "การประกอบ",
       "print_type": "การพิมพ์",
       "pattern": "รูปแบบ"
-    }
+    },
+    "priceBasisSpecs": "ราคาอ้างอิง: {specs}"
   },
   "stock": {
     "minOrder": "สั่งขั้นต่ำ {quantity} {unit}",

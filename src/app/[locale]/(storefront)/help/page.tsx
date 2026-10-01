@@ -20,7 +20,7 @@ const TOPICS: { key: string; href: string; icon: IconName }[] = [
   { key: "track", href: "/track", icon: "truck" },
   { key: "artwork", href: "/faq#artwork", icon: "file-check" },
   { key: "payment", href: "/faq#payment", icon: "wallet" },
-  { key: "samples", href: "/samples", icon: "package" },
+  // Sample kits wait for the samples work (U2.4, D-223); the topic comes back with them.
   { key: "business", href: "/business", icon: "building" },
 ];
 

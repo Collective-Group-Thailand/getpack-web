@@ -60,6 +60,9 @@ export type PromotionStatus = Schemas["PromotionStatus"];
 /** One coupon code (D-053). **Source: contract** (U-F0.3). */
 export type CouponStatus = Schemas["CouponStatus"];
 
+/** Whether a promotion code a customer holds or checks can be used now (D-053). **Source: contract** (U-F0.4). */
+export type PromotionOfferStatus = Schemas["PromotionOfferStatus"];
+
 /** One line of the points ledger (D-132): pending until completion + claim window. **Source: contract** (U-F0.2). */
 export type PointsStatus = Schemas["PointsStatus"];
 

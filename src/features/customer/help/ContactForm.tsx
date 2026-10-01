@@ -4,10 +4,9 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
@@ -15,7 +14,8 @@ import { Input, Textarea } from "@/ui/components/Input";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 import { Select } from "@/ui/components/Select";
 
-type Ticket = ResponseOf<Requests, "POST /v1/store/support/actions/contact">;
+type Ticket = Schemas["SupportTicketDto"];
+/** The storefront's topic keys; the API takes any `snake_case` key (`SupportContactDto.topic`). */
 const TOPICS = ["order", "quote", "artwork", "payment", "delivery", "business", "partnership", "other"] as const;
 type Topic = (typeof TOPICS)[number];
 
@@ -23,8 +23,10 @@ const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
 /**
- * A message to the team (F3 3.7). Phone or e-mail, at least one; a 429 says how long to wait
- * rather than failing silently. The ticket number comes back to quote later.
+ * A message to the team (F3 3.7, `store.support.contact`, D-221). Phone or e-mail, at least one;
+ * a 429 says how long to wait rather than failing silently. The ticket number comes back to quote
+ * later, with the first-response target the API sets and, once LINE is set up, a LINE link
+ * carrying only the ticket number.
  */
 export function ContactForm({ defaultTopic }: { defaultTopic?: Topic }) {
   const t = useTranslations("help.contact");
@@ -54,19 +56,20 @@ export function ContactForm({ defaultTopic }: { defaultTopic?: Topic }) {
     if (Object.keys(found).length > 0) return;
     setBusy(true);
     try {
-      setTicket(
-        await browserRequests().call("POST /v1/store/support/actions/contact", {
-          body: {
+      const { data } = await browserApi().POST("/v1/store/support/actions/contact", {
+        params: { header: { "Idempotency-Key": key.current } },
+        body: {
+          contact: {
             name: name.trim(),
             ...(phone ? { phone } : {}),
             ...(email.trim() ? { email: email.trim() } : {}),
-            topic,
-            ...(orderCode.trim() ? { orderCode: orderCode.trim() } : {}),
-            message: message.trim(),
           },
-          idempotencyKey: key.current,
-        }),
-      );
+          topic,
+          ...(orderCode.trim() ? { orderCode: orderCode.trim() } : {}),
+          message: message.trim(),
+        },
+      });
+      setTicket(data!);
     } catch (error) {
       key.current = newKey();
       setFailure(
@@ -81,6 +84,16 @@ export function ContactForm({ defaultTopic }: { defaultTopic?: Topic }) {
     return (
       <Callout tone="success" title={t("sentTitle", { ticket: ticket.ticketNo })} role="status">
         {t("sent", { date: format.dateTime(ticket.respondBy) })}
+        {ticket.lineUrl ? (
+          <a
+            href={ticket.lineUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 block underline underline-offset-4"
+          >
+            {t("openLine")}
+          </a>
+        ) : null}
       </Callout>
     );
 

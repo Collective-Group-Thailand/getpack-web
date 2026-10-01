@@ -204,7 +204,7 @@ test.describe("signing in", () => {
   });
 
   test("a new customer accepts the required terms, may skip marketing, and completes a profile", async ({ page }) => {
-    // CONTRACT-GAP store.profile — the profile no longer takes an e-mail (v0.2.0); name and type only.
+    // The e-mail comes from a verified sign-in (D-224): the profile asks a name and a type only.
     await gotoHydrated(page, `${HOSTS.customer}/products`);
     await page.getByRole("banner").getByRole("link", { name: "บัญชีของฉัน" }).click();
     const sheet = await signIn(page, MOCK_NEW_CUSTOMER_PHONE);

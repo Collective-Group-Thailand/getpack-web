@@ -166,8 +166,6 @@
     "outOfRange": "{label} must be between {min} and {max} mm (clearance included)",
     "materialLabel": "Material",
     "materialOption": "{name} ({thickness} mm thick)",
-    "materialOptionNoPrint": "{name} ({thickness} mm thick) — no full-colour printing",
-    "flexoOnly": "This material suits single-colour (flexo) logo printing only",
     "innerSize": "Inside size",
     "cutLine": "Cut line",
     "foldLine": "Fold line",
@@ -231,6 +229,12 @@
     "kind": {
       "autosave": "Autosave",
       "manual": "Saved",
+      "restore": "Restored",
+      "import": "Imported"
+    },
+    "kinds": {
+      "manual": "Saved",
+      "autosave": "Autosaved",
       "restore": "Restored",
       "import": "Imported"
     }
@@ -521,7 +525,8 @@
     "revoke": "Revoke link",
     "revoked": "Link revoked; the old link no longer opens",
     "revokeFailed": "The link could not be revoked",
-    "failed": "The link could not be created. Try again."
+    "failed": "The link could not be created. Try again.",
+    "expires": "The link works until {date}"
   },
   "shared": {
     "metaTitle": "A shared box design",
@@ -532,7 +537,8 @@
     "unreadable": "This design cannot be shown by this version",
     "viewOnly": "View only",
     "viewOnlyBody": "Someone shared this design with you. To make a box of your own, start designing for free.",
-    "start": "Design your own box"
+    "start": "Design your own box",
+    "expiresAt": "The link works until {time}"
   },
   "account": {
     "browserOnly": "Saved in this browser (no product chosen yet)"

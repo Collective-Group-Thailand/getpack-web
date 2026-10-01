@@ -614,5 +614,16 @@
     "ok": "ปกติ",
     "alert": "เกินเกณฑ์",
     "unknown": "อ่านค่าไม่ได้"
+  },
+  "promotionOffer": {
+    "usable": "ใช้ได้",
+    "notStarted": "ยังไม่เริ่ม",
+    "notApplicable": "ไม่ตรงเงื่อนไข",
+    "usedUp": "ใช้ครบแล้ว",
+    "expired": "หมดอายุ",
+    "budgetExhausted": "สิทธิ์หมดแล้ว",
+    "inactive": "ยังไม่เปิดใช้",
+    "disabled": "ปิดใช้งาน",
+    "notYours": "ไม่ใช่โค้ดของบัญชีนี้"
   }
 }

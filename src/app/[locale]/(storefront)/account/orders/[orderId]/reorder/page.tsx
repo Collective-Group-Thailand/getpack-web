@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getReorder } from "@/features/customer/fulfilment/api.server";
 import { ReorderView } from "@/features/customer/fulfilment/ReorderView";
 import { getMyOrder } from "@/features/customer/orders/api.server";
+import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
@@ -24,8 +25,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, detail, preview] = await Promise.all([
+  const [t, tCatalog, locale, detail, preview] = await Promise.all([
     getTranslations("fulfilment.reorder"),
+    getTranslations("catalog"),
+    getLocale(),
     getMyOrder(orderId),
     getReorder(orderId),
   ]);
@@ -39,9 +42,19 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           {t("back", { code: order.orderCode })}
         </Link>
         <h1 className="text-2xl font-bold">{t("titleFor", { code: order.orderCode })}</h1>
-        {preview ? <p className="text-muted text-sm">{t("intro", { product: preview.product.name })}</p> : null}
+        {preview ? (
+          <p className="text-muted text-sm">{t("intro", { product: productNameOf(locale, order.summary) })}</p>
+        ) : null}
       </header>
-      {preview ? <ReorderView initial={preview} /> : <Callout tone="info">{t("notAllowed")}</Callout>}
+      {preview ? (
+        <ReorderView
+          initial={preview}
+          specs={specLinesOf(locale, order.summary)}
+          unit={tCatalog(`stock.units.${order.summary.unit}`)}
+        />
+      ) : (
+        <Callout tone="info">{t("notAllowed")}</Callout>
+      )}
     </div>
   );
 }

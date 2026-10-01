@@ -91,16 +91,26 @@
     "claimLine": "{claim} · {type} · {date}",
     "destinationLine": "{name} · {quantity} {unit}",
     "stages": "Stage by stage",
-    "destinationLineNoUnit": "{name} · qty {quantity}",
     "photos": "{count, plural, one {# photo} other {# photos}}",
     "shipByTerm": "Ships from the factory",
-    "trackingFailed": "Couldn't create a tracking link. Please try again."
+    "trackingFailed": "Couldn't create a tracking link. Please try again.",
+    "artworkLink": "Artwork and proofs",
+    "cancelReason": "Reason: {reason}",
+    "quantityUnit": "{quantity} {unit}",
+    "arrivesByTerm": "Expected delivery",
+    "deliveredTerm": "Delivered",
+    "completedTerm": "Completed",
+    "completedByYou": "{date} (you confirmed receipt)",
+    "completedAuto": "{date} (completed automatically)"
   },
   "tolerance": {
-    "exact": "All {delivered} of {ordered} received",
-    "shortage_within": "{delivered} of {ordered} received, within the accepted variance; the shortfall comes back as {credit} credit",
-    "overage_within": "{delivered} of {ordered} received; the extra is free",
-    "outside_claim_opened": "{delivered} of {ordered} received, outside the accepted variance — a claim was opened for you"
+    "title": "Quantity received",
+    "exact": "All {delivered} of {ordered} {unit} arrived",
+    "shortage_within": "{delivered} of {ordered} {unit} arrived, within the agreed tolerance; the shortfall comes back as {credit} credit",
+    "shortage_within_no_credit": "{delivered} of {ordered} {unit} arrived, within the agreed tolerance",
+    "overage_within": "{delivered} of {ordered} {unit} arrived; the extra is free of charge",
+    "shortage_outside": "{delivered} of {ordered} {unit} arrived, short of the agreed tolerance; you can report it",
+    "overage_outside": "{delivered} of {ordered} {unit} arrived, over the agreed tolerance; you can report it"
   },
   "claimTypes": {
     "damaged": "Damaged",
@@ -110,7 +120,6 @@
     "late": "Late",
     "other": "Other"
   },
-  "rowNoUnit": "Qty {quantity} · Ordered {date}",
   "timelineTypes": {
     "order_placed": "Order placed",
     "payment_received": "Payment received",
@@ -126,5 +135,6 @@
     "order_receipt_confirmed": "Receipt confirmed",
     "order_cancelled": "Order cancelled",
     "other": "Order updated"
-  }
+  },
+  "arrivesBy": "Expected by {date}"
 }

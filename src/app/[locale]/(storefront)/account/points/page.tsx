@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { getPoints, getPointsEntries } from "@/features/customer/account/api.server";
+import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { POINTS_STATUS } from "@/domain/status";
+import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { Stat } from "@/ui/components/Stat";
 
@@ -15,11 +17,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Points: balance, pending, what expires soon, the tier and history (F3 3.4, D-130–D-134).
- *
- * CONTRACT-GAP store.loyalty — the published summary has the tier and the 12-month spend but not
- * the next tier or its threshold, so progress towards it is not shown (thresholds are D-134
- * settings, never hard-coded here).
+ * Points: balance, pending, what expires soon, the tier and how far the next one is, and history
+ * (F3 3.4, D-130–D-134). Thresholds are D-134 settings the API sends, never hard-coded here.
  */
 export default async function Page() {
   await requireCustomer();
@@ -50,6 +49,7 @@ export default async function Page() {
           hint={t("tierHint", { multiplier: points.multiplier, spend: format.thb(points.spend12m) })}
         />
       </div>
+      <TierProgress points={points} className="text-sm" />
       {points.expiringSoon.map((lot) => (
         <Callout key={lot.expiresAt} tone="warning">
           {t("expiring", { points: format.number(lot.points), date: format.date(lot.expiresAt) })}
@@ -84,7 +84,14 @@ export default async function Page() {
                   <td className="px-4 py-2 whitespace-nowrap">{format.date(entry.createdAt)}</td>
                   <td className="px-4 py-2">
                     {t(`types.${entry.entryType}`)}
-                    {entry.orderCode ? (
+                    {entry.orderCode && entry.orderId ? (
+                      <Link
+                        href={`/account/orders/${entry.orderId}`}
+                        className="text-primary block font-mono text-xs underline-offset-4 hover:underline"
+                      >
+                        {entry.orderCode}
+                      </Link>
+                    ) : entry.orderCode ? (
                       <span className="text-muted block font-mono text-xs">{entry.orderCode}</span>
                     ) : null}
                     {entry.reason ? <span className="text-muted block text-xs">{entry.reason}</span> : null}

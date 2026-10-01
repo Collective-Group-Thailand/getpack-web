@@ -6,7 +6,6 @@
   "itemsLabel": "Items in your cart",
   "quote": "Quotation {code} · price holds until {date}",
   "quoteNoCode": "Price holds until {date}",
-  "perUnit": "{price} per unit · quantity {quantity}",
   "repricedTitle": "The price changed",
   "repriced": "Today’s price is {after} (was {before}). Please confirm it before checkout.",
   "acceptReprice": "Confirm the new price",
@@ -44,5 +43,8 @@
     "addRow": "Add a destination",
     "newAddress": "New address",
     "save": "Save the split"
-  }
+  },
+  "perUnitOf": "{price} each · {quantity} {unit}",
+  "reorderOf": "Reorder of {code}, with new artwork",
+  "reorderOfReused": "Reorder of {code}: the approved artwork carries over, no new proof"
 }

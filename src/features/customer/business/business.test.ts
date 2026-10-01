@@ -13,7 +13,6 @@ import type { Schemas } from "@/lib/api/types";
 
 import { buildCalculateBody } from "../configurator/build";
 import { initialState } from "../configurator/state";
-import { capabilitiesOf } from "./capabilities";
 import { parseReorderCsv } from "./csv";
 
 const server = setupServer(...handlers);
@@ -89,15 +88,27 @@ describe("business accounts, against the mock", () => {
     return { api, company, self: company.members.find((entry) => entry.user.id === me!.id)! };
   }
 
-  it("shows each member what their roles open (read from the published roles)", async () => {
+  it("shows each member what their roles open (the company's own `can` map)", async () => {
     const mine = await membership(admin);
-    expect(capabilitiesOf(mine.self.roles)).toMatchObject({ manageMembers: true, approveOrders: true });
+    expect(mine.company.can).toMatchObject({ manageMembers: true, approveOrders: true, manageAssets: true });
     const theirs = await membership(buyer);
-    expect(capabilitiesOf(theirs.self.roles)).toMatchObject({
+    expect(theirs.company.can).toMatchObject({
       manageMembers: false,
       approveOrders: false,
+      manageAssets: false,
       order: true,
     });
+    // Brand assets: every member reads them, only the Company Admin adds (D-227).
+    const add = (member: typeof theirs) =>
+      member.api.POST("/v1/store/companies/{companyId}/brand-assets", {
+        params: { path: { companyId: member.company.id } },
+        body: { fileId: uuid(), kind: "logo", name: "โลโก้" },
+      });
+    expect((await failure(add(theirs)))?.status).toBe(403);
+    const { data: listed } = await theirs.api.GET("/v1/store/companies/{companyId}/brand-assets", {
+      params: { path: { companyId: theirs.company.id } },
+    });
+    expect(listed!.length).toBeGreaterThan(0);
     const month = new Date().toISOString().slice(0, 7);
     expect(
       (
@@ -169,15 +180,63 @@ describe("business accounts, against the mock", () => {
     expect(Number(after.availableAmount)).toBeLessThan(Number(before.availableAmount));
   });
 
-  // CONTRACT-GAP store.geo-ids: `store.companies.apply` needs the head office's province id.
-  it.todo("signs a company up only with fresh KYC documents (D-120)");
+  it("signs a company up: apply with the postcode's ids, file the KYC documents, then submit (D-120)", async () => {
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer", "founder") });
+    const { data: areas } = await api.GET("/v1/store/catalog/geo/postcodes/{postcode}", {
+      params: { path: { postcode: "10110" } },
+    });
+    const area = areas![0]!;
+    const headOffice = {
+      name: "สำนักงานใหญ่",
+      line1: "1 ถนนทดสอบ",
+      postcode: "10110",
+      provinceId: area.province.id,
+      subdistrictId: area.subdistrict.id,
+    };
+    const apply = (body: Partial<Schemas["ApplyCompanyDto"]>) =>
+      api.POST("/v1/store/companies", {
+        params: { header: { "Idempotency-Key": uuid() } },
+        body: {
+          legalName: "บริษัท ทดสอบหน่วย จำกัด",
+          taxId: "0105556000017",
+          isVatRegistered: false,
+          headOffice,
+          signatory: { name: "สมใจ ทดสอบ", position: "กรรมการ" },
+          ...body,
+        },
+      });
+    // Ids that are not the postcode's are refused.
+    const wrong = await failure(apply({ headOffice: { ...headOffice, postcode: "50200" } }));
+    expect(wrong?.status).toBe(422);
+    const { data: company } = await apply({});
+    expect(company).toMatchObject({ status: "applied", myRoles: ["company_admin"] });
+    expect(company!.missingKyc).toEqual(["company_certificate", "signatory_id"]);
+    expect(company!.branches[0]).toMatchObject({ branchCode: "00000", provinceNameTh: "กรุงเทพมหานคร" });
+    const companyId = company!.id;
+    const submit = () =>
+      api.POST("/v1/store/companies/{companyId}/actions/submit-kyc", { params: { path: { companyId } } });
+    expect((await failure(submit()))?.code).toBe("companies.kyc_incomplete");
+    for (const docType of ["company_certificate", "signatory_id"] as const) {
+      const { data: presigned } = await api.POST("/v1/store/files/presign", {
+        body: { fileName: `${docType}.pdf`, mimeType: "application/pdf", sizeBytes: 1000, purpose: "evidence" },
+      });
+      await api.POST("/v1/store/companies/{companyId}/kyc-documents", {
+        params: { path: { companyId } },
+        body: { docType, fileId: presigned!.fileId, issuedOn: docType === "company_certificate" ? "2026-09-01" : null },
+      });
+    }
+    const { data: submitted } = await submit();
+    expect(submitted).toMatchObject({ status: "kyc_review", missingKyc: [] });
+  });
 
   it("checks bulk reorder rows before anything reaches the cart (D-153)", async () => {
     const { data: groups } = await createApiClient({ baseUrl: "http://api.mock", accessToken: admin.token }).GET(
       "/v1/store/order-groups",
     );
     const code = groups!.data[0]!.orders[0]!.orderCode;
-    const preview = await admin.call("POST /v1/store/me/company/bulk-reorders/actions/preview", {
+    const { api, company } = await membership(admin);
+    const { data: preview } = await api.POST("/v1/store/companies/{companyId}/bulk-reorders/actions/preview", {
+      params: { path: { companyId: company.id } },
       body: {
         rows: [
           { line: 1, orderCode: code, quantity: 2000 },
@@ -186,12 +245,23 @@ describe("business accounts, against the mock", () => {
         ],
       },
     });
-    expect(preview.okCount).toBe(1);
-    expect(preview.rows.map((row) => row.status)).toEqual(["ok", "error", "error"]);
-    const added = await admin.call("POST /v1/store/me/company/bulk-reorders", {
-      body: { previewToken: preview.previewToken },
-      idempotencyKey: uuid(),
+    expect(preview!.okCount).toBe(1);
+    expect(preview!.rows.map((row) => row.status)).toEqual(["ok", "refused", "refused"]);
+    expect(preview!.rows[1]!.reason).toBe("orders.not_found");
+    const { data: added } = await api.POST("/v1/store/companies/{companyId}/bulk-reorders", {
+      params: { path: { companyId: company.id }, header: { "Idempotency-Key": uuid() } },
+      body: { previewToken: preview!.previewToken! },
     });
-    expect(added.cartItemIds).toHaveLength(1);
+    expect(added!.added).toHaveLength(1);
+
+    // The last Company Admin keeps the role (409 `companies.last_admin`).
+    const self = company.members.find((member) => member.roles.includes("company_admin"))!;
+    const demote = await failure(
+      api.PUT("/v1/store/companies/{companyId}/members/{memberId}/roles", {
+        params: { path: { companyId: company.id, memberId: self.id } },
+        body: { roles: ["company_buyer"] },
+      }),
+    );
+    expect(demote?.code).toBe("companies.last_admin");
   });
 });

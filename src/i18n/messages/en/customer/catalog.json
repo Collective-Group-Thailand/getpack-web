@@ -79,7 +79,8 @@
       "assembly": "Assembly",
       "print_type": "Printing",
       "pattern": "Style"
-    }
+    },
+    "priceBasisSpecs": "Priced at: {specs}"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",

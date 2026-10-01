@@ -1,11 +1,8 @@
 /**
- * The storefront's catalogue (packio-api B2.1's public `/v1/store/catalog/*` reads), mocked
- * from the same rows the back office edits (`../admin/catalogue.ts`): what is active or
- * published in admin is what the shop shows, in the store DTOs' shapes, typed by `Schemas`.
- *
- * Plus the storefront's contract requests (CONTRACT-REQUEST store.price-hints,
- * store.product-faqs, store.product-categories) through `mockRequest`, which holds each
- * response to its requested schema.
+ * The storefront's catalogue (packio-api's public `/v1/store/catalog/*` reads), mocked from the
+ * same rows the back office edits (`../admin/catalogue.ts`): what is active or published in admin
+ * is what the shop shows, in the store DTOs' shapes, typed by `Schemas` — the categories, price
+ * hints, product FAQs and the sitemap (U-B0.1) among them.
  *
  * Every figure here is obviously fake. Prices are a deterministic function of the product's
  * slug — nothing is computed the way the API will compute it.
@@ -16,7 +13,6 @@ import { http, HttpResponse, type HttpHandler } from "msw";
 import type { Schemas } from "@/lib/api/types";
 
 import { catalogueRows } from "../admin/catalogue";
-import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
 
 export type Row = ReturnType<typeof catalogueRows>[number];
@@ -248,6 +244,33 @@ function placeholderSvg(fileId: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600"><rect width="800" height="600" fill="hsl(${hue} 35% 92%)"/><path d="M280 230l120-60 120 60v150l-120 60-120-60z" fill="none" stroke="hsl(${hue} 30% 45%)" stroke-width="10" stroke-linejoin="round"/><path d="M280 230l120 60 120-60M400 290v150" fill="none" stroke="hsl(${hue} 30% 45%)" stroke-width="10" stroke-linejoin="round"/><text x="400" y="520" font-family="sans-serif" font-size="28" text-anchor="middle" fill="hsl(${hue} 25% 40%)">mock image</text></svg>`;
 }
 
+/** Active categories that hold an active product type, directly or through a sub-category (D-228). */
+function productCategories(): Schemas["StoreProductCategoryDto"][] {
+  const categories = catalogueRows("productCategories");
+  const used = new Set(productTypes().map((type) => type.categoryId));
+  return sortBy(live(categories), "sort", "asc")
+    .filter(
+      (row) => used.has(row.id) || live(categories).some((child) => child.parentId === row.id && used.has(child.id)),
+    )
+    .map((row) => ({
+      code: String(row.code),
+      nameTh: String(row.nameTh),
+      nameEn: String(row.nameEn),
+      parentCode: str(byId(categories, row.parentId)?.code),
+      sort: Number(row.sort ?? 0),
+    }));
+}
+
+/** Whether a product's type sits in the category `code` or one of its sub-categories (D-228). */
+function inCategory(product: Row, code: string): boolean {
+  const categories = catalogueRows("productCategories");
+  const type = byId(catalogueRows("productTypes"), product.productTypeId);
+  for (let category = byId(categories, type?.categoryId); category; category = byId(categories, category.parentId)) {
+    if (category.code === code) return true;
+  }
+  return false;
+}
+
 /* ---------------------------------------------------------------------------- handlers */
 
 const notFound = () => problem(404, "http.not_found", "ไม่พบรายการนี้");
@@ -293,6 +316,17 @@ export function postcodeArea(postcode: string) {
   if (!known) return undefined;
   const [province, district] = known.map(([code, nameTh, nameEn]) => ({ code, nameTh, nameEn }));
   return { province: province!, district: district! };
+}
+
+/**
+ * The names an address filed under these ids carries, or `undefined` when the ids are not the
+ * postcode's (the API's 422 on `postcode`): the mock rows keep names, the contract ids.
+ */
+export function areaOfIds(postcode: string, provinceId: string, subdistrictId?: string | null) {
+  const area = postcodeArea(postcode);
+  if (!area || provinceId !== mockId("gpv", Number(area.province.code))) return undefined;
+  if (subdistrictId && subdistrictId !== mockId("gsd", Number(`${area.district.code}01`))) return undefined;
+  return { province: area.province.nameTh, district: area.district.nameTh, subdistrict: area.district.nameTh };
 }
 
 /**
@@ -345,9 +379,11 @@ export const storeCatalogHandlers: HttpHandler[] = [
   http.get("*/v1/store/catalog/products", ({ request }) => {
     const url = new URL(request.url);
     const type = url.searchParams.get("productType");
+    const category = url.searchParams.get("category");
     const q = url.searchParams.get("q") ?? undefined;
     const rows = catalogProducts()
       .filter((row) => !type || typeCodeOf(row) === type)
+      .filter((row) => !category || inCategory(row, category))
       .filter((row) => matchesQuery(q, String(row.nameTh), String(row.nameEn), String(row.slug)));
     const sorted = sortBy(
       rows,
@@ -371,8 +407,10 @@ export const storeCatalogHandlers: HttpHandler[] = [
     const url = new URL(request.url);
     const type = url.searchParams.get("productType");
     const q = url.searchParams.get("q") ?? undefined;
+    const category = url.searchParams.get("category");
     const rows = stockProducts()
       .filter((row) => !type || typeCodeOf(row) === type)
+      .filter((row) => !category || inCategory(row, category))
       .filter((row) => matchesQuery(q, String(row.nameTh), String(row.nameEn), String(row.sku)));
     return HttpResponse.json(
       paginate(rows.map(stock), {
@@ -526,6 +564,10 @@ export const storeCatalogHandlers: HttpHandler[] = [
         const a = articleCard(row);
         return hit("article", a.slug, a.titleTh, a.titleEn, a.coverUrl);
       }),
+      // Published FAQ questions; the key is the FAQ's id (U-B0.1 `store.search-faq-hits`).
+      ...live(catalogueRows("faqs")).map((row) =>
+        hit("faq", String(row.id), String(row.questionTh), str(row.questionEn), null),
+      ),
     ]
       .filter((entry): entry is Schemas["StoreSearchHitDto"] => entry !== null)
       .sort((a, b) => b.score - a.score)
@@ -547,30 +589,51 @@ export const storeCatalogHandlers: HttpHandler[] = [
       }),
   ),
 
-  // CONTRACT-REQUEST store.product-categories
-  mockRequest("GET /v1/store/catalog/product-categories", () => {
-    const categories = catalogueRows("productCategories");
-    const used = new Set(productTypes().map((type) => type.categoryId));
-    return sortBy(live(categories), "sort", "asc")
-      .filter((row) => used.has(row.id))
-      .map((row) => ({
-        code: String(row.code),
-        nameTh: String(row.nameTh),
-        nameEn: String(row.nameEn),
-        parentCode: str(byId(categories, row.parentId)?.code),
-        sort: Number(row.sort ?? 0),
-      }));
+  // store.catalog.listProductCategories: active categories holding an active product type.
+  http.get("*/v1/store/catalog/product-categories", () => HttpResponse.json(productCategories())),
+
+  // store.catalog.getSitemap: what the storefront lists, each with its last change.
+  http.get("*/v1/store/sitemap", () => {
+    const at = (row: Row) => String(row.updatedAt ?? row.publishedAt ?? "2026-09-01T09:00:00+07:00");
+    const entries: Schemas["StoreSitemapEntryDto"][] = [
+      ...productCategories().map((category) => ({
+        kind: "category" as const,
+        key: category.code,
+        lastModified: "2026-09-01T09:00:00+07:00",
+      })),
+      ...catalogProducts().map((row) => ({
+        kind: "catalog_product" as const,
+        key: String(row.slug),
+        lastModified: at(row),
+      })),
+      ...stockProducts().map((row) => ({
+        kind: "stock_product" as const,
+        key: String(row.sku),
+        lastModified: at(row),
+      })),
+      ...articles().map((row) => ({ kind: "article" as const, key: String(row.slug), lastModified: at(row) })),
+    ];
+    return HttpResponse.json(entries);
   }),
 
-  // CONTRACT-REQUEST store.price-hints
-  mockRequest("GET /v1/store/catalog/price-hints", ({ query }) => {
-    const slugs = query.slugs?.split(",");
-    const skus = query.skus?.split(",");
+  // store.catalog.listPriceHints (D-220): a fake figure per product, `null` for an RFQ type.
+  http.get("*/v1/store/catalog/price-hints", ({ request }) => {
+    const url = new URL(request.url);
+    const list = (name: string) => {
+      const values = url.searchParams
+        .getAll(name)
+        .flatMap((value) => value.split(","))
+        .filter(Boolean);
+      return values.length ? values : undefined;
+    };
+    const productType = url.searchParams.get("productType");
+    const slugs = list("slugs");
+    const skus = list("skus");
     const quoteModeOf = (row: Row) =>
       String(byId(catalogueRows("productTypes"), row.productTypeId)?.quoteMode ?? "rfq");
-    const wanted = (row: Row, list: string[] | undefined, key: string) =>
-      (!query.productType || typeCodeOf(row) === query.productType) && (!list || list.includes(key));
-    const hint = (row: Row, kind: "catalog_product" | "stock_product", key: string, quantity: number) => {
+    const wanted = (row: Row, keys: string[] | undefined, key: string) =>
+      (!productType || typeCodeOf(row) === productType) && (!keys || keys.includes(key));
+    const hint = (row: Row, kind: Schemas["PriceHintKind"], key: string, quantity: number): Schemas["PriceHintDto"] => {
       const instant = quoteModeOf(row) === "instant";
       const size = live(catalogueRows("standardSizes")).find((entry) => entry.catalogProductId === row.id);
       return {
@@ -578,33 +641,58 @@ export const storeCatalogHandlers: HttpHandler[] = [
         kind,
         productTypeCode: typeCodeOf(row),
         startingFromPerPiece: instant ? fakePrice(key) : null,
-        currency: "THB" as const,
-        basis: instant ? { quantity, sizeCode: str(size?.code), includesVat: true, includesDelivery: false } : null,
+        currency: "THB",
+        basis: instant
+          ? {
+              quantity,
+              sizeCode: str(size?.code),
+              includesVat: true,
+              includesDelivery: false,
+              specs: [
+                {
+                  key: "style",
+                  labelTh: "ทรง",
+                  labelEn: "Style",
+                  valueTh: String(row.nameTh),
+                  valueEn: String(row.nameEn),
+                },
+                ...(size
+                  ? [
+                      {
+                        key: "size",
+                        labelTh: "ขนาด",
+                        labelEn: "Size",
+                        valueTh: String(size.name ?? size.code),
+                        valueEn: String(size.name ?? size.code),
+                      },
+                    ]
+                  : []),
+              ],
+            }
+          : null,
         leadTimeBusinessDays: instant ? { min: 7, max: 10 } : null,
-        computedAt: bangkokIso(),
+        computedAt: instant ? bangkokIso() : null,
       };
     };
-    return {
-      data: [
-        ...(skus && !slugs
-          ? []
-          : catalogProducts()
-              .filter((row) => wanted(row, slugs, String(row.slug)))
-              .map((row) => hint(row, "catalog_product", String(row.slug), 1000))),
-        ...(slugs && !skus
-          ? []
-          : stockProducts()
-              .filter((row) => wanted(row, skus, String(row.sku)))
-              .map((row) => hint(row, "stock_product", String(row.sku), Number(row.minOrderQty ?? 1)))),
-      ],
-    };
+    return HttpResponse.json([
+      ...(skus && !slugs
+        ? []
+        : catalogProducts()
+            .filter((row) => wanted(row, slugs, String(row.slug)))
+            .map((row) => hint(row, "catalog_product", String(row.slug), 1000))),
+      ...(slugs && !skus
+        ? []
+        : stockProducts()
+            .filter((row) => wanted(row, skus, String(row.sku)))
+            .map((row) => hint(row, "stock_product", String(row.sku), Number(row.minOrderQty ?? 1)))),
+    ]);
   }),
 
-  // CONTRACT-REQUEST store.product-faqs — no link between FAQs and products exists in the
-  // admin mock, so every product shows the first two published questions.
-  mockRequest("GET /v1/store/catalog/products/{slug}/faqs", ({ params }) => {
+  // store.catalog.listProductFaqs — no link between FAQs and products exists in the admin mock,
+  // so every product shows the first two published questions.
+  http.get("*/v1/store/catalog/products/:slug/faqs", ({ params }) => {
     if (!catalogProducts().some((row) => row.slug === params.slug)) return notFound();
-    return sortBy(live(catalogueRows("faqs")), "sort", "asc")
+    const faqs: Schemas["StoreFaqDto"][] = sortBy(live(catalogueRows("faqs")), "sort", "asc")
       .slice(0, 2)
       .map((faq) => ({
         questionTh: String(faq.questionTh),
@@ -612,5 +700,6 @@ export const storeCatalogHandlers: HttpHandler[] = [
         answerTh: String(faq.answerTh),
         answerEn: str(faq.answerEn),
       }));
+    return HttpResponse.json(faqs);
   }),
 ];

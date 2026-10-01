@@ -83,20 +83,23 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
     updatedAt: design.updatedAt,
     orderCode: null,
   });
-  // CONTRACT-GAP store.designs — a listed design names no product, box style or order; its size is
-  // what the card can say.
-  const accountRow = (design: StoreDesign): Row => ({
-    id: design.id,
-    name: design.title,
-    thumbnail: null,
-    thumbnailFileId: design.thumbnailFileId,
-    spec:
+  // A listed design names its product, its size and the orders it was used in.
+  const accountRow = (design: StoreDesign): Row => {
+    const product = design.product.slug ? (locale === "en" ? design.product.nameEn : design.product.nameTh) : null;
+    const size =
       design.lengthMm && design.widthMm && design.heightMm
         ? t("card.size", { l: design.lengthMm, w: design.widthMm, h: design.heightMm })
-        : null,
-    updatedAt: design.updatedAt,
-    orderCode: null,
-  });
+        : null;
+    return {
+      id: design.id,
+      name: design.title,
+      thumbnail: design.thumbnailUrl,
+      thumbnailFileId: design.thumbnailFileId,
+      spec: [product, size].filter(Boolean).join(" · ") || null,
+      updatedAt: design.updatedAt,
+      orderCode: design.orders[0]?.orderCode ?? null,
+    };
+  };
 
   // Designs kept in this browser that the account does not have yet.
   const imported = new Set(signedIn ? importedLocalIds() : []);
@@ -114,8 +117,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
           name: design.name,
           spec: design.spec,
           content: design.content,
-          createdAt: design.createdAt,
-          updatedAt: design.updatedAt,
+          catalogProductId: design.catalogProductId ?? null,
         })),
         crypto.randomUUID(),
       );
@@ -234,13 +236,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
                     <Button size="sm" variant="ghost" onClick={() => void duplicate(row)}>
                       {tCommon("actions.duplicate")}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-danger"
-                      disabled={row.orderCode !== null}
-                      onClick={() => setPendingDelete(row)}
-                    >
+                    <Button size="sm" variant="ghost" className="text-danger" onClick={() => setPendingDelete(row)}>
                       {tCommon("actions.delete")}
                     </Button>
                   </div>

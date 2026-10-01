@@ -13,49 +13,63 @@ import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserApi } from "@/lib/api/browser";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { PriceSummary } from "@/ui/components/PriceSummary";
 import { toast } from "@/ui/components/Toast";
 
-type Preview = ResponseOf<Requests, "GET /v1/store/orders/{orderId}/reorder">;
+type Preview = Schemas["ReorderPreviewDto"];
 
 const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 
 /**
- * One-click reorder (D-153): the same spec and artwork, re-priced by the API as the quantity
- * changes, with the one-off costs it waives shown as waived and why. Confirming puts it in the
- * cart as a quotation and goes straight to checkout, which places it like any other order.
+ * One-click reorder (D-153): the same spec, re-priced by the API as the quantity changes
+ * (`store.claims.previewReorder`), and whether the approved artwork carries over so no new proof
+ * is needed. Confirming sends the preview's token, so the cart is not given a price other than the
+ * one shown (409 `orders.reorder_repriced`), and goes straight to checkout, which places it like
+ * any other order. Plate and die-block reuse is shown once the tooling register exists (D-205).
  */
-export function ReorderView({ initial }: { initial: Preview }) {
+export function ReorderView({
+  initial,
+  specs,
+  unit,
+}: {
+  initial: Preview;
+  /** What was ordered, in words (the order's `summary`). */
+  specs: { term: string; description: string }[];
+  unit: string;
+}) {
   const t = useTranslations("fulfilment.reorder");
   const format = useFormat();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const orderId = initial.source.orderId;
+  const orderId = initial.orderId;
   const [text, setText] = useState(String(initial.quantity));
+  const [reuseArtwork, setReuseArtwork] = useState(true);
+  const { min, max } = initial.quantityLimits;
   const typed = /^\d+$/.test(text) ? Number(text) : null;
-  const tooFew = typed !== null && typed < initial.minQuantity;
-  const tooMany = typed !== null && initial.maxQuantity !== null && typed > initial.maxQuantity;
+  const tooFew = typed !== null && min !== null && typed < min;
+  const tooMany = typed !== null && max !== null && typed > max;
   const quantity = useDebounced(typed !== null && !tooFew && !tooMany ? typed : null, 400);
   const [busy, setBusy] = useState<"checkout" | "cart" | null>(null);
   const key = useRef(newKey());
+  const asked = quantity ?? initial.quantity;
 
   const query = useQuery({
-    queryKey: [...queryKeys.related("customer", "orders", orderId, "reorder"), quantity ?? initial.quantity],
-    queryFn: () =>
-      browserRequests().call("GET /v1/store/orders/{orderId}/reorder", {
-        path: { orderId },
-        query: { quantity: quantity ?? initial.quantity },
-      }),
-    initialData: quantity === null || quantity === initial.quantity ? initial : undefined,
+    queryKey: [...queryKeys.related("customer", "orders", orderId, "reorder"), asked, reuseArtwork],
+    queryFn: async () =>
+      (
+        await browserApi().GET("/v1/store/orders/{orderId}/reorder", {
+          params: { path: { orderId }, query: { quantity: asked, reuseArtwork } },
+        })
+      ).data!,
+    initialData: asked === initial.quantity && reuseArtwork ? initial : undefined,
     placeholderData: keepPreviousData,
   });
   const preview = query.data ?? initial;
@@ -64,20 +78,17 @@ export function ReorderView({ initial }: { initial: Preview }) {
     typed === null
       ? t("errors.number")
       : tooFew
-        ? t("errors.min", { min: format.number(initial.minQuantity) })
+        ? t("errors.min", { min: format.number(min ?? 0) })
         : tooMany
-          ? t("errors.max", { max: format.number(initial.maxQuantity ?? 0) })
+          ? t("errors.max", { max: format.number(max ?? 0) })
           : undefined;
 
   async function reorder(then: "checkout" | "cart") {
     setBusy(then);
     try {
-      // `store.claims.reorder` adds the line straight to the cart; the preview it answered with is
-      // not bound to it (CONTRACT-GAP store.reorder: no preview token), so the price shown is the
-      // one the cart will re-check.
       await browserApi().POST("/v1/store/orders/{orderId}/actions/reorder", {
         params: { path: { orderId }, header: { "Idempotency-Key": key.current } },
-        body: { quantity: preview.quantity, reuseArtwork: preview.artwork.reused },
+        body: { quantity: preview.quantity, reuseArtwork, previewToken: preview.previewToken },
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
       // The reorder funnel (docs/ux/funnels.md): the band, never the quantity; where it went next.
@@ -85,7 +96,11 @@ export function ReorderView({ initial }: { initial: Preview }) {
       router.push(then === "checkout" ? "/checkout" : "/cart");
     } catch (failure) {
       key.current = newKey();
-      if (isApiError(failure) && failure.code === "reorder.repriced") await query.refetch();
+      if (
+        isApiError(failure) &&
+        (failure.code === "orders.reorder_repriced" || failure.code === "orders.reorder_preview_expired")
+      )
+        await query.refetch();
       toast.error(isApiError(failure) ? failure.detail : t("failed"));
       setBusy(null);
     }
@@ -95,31 +110,33 @@ export function ReorderView({ initial }: { initial: Preview }) {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <TrackOnView name="reorder_started" properties={{ quantityBand: quantityBand(initial.quantity) }} />
       <div className="flex min-w-0 flex-col gap-6">
-        <section aria-labelledby="reorder-what">
-          <h2 id="reorder-what" className="text-lg font-semibold">
-            {t("what")}
-          </h2>
-          <DescriptionList
-            className="mt-3"
-            items={preview.specs.map((spec) => ({ term: spec.label, description: spec.value }))}
-          />
-        </section>
+        {specs.length > 0 ? (
+          <section aria-labelledby="reorder-what">
+            <h2 id="reorder-what" className="text-lg font-semibold">
+              {t("what")}
+            </h2>
+            <DescriptionList className="mt-3" items={specs} />
+          </section>
+        ) : null}
         <Callout
-          tone={preview.artwork.reused ? "success" : "warning"}
-          title={preview.artwork.reused ? t("artworkReused") : t("artworkNew")}
+          tone={preview.proofSkipped ? "success" : "warning"}
+          title={reuseArtwork ? t("artworkReused") : t("artworkNew")}
         >
-          {preview.artwork.reused
-            ? preview.artwork.proofSkipped
-              ? t("proofSkipped", { version: preview.artwork.approvedProofVersion ?? 1 })
-              : t("proofAgain")
-            : preview.artwork.note}
+          {preview.proofSkipped ? t("proofSkippedNoVersion") : t("proofAgain")}
         </Callout>
+        <Checkbox
+          checked={!reuseArtwork}
+          onCheckedChange={(checked) => setReuseArtwork(checked !== true)}
+          label={t("newArtwork")}
+          description={t("newArtworkHint")}
+        />
         <Field
-          label={t("quantity", { unit: preview.unit })}
-          hint={t("quantityHint", {
-            original: format.number(preview.source.quantity),
-            min: format.number(preview.minQuantity),
-          })}
+          label={t("quantity", { unit })}
+          hint={
+            min !== null
+              ? t("quantityHint", { original: format.number(preview.previousQuantity), min: format.number(min) })
+              : t("quantityHintNoMin", { original: format.number(preview.previousQuantity) })
+          }
           error={error}
         >
           <Input
@@ -138,29 +155,39 @@ export function ReorderView({ initial }: { initial: Preview }) {
         <div aria-busy={stale} className={stale ? "opacity-60 transition-opacity" : "transition-opacity"}>
           <PriceSummary
             rows={[
-              ...preview.lines.map((line) => ({
-                label: line.description,
-                value: line.waivedReason ? t("waived") : format.thb(line.grossAmount),
-                hint: line.waivedReason ?? undefined,
-                tone: line.waivedReason ? ("discount" as const) : ("default" as const),
-              })),
+              {
+                label: t("product", { quantity: format.number(preview.quantity), unit }),
+                value: format.thb(preview.productAmount),
+              },
+              ...(preview.designFeeAmount !== "0.00"
+                ? [{ label: t("designFee"), value: format.thb(preview.designFeeAmount) }]
+                : []),
+              ...(preview.toolingAmount !== null
+                ? [{ label: t("tooling"), value: format.thb(preview.toolingAmount) }]
+                : []),
+              {
+                label: t("shipping"),
+                value: preview.shippingAmount !== null ? format.thb(preview.shippingAmount) : t("shippingAtCheckout"),
+                tone: preview.shippingAmount !== null ? ("default" as const) : ("muted" as const),
+              },
               { label: t("vat"), value: format.thb(preview.vatAmount), tone: "muted" as const },
             ]}
             total={{
               label: t("total"),
               value: format.thb(preview.grossAmount),
-              hint: t("perUnit", { price: format.thb(preview.unitPrice), unit: preview.unit }),
+              hint: t("perUnit", { price: format.thb(preview.unitPrice), unit }),
             }}
           />
         </div>
-        {preview.priceChanged ? (
+        {preview.leadTimeDays !== null && preview.earliestShipDate ? (
           <p className="text-muted text-xs">
-            {t("priceChanged", { before: format.thb(preview.source.unitPrice), code: preview.source.orderCode })}
+            {t("lead", { days: preview.leadTimeDays, date: format.date(preview.earliestShipDate) })}
           </p>
         ) : null}
-        <p className="text-muted text-xs">
-          {t("lead", { days: preview.leadTimeDays, date: format.date(preview.earliestShipDate) })}
-        </p>
+        {preview.earliestDeliveryDate ? (
+          <p className="text-muted text-xs">{t("arrives", { date: format.date(preview.earliestDeliveryDate) })}</p>
+        ) : null}
+        <p className="text-muted text-xs">{t("holds", { date: format.dateTime(preview.previewExpiresAt) })}</p>
         <Button
           loading={busy === "checkout"}
           disabled={stale || Boolean(error) || busy !== null}

@@ -22,7 +22,6 @@ import {
 } from "@/lib/api/requests/admin-orders";
 import { quoteSource } from "@/lib/api/requests/store-quotes";
 import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
-import { companyRole, creditApplication } from "@/lib/api/requests/store-business";
 
 import {
   companyKycDocType,
@@ -325,6 +324,21 @@ export const companyNotice = z
     daysOverdue: z.number().int(),
   })
   .meta({ id: "CompanyNoticeDto" });
+
+const companyRole = z.enum(["company_admin", "company_buyer", "company_approver", "company_accountant"]);
+
+/** A credit application as the mock keeps it until the back office decides (D-121). */
+export const creditApplication = z.object({
+  id: uuid(),
+  status: z.enum(["submitted", "approved", "rejected"]),
+  requestedLimit: money(),
+  termDays: z.number().int(),
+  basis: z.enum(["paid_orders", "financial_statement"]),
+  submittedAt: dateTime(),
+  decidedAt: dateTime().nullable(),
+  note: z.string().nullable(),
+  approvedLimit: money().nullable(),
+});
 
 export const storeCompany = z
   .object({
