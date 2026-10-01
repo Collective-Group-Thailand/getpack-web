@@ -9,12 +9,12 @@ import { billingRequestHandlers } from "./billing";
 import { factoryHandlers } from "./factories";
 import { jobHandlers } from "./jobs";
 import { onboardingRequestHandlers } from "./onboarding";
-import { shipmentRequestHandlers } from "./shipments";
+import { shipmentHandlers } from "./shipments";
 
 export const partnerZoneHandlers = [
   ...onboardingRequestHandlers,
   ...jobHandlers,
-  ...shipmentRequestHandlers,
+  ...shipmentHandlers,
   ...billingRequestHandlers,
   ...factoryHandlers,
 ];

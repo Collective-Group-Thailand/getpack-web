@@ -9,22 +9,23 @@ import { bangkokNow, newReport, uploadPhotos, useFloorAction } from "@/features/
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
+import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import { browserRequests } from "@/lib/api/requests/browser";
+import type { Schemas } from "@/lib/api/types";
 import { BigActionButton } from "@/ui/components/BigActionButton";
 import { Button } from "@/ui/components/Button";
 import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture";
 import { Field } from "@/ui/components/Field";
-import { Input, NumberInput } from "@/ui/components/Input";
+import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { Select } from "@/ui/components/Select";
 import { SignaturePad } from "@/ui/components/SignaturePad";
 import { toast } from "@/ui/components/Toast";
 
-type Report = ReturnType<typeof newReport>;
-
-function useReport() {
-  const current = useRef<Report | null>(null);
+/** One `Idempotency-Key` per intent: minted on the first attempt, kept on a retry, dropped on success. */
+function useIntentKey() {
+  const current = useRef<string | null>(null);
   return {
-    get: () => (current.current ??= newReport()),
+    get: () => (current.current ??= newReport().idempotencyKey),
     done: () => {
       current.current = null;
     },
@@ -34,8 +35,9 @@ function useReport() {
 /* ------------------------------------------------------------------------ new shipment */
 
 /**
- * A shipment for one destination of a finished job (D-110): the quantity it takes — all that is
- * left, or part of it for a split — and its cartons, which become its labels.
+ * A draft trip to one destination of a finished job (D-110): the quantity it takes — all that is
+ * left, or part of it for a split — its cartons, which become its labels when it is packed, and
+ * its weight.
  */
 export function CreateShipment({
   jobId,
@@ -46,46 +48,45 @@ export function CreateShipment({
 }) {
   const t = useTranslations("partnerShip.create");
   const format = useFormat();
-  const { factoryId, can } = useFactory();
   const router = useRouter();
-  const report = useReport();
+  const key = useIntentKey();
   const [quantity, setQuantity] = useState(String(destination.left));
   const [cartons, setCartons] = useState("1");
   const [weight, setWeight] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ quantity?: string; cartons?: string; weight?: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  if (!can("factory_shipments.manage")) return null;
 
   async function create(event: React.FormEvent) {
     event.preventDefault();
     const qty = Number(quantity);
     const boxes = Number(cartons);
+    // The scale reads kilograms; the contract takes whole grams (a weight, not money).
+    const grams = Math.round(Number(weight) * 1000);
     if (!Number.isInteger(qty) || qty < 1 || qty > destination.left)
-      return setError(t("quantityRange", { max: format.number(destination.left) }));
-    if (!Number.isInteger(boxes) || boxes < 1) return setError(t("cartonsRange"));
+      return setError({ quantity: t("quantityRange", { max: format.number(destination.left) }) });
+    if (!Number.isInteger(boxes) || boxes < 1) return setError({ cartons: t("cartonsRange") });
+    if (!Number.isFinite(grams) || grams < 1) return setError({ weight: t("weightRequired") });
     setError(null);
     setBusy(true);
-    const next = report.get();
     try {
-      const created = await browserRequests().call("POST /v1/partner/factories/{factoryId}/shipments", {
-        path: { factoryId },
-        body: {
-          ...next.stamp,
-          jobId,
-          destinationId: destination.id,
-          quantity: qty,
-          cartons: boxes,
-          ...(Number(weight) > 0 ? { weightG: Math.round(Number(weight) * 1000) } : {}),
-        },
-        idempotencyKey: next.idempotencyKey,
-      });
-      report.done();
+      const created = (
+        await browserApi().POST("/v1/partner/shipments", {
+          params: { header: { "Idempotency-Key": key.get() } },
+          body: {
+            items: [{ jobId, destinationId: destination.id, quantity: qty }],
+            cartonsCount: boxes,
+            weightG: grams,
+          },
+        })
+      ).data!;
+      key.done();
       toast.success(t("created", { no: created.shipmentNo }));
       router.push(`/ship/${created.id}`);
     } catch (failure) {
-      setError(
-        isApiError(failure) && failure.errors[0] ? failure.errors[0].message : problemMessage(failure, t("failed")),
-      );
+      setError({
+        quantity:
+          isApiError(failure) && failure.errors[0] ? failure.errors[0].message : problemMessage(failure, t("failed")),
+      });
     } finally {
       setBusy(false);
     }
@@ -94,7 +95,7 @@ export function CreateShipment({
   return (
     <form onSubmit={(event) => void create(event)} className="flex flex-col gap-3" noValidate>
       <div className="grid grid-cols-3 gap-2">
-        <Field label={t("quantity")} error={error ?? undefined}>
+        <Field label={t("quantity")} error={error?.quantity}>
           <NumberInput
             inputSize="lg"
             inputMode="numeric"
@@ -104,7 +105,7 @@ export function CreateShipment({
             onChange={(event) => setQuantity(event.target.value)}
           />
         </Field>
-        <Field label={t("cartons")}>
+        <Field label={t("cartons")} error={error?.cartons}>
           <NumberInput
             inputSize="lg"
             inputMode="numeric"
@@ -113,7 +114,7 @@ export function CreateShipment({
             onChange={(event) => setCartons(event.target.value)}
           />
         </Field>
-        <Field label={t("weight")}>
+        <Field label={t("weight")} error={error?.weight}>
           <NumberInput
             inputSize="lg"
             inputMode="decimal"
@@ -131,45 +132,73 @@ export function CreateShipment({
   );
 }
 
-/* ------------------------------------------------------------------------------ dispatch */
+/* ------------------------------------------------------------------- ready / dispatch */
 
-export function DispatchShipment({ shipmentId, shipmentNo }: { shipmentId: string; shipmentNo: string }) {
-  const t = useTranslations("partnerShip.dispatch");
-  const { factoryId, can } = useFactory();
-  const report = useReport();
+/** Packed: the API makes the carton labels and the packing list (`partner.shipments.markReady`). */
+export function MarkReady({ shipmentId, shipmentNo }: { shipmentId: string; shipmentNo: string }) {
+  const t = useTranslations("partnerShip.ready");
+  const key = useIntentKey();
   const { run, busy } = useFloorAction();
-  if (!can("factory_shipments.manage")) return null;
   return (
     <BigActionButton
       title={t("action")}
       hint={t("hint", { no: shipmentNo })}
-      icon="truck"
+      icon="printer"
       loading={busy}
       onClick={async () => {
-        const next = report.get();
         const ok = await run(
           () =>
-            browserRequests().call("POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/dispatch", {
-              path: { factoryId, shipmentId },
-              body: next.stamp,
-              idempotencyKey: next.idempotencyKey,
+            browserApi().POST("/v1/partner/shipments/{shipmentId}/actions/ready", {
+              params: { path: { shipmentId }, header: { "Idempotency-Key": key.get() } },
             }),
           t("done", { no: shipmentNo }),
         );
-        if (ok) report.done();
+        if (ok) key.done();
       }}
     />
   );
 }
 
-/** The fleet cannot reach this address: Packio books its fallback carrier (D-013, D-114). */
+/** The factory's own fleet leaves with it (D-013); the API holds it at the gate (B3.2, D-076). */
+export function DispatchShipment({
+  shipmentId,
+  shipmentNo,
+  blockedBy,
+}: {
+  shipmentId: string;
+  shipmentNo: string;
+  /** Why the API offers it disabled now (`disabledReason`), in words. */
+  blockedBy?: string | null;
+}) {
+  const t = useTranslations("partnerShip.dispatch");
+  const key = useIntentKey();
+  const { run, busy } = useFloorAction();
+  return (
+    <BigActionButton
+      title={t("action")}
+      hint={blockedBy ?? t("hint", { no: shipmentNo })}
+      icon="truck"
+      loading={busy}
+      disabled={Boolean(blockedBy)}
+      onClick={async () => {
+        const ok = await run(
+          () =>
+            browserApi().POST("/v1/partner/shipments/{shipmentId}/actions/dispatch", {
+              params: { path: { shipmentId }, header: { "Idempotency-Key": key.get() } },
+            }),
+          t("done", { no: shipmentNo }),
+        );
+        if (ok) key.done();
+      }}
+    />
+  );
+}
+
+/** The fleet cannot reach this address: the factory asks Packio for its fallback carrier (D-013, D-114). */
 export function RequestCarrier({ shipmentId, shipmentNo }: { shipmentId: string; shipmentNo: string }) {
   const t = useTranslations("partnerShip.carrier");
-  const { factoryId, can } = useFactory();
-  const report = useReport();
   const { run } = useFloorAction();
   const [open, setOpen] = useState(false);
-  if (!can("factory_shipments.manage")) return null;
   return (
     <>
       <Button size="xl" variant="secondary" iconStart="route" onClick={() => setOpen(true)}>
@@ -182,25 +211,112 @@ export function RequestCarrier({ shipmentId, shipmentNo }: { shipmentId: string;
         description={t("body", { no: shipmentNo })}
         confirmLabel={t("confirm")}
         reason={{ label: t("reason"), required: true, minLength: 3, hint: t("reasonHint") }}
-        onConfirm={async ({ reason }) => {
-          const next = report.get();
+        onConfirm={async ({ idempotencyKey, reason }) => {
           const ok = await run(
             () =>
-              browserRequests().call(
-                "POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/request-carrier",
-                {
-                  path: { factoryId, shipmentId },
-                  body: { ...next.stamp, reason },
-                  idempotencyKey: next.idempotencyKey,
-                },
-              ),
+              browserApi().POST("/v1/partner/shipments/{shipmentId}/actions/request-carrier", {
+                params: { path: { shipmentId }, header: { "Idempotency-Key": idempotencyKey } },
+                body: { reason },
+              }),
             t("done"),
           );
-          if (ok) report.done();
-          else throw new Error("not requested");
+          if (!ok) throw new Error("not requested");
         }}
       />
     </>
+  );
+}
+
+/** Cancelling a trip that has not left cannot be undone (`shipment.cancel`): the number is retyped. */
+export function CancelShipment({ shipmentId, shipmentNo }: { shipmentId: string; shipmentNo: string }) {
+  const t = useTranslations("partnerShip.cancel");
+  const { run } = useFloorAction();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button size="lg" variant="ghost" iconStart="ban" onClick={() => setOpen(true)}>
+        {t("action")}
+      </Button>
+      <ConfirmAction
+        open={open}
+        onOpenChange={setOpen}
+        tone="destructive"
+        title={t("title", { no: shipmentNo })}
+        description={t("body", { no: shipmentNo })}
+        confirmLabel={t("confirm")}
+        confirmationPhrase={shipmentNo}
+        reason={{ label: t("reason"), required: true, minLength: 3 }}
+        onConfirm={async ({ idempotencyKey, reason }) => {
+          const ok = await run(
+            () =>
+              browserApi().POST("/v1/partner/shipments/{shipmentId}/actions/cancel", {
+                params: { path: { shipmentId }, header: { "Idempotency-Key": idempotencyKey } },
+                body: { reason },
+              }),
+            t("done", { no: shipmentNo }),
+          );
+          if (!ok) throw new Error("not cancelled");
+        }}
+      />
+    </>
+  );
+}
+
+const TRANSIT = [
+  "in_transit",
+  "out_for_delivery",
+  "failed",
+  "returned",
+] as const satisfies readonly Schemas["ShipmentTransitStatus"][];
+
+/** The fleet's own steps on the road (`partner.shipments.updateStatus`): out for delivery, a failed attempt. */
+export function UpdateTransit({ shipmentId }: { shipmentId: string }) {
+  const t = useTranslations("partnerShip.transit");
+  const tStatus = useTranslations("status");
+  const key = useIntentKey();
+  const { run, busy } = useFloorAction();
+  const [status, setStatus] = useState<Schemas["ShipmentTransitStatus"]>("out_for_delivery");
+  const [note, setNote] = useState("");
+  const LABELS = {
+    in_transit: "shipment.inTransit",
+    out_for_delivery: "shipment.outForDelivery",
+    failed: "shipment.failed",
+    returned: "shipment.returned",
+  } as const;
+  return (
+    <form
+      className="flex flex-col gap-3"
+      noValidate
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const ok = await run(
+          () =>
+            browserApi().POST("/v1/partner/shipments/{shipmentId}/events", {
+              params: { path: { shipmentId }, header: { "Idempotency-Key": key.get() } },
+              body: { status, occurredAt: bangkokNow(), ...(note.trim() ? { note: note.trim() } : {}) },
+            }),
+          t("done"),
+        );
+        if (ok) {
+          key.done();
+          setNote("");
+        }
+      }}
+    >
+      <Field label={t("status")}>
+        <Select
+          value={status}
+          onValueChange={setStatus}
+          options={TRANSIT.map((value) => ({ value, label: tStatus(LABELS[value]) }))}
+        />
+      </Field>
+      <Field label={t("note")}>
+        <Textarea rows={2} value={note} maxLength={1000} onChange={(event) => setNote(event.target.value)} />
+      </Field>
+      <Button type="submit" size="xl" variant="secondary" iconStart="route" loading={busy} className="self-start">
+        {t("submit")}
+      </Button>
+    </form>
   );
 }
 
@@ -208,28 +324,36 @@ export function RequestCarrier({ shipmentId, shipmentNo }: { shipmentId: string;
 
 /**
  * Proof of delivery, required for the factory's own deliveries (D-013): photos of the goods at
- * the door, who received them, their signature (or typed name), and how many were delivered —
- * the quantity the tolerance is judged on (D-021, D-080). Photos keep the time they were taken.
+ * the door, who received them, their signature (or typed name), and how many were delivered to
+ * each destination on the trip — the quantity the tolerance is judged on (D-021, D-080). Photos
+ * keep the time they were taken. Recording it cannot be undone (`shipment.record_pod`).
  */
-export function PodForm({ shipmentId, quantity }: { shipmentId: string; quantity: number }) {
+export function PodForm({
+  shipmentId,
+  items,
+}: {
+  shipmentId: string;
+  items: { destinationId: string; jobNo: string; quantity: number }[];
+}) {
   const t = useTranslations("partnerShip.pod");
   const tCamera = useTranslations("partnerJobs.camera");
   const tCommon = useTranslations("common");
-  const { factoryId, can } = useFactory();
-  const report = useReport();
+  const { factoryId } = useFactory();
+  const key = useIntentKey();
   const { run, busy, errors } = useFloorAction();
   const [receiver, setReceiver] = useState("");
-  const [delivered, setDelivered] = useState(String(quantity));
+  const [delivered, setDelivered] = useState<Record<string, string>>(() =>
+    Object.fromEntries(items.map((item) => [item.destinationId, String(item.quantity)])),
+  );
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [signature, setSignature] = useState<Blob | null>(null);
   const [uploading, setUploading] = useState(false);
-  if (!can("factory_shipments.manage")) return null;
-  const count = Number(delivered);
+  const counts = items.map((item) => Number(delivered[item.destinationId]));
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (receiver.trim().length < 2) return void toast.error(t("receiverRequired"));
-    if (!Number.isInteger(count) || count < 0) return void toast.error(t("quantityInvalid"));
+    if (counts.some((count) => !Number.isInteger(count) || count < 0)) return void toast.error(t("quantityInvalid"));
     if (!photos.length) return void toast.error(t("photoRequired"));
     if (!signature) return void toast.error(t("signatureRequired"));
     setUploading(true);
@@ -244,25 +368,25 @@ export function PodForm({ shipmentId, quantity }: { shipmentId: string; quantity
       return void toast.error(problemMessage(error, t("uploadFailed")));
     }
     setUploading(false);
-    const next = report.get();
     const ok = await run(
       () =>
-        browserRequests().call("POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/pod", {
-          path: { factoryId, shipmentId },
+        browserApi().POST("/v1/partner/shipments/{shipmentId}/proof-of-delivery", {
+          params: { path: { shipmentId }, header: { "Idempotency-Key": key.get() } },
           body: {
-            ...next.stamp,
             receiverName: receiver.trim(),
-            deliveredQuantity: count,
+            items: items.map((item, index) => ({
+              destinationId: item.destinationId,
+              deliveredQuantity: counts[index]!,
+            })),
             // When the goods were handed over: the first photo's shutter time, or now.
             capturedAt: photos[0]?.capturedAt ?? bangkokNow(),
             photoFileIds,
             signatureFileId,
           },
-          idempotencyKey: next.idempotencyKey,
         }),
       t("done"),
     );
-    if (ok) report.done();
+    if (ok) key.done();
   }
 
   return (
@@ -289,21 +413,24 @@ export function PodForm({ shipmentId, quantity }: { shipmentId: string; quantity
           onChange={(event) => setReceiver(event.target.value)}
         />
       </Field>
-      <Field
-        label={t("delivered")}
-        hint={t("deliveredHint", { quantity })}
-        required
-        requiredLabel={tCommon("state.required")}
-        error={errors.deliveredQuantity}
-      >
-        <NumberInput
-          inputSize="lg"
-          inputMode="numeric"
-          min={0}
-          value={delivered}
-          onChange={(event) => setDelivered(event.target.value)}
-        />
-      </Field>
+      {items.map((item) => (
+        <Field
+          key={item.destinationId}
+          label={items.length > 1 ? t("deliveredFor", { jobNo: item.jobNo }) : t("delivered")}
+          hint={t("deliveredHint", { quantity: item.quantity })}
+          required
+          requiredLabel={tCommon("state.required")}
+          error={errors.items}
+        >
+          <NumberInput
+            inputSize="lg"
+            inputMode="numeric"
+            min={0}
+            value={delivered[item.destinationId] ?? ""}
+            onChange={(event) => setDelivered({ ...delivered, [item.destinationId]: event.target.value })}
+          />
+        </Field>
+      ))}
       <SignaturePad
         onChange={setSignature}
         labels={{

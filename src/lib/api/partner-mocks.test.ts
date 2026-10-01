@@ -224,7 +224,6 @@ describe("a factory price-list proposal (F001)", () => {
 });
 
 describe("the production floor and shipping (F001, F5 5.2)", () => {
-  const stamp = (clientRef: string) => ({ clientRef, clientReportedAt: "2026-09-27T10:00:00+07:00" });
   const uuid = (n: number) => `00000000-0000-4000-8000-${n.toString(16).padStart(12, "0")}`;
   const path = { factoryId: F001 };
 
@@ -237,7 +236,6 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
 
   it("accepts a released job, reports every step with the rules B4.2 states, and ships it split", async () => {
     const api = partner("owner");
-    const floor = requestsAs("owner");
     const key = (n: number) => ({ "Idempotency-Key": uuid(n) });
     const today = (await api.GET("/v1/partner/factories/{factoryId}/today", { params: { path } })).data!;
     expect(today.counters.awaitingAcceptance).toBeGreaterThanOrEqual(2);
@@ -341,65 +339,109 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
       }),
     ).rejects.toMatchObject({ status: 409, code: "production.invalid_status" });
 
-    const plan = await floor.call("GET /v1/partner/factories/{factoryId}/ship-plan", { path });
-    const ready = plan.find((item) => item.id === released.id)!;
+    const plan = (await api.GET("/v1/partner/factories/{factoryId}/ship-plan", { params: { path } })).data!;
+    const ready = plan.find((item) => item.jobId === released.id)!;
     expect(ready.destinations).toHaveLength(2);
+    expect(ready.blockedReason).toBeNull();
     const shipmentIds: string[] = [];
     for (const [index, destination] of ready.destinations.entries()) {
-      const created = await floor.call("POST /v1/partner/factories/{factoryId}/shipments", {
-        path,
-        body: {
-          ...stamp(uuid(400 + index)),
-          jobId: ready.id,
-          destinationId: destination.id,
-          quantity: destination.quantity,
-          cartons: 2,
-        },
-        idempotencyKey: uuid(400 + index),
-      });
-      expect(created.cartonList).toHaveLength(2);
+      const created = (
+        await api.POST("/v1/partner/shipments", {
+          params: { header: key(400 + index) },
+          body: {
+            items: [
+              { jobId: ready.jobId, destinationId: destination.destinationId, quantity: destination.remainingQuantity },
+            ],
+            cartonsCount: 2,
+            weightG: 12_000,
+          },
+        })
+      ).data!;
+      // A draft: the labels come when it is packed.
+      expect(created).toMatchObject({ status: "draft", cartons: [], labelFileId: null });
+      expect(created.nextActions.map((action) => action.key)).toContain("shipment.mark_ready");
       shipmentIds.push(created.id);
     }
     // A replay of the first create is the same shipment, not a third one.
-    const replay = await floor.call("POST /v1/partner/factories/{factoryId}/shipments", {
-      path,
-      body: { ...stamp(uuid(400)), jobId: ready.id, destinationId: ready.destinations[0]!.id, quantity: 1, cartons: 1 },
-      idempotencyKey: uuid(400),
+    const replay = await api.POST("/v1/partner/shipments", {
+      params: { header: key(400) },
+      body: {
+        items: [{ jobId: ready.jobId, destinationId: ready.destinations[0]!.destinationId, quantity: 1 }],
+        cartonsCount: 1,
+        weightG: 1,
+      },
     });
-    expect(replay.id).toBe(shipmentIds[0]);
+    expect(replay.data!.id).toBe(shipmentIds[0]);
+    // Nothing is left to ship to either destination.
+    await expect(
+      api.POST("/v1/partner/shipments", {
+        params: { header: key(450) },
+        body: {
+          items: [{ jobId: ready.jobId, destinationId: ready.destinations[0]!.destinationId, quantity: 1 }],
+          cartonsCount: 1,
+          weightG: 1,
+        },
+      }),
+    ).rejects.toMatchObject({ status: 422, code: "shipments.quantity_exceeds" });
 
     for (const [index, shipmentId] of shipmentIds.entries()) {
-      const shipment = await floor.call(
-        "POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/actions/dispatch",
-        {
-          path: { ...path, shipmentId },
-          body: stamp(uuid(500 + index)),
-          idempotencyKey: uuid(500 + index),
-        },
-      );
-      const delivered = await floor.call("POST /v1/partner/factories/{factoryId}/shipments/{shipmentId}/pod", {
-        path: { ...path, shipmentId },
-        body: {
-          ...stamp(uuid(600 + index)),
-          receiverName: "คุณผู้รับ ทดสอบ",
-          deliveredQuantity: shipment.quantity,
-          capturedAt: "2026-09-27T15:00:00+07:00",
-          photoFileIds: [await photo(api)],
-          signatureFileId: await photo(api),
-        },
-        idempotencyKey: uuid(600 + index),
-      });
+      const packed = (
+        await api.POST("/v1/partner/shipments/{shipmentId}/actions/ready", {
+          params: { path: { shipmentId }, header: key(480 + index) },
+        })
+      ).data!;
+      expect(packed.cartons).toHaveLength(2);
+      expect(packed.labelFileId).not.toBeNull();
+      const labels = (
+        await api.GET("/v1/partner/files/{fileId}/download", { params: { path: { fileId: packed.labelFileId! } } })
+      ).data!;
+      expect(labels.url).toMatch(/^data:/);
+      const shipment = (
+        await api.POST("/v1/partner/shipments/{shipmentId}/actions/dispatch", {
+          params: { path: { shipmentId }, header: key(500 + index) },
+        })
+      ).data!;
+      expect(shipment.status).toBe("in_transit");
+      // A factory delivery needs a photo and a signature (D-013).
+      await expect(
+        api.POST("/v1/partner/shipments/{shipmentId}/proof-of-delivery", {
+          params: { path: { shipmentId }, header: key(590 + index) },
+          body: {
+            receiverName: "คุณผู้รับ ทดสอบ",
+            items: shipment.items.map((item) => ({
+              destinationId: item.destinationId,
+              deliveredQuantity: item.quantity,
+            })),
+          },
+        }),
+      ).rejects.toMatchObject({ status: 409, code: "shipments.pod_required" });
+      const delivered = (
+        await api.POST("/v1/partner/shipments/{shipmentId}/proof-of-delivery", {
+          params: { path: { shipmentId }, header: key(600 + index) },
+          body: {
+            receiverName: "คุณผู้รับ ทดสอบ",
+            items: shipment.items.map((item) => ({
+              destinationId: item.destinationId,
+              deliveredQuantity: item.quantity,
+            })),
+            capturedAt: "2026-09-27T15:00:00+07:00",
+            photoFileIds: [await photo(api)],
+            signatureFileId: await photo(api),
+          },
+        })
+      ).data!;
       expect(delivered.status).toBe("delivered");
-      expect(delivered.tolerance?.outcome).toBe("exact");
+      // The order's result comes once every trip of it is delivered (D-021, D-080).
+      expect(delivered.items[0]!.toleranceOutcome).toBe(index === shipmentIds.length - 1 ? "exact" : null);
     }
-    // The logistics desk sees both delivered, with their POD (D-013). The published list has no
-    // POD-review queue (CONTRACT-GAP admin.shipments), so it is the delivered status.
-    const delivered = (
-      await staff("logistics").GET("/v1/admin/shipments", { params: { query: { status: "delivered", perPage: 100 } } })
+    // The logistics desk sees both PODs waiting for review (D-229).
+    const waiting = (
+      await staff("logistics").GET("/v1/admin/shipments", { params: { query: { queue: "pod_review", perPage: 100 } } })
     ).data!.data;
-    expect(delivered.filter((row) => shipmentIds.includes(row.id)).every((row) => row.proofOfDelivery)).toBe(true);
-    const numbers = delivered.map((row) => row.id);
-    expect(shipmentIds.every((id) => numbers.includes(id))).toBe(true);
+    const mine = waiting.filter((row) => shipmentIds.includes(row.id));
+    expect(mine).toHaveLength(2);
+    expect(mine.every((row) => row.podReview?.state === "pending")).toBe(true);
+    expect(mine[0]!.nextActions.map((action) => action.key)).toContain("shipment.review_pod");
   });
 
   it("keeps an operator from accepting jobs, and another factory's job is not found", async () => {
