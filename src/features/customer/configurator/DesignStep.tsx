@@ -41,7 +41,11 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
     mutationFn: async (code: string) =>
       (
         await browserApi().POST("/v1/store/promotions/actions/check", {
-          body: { code, productTypeCode: configurator.productTypeCode, quantity: state.quantity },
+          body: {
+            code,
+            productTypeCode: configurator.productTypeCode,
+            ...(state.quantity > 0 ? { quantity: state.quantity } : {}),
+          },
         })
       ).data!,
   });

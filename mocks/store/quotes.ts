@@ -7,7 +7,8 @@
  *   published  saved quotations (`store.quotes.save` / `.list` / `.get` / `.share` / `.getShared` /
  *              `.requestPdf` / `.getPdf`, U-F0.2) — projected from the records below, which the
  *              cart, checkout, RFQ and reorder mocks share
- *   requested  store.configurator (parked for U2.F1)
+ *   published  `store.catalog.getConfigurator` — the published `StoreConfiguratorDto`, converted from the
+ *              mock's own, richer view below (`toStoreConfiguratorDto`)
  *   published  the code check (`store.promotions.checkCode`) and the CS channels (`store.support.getChannels`)
  *
  * The configurator is built from the back office's own catalogue rows (`../admin/catalogue.ts`)
@@ -23,23 +24,20 @@ import { resolveStyleId } from "@packio/dieline";
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type { z } from "zod";
 
-import type { storeConfigurator, storeGenericConfiguration, storeQuote } from "@/lib/api/requests/store-quotes";
+import type { storeGenericConfiguration, storeQuote } from "@/lib/api/requests/store-quotes";
 import type { Schemas } from "@/lib/api/types";
 
 import { lineSummaryOf } from "../admin/catalog";
 import { catalogueRows } from "../admin/catalogue";
 import { baht } from "../admin/commerce";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, paginate, problem } from "../support";
 import { byId, catalogProducts, imageUrl, live, typeCodeOf, type Row } from "./catalog";
 import { customerOf } from "./customers";
 import { unitOf } from "./order-dto";
 
-type Configurator = z.output<typeof storeConfigurator>;
-type Group = Configurator["groups"][number];
-type Option = Group["options"][number];
 type GenericConfiguration = z.output<typeof storeGenericConfiguration>;
 type FoldingConfiguration = Schemas["FoldingConfigurationDto"];
+type CorrugateConfiguration = Schemas["CorrugateConfigurationDto"];
 type Step = Schemas["QuoteStepDto"];
 export type StoreQuote = z.output<typeof storeQuote>;
 
@@ -50,6 +48,106 @@ const str = (value: unknown) => (typeof value === "string" ? value : null);
 export const QUOTE_VALIDITY_DAYS = 15;
 
 /* ---------------------------------------------------------------------------- configurator */
+
+/*
+ * The mock's own view of a product's configurator: what F3 3.2 first asked for (typed groups per
+ * calculator input, print presets, swatches and explainers), richer than what packio-api
+ * publishes. The fake price below reads it; the configurator endpoint converts it to the
+ * published `StoreConfiguratorDto` (`toStoreConfiguratorDto`), dropping what the contract has no
+ * place for, so the storefront sees exactly what the real API can say.
+ */
+type GroupKind =
+  | "material"
+  | "print"
+  | "coating_front"
+  | "coating_back"
+  | "finish"
+  | "diecut"
+  | "assembly"
+  | "shape"
+  | "pouch_type"
+  | "closure"
+  | "window";
+type SizeKind = "box" | "flat" | "pouch" | "none";
+interface PrintColour {
+  inkColourId: string;
+  percent: number;
+}
+interface Option {
+  id: string;
+  code: string;
+  nameTh: string;
+  nameEn: string;
+  descriptionTh: string | null;
+  descriptionEn: string | null;
+  imageUrl: string | null;
+  swatchHex: string | null;
+  isDefault: boolean;
+  print: { front: PrintColour[]; back: PrintColour[] } | null;
+  area: { requiresAmount: boolean; requiresWidth: boolean; requiresLength: boolean; maxAmount: number } | null;
+  /** The catalogue row's published attributes (gsm, finish kind…). */
+  attributes?: Record<string, unknown>;
+}
+interface Group {
+  kind: GroupKind;
+  step: "material" | "printing" | "finishing" | "assembly";
+  nameTh: string;
+  nameEn: string;
+  helpTh: string | null;
+  helpEn: string | null;
+  selection: "single" | "multiple";
+  required: boolean;
+  options: Option[];
+}
+interface Rules {
+  minLengthMm: number;
+  maxLengthMm: number;
+  minWidthMm: number;
+  maxWidthMm: number;
+  minHeightMm: number | null;
+  maxHeightMm: number | null;
+  minGussetMm: number | null;
+  maxGussetMm: number | null;
+  lengthMustExceedWidth: boolean;
+  stepMm: number;
+}
+interface Pattern {
+  id: string;
+  code: string;
+  name: string;
+  dielineKey: string | null;
+  imageUrl: string | null;
+  parts: { subPatternId: string | null; name: string }[];
+  rules: Rules;
+}
+interface Configurator {
+  slug: string;
+  catalogProductId: string;
+  productTypeCode: string;
+  calculator: Schemas["CalculatorKey"];
+  unit: string;
+  size: {
+    kind: SizeKind;
+    patterns: Pattern[];
+    standardSizes: {
+      id: string;
+      code: string;
+      name: string;
+      patternId: string | null;
+      lengthMm: number;
+      widthMm: number;
+      heightMm: number | null;
+      gussetMm: number | null;
+    }[];
+    customAllowed: boolean;
+  };
+  groups: Group[];
+  quantity: { presets: number[]; min: number; max: number; default: number; maxTiers: number };
+  design: { options: Schemas["DesignOption"][]; default: Schemas["DesignOption"] };
+  mockup: { options: Schemas["MockupOption"][] };
+  fixedInputs: Record<string, string>;
+  quoteValidityDays: number;
+}
 
 const CALCULATOR_OF: Record<string, Configurator["calculator"]> = {
   folding_carton: "folding",
@@ -168,6 +266,12 @@ function finishes(kinds: string[], area = false): Option[] {
     .filter((row) => kinds.includes(String(row.finishKind)))
     .map((row) =>
       option(row as never, {
+        attributes: {
+          finishKind: row.finishKind,
+          requiresAmount: Boolean(row.requiresAmount),
+          requiresWidth: Boolean(row.requiresWidth),
+          requiresLength: Boolean(row.requiresLength),
+        },
         area:
           area && (row.requiresWidth || row.requiresLength || row.requiresAmount)
             ? {
@@ -183,7 +287,7 @@ function finishes(kinds: string[], area = false): Option[] {
 
 const rows = (table: "diecutTypes" | "assemblies") => live(catalogueRows(table)).map((row) => option(row as never));
 
-function rulesOf(pattern: Row, kind: Configurator["size"]["kind"]): Configurator["size"]["patterns"][number]["rules"] {
+function rulesOf(pattern: Row, kind: SizeKind): Rules {
   const constraints = (pattern.constraints as Record<string, number> | undefined) ?? {};
   return {
     minLengthMm: constraints.minL ?? 30,
@@ -199,7 +303,7 @@ function rulesOf(pattern: Row, kind: Configurator["size"]["kind"]): Configurator
   };
 }
 
-function patternsOf(product: Row, kind: Configurator["size"]["kind"]): Configurator["size"]["patterns"] {
+function patternsOf(product: Row, kind: SizeKind): Pattern[] {
   if (kind === "none") return [];
   const entries = (product.patterns as { patternId: string }[] | undefined) ?? [];
   const patterns = entries.flatMap((entry) => {
@@ -244,7 +348,7 @@ export function configuratorOf(product: Row): Configurator | null {
   if (!calculator || type?.quoteMode !== "instant") return null;
   synthetic = 0;
 
-  const kind: Configurator["size"]["kind"] =
+  const kind: SizeKind =
     calculator === "folding" || calculator === "corrugate"
       ? "box"
       : calculator === "pouch"
@@ -256,6 +360,7 @@ export function configuratorOf(product: Row): Configurator | null {
   const standardSizes = live(catalogueRows("standardSizes"))
     .filter((size) => size.catalogProductId === product.id)
     .map((size) => ({
+      id: String(size.id),
       code: String(size.code),
       name: String(size.name),
       patternId: null,
@@ -453,6 +558,116 @@ export function configuratorOf(product: Row): Configurator | null {
   };
 }
 
+/** The published kinds the mock's groups become; a kind the contract has no place for is dropped. */
+const PUBLISHED_KIND: Partial<Record<GroupKind, Schemas["OfferableOptionKind"]>> = {
+  material: "material",
+  coating_front: "coating",
+  coating_back: "coating",
+  finish: "finish",
+  diecut: "diecut",
+  assembly: "assembly",
+};
+
+const UNIT: Record<string, Schemas["ProductUnit"]> = { ชิ้น: "piece", ดวง: "piece", ซอง: "pouch" };
+
+/**
+ * The mock's view → the published `StoreConfiguratorDto`. What the contract does not carry is
+ * left behind: print presets become the ink colours they print with, group names, help, steps,
+ * the shapes and pouch styles of the unported calculators, the mockup add-on, the cutting step
+ * and the gusset limits.
+ */
+export function toStoreConfiguratorDto(configurator: Configurator): Schemas["StoreConfiguratorDto"] {
+  const published = (option: Option): Schemas["StoreOptionDto"] => ({
+    id: option.id,
+    code: option.code,
+    nameTh: option.nameTh,
+    nameEn: option.nameEn,
+    descriptionTh: option.descriptionTh,
+    descriptionEn: option.descriptionEn,
+    imageUrl: option.imageUrl,
+    swatchHex: option.swatchHex,
+    isDefault: option.isDefault,
+    attributes: option.attributes ?? {},
+  });
+  const optionGroups: Schemas["StoreOptionGroupDto"][] = [];
+  for (const group of configurator.groups) {
+    const kind = PUBLISHED_KIND[group.kind];
+    if (!kind) continue;
+    const existing = optionGroups.find((entry) => entry.kind === kind);
+    if (existing) {
+      // One coating list for both sides.
+      for (const option of group.options)
+        if (!existing.options.some((known) => known.id === option.id)) existing.options.push(published(option));
+      continue;
+    }
+    optionGroups.push({ kind, options: group.options.map(published) });
+  }
+  if (configurator.groups.some((group) => group.kind === "print")) {
+    optionGroups.push({
+      kind: "ink_colour",
+      options: live(catalogueRows("inkColours")).map((row) => ({
+        id: String(row.id),
+        code: String(row.code),
+        nameTh: String(row.name),
+        nameEn: String(row.name),
+        descriptionTh: null,
+        descriptionEn: null,
+        imageUrl: null,
+        swatchHex: null,
+        isDefault: false,
+        attributes: { colourKind: row.colourKind },
+      })),
+    });
+  }
+  const box = configurator.size.kind === "box";
+  return {
+    slug: configurator.slug,
+    catalogProductId: configurator.catalogProductId,
+    productTypeCode: configurator.productTypeCode,
+    calculator: configurator.calculator,
+    instant: configurator.fixedInputs.difficultyLevelId !== undefined,
+    difficultyLevelId: configurator.fixedInputs.difficultyLevelId ?? null,
+    patterns: configurator.size.patterns.map((pattern) => ({
+      id: pattern.id,
+      code: pattern.code,
+      name: pattern.name,
+      dielineKey: pattern.dielineKey,
+      imageUrl: pattern.imageUrl,
+      descriptionTh: null,
+      descriptionEn: null,
+      parts: pattern.parts.flatMap((part, index) =>
+        part.subPatternId ? [{ subPatternId: part.subPatternId, seq: index + 1, name: part.name }] : [],
+      ),
+      fluteTypeIds: [],
+      rules: {
+        minLMm: pattern.rules.minLengthMm,
+        maxLMm: pattern.rules.maxLengthMm,
+        minWMm: pattern.rules.minWidthMm,
+        maxWMm: pattern.rules.maxWidthMm,
+        minHMm: pattern.rules.minHeightMm,
+        maxHMm: pattern.rules.maxHeightMm,
+        lengthMustExceedWidth: pattern.rules.lengthMustExceedWidth,
+        lengthMustExceedHeight: false,
+        widthMustExceedHeight: false,
+      },
+    })),
+    standardSizes: configurator.size.standardSizes.map((size) => ({
+      id: size.id,
+      code: size.code,
+      name: size.name,
+      lengthMm: size.lengthMm,
+      widthMm: size.widthMm,
+      heightMm: box ? (size.heightMm ?? 0) : 0,
+    })),
+    optionGroups,
+    printAreas: configurator.calculator === "corrugate" ? ["top", "side", "top_side", "all_round"] : [],
+    quoteValidityDays: configurator.quoteValidityDays,
+    unit: UNIT[configurator.unit] ?? "piece",
+    quantity: { ...configurator.quantity },
+    design: configurator.design,
+  };
+}
+
 function productOfSlug(slug: string | undefined): Row | undefined {
   return catalogProducts().find((row) => row.slug === slug);
 }
@@ -528,6 +743,27 @@ function inputsOf(productTypeCode: string, raw: Record<string, unknown>): Inputs
         (part?.finish2?.length ?? 0) +
         (part?.assemblies?.length ?? 0),
       materialFactor: materialFactorOf(config.materialId),
+      graphic: config.design?.graphic ?? false,
+      structure: config.design?.structure ?? false,
+    };
+  }
+
+  if (configurator.calculator === "corrugate") {
+    const config = raw as unknown as CorrugateConfiguration;
+    const bad = checkSize(configurator, config.patternId, config.l, config.w, config.d);
+    if (bad) return bad;
+    const part = config.parts?.[0];
+    return {
+      configurator,
+      product,
+      l: config.l,
+      w: config.w,
+      d: config.d,
+      gusset: 0,
+      quantities: config.quantities,
+      colours: (part?.printFront?.length ?? 0) + (part?.printBack?.length ?? 0),
+      extras: (part?.coatingFrontId ? 1 : 0) + (part?.coatingBackId ? 1 : 0) + (part?.assemblies?.length ?? 0),
+      materialFactor: 1,
       graphic: config.design?.graphic ?? false,
       structure: config.design?.structure ?? false,
     };
@@ -1042,11 +1278,12 @@ export const storeQuoteHandlers: HttpHandler[] = [
     return HttpResponse.json(result);
   }),
 
-  // CONTRACT-REQUEST store.configurator
-  mockRequest("GET /v1/store/catalog/products/{slug}/configurator", ({ params }) => {
-    const product = productOfSlug(params.slug);
+  // Published (`store.catalog.getConfigurator`, v0.3.0): the mock's view in the published shape.
+  http.get("*/v1/store/catalog/products/:slug/configurator", ({ params }) => {
+    const product = productOfSlug(params.slug as string);
     const configurator = product ? configuratorOf(product) : null;
-    return configurator ?? problem(404, "http.not_found", "สินค้านี้ขอใบเสนอราคาเท่านั้น");
+    if (!configurator) return problem(404, "http.not_found", "สินค้านี้ขอใบเสนอราคาเท่านั้น");
+    return HttpResponse.json(toStoreConfiguratorDto(configurator));
   }),
 
   // Published (U-F0.2): the saved quotation. One option per quantity it was given — the storefront
