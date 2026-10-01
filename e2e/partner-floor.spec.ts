@@ -12,7 +12,6 @@ import { gotoHydrated, signInAsPartner, signInAsStaff } from "./helpers/session"
  */
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
-const F001 = "00000000-0000-4000-8000-0000000000f1";
 /** A real 1 × 1 JPEG, so the browser's own decoder takes the camera path. */
 const JPEG = Buffer.from(
   "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=",
@@ -47,7 +46,7 @@ test.describe("a job from acceptance to delivery (F001)", () => {
     await expectAxeClean(page);
 
     // The released job due soonest: the one this flow can take to delivery.
-    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/factories/${F001}/jobs?view=to_accept`);
+    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/production-jobs?view=to_accept`);
     const jobs = ((await list.json()) as { data: { id: string; jobNo: string; acceptDueAt: string }[] }).data;
     const job = [...jobs].sort((a, b) => a.acceptDueAt.localeCompare(b.acceptDueAt))[0]!;
 
@@ -98,15 +97,22 @@ test.describe("a job from acceptance to delivery (F001)", () => {
     for (let round = 0; round < 2; round += 1) {
       if (round === 1) await gotoHydrated(page, `${HOSTS.partner}/ship`);
       await page
+        .getByLabel(/^น้ำหนัก/)
+        .first()
+        .fill("12");
+      await page
         .getByRole("button", { name: /^สร้างการจัดส่งถึง/ })
         .first()
         .click();
       await expect(page).toHaveURL(/\/ship\/[0-9a-f-]+$/);
       const shipmentNo = (await page.getByRole("heading", { level: 1 }).textContent())!;
       shipped.push(shipmentNo);
+      // A draft until it is packed: then the API makes its labels and packing list.
+      await page.getByRole("button", { name: /^แพ็กเสร็จ/ }).click();
+      await toast(page, `${shipmentNo} พร้อมส่งแล้ว`);
       if (round === 0) {
         await page.getByRole("link", { name: /พิมพ์ฉลากกล่อง/ }).click();
-        await expect(page.getByRole("img", { name: "QR ติดตามกล่องที่ 1" })).toBeVisible();
+        await expect(page.getByRole("img", { name: "QR รหัสกล่องที่ 1" })).toBeVisible();
         await expectAxeClean(page);
         await page.getByRole("link", { name: "กลับไปที่การจัดส่ง" }).click();
         await expect(page.getByRole("heading", { level: 1, name: shipmentNo })).toBeVisible();
@@ -123,13 +129,13 @@ test.describe("a job from acceptance to delivery (F001)", () => {
       if (round === 0) await expectAxeClean(page);
       await page.getByRole("button", { name: /^บันทึกการส่งมอบ/ }).click();
       await toast(page, "บันทึกการส่งมอบแล้ว รอ Packio ตรวจ");
-      await expect(page.getByText("ส่งครบตามจำนวน")).toBeVisible();
+      // The order's tolerance result comes once every trip of it is delivered (D-021, D-080).
+      if (round === 1) await expect(page.getByText("ส่งครบตามจำนวน")).toBeVisible();
     }
 
-    // The logistics desk sees them delivered (D-013). CONTRACT-GAP admin.shipments — no POD-review
-    // queue on the published list, so it is the delivered status.
+    // The logistics desk has both PODs waiting for review (D-013, D-229).
     await signInAsStaff(page, "logistics");
-    await gotoHydrated(page, `${HOSTS.admin}/shipments?status=delivered`);
+    await gotoHydrated(page, `${HOSTS.admin}/shipments?queue=pod_review`);
     for (const shipmentNo of shipped) await expect(page.getByText(shipmentNo).first()).toBeVisible();
   });
 });
@@ -137,7 +143,7 @@ test.describe("a job from acceptance to delivery (F001)", () => {
 test.describe("the floor's other screens and rules", () => {
   test("a typed code opens its job, and the capacity calendar reads", async ({ page }) => {
     await signInAsPartner(page, "planner");
-    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/factories/${F001}/jobs?view=all`);
+    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/production-jobs`);
     const [first] = ((await list.json()) as { data: { id: string; jobNo: string }[] }).data;
     await gotoHydrated(page, `${HOSTS.partner}/jobs`);
     await page.getByRole("button", { name: "สแกน QR" }).click();
@@ -158,7 +164,7 @@ test.describe("the floor's other screens and rules", () => {
     await expect(nav.getByRole("link", { name: "งานผลิต" })).toBeVisible();
     await expect(nav.getByRole("link", { name: "วางบิล" })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "จัดส่ง" })).toHaveCount(0);
-    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/factories/${F001}/jobs?view=to_accept`);
+    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/production-jobs?view=to_accept`);
     const [waiting] = ((await list.json()) as { data: { id: string }[] }).data;
     if (waiting) {
       await gotoHydrated(page, `${HOSTS.partner}/jobs/${waiting.id}`);
@@ -169,7 +175,7 @@ test.describe("the floor's other screens and rules", () => {
 
   test("another factory's job is not found (D-044)", async ({ page }) => {
     await signInAsPartner(page, "owner");
-    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/factories/${F001}/jobs?view=all`);
+    const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/production-jobs`);
     const [job] = ((await list.json()) as { data: { id: string }[] }).data;
     await signInAsPartner(page, "assisted");
     await gotoHydrated(page, `${HOSTS.partner}/jobs/${job!.id}`);

@@ -1,22 +1,25 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { JOB_STATUS } from "@/domain/status";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Icon } from "@/ui/icons";
 
 import { Countdown } from "./Countdown";
 
-export type JobSummary = ResponseOf<Requests, "GET /v1/partner/factories/{factoryId}/jobs">["data"][number];
+export type JobSummary = Schemas["PartnerJobDto"];
+
+/** A step's name in the reader's language (`MilestoneDto.nameTh` / `nameEn`). */
+export const stepName = (step: { nameTh: string; nameEn: string }, locale: string) =>
+  locale === "en" ? step.nameEn : step.nameTh;
 
 /** One job as the floor scans a list: number, what it is, where it stands, what is due. */
 export async function JobCard({ job }: { job: JobSummary }) {
-  const t = await getTranslations("partnerJobs.card");
-  const format = await getFormat();
+  const [t, format, locale] = await Promise.all([getTranslations("partnerJobs.card"), getFormat(), getLocale()]);
+  const current = job.milestones.find((step) => step.key === job.currentMilestoneKey);
   return (
     <Link
       href={`/jobs/${job.id}`}
@@ -25,7 +28,7 @@ export async function JobCard({ job }: { job: JobSummary }) {
       <span className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-base font-semibold">{job.jobNo}</span>
         <StatusChip map={JOB_STATUS} value={job.status} />
-        {job.views.includes("late") ? (
+        {job.atRisk ? (
           <Badge tone="danger" size="sm" icon="warning">
             {t("late")}
           </Badge>
@@ -39,9 +42,9 @@ export async function JobCard({ job }: { job: JobSummary }) {
       </span>
       <span className="font-medium">{job.title}</span>
       <span className="text-muted flex flex-wrap gap-x-3 text-sm">
-        <span>{t("quantity", { quantity: format.number(job.quantity) })}</span>
-        <span>{t("ship", { date: format.date(job.promisedShipDate) })}</span>
-        {job.current ? <span>{t("step", { name: job.current.name })}</span> : null}
+        <span>{t("quantity", { quantity: format.number(job.quantityOrdered) })}</span>
+        {job.promisedShipDate ? <span>{t("ship", { date: format.date(job.promisedShipDate) })}</span> : null}
+        {current ? <span>{t("step", { name: stepName(current, locale) })}</span> : null}
       </span>
       {job.status === "released" ? <Countdown dueAt={job.acceptDueAt} /> : null}
     </Link>

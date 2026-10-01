@@ -2,8 +2,6 @@ import { HOSTS } from "../../playwright.config";
 import { signInAsPartner } from "../helpers/session";
 import { expect, test } from "./fixture";
 
-const F001 = "00000000-0000-4000-8000-0000000000f1";
-
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** T11 "รับงานใหม่ แล้วอัปเดตว่าเริ่มพิมพ์พร้อมถ่ายรูป" — taps on a phone, from the partner home. */
@@ -13,7 +11,7 @@ test("T11 accept a new job and report printing started", async ({ page, journey 
   await j.startHere();
 
   // The released job due soonest — the one the floor spec also takes to delivery.
-  const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/factories/${F001}/jobs?view=to_accept`);
+  const list = await page.request.get(`${HOSTS.partner}/bff/v1/partner/production-jobs?view=to_accept`);
   const jobs = ((await list.json()) as { data: { jobNo: string; acceptDueAt: string }[] }).data;
   const job = [...jobs].sort((a, b) => a.acceptDueAt.localeCompare(b.acceptDueAt))[0]!;
   const toast = (text: string) => expect(page.getByText(text).first()).toBeVisible();

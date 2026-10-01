@@ -3,19 +3,20 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { SHIPMENT_STATUS } from "@/domain/status";
-import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
-import { addressLine } from "@/features/partner/address";
+import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { CreateShipment } from "@/features/partner/ship/actions";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
+import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-const VIEWS = ["open", "in_transit", "delivered", "all"] as const;
+/** `partner.shipments.list?view`, and everything. */
+const VIEWS = ["open", "in_transit", "delivered", "exceptions", "all"] as const;
 type View = (typeof VIEWS)[number];
 type Props = { searchParams: Promise<{ view?: string }> };
 
@@ -24,24 +25,43 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Shipping (F5 5.2): finished jobs with what each destination still needs — a shipment per
- * destination, several for a split (D-110) — and the factory's shipments by stage, each to its
- * labels, dispatch and proof of delivery (D-013).
+ * Shipping (F5 5.2, `partner.shipments.*`): finished jobs with what each destination still needs
+ * — a trip per destination, several for a split (D-110) — and the factory's trips by stage, each
+ * to its labels, dispatch and proof of delivery (D-013).
+ *
+ * CONTRACT-GAP partner.shipments — the ship plan names a job by number and order code only (no
+ * title, product type or promised date), and a destination by name, province and postcode.
  */
 export default async function ShipPage({ searchParams }: Props) {
   const query = await searchParams;
   const view: View = (VIEWS as readonly string[]).includes(query.view ?? "") ? (query.view as View) : "open";
-  const t = await getTranslations("partnerShip");
-  const format = await getFormat();
+  const [t, format] = await Promise.all([getTranslations("partnerShip"), getFormat()]);
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
-  const path = { factoryId: context.factoryId };
+  const { contract } = await partnerServerApis();
   const [plan, list] = await Promise.all([
-    attempt(() => requests.call("GET /v1/partner/factories/{factoryId}/ship-plan", { path })),
-    attempt(() =>
-      requests.call("GET /v1/partner/factories/{factoryId}/shipments", { path, query: { view, perPage: 50 } }),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/factories/{factoryId}/ship-plan", {
+            params: { path: { factoryId: context.factoryId } },
+          })
+        ).data!,
+    ),
+    attempt(
+      async () =>
+        (
+          await contract.GET("/v1/partner/shipments", {
+            params: {
+              query: {
+                perPage: 50,
+                ...(view === "all" ? {} : { view: view satisfies Schemas["PartnerShipmentView"] }),
+              },
+            },
+          })
+        ).data!,
     ),
   ]);
+  const manage = canAt(context, "factory_shipments.manage");
 
   return (
     <PartnerPage title={t("title")} wide>
@@ -50,18 +70,20 @@ export default async function ShipPage({ searchParams }: Props) {
           plan.data.length ? (
             <ul className="flex flex-col gap-3">
               {plan.data.map((job) => (
-                <li key={job.id} id={`job-${job.id}`}>
+                <li key={job.jobId} id={`job-${job.jobId}`}>
                   <Card padding="md" className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/jobs/${job.id}`} className="font-mono font-semibold underline">
+                      <Link href={`/jobs/${job.jobId}`} className="font-mono font-semibold underline">
                         {job.jobNo}
                       </Link>
-                      <span className="flex-1">{job.title}</span>
+                      <span className="text-muted flex-1 font-mono text-sm">{job.orderCode}</span>
                       <span className="text-muted text-sm">
-                        {t("plan.meta", {
-                          good: format.number(job.quantityGood),
-                          date: format.date(job.promisedShipDate),
-                        })}
+                        {job.quantityGood !== null
+                          ? t("plan.meta", {
+                              good: format.number(job.quantityGood),
+                              ordered: format.number(job.quantityOrdered),
+                            })
+                          : t("plan.metaOrdered", { ordered: format.number(job.quantityOrdered) })}
                       </span>
                     </div>
                     {job.blockedReason ? (
@@ -71,27 +93,29 @@ export default async function ShipPage({ searchParams }: Props) {
                     ) : null}
                     <ul className="grid gap-3 md:grid-cols-2">
                       {job.destinations
-                        .filter((destination) => destination.shippedQuantity < destination.quantity)
+                        .filter((destination) => destination.remainingQuantity > 0)
                         .map((destination) => (
-                          <li key={destination.id} className="border-border rounded-lg border p-3">
+                          <li key={destination.destinationId} className="border-border rounded-lg border p-3">
                             <p className="font-medium">{destination.recipientName}</p>
-                            <p className="text-muted text-sm">{addressLine(destination)}</p>
+                            <p className="text-muted text-sm">
+                              {[destination.provinceNameTh, destination.postcode].join(" ")}
+                            </p>
                             <p className="mb-3 text-sm">
                               {t("plan.left", {
-                                left: format.number(destination.quantity - destination.shippedQuantity),
+                                left: format.number(destination.remainingQuantity),
                                 total: format.number(destination.quantity),
                               })}
                             </p>
-                            {job.blockedReason === "inspection_pending" ? null : (
+                            {manage && job.blockedReason !== "inspection_pending" ? (
                               <CreateShipment
-                                jobId={job.id}
+                                jobId={job.jobId}
                                 destination={{
-                                  id: destination.id,
+                                  id: destination.destinationId,
                                   recipientName: destination.recipientName,
-                                  left: destination.quantity - destination.shippedQuantity,
+                                  left: destination.remainingQuantity,
                                 }}
                               />
-                            )}
+                            ) : null}
                           </li>
                         ))}
                     </ul>
@@ -129,33 +153,38 @@ export default async function ShipPage({ searchParams }: Props) {
         {list.data ? (
           list.data.data.length ? (
             <ul className="grid gap-2 md:grid-cols-2">
-              {list.data.data.map((shipment) => (
-                <li key={shipment.id}>
-                  <Link
-                    href={`/ship/${shipment.id}`}
-                    className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col gap-1 rounded-xl border p-3"
-                  >
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono font-semibold">{shipment.shipmentNo}</span>
-                      <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
-                      <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
-                    </span>
-                    <span>{shipment.destination.recipientName}</span>
-                    <span className="text-muted text-sm">
-                      {t("list.meta", {
-                        jobNo: shipment.job.jobNo,
-                        quantity: format.number(shipment.quantity),
-                        cartons: shipment.cartons,
-                      })}
-                    </span>
-                    {shipment.podRequired &&
-                    !shipment.hasPod &&
-                    ["in_transit", "picked_up", "out_for_delivery"].includes(shipment.status) ? (
-                      <span className="text-warning-subtle-fg text-sm font-medium">{t("list.podMissing")}</span>
-                    ) : null}
-                  </Link>
-                </li>
-              ))}
+              {list.data.data.map((shipment) => {
+                const pieces = shipment.items.reduce((total, item) => total + item.quantity, 0);
+                const podDue =
+                  shipment.carrier === "factory_fleet" &&
+                  !shipment.proofOfDelivery &&
+                  ["picked_up", "in_transit", "out_for_delivery"].includes(shipment.status);
+                return (
+                  <li key={shipment.id}>
+                    <Link
+                      href={`/ship/${shipment.id}`}
+                      className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col gap-1 rounded-xl border p-3"
+                    >
+                      <span className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono font-semibold">{shipment.shipmentNo}</span>
+                        <StatusChip map={SHIPMENT_STATUS} value={shipment.status} />
+                        <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
+                      </span>
+                      <span>{shipment.destination.recipientName}</span>
+                      <span className="text-muted text-sm">
+                        {t("list.meta", {
+                          jobNo: [...new Set(shipment.items.map((item) => item.jobNo))].join(", "),
+                          quantity: format.number(pieces),
+                          cartons: shipment.cartonsCount,
+                        })}
+                      </span>
+                      {podDue ? (
+                        <span className="text-warning-subtle-fg text-sm font-medium">{t("list.podMissing")}</span>
+                      ) : null}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <EmptyState icon="truck" title={t(`list.empty.${view}`)} />

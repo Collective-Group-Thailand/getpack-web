@@ -336,6 +336,24 @@ registerQueue("production.read", () => {
   };
 });
 
+/** A factory's scorecard `back` months before last month, by its place in the pipeline (D-155). */
+function scorecardOf(index: number, back: number): Schemas["ScorecardDto"] {
+  const wobble = (back % 3) * 0.75;
+  return {
+    month: month(-1 - back),
+    onTimeAcceptancePct: (98 - index * 3.5 - wobble).toFixed(4),
+    onTimeShippingPct: (95 - index * 4.25 + wobble).toFixed(4),
+    qcFirstPassPct: (97 - index * 2 - wobble).toFixed(4),
+    claimRatePct: (0.8 + index * 0.9 + wobble / 2).toFixed(4),
+    onTimeUpdatesPct: (92 - index * 6 + wobble).toFixed(4),
+    jobsCount: Math.max(0, 40 - index * 8 - back),
+    computedAt: bangkokIso(-60 * 24 * (2 + back * 30)),
+  };
+}
+
+/** `admin.inspections.record` takes an optional Idempotency-Key (v0.5.0): a replay answers the first result. */
+const inspectionReplays = new Map<string, unknown>();
+
 /* --------------------------------------------------------------------------------- handlers */
 
 export const governanceHandlers = [
@@ -472,7 +490,11 @@ export const governanceHandlers = [
     if (!can(staffPersonaOf(request), "production.read")) return forbidden();
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
-    const rows = inspections.filter((item) => !status || item.status === status).map(toInspectionDto);
+    const factoryId = url.searchParams.get("factoryId");
+    const rows = inspections
+      .filter((item) => !status || item.status === status)
+      .filter((item) => !factoryId || item.factory.id === factoryId)
+      .map(toInspectionDto);
     return HttpResponse.json(
       paginate(rows, {
         page: Number(url.searchParams.get("page") ?? 1),
@@ -483,6 +505,11 @@ export const governanceHandlers = [
   http.post("*/v1/admin/inspections/:inspectionId/actions/record", async ({ params, request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "inspections.perform")) return forbidden();
+    const key = request.headers.get("idempotency-key");
+    if (key && inspectionReplays.has(`${String(params.inspectionId)} ${key}`))
+      return HttpResponse.json(inspectionReplays.get(`${String(params.inspectionId)} ${key}`) as never, {
+        headers: { "Idempotent-Replayed": "true" },
+      });
     const item = inspections.find((candidate) => candidate.id === params.inspectionId);
     if (!item) return problem(404, "http.not_found", "ไม่พบงานตรวจนี้");
     if (!["planned", "in_progress"].includes(item.status))
@@ -505,26 +532,34 @@ export const governanceHandlers = [
       resultAt: bangkokIso(),
       inspector: { id: who.id, displayName: who.displayName },
     });
+    if (key) inspectionReplays.set(`${String(params.inspectionId)} ${key}`, toInspectionDto(item));
     return HttpResponse.json(toInspectionDto(item));
+  }),
+  // admin.inspections.monthScorecards: every factory's card for one month (D-155), for allocation.
+  http.get("*/v1/admin/scorecards", ({ request }) => {
+    if (!can(staffPersonaOf(request), "production.read")) return forbidden();
+    const wanted = new URL(request.url).searchParams.get("month") ?? "";
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(wanted))
+      return problem(422, "validation.failed", "ระบุเดือน", [{ path: "month", code: "invalid", message: "YYYY-MM" }]);
+    const back = Array.from({ length: 12 }, (_, at) => at).find((at) => month(-1 - at) === wanted);
+    if (back === undefined) return HttpResponse.json([]);
+    // Each card follows the factory's place in the whole pipeline, as the per-factory read does.
+    const all = factoryTiers();
+    return HttpResponse.json(
+      all
+        .filter((entry) => ["trial", "active", "suspended"].includes(entry.status))
+        .map((entry): Schemas["FactoryScorecardDto"] => ({
+          ...scorecardOf(all.indexOf(entry), back),
+          factory: { id: entry.factory.id, code: entry.factory.code, name: entry.factory.name },
+        })),
+    );
   }),
   // admin.inspections.scorecards: one factory's latest 12 months, newest first (D-155).
   http.get("*/v1/admin/factories/:factoryId/scorecards", ({ params, request }) => {
     if (!can(staffPersonaOf(request), "production.read")) return forbidden();
     const index = factoryTiers().findIndex((entry) => entry.factory.id === params.factoryId);
     if (index < 0) return problem(404, "http.not_found", "ไม่พบโรงงานนี้");
-    const cards = Array.from({ length: 12 }, (_, back): Schemas["ScorecardDto"] => {
-      const wobble = (back % 3) * 0.75;
-      return {
-        month: month(-1 - back),
-        onTimeAcceptancePct: (98 - index * 3.5 - wobble).toFixed(4),
-        onTimeShippingPct: (95 - index * 4.25 + wobble).toFixed(4),
-        qcFirstPassPct: (97 - index * 2 - wobble).toFixed(4),
-        claimRatePct: (0.8 + index * 0.9 + wobble / 2).toFixed(4),
-        onTimeUpdatesPct: (92 - index * 6 + wobble).toFixed(4),
-        jobsCount: Math.max(0, 40 - index * 8 - back),
-        computedAt: bangkokIso(-60 * 24 * (2 + back * 30)),
-      };
-    });
+    const cards = Array.from({ length: 12 }, (_, back) => scorecardOf(index, back));
     return HttpResponse.json(cards);
   }),
 ];

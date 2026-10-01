@@ -46,7 +46,6 @@ const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
   "GET /v1/admin/search": { q: "ตัวอย่าง" },
   "GET /v1/admin/analytics/journeys": { range: "7d", journey: "claims" },
   "GET /v1/store/catalog/price-hints": { productType: "folding_carton" },
-  "GET /v1/partner/factories/{factoryId}/jobs/lookup": { code: "J-2569-00300" },
   "GET /v1/admin/depreciation-runs/preview": { period: new Date().toISOString().slice(0, 7) },
   "GET /v1/admin/financial-reports/roll-forward": {
     accountCode: "2330",

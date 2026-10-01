@@ -7,14 +7,14 @@
 
 import { billingRequestHandlers } from "./billing";
 import { factoryHandlers } from "./factories";
-import { jobRequestHandlers } from "./jobs";
+import { jobHandlers } from "./jobs";
 import { onboardingRequestHandlers } from "./onboarding";
-import { shipmentRequestHandlers } from "./shipments";
+import { shipmentHandlers } from "./shipments";
 
 export const partnerZoneHandlers = [
   ...onboardingRequestHandlers,
-  ...jobRequestHandlers,
-  ...shipmentRequestHandlers,
+  ...jobHandlers,
+  ...shipmentHandlers,
   ...billingRequestHandlers,
   ...factoryHandlers,
 ];

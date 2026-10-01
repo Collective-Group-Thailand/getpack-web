@@ -7,6 +7,7 @@ import { PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { JobCard } from "@/features/partner/jobs/JobCard";
 import { awaitsSignOff } from "@/features/partner/onboarding/steps";
 import { loadPrices } from "@/features/partner/prices/server";
+import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
@@ -19,15 +20,17 @@ import { Icon, type IconName } from "@/ui/icons";
  *
  * While the factory is onboarding that is its progress and the steps Packio entered for it to
  * sign off; for every factory, the price items waiting for an answer (a rate card, prices to sign
- * off, counters). From trial on, the floor comes first: counters (to accept, due today, at risk, on
- * hold), alerts and the queue in the order to work it (contract request `partner.today`).
+ * off, counters). From trial on, the floor comes first: counters (to accept and overdue, due
+ * today, at risk, on hold, inspections planned), alerts and the queue in the order to work it
+ * (`partner.production.today`). Statements to check and claims to answer come from their lists
+ * (`partner.payables.listStatements`, `partner.claims.list`), a claim when it offers `claim.respond`.
  */
 export default async function PartnerHomePage() {
   const t = await getTranslations("partnerToday");
   const context = await factoryContext();
   const factory = context.factory;
   const onboarding = factory && ["applied", "under_review", "trial"].includes(factory.status);
-  const { contract, requests } = await partnerServerApis();
+  const { contract } = await partnerServerApis();
   const producing =
     factory && ["trial", "active", "suspended"].includes(factory.status) && canAt(context, "factory_jobs.read");
   const [steps, prices, floor] = await Promise.all([
@@ -43,30 +46,35 @@ export default async function PartnerHomePage() {
       : null,
     canAt(context, "factory_prices.read") ? loadPrices(context.factoryId) : null,
     producing
-      ? attempt(() =>
-          requests.call("GET /v1/partner/factories/{factoryId}/today", { path: { factoryId: context.factoryId } }),
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/today", {
+                params: { path: { factoryId: context.factoryId } },
+              })
+            ).data!,
         )
       : null,
   ]);
   const [statements, claims] = await Promise.all([
     canAt(context, "factory_payables.manage")
-      ? attempt(() =>
-          requests.call("GET /v1/partner/factories/{factoryId}/billing-statements", {
-            path: { factoryId: context.factoryId },
-            query: { status: "sent" },
-          }),
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/billing-statements", {
+                params: { query: { factoryId: context.factoryId, status: "sent" } },
+              })
+            ).data!,
         )
       : null,
     canAt(context, "factory_claims.respond")
-      ? attempt(() =>
-          requests.call("GET /v1/partner/factories/{factoryId}/claims", {
-            path: { factoryId: context.factoryId },
-            query: { status: "factory_review" },
-          }),
+      ? attempt(
+          async () =>
+            (await contract.GET("/v1/partner/claims", { params: { query: { status: "factory_review" } } })).data!,
         )
       : null,
   ]);
-  const tFloor = await getTranslations("partnerToday.floor");
+  const [tFloor, format] = await Promise.all([getTranslations("partnerToday.floor"), getFormat()]);
 
   const tasks: { key: string; href: string; icon: IconName; title: string; body: string }[] = [];
   const toSignOff = (steps?.data ?? []).filter(awaitsSignOff).length;
@@ -104,7 +112,9 @@ export default async function PartnerHomePage() {
       title: t("tasks.statement", { no: statement.bsNumber }),
       body: t("tasks.statementBody"),
     });
-  for (const claim of (claims?.data?.data ?? []).filter((item) => item.responseDueAt))
+  for (const claim of (claims?.data?.data ?? []).filter((item) =>
+    item.nextActions.some((action) => action.key === "claim.respond"),
+  ))
     tasks.push({
       key: claim.id,
       href: `/claims/${claim.id}`,
@@ -149,28 +159,37 @@ export default async function PartnerHomePage() {
 
       {floor?.data ? (
         <>
-          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label={tFloor("countersLabel")}>
+          <ul className="grid grid-cols-2 gap-2 md:grid-cols-5" aria-label={tFloor("countersLabel")}>
             {(
               [
-                ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.toAccept],
-                ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.dueToday],
+                ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
+                ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.milestonesDueToday],
                 ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
                 ["onHold", "/jobs?view=all", "pause", floor.data.counters.onHold],
+                ["inspections", "/jobs?view=all", "shield", floor.data.counters.inspectionsPlanned],
               ] as const
-            ).map(([key, href, icon, value]) => (
-              <li key={key}>
-                <Stat
-                  as={Link}
-                  href={href}
-                  label={tFloor(`counters.${key}`)}
-                  value={value}
-                  icon={icon}
-                  tone={
-                    key === "atRisk" && value > 0 ? "danger" : key === "toAccept" && value > 0 ? "warning" : "neutral"
-                  }
-                />
-              </li>
-            ))}
+            ).map(([key, href, icon, value]) => {
+              const overdue = key === "toAccept" ? floor.data!.counters.acceptanceOverdue : 0;
+              return (
+                <li key={key}>
+                  <Stat
+                    as={Link}
+                    href={href}
+                    label={tFloor(`counters.${key}`)}
+                    value={value}
+                    icon={icon}
+                    hint={overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined}
+                    tone={
+                      (key === "atRisk" && value > 0) || overdue > 0
+                        ? "danger"
+                        : key === "toAccept" && value > 0
+                          ? "warning"
+                          : "neutral"
+                    }
+                  />
+                </li>
+              );
+            })}
           </ul>
           {floor.data.alerts.length ? (
             <ul className="flex flex-col gap-2">
@@ -178,11 +197,13 @@ export default async function PartnerHomePage() {
                 <li key={`${alert.kind}-${alert.jobId}`}>
                   <Link href={`/jobs/${alert.jobId}`} className="block">
                     <Callout
-                      tone={alert.kind === "accept_overdue" ? "danger" : "warning"}
+                      tone={alert.kind === "acceptance_overdue" || alert.kind === "step_overdue" ? "danger" : "warning"}
                       icon="warning"
                       title={alert.jobNo}
                     >
-                      {alert.text}
+                      {alert.dueAt
+                        ? tFloor(`alerts.${alert.kind}`, { at: format.dateTime(alert.dueAt) })
+                        : tFloor(`alertsUndated.${alert.kind}`)}
                     </Callout>
                   </Link>
                 </li>
