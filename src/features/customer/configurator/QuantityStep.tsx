@@ -31,13 +31,18 @@ export function QuantityStep({ configurator, state, onChange }: QuantityStepProp
   const { min, max, maxTiers, presets } = configurator.quantity;
   const unit = configurator.unit;
 
+  // The range is the API's; where it publishes none, any whole number is sent and the API decides.
+  const range = min !== null && max !== null ? { min: format.number(min), max: format.number(max), unit } : null;
+
   const add = (quantity: number) => {
     const next = withTier(configurator, state.quantities, quantity);
     if (!next) {
       setError(
         state.quantities.length >= maxTiers
           ? t("tooMany", { count: maxTiers })
-          : t("outOfRange", { min: format.number(min), max: format.number(max), unit }),
+          : range
+            ? t("outOfRange", range)
+            : t("invalid"),
       );
       return false;
     }
@@ -104,13 +109,13 @@ export function QuantityStep({ configurator, state, onChange }: QuantityStepProp
       >
         <Field
           label={t("add")}
-          hint={t("range", { min: format.number(min), max: format.number(max), unit })}
+          hint={range ? t("range", range) : undefined}
           error={error ?? undefined}
           className="flex-1"
         >
           <NumberInput
-            min={min}
-            max={max}
+            min={min ?? 1}
+            max={max ?? undefined}
             step={1}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
@@ -122,25 +127,27 @@ export function QuantityStep({ configurator, state, onChange }: QuantityStepProp
         </Button>
       </form>
 
-      <div>
-        <p className="text-muted text-xs">{t("presets")}</p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          {presets
-            .filter((preset) => !state.quantities.includes(preset))
-            .map((preset) => (
-              <Button
-                key={preset}
-                size="sm"
-                variant="ghost"
-                iconStart="plus"
-                onClick={() => add(preset)}
-                disabled={state.quantities.length >= maxTiers}
-              >
-                {t("tier", { quantity: format.number(preset), unit })}
-              </Button>
-            ))}
+      {presets.length > 0 ? (
+        <div>
+          <p className="text-muted text-xs">{t("presets")}</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {presets
+              .filter((preset) => !state.quantities.includes(preset))
+              .map((preset) => (
+                <Button
+                  key={preset}
+                  size="sm"
+                  variant="ghost"
+                  iconStart="plus"
+                  onClick={() => add(preset)}
+                  disabled={state.quantities.length >= maxTiers}
+                >
+                  {t("tier", { quantity: format.number(preset), unit })}
+                </Button>
+              ))}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

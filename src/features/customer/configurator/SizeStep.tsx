@@ -76,8 +76,8 @@ export function SizeStep({ configurator, state, onChange }: StepProps) {
     const rules = pattern?.rules;
     if (!rules) return [null, null];
     return {
-      l: [rules.minLengthMm, rules.maxLengthMm] as [number, number],
-      w: [rules.minWidthMm, rules.maxWidthMm] as [number, number],
+      l: [rules.minLengthMm, rules.maxLengthMm] as [number | null, number | null],
+      w: [rules.minWidthMm, rules.maxWidthMm] as [number | null, number | null],
       d: [rules.minHeightMm, rules.maxHeightMm] as [number | null, number | null],
       gusset: [rules.minGussetMm, rules.maxGussetMm] as [number | null, number | null],
     }[axis];
@@ -96,6 +96,10 @@ export function SizeStep({ configurator, state, onChange }: StepProps) {
         return t("errors.step", { step: show(problem.stepMm) });
       case "length_exceeds_width":
         return t("errors.lengthExceedsWidth");
+      case "length_exceeds_height":
+        return t("errors.lengthExceedsHeight");
+      case "width_exceeds_height":
+        return t("errors.widthExceedsHeight");
     }
   };
 

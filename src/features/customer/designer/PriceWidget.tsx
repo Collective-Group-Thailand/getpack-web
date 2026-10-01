@@ -5,13 +5,14 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { buildCalculateBody } from "@/features/customer/configurator/build";
+import { fromContract } from "@/features/customer/configurator/from-contract";
 import { useLivePrice } from "@/features/customer/configurator/pricing";
 import { initialState, type Configurator, type ConfiguratorState } from "@/features/customer/configurator/state";
 import { insideSize } from "@/features/designer/document";
 import { useEditor } from "@/features/designer/store/editor";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";
 import { formatTHB } from "@/i18n/format";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Select } from "@/ui/components/Select";
 import { Spinner } from "@/ui/components/Spinner";
@@ -61,6 +62,8 @@ export function stateForDesign(
     .find((g) => g.kind === "material")
     ?.options.find((o) => o.id === spec.materialId);
   if (material) choices.material = [material.id];
+  // CONTRACT-GAP store.configurator — no print presets are published, so there is no print group
+  // to fit the artwork's colours to yet (U2.F1); the price is the unprinted part's.
   const printGroup = configurator.groups.find((g) => g.kind === "print");
   if (printGroup) {
     const need = inferPrint(content);
@@ -93,27 +96,42 @@ export function stateForDesign(
  */
 export function PriceWidget({ productSlug }: { productSlug: string }) {
   const t = useTranslations("designer.price");
+  const units = useTranslations("catalog.stock.units");
   const locale = useLocale() as "th" | "en";
   const spec = useEditor((s) => s.spec);
   const content = useEditor((s) => s.content);
 
   const configurator = useQuery({
-    queryKey: [...queryKeys.zone("customer"), "configurator", productSlug],
-    queryFn: () =>
-      browserRequests().call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug: productSlug } }),
+    queryKey: [...queryKeys.zone("customer"), "configurator", productSlug, locale],
+    queryFn: async () => {
+      const { data } = await browserApi().GET("/v1/store/catalog/products/{slug}/configurator", {
+        params: { path: { slug: productSlug } },
+      });
+      return fromContract(data!, { unit: (unit) => units(unit) });
+    },
     staleTime: 5 * 60_000,
   });
   const [quantity, setQuantity] = useState<number | null>(null);
   const qty = quantity ?? configurator.data?.quantity.default ?? null;
 
+  // A product quoted on request (`instant: false`) is never priced here.
   const body =
-    configurator.data && spec && qty
+    configurator.data?.instant && spec && qty
       ? buildCalculateBody(configurator.data, stateForDesign(configurator.data, spec, content, qty))
       : null;
   const price = useLivePrice(body);
   const step = price.data?.steps[0];
 
   if (!configurator.data) return configurator.isError ? null : <Spinner size={16} label={t("loading")} />;
+  if (!configurator.data.instant)
+    return (
+      <div className="flex items-center gap-2 text-xs" aria-live="polite">
+        <span>{t("onRequest")}</span>
+      </div>
+    );
+
+  // No quantity suggested by the API: nothing to choose from here, so nothing is priced.
+  if (configurator.data.quantity.presets.length === 0) return null;
 
   return (
     <div className="flex items-center gap-2 text-xs" aria-live="polite">

@@ -27,7 +27,8 @@
   "next": "Next: {step}",
   "missing": {
     "size": "a valid size",
-    "area": "the size of the {name}"
+    "area": "the size of the {name}",
+    "quantity": "a quantity"
   },
   "lineMessage": "A question about {name}",
   "size": {
@@ -57,7 +58,9 @@
       "min": "At least {limit}",
       "max": "At most {limit}",
       "step": "In steps of {step}",
-      "lengthExceedsWidth": "For this style the length must be greater than the width"
+      "lengthExceedsWidth": "For this style the length must be greater than the width",
+      "lengthExceedsHeight": "For this style the length must be greater than the height",
+      "widthExceedsHeight": "For this style the width must be greater than the height"
     },
     "insideNote": "Measured inside the box, a little larger than your product. Switch units freely — sizes are always kept in millimetres.",
     "flatNote": "The item's flat size. Switch units freely — sizes are always kept in millimetres."
@@ -71,7 +74,16 @@
     "required": "required",
     "pickOne": "Choose a {name}",
     "none": "None",
-    "noneHint": "You can skip this"
+    "noneHint": "You can skip this",
+    "groups": {
+      "material": "Material",
+      "print": "Printing",
+      "coating_front": "Outside coating",
+      "coating_back": "Inside coating",
+      "finish": "Special finishes",
+      "diecut": "Die-cut",
+      "assembly": "Assembly"
+    }
   },
   "quantity": {
     "tiers": "Quantities to compare",
@@ -84,7 +96,8 @@
     "presets": "Popular quantities",
     "tooMany": "You can compare up to {count} quantities. Remove one first.",
     "outOfRange": "Order between {min} and {max} {unit}",
-    "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}"
+    "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}",
+    "invalid": "Enter a whole number of 1 or more"
   },
   "delivery": {
     "postcode": "Delivery postcode",
@@ -208,7 +221,9 @@
     "breaksTotal": "Total",
     "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "Choose",
-    "breaksChosen": "Chosen"
+    "breaksChosen": "Chosen",
+    "notInstant": "No instant price for this product yet",
+    "notInstantHint": "Our team prices the spec you chose: send a quote request"
   },
   "actions": {
     "addToCart": "Add to cart",

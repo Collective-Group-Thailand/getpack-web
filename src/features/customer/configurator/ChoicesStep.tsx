@@ -40,7 +40,7 @@ function AreaFields({
       <Field label={t("areaAmount")} className="col-span-1">
         <NumberInput
           min={1}
-          max={area.maxAmount}
+          max={area.maxAmount ?? undefined}
           value={current.amount || ""}
           onChange={(event) => onChange({ ...current, amount: toNumber(event.target.value) ?? 0 })}
           unit={t("areaAmountUnit")}
@@ -72,8 +72,10 @@ function AreaFields({
 
 /**
  * The choice groups of one step (material, printing, finishing, assembly), each explained where
- * the decision is made (design-system.md §1.5): a swatch and a sentence per material, the
- * group's own help under its name.
+ * the decision is made (design-system.md §1.5): a swatch and a sentence per material.
+ *
+ * The group's name is the storefront's, per kind (the API publishes the options only).
+ * CONTRACT-GAP store.configurator — no help text per group is published, so none is shown.
  */
 export function ChoicesStep({ groups, state, onChange, missing }: ChoicesStepProps) {
   const t = useTranslations("configurator.choices");
@@ -86,15 +88,13 @@ export function ChoicesStep({ groups, state, onChange, missing }: ChoicesStepPro
     <div className="flex flex-col gap-6">
       {groups.map((group) => {
         const chosen = state.choices[group.kind] ?? [];
-        const name = pick(locale, group.nameTh, group.nameEn);
-        const help = pick(locale, group.helpTh ?? "", group.helpEn) || undefined;
+        const name = t(`groups.${group.kind}`);
         if (group.selection === "single") {
           const hasSwatch = group.options.some((option) => option.swatchHex || option.imageUrl);
           return (
             <Field
               key={group.kind}
               label={name}
-              hint={help}
               required={group.required}
               requiredLabel={t("required")}
               error={missing.has(group.kind) ? t("pickOne", { name }) : undefined}
@@ -121,7 +121,6 @@ export function ChoicesStep({ groups, state, onChange, missing }: ChoicesStepPro
         return (
           <fieldset key={group.kind} className="flex flex-col gap-2">
             <legend className="text-sm font-medium">{name}</legend>
-            {help ? <p className="text-muted text-xs">{help}</p> : null}
             <ul className="mt-1 flex flex-col gap-3">
               {group.options.map((option) => {
                 const checked = chosen.includes(option.id);
