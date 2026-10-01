@@ -387,7 +387,8 @@
     "statementOnFile": "A financial statement is already on file",
     "note": "Note to Finance (optional)",
     "owedTitle": "Owed as of {date}",
-    "nextDueTerm": "Next due"
+    "nextDueTerm": "Next due",
+    "openFile": "Open file"
   },
   "reorder": {
     "title": "Bulk reorder",
