@@ -4,14 +4,11 @@
  * only stop someone composing a grant that is certain to be refused, and say why.
  */
 
-import type { z } from "zod";
-
-import type { sodRule } from "@/lib/api/requests/admin-console";
 import type { Schemas } from "@/lib/api/types";
 
 export type Role = Schemas["RoleDto"];
 export type User = Schemas["UserAdminDto"];
-export type SodRule = z.output<typeof sodRule>;
+export type SodRule = Schemas["SodRuleDto"];
 
 /** Roles whose audience matches the account — a customer role on a staff account is meaningless. */
 export function grantableRoles(roles: readonly Role[], user: User): Role[] {

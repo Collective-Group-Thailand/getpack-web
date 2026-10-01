@@ -28,15 +28,15 @@ const ROLE_KEYS = [
  * The theme toggle stays because the partner zone is the one with a high-contrast option
  * (`themeChoicesFor("partner")`), and a shop floor in daylight is exactly where it is needed.
  *
- * The factory's name comes from `GET /v1/partner/factories` (`/me` names factories by id only,
- * `partner.factory-name`). A user of several factories switches between them in the account
- * menu; the choice is a cookie, the token's scopes still decide.
+ * The factory's name comes from `/me` (`partner.me.get` names every factory the token acts for). A
+ * user of several factories switches between them in the account menu; the choice is a cookie, the
+ * token's scopes still decide.
  */
 export async function PartnerTopbar({ context }: { context: FactoryContext }) {
   const t = await getTranslations("partner.shell");
   const tCommon = await getTranslations("common");
-  const { actor, factory } = context;
-  const factoryName = factory ? (factory.tradeName ?? factory.legalName) : null;
+  const { actor } = context;
+  const factoryName = context.factories.find((item) => item.factoryId === context.factoryId)?.name ?? null;
   const roleLabel = (role: string) =>
     (ROLE_KEYS as readonly string[]).includes(role) ? t(`roles.${role as (typeof ROLE_KEYS)[number]}`) : role;
 
@@ -88,17 +88,17 @@ export async function PartnerTopbar({ context }: { context: FactoryContext }) {
                 <p className="text-sm font-medium">{t("switchFactory")}</p>
                 <ul className="mt-2 flex flex-col gap-1">
                   {context.factories.map((other) => (
-                    <li key={other.id}>
+                    <li key={other.factoryId}>
                       <Button
                         type="submit"
                         name="factoryId"
-                        value={other.id}
-                        variant={other.id === context.factoryId ? "secondary" : "ghost"}
+                        value={other.factoryId}
+                        variant={other.factoryId === context.factoryId ? "secondary" : "ghost"}
                         block
-                        aria-current={other.id === context.factoryId ? "true" : undefined}
+                        aria-current={other.factoryId === context.factoryId ? "true" : undefined}
                         className="justify-start"
                       >
-                        {other.tradeName ?? other.legalName}
+                        {other.name}
                       </Button>
                     </li>
                   ))}

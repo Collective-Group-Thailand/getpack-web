@@ -9,12 +9,12 @@ import type { Schemas } from "@/lib/api/types";
  *
  *   consent   every required purpose not granted, or granted at an older version (PDPA; Packio's
  *             own consent records, D-005), plus the optional ones never answered
- *   profile   no e-mail yet and not asked before — the progressive-profiling step
+ *   profile   never saved (`CustomerProfileDto.profileCompletedAt` is null) — the progressive-
+ *             profiling step. The e-mail is not asked: it comes from a verified sign-in (D-224).
  *
- * CONTRACT-GAP store.profile — `store.customerProfile.update` cannot write the e-mail and nothing
- * says the step was answered, so "asked before" is remembered here, in a first-party cookie
- * holding the customer's id: without it, a customer with no e-mail would be asked at every
- * sign-in.
+ * Saving sets `profileCompletedAt`; skipping does not, so "not now" is remembered in a first-party
+ * cookie holding the customer's id — otherwise a customer who skipped would be asked at every
+ * sign-in on this browser.
  */
 
 export type Consent = Schemas["ConsentDto"];
@@ -22,22 +22,22 @@ export type ConsentSource = Schemas["ConsentSource"];
 
 export interface Onboarding {
   consents: Consent[];
-  me: Schemas["StoreMeDto"] | null;
+  profile: Schemas["CustomerProfileDto"] | null;
 }
 
 export async function loadOnboarding(): Promise<Onboarding> {
   const api = browserApi();
-  const [consents, me] = await Promise.all([
+  const [consents, profile] = await Promise.all([
     api
       .GET("/v1/store/me/consents")
       .then((response) => response.data ?? [])
       .catch(() => []),
     api
-      .GET("/v1/store/me")
+      .GET("/v1/store/customer-profile")
       .then((response) => response.data ?? null)
       .catch(() => null),
   ]);
-  return { consents, me };
+  return { consents, profile };
 }
 
 /** The purposes the consent step shows. Empty means there is nothing to ask. */
@@ -58,11 +58,11 @@ function profileAskedFor(): string | undefined {
     ?.slice(PROFILE_ASKED_COOKIE.length + 1);
 }
 
-export function needsProfile(me: Onboarding["me"], askedFor = profileAskedFor()): boolean {
-  return me !== null && !me.email && askedFor !== me.id;
+export function needsProfile(profile: Onboarding["profile"], askedFor = profileAskedFor()): boolean {
+  return profile !== null && profile.profileCompletedAt === null && askedFor !== profile.id;
 }
 
-/** The step was answered (saved or skipped) — not asked again for this customer. */
+/** The step was skipped — not asked again for this customer on this browser. */
 export function rememberProfileAsked(customerId: string): void {
   document.cookie = `${PROFILE_ASKED_COOKIE}=${encodeURIComponent(customerId)}; path=/; max-age=${PROFILE_ASKED_MAX_AGE}; samesite=lax${
     window.location.protocol === "https:" ? "; secure" : ""

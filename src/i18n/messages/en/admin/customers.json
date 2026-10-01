@@ -11,7 +11,8 @@
       "contact": "Contact",
       "orders": "Orders",
       "via": "Came via",
-      "since": "Since"
+      "since": "Since",
+      "referralCode": "Referral code"
     },
     "types": {
       "individual": "Individual",
@@ -72,7 +73,8 @@
     "noTaxProfiles": "No tax profiles",
     "headOffice": "Head office",
     "branch": "Branch {code}",
-    "withholds": "Withholds tax"
+    "withholds": "Withholds tax",
+    "company": "Company"
   },
   "points": {
     "when": "When",
@@ -110,7 +112,8 @@
     },
     "spend": "12-month spend {value}",
     "ledger": "Points ledger",
-    "empty": "No points yet"
+    "empty": "No points yet",
+    "entryFilter": "Entry type"
   },
   "referrals": {
     "title": "Friends referred with {code}",
@@ -120,7 +123,18 @@
     "when": "Referred",
     "status": "Status",
     "reward": "Reward",
-    "empty": "No referrals yet"
+    "empty": "No referrals yet",
+    "firstOrder": "First order",
+    "claimWindow": "claims close",
+    "unreadable": "Your role cannot see referrals",
+    "flags": {
+      "phone_match": "Same phone",
+      "address_match": "Same address",
+      "card_token_match": "Same card",
+      "device_match": "Same device",
+      "linked_referees": "Linked referees",
+      "monthly_cap": "Over the monthly cap"
+    }
   },
   "consents": {
     "title": "Consents",
@@ -150,6 +164,7 @@
       "cs": "CS",
       "partner_zone": "Partner zone"
     },
-    "when": "Recorded"
+    "when": "Recorded",
+    "outdatedVersion": "Version {no} is newer"
   }
 }

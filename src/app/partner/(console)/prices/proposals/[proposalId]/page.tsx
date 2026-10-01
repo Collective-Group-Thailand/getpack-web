@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { PROPOSAL_STATUS } from "@/domain/status";
+import { PartnerFileButton } from "@/features/partner/account/files";
 import { attempt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage, PartnerSection } from "@/features/partner/frame";
 import { CounterAnswers, EvidenceUpload, SubmitProposal, WithdrawProposal } from "@/features/partner/prices/actions";
@@ -32,7 +33,7 @@ export default async function ProposalPage({ params }: Props) {
   const t = await getTranslations("partnerPrices.proposal");
   const format = await getFormat();
   const context = await factoryContext();
-  const { contract, requests } = await partnerServerApis();
+  const { contract } = await partnerServerApis();
   const path = { factoryId: context.factoryId, proposalId };
   const [proposal, prices] = await Promise.all([
     attempt(
@@ -54,8 +55,13 @@ export default async function ProposalPage({ params }: Props) {
   const factoryOwn = item.direction === "factory_to_packio";
   const label = await lineLabeller(prices.components, prices.references);
   const evidence = factoryOwn
-    ? await attempt(() =>
-        requests.call("GET /v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence", { path }),
+    ? await attempt(
+        async () =>
+          (
+            await contract.GET("/v1/partner/factories/{factoryId}/price-proposals/{proposalId}/evidence", {
+              params: { path },
+            })
+          ).data ?? [],
       )
     : null;
   const list = prices.lists.data?.find((candidate) => candidate.id === item.priceListId);
@@ -153,13 +159,16 @@ export default async function ProposalPage({ params }: Props) {
           {evidence?.data?.length ? (
             <ul className="flex flex-col gap-1">
               {evidence.data.map((file) => (
-                <li key={file.id} className="text-sm">
-                  {t("evidenceItem", {
-                    name: file.originalName,
-                    by: file.createdBy.displayName,
-                    date: format.date(file.createdAt),
-                  })}
-                  {file.note ? ` — ${file.note}` : ""}
+                <li key={file.fileId} className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="min-w-0 flex-1">
+                    {t("evidenceItem", {
+                      name: file.fileName,
+                      by: file.addedBy?.displayName ?? "—",
+                      date: format.date(file.addedAt),
+                    })}
+                    {file.note ? ` — ${file.note}` : ""}
+                  </span>
+                  <PartnerFileButton fileId={file.fileId} label={t("evidenceOpen")} size="md" />
                 </li>
               ))}
             </ul>

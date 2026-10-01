@@ -19,7 +19,16 @@
     "empty": "ไม่มีงาน",
     "awaiting": "รอโรงงานรับงาน",
     "pieces": "{quantity} ชิ้น",
-    "truncated": "แสดง {count} งานแรก"
+    "truncated": "แสดง {count} งานแรก",
+    "factory": "โรงงาน",
+    "productType": "ประเภทสินค้า",
+    "allFactories": "ทุกโรงงาน",
+    "allProductTypes": "ทุกประเภท",
+    "totals": "งานทั้งหมด {total} · เสี่ยง {atRisk}",
+    "riskReasons": {
+      "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนด",
+      "late_plan": "แผนเลยวันที่สัญญาส่ง"
+    }
   },
   "inspections": {
     "title": "งานตรวจคุณภาพ",
@@ -30,7 +39,8 @@
       "sample": "ตัวอย่าง",
       "found": "พบข้อบกพร่อง",
       "status": "สถานะ",
-      "when": "เมื่อ"
+      "when": "เมื่อ",
+      "factory": "โรงงาน"
     },
     "reasons": {
       "value_100_pct": "มูลค่า ≥ ฿300,000 ตรวจทั้งหมด",
@@ -55,7 +65,8 @@
     "passed": "ผลตรวจ: ผ่าน",
     "failed": "ผลตรวจ: ไม่ผ่าน",
     "recordFailed": "บันทึกผลไม่สำเร็จ",
-    "empty": "ไม่มีงานตรวจ"
+    "empty": "ไม่มีงานตรวจ",
+    "aql": "AQL วิกฤต {critical} · หลัก {major} · รอง {minor}"
   },
   "scorecards": {
     "title": "คะแนนโรงงาน",
@@ -71,6 +82,9 @@
     },
     "monthColumn": "เดือน",
     "openFactory": "เปิดโรงงาน {code}",
-    "caption": "คะแนนโรงงาน {code}"
+    "caption": "คะแนนโรงงาน {code}",
+    "byMonth": "ทุกโรงงานในเดือนเดียว",
+    "month": "เดือน",
+    "monthCaption": "คะแนนทุกโรงงาน {month}"
   }
 }

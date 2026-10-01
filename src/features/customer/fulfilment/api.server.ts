@@ -1,7 +1,6 @@
 import "server-only";
 
 import { isApiError } from "@/lib/api/problem";
-import { serverRequests } from "@/lib/api/requests/server";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
@@ -15,9 +14,12 @@ async function orNull<T>(read: Promise<T>): Promise<T | null> {
   }
 }
 
-export async function getClaimForm(orderId: string) {
+/** Whether a claim can be filed on the order now, and on what terms (`store.claims.getForm`, D-082). */
+export async function getClaimForm(orderId: string): Promise<Schemas["ClaimFormDto"] | null> {
   return orNull(
-    (await serverRequests("customer")).call("GET /v1/store/orders/{orderId}/claim-form", { path: { orderId } }),
+    (await serverApi("customer"))
+      .GET("/v1/store/orders/{orderId}/claim-form", { params: { path: { orderId } } })
+      .then(({ data }) => data!),
   );
 }
 
@@ -30,8 +32,11 @@ export async function getMyClaim(claimId: string): Promise<Schemas["StoreClaimDt
   );
 }
 
-export async function getReorder(orderId: string) {
+/** The same order at today's price, for its past quantity (`store.claims.previewReorder`, D-153). */
+export async function getReorder(orderId: string): Promise<Schemas["ReorderPreviewDto"] | null> {
   return orNull(
-    (await serverRequests("customer")).call("GET /v1/store/orders/{orderId}/reorder", { path: { orderId } }),
+    (await serverApi("customer"))
+      .GET("/v1/store/orders/{orderId}/reorder", { params: { path: { orderId } } })
+      .then(({ data }) => data!),
   );
 }

@@ -28,6 +28,7 @@ import { formatTaxId } from "../account/tax-id";
 import { editCart, type Cart } from "../cart/cart-client";
 import { pick } from "../catalog/localize";
 import { useDebounced } from "../configurator/pricing";
+import { productNameOf } from "../orders/summary";
 
 const AddressSheet = dynamic(() => import("../cart/AddressSheet").then((module) => module.AddressSheet), {
   ssr: false,
@@ -72,8 +73,6 @@ export interface CheckoutViewProps {
   pointsBalance: number;
   /** The company the customer orders for, if they belong to one (`store.companies.listMine`). */
   company: CheckoutCompany | null;
-  /** Product type code → name, since a cart line names its type only. */
-  typeNames: Record<string, string>;
 }
 
 /**
@@ -89,9 +88,11 @@ export interface CheckoutViewProps {
  * - the payment method is chosen when paying (`store.payments.initiate`, per order group);
  * - over a company's threshold the order is placed as `pending_company_approval` (D-123).
  *
- * CONTRACT-GAP store.checkout — no contact block, no note to the team, no choice of payment schedule
- * (`scheduleKey`, kept requested), no list of payment methods, no points bounds or points to earn, no
- * company credit summary in the preview.
+ * The preview says which payment methods are offered now, how many points this order can take and
+ * earn, and — for a company — its credit and whether the order waits for the approver.
+ *
+ * CONTRACT-GAP store.checkout — no contact block or note to the team. The schedule is the rules'
+ * (`scheduleKey` stays requested, proposed rejection); store credit at checkout is U2.F (D-196).
  */
 export function CheckoutView({
   cart: initialCart,
@@ -99,7 +100,6 @@ export function CheckoutView({
   taxProfiles: initialProfiles,
   pointsBalance,
   company,
-  typeNames,
 }: CheckoutViewProps) {
   const t = useTranslations("checkout");
   const tMethods = useTranslations("checkout.methods");
@@ -184,7 +184,17 @@ export function CheckoutView({
   });
   const data: Preview | undefined = preview.data;
   const pending = key !== settled || preview.isFetching || edit.isPending;
-  const needsApproval = data?.notices.some((notice) => notice.code === "company.approval_required") ?? false;
+  const needsApproval =
+    data?.company?.approvalRequired ??
+    data?.notices.some((notice) => notice.code === "company.approval_required") ??
+    false;
+  // The methods the preview offers now (D-176), within the ones the storefront has a payment page for.
+  const offered = (data?.paymentMethods ?? [])
+    .filter((option) => option.available && ONLINE_PAYMENT_METHODS.includes(option.method))
+    .map((option) => option.method);
+  const methods = data ? offered : ONLINE_PAYMENT_METHODS;
+  const chosenMethod = methods.includes(method) ? method : (methods[0] ?? method);
+  const pointsBounds = data?.points ?? null;
   const dueNow = data?.paymentSchedule?.instalments.find((instalment) => instalment.dueTrigger === "at_checkout");
   const canPlace = Boolean(data) && !pending && (company?.poNumberPolicy !== "required" || poNumber.trim() !== "");
 
@@ -226,7 +236,7 @@ export function CheckoutView({
       }
       const { data: payment } = await api.POST("/v1/store/order-groups/{groupId}/payments", {
         params: { path: { groupId: group!.id }, header: { "Idempotency-Key": `${idempotencyKey.current}:pay` } },
-        body: { method },
+        body: { method: chosenMethod },
       });
       router.push(`/checkout/pay/${payment!.id}`);
     } catch (error) {
@@ -333,7 +343,7 @@ export function CheckoutView({
             <ul className="flex flex-col gap-2 text-sm">
               {cart.items.map((item) => (
                 <li key={item.id} className="border-border rounded-lg border p-3">
-                  <p className="font-medium">{typeNames[item.productTypeCode] ?? item.productTypeCode}</p>
+                  <p className="font-medium">{productNameOf(locale, item.summary)}</p>
                   {item.destinations.map((destination) => (
                     <p key={destination.id} className="text-muted">
                       {t("delivery.line", {
@@ -432,16 +442,27 @@ export function CheckoutView({
           ) : null}
         </FormSection>
 
-        {pointsBalance > 0 ? (
+        {(pointsBounds?.balance ?? pointsBalance) > 0 ? (
           <FormSection
             title={t("points.title")}
-            description={t("points.hint", { balance: format.number(pointsBalance) })}
+            description={t("points.hint", { balance: format.number(pointsBounds?.balance ?? pointsBalance) })}
           >
             <div className="flex items-end gap-2">
-              <Field label={t("points.redeem")} className="w-48">
+              <Field
+                label={t("points.redeem")}
+                className="w-48"
+                hint={
+                  pointsBounds
+                    ? t("points.bounds", {
+                        min: format.number(pointsBounds.minimumPoints),
+                        max: format.number(pointsBounds.maximumPoints),
+                      })
+                    : undefined
+                }
+              >
                 <NumberInput
                   min={0}
-                  max={pointsBalance}
+                  max={pointsBounds?.maximumPoints ?? pointsBalance}
                   step={1}
                   unit={t("points.unit")}
                   value={points || ""}
@@ -472,6 +493,19 @@ export function CheckoutView({
                 />
               </Field>
             ) : null}
+            {data?.company ? (
+              <p className="text-muted text-sm">
+                {data.company.onCredit
+                  ? t("company.onCredit", {
+                      days: data.company.creditTermDays ?? 0,
+                      available: format.thb(data.company.creditAvailableAmount),
+                    })
+                  : t("company.prepaid")}
+                {data.company.approvalRequired && data.company.approvalThreshold
+                  ? ` · ${t("company.approval", { amount: format.thb(data.company.approvalThreshold) })}`
+                  : ""}
+              </p>
+            ) : null}
           </FormSection>
         ) : null}
 
@@ -494,14 +528,14 @@ export function CheckoutView({
           )}
         </FormSection>
 
-        {dueNow && !needsApproval ? (
+        {dueNow && !needsApproval && !data?.company?.onCredit ? (
           <FormSection title={t("method.title")} description={t("method.hint")}>
             <RadioCards
               aria-label={t("method.title")}
               columns={2}
-              value={method}
+              value={chosenMethod}
               onValueChange={(value) => setMethod(value as PaymentMethod)}
-              options={ONLINE_PAYMENT_METHODS.map((option) => ({
+              options={methods.map((option) => ({
                 value: option,
                 label: tMethods(`${option}.label`),
                 description: tMethods(`${option}.description`),
@@ -534,6 +568,11 @@ export function CheckoutView({
               rows={totalsRows(data.totals)}
               total={{ label: t("summary.total"), value: format.thb(data.totals.grossAmount) }}
             />
+            {data.points && data.points.toEarn > 0 ? (
+              <p className="text-muted mt-2 text-xs">
+                {t("summary.pointsToEarn", { points: format.number(data.points.toEarn) })}
+              </p>
+            ) : null}
             {dueNow ? (
               <div className="bg-bg-subtle mt-4 rounded-lg p-3">
                 <p className="text-sm">{pick(locale, dueNow.labelTh, dueNow.labelEn)}</p>

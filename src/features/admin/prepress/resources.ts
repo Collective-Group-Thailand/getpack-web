@@ -31,8 +31,9 @@ export type PrepressTab = (typeof PREPRESS_TABS)[number];
  * proofs the customer sent back, proofs with the customer. `?kind=` picks one and the desk opens on
  * the first. Each row is one submission or one proof (`itemId`), so an order can appear twice.
  *
- * CONTRACT-GAP admin.prepress — no all-stages queue (template, design and mockup stages), no
- * customer, product type, artwork status or assignee on a row, and no filters by them.
+ * Each row names the customer, the product type, the order's artwork status and its Prepress
+ * owner, and the queue filters by owner (`assigneeId`, `none` for nobody), product type and artwork
+ * status. CONTRACT-GAP admin.prepress — no all-stages queue (template, design and mockup stages).
  */
 export const prepressList = defineList<PrepressQueueItem>({
   key: "prepress",
@@ -46,7 +47,7 @@ export const prepressList = defineList<PrepressQueueItem>({
   },
   getRowId: (row) => row.itemId,
   getRowName: (row) => row.orderCode,
-  defaults: { filterKeys: ["kind"] },
+  defaults: { filterKeys: ["kind", "assigneeId", "productTypeCode", "artworkStatus"] },
   // A queue with SLA timers on it.
   staleTime: STALE_TIME.live,
 });

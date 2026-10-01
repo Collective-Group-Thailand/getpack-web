@@ -142,14 +142,13 @@ export function PaymentDetail({ paymentId }: { paymentId: string }) {
   const documents = useQuery({
     queryKey: queryKeys.related("admin", "payment", paymentId, "documents"),
     queryFn: async () =>
+      // The TR / RC this payment produced (`admin.customerDocuments.list?paymentId`).
       (
         await adminBrowserApis().contract.GET("/v1/admin/customer-documents", {
-          // CONTRACT-REQUEST admin.document-payment-filter: the list has no `paymentId` filter yet,
-          // so the one extra parameter is cast here; the rows are still filtered by it below.
-          params: { query: { paymentId, perPage: 50 } as never },
+          params: { query: { paymentId, perPage: 50 } },
         })
       ).data!,
-    select: (page) => page.data.filter((doc) => doc.paymentId === paymentId),
+    select: (page) => page.data,
   });
   const refunds = useQuery({
     queryKey: queryKeys.related("admin", "payment", paymentId, "refunds"),

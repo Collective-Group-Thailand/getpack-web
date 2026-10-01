@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { resolveStyleId } from "@packio/dieline";
 
-import { getConfigurator, getDesignerCatalog } from "@/features/customer/catalog/api.server";
+import { getDesignerCatalog } from "@/features/customer/catalog/api.server";
 import { CustomerDesigner } from "@/features/customer/designer/CustomerDesigner";
 import { getMyDesign } from "@/features/customer/designer/api.server";
 import { documentOf } from "@/features/designer/data/published";
@@ -21,9 +21,10 @@ const mm = (value: unknown) => (typeof value === "string" && /^\d{1,4}(\.\d)?$/.
 /**
  * A new design's starting point (F4 C.2): `?style=&l=&w=&h=` from the configurator or an order's
  * artwork page, plus `product`, `pattern` and `material` to preselect the catalogue's choices.
- * Anything malformed is ignored — the setup dialog still opens. `product` and the order line
- * (`order`, `item`, `orderCode`) stay in the address once the design has its own id, since the
- * design does not name them (CONTRACT-GAP store.catalog-product-ref, store.designs).
+ * Anything malformed is ignored — the setup dialog still opens. A saved design names its product
+ * (`DesignDocumentDto.product`); the order line it is being made for (`order`, `item`, `orderCode`)
+ * stays in the address once the design has its own id, since a design names only the orders it was
+ * used in (`orders`), not the line waiting for it.
  */
 function seedOf(query: Query): EditorSeed | undefined {
   const style = typeof query.style === "string" ? resolveStyleId(query.style) : null;
@@ -53,11 +54,10 @@ export default async function DesignPage({
   // account id at all, so a signed-in customer opening one falls back to the browser copy.
   if (signedIn && id !== "new" && !saved && uuid(id)) notFound();
 
-  const productSlug = text(query.product) ?? undefined;
-  const [catalog, configurator] = await Promise.all([
-    getDesignerCatalog(productSlug),
-    productSlug ? getConfigurator(productSlug).catch(() => null) : Promise.resolve(null),
-  ]);
+  // The product the page was opened with, else the one the saved design names.
+  const productSlug = text(query.product) ?? (saved?.data.product.slug || undefined);
+  // The designer catalogue of the product names its id, which a new account design is created under.
+  const catalog = await getDesignerCatalog(productSlug);
   const document = saved ? documentOf(saved.data) : null;
   const orderId = uuid(query.order);
   const itemId = uuid(query.item) ?? orderId;
@@ -72,7 +72,7 @@ export default async function DesignPage({
       templateId={id === "new" ? uuid(query.template) : null}
       link={orderId && itemId && signedIn ? { orderId, itemId, orderCode: orderCode ?? "" } : null}
       productSlug={productSlug ?? null}
-      catalogProductId={configurator?.catalogProductId ?? null}
+      catalogProductId={saved?.data.catalogProductId ?? catalog?.product.id ?? null}
       design={
         saved
           ? {

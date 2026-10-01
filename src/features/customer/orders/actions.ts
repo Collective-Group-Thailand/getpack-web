@@ -13,8 +13,6 @@ export function actionHref(orderId: string, key: string, surface: Surface = "acc
   }
   switch (key) {
     case "order.upload_artwork":
-    case "order.design_brief":
-    case "order.review_design":
       return `/account/orders/${orderId}/artwork`;
     case "order.approve_proof":
       return `/account/orders/${orderId}/proof`;
@@ -24,8 +22,6 @@ export function actionHref(orderId: string, key: string, surface: Surface = "acc
       return `/account/orders/${orderId}/claim`;
     case "order.reorder":
       return `/account/orders/${orderId}/reorder`;
-    case "order.pay_instalment":
-      return null;
     default:
       return `/account/orders/${orderId}`;
   }

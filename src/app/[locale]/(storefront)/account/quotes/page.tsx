@@ -3,8 +3,8 @@ import { getTranslations } from "next-intl/server";
 
 import { getSavedQuotes } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getProductTypes } from "@/features/customer/catalog/api.server";
-import { pick } from "@/features/customer/catalog/localize";
+import { configureHref } from "@/features/customer/catalog/paths";
+import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { QUOTE_STATUS } from "@/domain/status";
@@ -18,24 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Saved quotations (F3 3.4): each holds its price until its validity ends (D-051).
- *
- * CONTRACT-GAP store.catalog-product-ref — a published quotation names its catalogue product by id
- * only, and the store catalogue cannot be read by id, so a quotation can no longer be reopened in
- * the configurator from here, and is named by its product type.
+ * Saved quotations (F3 3.4): each holds its price until its validity ends (D-051), names its
+ * product and spec lines (`summary`), and reopens in the configurator of its product, where it is
+ * priced again at today's prices.
  */
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const [, { locale }] = await Promise.all([requireCustomer(), params]);
-  const [t, format, quotes, types] = await Promise.all([
-    getTranslations("account.quotes"),
-    getFormat(),
-    getSavedQuotes(),
-    getProductTypes(),
-  ]);
-  const typeName = (code: string) => {
-    const type = types.find((candidate) => candidate.code === code);
-    return type ? pick(locale, type.nameTh, type.nameEn) : code;
-  };
+  const [t, format, quotes] = await Promise.all([getTranslations("account.quotes"), getFormat(), getSavedQuotes()]);
 
   return (
     <div>
@@ -63,7 +52,14 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 className="border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
               >
                 <div className="min-w-0">
-                  <p className="font-semibold">{typeName(quote.productTypeCode)}</p>
+                  <p className="font-semibold">{productNameOf(locale, quote.summary)}</p>
+                  {quote.summary.specs.length > 0 ? (
+                    <p className="text-muted text-sm">
+                      {specLinesOf(locale, quote.summary)
+                        .map((line) => `${line.term} ${line.description}`)
+                        .join(" · ")}
+                    </p>
+                  ) : null}
                   {option ? (
                     <p className="text-muted text-sm">
                       {t(quote.quoteCode ? "row" : "rowNoCode", {
@@ -75,7 +71,17 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   ) : null}
                   <p className="text-muted text-xs">{t("validUntil", { date: format.date(quote.validUntil) })}</p>
                 </div>
-                <StatusChip map={QUOTE_STATUS} value={quote.status} />
+                <div className="flex items-center gap-2">
+                  <StatusChip map={QUOTE_STATUS} value={quote.status} />
+                  {quote.summary.product && quote.source === "instant" ? (
+                    <Button asChild size="sm" variant="secondary">
+                      <Link href={`${configureHref(quote.summary.product.slug)}?quote=${quote.id}`}>
+                        {t("reopen")}
+                        <span className="sr-only"> {quote.quoteCode ?? productNameOf(locale, quote.summary)}</span>
+                      </Link>
+                    </Button>
+                  ) : null}
+                </div>
               </li>
             );
           })}

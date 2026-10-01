@@ -66,6 +66,10 @@ async function choose(page: Page, label: string | RegExp, option: string | RegEx
 const bangkok = (offsetDays = 0) =>
   new Date(Date.now() + 7 * 3_600_000 + offsetDays * 86_400_000).toISOString().slice(0, 10);
 const thisMonth = () => bangkok().slice(0, 7);
+// The mock's seeded payout run is paid five days back (`mocks/admin/finance/payouts.ts`), so its
+// WHT certificates, and the ภ.ง.ด.53 lines they make, fall in that day's month — the previous one
+// during a month's first five days.
+const seededRunMonth = () => bangkok(-5).slice(0, 7);
 const nextMonth = () => {
   const [year, month] = thisMonth().split("-").map(Number) as [number, number];
   return new Date(Date.UTC(year, month, 15)).toISOString().slice(0, 10);
@@ -196,7 +200,7 @@ test.describe("tax (§6, D-033)", () => {
     test.setTimeout(90_000);
     const finance = await (await browser.newContext({ acceptDownloads: true })).newPage();
     await signInAsStaff(finance, "finance");
-    await gotoHydrated(finance, `${HOSTS.admin}/finance/tax?period=${thisMonth()}`);
+    await gotoHydrated(finance, `${HOSTS.admin}/finance/tax?period=${seededRunMonth()}`);
     const papers = finance.getByRole("table", { name: "รายงานภาษีของเดือน" });
     await finance.getByRole("button", { name: "สร้าง", exact: true }).first().waitFor();
     for (const name of ["รายงานภาษีขาย", "รายงานภาษีซื้อ", "ภ.ง.ด.53 (นิติบุคคล)"]) {
@@ -218,7 +222,7 @@ test.describe("tax (§6, D-033)", () => {
     ).toContainText("WT");
     await expectAxeClean(finance);
     await finance.getByRole("button", { name: "ปิดรายงาน" }).click();
-    await confirm(finance, "ปิดรายงาน", thisMonth());
+    await confirm(finance, "ปิดรายงาน", seededRunMonth());
     await expect(finance.getByText("ปิดแล้ว").first()).toBeVisible();
 
     const download = finance.waitForEvent("download");

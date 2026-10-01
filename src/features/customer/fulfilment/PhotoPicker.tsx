@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
-import { uploadFile } from "@/features/shared/files/upload";
+import { uploadFile, type FilePurpose } from "@/features/shared/files/upload";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { IconButton } from "@/ui/components/IconButton";
 import { Icon } from "@/ui/icons";
@@ -20,7 +20,8 @@ const newKey = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Math.random());
 
 /**
- * Evidence photos for a claim (D-082): each uploads as it is added (purpose `evidence`), shows a
+ * Evidence photos for a claim (D-082): each uploads as it is added (with the purpose the claim form
+ * names, `evidence`), shows a
  * preview from the device, and can be removed. The parent reads the uploaded ids.
  */
 export function PhotoPicker({
@@ -28,6 +29,7 @@ export function PhotoPicker({
   accept,
   maxBytes,
   max,
+  purpose = "evidence",
   photos,
   onChange,
   invalid,
@@ -37,6 +39,8 @@ export function PhotoPicker({
   accept: string;
   maxBytes: number;
   max: number;
+  /** The purpose to presign with, as the claim form names it (one of the API's `FilePurpose`s). */
+  purpose?: string;
   photos: PickedPhoto[];
   onChange: (update: (current: PickedPhoto[]) => PickedPhoto[]) => void;
   invalid?: boolean;
@@ -50,7 +54,7 @@ export function PhotoPicker({
       const entry: PickedPhoto = { key: newKey(), name: file.name, preview: URL.createObjectURL(file) };
       onChange((current) => [...current, entry]);
       try {
-        const uploaded = await uploadFile("customer", file, "evidence");
+        const uploaded = await uploadFile("customer", file, purpose as FilePurpose);
         onChange((current) =>
           current.map((item) => (item.key === entry.key ? { ...item, fileId: uploaded.id } : item)),
         );

@@ -12,7 +12,7 @@ describe("partnerNav", () => {
   });
 
   it("gives a producing factory the shop floor, never more than five destinations", () => {
-    const all = ["factory_jobs.read", "factory_shipments.read", "factory_billing.read"];
+    const all = ["factory_jobs.read", "factory_shipments.read", "factory_payables.read"];
     for (const status of ["trial", "active", "suspended"]) {
       const items = keys(status, all);
       expect(items).toEqual(["today", "jobs", "ship", "billing", "more"]);

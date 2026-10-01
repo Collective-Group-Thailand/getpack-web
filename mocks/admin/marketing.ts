@@ -1,24 +1,21 @@
 /**
  * Marketing on the published contract (`admin.campaigns.*`, `admin.promotions.*`, U-F0.3):
  * campaigns with budgets (D-154), promotions with typed conditions and benefits (D-053), their
- * coupon codes and the promotion report; and referral attributions held for review (D-136).
- * Two requests stay (`mockRequest`): reordering promotions and listing coupon batches.
+ * coupon codes and their batches, the priority reorder and the promotion report; and referral
+ * attributions held for review (D-136). Referral promotions are system-managed (409
+ * `promotions.system_managed`), as packio-api answers.
  *
  * The promotion engine is the API's: this mock only stores configuration and reports usage.
  * The budget alert threshold comes from the setting `campaigns.budget_alert_pct`; a held referral
  * opens a `referral_review` approval, and deciding it in the approvals engine moves the referral.
  */
 
-import type { z } from "zod";
-
-import type { couponBatch } from "@/lib/api/requests/admin-marketing";
 import type { Schemas } from "@/lib/api/types";
 
 import { http, HttpResponse } from "msw";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, withEtag } from "../support";
 import { baht, customers } from "./commerce";
 import { registerQueue } from "./console";
@@ -26,7 +23,17 @@ import type { CampaignRow, CouponCodeRow, PromotionRow } from "./marketing-model
 import { onApprovalDecided, openApproval, settingValue } from "./platform";
 import { etagOf as tableEtag } from "./tables";
 
-type Batch = z.output<typeof couponBatch>;
+/** A coupon batch as the fixture keeps it; `toCouponBatchDto` is what the API answers. */
+interface Batch {
+  id: string;
+  promotionId: string;
+  kind: Schemas["CouponKind"];
+  count: number;
+  prefix: string | null;
+  usageLimitPerCode: number | null;
+  generatedAt: string;
+  generatedBy: { id: string; displayName: string } | null;
+}
 /** A referral as the fixture keeps it; `toReferralDto` is what the API answers (`AdminReferralDto`). */
 interface Referral {
   id: string;
@@ -36,7 +43,7 @@ interface Referral {
   attributedAt: string;
   firstOrder: { id: string; orderCode: string; grossAmount: string; claimWindowEndsAt: string | null } | null;
   status: Schemas["ReferralStatus"];
-  fraudFlags: string[];
+  fraudFlags: Schemas["ReferralFraudFlag"][];
   approvalRequestId: string | null;
   rewardPoints: number | null;
 }
@@ -134,7 +141,15 @@ function toCampaignDto(row: CampaignRow): Schemas["CampaignDto"] {
     spentAmount: row.spentAmount,
     alertThresholdPct: Number(alertPct()).toFixed(4),
     alertedAt: row.alertedAt,
+    // Spent as a share of the budget, as `crossed` reads it (D-154); none without a budget.
+    spentPct:
+      row.budgetAmount === null || Number(row.budgetAmount) <= 0
+        ? null
+        : ((Number(row.spentAmount) * 100) / Number(row.budgetAmount)).toFixed(2),
     goals: row.goals,
+    promotionsCount: promotions.filter((promotion) => promotion.campaignId === row.id).length,
+    owner: row.owner,
+    createdAt: row.createdAt,
     currency: "THB",
   };
 }
@@ -268,10 +283,64 @@ const promotions: PromotionRow[] = [
 ];
 
 function toPromotionDto(row: PromotionRow): Schemas["PromotionDto"] {
-  const { usage, updatedAt, ...dto } = row;
-  void updatedAt;
+  const campaign = campaigns.find((candidate) => candidate.id === row.campaignId);
   // The spend is the discount given: what the promotion's own budget is measured against.
-  return { ...dto, spentAmount: usage.discountAmount };
+  return {
+    ...row,
+    usage: { ...row.usage },
+    spentAmount: row.usage.discountAmount,
+    campaign: campaign ? { id: campaign.id, code: campaign.code, name: campaign.name } : null,
+    benefitSummaryTh: benefitSummary(row.benefit).th,
+    benefitSummaryEn: benefitSummary(row.benefit).en,
+  };
+}
+
+/**
+ * The benefit in words, Thai and English — packio-api's `benefit-summary.ts` at v0.6.0, so the
+ * screens never word a benefit themselves. Amounts are the stored decimal strings.
+ */
+function benefitSummary(benefit: Schemas["PromotionBenefitDto"]): { th: string; en: string } {
+  const cap = benefit.maxAmount ?? null;
+  const capTh = cap ? ` สูงสุด ${cap} บาท` : "";
+  const capEn = cap ? `, up to THB ${cap}` : "";
+  switch (benefit.type) {
+    case "percent":
+      return { th: `ลด ${benefit.pct}%${capTh}`, en: `${benefit.pct}% off${capEn}` };
+    case "fixed":
+      return { th: `ลด ${benefit.amount} บาท`, en: `THB ${benefit.amount} off` };
+    case "tiered": {
+      const tiers = benefit.tiers ?? [];
+      const byQty = benefit.basis === "quantity";
+      const th = tiers
+        .map(
+          (t) =>
+            `${byQty ? `${t.min} ชิ้นขึ้นไป` : `${t.min} บาทขึ้นไป`} ลด ${t.pct ? `${t.pct}%` : `${t.amount} บาท`}`,
+        )
+        .join(", ");
+      const en = tiers
+        .map(
+          (t) => `${byQty ? `${t.min}+ pieces` : `THB ${t.min}+`}: ${t.pct ? `${t.pct}% off` : `THB ${t.amount} off`}`,
+        )
+        .join("; ");
+      return { th: th + capTh, en: en + capEn };
+    }
+    case "unit_price_override":
+      return { th: `ราคาพิเศษ ${benefit.unitPrice} บาท/ชิ้น`, en: `Special price THB ${benefit.unitPrice} per piece` };
+    case "free_revision_rounds":
+      return { th: `แก้แบบฟรี ${benefit.rounds} รอบ`, en: `${benefit.rounds} free revision rounds` };
+    case "points_multiplier":
+      return { th: `คะแนน x${benefit.multiplier}`, en: `${benefit.multiplier}× points` };
+    case "bonus_points":
+      return { th: `รับคะแนนพิเศษ ${benefit.points} คะแนน`, en: `${benefit.points} bonus points` };
+    case "free_shipping":
+      return { th: "ส่งฟรี", en: "Free shipping" };
+    case "free_design":
+      return { th: "ออกแบบฟรี", en: "Free design" };
+    case "free_mockup":
+      return { th: "ตัวอย่างฟรี", en: "Free mock-up" };
+    default:
+      return { th: "—", en: "—" };
+  }
 }
 
 /** What a benefit of each type must carry, so a half-filled form is refused like the API would. */
@@ -367,6 +436,7 @@ const randomTail = (seed: number) =>
   Array.from({ length: 6 }, (_, index) => ALPHABET[(seed * 7919 + index * 104729) % ALPHABET.length]).join("");
 
 function toCouponCodeDto(row: CouponCodeRow): Schemas["CouponCodeDto"] {
+  const assigned = customers.find((customer) => customer.id === row.assignedCustomerId);
   return {
     id: row.id,
     code: row.code,
@@ -374,6 +444,8 @@ function toCouponCodeDto(row: CouponCodeRow): Schemas["CouponCodeDto"] {
     usageLimit: row.usageLimit,
     usedCount: row.usedCount,
     assignedCustomerId: row.assignedCustomerId,
+    assignedCustomer: assigned ? { id: assigned.id, displayName: assigned.displayName } : null,
+    batchId: row.batchId,
   };
 }
 
@@ -390,7 +462,7 @@ const referrals: Referral[] = [
   [2, 5, "under_review", ["phone_match"]],
   [2, 6, "under_review", ["address_match", "device_match"]],
   [7, 8, "pending", []],
-  [9, 10, "rejected_fraud", ["card_match"]],
+  [9, 10, "rejected_fraud", ["card_token_match"]],
 ].map(([from, to, status, flags], index) => ({
   id: mockId("ref", index + 1),
   referrer: customerRef(from as number),
@@ -407,7 +479,7 @@ const referrals: Referral[] = [
           claimWindowEndsAt: bangkokIso(-(3 - index) * DAY),
         },
   status: status as Referral["status"],
-  fraudFlags: flags as string[],
+  fraudFlags: flags as Schemas["ReferralFraudFlag"][],
   approvalRequestId: null,
   rewardPoints: status === "rewarded" || status === "qualified" || status === "under_review" ? REFERRER_POINTS : null,
 }));
@@ -422,6 +494,9 @@ function toReferralDto(item: Referral): Schemas["AdminReferralDto"] {
     attributedAt: item.attributedAt,
     firstOrderGroupId: item.firstOrder ? mockId("grp", 900 + referrals.indexOf(item)) : null,
     firstOrderGroupCode: item.firstOrder?.orderCode.replace(/^PK/, "PG") ?? null,
+    firstOrderGrossAmount: item.firstOrder?.grossAmount ?? null,
+    firstOrderClaimWindowEndsAt: item.firstOrder?.claimWindowEndsAt ?? null,
+    rewardPoints: item.rewardPoints ?? 0,
     status: item.status,
     fraudFlags: item.fraudFlags,
     approvalId: item.approvalRequestId,
@@ -482,6 +557,8 @@ const campaignOf = (id: unknown) => campaigns.find((row) => row.id === id);
 const promotionOf = (id: unknown) => promotions.find((row) => row.id === id);
 const noCampaign = () => problem(404, "http.not_found", "ไม่พบแคมเปญนี้");
 const noPromotion = () => problem(404, "http.not_found", "ไม่พบโปรโมชันนี้");
+const systemManaged = () =>
+  problem(409, "promotions.system_managed", "โปรโมชันชวนเพื่อนจัดการโดยระบบ แก้ไขหรือเปลี่ยนสถานะไม่ได้");
 const touch = (row: { updatedAt: string }) => {
   // A new ETag on every change, even two within the same millisecond.
   row.updatedAt = new Date(Math.max(Date.now(), Date.parse(row.updatedAt) + 1)).toISOString();
@@ -641,6 +718,7 @@ export const marketingContractHandlers = [
     if (!row) return noPromotion();
     const refused = precondition(request, etagOf(row));
     if (refused) return refused;
+    if (row.kind === "referral") return systemManaged();
     if (row.status === "ended") return problem(409, "promotions.ended", "โปรโมชันนี้สิ้นสุดแล้ว แก้ไขไม่ได้");
     const body = (await request.json()) as Schemas["UpdatePromotionDto"];
     if (body.benefit) {
@@ -665,6 +743,7 @@ export const marketingContractHandlers = [
     if (!allowed(request, "promotions.manage")) return forbidden();
     const row = promotionOf(params.promotionId);
     if (!row) return noPromotion();
+    if (row.kind === "referral") return systemManaged();
     const next = nextPromotionStatus(row, String(params.action));
     if (!next) return problem(409, "promotions.invalid_transition", "ทำรายการนี้กับโปรโมชันในสถานะนี้ไม่ได้");
     if (params.action === "activate" && row.kind === "coupon" && !codes.some((code) => code.promotionId === row.id))
@@ -679,9 +758,12 @@ export const marketingContractHandlers = [
     if (!promotionOf(params.promotionId)) return noPromotion();
     const url = new URL(request.url);
     const q = url.searchParams.get("q") ?? undefined;
+    const [batchId, status] = ["batchId", "status"].map((name) => url.searchParams.get(name));
     const rows = codes
       .filter((code) => code.promotionId === params.promotionId)
       .filter((code) => matchesQuery(q, code.code))
+      .filter((code) => !batchId || code.batchId === batchId)
+      .filter((code) => !status || code.status === status)
       .map(toCouponCodeDto);
     return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
@@ -730,7 +812,15 @@ export const marketingContractHandlers = [
         status: "active",
       });
     }
-    const result: Schemas["CouponBatchResultDto"] = { batchId: batch.id, count };
+    const result: Schemas["CouponBatchResultDto"] = {
+      batchId: batch.id,
+      count,
+      kind: batch.kind,
+      prefix: batch.prefix,
+      usageLimit: batch.usageLimitPerCode,
+      generatedAt: batch.generatedAt,
+      generatedBy: batch.generatedBy,
+    };
     generated.set(`${row.id}:${key}`, result);
     return HttpResponse.json(result, { status: 201 });
   }),
@@ -752,33 +842,69 @@ export const marketingContractHandlers = [
   }),
 ];
 
-/** The marketing requests packio-api still has to build, and the referral queue. */
-export const marketingHandlers = [
-  mockRequest("PUT /v1/admin/promotions/priority", ({ body, request }) => {
-    if (!allowed(request, "promotions.manage")) return forbidden();
-    body.promotionIds.forEach((id, index) => {
-      const row = promotionOf(id);
-      if (row) {
-        row.priority = (index + 1) * 10;
-        touch(row);
-      }
-    });
-    return { updated: body.promotionIds.length };
-  }),
-  mockRequest("GET /v1/admin/promotions/{promotionId}/coupon-batches", ({ params, request }) => {
-    if (!allowed(request, "promotions.read")) return forbidden();
-    return batches.filter((batch) => batch.promotionId === params.promotionId);
-  }),
+/** Reorders already answered, by Idempotency-Key. */
+const reorders = new Map<string, Schemas["PromotionPriorityResultDto"]>();
 
-  // admin.referrals.list (U-F0.3): no referrerId filter, the first order as its group.
+function toCouponBatchDto(batch: Batch): Schemas["CouponBatchDto"] {
+  return {
+    id: batch.id,
+    kind: batch.kind,
+    count: batch.count,
+    prefix: batch.prefix,
+    usageLimit: batch.usageLimitPerCode,
+    generatedAt: batch.generatedAt,
+    generatedBy: batch.generatedBy,
+  };
+}
+
+/** The priority reorder and coupon batches (published in v0.5.0), and the referral queue. */
+export const marketingHandlers = [
+  // admin.promotions.reorder (`promotions.manage`, optional Idempotency-Key): priorities 10, 20, …
+  http.put("*/v1/admin/promotions/priority", async ({ request }) => {
+    if (!allowed(request, "promotions.manage")) return forbidden();
+    const key = request.headers.get("idempotency-key");
+    const replay = key ? reorders.get(key) : undefined;
+    if (replay) return HttpResponse.json(replay, { headers: { "Idempotent-Replayed": "true" } });
+    const body = (await request.json().catch(() => null)) as Schemas["PromotionPriorityDto"] | null;
+    const ids = [...new Set(body?.promotionIds ?? [])];
+    if (ids.length === 0) return invalid("promotionIds", "เลือกโปรโมชันอย่างน้อยหนึ่งรายการ");
+    const rows = ids.map(promotionOf);
+    if (rows.some((row) => !row)) return noPromotion();
+    if (rows.some((row) => row!.kind === "referral")) return systemManaged();
+    let updated = 0;
+    rows.forEach((row, index) => {
+      const priority = (index + 1) * 10;
+      if (row!.priority === priority) return;
+      row!.priority = priority;
+      touch(row!);
+      updated += 1;
+    });
+    const result = { updated };
+    if (key) reorders.set(key, result);
+    return HttpResponse.json(result);
+  }),
+  // admin.promotions.listCouponBatches (`promotions.read`): newest first.
+  http.get("*/v1/admin/promotions/:promotionId/coupon-batches", ({ params, request }) => {
+    if (!allowed(request, "promotions.read")) return forbidden();
+    if (!promotionOf(params.promotionId)) return noPromotion();
+    return HttpResponse.json(
+      batches
+        .filter((batch) => batch.promotionId === params.promotionId)
+        .sort((a, b) => Date.parse(b.generatedAt) - Date.parse(a.generatedAt))
+        .map(toCouponBatchDto),
+    );
+  }),
+  // admin.referrals.list: `?referrerId` (v0.5.0) for the customer screen, the first order as its group.
   http.get("*/v1/admin/referrals", ({ request }) => {
     const who = staffPersonaOf(request);
     if (!who || !can(who, "promotions.read")) return forbidden();
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
+    const referrerId = url.searchParams.get("referrerId");
     const q = url.searchParams.get("q") ?? undefined;
     const rows = referrals
       .filter((item) => !status || item.status === status)
+      .filter((item) => !referrerId || item.referrer.id === referrerId)
       .filter((item) => matchesQuery(q, item.referralCode, item.referrer.displayName, item.referee.displayName))
       .map(toReferralDto);
     return HttpResponse.json(

@@ -300,13 +300,13 @@ function SetupForm({ initial, catalog, onConfirm, onClose, hasContent, isNew = f
                   onValueChange={setPaperId}
                   options={papers.map((option) => ({
                     value: option.id,
-                    label: t(option.printable ? "materialOption" : "materialOptionNoPrint", {
+                    // The catalogue no longer says whether a board takes offset print (U-B0.1).
+                    label: t("materialOption", {
                       name: (locale === "en" ? option.nameEn : null) ?? option.nameTh,
                       thickness: option.caliperMm,
                     }),
                   }))}
                 />
-                {!paper.printable ? <Callout tone="warning" title={t("flexoOnly")} className="mt-2" /> : null}
               </>
             ) : (
               <p className="text-muted text-sm">

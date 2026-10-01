@@ -273,12 +273,14 @@ test.describe("the production floor", () => {
 
   test("scorecards show a factory's months", async ({ page }) => {
     await signInAsStaff(page, "partner_manager");
-    // admin.inspections.scorecards is per factory (CONTRACT-GAP admin.scorecards: no month across factories).
     await gotoHydrated(page, `${HOSTS.admin}/production/scorecards?factoryId=${factory(2)}`);
     await expect(page.getByText("ส่งตรงเวลา").first()).toBeVisible();
     const table = page.getByRole("table", { name: /^คะแนนโรงงาน / });
     await expect(table.getByRole("row")).toHaveCount(13);
     await expect(page.getByRole("link", { name: /^เปิดโรงงาน / })).toHaveAttribute("href", `/partners/${factory(2)}`);
+    // Every factory side by side for one month (admin.inspections.monthScorecards).
+    const month = page.getByRole("table", { name: /^คะแนนทุกโรงงาน / });
+    await expect(month.getByRole("row").nth(1)).toBeVisible();
     await expectAxeClean(page);
   });
 });

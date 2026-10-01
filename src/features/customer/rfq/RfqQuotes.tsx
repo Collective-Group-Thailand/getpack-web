@@ -5,7 +5,6 @@ import { useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { canAcceptQuotation } from "@/domain/next-actions/store";
 import { RFQ_QUOTE_STATUS } from "@/domain/status";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
@@ -29,7 +28,8 @@ const newKey = () =>
 
 /**
  * The quotes CS sent, newest first, and accepting one quantity of the current one — which makes
- * the saved quotation (`source = rfq`, `acceptedQuoteId`) the cart takes. Accepting is
+ * the saved quotation (`source = rfq`, `acceptedQuoteId`) the cart takes — offered while the RFQ
+ * carries `rfq.accept` (its own `nextActions`) and only on the quote that was sent. Accepting is
  * irreversible, so the dialog restates the RFQ, the quantity and the amount, and the request
  * carries one idempotency key per intent.
  */
@@ -40,6 +40,7 @@ export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null 
   const [choice, setChoice] = useState<{ quoteId: string; line: Line } | null>(null);
   const [busy, setBusy] = useState<"accept" | "cart" | null>(null);
   const key = useRef(newKey());
+  const acceptable = rfq.nextActions.some((action) => action.key === "rfq.accept" && !action.disabledReason);
   const quotations = [...rfq.quotations]
     .filter((quotation) => quotation.status !== "draft")
     .sort((a, b) => b.versionNo - a.versionNo);
@@ -119,7 +120,7 @@ export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null 
       ) : null}
 
       {quotations.map((quote) => {
-        const current = canAcceptQuotation(rfq, quote);
+        const current = acceptable && quote.status === "sent";
         return (
           <article key={quote.id} className="border-border rounded-xl border">
             <header className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">

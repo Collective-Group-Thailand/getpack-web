@@ -23,9 +23,8 @@ export async function listMyCompanies(): Promise<Company[]> {
 /**
  * The company the customer acts for: the first of theirs, preferring an active one.
  *
- * CONTRACT-GAP store.companies — a user may belong to several companies and the published contract
- * has no singular "my company" (the request asked for `/me/company`), so the storefront takes the
- * first. A picker belongs here once a customer with two companies exists.
+ * A user may belong to several companies and the contract addresses each by id, so the storefront
+ * takes the first. A picker belongs here once a customer with two companies exists.
  */
 export async function findMyCompany(): Promise<Company | null> {
   const companies = await listMyCompanies();

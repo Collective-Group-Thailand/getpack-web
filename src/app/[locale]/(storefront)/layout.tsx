@@ -5,7 +5,6 @@ import { MobileBottomNav, SiteFooter, SiteHeader } from "@/features/customer/she
 import { ConsentBanner } from "@/features/customer/shell/ConsentBanner";
 import { GoogleTagManager } from "@/features/customer/shell/GoogleTagManager";
 import { OrganizationJsonLd } from "@/features/customer/shell/OrganizationJsonLd";
-import { GuidedHelpLauncher } from "@/features/customer/help/GuidedHelpLauncher";
 import { publicOrigin } from "@/lib/seo";
 import { AppShell } from "@/ui/components/AppShell";
 
@@ -36,7 +35,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
       <FunnelPageView />
       <OrganizationJsonLd origin={origin} />
       {children}
-      <GuidedHelpLauncher />
+      {/* The guided-help launcher waits for the Structure Advisor (U2.2, D-223). */}
       <ConsentBanner />
     </AppShell>
   );

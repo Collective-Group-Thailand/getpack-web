@@ -15,12 +15,12 @@ import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
-import { baht, satang } from "../admin/commerce";
+import { baht, orders, satang } from "../admin/commerce";
 import { bangkokIso, mockId, precondition, problem, versionTag, withEtag } from "../support";
 import { bookOf, toAddressDto } from "./book";
 import { customerOf, type MockCustomer } from "./customers";
 import type { Cart, Item } from "./model";
-import { checkCode, optionIdOf, quotesOf, type StoreQuote } from "./quotes";
+import { checkCode, optionIdOf, quoteSummaryOf, quotesOf, type StoreQuote } from "./quotes";
 
 interface Line {
   id: string;
@@ -207,6 +207,7 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         quoteCode: quote.quoteCode,
         source: quote.source,
         productTypeCode: quote.productType.code,
+        summary: quoteSummaryOf(quote),
         quantity: item.quantity,
         unitPrice: pending || line.confirmedReprice ? item.unitPrice : quote.unitPrice,
         productGrossAmount: line.confirmedReprice ? item.grossAmount : quote.grossAmount,
@@ -253,8 +254,9 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
               validUntil: bangkokIso(15 * 24 * 60),
             }
           : null,
-        reorderOf: null,
-        reusesApprovedArtwork: false,
+        // A reorder's quotation names the order it repeats (D-153).
+        reorderOf: reorderedOf(quote),
+        reusesApprovedArtwork: reorderedOf(quote) !== null && quote.designOption === "own_file",
       };
     }),
   };
@@ -419,3 +421,9 @@ export const storeCartHandlers = [
     return edited(customer);
   }),
 ];
+
+function reorderedOf(quote: { configuration: Record<string, unknown> }): Schemas["OrderRefDto"] | null {
+  const orderId = quote.configuration.reorderOf;
+  const order = typeof orderId === "string" ? orders.find((candidate) => candidate.id === orderId) : undefined;
+  return order ? { orderId: order.id, orderCode: order.orderCode } : null;
+}

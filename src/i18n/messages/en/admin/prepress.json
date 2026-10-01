@@ -8,7 +8,10 @@
       "stage": "Stage",
       "progress": "Progress",
       "sla": "SLA",
-      "since": "Waiting since"
+      "since": "Waiting since",
+      "customer": "Customer · type",
+      "artwork": "Artwork",
+      "assignee": "Owner"
     },
     "fileVersion": "File v{version}",
     "proofVersion": "Proof v{version}",
@@ -22,7 +25,11 @@
       "changes_requested": "Changes requested",
       "proofs_waiting": "Proofs with the customer"
     },
-    "noSla": "No SLA"
+    "noSla": "No SLA",
+    "you": "You",
+    "unassigned": "Unassigned",
+    "mine": "Mine",
+    "productType": "Product type"
   },
   "actions": {
     "labels": {
@@ -97,7 +104,10 @@
       "body": "{code}'s file passed preflight and goes to proofing.",
       "bodyWarnings": "{code}'s file has {count} warnings; accepting it acknowledges them.",
       "confirm": "Accept for proof",
-      "done": "Accepted for proof"
+      "done": "Accepted for proof",
+      "note": "Why the warnings are acceptable",
+      "noteHint": "Recorded with the acceptance, e.g. the customer confirmed this image",
+      "noteOptional": "Optional"
     },
     "reject": {
       "title": "Send file v{version} back",
@@ -145,7 +155,9 @@
         "with_print": "Printed mockup",
         "without_print": "Blank mockup"
       },
-      "ownerUnknown": "Not shown yet (the API does not publish the owner)"
+      "ownerUnknown": "Not shown yet (the API does not publish the owner)",
+      "specs": "Spec from the quotation",
+      "noSpecs": "The order's quotation recorded no spec lines"
     },
     "artwork": {
       "version": "File version {version}",
@@ -230,7 +242,9 @@
       "brandCategory": "Category",
       "briefDescription": "Description",
       "attachment": "Attachment {number}",
-      "noBrief": "The customer has not sent the brief yet"
+      "noBrief": "The customer has not sent the brief yet",
+      "ownerStaff": "Staff design by {name}",
+      "ownerCustomer": "Customer design by {name}"
     },
     "proofs": {
       "none": "No proof yet",
@@ -271,7 +285,8 @@
       "replied": "Reply sent",
       "replyFailed": "Could not reply",
       "decisionComment": "Customer comment",
-      "dielineFile": "Proof dieline"
+      "dielineFile": "Proof dieline",
+      "resolvedBy": "by {name}"
     },
     "template": {
       "dieline": "Dieline",

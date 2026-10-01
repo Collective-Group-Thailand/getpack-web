@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { INSPECTION_STATUS, JOB_ISSUE_STATUS, JOB_STATUS, QC_RESULT } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
@@ -16,6 +16,8 @@ import {
   StartMilestone,
 } from "@/features/partner/jobs/actions";
 import { Countdown } from "@/features/partner/jobs/Countdown";
+import { needsQcForm } from "@/features/partner/jobs/evidence";
+import { stepName } from "@/features/partner/jobs/JobCard";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Callout } from "@/ui/components/Callout";
@@ -30,23 +32,37 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerJobs.detail"))("metaTitle") };
 }
 
+/** A spec value of the job's open snapshot map, as text. */
+const specText = (value: unknown) =>
+  typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+    ? String(value)
+    : JSON.stringify(value);
+
 /**
- * One job on the shop floor (F5 5.2): accept or reject within the window (D-074), then the
- * milestones in order with the one next action open, QC with photos (D-076), the spec, the
- * approved artwork only, the PO, recipients by name, address and phone only (D-142), Packio's
- * inspection notices, issues and history. Every write re-renders from the server's state.
+ * One job on the shop floor (F5 5.2) on `partner.production.*`: accept or reject within the window
+ * (D-074), then the milestones in order with the one next action open, QC with photos (D-076),
+ * the spec, the approved artwork only (opened by its signed URL), the factory's own PO, recipients
+ * by name, address and phone only (D-142), Packio's inspection and the issues. What the factory
+ * may do comes from the job's own `nextActions`; every write re-renders from the server's state.
+ *
+ * CONTRACT-GAP partner.jobs — the published job has no activity history, and the factory's view
+ * of Packio's inspection has no reasons or notes; neither is shown.
  */
 export default async function JobPage({ params }: Props) {
   const { jobId } = await params;
-  const t = await getTranslations("partnerJobs.detail");
-  const tStages = await getTranslations("partnerJobs.stages");
-  const format = await getFormat();
+  const [t, tStages, tIssue, tQc, format, locale] = await Promise.all([
+    getTranslations("partnerJobs.detail"),
+    getTranslations("partnerJobs.stages"),
+    getTranslations("partnerJobs.issue"),
+    getTranslations("partnerJobs.qc"),
+    getFormat(),
+    getLocale(),
+  ]);
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
-  const found = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/jobs/{jobId}", {
-      path: { factoryId: context.factoryId, jobId },
-    }),
+  const { contract } = await partnerServerApis();
+  const path = { jobId };
+  const found = await attempt(
+    async () => (await contract.GET("/v1/partner/production-jobs/{jobId}", { params: { path } })).data!,
   );
   const back = { href: "/jobs", label: t("back") };
   if (!found.data)
@@ -56,39 +72,80 @@ export default async function JobPage({ params }: Props) {
       </PartnerPage>
     );
   const job = found.data;
-  const current = job.milestones.find((milestone) => milestone.status !== "completed");
+  const download = (fileId: string | null) =>
+    fileId
+      ? attempt(
+          async () =>
+            (await contract.GET("/v1/partner/files/{fileId}/download", { params: { path: { fileId } } })).data!.url,
+        ).then((result) => result.data)
+      : Promise.resolve(null);
+  const [qc, issues, po, proofUrl, dielineUrl] = await Promise.all([
+    attempt(
+      async () => (await contract.GET("/v1/partner/production-jobs/{jobId}/qc-checks", { params: { path } })).data!,
+    ),
+    attempt(async () => (await contract.GET("/v1/partner/production-jobs/{jobId}/issues", { params: { path } })).data!),
+    canAt(context, "factory_payables.read")
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/purchase-orders", { params: { query: { q: job.jobNo, perPage: 5 } } })
+            ).data!.data.find((item) => item.jobNo === job.jobNo) ?? null,
+        ).then((result) => result.data)
+      : null,
+    download(job.approvedFileId),
+    download(job.dielineFileId),
+  ]);
+  const offered = new Set(job.nextActions.filter((action) => !action.disabledReason).map((action) => action.key));
+  const checks = qc.data ?? [];
+  const current = job.milestones.find((milestone) => milestone.key === job.currentMilestoneKey);
   const stateOf = (status: string, isCurrent: boolean): StageState =>
     status === "completed" ? "done" : status === "skipped" ? "skipped" : isCurrent ? "current" : "upcoming";
-  const passedQc = job.qcChecks.some((check) => check.result !== "fail");
+  // The step's QC form is the latest check, and it must not have failed (D-076).
+  const latest = [...checks].sort((a, b) => b.performedAt.localeCompare(a.performedAt))[0];
+  const passedQc = Boolean(latest && latest.result !== "fail");
+  const spec = Object.entries(job.spec);
 
   return (
     <PartnerPage
       title={job.jobNo}
       back={back}
       meta={<StatusChip map={JOB_STATUS} value={job.status} size="md" />}
-      description={t("summary", {
-        title: job.title,
-        quantity: format.number(job.quantity),
-        date: format.date(job.promisedShipDate),
-      })}
+      description={
+        job.promisedShipDate
+          ? t("summary", {
+              title: job.title,
+              quantity: format.number(job.quantityOrdered),
+              date: format.date(job.promisedShipDate),
+            })
+          : t("summaryNoDate", { title: job.title, quantity: format.number(job.quantityOrdered) })
+      }
       wide
     >
       {job.status === "released" ? (
         <Card padding="lg" className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">{t("acceptTitle")}</h2>
           <Countdown dueAt={job.acceptDueAt} large />
-          <AcceptJob job={job} />
-          <RejectJob job={job} />
+          {offered.has("job.accept") ? (
+            <AcceptJob job={job} poAmount={po?.netAmount ?? null} />
+          ) : (
+            <p className="text-muted">{t("plannerOnly")}</p>
+          )}
+          {offered.has("job.reject") ? <RejectJob job={job} /> : null}
         </Card>
       ) : null}
       {job.status === "rejected" ? (
         <Callout tone="neutral" title={t("rejectedTitle")}>
-          {job.rejectedReason ? t(`rejectReasons.${job.rejectedReason}`) : null}
+          {job.rejectReasonCode
+            ? t.has(`rejectReasons.${job.rejectReasonCode}`)
+              ? t(`rejectReasons.${job.rejectReasonCode}`)
+              : job.rejectReasonCode
+            : null}
+          {job.rejectNote ? ` · ${job.rejectNote}` : null}
         </Callout>
       ) : null}
-      {job.atRisk && job.riskReason ? (
+      {job.atRisk ? (
         <Callout tone="warning" icon="warning" title={t("atRisk")}>
-          {job.riskReason}
+          {job.riskReason ? t(`riskReasons.${job.riskReason}`) : null}
         </Callout>
       ) : null}
 
@@ -103,10 +160,12 @@ export default async function JobPage({ params }: Props) {
               skipped: tStages("skipped"),
             }}
             stages={job.milestones.map((milestone) => {
-              const isCurrent = milestone.seq === current?.seq;
+              const isCurrent = milestone.id === current?.id;
+              const name = stepName(milestone, locale);
+              const qcFirst = needsQcForm(milestone) && !passedQc;
               return {
                 key: milestone.key,
-                title: milestone.name,
+                title: name,
                 state: stateOf(milestone.status, isCurrent),
                 meta:
                   milestone.status === "completed" ? (
@@ -117,7 +176,9 @@ export default async function JobPage({ params }: Props) {
                             scrap: format.number(milestone.quantityScrap ?? 0),
                           })
                         : t("stepDoneNoQty")}
-                      {milestone.photos.length ? ` · ${t("photos", { count: milestone.photos.length })}` : ""}
+                      {milestone.photoFileIds.length
+                        ? ` · ${t("photos", { count: milestone.photoFileIds.length })}`
+                        : ""}
                       {milestone.completedAt ? ` · ${format.dateTime(milestone.completedAt)}` : ""}
                     </span>
                   ) : milestone.dueAt ? (
@@ -125,11 +186,27 @@ export default async function JobPage({ params }: Props) {
                   ) : null,
                 children: isCurrent ? (
                   milestone.status === "pending" ? (
-                    <StartMilestone job={job} milestone={milestone} />
+                    offered.has("job.update_milestone") ? (
+                      <StartMilestone job={job} milestone={milestone} name={name} />
+                    ) : (
+                      <p className="text-muted">{t("noMilestonePermission")}</p>
+                    )
                   ) : (
                     <>
-                      {milestone.requiresQc && !passedQc ? <QcForm job={job} /> : null}
-                      <CompleteMilestone job={job} milestone={milestone} />
+                      {qcFirst ? (
+                        offered.has("job.record_qc") ? (
+                          <QcForm job={job} />
+                        ) : (
+                          <p className="text-muted">{tQc("qcOnly")}</p>
+                        )
+                      ) : null}
+                      {qcFirst ? (
+                        <p className="text-muted">{t("qcFirst")}</p>
+                      ) : offered.has("job.update_milestone") ? (
+                        <CompleteMilestone job={job} milestone={milestone} name={name} />
+                      ) : (
+                        <p className="text-muted">{t("noMilestonePermission")}</p>
+                      )}
                     </>
                   )
                 ) : undefined,
@@ -139,7 +216,7 @@ export default async function JobPage({ params }: Props) {
         </PartnerSection>
       ) : null}
 
-      {job.nextActions.includes("ship") && canAt(context, "factory_shipments.read") ? (
+      {offered.has("job.ship") ? (
         <Link
           href={`/ship#job-${job.id}`}
           className="bg-primary text-primary-fg hover:bg-primary-hover inline-flex min-h-16 items-center justify-center gap-2 rounded-xl px-6 text-xl font-semibold"
@@ -150,29 +227,22 @@ export default async function JobPage({ params }: Props) {
       ) : null}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <PartnerSection title={t("spec")}>
-          <Card padding="md">
-            <DescriptionList
-              columns={1}
-              items={job.spec.map((line) => ({ term: line.label, description: line.value }))}
-            />
-          </Card>
-        </PartnerSection>
+        {spec.length ? (
+          <PartnerSection title={t("spec")}>
+            <Card padding="md">
+              <DescriptionList
+                columns={1}
+                items={spec.map(([term, value]) => ({ term, description: specText(value) }))}
+              />
+            </Card>
+          </PartnerSection>
+        ) : null}
 
         <PartnerSection title={t("artwork")}>
           {job.artwork ? (
             <Card padding="md" className="flex flex-col gap-3">
               <div className="bg-surface-subtle relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg">
-                {job.artwork.proof.thumbnailUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL
-                  <img
-                    src={job.artwork.proof.thumbnailUrl}
-                    alt={t("proofAlt", { version: job.artwork.versionNo })}
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
-                  <Icon name="document" size={48} className="text-muted" />
-                )}
+                <Icon name="document" size={48} className="text-muted" />
                 <span
                   aria-hidden
                   className="text-danger/60 border-danger/60 absolute rotate-[-18deg] rounded-md border-4 px-3 py-1 text-3xl font-black tracking-widest"
@@ -181,12 +251,17 @@ export default async function JobPage({ params }: Props) {
                 </span>
               </div>
               <p className="text-sm">
-                {t("approvedOn", { version: job.artwork.versionNo, date: format.dateTime(job.artwork.approvedAt) })}
+                {job.artwork.approvedAt
+                  ? t("approvedOn", {
+                      version: job.artwork.versionNo,
+                      date: format.dateTime(job.artwork.approvedAt),
+                    })
+                  : t("approvedVersion", { version: job.artwork.versionNo })}
               </p>
               <div className="flex flex-wrap gap-3">
-                {job.artwork.proof.url ? (
+                {proofUrl ? (
                   <a
-                    href={job.artwork.proof.url}
+                    href={proofUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="text-primary inline-flex min-h-12 items-center underline"
@@ -194,9 +269,9 @@ export default async function JobPage({ params }: Props) {
                     {t("openProof")}
                   </a>
                 ) : null}
-                {job.artwork.dieline?.url ? (
+                {dielineUrl ? (
                   <a
-                    href={job.artwork.dieline.url}
+                    href={dielineUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="text-primary inline-flex min-h-12 items-center underline"
@@ -211,28 +286,38 @@ export default async function JobPage({ params }: Props) {
           )}
         </PartnerSection>
 
-        <PartnerSection title={t("po")}>
-          <Card padding="md">
-            <DescriptionList
-              columns={1}
-              items={[
-                { term: t("poNumber"), description: <span className="font-mono">{job.purchaseOrder.poNumber}</span> },
-                { term: t("poIssued"), description: format.dateTime(job.purchaseOrder.issuedAt) },
-                {
-                  term: t("poAmount"),
-                  description: <span className="tabular-nums">{format.thb(job.purchaseOrder.buyAmount)}</span>,
-                },
-                {
-                  term: t("tolerance"),
-                  description: t("toleranceValue", {
-                    shortage: format.percent(job.tolerance.shortagePct),
-                    overage: format.percent(job.tolerance.overagePct),
-                  }),
-                },
-              ]}
-            />
-          </Card>
-        </PartnerSection>
+        {po || job.tolerance ? (
+          <PartnerSection title={t("po")}>
+            <Card padding="md">
+              <DescriptionList
+                columns={1}
+                items={[
+                  ...(po
+                    ? [
+                        { term: t("poNumber"), description: <span className="font-mono">{po.poNumber}</span> },
+                        { term: t("poIssued"), description: format.dateTime(po.issuedAt) },
+                        {
+                          term: t("poAmount"),
+                          description: <span className="tabular-nums">{format.thb(po.netAmount)}</span>,
+                        },
+                      ]
+                    : []),
+                  ...(job.tolerance
+                    ? [
+                        {
+                          term: t("tolerance"),
+                          description: t("toleranceValue", {
+                            shortage: format.percent(job.tolerance.shortagePct),
+                            overage: format.percent(job.tolerance.overagePct),
+                          }),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </Card>
+          </PartnerSection>
+        ) : null}
 
         <PartnerSection title={t("destinations")} description={t("destinationsNote")}>
           <ul className="flex flex-col gap-2">
@@ -240,7 +325,12 @@ export default async function JobPage({ params }: Props) {
               <li key={destination.id}>
                 <Card padding="md">
                   <p className="font-medium">{destination.recipientName}</p>
-                  <p className="text-sm">{addressLine(destination)}</p>
+                  <p className="text-sm">
+                    {addressLine({
+                      ...destination,
+                      province: locale === "en" ? destination.provinceNameEn : destination.provinceNameTh,
+                    })}
+                  </p>
                   <p className="text-sm">
                     <a href={`tel:${destination.phone}`} className="text-primary underline">
                       {destination.phone}
@@ -259,79 +349,90 @@ export default async function JobPage({ params }: Props) {
         </PartnerSection>
       </div>
 
-      {job.qcChecks.length || job.inspections.length ? (
+      {checks.length || job.inspection ? (
         <PartnerSection title={t("quality")}>
           <ul className="flex flex-col gap-2">
-            {job.qcChecks.map((check) => (
+            {checks.map((check) => (
               <li key={check.id}>
                 <Card padding="md" className="flex flex-col gap-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{t("qcBy", { name: check.performedBy.displayName })}</span>
+                    <span className="font-medium">
+                      {check.performedBy ? t("qcBy", { name: check.performedBy.displayName }) : t("qcRecorded")}
+                    </span>
                     <StatusChip map={QC_RESULT} value={check.result} />
                   </span>
                   <span className="text-muted text-sm">
-                    {format.dateTime(check.performedAt)} · {t("photos", { count: check.photos.length })}
+                    {format.dateTime(check.performedAt)} · {t("photos", { count: check.photoFileIds.length })}
                     {check.defects.length
-                      ? ` · ${check.defects.map((defect) => `${defect.label} ${format.number(defect.count)}`).join(", ")}`
+                      ? ` · ${check.defects
+                          .map((defect) =>
+                            t("defect", {
+                              item: tQc.has(`items.${defect.code}`) ? tQc(`items.${defect.code}`) : defect.code,
+                              severity: tQc(`severity.${defect.severity}`),
+                              count: format.number(defect.count),
+                            }),
+                          )
+                          .join(", ")}`
                       : ""}
                   </span>
                 </Card>
               </li>
             ))}
-            {job.inspections.map((inspection) => (
-              <li key={inspection.id}>
+            {job.inspection ? (
+              <li>
                 <Callout tone="info" icon="shield" title={t("inspection")}>
                   <span className="flex flex-wrap items-center gap-2">
-                    <StatusChip map={INSPECTION_STATUS} value={inspection.status} />
-                    {inspection.plannedFor ? t("inspectionOn", { date: format.date(inspection.plannedFor) }) : null}
+                    <StatusChip map={INSPECTION_STATUS} value={job.inspection.status} />
+                    {job.inspection.scheduledAt
+                      ? t("inspectionOn", { date: format.date(job.inspection.scheduledAt) })
+                      : null}
                   </span>
-                  <span className="mt-1 block text-sm">{inspection.reasons.join(" · ")}</span>
-                  {inspection.notes ? <span className="mt-1 block text-sm">{inspection.notes}</span> : null}
+                  <span className="mt-1 block text-sm">
+                    {t("inspectionSample", { count: format.number(job.inspection.sampleSize) })}
+                  </span>
                 </Callout>
               </li>
-            ))}
+            ) : null}
           </ul>
         </PartnerSection>
       ) : null}
 
       <PartnerSection title={t("issues")}>
-        {job.issues.length ? (
+        {issues.data?.length ? (
           <ul className="flex flex-col gap-2">
-            {job.issues.map((issue) => (
+            {issues.data.map((issue) => (
               <li key={issue.id}>
                 <Card padding="md" className="flex flex-wrap items-center gap-2">
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{issue.description}</span>
                     <span className="text-muted text-sm">
-                      {issue.raisedBy.displayName} · {format.dateTime(issue.raisedAt)}
+                      {tIssue.has(`kinds.${issue.kind}`) ? tIssue(`kinds.${issue.kind}`) : issue.kind}
+                      {issue.raisedBy ? ` · ${issue.raisedBy.displayName}` : ""} · {format.dateTime(issue.createdAt)}
                     </span>
+                    {issue.resolutionNote ? (
+                      <span className="text-muted block text-sm">
+                        {t("issueResolved", {
+                          note: issue.resolutionNote,
+                          name: issue.resolvedBy?.displayName ?? "",
+                        })}
+                      </span>
+                    ) : null}
                   </span>
                   <StatusChip map={JOB_ISSUE_STATUS} value={issue.status} />
-                  {issue.status === "open" ? <ResolveIssue jobId={job.id} issueId={issue.id} /> : null}
+                  {issue.status === "open" && offered.has("job.raise_issue") ? (
+                    <ResolveIssue jobId={job.id} issueId={issue.id} description={issue.description} />
+                  ) : null}
                 </Card>
               </li>
             ))}
           </ul>
         ) : null}
-        {job.nextActions.includes("raise_issue") ? (
+        {offered.has("job.raise_issue") ? (
           <Card padding="lg">
             <RaiseIssue job={job} />
           </Card>
         ) : null}
       </PartnerSection>
-
-      {job.history.length ? (
-        <PartnerSection title={t("history")}>
-          <ol className="border-border flex flex-col gap-2 border-s-2 ps-4">
-            {job.history.map((entry, index) => (
-              <li key={`${entry.at}-${index}`} className="text-sm">
-                <span className="text-muted">{format.dateTime(entry.at)}</span> · {entry.text}
-                {entry.actor ? <span className="text-muted"> · {entry.actor.displayName}</span> : null}
-              </li>
-            ))}
-          </ol>
-        </PartnerSection>
-      ) : null}
     </PartnerPage>
   );
 }

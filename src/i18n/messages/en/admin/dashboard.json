@@ -19,13 +19,18 @@
       "awaiting_artwork": "Awaiting artwork",
       "ready_to_produce": "Ready to produce",
       "due_soon": "Due soon",
-      "late": "Late"
+      "late": "Late",
+      "artwork_review": "Artwork to review",
+      "waiting_production": "Waiting for production"
     },
     "rfq": {
       "new": "New RFQs",
       "awaiting_factory": "Awaiting factory price",
       "mine": "My RFQs",
       "overdue": "RFQs past SLA"
+    },
+    "rfqs": {
+      "awaiting_first_response": "RFQs awaiting a first response"
     },
     "prepress": {
       "queue": "Prepress queue",

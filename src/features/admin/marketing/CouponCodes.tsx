@@ -9,7 +9,6 @@ import { COUPON_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
@@ -17,6 +16,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
 import {
@@ -38,12 +38,12 @@ import type { CouponCode, Promotion } from "./resources";
  * never makes a second batch. A leaked code is disabled; its redemptions stay, and it can be
  * enabled again.
  *
- * The batch list is still a request (`admin.coupons`, packio-api U-B0.2).
- * CONTRACT-GAP admin.coupons — a code has no batch or assigned-customer ref, the list has no
- * batch or status filter, and disabling records no reason.
+ * The batches are `admin.promotions.listCouponBatches`; the codes filter by batch and status, and
+ * each names its batch and, for a per-customer code, its customer. Disabling records why.
  */
 export function CouponCodes({ promotion }: { promotion: Promotion }) {
   const t = useTranslations("marketing.coupons");
+  const tStatus = useTranslations("status");
   const format = useFormat();
   const queryClient = useQueryClient();
   const actor = useActor();
@@ -55,23 +55,34 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
   const [count, setCount] = useState("100");
   const [prefix, setPrefix] = useState("");
   const [changing, setChanging] = useState<{ coupon: CouponCode; action: Schemas["CouponAction"] } | null>(null);
+  const [batchId, setBatchId] = useState("");
+  const [status, setStatus] = useState<Schemas["CouponStatus"] | "">("");
 
   const batches = useQuery({
     queryKey: queryKeys.related("admin", "promotion", promotion.id, "batches"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/promotions/{promotionId}/coupon-batches", {
-        path: { promotionId: promotion.id },
-      }),
-  });
-  const codes = useQuery({
-    queryKey: queryKeys.related("admin", "promotion", promotion.id, "codes"),
     queryFn: async () =>
       (
-        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/coupons", {
-          params: { path: { promotionId: promotion.id }, query: { perPage: 100 } },
+        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/coupon-batches", {
+          params: { path: { promotionId: promotion.id } },
         })
       ).data!,
   });
+  const codes = useQuery({
+    queryKey: [...queryKeys.related("admin", "promotion", promotion.id, "codes"), batchId, status],
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/promotions/{promotionId}/coupons", {
+          params: {
+            path: { promotionId: promotion.id },
+            query: { perPage: 100, ...(batchId ? { batchId } : {}), ...(status ? { status } : {}) },
+          },
+        })
+      ).data!,
+  });
+  const batchLabel = (id: string | null) => {
+    const batch = (batches.data ?? []).find((item) => item.id === id);
+    return batch ? t("batchLabel", { kind: t(`kinds.${batch.kind}`), date: format.date(batch.generatedAt) }) : "–";
+  };
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.related("admin", "promotion", promotion.id, "batches") });
     void queryClient.invalidateQueries({ queryKey: queryKeys.related("admin", "promotion", promotion.id, "codes") });
@@ -85,6 +96,13 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
       id: "status",
       header: t("columns.status"),
       cell: (row) => <StatusChip map={COUPON_STATUS} value={row.status} />,
+    },
+    { id: "batch", header: t("columns.batch"), hideable: true, cell: (row) => batchLabel(row.batchId) },
+    {
+      id: "customer",
+      header: t("columns.customer"),
+      hideable: true,
+      cell: (row) => row.assignedCustomer?.displayName ?? <span className="text-muted">–</span>,
     },
     {
       id: "used",
@@ -136,12 +154,36 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
         <ul className="text-muted mb-3 flex flex-col gap-1 text-sm">
           {(batches.data ?? []).map((batch) => (
             <li key={batch.id}>
-              {t(`batch.${batch.kind}`, { count: batch.count, prefix: batch.prefix ?? "" })} ·{" "}
-              {batch.generatedBy.displayName} · <When at={batch.generatedAt} />
+              {t(`batch.${batch.kind}`, { count: batch.count, prefix: batch.prefix ?? "" })}
+              {batch.generatedBy ? ` · ${batch.generatedBy.displayName}` : null} · <When at={batch.generatedAt} />
             </li>
           ))}
         </ul>
       ) : null}
+      <div className="mb-3 grid gap-3 sm:grid-cols-2">
+        {(batches.data ?? []).length > 1 ? (
+          <Field label={t("filterBatch")}>
+            <Select
+              value={batchId || "all"}
+              onValueChange={(value) => setBatchId(value === "all" ? "" : value)}
+              options={[
+                { value: "all", label: t("allBatches") },
+                ...(batches.data ?? []).map((batch) => ({ value: batch.id, label: batchLabel(batch.id) })),
+              ]}
+            />
+          </Field>
+        ) : null}
+        <Field label={t("filterStatus")}>
+          <Select
+            value={status || "all"}
+            onValueChange={(value) => setStatus(value === "all" ? "" : (value as Schemas["CouponStatus"]))}
+            options={[
+              { value: "all", label: t("allStatuses") },
+              ...Object.entries(COUPON_STATUS).map(([value, meta]) => ({ value, label: tStatus(meta.labelKey) })),
+            ]}
+          />
+        </Field>
+      </div>
       <DataTable
         caption={t("title")}
         columns={columns}
@@ -220,7 +262,12 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
           description={t(`${changing.action}Body`, { code: changing.coupon.code, used: changing.coupon.usedCount })}
           confirmLabel={t(changing.action)}
           tone={changing.action === "disable" ? "destructive" : "primary"}
-          onConfirm={async () => {
+          reason={
+            changing.action === "disable"
+              ? { label: t("disableReason"), required: true, minLength: 3, hint: t("disableReasonHint") }
+              : undefined
+          }
+          onConfirm={async ({ reason }) => {
             try {
               await adminBrowserApis().contract.POST(
                 "/v1/admin/promotions/{promotionId}/coupons/{couponId}/actions/{action}",
@@ -228,6 +275,7 @@ export function CouponCodes({ promotion }: { promotion: Promotion }) {
                   params: {
                     path: { promotionId: promotion.id, couponId: changing.coupon.id, action: changing.action },
                   },
+                  body: reason ? { reason } : {},
                 },
               );
               toast.success(t(`${changing.action}d`));

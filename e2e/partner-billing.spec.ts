@@ -45,6 +45,7 @@ test.describe("billing and payouts (F001)", () => {
     await expect(page.getByRole("heading", { level: 1, name: /^BS-/ })).toBeVisible();
     const bsNumber = (await page.getByRole("heading", { level: 1 }).textContent())!;
     await expect(page.getByText("ค่าผลิต").first()).toBeVisible();
+    await expect(page.getByText(/^Packio สร้างเมื่อ /)).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "ยืนยันใบวางบิล" }).click();
@@ -53,8 +54,13 @@ test.describe("billing and payouts (F001)", () => {
     await dialog(page).getByRole("button", { name: "ยืนยัน", exact: true }).click();
     await expect(page.getByText(`ยืนยัน ${bsNumber} แล้ว`)).toBeVisible();
 
-    // The factory's own tax invoice (D-090), a PDF against the confirmed amount.
+    // The factory's own tax invoice (D-090), a PDF, with the amounts as printed on it (backend wins).
     await page.getByLabel(/^เลขที่ใบกำกับภาษี/).fill("INV-6910-0001");
+    await page.getByLabel(/^มูลค่าก่อน VAT/).fill("12500");
+    await page.getByRole("button", { name: "บันทึกใบกำกับภาษี" }).click();
+    await expect(page.getByText("ใส่ตัวเลขทศนิยม 2 ตำแหน่ง เช่น 12500.00").first()).toBeVisible();
+    await page.getByLabel(/^มูลค่าก่อน VAT/).fill("12500.00");
+    await page.getByLabel(/^VAT ตามใบกำกับภาษี/).fill("875.00");
     await page
       .locator('input[type="file"]')
       .setInputFiles({ name: "invoice.pdf", mimeType: "application/pdf", buffer: PDF });
@@ -65,15 +71,21 @@ test.describe("billing and payouts (F001)", () => {
     await expect(page.getByText("รอฝ่ายการเงินตรวจ").first()).toBeVisible();
 
     await gotoHydrated(page, `${HOSTS.partner}/payouts`);
+    // The terms the job snapshot (`PayoutScheduleJobDto.terms`, D-022, D-164).
     await expect(page.getByText(/ล่วงหน้า 30%/).first()).toBeVisible();
     await expect(page.getByText(/เงินประกัน 5%/).first()).toBeVisible();
     await expectAxeClean(page);
     await page.getByRole("link", { name: /^PV-/ }).first().click();
+    await expect(page.getByRole("heading", { level: 1, name: /^PV-/ })).toBeVisible();
+    const pvNumber = (await page.getByRole("heading", { level: 1 }).textContent())!;
+    // The documents of a paid payout (`partner.payables.payoutDocuments`).
+    await expect(page.getByRole("link", { name: /ใบแจ้งการโอนเงิน/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /หนังสือรับรองการหักภาษี ณ ที่จ่าย/ })).toBeVisible();
     await expectAxeClean(page);
 
     await gotoHydrated(page, `${HOSTS.partner}/payouts/statement`);
-    await expect(page.getByRole("table")).toContainText(bsNumber);
+    await expect(page.getByRole("table")).toContainText(pvNumber);
+    await expect(page.getByRole("table")).toContainText("รับสินค้า");
     await expectAxeClean(page);
   });
 });
@@ -102,19 +114,32 @@ test.describe("claims, performance and settings", () => {
     await expect(page.getByText("ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ กล่องแพ็กแน่นก่อนส่ง").first()).toBeVisible();
   });
 
-  test("performance and settings read, invite a user, and switch to high contrast", async ({ page }) => {
+  test("performance and settings read, add a user, and switch to high contrast", async ({ page }) => {
     await signInAsPartner(page, "owner");
     await gotoHydrated(page, `${HOSTS.partner}/performance`);
     await expect(page.getByText("รับงานตรงเวลา").first()).toBeVisible();
     await expectAxeClean(page);
 
     await gotoHydrated(page, `${HOSTS.partner}/settings`);
-    await page.getByRole("textbox", { name: /^ชื่อ/ }).fill("ฝ่าย QC ใหม่ (ข้อมูลจำลอง)");
-    await page.getByRole("textbox", { name: /^อีเมล/ }).fill("qc.new@factory.invalid");
-    await page.getByRole("checkbox", { name: /ฝ่ายควบคุมคุณภาพ/ }).click();
-    await page.getByRole("button", { name: "ส่งคำเชิญ" }).click();
-    await expect(page.getByText("ส่งคำเชิญแล้ว")).toBeVisible();
+    // The owner's own row is read-only, and there is no owner role to give (D-171).
+    await expect(page.getByText("นี่คือบัญชีของคุณ")).toBeVisible();
+    const create = page.locator("form").filter({ has: page.getByRole("button", { name: "เพิ่มผู้ใช้" }) });
+    await expect(create.getByRole("checkbox", { name: "เจ้าของโรงงาน" })).toHaveCount(0);
+    await create.getByRole("textbox", { name: /^ชื่อ/ }).fill("ฝ่าย QC ใหม่ (ข้อมูลจำลอง)");
+    await create.getByRole("textbox", { name: /^อีเมล/ }).fill("qc.new@factory.invalid");
+    // The first password is handed over out of band, typed into a password field the browser won't autofill.
+    const password = create.getByLabel(/^รหัสผ่านแรก/);
+    await expect(password).toHaveAttribute("type", "password");
+    await expect(password).toHaveAttribute("autocomplete", "new-password");
+    await password.fill("short");
+    await create.getByRole("button", { name: "เพิ่มผู้ใช้" }).click();
+    await expect(create.getByText("รหัสผ่านต้องมีอย่างน้อย 12 ตัวอักษร")).toBeVisible();
+    await password.fill("first-sign-in-2569");
+    await create.getByRole("checkbox", { name: /ฝ่ายควบคุมคุณภาพ/ }).click();
+    await create.getByRole("button", { name: "เพิ่มผู้ใช้" }).click();
+    await expect(page.getByText("เพิ่มผู้ใช้แล้ว แจ้งรหัสผ่านแรกให้เจ้าตัวโดยตรง")).toBeVisible();
     await expect(page.getByText("qc.new@factory.invalid")).toBeVisible();
+    await expect(page.getByText("first-sign-in-2569")).toHaveCount(0);
     await page.getByRole("radio", { name: "4 × 6 นิ้ว" }).click();
     await expect(page.getByText("บันทึกขนาดฉลากแล้ว")).toBeVisible();
     // The shop floor's high-contrast theme, from the settings screen's own toggle.

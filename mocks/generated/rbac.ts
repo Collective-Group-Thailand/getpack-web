@@ -1,12 +1,12 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: packio-api docs/rbac.md (staff table) · Regenerate: pnpm gen:rbac
+ * Source: packio-api docs/rbac.md at v0.6.0 (staff and factory tables) · Regenerate: pnpm gen:rbac
  *
- * The permissions each D-140 staff role holds in packio-api, verbatim. The mock personas are built
- * from these (`mocks/personas.ts`).
+ * The permissions each D-140 staff role and factory role holds in packio-api, verbatim. The mock
+ * personas are built from these (`mocks/personas.ts`, `mocks/partner/personas.ts`).
  */
 
-export const RBAC_SOURCE = { commit: "945f02e" } as const;
+export const RBAC_SOURCE = { commit: "e8f6e1f", tag: "v0.6.0" } as const;
 
 export const STAFF_PERMISSIONS = [
   "agreements.manage",
@@ -28,6 +28,7 @@ export const STAFF_PERMISSIONS = [
   "banking.accounts.propose",
   "banking.manage",
   "banking.read",
+  "business_calendar.manage",
   "calendars.manage",
   "calendars.read",
   "campaigns.manage",
@@ -112,6 +113,7 @@ export const STAFF_PERMISSIONS = [
   "prepress.review",
   "price_proposals.review",
   "price_suggestions.read",
+  "privacy_requests.manage",
   "production.manage",
   "production.read",
   "production.start_manual",
@@ -187,6 +189,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "banking.accounts.propose",
     "banking.manage",
     "banking.read",
+    "business_calendar.manage",
     "calendars.manage",
     "calendars.read",
     "campaigns.manage",
@@ -271,6 +274,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "prepress.review",
     "price_proposals.review",
     "price_suggestions.read",
+    "privacy_requests.manage",
     "production.manage",
     "production.read",
     "production.start_manual",
@@ -402,6 +406,7 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "approvals.read",
     "artwork.read",
     "artwork.submit_on_behalf",
+    "business_calendar.manage",
     "calendars.manage",
     "calendars.read",
     "campaigns.manage",
@@ -812,5 +817,121 @@ export const STAFF_ROLE_GRANTS: Readonly<Record<string, readonly StaffPermission
     "shipping_rates.read",
     "tax.read",
     "users.read",
+  ],
+  dpo: [
+    "approvals.delegate",
+    "approvals.read",
+    "calendars.read",
+    "customers.read",
+    "files.read",
+    "files.upload",
+    "privacy_requests.manage",
+  ],
+};
+
+/** Factory scope (D-140 factory roles): what a partner user may do at the factory they act for. */
+export const FACTORY_PERMISSIONS = [
+  "factory_agreements.accept",
+  "factory_bank_account.propose",
+  "factory_capacity.manage",
+  "factory_capacity.read",
+  "factory_claims.read",
+  "factory_claims.respond",
+  "factory_issues.raise",
+  "factory_jobs.read",
+  "factory_jobs.respond",
+  "factory_milestones.update",
+  "factory_onboarding.sign_off",
+  "factory_payables.manage",
+  "factory_payables.read",
+  "factory_prices.propose",
+  "factory_prices.read",
+  "factory_profile.manage",
+  "factory_profile.read",
+  "factory_qc.record",
+  "factory_rate_card.accept",
+  "factory_rfq.read",
+  "factory_rfq.respond",
+  "factory_scorecard.read",
+  "factory_shipments.manage",
+  "factory_shipments.read",
+  "factory_users.manage",
+] as const;
+
+export type FactoryPermission = (typeof FACTORY_PERMISSIONS)[number];
+
+export const FACTORY_ROLE_GRANTS: Readonly<Record<string, readonly FactoryPermission[]>> = {
+  factory_owner: [
+    "factory_agreements.accept",
+    "factory_bank_account.propose",
+    "factory_capacity.manage",
+    "factory_capacity.read",
+    "factory_claims.read",
+    "factory_claims.respond",
+    "factory_issues.raise",
+    "factory_jobs.read",
+    "factory_jobs.respond",
+    "factory_milestones.update",
+    "factory_onboarding.sign_off",
+    "factory_payables.manage",
+    "factory_payables.read",
+    "factory_prices.propose",
+    "factory_prices.read",
+    "factory_profile.manage",
+    "factory_profile.read",
+    "factory_qc.record",
+    "factory_rate_card.accept",
+    "factory_rfq.read",
+    "factory_rfq.respond",
+    "factory_scorecard.read",
+    "factory_shipments.manage",
+    "factory_shipments.read",
+    "factory_users.manage",
+  ],
+  factory_planner: [
+    "factory_capacity.manage",
+    "factory_capacity.read",
+    "factory_claims.read",
+    "factory_issues.raise",
+    "factory_jobs.read",
+    "factory_jobs.respond",
+    "factory_milestones.update",
+    "factory_profile.read",
+    "factory_rfq.read",
+    "factory_rfq.respond",
+    "factory_scorecard.read",
+    "factory_shipments.read",
+  ],
+  factory_operator: [
+    "factory_issues.raise",
+    "factory_jobs.read",
+    "factory_milestones.update",
+    "factory_profile.read",
+  ],
+  factory_qc: [
+    "factory_claims.read",
+    "factory_claims.respond",
+    "factory_issues.raise",
+    "factory_jobs.read",
+    "factory_milestones.update",
+    "factory_profile.read",
+    "factory_qc.record",
+    "factory_scorecard.read",
+  ],
+  factory_shipping: [
+    "factory_issues.raise",
+    "factory_jobs.read",
+    "factory_milestones.update",
+    "factory_profile.read",
+    "factory_shipments.manage",
+    "factory_shipments.read",
+  ],
+  factory_accountant: [
+    "factory_bank_account.propose",
+    "factory_jobs.read",
+    "factory_payables.manage",
+    "factory_payables.read",
+    "factory_prices.read",
+    "factory_profile.read",
   ],
 };

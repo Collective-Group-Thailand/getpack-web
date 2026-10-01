@@ -43,16 +43,13 @@ export const proposalsList = defineList<ProposalSummary>({
   staleTime: STALE_TIME.live,
 });
 
-/**
- * Packio's inspections (`admin.inspections.list`), by status. No factory filter, search or sort
- * (CONTRACT-GAP admin.inspections).
- */
+/** Packio's inspections (`admin.inspections.list`), by status and factory; no search or sort. */
 export const inspectionsList = defineList<Inspection>({
   key: "inspection",
   fetch: async ({ contract }, query) =>
     (await contract.GET("/v1/admin/inspections", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.jobNo,
-  defaults: { filterKeys: ["status"] },
+  defaults: { filterKeys: ["status", "factoryId"] },
   staleTime: STALE_TIME.live,
 });

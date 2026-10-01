@@ -5,9 +5,9 @@
  * packio-api's `docs/rbac.md` (`pnpm gen:rbac`). Backend names win (triage `admin.permissions`,
  * U-F0.3): a screen gated on a permission the real role lacks is hidden in the mock too.
  *
- * The menu's platform entries are packio-api's (`menu.catalog.ts`) verbatim. The business entries
- * are still a request (`admin.menu-entries`, packio-api U-B0.3), keyed on the backend permission
- * that reads each area. The real API sends the menu, so nothing here decides what production shows.
+ * The menu is packio-api's (`src/modules/iam/menu.catalog.ts` at v0.6.0) verbatim, business
+ * entries and the `finance` any-of gate included (U-B0.3, `admin.menu-entries`). The real API
+ * sends the menu, so nothing here decides what production shows.
  */
 
 import { STAFF_ROLE_GRANTS, type StaffPermission } from "./generated/rbac";
@@ -16,7 +16,7 @@ export const MOCK_PASSWORD = "mock-password";
 
 /**
  * The menu the mock API builds: an entry appears when the persona holds its permission. Paths
- * are host-absolute (`/admin/...`), as the contract's own `MenuEntryDto` example spells them.
+ * are host-absolute (`/admin/...`), as packio-api spells them; the order is packio-api's.
  */
 export const MENU_CATALOGUE: readonly {
   key: string;
@@ -24,8 +24,35 @@ export const MENU_CATALOGUE: readonly {
   /** One permission, or any of several (the finance workspace opens for each of its desks). */
   permission: StaffPermission | readonly StaffPermission[] | null;
 }[] = [
-  // packio-api src/modules/iam/menu.catalog.ts, verbatim.
+  // packio-api src/modules/iam/menu.catalog.ts (v0.6.0), verbatim. There is no CMS entry: the CMS
+  // screens open by their URL only (CONTRACT-GAP admin.menu-cms).
   { key: "dashboard", path: "/admin", permission: null },
+  { key: "orders", path: "/admin/orders", permission: "orders.read" },
+  { key: "cs_calculators", path: "/admin/cs", permission: "quotes.calculate" },
+  { key: "quotations", path: "/admin/quotations", permission: "quotes.read" },
+  { key: "rfq", path: "/admin/rfq", permission: "rfqs.read" },
+  { key: "prepress", path: "/admin/prepress", permission: "artwork.read" },
+  { key: "production", path: "/admin/production", permission: "production.read" },
+  { key: "shipments", path: "/admin/shipments", permission: "shipments.read" },
+  { key: "claims", path: "/admin/claims", permission: "claims.read" },
+  { key: "partners", path: "/admin/partners", permission: "partners.read" },
+  { key: "catalogue", path: "/admin/catalogue", permission: "catalog.read" },
+  { key: "marketing", path: "/admin/marketing", permission: "promotions.read" },
+  { key: "customers", path: "/admin/customers", permission: "customers.read" },
+  { key: "companies", path: "/admin/companies", permission: "companies.read" },
+  { key: "discount_memos", path: "/admin/discount-memos", permission: "discount_memos.read" },
+  {
+    key: "finance",
+    path: "/admin/finance",
+    permission: [
+      "payments.verify_slip",
+      "receivables.manage",
+      "ledger.read",
+      "payables.read",
+      "banking.read",
+      "tax.read",
+    ],
+  },
   { key: "approvals", path: "/admin/approvals", permission: "approvals.read" },
   { key: "users", path: "/admin/users", permission: "users.read" },
   { key: "settings", path: "/admin/settings", permission: "settings.read" },
@@ -41,37 +68,6 @@ export const MENU_CATALOGUE: readonly {
   { key: "analytics", path: "/admin/analytics", permission: "analytics.read" },
   { key: "reports", path: "/admin/reports", permission: null },
   { key: "ops", path: "/admin/ops", permission: "ops.read" },
-  // CONTRACT-GAP admin.menu-entries — each business module adds its own on the backend (U-B0.3).
-  { key: "orders", path: "/admin/orders", permission: "orders.read" },
-  { key: "cs_calculators", path: "/admin/cs", permission: "quotes.calculate" },
-  { key: "quotations", path: "/admin/quotations", permission: "quotes.read" },
-  { key: "rfq", path: "/admin/rfq", permission: "rfqs.read" },
-  { key: "prepress", path: "/admin/prepress", permission: "artwork.read" },
-  { key: "production", path: "/admin/production", permission: "production.read" },
-  { key: "shipments", path: "/admin/shipments", permission: "shipments.read" },
-  { key: "claims", path: "/admin/claims", permission: "claims.read" },
-  { key: "partners", path: "/admin/partners", permission: "partners.read" },
-  { key: "catalogue", path: "/admin/catalogue", permission: "catalog.read" },
-  { key: "cms", path: "/admin/cms", permission: "cms.manage" },
-  { key: "marketing", path: "/admin/marketing", permission: "promotions.read" },
-  { key: "customers", path: "/admin/customers", permission: "customers.read" },
-  { key: "companies", path: "/admin/companies", permission: "companies.read" },
-  { key: "discount_memos", path: "/admin/discount-memos", permission: "discount_memos.read" },
-  // CONTRACT-GAP admin.menu-entries — the finance workspace, for whoever works one of its desks.
-  {
-    key: "finance",
-    path: "/admin/finance",
-    permission: [
-      "payments.verify_slip",
-      "receivables.manage",
-      "ledger.read",
-      "payables.read",
-      "banking.read",
-      "tax.read",
-      "close.read",
-      "audit_support.read",
-    ],
-  },
 ];
 
 export interface StaffPersona {
@@ -109,6 +105,8 @@ export const PERSONAS: readonly StaffPersona[] = [
   persona("marketing", 12, "ฝ่ายการตลาด ตัวอย่าง (ข้อมูลจำลอง)", ["marketing"]),
   persona("partner_manager", 13, "ผู้จัดการพันธมิตร ตัวอย่าง (ข้อมูลจำลอง)", ["partner_manager"]),
   persona("auditor", 14, "ผู้ตรวจสอบบัญชี ตัวอย่าง (ข้อมูลจำลอง)", ["auditor"]),
+  // D-222: the Data Protection Officer, the fifteenth staff role (packio-api v0.4.0).
+  persona("dpo", 15, "เจ้าหน้าที่คุ้มครองข้อมูล ตัวอย่าง (ข้อมูลจำลอง)", ["dpo"]),
 ];
 
 /** The persona the F1 tests sign in as (`somchai.staff@…`), a CS agent. */

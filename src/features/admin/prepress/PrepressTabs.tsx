@@ -32,6 +32,7 @@ import { cn } from "@/ui/lib/cn";
 import { adminBrowserApis, problemMessage, StatusChip, useActor, useCan, useSlaFormat } from "../console";
 import type { Order } from "../orders/resources";
 import { useProof } from "./data";
+import { FileItem } from "./FileItem";
 import { SubmissionDialogs } from "./PrepressActions";
 import type {
   ArtworkSubmission,
@@ -59,55 +60,6 @@ function Section({
       </CardHeader>
       {children}
     </Card>
-  );
-}
-
-/**
- * A stored file, downloaded through a short-lived signed URL (`admin.files.download`): asked for on
- * click, then opened by a second, explicit click — a tab opened after an await is a pop-up to the
- * browser, and blocked.
- */
-function FileItem({ fileId, name, sizeBytes }: { fileId: string | null; name: string; sizeBytes?: number | null }) {
-  const t = useTranslations("prepress.detail");
-  const format = useFormat();
-  const [url, setUrl] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  return (
-    <span className="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-      <Icon name="paperclip" size={16} />
-      <span className="truncate">{name}</span>
-      {sizeBytes ? <span className="text-muted text-xs whitespace-nowrap">{format.bytes(sizeBytes)}</span> : null}
-      {!fileId ? null : url ? (
-        <Button asChild size="sm" variant="ghost" iconStart="external">
-          <a href={url} target="_blank" rel="noopener noreferrer" aria-label={t("openFile", { name })}>
-            {t("open")}
-          </a>
-        </Button>
-      ) : (
-        <Button
-          size="sm"
-          variant="ghost"
-          iconStart="download"
-          loading={busy}
-          aria-label={t("downloadFile", { name })}
-          onClick={async () => {
-            setBusy(true);
-            try {
-              const { data } = await adminBrowserApis().contract.GET("/v1/admin/files/{fileId}/download", {
-                params: { path: { fileId } },
-              });
-              setUrl(data!.url);
-            } catch (error) {
-              toast.error(problemMessage(error, t("downloadFailed")));
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {t("download")}
-        </Button>
-      )}
-    </span>
   );
 }
 
@@ -331,19 +283,12 @@ function Annotations({ proof: listed }: { proof: Proof }) {
   };
 
   const reply = useMutation({
-    // CONTRACT-GAP admin.prepress-proofs — a reply must carry a kind, page and geometry, so it
-    // repeats its thread's (as the storefront does).
+    // A reply takes its thread's kind, page and geometry (the API copies them).
     mutationFn: async (parent: ProofAnnotation) =>
       (
         await contract.POST("/v1/admin/proofs/{proofId}/annotations", {
           params: { path: { proofId: proof.id } },
-          body: {
-            parentId: parent.id,
-            kind: parent.kind,
-            page: parent.page,
-            geometry: parent.geometry,
-            comment: (drafts[parent.id] ?? "").trim(),
-          },
+          body: { parentId: parent.id, comment: (drafts[parent.id] ?? "").trim() },
         })
       ).data!,
     onSuccess: (updated, parent) => {
@@ -401,11 +346,17 @@ function Annotations({ proof: listed }: { proof: Proof }) {
                   </span>
                   {t("thread", { page: thread.page, kind: t(`kinds.${thread.kind}`) })}
                 </p>
-                {/* CONTRACT-GAP admin.prepress-proofs — who resolved a thread is not published. */}
                 {thread.resolvedAt ? (
-                  <Badge tone="success" size="sm" icon="check">
-                    {t("isResolved")}
-                  </Badge>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <Badge tone="success" size="sm" icon="check">
+                      {t("isResolved")}
+                    </Badge>
+                    {thread.resolvedBy ? (
+                      <span className="text-muted text-xs">
+                        {t("resolvedBy", { name: thread.resolvedBy.displayName })}
+                      </span>
+                    ) : null}
+                  </span>
                 ) : canManage ? (
                   <Button
                     size="sm"
@@ -472,9 +423,9 @@ function Annotations({ proof: listed }: { proof: Proof }) {
 }
 
 /**
- * The proof versions, newest first.
- *
- * CONTRACT-GAP admin.prepress-proofs — a proof does not say who prepared it or who decided it.
+ * The proof versions, newest first, with who decided each (`decidedByName`: the customer, or
+ * Packio for a decision taken on their behalf). CONTRACT-GAP admin.prepress-proofs — a proof does
+ * not say who prepared it.
  */
 export function ProofsTab({
   proofs,
@@ -543,6 +494,7 @@ export function ProofsTab({
                         description: (
                           <span>
                             <When at={proof.decidedAt} />
+                            {proof.decidedByName ? ` · ${proof.decidedByName}` : null}
                             {proof.decisionChannel ? ` · ${t(`channels.${proof.decisionChannel}`)}` : null}
                           </span>
                         ),
@@ -587,11 +539,10 @@ export function ProofsTab({
 /* ----------------------------------------------------------------------------------- template */
 
 /**
- * The dieline and the templates sent to the customer.
- *
- * CONTRACT-GAP admin.prepress — the order carries no dieline pattern or size and there is no list
- * of an order's drawing jobs: the size and the jobs shown are those of a drawing asked for on this
- * page. A delivery does not say who sent it.
+ * The dieline and the templates sent to the customer. The drawings are the order's own
+ * (`admin.designs.listOrderDrawings`), newest first, each with its file and the size drawn.
+ * CONTRACT-GAP admin.prepress — the order carries no dieline pattern or size of its own, so the
+ * size shown is the latest drawing's. A delivery does not say who sent it.
  */
 export function TemplateTab({
   deliveries,
@@ -640,7 +591,11 @@ export function TemplateTab({
                   <StatusChip map={DRAWING_STATUS} value={job.status} />
                 </span>
                 {job.outputFileId ? (
-                  <FileItem fileId={job.outputFileId} name={t("drawnFile", { format: job.format.toUpperCase() })} />
+                  <FileItem
+                    fileId={job.outputFileId}
+                    name={job.outputFile?.originalName ?? t("drawnFile", { format: job.format.toUpperCase() })}
+                    sizeBytes={job.outputFile?.sizeBytes}
+                  />
                 ) : job.error ? (
                   <span className="text-danger text-xs">{job.error}</span>
                 ) : null}

@@ -66,7 +66,7 @@ test("a signed-in design is saved in the account, autosaved, and keeps its versi
   await page.getByRole("button", { name: "แชร์ลิงก์ดูแบบ" }).click();
   const share = page.getByRole("dialog", { name: "แชร์ลิงก์ดูแบบ" });
   const link = share.getByRole("textbox", { name: "ลิงก์" });
-  await expect(link).toHaveValue(/\/design\/shared\/[0-9a-f]{32}$/);
+  await expect(link).toHaveValue(/\/design\/shared\/[A-Za-z0-9_-]{43}$/);
   const url = await link.inputValue();
   await page.keyboard.press("Escape");
   const viewer = await page.context().browser()!.newPage();
@@ -99,7 +99,8 @@ test("two tabs saving the same design meet the conflict choice instead of overwr
 
 test("a guest's browser design is imported into the account after sign-in", async ({ page }) => {
   await acceptCookies(page);
-  await gotoHydrated(page, `${HOSTS.customer}/design/new`);
+  // With its product (the import needs one, store.catalog-product-ref): the designer catalogue names its id.
+  await gotoHydrated(page, `${HOSTS.customer}/design/new?product=tuck-end-box`);
   await startFromSetup(page);
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("กล่องจากเบราว์เซอร์");
   await page.getByRole("button", { name: "บันทึก", exact: true }).click();
@@ -115,12 +116,15 @@ test("a guest's browser design is imported into the account after sign-in", asyn
 });
 
 test("the order's artwork page opens the designer on its box", async ({ page }) => {
-  test.fixme(true, "CONTRACT-GAP store.artwork — the box's dieline key and dimensions are not published");
   await signInAsCustomer(page, `/account/orders/${DESIGN_ORDER}/artwork`, MOCK_DESIGNER_PHONE);
+  // The order's dieline and size (`store.artwork.getRules`) and its product (`OrderDto.summary`).
+  await page.getByRole("link", { name: "ออกแบบออนไลน์บนกล่องนี้" }).click();
+  await expect(page).toHaveURL(/\/design\/new\?style=[a-z-]+&l=\d+&w=\d+&h=\d+/);
+  await expect(page).toHaveURL(new RegExp(`order=${DESIGN_ORDER}`));
 });
 
 test("a design for an order is sent to print and prepress takes it", async ({ page }) => {
-  // The link the artwork page used to build (see the fixme above); the designer still takes it.
+  // The link the artwork page builds (see the test above), with the product the order names.
   const linked = new URLSearchParams({
     // A published design needs its product (store.catalog-product-ref).
     product: "tuck-end-box",
@@ -182,14 +186,19 @@ test("prepress opens a customer's design read-only and copies it", async ({ page
     page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name: "ข้อความ", exact: true }),
   ).toHaveCount(0);
 
+  // The owner is published (`owner`): the customer's design says whose it is.
+  await expect(page.getByText(/^แบบของลูกค้า /)).toBeVisible();
+
   await page.getByRole("button", { name: "ทำสำเนาเพื่อแก้ไข" }).click();
   await expect(page).toHaveURL(/\/designs\/[0-9a-f-]{36}\?from=/);
+  // `admin.designs.copy` makes a copy prepress owns.
+  await expect(page.getByText(/^แบบของพนักงาน /)).toBeVisible();
 });
 
 test("prepress works on its own copy and saves it", async ({ page }) => {
   test.fixme(
     true,
-    "CONTRACT-GAP admin.design-documents — admin.designs.save needs catalog.manage, which prepress lacks, and a design carries no editable flag",
+    "CONTRACT-GAP admin.design-documents — admin.designs.save needs catalog.manage, which prepress lacks, so even its own copy (editable) opens read-only",
   );
   await signInAsStaff(page, "prepress");
   await addHeading(page);

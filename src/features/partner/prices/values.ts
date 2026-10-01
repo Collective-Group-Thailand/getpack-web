@@ -2,6 +2,45 @@ import type { Schemas } from "@/lib/api/types";
 
 export type PriceComponentDef = Schemas["PriceComponentDto"];
 export type PriceReference = { column: string; id: string; code: string | null; name: string };
+
+/**
+ * The price column that holds a catalogue's ids (packio-api's price-component registry,
+ * `src/modules/pricing/calculators/{folding,corrugate}/price-components.ts` at v0.6.0).
+ *
+ * CONTRACT-GAP partner.price-column-ref — `CatalogueReferenceDto` names its catalogue table and
+ * `PriceColumnDto` does not name the table a `ref` column takes, so the pairing is copied here. A
+ * catalogue not listed keeps its table name as the column: its names still resolve by id.
+ */
+const COLUMN_OF_CATALOGUE: Record<string, string> = {
+  assemblies: "assemblyId",
+  diecut_types: "diecutTypeId",
+  difficulty_levels: "difficultyLevelId",
+  factory_machines: "machineId",
+  finishes: "finishId",
+  flute_types: "fluteTypeId",
+  ink_colours: "inkColourId",
+  materials: "materialId",
+  patterns: "patternId",
+  print_types: "printTypeId",
+  sub_patterns: "subPatternId",
+};
+
+/** The catalogue names `partner.factories.priceReferences` gives, keyed by the price column (D-044: names only). */
+export function toPriceReferences(
+  items: readonly Schemas["CatalogueReferenceDto"][],
+  locale: string,
+): PriceReference[] {
+  return items.map((item) => ({
+    column: COLUMN_OF_CATALOGUE[item.catalogue] ?? item.catalogue,
+    id: item.id,
+    code: item.code,
+    name: (locale === "en" ? (item.nameEn ?? item.nameTh) : (item.nameTh ?? item.nameEn)) ?? item.code ?? item.id,
+  }));
+}
+
+/** A product type's name in the reading locale (`ReferenceProductTypeDto`). */
+export const productTypeName = (type: Schemas["ReferenceProductTypeDto"], locale: string) =>
+  locale === "en" ? (type.nameEn ?? type.nameTh) : type.nameTh;
 export type Values = Record<string, unknown>;
 
 /**

@@ -4,6 +4,8 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getMyRfq, specInWords } from "@/features/customer/rfq/api.server";
+import { DeclineRfq } from "@/features/customer/rfq/DeclineRfq";
+import { FileLink } from "@/features/customer/files/FileLink";
 import { RfqQuotes } from "@/features/customer/rfq/RfqQuotes";
 import { RfqThread } from "@/features/customer/rfq/RfqThread";
 import { getFormat } from "@/features/shared/format/server";
@@ -24,8 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
  * One request for quotation (F3 3.2): what was asked, when CS will answer, the quotes sent, the
  * conversation, and — once a quote is accepted — the way to the cart.
  *
- * CONTRACT-GAP store.rfqs — the files sent with the RFQ and the words of a decline are not
- * published (a decline names a reason code only).
+ * The files sent with it open through `store.files.download`; the customer may close the request
+ * while it offers `rfq.decline`.
+ *
+ * CONTRACT-GAP store.rfqs — a decline names a reason code only, not the words of it.
  */
 export default async function Page({
   params,
@@ -55,7 +59,12 @@ export default async function Page({
         <h1 className="text-2xl font-bold">{t("heading", { type: rfq.productTypeName })}</h1>
         <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
       </div>
-      <p className="text-muted mt-1 font-mono text-sm">{rfq.rfqCode}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-3">
+        <p className="text-muted font-mono text-sm">{rfq.rfqCode}</p>
+        {rfq.nextActions.some((action) => action.key === "rfq.decline" && !action.disabledReason) ? (
+          <DeclineRfq rfqId={rfq.id} rfqCode={rfq.rfqCode} />
+        ) : null}
+      </div>
 
       {submitted ? (
         <Callout tone="success" live className="mt-4">
@@ -68,8 +77,12 @@ export default async function Page({
         </Callout>
       ) : null}
       {rfq.status === "declined" ? (
-        <Callout tone="warning" className="mt-4" title={t("declinedTitle")}>
-          {t("declinedBody")}
+        <Callout
+          tone="warning"
+          className="mt-4"
+          title={rfq.declineReasonCode === "customer_declined" ? t("withdrawnTitle") : t("declinedTitle")}
+        >
+          {rfq.declineReasonCode === "customer_declined" ? t("withdrawnBody") : t("declinedBody")}
         </Callout>
       ) : null}
 
@@ -85,7 +98,12 @@ export default async function Page({
             <h2 id="rfq-thread" className="mb-4 text-lg font-semibold">
               {t("threadTitle")}
             </h2>
-            <RfqThread rfqId={rfq.id} messages={rfq.messages} askedForInfo={rfq.status === "need_info"} />
+            <RfqThread
+              rfqId={rfq.id}
+              messages={rfq.messages}
+              askedForInfo={rfq.status === "need_info"}
+              canPost={rfq.nextActions.some((action) => action.key === "rfq.post_message" && !action.disabledReason)}
+            />
           </section>
         </div>
         <section aria-labelledby="rfq-spec">
@@ -113,6 +131,23 @@ export default async function Page({
               { term: t("submittedAt"), description: format.dateTime(rfq.submittedAt) },
             ]}
           />
+          {rfq.files.length > 0 ? (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium">{t("files")}</h3>
+              <ul className="mt-2 flex flex-col items-start gap-2">
+                {rfq.files.map((file) => (
+                  <li key={file.id}>
+                    <FileLink
+                      fileId={file.id}
+                      label={file.originalName}
+                      openLabel={t("openFile", { name: file.originalName })}
+                      failed={t("fileFailed")}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </section>
       </div>
     </div>

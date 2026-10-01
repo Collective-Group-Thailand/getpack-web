@@ -9,11 +9,9 @@
  * is deleted — so the list only shrinks.
  */
 export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
-  "GET /v1/partner/factories/{factoryId}/payouts",
-  "GET /v1/partner/factories/{factoryId}/scorecards",
-  "GET /v1/partner/factories/{factoryId}/users",
+  // Contract v0.4.0–v0.6.0 (2026-10-01) published every request packio-api's U-B0 groups built,
+  // and U-F0.4 moved all three zones off them. Only the parked configurator is left (below).
   "GET /v1/store/catalog/products/{slug}/configurator",
-  "POST /v1/partner/factories/{factoryId}/users",
 ];
 
 /**

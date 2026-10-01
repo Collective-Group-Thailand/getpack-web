@@ -76,7 +76,7 @@ Notation: Dr / Cr, amounts incl. VAT where stated. Nature = hire of work unless 
 | P12 | Points expired | Dr 2330 · Cr 4990 |
 | P13 | Factory job accepted — PO committed | memo only (commitment, no GL) |
 | P14 | Advance payout to factory (30 % default) | Dr 1250 net · Dr 1241/1242 VAT per factory tax invoice · Cr 112x cash · Cr 2231 WHT |
-| P15 | Delivery confirmed (GR from POD + reported quantity) | Dr 5110 production cost (actual qty × unit cost) · Dr 5120 shipping payout · Cr 2110 |
+| P15 | Delivery confirmed (GR from POD + reported quantity) | Dr 5110 production cost (min(actual, ordered) qty × unit cost — overage within tolerance is not paid, D-165) · Dr 5120 shipping payout · Cr 2110 |
 | P16 | Apply advance to payable | Dr 2110 · Cr 1250 |
 | P17 | Final payout after claim window | Dr 2110 · Dr 1241 VAT (if not already) · Cr 112x · Cr 2231 WHT · Cr 2130 retention (5 % default) |
 | P18 | Retention released | Dr 2130 · Cr 112x |
@@ -136,6 +136,6 @@ Nature per product type (§2) · deposit and instalment tax invoices · customer
 | Customer → Collective Group | 100.00 | 7.00 (output VAT) | 107.00 | TR by Collective Group, Packio brand |
 | Collective Group → factory | 80.00 | 5.60 (input VAT) | 85.60 | Factory's tax invoice to Collective Group |
 | VAT remitted by Collective Group (ภ.พ.30) | | **1.40** | | = 7.00 − 5.60 |
-If the customer is a juristic person withholding 3 %: customer pays 107.00 − 3.00 = 104.00 cash + 50 ทวิ for 3.00 (WHT receivable). Collective Group withholding 3 % on the factory: pays 85.60 − 2.40 = 83.20 cash + issues 50 ทวิ for 2.40 (filed in ภ.ง.ด.53). Gross margin = 100.00 − 80.00 = 20.00 (before gateway fees, shipping margin and promotions). If the factory is **not VAT-registered**, the 80.00 has no input VAT and Collective Group still remits 7.00 — the cost table of a non-VAT factory must therefore be compared on a VAT-inclusive basis in factory selection (the calculator's factory comparison must use *effective cost to Collective Group*).
+If the customer is a juristic person withholding 3 %: customer pays 107.00 − 3.00 = 104.00 cash + 50 ทวิ for 3.00 (WHT receivable). Collective Group withholding 3 % on the factory: pays 85.60 − 2.40 = 83.20 cash + issues 50 ทวิ for 2.40 (filed in ภ.ง.ด.53). Gross margin = 100.00 − 80.00 = 20.00 (before gateway fees, shipping margin and promotions). If the factory is **not VAT-registered**, the 80.00 has no input VAT and Collective Group still remits 7.00 — the price table of a non-VAT factory must therefore be compared on a VAT-inclusive basis in factory selection (the calculator's factory comparison must use *effective cost to Collective Group*).
 
 **No cut-over.** Packio is a new business under Collective Group (Thailand) with no orders in flight (D-092); all document series start at go-live.

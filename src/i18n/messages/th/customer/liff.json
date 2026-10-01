@@ -27,8 +27,7 @@
   "orders": {
     "title": "คำสั่งซื้อ",
     "empty": "ยังไม่มีคำสั่งซื้อ",
-    "row": "{code} · {quantity} {unit}",
-    "rowNoUnit": "{code} · จำนวน {quantity}"
+    "row": "{code} · {quantity} {unit}"
   },
   "order": {
     "title": "คำสั่งซื้อ",

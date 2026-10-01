@@ -58,7 +58,7 @@
   "replyPlaceholder": "Write a reply",
   "reply": "Reply",
   "decide": "Your decision",
-  "checklist": "Confirm every item before approving",
+  "checklist": "Check each before approving",
   "approve": "Approve for production",
   "approveTitle": "Approve proof version {version}?",
   "approveBody": "Order {code} will be produced exactly as proof version {version}. The file can't be changed after approval.",
@@ -79,5 +79,9 @@
   "fileOpen": "Open the proof",
   "loadingPage": "Loading the proof…",
   "approveIntro": "Check the text, the artwork against the dieline, the colours and the size before you approve.",
-  "decisionAt": "On {date}"
+  "decisionAt": "On {date}",
+  "checklistHint": "Tick every item to approve",
+  "approvalNote": "Note (optional)",
+  "decisionBy": "Decided by {name} on {date}",
+  "approveType": "Type {code} to confirm"
 }

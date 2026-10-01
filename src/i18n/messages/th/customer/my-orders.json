@@ -91,16 +91,26 @@
     "claimLine": "{claim} · {type} · {date}",
     "destinationLine": "{name} · {quantity} {unit}",
     "stages": "สถานะตามขั้นตอน",
-    "destinationLineNoUnit": "{name} · จำนวน {quantity}",
     "photos": "รูป {count} รูป",
     "shipByTerm": "กำหนดส่งจากโรงงาน",
-    "trackingFailed": "สร้างลิงก์ติดตามไม่สำเร็จ กรุณาลองใหม่"
+    "trackingFailed": "สร้างลิงก์ติดตามไม่สำเร็จ กรุณาลองใหม่",
+    "artworkLink": "ไฟล์งานและปรู๊ฟ",
+    "cancelReason": "เหตุผล: {reason}",
+    "quantityUnit": "{quantity} {unit}",
+    "arrivesByTerm": "คาดว่าจะได้รับ",
+    "deliveredTerm": "ส่งถึงเมื่อ",
+    "completedTerm": "เสร็จสิ้นเมื่อ",
+    "completedByYou": "{date} (คุณยืนยันรับสินค้า)",
+    "completedAuto": "{date} (ระบบยืนยันอัตโนมัติ)"
   },
   "tolerance": {
-    "exact": "ได้รับครบ {delivered} จาก {ordered} ชิ้น",
-    "shortage_within": "ได้รับ {delivered} จาก {ordered} ชิ้น อยู่ในเกณฑ์ที่ยอมรับ ส่วนที่ขาดคืนเป็นเครดิต {credit}",
-    "overage_within": "ได้รับ {delivered} จาก {ordered} ชิ้น ส่วนที่เกินไม่มีค่าใช้จ่าย",
-    "outside_claim_opened": "ได้รับ {delivered} จาก {ordered} ชิ้น เกินเกณฑ์ที่ยอมรับ ระบบเปิดเคลมให้อัตโนมัติ"
+    "title": "จำนวนที่ได้รับ",
+    "exact": "ได้รับครบ {delivered} จาก {ordered} {unit}",
+    "shortage_within": "ได้รับ {delivered} จาก {ordered} {unit} อยู่ในเกณฑ์ที่ยอมรับ ส่วนที่ขาดคืนเป็นเครดิต {credit}",
+    "shortage_within_no_credit": "ได้รับ {delivered} จาก {ordered} {unit} อยู่ในเกณฑ์ที่ยอมรับ",
+    "overage_within": "ได้รับ {delivered} จาก {ordered} {unit} ส่วนที่เกินไม่มีค่าใช้จ่าย",
+    "shortage_outside": "ได้รับ {delivered} จาก {ordered} {unit} ขาดเกินเกณฑ์ที่ยอมรับ แจ้งปัญหาสินค้าได้",
+    "overage_outside": "ได้รับ {delivered} จาก {ordered} {unit} เกินเกณฑ์ที่ยอมรับ แจ้งปัญหาสินค้าได้"
   },
   "claimTypes": {
     "damaged": "สินค้าเสียหาย",
@@ -110,7 +120,6 @@
     "late": "ส่งล่าช้า",
     "other": "อื่น ๆ"
   },
-  "rowNoUnit": "จำนวน {quantity} · สั่งเมื่อ {date}",
   "timelineTypes": {
     "order_placed": "สั่งซื้อแล้ว",
     "payment_received": "รับชำระเงินแล้ว",
@@ -126,5 +135,6 @@
     "order_receipt_confirmed": "ยืนยันรับสินค้าแล้ว",
     "order_cancelled": "ยกเลิกคำสั่งซื้อ",
     "other": "อัปเดตคำสั่งซื้อ"
-  }
+  },
+  "arrivesBy": "คาดว่าจะได้รับ {date}"
 }

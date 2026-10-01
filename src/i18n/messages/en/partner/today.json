@@ -31,10 +31,24 @@
       "toAccept": "To accept",
       "dueToday": "Due today",
       "atRisk": "At risk",
-      "onHold": "On hold"
+      "onHold": "On hold",
+      "inspections": "Inspections planned"
     },
     "queue": "Your queue",
     "allJobs": "All jobs",
-    "queueEmpty": "Nothing in the queue"
+    "queueEmpty": "Nothing in the queue",
+    "acceptanceOverdue": "{count, plural, one {# past the acceptance window} other {# past the acceptance window}}",
+    "alerts": {
+      "acceptance_overdue": "Past the acceptance window since {at}; Packio may move the job",
+      "acceptance_due_soon": "Accept by {at}",
+      "step_overdue": "The current step has been due since {at}",
+      "inspection_planned": "Packio inspects on {at}"
+    },
+    "alertsUndated": {
+      "acceptance_overdue": "Past the acceptance window; Packio may move the job",
+      "acceptance_due_soon": "The acceptance window closes soon",
+      "step_overdue": "The current step is past due",
+      "inspection_planned": "Packio plans to inspect this job"
+    }
   }
 }

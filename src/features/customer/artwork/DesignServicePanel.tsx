@@ -53,6 +53,10 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
   const [feeAccepted, setFeeAccepted] = useState(false);
   const [approving, setApproving] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Approving the delivered design approves its proof: the same checklist (`artwork.approval_checklist`).
+  const checklist = artwork.rules?.approvalChecklist ?? [];
+  const [checked, setChecked] = useState<string[]>([]);
+  const checklistDone = checklist.every((item) => checked.includes(item.key));
   const key = useRef(newKey());
   const used = Math.min(service.revisionsUsed, service.freeRounds);
   const freeLeft = service.freeRounds - used;
@@ -203,9 +207,10 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
               size="sm"
               instalment={{
                 id: artwork.feeInstalment.id,
+                groupId: artwork.feeInstalment.groupId,
                 label: pick(locale, artwork.feeInstalment.labelTh, artwork.feeInstalment.labelEn),
                 grossAmount: artwork.feeInstalment.openAmount,
-                activePaymentId: null,
+                activePaymentId: artwork.feeInstalment.activePaymentId,
               }}
               orderCode={order.orderCode}
             >
@@ -231,6 +236,23 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
           ) : (
             <p className="text-muted text-xs">{t("freeNote", { left: freeLeft })}</p>
           )}
+          {checklist.length > 0 ? (
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-medium">{t("checklist")}</legend>
+              {checklist.map((item) => (
+                <Checkbox
+                  key={item.key}
+                  checked={checked.includes(item.key)}
+                  onCheckedChange={(value) =>
+                    setChecked((current) =>
+                      value === true ? [...current, item.key] : current.filter((key) => key !== item.key),
+                    )
+                  }
+                  label={pick(locale, item.labelTh, item.labelEn)}
+                />
+              ))}
+            </fieldset>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
@@ -240,7 +262,9 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
             >
               {t("requestRevision")}
             </Button>
-            <Button onClick={() => setApproving(true)}>{t("approve")}</Button>
+            <Button onClick={() => setApproving(true)} disabled={!checklistDone}>
+              {t("approve")}
+            </Button>
           </div>
         </div>
       ) : null}
@@ -253,11 +277,14 @@ export function DesignServicePanel({ artwork }: { artwork: Artwork }) {
         confirmLabel={t("approve")}
         cancelLabel={t("cancel")}
         loading={busy}
+        confirmationPhrase={order.orderCode}
+        confirmationLabel={t("approveType", { code: order.orderCode })}
         onConfirm={() =>
           void run(
             () =>
               browserApi().POST("/v1/store/proofs/{proofId}/actions/approve", {
                 params: { path: { proofId: proof!.id }, header: { "Idempotency-Key": key.current } },
+                body: checklist.length > 0 ? { checklist: checked } : {},
               }),
             t("approved"),
           ).then(() => setApproving(false))

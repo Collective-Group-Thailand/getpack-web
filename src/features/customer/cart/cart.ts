@@ -4,9 +4,9 @@ export type Cart = Schemas["CartDto"];
 export type CartItem = Schemas["CartItemDto"];
 
 /**
- * Whether a line can go to checkout, from what the line itself says (CONTRACT-GAP store.cart: the
- * published cart has no `readyForCheckout` or blockers). The checkout preview is still the word
- * that counts — it refuses a cart that is not ready — so this only decides what the page asks for.
+ * What a line itself shows is missing before checkout: a price to confirm, or destinations that do
+ * not cover its quantity. Whether the whole cart can be placed is the checkout preview's word
+ * (`readyForCheckout` and its blockers moved there, U-B0.1); this only decides what the cart asks for.
  */
 export function lineBlockers(item: CartItem): ("reprice" | "destinations")[] {
   return [

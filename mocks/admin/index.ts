@@ -6,7 +6,6 @@
 import { analyticsContractHandlers, analyticsHandlers } from "./analytics";
 import { artworkContractHandlers } from "./artwork";
 import { catalogueHandlers } from "./catalogue";
-import { commerceHandlers } from "./commerce";
 import { companyHandlers } from "./companies";
 import { consoleHandlers } from "./console";
 import { customerHandlers } from "./customers";
@@ -19,13 +18,15 @@ import { orderHandlers } from "./orders";
 import { partnerHandlers } from "./partners";
 import { platformHandlers } from "./platform";
 import { designContractHandlers, prepressHandlers } from "./prepress";
+import { productionHandlers } from "./production";
 import { rfqHandlers } from "./rfq";
 import { salesHandlers } from "./sales";
+import { shipmentHandlers } from "./shipments";
 
 export const adminHandlers = [
   ...consoleHandlers,
+  ...productionHandlers,
   ...orderHandlers,
-  ...commerceHandlers,
   ...customerHandlers,
   ...salesHandlers,
   ...rfqHandlers,
@@ -40,6 +41,7 @@ export const adminHandlers = [
   ...companyHandlers,
   ...financeHandlers,
   ...loyaltyHandlers,
+  ...shipmentHandlers,
   ...logisticsHandlers,
   ...analyticsContractHandlers,
   ...analyticsHandlers,

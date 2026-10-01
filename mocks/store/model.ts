@@ -20,10 +20,8 @@ import {
   requiredBefore,
   slipStatus,
 } from "@/lib/api/requests/admin-orders";
-import { promotionKind } from "@/lib/api/requests/admin-marketing";
 import { quoteSource } from "@/lib/api/requests/store-quotes";
 import { currency, dateTime, money, pct, uuid } from "@/lib/api/requests/define";
-import { companyRole, creditApplication } from "@/lib/api/requests/store-business";
 
 import {
   companyKycDocType,
@@ -35,6 +33,9 @@ import {
 } from "../admin/company-model";
 
 /* ------------------------------------------------------------------------------------- cart */
+
+/** `PromotionKind`, as the contract names it (the admin request that defined it is retired, U-F0.4). */
+const promotionKind = z.enum(["coupon", "automatic", "referral"]).meta({ id: "PromotionKind" });
 
 export const cartItemState = z.enum(["ok", "repriced", "unavailable"]).meta({ id: "CartItemState" });
 
@@ -323,6 +324,21 @@ export const companyNotice = z
     daysOverdue: z.number().int(),
   })
   .meta({ id: "CompanyNoticeDto" });
+
+const companyRole = z.enum(["company_admin", "company_buyer", "company_approver", "company_accountant"]);
+
+/** A credit application as the mock keeps it until the back office decides (D-121). */
+export const creditApplication = z.object({
+  id: uuid(),
+  status: z.enum(["submitted", "approved", "rejected"]),
+  requestedLimit: money(),
+  termDays: z.number().int(),
+  basis: z.enum(["paid_orders", "financial_statement"]),
+  submittedAt: dateTime(),
+  decidedAt: dateTime().nullable(),
+  note: z.string().nullable(),
+  approvedLimit: money().nullable(),
+});
 
 export const storeCompany = z
   .object({

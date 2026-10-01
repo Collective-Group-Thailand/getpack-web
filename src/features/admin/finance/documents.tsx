@@ -6,16 +6,14 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { DOCUMENT_STATUS, RECEIVABLE_STATUS } from "@/domain/status";
+import { DOCUMENT_STATUS, DUNNING_STATUS, RECEIVABLE_STATUS } from "@/domain/status";
 import { isZeroMoney, moneyText } from "@/domain/money";
 import { useFormat, When } from "@/features/shared/format";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import type { Schemas } from "@/lib/api/types";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Checkbox } from "@/ui/components/Checkbox";
 import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Dialog } from "@/ui/components/Dialog";
@@ -30,7 +28,8 @@ import { toast } from "@/ui/components/Toast";
 import { useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
 import { ConfirmAction } from "../console/ConfirmAction";
-import { FormDialog, FormError, Section } from "../console/FormDialog";
+import { FormDialog, Section } from "../console/FormDialog";
+import { NextActionBar } from "../console/NextActionBar";
 import { problemMessage, QueryError } from "../console/QueryError";
 import { QueueTabs } from "../console/queues";
 import { ResourceList } from "../console/ResourceList";
@@ -159,6 +158,9 @@ export function DocumentsRegister({ initial }: { initial: InitialPage<CustomerDo
 
 type Action = "void" | "resend" | "debit";
 
+/** The verbs of `customer_document.*` this page performs. */
+const DOCUMENT_VERBS: ReadonlySet<string> = new Set(["resend", "void"]);
+
 /**
  * One customer document as issued: seller and buyer, lines, VAT and withholding, what it deducts,
  * what is still owed — and the steps either side of it: the order, the payment, the original a
@@ -169,7 +171,6 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
   const tDocs = useTranslations("finance.documents");
   const format = useFormat();
   const queryClient = useQueryClient();
-  const canManage = useCan("receivables.manage");
   const canCredit = useCan("credit_notes.request");
   const canDebit = useCan("receivables.debit_notes.issue");
   const router = useRouter();
@@ -205,11 +206,6 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const doc = query.data;
   if (!doc) return null;
-  const voidable =
-    canManage &&
-    doc.status === "issued" &&
-    (doc.docType === "iv" || doc.docType === "dn") &&
-    !doc.receivable?.status.match(/paid|partially_paid/);
   const isTaxInvoice = doc.docType === "tr" && doc.status === "issued" && Boolean(doc.orderId);
 
   return (
@@ -243,43 +239,44 @@ export function DocumentDetail({ documentId }: { documentId: string }) {
             >
               {t("download")}
             </Button>
-            <DropdownMenu
-              label={t("more")}
-              trigger={
-                <Button variant="ghost" iconStart="more">
-                  {t("more")}
-                </Button>
-              }
-              items={[
-                ...(doc.status === "issued"
-                  ? [{ id: "resend", label: t("resend"), icon: "send" as const, onSelect: () => setAction("resend") }]
-                  : []),
-                ...(isTaxInvoice && canCredit
-                  ? [
-                      {
-                        id: "credit",
-                        label: t("creditNote"),
-                        icon: "file-check" as const,
-                        onSelect: () => router.push(`/finance/credit-notes/new?orderId=${doc.orderId}`),
-                      },
-                    ]
-                  : []),
-                ...(isTaxInvoice && canDebit
-                  ? [{ id: "debit", label: t("debitNote"), icon: "plus" as const, onSelect: () => setAction("debit") }]
-                  : []),
-                ...(voidable
-                  ? [
-                      {
-                        id: "void",
-                        label: t("void"),
-                        icon: "ban" as const,
-                        onSelect: () => setAction("void"),
-                        tone: "destructive" as const,
-                        separatorBefore: true,
-                      },
-                    ]
-                  : []),
-              ]}
+            {isTaxInvoice && (canCredit || canDebit) ? (
+              <DropdownMenu
+                label={t("more")}
+                trigger={
+                  <Button variant="ghost" iconStart="more">
+                    {t("more")}
+                  </Button>
+                }
+                items={[
+                  ...(canCredit
+                    ? [
+                        {
+                          id: "credit",
+                          label: t("creditNote"),
+                          icon: "file-check" as const,
+                          onSelect: () => router.push(`/finance/credit-notes/new?orderId=${doc.orderId}`),
+                        },
+                      ]
+                    : []),
+                  ...(canDebit
+                    ? [
+                        {
+                          id: "debit",
+                          label: t("debitNote"),
+                          icon: "plus" as const,
+                          onSelect: () => setAction("debit"),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            ) : null}
+            {/* Resend and void are what the API offers on this document, for this person (`nextActions`). */}
+            <NextActionBar
+              actions={doc.nextActions}
+              supported={DOCUMENT_VERBS}
+              labelOf={(verb) => (verb === "resend" ? t("resend") : verb === "void" ? t("void") : undefined)}
+              onAction={(verb) => setAction(verb as Action)}
             />
           </>
         }
@@ -456,11 +453,15 @@ function Total({ label, amount, strong }: { label: string; amount: string; stron
   );
 }
 
-/** The statutory reason list (CONTRACT-REQUEST admin.credit-note-reasons), cached for the session. */
+/**
+ * The statutory reason list (`admin.customerDocuments.listCreditNoteReasons`, the §2 controlled
+ * list), with each reason's `direction`: credit notes take `credit`, debit notes `debit`. Cached
+ * for the session.
+ */
 export function useReasons() {
   return useQuery({
     queryKey: queryKeys.list("admin", "credit-note-reason"),
-    queryFn: () => browserRequests().call("GET /v1/admin/credit-note-reasons"),
+    queryFn: async () => (await adminBrowserApis().contract.GET("/v1/admin/credit-note-reasons")).data!,
     staleTime: 60 * 60_000,
   });
 }
@@ -476,36 +477,47 @@ function Deliveries({ documentId }: { documentId: string }) {
   const t = useTranslations("finance.documents.detail");
   const query = useQuery({
     queryKey: queryKeys.related("admin", "customer-document", documentId, "deliveries"),
-    queryFn: () =>
-      browserRequests().call("GET /v1/admin/customer-documents/{documentId}/deliveries", { path: { documentId } }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/customer-documents/{documentId}/deliveries", {
+          params: { path: { documentId } },
+        })
+      ).data!,
   });
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   return (
     <DataTable
       caption={t("deliveries")}
       density="compact"
-      rows={query.data?.data ?? []}
+      rows={query.data ?? []}
       loading={query.isPending}
-      getRowId={(row) => `${row.channel}:${row.sentAt}:${row.to}`}
+      getRowId={(row) => `${row.kind}:${row.channel}:${row.requestedAt}`}
       empty={<EmptyState icon="send" title={t("noDeliveries")} />}
       columns={[
-        { id: "sentAt", header: t("sentAt"), cell: (row) => <When at={row.sentAt} /> },
+        { id: "requestedAt", header: t("requestedAt"), cell: (row) => <When at={row.requestedAt} /> },
         { id: "kind", header: t("deliveryKind"), cell: (row) => t(`deliveryKinds.${row.kind}`) },
         { id: "channel", header: t("channel"), cell: (row) => t(`channels.${row.channel}`) },
-        { id: "to", header: t("to"), cell: (row) => row.to },
+        // Masked by the API (PDPA).
+        { id: "to", header: t("to"), cell: (row) => row.recipient ?? "—" },
+        {
+          id: "status",
+          header: t("deliveryStatus"),
+          cell: (row) => <StatusChip map={DUNNING_STATUS} value={row.status} />,
+        },
+        { id: "sentAt", header: t("sentAt"), cell: (row) => (row.sentAt ? <When at={row.sentAt} /> : "—") },
       ]}
     />
   );
 }
 
-/** Sends the document to the customer again (CONTRACT-REQUEST admin.document-resend). */
+/**
+ * Sends the document to the customer again (`admin.customerDocuments.resend`, D-143): the API
+ * queues it on the customer's own channels and the delivery log shows where it went.
+ */
 function Resend({ doc, onClose }: { doc: CustomerDocument; onClose: () => void }) {
   const t = useTranslations("finance.documents.resend");
   const queryClient = useQueryClient();
   const [idempotencyKey] = useState(() => crypto.randomUUID());
-  const [email, setEmail] = useState(true);
-  const [line, setLine] = useState(false);
-  const [address, setAddress] = useState("");
   return (
     <FormDialog
       title={t("title", { number: doc.docNumber })}
@@ -513,12 +525,8 @@ function Resend({ doc, onClose }: { doc: CustomerDocument; onClose: () => void }
       submitLabel={t("send")}
       onClose={onClose}
       onSubmit={async () => {
-        const channels = [...(email ? (["email"] as const) : []), ...(line ? (["line"] as const) : [])];
-        if (channels.length === 0) throw new FormError(t("needChannel"));
-        await browserRequests().call("POST /v1/admin/customer-documents/{documentId}/actions/resend", {
-          path: { documentId: doc.id },
-          body: { channels, ...(email && address.trim() ? { email: address.trim() } : {}) },
-          idempotencyKey,
+        await adminBrowserApis().contract.POST("/v1/admin/customer-documents/{documentId}/actions/resend", {
+          params: { path: { documentId: doc.id }, header: { "Idempotency-Key": idempotencyKey } },
         });
         void queryClient.invalidateQueries({
           queryKey: queryKeys.related("admin", "customer-document", doc.id, "deliveries"),
@@ -526,16 +534,8 @@ function Resend({ doc, onClose }: { doc: CustomerDocument; onClose: () => void }
         toast.success(t("sent"));
       }}
     >
-      <fieldset className="flex flex-col gap-3">
-        <legend className="mb-1 text-sm font-medium">{t("channels")}</legend>
-        <Checkbox checked={email} onCheckedChange={(value) => setEmail(value === true)} label={t("email")} />
-        <Checkbox checked={line} onCheckedChange={(value) => setLine(value === true)} label={t("line")} />
-      </fieldset>
-      {email ? (
-        <Field label={t("otherAddress")} hint={t("otherAddressHint")} className="mt-3">
-          <Input type="email" value={address} onChange={(event) => setAddress(event.target.value)} />
-        </Field>
-      ) : null}
+      {/* CONTRACT-GAP admin.document-resend — the resend takes no channel and no other address: it goes by the customer's own routes. */}
+      <p className="text-muted text-sm">{t("how")}</p>
     </FormDialog>
   );
 }

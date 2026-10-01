@@ -1,14 +1,11 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken, mockId } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
-import { createRequestClient } from "@/lib/api/requests/client";
-import { REQUESTS } from "@/lib/api/requests/registry";
 
 const server = setupServer(...handlers);
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
@@ -16,22 +13,11 @@ afterAll(() => server.close());
 
 // Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
 const as = (persona?: string) => ({
-  /** The published contract, for the operations this zone has migrated (U-F0.2). */
   api: () =>
     createApiClient({
       baseUrl: "http://api.mock",
       accessToken: persona === "guest" ? undefined : accessToken("customer", persona),
     }),
-  call: ((...args: unknown[]) =>
-    (
-      createRequestClient(
-        REQUESTS,
-        createApiClient({
-          baseUrl: "http://api.mock",
-          accessToken: persona === "guest" ? undefined : accessToken("customer", persona),
-        }) as unknown as Client<never>,
-      ).call as (...a: unknown[]) => unknown
-    )(...args)) as ReturnType<typeof createRequestClient<typeof REQUESTS>>["call"],
 });
 const receiver = as("receiver");
 const returning = as();
@@ -91,9 +77,14 @@ describe("after production, against the mock", () => {
     const { data: shipments } = await api.GET("/v1/store/orders/{orderId}/shipments", {
       params: { path: { orderId: DELIVERED } },
     });
-    // CONTRACT-GAP store.orders — no tolerance outcome is published; the delivery says how many arrived.
     const item = shipments![0]!.items[0]!;
     expect(item.deliveredQuantity).toBeLessThan(item.quantity);
+    // The order says how that compares with what was ordered (D-021, D-080), and what it may do now.
+    const { data: order } = await api.GET("/v1/store/orders/{orderId}", { params: { path: { orderId: DELIVERED } } });
+    expect(order!.toleranceOutcome?.deliveredQuantity).toBe(item.deliveredQuantity);
+    expect(order!.nextActions.map((action) => action.key)).toEqual(
+      expect.arrayContaining(["order.confirm_receipt", "order.open_claim", "order.reorder"]),
+    );
 
     const refused = await failure(
       api.POST("/v1/store/orders/{orderId}/actions/confirm-receipt", {
@@ -105,6 +96,8 @@ describe("after production, against the mock", () => {
       params: { path: { orderId: DELIVERED }, header: { "Idempotency-Key": uuid() } },
     });
     expect(after!.status).toBe("completed");
+    expect(after!.receipt).toMatchObject({ completionMode: "customer_confirmed" });
+    expect(after!.nextActions.map((action) => action.key)).not.toContain("order.confirm_receipt");
     const { data: progress } = await api.GET("/v1/store/orders/{orderId}/progress", {
       params: { path: { orderId: DELIVERED } },
     });
@@ -113,16 +106,18 @@ describe("after production, against the mock", () => {
 
   it("files a claim with both kinds of photo, and it reaches the desk (D-082)", async () => {
     const api = receiver.api();
-    const form = await receiver.call("GET /v1/store/orders/{orderId}/claim-form", { path: { orderId: DELIVERED } });
-    expect(form.open).toBe(true);
-    expect(form.evidence.minCartonPhotos).toBeGreaterThan(0);
+    const { data: form } = await api.GET("/v1/store/orders/{orderId}/claim-form", {
+      params: { path: { orderId: DELIVERED } },
+    });
+    expect(form!.open).toBe(true);
+    expect(form!.evidence.cartonPhotosMin).toBeGreaterThan(0);
 
     const submit = (cartonPhotoFileIds: string[]) =>
       api.POST("/v1/store/orders/{orderId}/claims", {
         params: { path: { orderId: DELIVERED }, header: { "Idempotency-Key": uuid() } },
         body: {
           type: "damaged",
-          shipmentId: form.shipments[0]!.id,
+          shipmentId: form!.shipments[0]!.id,
           claimedQuantity: 20,
           description: "กล่องบุบ 20 ใบ ฝาฉีก",
           requestedResolution: "reprint",
@@ -151,28 +146,34 @@ describe("after production, against the mock", () => {
   });
 
   it("closes the claim window 7 days after receipt", async () => {
-    const form = await returning.call("GET /v1/store/orders/{orderId}/claim-form", { path: { orderId: COMPLETED } });
-    expect(form.open).toBe(false);
+    const { data: form } = await returning.api().GET("/v1/store/orders/{orderId}/claim-form", {
+      params: { path: { orderId: COMPLETED } },
+    });
+    expect(form).toMatchObject({ open: false, closedReason: "window_closed" });
   });
 
-  it("reorders re-priced, with reusable one-off costs waived, into the cart (D-153)", async () => {
-    const preview = await returning.call("GET /v1/store/orders/{orderId}/reorder", {
-      path: { orderId: COMPLETED },
-      query: { quantity: 2000 },
+  it("reorders re-priced into the cart, held to the price it previewed (D-153)", async () => {
+    const api = returning.api();
+    const { data: preview } = await api.GET("/v1/store/orders/{orderId}/reorder", {
+      params: { path: { orderId: COMPLETED }, query: { quantity: 2000 } },
     });
-    expect(preview.quantity).toBe(2000);
-    expect(preview.artwork).toMatchObject({ reused: true, proofSkipped: true });
-    for (const line of preview.lines.filter((entry) => entry.oneOff)) {
-      expect(line.grossAmount).toBe("0.00");
-      expect(line.waivedReason).toMatch(/D-153/);
-    }
+    expect(preview!.quantity).toBe(2000);
+    expect(preview!.proofSkipped).toBe(true);
 
-    // `store.claims.reorder` adds the line and answers with the cart (no preview token to hold).
-    const { data: cart } = await returning.api().POST("/v1/store/orders/{orderId}/actions/reorder", {
+    // A token for another quantity is refused rather than putting a price nobody saw in the cart.
+    const stale = await failure(
+      api.POST("/v1/store/orders/{orderId}/actions/reorder", {
+        params: { path: { orderId: COMPLETED }, header: { "Idempotency-Key": uuid() } },
+        body: { quantity: 3000, reuseArtwork: true, previewToken: preview!.previewToken },
+      }),
+    );
+    expect(stale?.code).toBe("orders.reorder_preview_expired");
+
+    const { data: cart } = await api.POST("/v1/store/orders/{orderId}/actions/reorder", {
       params: { path: { orderId: COMPLETED }, header: { "Idempotency-Key": uuid() } },
-      body: { quantity: 2000, reuseArtwork: true },
+      body: { quantity: 2000, reuseArtwork: true, previewToken: preview!.previewToken },
     });
-    const item = cart!.items.find((entry) => entry.quantity === 2000 && entry.reorderOf === null);
-    expect(item?.productGrossAmount).toBe(preview.grossAmount);
+    const item = cart!.items.find((entry) => entry.quantity === 2000 && entry.reorderOf?.orderId === COMPLETED);
+    expect(item?.productGrossAmount).toBe(preview!.grossAmount);
   });
 });

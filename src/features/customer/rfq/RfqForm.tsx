@@ -5,14 +5,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { pick } from "@/features/customer/catalog/localize";
-import { uploadFile, type UploadedFile } from "@/features/shared/files/upload";
+import { uploadFile, type FilePurpose, type UploadedFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
@@ -28,7 +27,7 @@ const SignInSheet = dynamic(() => import("@/features/customer/auth/SignInSheet")
   ssr: false,
 });
 
-type Form = ResponseOf<Requests, "GET /v1/store/rfq-forms/{productTypeCode}">;
+type Form = Schemas["StoreRfqFormDto"];
 type SpecValue = string | number | boolean | string[];
 
 export interface RfqFormProps {
@@ -36,6 +35,8 @@ export interface RfqFormProps {
   signedIn: boolean;
   /** The catalogue product the customer came from, when the configurator sent them (D-043). */
   fromProduct: { slug: string; name: string } | null;
+  /** The configurator's calculation that routed here (D-102), sent as `routedFrom`. */
+  calculationId?: string | null;
 }
 
 interface Attached {
@@ -57,7 +58,7 @@ const newKey = () =>
  * who is asked to sign in at the end submits the same answers straight after. The submit carries
  * one idempotency key per attempt, so a double tap files one request.
  */
-export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
+export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: RfqFormProps) {
   const t = useTranslations("quoteRequests.form");
   const locale = useLocale();
   const format = useFormat();
@@ -118,12 +119,14 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
     setSubmitting(true);
     setFailure(null);
     try {
-      // `store.rfqs.submit`: the server stamps the spec's schema version itself.
-      // CONTRACT-GAP store.rfqs — nothing carries which product routed the customer here (D-102).
+      // `store.rfqs.submit`, with the form version it was filled in and, from the configurator, the
+      // calculation that routed it here (D-102).
       const { data: rfq } = await browserApi().POST("/v1/store/rfqs", {
         params: { header: { "Idempotency-Key": idempotencyKey.current } },
         body: {
           productTypeCode: form.productTypeCode,
+          specSchemaVersion: form.specSchemaVersion,
+          ...(calculationId ? { routedFrom: { calculationId } } : {}),
           spec,
           ...(form.dimensions.asked && dims.l && dims.w
             ? {
@@ -176,7 +179,8 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
       const key = newKey();
       setFiles((current) => [...current, { key, name: file.name }]);
       try {
-        const uploaded = await uploadFile("customer", file, "document");
+        // The form names the purpose to presign with; it is one of the API's own `FilePurpose`s.
+        const uploaded = await uploadFile("customer", file, form.files.purpose as FilePurpose);
         setFiles((current) => current.map((item) => (item.key === key ? { ...item, file: uploaded } : item)));
       } catch {
         setFiles((current) => current.map((item) => (item.key === key ? { ...item, failed: true } : item)));
@@ -355,7 +359,7 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
         <div className="flex flex-col gap-3">
           <FileDropzone
             multiple
-            accept={form.files.accept}
+            accept={form.files.accept.join(",")}
             maxBytes={form.files.maxBytes}
             disabled={files.length >= form.files.maxFiles}
             onFiles={(selected) => void attach(selected)}
@@ -400,7 +404,9 @@ export function RfqForm({ form, signedIn, fromProduct }: RfqFormProps) {
       </FormSection>
 
       <div className="flex flex-col gap-2">
-        <p className="text-muted text-sm">{t("sla", { hours: form.slaTargetHours })}</p>
+        {form.slaTargetHours !== null ? (
+          <p className="text-muted text-sm">{t("sla", { hours: form.slaTargetHours })}</p>
+        ) : null}
         <Button type="submit" size="lg" loading={submitting} className="self-start">
           {t("submit")}
         </Button>

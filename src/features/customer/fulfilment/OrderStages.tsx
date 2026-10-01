@@ -11,10 +11,8 @@ const STATE = { completed: "done", in_progress: "current", pending: "upcoming", 
 
 /**
  * An order's stages as the API lists them (`store.timeline.progress`, F3 3.6): a done stage says
- * when. Shared by the order page and the public tracking page.
- *
- * CONTRACT-GAP store.tracking — the published steps have no promised dates, so a stage still to come
- * says only that it is to come.
+ * when; a stage still to come says when the factory's plan has it (`promisedAt`, D-075), when the
+ * plan sets a date. Shared by the order page and the public tracking page.
  */
 export async function OrderStages({ steps, className }: { steps: readonly Step[]; className?: string }) {
   const [t, format, locale] = await Promise.all([getTranslations("fulfilment.stages"), getFormat(), getLocale()]);
@@ -32,7 +30,11 @@ export async function OrderStages({ steps, className }: { steps: readonly Step[]
         key: step.key,
         title: pick(locale, step.labelTh, step.labelEn),
         state: STATE[step.status],
-        time: step.completedAt ? <time dateTime={step.completedAt}>{format.date(step.completedAt)}</time> : undefined,
+        time: step.completedAt ? (
+          <time dateTime={step.completedAt}>{format.date(step.completedAt)}</time>
+        ) : step.promisedAt && step.status !== "skipped" ? (
+          <time dateTime={step.promisedAt}>{t("promised", { date: format.date(step.promisedAt) })}</time>
+        ) : undefined,
       }))}
     />
   );
