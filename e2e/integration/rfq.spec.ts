@@ -57,7 +57,7 @@ test("a customer asks, CS quotes on the desk, and the customer accepts into the 
   const confirm = customer.getByRole("alertdialog", { name: "ยืนยันการยอมรับใบเสนอราคา" });
   await expect(confirm).toContainText(code);
   await confirm.getByRole("button", { name: "ยืนยัน" }).click();
-  await expect(customer.getByText(/ยอมรับแล้ว — ใบเสนอราคา/)).toBeVisible();
+  await expect(customer.getByText("ยอมรับใบเสนอราคาแล้ว")).toBeVisible();
   await customer.getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
   await expect(customer).toHaveURL(`${HOSTS.customer}/cart`);
   await expect(customer.getByText(/1,000/).first()).toBeVisible();
