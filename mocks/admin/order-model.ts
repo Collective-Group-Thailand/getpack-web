@@ -296,7 +296,11 @@ export const orderDetail = orderSummary
     expiresAt: dateTime().nullable(),
     cancelledAt: dateTime().nullable(),
     cancelReason: z.string().nullable(),
-    nextActions: z.array(nextAction()),
+    /**
+     * Unused: each surface computes its own from packio-api's rules — the admin desk in
+     * `./orders.ts` (`ADMIN_ORDER_ACTIONS`), the storefront in `../store/order-dto.ts`.
+     */
+    nextActions: z.array(nextAction()).optional(),
   })
   .meta({ id: "OrderDetailDto" });
 

@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { adminOrderActions } from "@/domain/next-actions/admin";
 import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -12,8 +11,8 @@ import { Callout } from "@/ui/components/Callout";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { Tabs } from "@/ui/components/Tabs";
 
-import { QueryError, StatusChip, useActor } from "../console";
-import { useGroupCustomer, useGroupSlips, useOrder, useOrderGroup, type QueuedSlip } from "./data";
+import { QueryError, StatusChip, useCan } from "../console";
+import { useGroupSlips, useOrder, useOrderGroup, type QueuedSlip } from "./data";
 import { OrderActionBar, OrderActionDialogs, type OrderActionKey } from "./OrderActions";
 import { OrderRail } from "./OrderRail";
 import {
@@ -37,56 +36,56 @@ import type { OrderTab } from "./tabs";
  * action restates — and the tab is in the URL (`?tab=payments`), so a notification or a colleague
  * can link to the exact place.
  *
- * Composed from the published pieces (U-F0.3): the lean order, its group, the customer, and each
- * tab's own resource. What the page aggregate used to carry and the contract does not (next
- * actions, urgency, specs, parts, the tax profile, the order's payments) is marked in each tab.
+ * Composed from the published pieces: the lean order with its own `nextActions` (v0.6.0), its
+ * group (which names the customer, who placed it, the tax profile and whether a slip waits), and
+ * each tab's own resource. What the contract still does not carry (urgency, parts with per-part
+ * prices, the factory's name on the order) is marked where it was shown.
  */
 export function OrderDetail({ orderId, initial, tab }: { orderId: string; initial: Order | null; tab: OrderTab }) {
   const t = useTranslations("orders.detail");
   const format = useFormat();
   const pathname = usePathname();
-  const actor = useActor();
+  const canReviewSlips = useCan("payments.verify_slip");
   const [current, setCurrent] = useState<string>(tab);
   const [action, setAction] = useState<OrderActionKey | null>(null);
   const [slip, setSlip] = useState<QueuedSlip | null>(null);
 
   const query = useOrder(orderId, initial);
   const group = useOrderGroup(query.data);
-  const customer = useGroupCustomer(group.data?.customerId);
   const slips = useGroupSlips(group.data);
 
   if (query.isError) return <QueryError error={query.error} onRetry={() => void query.refetch()} />;
   const order = query.data;
   if (!order) return null;
   const waiting = slips.data ?? [];
+  // Every role reading the order learns a slip waits (the group says so); only Finance reviews it,
+  // from the slip queue (D-061).
+  const slipWaiting = group.data?.hasSlipToReview ?? false;
 
-  const actions = adminOrderActions(
-    { status: order.status, artworkStatus: order.artworkStatus, slipToReview: waiting.length > 0 },
-    (permission) => actor.permissions.includes(permission),
-  );
-  const offered = new Set(actions.filter((item) => !item.blockedBy).map((item) => item.key.slice("order.".length)));
   const open = (key: OrderActionKey, chosen?: QueuedSlip) => {
     setSlip(chosen ?? null);
     setAction(key);
   };
-  const customerName = customer.data?.displayName ?? null;
 
   const tabs = [
     {
       value: "summary",
       label: t("tabs.summary"),
-      content: <SummaryTab order={order} group={group.data ?? null} customer={customer.data ?? null} />,
+      content: <SummaryTab order={order} group={group.data ?? null} />,
     },
     { value: "items", label: t("tabs.items"), content: <ItemsTab order={order} /> },
     {
       value: "payments",
-      label: `${t("tabs.payments")}${waiting.length > 0 ? " •" : ""}`,
+      label: `${t("tabs.payments")}${slipWaiting ? " •" : ""}`,
       content: (
         <PaymentsTab
+          order={order}
           group={group.data ?? null}
           slips={waiting}
-          onApproveSlip={offered.has("approve_slip") ? (chosen) => open("approve_slip", chosen) : undefined}
-          onRejectSlip={offered.has("reject_slip") ? (chosen) => open("reject_slip", chosen) : undefined}
+          onApproveSlip={canReviewSlips ? (chosen) => open("approve_slip", chosen) : undefined}
+          onRejectSlip={canReviewSlips ? (chosen) => open("reject_slip", chosen) : undefined}
+          onRemind={() => open("send_payment_reminder")}
+          onRecordSlip={() => open("record_slip")}
         />
       ),
     },
@@ -115,15 +114,15 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
             </>
           }
           description={t("headline", {
-            customer: customerName ?? "—",
+            customer: group.data?.customer.displayName ?? "—",
             amount: format.thb(order.totals.grossAmount),
             group: group.data?.groupCode ?? "—",
           })}
-          actions={<OrderActionBar actions={actions} onAction={(key) => open(key)} />}
+          actions={<OrderActionBar actions={order.nextActions} onAction={(key) => open(key)} />}
         />
       </div>
 
-      {waiting.length > 0 ? <Callout tone="warning" title={t("slipWaiting")} /> : null}
+      {slipWaiting ? <Callout tone="warning" title={t("slipWaiting")} /> : null}
       {order.internal.belowMarginFloor ? <Callout tone="danger" title={t("belowFloor")} /> : null}
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -143,7 +142,6 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
       <OrderActionDialogs
         order={order}
         group={group.data ?? null}
-        customerName={customerName}
         open={action}
         slip={slip ?? waiting[0] ?? null}
         onClose={() => setAction(null)}

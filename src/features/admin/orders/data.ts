@@ -24,8 +24,8 @@ export function useOrder(orderId: string, initial?: Order | null) {
 }
 
 /**
- * The order's group. `AdminOrderDto` does not name its group (CONTRACT-GAP admin.orders), so it
- * is the group whose orders include this one, found by the order's code (`q` matches it).
+ * The order's group. `AdminOrderDto` still does not name its group (CONTRACT-GAP admin.orders), so
+ * it is the group whose orders include this one, found by the order's code (`q` matches it).
  */
 export function useOrderGroup(order: Pick<Order, "id" | "orderCode"> | undefined) {
   return useQuery({
@@ -43,27 +43,10 @@ export function useOrderGroup(order: Pick<Order, "id" | "orderCode"> | undefined
   });
 }
 
-/** Who placed the group, when the actor may read customers (`customers.read`). */
-export function useGroupCustomer(customerId: string | undefined) {
-  const allowed = useCan("customers.read");
-  return useQuery({
-    queryKey: queryKeys.detail("admin", "customer", customerId ?? ""),
-    enabled: Boolean(customerId) && allowed,
-    queryFn: async () =>
-      (
-        await adminBrowserApis().contract.GET("/v1/admin/customers/{customerId}", {
-          params: { path: { customerId: customerId! } },
-        })
-      ).data!,
-    staleTime: STALE_TIME.reference,
-  });
-}
-
 /**
- * The group's slips waiting for Finance (D-061), from the slip queue — the only place a slip under
- * review is published, and only to `payments.verify_slip`. The queue is searched by group code and
- * kept to this group. Other roles cannot tell that a slip waits (CONTRACT-GAP admin.orders,
- * `hasSlipToReview`).
+ * The group's slips waiting for Finance (D-061), from the slip queue, which is Finance's to work
+ * (`payments.verify_slip`). The queue is searched by group code and kept to this group. Every other
+ * role learns a slip waits from the group's `hasSlipToReview`.
  */
 export function useGroupSlips(group: Pick<OrderGroup, "id" | "groupCode"> | null | undefined) {
   const allowed = useCan("payments.verify_slip");
@@ -89,6 +72,25 @@ export function useGroupSchedule(groupId: string | undefined) {
       (
         await adminBrowserApis().contract.GET("/v1/admin/order-groups/{groupId}/payment-schedule", {
           params: { path: { groupId: groupId! } },
+        })
+      ).data!,
+    staleTime: STALE_TIME.transactional,
+  });
+}
+
+/**
+ * The group's payments with their slips (`admin.payments.list?groupId`, v0.5.0), for roles that read
+ * payments (`payments.read`).
+ */
+export function useGroupPayments(groupId: string | undefined) {
+  const allowed = useCan("payments.read");
+  return useQuery({
+    queryKey: queryKeys.list("admin", "payment", { groupId }),
+    enabled: Boolean(groupId) && allowed,
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/payments", {
+          params: { query: { groupId: groupId!, perPage: 50, sort: "createdAt", order: "desc" } },
         })
       ).data!,
     staleTime: STALE_TIME.transactional,

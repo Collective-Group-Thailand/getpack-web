@@ -6,7 +6,6 @@
 import { analyticsContractHandlers, analyticsHandlers } from "./analytics";
 import { artworkContractHandlers } from "./artwork";
 import { catalogueHandlers } from "./catalogue";
-import { commerceHandlers } from "./commerce";
 import { companyHandlers } from "./companies";
 import { consoleHandlers } from "./console";
 import { customerHandlers } from "./customers";
@@ -25,7 +24,6 @@ import { salesHandlers } from "./sales";
 export const adminHandlers = [
   ...consoleHandlers,
   ...orderHandlers,
-  ...commerceHandlers,
   ...customerHandlers,
   ...salesHandlers,
   ...rfqHandlers,
