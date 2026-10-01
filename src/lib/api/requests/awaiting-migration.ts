@@ -92,7 +92,6 @@ export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   "GET /v1/admin/bank-statement-lines/{lineId}/suggestions",
   "GET /v1/admin/credit-note-reasons",
   "GET /v1/admin/customer-documents/{documentId}/deliveries",
-  "GET /v1/admin/customers/{customerId}/consents",
   "GET /v1/admin/dashboard",
   "GET /v1/admin/depreciation-runs/preview",
   "GET /v1/admin/dunning-log",
