@@ -15,9 +15,8 @@
     "save": "Save address",
     "cancel": "Cancel",
     "newTitle": "New address",
-    "createBlockedTitle": "New addresses cannot be added yet",
-    "createBlocked": "Adding a new address on the website is not open yet. Your saved addresses work as usual, or ask our team to add one for you.",
-    "areaFixed": "Sub-district, province and postcode"
+    "areaFixed": "Sub-district, province and postcode",
+    "postcodeInvalid": "A five-digit postcode"
   },
   "taxForm": {
     "required": "Please fill this in",
@@ -32,8 +31,6 @@
     "save": "Save",
     "cancel": "Cancel",
     "newTitle": "New tax-invoice details",
-    "createBlockedTitle": "New tax-invoice details cannot be added yet",
-    "createBlocked": "Adding new tax-invoice details on the website is not open yet. Your saved details work as usual, or ask our team to add them for you.",
     "areaFixed": "Province and postcode",
     "name": "Name on the tax invoice",
     "line1": "Registered address",
@@ -47,7 +44,12 @@
       "individual": "Individual",
       "juristic": "Company",
       "government": "Government body"
-    }
+    },
+    "taxIdInvalid": "This 13-digit tax id is not valid",
+    "branchCodeInvalid": "A five-digit branch number",
+    "branchLabel": "Branch",
+    "branchCode": "Branch number",
+    "postcodeInvalid": "A five-digit postcode"
   },
   "nav": {
     "label": "My account",
@@ -283,5 +285,13 @@
   },
   "copy": {
     "copied": "Copied"
+  },
+  "area": {
+    "postcode": "Postcode",
+    "postcodeHint": "Enter it first, then choose the sub-district",
+    "requiredMark": "required",
+    "subdistrict": "Sub-district",
+    "choose": "Choose a sub-district",
+    "unknown": "We do not know this postcode"
   }
 }

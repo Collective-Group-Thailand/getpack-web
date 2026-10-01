@@ -319,6 +319,17 @@ export function postcodeArea(postcode: string) {
 }
 
 /**
+ * The names an address filed under these ids carries, or `undefined` when the ids are not the
+ * postcode's (the API's 422 on `postcode`): the mock rows keep names, the contract ids.
+ */
+export function areaOfIds(postcode: string, provinceId: string, subdistrictId?: string | null) {
+  const area = postcodeArea(postcode);
+  if (!area || provinceId !== mockId("gpv", Number(area.province.code))) return undefined;
+  if (subdistrictId && subdistrictId !== mockId("gsd", Number(`${area.district.code}01`))) return undefined;
+  return { province: area.province.nameTh, district: area.district.nameTh, subdistrict: area.district.nameTh };
+}
+
+/**
  * A postcode's province as a geography ref (`gpv` + code, the admin geography mock's ids). A
  * postcode the short list lacks keeps the Thai name the row holds, in both languages.
  */

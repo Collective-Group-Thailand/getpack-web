@@ -72,8 +72,7 @@ test.describe("cart and checkout", () => {
     const lines = page.getByRole("list", { name: "รายการในตะกร้า" }).locator(":scope > li");
     await expect(lines).toHaveCount(2);
 
-    // Split the first line across the two saved addresses, 400 + 600. (Adding an address on the
-    // spot waits for CONTRACT-GAP store.geo-ids — see "a new address is added from the cart".)
+    // Split the first line across the two saved addresses, 400 + 600.
     const first = lines.first();
     await first.getByRole("button", { name: "แบ่งส่งหลายที่อยู่" }).click();
 
@@ -247,28 +246,44 @@ test.describe("cart and checkout", () => {
   });
 
   test("a new address is added from the cart", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.geo-ids — no store geo read gives the province id an address needs");
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
-    await page.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).first().click();
-    await expect(page.getByRole("dialog", { name: "เพิ่มที่อยู่ใหม่" }).getByLabel(/^รหัสไปรษณีย์/)).toBeVisible();
+    await emptyCart(page);
+    await addBox(page, "500");
+    await gotoHydrated(page, `${HOSTS.customer}/cart`);
+    const line = page.getByRole("list", { name: "รายการในตะกร้า" }).locator(":scope > li").first();
+    await line.getByRole("button", { name: "แบ่งส่งหลายที่อยู่" }).click();
+    await line.getByRole("button", { name: "เพิ่มที่อยู่ใหม่" }).click();
+    const sheet = page.getByRole("dialog", { name: "เพิ่มที่อยู่ใหม่" });
+    await sheet.getByLabel(/^ชื่อที่อยู่/).fill("หน้าร้าน e2e");
+    await sheet.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับหน้าร้าน");
+    await sheet.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
+    await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("20000");
+    await expect(sheet.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("ชลบุรี");
+    await sheet.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("5 ถนนทดสอบ");
+    await expectNoViolations(page);
+    await sheet.getByRole("button", { name: "บันทึกที่อยู่" }).click();
+    await expect(sheet).toBeHidden();
+    // The new address is one the split can send to at once.
+    await line.getByRole("combobox", { name: "ที่อยู่ที่ 1" }).click();
+    await expect(page.getByRole("option", { name: /หน้าร้าน e2e/ })).toBeVisible();
   });
 
   test("a tax invoice profile needs a valid tax id", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.geo-ids — a new tax profile needs a province id no store geo read gives");
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
     await addBox(page, "500");
     await gotoHydrated(page, `${HOSTS.customer}/checkout`);
     await page.getByRole("button", { name: "เพิ่มข้อมูลใบกำกับภาษี" }).click();
     const sheet = page.getByRole("dialog", { name: "เพิ่มข้อมูลใบกำกับภาษี" });
-    await sheet.getByLabel(/^ชื่อบริษัท/).fill("บริษัท ทดสอบ จำกัด");
+    await sheet.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท ทดสอบ จำกัด");
     await sheet.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
-    await sheet.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ กรุงเทพมหานคร 10110");
-    await sheet.getByRole("button", { name: "บันทึก" }).click();
-    await expect(sheet.getByText(/เลขประจำตัวผู้เสียภาษีไม่ถูกต้อง/)).toBeVisible();
+    await sheet.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    await sheet.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
+    await sheet.getByRole("button", { name: "บันทึก", exact: true }).click();
+    await expect(sheet.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
     // A valid one (its checksum digit is 7): saved and chosen for the invoice.
     await sheet.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
-    await sheet.getByRole("button", { name: "บันทึก" }).click();
+    await sheet.getByRole("button", { name: "บันทึก", exact: true }).click();
     await expect(sheet).toBeHidden();
     await expect(page.getByRole("radio", { name: /บริษัท ทดสอบ จำกัด/ })).toBeChecked();
     await expect(page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" })).toContainText(

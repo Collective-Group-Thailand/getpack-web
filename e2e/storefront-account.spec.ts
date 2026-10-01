@@ -107,7 +107,7 @@ test.describe("the account", () => {
     await expect(page).toHaveURL(/\/configure\/tuck-end-box\?quote=/);
   });
 
-  test("a saved address is edited under its ETag; a new one cannot be added yet", async ({ page }) => {
+  test("a saved address is edited under its ETag", async ({ page }) => {
     await signInAsCustomer(page, "/account/addresses");
     const card = page.getByRole("listitem").filter({ hasText: "ที่อยู่หลัก" }).first();
     await card.getByRole("button", { name: /แก้ไข/ }).click();
@@ -115,17 +115,43 @@ test.describe("the account", () => {
     await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
     await expect(page.getByRole("listitem").filter({ hasText: "ชั้น 2 (e2e)" })).toBeVisible();
     await expectNoViolations(page);
-
-    // CONTRACT-GAP store.geo-ids: the form says why instead of offering fields it cannot save.
-    await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
-    await expect(page.getByText("ยังเพิ่มที่อยู่ใหม่ไม่ได้")).toBeVisible();
   });
 
-  test("addresses and tax profiles are added and removed", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.geo-ids — no store geo read gives the province id an address needs");
+  test("addresses and tax profiles are added from the postcode, and removed", async ({ page }) => {
     await signInAsCustomer(page, "/account/addresses");
     await page.getByRole("button", { name: "เพิ่มที่อยู่" }).click();
+    await page.getByLabel(/^ชื่อที่อยู่/).fill("โกดัง e2e");
+    await page.getByLabel(/^ชื่อผู้รับ/).fill("ผู้รับ e2e");
+    await page.getByLabel(/^เบอร์ผู้รับ/).fill("0812345678");
+    // The postcode names the area: one sub-district is chosen at once.
     await page.getByLabel(/^รหัสไปรษณีย์/).fill("10400");
+    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("พญาไท");
+    await page.getByLabel(/^บ้านเลขที่ อาคาร ถนน/).fill("9 ถนนทดสอบ");
+    await expectNoViolations(page);
+    await page.getByRole("button", { name: "บันทึกที่อยู่" }).click();
+    const added = page.getByRole("listitem").filter({ hasText: "โกดัง e2e" });
+    await expect(added).toContainText("กรุงเทพมหานคร");
+    await expect(added).toContainText("10400");
+
+    await page.getByRole("button", { name: "เพิ่มข้อมูลใบกำกับภาษี" }).click();
+    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("1234567890123");
+    await page.getByLabel(/^ชื่อที่พิมพ์ในใบกำกับภาษี/).fill("บริษัท อีทูอี จำกัด");
+    await page.getByLabel(/^รหัสไปรษณีย์/).fill("50200");
+    await page.getByLabel(/^ที่อยู่ตามทะเบียน/).fill("1 ถนนทดสอบ");
+    await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+    await expect(page.getByText("เลขประจำตัวผู้เสียภาษี 13 หลักไม่ถูกต้อง")).toBeVisible();
+    // A valid one (its check digit is 7).
+    await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
+    await page.getByRole("button", { name: "บันทึก", exact: true }).click();
+    const profile = page.getByRole("listitem").filter({ hasText: "บริษัท อีทูอี จำกัด" });
+    await expect(profile).toContainText("เชียงใหม่");
+
+    await profile.getByRole("button", { name: /^ลบ/ }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "ลบ", exact: true }).click();
+    await expect(profile).toHaveCount(0);
+    await added.getByRole("button", { name: /^ลบ/ }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "ลบ", exact: true }).click();
+    await expect(added).toHaveCount(0);
   });
 
   test("notification preferences: order e-mail stays on, marketing is the customer's choice", async ({ page }) => {

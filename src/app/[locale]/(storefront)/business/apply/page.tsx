@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getMyCompany } from "@/features/customer/business/api.server";
+import { CompanySignup } from "@/features/customer/business/CompanySignup";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 
@@ -11,16 +12,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title"), robots: { index: false, follow: false } };
 }
 
-/**
- * Company sign-up (F3 3.7, D-120).
- *
- * CONTRACT-GAP store.geo-ids — `store.companies.apply` files the head office under a province
- * **id**, which no store geo read gives, so the sign-up cannot be sent from here yet; the page says
- * how to reach the team instead. The form returns with the published apply → KYC documents →
- * submit flow once the ids ship.
- */
+/** Company sign-up (F3 3.7, D-120): apply → KYC documents → submit for review. */
 export default async function Page() {
-  await requireCustomer();
+  const me = await requireCustomer();
   const [t, company] = await Promise.all([getTranslations("business.apply"), getMyCompany()]);
   return (
     <div className="flex flex-col gap-6">
@@ -35,9 +29,7 @@ export default async function Page() {
           </Link>
         </Callout>
       ) : (
-        <Callout tone="info" title={t("blockedTitle")}>
-          {t("blocked")}
-        </Callout>
+        <CompanySignup phone={me.phone ?? ""} />
       )}
     </div>
   );

@@ -281,7 +281,8 @@ export function addReorderToCart(customer: MockCustomer, order: MockOrder, quant
 
 export const storeFulfilmentHandlers = [
   // store.timeline.track (published, U-F0.2): anyone with the token sees the steps and the
-  // carriers' progress — no order code, product, name or place (CONTRACT-GAP store.tracking).
+  // carriers' progress, the promised and estimated dates — no order code, product, name or place
+  // (D-143).
   http.get("*/v1/store/track/:token", ({ params }) => {
     const order = orders.find((candidate) => trackingTokenOf(candidate) === params.token);
     if (!order || order.status === "cancelled") return problem(404, "http.not_found", "ไม่พบข้อมูลการติดตามนี้");

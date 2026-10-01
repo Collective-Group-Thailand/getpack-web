@@ -17,6 +17,7 @@ import { baht, orders, satang } from "../admin/commerce";
 import {
   companyStores,
   presentCompany,
+  registerCompany,
   toCompanyBranchDto,
   toCreditEligibilityDto,
   type CompanyStore,
@@ -31,6 +32,7 @@ import {
   type CustomerPersona,
   type MockCustomer,
 } from "./customers";
+import { areaOfIds } from "./catalog";
 import { addReorderToCart, reorderOf } from "./fulfilment";
 import type { CompanyApproval, Input, StoreCompany } from "./model";
 import { ordersOf } from "./orders";
@@ -84,6 +86,25 @@ const assets = new Map<string, BrandAsset[]>([
     ],
   ],
 ]);
+
+/** What a sign-up gives that the back office's rows have no column for. */
+const applicantDetails = new Map<
+  string,
+  { signatory: Schemas["CompanySignatoryDto"] | null; contactPhone: string | null; tradeName: string | null }
+>();
+
+/** D-120: the documents a company must have on file (not rejected) before review. */
+function missingKycOf(store: CompanyStore): Schemas["CompanyKycDocType"][] {
+  const have = new Set<string>(
+    store.kyc.filter((document) => document.status !== "rejected").map((document) => document.docType),
+  );
+  const required: Schemas["CompanyKycDocType"][] = [
+    "company_certificate",
+    "signatory_id",
+    ...(store.company.isVatRegistered ? (["vat_registration_pp20"] as const) : []),
+  ];
+  return required.filter((docType) => !have.has(docType));
+}
 
 /* ---------------------------------------------------------------------------- checkout link */
 
@@ -183,7 +204,7 @@ export function toCompanyDto(store: CompanyStore, me?: Member): Schemas["Company
     id: presented.id,
     companyCode: presented.companyCode,
     legalName: presented.legalName,
-    tradeName: null,
+    tradeName: applicantDetails.get(presented.id)?.tradeName ?? null,
     taxId: presented.taxId,
     isVatRegistered: presented.isVatRegistered,
     status: presented.status,
@@ -213,11 +234,11 @@ export function toCompanyDto(store: CompanyStore, me?: Member): Schemas["Company
       note: document.note,
       status: document.status,
     })),
-    missingKyc: [],
+    missingKyc: missingKycOf(store),
     discountPct: presented.discount?.pct ?? null,
-    // The rows keep no contact phone or signatory (the signatory's ID is a KYC file only).
-    contactPhone: null,
-    signatory: null,
+    // The rows keep no contact phone or signatory; a storefront sign-up's are kept beside them.
+    contactPhone: applicantDetails.get(presented.id)?.contactPhone ?? null,
+    signatory: applicantDetails.get(presented.id)?.signatory ?? null,
     myRoles: me?.roles ?? [],
     can: capabilitiesOf(me),
   };
@@ -316,6 +337,127 @@ export const storeBusinessHandlers = [
     return HttpResponse.json(
       companiesOf(customer).map((store) => toCompanyDto(store, store === mine?.store ? mine.member : undefined)),
     );
+  }),
+
+  // store.companies.apply (D-120, D-121): the company and its head office, with me as its admin;
+  // it waits as `applied` until its KYC documents are in and submitted.
+  http.post("*/v1/store/companies", async ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    if (membershipOf(customer)) return problem(409, "companies.already_member", "บัญชีนี้อยู่ในบริษัทแล้ว");
+    const body = (await request.json().catch(() => null)) as Schemas["ApplyCompanyDto"] | null;
+    if (!body?.legalName?.trim() || !/^\d{13}$/.test(body.taxId ?? ""))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "taxId", code: "taxId", message: "not a valid Thai tax id" },
+      ]);
+    if (companyStores.some((store) => store.company.taxId === body.taxId && store.company.status !== "closed"))
+      return problem(
+        409,
+        "companies.tax_id_taken",
+        "เลขประจำตัวผู้เสียภาษีนี้มีบัญชีบริษัทแล้ว ขอให้ผู้ดูแลบริษัทเชิญคุณเข้าร่วม",
+      );
+    const office = body.headOffice;
+    const area = areaOfIds(office.postcode, office.provinceId, office.subdistrictId);
+    if (!area)
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "headOffice.postcode", code: "invalid", message: "does not match the subdistrict" },
+      ]);
+    const store = registerCompany({
+      legalName: body.legalName.trim(),
+      taxId: body.taxId,
+      isVatRegistered: body.isVatRegistered,
+      address: [office.line1, office.line2, area.province, office.postcode].filter(Boolean).join(" "),
+      applicant: { id: customer.id, displayName: customer.displayName, email: customer.email, phone: customer.phone },
+      documents: [],
+    });
+    // The API's sign-up starts `applied` with its applicant as Company Admin only.
+    store.company.status = "applied";
+    store.members[0]!.roles = ["company_admin"];
+    applicantDetails.set(store.company.id, {
+      signatory: body.signatory ? { name: body.signatory.name.trim(), position: body.signatory.position.trim() } : null,
+      contactPhone: body.contactPhone ?? null,
+      tradeName: body.tradeName?.trim() || null,
+    });
+    memberships.set(customer.persona, { companyId: store.company.id, memberId: store.members[0]!.id });
+    return HttpResponse.json(toCompanyDto(store, store.members[0]!), { status: 201 });
+  }),
+
+  http.post("*/v1/store/companies/:companyId/kyc-documents", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin")) return forbidden();
+    const { company } = found.store;
+    if (!["applied", "kyc_review", "active"].includes(company.status))
+      return problem(409, "companies.invalid_status", "สถานะบัญชีบริษัทนี้แนบเอกสารไม่ได้");
+    const body = (await request.json().catch(() => null)) as Schemas["AddCompanyKycDocumentDto"] | null;
+    const file = body?.fileId ? files.get(body.fileId) : undefined;
+    // The back office's rows hold the four named document types only.
+    if (!body || !file || body.docType === "other")
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "fileId", code: "fileReady", message: "not an uploaded file of yours" },
+      ]);
+    const docType = body.docType;
+    found.store.kyc.push({
+      id: mockId("ckd", 5000 + found.store.kyc.length + companyStores.indexOf(found.store) * 100),
+      docType,
+      status: "pending",
+      file: {
+        id: body.fileId,
+        originalName: file.originalName,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+        thumbnailUrl: null,
+        url: null,
+      },
+      issuedOn: body.issuedOn ?? null,
+      note: null,
+      reviewedBy: null,
+      reviewedAt: null,
+      uploadedAt: bangkokIso(),
+    });
+    company.updatedAt = bangkokIso();
+    return HttpResponse.json(toCompanyDto(found.store, found.member), { status: 201 });
+  }),
+
+  http.post("*/v1/store/companies/:companyId/actions/submit-kyc", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin")) return forbidden();
+    const { company } = found.store;
+    if (company.status !== "applied") return problem(409, "companies.invalid_status", "ใบสมัครนี้ส่งตรวจแล้ว");
+    const missing: string[] = missingKycOf(found.store);
+    if (!applicantDetails.get(company.id)?.signatory) missing.push("signatory details");
+    if (missing.length > 0) return problem(409, "companies.kyc_incomplete", `เอกสารยังไม่ครบ: ${missing.join(", ")}`);
+    company.status = "kyc_review";
+    company.updatedAt = bangkokIso();
+    return HttpResponse.json(toCompanyDto(found.store, found.member));
+  }),
+
+  http.post("*/v1/store/companies/:companyId/branches", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin")) return forbidden();
+    const body = (await request.json().catch(() => null)) as Schemas["CompanyBranchInputDto"] | null;
+    if (!body?.name?.trim() || body.branchType === "head_office" || !/^\d{5}$/.test(body.branchCode ?? ""))
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "branchCode", code: "pattern", message: "five digits; the head office exists already" },
+      ]);
+    if (found.store.branches.some((branch) => branch.branchCode === body.branchCode))
+      return problem(409, "companies.branch_exists", "มีสาขาเลขนี้แล้ว");
+    const area = areaOfIds(body.postcode, body.provinceId, body.subdistrictId);
+    if (!area)
+      return problem(422, "validation.failed", "ข้อมูลไม่ถูกต้อง", [
+        { path: "postcode", code: "invalid", message: "does not match the subdistrict" },
+      ]);
+    found.store.branches.push({
+      id: mockId("cbr", 5000 + found.store.branches.length + companyStores.indexOf(found.store) * 100),
+      branchType: "branch",
+      branchCode: body.branchCode!,
+      name: body.name.trim(),
+      address: [body.line1, body.line2, area.province, body.postcode].filter(Boolean).join(" "),
+    });
+    found.store.company.updatedAt = bangkokIso();
+    return HttpResponse.json(toCompanyDto(found.store, found.member), { status: 201 });
   }),
 
   http.get("*/v1/store/companies/:companyId", ({ params, request }) => {
