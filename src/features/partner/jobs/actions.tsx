@@ -4,24 +4,24 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
+import { QC_CHECKLIST_ITEMS, QC_CHECKLIST_VERSION, qcItemLabelKey, type QcChecklistItem } from "@/domain/qc/checklist";
 import { useFactory } from "@/features/partner/context/FactoryProvider";
 import { newReport, uploadPhotos, useFloorAction } from "@/features/partner/floor";
 import { ConfirmAction, problemMessage } from "@/features/shared/actions";
 import { useFormat } from "@/features/shared/format";
-import { browserRequests } from "@/lib/api/requests/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
+import { browserApi } from "@/lib/api/browser";
+import type { Schemas } from "@/lib/api/types";
 import { BigActionButton } from "@/ui/components/BigActionButton";
 import { Button } from "@/ui/components/Button";
 import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture";
 import { Field } from "@/ui/components/Field";
-import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { NumberInput, Textarea } from "@/ui/components/Input";
 import { ScanButton } from "@/ui/components/ScanButton";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
 
-export type PartnerJob = ResponseOf<Requests, "GET /v1/partner/factories/{factoryId}/jobs/{jobId}">;
+export type PartnerJob = Schemas["PartnerJobDto"];
 type Milestone = PartnerJob["milestones"][number];
 type Report = ReturnType<typeof newReport>;
 
@@ -30,6 +30,17 @@ function useReport() {
   const current = useRef<Report | null>(null);
   return {
     get: () => (current.current ??= newReport()),
+    done: () => {
+      current.current = null;
+    },
+  };
+}
+
+/** One `Idempotency-Key` per intent, for writes without a device report (QC, issues). */
+function useIntentKey() {
+  const current = useRef<string | null>(null);
+  return {
+    get: () => (current.current ??= newReport().idempotencyKey),
     done: () => {
       current.current = null;
     },
@@ -48,25 +59,29 @@ function useCameraLabels() {
   };
 }
 
+/** A step's evidence rule (`EvidenceRequirement`): a photo, the QC form, or both. */
+export const needsPhoto = (milestone: Pick<Milestone, "evidence">) =>
+  milestone.evidence === "photo" || milestone.evidence === "photo_and_qc_form";
+export const needsQcForm = (milestone: Pick<Milestone, "evidence">) =>
+  milestone.evidence === "qc_form" || milestone.evidence === "photo_and_qc_form";
+
 /* ----------------------------------------------------------------------- accept / reject */
 
 /**
- * Accepting commits the factory to produce at the PO's price by the promised date (D-011, D-074)
- * and starts the advance payable (D-022) — restated before it is sent.
+ * Accepting commits the factory to produce by the promised date (D-011, D-074) at its purchase
+ * order's price, and starts the advance payable (D-022) — restated before it is sent. The PO is
+ * the factory's own (`partner.payables.listPurchaseOrders`), shown to the roles that may read it.
  */
-export function AcceptJob({ job }: { job: PartnerJob }) {
+export function AcceptJob({ job, poAmount }: { job: PartnerJob; poAmount: string | null }) {
   const t = useTranslations("partnerJobs.accept");
   const format = useFormat();
-  const { factoryId, can } = useFactory();
-  const report = useReport();
   const { run, busy } = useFloorAction();
   const [open, setOpen] = useState(false);
-  if (!can("factory_jobs.respond")) return <p className="text-muted">{t("plannerOnly")}</p>;
   return (
     <>
       <BigActionButton
         title={t("action")}
-        hint={job.acceptDueAt ? t("hint", { due: format.dateTime(job.acceptDueAt) }) : undefined}
+        hint={t("hint", { due: format.dateTime(job.acceptDueAt) })}
         icon="check"
         loading={busy}
         onClick={() => setOpen(true)}
@@ -75,42 +90,44 @@ export function AcceptJob({ job }: { job: PartnerJob }) {
         open={open}
         onOpenChange={setOpen}
         title={t("title", { jobNo: job.jobNo })}
-        description={t("body", {
-          jobNo: job.jobNo,
-          quantity: format.number(job.quantity),
-          date: format.date(job.promisedShipDate),
-          amount: format.thb(job.purchaseOrder.buyAmount),
-        })}
+        description={[
+          t("body", { jobNo: job.jobNo, quantity: format.number(job.quantityOrdered) }),
+          job.promisedShipDate ? t("bodyDate", { date: format.date(job.promisedShipDate) }) : null,
+          poAmount ? t("bodyPo", { amount: format.thb(poAmount) }) : null,
+        ]
+          .filter(Boolean)
+          .join(" ")}
         confirmLabel={t("confirm")}
-        onConfirm={async () => {
-          const next = report.get();
+        onConfirm={async ({ idempotencyKey }) => {
           const ok = await run(
             () =>
-              browserRequests().call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
-                path: { factoryId, jobId: job.id },
-                body: next.stamp,
-                idempotencyKey: next.idempotencyKey,
+              browserApi().POST("/v1/partner/production-jobs/{jobId}/actions/accept", {
+                params: { path: { jobId: job.id }, header: { "Idempotency-Key": idempotencyKey } },
               }),
             t("done", { jobNo: job.jobNo }),
           );
-          if (ok) report.done();
-          else throw new Error("not accepted");
+          if (!ok) throw new Error("not accepted");
         }}
       />
     </>
   );
 }
 
-const REJECT_REASONS = ["capacity", "material", "machine", "spec_not_feasible", "price", "other"] as const;
+const REJECT_REASONS = [
+  "capacity",
+  "material_unavailable",
+  "artwork_issue",
+  "spec_not_feasible",
+  "price",
+  "other",
+] as const satisfies readonly Schemas["JobRejectReason"][];
 
+/** Turning a job down cannot be undone (`job.reject` is irreversible): the job number is retyped. */
 export function RejectJob({ job }: { job: PartnerJob }) {
   const t = useTranslations("partnerJobs.reject");
-  const { factoryId, can } = useFactory();
-  const report = useReport();
   const { run } = useFloorAction();
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState<(typeof REJECT_REASONS)[number]>("capacity");
-  if (!can("factory_jobs.respond")) return null;
+  const [reason, setReason] = useState<Schemas["JobRejectReason"]>("capacity");
   return (
     <>
       <Button size="xl" variant="secondary" iconStart="ban" onClick={() => setOpen(true)}>
@@ -123,20 +140,18 @@ export function RejectJob({ job }: { job: PartnerJob }) {
         title={t("title", { jobNo: job.jobNo })}
         description={t("body", { jobNo: job.jobNo })}
         confirmLabel={t("confirm")}
+        confirmationPhrase={job.jobNo}
         reason={{ label: t("note"), hint: t("noteHint") }}
-        onConfirm={async ({ reason: note }) => {
-          const next = report.get();
+        onConfirm={async ({ idempotencyKey, reason: note }) => {
           const ok = await run(
             () =>
-              browserRequests().call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/reject", {
-                path: { factoryId, jobId: job.id },
-                body: { ...next.stamp, reason, ...(note ? { note } : {}) },
-                idempotencyKey: next.idempotencyKey,
+              browserApi().POST("/v1/partner/production-jobs/{jobId}/actions/reject", {
+                params: { path: { jobId: job.id }, header: { "Idempotency-Key": idempotencyKey } },
+                body: { reasonCode: reason, ...(note ? { note } : {}) },
               }),
             t("done", { jobNo: job.jobNo }),
           );
-          if (ok) report.done();
-          else throw new Error("not rejected");
+          if (!ok) throw new Error("not rejected");
         }}
       >
         <Field label={t("reason")} className="mt-4">
@@ -153,31 +168,40 @@ export function RejectJob({ job }: { job: PartnerJob }) {
 
 /* ---------------------------------------------------------------------------- milestones */
 
-export function StartMilestone({ job, milestone }: { job: PartnerJob; milestone: Milestone }) {
+/**
+ * `partner.production.updateMilestone` answers `applied: false` when nothing changed — the same
+ * report again, or a step another device already moved. That is not an error: the screen reloads
+ * the job and says why.
+ */
+function useMilestoneUpdate(job: PartnerJob, milestone: Milestone) {
   const t = useTranslations("partnerJobs.milestone");
-  const { factoryId, can } = useFactory();
+  return async (body: Omit<Schemas["UpdateMilestoneDto"], "clientRef" | "clientReportedAt">, report: Report) => {
+    const result = (
+      await browserApi().POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+        params: {
+          path: { jobId: job.id, milestoneId: milestone.id },
+          header: { "Idempotency-Key": report.idempotencyKey },
+        },
+        body: { ...body, ...report.stamp },
+      })
+    ).data!;
+    return result.applied ? undefined : { notice: t(`outcomes.${result.reason ?? "duplicate"}`) };
+  };
+}
+
+export function StartMilestone({ job, milestone, name }: { job: PartnerJob; milestone: Milestone; name: string }) {
+  const t = useTranslations("partnerJobs.milestone");
   const report = useReport();
+  const update = useMilestoneUpdate(job, milestone);
   const { run, busy } = useFloorAction();
-  if (!can("factory_milestones.update")) return <p className="text-muted">{t("noPermission")}</p>;
   return (
     <BigActionButton
-      title={t("start", { name: milestone.name })}
+      title={t("start", { name })}
       icon="play"
       loading={busy}
       onClick={async () => {
         const next = report.get();
-        const ok = await run(
-          () =>
-            browserRequests().call(
-              "POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/start",
-              {
-                path: { factoryId, jobId: job.id, seq: String(milestone.seq) },
-                body: next.stamp,
-                idempotencyKey: next.idempotencyKey,
-              },
-            ),
-          t("started", { name: milestone.name }),
-        );
+        const ok = await run(() => update({ action: "start" }, next), t("started", { name }));
         if (ok) report.done();
       }}
     />
@@ -185,36 +209,39 @@ export function StartMilestone({ job, milestone }: { job: PartnerJob; milestone:
 }
 
 /**
- * Completing a step with what went in, what came out good and what was scrapped (B4.2) — the API
- * checks the arithmetic and what the previous step put out; the form only guides it. Photos where
- * the route asks for them, taken here and uploaded before the report.
+ * Completing a step. A step that tracks quantities says what went in, what came out good and
+ * what was scrapped (B4.2) — the API checks the arithmetic against what the previous step put
+ * out; the form only guides it. Photos where the step's evidence asks for them, taken here and
+ * uploaded before the report.
  */
-export function CompleteMilestone({ job, milestone }: { job: PartnerJob; milestone: Milestone }) {
+export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; milestone: Milestone; name: string }) {
   const t = useTranslations("partnerJobs.milestone");
   const tCommon = useTranslations("common");
   const format = useFormat();
   const cameraLabels = useCameraLabels();
-  const { factoryId, can } = useFactory();
+  const { factoryId } = useFactory();
   const report = useReport();
+  const update = useMilestoneUpdate(job, milestone);
   const { run, busy, errors } = useFloorAction();
-  const previous = [...job.milestones].reverse().find((item) => item.seq < milestone.seq && item.quantityOut !== null);
-  const start = previous?.quantityOut ?? job.quantity;
+  const previous = [...job.milestones]
+    .sort((a, b) => b.seq - a.seq)
+    .find((item) => item.seq < milestone.seq && item.tracksQuantity && item.quantityOut !== null);
+  const start = milestone.quantityIn ?? previous?.quantityOut ?? job.quantityOrdered;
   const [quantityIn, setIn] = useState(String(start));
   const [quantityScrap, setScrap] = useState("0");
   const [quantityOut, setOut] = useState(String(start));
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [uploading, setUploading] = useState(false);
-  if (!can("factory_milestones.update")) return <p className="text-muted">{t("noPermission")}</p>;
-  const needsQc = milestone.requiresQc && !job.qcChecks.some((check) => check.result !== "fail");
+  const photoRequired = needsPhoto(milestone) && milestone.photoFileIds.length === 0;
   const numbers = [quantityIn, quantityOut, quantityScrap].map(Number);
-  const invalid = numbers.some((value) => !Number.isInteger(value) || value < 0);
-  const overflow = !invalid && numbers[1]! + numbers[2]! > numbers[0]!;
+  const invalid = milestone.tracksQuantity && numbers.some((value) => !Number.isInteger(value) || value < 0);
+  const overflow = milestone.tracksQuantity && !invalid && numbers[1]! + numbers[2]! > numbers[0]!;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (invalid || overflow) return;
-    if (milestone.requiresPhoto && photos.length === 0) return void toast.error(t("photoRequired"));
+    if (photoRequired && photos.length === 0) return void toast.error(t("photoRequired"));
     setUploading(true);
     let photoFileIds: string[];
     try {
@@ -227,22 +254,18 @@ export function CompleteMilestone({ job, milestone }: { job: PartnerJob; milesto
     const next = report.get();
     const ok = await run(
       () =>
-        browserRequests().call(
-          "POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete",
+        update(
           {
-            path: { factoryId, jobId: job.id, seq: String(milestone.seq) },
-            body: {
-              ...next.stamp,
-              quantityIn: numbers[0]!,
-              quantityOut: numbers[1]!,
-              quantityScrap: numbers[2]!,
-              photoFileIds,
-              ...(note.trim() ? { note: note.trim() } : {}),
-            },
-            idempotencyKey: next.idempotencyKey,
+            action: "complete",
+            ...(milestone.tracksQuantity
+              ? { quantityIn: numbers[0]!, quantityOut: numbers[1]!, quantityScrap: numbers[2]! }
+              : {}),
+            ...(photoFileIds.length ? { photoFileIds } : {}),
+            ...(note.trim() ? { note: note.trim() } : {}),
           },
+          next,
         ),
-      t("completed", { name: milestone.name }),
+      t("completed", { name }),
     );
     if (ok) {
       report.done();
@@ -250,45 +273,47 @@ export function CompleteMilestone({ job, milestone }: { job: PartnerJob; milesto
     }
   }
 
-  if (needsQc) return <p className="text-muted">{t("qcFirst")}</p>;
-
   return (
     <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4" noValidate>
-      <div className="grid grid-cols-3 gap-2">
-        <Field label={t("in")} error={errors.quantityIn} required requiredLabel={tCommon("state.required")}>
-          <NumberInput
-            inputSize="lg"
-            inputMode="numeric"
-            min={0}
-            value={quantityIn}
-            onChange={(event) => setIn(event.target.value)}
-          />
-        </Field>
-        <Field label={t("good")} error={errors.quantityOut ?? (overflow ? t("overflow") : undefined)}>
-          <NumberInput
-            inputSize="lg"
-            inputMode="numeric"
-            min={0}
-            value={quantityOut}
-            onChange={(event) => setOut(event.target.value)}
-          />
-        </Field>
-        <Field label={t("scrap")} error={errors.quantityScrap}>
-          <NumberInput
-            inputSize="lg"
-            inputMode="numeric"
-            min={0}
-            value={quantityScrap}
-            onChange={(event) => {
-              setScrap(event.target.value);
-              const left = Number(quantityIn) - Number(event.target.value);
-              if (Number.isInteger(left) && left >= 0) setOut(String(left));
-            }}
-          />
-        </Field>
-      </div>
-      <p className="text-muted text-sm">{t("fromBefore", { quantity: format.number(start) })}</p>
-      {milestone.requiresPhoto ? (
+      {milestone.tracksQuantity ? (
+        <>
+          <div className="grid grid-cols-3 gap-2">
+            <Field label={t("in")} error={errors.quantityIn} required requiredLabel={tCommon("state.required")}>
+              <NumberInput
+                inputSize="lg"
+                inputMode="numeric"
+                min={0}
+                value={quantityIn}
+                onChange={(event) => setIn(event.target.value)}
+              />
+            </Field>
+            <Field label={t("good")} error={errors.quantityOut ?? (overflow ? t("overflow") : undefined)}>
+              <NumberInput
+                inputSize="lg"
+                inputMode="numeric"
+                min={0}
+                value={quantityOut}
+                onChange={(event) => setOut(event.target.value)}
+              />
+            </Field>
+            <Field label={t("scrap")} error={errors.quantityScrap}>
+              <NumberInput
+                inputSize="lg"
+                inputMode="numeric"
+                min={0}
+                value={quantityScrap}
+                onChange={(event) => {
+                  setScrap(event.target.value);
+                  const left = Number(quantityIn) - Number(event.target.value);
+                  if (Number.isInteger(left) && left >= 0) setOut(String(left));
+                }}
+              />
+            </Field>
+          </div>
+          <p className="text-muted text-sm">{t("fromBefore", { quantity: format.number(start) })}</p>
+        </>
+      ) : null}
+      {needsPhoto(milestone) ? (
         <Field label={t("photos")} hint={t("photosHint")} error={errors.photoFileIds}>
           <CameraCapture photos={photos} onChange={setPhotos} labels={cameraLabels} />
         </Field>
@@ -298,11 +323,15 @@ export function CompleteMilestone({ job, milestone }: { job: PartnerJob; milesto
       </Field>
       <BigActionButton
         type="submit"
-        title={t("complete", { name: milestone.name })}
-        hint={t("completeHint", {
-          good: format.number(Number(quantityOut) || 0),
-          scrap: format.number(Number(quantityScrap) || 0),
-        })}
+        title={t("complete", { name })}
+        hint={
+          milestone.tracksQuantity
+            ? t("completeHint", {
+                good: format.number(Number(quantityOut) || 0),
+                scrap: format.number(Number(quantityScrap) || 0),
+              })
+            : undefined
+        }
         icon="check"
         loading={busy || uploading}
         disabled={invalid || overflow}
@@ -313,22 +342,31 @@ export function CompleteMilestone({ job, milestone }: { job: PartnerJob; milesto
 
 /* ------------------------------------------------------------------------------------ QC */
 
-/** The factory's QC with photos (D-076): the checklist item by item, defects counted. */
+const SEVERITIES = ["critical", "major", "minor"] as const satisfies readonly Schemas["DefectSeverity"][];
+type DefectInput = { severity: Schemas["DefectSeverity"]; count: string };
+
+/**
+ * The factory's QC with photos (D-076): the checklist item by item, and a defect for each failed
+ * item with its severity and count (`QcDefectDto`, coded by the item).
+ *
+ * CONTRACT-GAP partner.job-qc-checklist — no partner response carries the route's checklist, so
+ * the factory answers the web's interim list (`src/domain/qc/checklist.ts`) under its own version.
+ */
 export function QcForm({ job }: { job: PartnerJob }) {
   const t = useTranslations("partnerJobs.qc");
   const cameraLabels = useCameraLabels();
-  const { factoryId, can } = useFactory();
-  const report = useReport();
+  const { factoryId } = useFactory();
+  const key = useIntentKey();
   const { run, busy, errors } = useFloorAction();
-  const [answers, setAnswers] = useState<Record<string, "pass" | "fail">>({});
-  const [result, setResult] = useState<"pass" | "fail" | "conditional" | null>(null);
-  const [defects, setDefects] = useState<{ label: string; count: string }[]>([]);
+  const [answers, setAnswers] = useState<Partial<Record<QcChecklistItem, "pass" | "fail">>>({});
+  const [result, setResult] = useState<Schemas["QcResult"] | null>(null);
+  const [defects, setDefects] = useState<Partial<Record<QcChecklistItem, DefectInput>>>({});
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
-  if (!can("factory_qc.record")) return <p className="text-muted">{t("qcOnly")}</p>;
-  const complete = job.qcChecklist.every((item) => answers[item.key]);
-  const derived = complete ? (Object.values(answers).every((value) => value === "pass") ? "pass" : "fail") : null;
+  const complete = QC_CHECKLIST_ITEMS.every((item) => answers[item]);
+  const failed = QC_CHECKLIST_ITEMS.filter((item) => answers[item] === "fail");
+  const derived = complete ? (failed.length === 0 ? "pass" : "fail") : null;
   const chosen = result ?? derived;
 
   async function submit(event: React.FormEvent) {
@@ -344,27 +382,30 @@ export function QcForm({ job }: { job: PartnerJob }) {
       return void toast.error(problemMessage(error, t("uploadFailed")));
     }
     setUploading(false);
-    const next = report.get();
+    const idempotencyKey = key.get();
     const ok = await run(
       () =>
-        browserRequests().call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/qc-checks", {
-          path: { factoryId, jobId: job.id },
+        browserApi().POST("/v1/partner/production-jobs/{jobId}/qc-checks", {
+          params: { path: { jobId: job.id }, header: { "Idempotency-Key": idempotencyKey } },
           body: {
-            ...next.stamp,
-            checklist: job.qcChecklist.map((item) => ({ key: item.key, pass: answers[item.key] === "pass" })),
+            checklistVersion: QC_CHECKLIST_VERSION,
+            checklist: Object.fromEntries(QC_CHECKLIST_ITEMS.map((item) => [item, answers[item]!])),
             result: chosen,
-            defects: defects
-              .filter((item) => item.label.trim() && Number(item.count) > 0)
-              .map((item) => ({ label: item.label.trim(), count: Number(item.count) })),
+            defects: failed.flatMap((item) => {
+              const defect = defects[item];
+              const count = Number(defect?.count ?? 1);
+              return Number.isInteger(count) && count > 0
+                ? [{ code: item, severity: defect?.severity ?? "minor", count }]
+                : [];
+            }),
             photoFileIds,
-            ...(notes.trim() ? { notes: notes.trim() } : {}),
+            ...(notes.trim() ? { note: notes.trim() } : {}),
           },
-          idempotencyKey: next.idempotencyKey,
         }),
       t("recorded"),
     );
     if (ok) {
-      report.done();
+      key.done();
       setPhotos([]);
     }
   }
@@ -372,21 +413,45 @@ export function QcForm({ job }: { job: PartnerJob }) {
   return (
     <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4" noValidate>
       <ul className="flex flex-col gap-3">
-        {job.qcChecklist.map((item) => (
-          <li key={item.key} className="flex flex-col gap-2">
-            <span className="font-medium">{item.label}</span>
-            <SegmentedControl
-              label={t("answerFor", { item: item.label })}
-              size="xl"
-              value={answers[item.key] ?? ("" as "pass")}
-              onValueChange={(value) => setAnswers({ ...answers, [item.key]: value })}
-              options={[
-                { value: "pass", label: t("pass"), icon: "check" },
-                { value: "fail", label: t("fail"), icon: "close" },
-              ]}
-            />
-          </li>
-        ))}
+        {QC_CHECKLIST_ITEMS.map((item) => {
+          const label = t(qcItemLabelKey(item));
+          const defect: DefectInput = defects[item] ?? { severity: "minor", count: "1" };
+          return (
+            <li key={item} className="flex flex-col gap-2">
+              <span className="font-medium">{label}</span>
+              <SegmentedControl
+                label={t("answerFor", { item: label })}
+                size="xl"
+                value={answers[item] ?? ("" as "pass")}
+                onValueChange={(value) => setAnswers({ ...answers, [item]: value })}
+                options={[
+                  { value: "pass", label: t("pass"), icon: "check" },
+                  { value: "fail", label: t("fail"), icon: "close" },
+                ]}
+              />
+              {answers[item] === "fail" ? (
+                <div className="grid grid-cols-[1fr_6rem] gap-2">
+                  <Field label={t("severityFor", { item: label })}>
+                    <Select
+                      value={defect.severity}
+                      onValueChange={(severity) => setDefects({ ...defects, [item]: { ...defect, severity } })}
+                      options={SEVERITIES.map((severity) => ({ value: severity, label: t(`severity.${severity}`) }))}
+                    />
+                  </Field>
+                  <Field label={t("defectCount")}>
+                    <NumberInput
+                      inputSize="lg"
+                      inputMode="numeric"
+                      min={1}
+                      value={defect.count}
+                      onChange={(event) => setDefects({ ...defects, [item]: { ...defect, count: event.target.value } })}
+                    />
+                  </Field>
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
       {complete ? (
         <Field label={t("result")}>
@@ -403,41 +468,6 @@ export function QcForm({ job }: { job: PartnerJob }) {
           />
         </Field>
       ) : null}
-      <fieldset className="flex flex-col gap-2">
-        <legend className="font-medium">{t("defects")}</legend>
-        {defects.map((defect, index) => (
-          <div key={index} className="grid grid-cols-[1fr_6rem] gap-2">
-            <Input
-              inputSize="lg"
-              aria-label={t("defectLabel", { n: index + 1 })}
-              value={defect.label}
-              onChange={(event) =>
-                setDefects(defects.map((item, at) => (at === index ? { ...item, label: event.target.value } : item)))
-              }
-            />
-            <NumberInput
-              inputSize="lg"
-              inputMode="numeric"
-              min={1}
-              aria-label={t("defectCount", { n: index + 1 })}
-              value={defect.count}
-              onChange={(event) =>
-                setDefects(defects.map((item, at) => (at === index ? { ...item, count: event.target.value } : item)))
-              }
-            />
-          </div>
-        ))}
-        <Button
-          type="button"
-          variant="ghost"
-          size="lg"
-          iconStart="plus"
-          onClick={() => setDefects([...defects, { label: "", count: "1" }])}
-          className="self-start"
-        >
-          {t("addDefect")}
-        </Button>
-      </fieldset>
       <Field label={t("photos")} hint={t("photosHint")} error={errors.photoFileIds}>
         <CameraCapture photos={photos} onChange={setPhotos} labels={cameraLabels} />
       </Field>
@@ -457,15 +487,23 @@ export function QcForm({ job }: { job: PartnerJob }) {
 
 /* -------------------------------------------------------------------------------- issues */
 
-const ISSUE_KINDS = ["material", "machine", "artwork", "quantity", "quality", "delay", "other"] as const;
+const ISSUE_KINDS = [
+  "material_shortage",
+  "machine_down",
+  "artwork_question",
+  "quantity",
+  "quality",
+  "delay",
+  "other",
+] as const satisfies readonly Schemas["JobIssueKind"][];
 
+/** Raising an issue (D-232): a named kind and what happened; Packio sees it on the board. */
 export function RaiseIssue({ job }: { job: PartnerJob }) {
   const t = useTranslations("partnerJobs.issue");
   const tCommon = useTranslations("common");
-  const { factoryId } = useFactory();
-  const report = useReport();
+  const key = useIntentKey();
   const { run, busy, errors } = useFloorAction();
-  const [kind, setKind] = useState<(typeof ISSUE_KINDS)[number]>("material");
+  const [kind, setKind] = useState<Schemas["JobIssueKind"]>("material_shortage");
   const [description, setDescription] = useState("");
   return (
     <form
@@ -474,18 +512,17 @@ export function RaiseIssue({ job }: { job: PartnerJob }) {
       onSubmit={async (event) => {
         event.preventDefault();
         if (description.trim().length < 3) return void toast.error(t("tooShort"));
-        const next = report.get();
+        const idempotencyKey = key.get();
         const ok = await run(
           () =>
-            browserRequests().call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/issues", {
-              path: { factoryId, jobId: job.id },
-              body: { ...next.stamp, kind, description: description.trim() },
-              idempotencyKey: next.idempotencyKey,
+            browserApi().POST("/v1/partner/production-jobs/{jobId}/issues", {
+              params: { path: { jobId: job.id }, header: { "Idempotency-Key": idempotencyKey } },
+              body: { kind, description: description.trim() },
             }),
           t("raised"),
         );
         if (ok) {
-          report.done();
+          key.done();
           setDescription("");
         }
       }}
@@ -494,7 +531,7 @@ export function RaiseIssue({ job }: { job: PartnerJob }) {
         <Select
           value={kind}
           onValueChange={setKind}
-          options={ISSUE_KINDS.map((key) => ({ value: key, label: t(`kinds.${key}`) }))}
+          options={ISSUE_KINDS.map((value) => ({ value, label: t(`kinds.${value}`) }))}
         />
       </Field>
       <Field label={t("description")} required requiredLabel={tCommon("state.required")} error={errors.description}>
@@ -512,45 +549,44 @@ export function RaiseIssue({ job }: { job: PartnerJob }) {
   );
 }
 
-export function ResolveIssue({ jobId, issueId }: { jobId: string; issueId: string }) {
+/** The factory closes an issue its own people raised (D-232), saying how it was fixed. */
+export function ResolveIssue({ jobId, issueId, description }: { jobId: string; issueId: string; description: string }) {
   const t = useTranslations("partnerJobs.issue");
-  const { factoryId } = useFactory();
-  const report = useReport();
-  const { run, busy } = useFloorAction();
+  const { run } = useFloorAction();
+  const [open, setOpen] = useState(false);
   return (
-    <Button
-      size="lg"
-      variant="ghost"
-      iconStart="check"
-      loading={busy}
-      onClick={async () => {
-        const next = report.get();
-        const ok = await run(
-          () =>
-            browserRequests().call(
-              "POST /v1/partner/factories/{factoryId}/jobs/{jobId}/issues/{issueId}/actions/resolve",
-              {
-                path: { factoryId, jobId, issueId },
-                body: next.stamp,
-                idempotencyKey: next.idempotencyKey,
-              },
-            ),
-          t("resolved"),
-        );
-        if (ok) report.done();
-      }}
-    >
-      {t("resolve")}
-    </Button>
+    <>
+      <Button size="lg" variant="ghost" iconStart="check" onClick={() => setOpen(true)}>
+        {t("resolve")}
+      </Button>
+      <ConfirmAction
+        open={open}
+        onOpenChange={setOpen}
+        title={t("resolveTitle")}
+        description={description}
+        confirmLabel={t("resolve")}
+        reason={{ label: t("resolveNote"), required: true, hint: t("resolveNoteHint") }}
+        onConfirm={async ({ idempotencyKey, reason }) => {
+          const ok = await run(
+            () =>
+              browserApi().POST("/v1/partner/production-jobs/{jobId}/issues/{issueId}/actions/resolve", {
+                params: { path: { jobId, issueId }, header: { "Idempotency-Key": idempotencyKey } },
+                body: { note: reason },
+              }),
+            t("resolved"),
+          );
+          if (!ok) throw new Error("not resolved");
+        }}
+      />
+    </>
   );
 }
 
 /* ---------------------------------------------------------------------------------- scan */
 
-/** A job traveller's or carton label's code → that job (contract request `partner.jobs`). */
+/** A job traveller's or carton label's code → that job (`partner.production.lookup`). */
 export function JobScan() {
   const t = useTranslations("partnerJobs.scan");
-  const { factoryId } = useFactory();
   const router = useRouter();
   return (
     <ScanButton
@@ -566,10 +602,8 @@ export function JobScan() {
       }}
       onCode={async (code) => {
         try {
-          const found = await browserRequests().call("GET /v1/partner/factories/{factoryId}/jobs/lookup", {
-            path: { factoryId },
-            query: { code },
-          });
+          const found = (await browserApi().GET("/v1/partner/production-jobs/lookup", { params: { query: { code } } }))
+            .data!;
           router.push(`/jobs/${found.jobId}`);
         } catch (error) {
           toast.error(problemMessage(error, t("notFound", { code })));

@@ -14,7 +14,18 @@ import { z } from "zod";
 import { toleranceResult } from "./admin-logistics";
 import { carrierCode, productTypeRef, shipmentStatus } from "./admin-orders";
 import { date, dateTime, fileRef, listQuery, page, request, userRef, uuid } from "./define";
-import { partnerDestination } from "./partner-jobs";
+
+/** A destination of the job, with what is already on a shipment for it (D-142). */
+const partnerDestination = z.object({
+  id: uuid(),
+  recipientName: z.string(),
+  phone: z.string(),
+  address: z.string(),
+  province: z.string(),
+  postcode: z.string(),
+  quantity: z.number().int(),
+  shippedQuantity: z.number().int(),
+});
 
 export const shipView = z.enum(["open", "in_transit", "delivered", "all"]).meta({ id: "PartnerShipmentView" });
 

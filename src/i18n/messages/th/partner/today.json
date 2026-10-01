@@ -31,10 +31,24 @@
       "toAccept": "รอรับงาน",
       "dueToday": "ครบกำหนดวันนี้",
       "atRisk": "เสี่ยงล่าช้า",
-      "onHold": "พักงาน"
+      "onHold": "พักงาน",
+      "inspections": "Packio นัดตรวจ"
     },
     "queue": "คิวงาน",
     "allJobs": "งานทั้งหมด",
-    "queueEmpty": "ไม่มีงานในคิว"
+    "queueEmpty": "ไม่มีงานในคิว",
+    "acceptanceOverdue": "{count, plural, other {เลยเวลารับงาน # งาน}}",
+    "alerts": {
+      "acceptance_overdue": "เลยเวลารับงานตั้งแต่ {at} Packio อาจย้ายงาน",
+      "acceptance_due_soon": "รับงานภายใน {at}",
+      "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดตั้งแต่ {at}",
+      "inspection_planned": "Packio นัดตรวจคุณภาพ {at}"
+    },
+    "alertsUndated": {
+      "acceptance_overdue": "เลยเวลารับงานแล้ว Packio อาจย้ายงาน",
+      "acceptance_due_soon": "ใกล้หมดเวลารับงาน",
+      "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดแล้ว",
+      "inspection_planned": "Packio นัดตรวจคุณภาพงานนี้"
+    }
   }
 }

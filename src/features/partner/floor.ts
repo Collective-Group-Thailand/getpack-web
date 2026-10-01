@@ -39,7 +39,9 @@ export type FieldErrors = Record<string, string>;
  * Runs a shop-floor write the way B4.2 asks: on success the screen re-renders with the server's
  * state; on a `409` — another device reported first, or the job moved on — it says so and shows
  * the server's state too ("server wins"); a `422` comes back as field errors to show beside the
- * inputs, the input kept.
+ * inputs, the input kept. An act that resolves to a `{ notice }` was answered but changed nothing
+ * (a milestone update with `applied: false`): the notice says why, and the screen shows the
+ * server's state.
  */
 export function useFloorAction() {
   const t = useTranslations("partnerJobs.floor");
@@ -51,8 +53,13 @@ export function useFloorAction() {
     setBusy(true);
     setErrors({});
     try {
-      await act();
-      toast.success(success);
+      const result = await act();
+      const notice =
+        result && typeof result === "object" && "notice" in result && typeof result.notice === "string"
+          ? result.notice
+          : null;
+      if (notice) toast.warning(notice);
+      else toast.success(success);
       refresh();
       return true;
     } catch (error) {

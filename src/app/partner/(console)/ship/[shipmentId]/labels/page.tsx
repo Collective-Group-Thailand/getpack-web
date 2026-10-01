@@ -56,7 +56,7 @@ export default async function LabelsPage({ params }: Props) {
             <hr className="border-black" />
             <p className="text-[9pt] font-semibold">{t("to")}</p>
             <p className="text-[14pt] font-bold">{destination.recipientName}</p>
-            <p>{addressLine(destination)}</p>
+            <p>{addressLine({ ...destination, line1: destination.address })}</p>
             <p className="font-semibold">{destination.phone}</p>
             {carton.weightG ? (
               <p className="text-[9pt]">{t("weight", { kg: format.number(carton.weightG / 1000) })}</p>

@@ -4,7 +4,6 @@
   "views": {
     "to_accept": "รอรับงาน",
     "in_production": "กำลังผลิต",
-    "awaiting_qc": "รอ QC",
     "ready_to_ship": "พร้อมส่ง",
     "late": "ล่าช้า",
     "all": "ทั้งหมด"
@@ -15,7 +14,6 @@
   "empty": {
     "to_accept": "ไม่มีงานรอรับ",
     "in_production": "ไม่มีงานกำลังผลิต",
-    "awaiting_qc": "ไม่มีงานรอตรวจคุณภาพ",
     "ready_to_ship": "ไม่มีงานพร้อมส่ง",
     "late": "ไม่มีงานล่าช้า",
     "all": "ยังไม่มีงาน"
@@ -34,13 +32,14 @@
     "processing": "กำลังเตรียมรูป…"
   },
   "accept": {
-    "plannerOnly": "ผู้วางแผนหรือเจ้าของโรงงานเป็นผู้รับงาน",
     "action": "รับงาน",
     "hint": "รับภายใน {due}",
     "title": "รับงาน {jobNo}",
-    "body": "โรงงานรับผลิต {jobNo} จำนวน {quantity} ชิ้น ส่งภายใน {date} ในราคาตามใบสั่งซื้อ {amount}",
+    "body": "โรงงานรับผลิต {jobNo} จำนวน {quantity} ชิ้น",
     "confirm": "รับงาน",
-    "done": "รับงาน {jobNo} แล้ว"
+    "done": "รับงาน {jobNo} แล้ว",
+    "bodyDate": "ส่งภายใน {date}",
+    "bodyPo": "ในราคาตามใบสั่งซื้อ {amount}"
   },
   "reject": {
     "action": "ปฏิเสธงาน",
@@ -53,21 +52,19 @@
     "reason": "เหตุผล",
     "reasons": {
       "capacity": "กำลังผลิตไม่พอ",
-      "material": "ไม่มีวัสดุตามสเปก",
-      "machine": "เครื่องจักรไม่พร้อม",
+      "material_unavailable": "ไม่มีวัสดุตามสเปก",
+      "artwork_issue": "ไฟล์งานมีปัญหา",
       "spec_not_feasible": "ผลิตตามสเปกนี้ไม่ได้",
       "price": "ราคาไม่ตรงกับที่ตกลง",
       "other": "เหตุผลอื่น"
     }
   },
   "milestone": {
-    "noPermission": "บทบาทของคุณอัปเดตขั้นตอนไม่ได้",
     "start": "เริ่ม{name}",
     "started": "เริ่ม{name}แล้ว",
     "photoRequired": "ขั้นตอนนี้ต้องแนบรูปอย่างน้อยหนึ่งรูป",
     "uploadFailed": "อัปโหลดรูปไม่สำเร็จ ลองอีกครั้ง",
     "completed": "จบ{name}แล้ว",
-    "qcFirst": "บันทึกผลตรวจคุณภาพที่ผ่านก่อน แล้วจึงจบขั้นตอนนี้",
     "in": "รับเข้า",
     "good": "ดี",
     "overflow": "ดีรวมเสียเกินจำนวนรับเข้า",
@@ -77,7 +74,13 @@
     "photosHint": "ถ่ายงานจริงในขั้นตอนนี้ ระบบเก็บเวลาที่ถ่ายไว้",
     "note": "หมายเหตุ",
     "complete": "จบ{name}",
-    "completeHint": "ดี {good} · เสีย {scrap}"
+    "completeHint": "ดี {good} · เสีย {scrap}",
+    "outcomes": {
+      "duplicate": "บันทึกนี้ส่งไปแล้ว หน้านี้แสดงข้อมูลล่าสุด",
+      "already_started": "ขั้นตอนนี้เริ่มจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด",
+      "already_completed": "ขั้นตอนนี้บันทึกเสร็จจากอุปกรณ์อื่นแล้ว หน้านี้แสดงข้อมูลล่าสุด",
+      "skipped": "Packio ข้ามขั้นตอนนี้แล้ว"
+    }
   },
   "qc": {
     "qcOnly": "ฝ่ายตรวจคุณภาพเป็นผู้บันทึกผล",
@@ -94,10 +97,7 @@
       "conditional": "ผ่านแบบมีเงื่อนไข",
       "fail": "ไม่ผ่าน"
     },
-    "defects": "ข้อบกพร่องที่พบ",
-    "defectLabel": "ข้อบกพร่องที่ {n}",
-    "defectCount": "จำนวนของข้อบกพร่องที่ {n}",
-    "addDefect": "เพิ่มข้อบกพร่อง",
+    "defectCount": "จำนวน",
     "photos": "รูปถ่ายงานที่ตรวจ",
     "photosHint": "อย่างน้อยหนึ่งรูป (D-076)",
     "notes": "หมายเหตุ",
@@ -113,16 +113,17 @@
       "critical": "ร้ายแรง",
       "major": "หลัก",
       "minor": "เล็กน้อย"
-    }
+    },
+    "severityFor": "ระดับข้อบกพร่องของ {item}"
   },
   "issue": {
     "tooShort": "เล่าปัญหาอย่างน้อย 3 ตัวอักษร",
     "raised": "แจ้งปัญหาแล้ว Packio เห็นในบอร์ดการผลิต",
     "kind": "ประเภทปัญหา",
     "kinds": {
-      "material": "วัสดุ",
-      "machine": "เครื่องจักร",
-      "artwork": "ไฟล์งาน",
+      "material_shortage": "วัสดุไม่พอ",
+      "machine_down": "เครื่องจักรเสีย",
+      "artwork_question": "สงสัยเรื่องไฟล์งาน",
       "quantity": "จำนวน",
       "quality": "คุณภาพ",
       "delay": "ล่าช้า",
@@ -131,7 +132,10 @@
     "description": "รายละเอียด",
     "submit": "แจ้งปัญหา",
     "resolved": "แก้ปัญหาแล้ว",
-    "resolve": "แก้แล้ว"
+    "resolve": "แก้แล้ว",
+    "resolveTitle": "ปิดปัญหานี้",
+    "resolveNote": "แก้อย่างไร",
+    "resolveNoteHint": "เช่น ซ่อมเครื่องเสร็จแล้ว วัสดุมาถึงแล้ว"
   },
   "scan": {
     "open": "สแกน QR",
@@ -169,8 +173,8 @@
     "rejectedTitle": "โรงงานปฏิเสธงานนี้แล้ว",
     "rejectReasons": {
       "capacity": "กำลังผลิตไม่พอ",
-      "material": "ไม่มีวัสดุตามสเปก",
-      "machine": "เครื่องจักรไม่พร้อม",
+      "material_unavailable": "ไม่มีวัสดุตามสเปก",
+      "artwork_issue": "ไฟล์งานมีปัญหา",
       "spec_not_feasible": "ผลิตตามสเปกนี้ไม่ได้",
       "price": "ราคาไม่ตรงกับที่ตกลง",
       "other": "เหตุผลอื่น"
@@ -184,7 +188,6 @@
     "toShip": "ผลิตเสร็จ — ไปจัดส่ง",
     "spec": "สเปก",
     "artwork": "ไฟล์งานที่อนุมัติ",
-    "proofAlt": "ปรู๊ฟที่อนุมัติ ฉบับที่ {version}",
     "watermark": "APPROVED v{version}",
     "approvedOn": "ฉบับที่ {version} อนุมัติเมื่อ {date} — ผลิตตามฉบับนี้เท่านั้น",
     "openProof": "เปิดปรู๊ฟ",
@@ -204,14 +207,30 @@
     "inspection": "Packio ตรวจคุณภาพงานนี้",
     "inspectionOn": "นัดวันที่ {date}",
     "issues": "ปัญหา",
-    "history": "ประวัติ"
+    "summaryNoDate": "{title} · {quantity} ชิ้น",
+    "plannerOnly": "ผู้วางแผนหรือเจ้าของโรงงานเป็นผู้รับงาน",
+    "noMilestonePermission": "บทบาทของคุณอัปเดตขั้นตอนไม่ได้",
+    "qcFirst": "บันทึกผลตรวจคุณภาพที่ผ่านก่อน แล้วจึงจบขั้นตอนนี้",
+    "riskReasons": {
+      "step_overdue": "ขั้นตอนปัจจุบันเลยกำหนดแล้ว",
+      "late_plan": "แผนการผลิตเลยวันที่สัญญาส่ง"
+    },
+    "approvedVersion": "ฉบับที่ {version} — ผลิตตามฉบับนี้เท่านั้น",
+    "qcRecorded": "บันทึกผลตรวจ",
+    "defect": "{item} ({severity}) {count}",
+    "inspectionSample": "สุ่มตรวจ {count} ชิ้น",
+    "issueResolved": "แก้แล้ว: {note} · {name}"
   },
   "capacity": {
     "title": "กำลังผลิตรายสัปดาห์",
     "body": "กำลังผลิตเทียบกับงานที่รับแล้ว หากต้องปรับ ส่งคำขอถึงทีมพาร์ตเนอร์",
     "closures": "วันหยุด",
-    "closure": "{date} · {name}",
     "week": "สัปดาห์ที่เริ่ม {date}",
-    "load": "จองแล้ว {booked} จาก {capacity} {unit}"
+    "load": "จองแล้ว {booked} จาก {capacity} {unit}",
+    "dayKinds": {
+      "holiday": "{date} · {name}",
+      "closure": "{date} · {name} (โรงงานหยุด)",
+      "extra_working_day": "{date} · {name} (วันทำงานเพิ่ม)"
+    }
   }
 }

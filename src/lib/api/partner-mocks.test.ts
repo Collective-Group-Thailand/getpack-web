@@ -8,6 +8,7 @@ import { accessToken, mockId } from "../../../mocks/support";
 import { createApiClient } from "./client";
 import { createRequestClient } from "./requests/client";
 import { REQUESTS } from "./requests/registry";
+import type { Schemas } from "./types";
 import { FACTORY_ROLE_GRANTS } from "../../../mocks/generated/rbac";
 
 /**
@@ -237,86 +238,108 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
   it("accepts a released job, reports every step with the rules B4.2 states, and ships it split", async () => {
     const api = partner("owner");
     const floor = requestsAs("owner");
-    const today = await floor.call("GET /v1/partner/factories/{factoryId}/today", { path });
-    expect(today.counters.toAccept).toBeGreaterThanOrEqual(2);
-    const { data: toAccept } = await floor.call("GET /v1/partner/factories/{factoryId}/jobs", {
-      path,
-      query: { view: "to_accept" },
-    });
+    const key = (n: number) => ({ "Idempotency-Key": uuid(n) });
+    const today = (await api.GET("/v1/partner/factories/{factoryId}/today", { params: { path } })).data!;
+    expect(today.counters.awaitingAcceptance).toBeGreaterThanOrEqual(2);
+    const toAccept = (await api.GET("/v1/partner/production-jobs", { params: { query: { view: "to_accept" } } })).data!
+      .data;
     // The one split across two addresses (D-110).
-    const released = toAccept.find(
-      (job) => job.acceptDueAt && Date.parse(job.acceptDueAt) - Date.now() < 6 * 3_600_000,
-    )!;
-    const jobPath = { ...path, jobId: released.id };
-    let job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
-      path: jobPath,
-      body: stamp(uuid(1)),
-      idempotencyKey: uuid(1),
-    });
+    const released = toAccept.find((job) => Date.parse(job.acceptDueAt) - Date.now() < 6 * 3_600_000)!;
+    expect(released.nextActions.map((action) => action.key)).toEqual(["job.accept", "job.reject", "job.raise_issue"]);
+    expect(released.nextActions.find((action) => action.key === "job.reject")?.irreversible).toBe(true);
+    const jobPath = { jobId: released.id };
+    let job = (
+      await api.POST("/v1/partner/production-jobs/{jobId}/actions/accept", {
+        params: { path: jobPath, header: key(1) },
+      })
+    ).data!;
     expect(job.status).toBe("accepted");
     expect(job.destinations).toHaveLength(2);
 
     for (const milestone of job.milestones.filter((item) => item.status !== "completed")) {
-      const seq = String(milestone.seq);
-      job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/start", {
-        path: { ...jobPath, seq },
-        body: stamp(uuid(100 + milestone.seq)),
-        idempotencyKey: uuid(100 + milestone.seq),
-      });
-      if (milestone.requiresQc) {
-        job = await floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/qc-checks", {
-          path: jobPath,
-          body: {
-            ...stamp(uuid(300)),
-            checklist: job.qcChecklist.map((item) => ({ key: item.key, pass: true })),
-            result: "pass",
-            defects: [],
-            photoFileIds: [await photo(api)],
-          },
-          idempotencyKey: uuid(300),
+      const update = (body: Omit<Schemas["UpdateMilestoneDto"], "clientRef">, n: number) =>
+        api.POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+          params: { path: { ...jobPath, milestoneId: milestone.id }, header: key(n) },
+          body: { clientRef: uuid(n), ...body },
         });
-        expect(job.qcChecks[0]).toMatchObject({ result: "pass", isFirstPass: true });
-      }
-      const complete = (quantityOut: number, ref: number, photos: string[]) =>
-        floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", {
-          path: { ...jobPath, seq },
-          body: {
-            ...stamp(uuid(ref)),
-            quantityIn: released.quantity,
-            quantityOut,
-            quantityScrap: 0,
-            photoFileIds: photos,
-          },
-          idempotencyKey: uuid(ref),
-        });
-      if (milestone.requiresPhoto) {
-        // No photo where the route asks for one: a 422 the form shows beside the field.
-        await expect(complete(released.quantity, 200 + milestone.seq, [])).rejects.toMatchObject({ status: 422 });
-      }
-      // Good plus scrap above what went in is refused by the API, not only by the form.
-      await expect(complete(released.quantity + 1, 250 + milestone.seq, [await photo(api)])).rejects.toMatchObject({
-        status: 422,
+      const started = (await update({ action: "start" }, 100 + milestone.seq)).data!;
+      expect(started.applied).toBe(true);
+      job = started.job;
+      // The same report sent again changes nothing (server wins).
+      const replayed = await api.POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+        params: { path: { ...jobPath, milestoneId: milestone.id }, header: key(150 + milestone.seq) },
+        body: { action: "start", clientRef: uuid(100 + milestone.seq) },
       });
-      job = await complete(released.quantity, 200 + milestone.seq, milestone.requiresPhoto ? [await photo(api)] : []);
+      expect(replayed.data).toMatchObject({ applied: false, reason: "duplicate" });
+      if (milestone.evidence === "qc_form") {
+        // Completing before a passing QC is refused.
+        await expect(update({ action: "complete", quantityOut: 1 }, 260 + milestone.seq)).rejects.toMatchObject({
+          status: 409,
+          code: "production.evidence_missing",
+        });
+        const check = (
+          await api.POST("/v1/partner/production-jobs/{jobId}/qc-checks", {
+            params: { path: jobPath, header: key(300) },
+            body: {
+              checklistVersion: "packio-web-v1",
+              checklist: { colour: "pass", registration: "pass", diecut: "pass", count: "pass", clean: "pass" },
+              result: "pass",
+              defects: [],
+              photoFileIds: [await photo(api)],
+            },
+          })
+        ).data!;
+        expect(check).toMatchObject({ result: "pass", isFirstPass: true, checklistVersion: "packio-web-v1" });
+      }
+      const quantities = milestone.tracksQuantity
+        ? { quantityIn: released.quantityOrdered, quantityOut: released.quantityOrdered, quantityScrap: 0 }
+        : {};
+      if (milestone.evidence === "photo") {
+        // No photo where the step asks for one.
+        await expect(update({ action: "complete", ...quantities }, 200 + milestone.seq)).rejects.toMatchObject({
+          status: 409,
+          code: "production.evidence_missing",
+        });
+      }
+      if (milestone.tracksQuantity) {
+        // Good plus scrap above what went in is refused by the API, not only by the form.
+        await expect(
+          update(
+            {
+              action: "complete",
+              ...quantities,
+              quantityOut: released.quantityOrdered + 1,
+              photoFileIds: [await photo(api)],
+            },
+            250 + milestone.seq,
+          ),
+        ).rejects.toMatchObject({ status: 422, code: "production.quantity_invalid" });
+      }
+      const done = (
+        await update(
+          {
+            action: "complete",
+            ...quantities,
+            ...(milestone.evidence === "photo" ? { photoFileIds: [await photo(api)] } : {}),
+          },
+          200 + milestone.seq + 20,
+        )
+      ).data!;
+      expect(done.applied).toBe(true);
+      job = done.job;
     }
     expect(job.status).toBe("completed");
-    expect(job.nextActions).toContain("ship");
+    expect(job.quantityGood).toBe(released.quantityOrdered);
+    expect(job.nextActions.map((action) => action.key)).toContain("job.ship");
 
-    // Another device completing the last step again with its own report: the server's state stands.
-    const last = String(job.milestones.at(-1)!.seq);
+    // Another device completing the last step of a finished job: refused, the server's state stands.
+    const last = job.milestones.at(-1)!;
     await expect(
-      floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/milestones/{seq}/actions/complete", {
-        path: { ...jobPath, seq: last },
-        body: {
-          ...stamp(uuid(999)),
-          quantityIn: 1,
-          quantityOut: 1,
-          quantityScrap: 0,
-          photoFileIds: [await photo(api)],
-        },
-        idempotencyKey: uuid(999),
+      api.POST("/v1/partner/production-jobs/{jobId}/milestones/{milestoneId}", {
+        params: { path: { ...jobPath, milestoneId: last.id }, header: key(999) },
+        body: { action: "complete", clientRef: uuid(999), quantityOut: 1 },
       }),
-    ).rejects.toMatchObject({ status: 409 });
+    ).rejects.toMatchObject({ status: 409, code: "production.invalid_status" });
 
     const plan = await floor.call("GET /v1/partner/factories/{factoryId}/ship-plan", { path });
     const ready = plan.find((item) => item.id === released.id)!;
@@ -380,19 +403,16 @@ describe("the production floor and shipping (F001, F5 5.2)", () => {
   });
 
   it("keeps an operator from accepting jobs, and another factory's job is not found", async () => {
-    const floor = requestsAs("operator");
-    const { data } = await floor.call("GET /v1/partner/factories/{factoryId}/jobs", { path, query: { view: "all" } });
+    const api = partner("operator");
+    const { data } = (await api.GET("/v1/partner/production-jobs", {})).data!;
+    expect(data[0]!.nextActions.map((action) => action.key)).not.toContain("job.accept");
     await expect(
-      floor.call("POST /v1/partner/factories/{factoryId}/jobs/{jobId}/actions/accept", {
-        path: { ...path, jobId: data[0]!.id },
-        body: stamp(uuid(700)),
-        idempotencyKey: uuid(700),
+      api.POST("/v1/partner/production-jobs/{jobId}/actions/accept", {
+        params: { path: { jobId: data[0]!.id }, header: { "Idempotency-Key": uuid(700) } },
       }),
     ).rejects.toMatchObject({ status: 403 });
     await expect(
-      requestsAs("assisted").call("GET /v1/partner/factories/{factoryId}/jobs/{jobId}", {
-        path: { factoryId: F006, jobId: data[0]!.id },
-      }),
+      partner("assisted").GET("/v1/partner/production-jobs/{jobId}", { params: { path: { jobId: data[0]!.id } } }),
     ).rejects.toMatchObject({ status: 404 });
   });
 });

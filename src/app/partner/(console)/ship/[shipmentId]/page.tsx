@@ -142,7 +142,7 @@ export default async function ShipmentPage({ params }: Props) {
       <PartnerSection title={t("recipient")} description={t("recipientNote")}>
         <Card padding="md">
           <p className="font-medium">{shipment.destination.recipientName}</p>
-          <p>{addressLine(shipment.destination)}</p>
+          <p>{addressLine({ ...shipment.destination, line1: shipment.destination.address })}</p>
           <a
             href={`tel:${shipment.destination.phone}`}
             className="text-primary inline-flex min-h-12 items-center underline"
