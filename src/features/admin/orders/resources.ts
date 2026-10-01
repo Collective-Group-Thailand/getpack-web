@@ -73,7 +73,7 @@ export const quotationsList = defineList<Quotation>({
     (await contract.GET("/v1/admin/quotes", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.quoteCode ?? row.id.slice(0, 8),
-  defaults: { filterKeys: ["status", "customerId"], sort: "createdAt", order: "desc" },
+  defaults: { filterKeys: ["status", "customerId", "channel"], sort: "createdAt", order: "desc" },
 });
 
 export const memosList = defineList<DiscountMemo>({
@@ -81,7 +81,7 @@ export const memosList = defineList<DiscountMemo>({
   fetch: async ({ contract }, query) =>
     (await contract.GET("/v1/admin/discount-memos", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
-  // A memo has no code of its own (CONTRACT-GAP admin.discount-memos); its customer names it.
+  // A memo has no code of its own (CONTRACT-GAP admin.discount-memos: no series decided); its customer names it.
   getRowName: (row) => row.customer?.displayName ?? row.id.slice(0, 8),
-  defaults: { filterKeys: ["status", "customerId"], sort: "createdAt", order: "desc" },
+  defaults: { filterKeys: ["status", "customerId", "requestedBy"], sort: "createdAt", order: "desc" },
 });
