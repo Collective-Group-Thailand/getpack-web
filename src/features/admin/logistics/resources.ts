@@ -34,6 +34,19 @@ export const CLAIM_STATUSES = [
   "resolved",
   "closed",
 ] as const satisfies readonly Schemas["ClaimStatus"][];
+export const CLAIM_TYPES = [
+  "damaged",
+  "wrong_spec",
+  "print_defect",
+  "quantity_short",
+  "late",
+  "other",
+] as const satisfies readonly Schemas["ClaimType"][];
+export const CLAIM_ORIGINS = [
+  "customer",
+  "tolerance_auto",
+  "staff",
+] as const satisfies readonly Schemas["ClaimOrigin"][];
 
 /**
  * The logistics desk (`admin.shipments.list`). The published list filters by status, order and
@@ -51,8 +64,8 @@ export const shipmentsList = defineList<Shipment>({
 });
 
 /**
- * Claims (`admin.claims.list`), by status and `q`. No type or origin filter, no customer and no SLA
- * on the row (CONTRACT-GAP admin.claims).
+ * Claims (`admin.claims.list`), by status, type, origin, customer and factory (U-B0.2) and `q`. No SLA
+ * on the row (CONTRACT-GAP admin.claims — `slaDueAt` is U2.5).
  */
 export const claimsList = defineList<Claim>({
   key: "claim",
@@ -60,6 +73,6 @@ export const claimsList = defineList<Claim>({
     (await contract.GET("/v1/admin/claims", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
   getRowName: (row) => row.claimNo,
-  defaults: { filterKeys: ["status"] },
+  defaults: { filterKeys: ["status", "type", "origin", "customerId", "factoryId"] },
   staleTime: STALE_TIME.live,
 });

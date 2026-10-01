@@ -18,17 +18,18 @@ import type { carrierQuote, shipmentDetail } from "@/lib/api/requests/admin-logi
 import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
+import { nextActions, type ActionRule } from "../next-actions";
 import { can, type StaffPersona } from "../personas";
 import { mockRequest } from "../route";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
 import { provinceRefOf } from "../store/catalog";
 import { baht, FACTORY, orders } from "./commerce";
 import { registerQueue } from "./console";
-import type { claimDetail } from "./logistics-model";
+import type { ClaimDetail } from "./logistics-model";
 import { etagOf } from "./tables";
 
 export type Shipment = z.output<typeof shipmentDetail> & { updatedAt: string };
-export type Claim = z.output<typeof claimDetail> & { updatedAt: string };
+export type Claim = ClaimDetail & { updatedAt: string };
 type Quote = z.output<typeof carrierQuote>;
 
 const DAY = 24 * 60;
@@ -561,7 +562,7 @@ export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Sc
 }
 
 /** What the team last asked the customer, and the customer's answer after it (the thread is the fixture's). */
-function infoOf(item: Claim) {
+export function claimInfoOf(item: Claim) {
   const customer = item.customer.displayName;
   const asked = item.messages.findLastIndex(
     (message) => message.audience === "customer" && message.author !== customer,
@@ -571,8 +572,76 @@ function infoOf(item: Claim) {
   return { infoRequest: item.messages[asked]!.body, infoResponse: answer?.body ?? null };
 }
 
-/** A claim as `admin.claims.*` answers it (U-F0.3). */
-export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
+/** What a claim recovered from the factory (D-083): each factory-deduction resolution, offset on its payables. */
+export function claimDeductionsOf(item: Claim): Schemas["ClaimDeductionDto"][] {
+  return item.resolutions
+    .map((resolution, index) => ({ resolution, index }))
+    .filter(({ resolution }) => resolution.action === "factory_deduction" && resolution.amount)
+    .map(({ resolution, index }) => ({
+      id: mockId("vdd", Number.parseInt(item.id.slice(-6), 16) * 8 + index),
+      amount: resolution.amount!,
+      offsetAgainst: "payable" as const,
+      status: "applied" as const,
+      recordedAt: resolution.executedAt,
+    }));
+}
+
+/** The sum of the applied and pending deductions, in satang arithmetic (the mock's, never the zone's). */
+export function claimDeductionAmountOf(item: Claim): string {
+  const total = claimDeductionsOf(item)
+    .filter((deduction) => deduction.status !== "cancelled")
+    .reduce((sum, deduction) => sum + Math.round(Number(deduction.amount) * 100), 0);
+  return baht(total);
+}
+
+/** The fields of a claim its action guards read (packio-api `claims.service.ts`). */
+interface ClaimFacts {
+  status: string;
+  liability: string;
+  factoryId: string | null;
+}
+
+const REVIEWABLE = ["submitted", "need_info", "factory_review"];
+const OVERRIDABLE = ["submitted", "under_review", "need_info", "factory_review"];
+
+/** packio-api `src/modules/claims/claim-actions.ts` (v0.6.0), the staff rules. */
+const ADMIN_CLAIM_ACTIONS: ActionRule<ClaimFacts>[] = [
+  { key: "claim.review", permissions: ["claims.manage"], when: (c) => REVIEWABLE.includes(c.status) },
+  { key: "claim.request_info", permissions: ["claims.manage"], when: (c) => c.status === "under_review" },
+  {
+    key: "claim.send_to_factory",
+    permissions: ["claims.manage"],
+    when: (c) => c.status === "under_review" && (c.factoryId !== null || "claims.no_factory"),
+  },
+  {
+    key: "claim.override_liability",
+    permissions: ["claims.override_liability"],
+    when: (c) => OVERRIDABLE.includes(c.status),
+  },
+  {
+    key: "claim.approve",
+    permissions: ["claims.manage"],
+    irreversible: true,
+    when: (c) => c.status === "under_review" && (c.liability !== "undetermined" || "claims.liability_undetermined"),
+  },
+  { key: "claim.reject", permissions: ["claims.manage"], irreversible: true, when: (c) => c.status === "under_review" },
+  { key: "claim.resolve", permissions: ["claims.resolve"], irreversible: true, when: (c) => c.status === "approved" },
+  {
+    key: "claim.close",
+    permissions: ["claims.manage"],
+    irreversible: true,
+    when: (c) => c.status === "rejected" || c.status === "resolved",
+  },
+];
+
+export const claimFactsOf = (item: Claim): ClaimFacts => ({
+  status: item.status,
+  liability: item.liability,
+  factoryId: item.factory?.id ?? null,
+});
+
+/** A claim as `admin.claims.*` answers it, with what this staff member may do on it now. */
+export function toAdminClaimDto(item: Claim, who: StaffPersona | null): Schemas["AdminClaimDto"] {
   const job = orders.find((order) => order.id === item.order.id)?.jobs[0];
   return {
     id: item.id,
@@ -603,11 +672,11 @@ export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
       product: item.evidence.productPhotos.map((photo) => photo.id),
       carton: item.evidence.cartonPhotos.map((photo) => photo.id),
     },
-    ...infoOf(item),
+    ...claimInfoOf(item),
     factoryResponse: item.factoryResponse?.response ?? null,
     factoryResponseNote: item.factoryResponse?.note ?? null,
     factoryRespondedAt: item.factoryResponse?.at ?? null,
-    factoryEvidenceFileIds: [],
+    factoryEvidenceFileIds: item.factoryEvidenceFileIds ?? [],
     decidedAt: item.decision?.at ?? null,
     decidedBy: item.decision?.by ?? null,
     decisionNote: item.decision?.reason ?? null,
@@ -619,13 +688,14 @@ export function toAdminClaimDto(item: Claim): Schemas["AdminClaimDto"] {
       quantity: resolution.action === "reproduction_job" ? item.claimedQuantity : null,
       refundId: null,
     })),
-    // The rows keep no deduction records: none recovered until the claims slice adds them.
-    deductions: [],
-    deductionAmount: "0.00",
+    deductions: claimDeductionsOf(item),
+    deductionAmount: claimDeductionAmountOf(item),
     submittedAt: item.submittedAt,
     receivedAt: item.receivedAt,
     windowEndsAt: item.windowEndsAt,
-    nextActions: [],
+    nextActions: nextActions(claimFactsOf(item), ADMIN_CLAIM_ACTIONS, (permission) =>
+      Boolean(who && can(who, permission)),
+    ),
   };
 }
 
@@ -719,7 +789,7 @@ function step(
       if (refused) return refused;
       item.slaDueAt = ["under_review", "need_info", "factory_review"].includes(item.status) ? bangkokIso(DAY) : null;
       item.updatedAt = bangkokIso();
-      return HttpResponse.json(toAdminClaimDto(item));
+      return HttpResponse.json(toAdminClaimDto(item, who));
     }),
   );
 }
@@ -920,24 +990,32 @@ export const logisticsHandlers = [
 
   /* ------------------------------------------------------------------- admin.claims (published) */
   http.get("*/v1/admin/claims", ({ request }) => {
-    if (!access(request, "claims.read")) return forbidden();
+    const who = access(request, "claims.read");
+    if (!who) return forbidden();
     const url = new URL(request.url);
-    const status = url.searchParams.get("status");
-    const orderId = url.searchParams.get("orderId");
-    const q = url.searchParams.get("q") ?? undefined;
+    const filter = (key: string) => url.searchParams.get(key);
+    const q = filter("q") ?? undefined;
     const rows = claims
-      .filter((item) => !status || item.status === status)
-      .filter((item) => !orderId || item.order.id === orderId)
-      .filter((item) => matchesQuery(q, item.claimNo, item.order.orderCode))
-      .map(toAdminClaimDto);
+      .filter((item) => !filter("status") || item.status === filter("status"))
+      .filter((item) => !filter("orderId") || item.order.id === filter("orderId"))
+      .filter((item) => !filter("type") || item.type === filter("type"))
+      .filter((item) => !filter("origin") || item.origin === filter("origin"))
+      .filter((item) => !filter("customerId") || item.customer.id === filter("customerId"))
+      .filter((item) => !filter("factoryId") || item.factory?.id === filter("factoryId"))
+      .filter((item) => matchesQuery(q, item.claimNo, item.order.orderCode, item.customer.displayName))
+      .map((item) => toAdminClaimDto(item, who));
     return HttpResponse.json(paginate(rows, pageOf(url)));
   }),
   http.get("*/v1/admin/claims/:claimId", ({ params, request }) => {
-    if (!access(request, "claims.read")) return forbidden();
+    const who = access(request, "claims.read");
+    if (!who) return forbidden();
     const item = claimOf(params.claimId);
-    return item ? HttpResponse.json(toAdminClaimDto(item)) : noClaim();
+    return item
+      ? HttpResponse.json(toAdminClaimDto(item, who), { headers: { ETag: etagOf(item as never) } })
+      : noClaim();
   }),
-  step("review", ["submitted", "need_info"], (item, who) => {
+  // The endpoints' own state checks, as the rules above offer them (packio-api `claims.service.ts`).
+  step("review", REVIEWABLE as Claim["status"][], (item, who) => {
     item.status = "under_review";
     item.messages.push({ at: bangkokIso(), author: who.displayName, audience: "internal", body: "เริ่มตรวจสอบ" });
   }),
@@ -948,10 +1026,11 @@ export const logisticsHandlers = [
     item.messages.push({ at: bangkokIso(), author: who.displayName, audience: "customer", body: body.note!.trim() });
   }),
   step("send-to-factory", ["under_review"], (item, who) => {
+    if (!item.factory) return problem(422, "claims.action_not_allowed", "เคลมนี้ไม่มีโรงงานให้ส่งตอบ");
     item.status = "factory_review";
     item.messages.push({ at: bangkokIso(), author: who.displayName, audience: "factory", body: "ส่งให้โรงงานตอบ" });
   }),
-  step("decide", ["under_review", "factory_review"], (item, who, body) => {
+  step("decide", ["under_review"], (item, who, body) => {
     const refused = needNote(body.note);
     if (refused) return refused;
     if (body.decision !== "approved" && body.decision !== "rejected")
@@ -964,7 +1043,7 @@ export const logisticsHandlers = [
     item.decision = { by: ref(who), at: bangkokIso(), reason: body.note!.trim() };
     item.messages.push({ at: bangkokIso(), author: who.displayName, audience: "customer", body: body.note!.trim() });
   }),
-  step("close", ["approved", "rejected", "resolved"], (item) => {
+  step("close", ["rejected", "resolved"], (item) => {
     item.status = "closed";
   }),
   http.post("*/v1/admin/claims/:claimId/actions/override-liability", ({ params, request }) =>
@@ -985,7 +1064,7 @@ export const logisticsHandlers = [
       item.liabilityOverride =
         body.liability === item.liabilityByRule ? null : { by: ref(who), reason: body.reason.trim(), at: bangkokIso() };
       item.updatedAt = bangkokIso();
-      return HttpResponse.json(toAdminClaimDto(item));
+      return HttpResponse.json(toAdminClaimDto(item, who));
     }),
   ),
   http.post("*/v1/admin/claims/:claimId/actions/resolve", ({ params, request }) =>
@@ -1031,7 +1110,7 @@ export const logisticsHandlers = [
       }
       item.status = "resolved";
       item.updatedAt = bangkokIso();
-      return HttpResponse.json(toAdminClaimDto(item));
+      return HttpResponse.json(toAdminClaimDto(item, who));
     }),
   ),
 ];
