@@ -180,8 +180,54 @@ describe("business accounts, against the mock", () => {
     expect(Number(after.availableAmount)).toBeLessThan(Number(before.availableAmount));
   });
 
-  // CONTRACT-GAP store.geo-ids: `store.companies.apply` needs the head office's province id.
-  it.todo("signs a company up only with fresh KYC documents (D-120)");
+  it("signs a company up: apply with the postcode's ids, file the KYC documents, then submit (D-120)", async () => {
+    const api = createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer", "founder") });
+    const { data: areas } = await api.GET("/v1/store/catalog/geo/postcodes/{postcode}", {
+      params: { path: { postcode: "10110" } },
+    });
+    const area = areas![0]!;
+    const headOffice = {
+      name: "สำนักงานใหญ่",
+      line1: "1 ถนนทดสอบ",
+      postcode: "10110",
+      provinceId: area.province.id,
+      subdistrictId: area.subdistrict.id,
+    };
+    const apply = (body: Partial<Schemas["ApplyCompanyDto"]>) =>
+      api.POST("/v1/store/companies", {
+        params: { header: { "Idempotency-Key": uuid() } },
+        body: {
+          legalName: "บริษัท ทดสอบหน่วย จำกัด",
+          taxId: "0105556000017",
+          isVatRegistered: false,
+          headOffice,
+          signatory: { name: "สมใจ ทดสอบ", position: "กรรมการ" },
+          ...body,
+        },
+      });
+    // Ids that are not the postcode's are refused.
+    const wrong = await failure(apply({ headOffice: { ...headOffice, postcode: "50200" } }));
+    expect(wrong?.status).toBe(422);
+    const { data: company } = await apply({});
+    expect(company).toMatchObject({ status: "applied", myRoles: ["company_admin"] });
+    expect(company!.missingKyc).toEqual(["company_certificate", "signatory_id"]);
+    expect(company!.branches[0]).toMatchObject({ branchCode: "00000", provinceNameTh: "กรุงเทพมหานคร" });
+    const companyId = company!.id;
+    const submit = () =>
+      api.POST("/v1/store/companies/{companyId}/actions/submit-kyc", { params: { path: { companyId } } });
+    expect((await failure(submit()))?.code).toBe("companies.kyc_incomplete");
+    for (const docType of ["company_certificate", "signatory_id"] as const) {
+      const { data: presigned } = await api.POST("/v1/store/files/presign", {
+        body: { fileName: `${docType}.pdf`, mimeType: "application/pdf", sizeBytes: 1000, purpose: "evidence" },
+      });
+      await api.POST("/v1/store/companies/{companyId}/kyc-documents", {
+        params: { path: { companyId } },
+        body: { docType, fileId: presigned!.fileId, issuedOn: docType === "company_certificate" ? "2026-09-01" : null },
+      });
+    }
+    const { data: submitted } = await submit();
+    expect(submitted).toMatchObject({ status: "kyc_review", missingKyc: [] });
+  });
 
   it("checks bulk reorder rows before anything reaches the cart (D-153)", async () => {
     const { data: groups } = await createApiClient({ baseUrl: "http://api.mock", accessToken: admin.token }).GET(

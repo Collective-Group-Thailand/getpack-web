@@ -577,8 +577,10 @@ export const storeDesignHandlers = [
     const body = (await request.json()) as Schemas["SaveDesignDto"];
     const document = documentFrom(body);
     if (!document) return problem(422, "validation.failed", "เอกสารแบบไม่ถูกต้อง");
-    saveVersion(row, "manual", document);
+    saveVersion(row, body.kind ?? "manual", document, body.label ?? null);
     if (body.title) row.design = { ...row.design, name: body.title };
+    if (body.materialId) row.design = { ...row.design, materialId: body.materialId };
+    if (body.patternId) row.design = { ...row.design, patternId: body.patternId };
     if (body.thumbnailFileId) {
       row.thumbnailFileId = body.thumbnailFileId;
       row.design = { ...row.design, thumbnailUrl: fileDataUrl(body.thumbnailFileId) };

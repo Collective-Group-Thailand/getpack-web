@@ -173,10 +173,15 @@
       "position": "Please enter the position",
       "phone": "That mobile number doesn't look right",
       "issuedOn": "Please enter the certificate's issue date",
-      "document": "Please attach the {name}"
+      "document": "Please attach the {name}",
+      "postcode": "Enter the head office's 5-digit postcode",
+      "subdistrict": "Choose the head office's sub-district"
     },
-    "blockedTitle": "Company sign-up is not open on the website yet",
-    "blocked": "Company accounts cannot be applied for on the website yet. Contact our team and we will open one for you; you can order and pay in advance meanwhile."
+    "addressIntro": "As on the company certificate; used on tax invoices (branch 00000)",
+    "line1": "Number, building, street",
+    "line1Hint": "No need to repeat the sub-district, province or postcode",
+    "line2": "More details",
+    "headOfficeName": "Head office"
   },
   "members": {
     "title": "Members",
@@ -236,10 +241,9 @@
     "errors": {
       "code": "A 5-digit branch code, e.g. 00001",
       "name": "Please enter the branch name",
-      "address": "Please enter the address"
-    },
-    "addBlockedTitle": "New branches cannot be added on the website yet",
-    "addBlocked": "Adding a branch on the website is not open yet. Ask our team to add it for you."
+      "address": "Please enter the address",
+      "area": "Choose the sub-district of the postcode"
+    }
   },
   "assets": {
     "title": "Brand assets",

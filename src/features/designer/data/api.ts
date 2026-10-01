@@ -29,6 +29,10 @@ export interface Saved<T> {
   etag: string | null;
 }
 
+/** A catalogue id (a placeholder board from the BoxStudio era is not one). */
+const isUuid = (value: string | null | undefined): value is string =>
+  !!value && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
 /** The published body: the document opaque, its schema version beside it. */
 const published = (spec: DesignSpec, content: DesignContent) => ({
   document: { spec, content } as unknown as Record<string, never>,
@@ -76,7 +80,8 @@ export const storeDesigns = {
   },
   /**
    * Every save is a new version, an autosave told apart from a save the customer made (`kind`).
-   * CONTRACT-GAP store.designs — the material lives in the document's spec only.
+   * The catalogue material and box style the spec names go beside the document, so the API's
+   * columns follow a change made in the editor.
    */
   async save(
     designId: string,
@@ -95,6 +100,8 @@ export const storeDesigns = {
         title: input.name,
         kind: input.kind,
         ...published(input.spec, input.content),
+        ...(isUuid(input.spec.materialId) ? { materialId: input.spec.materialId } : {}),
+        ...(isUuid(input.spec.patternId) ? { patternId: input.spec.patternId } : {}),
         ...(input.thumbnailFileId ? { thumbnailFileId: input.thumbnailFileId } : {}),
       },
     });

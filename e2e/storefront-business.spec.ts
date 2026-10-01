@@ -46,15 +46,7 @@ test.describe("Packio for business", () => {
     await expectNoViolations(page);
   });
 
-  test("company sign-up says it is not open on the website yet", async ({ page }) => {
-    // CONTRACT-GAP store.geo-ids: store.companies.apply files the head office under a province id.
-    await signInAsCustomer(page, "/business/apply", PHONES.founder);
-    await expect(page.getByText("ยังสมัครบัญชีบริษัททางหน้าเว็บไม่ได้")).toBeVisible();
-    await expectNoViolations(page);
-  });
-
   test("a company signs up with its KYC documents and waits for review (D-120)", async ({ page }) => {
-    test.fixme(true, "CONTRACT-GAP store.geo-ids — store.companies.apply needs the head office's province id");
     await signInAsCustomer(page, "/business/apply", PHONES.founder);
     await expect(page.getByRole("heading", { level: 1, name: "เปิดบัญชีบริษัท" })).toBeVisible();
     await page.getByRole("button", { name: "ส่งใบสมัคร" }).click();
@@ -62,7 +54,10 @@ test.describe("Packio for business", () => {
 
     await page.getByLabel(/^ชื่อนิติบุคคล/).fill("บริษัท ทดสอบอีทูอี จำกัด");
     await page.getByLabel(/^เลขประจำตัวผู้เสียภาษี/).fill("0105556000017");
-    await page.getByLabel(/^ที่อยู่สำนักงานใหญ่/).fill("1 ถนนทดสอบ แขวงทดสอบ เขตทดสอบ กรุงเทพมหานคร 10110");
+    // The head office starts from its postcode, which gives the area it is filed under.
+    await page.getByLabel(/^รหัสไปรษณีย์/).fill("10110");
+    await expect(page.getByRole("combobox", { name: /^แขวง\/ตำบล/ })).toContainText("คลองเตย");
+    await page.getByLabel(/^เลขที่ อาคาร ถนน/).fill("1 ถนนทดสอบ");
     await page.getByLabel(/^ชื่อ-นามสกุล/).fill("สมใจ ทดสอบ");
     await page.getByLabel(/^ตำแหน่ง/).fill("กรรมการผู้จัดการ");
     await page.getByLabel(/^วันที่ออกหนังสือรับรอง/).fill(new Date().toISOString().slice(0, 10));

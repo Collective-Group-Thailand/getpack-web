@@ -13,6 +13,7 @@ import { Input } from "@/ui/components/Input";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 
 import { geoName, type Address } from "./address";
+import { PostcodeAreaField, type ChosenArea } from "./PostcodeArea";
 
 export type { Address } from "./address";
 
@@ -35,13 +36,11 @@ const fromAddress = (address: Address): Draft => ({
 });
 
 /**
- * A saved address, edited (design-system.md §3 "AddressForm"): labels above fields, checked on
- * submit, nothing cleared on failure, saved under the `ETag` of a fresh read
- * (`store.addresses.update`, If-Match).
- *
- * CONTRACT-GAP store.geo-ids — an address is filed under a province and sub-district **id**, and no
- * store geo read gives one. So a new address cannot be created yet, and a saved one keeps its area;
- * everything else about it can change.
+ * An address, new or edited (design-system.md §3 "AddressForm"): labels above fields, checked on
+ * submit, nothing cleared on failure. A new one starts from the postcode, which names its
+ * sub-district, district and province and the ids it is filed under (`store.catalog.lookupPostcode`,
+ * `store.addresses.create`); a saved one is changed under the `ETag` of a fresh read
+ * (`store.addresses.update`, If-Match) and keeps its area.
  */
 export function AddressForm({
   address,
@@ -52,24 +51,122 @@ export function AddressForm({
   onSaved: (address: Address) => void;
   onCancel?: () => void;
 }) {
+  if (!address) return <CreateAddress onSaved={onSaved} onCancel={onCancel} />;
+  return <EditAddress address={address} onSaved={onSaved} onCancel={onCancel} />;
+}
+
+const EMPTY: Draft = { label: "", recipientName: "", phone: "", line1: "", line2: "", isDefault: false };
+
+function CreateAddress({ onSaved, onCancel }: { onSaved: (address: Address) => void; onCancel?: () => void }) {
   const t = useTranslations("account.addressForm");
-  if (!address) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Callout tone="info" title={t("createBlockedTitle")}>
-          {t("createBlocked")}
+  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [postcode, setPostcode] = useState("");
+  const [area, setArea] = useState<ChosenArea | null>(null);
+  const [errors, setErrors] = useState<Partial<Record<keyof Draft | "postcode" | "subdistrict", string>>>({});
+  const [failure, setFailure] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const set = (patch: Partial<Draft>) => setDraft((current) => ({ ...current, ...patch }));
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    const found: typeof errors = {};
+    if (!draft.label.trim()) found.label = t("required");
+    if (!draft.recipientName.trim()) found.recipientName = t("required");
+    if (!/^0\d{8,9}$/.test(draft.phone)) found.phone = t("phoneInvalid");
+    if (!draft.line1.trim()) found.line1 = t("required");
+    if (!/^\d{5}$/.test(postcode)) found.postcode = t("postcodeInvalid");
+    else if (!area) found.subdistrict = t("required");
+    setErrors(found);
+    if (Object.keys(found).length > 0 || !area) return;
+    setSaving(true);
+    setFailure(null);
+    try {
+      const { data } = await browserApi().POST("/v1/store/addresses", {
+        body: {
+          kind: "delivery",
+          label: draft.label.trim(),
+          recipientName: draft.recipientName.trim(),
+          phone: draft.phone,
+          line1: draft.line1.trim(),
+          line2: draft.line2.trim() || null,
+          postcode: area.postcode,
+          provinceId: area.provinceId,
+          subdistrictId: area.subdistrictId,
+          isDefault: draft.isDefault,
+        },
+      });
+      onSaved(data!);
+    } catch (error) {
+      setFailure(isApiError(error) ? error.detail : t("failed"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form noValidate onSubmit={(event) => void save(event)} className="flex flex-col gap-4">
+      {failure ? (
+        <Callout tone="danger" live>
+          {failure}
         </Callout>
+      ) : null}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={t("label")} hint={t("labelHint")} error={errors.label} required requiredLabel={t("requiredMark")}>
+          <Input value={draft.label} onChange={(event) => set({ label: event.target.value })} />
+        </Field>
+        <Field label={t("recipient")} error={errors.recipientName} required requiredLabel={t("requiredMark")}>
+          <Input
+            autoComplete="name"
+            value={draft.recipientName}
+            onChange={(event) => set({ recipientName: event.target.value })}
+          />
+        </Field>
+        <Field label={t("phone")} error={errors.phone} required requiredLabel={t("requiredMark")}>
+          <PhoneInput value={draft.phone} onChange={(phone) => set({ phone })} />
+        </Field>
+      </div>
+      <PostcodeAreaField
+        idPrefix="address"
+        postcode={postcode}
+        subdistrictId={area?.subdistrictId ?? ""}
+        errors={{ postcode: errors.postcode, subdistrict: errors.subdistrict }}
+        onChange={(next) => {
+          setPostcode(next.postcode);
+          setArea(next.area);
+        }}
+      />
+      <Field label={t("line1")} hint={t("line1Hint")} error={errors.line1} required requiredLabel={t("requiredMark")}>
+        <Input
+          autoComplete="address-line1"
+          value={draft.line1}
+          onChange={(event) => set({ line1: event.target.value })}
+        />
+      </Field>
+      <Field label={t("line2")}>
+        <Input
+          autoComplete="address-line2"
+          value={draft.line2}
+          onChange={(event) => set({ line2: event.target.value })}
+        />
+      </Field>
+      <Checkbox
+        checked={draft.isDefault}
+        onCheckedChange={(checked) => set({ isDefault: checked === true })}
+        label={t("default")}
+      />
+      <div className="flex gap-2">
+        <Button type="submit" loading={saving}>
+          {t("save")}
+        </Button>
         {onCancel ? (
-          <div>
-            <Button variant="secondary" onClick={onCancel}>
-              {t("cancel")}
-            </Button>
-          </div>
+          <Button variant="ghost" onClick={onCancel}>
+            {t("cancel")}
+          </Button>
         ) : null}
       </div>
-    );
-  }
-  return <EditAddress address={address} onSaved={onSaved} onCancel={onCancel} />;
+    </form>
+  );
 }
 
 function EditAddress({
