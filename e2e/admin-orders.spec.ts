@@ -147,7 +147,9 @@ test.describe("order actions", () => {
 
   test("a payment reminder goes once, and a second within the hour is refused", async ({ page }) => {
     await signInAsStaff(page, "cs");
-    await gotoHydrated(page, `${HOSTS.admin}/orders/${order(6)}?tab=payments`);
+    // PK-2569-00106: a due deposit no other spec pays (PK-2569-00105's is matched to a bank receipt
+    // by admin-finance-payables, which may run first).
+    await gotoHydrated(page, `${HOSTS.admin}/orders/${order(7)}?tab=payments`);
     for (const expected of ["ส่งข้อความเตือนแล้ว", "เพิ่งส่ง"]) {
       await page.getByRole("button", { name: "ส่งข้อความเตือนชำระ" }).click();
       const dialog = page.getByRole("alertdialog", { name: "ส่งข้อความเตือนชำระ?" });
