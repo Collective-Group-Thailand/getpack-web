@@ -341,10 +341,7 @@ onApprovalDecided("payout_run", (approval, outcome) => {
  */
 {
   refreshPayables();
-  // Five days ago, but never before this month began: the month's tax papers (ภ.ง.ด.3 / 53) list
-  // this run's certificates, so in a month's first days the run is dated on its first.
-  const fiveDaysAgo = new Date(Date.now() + 7 * 3_600_000 - 5 * 86_400_000).toISOString().slice(0, 10);
-  const lastWeek = [fiveDaysAgo, `${today().slice(0, 7)}-01`].sort().at(-1)!;
+  const lastWeek = new Date(Date.now() + 7 * 3_600_000 - 5 * 86_400_000).toISOString().slice(0, 10);
   const scb = companyAccounts[0]!;
   const advances = payables.filter(
     (row) =>
