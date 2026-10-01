@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { BILLING_STATEMENT_STATUS, INPUT_VAT_STATUS } from "@/domain/status";
+import { BILLING_STATEMENT_STATUS, INPUT_VAT_STATUS, VENDOR_INVOICE_STATUS } from "@/domain/status";
 import { attempt, canAt, factoryContext, partnerServerApis } from "@/features/partner/context/server";
 import { PageError, PartnerPage } from "@/features/partner/frame";
 import { getFormat } from "@/features/shared/format/server";
@@ -15,19 +15,22 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The factory's billing statements (F5 5.3, D-090): what Packio owes for each period, generated
- * from PO + POD, waiting for the factory to confirm — then for its own tax invoice.
+ * The factory's billing statements (F5 5.3, D-090, `partner.payables.listStatements`): what Packio
+ * owes for each period, generated from PO + POD, waiting for the factory to confirm — then for its
+ * own tax invoice. Token-scoped (D-044); `factoryId` picks the factory a user of several acts for.
  */
 export default async function BillingPage() {
   const t = await getTranslations("partnerBilling");
   const format = await getFormat();
   const context = await factoryContext();
-  const { requests } = await partnerServerApis();
-  const statements = await attempt(() =>
-    requests.call("GET /v1/partner/factories/{factoryId}/billing-statements", {
-      path: { factoryId: context.factoryId },
-      query: { perPage: 50 },
-    }),
+  const { contract } = await partnerServerApis();
+  const statements = await attempt(
+    async () =>
+      (
+        await contract.GET("/v1/partner/billing-statements", {
+          params: { query: { factoryId: context.factoryId, perPage: 50 } },
+        })
+      ).data!,
   );
 
   return (
@@ -62,7 +65,12 @@ export default async function BillingPage() {
                   </span>
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="text-lg font-semibold tabular-nums">{format.thb(statement.totals.gross)}</span>
-                    <StatusChip map={INPUT_VAT_STATUS} value={statement.inputVatStatus} />
+                    {statement.taxInvoiceStatus !== "none" ? (
+                      <StatusChip map={VENDOR_INVOICE_STATUS} value={statement.taxInvoiceStatus} />
+                    ) : null}
+                    {statement.inputVatStatus ? (
+                      <StatusChip map={INPUT_VAT_STATUS} value={statement.inputVatStatus} />
+                    ) : null}
                   </span>
                 </Link>
               </li>

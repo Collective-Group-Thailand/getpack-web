@@ -478,9 +478,10 @@
     "superseded": "มีฉบับใหม่แทน"
   },
   "vendorInvoice": {
-    "submitted": "รอฝ่ายการเงินตรวจ",
+    "recorded": "รอฝ่ายการเงินตรวจ",
     "validated": "ตรวจแล้ว",
-    "rejected": "ไม่ผ่าน"
+    "rejected": "ไม่ผ่าน",
+    "void": "ยกเลิกแล้ว"
   },
   "inputVat": {
     "claimable": "มีใบกำกับภาษีครบ",
@@ -494,7 +495,6 @@
     "excluded": "ไม่รวมในรอบนี้"
   },
   "factoryUser": {
-    "invited": "รอตอบรับคำเชิญ",
     "active": "ใช้งาน",
     "deactivated": "ปิดการใช้งาน"
   },

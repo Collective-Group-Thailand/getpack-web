@@ -478,9 +478,10 @@
     "superseded": "Superseded"
   },
   "vendorInvoice": {
-    "submitted": "Waiting for Finance",
+    "recorded": "Waiting for Finance",
     "validated": "Validated",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "void": "Voided"
   },
   "inputVat": {
     "claimable": "Tax invoice in",
@@ -494,7 +495,6 @@
     "excluded": "Excluded"
   },
   "factoryUser": {
-    "invited": "Invited",
     "active": "Active",
     "deactivated": "Deactivated"
   },

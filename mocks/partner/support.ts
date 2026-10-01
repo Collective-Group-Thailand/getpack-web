@@ -37,6 +37,16 @@ export function own(request: Request, factoryId: unknown, permission?: string): 
   return { who, store };
 }
 
+/**
+ * The signed-in factory user on a **token-scoped** path (`/v1/partner/billing-statements`,
+ * `/v1/partner/claims`, D-044): the factory is the token's; an optional `?factoryId` that is not one
+ * of the token's scopes answers 404, like any other factory's id.
+ */
+export function ownScope(request: Request, permission?: string): Response | Own {
+  const asked = new URL(request.url).searchParams.get("factoryId");
+  return own(request, asked ?? partnerPersonaOf(request)?.factoryId, permission);
+}
+
 /** The factory edits its own data only while it is `applied` or `under_review` (B2.2). */
 export function locked(store: Store): Response | null {
   return ["applied", "under_review"].includes(store.factory.status)
