@@ -8,10 +8,8 @@
 
 import { adminAnalyticsRequests } from "./admin-analytics";
 import { adminConsoleRequests } from "./admin-console";
-import { adminCustomerRequests } from "./admin-customers";
 import { adminFinanceRequests } from "./admin-finance";
 import { adminMarketingRequests } from "./admin-marketing";
-import { adminOrderRequests } from "./admin-orders";
 import { adminPrepressRequests } from "./admin-prepress";
 import { adminRfqRequests } from "./admin-rfq";
 import { storeFulfilmentRequests } from "./store-fulfilment";
@@ -26,8 +24,6 @@ import { storeRfqRequests } from "./store-rfq";
 
 export const REQUESTS = {
   ...adminConsoleRequests,
-  ...adminOrderRequests,
-  ...adminCustomerRequests,
   ...adminRfqRequests,
   ...adminPrepressRequests,
   ...adminMarketingRequests,

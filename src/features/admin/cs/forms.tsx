@@ -8,12 +8,19 @@ import { NumberInput } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { Switch } from "@/ui/components/Switch";
 
-import type {
-  CorrugateInputData,
-  CorrugateSelection,
-  FoldingInputData,
-  FoldingSelection,
-  Selection,
+import { Button } from "@/ui/components/Button";
+
+import {
+  sizeProblems,
+  type Axis,
+  type CatalogProduct,
+  type CorrugateInputData,
+  type CorrugateSelection,
+  type FoldingInputData,
+  type FoldingSelection,
+  type Selection,
+  type SizeProblem,
+  type SizeRules,
 } from "./configuration";
 
 type Named = { id: string; nameTh: string; nameEn: string };
@@ -58,14 +65,36 @@ function Millimetres({
   label,
   value,
   onChange,
+  range,
+  problem,
 }: {
   label: string;
   value: number | undefined;
   onChange: (value: number | undefined) => void;
+  /** The pattern's limits for this dimension, as the API sent them. */
+  range: [number | null, number | null];
+  problem: SizeProblem | undefined;
 }) {
   const tCommon = useTranslations("common");
+  const t = useTranslations("cs.form");
+  const [min, max] = range;
+  const hint =
+    min !== null && max !== null
+      ? t("range", { min, max })
+      : min !== null
+        ? t("rangeMin", { min })
+        : max !== null
+          ? t("rangeMax", { max })
+          : undefined;
+  const error = problem
+    ? problem.code === "min"
+      ? t("tooSmall", { min: problem.limitMm })
+      : problem.code === "max"
+        ? t("tooLarge", { max: problem.limitMm })
+        : t(problem.code)
+    : undefined;
   return (
-    <Field label={label} required requiredLabel={tCommon("state.required")}>
+    <Field label={label} required requiredLabel={tCommon("state.required")} hint={hint} error={error}>
       <NumberInput
         unit={tCommon("units.mm")}
         min={1}
@@ -106,8 +135,13 @@ function Colours({
   );
 }
 
-/** Pattern, sub-pattern, size, material and difficulty — what both calculators ask first. */
+/**
+ * Catalogue product, pattern, sub-pattern, size, material and difficulty — what both calculators ask
+ * first. A catalogue product offers its standard sizes; the pattern's size rules bound each
+ * dimension (v0.5.0).
+ */
 function Shape<S extends Selection>({
+  catalogProducts,
   patterns,
   materials,
   difficulties,
@@ -115,7 +149,8 @@ function Shape<S extends Selection>({
   value,
   onChange,
 }: {
-  patterns: { id: string; name: string; subPatterns: { id: string; name: string }[] }[];
+  catalogProducts: CatalogProduct[];
+  patterns: { id: string; name: string; rules: SizeRules; subPatterns: { id: string; name: string }[] }[];
   materials: { value: string; label: string }[];
   difficulties: Named[];
   materialLabel: string;
@@ -125,8 +160,28 @@ function Shape<S extends Selection>({
   const t = useTranslations("cs.form");
   const nameOf = useNameOf();
   const pattern = patterns.find((candidate) => candidate.id === value.patternId);
+  const product = catalogProducts.find((candidate) => candidate.id === value.catalogProductId);
+  const problems = sizeProblems(pattern?.rules, value);
+  const range = (axis: Axis): [number | null, number | null] => {
+    const rules = pattern?.rules;
+    if (!rules) return [null, null];
+    return axis === "l"
+      ? [rules.minLMm, rules.maxLMm]
+      : axis === "w"
+        ? [rules.minWMm, rules.maxWMm]
+        : [rules.minHMm, rules.maxHMm];
+  };
   return (
     <div className="space-y-4">
+      {catalogProducts.length > 0 ? (
+        <Choice
+          label={t("catalogProduct")}
+          allowNone
+          options={catalogProducts.map((row) => ({ value: row.id, label: nameOf({ ...row }) }))}
+          value={value.catalogProductId}
+          onChange={(catalogProductId) => onChange({ ...value, catalogProductId })}
+        />
+      ) : null}
       <Choice
         label={t("pattern")}
         required
@@ -143,11 +198,50 @@ function Shape<S extends Selection>({
           onChange={(subPatternId) => onChange({ ...value, subPatternId })}
         />
       ) : null}
-      {/* Pattern size limits and standard sizes are not in the input data (CONTRACT-GAP admin.cs-calculators). */}
+      {product && product.standardSizes.length > 0 ? (
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-medium">{t("standardSizes")}</legend>
+          <div className="flex flex-wrap gap-2">
+            {product.standardSizes.map((size) => (
+              <Button
+                key={size.id}
+                type="button"
+                size="sm"
+                variant={
+                  value.l === size.lengthMm && value.w === size.widthMm && value.d === size.heightMm
+                    ? "primary"
+                    : "secondary"
+                }
+                onClick={() => onChange({ ...value, l: size.lengthMm, w: size.widthMm, d: size.heightMm })}
+              >
+                {size.name}
+              </Button>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
       <div className="grid grid-cols-3 gap-2">
-        <Millimetres label={t("length")} value={value.l} onChange={(l) => onChange({ ...value, l })} />
-        <Millimetres label={t("width")} value={value.w} onChange={(w) => onChange({ ...value, w })} />
-        <Millimetres label={t("height")} value={value.d} onChange={(d) => onChange({ ...value, d })} />
+        <Millimetres
+          label={t("length")}
+          value={value.l}
+          range={range("l")}
+          problem={problems.l}
+          onChange={(l) => onChange({ ...value, l })}
+        />
+        <Millimetres
+          label={t("width")}
+          value={value.w}
+          range={range("w")}
+          problem={problems.w}
+          onChange={(w) => onChange({ ...value, w })}
+        />
+        <Millimetres
+          label={t("height")}
+          value={value.d}
+          range={range("d")}
+          problem={problems.d}
+          onChange={(d) => onChange({ ...value, d })}
+        />
       </div>
       <Choice
         label={materialLabel}
@@ -202,6 +296,7 @@ function FoldingForm({
   return (
     <div className="space-y-4">
       <Shape
+        catalogProducts={data.catalogProducts}
         patterns={data.patterns}
         materials={data.materials.map((row) => ({
           value: row.id,
@@ -269,6 +364,7 @@ function CorrugateForm({
   return (
     <div className="space-y-4">
       <Shape
+        catalogProducts={data.catalogProducts}
         patterns={data.patterns}
         materials={boards.map((row) => ({ value: row.id, label: `${nameOf(row)} · ${row.flute.name}` }))}
         difficulties={data.difficultyLevels}

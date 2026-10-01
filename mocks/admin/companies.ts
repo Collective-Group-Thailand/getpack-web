@@ -1,12 +1,14 @@
 /**
  * B2B companies on the published contract (`admin.companies.*`, `admin.companyCredit.*`,
- * `admin.receivables.companyStatement`, U-F0.3): KYC and its review (D-120), members and branches
- * inline on the company (D-125), credit — prepaid until a limit is approved by the `credit_limit`
- * policy (D-121) — and monthly statements.
+ * `admin.receivables.companyStatement*`): KYC and its review (D-120), members and branches inline
+ * on the company (D-125), credit — prepaid until a limit is approved by the `credit_limit` policy
+ * (D-121) — with its versions, receivables and aging (D-122), and the issued monthly statements
+ * with their PDF. The company carries an `ETag`; staff actions honour an optional `If-Match`
+ * (v0.5.0).
  *
  * The companies are the commerce mock's juristic customers, kept in their own model
- * (`./company-model`) with the receivables and the credit history the contract does not carry
- * yet; the storefront's business mock reads and changes the same rows. The limits, terms and
+ * (`./company-model`) with the receivables and the credit history; the storefront's business mock
+ * reads and changes the same rows. The limits, terms and
  * overdue rules are read from the settings the backend reads (`b2b.credit_terms`,
  * `b2b.credit_eligibility_paid_orders`, `b2b.overdue_rules`).
  */
@@ -17,7 +19,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS } from "../personas";
-import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy } from "../support";
+import { bangkokIso, matchesQuery, mockId, paginate, problem, sortBy, versionTag } from "../support";
 import { baht, customers } from "./commerce";
 import type {
   CompanyBranchRow,
@@ -471,8 +473,8 @@ export function toAdminCompanyDto(store: (typeof stores)[number]): Schemas["Admi
   };
 }
 
-/** The company's credit as `admin.companyCredit.*` answers it, with the limit request still waiting. */
-function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["CompanyCreditDto"] {
+/** The company's credit as `admin.companyCredit.*` answers it: figures, eligibility, every limit version. */
+function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["AdminCompanyCreditDto"] {
   const company = present(store);
   const pending = company.credit.versions.find((version) => version.status === "proposed");
   return {
@@ -484,9 +486,85 @@ function toCompanyCreditDto(store: (typeof stores)[number]): Schemas["CompanyCre
     currency: "THB",
     eligibility: toCreditEligibilityDto(store),
     pendingRequest: pending
-      ? { limitAmount: pending.limitAmount, termDays: pending.termDays, requestedAt: pending.createdAt }
+      ? {
+          versionNo: pending.versionNo,
+          limitAmount: pending.limitAmount,
+          termDays: pending.termDays,
+          requestedAt: pending.createdAt,
+          approvalId: pending.approvalRequestId,
+        }
       : null,
+    versions: company.credit.versions.map((version) => ({
+      id: mockId("clv", stores.indexOf(store) * 100 + version.versionNo),
+      versionNo: version.versionNo,
+      limitAmount: version.limitAmount,
+      termDays: version.termDays,
+      basis: version.basis,
+      reason: version.reason,
+      status: version.status,
+      effectiveFrom: version.effectiveFrom,
+      requestedAt: version.createdAt,
+      requestedBy: version.requestedBy,
+      decidedAt: version.status === "proposed" ? null : version.effectiveFrom,
+      approvalId: version.approvalRequestId,
+    })),
   };
+}
+
+/** Open receivables by days past due, with the D-122 notices (`admin.companyCredit.receivables`). */
+function toCompanyReceivablesDto(store: (typeof stores)[number]): Schemas["CompanyReceivablesDto"] {
+  const { receivables } = present(store);
+  const overdue = Number(receivables.overdueAmount);
+  const days = receivables.oldestOverdueDays;
+  const bucket = (from: number, to: number) => baht(overdue > 0 && days >= from && days <= to ? overdue * 100 : 0);
+  const notices: Schemas["CreditNoticeDto"][] = [
+    ...(overdue > 0
+      ? [{ code: "overdue" as const, amount: receivables.overdueAmount, dueAt: null, groupCode: null }]
+      : []),
+    ...(receivables.creditOrdersBlocked
+      ? [{ code: "credit_blocked" as const, amount: null, dueAt: null, groupCode: null }]
+      : []),
+    ...(receivables.nextDueAt && Date.parse(receivables.nextDueAt) - Date.now() < 7 * DAY * 60_000
+      ? [{ code: "due_soon" as const, amount: null, dueAt: receivables.nextDueAt, groupCode: null }]
+      : []),
+  ];
+  return {
+    asOf: today(),
+    openAmount: receivables.openAmount,
+    overdueAmount: receivables.overdueAmount,
+    oldestOverdueDays: overdue > 0 ? days : null,
+    nextDueAt: receivables.nextDueAt,
+    creditOrdersBlocked: receivables.creditOrdersBlocked,
+    currency: "THB",
+    aging: {
+      current: baht((Number(receivables.openAmount) - overdue) * 100),
+      d1_30: bucket(1, 30),
+      d31_60: bucket(31, 60),
+      d61_90: bucket(61, 90),
+      over_90: bucket(91, Number.MAX_SAFE_INTEGER),
+    },
+    notices,
+  };
+}
+
+/** The statements issued so far, newest first (`admin.companyCredit.listStatements`, at most 24). */
+function toIssuedStatements(store: (typeof stores)[number]): Schemas["IssuedStatementDto"][] {
+  return [...store.statements]
+    .sort((a, b) => b.period.localeCompare(a.period))
+    .slice(0, 24)
+    .map((statement) => ({
+      id: statement.id,
+      month: statement.period,
+      openingAmount: statement.openingBalance,
+      invoicedAmount: statement.invoicedAmount,
+      creditedAmount: "0.00",
+      paidAmount: statement.paidAmount,
+      closingAmount: statement.closingBalance,
+      currency: "THB",
+      pdfReady: statement.file !== null,
+      generatedAt: statement.issuedAt,
+      sentAt: statement.issuedAt,
+    }));
 }
 
 /**
@@ -544,7 +622,24 @@ async function reasonOf(request: Request): Promise<string | Response> {
 }
 
 const invalidStatus = () => problem(409, "companies.invalid_status", "ทำรายการนี้กับบริษัทในสถานะนี้ไม่ได้");
-const answer = (store: (typeof stores)[number]) => HttpResponse.json(toAdminCompanyDto(store));
+
+/** The company's `ETag`: its last change, as the API versions the aggregate. */
+const etagOf = (store: (typeof stores)[number]) =>
+  versionTag(store.company.id, Date.parse(store.company.updatedAt) || 0);
+
+/** An optional `If-Match` (v0.5.0): when sent, it must name the company as it is now. */
+function stale(request: Request, store: (typeof stores)[number]): Response | null {
+  const match = request.headers.get("if-match");
+  return match && match !== etagOf(store)
+    ? problem(412, "concurrency.stale", "ข้อมูลนี้ถูกแก้ไขไปแล้ว กรุณาโหลดใหม่")
+    : null;
+}
+
+const answer = (store: (typeof stores)[number]) =>
+  HttpResponse.json(toAdminCompanyDto(store), { headers: { ETag: etagOf(store) } });
+
+/** A requested limit's replay by `Idempotency-Key` (optional on `requestLimit`, v0.5.0). */
+const limitReplays = new Map<string, Schemas["AdminCompanyCreditDto"]>();
 
 onApprovalDecided("credit_limit", (approval, outcome) => {
   const store = stores.find((candidate) => candidate.company.id === approval.subjectId);
@@ -573,8 +668,7 @@ registerQueue("companies.read", () => {
   const rows = stores.filter((store) => present(store).receivables.creditOrdersBlocked);
   return {
     key: "companies.overdue",
-    // CONTRACT-GAP admin.companies — the published list has no creditStatus filter, so the queue opens the list.
-    path: "/admin/companies",
+    path: "/admin/companies?creditStatus=blocked_overdue",
     count: rows.length,
     overdueCount: rows.length,
     nextDueAt: null,
@@ -593,9 +687,11 @@ export const companyHandlers = [
     if (ok instanceof Response) return ok;
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
+    const creditStatus = url.searchParams.get("creditStatus");
     const q = url.searchParams.get("q") ?? undefined;
     const rows = stores
       .filter((store) => !status || store.company.status === status)
+      .filter((store) => !creditStatus || present(store).creditStatus === creditStatus)
       .filter((store) => matchesQuery(q, store.company.companyCode, store.company.legalName, store.company.taxId))
       .map(toAdminCompanyDto);
     const sort = url.searchParams.get("sort") ?? "createdAt";
@@ -612,6 +708,8 @@ export const companyHandlers = [
   http.post("*/v1/admin/companies/:companyId/actions/approve-kyc", ({ params, request }) => {
     const ok = access(request, String(params.companyId), "companies.kyc_review");
     if (ok instanceof Response) return ok;
+    const conflict = stale(request, ok.store);
+    if (conflict) return conflict;
     const { company } = ok.store;
     if (company.status !== "kyc_review") return invalidStatus();
     const missing = requiredKyc(company).filter(
@@ -632,6 +730,8 @@ export const companyHandlers = [
   http.post("*/v1/admin/companies/:companyId/actions/reject-kyc", async ({ params, request }) => {
     const ok = access(request, String(params.companyId), "companies.kyc_review");
     if (ok instanceof Response) return ok;
+    const conflict = stale(request, ok.store);
+    if (conflict) return conflict;
     const reason = await reasonOf(request);
     if (reason instanceof Response) return reason;
     const { company } = ok.store;
@@ -644,6 +744,8 @@ export const companyHandlers = [
   http.post("*/v1/admin/companies/:companyId/actions/:action", async ({ params, request }) => {
     const ok = access(request, String(params.companyId), "companies.manage");
     if (ok instanceof Response) return ok;
+    const conflict = stale(request, ok.store);
+    if (conflict) return conflict;
     const transition = TRANSITIONS[String(params.action) as Schemas["CompanyAction"]];
     if (!transition)
       return problem(422, "validation.failed", "ไม่รู้จักรายการนี้", [
@@ -667,6 +769,8 @@ export const companyHandlers = [
   http.post("*/v1/admin/companies/:companyId/kyc-documents/:documentId/actions/review", async ({ params, request }) => {
     const ok = access(request, String(params.companyId), "companies.kyc_review");
     if (ok instanceof Response) return ok;
+    const conflict = stale(request, ok.store);
+    if (conflict) return conflict;
     const doc = ok.store.kyc.find((candidate) => candidate.id === params.documentId);
     if (!doc) return problem(404, "http.not_found", "ไม่พบเอกสารนี้");
     const body = (await request.json().catch(() => null)) as Schemas["ReviewKycDocumentDto"] | null;
@@ -701,6 +805,9 @@ export const companyHandlers = [
   http.post("*/v1/admin/companies/:companyId/credit-limits", async ({ params, request }) => {
     const ok = access(request, String(params.companyId), "company_credit.manage");
     if (ok instanceof Response) return ok;
+    const key = request.headers.get("idempotency-key");
+    const replay = key ? limitReplays.get(`${ok.store.company.id} ${key}`) : undefined;
+    if (replay) return HttpResponse.json(replay, { status: 201, headers: { "Idempotent-Replayed": "true" } });
     const body = (await request.json().catch(() => null)) as Schemas["RequestCreditLimitDto"] | null;
     const { allowedDays, defaultDays } = settingValue<{ allowedDays: number[]; defaultDays: number }>(
       "b2b.credit_terms",
@@ -762,7 +869,32 @@ export const companyHandlers = [
       createdAt: bangkokIso(),
     });
     company.updatedAt = bangkokIso();
-    return HttpResponse.json(toCompanyCreditDto(ok.store), { status: 201 });
+    const credit = toCompanyCreditDto(ok.store);
+    if (key) limitReplays.set(`${company.id} ${key}`, credit);
+    return HttpResponse.json(credit, { status: 201 });
+  }),
+
+  // admin.companyCredit.receivables — aging and the D-122 notices.
+  http.get("*/v1/admin/companies/:companyId/receivables", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.read");
+    return ok instanceof Response ? ok : HttpResponse.json(toCompanyReceivablesDto(ok.store));
+  }),
+
+  // admin.companyCredit.listStatements — the issued months (D-125).
+  http.get("*/v1/admin/companies/:companyId/issued-statements", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "companies.read");
+    return ok instanceof Response ? ok : HttpResponse.json(toIssuedStatements(ok.store));
+  }),
+
+  // admin.receivables.companyStatementPdf — a short-lived URL of an issued month's PDF.
+  http.get("*/v1/admin/companies/:companyId/statements/:month/pdf", ({ params, request }) => {
+    const ok = access(request, String(params.companyId), "receivables.read");
+    if (ok instanceof Response) return ok;
+    const statement = ok.store.statements.find((candidate) => candidate.period === params.month);
+    if (!statement) return problem(404, "http.not_found", "ยังไม่ได้ออกใบแจ้งยอดของเดือนนี้");
+    if (!statement.file) return problem(409, "file.not_ready", "ใบแจ้งยอดยังสร้างไม่เสร็จ");
+    const url = `data:text/plain;charset=utf-8,${encodeURIComponent(`${ok.store.company.companyCode} ${statement.period} (ข้อมูลจำลอง)`)}`;
+    return HttpResponse.json({ url, expiresAt: bangkokIso(5) } satisfies Schemas["DownloadUrlDto"]);
   }),
 
   // admin.receivables.companyStatement — one month per call (D-125).

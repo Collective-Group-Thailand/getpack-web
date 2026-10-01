@@ -1,15 +1,13 @@
 /**
- * Requests for the order desk that packio-api still has to build (U-B0.2): the cancel reasons and
- * the payment reminders. The orders, groups, notes, timeline and the other actions are published
- * (`admin.orders.*`, `admin.orderOperations.*`, U-F0.3).
- *
- * The enums and references below are shared by the other request files; their values are
- * packio-api's (§4 catalogue).
+ * The order desk's vocabulary, shared by the other request files and the mock fixture models; the
+ * values are packio-api's (§4 catalogue). The order desk itself is published (`admin.orders.*`,
+ * `admin.orderOperations.*`): its last requests (cancel reasons, payment reminders) went in
+ * U-F0.4, so this file holds no request of its own.
  */
 
 import { z } from "zod";
 
-import { request, uuid } from "./define";
+import { uuid } from "./define";
 
 /* ------------------------------------------------------------------------------------ enums */
 
@@ -148,10 +146,6 @@ export const customerRef = z
 export const productTypeRef = z.object({ code: z.string(), name: z.string() }).meta({ id: "ProductTypeRefDto" });
 export const factoryRef = z.object({ id: uuid(), code: z.string(), name: z.string() }).meta({ id: "FactoryRefDto" });
 
-/* ----------------------------------------------------------------------------------- list */
-
-/* --------------------------------------------------------------------------------- detail */
-
 export const addressSnapshot = z
   .object({
     recipientName: z.string(),
@@ -188,28 +182,3 @@ export const preflightFinding = z
 
 /** Who carries it: the factory itself (D-013), or a Packio-booked fallback (D-114). */
 export const carrierCode = z.enum(["factory_fleet", "flash_express", "deliveree"]).meta({ id: "CarrierCode" });
-
-export const cancelReason = z
-  .object({ code: z.string(), name: z.string(), requiresCreditNote: z.boolean() })
-  .meta({ id: "OrderCancelReasonDto" });
-
-/* ----------------------------------------------------------------------------------- requests */
-
-export const adminOrderRequests = {
-  "GET /v1/admin/order-cancel-reasons": request({
-    request: "admin.order-actions",
-    summary: "Why an order can be cancelled, and which reasons need a credit note",
-    response: z.object({ data: z.array(cancelReason) }),
-  }),
-  "POST /v1/admin/orders/{orderId}/actions/send-payment-reminder": request({
-    request: "admin.order-actions",
-    summary: "Remind the customer of the instalment that is due",
-    status: 204,
-  }),
-  "POST /v1/admin/orders/actions/send-payment-reminders": request({
-    request: "admin.order-actions",
-    summary: "Bulk: remind the customers of several orders in the รอชำระ queue",
-    body: z.object({ orderIds: z.array(uuid()).min(1).max(100) }),
-    response: z.object({ sent: z.number().int(), skipped: z.array(z.object({ orderId: uuid(), reason: z.string() })) }),
-  }),
-} as const;

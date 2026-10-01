@@ -4,11 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import type { AdminOrderAction } from "@/domain/next-actions/admin";
 import { uploadFile } from "@/features/shared/files/upload";
 import { useFormat } from "@/features/shared/format";
+import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
-import { browserRequests } from "@/lib/api/requests/browser";
 import { STALE_TIME } from "@/lib/query/defaults";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
@@ -19,35 +18,42 @@ import { toast } from "@/ui/components/Toast";
 import { adminBrowserApis, ConfirmAction, NextActionBar, problemMessage } from "../console";
 import { SlipReview } from "../finance/slips";
 import { useGroupSchedule, type QueuedSlip } from "./data";
-import type { Order, OrderGroup } from "./resources";
+import type { CancelReason, Order, OrderGroup } from "./resources";
 
+/**
+ * What the order screen can open: the order's own actions (`nextActions`) and the group's payment
+ * operations, which packio-api offers no action list for (no order-group actions, U-B0.3) — the
+ * Payments tab opens those from the instalment and the slip they act on.
+ */
 export type OrderActionKey =
   "approve_slip" | "reject_slip" | "start_production" | "cancel" | "send_payment_reminder" | "record_slip";
 
-const SUPPORTED = new Set<string>([
-  "approve_slip",
-  "reject_slip",
-  "start_production",
-  "cancel",
-  "send_payment_reminder",
-  "record_slip",
-]);
+/**
+ * The order actions this screen performs. packio-api also offers `submit_artwork`, `add_mockup`
+ * and `reprice` (D-051, D-074); the desk has no flow for them yet, so they show disabled with why.
+ */
+const SUPPORTED = new Set<string>(["start_production", "cancel"]);
 
-/** The order's actions as `adminOrderActions` offers them — see `NextActionBar`. */
+/** The order's actions exactly as the API offered them (`AdminOrderDto.nextActions`) — see `NextActionBar`. */
 export function OrderActionBar({
   actions,
   onAction,
 }: {
-  actions: AdminOrderAction[];
+  actions: Order["nextActions"];
   onAction: (key: OrderActionKey) => void;
 }) {
   const t = useTranslations("orders.actions");
+  const tProblems = useTranslations("problems");
   return (
     <NextActionBar
-      actions={actions.map(({ key, irreversible, blockedBy }) => ({
-        key,
-        irreversible,
-        disabledReason: blockedBy ? t(`blocked.${blockedBy}`) : null,
+      // A blocked action's reason is a message key (`order.reprice_has_discounts`): the problem
+      // copy when this app has words for it, else as the API gave it.
+      actions={actions.map((action) => ({
+        ...action,
+        disabledReason:
+          action.disabledReason && tProblems.has(action.disabledReason)
+            ? tProblems(action.disabledReason)
+            : action.disabledReason,
       }))}
       supported={SUPPORTED}
       labelOf={(key) => (t.has(`labels.${key}`) ? t(`labels.${key}`) : undefined)}
@@ -62,14 +68,12 @@ type Settle = () => void;
 export function OrderActionDialogs({
   order,
   group,
-  customerName,
   open,
   slip,
   onClose,
 }: {
   order: Order;
   group: OrderGroup | null;
-  customerName: string | null;
   open: OrderActionKey | null;
   slip: QueuedSlip | null;
   onClose: () => void;
@@ -82,6 +86,7 @@ export function OrderActionDialogs({
   const nextInstalment =
     schedule.data?.instalments.find((instalment) => !["paid", "cancelled", "refunded"].includes(instalment.status)) ??
     null;
+  const customerName = group?.customer.displayName ?? null;
   const restated = t("restate", {
     code: order.orderCode,
     amount: format.thb(order.totals.grossAmount),
@@ -123,11 +128,10 @@ export function OrderActionDialogs({
             minLength: 3,
             hint: t("startProduction.reasonHint"),
           }}
-          onConfirm={async ({ reason }) => {
+          onConfirm={async ({ idempotencyKey, reason }) => {
             try {
-              // No Idempotency-Key: the published operation does not take one (CONTRACT-GAP admin.order-actions).
               await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/actions/start-production", {
-                params: { path: { orderId } },
+                params: { path: { orderId }, header: { "Idempotency-Key": idempotencyKey } },
                 body: { reason: reason! },
               });
               settle();
@@ -156,13 +160,14 @@ export function OrderActionDialogs({
           title={t("remind.title")}
           description={t("remind.body", {
             customer: customerName ?? "—",
-            amount: format.thb(nextInstalment?.grossAmount),
+            amount: format.thb(nextInstalment?.openAmount),
           })}
           confirmLabel={t("remind.confirm")}
-          onConfirm={async () => {
+          onConfirm={async ({ idempotencyKey }) => {
             try {
-              await browserRequests().call("POST /v1/admin/orders/{orderId}/actions/send-payment-reminder", {
-                path: { orderId },
+              // packio-api reminds of the group's first unpaid due instalment, once an hour at most.
+              await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/actions/send-payment-reminder", {
+                params: { path: { orderId }, header: { "Idempotency-Key": idempotencyKey } },
               });
               settle();
               toast.success(t("remind.done"));
@@ -204,13 +209,21 @@ function CancelDialog({
   fail: (error: unknown) => never;
 }) {
   const t = useTranslations("orders.actions");
+  const locale = useLocale();
   const [reasonCode, setReasonCode] = useState<string>("");
+  // The reasons staff may give (D-060); the customer's and the system's own are not offered here.
   const reasons = useQuery({
-    queryKey: queryKeys.list("admin", "order_cancel_reason"),
-    queryFn: () => browserRequests().call("GET /v1/admin/order-cancel-reasons"),
+    queryKey: queryKeys.list("admin", "order_cancel_reason", { appliesTo: "staff" }),
+    queryFn: async () =>
+      (
+        await adminBrowserApis().contract.GET("/v1/admin/order-cancel-reasons", {
+          params: { query: { appliesTo: "staff" } },
+        })
+      ).data!,
     staleTime: STALE_TIME.reference,
   });
-  const chosen = reasons.data?.data.find((reason) => reason.code === reasonCode);
+  const nameOf = (reason: CancelReason) => (locale === "en" ? reason.nameEn : reason.nameTh);
+  const chosen = reasons.data?.find((reason) => reason.code === reasonCode);
 
   return (
     <ConfirmAction
@@ -222,15 +235,14 @@ function CancelDialog({
       tone="destructive"
       confirmationPhrase={order.orderCode}
       reason={{ label: t("cancel.note"), hint: chosen?.requiresCreditNote ? t("cancel.creditNote") : undefined }}
-      onConfirm={async ({ reason }) => {
+      onConfirm={async ({ idempotencyKey, reason }) => {
         if (!reasonCode) {
           toast.error(t("cancel.chooseReason"));
           throw new Error("no reason");
         }
         try {
-          // No Idempotency-Key: the published operation does not take one (CONTRACT-GAP admin.order-actions).
           await adminBrowserApis().contract.POST("/v1/admin/orders/{orderId}/actions/cancel", {
-            params: { path: { orderId: order.id } },
+            params: { path: { orderId: order.id }, header: { "Idempotency-Key": idempotencyKey } },
             body: { reasonCode, ...(reason ? { note: reason } : {}) },
           });
           settle();
@@ -245,7 +257,7 @@ function CancelDialog({
           value={reasonCode || undefined}
           onValueChange={setReasonCode}
           placeholder={t("cancel.chooseReason")}
-          options={(reasons.data?.data ?? []).map((reason) => ({ value: reason.code, label: reason.name }))}
+          options={(reasons.data ?? []).map((reason) => ({ value: reason.code, label: nameOf(reason) }))}
         />
       </Field>
     </ConfirmAction>
@@ -280,6 +292,8 @@ function RecordSlipDialog({
   const [file, setFile] = useState<File | null>(null);
   const [amount, setAmount] = useState(open[0]?.grossAmount ?? "");
   const [transferredAt, setTransferredAt] = useState("");
+  // Two writes, one intent: the payment takes the dialog's key, the slip its own (each a uuid).
+  const [slipKey] = useState(newIdempotencyKey);
   const ready = instalmentId && file && /^\d+(\.\d{1,2})?$/.test(amount) && transferredAt;
 
   return (
@@ -300,12 +314,12 @@ function RecordSlipDialog({
           const { contract } = adminBrowserApis();
           const payment = (
             await contract.POST("/v1/admin/order-groups/{groupId}/payments", {
-              params: { path: { groupId: group.id }, header: { "Idempotency-Key": `${idempotencyKey}:payment` } },
+              params: { path: { groupId: group.id }, header: { "Idempotency-Key": idempotencyKey } },
               body: { method: "bank_transfer_slip", instalmentIds: [instalmentId] },
             })
           ).data!;
           await contract.POST("/v1/admin/payments/{paymentId}/slips", {
-            params: { path: { paymentId: payment.id }, header: { "Idempotency-Key": `${idempotencyKey}:slip` } },
+            params: { path: { paymentId: payment.id }, header: { "Idempotency-Key": slipKey } },
             body: {
               fileId: uploaded.id,
               declaredAmount: `${whole}.${fraction.padEnd(2, "0")}`,

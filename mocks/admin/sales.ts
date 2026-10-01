@@ -129,17 +129,43 @@ function foldingInputData(): Schemas["FoldingInputDataDto"] {
     diecutTypes: live(catalogueRows("diecutTypes")).map(named),
     assemblies: assemblies(),
     difficultyLevels: live(catalogueRows("difficultyLevels")).map(named),
-    ...calculatorPolicy(),
+    ...calculatorPolicy("folding"),
   };
 }
 
 /**
  * What both calculators' input data add: CS's own discount limit (`discounts.cs_limit_pct`,
- * D-052), and no catalogue products yet (the mock keeps no quantity presets or standard sizes
- * for the CS desk).
+ * D-052), and the calculator's catalogue products, each with its standard sizes and quantity
+ * presets (v0.5.0) — the catalogue mock's own rows, as the storefront configurator reads them.
  */
-function calculatorPolicy(): Pick<Schemas["FoldingInputDataDto"], "catalogProducts" | "discountPolicy"> {
-  return { catalogProducts: [], discountPolicy: { directLimitPct: String(csLimit()) } };
+function calculatorPolicy(
+  calculator: "folding" | "corrugate",
+): Pick<Schemas["FoldingInputDataDto"], "catalogProducts" | "discountPolicy"> {
+  const types = new Set(
+    live(catalogueRows("productTypes"))
+      .filter((row) => row.calculatorKey === calculator)
+      .map((row) => str(row.id)),
+  );
+  const catalogProducts = live(catalogueRows("catalogProducts"))
+    .filter((row) => row.status !== "draft" && types.has(str(row.productTypeId)))
+    .map((product) => ({
+      id: str(product.id),
+      slug: str(product.slug),
+      nameTh: str(product.nameTh),
+      nameEn: str(product.nameEn ?? product.nameTh),
+      quantity: { presets: [500, 1000, 2000, 3000, 5000, 10000], min: 100, max: 500_000, default: 1000, maxTiers: 5 },
+      standardSizes: live(catalogueRows("standardSizes"))
+        .filter((size) => size.catalogProductId === product.id)
+        .map((size) => ({
+          id: str(size.id),
+          code: str(size.code),
+          name: str(size.name),
+          lengthMm: Number(size.lengthMm),
+          widthMm: Number(size.widthMm),
+          heightMm: Number(size.heightMm),
+        })),
+    }));
+  return { catalogProducts, discountPolicy: { directLimitPct: String(csLimit()) } };
 }
 
 function corrugateInputData(): Schemas["CorrugateInputDataDto"] {
@@ -174,7 +200,7 @@ function corrugateInputData(): Schemas["CorrugateInputDataDto"] {
     assemblies: assemblies(),
     difficultyLevels: live(catalogueRows("difficultyLevels")).map(named),
     printAreas: ["top", "side", "top_side", "all_round"],
-    ...calculatorPolicy(),
+    ...calculatorPolicy("corrugate"),
   };
 }
 
@@ -387,7 +413,14 @@ const memos: Memo[] = [
     reason: "ลูกค้าเทียบราคากับคู่แข่ง ขอส่วนลดเพื่อปิดการขาย",
     approvalId: mockId("appr", 1),
     appliedGroupCode: null,
-    evidence: [],
+    evidence: [
+      {
+        id: mockId("fil", 9101),
+        originalName: "ราคาคู่แข่ง-ข้อมูลจำลอง.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 182_400,
+      },
+    ],
     validUntil: bangkokIso(DAY * 14),
     createdAt: bangkokIso(-53),
   },
@@ -470,6 +503,7 @@ export const salesHandlers = [
     const rows = quotations
       .filter((quote) => !status || quote.status === status)
       .filter((quote) => !customerId || quote.customer?.id === customerId)
+      .filter((quote) => !url.searchParams.get("channel") || quote.channel === url.searchParams.get("channel"))
       .filter((quote) => matchesQuery(q, quote.quoteCode, quote.customer?.displayName));
     const sort = url.searchParams.get("sort") ?? "createdAt";
     const order = (url.searchParams.get("order") as "asc" | "desc" | null) ?? "desc";
@@ -654,10 +688,12 @@ export const salesHandlers = [
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
     const customerId = url.searchParams.get("customerId");
+    const requestedBy = url.searchParams.get("requestedBy");
     const q = url.searchParams.get("q") ?? undefined;
     const rows = memos
       .filter((memo) => !status || memo.status === status)
       .filter((memo) => !customerId || memo.customer?.id === customerId)
+      .filter((memo) => !requestedBy || memo.requestedBy.id === requestedBy)
       .filter((memo) => matchesQuery(q, memo.customer?.displayName, memo.reason));
     return HttpResponse.json(paginate(rows, pageOf(url)));
   }),

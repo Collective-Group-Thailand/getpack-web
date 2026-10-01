@@ -37,9 +37,25 @@ test.describe("the CS queues", () => {
     await expect(tab).toHaveAttribute("aria-current", "page");
     const table = page.getByRole("table", { name: "คำสั่งซื้อ" });
     await expect(table.getByRole("row")).not.toHaveCount(1);
-    // The queue row carries no SLA timer (CONTRACT-GAP admin.orders); the queue is the SLA order.
+    // No row says how urgent the order is (CONTRACT-GAP admin.orders: no order SLA decided);
+    // the queue is the SLA order.
     await page.getByRole("link", { name: /^รอตรวจไฟล์/ }).click();
     await expect(page).toHaveURL(/queue=artwork_review/);
+    await expectAxeClean(page);
+  });
+
+  test("every order is one tab, filtered by the API and naming a slip that waits", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/orders?queue=all`);
+    await expect(page.getByRole("link", { name: /^ทั้งหมด/ })).toHaveAttribute("aria-current", "page");
+    const table = page.getByRole("table", { name: "คำสั่งซื้อ" });
+    // The row carries the group's next instalment and the slip's review deadline (D-061, D-175).
+    await expect(table.getByRole("columnheader", { name: "งวดถัดไป" })).toBeVisible();
+    await choose(page, /^สถานะ$/, "รอชำระ");
+    await expect(page).toHaveURL(/status=waiting_payment/);
+    await expect(page).toHaveURL(/queue=all/);
+    await expect(table.getByText("มีสลิปรอตรวจ").first()).toBeVisible();
+    await expect(table.getByText("ชำระแล้ว")).toHaveCount(0);
     await expectAxeClean(page);
   });
 });
@@ -79,9 +95,8 @@ test.describe("slip review (D-061)", () => {
     await expect(page.getByRole("button", { name: "อนุมัติสลิป" })).toHaveCount(0);
   });
 
-  // CONTRACT-GAP admin.orders — only the slip queue (payments.verify_slip) says a slip waits; CS
-  // cannot tell until the order carries `hasSlipToReview`.
-  test.fixme("a CS agent is told a slip waits for Finance", async ({ page }) => {
+  // The group's `hasSlipToReview` (v0.5.0) tells every role; only Finance reviews it.
+  test("a CS agent is told a slip waits for Finance", async ({ page }) => {
     await signInAsStaff(page, "cs");
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(8)}?tab=payments`);
     await expect(page.getByText("มีสลิปรอการเงินตรวจ")).toBeVisible();
@@ -110,14 +125,36 @@ test.describe("order actions", () => {
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(2)}`);
     const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
 
+    // The order's own actions (`nextActions`): cancel leads; submitting artwork on the customer's
+    // behalf is offered too, and shows disabled — the desk has no flow for it yet.
     await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
-    await page.getByRole("menuitem", { name: /ยกเลิกคำสั่งซื้อ/ }).click();
+    await expect(page.getByRole("menuitem", { name: /ส่งไฟล์งาน/ })).toBeDisabled();
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "ยกเลิกคำสั่งซื้อ" }).click();
     const dialog = page.getByRole("alertdialog");
+    // Only the reasons staff may give (D-060).
+    await page.getByRole("combobox", { name: /เหตุผล/ }).click();
+    await expect(page.getByRole("option", { name: "เปลี่ยนใจ" })).toHaveCount(0);
+    await page.keyboard.press("Escape");
     await choose(page, /เหตุผล/, "ลูกค้าขอยกเลิก");
     await dialog.getByLabel(/พิมพ์/).fill(code);
     await dialog.getByRole("button", { name: "ยกเลิกคำสั่งซื้อ" }).click();
 
     await expect(page.getByRole("heading", { level: 1 }).locator("..")).toContainText("ยกเลิกแล้ว");
+    // The reason, as the API names it, on the summary (and in the timeline).
+    await expect(page.getByText("ลูกค้าขอยกเลิก").first()).toBeVisible();
+  });
+
+  test("a payment reminder goes once, and a second within the hour is refused", async ({ page }) => {
+    await signInAsStaff(page, "cs");
+    await gotoHydrated(page, `${HOSTS.admin}/orders/${order(6)}?tab=payments`);
+    for (const expected of ["ส่งข้อความเตือนแล้ว", "เพิ่งส่ง"]) {
+      await page.getByRole("button", { name: "ส่งข้อความเตือนชำระ" }).click();
+      const dialog = page.getByRole("alertdialog", { name: "ส่งข้อความเตือนชำระ?" });
+      await dialog.getByRole("button", { name: "ส่งข้อความ" }).click();
+      await expect(page.getByText(new RegExp(expected)).first()).toBeVisible();
+      if (expected !== "ส่งข้อความเตือนแล้ว") await dialog.getByRole("button", { name: "ยกเลิก" }).click();
+    }
   });
 
   test("an internal note lands on the order", async ({ page }) => {

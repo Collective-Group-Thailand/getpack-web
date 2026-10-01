@@ -1,6 +1,7 @@
 /**
- * Customers on the published contract (`admin.customers.*`, U-F0.3): the list, find-or-create, the
- * customer, and its addresses and tax profiles as separate resources.
+ * Customers on the published contract (`admin.customers.*`): the list (with the type and channel
+ * filters of v0.5.0), find-or-create, the customer, and its addresses and tax profiles as separate
+ * resources.
  *
  * The rows are the fake commerce customers (`./commerce`), the same arrays the storefront's
  * address book reads (`../store/book.ts`), so what CS adds a customer sees. A new address arrives
@@ -68,7 +69,11 @@ export const customerHandlers = [
     if (!allowed(request, "customers.read")) return forbidden();
     const url = new URL(request.url);
     const q = url.searchParams.get("q") ?? undefined;
+    const customerType = url.searchParams.get("customerType");
+    const createdVia = url.searchParams.get("createdVia");
     const rows = customers
+      .filter((customer) => !customerType || customer.customerType === customerType)
+      .filter((customer) => !createdVia || customer.createdVia === createdVia)
       .filter((customer) =>
         matchesQuery(q, customer.displayName, customer.phone, customer.email, customer.customerCode),
       )

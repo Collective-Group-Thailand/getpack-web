@@ -18,8 +18,13 @@ export type InputDataOf<K extends PublishedCalculator> = K extends "folding" ? F
 export type FoldingConfiguration = Schemas["FoldingConfigurationDto"];
 export type CorrugateConfiguration = Schemas["CsCorrugateConfigurationDto"];
 
+export type SizeRules = Schemas["StoreSizeRulesDto"];
+export type CatalogProduct = Schemas["CsCatalogProductDto"];
+
 /** The part of the selection both calculators share. */
 interface Common {
+  /** The catalogue product the box is (its standard sizes and quantity presets), when CS picks one. */
+  catalogProductId?: string;
   patternId?: string;
   subPatternId?: string;
   materialId?: string;
@@ -50,19 +55,59 @@ export interface CorrugateSelection extends Common {
 
 export type Selection = FoldingSelection | CorrugateSelection;
 
-export type MissingField = "pattern" | "material" | "difficulty" | "dimensions";
+export type MissingField = "pattern" | "material" | "difficulty" | "dimensions" | "size";
+
+export type Axis = "l" | "w" | "d";
+
+/** What is wrong with one dimension by the pattern's own rules (`InputPatternDto.rules`, v0.5.0). */
+export type SizeProblem =
+  | { code: "min"; limitMm: number }
+  | { code: "max"; limitMm: number }
+  | { code: "lengthMustExceedWidth" }
+  | { code: "lengthMustExceedHeight" }
+  | { code: "widthMustExceedHeight" };
+
+/**
+ * Each dimension checked against the rules the API sent with the pattern — the limits are its
+ * data, so the desk says what is wrong before asking for a price the API would refuse.
+ */
+export function sizeProblems(rules: SizeRules | undefined, selection: Selection): Partial<Record<Axis, SizeProblem>> {
+  if (!rules) return {};
+  const limits: Record<Axis, [number | null, number | null]> = {
+    l: [rules.minLMm, rules.maxLMm],
+    w: [rules.minWMm, rules.maxWMm],
+    d: [rules.minHMm, rules.maxHMm],
+  };
+  const problems: Partial<Record<Axis, SizeProblem>> = {};
+  for (const axis of ["l", "w", "d"] as const) {
+    const value = selection[axis];
+    const [min, max] = limits[axis];
+    if (value === undefined) continue;
+    if (min !== null && value < min) problems[axis] = { code: "min", limitMm: min };
+    else if (max !== null && value > max) problems[axis] = { code: "max", limitMm: max };
+  }
+  const { l, w, d } = selection;
+  if (rules.lengthMustExceedWidth && l !== undefined && w !== undefined && !problems.l && l <= w)
+    problems.l = { code: "lengthMustExceedWidth" };
+  if (rules.lengthMustExceedHeight && l !== undefined && d !== undefined && !problems.l && l <= d)
+    problems.l = { code: "lengthMustExceedHeight" };
+  if (rules.widthMustExceedHeight && w !== undefined && d !== undefined && !problems.w && w <= d)
+    problems.w = { code: "widthMustExceedHeight" };
+  return problems;
+}
 
 export function emptySelection(calculator: PublishedCalculator): Selection {
   const common: Common = { printFront: [], printBack: [], graphic: false, structure: false };
   return calculator === "folding" ? { calculator, ...common } : { calculator, printArea: "all_round", ...common };
 }
 
-export function missingFields(selection: Selection): MissingField[] {
+export function missingFields(selection: Selection, rules?: SizeRules): MissingField[] {
   const missing: MissingField[] = [];
   if (!selection.patternId) missing.push("pattern");
   if (!selection.materialId) missing.push("material");
   if (!selection.difficultyLevelId) missing.push("difficulty");
   if (!(selection.l && selection.w && selection.d)) missing.push("dimensions");
+  else if (Object.keys(sizeProblems(rules, selection)).length > 0) missing.push("size");
   return missing;
 }
 
@@ -71,6 +116,7 @@ const FULL_COVERAGE = 100;
 
 export function toFolding(selection: FoldingSelection, quantities: number[]): FoldingConfiguration {
   return {
+    ...(selection.catalogProductId ? { catalogProductId: selection.catalogProductId } : {}),
     patternId: selection.patternId!,
     materialId: selection.materialId!,
     difficultyLevelId: selection.difficultyLevelId!,
@@ -94,6 +140,7 @@ export function toFolding(selection: FoldingSelection, quantities: number[]): Fo
 
 export function toCorrugate(selection: CorrugateSelection, quantities: number[]): CorrugateConfiguration {
   return {
+    ...(selection.catalogProductId ? { catalogProductId: selection.catalogProductId } : {}),
     patternId: selection.patternId!,
     materialId: selection.materialId!,
     difficultyLevelId: selection.difficultyLevelId!,

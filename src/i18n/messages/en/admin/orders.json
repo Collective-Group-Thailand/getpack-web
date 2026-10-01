@@ -8,7 +8,8 @@
       "artwork_review": "Artwork review",
       "waiting_production": "Ready to produce",
       "due_soon": "Due soon",
-      "late": "Late"
+      "late": "Late",
+      "all": "All orders"
     },
     "search": "Search orders",
     "searchPlaceholder": "Order code, name or phone",
@@ -22,7 +23,8 @@
       "ship": "Ship by",
       "sla": "SLA",
       "created": "Created",
-      "expires": "Payment expires"
+      "expires": "Payment expires",
+      "nextInstalment": "Next instalment"
     },
     "slipWaiting": "Slip to check",
     "noFactory": "Not assigned",
@@ -41,11 +43,28 @@
     "createdTo": "Created to",
     "sendReminders": "Send payment reminders",
     "remindersSent": "{count} reminders sent",
-    "remindersSkipped": "{count} skipped — no longer awaiting payment",
+    "remindersSkipped": "{count} skipped",
     "remindersFailed": "Could not send reminders",
     "create": "Create order for a customer",
     "emptyTitle": "No orders in this queue",
-    "emptyBody": "New work appears here as soon as it enters the queue."
+    "emptyBody": "New work appears here as soon as it enters the queue.",
+    "searchPrefix": "Order or group code (starts with)",
+    "artworkStatus": "Artwork status",
+    "productType": "Product type",
+    "quantityValue": "{quantity} {unit}",
+    "instalmentValue": "Instalment {seq} · {amount} open",
+    "units": {
+      "piece": "pcs",
+      "box": "boxes",
+      "pouch": "pouches",
+      "tube": "tubes",
+      "set": "sets",
+      "job": "jobs",
+      "round": "rounds",
+      "trip": "trips"
+    },
+    "emptyAllTitle": "No orders found",
+    "emptyAllBody": "Try other filters or another search."
   },
   "detail": {
     "title": "Order",
@@ -115,7 +134,32 @@
       "withholds": "Withholds tax",
       "taxAddress": "Address",
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "company": "Company",
+      "placedBy": "Placed by",
+      "quantityValue": "{quantity} {unit}",
+      "estimatedDelivery": "Estimated delivery",
+      "receipt": {
+        "title": "Delivery and receipt",
+        "delivered": "Delivered",
+        "confirmed": "Receipt confirmed",
+        "completed": "Completed",
+        "autoComplete": "Completes automatically on",
+        "claimWindow": "Claims open until",
+        "tolerance": "Delivered against tolerance",
+        "credit": "{amount} credited",
+        "modes": {
+          "auto_after_days": "automatically",
+          "customer_confirmed": "confirmed by the customer"
+        },
+        "outcomes": {
+          "exact": "{delivered} of {ordered}: exact",
+          "shortage_within": "{delivered} of {ordered}: short within tolerance — pro-rata credit",
+          "overage_within": "{delivered} of {ordered}: over within tolerance — not charged",
+          "shortage_outside": "{delivered} of {ordered}: short outside tolerance — claim opened",
+          "overage_outside": "{delivered} of {ordered}: over outside tolerance — claim opened"
+        }
+      }
     },
     "items": {
       "parts": "Parts and prices",
@@ -204,7 +248,10 @@
       "expected": "Expected {amount}",
       "slipsWaiting": "Slips waiting for Finance",
       "paymentsElsewhere": "The order's payments are on the finance desk",
-      "openPayments": "Open this group's payments"
+      "openPayments": "Open this group's payments",
+      "open": "Open",
+      "method": "Method",
+      "slips": "Slips"
     },
     "artwork": {
       "title": "Artwork",
@@ -254,7 +301,11 @@
       "noMilestones": "No progress yet",
       "doneAt": "done {at}",
       "dueAt": "due {at}",
-      "late": "late"
+      "late": "late",
+      "risks": {
+        "step_overdue": "A step is overdue",
+        "late_plan": "The plan ends after the promise"
+      }
     },
     "shipments": {
       "none": "No shipments yet",
@@ -304,7 +355,17 @@
         "other": "Other"
       }
     },
-    "unreadable": "Your role cannot see this part"
+    "unreadable": "Your role cannot see this part",
+    "units": {
+      "piece": "pcs",
+      "box": "boxes",
+      "pouch": "pouches",
+      "tube": "tubes",
+      "set": "sets",
+      "job": "jobs",
+      "round": "rounds",
+      "trip": "trips"
+    }
   },
   "actions": {
     "failed": "That did not work",
@@ -398,7 +459,9 @@
       "shipment_in_transit": "In transit",
       "shipment_delivered": "Delivered",
       "other": "Order updated"
-    }
+    },
+    "promisedOnTime": "On plan (due {at})",
+    "promisedLate": "Behind plan (due {at})"
   },
   "group": {
     "title": "Order group",
@@ -417,7 +480,12 @@
     "status": "Status",
     "schedule": "Payment schedule",
     "instalment": "Instalment",
-    "paid": "Paid"
+    "paid": "Paid",
+    "slipWaiting": "A slip of this group is waiting for Finance.",
+    "customer": "Customer",
+    "customerCode": "Customer code",
+    "company": "Company",
+    "placedBy": "Placed by"
   },
   "party": {
     "title": "Orders",
@@ -428,6 +496,8 @@
     "created": "Placed",
     "empty": "No orders yet",
     "unavailable": "Orders cannot be listed here yet",
-    "unavailableBody": "The system has no order list by company, or for a customer without a customer code. Search by order code on the orders desk instead."
+    "unavailableBody": "The system has no order list by company, or for a customer without a customer code. Search by order code on the orders desk instead.",
+    "placedBy": "Placed by",
+    "slipWaiting": "Slip to check"
   }
 }

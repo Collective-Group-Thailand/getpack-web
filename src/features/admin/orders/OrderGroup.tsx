@@ -13,15 +13,18 @@ import { DataTable } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { PageHeader } from "@/ui/components/PageHeader";
 
+import { Callout } from "@/ui/components/Callout";
+
 import { adminBrowserApis, QueryError, StatusChip, useProductTypes } from "../console";
-import { useGroupCustomer, useGroupSchedule } from "./data";
+import { useGroupSchedule } from "./data";
 
 /**
  * One checkout (B3.1): its orders — one per configuration — and its payment schedule. The group
- * names its customer and who placed it by id only (CONTRACT-GAP admin.orders); the customer is read.
+ * names its customer and who placed it (v0.5.0), and says when a slip waits for Finance.
  */
 export function OrderGroup({ groupId }: { groupId: string }) {
   const t = useTranslations("orders.group");
+  const tDetail = useTranslations("orders.detail");
   const format = useFormat();
   const locale = useLocale();
   const { labelOf } = useProductTypes();
@@ -31,7 +34,6 @@ export function OrderGroup({ groupId }: { groupId: string }) {
       (await adminBrowserApis().contract.GET("/v1/admin/order-groups/{groupId}", { params: { path: { groupId } } }))
         .data!,
   });
-  const customer = useGroupCustomer(group.data?.customerId);
   const schedule = useGroupSchedule(group.data?.id);
   if (group.isError) return <QueryError error={group.error} onRetry={() => void group.refetch()} />;
   const data = group.data;
@@ -48,16 +50,31 @@ export function OrderGroup({ groupId }: { groupId: string }) {
         title={<span className="font-mono">{data.groupCode}</span>}
         meta={<StatusChip map={ORDER_GROUP_STATUS} value={data.status} size="md" />}
         description={t("headline", {
-          customer: customer.data?.displayName ?? "—",
+          customer: data.customer.displayName,
           amount: format.thb(data.totals.grossAmount),
         })}
       />
+      {data.hasSlipToReview ? <Callout tone="warning" title={t("slipWaiting")} /> : null}
       <Card padding="lg">
         <DescriptionList
           columns={3}
           items={[
+            {
+              term: t("customer"),
+              description: (
+                <Link href={`/customers/${data.customer.id}`} className="text-primary hover:underline">
+                  {data.customer.displayName}
+                </Link>
+              ),
+            },
+            {
+              term: t("customerCode"),
+              description: <span className="font-mono">{data.customer.customerCode ?? "—"}</span>,
+            },
+            ...(data.customer.companyName ? [{ term: t("company"), description: data.customer.companyName }] : []),
+            { term: t("placedBy"), description: data.placedBy.displayName },
             { term: t("placedAt"), description: <When at={data.placedAt} /> },
-            { term: t("channel"), description: data.channel },
+            { term: t("channel"), description: tDetail(`channels.${data.channel}`) },
             { term: t("po"), description: data.poNumber ?? "—" },
             { term: t("expiresAt"), description: <When at={data.expiresAt} absoluteOnly /> },
             {
