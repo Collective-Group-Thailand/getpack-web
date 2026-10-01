@@ -16,6 +16,7 @@ import { Select } from "@/ui/components/Select";
 import { adminBrowserApis, QueryError } from "../console";
 
 type Scorecard = Schemas["ScorecardDto"];
+type MonthCard = Schemas["FactoryScorecardDto"];
 const METRICS = [
   "onTimeAcceptancePct",
   "onTimeShippingPct",
@@ -29,9 +30,10 @@ const METRICS = [
  * pass, on-time updates and claim rate, month by month — the same card the factory sees, and what
  * allocation leans on when several factories can take a job.
  *
- * `admin.inspections.scorecards` answers one factory's latest 12 months, so the screen picks a
- * factory (`?factoryId=`, the first one by default). CONTRACT-GAP admin.scorecards — no
- * all-factories view of one month (U-B0.2).
+ * One factory's latest 12 months (`admin.inspections.scorecards`, `?factoryId=`, the first one by
+ * default), and every factory side by side for one of those months
+ * (`admin.inspections.monthScorecards`, `?month=`, the latest by default) — for allocation and
+ * the partner team.
  */
 export function Scorecards() {
   const t = useTranslations("production.scorecards");
@@ -61,6 +63,19 @@ export function Scorecards() {
         })
       ).data!,
   });
+  const month = params.get("month") ?? cards.data?.[0]?.month ?? null;
+  const monthCards = useQuery({
+    queryKey: queryKeys.list("admin", "scorecard", { month }),
+    enabled: Boolean(month),
+    queryFn: async () =>
+      (await adminBrowserApis().contract.GET("/v1/admin/scorecards", { params: { query: { month: month! } } })).data!,
+  });
+  const go = (next: Record<string, string>) => {
+    const query = new URLSearchParams(params.toString());
+    for (const [key, value] of Object.entries(next)) query.set(key, value);
+    router.replace(`${pathname}?${query.toString()}`);
+  };
+  if (monthCards.isError) return <QueryError error={monthCards.error} onRetry={() => void monthCards.refetch()} />;
   if (factories.isError) return <QueryError error={factories.error} onRetry={() => void factories.refetch()} />;
   if (cards.isError) return <QueryError error={cards.error} onRetry={() => void cards.refetch()} />;
 
@@ -74,6 +89,24 @@ export function Scorecards() {
     })),
     { id: "jobs", header: t("jobs"), numeric: true, cell: (row) => format.number(row.jobsCount) },
   ];
+  const monthColumns: DataTableColumn<MonthCard>[] = [
+    {
+      id: "factory",
+      header: t("factory"),
+      cell: (row) => (
+        <Link href={`/partners/${row.factory.id}`} className="text-primary hover:underline">
+          <span className="font-mono">{row.factory.code}</span> · {row.factory.name}
+        </Link>
+      ),
+    },
+    ...METRICS.map((metric) => ({
+      id: metric,
+      header: t(`metrics.${metric}`),
+      numeric: true,
+      cell: (row: MonthCard) => (row[metric] === null ? "–" : format.percent(row[metric])),
+    })),
+    { id: "jobs", header: t("jobs"), numeric: true, cell: (row) => format.number(row.jobsCount) },
+  ];
 
   return (
     <div className="flex flex-col gap-3">
@@ -81,7 +114,7 @@ export function Scorecards() {
         <Field label={t("factory")} className="w-full max-w-sm">
           <Select
             value={factoryId ?? undefined}
-            onValueChange={(value) => router.replace(`${pathname}?factoryId=${encodeURIComponent(value)}`)}
+            onValueChange={(value) => go({ factoryId: value })}
             options={(factories.data ?? []).map((item) => ({
               value: item.id,
               label: `${item.code} · ${item.tradeName ?? item.legalName}`,
@@ -100,6 +133,25 @@ export function Scorecards() {
         rows={cards.data ?? []}
         getRowId={(row) => row.month}
         loading={factories.isPending || (Boolean(factoryId) && cards.isPending)}
+      />
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+        <h2 className="text-lg font-semibold">{t("byMonth")}</h2>
+        {cards.data?.length ? (
+          <Field label={t("month")} className="w-48">
+            <Select
+              value={month ?? undefined}
+              onValueChange={(value) => go({ month: value })}
+              options={cards.data.map((card) => ({ value: card.month, label: card.month }))}
+            />
+          </Field>
+        ) : null}
+      </div>
+      <DataTable
+        caption={month ? t("monthCaption", { month }) : t("byMonth")}
+        columns={monthColumns}
+        rows={monthCards.data ?? []}
+        getRowId={(row) => row.factory.id}
+        loading={Boolean(month) && monthCards.isPending}
       />
     </div>
   );
