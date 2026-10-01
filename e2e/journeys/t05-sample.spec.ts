@@ -13,6 +13,10 @@ const dock = (page: Page) => page.getByRole("complementary", { name: "ราค�
  */
 test("T5 ask for a sample before the production run", async ({ page, journey }) => {
   const j = journey("T5");
+  j.pending(
+    "CONTRACT-GAP store.configurator — no mockup add-on is published; D-192 makes it the sample",
+    "U2.F / U2.F1",
+  );
   await acceptCookies(page);
   await j.start(`${HOSTS.customer}/products/mailer-box`);
   j.gap("no sample request of the customer's own design; the D-072 mockup is an add-on to a full order (U2.4 / U2.F3)");

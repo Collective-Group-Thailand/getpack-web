@@ -1,10 +1,12 @@
 /**
  * The configurator's selection → the body `POST /v1/store/quotes/actions/calculate` takes.
  *
- * Folding cartons go as the published `FoldingConfigurationDto` (packio-api B2.3). The other six
- * instant calculators go as the generic shape of CONTRACT-REQUEST store.quote-configurations —
- * the selection by group kind, which the API maps onto its own calculator — until each ships its
- * own DTO. Either way the body carries catalogue ids only, never a price.
+ * Folding cartons go as the published `FoldingConfigurationDto` (packio-api B2.3), corrugated
+ * boxes as the published `CorrugateConfigurationDto` (v0.3.0). The other five instant calculators
+ * go as the generic shape of CONTRACT-REQUEST store.quote-configurations — the selection by group
+ * kind, which the API maps onto its own calculator — until each ships its own DTO. Either way the
+ * body carries the ids `store.catalog.getConfigurator` published (pattern, sub-pattern, option,
+ * difficulty level), never a price.
  */
 
 import type { z } from "zod";
@@ -15,8 +17,9 @@ import type { Schemas } from "@/lib/api/types";
 import { patternOf, POSTCODE, type Configurator, type ConfiguratorState } from "./state";
 
 export type FoldingConfiguration = Schemas["FoldingConfigurationDto"];
+export type CorrugateConfiguration = Schemas["CorrugateConfigurationDto"];
 export type GenericConfiguration = z.input<typeof storeGenericConfiguration>;
-export type Configuration = FoldingConfiguration | GenericConfiguration;
+export type Configuration = FoldingConfiguration | CorrugateConfiguration | GenericConfiguration;
 
 export interface CalculateBody {
   productTypeCode: string;
@@ -86,7 +89,41 @@ function folding(
     w: state.dims.w ?? 0,
     d: state.dims.d ?? 0,
     materialId: one(state, "material") ?? "",
-    difficultyLevelId: configurator.fixedInputs.difficultyLevelId ?? "",
+    // An instant product always has one (D-043); without it nothing is asked (`readyToPrice`).
+    difficultyLevelId: configurator.difficultyLevelId ?? "",
+    quantities: state.quantities,
+    parts: [part],
+    design: designOf(state),
+  };
+}
+
+function corrugate(configurator: Configurator, state: ConfiguratorState): CorrugateConfiguration {
+  const pattern = patternOf(configurator, state);
+  const part: CorrugateConfiguration["parts"][number] = {
+    ...(pattern?.parts[0]?.subPatternId ? { subPatternId: pattern.parts[0].subPatternId } : {}),
+    // CONTRACT-GAP store.configurator — no print presets, so no colours (see `from-contract.ts`).
+    printFront: [],
+    printBack: [],
+    ...(one(state, "coating_front") ? { coatingFrontId: one(state, "coating_front") } : {}),
+    ...(one(state, "coating_back") ? { coatingBackId: one(state, "coating_back") } : {}),
+    assemblies: all(state, "assembly").map((assemblyId) => {
+      const area = state.areas[assemblyId];
+      return {
+        assemblyId,
+        ...(area?.amount ? { amount: area.amount } : {}),
+        ...(area?.widthMm ? { w: area.widthMm } : {}),
+        ...(area?.lengthMm ? { l: area.lengthMm } : {}),
+      };
+    }),
+  };
+  return {
+    catalogProductId: configurator.catalogProductId,
+    patternId: pattern?.id ?? "",
+    l: state.dims.l ?? 0,
+    w: state.dims.w ?? 0,
+    d: state.dims.d ?? 0,
+    materialId: one(state, "material") ?? "",
+    difficultyLevelId: configurator.difficultyLevelId ?? "",
     quantities: state.quantities,
     parts: [part],
     design: designOf(state),
@@ -121,9 +158,9 @@ function generic(configurator: Configurator, state: ConfiguratorState): GenericC
 }
 
 export function buildConfiguration(configurator: Configurator, state: ConfiguratorState): Configuration {
-  return configurator.calculator === "folding"
-    ? (folding(configurator, state) as unknown as FoldingConfiguration)
-    : generic(configurator, state);
+  if (configurator.calculator === "folding") return folding(configurator, state) as unknown as FoldingConfiguration;
+  if (configurator.calculator === "corrugate") return corrugate(configurator, state);
+  return generic(configurator, state);
 }
 
 export function buildCalculateBody(configurator: Configurator, state: ConfiguratorState): CalculateBody {
@@ -152,6 +189,11 @@ export function seedFromConfiguration(
     const list = choices[group.kind] ?? [];
     choices[group.kind] = group.selection === "single" ? [id as string] : [...list, id as string];
   };
+  // One coating list serves both sides, so a coating id goes back to the side it was sent for.
+  const side = (kind: "coating_front" | "coating_back", id: string | undefined) => {
+    const group = configurator.groups.find((candidate) => candidate.kind === kind);
+    if (id && group?.options.some((option) => option.id === id)) choices[kind] = [id];
+  };
   const num = (value: unknown) => (typeof value === "number" && value > 0 ? value : null);
   const quantities = Array.isArray(configuration.quantities)
     ? (configuration.quantities as unknown[]).filter((value): value is number => typeof value === "number")
@@ -161,8 +203,8 @@ export function seedFromConfiguration(
     const folding = configuration as unknown as FoldingConfiguration;
     const part = (folding.parts?.[0] ?? {}) as FoldingPart;
     put(folding.materialId);
-    put(part.finish1FrontId);
-    put(part.finish1BackId);
+    side("coating_front", part.finish1FrontId);
+    side("coating_back", part.finish1BackId);
     for (const finish of part.finish2 ?? []) put(finish.finishId);
     put(part.diecutTypeId);
     for (const assembly of part.assemblies ?? []) put(assembly.assemblyId);
@@ -174,6 +216,13 @@ export function seedFromConfiguration(
           option.print?.back.length === (part.printBack?.length ?? 0),
       );
     if (print) choices.print = [print.id];
+  } else if (configurator.calculator === "corrugate") {
+    const corrugate = configuration as unknown as CorrugateConfiguration;
+    const part = corrugate.parts?.[0] ?? {};
+    put(corrugate.materialId);
+    side("coating_front", part.coatingFrontId);
+    side("coating_back", part.coatingBackId);
+    for (const assembly of part.assemblies ?? []) put(assembly.assemblyId);
   } else {
     const generic = configuration as unknown as GenericConfiguration;
     for (const value of Object.values(generic.options ?? {})) for (const id of [value].flat()) put(id);

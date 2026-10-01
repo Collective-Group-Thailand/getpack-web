@@ -10,16 +10,15 @@
  */
 export const PUBLISHED_AWAITING_MIGRATION: readonly string[] = [
   // Contract v0.4.0–v0.6.0 (2026-10-01) published every request packio-api's U-B0 groups built,
-  // and U-F0.4 moved all three zones off them. Only the parked configurator is left (below).
-  "GET /v1/store/catalog/products/{slug}/configurator",
+  // U-F0.4 moved all three zones off them, and U-F0.5 moved the parked configurator (below).
 ];
 
 /**
  * Customer-zone operations published after U-F0.2 closed the zone, parked here on purpose.
  *
- * `store.catalog.getConfigurator` arrived with contract v0.3.0 (2026-09-30), during U-F0.3. The
- * configurator is rebuilt on the published shape by U2.F1 (configurator v2, RUN-ORDER §1 row 3), so
- * moving it twice is wasted work (user decision 2026-09-30). The customer-zone gate in
+ * `store.catalog.getConfigurator` (contract v0.3.0) was parked here for U2.F1 (user decision
+ * 2026-09-30) until a thin adapter moved the configurator onto it in U-F0.5 (user decision
+ * 2026-10-01, `features/customer/configurator/from-contract.ts`). The customer-zone gate in
  * `registry.test.ts` allows exactly these, and each leaves the moment its screen migrates.
  */
-export const CUSTOMER_ZONE_PARKED: readonly string[] = ["GET /v1/store/catalog/products/{slug}/configurator"];
+export const CUSTOMER_ZONE_PARKED: readonly string[] = [];

@@ -230,6 +230,7 @@ export function Configurator({
       case "size":
         return sizeSummary || undefined;
       case "quantity":
+        if (state.quantities.length === 0) return undefined;
         return t("quantity.summary", {
           quantity: format.number(state.quantity),
           unit: configurator.unit,
@@ -248,8 +249,9 @@ export function Configurator({
 
   const missing = [
     ...(Object.keys(problems).length > 0 ? [t("missing.size")] : []),
-    ...missingGroups.map((group) => pick(locale, group.nameTh, group.nameEn)),
+    ...missingGroups.map((group) => t(`choices.groups.${group.kind}`)),
     ...missingArea.map((option) => t("missing.area", { name: pick(locale, option.nameTh, option.nameEn) })),
+    ...(state.quantities.length === 0 ? [t("missing.quantity")] : []),
   ];
   const style = boxStyleOf(configurator, state);
   const designHref =
@@ -262,7 +264,9 @@ export function Configurator({
       const value = choiceSummary(step);
       return value ? [{ label: t(`steps.${step}`), value }] : [];
     }),
-    { label: t("steps.quantity"), value: `${format.number(state.quantity)} ${configurator.unit}` },
+    ...(state.quantities.length > 0
+      ? [{ label: t("steps.quantity"), value: `${format.number(state.quantity)} ${configurator.unit}` }]
+      : []),
     ...(priced ? [{ label: t("dock.title"), value: format.thb(priced.grossAmount) }] : []),
   ];
   const lineHref = lineOaId
