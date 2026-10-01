@@ -54,7 +54,8 @@ export type Persona =
   | "logistics"
   | "marketing"
   | "partner_manager"
-  | "auditor";
+  | "auditor"
+  | "dpo";
 
 export function personaEmail(persona: Persona): string {
   return persona === "cs" ? MOCK_STAFF.email : `${persona.replace(/_/g, ".")}.staff@packio.invalid`;
