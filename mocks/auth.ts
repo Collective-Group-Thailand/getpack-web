@@ -8,8 +8,8 @@
 
 import { http, HttpResponse } from "msw";
 
-import { stores } from "./admin/partners";
 import { DEFAULT_PERSONA, MOCK_PASSWORD, menuFor, personaByEmail, personaByKey, type StaffPersona } from "./personas";
+import { factoryNameOf } from "./partner/factory-names";
 import { partnerPersonaByEmail, partnerPersonaByKey, permissionsOf, type PartnerPersona } from "./partner/personas";
 import { MOCK_CUSTOMER_PHONES, resetCustomer, type CustomerPersona } from "./store/customers";
 import { accessToken, principalOf, principalOfRefresh, problem, refreshToken, type Audience } from "./support";
@@ -200,15 +200,12 @@ export const authHandlers = [
       roles: persona.roles,
       permissions: permissionsOf(persona),
       // `partner.me.get` names each factory (U-B0.3, `partner.factory-name`): trade name, else legal name.
-      factories: [persona.factoryId].map((factoryId) => {
-        const factory = stores.get(factoryId)?.factory;
-        return {
-          factoryId,
-          code: factory?.code ?? "",
-          name: factory ? (factory.tradeName ?? factory.legalName) : "",
-          roles: persona.roles,
-        };
-      }),
+      factories: [persona.factoryId].map((factoryId) => ({
+        factoryId,
+        code: factoryNameOf(factoryId)?.code ?? "",
+        name: factoryNameOf(factoryId)?.name ?? "",
+        roles: persona.roles,
+      })),
     };
   }),
 ];
