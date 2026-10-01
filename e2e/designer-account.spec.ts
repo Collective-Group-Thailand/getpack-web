@@ -99,7 +99,8 @@ test("two tabs saving the same design meet the conflict choice instead of overwr
 
 test("a guest's browser design is imported into the account after sign-in", async ({ page }) => {
   await acceptCookies(page);
-  await gotoHydrated(page, `${HOSTS.customer}/design/new`);
+  // With its product (the import needs one, store.catalog-product-ref): the designer catalogue names its id.
+  await gotoHydrated(page, `${HOSTS.customer}/design/new?product=tuck-end-box`);
   await startFromSetup(page);
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("กล่องจากเบราว์เซอร์");
   await page.getByRole("button", { name: "บันทึก", exact: true }).click();

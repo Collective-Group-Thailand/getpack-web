@@ -98,10 +98,7 @@ test.describe("the account", () => {
   });
 
   test("a saved quotation reopens in the configurator", async ({ page }) => {
-    test.fixme(
-      true,
-      "CONTRACT-GAP store.catalog-product-ref — a saved quote names its product by id, and the catalogue has no read by id",
-    );
+    // A saved quotation names its product (`summary.product`), so it reopens in that configurator.
     await signInAsCustomer(page, "/account/quotes");
     await page
       .getByRole("link", { name: /เปิดอีกครั้ง/ })

@@ -93,7 +93,8 @@
     "browse": "Browse products",
     "validUntil": "Price holds until {date}",
     "row": "{code} · quantity {quantity} · {amount}",
-    "rowNoCode": "Quantity {quantity} · {amount}"
+    "rowNoCode": "Quantity {quantity} · {amount}",
+    "reopen": "Reopen"
   },
   "book": {
     "title": "Addresses and tax invoices",

@@ -1,9 +1,6 @@
 import "server-only";
 
 import { isApiError } from "@/lib/api/problem";
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
-import { serverRequests } from "@/lib/api/requests/server";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
 
@@ -18,7 +15,7 @@ export interface OpenedDesign {
 
 /**
  * One of the customer's designs with its ETag; `null` for a design that is not theirs (404). Never
- * cached. CONTRACT-GAP store.design-assets — an asset carries no URL, so each is signed for here.
+ * cached. An asset carries its signed URL once scanned clean; one without is signed for here.
  */
 export async function getMyDesign(designId: string): Promise<OpenedDesign | null> {
   const api = await serverApi("customer");
@@ -26,6 +23,7 @@ export async function getMyDesign(designId: string): Promise<OpenedDesign | null
     const { data, response } = await api.GET("/v1/store/designs/{designId}", { params: { path: { designId } } });
     const assets = await Promise.all(
       data!.assets.map(async (asset) => {
+        if (asset.url) return [{ id: asset.id, url: asset.url }];
         const signed = await api
           .GET("/v1/store/files/{fileId}/download", { params: { path: { fileId: asset.fileId } } })
           .then(({ data: download }) => download?.url ?? null)
@@ -50,12 +48,17 @@ export async function listMyDesigns(): Promise<MyDesign[]> {
   return data!.data;
 }
 
-export type SharedDesignData = ResponseOf<Requests, "GET /v1/store/shared-designs/{token}">;
+export type SharedDesignData = Schemas["SharedDesignDto"];
 
-/** A design shared by link, or `null` when the link is revoked, expired or unknown. Never cached. */
+/** A design shared by link (`store.designs.getShared`), or `null` when revoked, expired or unknown. Never cached. */
 export async function getSharedDesign(token: string): Promise<SharedDesignData | null> {
   try {
-    return await (await serverRequests("customer")).call("GET /v1/store/shared-designs/{token}", { path: { token } });
+    const { data } = await (
+      await serverApi("customer")
+    ).GET("/v1/store/shared-designs/{token}", {
+      params: { path: { token } },
+    });
+    return data!;
   } catch (error) {
     if (isApiError(error) && error.status === 404) return null;
     throw error;

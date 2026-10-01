@@ -119,6 +119,8 @@ export interface SavedDesign {
   spec: DesignSpec;
   content: DesignContent;
   thumbnail?: string;
+  /** The catalogue product it was opened with (`DesignerCatalogDto.product.id`), for its import. */
+  catalogProductId?: string;
   createdAt: number;
   updatedAt: number;
 }

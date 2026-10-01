@@ -10,6 +10,8 @@ import { REQUESTS, type Requests } from "@/lib/api/requests/registry";
 import type { ApiPaths, Schemas } from "@/lib/api/types";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 
+import { toCatalogView, type DesignerCatalog } from "@/features/designer/data/catalog-view";
+
 import { pick } from "./localize";
 
 /**
@@ -343,17 +345,20 @@ export async function getSampleKits(): Promise<SampleKit[]> {
 
 /* ------------------------------------------------------------------------- designer */
 
-export type DesignerCatalog = ResponseOf<Requests, "GET /v1/store/designer/catalog">;
-
 /**
- * The designer's catalogue slice (`store.designer-catalog`): patterns with dieline keys and
- * limits, materials with caliper, templates, colours, fonts and artwork rules — for one product
- * or for all. Public and cached like the catalogue; `null` when the API cannot answer, and the
- * designer then draws on the engine's typical boards (never priced).
+ * The designer's catalogue for one product (`store.designer.getCatalog`): its patterns with dieline
+ * keys and size rules, materials with caliper and flute allowances, templates, fonts and artwork
+ * rules, and the product's id a new design is created under. Public and cached like the catalogue;
+ * `null` without a product or when the API cannot answer, and the designer then draws on the
+ * engine's typical boards (never priced).
  */
 export async function getDesignerCatalog(product?: string): Promise<DesignerCatalog | null> {
+  if (!product) return null;
+  const api = await publicApi("catalogue");
   return orFallback(
-    (await publicRequests("catalogue")).call("GET /v1/store/designer/catalog", { query: product ? { product } : {} }),
+    api
+      .GET("/v1/store/designer/catalog", { params: { query: { product } } })
+      .then(({ data }) => (data ? toCatalogView(data) : null)),
     null,
   );
 }

@@ -93,7 +93,8 @@
     "browse": "เลือกสินค้า",
     "validUntil": "ราคาคงที่ถึง {date}",
     "row": "{code} · จำนวน {quantity} · {amount}",
-    "rowNoCode": "จำนวน {quantity} · {amount}"
+    "rowNoCode": "จำนวน {quantity} · {amount}",
+    "reopen": "เปิดอีกครั้ง"
   },
   "book": {
     "title": "ที่อยู่และใบกำกับภาษี",
