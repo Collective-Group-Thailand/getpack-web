@@ -33,6 +33,7 @@ import { useQuotePdf } from "./pdf";
 type Step = Schemas["AdminQuoteStepDto"];
 type Quote = Schemas["AdminSavedQuoteDto"];
 
+/** Tiers CS compares at once when no catalogue product says otherwise (its `quantity.maxTiers`). */
 const MAX_TIERS = 5;
 
 /**
@@ -81,6 +82,7 @@ function Workspace({
   const [tierDraft, setTierDraft] = useState("");
   const [postcode, setPostcode] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
+  const [note, setNote] = useState("");
   const [creatingCustomer, setCreatingCustomer] = useState(false);
 
   const data = useQuery({
@@ -139,6 +141,8 @@ function Workspace({
             configuration: toConfiguration(selection, tiers) as Schemas["StaffSaveQuoteDto"]["configuration"],
             customerUserId: customer!.value,
             ...(deliveryPostcode ? { deliveryPostcode } : {}),
+            // CS's internal note (v0.5.0); the customer never sees it.
+            ...(note.trim() ? { note: note.trim() } : {}),
           },
         })
       ).data!,
@@ -154,7 +158,21 @@ function Workspace({
   if (data.isError) return <QueryError error={data.error} onRetry={() => void data.refetch()} />;
   if (!data.data) return <Skeleton className="h-[40rem]" />;
 
-  const missing = missingFields(selection);
+  const pattern = data.data.patterns.find((row) => row.id === selection.patternId);
+  const product = data.data.catalogProducts.find((row) => row.id === selection.catalogProductId);
+  // A catalogue product brings its own quantity presets, bounds and tier count (v0.5.0).
+  const maxTiers = product?.quantity.maxTiers ?? MAX_TIERS;
+  const minQuantity = product?.quantity.min ?? null;
+  const maxQuantity = product?.quantity.max ?? null;
+  const addTier = (quantity: number) => {
+    const value = Math.floor(quantity);
+    if (value > 0 && !tiers.includes(value) && tiers.length < maxTiers)
+      setTiers([...tiers, value].sort((a, b) => a - b));
+  };
+  const draft = Number(tierDraft);
+  const draftOutside =
+    Boolean(draft) && ((minQuantity !== null && draft < minQuantity) || (maxQuantity !== null && draft > maxQuantity));
+  const missing = missingFields(selection, pattern?.rules);
   const ready = missing.length === 0 && tiers.length > 0;
   const calculation = calculate.data;
   const priced = calculation?.steps.some((step) => step.instant) ?? false;
@@ -215,19 +233,45 @@ function Workspace({
           <CardHeader>
             <CardTitle>{t("steps.quantities")}</CardTitle>
           </CardHeader>
-          {/* Quantity presets are not in the input data (CONTRACT-GAP admin.cs-calculators). */}
-          <p className="text-muted mb-2 text-xs">{t("tiersHint", { max: MAX_TIERS })}</p>
+          <p className="text-muted mb-2 text-xs">{t("tiersHint", { max: maxTiers })}</p>
+          {product && product.quantity.presets.length > 0 ? (
+            <div className="mb-3 flex flex-wrap gap-1" role="group" aria-label={t("presets")}>
+              {product.quantity.presets.map((preset) => (
+                <Button
+                  key={preset}
+                  type="button"
+                  size="sm"
+                  variant={tiers.includes(preset) ? "primary" : "secondary"}
+                  disabled={!tiers.includes(preset) && tiers.length >= maxTiers}
+                  aria-pressed={tiers.includes(preset)}
+                  onClick={() =>
+                    tiers.includes(preset) ? setTiers(tiers.filter((item) => item !== preset)) : addTier(preset)
+                  }
+                >
+                  {format.number(preset)}
+                </Button>
+              ))}
+            </div>
+          ) : null}
           <div className="flex items-end gap-2">
-            <Field label={t("customQuantity")} className="flex-1">
+            <Field
+              label={t("customQuantity")}
+              className="flex-1"
+              hint={
+                minQuantity !== null && maxQuantity !== null
+                  ? t("quantityRange", { min: format.number(minQuantity), max: format.number(maxQuantity) })
+                  : undefined
+              }
+              error={draftOutside ? t("quantityOutside") : undefined}
+            >
               <NumberInput min={1} value={tierDraft} onChange={(event) => setTierDraft(event.target.value)} />
             </Field>
             <Button
               type="button"
               variant="secondary"
-              disabled={!Number(tierDraft) || tiers.length >= MAX_TIERS}
+              disabled={!draft || draftOutside || tiers.length >= maxTiers}
               onClick={() => {
-                const value = Math.floor(Number(tierDraft));
-                if (value > 0 && !tiers.includes(value)) setTiers([...tiers, value].sort((a, b) => a - b));
+                addTier(draft);
                 setTierDraft("");
               }}
             >
@@ -350,9 +394,12 @@ function Workspace({
             role="region"
             aria-label={t("actionBar")}
           >
-            {/* The discount is given at checkout, where the memo prices the customer's cart (D-052). */}
-            <p className="text-muted text-xs">{t("discountAtCheckout")}</p>
-            <div className="flex flex-wrap items-center gap-2">
+            {/* The discount is given at checkout, where the memo prices the customer's cart (D-052);
+                the limit CS gives on its own is the API's setting, as the input data states it. */}
+            <p className="text-muted text-xs">
+              {t("discountAtCheckoutLimit", { pct: format.percent(data.data.discountPolicy.directLimitPct) })}
+            </p>
+            <div className="flex flex-wrap items-end gap-2">
               {quote ? (
                 <>
                   <Callout
@@ -370,9 +417,14 @@ function Workspace({
                   ) : null}
                 </>
               ) : canQuote ? (
-                <Button iconStart="save" loading={save.isPending} disabled={!customer} onClick={() => save.mutate()}>
-                  {t("saveQuotation")}
-                </Button>
+                <>
+                  <Field label={t("note")} hint={t("noteHint")} className="min-w-60 flex-1">
+                    <Input value={note} maxLength={1000} onChange={(event) => setNote(event.target.value)} />
+                  </Field>
+                  <Button iconStart="save" loading={save.isPending} disabled={!customer} onClick={() => save.mutate()}>
+                    {t("saveQuotation")}
+                  </Button>
+                </>
               ) : null}
             </div>
             {!customer && !quote ? <p className="text-muted text-xs">{t("needCustomer")}</p> : null}
