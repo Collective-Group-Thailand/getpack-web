@@ -1,9 +1,7 @@
 "use client";
 
 import { browserApi } from "@/lib/api/browser";
-import type { ResponseOf } from "@/lib/api/requests/client";
 import { browserRequests } from "@/lib/api/requests/browser";
-import type { Requests } from "@/lib/api/requests/registry";
 import type { Schemas } from "@/lib/api/types";
 import { uploadFile } from "@/features/shared/files/upload";
 
@@ -17,29 +15,19 @@ import { DOCUMENT_SCHEMA_VERSION } from "../document";
  * path from a URL — the session says which it is.
  *
  * The published design keeps the document opaque (`{ spec, content }`, with `schemaVersion` beside
- * it). Duplicate, restore and import are still requests (`store.designs`, packio-api U-B0.1), as is
- * a staff copy (`admin.design-documents`, U-B0.2), and answer in the request's shape.
+ * it); duplicate, restore and import are published too (U-B0.1). A staff copy is still a request
+ * (`admin.design-documents`, U-B0.2).
  */
 
 export type StoreDesign = Schemas["DesignDocumentDto"];
 export type DesignVersion = Schemas["DesignVersionDto"];
-export type DesignerCatalog = ResponseOf<Requests, "GET /v1/store/designer/catalog">;
-export type DesignerMaterial = DesignerCatalog["materials"][number];
-export type DesignerTemplate = DesignerCatalog["templates"][number];
-export type DesignerPattern = DesignerCatalog["patterns"][number];
+export type { DesignerCatalog, DesignerMaterial, DesignerPattern, DesignerTemplate } from "./catalog-view";
 export type AdminDesignDocument = Schemas["DesignDocumentDto"];
 
 export interface Saved<T> {
   data: T;
   etag: string | null;
 }
-
-/** The request-shaped document (`{ schemaVersion, spec, content }`) the remaining requests take. */
-export const toDocument = (spec: DesignSpec, content: DesignContent) => ({
-  schemaVersion: DOCUMENT_SCHEMA_VERSION,
-  spec: spec as unknown as Record<string, unknown>,
-  content: content as unknown as Record<string, unknown>,
-});
 
 /** The published body: the document opaque, its schema version beside it. */
 const published = (spec: DesignSpec, content: DesignContent) => ({
@@ -50,8 +38,9 @@ const published = (spec: DesignSpec, content: DesignContent) => ({
 export { documentOf } from "./published";
 
 /**
- * How a new design is created. CONTRACT-GAP store.catalog-product-ref — the product is required
- * by id, and only the configurator (a request) names it; a design without one is not created.
+ * How a new design is created: the product is required by id, which the designer catalogue of the
+ * product names (`DesignerCatalogDto.product`). CONTRACT-GAP store.catalog-product-ref — a blank
+ * design, opened without a product, has none and is not created.
  */
 export interface CreateInput {
   name: string;
@@ -114,17 +103,18 @@ export const storeDesigns = {
   async remove(designId: string) {
     await browserApi().DELETE("/v1/store/designs/{designId}", { params: { path: { designId } } });
   },
-  async duplicate(designId: string, name: string, idempotencyKey: string) {
-    return browserRequests().read("POST /v1/store/designs/{designId}/actions/duplicate", {
-      path: { designId },
-      body: { name },
-      idempotencyKey,
+  /** `store.designs.duplicate`: a new design from the current version, under the given title. */
+  async duplicate(designId: string, title: string, idempotencyKey: string): Promise<Saved<StoreDesign>> {
+    const { data, response } = await browserApi().POST("/v1/store/designs/{designId}/actions/duplicate", {
+      params: { path: { designId }, header: { "Idempotency-Key": idempotencyKey } },
+      body: { title },
     });
+    return { data: data!, etag: etagOf(response) };
   },
-  /** The design's versions, newest first. CONTRACT-GAP store.designs — no kind, label or paging. */
+  /** The design's versions, newest first, each with its kind (autosave, save, restore, import) and label. */
   async versions(designId: string): Promise<DesignVersion[]> {
     const { data } = await browserApi().GET("/v1/store/designs/{designId}/versions", {
-      params: { path: { designId } },
+      params: { path: { designId }, query: { limit: 50 } },
     });
     return [...data!].sort((a, b) => b.versionNo - a.versionNo);
   },
@@ -134,25 +124,28 @@ export const storeDesigns = {
     });
     return data!;
   },
-  async restore(designId: string, versionNo: number, etag: string | null) {
-    return browserRequests().read("POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore", {
-      path: { designId, versionNo: String(versionNo) },
-      etag: etag ?? undefined,
-    });
+  /** `store.designs.restoreVersion`: a new version (kind `restore`) with that version's document. */
+  async restore(designId: string, versionNo: number, etag: string | null): Promise<Saved<StoreDesign>> {
+    const { data, response } = await browserApi().POST(
+      "/v1/store/designs/{designId}/versions/{versionNo}/actions/restore",
+      { params: { path: { designId, versionNo }, header: { "If-Match": etag ?? "" } } },
+    );
+    return { data: data!, etag: etagOf(response) };
   },
   /**
-   * Uploads an image once and attaches it to the design; the document then refers to it by id.
-   * CONTRACT-GAP store.design-assets — the asset carries no URL, so it is signed for with the file.
+   * Uploads an image once (purpose `design_asset`) and attaches it to the design; the document then
+   * refers to it by id. The asset carries its signed URL once the file is scanned clean; until
+   * then it is signed for with the file.
    */
   async attachAsset(designId: string, file: File): Promise<{ id: string; url: string }> {
-    // `design_asset` is requested as a file purpose (store.design-assets); until then, artwork.
-    const uploaded = await uploadFile("customer", file, "artwork");
+    const uploaded = await uploadFile("customer", file, "design_asset");
     const api = browserApi();
     const { data: design } = await api.POST("/v1/store/designs/{designId}/assets", {
       params: { path: { designId } },
       body: { fileId: uploaded.id, kind: "image" },
     });
     const asset = design!.assets.find((candidate) => candidate.fileId === uploaded.id)!;
+    if (asset.url) return { id: asset.id, url: asset.url };
     const { data: signed } = await api.GET("/v1/store/files/{fileId}/download", {
       params: { path: { fileId: uploaded.id } },
     });
@@ -164,29 +157,33 @@ export const storeDesigns = {
     const uploaded = await uploadFile("customer", new File([blob], `${name}.png`, { type: "image/png" }), "artwork");
     return uploaded.id;
   },
+  /**
+   * `store.designs.import`: the browser's designs become the customer's, each as version 1. A row
+   * names its product when the browser kept one (`catalogProductId`); one without is skipped with
+   * its reason (`product_not_found`, CONTRACT-GAP store.catalog-product-ref).
+   */
   async importLocal(
     designs: {
       localId: string;
       name: string;
       spec: DesignSpec;
       content: DesignContent;
-      createdAt: number;
-      updatedAt: number;
+      catalogProductId?: string | null;
     }[],
     idempotencyKey: string,
-  ) {
-    return browserRequests().call("POST /v1/store/designs/actions/import", {
+  ): Promise<Schemas["ImportDesignsResultDto"]> {
+    const { data } = await browserApi().POST("/v1/store/designs/actions/import", {
+      params: { header: { "Idempotency-Key": idempotencyKey } },
       body: {
         designs: designs.map((d) => ({
           localId: d.localId,
-          name: d.name,
-          document: toDocument(d.spec, d.content),
-          createdAt: new Date(d.createdAt).toISOString(),
-          updatedAt: new Date(d.updatedAt).toISOString(),
+          title: d.name,
+          ...published(d.spec, d.content),
+          ...(d.catalogProductId ? { catalogProductId: d.catalogProductId } : {}),
         })),
       },
-      idempotencyKey,
     });
+    return data!;
   },
 };
 

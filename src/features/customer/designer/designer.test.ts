@@ -13,21 +13,14 @@ import { isApiError } from "@/lib/api/problem";
 import { createRequestClient } from "@/lib/api/requests/client";
 import { REQUESTS } from "@/lib/api/requests/registry";
 
+import { toCatalogView } from "@/features/designer/data/catalog-view";
+
 import { inferPrint, stateForDesign } from "./PriceWidget";
 
 const server = setupServer(...handlers);
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterAll(() => server.close());
 
-// Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
-const client = (audience?: "customer" | "staff", persona?: string) =>
-  createRequestClient(
-    REQUESTS,
-    createApiClient({
-      baseUrl: "http://api.mock",
-      ...(audience ? { accessToken: accessToken(audience, persona) } : {}),
-    }) as unknown as Client<never>,
-  );
 const failure = (promise: Promise<unknown>) =>
   promise.then(
     () => null,
@@ -45,19 +38,16 @@ const blank: DesignContent = {
   elements: [],
   pattern: { kind: "none", color: "#000000", background: "#ffffff", size: 12 },
 };
-const document = {
-  schemaVersion: 2,
-  spec: spec as unknown as Record<string, unknown>,
-  content: blank as unknown as Record<string, unknown>,
-};
-
-/** The published client, for the design operations this zone has migrated (U-F0.2). */
+// Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
 const api = (persona?: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer", persona) });
-/** Any catalogue product: a published design needs one, by id. */
+const anonymous = () => createApiClient({ baseUrl: "http://api.mock" });
+/** The configurator, parked as a request until U2.F1. */
+const client = () => createRequestClient(REQUESTS, anonymous() as unknown as Client<never>);
+/** A catalogue product's id, as its designer catalogue names it: a published design needs one. */
 const PRODUCT = async () =>
-  (await client().call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug: "tuck-end-box" } }))
-    .catalogProductId;
+  (await anonymous().GET("/v1/store/designer/catalog", { params: { query: { product: "tuck-end-box" } } })).data!
+    .product.id;
 const published = { document: { spec, content: blank } as unknown as Record<string, never>, schemaVersion: 2 };
 
 describe("store.designs (mock)", () => {
@@ -94,12 +84,15 @@ describe("store.designs (mock)", () => {
     });
     expect(versions!.map((v) => v.versionNo)).toEqual([2, 1]);
 
-    // Restore is still a request (store.designs), under the same ETag chain.
-    const restored = await client("customer").read(
-      "POST /v1/store/designs/{designId}/versions/{versionNo}/actions/restore",
-      { path: { designId: id, versionNo: "1" }, etag: second },
-    );
-    expect(restored.data.versionNo).toBe(3);
+    // Restore makes a new version (kind `restore`), under the same ETag chain.
+    const restored = await api().POST("/v1/store/designs/{designId}/versions/{versionNo}/actions/restore", {
+      params: { path: { designId: id, versionNo: 1 }, header: { "If-Match": second } },
+    });
+    expect(restored.data!.versionNo).toBe(3);
+    const { data: history } = await api().GET("/v1/store/designs/{designId}/versions", {
+      params: { path: { designId: id } },
+    });
+    expect(history!.find((version) => version.versionNo === 3)?.kind).toBe("restore");
   });
 
   it("refuses a design without a product, hides another customer's, and replays an import by local id", async () => {
@@ -116,35 +109,55 @@ describe("store.designs (mock)", () => {
     );
     expect(theirs?.status).toBe(404);
 
+    const row = { localId: "abc123", title: "จากเบราว์เซอร์", ...published };
     const body = {
       designs: [
-        {
-          localId: "abc123",
-          name: "จากเบราว์เซอร์",
-          document,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
+        { ...row, catalogProductId: await PRODUCT() },
+        { ...row, localId: "no-product" },
       ],
     };
-    const first = await client("customer").call("POST /v1/store/designs/actions/import", {
+    const { data: first } = await api().POST("/v1/store/designs/actions/import", {
+      params: { header: { "Idempotency-Key": crypto.randomUUID() } },
       body,
-      idempotencyKey: crypto.randomUUID(),
     });
-    const again = await client("customer").call("POST /v1/store/designs/actions/import", {
+    // A row without a product is skipped with its reason, not filed under some product.
+    expect(first!.skipped).toEqual([{ localId: "no-product", reason: "product_not_found" }]);
+    const { data: again } = await api().POST("/v1/store/designs/actions/import", {
+      params: { header: { "Idempotency-Key": crypto.randomUUID() } },
       body,
-      idempotencyKey: crypto.randomUUID(),
     });
-    expect(again.imported[0]!.designId).toBe(first.imported[0]!.designId);
+    expect(again!.imported[0]!.designId).toBe(first!.imported[0]!.designId);
   });
 
-  it("serves the designer catalogue publicly, with calipers and flute allowances", async () => {
-    const catalog = await client().call("GET /v1/store/designer/catalog", { query: {} });
+  it("serves a product's designer catalogue publicly, read with calipers and flute allowances", async () => {
+    const { data } = await anonymous().GET("/v1/store/designer/catalog", {
+      params: { query: { product: "tuck-end-box" } },
+    });
+    const catalog = toCatalogView(data!);
     expect(catalog.materials.length).toBeGreaterThan(0);
     const flute = catalog.materials.find((m) => m.kind === "corrugated");
     expect(flute?.caliperMm).toBeGreaterThan(1);
     expect(flute?.allowances?.panel).not.toBeNull();
     expect(catalog.rules.bleedMm).toBe(3);
+    expect(catalog.product.slug).toBe("tuck-end-box");
+  });
+
+  it("shares a view-only link that stops opening once revoked (D-226)", async () => {
+    const { data: design } = await api().POST("/v1/store/designs", {
+      body: { title: "แชร์", catalogProductId: await PRODUCT(), ...published },
+    });
+    const { data: share } = await api().POST("/v1/store/designs/{designId}/actions/share", {
+      params: { path: { designId: design!.id } },
+    });
+    const { data: shared } = await anonymous().GET("/v1/store/shared-designs/{token}", {
+      params: { path: { token: share!.shareToken } },
+    });
+    expect(shared).toMatchObject({ title: "แชร์", product: { slug: "tuck-end-box" } });
+    await api().DELETE("/v1/store/designs/{designId}/share", { params: { path: { designId: design!.id } } });
+    const gone = await failure(
+      anonymous().GET("/v1/store/shared-designs/{token}", { params: { path: { token: share!.shareToken } } }),
+    );
+    expect(gone?.status).toBe(404);
   });
 });
 
