@@ -9,26 +9,11 @@ import { adminBrowserApis } from "../console/api";
 
 export type ReportDefinition = Schemas["ReportDefinitionDto"];
 export type ReportKey = Schemas["ReportKey"];
-export type ReportGroup = "sales" | "finance" | "marketing" | "operations";
+/** Where a report sits in the menu: the catalogue's own `group` (U-B0.3). */
+export type ReportGroup = Schemas["ReportGroup"];
 
-/**
- * Where each report sits in the menu. The catalogue carries no group (CONTRACT-GAP admin.reports,
- * packio-api U-B0.3 optional `group`), so the screen maps the key — presentation only.
- */
-export const REPORT_GROUP: Record<ReportKey, ReportGroup> = {
-  sales: "sales",
-  orders: "sales",
-  quotations: "sales",
-  sales_tax: "finance",
-  payments_by_channel: "finance",
-  points_liability: "finance",
-  ar_aging: "finance",
-  ap_aging: "finance",
-  payout_history: "finance",
-  campaign_usage: "marketing",
-  claims: "operations",
-  factory_scorecards: "operations",
-};
+/** The groups in the order the menu shows them; each lists the reports the API put in it. */
+export const REPORT_GROUPS: readonly ReportGroup[] = ["sales", "finance", "marketing", "operations"];
 
 /** The reports whose data this person may read (`admin.reports.catalogue`, D-111). */
 export function useReportCatalogue() {

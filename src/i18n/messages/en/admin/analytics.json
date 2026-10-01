@@ -68,6 +68,20 @@
     "salesByType": "Sales by product type",
     "ordersPaid": "Orders paid"
   },
+  "sensitivity": {
+    "title": "Price sensitivity",
+    "note": "Sessions shown a price, and how many then added the product type to the cart. The drop-off is the API's figure.",
+    "byLeadTime": "By lead time",
+    "byPriceQuartile": "By price quartile",
+    "byLeadTimeBand": "Lead time",
+    "byPriceQuartileBand": "Price quartile",
+    "days": "{band} days",
+    "quartile": "Quartile {band}",
+    "shown": "Shown a price",
+    "carted": "Added to cart",
+    "dropOff": "Drop-off",
+    "empty": "No prices shown in this period"
+  },
   "unmet": {
     "title": "Unmet demand",
     "note": "Declined and expired RFQs, calculations without an instant price, weeks factories were full",
