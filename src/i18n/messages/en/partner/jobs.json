@@ -101,7 +101,19 @@
     "photos": "Photos of the checked work",
     "photosHint": "At least one (D-076)",
     "notes": "Notes",
-    "submit": "Record QC"
+    "submit": "Record QC",
+    "items": {
+      "colour": "Colour matches the approved proof",
+      "registration": "Print is in register",
+      "diecut": "Die-cut and creases follow the lines",
+      "count": "Count matches the order",
+      "clean": "No marks or damage"
+    },
+    "severity": {
+      "critical": "Critical",
+      "major": "Major",
+      "minor": "Minor"
+    }
   },
   "issue": {
     "tooShort": "Describe the issue in at least 3 characters",
