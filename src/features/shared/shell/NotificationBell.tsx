@@ -1,10 +1,12 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { formatDateTime } from "@/i18n/format";
+import { Link as LocaleLink } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Zone } from "@/lib/zones";
@@ -14,7 +16,7 @@ import { IconButton } from "@/ui/components/IconButton";
 import { Popover } from "@/ui/components/Popover";
 import { Spinner } from "@/ui/components/Spinner";
 
-import { markAllRead, markRead, useNotifications } from "./notifications";
+import { markAllRead, markRead, useNotifications, type NotificationItem } from "./notifications";
 
 /** Beyond this the badge says "99+"; the exact figure is in the accessible name. */
 const BADGE_MAX = 99;
@@ -23,8 +25,8 @@ const BADGE_MAX = 99;
  * The in-app notification centre, in every zone (D-143).
  *
  * Realtime invalidates the same query key, so when a driver is configured the badge updates
- * without polling. Items are buttons that mark themselves read, not links: the contract gives
- * an event type and a body but no destination yet (`notifications.unread-and-link`).
+ * without polling. An item with a `url` is a link to what it is about and marks itself read on the
+ * way; one without stays a button that marks itself read.
  */
 export function NotificationBell({ zone }: { zone: Zone }) {
   const t = useTranslations("common.notifications");
@@ -35,12 +37,11 @@ export function NotificationBell({ zone }: { zone: Zone }) {
   const { data, isPending } = useNotifications(zone);
   const items = data?.items ?? [];
   const unreadCount = data?.unreadCount ?? 0;
-  const lowerBound = data?.unreadIsLowerBound ?? false;
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.list(zone, "notifications") });
 
   async function onMarkAllRead() {
-    await markAllRead(zone, items);
+    await markAllRead(zone);
     await invalidate();
   }
 
@@ -49,7 +50,24 @@ export function NotificationBell({ zone }: { zone: Zone }) {
     await invalidate();
   }
 
-  const countLabel = lowerBound ? t("countAtLeast", { count: unreadCount }) : String(unreadCount);
+  const countLabel = String(unreadCount);
+
+  /** The customer zone prefixes its locale; the admin and partner hosts route the path as it is. */
+  function itemLink(item: NotificationItem & { url: string }, children: ReactNode) {
+    const props = {
+      href: item.url,
+      className: "hover:bg-surface-subtle flex w-full gap-2 px-3 py-2.5 text-start",
+      onClick: () => {
+        setOpen(false);
+        if (!item.readAt) void onRead(item.id);
+      },
+    };
+    return zone === "customer" ? (
+      <LocaleLink {...props}>{children}</LocaleLink>
+    ) : (
+      <NextLink {...props}>{children}</NextLink>
+    );
+  }
 
   return (
     /*
@@ -97,30 +115,18 @@ export function NotificationBell({ zone }: { zone: Zone }) {
             <ul className="max-h-96 overflow-y-auto">
               {items.map((item) => (
                 <li key={item.id} className="border-border border-b last:border-0">
-                  <button
-                    type="button"
-                    className="hover:bg-surface-subtle flex w-full gap-2 px-3 py-2.5 text-start"
-                    onClick={() => (item.readAt ? undefined : void onRead(item.id))}
-                    aria-disabled={item.readAt ? true : undefined}
-                  >
-                    {/* Unread is a dot *and* a bolder title: never colour alone. */}
-                    <span
-                      aria-hidden
-                      className={
-                        item.readAt ? "mt-1.5 size-2 shrink-0" : "bg-primary mt-1.5 size-2 shrink-0 rounded-full"
-                      }
-                    />
-                    <span className="min-w-0">
-                      <span className={item.readAt ? "block text-sm" : "block text-sm font-medium"}>
-                        {item.title ?? item.body}
-                        {item.readAt ? null : <span className="sr-only"> {t("unread")}</span>}
-                      </span>
-                      {item.title ? <span className="text-muted block text-xs">{item.body}</span> : null}
-                      <time dateTime={item.createdAt} className="text-muted block text-xs">
-                        {formatDateTime(item.createdAt, locale)}
-                      </time>
-                    </span>
-                  </button>
+                  {item.url ? (
+                    itemLink({ ...item, url: item.url }, <ItemContent item={item} locale={locale} />)
+                  ) : (
+                    <button
+                      type="button"
+                      className="hover:bg-surface-subtle flex w-full gap-2 px-3 py-2.5 text-start"
+                      onClick={() => (item.readAt ? undefined : void onRead(item.id))}
+                      aria-disabled={item.readAt ? true : undefined}
+                    >
+                      <ItemContent item={item} locale={locale} />
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -133,9 +139,33 @@ export function NotificationBell({ zone }: { zone: Zone }) {
           aria-hidden
           className="bg-danger text-danger-fg pointer-events-none absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[0.625rem] font-medium"
         >
-          {lowerBound ? countLabel : unreadCount > BADGE_MAX ? t("overflow") : unreadCount}
+          {unreadCount > BADGE_MAX ? t("overflow") : unreadCount}
         </span>
       ) : null}
     </span>
+  );
+}
+
+/** One item's dot, title, body and time — the same whether it links somewhere or not. */
+function ItemContent({ item, locale }: { item: NotificationItem; locale: Locale }) {
+  const t = useTranslations("common.notifications");
+  return (
+    <>
+      {/* Unread is a dot *and* a bolder title: never colour alone. */}
+      <span
+        aria-hidden
+        className={item.readAt ? "mt-1.5 size-2 shrink-0" : "bg-primary mt-1.5 size-2 shrink-0 rounded-full"}
+      />
+      <span className="min-w-0">
+        <span className={item.readAt ? "block text-sm" : "block text-sm font-medium"}>
+          {item.title ?? item.body}
+          {item.readAt ? null : <span className="sr-only"> {t("unread")}</span>}
+        </span>
+        {item.title ? <span className="text-muted block text-xs">{item.body}</span> : null}
+        <time dateTime={item.createdAt} className="text-muted block text-xs">
+          {formatDateTime(item.createdAt, locale)}
+        </time>
+      </span>
+    </>
   );
 }

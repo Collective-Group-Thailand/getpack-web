@@ -19,6 +19,8 @@
 
 import { http, HttpResponse } from "msw";
 
+import type { Schemas } from "@/lib/api/types";
+
 import { adminHandlers } from "./admin";
 import { authHandlers } from "./auth";
 import { generatedHandlers } from "./generated/handlers";
@@ -28,7 +30,11 @@ import { storeHandlers } from "./store";
 
 export { MOCK_ID_TOKENS, MOCK_NEW_CUSTOMER_PHONE, MOCK_OTP, MOCK_PARTNER, MOCK_STAFF } from "./auth";
 
-/** The notification inbox every surface shares in the mock. Two items, one unread. */
+/**
+ * The notification inbox every surface shares in the mock. Two items, one unread; the unread one
+ * links to the zone's order list, as `url` is zone-relative (the partner zone has no order page).
+ */
+const ORDER_PAGE: Record<string, string | null> = { store: "/account/orders", admin: "/orders", partner: null };
 const inbox = [
   {
     id: "00000000-0000-4000-8000-00000000e001",
@@ -37,6 +43,7 @@ const inbox = [
     body: "คำสั่งซื้อ PK-2569-00042 ชำระเงินครบแล้ว",
     readAt: null as string | null,
     createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+    linksToOrders: true,
   },
   {
     id: "00000000-0000-4000-8000-00000000e002",
@@ -45,6 +52,7 @@ const inbox = [
     body: "ไฟล์ของ PK-2569-00041 ต้องเพิ่มระยะตัดตก 3 มม.",
     readAt: "2026-09-23T10:00:00+07:00" as string | null,
     createdAt: new Date(Date.now() - 3 * 60 * 60_000).toISOString(),
+    linksToOrders: false,
   },
 ];
 
@@ -55,11 +63,21 @@ export const handlers = [
   ...adminHandlers,
   ...partnerZoneHandlers,
 
-  // Notifications on the contract B1.3 published (InboxItemDto, cursor feed, per-item read).
-  // Stateful, so "mark read" visibly does something; obviously fake.
-  http.get("*/v1/:surface/notifications", () =>
-    HttpResponse.json({ data: inbox.map((item) => ({ ...item })), meta: { nextCursor: null } }),
+  // Notifications (InboxPageDto: cursor feed with the caller's unread count, per-item and bulk
+  // read). Stateful, so "mark read" visibly does something; obviously fake.
+  http.get("*/v1/:surface/notifications", ({ params }) =>
+    HttpResponse.json({
+      data: inbox.map(({ linksToOrders, ...item }) => ({
+        ...item,
+        url: linksToOrders ? (ORDER_PAGE[String(params.surface)] ?? null) : null,
+      })),
+      meta: { nextCursor: null, unreadCount: inbox.filter((item) => item.readAt === null).length },
+    } satisfies Schemas["InboxPageDto"]),
   ),
+  http.post("*/v1/:surface/notifications/actions/read-all", () => {
+    for (const item of inbox) item.readAt ??= new Date().toISOString();
+    return new HttpResponse(null, { status: 204 });
+  }),
   http.post("*/v1/:surface/notifications/:notificationId/actions/read", ({ params }) => {
     const item = inbox.find((entry) => entry.id === params.notificationId);
     if (item && item.readAt === null) item.readAt = new Date().toISOString();
@@ -76,9 +94,8 @@ export const handlers = [
   // CONTRACT-REQUEST analytics.events — the D-102 funnel, accepted and discarded.
   http.post("*/v1/store/analytics/events", () => new HttpResponse(null, { status: 202 })),
 
-  // CONTRACT-REQUEST rum.web-vitals — no endpoint exists yet (docs/contract-requests.md).
-  // Accepted and discarded, on all three surfaces, so `pnpm dev:mock` and the e2e run do not
-  // fill the console with unhandled-request warnings on every page load.
+  // `{surface}.rum.recordWebVital` — accepted and discarded, on all three surfaces, so
+  // `pnpm dev:mock` and the e2e run do not fill the console with warnings on every page load.
   http.post("*/v1/:surface/rum/web-vitals", () => new HttpResponse(null, { status: 202 })),
 
   // Anything not overridden falls through to the contract's own examples.

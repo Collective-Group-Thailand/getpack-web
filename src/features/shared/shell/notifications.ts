@@ -9,18 +9,12 @@ import { STALE_TIME } from "@/lib/query/defaults";
 import type { Zone } from "@/lib/zones";
 
 /**
- * The in-app notification centre's data (D-143), on the contract packio-api B1.3 published:
- * `GET /v1/{surface}/notifications` (a cursor feed) and
- * `POST /v1/{surface}/notifications/{id}/actions/read` (one item, idempotent).
- *
- * Two things the F1 contract request asked for did not ship, and the UI is honest about both
- * rather than inventing them (`notifications.unread-and-link` in `docs/contract-requests.md`):
- *
- * - **No `unreadCount`.** The badge counts the unread items in the first page, and says "more"
- *   when a full page came back unread with more behind it — a lower bound that never lies,
- *   instead of a number that might.
- * - **No link.** `InboxItemDto` carries an `eventType` and a body, not a URL, so an item marks
- *   itself read rather than pretending to navigate somewhere.
+ * The in-app notification centre's data (D-143): `GET /v1/{surface}/notifications` (a cursor feed
+ * whose `meta.unreadCount` counts all of my unread, not only the page),
+ * `POST /v1/{surface}/notifications/{id}/actions/read` (one item, idempotent) and
+ * `POST /v1/{surface}/notifications/actions/read-all` (contract v0.6.0,
+ * `notifications.unread-and-link`). Each item carries the zone-relative `url` of what it is about,
+ * or `null` when the zone has no page for it.
  */
 export type NotificationItem = Schemas["InboxItemDto"];
 
@@ -29,13 +23,11 @@ export const FEED_PAGE_SIZE = 50;
 
 export interface NotificationFeed {
   items: NotificationItem[];
-  /** Unread among `items`. */
+  /** All my unread in-app notifications, as the API counts them. */
   unreadCount: number;
-  /** True when the first page was entirely unread and the API has more: the count is a floor. */
-  unreadIsLowerBound: boolean;
 }
 
-const EMPTY: NotificationFeed = { items: [], unreadCount: 0, unreadIsLowerBound: false };
+const EMPTY: NotificationFeed = { items: [], unreadCount: 0 };
 
 /**
  * One call per surface, because openapi-fetch types a request by its literal path — a union of
@@ -54,16 +46,8 @@ async function fetchFeed(zone: Zone) {
   }
 }
 
-export function summariseFeed(page: {
-  data: NotificationItem[];
-  meta: { nextCursor: string | null };
-}): NotificationFeed {
-  const unreadCount = page.data.filter((item) => item.readAt === null).length;
-  return {
-    items: page.data,
-    unreadCount,
-    unreadIsLowerBound: unreadCount === page.data.length && page.data.length > 0 && page.meta.nextCursor !== null,
-  };
+export function summariseFeed(page: Schemas["InboxPageDto"]): NotificationFeed {
+  return { items: page.data, unreadCount: page.meta.unreadCount };
 }
 
 export function useNotifications(zone: Zone) {
@@ -105,10 +89,18 @@ export async function markRead(zone: Zone, notificationId: string): Promise<void
   }
 }
 
-/**
- * Marks every unread item on the page read — one request each, since the contract has no bulk
- * endpoint yet. `allSettled`, so one failure does not leave the rest unmarked.
- */
-export async function markAllRead(zone: Zone, items: readonly NotificationItem[]): Promise<void> {
-  await Promise.allSettled(items.filter((item) => item.readAt === null).map((item) => markRead(zone, item.id)));
+/** Marks all of my unread notifications read, not only the ones on the page, in one request. */
+export async function markAllRead(zone: Zone): Promise<void> {
+  const api = browserApi();
+  switch (zone) {
+    case "admin":
+      await api.POST("/v1/admin/notifications/actions/read-all", {});
+      return;
+    case "partner":
+      await api.POST("/v1/partner/notifications/actions/read-all", {});
+      return;
+    case "customer":
+      await api.POST("/v1/store/notifications/actions/read-all", {});
+      return;
+  }
 }

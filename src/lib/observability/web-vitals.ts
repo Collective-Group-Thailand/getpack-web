@@ -6,30 +6,21 @@
  * reference device (design-system.md §6). Only field data does, which is why
  * `docs/performance-budgets.md` asks for both.
  *
- * CONTRACT-REQUEST `rum.web-vitals`: no endpoint exists yet. The payload below is what the UI
- * can honestly provide and what `docs/contract-requests.md` asks for.
+ * `{store,admin,partner}.rum.recordWebVital` (contract v0.6.0, `rum.web-vitals`) takes one sample
+ * as `WebVitalDto` and answers 202. Its `route` is the route *pattern*, never the URL:
+ * `/orders/[orderId]`, not `/orders/PK-2569-00042`. A real path would put an order code — and on
+ * some screens a tracking token — into an analytics store, which is both a PDPA problem (D-144)
+ * and useless for aggregation; the API refuses one with a 422.
  */
 
+import type { Schemas } from "@/lib/api/types";
 import type { Zone } from "@/lib/zones";
 
-/** The five Core Web Vitals `next/web-vitals` reports, plus Next's own navigation timings. */
-export interface WebVitalReport {
-  /** `LCP`, `INP`, `CLS`, `FCP`, `TTFB`, or a Next custom metric. */
-  name: string;
-  value: number;
-  /** `good` | `needs-improvement` | `poor`, as the web-vitals library grades it. */
-  rating: string;
-  /** Stable per page load, so several metrics can be joined into one visit. */
-  id: string;
-  /**
-   * The route *pattern*, never the URL.
-   *
-   * `/orders/[orderId]`, not `/orders/PK-2569-00042`. A real path would put an order code — and
-   * on some screens a tracking token — into an analytics store, which is both a PDPA problem
-   * (D-144) and useless for aggregation, since every visit would be its own bucket.
-   */
-  route: string;
-  zone: Zone;
+export type WebVitalReport = Schemas["WebVitalDto"];
+
+/** The API names the customer zone after its surface. */
+export function rumZone(zone: Zone): Schemas["RumZone"] {
+  return zone === "customer" ? "store" : zone;
 }
 
 /**
@@ -37,9 +28,9 @@ export interface WebVitalReport {
  * that means nothing without the others, and sending them all would triple the traffic for
  * numbers no budget is written against.
  */
-const REPORTED = new Set(["LCP", "INP", "CLS", "FCP", "TTFB"]);
+const REPORTED: ReadonlySet<string> = new Set<Schemas["WebVitalName"]>(["LCP", "INP", "CLS", "FCP", "TTFB"]);
 
-export function shouldReport(name: string): boolean {
+export function shouldReport(name: string): name is Schemas["WebVitalName"] {
   return REPORTED.has(name);
 }
 

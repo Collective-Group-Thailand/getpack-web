@@ -5,7 +5,7 @@ import { loadAllMessages } from "@/i18n/messages";
 import { routing } from "@/i18n/routing";
 
 import { STATUS_MAPS, UNKNOWN_STATUS } from "./index";
-import { nextActionMeta, primaryAction, UNKNOWN_ACTION } from "./next-action";
+import { API_ACTION_KEYS, nextActionMeta, primaryAction, UNKNOWN_ACTION } from "./next-action";
 
 type Messages = Record<string, unknown>;
 
@@ -82,6 +82,11 @@ describe("next actions", () => {
     expect(nextActionMeta("order.approve").labelKey).toBe("action.approve");
     // `approve_slip` is not in the table; the verb before the underscore is.
     expect(nextActionMeta("order.approve_slip").labelKey).toBe("action.approve");
+  });
+
+  it("presents every action packio-api offers", () => {
+    // `NextActionDto.key` is a string in the contract, so the build cannot hold this table to it.
+    expect(API_ACTION_KEYS.filter((key) => nextActionMeta(key) === UNKNOWN_ACTION)).toEqual([]);
   });
 
   it("still renders an action the UI has never met", () => {
