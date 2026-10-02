@@ -30,3 +30,7 @@ storybook-static/
 
 # Lighthouse CI run output (reports are uploaded as a CI artifact instead)
 .lighthouseci/
+
+# Style assets are build output (U3.3, ADR-0012); only the manifest with their hashes is committed.
+/packages/dieline/generated/*
+!/packages/dieline/generated/manifest.json

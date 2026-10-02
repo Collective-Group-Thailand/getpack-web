@@ -61,6 +61,11 @@ jobs:
       - name: Unit tests (@packio/dieline)
         run: pnpm test:dieline
 
+      # Thumbnails and dieline SVGs are build output; the manifest of their hashes is committed.
+      # A recipe change without a re-render, or a render that is not reproducible, fails here.
+      - name: Style assets are reproducible (U3.3)
+        run: pnpm styles:render:check
+
       - name: Build the publishable package
         run: pnpm build:packages
 
