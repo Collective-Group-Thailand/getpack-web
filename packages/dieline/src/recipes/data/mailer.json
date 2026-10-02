@@ -104,6 +104,10 @@
       }
     }
   ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  },
   "legacy": {
     "patternKeys": [
       "pid:20",

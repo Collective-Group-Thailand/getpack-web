@@ -89,14 +89,26 @@ describe("explain", () => {
     expect(isBuildable(rsc, values, fluteB)).toBe(true);
   });
 
-  it("finds no rule broken by any preset on any reference board of its category", () => {
+  /**
+   * Presets the manufacturing rules show cannot be made as drawn — findings for prepress (PROGRESS
+   * U3.3), kept visible here rather than hidden by changing a preset customers already use.
+   */
+  const KNOWN_FINDINGS: Record<string, string> = {
+    // The 35 mm corrugated glue flap is wider than the 33.6 mm sleeve side it is glued inside.
+    "sleeve-drawer · jewellery · flute-e": "mfg.glue_flap_too_wide",
+  };
+
+  it("finds no rule broken by any preset on any reference board of its category, but the known findings", () => {
     for (const r of RECIPES)
       for (const id of REFERENCE_BY_CATEGORY[r.category])
-        for (const p of presetsOf(r))
+        for (const p of presetsOf(r)) {
+          const key = `${r.id} · ${p.id} · ${id}`;
+          const errors = explain(r, p.values, REFERENCE_MATERIALS[id]).filter((x) => x.severity === "error");
           expect(
-            explain(r, p.values, REFERENCE_MATERIALS[id]).filter((x) => x.severity === "error"),
-            `${r.id} · ${p.id} · ${id}`,
-          ).toEqual([]);
+            errors.map((x) => x.code),
+            key,
+          ).toEqual(KNOWN_FINDINGS[key] ? [KNOWN_FINDINGS[key]] : []);
+        }
   });
 });
 

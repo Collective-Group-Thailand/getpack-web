@@ -84,6 +84,17 @@ export const sleeveAndDrawer: PieceSetModule = {
   label: t("ปลอก + ลิ้นชัก (สองชิ้น)", "Sleeve and drawer (two pieces)"),
   params: ["fingerHole", "glueWidth", "grain"],
   processes: ["die_cut", "folder_gluer_straight", "folder_gluer_corner"],
+  constraints: [
+    {
+      id: "sleeveAndDrawer.glue_width",
+      code: "mfg.glue_flap_too_wide",
+      severity: "error",
+      param: "glueWidth",
+      require: "(glueWidth ?? glueWidthFor(width)) <= height + t + 2 * C.DRAWER_CLEARANCE_MM + a.panel - a.gluePanel",
+      message: t("ปีกกาวกว้างกว่าแผงข้างของปลอก", "The glue flap is wider than the sleeve's side panel it is glued to"),
+      stage: "manufacturing",
+    },
+  ],
   contributes: { kinds: ["panel", "glue_flap", "base", "wall", "flap"], roles: ["cut", "crease", "glue_area"] },
   build(ctx) {
     const { v, m } = ctx;

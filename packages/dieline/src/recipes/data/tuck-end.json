@@ -7,6 +7,17 @@
     "tuck_bottom": "tuck",
     "hang": "none"
   },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      }
+    }
+  },
   "category": "folding_carton",
   "name": {
     "th": "กล่องฝาเสียบ (บน-ล่างทางเดียวกัน)",

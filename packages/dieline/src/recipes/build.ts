@@ -189,3 +189,22 @@ export function styleFromRecipe(recipe: StyleRecipe): BoxStyleDef {
     ...(recipe.legacy ? { legacy: recipe.legacy } : {}),
   });
 }
+
+/**
+ * The closed box's outer size: the recipe's `outerSize` per axis, or the nominal size (its
+ * `closedSize`, else the inside L × W × H) plus one board layer each side.
+ */
+export function outerSizeOf(
+  recipe: StyleRecipe,
+  values: ParamValues,
+  m: MaterialSpec,
+): { length: number; width: number; height: number } {
+  const v = withDefaults(defaultsOf(recipe), values);
+  const ctx = recipeContext(recipe, v, m);
+  const nominal = recipe.closedSize ?? { length: "length", width: "width", height: "height" };
+  const axis = (k: "length" | "width" | "height") => {
+    const own = recipe.outerSize?.[k];
+    return own ? ctx.num(own) : ctx.num(nominal[k]) + 2 * Math.max(0, m.caliperMm);
+  };
+  return { length: axis("length"), width: axis("width"), height: axis("height") };
+}
