@@ -29,6 +29,15 @@ const PANEL_INDEX: Record<string, number> = { front: 0, right: 1, back: 2, left:
 /** The rules every tuck shares (legacy `calculate_conditions` #1 tuck depth by length). */
 export const TUCK_CONSTRAINTS: Constraint[] = [
   {
+    id: "tuck.min_depth",
+    code: "mfg.tuck_too_shallow",
+    severity: "error",
+    param: "tuckDepth",
+    require: "(tuckDepth ?? tuckDepthFor(length)) >= rule.minTuck",
+    message: t("ลิ้นเสียบตื้นเกินไปสำหรับวัสดุนี้", "The tuck is too shallow to hold in this material"),
+    stage: "manufacturing",
+  },
+  {
     id: "tuck.depth_vs_height",
     code: "tuck.too_deep",
     severity: "error",
@@ -87,6 +96,9 @@ export const tuck: ClosureModule = {
  * two calipers on corrugated, a slit on paperboard). The named presets are the industry's flap
  * sets; `stages` orders the flaps when they lie over one another (`{ panel: stage }`).
  */
+/** The default settings of each flap set, for rules that read them (`rules/module-rules.ts`). */
+export const FLAP_DEFAULTS: Record<string, ModuleConfig> = {};
+
 function flapSet(
   id: string,
   label: ReturnType<typeof t>,
@@ -94,6 +106,7 @@ function flapSet(
   processes: ClosureModule["processes"],
   constraints: Constraint[] = [],
 ): ClosureModule {
+  FLAP_DEFAULTS[id] = defaults;
   return {
     id,
     slot: "closure",
@@ -229,6 +242,17 @@ export const crashLock: ClosureModule = {
   label: t("ก้นล็อกอัตโนมัติ (crash-lock)", "Crash-lock (auto) bottom"),
   params: [],
   processes: ["die_cut", "folder_gluer_crash_lock"],
+  constraints: [
+    {
+      id: "crashLock.depth",
+      code: "mfg.crash_lock_too_shallow",
+      severity: "error",
+      param: "width",
+      require: "side / 2 >= rule.crashLockMinDepth",
+      message: t("กล่องแคบเกินกว่าจะทำก้นล็อกอัตโนมัติ", "Too narrow for a crash-lock bottom in this material"),
+      stage: "manufacturing",
+    },
+  ],
   contributes: { kinds: ["lock", "flap"], roles: ["cut", "crease", "glue_area"] },
   tube: () => crashLockClosure(),
 };
@@ -291,6 +315,17 @@ export const polygonTuckLid: ClosureModule = {
   params: ["tuckDepth", "tuckCorners"],
   processes: ["die_cut", "folder_gluer_straight"],
   contributes: { kinds: ["lid", "tuck"], roles: ["cut", "crease"] },
+  constraints: [
+    {
+      id: "polygonTuckLid.min_depth",
+      code: "mfg.tuck_too_shallow",
+      severity: "error",
+      param: "tuckDepth",
+      require: "(tuckDepth ?? tuckDepthFor(2 * panel)) >= rule.minTuck",
+      message: t("ลิ้นเสียบตื้นเกินไปสำหรับวัสดุนี้", "The tuck is too shallow to hold in this material"),
+      stage: "manufacturing",
+    },
+  ],
   tube(ctx) {
     const a = ctx.dims.panel;
     const h = (a * Math.sqrt(3)) / 2;
