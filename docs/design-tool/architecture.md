@@ -2,7 +2,7 @@
 
 How the online box designer is put together: the geometry engine, the editor, where designs are
 kept, and the files it makes. Decisions are in ADR-0007 (engine ownership), ADR-0008 (geometry
-model), ADR-0009 (print file), ADR-0010 (3D preview) and ADR-0011 (composable style recipes).
+model), ADR-0009 (print file), ADR-0010 (3D preview), ADR-0011 (composable style recipes) and ADR-0012 (asset pipeline, thickness).
 
 ```
 @packio/dieline  (packages/dieline — framework-free, browser + Node, published for packio-api)
@@ -13,6 +13,8 @@ model), ADR-0009 (print file), ADR-0010 (3D preview) and ADR-0011 (composable st
   expr            the recipes' expression language (sizes, rules, closed sizes; no eval)
   solver          explain (every rule broken, codes + numbers), validRanges, sizeRanges
   rules/*         material classes and their manufacturing rules; machine envelope check
+  model/*         thickness model (foldModel), collision check, inflated pouch surface
+  render/*        software rasteriser: 2D and 3D thumbnails (ADR-0012)
   construct/*     tube, closures, tray: the builders modules draw with
   faces, lines    Face / Piece / Dieline; shared edges; dielineLines (each line once, with role)
   offset          Clipper2: safe zone, bleed outline, piece outline, triangulation (isolated)
@@ -33,7 +35,8 @@ src/features/designer  (shared by the customer and admin zones)
                      transformer, marquee, snapping guides, rulers, grid, print mode
     panels/*         box, templates, elements, text, uploads, brand, background, layers,
                      properties, arrange, checks
-    Preview3D.tsx    WebGL (three / @react-three/fiber), loaded on demand
+    Preview3D.tsx    WebGL (three / @react-three/fiber), loaded on demand; slabs of the caliper
+                     from the engine's foldModel (printed surface + board edges)
     DesignViewer.tsx read-only SVG of a design (prepress, shared links)
   data/*          persistence (local / store / admin), IndexedDB drafts, API calls
   print.ts        the print PDF (ADR-0009)

@@ -43,6 +43,50 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-01 | **U-F0.4** — the partner zone, and every zone onto v0.4–v0.6 | Contract **`v0.6.0`** adopted. `gen:triage` reads the triage at the tag and its shipped tables; `gen:rbac` imports the factory scope. Every published request in all three zones is on `serverApi` / `browserApi`: 115 request operations → 5 (the parked configurator, guided help and sample kits deferred by D-223, analytics journeys for U5.B6). `CONTRACT-GAP` markers 190 → 86, e2e fixmes 21 → 7. Entities render the API's `nextActions` (59 keys); notifications show the API's unread count and link; web vitals go to the API. Interim QC checklist `packio-web-v1` (user) | `e2e:integration` (U-F0.5); the gaps packio-api left out on purpose | See §U-F0.4 |
 | 2026-10-02 | **U3.1** — module system (engine refactor, no new styles) | The 30 styles are JSON recipes (`packages/dieline/src/recipes/data/`) over **26 implemented modules** (bodies, closures, features, piece sets) with **16 more declared `planned`** for U3.4; sizes and rules as expressions in an eval-free, three-valued language (`src/expr.ts`); `parseRecipe` / `buildFromRecipe` / `styleFromRecipe`; every module declares parameters, constraints, contributed face kinds and roles, hinges and factory processes; recipes map to 20 master-file bases; **byte-identical output** proven by a 1,164-case baseline written before the switch; ADR-0011 | U3.2 solver and material classes, U3.3 3D / fold gate / assets; recipe data out of the initial bundle before U3.4 wave 1 | See U3.1 below — designer and customer-app ratchets raised (customer-app was already over on `main`) |
 | 2026-10-02 | **U3.2** — constraint solver & manufacturability | Material classes (`paperboard`, `food_board`, `corrugated` per flute, `rigid`, `flexible`, `paper`, `label_stock`, `shrink_film`) with rule sets; manufacturing rules as recipe data (`rule.*`, `stage: "manufacturing"`) plus coded rules in `rules/`; `explain()` (codes, expected/actual, parameters read), `validRanges()` / `sizeRanges()`, `fitsEnvelope()` for partner machine envelopes, `recipeProcesses()`; seeded property tests on every recipe × reference board; `validate()` and the baseline unchanged | UI on `explain()` (U3.5); envelope data from the API (U3.B3) | ⚠ new rule values await prepress; see U3.2 below |
+| 2026-10-02 | **U3.3** — automatic 3D, virtual fold test, assets | Thickness model (`foldModel`: walls centred, closures inward and stacked in fold order, rolled walls, wrapping flaps, back-to-back walls, rigid wrap) also drawn by the designer's 3D preview; recipe `outerSize`; fold gate (min / typical / max × 2 calipers, ± 1 mm, collision check) on all 21 foldable recipes; inflated pouch surface; structural variants (46) with generated TH/EN names pending review; engine rasteriser + `pnpm styles:render` (166 assets, manifest committed, reproducibility checked in CI); ADR-0012 | Name review (D-212); curved pillow panels; U3.4 waves | New rule `mfg.glue_flap_too_wide`; one preset finding for prepress — see U3.3 below |
+---
+
+## U3.3 — Automatic 3D, virtual fold test, assets — 2026-10-02
+
+`docs/prompts/U3-style-library.md` §U3.3, on `feat/u3.3-auto-3d` (worktree `../packio-web-u3`, from `main` at `519a861`, U3.2 merged).
+
+### Gap analysis
+| U3.3 item | Found | Done |
+|---|---|---|
+| 1 3D from the hinge graph | `foldDieline` (zero-thickness faces), `Preview3D` with open/close animation and slider | `foldModel`: a slab of the caliper per face, layered (ADR-0012); `inflatedPouch` (flexible: seals flat, webs bulge); rigid board wrapped (`WRAP_MM`); `Preview3D` draws the slabs — artwork on the printed surface, board colour inside and on every cut edge — keeping its animation, slider and buttons; three.js still lazy |
+| 2 Virtual fold test | Zero-thickness bbox vs inside size, presets only, [−1, +2t+1] | `model/fold-gate.test.ts`: every foldable recipe (21) × smallest / typical / largest valid size (from `validRanges`) × two calipers of its category: thick model = `outerSizeOf` ± 1 mm per axis, and `collisions()` empty (transversal crossings between non-adjacent faces, contacts shrunk away); the F4 assertion stays as extra cover |
+| 3 Asset pipeline | `pnpm style:thumbnails` (Playwright, docs only) | `pnpm styles:render`: per variant the dieline SVG, a 2D thumbnail and 3D thumbnails on kraft and white board by the engine's own rasteriser (our "Packio studio" lights) → `packages/dieline/generated/`; `manifest.json` (key, axes, names, review state, processes, recipe hash, preset, values, sha256 per asset) committed; images git-ignored, rendered before publishing and shipped in `files`; CI `styles:render:check` |
+| 4 Names | Hand-written per style | `variants` axes in recipes (master-file axes of their base, checked against the master file), `variantsOf`, `describeVariant` (recipe name + axis phrases + module labels), `reviewStatus: pending` until in `names.reviewed.json`; a test forbids claims (best, premium, eco, ดีที่สุด, พรีเมียม …) |
+
+### Counts (U3.4 counting rules: structure only, nothing publishable yet)
+| Category | Bases (master codes) | Variants |
+|---|---|---|
+| Folding carton | 5 | 21 |
+| Corrugated | 6 | 9 |
+| Trays & lids | 4 | 5 |
+| Specialty | 1 | 1 |
+| Flat (labels, tags, sleeves, pouch) | 4 | 10 |
+| **Total** | **20** | **46** (166 assets) |
+Publishable: 0 — that is the API's (U3.B3 capability, U3.B4 pricing path).
+
+### Decisions taken, with reasons
+- **Thickness in the engine, outer size in the recipe.** The model makes a closed axis inside + 2t by construction; what is not (a sleeve's band, a tray's height + t, a mailer's front + 3t, a two-piece box) is written as `outerSize` data, which the gate checks and D-182's conversion can reuse.
+- **Own rasteriser instead of headless WebGL** — reproducible bytes (a CI check), no GPU, runnable by the drawing service in Node; plain flat shading, never artwork, scenes or third-party assets.
+- **Only the manifest is committed** — the images would grow to tens of MB at wave 2.
+- Bugs the gate and the thumbnails found in the new model and fixed: rolled inner walls (printed side inward) stacked the wrong way; the mailer's front flap wraps its wall; back-to-back handle panels z-fought; overlap footprints depended on a face's normal sign.
+
+### Findings for prepress (⚠)
+- **Glue flap wider than its panel** on the smallest sleeves: the legacy glue table (15 mm at W ≤ 150) exceeds a 10 mm closing panel, and the folded flap stands out. New manufacturing rule `mfg.glue_flap_too_wide` (tube bodies, sleeve-and-drawer) excludes those sizes from `validRanges`; `validate()` unchanged.
+- **`sleeve-drawer` "jewellery" (100 × 80 × 30) on E-flute** breaks it: the 35 mm corrugated glue flap on a 33.6 mm sleeve side. The preset is unchanged (customers use it) and listed as a known finding in `solver.test.ts`.
+- The mailer's compensation (walls + t) leaves the closed inside height H − t once the lid is on — to confirm.
+- The pillow keeps F4's flat-panel approximation (curved panels deferred); within ± 1 mm on paperboard.
+
+### Performance
+Designer 467,420 (ratchet 468,000), configurator 326,749 and account designs 316,176 (327,000): the model and rasteriser load only with the 3D tab or in Node.
+
+### Follow-ups
+Name review (Marketing + Prepress, D-212); curved pillow panels; U3.4 wave 1 (recipe data out of the initial bundle first, PROGRESS U3.1); the drawing service rendering assets per recipe version (U3.B5).
+
 ---
 
 ## U3.2 — Constraint solver & manufacturability rules — 2026-10-02
