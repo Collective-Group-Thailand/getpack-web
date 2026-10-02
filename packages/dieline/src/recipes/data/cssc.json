@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "cssc",
+  "base": "PK-CS-04",
+  "variant": {
+    "joint": "glue_flap"
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกฝาชนกลางทุกด้าน (CSSC)",
+    "en": "Centre special slotted container (CSSC)"
+  },
+  "description": {
+    "th": "ฝาในและฝานอกยาวมาชนกันกลางกล่องทั้งสองแนว ปิดด้านบนเต็มสองชั้น",
+    "en": "Inner and outer flaps all meet at the centre — a full double layer top and bottom"
+  },
+  "codes": {
+    "fefco": "0204"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "glueWidth",
+    "glueSide",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "slotted"
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "cssc"
+    },
+    "bottom": {
+      "module": "cssc"
+    }
+  },
+  "features": [
+    {
+      "module": "handHoles"
+    }
+  ],
+  "legacy": {
+    "patternKeys": []
+  }
+}

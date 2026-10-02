@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "rsc",
+  "base": "PK-CS-01",
+  "variant": {
+    "joint": "glue_flap"
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกฝาชน (RSC)",
+    "en": "Regular slotted container (RSC)"
+  },
+  "description": {
+    "th": "กล่องขนส่งมาตรฐาน ฝาบน-ล่างยาวครึ่งหนึ่งของความกว้าง พับมาชนกันกลางกล่อง",
+    "en": "The standard shipping box: all flaps half the width, outer flaps meeting in the middle"
+  },
+  "codes": {
+    "fefco": "0201"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "glueWidth",
+    "glueSide",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "slotted"
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "rsc"
+    },
+    "bottom": {
+      "module": "rsc"
+    }
+  },
+  "features": [
+    {
+      "module": "handHoles"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["pid:19", "mapping:30", "corrugate-rsc", "rsc-3d", "rsc"]
+  }
+}

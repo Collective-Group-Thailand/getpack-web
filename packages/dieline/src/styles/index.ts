@@ -1,71 +1,12 @@
 import { withDefaults } from "../params";
 import type { BoxStyleDef, Dieline, HingeMap, Issue, MaterialSpec, ParamValues } from "../types";
-import { band } from "./band";
-import { crashLockBottom } from "./crash-lock-bottom";
-import { cssc } from "./cssc";
-import { cupSleeve } from "./cup-sleeve";
-import { doubleWallTray } from "./double-wall-tray";
-import { flatCircle } from "./flat-circle";
-import { flatCustom } from "./flat-custom";
-import { flatOval } from "./flat-oval";
-import { flatRect } from "./flat-rect";
-import { flatRoundedRect } from "./flat-rounded-rect";
-import { fol } from "./fol";
-import { gable } from "./gable";
-import { hangTabTuck } from "./hang-tab-tuck";
-import { hangTag } from "./hang-tag";
-import { hexagonal } from "./hexagonal";
-import { hsc } from "./hsc";
-import { mailer } from "./mailer";
-import { pillow } from "./pillow";
-import { pouch } from "./pouch";
-import { rsc } from "./rsc";
-import { sealEnd } from "./seal-end";
-import { sleeve } from "./sleeve";
-import { sleeveDrawer } from "./sleeve-drawer";
-import { snapLockBottom } from "./snap-lock-bottom";
-import { telescope } from "./telescope";
-import { tray } from "./tray";
-import { tray6Corner } from "./tray-6-corner";
-import { reverseTuckEnd, tuckEnd } from "./tuck-end";
-import { wrapAround } from "./wrap-around";
+import { RECIPES, styleFromRecipe } from "../recipes";
 
 /**
  * Every style the engine can draw. Order is the catalogue's natural reading order: folding
  * carton, corrugated, trays and lids, specialty, flat.
  */
-export const STYLES: readonly BoxStyleDef[] = [
-  tuckEnd,
-  reverseTuckEnd,
-  snapLockBottom,
-  crashLockBottom,
-  sealEnd,
-  hangTabTuck,
-  sleeve,
-  sleeveDrawer,
-  gable,
-  hexagonal,
-  rsc,
-  hsc,
-  fol,
-  cssc,
-  mailer,
-  wrapAround,
-  tray,
-  tray6Corner,
-  doubleWallTray,
-  telescope,
-  pillow,
-  flatRect,
-  flatRoundedRect,
-  flatCircle,
-  flatOval,
-  flatCustom,
-  hangTag,
-  cupSleeve,
-  band,
-  pouch,
-];
+export const STYLES: readonly BoxStyleDef[] = RECIPES.map(styleFromRecipe);
 
 const BY_ID = new Map(STYLES.map((s) => [s.id, s]));
 
@@ -144,8 +85,6 @@ export function hingeMapOf(style: BoxStyleDef, v: ParamValues, material: Materia
   if (!f) return null;
   return typeof f === "function" ? f(resolveValues(style, v), material) : f;
 }
-
-export { rsc, tray, tuckEnd, reverseTuckEnd };
 
 /** Styles grouped by category, in registry order — for pickers. */
 export function stylesByCategory(): { category: BoxStyleDef["category"]; styles: BoxStyleDef[] }[] {

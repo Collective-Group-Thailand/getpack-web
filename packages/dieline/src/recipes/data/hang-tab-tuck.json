@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "hang-tab-tuck",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "reverse_tuck",
+    "tuck_bottom": "tuck"
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบมีหูแขวน",
+    "en": "Tuck end with hang tab"
+  },
+  "description": {
+    "th": "หูแขวนยื่นจากด้านหลัง เจาะรูแบบยูโรหรือรูกลม สำหรับแขวนบนราวในร้าน ฝาบนพับจากด้านหน้า",
+    "en": "A hang tab rises from the back with a euro slot or round hole for peg display; the top lid hinges from the front"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "hangerHeight",
+    "hangHole",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "hangHole": "euro"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "front"
+      }
+    },
+    "bottom": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "window"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["pid:6", "pid:8"]
+  }
+}

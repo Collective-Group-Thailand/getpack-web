@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "telescope",
+  "base": "PK-LB-01",
+  "category": "tray_lid",
+  "name": {
+    "th": "กล่องฝาครอบสองชิ้น (ฝา-ตัว)",
+    "en": "Two-piece telescope box"
+  },
+  "description": {
+    "th": "ตัวกล่องและฝาครอบแยกชิ้น ฝาครอบลึกเต็มหรือครึ่ง เปิดแล้วดูพรีเมียม เหมาะกับของขวัญ เสื้อผ้า",
+    "en": "A base and a separate lid, full or partial depth — a premium opening for gifts and apparel"
+  },
+  "materials": ["paperboard", "corrugated", "rigid"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 40,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 30,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 15,
+      "max": 300
+    },
+    "lid",
+    "lidDepth",
+    "grain"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 150,
+    "height": 60,
+    "lid": "partial",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "gift",
+      "label": {
+        "th": "ของขวัญ 200 × 150 × 60",
+        "en": "Gift 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "apparel",
+      "label": {
+        "th": "เสื้อผ้า 300 × 250 × 80",
+        "en": "Apparel 300 × 250 × 80"
+      },
+      "values": {
+        "length": 300,
+        "width": 250,
+        "height": 80,
+        "lid": "full"
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "lidAndBase"
+  },
+  "closedSize": {
+    "length": "length + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "width + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height"
+  },
+  "legacy": {
+    "patternKeys": ["pid:4", "pid:32", "mapping:11", "folding-cover-box", "pid:29"]
+  }
+}

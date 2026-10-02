@@ -100,6 +100,33 @@ export {
   stylesByCategory,
   validateStyle,
 } from "./styles";
+export {
+  buildFromRecipe,
+  collectExpressions,
+  PARAM_LIBRARY,
+  parseRecipe,
+  RECIPES,
+  RecipeError,
+  recipeConstraints,
+  resolveParam,
+  styleFromRecipe,
+  type BuiltRecipe,
+  type RecipeModule,
+  type RecipeParam,
+  type StyleRecipe,
+} from "./recipes";
+export {
+  getModule,
+  MODULES,
+  PROCESSES,
+  type BodyKind,
+  type Constraint,
+  type ModuleConfig,
+  type ModuleDef,
+  type ModuleSlot,
+  type Process,
+} from "./modules";
+export { callsOf, compile as compileExpression, ExprError, namesOf, type ExprValue } from "./expr";
 export { fixtureFileKey, patternFixtures, type PatternFixture } from "./fixtures";
 export { parseSvgPath } from "./svgpath";
 export {
