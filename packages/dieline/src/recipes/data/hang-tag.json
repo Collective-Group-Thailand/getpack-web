@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "id": "hang-tag",
   "base": "PK-TG-01",
+  "variants": {
+    "hang": {
+      "round_hole": {
+        "hole": "6"
+      },
+      "none": {
+        "hole": "0"
+      }
+    }
+  },
   "category": "flat",
   "name": {
     "th": "ป้ายแท็ก (ตัดมุม / มุมมน)",

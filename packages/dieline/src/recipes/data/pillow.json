@@ -88,6 +88,11 @@
     "width": "width",
     "height": "thickness"
   },
+  "outerSize": {
+    "length": "length",
+    "width": "width + t",
+    "height": "thickness"
+  },
   "legacy": {
     "patternKeys": []
   }

@@ -74,6 +74,9 @@
       }
     }
   },
+  "outerSize": {
+    "height": "height + t"
+  },
   "legacy": {
     "patternKeys": ["pid:10", "pid:11"]
   }

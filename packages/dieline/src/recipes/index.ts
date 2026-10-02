@@ -69,7 +69,23 @@ export const RECIPES: readonly StyleRecipe[] = [
   pouch,
 ] as unknown as StyleRecipe[];
 
-export { buildFromRecipe, recipeConstraints, recipeContext, styleFromRecipe, type BuiltRecipe } from "./build";
+export {
+  buildFromRecipe,
+  outerSizeOf,
+  recipeConstraints,
+  recipeContext,
+  styleFromRecipe,
+  type BuiltRecipe,
+} from "./build";
 export { collectExpressions, parseRecipe } from "./parse";
 export { defaultsOf, PARAM_LIBRARY, presetsOf, RECIPE_SETS, RecipeError, resolveParam } from "./params";
+export {
+  AXIS_PHRASES,
+  describeVariant,
+  variantKey,
+  variantsOf,
+  type ReviewStatus,
+  type StyleVariant,
+  type VariantWords,
+} from "./variants";
 export type { RecipeModule, RecipeParam, StyleRecipe } from "./types";
