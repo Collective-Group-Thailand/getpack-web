@@ -1,0 +1,159 @@
+{
+  "definition": "015c3fca1ca525",
+  "drinks · flute-e": {
+    "build": "03ccf0e3f7ff21",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-b": {
+    "build": "19a8db15fa6008",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-bc": {
+    "build": "05b09245ca2134",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "flat · flute-e": {
+    "build": "14e9e0829dee39",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "flat · flute-b": {
+    "build": "102486af03945f",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "flat · flute-bc": {
+    "build": "0780a996cb7380",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · length=min": {
+    "build": "099575d155cfcf",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · length=max": {
+    "build": "0c674687b884dc",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · length<min": {
+    "build": "104a6d34a1f4ca",
+    "hinges": "15ed47e3f7c926",
+    "validate": "0991d0b539713d",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · length>max": {
+    "build": "005f999a3e690d",
+    "hinges": "15ed47e3f7c926",
+    "validate": "0b5b1081c8c123",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · width=min": {
+    "build": "0f9fe1901f8d4a",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · width=max": {
+    "build": "0cd9759d04809b",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · width<min": {
+    "build": "0cf8b62edb7410",
+    "hinges": "15ed47e3f7c926",
+    "validate": "04fb7caf63d77e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · width>max": {
+    "build": "16ca305a585209",
+    "hinges": "15ed47e3f7c926",
+    "validate": "134fc0fa4f289e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · height=min": {
+    "build": "0bfbeb71903969",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · height=max": {
+    "build": "1b6ce2834c25ea",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · height<min": {
+    "build": "1af95c9b0aea58",
+    "hinges": "15ed47e3f7c926",
+    "validate": "0dfacfab4d4fc6",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · height>max": {
+    "build": "1294a7b4ce01f9",
+    "hinges": "15ed47e3f7c926",
+    "validate": "02957fe79a0712",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · glueWidth=min": {
+    "build": "0e545520995348",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · glueWidth=max": {
+    "build": "1901030e20814c",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · glueWidth<min": {
+    "build": "137d9205b01d18",
+    "hinges": "15ed47e3f7c926",
+    "validate": "1048c2ed5cf584",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · glueWidth>max": {
+    "build": "1c6a6b3a45e982",
+    "hinges": "15ed47e3f7c926",
+    "validate": "17e3d349f15997",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · glueSide=left": {
+    "build": "03ccf0e3f7ff21",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · glueSide=right": {
+    "build": "0bf7b62faaf921",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · grain=across": {
+    "build": "03ccf0e3f7ff21",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · grain=along": {
+    "build": "11034b379d0abd",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  }
+}

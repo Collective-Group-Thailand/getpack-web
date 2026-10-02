@@ -1,152 +1,162 @@
 # Authoring a box style
 
-A style is a `BoxStyleDef` in `packages/dieline/src/styles/`: its parameters, presets and
-materials, a `build` that returns the flat `Dieline`, and a hinge map that folds it. The
-registry (`styles/index.ts`) is the only list — the designer's setup dialog, the configurator,
-the drawing service in packio-api and the tests all read it. The model is ADR-0008; this is the
-how-to.
+Since U3.1 a style is a **recipe**: a JSON file in `packages/dieline/src/recipes/data/` that
+names the **modules** it is made of and sets their sizes, plus the parameters, defaults, presets
+and names a customer sees (ADR-0011). `styleFromRecipe` turns it into the `BoxStyleDef` the
+registry exposes, so the designer's setup dialog, the configurator, the drawing service in
+packio-api and the tests read it as before. The geometry model is ADR-0008; this is the how-to.
 
-## Rules that are not optional
+Most new styles are a new recipe over existing modules. A **new construction** — a closure, a
+feature or a body nobody has drawn yet — is a new module first (§3), then its recipes.
+
+## 1. Rules that are not optional
 
 - **Millimetres, y down, origin top-left, printed side facing you.** `assemble` anchors the sheet
   at the origin for you.
 - **Every edge has a role**: `cut`, `crease`, `perforation`, `half_cut`, `glue_area`, `bleed`. A
-  fold between two faces is **one edge listed by both faces with the same end points** (direction
-  does not matter); `dielineLines` then draws it once, and the fold finds it as a hinge.
+  fold between two faces is **one edge listed by both faces with the same end points**;
+  `dielineLines` draws it once and the fold finds it as a hinge.
 - **Faces and pieces are named by label keys** from `labels.ts` (`FACE_LABELS`, `PIECE_LABELS`),
-  never by words in the style. Add a key there, in Thai and English, if none fits.
-- **Caliper is the style's job.** Inside sizes come in; add the make-up allowances from
-  `allowancesOf(material)` (catalogue flute allowances win over caliper-derived ones) so the folded
-  box is the size the customer typed. Never hard-code a board.
-- **Validation speaks both languages** and names the parameter: `defineStyle` already checks the
-  schema (min/max per parameter, `size.out_of_range`) and the material kind; `check` adds the
-  style's own rules (a window must fit its panel, a tuck must fit its lid).
-- **Legacy mapping**: `legacy.patternKeys` lists the Locopack patterns the style draws
-  (`pid:<n>`, `mapping:<n>` or a drawing-service name); add catalogue aliases in `STYLE_ALIASES`.
-  Update [style-mapping.md](style-mapping.md) in the same change.
+  never by words in the geometry. `parseRecipe` refuses an unknown label.
+- **Caliper is the recipe's job, in the open.** Inside sizes come in; the body's `dims` add the
+  make-up allowances (`a.panel`, `a.depth`, `a.trayDepth`, `a.flap`, `a.gluePanel` — catalogue
+  flute allowances win over caliper-derived ones) so the folded box is the size the customer typed.
+  Never a board in a recipe.
+- **Rules speak both languages and keep their codes.** A constraint's `code` is what the UI
+  translates (`tuck.too_deep`); its `message` is the Thai and English fallback.
+- **Legacy mapping**: `legacy.patternKeys` lists the Locopack patterns the style draws; catalogue
+  aliases stay in `STYLE_ALIASES`. Update [style-mapping.md](style-mapping.md) in the same change.
 
-## Worked example — a table tent
+## 2. A recipe, read line by line
 
-Two panels on one crease, standing as an inverted V. It shows a shared crease, a parameter that is
-not a size, a hinge map that depends on a parameter, a placement that turns the model upright, and
-a `closedSize` for a shape that is not a box.
+`recipes/data/tuck-end.json`, shortened:
 
-```ts
-// packages/dieline/src/styles/table-tent.ts
-import { assemble, face, piece } from "../faces";
-import { num } from "../params";
-import { rectangle } from "../path";
-import type { ParamValues } from "../types";
-import { defineStyle, t } from "./_shared";
-
-/** A table tent: two panels on one crease, standing as an inverted V. */
-function make(v: ParamValues) {
-  const L = num(v, "length", 150);
-  const H = num(v, "height", 100);
-  const back = face("back", "back", "panel", rectangle(0, 0, L, H, { bottom: "crease" }));
-  const front = face("front", "front", "panel", rectangle(0, H, L, H, { top: "crease" }));
-  return assemble("table-tent", [piece("blank", "blank", [back, front])]);
+```jsonc
+{
+  "schemaVersion": 1,
+  "id": "tuck-end", // the engine id designs and dielineKey carry — never change it
+  "base": "PK-TE-01", // its row in style-library-master.json …
+  "variant": { "tuck_top": "straight_tuck", "tuck_bottom": "tuck", "hang": "none" }, // … and the axis values it stands for
+  "category": "folding_carton",
+  "name": { "th": "กล่องฝาเสียบ (บน-ล่างทางเดียวกัน)", "en": "Straight tuck end" },
+  "description": { "th": "…", "en": "…" },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    { "ref": "length", "min": 20, "max": 400 }, // a params.json entry with this style's limits
+    { "ref": "width", "min": 15, "max": 300 },
+    { "ref": "height", "min": 20, "max": 450 },
+    "tuckDepth", "tuckCorners", "dustFlapDepth", "thumbNotch",
+    "glueWidth", "glueSide", "grain",
+    "window", "windowPanel", "windowWidth", "windowHeight", "windowOffsetX", "windowOffsetY", "windowRadius"
+  ],
+  "defaults": { "@extends": "carton" }, // sets.json, with this style's own keys on top
+  "presets": "carton", // or a list of { id, label, values }
+  "body": { "module": "tube", "preset": "carton" },
+  "closures": {
+    "top": { "module": "tuck", "with": { "lid": "back" } },
+    "bottom": { "module": "tuck", "with": { "lid": "back" } } // "front" here makes a reverse tuck end
+  },
+  "features": [{ "module": "thumbNotch", "with": { "end": "top" } }, { "module": "window" }],
+  "legacy": { "patternKeys": ["pid:1", "mapping:1", "folding-truck-end-box", "…"] }
 }
-
-/** The apex's half-angle, radians. */
-const half = (v: ParamValues) => ((num(v, "apex", 50) / 2) * Math.PI) / 180;
-
-export const tableTent = defineStyle({
-  id: "table-tent",
-  category: "flat",
-  materials: ["paperboard"],
-  name: t("ป้ายตั้งโต๊ะ", "Table tent"),
-  description: t("แผ่นพับครึ่งตั้งเป็นรูปตัว V คว่ำ", "A card folded in two, standing as an inverted V"),
-  params: [
-    { key: "length", kind: "length", group: "size", label: t("ความยาว", "Length"), min: 50, max: 400, step: 0.5, legacyKey: "l" },
-    { key: "height", kind: "length", group: "size", label: t("ความสูงแต่ละด้าน", "Panel height"), min: 40, max: 300, step: 0.5, legacyKey: "h" },
-    { key: "apex", kind: "angle", group: "construction", label: t("มุมยอด", "Apex angle"), min: 20, max: 90, step: 1 },
-  ],
-  defaults: { length: 150, height: 100, apex: 50 },
-  presets: [
-    { id: "menu", label: t("เมนู 150 × 100", "Menu 150 × 100"), values: { length: 150, height: 100 } },
-    { id: "sign", label: t("ป้าย 210 × 150", "Sign 210 × 150"), values: { length: 210, height: 150 } },
-  ],
-  // Front stays put, the back folds away from the print; the pair is then turned by half the apex
-  // so the tent stands symmetric on its two bottom edges.
-  faces3d: (v) => ({
-    roots: { blank: "front" },
-    angles: { back: 180 - num(v, "apex", 50) },
-    placement: { blank: { rotate: [-num(v, "apex", 50) / 2, 0, 0] } },
-  }),
-  closedSize: (v) => ({
-    length: num(v, "length", 150),
-    width: 2 * num(v, "height", 100) * Math.sin(half(v)),
-    height: num(v, "height", 100) * Math.cos(half(v)),
-  }),
-  make,
-});
 ```
 
-What each part does:
+The `carton` preset of `tube` is the compensation, as data:
 
-1. **`make`** draws two faces with `rectangle(x, y, w, h, roles)`. The back's bottom edge and the
-   front's top edge are the same segment with role `crease`: that is the hinge. `piece` groups
-   faces that are cut from one blank; `assemble` lays pieces out left to right (a sleeve and its
-   drawer are two pieces).
-2. **Parameters** carry their unit by kind (`length` in mm, `angle` in degrees), the group the
-   setup dialog shows them in, bilingual labels and limits. `legacyKey` maps a size to Locopack's
-   `l`, `w`, `h`… field.
-3. **Presets** are complete, valid starting sizes — the tests build every one with every material.
-4. **`faces3d`** names each piece's root face (it stays put) and each face's closed fold angle
-   (default 90°; here `180 − apex`). Folds always turn away from the printed side. `placement`
-   turns, flips, stacks (`over`) or nests (`inside`) whole pieces after folding; a tray-like style
-   whose root is its base sets `upright: "base"`.
-5. **`closedSize`** tells the tests (and the designer's outside size) what the folded shape
-   measures when it is not the inside L × W × H.
+```jsonc
+"dims": { // evaluated in order; later ones may use earlier ones
+  "front": "length + a.panel",
+  "side": "width + a.panel",
+  "closingSide": "side - a.gluePanel", // the panel the glue flap closes on, t narrower
+  "depth": "height + a.depth",
+  "glue": "glueWidth ?? glueWidthFor(width)" // the customer's value, or the legacy table
+},
+"panels": [{ "id": "front", "label": "front", "width": "front" }, "…"],
+"depth": "depth", "glue": "glue", "glueRight": "glueSide == 'right'", "grain": "front", "root": "front"
+```
 
-Then:
+A recipe may override any of it with `"with": { … }` (a top-level key replaces the preset's).
 
-- **Register it**: import it in `styles/index.ts` and add it to `STYLES` (the order is the pickers'
-  order within a category).
-- **Run the matrix**: `pnpm --filter @packio/dieline test`. `styles.test.ts` builds every style ×
-  preset × allowed reference material and asserts: closed cut loops (≤ 0.01 mm), free edges cut,
-  no overlapping faces, no dangling cuts (`checkDieline`); the sheet anchored at the origin; every
-  face and piece labelled in both languages; `validate()` accepting the presets and rejecting sizes
-  outside the range; the folded bounding box equal to the nominal size within the caliper
-  allowance ± 1 mm.
-- **Accept the fixtures**: `pnpm --filter @packio/dieline fixtures` writes
-  `fixtures/svg/<style>--<preset>--<material>.svg` and `fixtures/dxf/…` for the new style; review
-  them like code — they are what packio-api's golden comparison against the legacy drawings reads.
-- **Thumbnails**: `pnpm style:thumbnails` redraws `docs/design-tool/styles/*.png` and the contact
-  sheet for the mapping table.
+**Optional parts:** `pieceSet` instead of `body` for separately cut pieces (`lidAndBase`,
+`sleeveAndDrawer`); `constraints` for rules of this style alone (they run before the modules');
+`closedSize` (`{ "length", "width", "height" }` expressions) when the closed shape is not the
+inside L × W × H — a gable's roof, a lid over its base, a hexagon across its corners; `codes` for
+industry codes Prepress has verified (D-211); `incompatible` for module pairs the recipe refuses.
+
+### Expressions
+
+Sizes, rules and closed sizes are expressions (`src/expr.ts`): `+ - * /`, comparisons,
+`and or not`, `a ?? b` (b when a is unset), `c ? a : b`, numbers and `'strings'`. Names: every
+parameter (numeric ones as numbers), the body's `dims` (they shadow a parameter of the same name),
+`t` (caliper), `a.panel` … (allowances), `material.kind`, `material.flute`, `pi`, `C.<NAME>` for a
+number in `constants.ts`. Functions: `min max abs floor ceil round sqrt sin cos tan number` and the
+legacy tables `tuckDepthFor(L)`, `glueWidthFor(W)`, `snapLockTongueFor(W)`, `slotWidth()`.
+
+A constraint holds when its `require` is **true** and fails only when it is **definitely false**:
+a comparison with an unset value is unknown, and unknown never fails.
+
+```json
+{
+  "id": "pillow.thickness",
+  "code": "pillow.too_thick",
+  "severity": "error",
+  "param": "thickness",
+  "require": "thickness <= width / 2",
+  "message": { "th": "ความหนาต้องไม่เกินครึ่งหนึ่งของความกว้าง", "en": "Thickness must be at most half the width" }
+}
+```
+
+Rules run in a fixed order — the recipe's own, then each module's (body, top, bottom, features:
+its data rules, then its coded check) — and a constraint id runs once.
+
+## 3. A new module
+
+A module (`packages/dieline/src/modules/<slot>/…`) is a construction a factory would recognise.
+It declares, in `ModuleDef` (`modules/types.ts`):
+
+| Field | What |
+| --- | --- |
+| `id`, `slot`, `status`, `label` | `body` · `closure` · `feature` · `pieceSet`; `implemented` or `planned`; Thai and English |
+| `params` | parameter keys it reads (add new ones to `recipes/params.json`) |
+| `constraints` | data rules (a function of its settings when they differ by setting) |
+| `check` | a coded rule over the built geometry (a window inside its panel) |
+| `processes` | what a factory needs (`PROCESSES`: `die_cut`, `folder_gluer_crash_lock`, `window_patching`…) — the capability matrix (U3.B3) matches on these |
+| `contributes` | the face kinds and line roles it adds |
+| `hinges` | its part of the fold: roots, angles, stages, placement |
+| `presets` | named settings recipes start from |
+| `tube` / `tray` / `tubeHoles` / `wrapClosure` / `flatHoles` / `build` | the geometry, by slot and by the body it attaches to (`fits`) |
+
+Draw with the `construct/` builders (`buildTube`, `buildTray`, `slottedFlaps`, `tuckClosure`…)
+rather than from scratch; read sizes from `ctx.dims` and settings from `cfg`, evaluating
+expressions with `ctx.num()`. Register it in `modules/index.ts`. A module listed as `planned`
+(`modules/planned.ts`) becomes `implemented` when its first recipe lands.
+
+## 4. Then
+
+- **Register the recipe**: import it in `recipes/index.ts` and add it to `RECIPES` (the order is
+  the pickers' order within a category).
+- **Run the matrix**: `pnpm --filter @packio/dieline test`. Every recipe passes `parseRecipe`;
+  `styles.test.ts` builds every style × preset × allowed reference material and asserts closed cut
+  loops (≤ 0.01 mm), free edges cut, no overlapping faces, no dangling cuts (`checkDieline`), the
+  sheet anchored at the origin, every face and piece labelled in both languages, `validate()`
+  accepting the presets and rejecting sizes outside the range, and the folded bounding box equal to
+  the nominal size within the caliper allowance ± 1 mm.
+- **The baseline**: `fixtures/baseline/<style>.json` pins every build, fold and validation. A new
+  recipe writes its file on the first run; a changed one fails until it is accepted with
+  `vitest -u` **and** the difference is explained in PROGRESS (prepress signs off a geometry change).
+- **Accept the fixtures**: `pnpm --filter @packio/dieline fixtures` writes the SVG/DXF snapshots;
+  review them like code — they are what packio-api's golden comparison reads.
+- **Thumbnails**: `pnpm style:thumbnails` redraws `docs/design-tool/styles/*.png`.
 - **Changeset**: a new style is a `minor` change of `@packio/dieline` (`pnpm changeset`).
 
-A quick check while drafting, before the matrix (this is how the example above was verified):
-
-```ts
-import { expect, it } from "vitest";
-import { checkDieline, foldedBounds, hingeMapOf, REFERENCE_MATERIALS, resolveValues } from "./index";
-import { tableTent } from "./styles/table-tent";
-
-it("the guide's table tent is a valid, foldable style", () => {
-  const m = REFERENCE_MATERIALS["board-350"];
-  for (const p of [...tableTent.presets, { id: "steep", values: { length: 150, height: 100, apex: 30 } }]) {
-    const v = resolveValues(tableTent, p.values);
-    const d = tableTent.build(v, m);
-    expect(checkDieline(d)).toEqual([]);
-    expect(tableTent.validate(p.values, m).filter((i) => i.severity === "error")).toEqual([]);
-    const b = foldedBounds(d, hingeMapOf(tableTent, v, m)!);
-    const size = [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]].sort((a, c) => a - c);
-    const c = tableTent.closedSize!(v, m);
-    const want = [c.length, c.width, c.height].sort((a, q) => a - q);
-    size.forEach((s, i) => expect(Math.abs(s - want[i]!)).toBeLessThan(1));
-  }
-  expect(tableTent.validate({ length: 600, height: 100 }, m).some((i) => i.code === "size.out_of_range")).toBe(true);
-});
-```
-
-## Common mistakes
+## 5. Common mistakes
 
 - **Two edges where there should be one** — a crease drawn twice with slightly different ends is
   two cuts to `checkDieline` and no hinge to the fold. Build shared edges from the same numbers.
 - **Folding the wrong way** — the fold always goes away from the print; if a flap ends up inside
   out, the face order or the root is wrong, not the angle's sign.
-- **Words in the geometry** — a face named "ฝาบน" in code. Use a label key.
+- **The same rule written twice** — reuse a module's constraint (it runs once per id) rather than
+  copying it into the recipe under another id.
 - **A preset that is only nearly valid** — presets are test inputs; `validate` must return no
   errors for every material the style allows.
+- **`not` as an operand** — `x + not y` is a syntax error; logic operators combine comparisons.

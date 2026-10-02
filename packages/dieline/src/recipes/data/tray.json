@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "tray",
+  "base": "PK-TR-01",
+  "variant": {
+    "corner": "glued"
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "ถาดทากาว 4 มุม",
+    "en": "Four-corner glued tray"
+  },
+  "description": {
+    "th": "ถาด 4 ผนัง มีปีกกาวที่มุม เหมาะกับเบเกอรี่ ของขวัญ และเป็นตัวฐานของกล่องสองชิ้น",
+    "en": "Four walls with glued corner flaps — bakery, gifts, and the base of two-piece boxes"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 30,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 30,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 10,
+      "max": 200
+    },
+    "cornerFlap",
+    "grain"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 150,
+    "height": 60,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "ถาดเล็ก 120 × 120 × 50",
+        "en": "Small 120 × 120 × 50"
+      },
+      "values": {
+        "length": 120,
+        "width": 120,
+        "height": 50
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "ถาดกลาง 200 × 150 × 60",
+        "en": "Medium 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "large",
+      "label": {
+        "th": "ถาดใหญ่ 300 × 220 × 80",
+        "en": "Large 300 × 220 × 80"
+      },
+      "values": {
+        "length": 300,
+        "width": 220,
+        "height": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "legacy": {
+    "patternKeys": ["pid:2", "pid:38", "tray"]
+  }
+}

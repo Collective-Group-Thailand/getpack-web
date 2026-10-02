@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "flat-custom",
+  "base": "PK-LA-02",
+  "variant": {
+    "shape_flat": "custom_path"
+  },
+  "category": "flat",
+  "name": {
+    "th": "รูปทรงอิสระจากไฟล์ SVG",
+    "en": "Custom shape from an SVG path"
+  },
+  "description": {
+    "th": "อัปโหลดเส้นรอบรูปเป็น SVG path ระบบย่อ-ขยายให้ด้านที่ยาวที่สุดเท่ากับขนาดที่กำหนด",
+    "en": "Upload the outline as an SVG path; it is scaled so its longest side is the size you set"
+  },
+  "materials": ["label", "paperboard", "flexible"],
+  "params": ["size", "path"],
+  "defaults": {
+    "size": 60,
+    "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+  },
+  "presets": [
+    {
+      "id": "star",
+      "label": {
+        "th": "ดาว 60 มม.",
+        "en": "Star, 60 mm"
+      },
+      "values": {
+        "size": 60,
+        "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "custom_path"
+    }
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

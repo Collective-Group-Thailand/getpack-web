@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "flat-oval",
+  "base": "PK-LA-02",
+  "variant": {
+    "shape_flat": "oval"
+  },
+  "category": "flat",
+  "name": {
+    "th": "แผ่นวงรี",
+    "en": "Oval"
+  },
+  "description": {
+    "th": "ฉลากหรือสติกเกอร์วงรี",
+    "en": "An oval label or sticker"
+  },
+  "materials": ["label", "paperboard", "flexible"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    }
+  ],
+  "defaults": {
+    "length": 80,
+    "width": 50
+  },
+  "presets": [
+    {
+      "id": "a",
+      "label": {
+        "th": "60 × 40",
+        "en": "60 × 40"
+      },
+      "values": {
+        "length": 60,
+        "width": 40
+      }
+    },
+    {
+      "id": "b",
+      "label": {
+        "th": "100 × 60",
+        "en": "100 × 60"
+      },
+      "values": {
+        "length": 100,
+        "width": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "oval"
+    }
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

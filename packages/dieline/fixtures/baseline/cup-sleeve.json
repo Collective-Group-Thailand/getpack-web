@@ -1,0 +1,135 @@
+{
+  "definition": "0a155f7b774fe1",
+  "cup-12oz · label-film": {
+    "build": "092e507c07b8db",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · board-350": {
+    "build": "092e507c07b8db",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-16oz · label-film": {
+    "build": "00495f209c2f3a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-16oz · board-350": {
+    "build": "00495f209c2f3a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "straight · label-film": {
+    "build": "0ea05b77db2c65",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "straight · board-350": {
+    "build": "0ea05b77db2c65",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · topDiameter=min": {
+    "build": "0d3ddce8d1fadf",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1f0bc05347f02c",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · topDiameter=max": {
+    "build": "01a2e38e225979",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · topDiameter<min": {
+    "build": "157eacd804f266",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0147f427237724",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · topDiameter>max": {
+    "build": "0f6fc9b2b7f8f6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0286a77ba04429",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · bottomDiameter=min": {
+    "build": "03d9f7b542458b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · bottomDiameter=max": {
+    "build": "1ba1af37db4862",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1f0bc05347f02c",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · bottomDiameter<min": {
+    "build": "14e5ac707e2bd3",
+    "hinges": "15e0da69fcb93a",
+    "validate": "026db0f8a762f5",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · bottomDiameter>max": {
+    "build": "1ba1af37db4862",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1863113a4923bc",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · height=min": {
+    "build": "1d22b5a9b1ac02",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · height=max": {
+    "build": "055a1e3e069354",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · height<min": {
+    "build": "044485161c0be5",
+    "hinges": "15e0da69fcb93a",
+    "validate": "16a763b352acda",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · height>max": {
+    "build": "0ec56240c2881e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "089bef22ba4ed6",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · overlap=min": {
+    "build": "14b1dbc4cab62a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · overlap=max": {
+    "build": "078275f9be8ad1",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · overlap<min": {
+    "build": "0cf815c6ee4e93",
+    "hinges": "15e0da69fcb93a",
+    "validate": "032d1b613177e3",
+    "closed": "15e0da69fcb93a"
+  },
+  "cup-12oz · label-film · overlap>max": {
+    "build": "003b9ef4ee1717",
+    "hinges": "15e0da69fcb93a",
+    "validate": "03cfff900a94d0",
+    "closed": "15e0da69fcb93a"
+  }
+}
