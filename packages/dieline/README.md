@@ -128,6 +128,19 @@ fitsEnvelope(dieline, board, machinesFromTheApi, recipeProcesses(recipe)); // pe
 | `fitsEnvelope` / `recipeProcesses`    | Which machine envelopes (from the API) can cut each piece, either way round; the processes a recipe needs                                  |
 | `dielineManufacturing`                | The whole-dieline rules: the caliper belongs to the class, no cut running beside a crease                                                  |
 
+## Thickness, fold gate and assets
+
+`foldModel(dieline, hinges, material, progress)` is the folded box with board thickness: a slab of
+the caliper per face (walls centred on their crease, closures inward and stacked in fold order,
+rigid board wrapped). `modelBounds` is its outer extent, `collisions` the faces passing through each
+other when closed, `inflatedPouch` a filled pouch as a surface. `outerSizeOf(recipe, values, m)` is
+what the box should measure outside; the virtual fold test holds the model to it (ADR-0012).
+
+`render2D`, `render3D` and `renderSurface` draw thumbnails with the engine's own rasteriser (neutral
+kraft / white board, the `STUDIO_LIGHTS` preset) into RGBA; `pnpm styles:render` writes every
+variant's assets to `generated/` with a manifest of hashes. `variantsOf` and `describeVariant` give
+the variants and their generated, review-pending names.
+
 ## Offsetting, 3D and exports
 
 | Function                                            | Does                                                                                                                                 |

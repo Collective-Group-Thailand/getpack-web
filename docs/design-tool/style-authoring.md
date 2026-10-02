@@ -77,6 +77,17 @@ The `carton` preset of `tube` is the compensation, as data:
 
 A recipe may override any of it with `"with": { … }` (a top-level key replaces the preset's).
 
+**Variants**: `"variants": { "<axis>": { "<value>": { …parameter values } } }` lists the
+structural options along master-file axes (`window`, `hang`, `hand_holes`, `lid_depth`, `thumb` …,
+only axes of the recipe's `base` row); every combination is a variant, keyed with the fixed
+`variant` axes (`variantsOf`). Each axis value needs a phrase in `AXIS_PHRASES`
+(`recipes/variants.ts`) — construction words, never claims; generated names stay `pending` until
+approved into `recipes/names.reviewed.json` (D-212). Sizes, materials and prints are never variants.
+
+**Outer size**: the fold gate holds the thick 3D model to `outerSize` (default: nominal + 2t per
+axis). Set it for an open axis (`"height": "height"` on a sleeve, `"height + t"` on a tray) or a flap
+that wraps a wall (`"width": "width + 3 * t"` on a mailer), and say why in the PR.
+
 **Optional parts:** `pieceSet` instead of `body` for separately cut pieces (`lidAndBase`,
 `sleeveAndDrawer`); `constraints` for rules of this style alone (they run before the modules');
 `closedSize` (`{ "length", "width", "height" }` expressions) when the closed shape is not the
@@ -154,7 +165,10 @@ expressions with `ctx.num()`. Register it in `modules/index.ts`. A module listed
   `vitest -u` **and** the difference is explained in PROGRESS (prepress signs off a geometry change).
 - **Accept the fixtures**: `pnpm --filter @packio/dieline fixtures` writes the SVG/DXF snapshots;
   review them like code — they are what packio-api's golden comparison reads.
-- **Thumbnails**: `pnpm style:thumbnails` redraws `docs/design-tool/styles/*.png`.
+- **Assets**: `pnpm styles:render` re-renders every variant's dieline SVG and 2D/3D thumbnails
+  into `packages/dieline/generated/` and rewrites `generated/manifest.json` — commit the manifest
+  (CI's `styles:render:check` fails when it is stale). `pnpm style:thumbnails` still redraws the
+  docs contact sheet in `docs/design-tool/styles/`.
 - **Changeset**: a new style is a `minor` change of `@packio/dieline` (`pnpm changeset`).
 
 ## 5. Common mistakes

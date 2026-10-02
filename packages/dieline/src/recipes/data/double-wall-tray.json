@@ -74,6 +74,9 @@
       }
     }
   ],
+  "outerSize": {
+    "height": "height + t"
+  },
   "legacy": {
     "patternKeys": []
   }

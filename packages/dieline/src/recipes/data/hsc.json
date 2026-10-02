@@ -5,6 +5,16 @@
   "variant": {
     "joint": "glue_flap"
   },
+  "variants": {
+    "hand_holes": {
+      "none": {
+        "handles": "none"
+      },
+      "end_panels": {
+        "handles": "side"
+      }
+    }
+  },
   "category": "corrugated",
   "name": {
     "th": "กล่องลูกฟูกฝาเดียว (HSC)",
@@ -66,6 +76,9 @@
       "module": "handHoles"
     }
   ],
+  "outerSize": {
+    "height": "height + t"
+  },
   "legacy": {
     "patternKeys": []
   }

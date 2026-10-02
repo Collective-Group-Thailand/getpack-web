@@ -8,7 +8,18 @@ import { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "../materials";
 import { MODULES, PROCESSES } from "../modules";
 import { getStyle, hingeMapOf, resolveValues, STYLES } from "../styles";
 import { EXPRESSION_FUNCTIONS } from "./context";
-import { buildFromRecipe, collectExpressions, parseRecipe, presetsOf, RECIPES, RecipeError, type StyleRecipe } from ".";
+import {
+  AXIS_PHRASES,
+  buildFromRecipe,
+  collectExpressions,
+  describeVariant,
+  parseRecipe,
+  presetsOf,
+  RECIPES,
+  RecipeError,
+  variantsOf,
+  type StyleRecipe,
+} from ".";
 
 const tuckEnd = RECIPES.find((r) => r.id === "tuck-end")!;
 const clone = (r: StyleRecipe): StyleRecipe => JSON.parse(JSON.stringify(r)) as StyleRecipe;
@@ -126,5 +137,40 @@ describe("modules", () => {
       );
       for (const k of kinds) expect(allowed, `${r.id}: ${k}`).toContain(k);
     }
+  });
+});
+
+describe("variants and their words", () => {
+  /** Claims and sales wording a generated name must never carry (D-181, D-208). */
+  const CLAIMS =
+    /\b(best|premium|luxury|eco|green|sustainable|cheapest|perfect|ultimate|no\.?\s?1)\b|ดีที่สุด|พรีเมียม|หรูหรา|รักษ์โลก|ถูกที่สุด|อันดับ\s?1/i;
+
+  it("are every combination of a recipe's axes, each with a unique key", () => {
+    for (const r of RECIPES) {
+      const variants = variantsOf(r);
+      const expected = Object.values(r.variants ?? {}).reduce((n, o) => n * Object.keys(o).length, 1);
+      expect(variants, r.id).toHaveLength(expected);
+      expect(new Set(variants.map((v) => v.key)).size, r.id).toBe(variants.length);
+      for (const v of variants)
+        for (const [axis, value] of Object.entries(r.variant ?? {})) expect(v.axes[axis]).toBe(value);
+    }
+  });
+
+  it("have generated Thai and English names that describe, never sell, pending review", () => {
+    for (const r of RECIPES)
+      for (const v of variantsOf(r)) {
+        const words = describeVariant(r, v);
+        for (const text of [words.name.th, words.name.en, words.description.th, words.description.en]) {
+          expect(text.length, `${r.id} ${v.key}`).toBeGreaterThan(3);
+          expect(text, `${r.id} ${v.key}`).not.toMatch(CLAIMS);
+        }
+        expect(words.reviewStatus).toBe("pending");
+      }
+  });
+
+  it("name every axis value a recipe uses", () => {
+    for (const r of RECIPES)
+      for (const [axis, options] of Object.entries(r.variants ?? {}))
+        for (const value of Object.keys(options)) expect(AXIS_PHRASES[axis], `${axis}`).toHaveProperty(value);
   });
 });

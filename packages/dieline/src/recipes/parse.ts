@@ -117,8 +117,22 @@ export function parseRecipe(raw: unknown): StyleRecipe {
     return def!;
   });
   checkConstraints(r.constraints ?? [], at("constraints"));
+  for (const [axis, options] of Object.entries(r.variants ?? {}))
+    for (const [value, set] of Object.entries(options))
+      for (const k of Object.keys(set))
+        if (!keys.includes(k))
+          throw new RecipeError(
+            "recipe.unknown_param",
+            at(`variants.${axis}.${value}`),
+            `"${k}" is not a parameter of this recipe`,
+          );
   if (r.closedSize)
     for (const k of ["length", "width", "height"] as const) expr(r.closedSize[k], at(`closedSize.${k}`));
+  for (const [k, e] of Object.entries(r.outerSize ?? {})) {
+    if (!["length", "width", "height"].includes(k))
+      throw new RecipeError("recipe.bad_outer_size", at(`outerSize.${k}`), k);
+    expr(e, at(`outerSize.${k}`));
+  }
 
   const used = new Set([body, top, bottom, ...features].filter(Boolean).map((d) => d!.id));
   for (const rule of r.incompatible ?? [])
@@ -163,6 +177,7 @@ export function collectExpressions(r: StyleRecipe): string[] {
   [r.body, r.pieceSet, r.closures?.top, r.closures?.bottom, ...(r.features ?? [])].forEach(cfgExprs);
   for (const c of r.constraints ?? []) out.push(c.require);
   if (r.closedSize) out.push(r.closedSize.length, r.closedSize.width, r.closedSize.height);
+  out.push(...Object.values(r.outerSize ?? {}).filter((e): e is string => typeof e === "string"));
   return out;
 }
 

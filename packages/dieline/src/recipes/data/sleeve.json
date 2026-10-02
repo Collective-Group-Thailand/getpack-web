@@ -2,6 +2,17 @@
   "schemaVersion": 1,
   "id": "sleeve",
   "base": "PK-SL-01",
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      }
+    }
+  },
   "category": "folding_carton",
   "name": {
     "th": "ปลอกสวม",
@@ -101,6 +112,9 @@
       "module": "window"
     }
   ],
+  "outerSize": {
+    "height": "height"
+  },
   "legacy": {
     "patternKeys": ["pid:3"]
   }

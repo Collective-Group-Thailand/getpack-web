@@ -36,6 +36,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @packio/dieline typecheck
       - run: pnpm test:dieline
+      # `generated/` (thumbnails, dieline SVGs) is published with the package (ADR-0012).
+      - run: pnpm styles:render
       - uses: changesets/action@v1
         with:
           version: pnpm changeset:version

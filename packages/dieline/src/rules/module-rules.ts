@@ -54,6 +54,20 @@ const tube: Rule = (ctx, cfg) => {
       ),
     );
   const glue = ctx.num((cfg.glue ?? 0) as string);
+  const panels = cfg.panels as unknown as { width: string }[];
+  const closing = ctx.num(panels[panels.length - 1].width);
+  // The glue flap is glued inside the last panel; wider than it, it stands out of the folded tube.
+  if (glue > closing)
+    out.push(
+      issue(
+        "mfg.glue_flap_too_wide",
+        t(
+          `ปีกกาวกว้างกว่าแผงที่ติดกาว (${Math.round(closing * 10) / 10} มม.)`,
+          `The glue flap is wider than the panel it is glued to (${Math.round(closing * 10) / 10} mm)`,
+        ),
+        "glueWidth",
+      ),
+    );
   if (glue > 0 && glue < r.minGlueFlap)
     out.push(
       issue(

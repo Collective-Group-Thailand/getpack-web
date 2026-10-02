@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "id": "sleeve-drawer",
   "base": "PK-SL-02",
+  "variants": {
+    "thumb": {
+      "thumb_notch": {
+        "fingerHole": true
+      },
+      "none": {
+        "fingerHole": false
+      }
+    }
+  },
   "category": "folding_carton",
   "name": {
     "th": "กล่องลิ้นชัก (ปลอก + ถาด)",
@@ -72,6 +82,11 @@
     "length": "length + 2 * t",
     "width": "width + 2 * t + 2 * C.DRAWER_CLEARANCE_MM",
     "height": "height + t + 2 * C.DRAWER_CLEARANCE_MM"
+  },
+  "outerSize": {
+    "length": "length + 3 * t",
+    "width": "width + 4 * t + 2 * C.DRAWER_CLEARANCE_MM",
+    "height": "height + 3 * t + 2 * C.DRAWER_CLEARANCE_MM"
   },
   "legacy": {
     "patternKeys": ["pid:31", "mapping:10", "folding-slide-box", "pid:30", "mapping:56", "corrugate-slide"]

@@ -17,6 +17,12 @@ export interface StyleRecipe {
    */
   base?: string;
   variant?: Record<string, string>;
+  /**
+   * Structural options this recipe varies along (master-file axes, `style-library-program.md` §1):
+   * axis → value → the parameter values that make it. Every combination is a variant (`variantsOf`);
+   * sizes, materials and prints never are.
+   */
+  variants?: Record<string, Record<string, ParamValues>>;
   category: BoxCategory;
   name: Localized;
   description: Localized;
@@ -38,6 +44,13 @@ export interface StyleRecipe {
   constraints?: Constraint[];
   /** The closed shape's nominal extent when it is not the inside L × W × H (expressions). */
   closedSize?: { length: string; width: string; height: string };
+  /**
+   * The closed box's outer extent per axis when it is not the nominal size + 2t (one board layer
+   * each side): an open axis (a sleeve's band, a tray's height + t), a flap wrapping a wall (a
+   * mailer's front, + 3t). The virtual fold test (U3.3) holds the 3D model to it; the measurement
+   * basis conversion (D-182) reads it.
+   */
+  outerSize?: Partial<Record<"length" | "width" | "height", string>>;
   /** Module combinations this recipe refuses, with the reason code (checked by `parseRecipe`). */
   incompatible?: { modules: string[]; code: string }[];
   legacy?: { patternKeys: string[] };
