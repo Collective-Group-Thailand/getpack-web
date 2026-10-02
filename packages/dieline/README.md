@@ -102,6 +102,32 @@ MODULES.find((m) => m.id === "crashLock")!.processes; // ["die_cut", "folder_glu
 | `MODULES` / `getModule(id)` / `PROCESSES`   | The module catalogue and the factory-process vocabulary (U3.B3 capability matrix)       |
 | `compileExpression`, `namesOf`, `callsOf`   | The recipe expression language (`src/expr.ts`)                                          |
 
+## Solver, materials and machines
+
+`validate()` is the storefront's check as it shipped; `explain()` is the full answer (U3.2): the
+schema, the material, every recipe and module rule, the geometry checks and the material class's
+**manufacturing rules**, each as a `Violation { code, severity, rule, param, params, expected,
+actual }` — codes and numbers for the UI to translate.
+
+```ts
+import { explain, fitsEnvelope, recipeProcesses, sizeRanges, validRanges } from "@packio/dieline";
+
+explain(recipe, { length: 40, width: 80, height: 100 }, board);
+// [{ code: "handle.too_narrow", rule: "constraint", param: "length", expected: { min: 60 }, actual: 40.45, … }]
+validRanges(recipe, board); // [{ param: "length", domain: [20, 400], at: 150, intervals: [[59.55, 400]] }, …]
+sizeRanges(recipe, board); // { length: { min: 59.55, max: 400 }, … } — the widest span around any preset
+fitsEnvelope(dieline, board, machinesFromTheApi, recipeProcesses(recipe)); // per machine: fits, reasons, missing, rotated
+```
+
+| Export                                | Does                                                                                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MATERIAL_CLASSES`, `materialClassOf` | `paperboard` `food_board` `corrugated` `rigid` `flexible` `paper` `label_stock` `shrink_film`; `MaterialSpec.class` or implied by `kind`   |
+| `materialRules(m)`                    | Caliper range, minimum panel, cut-to-crease distance, glue flap, slot, window margin, tuck depth, crash-lock depth, seal widths (⚠ values) |
+| `explain` / `isBuildable`             | Every rule a size breaks / whether it passes every error rule                                                                              |
+| `validRanges` / `sizeRanges`          | Valid intervals per size parameter with the others held (sampled, boundaries to 0.01 mm) / per material for the library                    |
+| `fitsEnvelope` / `recipeProcesses`    | Which machine envelopes (from the API) can cut each piece, either way round; the processes a recipe needs                                  |
+| `dielineManufacturing`                | The whole-dieline rules: the caliper belongs to the class, no cut running beside a crease                                                  |
+
 ## Offsetting, 3D and exports
 
 | Function                                            | Does                                                                                                                                 |
