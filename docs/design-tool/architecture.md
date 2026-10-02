@@ -2,12 +2,16 @@
 
 How the online box designer is put together: the geometry engine, the editor, where designs are
 kept, and the files it makes. Decisions are in ADR-0007 (engine ownership), ADR-0008 (geometry
-model), ADR-0009 (print file) and ADR-0010 (3D preview).
+model), ADR-0009 (print file), ADR-0010 (3D preview) and ADR-0011 (composable style recipes).
 
 ```
 @packio/dieline  (packages/dieline — framework-free, browser + Node, published for packio-api)
-  styles/*        30 BoxStyleDef: params, presets, validate, build → Dieline, faces3d → HingeMap
-  construct/*     tube, closures, tray: the shared constructions styles are made of
+  recipes/*       30 StyleRecipe JSON files (ADR-0011) + params.json / sets.json; parseRecipe,
+                  buildFromRecipe, styleFromRecipe → the BoxStyleDef registry (styles/index.ts)
+  modules/*       body · closure · feature · pieceSet modules: params, constraints, processes,
+                  hinges, geometry (16 more declared `planned` for U3.4)
+  expr            the recipes' expression language (sizes, rules, closed sizes; no eval)
+  construct/*     tube, closures, tray: the builders modules draw with
   faces, lines    Face / Piece / Dieline; shared edges; dielineLines (each line once, with role)
   offset          Clipper2: safe zone, bleed outline, piece outline, triangulation (isolated)
   fold            foldDieline → 4×4 matrix per face at a fold progress; foldedBounds
