@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "id": "telescope",
   "base": "PK-LB-01",
+  "variants": {
+    "lid_depth": {
+      "partial": {
+        "lid": "partial"
+      },
+      "full": {
+        "lid": "full"
+      }
+    }
+  },
   "category": "tray_lid",
   "name": {
     "th": "กล่องฝาครอบสองชิ้น (ฝา-ตัว)",

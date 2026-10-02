@@ -8,6 +8,7 @@
   "files": [
     "dist",
     "fixtures",
+    "generated",
     "README.md"
   ],
   "main": "./src/index.ts",

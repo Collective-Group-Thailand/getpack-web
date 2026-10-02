@@ -114,6 +114,15 @@ export {
   type RecipeModule,
   type RecipeParam,
   type StyleRecipe,
+  defaultsOf,
+  presetsOf,
+  AXIS_PHRASES,
+  describeVariant,
+  variantKey,
+  variantsOf,
+  outerSizeOf,
+  type StyleVariant,
+  type VariantWords,
 } from "./recipes";
 export {
   getModule,
@@ -151,6 +160,21 @@ export {
   type EnvelopeReason,
   type MachineEnvelope,
 } from "./rules/envelope";
+export { foldModel, modelBounds, slabPoint, WRAP_MM, type FoldedModel, type ModelFace } from "./model/thickness";
+export { collisions, CONTACT_MM } from "./model/collide";
+export { inflatedPouch, pouchBulge, type SurfaceMesh } from "./model/pouch";
+export { Raster, type Image, type Rgb } from "./render/raster";
+export {
+  AMBIENT,
+  render2D,
+  render3D,
+  renderSurface,
+  STUDIO_LIGHTS,
+  TONES,
+  VIEW,
+  type BoardTone,
+  type ThumbnailOptions,
+} from "./render/thumbnails";
 export { callsOf, compile as compileExpression, ExprError, namesOf, type ExprValue } from "./expr";
 export { fixtureFileKey, patternFixtures, type PatternFixture } from "./fixtures";
 export { parseSvgPath } from "./svgpath";
