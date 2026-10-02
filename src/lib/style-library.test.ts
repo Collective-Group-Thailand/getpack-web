@@ -22,6 +22,16 @@ describe("recipes and the style library master file", () => {
     }
   });
 
+  it("vary only along axes of their base, with the master file's values", () => {
+    for (const r of RECIPES.filter((x) => x.base && x.variants)) {
+      const row = bases.get(r.base!)!;
+      for (const [axis, options] of Object.entries(r.variants!)) {
+        expect(row.variant_axes.split(";"), `${r.id}: ${axis} on ${r.base}`).toContain(axis);
+        for (const value of Object.keys(options)) expect(axes[axis], `${r.id}: ${axis}=${value}`).toContain(value);
+      }
+    }
+  });
+
   it("only pair tuck closures the master file allows", () => {
     const pairs = new Set(master.allowed_tuck_pairs.map(([top, bottom]) => `${top}/${bottom}`));
     for (const r of RECIPES) {

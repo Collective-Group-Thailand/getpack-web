@@ -5,13 +5,14 @@ import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   allFaces,
-  applyMat4,
   facePolygons,
-  foldDieline,
-  lift,
+  flattenContour,
+  foldModel,
+  slabPoint,
   triangulate,
   type Dieline,
   type HingeMap,
+  type MaterialSpec,
   type Pt,
 } from "@packio/dieline";
 
@@ -44,6 +45,8 @@ export interface Preview3DProps {
   artwork: string | null;
   /** The unprinted inside: the board's colour. */
   boardColour: string;
+  /** The board, for its thickness (U3.3: the box is drawn with its real caliper). */
+  material: MaterialSpec;
   labels: Preview3DLabels;
   /** File name (no extension) for the PNG. */
   name: string;
@@ -59,8 +62,11 @@ const LIGHTING: Record<LightingPreset, { ambient: [string, number]; key: [string
   warm: { ambient: ["#fff1dc", 0.5], key: ["#ffd9a8", 1.5], fill: ["#ffe8cc", 0.4] },
 };
 
-/** Each face triangulated once, in sheet millimetres, wound to face the printed side (+Z). */
-function triangulated(d: Dieline): { id: string; triangles: Pt[] }[] {
+/**
+ * Each face triangulated once, in sheet millimetres, wound to face the printed side (+Z), with its
+ * outline and holes as loops for the cut edges.
+ */
+function triangulated(d: Dieline): { id: string; triangles: Pt[]; loops: Pt[][] }[] {
   return allFaces(d).map((f) => {
     const triangles: Pt[] = [];
     for (const tri of triangulate(facePolygons(f))) {
@@ -70,37 +76,72 @@ function triangulated(d: Dieline): { id: string; triangles: Pt[] }[] {
       const cross = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
       triangles.push(...(cross < 0 ? [a, b, c] : [a, c, b]));
     }
-    return { id: f.id, triangles };
+    const loops = [f.outline, ...f.holes].map((c) => flattenContour(c, 0.5));
+    return { id: f.id, triangles, loops };
   });
 }
 
-function buildGeometry(d: Dieline, faces: { id: string; triangles: Pt[] }[], transforms: Map<string, number[]> | null) {
-  const count = faces.reduce((n, f) => n + f.triangles.length, 0);
-  const positions = new Float32Array(count * 3);
-  const uvs = new Float32Array(count * 2);
-  let i = 0;
+/**
+ * The box as two meshes from the engine's thickness model (`foldModel`): the printed outer surface,
+ * carrying the artwork, and the board — the inner surface and every cut edge — in the board's
+ * colour. A flat piece is a plate of the caliper.
+ */
+function buildGeometry(
+  d: Dieline,
+  faces: ReturnType<typeof triangulated>,
+  hinges: HingeMap | null,
+  material: MaterialSpec,
+  progress: number,
+) {
+  const t = Math.max(0, material.caliperMm);
+  const model = hinges ? foldModel(d, hinges, material, progress) : null;
+  const byId = new Map(model?.faces.map((f) => [f.id, f]));
+  const printed: number[] = [];
+  const uvs: number[] = [];
+  const board: number[] = [];
   for (const f of faces) {
-    const m = transforms?.get(f.id);
+    const m = byId.get(f.id);
+    const at = (p: Pt, z: number) => (m ? slabPoint(m, p, z) : [p[0], -p[1], z]);
+    const lo = m?.lo ?? -t / 2;
+    const hi = m?.hi ?? t / 2;
     for (const p of f.triangles) {
-      const q = m ? applyMat4(m, lift(p)) : lift(p);
-      positions.set(q, i * 3);
-      uvs.set([p[0] / d.width, 1 - p[1] / d.height], i * 2);
-      i++;
+      printed.push(...at(p, hi));
+      uvs.push(p[0] / d.width, 1 - p[1] / d.height);
     }
+    for (let i = 0; i < f.triangles.length; i += 3) {
+      const [a, b, c] = [f.triangles[i], f.triangles[i + 1], f.triangles[i + 2]];
+      board.push(...at(a, lo), ...at(c, lo), ...at(b, lo));
+    }
+    if (hi - lo > 1e-6)
+      for (const loop of f.loops)
+        loop.forEach((a, i) => {
+          const b = loop[(i + 1) % loop.length];
+          board.push(...at(a, lo), ...at(b, lo), ...at(b, hi), ...at(a, lo), ...at(b, hi), ...at(a, hi));
+        });
   }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-  geometry.computeVertexNormals();
-  geometry.computeBoundingBox();
-  const box = geometry.boundingBox!;
+  const make = (positions: number[], uv?: number[]) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+    if (uv) g.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uv), 2));
+    g.computeVertexNormals();
+    return g;
+  };
+  const geometries = { printed: make(printed, uvs), board: make(board) };
+  const box = new THREE.Box3().setFromBufferAttribute(
+    geometries.printed.getAttribute("position") as THREE.BufferAttribute,
+  );
+  box.union(
+    new THREE.Box3().setFromBufferAttribute(geometries.board.getAttribute("position") as THREE.BufferAttribute),
+  );
   const centre = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
-  geometry.translate(-centre.x, -centre.y, -centre.z);
   // The longest side is 2 units, whatever the box's real size.
   const s = 2 / Math.max(size.x, size.y, size.z, 1);
-  geometry.scale(s, s, s);
-  return geometry;
+  for (const g of [geometries.printed, geometries.board]) {
+    g.translate(-centre.x, -centre.y, -centre.z);
+    g.scale(s, s, s);
+  }
+  return geometries;
 }
 
 function Box({
@@ -109,7 +150,7 @@ function Box({
   boardColour,
   rotation,
 }: {
-  geometry: THREE.BufferGeometry;
+  geometry: { printed: THREE.BufferGeometry; board: THREE.BufferGeometry };
   artwork: string | null;
   boardColour: string;
   rotation: { x: number; y: number };
@@ -131,11 +172,17 @@ function Box({
       live = false;
     };
   }, [artwork]);
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(
+    () => () => {
+      geometry.printed.dispose();
+      geometry.board.dispose();
+    },
+    [geometry],
+  );
 
   return (
     <group rotation={[rotation.x, rotation.y, 0]}>
-      <mesh geometry={geometry}>
+      <mesh geometry={geometry.printed}>
         <meshStandardMaterial
           map={texture}
           color={texture ? "#ffffff" : boardColour}
@@ -143,8 +190,8 @@ function Box({
           roughness={0.75}
         />
       </mesh>
-      <mesh geometry={geometry}>
-        <meshStandardMaterial color={boardColour} side={THREE.BackSide} roughness={0.9} />
+      <mesh geometry={geometry.board}>
+        <meshStandardMaterial color={boardColour} side={THREE.DoubleSide} roughness={0.9} />
       </mesh>
     </group>
   );
@@ -168,7 +215,7 @@ const INITIAL = { x: 0.35, y: -0.6 };
  * the editor's first paint. The fold slider shows the box closing; the buttons rotate it as the
  * drag does (WCAG 2.5.7); with reduced motion, "play" jumps instead of animating.
  */
-export default function Preview3D({ dieline, hinges, artwork, boardColour, labels, name }: Preview3DProps) {
+export default function Preview3D({ dieline, hinges, artwork, boardColour, material, labels, name }: Preview3DProps) {
   const [progress, setProgress] = useState(1);
   const [rotation, setRotation] = useState(INITIAL);
   const [lighting, setLighting] = useState<LightingPreset>("studio");
@@ -178,8 +225,8 @@ export default function Preview3D({ dieline, hinges, artwork, boardColour, label
 
   const faces = useMemo(() => triangulated(dieline), [dieline]);
   const geometry = useMemo(
-    () => buildGeometry(dieline, faces, hinges ? foldDieline(dieline, hinges, progress) : null),
-    [dieline, faces, hinges, progress],
+    () => buildGeometry(dieline, faces, hinges, material, progress),
+    [dieline, faces, hinges, material, progress],
   );
   useEffect(() => () => cancelAnimationFrame(animation.current ?? 0), []);
 

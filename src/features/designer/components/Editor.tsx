@@ -436,12 +436,13 @@ export default function Editor({
   const errors = issues.filter((i) => i.severity === "error").length;
 
   const preview =
-    dieline && paperColour ? (
+    dieline && paperColour && spec ? (
       <Preview3D
         dieline={dieline}
         hinges={hinges}
         artwork={artwork}
         boardColour={paperColour}
+        material={spec.material}
         name={name}
         labels={{
           canvas: t("preview3d.canvas", { name }),
