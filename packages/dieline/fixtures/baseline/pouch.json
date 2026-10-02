@@ -1,0 +1,237 @@
+{
+  "definition": "07cc49c2f4bb2b",
+  "three-side · label-film": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · board-350": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "standing · label-film": {
+    "build": "0d3e4ca79e19e9",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "standing · board-350": {
+    "build": "0d3e4ca79e19e9",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "pillow · label-film": {
+    "build": "0254d1a040552d",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "pillow · board-350": {
+    "build": "0254d1a040552d",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "gusset · label-film": {
+    "build": "06ab41448b952f",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "gusset · board-350": {
+    "build": "06ab41448b952f",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "four-side · label-film": {
+    "build": "003f48e1beacf6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "four-side · board-350": {
+    "build": "003f48e1beacf6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · pouchType=three_side": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · pouchType=four_side": {
+    "build": "00cfc3dbb2b9da",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · pouchType=center_seal": {
+    "build": "028deb6903d051",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · pouchType=center_seal_gusset": {
+    "build": "02748bacf1d41b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · pouchType=standing": {
+    "build": "03fb4ddac2bc4f",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · width=min": {
+    "build": "12d0714cbd986c",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · width=max": {
+    "build": "15ff56d48eb658",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · width<min": {
+    "build": "05b4d250a79aa1",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0b6c612b2db5de",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · width>max": {
+    "build": "044e4fd0d9cc77",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0d3a98a733c211",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · length=min": {
+    "build": "1d8ca23a809e30",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · length=max": {
+    "build": "14a4ef5602181b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · length<min": {
+    "build": "0c565cb38cdf3a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "174b934d76036c",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · length>max": {
+    "build": "05d6f62c9ab6f3",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0ae76ab1c6f999",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · gusset=min": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · gusset=max": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · gusset<min": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · gusset>max": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · bottom=min": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · bottom=max": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · bottom<min": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · bottom>max": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · centerSeal=min": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · centerSeal=max": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · centerSeal<min": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · centerSeal>max": {
+    "build": "1649e0e4781817",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · sealWidth=min": {
+    "build": "0e8e1ef6cee975",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · sealWidth=max": {
+    "build": "04ad3045e0993a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · sealWidth<min": {
+    "build": "12c86ce92bf0cb",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1e0dc99de96ba0",
+    "closed": "15e0da69fcb93a"
+  },
+  "three-side · label-film · sealWidth>max": {
+    "build": "0f869263d7dd40",
+    "hinges": "15e0da69fcb93a",
+    "validate": "16bebf5051e800",
+    "closed": "15e0da69fcb93a"
+  }
+}
