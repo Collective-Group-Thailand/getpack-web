@@ -11,3 +11,4 @@
 | 0008 | `@packio/dieline` geometry model v2 (edges with roles, pieces, style registry) | Accepted (F4 A) |
 | 0009 | The designer's print file is made in the browser, on the engine's PDF writer | Accepted (F4 C) |
 | 0010 | The designer's 3D preview is WebGL, folded by the engine, loaded on demand | Accepted (F4 D) |
+| 0011 | Composable style recipes (modules + JSON recipes + expression constraints) | Accepted (U3.1) |

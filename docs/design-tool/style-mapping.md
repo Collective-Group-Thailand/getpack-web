@@ -152,6 +152,47 @@ Status: ✅ drawn by the engine · ≈ drawn by the nearest style, construction 
 FEFCO codes are attached only where verified: 0200 (HSC), 0201 (RSC), 0203 (FOL), 0204 (CSSC),
 0427 (mailer). No ECMA codes are attached.
 
+### Recipes and the style library master (U3.1)
+
+Every style is now a recipe (`packages/dieline/src/recipes/data/<id>.json`, ADR-0011) made of
+modules. `base` is the master-file row (`style-library-master.json`) the style is a variant of,
+and `variant` the axis values it stands for — informational; the public code and its immutability
+are the API's (D-184). `pouch` draws several master rows (stand-up, three-side, centre-seal,
+side-gusset pouches) through `pouchType`, so it names none. Regenerate this table when a recipe changes.
+
+| Style | Body / piece set | Top | Bottom | Features | Base | Variant |
+| --- | --- | --- | --- | --- | --- | --- |
+| `tuck-end` | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=tuck; hang=none |
+| `reverse-tuck-end` | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: front) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck; hang=none |
+| `snap-lock-bottom` | `tube` (preset carton) | `tuck` (lid: back) | `snapLock123` (preset default) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=snap_lock_123; hang=none |
+| `crash-lock-bottom` | `tube` (preset carton) | `tuck` (lid: back) | `crashLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=crash_lock; hang=none |
+| `seal-end` | `tube` (preset carton) | `seal` | `seal` | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=seal; hang=none |
+| `hang-tab-tuck` | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `hangTab` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck |
+| `sleeve` | `tube` (preset carton) | — | — | `window` | PK-SL-01 | — |
+| `sleeve-drawer` | `sleeveAndDrawer` | — | — | — | PK-SL-02 | — |
+| `gable` | `tube` (preset carton) | `gableHandle` | `snapLock123` (preset default) | `window` | PK-SP-02 | tuck_bottom=snap_lock_123 |
+| `hexagonal` | `tube` | `polygonTuckLid` | `polygonTuckLid` | — | PK-SP-03 | — |
+| `rsc` | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-01 | joint=glue_flap |
+| `hsc` | `tube` (preset carton) | — | `rsc` | `handHoles` | PK-CS-02 | joint=glue_flap |
+| `fol` | `tube` (preset carton) | `fol` | `fol` | `handHoles` | PK-CS-03 | joint=glue_flap |
+| `cssc` | `tube` (preset carton) | `cssc` | `cssc` | `handHoles` | PK-CS-04 | joint=glue_flap |
+| `mailer` | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: ['front', 'left', 'right']) | PK-CF-01 | mailer_front=tuck |
+| `wrap-around` | `tube` | `endFlaps` | `endFlaps` | — | PK-CF-03 | joint=glue_flap |
+| `tray` | `tray` (preset glued) | — | — | — | PK-TR-01 | corner=glued |
+| `tray-6-corner` | `tray` (preset glued) | `hingedLid` (front: glued_lips) | — | — | PK-TR-02 | — |
+| `double-wall-tray` | `tray` (preset glued) | — | — | `rollOverWalls` (walls: ['back', 'front']) | PK-TR-03 | — |
+| `telescope` | `lidAndBase` | — | — | — | PK-LB-01 | — |
+| `pillow` | `pillowTube` | — | — | — | PK-SP-01 | — |
+| `flat-rect` | `flatShape` (shape: rectangle) | — | — | — | PK-LA-02 | shape_flat=rectangle |
+| `flat-rounded-rect` | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-02 | shape_flat=rounded_rectangle |
+| `flat-circle` | `flatShape` (shape: circle) | — | — | — | PK-LA-02 | shape_flat=circle |
+| `flat-oval` | `flatShape` (shape: oval) | — | — | — | PK-LA-02 | shape_flat=oval |
+| `flat-custom` | `flatShape` (shape: custom_path) | — | — | — | PK-LA-02 | shape_flat=custom_path |
+| `hang-tag` | `flatShape` (shape: tag) | — | — | `hangHole` | PK-TG-01 | — |
+| `cup-sleeve` | `cone` | — | — | — | PK-TG-02 | — |
+| `band` | `band` | — | — | — | PK-SL-03 | — |
+| `pouch` | `pouchWeb` | — | — | — | — | — |
+
 ## 4. Patterns the engine does not draw
 
 For these, prepress supplies the die file through the drawing job's upload (admin prepress, F2 2.4)

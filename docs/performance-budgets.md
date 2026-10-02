@@ -111,3 +111,22 @@ Measured signed out (the set's convention), so `/cart` measures the sign-in page
 (268 KB); the cart, checkout and payment pages themselves need a customer session, which the
 Lighthouse runs do not carry. The configurator moved 283 → 284 KB with 3.3's changes to modules it
 shares, just over the 290,000-byte ceiling pinned in 3.2; the ratchet moves to **293,000** bytes.
+
+## U3.1 — style recipes (2026-10-02)
+
+Measured on the same build of `main` (`bb1fe7f`) and of the U3.1 branch, `pnpm lhci`, script
+transfer size, heaviest of three runs:
+
+| Page | `main` | U3.1 | Ratchet |
+|---|---|---|---|
+| `/design/new` | 459,739 | 467,144 | designer 460,000 → **468,000** |
+| `/configure/tuck-end-box` | 319,069 | 326,473 | customer-app 293,000 → **327,000** |
+| `/account/designs` | 308,493 | 315,900 | (same set) |
+| `/rfq/rigid-box`, `/sign-in` | 281,735 / 274,726 | unchanged | — |
+
+The ~7.4 KB is the recipe engine on every page that loads `@packio/dieline` (ADR-0011): 30
+recipes as data, the module declarations and the expression evaluator. Recipe data must leave the
+initial bundle before U3.4 wave 1 (≈ 75 more recipes) — loaded per style, or read from the API
+(U3.B2). **`customer-app` was already over its ceiling on `main`** (319,069 against 293,000):
+that growth came with the U-F0 migrations and is not explained in their entries. It is a separate
+follow-up; the ratchet now covers both so the set stops failing on everything else.
