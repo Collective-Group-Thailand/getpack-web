@@ -12,3 +12,4 @@
 | 0009 | The designer's print file is made in the browser, on the engine's PDF writer | Accepted (F4 C) |
 | 0010 | The designer's 3D preview is WebGL, folded by the engine, loaded on demand | Accepted (F4 D) |
 | 0011 | Composable style recipes (modules + JSON recipes + expression constraints) | Accepted (U3.1) |
+| 0012 | Style asset pipeline and the thickness model (engine rasteriser, manifest committed) | Accepted (U3.3) |
