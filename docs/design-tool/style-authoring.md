@@ -106,6 +106,14 @@ a comparison with an unset value is unknown, and unknown never fails.
 }
 ```
 
+A rule of the material rather than the style reads the class's manufacturing rules as
+`rule.<name>` (`rule.minTuck`, `rule.minPanel`, `rule.seal.min` — `src/rules/materials.ts`) and is
+marked `"stage": "manufacturing"`: `explain()` and the solver run it, `validate()` does not (it
+keeps the checks the storefront shipped with until U3.5 moves the UI onto `explain()`). A
+manufacturing rule that needs the geometry or a module's settings goes in
+`src/rules/module-rules.ts`, keyed by module id — outside the module, so pages that only draw never
+load it.
+
 Rules run in a fixed order — the recipe's own, then each module's (body, top, bottom, features:
 its data rules, then its coded check) — and a constraint id runs once.
 
