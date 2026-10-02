@@ -1,0 +1,39 @@
+{
+  "definition": "0770973aa85141",
+  "star · label-film": {
+    "build": "07eb957a9f5df3",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · board-350": {
+    "build": "07eb957a9f5df3",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size=min": {
+    "build": "0670415da0ae5b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size=max": {
+    "build": "0c629d30d04f15",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size<min": {
+    "build": "1d96e4c6b8e934",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0f94e48fea30da",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size>max": {
+    "build": "024243465650f4",
+    "hinges": "15e0da69fcb93a",
+    "validate": "09ab4bbd19163a",
+    "closed": "15e0da69fcb93a"
+  }
+}
