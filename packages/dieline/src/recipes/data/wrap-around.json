@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "id": "wrap-around",
+  "base": "PK-CF-03",
+  "variant": {
+    "joint": "glue_flap"
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "แผ่นห่อรอบสินค้า (Wrap-around)",
+    "en": "Wrap-around blank"
+  },
+  "description": {
+    "th": "ห่อรอบสินค้าตามแนวยาวแล้วติดกาว ปิดหัวท้ายด้วยปีก แน่นพอดีสินค้า นิยมกับเครื่องบรรจุอัตโนมัติ",
+    "en": "Wrapped round the product along its length and glued, ends closed by flaps — a tight fit, common on automatic packers"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 600
+    },
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "length": 300,
+    "width": 200,
+    "height": 100,
+    "glueSide": "left",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "drinks",
+      "label": {
+        "th": "เครื่องดื่ม 6 ขวด 260 × 180 × 230",
+        "en": "Six bottles 260 × 180 × 230"
+      },
+      "values": {
+        "length": 260,
+        "width": 180,
+        "height": 230
+      }
+    },
+    {
+      "id": "flat",
+      "label": {
+        "th": "สินค้าแบน 400 × 300 × 60",
+        "en": "Flat goods 400 × 300 × 60"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "with": {
+      "dims": {
+        "wall": "height + a.panel",
+        "top": "width + a.panel",
+        "depth": "length + a.depth",
+        "glue": "glueWidth ?? glueWidthFor(width)"
+      },
+      "panels": [
+        {
+          "id": "wall-front",
+          "label": "wall_front",
+          "width": "wall"
+        },
+        {
+          "id": "top",
+          "label": "top",
+          "width": "top"
+        },
+        {
+          "id": "wall-back",
+          "label": "wall_back",
+          "width": "wall"
+        },
+        {
+          "id": "bottom",
+          "label": "bottom",
+          "width": "top - a.gluePanel"
+        }
+      ],
+      "depth": "depth",
+      "glue": "glue",
+      "glueRight": "glueSide == 'right'",
+      "grain": "top",
+      "root": "wall-front"
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "endFlaps"
+    },
+    "bottom": {
+      "module": "endFlaps"
+    }
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

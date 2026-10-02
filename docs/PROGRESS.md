@@ -41,6 +41,44 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-09-30 | **U-F0.2** — migrate the customer zone (`store.*`) | All 79 published store operations are called through `serverApi`/`browserApi` with the generated types (the user's call: migrate literally). Zod definitions and `mockRequest` overrides are deleted, and the mocks answer at the published paths with ETags. `awaiting-migration.ts` has no store entry (bound ≤ 54), and a gate keeps store requests to the 34 packio-api still builds. What v0.2.0 does not carry is marked `CONTRACT-GAP <id>` (gated) and left out of the screens; 14 e2e fixmes name their gap | Three defects raised (`store.geo-ids`, `store.catalog-product-ref`, `store.order-group-ref`); the admin and partner zones (U-F0.3, U-F0.4) | See §U-F0.2 |
 | 2026-09-30 | **U-F0.3** — migrate the admin zone (`admin.*`) | Contract **`v0.3.0`** adopted (the storefront configurator parked for U2.F1). All published admin operations are called through `serverApi`/`browserApi`: customers, orders, the CS desk (folding and corrugate price for real; the other five calculators are RFQ-only; checkout through the customer's cart), RFQ, prepress and designs, production, logistics and claims, marketing, companies, analytics, reports and imports. Mock personas hold packio-api's role grants (`pnpm gen:rbac`, gated). Offered actions come from one module until entities carry `nextActions`. `awaiting-migration.ts` has no admin entry (bound ≤ 5), and a gate keeps admin requests to what packio-api still builds. Gaps are marked `CONTRACT-GAP`; 7 e2e fixmes name theirs | The partner zone (U-F0.4); `e2e:integration` (U-F0.5) | See §U-F0.3 |
 | 2026-10-01 | **U-F0.4** — the partner zone, and every zone onto v0.4–v0.6 | Contract **`v0.6.0`** adopted. `gen:triage` reads the triage at the tag and its shipped tables; `gen:rbac` imports the factory scope. Every published request in all three zones is on `serverApi` / `browserApi`: 115 request operations → 5 (the parked configurator, guided help and sample kits deferred by D-223, analytics journeys for U5.B6). `CONTRACT-GAP` markers 190 → 86, e2e fixmes 21 → 7. Entities render the API's `nextActions` (59 keys); notifications show the API's unread count and link; web vitals go to the API. Interim QC checklist `packio-web-v1` (user) | `e2e:integration` (U-F0.5); the gaps packio-api left out on purpose | See §U-F0.4 |
+| 2026-10-02 | **U3.1** — module system (engine refactor, no new styles) | The 30 styles are JSON recipes (`packages/dieline/src/recipes/data/`) over **26 implemented modules** (bodies, closures, features, piece sets) with **16 more declared `planned`** for U3.4; sizes and rules as expressions in an eval-free, three-valued language (`src/expr.ts`); `parseRecipe` / `buildFromRecipe` / `styleFromRecipe`; every module declares parameters, constraints, contributed face kinds and roles, hinges and factory processes; recipes map to 20 master-file bases; **byte-identical output** proven by a 1,164-case baseline written before the switch; ADR-0011 | U3.2 solver and material classes, U3.3 3D / fold gate / assets; recipe data out of the initial bundle before U3.4 wave 1 | See U3.1 below — designer and customer-app ratchets raised (customer-app was already over on `main`) |
+---
+
+## U3.1 — Module system (composable style recipes) — 2026-10-02
+
+`docs/prompts/U3-style-library.md` §U3.1, on `feat/u3.1-module-system` (worktree `../packio-web-u3`, from `main` at `bb1fe7f`). Runs in parallel with U-F0.5 (RUN-ORDER §1 row 2); nothing here touches the app's API use. Post-launch per D-219.
+
+### Gap analysis (against the code, not the prompt)
+| U3.1 item | Found | Done |
+|---|---|---|
+| 1 Modules | Constructions shared informally: `construct/tube.ts`, `construct/closures.ts`, `construct/tray.ts`; windows, hang tabs, thumb notches, hand holes and one-off bodies (pillow, pouch, cup sleeve, hexagon) lived inside style files | `src/modules/{body,closure,feature,pieceSet}` — 26 modules wrapping the existing builders (geometry moved, not redrawn); 16 prompt modules no style uses yet declared `planned` (`module.not_implemented` if built) |
+| 2 Declarations | Rules were TS functions per style | Each module: params, data constraints (+ a coded `check` where geometry is needed), `contributes` (face kinds, line roles), `hinges`, `processes` (capability vocabulary for U3.B3), named presets |
+| 3 Recipe | `BoxStyleDef` via `defineStyle` | `StyleRecipe` JSON (`schemaVersion: 1`) + `params.json` + `sets.json`; `parseRecipe` (typed `RecipeError` codes), `buildFromRecipe` → `{ dieline, hinges, limits }`, `styleFromRecipe` → the registry |
+| 4 Re-express, byte-identical | SVG/DXF snapshots on one board per style only | **Baseline first** (`src/baseline.test.ts`, `fixtures/baseline/<style>.json`): a hash of build, hinge map, validation and closed size for every preset × every reference board × every single-option change — 1,164 cases from the hand-written styles. All 30 recipes reproduce all of them; **no geometry, fold or validation difference**, so no prepress sign-off is pending |
+| 5 ADR | — | ADR-0011 "Composable style recipes" |
+
+### Decisions taken, with reasons
+- **Recipes are JSON, geometry stays code.** What prepress reviews (modules, compensation, rules, names, presets) is data packio-api can import (U3.B1); the drawing code is the F4 builders, unchanged.
+- **Expressions, not code, for sizes and rules** — hand-parsed (CSP-safe), three-valued so a rule over an unset value never fires, exactly as the old checks behaved. Logic keywords are reserved (`x + not y` is a syntax error — found by a test).
+- **Straight / reverse tuck are lid choices of one `tuck` closure**, `tube4` and the hexagon are settings of one `tube` body: fewer generators, same output.
+- **Engine ids unchanged**; `base` / `variant` map each recipe to its master-file row (tuck end, reverse tuck, snap-lock, crash-lock, seal end and hang-tab tuck are variants of PK-TE-01). Informational only — public codes are the API's (D-184); no reference codes added (D-211 open).
+- **Recipes are not re-checked at package load** (the browser would pay for the checker); `recipes.test.ts` runs every one through `parseRecipe`, and anything from outside must be parsed first.
+- **JSON imports carry `with { type: "json" }`** so the published `dist/` loads in Node ESM (packio-api).
+
+### Tests added
+`baseline.test.ts` (1,164 cases), `expr.test.ts`, `recipes/recipes.test.ts` (registry = recipes, recipe build = style build, every rejection code, module catalogue: unique ids, bilingual labels, known processes, every implemented module used, planned ones refuse to build, faces only of declared kinds), `src/lib/style-library.test.ts` (each base is a master row; variant axes and values exist; tuck pairs allowed; every construction the programme names is declared). Mutation check: a 0.0001 mm change in one recipe fails the baseline.
+
+### Performance — ratchets raised (rule: say why here)
+The engine adds ~7.4 KB of compressed JS wherever `@packio/dieline` loads (30 recipes as data, module declarations, the evaluator): `/design/new` 459,739 → 467,144 (designer ratchet 460,000 → **468,000**), `/configure/tuck-end-box` 319,069 → 326,473, `/account/designs` 308,493 → 315,900 (customer-app ratchet 293,000 → **327,000**). Deduplicating shared presets/defaults (`sets.json`) and dropping the load-time check won ~1.4 KB; the rest is the engine. **`customer-app` was already failing on `main`** (319,069 against 293,000) — growth from the U-F0 migrations no entry explains; follow-up for the U-F0.5 / U-F3 owner. Details in `docs/performance-budgets.md` §U3.1.
+
+### Follow-ups
+- **Before U3.4 wave 1:** recipe data must leave the initial bundle (≈ 75 more recipes would add tens of KB to every engine page) — load per style or read from U3.B2.
+- U3.2 (solver, material classes, envelope check, property tests) and U3.3 (thickness model, fold gate, `styles:render`, generated names) next, on their own branches.
+
+### Assumptions (most conservative option)
+- Only modules the 30 styles use are implemented; the rest are `planned` until their first recipe (U3.4 "missing modules first").
+- No variant is publishable here — that is the API's (U3.B3 / U3.B4).
+
 ---
 
 ## U-F0.4 — The partner zone, and every zone onto v0.4–v0.6 — 2026-10-01

@@ -1,0 +1,63 @@
+{
+  "definition": "0b9ee5bde50407",
+  "d30 · label-film": {
+    "build": "0d286dfab51671",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · board-350": {
+    "build": "0d286dfab51671",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d50 · label-film": {
+    "build": "0e9f5c0cf4a825",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d50 · board-350": {
+    "build": "0e9f5c0cf4a825",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d80 · label-film": {
+    "build": "158cb0b70e5993",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d80 · board-350": {
+    "build": "158cb0b70e5993",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter=min": {
+    "build": "19e8d9e450d309",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter=max": {
+    "build": "1cffba3e363b93",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter<min": {
+    "build": "08539e4709abcd",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1521b7792e280f",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter>max": {
+    "build": "1ec1d67f376948",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1d44afcdeca0cf",
+    "closed": "15e0da69fcb93a"
+  }
+}

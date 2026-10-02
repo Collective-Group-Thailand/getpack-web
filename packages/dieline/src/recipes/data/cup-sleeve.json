@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "cup-sleeve",
+  "base": "PK-TG-02",
+  "category": "flat",
+  "name": {
+    "th": "ปลอกแก้ว",
+    "en": "Cup sleeve"
+  },
+  "description": {
+    "th": "ปลอกกระดาษสวมแก้วทรงกรวย คำนวณส่วนโค้งจากเส้นผ่านศูนย์กลางปากและก้นแก้ว",
+    "en": "A band round a tapered cup, its curve worked out from the rim and base diameters"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    "topDiameter",
+    "bottomDiameter",
+    {
+      "ref": "height",
+      "label": {
+        "th": "ความสูงปลอก",
+        "en": "Sleeve height"
+      },
+      "min": 20,
+      "max": 200,
+      "omit": ["legacyKey"]
+    },
+    "overlap"
+  ],
+  "defaults": {
+    "topDiameter": 90,
+    "bottomDiameter": 60,
+    "height": 70,
+    "overlap": 10
+  },
+  "presets": [
+    {
+      "id": "cup-12oz",
+      "label": {
+        "th": "แก้ว 12 ออนซ์ (⌀90 → ⌀60, สูง 70)",
+        "en": "12 oz cup (⌀90 → ⌀60, 70 high)"
+      },
+      "values": {
+        "topDiameter": 90,
+        "bottomDiameter": 60,
+        "height": 70
+      }
+    },
+    {
+      "id": "cup-16oz",
+      "label": {
+        "th": "แก้ว 16 ออนซ์ (⌀90 → ⌀60, สูง 85)",
+        "en": "16 oz cup (⌀90 → ⌀60, 85 high)"
+      },
+      "values": {
+        "topDiameter": 90,
+        "bottomDiameter": 60,
+        "height": 85
+      }
+    },
+    {
+      "id": "straight",
+      "label": {
+        "th": "แก้วทรงตรง ⌀75 สูง 75",
+        "en": "Straight cup ⌀75, 75 high"
+      },
+      "values": {
+        "topDiameter": 75,
+        "bottomDiameter": 75,
+        "height": 75
+      }
+    }
+  ],
+  "body": {
+    "module": "cone"
+  },
+  "legacy": {
+    "patternKeys": ["pid:36", "mapping:60"]
+  }
+}

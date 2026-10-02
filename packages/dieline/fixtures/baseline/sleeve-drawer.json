@@ -1,0 +1,153 @@
+{
+  "definition": "0ff00f4a9340a0",
+  "jewellery · board-350": {
+    "build": "009f4038c1d042",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-450": {
+    "build": "0eabea0b438707",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "0e15857a944b7f"
+  },
+  "jewellery · flute-e": {
+    "build": "1ee9087c4d9241",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "04ff479593e2ef"
+  },
+  "gift · board-350": {
+    "build": "037d44b1c4d32e",
+    "hinges": "094670099329fd",
+    "validate": "15202279b28c9e",
+    "closed": "0944fa51bccb58"
+  },
+  "gift · board-450": {
+    "build": "1e444825b228a1",
+    "hinges": "094670099329fd",
+    "validate": "15202279b28c9e",
+    "closed": "136af11498f5fd"
+  },
+  "gift · flute-e": {
+    "build": "00aa42436a1230",
+    "hinges": "094670099329fd",
+    "validate": "15202279b28c9e",
+    "closed": "0a06d75e525667"
+  },
+  "jewellery · board-350 · length=min": {
+    "build": "16ade0619ade3a",
+    "hinges": "1e47b4844fefb1",
+    "validate": "15202279b28c9e",
+    "closed": "0ad46f89c736aa"
+  },
+  "jewellery · board-350 · length=max": {
+    "build": "1e8f4025bdeeea",
+    "hinges": "056eac77c6d542",
+    "validate": "15202279b28c9e",
+    "closed": "0a0f8c4c1a7f42"
+  },
+  "jewellery · board-350 · length<min": {
+    "build": "1cc18be7f7c24d",
+    "hinges": "07fc47309b5170",
+    "validate": "0481af8584fc69",
+    "closed": "0bd96b035d0886"
+  },
+  "jewellery · board-350 · length>max": {
+    "build": "0834262676a74c",
+    "hinges": "08b1c474f0793e",
+    "validate": "1f3293c2547afb",
+    "closed": "1be218f7eb711a"
+  },
+  "jewellery · board-350 · width=min": {
+    "build": "135f0ba30c62ef",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "053a4dac20ccf9"
+  },
+  "jewellery · board-350 · width=max": {
+    "build": "09077dc887fe9d",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "193780d4943304"
+  },
+  "jewellery · board-350 · width<min": {
+    "build": "1f8c13968e535b",
+    "hinges": "10ca9cf151ee45",
+    "validate": "14605db2e52ecc",
+    "closed": "1e320dff1f47fe"
+  },
+  "jewellery · board-350 · width>max": {
+    "build": "1f44ddbde9c9f1",
+    "hinges": "10ca9cf151ee45",
+    "validate": "12cfd53dd9d4dd",
+    "closed": "00cdb094a7d8f9"
+  },
+  "jewellery · board-350 · height=min": {
+    "build": "00745e3c3e7bce",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "000bb068e8c5fb"
+  },
+  "jewellery · board-350 · height=max": {
+    "build": "16f3ba65005d58",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "196d8f2432a3a7"
+  },
+  "jewellery · board-350 · height<min": {
+    "build": "194723d0ab5f47",
+    "hinges": "10ca9cf151ee45",
+    "validate": "04efa7b25ac6c9",
+    "closed": "0209ed39dd03c1"
+  },
+  "jewellery · board-350 · height>max": {
+    "build": "18ad449c0bf73d",
+    "hinges": "10ca9cf151ee45",
+    "validate": "0ee6176d79b403",
+    "closed": "0460cf919118ec"
+  },
+  "jewellery · board-350 · fingerHole=false": {
+    "build": "11813587592d08",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · glueWidth=min": {
+    "build": "0c7cf3e883ebda",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · glueWidth=max": {
+    "build": "18dc6bebbfc2f6",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · glueWidth<min": {
+    "build": "0ec034400d574e",
+    "hinges": "10ca9cf151ee45",
+    "validate": "1048c2ed5cf584",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · glueWidth>max": {
+    "build": "1e95f98f80d816",
+    "hinges": "10ca9cf151ee45",
+    "validate": "17e3d349f15997",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · grain=across": {
+    "build": "009f4038c1d042",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  },
+  "jewellery · board-350 · grain=along": {
+    "build": "1972d1985751ba",
+    "hinges": "10ca9cf151ee45",
+    "validate": "15202279b28c9e",
+    "closed": "05d4749e240135"
+  }
+}

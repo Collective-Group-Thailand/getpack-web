@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "id": "reverse-tuck-end",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "reverse_tuck",
+    "tuck_bottom": "tuck",
+    "hang": "none"
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบสลับ (บน-ล่างสลับด้าน)",
+    "en": "Reverse tuck end"
+  },
+  "description": {
+    "th": "ลิ้นเสียบบนพับจากด้านหลัง ลิ้นเสียบล่างพับจากด้านหน้า ใช้กระดาษคุ้มกว่าในงานพิมพ์จำนวนมาก",
+    "en": "Top tuck hinges from the back, bottom tuck from the front — nests tighter on the press sheet"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "tuck",
+      "with": {
+        "lid": "front"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "thumbNotch",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "window"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["rte"]
+  }
+}

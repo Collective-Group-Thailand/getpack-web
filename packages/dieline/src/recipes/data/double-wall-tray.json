@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "id": "double-wall-tray",
+  "base": "PK-TR-03",
+  "category": "tray_lid",
+  "name": {
+    "th": "ถาดผนังสองชั้น",
+    "en": "Double-wall tray"
+  },
+  "description": {
+    "th": "ผนังหน้า-หลังพับซ้อนสองชั้นหนีบปีกมุมไว้ ขอบแข็งแรง ไม่ต้องทากาว เหมาะกับผักผลไม้ ถาดโชว์สินค้า",
+    "en": "Front and back walls fold over into a second layer that traps the corner flaps — stiff rims, no glue; produce and display trays"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "width",
+      "min": 40,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 250
+    },
+    "grain"
+  ],
+  "defaults": {
+    "length": 250,
+    "width": 180,
+    "height": 60,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "produce",
+      "label": {
+        "th": "ผักผลไม้ 400 × 300 × 100",
+        "en": "Produce 400 × 300 × 100"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 100
+      }
+    },
+    {
+      "id": "display",
+      "label": {
+        "th": "ถาดโชว์ 250 × 180 × 60",
+        "en": "Display 250 × 180 × 60"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "features": [
+    {
+      "module": "rollOverWalls",
+      "with": {
+        "walls": ["back", "front"]
+      }
+    }
+  ],
+  "legacy": {
+    "patternKeys": []
+  }
+}
