@@ -76,6 +76,32 @@ Compensation rules and every rule-of-thumb constant live in `src/constants.ts` w
 source (legacy calculator, common practice, or ⚠ awaiting prepress confirmation). The authoring
 guide with a worked example is `docs/design-tool/style-authoring.md` in packio-web.
 
+## Recipes and modules
+
+Since U3.1 every style is a **recipe** — JSON in `src/recipes/data/` naming the modules it is made
+of (a body or piece set, a closure per end, features), their sizes as expressions, and the
+parameters, presets and names (ADR-0011). The registry above is built from them; nothing about
+`STYLES` or `getStyle` changed.
+
+```ts
+import { buildFromRecipe, MODULES, parseRecipe, RECIPES } from "@packio/dieline";
+
+const recipe = parseRecipe(json); // RecipeError { code, path } when it is not usable
+const { dieline, hinges, limits } = buildFromRecipe(recipe, { length: 70, width: 40, height: 150 }, board);
+MODULES.filter((m) => m.status === "planned"); // declared for U3.4, `module.not_implemented` if built
+MODULES.find((m) => m.id === "crashLock")!.processes; // ["die_cut", "folder_gluer_crash_lock"]
+```
+
+| Export                                      | Does                                                                                    |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `RECIPES`                                   | The 30 recipes, registry order                                                          |
+| `parseRecipe(raw)`                          | Checks a recipe: modules, slots, fit, parameters, labels, every expression and function |
+| `buildFromRecipe(recipe, values, material)` | `{ dieline, hinges, limits }`                                                           |
+| `styleFromRecipe(recipe)`                   | The `BoxStyleDef` the registry holds                                                    |
+| `recipeConstraints(recipe)`                 | Every data rule in run order, deduplicated                                              |
+| `MODULES` / `getModule(id)` / `PROCESSES`   | The module catalogue and the factory-process vocabulary (U3.B3 capability matrix)       |
+| `compileExpression`, `namesOf`, `callsOf`   | The recipe expression language (`src/expr.ts`)                                          |
+
 ## Offsetting, 3D and exports
 
 | Function                                            | Does                                                                                                                                 |

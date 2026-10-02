@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "flat-rounded-rect",
+  "base": "PK-LA-02",
+  "variant": {
+    "shape_flat": "rounded_rectangle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "แผ่นสี่เหลี่ยมมุมมน",
+    "en": "Rounded rectangle"
+  },
+  "description": {
+    "th": "ชิ้นงานแบนสี่เหลี่ยมมุมมน รัศมีมุมกำหนดได้",
+    "en": "A flat rectangle with rounded corners"
+  },
+  "materials": ["label", "paperboard", "flexible"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "cornerRadius"
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60,
+    "cornerRadius": 6
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rounded_rectangle"
+    }
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

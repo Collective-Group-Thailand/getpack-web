@@ -1,0 +1,153 @@
+{
+  "presets": {
+    "carton": [
+      {
+        "id": "cosmetic",
+        "label": {
+          "th": "ครีม/เครื่องสำอาง 50 × 50 × 120",
+          "en": "Cosmetics 50 × 50 × 120"
+        },
+        "values": {
+          "length": 50,
+          "width": 50,
+          "height": 120
+        }
+      },
+      {
+        "id": "supplement",
+        "label": {
+          "th": "อาหารเสริม 70 × 40 × 150",
+          "en": "Supplements 70 × 40 × 150"
+        },
+        "values": {
+          "length": 70,
+          "width": 40,
+          "height": 150
+        }
+      },
+      {
+        "id": "snack",
+        "label": {
+          "th": "ขนม 120 × 60 × 180",
+          "en": "Snacks 120 × 60 × 180"
+        },
+        "values": {
+          "length": 120,
+          "width": 60,
+          "height": 180
+        }
+      }
+    ],
+    "slotted": [
+      {
+        "id": "s",
+        "label": {
+          "th": "S 150 × 100 × 80",
+          "en": "S 150 × 100 × 80"
+        },
+        "values": {
+          "length": 150,
+          "width": 100,
+          "height": 80
+        }
+      },
+      {
+        "id": "m",
+        "label": {
+          "th": "M 250 × 180 × 120",
+          "en": "M 250 × 180 × 120"
+        },
+        "values": {
+          "length": 250,
+          "width": 180,
+          "height": 120
+        }
+      },
+      {
+        "id": "l",
+        "label": {
+          "th": "L 350 × 250 × 200",
+          "en": "L 350 × 250 × 200"
+        },
+        "values": {
+          "length": 350,
+          "width": 250,
+          "height": 200
+        }
+      },
+      {
+        "id": "xl",
+        "label": {
+          "th": "XL 450 × 350 × 300",
+          "en": "XL 450 × 350 × 300"
+        },
+        "values": {
+          "length": 450,
+          "width": 350,
+          "height": 300
+        }
+      }
+    ],
+    "label": [
+      {
+        "id": "a",
+        "label": {
+          "th": "50 × 50",
+          "en": "50 × 50"
+        },
+        "values": {
+          "length": 50,
+          "width": 50
+        }
+      },
+      {
+        "id": "b",
+        "label": {
+          "th": "100 × 60",
+          "en": "100 × 60"
+        },
+        "values": {
+          "length": 100,
+          "width": 60
+        }
+      },
+      {
+        "id": "c",
+        "label": {
+          "th": "150 × 100",
+          "en": "150 × 100"
+        },
+        "values": {
+          "length": 150,
+          "width": 100
+        }
+      }
+    ]
+  },
+  "defaults": {
+    "carton": {
+      "length": 70,
+      "width": 40,
+      "height": 150,
+      "tuckCorners": "rounded",
+      "glueSide": "left",
+      "thumbNotch": false,
+      "grain": "across",
+      "windowPanel": "front",
+      "window": "none",
+      "windowWidth": 40,
+      "windowHeight": 30,
+      "windowOffsetX": 0,
+      "windowOffsetY": 0,
+      "windowRadius": 6
+    },
+    "slotted": {
+      "length": 250,
+      "width": 180,
+      "height": 120,
+      "glueSide": "left",
+      "handles": "none",
+      "grain": "across"
+    }
+  }
+}

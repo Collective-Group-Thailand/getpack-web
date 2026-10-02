@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "id": "pouch",
+  "category": "flat",
+  "name": {
+    "th": "ซองบรรจุภัณฑ์ (แบบพิมพ์)",
+    "en": "Pouch print template"
+  },
+  "description": {
+    "th": "แบบคลี่สำหรับพิมพ์ซอง: ซีล 3 ด้าน, ซีล 4 ด้าน, ซีลกลาง, ซีลกลางมีข้าง และซองตั้งได้",
+    "en": "Flat print layouts for 3-side seal, 4-side seal, centre seal, centre seal with gussets and stand-up pouches"
+  },
+  "materials": ["flexible"],
+  "params": [
+    "pouchType",
+    {
+      "ref": "width",
+      "label": {
+        "th": "ความกว้างรวมรอยซีล",
+        "en": "Width incl. seals"
+      },
+      "min": 30,
+      "max": 600
+    },
+    {
+      "ref": "length",
+      "label": {
+        "th": "ความสูงรวมรอยซีล",
+        "en": "Height incl. seals"
+      },
+      "min": 30,
+      "max": 800
+    },
+    "gusset",
+    "bottom",
+    "centerSeal",
+    "sealWidth"
+  ],
+  "defaults": {
+    "pouchType": "three_side",
+    "width": 120,
+    "length": 180,
+    "gusset": 40,
+    "bottom": 40,
+    "centerSeal": 10,
+    "sealWidth": 8
+  },
+  "presets": [
+    {
+      "id": "three-side",
+      "label": {
+        "th": "ซีล 3 ด้าน 120 × 180",
+        "en": "3-side seal 120 × 180"
+      },
+      "values": {
+        "pouchType": "three_side",
+        "width": 120,
+        "length": 180
+      }
+    },
+    {
+      "id": "standing",
+      "label": {
+        "th": "ซองตั้ง 140 × 200 ก้น 40",
+        "en": "Stand-up 140 × 200, 40 base"
+      },
+      "values": {
+        "pouchType": "standing",
+        "width": 140,
+        "length": 200,
+        "bottom": 40
+      }
+    },
+    {
+      "id": "pillow",
+      "label": {
+        "th": "ซีลกลาง 100 × 160",
+        "en": "Centre seal 100 × 160"
+      },
+      "values": {
+        "pouchType": "center_seal",
+        "width": 100,
+        "length": 160
+      }
+    },
+    {
+      "id": "gusset",
+      "label": {
+        "th": "ซีลกลางมีข้าง 100 × 200 ข้าง 40",
+        "en": "Centre seal gusset 100 × 200, 40 side"
+      },
+      "values": {
+        "pouchType": "center_seal_gusset",
+        "width": 100,
+        "length": 200,
+        "gusset": 40
+      }
+    },
+    {
+      "id": "four-side",
+      "label": {
+        "th": "ซีล 4 ด้าน 100 × 180 ข้าง 40",
+        "en": "4-side seal 100 × 180, 40 side"
+      },
+      "values": {
+        "pouchType": "four_side",
+        "width": 100,
+        "length": 180,
+        "gusset": 40
+      }
+    }
+  ],
+  "body": {
+    "module": "pouchWeb"
+  },
+  "legacy": {
+    "patternKeys": [
+      "pid:40",
+      "pid:41",
+      "pid:42",
+      "pid:43",
+      "pid:44",
+      "mapping:76",
+      "mapping:77",
+      "mapping:78",
+      "mapping:79",
+      "mapping:80",
+      "pouch-3-seal",
+      "pouch-center-seal",
+      "pouch-center-seal-gusset",
+      "pouch-4-seal",
+      "pouch-standing"
+    ]
+  }
+}

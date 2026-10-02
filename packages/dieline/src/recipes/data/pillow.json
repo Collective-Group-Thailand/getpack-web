@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "id": "pillow",
+  "base": "PK-SP-01",
+  "category": "specialty",
+  "name": {
+    "th": "กล่องหมอน",
+    "en": "Pillow box"
+  },
+  "description": {
+    "th": "ปลายโค้งพับเข้าหากัน ตัวกล่องโป่งเหมือนหมอน สวยสำหรับของชำร่วย เครื่องประดับ",
+    "en": "Curved ends fold in and bow the box into a pillow — favours, jewellery, small gifts"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "label": {
+        "th": "ความยาวรวม (กึ่งกลาง)",
+        "en": "Overall length (at the middle)"
+      },
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "label": {
+        "th": "ความกว้าง",
+        "en": "Width"
+      },
+      "min": 40,
+      "max": 300
+    },
+    "thickness",
+    "glueWidth",
+    "grain"
+  ],
+  "defaults": {
+    "length": 150,
+    "width": 100,
+    "thickness": 30,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "เล็ก 120 × 80 × 25",
+        "en": "Small 120 × 80 × 25"
+      },
+      "values": {
+        "length": 120,
+        "width": 80,
+        "thickness": 25
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "กลาง 180 × 110 × 35",
+        "en": "Medium 180 × 110 × 35"
+      },
+      "values": {
+        "length": 180,
+        "width": 110,
+        "thickness": 35
+      }
+    }
+  ],
+  "body": {
+    "module": "pillowTube"
+  },
+  "constraints": [
+    {
+      "id": "pillow.thickness",
+      "code": "pillow.too_thick",
+      "severity": "error",
+      "param": "thickness",
+      "require": "thickness <= width / 2",
+      "message": {
+        "th": "ความหนาต้องไม่เกินครึ่งหนึ่งของความกว้าง",
+        "en": "Thickness must be at most half the width"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "thickness"
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

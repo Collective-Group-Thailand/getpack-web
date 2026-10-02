@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "gable",
+  "base": "PK-SP-02",
+  "variant": {
+    "tuck_bottom": "snap_lock_123"
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องทรงบ้าน มีหูหิ้ว",
+    "en": "Gable box with handle"
+  },
+  "description": {
+    "th": "หลังคาทรงจั่วต่อเป็นหูหิ้วมีช่องมือจับ ก้นล็อก 1-2-3 เหมาะกับขนม เบเกอรี่ ของฝาก",
+    "en": "A gable roof rising into a carry handle with a hand hole, snap-lock bottom — bakery and gifts"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "handleHeight",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "length": 150,
+    "width": 80,
+    "height": 100,
+    "handleHeight": 40
+  },
+  "presets": [
+    {
+      "id": "cake",
+      "label": {
+        "th": "ขนม 150 × 80 × 100",
+        "en": "Cakes 150 × 80 × 100"
+      },
+      "values": {
+        "length": 150,
+        "width": 80,
+        "height": 100
+      }
+    },
+    {
+      "id": "gift",
+      "label": {
+        "th": "ของฝาก 200 × 100 × 120",
+        "en": "Gifts 200 × 100 × 120"
+      },
+      "values": {
+        "length": 200,
+        "width": 100,
+        "height": 120
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "gableHandle"
+    },
+    "bottom": {
+      "module": "snapLock123",
+      "preset": "default",
+      "with": {
+        "tongue": "snapLockTongueFor(width)"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ],
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height + side / 2"
+  },
+  "legacy": {
+    "patternKeys": [
+      "pid:9",
+      "pid:27",
+      "pid:28",
+      "mapping:51",
+      "mapping:52",
+      "corrugate-handle-box-no-rim",
+      "corrugate-handle-box-with-rim"
+    ]
+  }
+}

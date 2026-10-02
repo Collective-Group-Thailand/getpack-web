@@ -1,0 +1,809 @@
+{
+  "bottom": {
+    "key": "bottom",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ขนาดก้นซองรวมรอยซีล",
+      "en": "Bottom gusset incl. seals"
+    },
+    "min": 10,
+    "max": 200,
+    "step": 0.5,
+    "legacyKey": "b",
+    "when": {
+      "key": "pouchType",
+      "in": ["standing"]
+    }
+  },
+  "bottomDiameter": {
+    "key": "bottomDiameter",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "เส้นผ่านศูนย์กลางด้านล่าง",
+      "en": "Bottom diameter"
+    },
+    "min": 20,
+    "max": 200,
+    "step": 0.5
+  },
+  "centerSeal": {
+    "key": "centerSeal",
+    "kind": "length",
+    "group": "construction",
+    "label": {
+      "th": "ขนาดซีลกลาง",
+      "en": "Centre seal"
+    },
+    "min": 5,
+    "max": 30,
+    "step": 0.5,
+    "legacyKey": "cs",
+    "when": {
+      "key": "pouchType",
+      "in": ["center_seal", "center_seal_gusset"]
+    }
+  },
+  "cornerFlap": {
+    "key": "cornerFlap",
+    "kind": "length",
+    "group": "construction",
+    "label": {
+      "th": "ความยาวปีกกาวมุม",
+      "en": "Corner flap reach"
+    },
+    "help": {
+      "th": "เว้นว่างเพื่อใช้ค่าแนะนำ (85% ของความสูง ไม่เกิน 25 มม.)",
+      "en": "Leave empty for the recommended reach (85 % of the height, at most 25 mm)"
+    },
+    "min": 5,
+    "max": 60,
+    "step": 0.5
+  },
+  "cornerRadius": {
+    "key": "cornerRadius",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "รัศมีมุม",
+      "en": "Corner radius"
+    },
+    "min": 1,
+    "max": 200,
+    "step": 0.5,
+    "legacyKey": "r"
+  },
+  "cornerSize": {
+    "key": "cornerSize",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ขนาดมุม",
+      "en": "Corner size"
+    },
+    "min": 1,
+    "max": 30,
+    "step": 0.5,
+    "legacyKey": "r"
+  },
+  "corners": {
+    "key": "corners",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "มุม",
+      "en": "Corners"
+    },
+    "options": [
+      {
+        "value": "chamfer",
+        "label": {
+          "th": "ตัดมุม",
+          "en": "Cut corners"
+        }
+      },
+      {
+        "value": "rounded",
+        "label": {
+          "th": "มุมมน",
+          "en": "Rounded"
+        }
+      },
+      {
+        "value": "square",
+        "label": {
+          "th": "มุมฉาก",
+          "en": "Square"
+        }
+      }
+    ]
+  },
+  "diameter": {
+    "key": "diameter",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "เส้นผ่านศูนย์กลาง",
+      "en": "Diameter"
+    },
+    "min": 5,
+    "max": 600,
+    "step": 0.5,
+    "legacyKey": "w"
+  },
+  "dustFlapDepth": {
+    "key": "dustFlapDepth",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ความลึกปีกกันฝุ่น",
+      "en": "Dust flap depth"
+    },
+    "help": {
+      "th": "เว้นว่างเพื่อใช้ค่าแนะนำ",
+      "en": "Leave empty for the recommended depth"
+    },
+    "min": 5,
+    "max": 300,
+    "step": 0.5
+  },
+  "fingerHole": {
+    "key": "fingerHole",
+    "kind": "boolean",
+    "group": "options",
+    "label": {
+      "th": "รูดึงลิ้นชัก",
+      "en": "Finger hole in the drawer"
+    }
+  },
+  "glueSide": {
+    "key": "glueSide",
+    "kind": "enum",
+    "group": "construction",
+    "label": {
+      "th": "ด้านปีกกาว",
+      "en": "Glue flap side"
+    },
+    "options": [
+      {
+        "value": "left",
+        "label": {
+          "th": "ซ้าย",
+          "en": "Left"
+        }
+      },
+      {
+        "value": "right",
+        "label": {
+          "th": "ขวา",
+          "en": "Right"
+        }
+      }
+    ]
+  },
+  "glueWidth": {
+    "key": "glueWidth",
+    "kind": "length",
+    "group": "construction",
+    "label": {
+      "th": "ความกว้างปีกกาว",
+      "en": "Glue flap width"
+    },
+    "help": {
+      "th": "เว้นว่างเพื่อใช้ค่าแนะนำตามขนาดกล่อง",
+      "en": "Leave empty for the recommended width for this size"
+    },
+    "min": 8,
+    "max": 60,
+    "step": 0.5,
+    "legacyKey": "g"
+  },
+  "grain": {
+    "key": "grain",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "แนวเสี้ยนกระดาษ",
+      "en": "Grain direction"
+    },
+    "help": {
+      "th": "ลูกศรบอกแนวเสี้ยนบนแบบคลี่ สำหรับโรงงาน",
+      "en": "An arrow on the drawing telling the factory which way the grain runs"
+    },
+    "options": [
+      {
+        "value": "across",
+        "label": {
+          "th": "ขวางรอยพับหลัก",
+          "en": "Across the main creases"
+        }
+      },
+      {
+        "value": "along",
+        "label": {
+          "th": "ตามรอยพับหลัก",
+          "en": "Along the main creases"
+        }
+      }
+    ]
+  },
+  "gusset": {
+    "key": "gusset",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ขนาดข้างซองรวมรอยซีล",
+      "en": "Side gusset incl. seals"
+    },
+    "min": 10,
+    "max": 200,
+    "step": 0.5,
+    "legacyKey": "s",
+    "when": {
+      "key": "pouchType",
+      "in": ["four_side", "center_seal_gusset"]
+    }
+  },
+  "handleHeight": {
+    "key": "handleHeight",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ความสูงหูหิ้ว",
+      "en": "Handle height"
+    },
+    "min": 25,
+    "max": 120,
+    "step": 0.5
+  },
+  "handles": {
+    "key": "handles",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "ช่องมือจับ",
+      "en": "Hand holes"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "side",
+        "label": {
+          "th": "ที่ด้านข้างทั้งสอง",
+          "en": "In both end panels"
+        }
+      }
+    ]
+  },
+  "hangHole": {
+    "key": "hangHole",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "รูแขวน",
+      "en": "Hang hole"
+    },
+    "options": [
+      {
+        "value": "euro",
+        "label": {
+          "th": "รูยูโร",
+          "en": "Euro slot"
+        }
+      },
+      {
+        "value": "round",
+        "label": {
+          "th": "รูกลม",
+          "en": "Round hole"
+        }
+      },
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่เจาะ",
+          "en": "None"
+        }
+      }
+    ]
+  },
+  "hangerHeight": {
+    "key": "hangerHeight",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ความสูงหูแขวน",
+      "en": "Hang tab height"
+    },
+    "help": {
+      "th": "เว้นว่างเพื่อใช้ค่าแนะนำ",
+      "en": "Leave empty for the recommended height"
+    },
+    "min": 15,
+    "max": 120,
+    "step": 0.5
+  },
+  "height": {
+    "key": "height",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความสูง (ด้านใน)",
+      "en": "Inside height"
+    },
+    "step": 0.5,
+    "legacyKey": "h"
+  },
+  "hole": {
+    "key": "hole",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "รูร้อยเชือก",
+      "en": "String hole"
+    },
+    "options": [
+      {
+        "value": "6",
+        "label": {
+          "th": "6 มม.",
+          "en": "6 mm"
+        }
+      },
+      {
+        "value": "3",
+        "label": {
+          "th": "3 มม.",
+          "en": "3 mm"
+        }
+      },
+      {
+        "value": "0",
+        "label": {
+          "th": "ไม่เจาะ",
+          "en": "None"
+        }
+      }
+    ],
+    "legacyKey": "dim"
+  },
+  "holeOffset": {
+    "key": "holeOffset",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ระยะรูจากขอบบน",
+      "en": "Hole from top edge"
+    },
+    "min": 4,
+    "max": 60,
+    "step": 0.5
+  },
+  "length": {
+    "key": "length",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความยาว (ด้านใน)",
+      "en": "Inside length"
+    },
+    "step": 0.5,
+    "legacyKey": "l"
+  },
+  "lid": {
+    "key": "lid",
+    "kind": "enum",
+    "group": "closure",
+    "label": {
+      "th": "ความลึกฝา",
+      "en": "Lid depth"
+    },
+    "options": [
+      {
+        "value": "partial",
+        "label": {
+          "th": "ครอบบางส่วน",
+          "en": "Partial"
+        }
+      },
+      {
+        "value": "full",
+        "label": {
+          "th": "ครอบเต็ม",
+          "en": "Full"
+        }
+      }
+    ]
+  },
+  "lidDepth": {
+    "key": "lidDepth",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ความลึกฝาครอบ",
+      "en": "Lid depth (partial)"
+    },
+    "min": 10,
+    "max": 300,
+    "step": 0.5,
+    "when": {
+      "key": "lid",
+      "in": ["partial"]
+    }
+  },
+  "lockTongue": {
+    "key": "lockTongue",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ลิ้นล็อกก้น",
+      "en": "Bottom lock tongue"
+    },
+    "help": {
+      "th": "เว้นว่างเพื่อใช้ค่าแนะนำตามความกว้าง (3 / 5 / 10 มม.)",
+      "en": "Leave empty for the recommended tongue by width (3 / 5 / 10 mm)"
+    },
+    "min": 2,
+    "max": 30,
+    "step": 0.5,
+    "legacyKey": "b"
+  },
+  "overlap": {
+    "key": "overlap",
+    "kind": "length",
+    "group": "construction",
+    "label": {
+      "th": "ระยะทับกาว",
+      "en": "Glue overlap"
+    },
+    "min": 5,
+    "max": 30,
+    "step": 0.5
+  },
+  "path": {
+    "key": "path",
+    "kind": "text",
+    "group": "size",
+    "label": {
+      "th": "เส้นรอบรูป (SVG path)",
+      "en": "Outline (SVG path data)"
+    }
+  },
+  "pouchType": {
+    "key": "pouchType",
+    "kind": "enum",
+    "group": "construction",
+    "label": {
+      "th": "ชนิดซอง",
+      "en": "Pouch type"
+    },
+    "options": [
+      {
+        "value": "three_side",
+        "label": {
+          "th": "ซีล 3 ด้าน",
+          "en": "3-side seal"
+        }
+      },
+      {
+        "value": "four_side",
+        "label": {
+          "th": "ซีล 4 ด้าน",
+          "en": "4-side seal"
+        }
+      },
+      {
+        "value": "center_seal",
+        "label": {
+          "th": "ซีลกลาง (หมอน)",
+          "en": "Centre seal (pillow)"
+        }
+      },
+      {
+        "value": "center_seal_gusset",
+        "label": {
+          "th": "ซีลกลางมีข้าง",
+          "en": "Centre seal with gussets"
+        }
+      },
+      {
+        "value": "standing",
+        "label": {
+          "th": "ซองตั้งได้",
+          "en": "Stand-up pouch"
+        }
+      }
+    ]
+  },
+  "sealWidth": {
+    "key": "sealWidth",
+    "kind": "length",
+    "group": "construction",
+    "label": {
+      "th": "ความกว้างรอยซีล",
+      "en": "Seal width"
+    },
+    "min": 3,
+    "max": 25,
+    "step": 0.5
+  },
+  "side": {
+    "key": "side",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความยาวด้าน",
+      "en": "Side length"
+    },
+    "min": 20,
+    "max": 200,
+    "step": 0.5
+  },
+  "size": {
+    "key": "size",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ขนาดด้านที่ยาวที่สุด",
+      "en": "Longest side"
+    },
+    "min": 10,
+    "max": 1000,
+    "step": 0.5
+  },
+  "thickness": {
+    "key": "thickness",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความหนาตรงกลาง",
+      "en": "Thickness at the middle"
+    },
+    "min": 10,
+    "max": 120,
+    "step": 0.5
+  },
+  "thumbNotch": {
+    "key": "thumbNotch",
+    "kind": "boolean",
+    "group": "options",
+    "label": {
+      "th": "รอยเว้านิ้วโป้ง",
+      "en": "Thumb notch"
+    }
+  },
+  "topDiameter": {
+    "key": "topDiameter",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "เส้นผ่านศูนย์กลางด้านบน",
+      "en": "Top diameter"
+    },
+    "min": 30,
+    "max": 200,
+    "step": 0.5
+  },
+  "tuckCorners": {
+    "key": "tuckCorners",
+    "kind": "enum",
+    "group": "closure",
+    "label": {
+      "th": "มุมลิ้นเสียบ",
+      "en": "Tuck corners"
+    },
+    "options": [
+      {
+        "value": "rounded",
+        "label": {
+          "th": "มุมมน",
+          "en": "Rounded"
+        }
+      },
+      {
+        "value": "square",
+        "label": {
+          "th": "มุมเหลี่ยม",
+          "en": "Square"
+        }
+      }
+    ]
+  },
+  "tuckDepth": {
+    "key": "tuckDepth",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ความลึกลิ้นเสียบ",
+      "en": "Tuck depth"
+    },
+    "help": {
+      "th": "เว้นว่างเพื่อใช้ค่าแนะนำตามความยาวกล่อง (15 / 20 / 25 มม.)",
+      "en": "Leave empty for the recommended depth by box length (15 / 20 / 25 mm)"
+    },
+    "min": 8,
+    "max": 60,
+    "step": 0.5,
+    "legacyKey": "f"
+  },
+  "width": {
+    "key": "width",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความกว้าง (ด้านใน)",
+      "en": "Inside width"
+    },
+    "step": 0.5,
+    "legacyKey": "w"
+  },
+  "window": {
+    "key": "window",
+    "kind": "enum",
+    "group": "window",
+    "label": {
+      "th": "หน้าต่าง",
+      "en": "Window"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "rect",
+        "label": {
+          "th": "สี่เหลี่ยม",
+          "en": "Rectangle"
+        }
+      },
+      {
+        "value": "rounded",
+        "label": {
+          "th": "สี่เหลี่ยมมุมมน",
+          "en": "Rounded rectangle"
+        }
+      },
+      {
+        "value": "ellipse",
+        "label": {
+          "th": "วงรี",
+          "en": "Ellipse"
+        }
+      }
+    ]
+  },
+  "windowHeight": {
+    "key": "windowHeight",
+    "kind": "length",
+    "group": "window",
+    "label": {
+      "th": "ความสูงหน้าต่าง",
+      "en": "Window height"
+    },
+    "min": 10,
+    "max": 600,
+    "step": 0.5,
+    "when": {
+      "key": "window",
+      "in": ["rect", "rounded", "ellipse"]
+    }
+  },
+  "windowOffsetX": {
+    "key": "windowOffsetX",
+    "kind": "length",
+    "group": "window",
+    "label": {
+      "th": "เลื่อนหน้าต่างแนวนอน",
+      "en": "Window offset, horizontal"
+    },
+    "min": -300,
+    "max": 300,
+    "step": 0.5,
+    "when": {
+      "key": "window",
+      "in": ["rect", "rounded", "ellipse"]
+    }
+  },
+  "windowOffsetY": {
+    "key": "windowOffsetY",
+    "kind": "length",
+    "group": "window",
+    "label": {
+      "th": "เลื่อนหน้าต่างแนวตั้ง",
+      "en": "Window offset, vertical"
+    },
+    "min": -300,
+    "max": 300,
+    "step": 0.5,
+    "when": {
+      "key": "window",
+      "in": ["rect", "rounded", "ellipse"]
+    }
+  },
+  "windowPanel": {
+    "key": "windowPanel",
+    "kind": "enum",
+    "group": "window",
+    "label": {
+      "th": "หน้าต่างอยู่ที่ด้าน",
+      "en": "Window on"
+    },
+    "options": [
+      {
+        "value": "front",
+        "label": {
+          "th": "ด้านหน้า",
+          "en": "Front"
+        }
+      },
+      {
+        "value": "back",
+        "label": {
+          "th": "ด้านหลัง",
+          "en": "Back"
+        }
+      },
+      {
+        "value": "right",
+        "label": {
+          "th": "ด้านข้างขวา",
+          "en": "Right side"
+        }
+      },
+      {
+        "value": "left",
+        "label": {
+          "th": "ด้านข้างซ้าย",
+          "en": "Left side"
+        }
+      }
+    ],
+    "when": {
+      "key": "window",
+      "in": ["rect", "rounded", "ellipse"]
+    }
+  },
+  "windowRadius": {
+    "key": "windowRadius",
+    "kind": "length",
+    "group": "window",
+    "label": {
+      "th": "รัศมีมุมหน้าต่าง",
+      "en": "Window corner radius"
+    },
+    "min": 0,
+    "max": 100,
+    "step": 0.5,
+    "when": {
+      "key": "window",
+      "in": ["rounded"]
+    }
+  },
+  "windowWidth": {
+    "key": "windowWidth",
+    "kind": "length",
+    "group": "window",
+    "label": {
+      "th": "ความกว้างหน้าต่าง",
+      "en": "Window width"
+    },
+    "min": 10,
+    "max": 600,
+    "step": 0.5,
+    "when": {
+      "key": "window",
+      "in": ["rect", "rounded", "ellipse"]
+    }
+  }
+}

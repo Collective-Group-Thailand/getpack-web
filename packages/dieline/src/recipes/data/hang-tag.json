@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "hang-tag",
+  "base": "PK-TG-01",
+  "category": "flat",
+  "name": {
+    "th": "ป้ายแท็ก (ตัดมุม / มุมมน)",
+    "en": "Hang tag (cut or rounded corners)"
+  },
+  "description": {
+    "th": "ป้ายห้อยสินค้า เจาะรูร้อยเชือก มุมตัดหรือมุมมน",
+    "en": "A swing tag with a string hole, corners cut or rounded"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "width",
+      "label": {
+        "th": "ความกว้าง",
+        "en": "Width"
+      },
+      "min": 20,
+      "max": 200
+    },
+    {
+      "ref": "length",
+      "label": {
+        "th": "ความสูง",
+        "en": "Height"
+      },
+      "min": 30,
+      "max": 300
+    },
+    "corners",
+    "cornerSize",
+    "hole",
+    "holeOffset"
+  ],
+  "defaults": {
+    "width": 40,
+    "length": 60,
+    "corners": "chamfer",
+    "cornerSize": 5,
+    "hole": "6"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 40 × 60",
+        "en": "S 40 × 60"
+      },
+      "values": {
+        "width": 40,
+        "length": 60
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 40 × 80",
+        "en": "M 40 × 80"
+      },
+      "values": {
+        "width": 40,
+        "length": 80
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 50 × 100",
+        "en": "L 50 × 100"
+      },
+      "values": {
+        "width": 50,
+        "length": 100
+      }
+    },
+    {
+      "id": "xl",
+      "label": {
+        "th": "XL 60 × 120",
+        "en": "XL 60 × 120"
+      },
+      "values": {
+        "width": 60,
+        "length": 120
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "tag"
+    }
+  },
+  "features": [
+    {
+      "module": "hangHole"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["pid:33", "pid:34", "mapping:57", "mapping:58", "tag-cut", "tag-curve"]
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "sleeve-drawer",
+  "base": "PK-SL-02",
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องลิ้นชัก (ปลอก + ถาด)",
+    "en": "Sleeve and drawer (two pieces)"
+  },
+  "description": {
+    "th": "ถาดลิ้นชักเลื่อนเข้าออกในปลอก ให้ความรู้สึกพรีเมียม เหมาะกับเครื่องประดับ ของขวัญ",
+    "en": "A drawer sliding in a sleeve — a premium reveal for jewellery and gifts"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 40,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 30,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 10,
+      "max": 200
+    },
+    "fingerHole",
+    "glueWidth",
+    "grain"
+  ],
+  "defaults": {
+    "length": 150,
+    "width": 100,
+    "height": 40,
+    "fingerHole": true,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "jewellery",
+      "label": {
+        "th": "เครื่องประดับ 100 × 80 × 30",
+        "en": "Jewellery 100 × 80 × 30"
+      },
+      "values": {
+        "length": 100,
+        "width": 80,
+        "height": 30
+      }
+    },
+    {
+      "id": "gift",
+      "label": {
+        "th": "ของขวัญ 200 × 150 × 60",
+        "en": "Gift 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "sleeveAndDrawer"
+  },
+  "closedSize": {
+    "length": "length + 2 * t",
+    "width": "width + 2 * t + 2 * C.DRAWER_CLEARANCE_MM",
+    "height": "height + t + 2 * C.DRAWER_CLEARANCE_MM"
+  },
+  "legacy": {
+    "patternKeys": ["pid:31", "mapping:10", "folding-slide-box", "pid:30", "mapping:56", "corrugate-slide"]
+  }
+}
