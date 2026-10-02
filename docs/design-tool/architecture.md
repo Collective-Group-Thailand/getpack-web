@@ -11,6 +11,8 @@ model), ADR-0009 (print file), ADR-0010 (3D preview) and ADR-0011 (composable st
   modules/*       body · closure · feature · pieceSet modules: params, constraints, processes,
                   hinges, geometry (16 more declared `planned` for U3.4)
   expr            the recipes' expression language (sizes, rules, closed sizes; no eval)
+  solver          explain (every rule broken, codes + numbers), validRanges, sizeRanges
+  rules/*         material classes and their manufacturing rules; machine envelope check
   construct/*     tube, closures, tray: the builders modules draw with
   faces, lines    Face / Piece / Dieline; shared edges; dielineLines (each line once, with role)
   offset          Clipper2: safe zone, bleed outline, piece outline, triangulation (isolated)

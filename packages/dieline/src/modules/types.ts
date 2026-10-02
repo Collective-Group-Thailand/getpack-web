@@ -1,4 +1,5 @@
 import type { Scope } from "../expr";
+import type { MaterialRules } from "../rules/materials";
 import type { Closure, PanelSpan } from "../construct/tube";
 import type {
   Contour,
@@ -63,6 +64,11 @@ export interface Constraint {
   param?: string;
   require: string;
   message: Localized;
+  /**
+   * `manufacturing`: a rule of the material class (`rule.*`, U3.2) — checked by `explain()` and the
+   * solver, not by `validate()`, which keeps the behaviour the storefront shipped with.
+   */
+  stage?: "manufacturing";
 }
 
 /** What building one recipe sees: the values (defaults filled in), the board, and the body's named sizes. */
@@ -73,6 +79,11 @@ export interface BuildContext {
   /** The body's named sizes (`front`, `side`, `depth`…), evaluated from its `dims` expressions. */
   dims: Record<string, number>;
   scope: Scope;
+  /**
+   * The material class's manufacturing rules — set only when the solver builds the context
+   * (`explain`), so `validate()` and drawing never load them; `manufacturing` hooks may rely on it.
+   */
+  rules?: MaterialRules;
   /** Evaluates an expression to a number in this context (`NaN` when it gives none). */
   num(expr: string | number): number;
   /** Evaluates an expression to a boolean in this context (unknown → false). */

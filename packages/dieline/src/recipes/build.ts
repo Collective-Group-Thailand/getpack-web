@@ -4,6 +4,7 @@ import type { BuildContext, Constraint, ModuleConfig, ModuleDef, ModuleUse, Part
 import { issue, withDefaults } from "../params";
 import { defineStyle } from "../styles/_shared";
 import type { BoxStyleDef, Dieline, HingeMap, Issue, MaterialSpec, ParamValues } from "../types";
+import type { MaterialRules } from "../rules/materials";
 import { contextFor } from "./context";
 import { defaultsOf, presetsOf, resolveParam } from "./params";
 import type { RecipeModule, StyleRecipe } from "./types";
@@ -23,7 +24,7 @@ function moduleUse(rm: RecipeModule | undefined, end?: "top" | "bottom"): Module
   return { def, cfg, end };
 }
 
-interface Uses {
+export interface Uses {
   main: ModuleUse;
   parts: Parts;
   /** Every module in rule order: body or piece set, top, bottom, features. */
@@ -42,6 +43,8 @@ function resolveUses(recipe: StyleRecipe): Uses {
 }
 
 const usesCache = new WeakMap<StyleRecipe, Uses>();
+/** The modules a recipe uses, resolved once per recipe object. */
+export const recipeUses = (r: StyleRecipe): Uses => uses(r);
 const uses = (r: StyleRecipe) => {
   let u = usesCache.get(r);
   if (!u) usesCache.set(r, (u = resolveUses(r)));
@@ -49,11 +52,16 @@ const uses = (r: StyleRecipe) => {
 };
 
 /** The build context for a recipe at these values (defaults already applied). */
-export function recipeContext(recipe: StyleRecipe, v: ParamValues, m: MaterialSpec): BuildContext {
-  return contextFor(recipe.id, v, m, (uses(recipe).main.cfg.dims ?? {}) as Record<string, string>);
+export function recipeContext(
+  recipe: StyleRecipe,
+  v: ParamValues,
+  m: MaterialSpec,
+  rules?: MaterialRules,
+): BuildContext {
+  return contextFor(recipe.id, v, m, (uses(recipe).main.cfg.dims ?? {}) as Record<string, string>, rules);
 }
 
-function draw(recipe: StyleRecipe, ctx: BuildContext): Dieline {
+export function drawRecipe(recipe: StyleRecipe, ctx: BuildContext): Dieline {
   const { main, parts } = uses(recipe);
   if (main.def.slot === "pieceSet") return main.def.build(ctx, main.cfg);
   if (main.def.slot !== "body") throw new Error(`recipe.no_body: ${recipe.id}`);
@@ -79,7 +87,7 @@ function hinges(recipe: StyleRecipe, ctx: BuildContext): HingeMap {
   return out;
 }
 
-const constraintsOf = (def: ModuleDef, cfg: ModuleConfig): Constraint[] =>
+export const constraintsOf = (def: ModuleDef, cfg: ModuleConfig): Constraint[] =>
   typeof def.constraints === "function" ? def.constraints(cfg) : (def.constraints ?? []);
 
 /** `{{name}}` in a message is replaced by that value, rounded to 0.1. */
@@ -118,7 +126,7 @@ function check(recipe: StyleRecipe, v: ParamValues, m: MaterialSpec, built: Diel
   const out: Issue[] = [];
   const seen = new Set<string>();
   const rule = (c: Constraint) => {
-    if (seen.has(c.id)) return;
+    if (c.stage === "manufacturing" || seen.has(c.id)) return;
     seen.add(c.id);
     if (broken(c, ctx)) out.push(toIssue(c, ctx));
   };
@@ -145,7 +153,7 @@ export function buildFromRecipe(recipe: StyleRecipe, values: ParamValues, materi
   const limits: BuiltRecipe["limits"] = {};
   for (const p of recipe.params.map((x) => resolveParam(x)))
     if (p.min !== undefined || p.max !== undefined) limits[p.key] = { min: p.min, max: p.max };
-  return { dieline: draw(recipe, ctx), hinges: foldable(recipe) ? hinges(recipe, ctx) : null, limits };
+  return { dieline: drawRecipe(recipe, ctx), hinges: foldable(recipe) ? hinges(recipe, ctx) : null, limits };
 }
 
 /** A recipe as the engine's `BoxStyleDef`, so the registry and every caller stay as they were. */
@@ -176,7 +184,7 @@ export function styleFromRecipe(recipe: StyleRecipe): BoxStyleDef {
           },
         }
       : {}),
-    make: (v, m) => draw(recipe, recipeContext(recipe, v, m)),
+    make: (v, m) => drawRecipe(recipe, recipeContext(recipe, v, m)),
     check: (v, m, built) => check(recipe, v, m, built),
     ...(recipe.legacy ? { legacy: recipe.legacy } : {}),
   });

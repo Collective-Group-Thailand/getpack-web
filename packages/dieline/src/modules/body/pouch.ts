@@ -128,6 +128,15 @@ export const pouchWeb: BodyModule = {
       require: "sealWidth * 2 < min(width, length)",
       message: t("รอยซีลกว้างเกินขนาดซอง", "The seals are wider than the pouch"),
     },
+    {
+      id: "pouchWeb.seal_range",
+      code: "mfg.seal_width",
+      severity: "error",
+      param: "sealWidth",
+      require: "rule.seal.max == 0 or (sealWidth >= rule.seal.min and sealWidth <= rule.seal.max)",
+      message: t("ความกว้างรอยซีลอยู่นอกช่วงที่เครื่องทำได้", "The seal width is outside what a pouch line makes"),
+      stage: "manufacturing",
+    },
   ],
   build: (ctx) => build(ctx.styleId, ctx.v),
 };

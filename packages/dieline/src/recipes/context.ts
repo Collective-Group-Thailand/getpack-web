@@ -9,6 +9,7 @@ import {
 } from "../constants";
 import { compile, evaluate, type ExprFunction, type ExprValue, type Scope } from "../expr";
 import type { BuildContext } from "../modules/types";
+import type { MaterialRules } from "../rules/materials";
 import type { MaterialSpec, ParamValue, ParamValues } from "../types";
 
 /**
@@ -17,6 +18,8 @@ import type { MaterialSpec, ParamValue, ParamValues } from "../types";
  *   named sizes (`front`, `side`, `depth`…) shadow parameters of the same name;
  * - `t` the caliper, `a.panel` `a.depth` `a.trayDepth` `a.flap` `a.gluePanel` the make-up
  *   allowances (`allowancesOf`), `material.kind`, `material.flute`, `pi`;
+ * - `rule.<name>` the material class's manufacturing rules (`rule.minPanel`, `rule.seal.min`…),
+ *   when the solver supplies them — unset otherwise, so a manufacturing rule is unknown, never failed;
  * - `C.<NAME>` any numeric constant in `constants.ts`;
  * - `min max abs floor ceil round sqrt sin cos tan number`, and the legacy tables
  *   `tuckDepthFor(L)`, `glueWidthFor(W)`, `snapLockTongueFor(W)`, `slotWidth()`.
@@ -66,7 +69,7 @@ function readParam(raw: ParamValue | undefined): ExprValue {
 
 const CONSTANTS = constants as unknown as Record<string, unknown>;
 
-export function scopeFor(v: ParamValues, m: MaterialSpec, dims: Record<string, number>): Scope {
+export function scopeFor(v: ParamValues, m: MaterialSpec, dims: Record<string, number>, rules?: MaterialRules): Scope {
   const a = allowancesOf(m) as unknown as Record<string, number>;
   return {
     fn: functionsFor(m),
@@ -77,6 +80,12 @@ export function scopeFor(v: ParamValues, m: MaterialSpec, dims: Record<string, n
       if (name === "material.kind") return m.kind;
       if (name === "material.flute") return m.flute ?? undefined;
       if (name.startsWith("a.")) return a[name.slice(2)];
+      if (name.startsWith("rule.")) {
+        const [key, part] = name.slice(5).split(".");
+        const r = (rules as unknown as Record<string, number | [number, number]> | undefined)?.[key];
+        if (Array.isArray(r)) return part === "min" ? r[0] : part === "max" ? r[1] : undefined;
+        return typeof r === "number" && part === undefined ? r : undefined;
+      }
       if (name.startsWith("C.")) {
         const c = CONSTANTS[name.slice(2)];
         return typeof c === "number" ? c : undefined;
@@ -95,9 +104,10 @@ export function contextFor(
   v: ParamValues,
   m: MaterialSpec,
   dimsExpr: Record<string, string> = {},
+  rules?: MaterialRules,
 ): BuildContext {
   const dims: Record<string, number> = {};
-  const scope = scopeFor(v, m, dims);
+  const scope = scopeFor(v, m, dims, rules);
   const value = (e: string | number | boolean) => (typeof e === "string" ? evaluate(compile(e), scope) : e);
   for (const [name, e] of Object.entries(dimsExpr)) {
     const x = value(e);
@@ -109,6 +119,7 @@ export function contextFor(
     m,
     dims,
     scope,
+    rules,
     num: (e) => {
       const x = value(e);
       return typeof x === "number" ? x : NaN;

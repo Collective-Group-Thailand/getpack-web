@@ -6,6 +6,8 @@
  * from its **printed side** — the outside of the finished box.
  */
 
+import type { MaterialClass } from "./rules/materials";
+
 export type Pt = [number, number];
 
 /**
@@ -129,6 +131,11 @@ export interface MaterialSpec {
   /** Board thickness in millimetres. */
   caliperMm: number;
   kind: "paperboard" | "corrugated" | "rigid" | "label" | "flexible";
+  /**
+   * The finer material class when the catalogue knows it (`food_board`, `paper`, `shrink_film`…);
+   * absent, it follows from `kind` (`materialClassOf`). It selects the manufacturing rules (U3.2).
+   */
+  class?: MaterialClass;
   /** Flute code (`E`, `B`, `BC`…) for corrugated board. */
   flute?: string | null;
   /**

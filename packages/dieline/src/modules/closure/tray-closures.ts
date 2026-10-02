@@ -122,6 +122,15 @@ export const hingedLid: ClosureModule = {
             require: "(tuckDepth ?? tuckDepthFor(length)) < height + t",
             message: t("ลิ้นเสียบลึกเกินความสูงกล่อง", "The tuck is deeper than the box is tall"),
           },
+          {
+            id: "hingedLid.tuck_min_depth",
+            code: "mfg.tuck_too_shallow",
+            severity: "error",
+            param: "tuckDepth",
+            require: "(tuckDepth ?? tuckDepthFor(length + a.panel)) >= rule.minTuck",
+            message: t("ลิ้นเสียบตื้นเกินไปสำหรับวัสดุนี้", "The tuck is too shallow to hold in this material"),
+            stage: "manufacturing",
+          },
         ]
       : [],
   tray: (ctx, cfg, frame): TrayExtras => ({

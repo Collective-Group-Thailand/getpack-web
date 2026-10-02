@@ -126,6 +126,31 @@ export {
   type ModuleSlot,
   type Process,
 } from "./modules";
+export {
+  explain,
+  isBuildable,
+  RESOLUTION_MM,
+  sizeRanges,
+  validRanges,
+  type ParamRange,
+  type Violation,
+  type ViolationRule,
+} from "./solver";
+export {
+  MATERIAL_CLASSES,
+  materialClassOf,
+  materialRules,
+  type MaterialClass,
+  type MaterialRules,
+} from "./rules/materials";
+export { dielineManufacturing } from "./rules/manufacturing";
+export {
+  fitsEnvelope,
+  recipeProcesses,
+  type EnvelopeFit,
+  type EnvelopeReason,
+  type MachineEnvelope,
+} from "./rules/envelope";
 export { callsOf, compile as compileExpression, ExprError, namesOf, type ExprValue } from "./expr";
 export { fixtureFileKey, patternFixtures, type PatternFixture } from "./fixtures";
 export { parseSvgPath } from "./svgpath";
