@@ -24,6 +24,15 @@ import teStraightSeal from "./data/te-straight-seal.json" with { type: "json" };
 import te2Airplane from "./data/te2-airplane.json" with { type: "json" };
 import te2Reverse from "./data/te2-reverse.json" with { type: "json" };
 import te2Straight from "./data/te2-straight.json" with { type: "json" };
+import pizzaBox from "./data/pizza-box.json" with { type: "json" };
+import lockCornerTray from "./data/lock-corner-tray.json" with { type: "json" };
+import archiveBox from "./data/archive-box.json" with { type: "json" };
+import produceTray from "./data/produce-tray.json" with { type: "json" };
+import partitionSet from "./data/partition-set.json" with { type: "json" };
+import padSheet from "./data/pad-sheet.json" with { type: "json" };
+import rscHandHoles from "./data/rsc-hand-holes.json" with { type: "json" };
+import fullTelescope from "./data/full-telescope.json" with { type: "json" };
+import hscLid from "./data/hsc-lid.json" with { type: "json" };
 import rollEndTray from "./data/roll-end-tray.json" with { type: "json" };
 import trayInsert from "./data/tray-insert.json" with { type: "json" };
 import displayTray from "./data/display-tray.json" with { type: "json" };
@@ -63,6 +72,15 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   te2Airplane,
   te2Reverse,
   te2Straight,
+  pizzaBox,
+  lockCornerTray,
+  archiveBox,
+  produceTray,
+  partitionSet,
+  padSheet,
+  rscHandHoles,
+  fullTelescope,
+  hscLid,
   rollEndTray,
   trayInsert,
   displayTray,

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "id": "pizza-box",
+  "base": "PK-CF-02",
+  "variants": {
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องพิซซ่า",
+    "en": "Pizza box"
+  },
+  "description": {
+    "th": "กล่องลูกฟูกทรงเตี้ย ผนังพับสองชั้น ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบ",
+    "en": "A low corrugated box with rolled walls and a tuck lid hinged on the back"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 250
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "grain",
+    "fingerHole"
+  ],
+  "defaults": {
+    "length": 300,
+    "width": 300,
+    "height": 40,
+    "grain": "across",
+    "fingerHole": false
+  },
+  "presets": [
+    {
+      "id": "10",
+      "label": {
+        "th": "10\" 260 × 260 × 40",
+        "en": "10\" 260 × 260 × 40"
+      },
+      "values": {
+        "length": 260,
+        "width": 260,
+        "height": 40
+      }
+    },
+    {
+      "id": "12",
+      "label": {
+        "th": "12\" 310 × 310 × 40",
+        "en": "12\" 310 × 310 × 40"
+      },
+      "values": {
+        "length": 310,
+        "width": 310,
+        "height": 40
+      }
+    },
+    {
+      "id": "14",
+      "label": {
+        "th": "14\" 360 × 360 × 45",
+        "en": "14\" 360 × 360 × 45"
+      },
+      "values": {
+        "length": 360,
+        "width": 360,
+        "height": 45
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "rollOverWalls",
+      "with": {
+        "walls": ["front", "left", "right"]
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}

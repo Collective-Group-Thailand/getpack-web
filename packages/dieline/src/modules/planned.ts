@@ -45,13 +45,7 @@ export const PLANNED_MODULES: ModuleDef[] = [
     ["adhesive_strip_applicator"],
     ["tube", "tray"],
   ),
-  planned("vents", "feature", t("รูระบายอากาศ", "Vent holes"), ["die_cut"], ["tube", "tray"]),
   planned("dispenser", "feature", t("ช่องดึงสินค้า", "Dispenser opening"), ["die_cut"]),
   planned("neckLock", "feature", t("ล็อกคอขวด", "Neck lock"), ["die_cut"]),
   planned("dustFlapLock", "feature", t("ล็อกปีกกันฝุ่น", "Dust-flap lock"), ["die_cut"]),
-  planned("partitionGrid", "pieceSet", t("ช่องกั้นตาราง", "Partition grid (rows × columns)"), [
-    "die_cut",
-    "slotter",
-    "hand_assembly",
-  ]),
 ];

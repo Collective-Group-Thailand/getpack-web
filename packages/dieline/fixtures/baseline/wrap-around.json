@@ -1,5 +1,5 @@
 {
-  "definition": "015c3fca1ca525",
+  "definition": "1ebd2350dbaac0",
   "drinks · flute-e": {
     "build": "03ccf0e3f7ff21",
     "hinges": "15ed47e3f7c926",
@@ -106,6 +106,24 @@
     "build": "1294a7b4ce01f9",
     "hinges": "15ed47e3f7c926",
     "validate": "02957fe79a0712",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · joint=glue": {
+    "build": "03ccf0e3f7ff21",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · joint=stitch": {
+    "build": "1b6fdea0d6b14a",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "drinks · flute-e · joint=tape": {
+    "build": "14ae01b41c422b",
+    "hinges": "15ed47e3f7c926",
+    "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
   "drinks · flute-e · glueWidth=min": {

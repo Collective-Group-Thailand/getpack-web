@@ -2,8 +2,50 @@
   "schemaVersion": 1,
   "id": "mailer",
   "base": "PK-CF-01",
-  "variant": {
-    "mailer_front": "tuck"
+  "variants": {
+    "mailer_front": {
+      "tuck": {
+        "mailerFront": "tuck"
+      },
+      "tab_lock": {
+        "mailerFront": "tab"
+      }
+    },
+    "tear_strip": {
+      "none": {
+        "tearStrip": false
+      },
+      "zip_tear_strip": {
+        "tearStrip": true
+      }
+    },
+    "adhesive": {
+      "none": {
+        "adhesive": "none"
+      },
+      "single_strip": {
+        "adhesive": "single"
+      },
+      "dual_strip_return": {
+        "adhesive": "dual"
+      }
+    },
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
   },
   "category": "corrugated",
   "name": {
@@ -38,13 +80,23 @@
       "ref": "tuckDepth",
       "omit": ["help"]
     },
-    "grain"
+    "grain",
+    "mailerFront",
+    "tearStrip",
+    "adhesive",
+    "fingerHole",
+    "insert"
   ],
   "defaults": {
     "length": 250,
     "width": 180,
     "height": 80,
-    "grain": "across"
+    "grain": "across",
+    "mailerFront": "tuck",
+    "tearStrip": false,
+    "adhesive": "none",
+    "fingerHole": false,
+    "insert": "none"
   },
   "presets": [
     {
@@ -101,6 +153,13 @@
       "module": "rollOverWalls",
       "with": {
         "walls": ["front", "left", "right"]
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t",
+        "inset": "t"
       }
     }
   ],
