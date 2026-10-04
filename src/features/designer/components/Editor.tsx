@@ -67,14 +67,16 @@ import { PrintRulesModal } from "./PrintRulesModal";
 import { SetupModal } from "./SetupModal";
 import { DesignerContext, type DesignerHandle } from "./DesignerContext";
 import { ChecksPanel } from "./panels/ChecksPanel";
-import { ShareDialog } from "./ShareDialog";
 import { FocusChip } from "./shell/FocusChip";
 import { RAIL, RailPanel, SelectionPanel, type RailId } from "./shell/panels";
 import { shortcutList, useEditorShortcuts } from "./shell/shortcuts";
 import { StatusBar } from "./shell/StatusBar";
-import { VersionHistory } from "./VersionHistory";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
+const Presentation = dynamic(() => import("./Presentation"), { ssr: false });
+// Opened on demand: the history (with its compare view) and the view-only link.
+const VersionHistory = dynamic(() => import("./VersionHistory").then((m) => m.VersionHistory), { ssr: false });
+const ShareDialog = dynamic(() => import("./ShareDialog").then((m) => m.ShareDialog), { ssr: false });
 // three.js loads only when the 3D tab opens.
 const Preview3D = dynamic(() => import("./Preview3D"), {
   ssr: false,
@@ -197,6 +199,8 @@ export interface EditorSession {
   /** The studio's box fields and spec, saved with each version (U4.1, D-275). */
   box?: PersistenceConfig["box"];
   initialBox?: PersistenceConfig["initialBox"];
+  /** An edit link (U4.7, mode `shared`). */
+  shared?: PersistenceConfig["shared"];
 }
 
 /** What the studio's frame is handed: the editor's own actions and facts. */
@@ -234,6 +238,14 @@ export interface EditorChrome {
   views?: boolean;
   /** Asked before switching to the inside — the studio shows the cost first; `false` stays outside. */
   onSide?: (side: "outside" | "inside") => boolean | Promise<boolean>;
+  /** The studio's comments (U4.7), as a rail tool; the tool is offered only with it. */
+  comments?: (ctx: EditorChromeContext) => React.ReactNode;
+  /** More top-bar actions. */
+  actions?: (ctx: EditorChromeContext) => React.ReactNode;
+  /** Presentation mode with AR (U4.7): turntable, scenes, PNG / video, the box at real size. */
+  presentation?: boolean;
+  /** The studio's own share dialog (U4.7: links with a scope) in place of the view-only link. */
+  share?: (designId: string, close: () => void) => React.ReactNode;
 }
 
 type StageView = "split" | "flat" | "3d";
@@ -319,6 +331,7 @@ export default function Editor({
   const [resetOpen, setResetOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [presenting, setPresenting] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [fitSignal, setFitSignal] = useState(0);
   // The studio opens on the stage; its box has its own step (②).
@@ -373,6 +386,7 @@ export default function Editor({
     onSaved: session.onSaved,
     box: session.box,
     initialBox: session.initialBox,
+    ...(session.shared ? { shared: session.shared } : {}),
     thumbnail: () =>
       stageRef.current && dieline && useEditor.getState().side === "outside"
         ? makeThumbnail(stageRef.current, dieline)
@@ -559,7 +573,7 @@ export default function Editor({
     return () => setActiveStage(null);
   }, [stage]);
   const show3d = chrome?.views ? view !== "flat" : sideTab === "preview" || mobilePanel === "preview";
-  const artworks = useArtwork(show3d, stage, canvasDieline, side, view === "split" ? 1024 : 2048);
+  const artworks = useArtwork(show3d || presenting, stage, canvasDieline, side, view === "split" ? 1024 : 2048);
   const artwork = artworks.outside;
   const finishMasks = artworks.finishes;
 
@@ -621,7 +635,9 @@ export default function Editor({
     dieline,
   };
   const stepPanel = chrome?.panel?.(chromeContext) ?? null;
-  const railTools = RAIL.filter((item) => chrome?.rail?.(item.id) ?? true);
+  const railTools = RAIL.filter((item) =>
+    item.id === "comments" ? !!chrome?.comments : (chrome?.rail?.(item.id) ?? true),
+  );
 
   const preview =
     dieline && paperColour && spec ? (
@@ -744,6 +760,10 @@ export default function Editor({
 
             <div className="ms-auto flex items-center gap-1 xl:ms-4">
               {topBarExtra}
+              {chrome?.actions?.(chromeContext)}
+              {chrome?.presentation && spec ? (
+                <IconButton name="eye" label={t("present.launch")} size="sm" onClick={() => setPresenting(true)} />
+              ) : null}
               {editable ? (
                 <Button size="sm" onClick={() => void save()} disabled={!spec} iconStart="save">
                   {tCommon("actions.save")}
@@ -752,7 +772,12 @@ export default function Editor({
               {session.mode === "store" && persistence.serverId() ? (
                 <>
                   <IconButton name="history" label={t("history.open")} size="sm" onClick={() => setHistoryOpen(true)} />
-                  <IconButton name="link" label={t("share.open")} size="sm" onClick={() => setShareOpen(true)} />
+                  <IconButton
+                    name="link"
+                    label={chrome?.share ? t("share.openStudio") : t("share.open")}
+                    size="sm"
+                    onClick={() => setShareOpen(true)}
+                  />
                 </>
               ) : null}
 
@@ -876,7 +901,12 @@ export default function Editor({
                     className="border-border bg-surface hidden w-72 shrink-0 overflow-y-auto border-e p-4 lg:block"
                   >
                     <h2 className="mb-3 font-semibold">{t(`rail.${rail}`)}</h2>
-                    <RailPanel id={rail} onOpenSetup={openSetup} onOpenRules={openRules} />
+                    <RailPanel
+                      id={rail}
+                      onOpenSetup={openSetup}
+                      onOpenRules={openRules}
+                      comments={chrome?.comments?.(chromeContext)}
+                    />
                   </section>
                 ) : null}
               </>
@@ -1052,7 +1082,12 @@ export default function Editor({
                 />
               </div>
               {mobilePanel in RAIL_LABELS ? (
-                <RailPanel id={mobilePanel as RailId} onOpenSetup={openSetup} onOpenRules={openRules} />
+                <RailPanel
+                  id={mobilePanel as RailId}
+                  onOpenSetup={openSetup}
+                  onOpenRules={openRules}
+                  comments={chrome?.comments?.(chromeContext)}
+                />
               ) : (
                 sidePanel(mobilePanel as SideTab)
               )}
@@ -1151,6 +1186,11 @@ export default function Editor({
               designId={persistence.serverId()!}
               open={historyOpen}
               onClose={() => setHistoryOpen(false)}
+              onName={async (label) => {
+                const ok = await persistence.save("manual", label);
+                if (ok) toast.success(t("history.named", { label }));
+                return ok;
+              }}
               onRestore={async (versionNo) => {
                 const ok = await persistence.restoreVersion(versionNo);
                 if (ok) {
@@ -1161,8 +1201,27 @@ export default function Editor({
             />
           ) : null}
 
+          {presenting && dieline && spec && paperColour ? (
+            <Presentation
+              dieline={dieline}
+              hinges={hinges}
+              material={spec.material}
+              artwork={artwork}
+              insideArtwork={artworks.inside}
+              finishMasks={finishMasks}
+              boardColour={paperColour}
+              name={name}
+              onClose={() => setPresenting(false)}
+              onDownloadDieline={() => doExport("dieline-pdf")}
+            />
+          ) : null}
+
           {shareOpen && persistence.serverId() ? (
-            <ShareDialog designId={persistence.serverId()!} open={shareOpen} onClose={() => setShareOpen(false)} />
+            chrome?.share ? (
+              chrome.share(persistence.serverId()!, () => setShareOpen(false))
+            ) : (
+              <ShareDialog designId={persistence.serverId()!} open={shareOpen} onClose={() => setShareOpen(false)} />
+            )
           ) : null}
 
           <Dialog

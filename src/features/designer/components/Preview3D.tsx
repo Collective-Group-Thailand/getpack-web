@@ -18,6 +18,8 @@ import {
 
 import { IconButton } from "@/ui/components/IconButton";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
+
+import { useCommentPins } from "../comments/pins";
 import { Slider } from "@/ui/components/Slider";
 
 export type LightingPreset = "studio" | "daylight" | "warm";
@@ -70,7 +72,10 @@ export interface Preview3DProps {
  * Lighting as physics, not brand: plain whites and a warm tungsten, so the preview neither
  * flatters nor tints the customer's colours beyond what a room would.
  */
-const LIGHTING: Record<LightingPreset, { ambient: [string, number]; key: [string, number]; fill: [string, number] }> = {
+export const LIGHTING: Record<
+  LightingPreset,
+  { ambient: [string, number]; key: [string, number]; fill: [string, number] }
+> = {
   studio: { ambient: ["#ffffff", 0.55], key: ["#ffffff", 1.6], fill: ["#ffffff", 0.5] },
   daylight: { ambient: ["#eef4ff", 0.8], key: ["#fffaf0", 1.2], fill: ["#dfe9ff", 0.6] },
   warm: { ambient: ["#fff1dc", 0.5], key: ["#ffd9a8", 1.5], fill: ["#ffe8cc", 0.4] },
@@ -80,7 +85,7 @@ const LIGHTING: Record<LightingPreset, { ambient: [string, number]; key: [string
  * Each face triangulated once, in sheet millimetres, wound to face the printed side (+Z), with its
  * outline and holes as loops for the cut edges.
  */
-function triangulated(d: Dieline): { id: string; triangles: Pt[]; loops: Pt[][] }[] {
+export function triangulated(d: Dieline): { id: string; triangles: Pt[]; loops: Pt[][] }[] {
   return allFaces(d).map((f) => {
     const triangles: Pt[] = [];
     for (const tri of triangulate(facePolygons(f))) {
@@ -100,7 +105,7 @@ function triangulated(d: Dieline): { id: string; triangles: Pt[]; loops: Pt[][] 
  * carrying the artwork, and the board — the inner surface and every cut edge — in the board's
  * colour. A flat piece is a plate of the caliper.
  */
-function buildGeometry(
+export function buildGeometry(
   d: Dieline,
   faces: ReturnType<typeof triangulated>,
   hinges: HingeMap | null,
@@ -180,10 +185,11 @@ function buildGeometry(
     }
     if (n.lengthSq() > 0) normals.set(r.id, n.normalize());
   }
-  return { ...geometries, ranges, normals };
+  // `scale`: model units per mm (the AR model undoes it for real size, U4.7).
+  return { ...geometries, ranges, normals, scale: s };
 }
 
-type Geometry = ReturnType<typeof buildGeometry>;
+export type Geometry = ReturnType<typeof buildGeometry>;
 
 /** A texture from an image URL, replaced (and the old one freed) when the URL changes. */
 function useTexture(url: string | null | undefined) {
@@ -208,6 +214,41 @@ function useTexture(url: string | null | undefined) {
 }
 
 /** The face a hit triangle belongs to. */
+/**
+ * The point of the printed surface at a place on the sheet (its UV), lifted a little along the
+ * face's normal — where a comment pin sits on the box (U4.7); `null` off every face.
+ */
+function surfacePoint(geometry: Geometry, uvAt: [number, number]): THREE.Vector3 | null {
+  const position = geometry.printed.getAttribute("position") as THREE.BufferAttribute;
+  const uv = geometry.printed.getAttribute("uv") as THREE.BufferAttribute;
+  const [a, b, c] = [new THREE.Vector2(), new THREE.Vector2(), new THREE.Vector2()];
+  const p = new THREE.Vector2(uvAt[0], uvAt[1]);
+  const bary = new THREE.Vector3();
+  for (let t = 0; t < position.count / 3; t++) {
+    a.fromBufferAttribute(uv, t * 3);
+    b.fromBufferAttribute(uv, t * 3 + 1);
+    c.fromBufferAttribute(uv, t * 3 + 2);
+    THREE.Triangle.getBarycoord(
+      new THREE.Vector3(p.x, p.y, 0),
+      new THREE.Vector3(a.x, a.y, 0),
+      new THREE.Vector3(b.x, b.y, 0),
+      new THREE.Vector3(c.x, c.y, 0),
+      bary,
+    );
+    if (bary.x < -1e-6 || bary.y < -1e-6 || bary.z < -1e-6) continue;
+    const pa = new THREE.Vector3().fromBufferAttribute(position, t * 3);
+    const pb = new THREE.Vector3().fromBufferAttribute(position, t * 3 + 1);
+    const pc = new THREE.Vector3().fromBufferAttribute(position, t * 3 + 2);
+    const normal = pb.clone().sub(pa).cross(pc.clone().sub(pa)).normalize();
+    return pa
+      .multiplyScalar(bary.x)
+      .add(pb.multiplyScalar(bary.y))
+      .add(pc.multiplyScalar(bary.z))
+      .addScaledVector(normal, 0.02);
+  }
+  return null;
+}
+
 const faceOfTriangle = (ranges: Geometry["ranges"], index: number) =>
   ranges.find((r) => index >= r.first && index < r.first + r.count)?.id ?? null;
 
@@ -229,7 +270,7 @@ function useHighlight(geometry: Geometry, faceId: string | null | undefined) {
   }, [geometry, faceId]);
 }
 
-function Box({
+export function Box({
   geometry,
   artwork,
   insideArtwork,
@@ -238,7 +279,10 @@ function Box({
   focusedFaceId,
   onPickFace,
   finishMasks,
+  sheet,
 }: {
+  /** The sheet's size (mm), for placing comments by UV (U4.7). */
+  sheet: { width: number; height: number };
   geometry: Geometry;
   finishMasks?: Preview3DProps["finishMasks"];
   artwork: string | null;
@@ -255,6 +299,16 @@ function Box({
   const emboss = useTexture(finishMasks?.emboss);
   const window_ = useTexture(finishMasks?.window);
   const highlight = useHighlight(geometry, focusedFaceId);
+  const pins = useCommentPins((state) => state.pins);
+  const activePin = useCommentPins((state) => state.active);
+  const pinPoints = useMemo(
+    () =>
+      pins.flatMap((pin) => {
+        const at = surfacePoint(geometry, [pin.xMm / sheet.width, 1 - pin.yMm / sheet.height]);
+        return at ? [{ pin, at }] : [];
+      }),
+    [pins, geometry, sheet.width, sheet.height],
+  );
   useEffect(
     () => () => {
       geometry.printed.dispose();
@@ -267,15 +321,23 @@ function Box({
     <group rotation={[rotation.x, rotation.y, 0]}>
       <mesh
         geometry={geometry.printed}
-        onClick={
-          onPickFace
-            ? (event) => {
-                event.stopPropagation();
-                if (event.delta > 4) return; // the end of an orbit drag, not a pick
-                onPickFace(event.faceIndex == null ? null : faceOfTriangle(geometry.ranges, event.faceIndex));
-              }
-            : undefined
-        }
+        onClick={(event) => {
+          if (event.delta > 4) return; // the end of an orbit drag, not a pick
+          const faceId = event.faceIndex == null ? null : faceOfTriangle(geometry.ranges, event.faceIndex);
+          // Placing a comment (U4.7): the place on the sheet under the click, and its face.
+          if (useCommentPins.getState().placing && event.uv) {
+            event.stopPropagation();
+            useCommentPins.getState().pick({
+              xMm: event.uv.x * sheet.width,
+              yMm: (1 - event.uv.y) * sheet.height,
+              faceId: faceId ?? null,
+            });
+            return;
+          }
+          if (!onPickFace) return;
+          event.stopPropagation();
+          onPickFace(faceId ?? null);
+        }}
       >
         <meshStandardMaterial
           map={texture}
@@ -340,6 +402,16 @@ function Box({
         />
         <meshStandardMaterial attach="material-1" color={boardColour} side={THREE.DoubleSide} roughness={0.9} />
       </mesh>
+      {pinPoints.map(({ pin, at }) => (
+        <mesh key={pin.id} position={at} renderOrder={2}>
+          <sphereGeometry args={[pin.id === activePin ? 0.05 : 0.035, 16, 12]} />
+          <meshBasicMaterial
+            color={pin.id === activePin ? "#2f80ed" : "#d9480f"}
+            transparent
+            opacity={pin.resolved ? 0.45 : 1}
+          />
+        </mesh>
+      ))}
       {highlight ? (
         <mesh geometry={highlight} renderOrder={1}>
           <meshBasicMaterial color="#2f80ed" transparent opacity={0.22} depthTest={false} side={THREE.DoubleSide} />
@@ -350,7 +422,7 @@ function Box({
 }
 
 /** Hands the renderer to the parent, for the PNG export. */
-function Grab({ rendererRef }: { rendererRef: React.RefObject<THREE.WebGLRenderer | null> }) {
+export function Grab({ rendererRef }: { rendererRef: React.RefObject<THREE.WebGLRenderer | null> }) {
   const gl = useThree((s) => s.gl);
   useEffect(() => {
     rendererRef.current = gl;
@@ -359,7 +431,7 @@ function Grab({ rendererRef }: { rendererRef: React.RefObject<THREE.WebGLRendere
 }
 
 const STEP = Math.PI / 12;
-const INITIAL = { x: 0.35, y: -0.6 };
+export const INITIAL = { x: 0.35, y: -0.6 };
 const TILT = Math.PI / 2;
 
 /**
@@ -478,6 +550,7 @@ export default function Preview3D({
           <directionalLight color={light.key[0]} intensity={light.key[1]} position={[3, 4, 5]} />
           <directionalLight color={light.fill[0]} intensity={light.fill[1]} position={[-4, -1, -3]} />
           <Box
+            sheet={{ width: dieline.width, height: dieline.height }}
             geometry={geometry}
             artwork={artwork}
             insideArtwork={insideArtwork}
