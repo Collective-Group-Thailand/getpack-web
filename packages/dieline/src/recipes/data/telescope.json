@@ -10,31 +10,6 @@
       "full": {
         "lid": "full"
       }
-    },
-    "corner": {
-      "glued": {
-        "cornerLock": "glued"
-      },
-      "lock_corner": {
-        "cornerLock": "lock"
-      }
-    },
-    "window": {
-      "none": {
-        "window": "none"
-      },
-      "top_window": {
-        "window": "rect",
-        "windowPanel": "lid-base"
-      }
-    },
-    "thumb": {
-      "none": {
-        "fingerHole": false
-      },
-      "thumb_notch": {
-        "fingerHole": true
-      }
     }
   },
   "category": "tray_lid",
@@ -65,43 +40,14 @@
     },
     "lid",
     "lidDepth",
-    "grain",
-    "cornerLock",
-    "fingerHole",
-    "window",
-    {
-      "ref": "windowPanel",
-      "options": [
-        {
-          "value": "lid-base",
-          "label": {
-            "th": "ด้านบนฝา",
-            "en": "Lid top"
-          }
-        }
-      ]
-    },
-    "windowWidth",
-    "windowHeight",
-    "windowOffsetX",
-    "windowOffsetY",
-    "windowRadius"
+    "grain"
   ],
   "defaults": {
     "length": 200,
     "width": 150,
     "height": 60,
     "lid": "partial",
-    "grain": "across",
-    "cornerLock": "glued",
-    "fingerHole": false,
-    "window": "none",
-    "windowWidth": 40,
-    "windowHeight": 30,
-    "windowOffsetX": 0,
-    "windowOffsetY": 0,
-    "windowRadius": 6,
-    "windowPanel": "lid-base"
+    "grain": "across"
   },
   "presets": [
     {
@@ -133,11 +79,6 @@
   "pieceSet": {
     "module": "lidAndBase"
   },
-  "features": [
-    {
-      "module": "window"
-    }
-  ],
   "closedSize": {
     "length": "length + 2 * t + 2 * C.LID_CLEARANCE_MM",
     "width": "width + 2 * t + 2 * C.LID_CLEARANCE_MM",

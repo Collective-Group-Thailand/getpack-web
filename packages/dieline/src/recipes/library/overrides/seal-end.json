@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "id": "seal-end",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "seal",
+    "tuck_bottom": "seal",
+    "hang": "none"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องปิดทากาวหัวท้าย (Seal end)",
+    "en": "Seal end"
+  },
+  "description": {
+    "th": "ปิดทั้งสองด้านด้วยกาว แน่นหนา เหมาะกับสินค้าเทใส่อัตโนมัติ เช่น ซีเรียล ผงซักฟอก",
+    "en": "Both ends closed with glue — tamper-evident, for auto-filled goods like cereal or detergent"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "length": 190,
+    "width": 60,
+    "height": 280
+  },
+  "presets": [
+    {
+      "id": "cereal",
+      "label": {
+        "th": "ซีเรียล 190 × 60 × 280",
+        "en": "Cereal 190 × 60 × 280"
+      },
+      "values": {
+        "length": 190,
+        "width": 60,
+        "height": 280
+      }
+    },
+    {
+      "id": "tea",
+      "label": {
+        "th": "ชา 110 × 60 × 70",
+        "en": "Tea 110 × 60 × 70"
+      },
+      "values": {
+        "length": 110,
+        "width": 60,
+        "height": 70
+      }
+    },
+    {
+      "id": "powder",
+      "label": {
+        "th": "ผง 150 × 50 × 200",
+        "en": "Powder 150 × 50 × 200"
+      },
+      "values": {
+        "length": 150,
+        "width": 50,
+        "height": 200
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "seal"
+    },
+    "bottom": {
+      "module": "seal"
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ],
+  "legacy": {
+    "patternKeys": []
+  }
+}

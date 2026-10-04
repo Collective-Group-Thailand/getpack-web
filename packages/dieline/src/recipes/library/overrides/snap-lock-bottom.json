@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "id": "snap-lock-bottom",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "straight_tuck",
+    "tuck_bottom": "snap_lock_123",
+    "hang": "none"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบบน ก้นล็อก (1-2-3)",
+    "en": "Tuck top, snap-lock (1-2-3) bottom"
+  },
+  "description": {
+    "th": "ฝาบนเป็นลิ้นเสียบ ก้นพับล็อกกันเองโดยไม่ต้องใช้กาว รับน้ำหนักได้ดีกว่าฝาเสียบธรรมดา",
+    "en": "Tuck top; the bottom flaps interlock without glue and carry more weight than a tuck"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "lockTongue",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "snapLock123",
+      "preset": "default"
+    }
+  },
+  "features": [
+    {
+      "module": "thumbNotch",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "window"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["pid:16", "pid:17", "mapping:94", "folding-truck-end-snap-lock-bottom"]
+  }
+}

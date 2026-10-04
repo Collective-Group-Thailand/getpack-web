@@ -1,11 +1,9 @@
 import { band, cone, flatShape } from "./body/flat";
 import { pillowTube } from "./body/pillow";
-import { paperBag } from "./body/bag";
-import { polyMailer, pouchWeb } from "./body/pouch";
+import { pouchWeb } from "./body/pouch";
 import { tray } from "./body/tray";
 import { tube } from "./body/tube";
 import { hingedLid } from "./closure/tray-closures";
-import { airplaneTuck, flipTop, fourFlapLock, openEnd, slitLock } from "./closure/wave-closures";
 import {
   crashLock,
   cssc,
@@ -18,35 +16,20 @@ import {
   snapLock123,
   tuck,
 } from "./closure/tube-closures";
-import {
-  fingerNotch,
-  handHoles,
-  hangHole,
-  hangTab,
-  rollOverWalls,
-  thumbNotch,
-  vents,
-  windowFeature,
-} from "./feature/features";
-import { dieCutInsert, insertBody } from "./feature/insert";
-import { displayHeader, lockCorners, telescopeLid } from "./feature/tray-features";
-import { partitionSet } from "./body/partition";
+import { handHoles, hangHole, hangTab, rollOverWalls, thumbNotch, windowFeature } from "./feature/features";
 import { lidAndBase, sleeveAndDrawer } from "./pieceSet/piece-sets";
 import { PLANNED_MODULES } from "./planned";
 import type { ModuleDef } from "./types";
 
 /** Every module, implemented first (body, closure, feature, piece set), then the planned ones. */
-export const MODULES: readonly ModuleDef[] = [
+export const MODULES: ModuleDef[] = [
   tube,
   tray,
   pillowTube,
   flatShape,
   band,
   cone,
-  partitionSet,
   pouchWeb,
-  polyMailer,
-  paperBag,
   tuck,
   rsc,
   fol,
@@ -58,30 +41,31 @@ export const MODULES: readonly ModuleDef[] = [
   gableHandle,
   polygonTuckLid,
   hingedLid,
-  airplaneTuck,
-  fourFlapLock,
-  flipTop,
-  slitLock,
-  openEnd,
   windowFeature,
   thumbNotch,
   hangTab,
   handHoles,
-  vents,
   rollOverWalls,
   hangHole,
-  dieCutInsert,
-  insertBody,
-  lockCorners,
-  displayHeader,
-  telescopeLid,
-  fingerNotch,
   lidAndBase,
   sleeveAndDrawer,
   ...PLANNED_MODULES,
 ];
 
 const BY_ID = new Map(MODULES.map((m) => [m.id, m]));
+
+/**
+ * Adds modules after load — the style library's (`@packio/dieline/library`), kept out of the main
+ * entry with the recipes that use them (U3.4). A module declared `planned` is replaced.
+ */
+export function registerModules(defs: readonly ModuleDef[]): void {
+  for (const def of defs) {
+    const at = MODULES.findIndex((m) => m.id === def.id);
+    if (at >= 0) MODULES[at] = def;
+    else MODULES.push(def);
+    BY_ID.set(def.id, def);
+  }
+}
 
 export function getModule(id: string): ModuleDef | undefined {
   return BY_ID.get(id);

@@ -2,31 +2,6 @@
   "schemaVersion": 1,
   "id": "pillow",
   "base": "PK-SP-01",
-  "variants": {
-    "hang": {
-      "none": {
-        "hangHole": "none"
-      },
-      "euro_slot": {
-        "hangHole": "euro"
-      },
-      "round_hole": {
-        "hangHole": "round"
-      },
-      "sombrero_header": {
-        "hangHole": "sombrero"
-      }
-    },
-    "window": {
-      "none": {
-        "window": "none"
-      },
-      "front_window": {
-        "window": "rect",
-        "windowPanel": "front"
-      }
-    }
-  },
   "category": "specialty",
   "name": {
     "th": "กล่องหมอน",
@@ -58,29 +33,13 @@
     },
     "thickness",
     "glueWidth",
-    "grain",
-    "hangHole",
-    "window",
-    "windowPanel",
-    "windowWidth",
-    "windowHeight",
-    "windowOffsetX",
-    "windowOffsetY",
-    "windowRadius"
+    "grain"
   ],
   "defaults": {
     "length": 150,
     "width": 100,
     "thickness": 30,
-    "grain": "across",
-    "hangHole": "none",
-    "windowPanel": "front",
-    "window": "none",
-    "windowWidth": 40,
-    "windowHeight": 30,
-    "windowOffsetX": 0,
-    "windowOffsetY": 0,
-    "windowRadius": 6
+    "grain": "across"
   },
   "presets": [
     {
@@ -111,21 +70,16 @@
   "body": {
     "module": "pillowTube"
   },
-  "features": [
-    {
-      "module": "window"
-    }
-  ],
   "constraints": [
     {
-      "id": "pillow.hang_width",
-      "code": "hanger.too_narrow",
+      "id": "pillow.thickness",
+      "code": "pillow.too_thick",
       "severity": "error",
-      "param": "hangHole",
-      "require": "not ((hangHole == 'euro' or hangHole == 'sombrero') and width < C.EURO_SLOT_WIDTH_MM + 12)",
+      "param": "thickness",
+      "require": "thickness <= width / 2",
       "message": {
-        "th": "กล่องแคบเกินกว่าจะเจาะรูยูโร เลือกรูกลมแทน",
-        "en": "The box is too narrow for a euro slot — choose a round hole"
+        "th": "ความหนาต้องไม่เกินครึ่งหนึ่งของความกว้าง",
+        "en": "Thickness must be at most half the width"
       }
     }
   ],

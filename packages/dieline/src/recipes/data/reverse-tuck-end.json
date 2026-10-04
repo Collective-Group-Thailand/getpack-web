@@ -15,10 +15,6 @@
       "front_window": {
         "window": "rect",
         "windowPanel": "front"
-      },
-      "top_window": {
-        "window": "rect",
-        "windowPanel": "lid"
       }
     }
   },
