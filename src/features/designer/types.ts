@@ -99,8 +99,26 @@ export type NewElement = DistributiveOmit<DesignElement, "id">;
  * The box a design is drawn on: the engine's spec (style, parameter values, material) plus the
  * product size the customer typed, when they sized the box from their product.
  */
+/**
+ * What the studio's ② Box step chose beyond the dieline (U4.2): how it is printed, on which sides,
+ * the coating and finishes (the product's catalogue option ids), the size basis it was entered
+ * on and the published style variant. Absent on a design made outside the studio.
+ */
+export interface StudioChoices {
+  /** `null` — "ให้ระบบเลือก": the inks the artwork needs, as the F4 designer inferred them. */
+  printMethod?: "digital" | "offset" | "flexo" | "none" | null;
+  printSides?: "outside" | "inside" | "both" | "none";
+  coatingId?: string | null;
+  finishIds?: string[];
+  basis?: "internal" | "external" | "over_crease";
+  styleVariantCode?: string | null;
+  /** The base the variant belongs to (`PK-TE-01`), for a library style the main entry does not name. */
+  baseCode?: string | null;
+}
+
 export interface DesignSpec extends DielineSpec {
   productDims?: BoxDims;
+  studio?: StudioChoices;
   /** The catalogue pattern the design is for, when it came from a product. */
   patternId?: string | null;
   /** The material's name and board colour as chosen, so a design draws without the catalogue. */

@@ -24,6 +24,7 @@ import { absoluteImageUrl, storeImageSrc } from "./images";
 import { pick } from "./localize";
 import { categoryHref, configureHref, productHref, rfqHref } from "./paths";
 import { priceHintText } from "./PriceHint";
+import { studioHref } from "@/features/customer/studio/paths";
 
 /**
  * A catalogue product's page: pictures, what it is, what it costs to start and how long it
@@ -149,7 +150,7 @@ export async function ProductView({
             {product.templateAvailability === "online_template" ? (
               <Button asChild size="lg" variant="secondary">
                 {/* With the product, so the designer offers its patterns and materials and prices it. */}
-                <Link href={`/design/new?product=${encodeURIComponent(product.slug)}`}>
+                <Link href={studioHref({ product: product.slug, step: "start" })}>
                   {t("product.designOnline")}
                 </Link>
               </Button>

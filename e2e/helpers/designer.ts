@@ -17,3 +17,4 @@ export async function openRail(page: Page, name: string): Promise<void> {
   const button = page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name, exact: true });
   if ((await button.getAttribute("aria-pressed")) !== "true") await button.click();
 }
+

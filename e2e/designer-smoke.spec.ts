@@ -15,14 +15,17 @@ const HOME = "/";
 const MY_DESIGNS = "/account/designs";
 
 async function startNewDesign(page: Page, product?: string) {
+  // An old /design link lands in the studio (U4.2).
   if (product) await page.goto(`/design/new?product=${product}`);
   else {
     await page.goto(HOME);
     await page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click();
-    await expect(page).toHaveURL(/\/design\/new$/);
   }
+  await expect(page).toHaveURL(/\/studio\/new(\?|$)/);
+  await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 
-  // The setup dialog opens by itself for a new design.
+  // ① offers the box setup.
+  await page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" }).click();
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
@@ -42,8 +45,8 @@ test("designs a box, saves it, finds it again and exports the dieline", async ({
 
   await page.getByRole("button", { name: "บันทึก", exact: true }).click();
   await expect(page.getByText("บันทึกแล้ว")).toBeVisible();
-  // Saving a brand-new design swaps /design/new for its real id.
-  await expect(page).not.toHaveURL(/\/design\/new$/);
+  // Saving a brand-new design swaps /studio/new for its real id.
+  await expect(page).not.toHaveURL(/\/studio\/new(\?|$)/);
 
   await page.goto(MY_DESIGNS);
   const card = page.getByRole("link", { name: "กล่องทดสอบ E2E" }).last();

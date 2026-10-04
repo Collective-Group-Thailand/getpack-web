@@ -48,6 +48,40 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.2 — ① Start and ② Box — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.2, on `feat/u4.2-start-box` (worktree `../packio-web-u4`, from `main` at `13cc467`, U4.1 merged). Gap: `docs/update-2026-09-29-gap.md` §U4. Post-launch (D-219); run straight through under the user's "auto mode" instruction.
+
+### Done
+| Item | What |
+|---|---|
+| 1 Entry points | One helper (`studio/paths.ts` `studioHref`) for every way in, each with the step that fits: header / home / phone nav / account "ออกแบบใหม่" → ①; product page → ① with the product; style page → ② (style chosen, size and material next); configurator and an order's artwork page → ③ (box known, the order line carried); account design cards → the design; a shared design's "start your own" → ①. **`/design/[id]` redirects into the studio** with everything it carried, so old links (and LIFF, which opens the same storefront links) land there; `CustomerDesigner` and the top-bar `PriceWidget` are gone (their pricing helpers moved to `studio/state.ts`). |
+| 2 Describe your product | ① `DescribeProduct`: the product as measured (L × W × H, unit switch) and how it travels (parcel / pallet / shelf) → up to three boxes it fits (`suggest.ts`: the product's own patterns, inside = product + the designer's clearance, the engine's rules and the pattern's limits must accept it; ordered by family for the journey, then least board), each with reasons (fits at inside size, family suits the journey, Structure Advisor picks the board in ② for corrugated, flat sheet size). Picking one sets the box and opens ②. |
+| 3 Box step | ② `BoxStep`: the published **variant** of the base (U3.5's axes, an option that cannot go with the rest disabled; a wave recipe loads `@packio/dieline/library` on demand and saved library styles register it before opening); **size** with basis (inside / outside / over the creases), unit switch and the API's three derived sizes (`store.specs.convertDimensions`), a size the engine or the product cannot make listed with the solver's message and reason code, applied on purpose (a warning when artwork is placed); **materials** as swatches; **print method** (ให้ระบบเลือก / digital / offset / flexo / none) and **print sides**; **coating and finishes** (placed finishes wait for finish layers, U4.4); the **Structure Advisor** for corrugated boxes (goods and journey → recommended board; taking it changes the material). Every choice lives in the design's `spec.studio` and in the version's box fields (`printMethod`, `styleVariantCode`, D-275). |
+| 4 Print method configures editor and price | `studio/state.ts`: digital / offset → the process ink; flexo → one spot ink per artwork colour, never more than Prepress's `spot_colour_count.maxColours` (`store.studio.getRules`, D-278); none → no ink; ให้ระบบเลือก → what the artwork needs (F4). Sides put the inks on front / back. The editor follows: no print → only Box and Layers on the rail and "ไม่พิมพ์: ออกแบบได้เฉพาะโครงสร้าง"; flexo → no photo uploads and a live "เฟล็กโซ: ใช้ n จาก max สี" (warning past the limit); a plain box can be checked and ordered without artwork. |
+
+### Decisions taken (most conservative option)
+- **Price impact of a finish or method is shown by the dock** (the API's reason and from → to), not as a per-option delta: a delta would be client-side arithmetic or one extra quote per option.
+- **① does not pop the setup dialog**: it offers "เลือกแบบและขนาดกล่อง", the library and the helper; a box set up from ① goes straight to ③ (the dialog already covers style, size and material).
+- **A method chosen on purpose is priced as printed** even before artwork is placed (the customer has said they print); "ให้ระบบเลือก" keeps F4's inference.
+- **Flexo limit unset = no limit shown** (the seed leaves it off until Prepress sets it; the mock sets 3 to exercise it).
+- **The new design's address is swapped in place** (`history.replaceState`), not navigated: a navigation to the new id remounted the studio, whose first save raced the old one's with an older ETag — a **412 conflict found on the real API** right after creation.
+- `contract/studio-rules.json` is vendored from packio-api at the lock's tag (the shared rule ids, for U4.5).
+
+### Tests
+Unit: print-method inks and sides, coating, the flexo limit from the rules, suggestions (≤ 3, journey family first, every one valid, none for an impossible size), entry links (`box.test.ts`). e2e `storefront-studio.spec.ts`: + "② print method configures the editor and the price; a size that cannot be made says why" (digital re-priced with "เปลี่ยนการพิมพ์", flexo limit and no uploads, no print → structure only, a 2 mm height refused with the reason, axe) and "① describe your product → three boxes with reasons → ②" (axe). Designer suites, a11y, consent and journeys T2–T4 moved to the studio entry.
+
+### Verification
+- `pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` 969. Mock e2e full run: 383 passed; the 4 failures were the moved entry URLs (fixed and re-run green) and the known load-related `storefront-account` saved-quotation timeout (green on re-run).
+- **Real API** (`v0.41.0`): `e2e/integration/studio.spec.ts` green — priced, re-priced by quantity, flexo saved on the design (`printMethod: flexo` read back) and the editor's uploads gone. The seed's carton publishes **no ink options**, so a print method cannot change its price there (the mock proves the price path).
+- Lighthouse `studio` 484,482 B (performance 0.98) → ratchet 479,000 → 485,000; ① and ② are `next/dynamic` (+12 KB inline otherwise); the `designer` set is retired (`/design` redirects). `docs/performance-budgets.md` §U4.2.
+
+### Follow-ups
+- Journeys: T4 is one step longer until U4.6 orders inside the studio.
+- Finishes placed by size (foil, window) as layers — U4.4.
+
+---
+
 ## U4.1 — Packio 3D Studio shell, step bar, price dock, instrumentation — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.1 with `docs/design-tool/studio-spec.md`, on `feat/u4.1-studio-shell` (worktree `../packio-web-u4`, from `main` at `6de9599`). Gap analysis: `docs/update-2026-09-29-gap.md` §U4. Post-launch per D-219. The user approved running U4.1 → U4.8 straight through ("auto mode"); decisions below are the most conservative option each time.

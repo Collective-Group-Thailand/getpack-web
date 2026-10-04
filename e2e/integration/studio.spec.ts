@@ -38,4 +38,19 @@ test("studio → saved box and spec → studio price → quantity → new price,
   await quantity.fill("3000");
   await expect(perPiece).not.toHaveText(first!, { timeout: 30_000 });
   await expect(dock.getByText(/เปลี่ยนจำนวน/)).toBeVisible();
+
+  // ② the print method is saved with the design's box (D-275) and configures the editor (U4.2). The
+  // dev seed's carton publishes no inks, so here it cannot move the price; the mock suite proves that.
+  const designId = /\/studio\/([0-9a-f-]{36})/.exec(page.url())![1];
+  await page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /ขนาดและวัสดุ/ }).click();
+  await page.getByRole("radiogroup", { name: "วิธีพิมพ์" }).getByRole("radio", { name: /เฟล็กโซ/ }).click();
+  await expect
+    .poll(async () => (await (await page.request.get(`${HOSTS.customer}/bff/v1/store/designs/${designId}`)).json()).printMethod, {
+      timeout: 30_000,
+    })
+    .toBe("flexo");
+  await page.getByRole("button", { name: "ใช้กล่องนี้ แล้วเริ่มออกแบบ" }).click();
+  const rail = page.getByRole("navigation", { name: "เครื่องมือออกแบบ" });
+  await expect(rail.getByRole("button", { name: "ข้อความ", exact: true })).toBeVisible();
+  await expect(rail.getByRole("button", { name: "อัปโหลด", exact: true })).toHaveCount(0);
 });

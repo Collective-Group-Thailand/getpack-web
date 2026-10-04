@@ -41,9 +41,8 @@ Leak signal: `quote_abandoned` (declared, not sent yet — needs a session end t
 ### Studio — start → saved → ordered
 | Step | Event | Sent from |
 |---|---|---|
-| 1 | `design_started` | the designer created a new design (`EditorSession.onCreated`) |
-| 2 | `design_saved` | first successful save after an edit, once per editing session (`EditorSession.onSaved`) |
-| 3 | `design_ordered` | "สั่งทำแบบนี้" in the studio opened the pre-filled configurator (`OrderAction.tsx`); from there the configurator funnel takes over |
+| — | `design_started`, `design_saved` | retired with U4.2 (`/design/[id]` is the studio now); the studio funnel below replaces them |
+| 3 | `design_ordered` | "สั่งผลิต" in the studio's ⑤ opened the pre-filled configurator (`OrderAction.tsx`); from there the configurator funnel takes over (until U4.6) |
 
 ### Studio funnel (U4.1, D-286) — `/studio/[designId]`, ingested as packio-api's `studio_*` events
 Each carries `printMethod` (once ② sets it) and `styleFamily` (the product type code) only.
