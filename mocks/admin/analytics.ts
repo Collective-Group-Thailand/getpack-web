@@ -18,7 +18,6 @@ import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can } from "../personas";
-import { mockRequest } from "../route";
 import { bangkokIso, mockId, problem } from "../support";
 import { PRODUCT_TYPES } from "./catalog";
 import { catalogueRows } from "./catalogue";
@@ -342,6 +341,8 @@ function unmet(from: string, to: string): Schemas["UnmetDemandReportDto"] {
   const n = (factor: number) => Math.max(1, Math.round(scale * factor));
   const bangkok = provinceRef("10", "กรุงเทพมหานคร", "Bangkok");
   return {
+    // D-252: no cell reaches the five distinct customers in the mock, so every row is suppressed.
+    priceGap: { minGroupSize: 5, rows: [], suppressedRows: 2 },
     bySource: [
       { key: "rfq_declined", records: n(2.6) },
       { key: "rfq_expired", records: n(1.3) },
@@ -870,83 +871,160 @@ const filtersOfUrl = (url: URL): Filters =>
     }),
   ) as Filters;
 
-/* ---------------------------------------------------------------- journey funnels (U5.0) */
+/* ------------------------------------------------------------ journey funnels (U5.B6, D-303) */
 
-type Journey = "configurator" | "checkout" | "studio" | "claims" | "reorder";
-
-/** A preset resolved against yesterday in Asia/Bangkok (the rollups are nightly), or `custom`. */
-function resolvePreset(query: {
-  range: "7d" | "30d" | "90d" | "custom";
-  from?: string;
-  to?: string;
-}): [string, string] | Response {
-  if (query.range === "custom") {
-    if (!query.from || !query.to || query.from > query.to) return badRange();
-    return [query.from, query.to];
-  }
-  const to = addDays(bangkokIso().slice(0, 10), -1);
-  return [addDays(to, -({ "7d": 7, "30d": 30, "90d": 90 }[query.range] - 1)), to];
-}
+type Journey = Schemas["ScorecardJourney"];
 
 /**
- * The steps of each journey (`docs/ux/funnels.md`), with a share reaching each step this week and
- * last week. One step drops beyond the threshold — the claims form, submitted less often this
- * week — so the alert has something to show.
+ * packio-api's journeys (`src/modules/analytics/journeys.ts`): the scorecard task, its steps, and
+ * the share of the previous step's sessions that reach each one. `claim` drops this week, so the
+ * weekly check has an alert to show.
  */
-const JOURNEY_STEPS: Record<Journey, { event: string; now: number; before: number }[]> = {
-  configurator: [
-    { event: "configurator_opened", now: 1, before: 1 },
-    { event: "configuration_changed", now: 0.72, before: 0.7 },
-    { event: "quote_shown", now: 0.9, before: 0.88 },
-    { event: "cart_item_added", now: 0.21, before: 0.22 },
-  ],
-  checkout: [
-    { event: "checkout_started", now: 1, before: 1 },
-    { event: "order_placed", now: 0.64, before: 0.61 },
-    { event: "order_paid", now: 0.83, before: 0.85 },
-  ],
-  studio: [
-    { event: "design_started", now: 1, before: 1 },
-    { event: "design_saved", now: 0.58, before: 0.6 },
-    { event: "design_ordered", now: 0.19, before: 0.18 },
-  ],
-  claims: [
-    { event: "claim_started", now: 1, before: 1 },
-    { event: "claim_submitted", now: 0.52, before: 0.71 },
-  ],
-  reorder: [
-    { event: "reorder_started", now: 1, before: 1 },
-    { event: "reorder_added_to_cart", now: 0.77, before: 0.74 },
-    { event: "order_placed", now: 0.8, before: 0.79 },
-  ],
-};
-const JOURNEY_ENTRIES: Record<Journey, number> = { configurator: 42, checkout: 9, studio: 21, claims: 2, reorder: 3 };
-/** The mock's value for the setting; the UI shows it, never assumes it. */
-const ALERT_THRESHOLD = 15;
+const JOURNEYS: { journey: Journey; task: string; entries: number; steps: [string, number][] }[] = [
+  {
+    journey: "discovery_price",
+    task: "T1",
+    entries: 60,
+    steps: [
+      ["browsed", 1],
+      ["configured", 0.42],
+      ["priced", 0.9],
+    ],
+  },
+  {
+    journey: "studio",
+    task: "T2",
+    entries: 21,
+    steps: [
+      ["started", 1],
+      ["box_confirmed", 0.8],
+      ["first_artwork", 0.62],
+      ["added_to_cart", 0.3],
+    ],
+  },
+  {
+    journey: "checks",
+    task: "T3",
+    entries: 13,
+    steps: [
+      ["first_artwork", 1],
+      ["checks_clean", 0.7],
+    ],
+  },
+  {
+    journey: "order",
+    task: "T4",
+    entries: 12,
+    steps: [
+      ["added_to_cart", 1],
+      ["checkout_started", 0.7],
+      ["address", 0.9],
+      ["payment", 0.85],
+      ["placed", 0.9],
+    ],
+  },
+  { journey: "sample", task: "T5", entries: 0, steps: [] },
+  {
+    journey: "target_price",
+    task: "T6",
+    entries: 4,
+    steps: [
+      ["target_entered", 1],
+      ["lever_applied", 0.4],
+      ["quote_shown", 0.9],
+    ],
+  },
+  {
+    journey: "tracking",
+    task: "T7",
+    entries: 18,
+    steps: [
+      ["opened", 1],
+      ["status_viewed", 0.95],
+      ["delivery_date_viewed", 0.6],
+    ],
+  },
+  {
+    journey: "reorder",
+    task: "T8",
+    entries: 3,
+    steps: [
+      ["started", 1],
+      ["previewed", 0.8],
+      ["added_to_cart", 0.75],
+    ],
+  },
+  {
+    journey: "claim",
+    task: "T9",
+    entries: 2,
+    steps: [
+      ["started", 1],
+      ["evidence_added", 0.7],
+      ["submitted", 0.52],
+    ],
+  },
+  {
+    journey: "documents",
+    task: "T10",
+    entries: 7,
+    steps: [
+      ["opened", 1],
+      ["downloaded", 0.8],
+    ],
+  },
+  {
+    journey: "dieline",
+    task: "T12",
+    entries: 5,
+    steps: [
+      ["opened", 1],
+      ["size_entered", 0.7],
+      ["downloaded", 0.6],
+    ],
+  },
+];
 
-function journeyFunnel(from: string, to: string, journey: Journey) {
+const sharePct = (part: number, whole: number) => (whole > 0 ? ((part / whole) * 100).toFixed(2) : null);
+
+function journeysReport(from: string, to: string): Schemas["JourneysReportDto"] {
   const n = days(from, to);
-  let sessions = JOURNEY_ENTRIES[journey] * n;
-  const steps = JOURNEY_STEPS[journey].map((step, index) => {
-    if (index > 0) sessions = Math.round(sessions * step.now);
-    const change = index > 0 ? ((step.now - step.before) / step.before) * 100 : null;
+  const journeys = JOURNEYS.map(({ journey, task, entries, steps }) => {
+    let sessions = entries * n;
+    const counted = steps.map(([step, share], index) => {
+      const previous = sessions;
+      if (index > 0) sessions = Math.round(sessions * share);
+      return { step, sessions, fromPreviousPct: index > 0 ? sharePct(sessions, previous) : null };
+    });
+    const first = counted[0]?.sessions ?? 0;
+    const last = counted.at(-1)?.sessions ?? 0;
+    return { journey, task, steps: counted, conversionPct: counted.length > 1 ? sharePct(last, first) : null };
+  });
+  // The last Monday-started week against the one before (D-303); the mock's claims fell by a third.
+  const weekStart = addDays(to, -6);
+  const weekChecks = JOURNEYS.filter((entry) => entry.steps.length > 1).map(({ journey, entries }) => {
+    const firstSessions = entries * 7;
+    const previousFirstSessions = Math.round(firstSessions * 0.95);
+    const lastSessions = Math.round(firstSessions * (journey === "claim" ? 0.3 : 0.45));
+    const previousLastSessions = Math.round(previousFirstSessions * 0.45);
+    const conversion = firstSessions > 0 ? lastSessions / firstSessions : null;
+    const before = previousFirstSessions > 0 ? previousLastSessions / previousFirstSessions : null;
+    const drop = conversion !== null && before ? ((before - conversion) / before) * 100 : null;
     return {
-      event: step.event as never,
-      sessions,
-      conversionPct: index > 0 ? (step.now * 100).toFixed(4) : null,
-      previousConversionPct: index > 0 ? (step.before * 100).toFixed(4) : null,
-      weekOverWeekPct: change === null ? null : change.toFixed(4),
-      alert: change !== null && change < -ALERT_THRESHOLD,
+      journey,
+      weekStart,
+      firstSessions,
+      lastSessions,
+      previousFirstSessions,
+      previousLastSessions,
+      conversionPct: conversion === null ? null : (conversion * 100).toFixed(2),
+      previousConversionPct: before === null ? null : (before * 100).toFixed(2),
+      dropPct: drop === null ? null : drop.toFixed(2),
+      // `analytics.journey_drop_alert_pct` (15) with `analytics.journey_alert_min_sessions` (30) both weeks.
+      alert: drop !== null && drop > 15 && firstSessions >= 30 && previousFirstSessions >= 30,
     };
   });
-  return {
-    journey,
-    period: { from, to },
-    previousPeriod: { from: addDays(from, -n), to: addDays(from, -1) },
-    steps,
-    alertThresholdPct: ALERT_THRESHOLD.toFixed(4),
-    computedAt: bangkokIso(-60 * 6),
-  };
+  return { from, to, journeys, weekChecks };
 }
 
 /* --------------------------------------------------------------------------------- handlers */
@@ -981,6 +1059,7 @@ export const analyticsContractHandlers = [
   http.get("*/v1/admin/analytics/sensitivity", dashboard(["analytics.read"], sensitivity)),
   http.get("*/v1/admin/analytics/factories", dashboard(["analytics.read", "analytics.read_factories"], factories)),
   http.get("*/v1/admin/analytics/campaigns", dashboard(["analytics.read"], campaigns)),
+  http.get("*/v1/admin/analytics/journeys", dashboard(["analytics.read"], journeysReport)),
 
   http.get("*/v1/admin/analytics/prospectus-exports", ({ request }) => {
     if (!allowed(request, "analytics.prospectus")) return forbidden();
@@ -1102,13 +1181,5 @@ export const analyticsContractHandlers = [
       url: `data:text/plain;charset=utf-8,${encodeURIComponent(`report ${run.reportKey} ${run.id} ${run.format}`)}`,
       expiresAt: bangkokIso(5),
     } satisfies Schemas["DownloadUrlDto"]);
-  }),
-];
-
-export const analyticsHandlers = [
-  mockRequest("GET /v1/admin/analytics/journeys", ({ query, request }) => {
-    if (!allowed(request, "analytics.read")) return forbidden();
-    const period = resolvePreset(query);
-    return period instanceof Response ? period : journeyFunnel(...period, query.journey);
   }),
 ];

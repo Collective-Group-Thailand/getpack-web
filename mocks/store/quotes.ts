@@ -30,7 +30,7 @@ import type { Schemas } from "@/lib/api/types";
 import { lineSummaryOf } from "../admin/catalog";
 import { catalogueRows } from "../admin/catalogue";
 import { baht } from "../admin/commerce";
-import { bangkokIso, mockId, paginate, problem } from "../support";
+import { bangkokIso, mockId, paginate, problem, QUOTE_V2_EMPTY } from "../support";
 import { byId, catalogProducts, imageUrl, live, typeCodeOf, type Row } from "./catalog";
 import { customerOf } from "./customers";
 import { unitOf } from "./order-dto";
@@ -119,6 +119,9 @@ interface Pattern {
   imageUrl: string | null;
   parts: { subPatternId: string | null; name: string }[];
   rules: Rules;
+  /** D-184: the public code, once the pattern has one; the international name only when verified (D-211). */
+  styleCode: string | null;
+  internationalName: string | null;
 }
 interface Configurator {
   slug: string;
@@ -323,6 +326,8 @@ function patternsOf(product: Row, kind: SizeKind): Pattern[] {
         // A single-part box prices its body only; multi-part patterns list their parts.
         parts: subs.length > 0 ? [{ subPatternId: String(subs[0]!.id), name: String(subs[0]!.name) }] : [],
         rules: rulesOf(pattern, kind),
+        styleCode: str(pattern.styleCode),
+        internationalName: pattern.internationalNameVerifiedAt ? str(pattern.internationalName) : null,
       };
     });
   }
@@ -337,6 +342,8 @@ function patternsOf(product: Row, kind: SizeKind): Pattern[] {
       imageUrl: null,
       parts: [],
       rules: rulesOf({ constraints: { minW: 20, maxW: 400, minL: 20, maxL: 500 } } as unknown as Row, kind),
+      styleCode: null,
+      internationalName: null,
     },
   ];
 }
@@ -631,6 +638,9 @@ export function toStoreConfiguratorDto(configurator: Configurator): Schemas["Sto
       id: pattern.id,
       code: pattern.code,
       name: pattern.name,
+      styleCode: pattern.styleCode,
+      internationalName: pattern.internationalName,
+      pouch: null,
       dielineKey: pattern.dielineKey,
       imageUrl: pattern.imageUrl,
       descriptionTh: null,
@@ -822,6 +832,11 @@ function unitNetOf(inputs: Inputs, quantity: number): number {
 }
 
 const DAY = 24 * 60;
+const DIMENSIONAL_TOLERANCE: Partial<Record<Configurator["calculator"], string>> = {
+  folding: "1.00",
+  tag_sleeve: "1.00",
+  corrugate: "3.00",
+};
 const vat = (net: number) => Math.round(net * 0.07);
 const shippingNetOf = (quantity: number) => 15_000 + Math.ceil(quantity / 1000) * 4_000;
 const leadTimeOf = (quantity: number) => Math.min(25, 7 + Math.ceil(quantity / 5000));
@@ -838,6 +853,9 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     designFeeAmount: null,
     structureDesignFeeAmount: null,
     toolingAmount: null,
+    toolingWaiver: null,
+    toleranceDimensionalMm: null,
+    toleranceColourDeltaE: null,
     shippingAmount: null,
     vatAmount: null,
     grossAmount: null,
@@ -872,6 +890,11 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     structureDesignFeeAmount: baht(structureNet + vat(structureNet)),
     // The mock prices no plates or die blocks (v0.3.0 `toolingAmount`); the engine does.
     toolingAmount: baht(0),
+    toolingWaiver: null,
+    // D-186 platform defaults: ± 1 mm folding cartons (and tags & sleeves), ± 3 mm corrugated;
+    // ΔE2000 ≤ 3 on printed work.
+    toleranceDimensionalMm: DIMENSIONAL_TOLERANCE[inputs.configurator.calculator] ?? null,
+    toleranceColourDeltaE: inputs.colours > 0 ? "3.00" : null,
     shippingAmount: baht(shippingGross),
     vatAmount: baht(vat(productNet) + vat(designNet) + vat(structureNet) + vat(shippingNet)),
     grossAmount: baht(productGross + designNet + vat(designNet) + structureNet + vat(structureNet) + shippingGross),
@@ -1207,10 +1230,21 @@ export function quoteSummaryOf(quote: StoreQuote): Schemas["LineSummaryDto"] {
   };
 }
 
+/** D-185: a share link lasts `configurations.share_link_days` (15) from when it was made. */
+const SHARE_LINK_DAYS = 15;
+const shareExpiryOf = (quoteId: string): string | null => {
+  const at = sharedAt.get(quoteId);
+  return at
+    ? new Date(Date.parse(at) + SHARE_LINK_DAYS * 86_400_000 + 7 * 3_600_000).toISOString().replace("Z", "+07:00")
+    : null;
+};
+
 export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
   const expired = Date.parse(quote.validUntil) < Date.now();
   const shipping = quote.lines.find((line) => line.lineType === "shipping");
   return {
+    ...QUOTE_V2_EMPTY,
+    shareExpiresAt: shareExpiryOf(quote.id),
     id: quote.id,
     quoteCode: uncoded.has(quote.id) ? null : quote.quoteCode,
     status: expired ? "expired" : quote.status,
@@ -1229,6 +1263,10 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
         structureDesignFeeAmount: netOf(quote, "structure_design_fee"),
         // The mock prices no plates or die blocks apart.
         toolingAmount: null,
+        toolingWaiver: null,
+        toleranceDimensionalMm: null,
+        toleranceColourDeltaE: null,
+        targetGap: null,
         shippingAmount: shipping ? shipping.netAmount : null,
         shippingPending: !shipping,
         shippingPendingReason: shipping ? null : "no_postcode",
@@ -1273,6 +1311,8 @@ export const storeQuoteHandlers: HttpHandler[] = [
       // The mock records no calculations.
       calculationId: null,
       calculatorVersion: "mock-0.0.0",
+      dimensions: null,
+      target: null,
       steps: inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode)),
     };
     return HttpResponse.json(result);
@@ -1362,6 +1402,7 @@ export const storeQuoteHandlers: HttpHandler[] = [
     sharedAt.set(quote.id, bangkokIso());
     const result: Schemas["ShareQuoteResultDto"] = {
       quote: toSavedQuote(quote),
+      expiresAt: shareExpiryOf(quote.id)!,
       shareToken,
       sharePath: `/quotes/shared/${shareToken}`,
     };

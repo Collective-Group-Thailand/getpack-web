@@ -317,10 +317,42 @@ export const claimFactsOf = (item: Claim): ClaimFacts => ({
   factoryId: item.factory?.id ?? null,
 });
 
+/**
+ * The U2.5 facts every claim view carries (v0.19.0, D-260–D-263). The mock keeps no guarantee
+ * policy, so there is no stamped version, no due date and no decided severity or remedy — only
+ * who holds the claim now, by D-263's rule.
+ */
+export function claimTrustFactsOf(status: Schemas["ClaimStatus"]) {
+  const currentOwner: Schemas["ClaimOwner"] =
+    status === "need_info"
+      ? "customer"
+      : status === "factory_review"
+        ? "factory"
+        : ["approved", "rejected", "resolved", "closed"].includes(status)
+          ? "none"
+          : "packio";
+  return {
+    remedy: null,
+    severity: null,
+    sampleId: null,
+    sla: {
+      currentOwner,
+      guaranteeVersionNo: null,
+      responseDueAt: null,
+      respondedAt: null,
+      responseOverdue: false,
+      decisionDueAt: null,
+      decisionOverdue: false,
+    },
+    tolerance: { shortagePct: "5.0000", overagePct: "5.0000", dimensionalMm: null, colourDeltaE: null },
+  } satisfies Pick<Schemas["StoreClaimDto"], "remedy" | "severity" | "sampleId" | "sla" | "tolerance">;
+}
+
 /** A claim as `admin.claims.*` answers it, with what this staff member may do on it now. */
 export function toAdminClaimDto(item: Claim, who: StaffPersona | null): Schemas["AdminClaimDto"] {
   const job = orders.find((order) => order.id === item.order.id)?.jobs[0];
   return {
+    ...claimTrustFactsOf(item.status),
     id: item.id,
     claimNo: item.claimNo,
     type: item.type,

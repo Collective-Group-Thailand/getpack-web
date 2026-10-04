@@ -49,6 +49,8 @@ export const QUOTE_STATUS = defineStatusMap<QuoteStatus>({
   converted: { tone: "success", icon: "check", labelKey: "quote.converted" },
   expired: { tone: "neutral", icon: "hourglass", labelKey: "quote.expired" },
   superseded: { tone: "neutral", icon: "history", labelKey: "quote.superseded" },
+  declined: { tone: "neutral", icon: "ban", labelKey: "quote.declined" },
+  routed_to_rfq: { tone: "info", icon: "send", labelKey: "quote.routedToRfq" },
 });
 
 /** A discount memo, above the CS limit (D-052, D-162). */

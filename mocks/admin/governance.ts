@@ -347,6 +347,10 @@ function scorecardOf(index: number, back: number): Schemas["ScorecardDto"] {
     claimRatePct: (0.8 + index * 0.9 + wobble / 2).toFixed(4),
     onTimeUpdatesPct: (92 - index * 6 + wobble).toFixed(4),
     jobsCount: Math.max(0, 40 - index * 8 - back),
+    // D-259: sample jobs counted apart; the mock factories made none.
+    sampleJobsCount: 0,
+    sampleOnTimePct: null,
+    sampleAvgLeadDays: null,
     computedAt: bangkokIso(-60 * 24 * (2 + back * 30)),
   };
 }

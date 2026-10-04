@@ -77,7 +77,9 @@
     "invalid_status": "Wrong claim status",
     "liability_undetermined": "Liability undetermined",
     "not_delivered": "Not delivered yet",
-    "window_closed": "Claim window closed"
+    "window_closed": "Claim window closed",
+    "remedy_not_allowed": "The guarantee policy does not allow this remedy for this claim type and severity",
+    "severity_required": "Choose a severity before approving the claim"
   },
   "close": {
     "auditor_sign_off_required": "Auditor sign-off required",
@@ -124,7 +126,8 @@
   "designs": {
     "document_too_large": "Design too large",
     "template_without_design": "Template has no design",
-    "read_only": "Read-only design"
+    "read_only": "Read-only design",
+    "version_required": "A design version is required"
   },
   "discount_memos": {
     "not_usable": "Memo cannot be used",
@@ -404,5 +407,23 @@
   },
   "support": {
     "contact_required": "Contact details required"
+  },
+  "specs": {
+    "basis_not_accepted": "This product does not take that measurement basis",
+    "caliper_missing": "The material's thickness is unknown, so the size cannot be converted — enter the inside size or choose another material",
+    "unit_not_accepted": "Sizes are accepted in millimetres only"
+  },
+  "assistant": {
+    "not_cleared": "The assistant has not passed the required evaluation and cannot be switched on"
+  },
+  "feature_flags": {
+    "dev_only": "This flag is for development only and cannot be switched on here"
+  },
+  "advisory": {
+    "choice_mismatch": "The material does not match the board chosen from the recommendation",
+    "choice_required": "Choose a board from the recommendation before saving the quotation"
+  },
+  "samples": {
+    "evidence_missing": "Record the measured size, the material used and at least one photo before shipping the sample"
   }
 }

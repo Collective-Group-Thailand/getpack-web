@@ -6,11 +6,9 @@
  * entry is well-formed and not already in the contract.
  */
 
-import { adminAnalyticsRequests } from "./admin-analytics";
 import { storeSupportRequests } from "./store-support";
 
 export const REQUESTS = {
-  ...adminAnalyticsRequests,
   ...storeSupportRequests,
 } as const;
 
