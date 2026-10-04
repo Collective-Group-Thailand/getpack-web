@@ -393,7 +393,7 @@ function SetupForm({ initial, catalog, onConfirm, onClose, hasContent, isNew = f
 }
 
 /** The catalogue pattern's own size limits (`pattern.min_* / max_*`), on top of the engine's. */
-function patternIssues(
+export function patternIssues(
   pattern: DesignerCatalog["patterns"][number] | undefined,
   values: ParamValues,
   style: BoxStyleDef,

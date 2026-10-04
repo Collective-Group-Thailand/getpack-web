@@ -11,7 +11,7 @@
     "order": "Order",
     "locked": {
       "needsQuantity": "Enter a quantity to see the price",
-    "needsBox": "Pick a box first to open this step",
+      "needsBox": "Pick a box first to open this step",
       "needsContent": "Add artwork or text to the box first to open this step"
     }
   },
@@ -24,7 +24,82 @@
     "next": "Go to size & material"
   },
   "box": {
-    "confirm": "Use this box and start designing"
+    "confirm": "Use this box and start designing",
+    "title": "Size, material and printing",
+    "style": "Box style",
+    "chooseVariant": "Choose",
+    "variantCode": "Variant {code}",
+    "changeStyle": "Change box style",
+    "size": "Size",
+    "sizeInSetup": "Resize a flat piece under \"Change box style\"",
+    "basis": "Measured on",
+    "bases": {
+      "internal": "Inside",
+      "external": "Outside",
+      "over_crease": "Over the creases"
+    },
+    "legend": {
+      "internal": "Inside size",
+      "external": "Outside size",
+      "over_crease": "Size over the creases"
+    },
+    "unit": "Display unit",
+    "units": {
+      "mm": "mm",
+      "cm": "cm",
+      "in": "in"
+    },
+    "axes": {
+      "l": "Length",
+      "w": "Width",
+      "d": "Height"
+    },
+    "derived": "The size on each basis",
+    "caliperUnknown": "This material's thickness is not known yet, so the size cannot be converted. Enter the inside size or choose another material.",
+    "cannotMake": "This size cannot be made",
+    "reasonCode": "({code})",
+    "applySize": "Use this size",
+    "resizeTitle": "Change the box size?",
+    "resizeBody": "Your artwork stays where it is on the flat sheet and may need moving after the change.",
+    "cancel": "Cancel",
+    "material": "Material",
+    "caliper": "{mm, number} mm thick",
+    "printMethod": "Print method",
+    "methods": {
+      "auto": {
+        "label": "Let Packio choose",
+        "description": "The inks your artwork needs"
+      },
+      "digital": {
+        "label": "Digital",
+        "description": "Full-colour CMYK, suits small runs"
+      },
+      "offset": {
+        "label": "Offset",
+        "description": "Full-colour CMYK, suits large runs"
+      },
+      "flexo": {
+        "label": "Flexo",
+        "description": "Spot colours, priced per colour",
+        "limited": "Up to {count, number} spot colours, priced per colour"
+      },
+      "none": {
+        "label": "No print",
+        "description": "A plain box: structure only"
+      }
+    },
+    "printSides": "Print on",
+    "sides": {
+      "outside": "Outside",
+      "inside": "Inside",
+      "both": "Both sides"
+    },
+    "finishes": "Coating and finishes",
+    "coating": "Coating",
+    "noCoating": "No coating",
+    "finishPrice": "The price dock shows what changes, and why",
+    "advisor": "Let Packio suggest the board",
+    "advisorOpen": "Tell us the weight and journey"
   },
   "check": {
     "title": "Check before you order",
@@ -71,5 +146,46 @@
     "failed": "Could not price this. Try another quantity or wait a moment.",
     "needsQuantity": "Enter a quantity to see the price",
     "needsBox": "Pick a box to see the price"
+  },
+  "describe": {
+    "title": "Describe your product",
+    "hint": "Measure your product and we suggest three boxes it fits, with the reasons",
+    "size": "Product size",
+    "unit": "Display unit",
+    "units": {
+      "mm": "mm",
+      "cm": "cm",
+      "in": "in"
+    },
+    "axes": {
+      "l": "Length",
+      "w": "Width",
+      "h": "Height"
+    },
+    "shipsBy": "How it travels",
+    "ships": {
+      "parcel": "By parcel",
+      "pallet": "On pallets",
+      "shelf": "On a shelf"
+    },
+    "suggest": "Suggest boxes",
+    "none": "No box style fits a product this size yet. Pick a style yourself or request a quote.",
+    "results": "Suggested boxes",
+    "reasons": {
+      "fits": "Fits the product, inside {size}",
+      "family": {
+        "parcel": "{family} suits parcel shipping",
+        "pallet": "{family} suits pallet transport",
+        "shelf": "{family} suits a retail shelf"
+      },
+      "advisor": "Next, the board is suggested by weight",
+      "sheet": "Flat sheet {width, number} × {height, number} mm"
+    },
+    "pick": "Use this box"
+  },
+  "mode": {
+    "none": "No print: structure only",
+    "flexo": "Flexo: {used, number} colours",
+    "flexoLimited": "Flexo: {used, number} of {max, number} colours"
   }
 }

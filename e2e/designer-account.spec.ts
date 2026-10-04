@@ -21,10 +21,14 @@ const DESIGN_ORDER = "00000000-0000-4000-8000-6f726400000a";
 /** The design document on the prepress plan's order whose customer used the designer (`mocks/admin/prepress` plan 15). */
 const CUSTOMER_DOCUMENT = "00000000-0000-4000-8000-646463000010";
 
-const UUID = /\/design\/[0-9a-f-]{36}(\?|$)/;
+const UUID = /\/studio\/[0-9a-f-]{36}(\?|$)/;
 
 async function startFromSetup(page: Page) {
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
+  // With a box in the address the studio opens the setup by itself; from ① it is offered (U4.2).
+  const choose = page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" });
+  await expect(dialog.or(choose)).toBeVisible();
+  if (await choose.isVisible()) await choose.click();
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(dialog).toBeHidden();
@@ -43,10 +47,10 @@ test("a blank design is saved in the account", async ({ page }) => {
 
 test("a signed-in design is saved in the account, autosaved, and keeps its versions", async ({ page }) => {
   // Started from a product: the published design needs one (store.catalog-product-ref).
-  await signInAsCustomer(page, "/design/new?product=tuck-end-box", MOCK_DESIGNER_PHONE);
+  await signInAsCustomer(page, "/studio/new?product=tuck-end-box&step=start", MOCK_DESIGNER_PHONE);
   await startFromSetup(page);
 
-  // The first autosave creates the design and swaps /design/new for its id.
+  // The first autosave creates the design and swaps /studio/new for its id.
   await expect(page).toHaveURL(UUID, { timeout: 15_000 });
   await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
 
@@ -100,7 +104,7 @@ test("two tabs saving the same design meet the conflict choice instead of overwr
 test("a guest's browser design is imported into the account after sign-in", async ({ page }) => {
   await acceptCookies(page);
   // With its product (the import needs one, store.catalog-product-ref): the designer catalogue names its id.
-  await gotoHydrated(page, `${HOSTS.customer}/design/new?product=tuck-end-box`);
+  await gotoHydrated(page, `${HOSTS.customer}/studio/new?product=tuck-end-box&step=start`);
   await startFromSetup(page);
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("กล่องจากเบราว์เซอร์");
   await page.getByRole("button", { name: "บันทึก", exact: true }).click();
@@ -119,7 +123,7 @@ test("the order's artwork page opens the designer on its box", async ({ page }) 
   await signInAsCustomer(page, `/account/orders/${DESIGN_ORDER}/artwork`, MOCK_DESIGNER_PHONE);
   // The order's dieline and size (`store.artwork.getRules`) and its product (`OrderDto.summary`).
   await page.getByRole("link", { name: "ออกแบบออนไลน์บนกล่องนี้" }).click();
-  await expect(page).toHaveURL(/\/design\/new\?style=[a-z-]+&l=\d+&w=\d+&h=\d+/);
+  await expect(page).toHaveURL(/\/studio\/new\?(product=[^&]+&)?style=[a-z-]+&l=\d+&w=\d+&h=\d+/);
   await expect(page).toHaveURL(new RegExp(`order=${DESIGN_ORDER}`));
 });
 
@@ -136,10 +140,13 @@ test("a design for an order is sent to print and prepress takes it", async ({ pa
     item: DESIGN_ORDER,
     orderCode: "PK-2569-00109",
   });
-  await signInAsCustomer(page, `/design/new?${linked.toString()}`, MOCK_DESIGNER_PHONE);
+  await signInAsCustomer(page, `/studio/new?${linked.toString()}`, MOCK_DESIGNER_PHONE);
   await startFromSetup(page);
   await expect(page).toHaveURL(UUID, { timeout: 15_000 });
 
+  // ⑤ opens once the box has artwork.
+  await addHeading(page);
+  await page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /สั่งผลิต/ }).click();
   await page.getByRole("button", { name: "ส่งเข้าผลิต" }).click();
   const confirm = page.getByRole("alertdialog", { name: /^ส่งแบบนี้เป็นไฟล์งานของคำสั่งซื้อ/ });
   await expect(confirm).toBeVisible();
@@ -153,21 +160,20 @@ test("a design for an order is sent to print and prepress takes it", async ({ pa
   await expect(page).toHaveURL(new RegExp(`/account/orders/${DESIGN_ORDER}/artwork$`));
 });
 
-test("from a product page: design online with its live price, which follows quantity and artwork", async ({ page }) => {
+test("from a product page: the studio with its live price, which follows quantity and artwork", async ({ page }) => {
   await signInAsCustomer(page, "/products/shipping-box", MOCK_DESIGNER_PHONE);
   await page.getByRole("link", { name: "ออกแบบออนไลน์" }).click();
-  await expect(page).toHaveURL(/\/design\/new\?product=shipping-box$/);
+  await expect(page).toHaveURL(/\/studio\/new\?product=shipping-box&step=start$/);
   await startFromSetup(page);
 
-  // The top bar prices this box at the product's default quantity, from the API.
-  const header = page.locator("header").first();
-  const price = header.locator("b").filter({ hasText: "฿" });
+  // The dock prices this box at the product's default quantity, from the API.
+  const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
+  const price = dock.locator("span.font-semibold").filter({ hasText: "฿" });
   await expect(price).toBeVisible({ timeout: 15_000 });
   const blank = await price.textContent();
 
-  await header.getByRole("combobox", { name: "จำนวน" }).click();
-  const options = page.getByRole("option");
-  await options.last().click();
+  await dock.getByRole("combobox", { name: "จำนวน" }).click();
+  await page.getByRole("option").last().click();
   await expect(price).not.toHaveText(blank!, { timeout: 15_000 });
   const larger = await price.textContent();
 

@@ -13,7 +13,7 @@ import { isApiError } from "@/lib/api/problem";
 
 import { toCatalogView } from "@/features/designer/data/catalog-view";
 
-import { inferPrint, stateForDesign } from "./PriceWidget";
+import { inferPrint, stateForDesign } from "@/features/customer/studio/state";
 
 const server = setupServer(...handlers);
 beforeAll(() => server.listen({ onUnhandledRequest: "error" }));

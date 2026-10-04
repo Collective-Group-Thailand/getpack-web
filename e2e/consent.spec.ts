@@ -95,7 +95,7 @@ test.describe("consent gate", () => {
     await expect(page.getByRole("region", { name: "การใช้คุกกี้" })).toBeVisible();
 
     await page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click();
-    await expect(page).toHaveURL(new RegExp("/design/new"));
+    await expect(page).toHaveURL(new RegExp("/studio/new"));
   });
 
   test("never appears in the back office", async ({ page }) => {

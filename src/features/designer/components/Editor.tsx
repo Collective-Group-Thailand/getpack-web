@@ -175,6 +175,12 @@ export interface EditorChrome {
   below?: (ctx: EditorChromeContext) => React.ReactNode;
   panel?: (ctx: EditorChromeContext) => React.ReactNode;
   dock?: (ctx: EditorChromeContext, layout: "rail" | "bar") => React.ReactNode;
+  /** Which tools the rail offers (the print method configures the editor, U4.2); all when absent. */
+  rail?: (id: RailId) => boolean;
+  /** A note over the canvas — the print mode and its limits. */
+  notice?: React.ReactNode;
+  /** Open the setup dialog by itself when there is no box yet (the studio's ① offers its own ways). */
+  autoSetup?: boolean;
 }
 
 /**
@@ -307,10 +313,12 @@ export default function Editor({
         editor.load({ id: id === "new" ? nanoid(10) : id, name: t("untitled"), spec: null });
         // A design with no box opens straight into setup — there is nothing else to show.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (editable) setSetupOpen(true);
+        if (editable && chrome?.autoSetup !== false) setSetupOpen(true);
       }
     }
     setLoaded(true);
+    // The frame's wish is read once, when the design loads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, t, session, editable]);
 
   // Images placed in an account design are uploaded once as design assets; the document then
@@ -469,6 +477,7 @@ export default function Editor({
   const errors = issues.filter((i) => i.severity === "error").length;
   const chromeContext: EditorChromeContext = { persistence, issues, openSetup, openRules };
   const stepPanel = chrome?.panel?.(chromeContext) ?? null;
+  const railTools = RAIL.filter((item) => chrome?.rail?.(item.id) ?? true);
 
   const preview =
     dieline && paperColour && spec ? (
@@ -684,7 +693,7 @@ export default function Editor({
                   aria-label={t("rail.label")}
                   className="border-border bg-surface hidden w-20 shrink-0 flex-col gap-1 overflow-y-auto border-e p-1.5 lg:flex"
                 >
-                  {RAIL.map((item) => (
+                  {railTools.map((item) => (
                     <button
                       key={item.id}
                       type="button"
@@ -704,7 +713,7 @@ export default function Editor({
                     </button>
                   ))}
                 </nav>
-                {rail ? (
+                {rail && railTools.some((item) => item.id === rail) ? (
                   <section
                     id="designer-rail-panel"
                     aria-label={t(`rail.${rail}`)}
@@ -739,6 +748,11 @@ export default function Editor({
                 />
               ) : null}
               {dieline ? <FocusChip dieline={dieline} /> : null}
+              {chrome?.notice ? (
+                <div className="pointer-events-none absolute inset-x-0 top-2 flex justify-center px-3">
+                  <div className="pointer-events-auto">{chrome.notice}</div>
+                </div>
+              ) : null}
 
               {!spec && !setupOpen && editable ? (
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -826,7 +840,7 @@ export default function Editor({
             >
               {[
                 ...(editable
-                  ? RAIL.map((item) => ({ id: item.id as MobilePanel, icon: item.icon, label: t(`rail.${item.id}`) }))
+                  ? railTools.map((item) => ({ id: item.id as MobilePanel, icon: item.icon, label: t(`rail.${item.id}`) }))
                   : []),
                 ...(editable
                   ? [{ id: "properties" as MobilePanel, icon: "edit" as const, label: t("side.properties") }]

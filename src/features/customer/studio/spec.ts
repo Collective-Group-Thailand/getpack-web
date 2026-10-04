@@ -1,6 +1,6 @@
 import { buildConfiguration } from "@/features/customer/configurator/build";
 import type { Configurator } from "@/features/customer/configurator/model";
-import { stateForDesign } from "@/features/customer/designer/PriceWidget";
+import { stateForDesign } from "./state";
 import type { BoxFields } from "@/features/designer/data/api";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";
 import type { Schemas } from "@/lib/api/types";
@@ -38,9 +38,10 @@ export function studioFieldsOf(
   configurator: Configurator,
   spec: DesignSpec | null,
   content: DesignContent,
+  maxSpot: number | null = null,
 ): StudioFields | null {
   if (!spec || !configurator.instant) return null;
-  const state = stateForDesign(configurator, spec, content, configurator.quantity.default ?? 1);
+  const state = stateForDesign(configurator, spec, content, configurator.quantity.default ?? 1, maxSpot);
   const configuration: Record<string, unknown> = { ...buildConfiguration(configurator, state) };
   delete configuration.quantities;
   return {
@@ -53,6 +54,11 @@ export function studioFieldsOf(
       ? { measurementBasis: configuration.basis as Schemas["MeasurementBasis"] }
       : {}),
     printSides: printSidesOf(configuration),
-    spec: configuration,
+    ...(spec.studio?.printMethod ? { printMethod: spec.studio.printMethod } : {}),
+    ...(spec.studio?.styleVariantCode ? { styleVariantCode: spec.studio.styleVariantCode } : {}),
+    spec: {
+      ...configuration,
+      ...(spec.studio?.styleVariantCode ? { styleVariantCode: spec.studio.styleVariantCode } : {}),
+    },
   };
 }

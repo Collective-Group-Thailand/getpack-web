@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 
 import { HOSTS } from "../../playwright.config";
 import { MOCK_BUYER_PHONE, signInAsCustomer } from "../helpers/customer";
+import { addHeading } from "../helpers/designer";
 import { gotoHydrated } from "../helpers/session";
 import { expect, test } from "./fixture";
 
@@ -25,12 +26,22 @@ test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey
   await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
   await emptyCart(page);
   // The task card's start: a design of the box open in the studio.
-  await gotoHydrated(page, `${HOSTS.customer}/design/new?product=shipping-box`);
+  // Packio 3D Studio (U4.2): ① offers the setup; the box gets a heading so ⑤ opens.
+  await gotoHydrated(page, `${HOSTS.customer}/studio/new?product=shipping-box&step=start`);
+  await page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" }).click();
   const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(setup).toBeHidden();
+  await addHeading(page);
   await j.startHere();
   j.expectEvents("design_ordered", "configurator_opened", "cart_item_added", "checkout_started", "order_placed");
+
+  await j.screen(
+    "the studio's order step",
+    () => page.getByRole("region", { name: "ราคาและการสั่งผลิต" }).getByRole("button", { name: "สั่งผลิต" }).click(),
+    () => expect(page.getByRole("heading", { name: "สั่งผลิตแบบนี้" })).toBeVisible(),
+  );
+  j.gap("ordering inside the studio without the configurator round trip is U4.6");
 
   await j.screen(
     "configurator, filled in from the design",
