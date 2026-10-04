@@ -38,6 +38,8 @@ test("T1 find a mailer box and its price for 500 pcs", async ({ page, journey })
   await j.decide("unit (the task is in cm, the configurator starts in mm)", () =>
     page.getByRole("radio", { name: "ซม." }).click(),
   );
+  // D-182 (U2.F1): the customer says which size they mean before it is priced.
+  await j.decide("basis (the inside of the box)", () => page.getByRole("radio", { name: /ขนาดภายใน/ }).click());
   await j.decide("size", async () => {
     await page.getByRole("textbox", { name: "ยาว" }).fill("20");
     await page.getByRole("textbox", { name: "กว้าง" }).fill("15");

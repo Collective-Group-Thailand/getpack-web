@@ -7,7 +7,15 @@ import { useLocale, useTranslations } from "next-intl";
 import type Konva from "konva";
 import { nanoid } from "nanoid";
 
-import { allFaces, DEFAULT_SAFE_MM, faceBounds, getStyle, PX_PER_MM, SPEC_VERSION } from "@packio/dieline";
+import {
+  allFaces,
+  DEFAULT_SAFE_MM,
+  faceBounds,
+  getStyle,
+  mirrorDieline,
+  PX_PER_MM,
+  SPEC_VERSION,
+} from "@packio/dieline";
 import { boardColour, fallbackMaterial, materialsFor, withMaterial } from "@/features/designer/catalog";
 import { storeDesigns, type DesignerCatalog } from "@/features/designer/data/api";
 import {
@@ -27,6 +35,7 @@ import {
   renderDieline,
 } from "@/features/designer/export";
 import { uprightAngles } from "@/features/designer/lib/upright";
+import { useFaceNames } from "@/features/designer/lib/useFaceNames";
 import type { DesignIssue } from "@/features/designer/lib/checks";
 import { useDesignIssues } from "@/features/designer/lib/useIssues";
 import { designRepo } from "@/features/designer/storage";
@@ -42,6 +51,7 @@ import { IconButton } from "@/ui/components/IconButton";
 import { useModKey } from "@/ui/components/CommandPalette";
 import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
 import { Skeleton } from "@/ui/components/Skeleton";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 import { Tooltip, TooltipProvider } from "@/ui/components/Tooltip";
@@ -70,21 +80,31 @@ const Preview3D = dynamic(() => import("./Preview3D"), {
 type SideTab = "properties" | "checks" | "preview";
 type MobilePanel = RailId | SideTab;
 
-/** The artwork sheet as an image for the 3D preview: redrawn a moment after each change while shown. */
-function useArtwork(active: boolean, stage: () => Konva.Stage | null, dieline: DesignerHandle["dieline"]) {
-  const [url, setUrl] = useState<string | null>(null);
+/**
+ * The artwork of each side as an image for the 3D preview: the side on the canvas is redrawn a
+ * moment after each change while the 3D view is shown; the other side keeps its last drawing.
+ * Level of detail: the sheet is drawn at the resolution the 3D view can show (2048 px on its long
+ * side at most, 1024 for a small view), one texture for every face (the sheet is the atlas).
+ */
+function useArtwork(
+  active: boolean,
+  stage: () => Konva.Stage | null,
+  dieline: DesignerHandle["dieline"],
+  side: "outside" | "inside",
+  longSidePx: number,
+) {
+  const [urls, setUrls] = useState<{ outside: string | null; inside: string | null }>({ outside: null, inside: null });
   useEffect(() => {
     if (!active || !dieline) return;
     const draw = () => {
       const s = stage();
-      if (s)
-        setUrl(
-          renderDieline(s, dieline, {
-            pxPerMm: 2048 / Math.max(dieline.width, dieline.height),
-            withGuides: false,
-            marginMm: 0,
-          }),
-        );
+      if (!s) return;
+      const url = renderDieline(s, dieline, {
+        pxPerMm: longSidePx / Math.max(dieline.width, dieline.height),
+        withGuides: false,
+        marginMm: 0,
+      });
+      setUrls((current) => ({ ...current, [side]: url }));
     };
     const first = setTimeout(draw, 50);
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -98,8 +118,8 @@ function useArtwork(active: boolean, stage: () => Konva.Stage | null, dieline: D
       clearTimeout(timer);
       unsubscribe();
     };
-  }, [active, stage, dieline]);
-  return url;
+  }, [active, stage, dieline, side, longSidePx]);
+  return urls;
 }
 
 type ExportKind = "pdf" | "png" | "png-guides" | "svg" | "dxf" | "dieline-pdf";
@@ -181,7 +201,16 @@ export interface EditorChrome {
   notice?: React.ReactNode;
   /** Open the setup dialog by itself when there is no box yet (the studio's ① offers its own ways). */
   autoSetup?: boolean;
+  /**
+   * The studio's stage (U4.3): 3D and flat side by side (split, the default on wide screens),
+   * either alone (3D first on phones), and the outside / inside of the board.
+   */
+  views?: boolean;
+  /** Asked before switching to the inside — the studio shows the cost first; `false` stays outside. */
+  onSide?: (side: "outside" | "inside") => boolean | Promise<boolean>;
 }
+
+type StageView = "split" | "flat" | "3d";
 
 /**
  * How the designer moves between pages. Each zone's wrapper supplies its own router: the
@@ -261,13 +290,32 @@ export default function Editor({
   const [shareOpen, setShareOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [fitSignal, setFitSignal] = useState(0);
-  const [rail, setRail] = useState<RailId | null>("box");
+  // The studio opens on the stage; its box has its own step (②).
+  const [rail, setRail] = useState<RailId | null>(chrome?.views ? null : "box");
   const [sideTab, setSideTab] = useState<SideTab>("properties");
   const [mobilePanel, setMobilePanel] = useState<MobilePanel | null>(null);
 
   const dieline = useMemo(() => (spec ? dielineOf(spec) : null), [spec]);
   const hinges = useMemo(() => (spec ? hingesOf(spec) : null), [spec]);
-  const upright = useMemo(() => (dieline && hinges ? uprightAngles(dieline, hinges) : {}), [dieline, hinges]);
+  const side = useEditor((s) => s.side);
+  // The inside is drawn on the sheet as seen from inside (U4.3); faces keep their ids.
+  const canvasDieline = useMemo(
+    () => (dieline && side === "inside" ? mirrorDieline(dieline) : dieline),
+    [dieline, side],
+  );
+  const upright = useMemo(
+    () => (dieline && hinges && side === "outside" ? uprightAngles(dieline, hinges) : {}),
+    [dieline, hinges, side],
+  );
+  const faceNames = useFaceNames(dieline);
+  const focusedFaceId = useEditor((s) => s.focusedFaceId);
+  const [view, setView] = useState<StageView>(() =>
+    !chrome?.views
+      ? "flat"
+      : typeof window !== "undefined" && window.matchMedia("(min-width: 64rem)").matches
+        ? "split"
+        : "3d",
+  );
   const issues = useDesignIssues(dieline, catalog);
 
   const persistence = usePersistence({
@@ -284,7 +332,10 @@ export default function Editor({
     onSaved: session.onSaved,
     box: session.box,
     initialBox: session.initialBox,
-    thumbnail: () => (stageRef.current && dieline ? makeThumbnail(stageRef.current, dieline) : null),
+    thumbnail: () =>
+      stageRef.current && dieline && useEditor.getState().side === "outside"
+        ? makeThumbnail(stageRef.current, dieline)
+        : null,
   });
 
   /*
@@ -391,9 +442,9 @@ export default function Editor({
   /** Where a new element goes: the middle of the focused face, or of the view. */
   const viewCenter = useCallback(() => {
     const stage = stageRef.current;
-    if (!stage || !dieline) return { x: 0, y: 0 };
+    if (!stage || !canvasDieline) return { x: 0, y: 0 };
     const focused = useEditor.getState().focusedFaceId;
-    const face = focused ? allFaces(dieline).find((f) => f.id === focused) : undefined;
+    const face = focused ? allFaces(canvasDieline).find((f) => f.id === focused) : undefined;
     if (face) {
       const b = faceBounds(face);
       return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
@@ -407,21 +458,23 @@ export default function Editor({
         .point({ x: size.width / 2, y: size.height / 2 });
     const scale = stage.scaleX();
     return { x: (size.width / 2 - stage.x()) / scale, y: (size.height / 2 - stage.y()) / scale };
-  }, [dieline, size]);
+  }, [canvasDieline, size]);
 
   const doExport = (kind: ExportKind) => {
     const stage = stageRef.current;
     if (!stage || !dieline) return;
 
-    // Deselect first: the transformer handles would otherwise be baked into the bitmap.
+    // Deselect first: the transformer handles would otherwise be baked into the bitmap. The files
+    // are the outside's: the canvas turns back to it before drawing (U4.3).
     useEditor.getState().select(null);
+    if (useEditor.getState().side === "inside") useEditor.getState().setSide("outside");
     setTimeout(() => {
       if (kind === "svg") exportDielineSvg(dieline, name);
       else if (kind === "dxf") exportDielineDxf(dieline, name);
       else if (kind === "dieline-pdf") exportDielinePdf(dieline, name);
       else if (kind === "pdf") void exportPrintPdf(stage, dieline, name, useEditor.getState().bleedMm);
       else exportPng(stage, dieline, name, kind === "png-guides");
-    }, 50);
+    }, 150);
   };
 
   const leave = () => nav.push(exitHref);
@@ -441,11 +494,20 @@ export default function Editor({
   };
 
   const stage = useCallback(() => stageRef.current, []);
-  const artwork = useArtwork(sideTab === "preview" || mobilePanel === "preview", stage, dieline);
+  const show3d = chrome?.views ? view !== "flat" : sideTab === "preview" || mobilePanel === "preview";
+  const artworks = useArtwork(show3d, stage, canvasDieline, side, view === "split" ? 1024 : 2048);
+  const artwork = artworks.outside;
+
+  const switchSide = async (next: "outside" | "inside") => {
+    if (next === side) return;
+    if (chrome?.onSide && !(await chrome.onSide(next))) return;
+    useEditor.getState().setSide(next);
+    setFitSignal((signal) => signal + 1);
+  };
 
   const handle: DesignerHandle = {
     stage,
-    dieline,
+    dieline: canvasDieline,
     save: persistence.save,
     serverId: persistence.serverId,
     center: viewCenter,
@@ -506,6 +568,16 @@ export default function Editor({
           exportPng: t("preview3d.exportPng"),
           flat: t("preview3d.flat"),
         }}
+        {...(chrome?.views
+          ? {
+              fill: true,
+              insideArtwork: artworks.inside,
+              faceLabels: Object.fromEntries(faceNames),
+              focusedFaceId,
+              pickLabel: t("stage.pick"),
+              onPickFace: (faceId: string | null) => useEditor.getState().focusFace(faceId),
+            }
+          : {})}
       />
     ) : null;
 
@@ -698,7 +770,7 @@ export default function Editor({
                       key={item.id}
                       type="button"
                       aria-pressed={rail === item.id}
-                      aria-controls="designer-rail-panel"
+                      aria-controls={rail === item.id ? "designer-rail-panel" : undefined}
                       onClick={() => setRail((open) => (open === item.id ? null : item.id))}
                       className={cn(
                         "focus-visible:ring-focus-ring flex flex-col items-center gap-0.5 rounded-lg px-1 py-2 text-[11px] outline-none focus-visible:ring-2",
@@ -726,39 +798,87 @@ export default function Editor({
               </>
             ) : null}
 
-            <div
-              ref={wrapRef}
-              className="relative min-w-0 flex-1 overflow-hidden"
-              style={{
-                backgroundImage: "radial-gradient(var(--color-canvas-grid) 1px, transparent 1px)",
-                backgroundSize: "18px 18px",
-              }}
-            >
-              {dieline && paperColour && size.width > 0 ? (
-                <DesignCanvas
-                  dieline={dieline}
-                  paperColor={paperColour}
-                  stageRef={stageRef}
-                  width={size.width}
-                  height={size.height}
-                  fitSignal={fitSignal}
-                  readOnly={!editable}
-                  upright={upright}
-                  safeMm={catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM}
-                />
-              ) : null}
-              {dieline ? <FocusChip dieline={dieline} /> : null}
-              {chrome?.notice ? (
-                <div className="pointer-events-none absolute inset-x-0 top-2 flex justify-center px-3">
-                  <div className="pointer-events-auto">{chrome.notice}</div>
-                </div>
-              ) : null}
+            <div className="relative flex min-w-0 flex-1 flex-col">
+              <div className="relative flex min-h-0 flex-1">
+                <div
+                  ref={wrapRef}
+                  className={cn(
+                    "relative min-w-0 flex-1 overflow-hidden",
+                    // In 3D only the flat canvas stays mounted (it draws the 3D's artwork), out of sight.
+                    view === "3d" && "pointer-events-none invisible absolute inset-0",
+                  )}
+                  aria-hidden={view === "3d" || undefined}
+                  style={{
+                    backgroundImage: "radial-gradient(var(--color-canvas-grid) 1px, transparent 1px)",
+                    backgroundSize: "18px 18px",
+                  }}
+                >
+                  {dieline && paperColour && size.width > 0 ? (
+                    <DesignCanvas
+                      dieline={canvasDieline!}
+                      paperColor={paperColour}
+                      stageRef={stageRef}
+                      width={size.width}
+                      height={size.height}
+                      fitSignal={fitSignal}
+                      readOnly={!editable}
+                      upright={upright}
+                      safeMm={catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM}
+                    />
+                  ) : null}
+                  {canvasDieline ? <FocusChip dieline={canvasDieline} /> : null}
+                  {chrome?.notice ? (
+                    <div className="pointer-events-none absolute inset-x-0 top-2 flex justify-center px-3">
+                      <div className="pointer-events-auto">{chrome.notice}</div>
+                    </div>
+                  ) : null}
 
-              {!spec && !setupOpen && editable ? (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Button size="lg" onClick={openSetup}>
-                    {t("chooseBoxFirst")}
-                  </Button>
+                  {!spec && !setupOpen && editable ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Button size="lg" onClick={openSetup}>
+                        {t("chooseBoxFirst")}
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+                {chrome?.views && view !== "flat" && spec ? (
+                  <section
+                    aria-label={t("stage.model")}
+                    className={cn(
+                      "bg-surface flex min-h-0 flex-col p-2",
+                      view === "split" ? "border-border w-[42%] shrink-0 border-s" : "flex-1",
+                    )}
+                  >
+                    {preview}
+                  </section>
+                ) : null}
+              </div>
+              {chrome?.views && spec ? (
+                <div
+                  role="toolbar"
+                  aria-label={t("stage.label")}
+                  className="border-border bg-surface flex flex-wrap items-center gap-2 border-t px-2 py-1"
+                >
+                  <SegmentedControl
+                    label={t("stage.mode")}
+                    size="sm"
+                    value={view}
+                    onValueChange={(next) => setView(next as StageView)}
+                    options={(["split", "flat", "3d"] as const).map((value) => ({ value, label: t(`stage.${value}`) }))}
+                  />
+                  <SegmentedControl
+                    label={t("stage.side")}
+                    size="sm"
+                    value={side}
+                    onValueChange={(next) => void switchSide(next as "outside" | "inside")}
+                    options={(["outside", "inside"] as const).map((value) => ({ value, label: t(`stage.${value}`) }))}
+                  />
+                  {focusedFaceId && faceNames.get(focusedFaceId) ? (
+                    // The canvas's focus chip announces it; this repeats it beside the views, quietly.
+                    <span aria-hidden="true" className="text-xs">
+                      {t("stage.editing", { face: faceNames.get(focusedFaceId)! })}
+                    </span>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -768,6 +888,11 @@ export default function Editor({
                 aria-label={t("side.label")}
                 className="border-border bg-surface hidden w-80 shrink-0 overflow-y-auto border-s px-4 pb-4 lg:block"
               >
+                {chrome?.dock ? (
+                  <div className="border-border -mx-4 mb-2 border-b px-4 py-4">
+                    {chrome.dock(chromeContext, "rail")}
+                  </div>
+                ) : null}
                 <Tabs
                   label={t("side.label")}
                   value={sideTab}
@@ -777,14 +902,17 @@ export default function Editor({
                       ? [{ value: "properties", label: t("side.properties"), content: sidePanel("properties") }]
                       : []),
                     { value: "checks", label: checksLabel, content: sidePanel("checks") },
-                    { value: "preview", label: t("side.preview"), content: sideTab === "preview" ? preview : null },
+                    ...(chrome?.views
+                      ? []
+                      : [
+                          {
+                            value: "preview",
+                            label: t("side.preview"),
+                            content: sideTab === "preview" ? preview : null,
+                          },
+                        ]),
                   ]}
                 />
-              </aside>
-            ) : null}
-            {chrome?.dock ? (
-              <aside className="border-border bg-surface hidden w-72 shrink-0 overflow-y-auto border-s p-4 lg:block">
-                {chrome.dock(chromeContext, "rail")}
               </aside>
             ) : null}
           </div>
@@ -840,7 +968,11 @@ export default function Editor({
             >
               {[
                 ...(editable
-                  ? railTools.map((item) => ({ id: item.id as MobilePanel, icon: item.icon, label: t(`rail.${item.id}`) }))
+                  ? railTools.map((item) => ({
+                      id: item.id as MobilePanel,
+                      icon: item.icon,
+                      label: t(`rail.${item.id}`),
+                    }))
                   : []),
                 ...(editable
                   ? [{ id: "properties" as MobilePanel, icon: "edit" as const, label: t("side.properties") }]
@@ -873,7 +1005,7 @@ export default function Editor({
           ) : null}
 
           <StatusBar
-            dieline={dieline}
+            dieline={canvasDieline}
             issues={issues}
             onShowChecks={showChecks}
             onFit={() => setFitSignal((signal) => signal + 1)}

@@ -15,8 +15,13 @@ test("T12 download the dieline for a size, for Illustrator", async ({ page, jour
 
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   await j.screen(
-    "designer setup",
+    "studio ① start",
     () => page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click(),
+    () => expect(page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" })).toBeVisible(),
+  );
+  await j.screen(
+    "box setup",
+    () => page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" }).click(),
     () => expect(dialog).toBeVisible(),
   );
   await j.decide("size", async () => {

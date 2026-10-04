@@ -91,3 +91,36 @@ describe("editor store (F4 Part D)", () => {
     expect(s().focusedFaceId).toBeNull();
   });
 });
+
+describe("editor store (U4.3 design core)", () => {
+  beforeEach(() => s().load({ id: "d", name: "test", spec: null }));
+
+  it("keeps at least 200 undo steps", () => {
+    for (let i = 0; i < 230; i++) s().addElement(newShape({ x: i, y: i }, "rect"));
+    expect(s().past.length).toBe(200);
+  });
+
+  it("puts new elements on the side being edited, and select-all stays on that side", () => {
+    s().addElement(newShape({ x: 10, y: 10 }, "rect"));
+    s().setSide("inside");
+    s().addElement(newText({ x: 20, y: 20 }, "ด้านใน"));
+    const [outer, inner] = s().content.elements;
+    expect(outer!.side).toBeUndefined();
+    expect(inner!.side).toBe("inside");
+    s().selectAll();
+    expect(s().selectedIds).toEqual([inner!.id]);
+    s().copySelected();
+    s().setSide("outside");
+    s().paste();
+    expect(s().content.elements.at(-1)!.side).toBeUndefined();
+  });
+
+  it("clips an element placed on a focused face to that face", () => {
+    s().focusFace("lid-top");
+    s().addElement(newText({ x: 20, y: 20 }, "ฝาบน"));
+    expect(s().content.elements.at(-1)!.clipFaceId).toBe("lid-top");
+    s().focusFace(null);
+    s().addElement(newText({ x: 20, y: 20 }, "ทั้งแผ่น"));
+    expect(s().content.elements.at(-1)!.clipFaceId).toBeUndefined();
+  });
+});

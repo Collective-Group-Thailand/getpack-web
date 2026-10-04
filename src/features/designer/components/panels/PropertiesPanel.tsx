@@ -387,6 +387,7 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
               ...faces.map((f) => ({ value: f.id, label: names.get(f.id) ?? f.label })),
             ]}
           />
+          {!el.clipFaceId ? <p className="text-muted mt-1 text-xs">{t("wrapWarning")}</p> : null}
         </Field>
       ) : null}
 

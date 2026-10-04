@@ -29,9 +29,11 @@ test("adds a QR code, finds it in layers, locks it, and undoes", async ({ page }
   ).toBeVisible();
 
   await openRail(page, "ชั้น");
-  const layers = page.getByRole("list", { name: "ชั้นขององค์ประกอบ บนสุดก่อน" });
-  await expect(layers.getByRole("listitem")).toHaveCount(1);
-  await layers.getByRole("button", { name: /^ล็อก / }).click();
+  // The layers are an accessible tree (U4.3): the outside, then its element.
+  const layers = page.getByRole("tree", { name: "ชั้นขององค์ประกอบ บนสุดก่อน" });
+  await expect(layers.getByRole("treeitem")).toHaveCount(2);
+  await layers.getByRole("treeitem", { level: 2 }).click();
+  await page.getByRole("button", { name: /^ล็อก / }).click();
   await expect(page.getByText("ล็อกอยู่ — ปลดล็อกเพื่อย้ายหรือแก้ไข")).toBeVisible();
 
   // Undo the lock, then the code itself.
@@ -44,7 +46,7 @@ test("focuses a face upright and leaves it with Escape", async ({ page }) => {
   await newDesign(page);
 
   await openRail(page, "กล่อง");
-  await page.getByRole("button", { name: "ด้านหน้า", exact: true }).click();
+  await page.getByRole("region", { name: "กล่อง", exact: true }).getByRole("button", { name: "ด้านหน้า", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "กำลังแก้: ด้านหน้า" })).toBeVisible();
 
   // A heading added now lands on the focused face.
@@ -73,7 +75,8 @@ test("flags small text in the checks and selects it from there", async ({ page }
 test("shows the box in 3D with the fold slider, and lists the shortcuts", async ({ page }) => {
   await newDesign(page);
 
-  await page.getByRole("tab", { name: "3 มิติ" }).click();
+  // The studio's stage: 3D on its own, then beside the sheet (U4.3).
+  await page.getByRole("radio", { name: "3 มิติ" }).click();
   await expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
   await expect(page.getByRole("slider", { name: "การพับกล่อง" })).toBeVisible();
   await page.getByRole("button", { name: "หมุนไปทางซ้าย" }).click();

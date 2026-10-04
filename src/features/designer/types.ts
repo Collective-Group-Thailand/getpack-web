@@ -39,6 +39,11 @@ interface BaseElement {
   name?: string;
   /** Clipped to this face's outline instead of the whole sheet. */
   clipFaceId?: string;
+  /**
+   * Printed on the inside of the box (U4.3): its position is on the sheet as seen from the inside
+   * (the dieline mirrored, `mirrorDieline`), so it reads the right way round once folded.
+   */
+  side?: "inside";
 }
 
 export interface TextElement extends BaseElement {

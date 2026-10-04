@@ -19,6 +19,7 @@ import { useEditor } from "@/features/designer/store/editor";
 import { Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
+import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -114,7 +115,9 @@ export function Studio({
   }, [maxSpot]);
 
   // A design on a style only the library draws (a published variant, U3.4) opens once it is loaded.
-  const [libraryReady, setLibraryReady] = useState(() => !needsLibrary((design?.document.spec as { styleId?: unknown } | null)?.styleId));
+  const [libraryReady, setLibraryReady] = useState(
+    () => !needsLibrary((design?.document.spec as { styleId?: unknown } | null)?.styleId),
+  );
   useEffect(() => {
     if (libraryReady) return;
     let cancelled = false;
@@ -138,6 +141,28 @@ export function Studio({
   const printMethod = useEditor((s) => s.spec?.studio?.printMethod ?? undefined) ?? undefined;
   const colours = useEditor((s) => artworkColours(s.content));
   const funnel = useStudioFunnel({ route: STUDIO_ROUTE, styleFamily, printMethod });
+  // Inside printing (U4.3): its cost is shown before the first switch to the inside.
+  const [insideAsk, setInsideAsk] = useState<((ok: boolean) => void) | null>(null);
+  const onSide = useCallback(async (next: "outside" | "inside") => {
+    if (next === "outside") return true;
+    const spec = useEditor.getState().spec;
+    const sides = spec?.studio?.printSides ?? "outside";
+    if (sides === "inside" || sides === "both") return true;
+    const ok = await new Promise<boolean>((resolve) => setInsideAsk(() => resolve));
+    setInsideAsk(null);
+    if (!ok || !spec) return false;
+    const now = useEditor.getState().spec!;
+    useEditor.getState().setSpec({
+      ...now,
+      studio: {
+        ...now.studio,
+        printSides: sides === "none" ? "inside" : "both",
+        ...(now.studio?.printMethod === "none" ? { printMethod: null } : {}),
+      },
+    });
+    return true;
+  }, []);
+
   // ① offers its own ways to a box: the setup dialog opens only when asked there.
   const [autoSetup] = useState(() => step !== "start");
 
@@ -208,7 +233,9 @@ export function Studio({
         return (
           <div className="space-y-6">
             <StartPanel
-              productName={catalog?.product ? (locale === "en" ? catalog.product.nameEn : catalog.product.nameTh) : null}
+              productName={
+                catalog?.product ? (locale === "en" ? catalog.product.nameEn : catalog.product.nameTh) : null
+              }
               hasBox={hasBox}
               onChooseBox={ctx.openSetup}
               onNext={() => goTo(hasBox ? "box" : "start")}
@@ -270,59 +297,79 @@ export function Studio({
   if (!libraryReady) return null;
 
   return (
-    <Editor
-      id={id}
-      nav={{
-        home: locale === "en" ? "/en" : "/",
-        push: (href) => router.push(href),
-        // `/studio/new` becomes the design's own address in place: a navigation would mount a
-        // second studio (a new route param) whose first save races this one's with an older ETag.
-        replace: (href) => {
-          const studioHref = href.replace(/^\/design\//, "/studio/");
-          const query = new URLSearchParams(carried);
-          query.set("step", stepRef.current);
-          const prefix = locale === "en" ? "/en" : "";
-          window.history.replaceState(window.history.state, "", `${prefix}${studioHref}?${query.toString()}`);
-        },
-      }}
-      session={session}
-      catalog={catalog}
-      seed={seed}
-      designHref={(designId) => `/studio/${designId}`}
-      chrome={{
-        below: (ctx) => (
-          <>
-            <StepBar step={shown} facts={facts} onStep={goTo} />
-            <ChecksCleanWatch issues={ctx.issues} onClean={funnel.checksClean} />
-          </>
-        ),
-        panel,
-        autoSetup,
-        rail: (tool) => (printMethod === "none" ? tool === "box" || tool === "layers" : printMethod === "flexo" ? tool !== "uploads" : true),
-        notice:
-          shown === "design" && printMethod === "none" ? (
-            <Badge tone="info">{t("mode.none")}</Badge>
-          ) : shown === "design" && printMethod === "flexo" ? (
-            <Badge tone={maxSpot !== null && colours > maxSpot ? "warning" : "info"}>
-              {maxSpot !== null ? t("mode.flexoLimited", { used: colours, max: maxSpot }) : t("mode.flexo", { used: colours })}
-            </Badge>
-          ) : null,
-        dock: (ctx, layout) =>
-          shown === "start" ? null : (
-            <PriceDock
-              configurator={configurator.data ?? null}
-              source={mode === "store" ? "studio" : "guest"}
-              persistence={ctx.persistence}
-              maxSpot={maxSpot}
-              layout={layout}
-              quantity={quantity}
-              onQuantity={setQuantity}
-              onOrder={() => goTo("order")}
-              orderDisabled={!hasContent}
-            />
+    <>
+      <AlertDialog
+        open={insideAsk !== null}
+        onOpenChange={(open) => !open && insideAsk?.(false)}
+        title={t("inside.title")}
+        description={t("inside.body")}
+        confirmLabel={t("inside.confirm")}
+        cancelLabel={t("inside.cancel")}
+        onConfirm={() => insideAsk?.(true)}
+      />
+      <Editor
+        id={id}
+        nav={{
+          home: locale === "en" ? "/en" : "/",
+          push: (href) => router.push(href),
+          // `/studio/new` becomes the design's own address in place: a navigation would mount a
+          // second studio (a new route param) whose first save races this one's with an older ETag.
+          replace: (href) => {
+            const studioHref = href.replace(/^\/design\//, "/studio/");
+            const query = new URLSearchParams(carried);
+            query.set("step", stepRef.current);
+            const prefix = locale === "en" ? "/en" : "";
+            window.history.replaceState(window.history.state, "", `${prefix}${studioHref}?${query.toString()}`);
+          },
+        }}
+        session={session}
+        catalog={catalog}
+        seed={seed}
+        designHref={(designId) => `/studio/${designId}`}
+        chrome={{
+          below: (ctx) => (
+            <>
+              <StepBar step={shown} facts={facts} onStep={goTo} />
+              <ChecksCleanWatch issues={ctx.issues} onClean={funnel.checksClean} />
+            </>
           ),
-      }}
-    />
+          panel,
+          autoSetup,
+          views: true,
+          onSide,
+          rail: (tool) =>
+            printMethod === "none"
+              ? tool === "box" || tool === "layers"
+              : printMethod === "flexo"
+                ? tool !== "uploads"
+                : true,
+          notice:
+            shown === "design" && printMethod === "none" ? (
+              <Badge tone="info">{t("mode.none")}</Badge>
+            ) : shown === "design" && printMethod === "flexo" ? (
+              <Badge tone={maxSpot !== null && colours > maxSpot ? "warning" : "info"}>
+                {maxSpot !== null
+                  ? t("mode.flexoLimited", { used: colours, max: maxSpot })
+                  : t("mode.flexo", { used: colours })}
+              </Badge>
+            ) : null,
+          dock: (ctx, layout) =>
+            shown === "start" ? null : (
+              <PriceDock
+                configurator={configurator.data ?? null}
+                source={mode === "store" ? "studio" : "guest"}
+                persistence={ctx.persistence}
+                maxSpot={maxSpot}
+                layout={layout}
+                quantity={quantity}
+                onQuantity={setQuantity}
+                onOrder={() => goTo("order")}
+                orderDisabled={!hasContent}
+              />
+            ),
+        }}
+      />
+    </>
   );
 }
 
