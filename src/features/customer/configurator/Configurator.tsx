@@ -43,6 +43,7 @@ import {
 } from "./state";
 import { useDraft, type Draft } from "./useDraft";
 import { useQuoteActions, type SavedQuote } from "./useQuoteActions";
+import { studioHref } from "@/features/customer/studio/paths";
 
 /*
  * Only the first step is in the initial load; the others arrive when first opened (they are a
@@ -443,7 +444,13 @@ export function Configurator({
   const inside = isConverted(state.basis) ? conversion.internal : state.basis === "internal" ? state.dims : null;
   const designHref =
     style && configurator.design.options.includes("online_designer") && inside?.l && inside.w && inside.d
-      ? `/design/new?style=${style}&l=${inside.l}&w=${inside.w}&h=${inside.d}&product=${encodeURIComponent(configurator.slug)}`
+      ? studioHref({
+          style,
+          dims: { l: inside.l, w: inside.w, h: inside.d },
+          product: configurator.slug,
+          material: state.choices.material?.[0] ?? null,
+          step: "design",
+        })
       : null;
   const facts = [
     ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),

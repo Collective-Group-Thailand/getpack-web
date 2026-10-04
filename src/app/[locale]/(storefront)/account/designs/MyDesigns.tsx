@@ -23,6 +23,7 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
+import { studioHref } from "@/features/customer/studio/paths";
 
 /** One card's worth, whichever store the design lives in. */
 interface Row {
@@ -181,7 +182,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
             />
           </Field>
           <Button asChild size="sm">
-            <Link href="/design/new">{t("new")}</Link>
+            <Link href="/studio/new">{t("new")}</Link>
           </Button>
         </div>
       </div>
@@ -203,7 +204,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
           action={
             rows.length ? null : (
               <Button asChild>
-                <Link href="/design/new">{t("empty.action")}</Link>
+                <Link href="/studio/new">{t("empty.action")}</Link>
               </Button>
             )
           }
@@ -213,7 +214,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
           {filtered.map((row) => (
             <Card as="li" key={row.id} padding="none" className="hover:shadow-overlay overflow-hidden transition">
               <Link
-                href={`/design/${row.id}`}
+                href={studioHref({ designId: row.id })}
                 className="bg-surface-subtle block aspect-[4/3] p-4"
                 tabIndex={-1}
                 aria-hidden={Boolean(row.thumbnail || row.thumbnailFileId)}
@@ -222,7 +223,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
               </Link>
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
-                  <Link href={`/design/${row.id}`} className="hover:text-primary font-medium">
+                  <Link href={studioHref({ designId: row.id })} className="hover:text-primary font-medium">
                     {row.name}
                   </Link>
                   {row.orderCode ? <Badge tone="info">{t("card.linked", { order: row.orderCode })}</Badge> : null}

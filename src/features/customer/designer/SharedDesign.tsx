@@ -12,6 +12,7 @@ import { Callout } from "@/ui/components/Callout";
 
 import { pick } from "../catalog/localize";
 import type { SharedDesignData } from "./api.server";
+import { studioHref } from "@/features/customer/studio/paths";
 
 /** Image sources from the assets' signed URLs (ids are kept in the document; URLs expire). */
 function withAssets(content: DesignContent, assets: SharedDesignData["assets"]): DesignContent {
@@ -73,7 +74,7 @@ export async function SharedDesign({ shared }: { shared: SharedDesignData }) {
           <Button asChild>
             <Link
               href={
-                shared.product.slug ? `/design/new?product=${encodeURIComponent(shared.product.slug)}` : "/design/new"
+                studioHref({ product: shared.product.slug || null, step: "start" })
               }
             >
               {t("start")}
