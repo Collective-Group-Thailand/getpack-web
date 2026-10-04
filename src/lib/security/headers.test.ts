@@ -118,6 +118,14 @@ describe("contentSecurityPolicy", () => {
   });
 });
 
+describe("the studio's AR model", () => {
+  it("lets the storefront fetch a blob: URL it made, and no other zone", () => {
+    expect(cspDirectives("customer", options)["connect-src"]).toContain("blob:");
+    expect(cspDirectives("admin", options)["connect-src"]).not.toContain("blob:");
+    expect(cspDirectives("partner", options)["connect-src"]).not.toContain("blob:");
+  });
+});
+
 describe("sign-in origins", () => {
   const withSignIn = { ...options, origins: { firebaseAuthDomain: "packio.firebaseapp.com", line: true } };
 

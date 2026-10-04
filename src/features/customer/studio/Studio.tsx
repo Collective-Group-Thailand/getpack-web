@@ -39,6 +39,10 @@ import { useChecksClean, useStudioFunnel } from "./funnel";
 const STUDIO_ROUTE = "/studio/[designId]";
 
 // ① and ② load when they are shown: a design opened on ③ never pays for them.
+const StudioComments = dynamic(() => import("./comments/StudioComments").then((m) => m.StudioComments), {
+  ssr: false,
+});
+const ShareLinks = dynamic(() => import("./ShareLinks").then((m) => m.ShareLinks), { ssr: false });
 const OrderSheet = dynamic(() => import("./OrderSheet").then((m) => m.OrderSheet), { ssr: false });
 const BoxStep = dynamic(() => import("./BoxStep").then((m) => m.BoxStep), { ssr: false });
 const DescribeProduct = dynamic(() => import("./DescribeProduct").then((m) => m.DescribeProduct), { ssr: false });
@@ -367,6 +371,22 @@ export function Studio({
           autoSetup,
           views: true,
           onSide,
+          comments:
+            mode === "store"
+              ? (ctx) =>
+                  ctx.persistence.serverId() ? (
+                    <StudioComments
+                      designId={ctx.persistence.serverId()!}
+                      dieline={ctx.dieline}
+                      companyId={companies.data?.[0]?.id ?? null}
+                      versionNo={ctx.persistence.versionNo()}
+                    />
+                  ) : null
+              : undefined,
+          presentation: true,
+          share: (designId, close) => (
+            <ShareLinks designId={designId} open onClose={close} canEdit={(companies.data?.length ?? 0) > 0} />
+          ),
           rail: (tool) =>
             printMethod === "none"
               ? tool === "box" || tool === "layers"

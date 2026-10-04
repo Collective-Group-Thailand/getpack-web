@@ -2,7 +2,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type Konva from "konva";
 import { useLocale } from "next-intl";
-import { Ellipse, Group, Image as KImage, Layer, Line, Path, Rect, Stage, Text, Transformer } from "react-konva";
+import {
+  Circle,
+  Ellipse,
+  Group,
+  Image as KImage,
+  Layer,
+  Line,
+  Path,
+  Rect,
+  Stage,
+  Text,
+  Transformer,
+} from "react-konva";
 import {
   allFaces,
   bleedOutline,
@@ -26,6 +38,7 @@ import { barModules, barsPath, qrMatrix, qrPath } from "@/features/designer/lib/
 import { linesOf, snapBox, type SnapTargets } from "@/features/designer/lib/snapping";
 import { buildPatternTile } from "@/features/designer/patterns";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
+import { useCommentPins } from "@/features/designer/comments/pins";
 import { useCanvasStatus } from "@/features/designer/store/status";
 import type { CodeElement, DesignContent, DesignElement, Dieline, ImageElement } from "@/features/designer/types";
 
@@ -170,6 +183,9 @@ export default function DesignCanvas({
     [content.elements, side],
   );
   const pattern = side === "inside" ? NO_PATTERN : content.pattern;
+  const pins = useCommentPins((s) => s.pins);
+  const activePin = useCommentPins((s) => s.active);
+  const placing = useCommentPins((s) => s.placing);
   const locale = useLocale() as "th" | "en";
   const trRef = useRef<Konva.Transformer>(null);
   const worldRef = useRef<Konva.Group>(null);
@@ -465,6 +481,15 @@ export default function DesignCanvas({
   }
 
   const onStageMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Placing a comment (U4.7): the click is its place on the sheet, nothing else.
+    if (useCommentPins.getState().placing) {
+      const p = stageRef.current?.getPointerPosition();
+      if (p) {
+        const [xMm, yMm] = toSheet(p);
+        useCommentPins.getState().pick({ xMm, yMm, faceId: null });
+      }
+      return;
+    }
     const target = e.target;
     const onElement = target.name() === "design-element" || !!target.findAncestor(".design-element");
     const onTransformer = target.getParent()?.className?.includes("Transformer");
@@ -539,7 +564,8 @@ export default function DesignCanvas({
         y={pos.y}
         scaleX={scale}
         scaleY={scale}
-        draggable
+        draggable={!placing}
+        style={placing ? { cursor: "crosshair" } : undefined}
         onDragEnd={(e) => {
           if (e.target === e.target.getStage()) setPos({ x: e.target.x(), y: e.target.y() });
         }}
@@ -556,6 +582,8 @@ export default function DesignCanvas({
         <Layer>
           <Group
             ref={worldRef}
+            // Placing a comment: the design does not take the click, the sheet does.
+            listening={!placing}
             name="world"
             x={pivot.x}
             y={pivot.y}
@@ -721,6 +749,41 @@ export default function DesignCanvas({
                 />
               ))}
               {gaps ? <DistanceLabels box={gaps.box} face={gaps.face} scale={scale} locale={locale} /> : null}
+              {/* Comment pins (U4.7): on the outside, never in a capture (`.guide`). */}
+              {side === "outside" && !printMode
+                ? pins.map((pin) => (
+                    <Group
+                      key={pin.id}
+                      name="guide"
+                      x={pin.xMm}
+                      y={pin.yMm}
+                      opacity={pin.resolved ? 0.45 : 1}
+                      onClick={() => useCommentPins.getState().setActive(pin.id)}
+                      onTap={() => useCommentPins.getState().setActive(pin.id)}
+                    >
+                      <Circle
+                        radius={11 / scale}
+                        fill={pin.id === activePin ? CANVAS_COLORS.selection : "#d9480f"}
+                        stroke="#ffffff"
+                        strokeWidth={2}
+                        strokeScaleEnabled={false}
+                      />
+                      <Text
+                        text={String(pin.n)}
+                        width={22 / scale}
+                        height={22 / scale}
+                        offsetX={11 / scale}
+                        offsetY={11 / scale}
+                        align="center"
+                        verticalAlign="middle"
+                        fontSize={12 / scale}
+                        fontStyle="bold"
+                        fill="#ffffff"
+                        listening={false}
+                      />
+                    </Group>
+                  ))
+                : null}
               {marquee ? (
                 <Rect
                   x={Math.min(marquee.x0, marquee.x1)}

@@ -98,6 +98,8 @@ export const storeDesigns = {
       content: DesignContent;
       thumbnailFileId?: string;
       box?: BoxFields | null;
+      /** A named version (U4.7). */
+      label?: string;
     },
     etag: string | null,
   ): Promise<Saved<StoreDesign>> {
@@ -110,6 +112,7 @@ export const storeDesigns = {
         ...(isUuid(input.spec.materialId) ? { materialId: input.spec.materialId } : {}),
         ...(isUuid(input.spec.patternId) ? { patternId: input.spec.patternId } : {}),
         ...(input.thumbnailFileId ? { thumbnailFileId: input.thumbnailFileId } : {}),
+        ...(input.label ? { label: input.label } : {}),
         ...(input.box ?? {}),
       },
     });
@@ -131,6 +134,30 @@ export const storeDesigns = {
         schemaVersion: DOCUMENT_SCHEMA_VERSION,
         operations: input.operations as Schemas["JsonPatchOperationDto"][],
       },
+    });
+    return { data: data!, etag: etagOf(response) };
+  },
+  /** `store.studio.editShared` (U4.7, D-285): the same JSON Patch through an edit link. */
+  async patchShared(
+    token: string,
+    input: { kind: Schemas["DesignSaveKind"]; operations: PatchOperation[]; label?: string },
+    etag: string | null,
+  ): Promise<Saved<StoreDesign>> {
+    const { data, response } = await browserApi().PATCH("/v1/store/studio/shared/{token}/document", {
+      params: { path: { token }, header: { "If-Match": etag ?? "" } },
+      body: {
+        kind: input.kind,
+        ...(input.label ? { label: input.label } : {}),
+        schemaVersion: DOCUMENT_SCHEMA_VERSION,
+        operations: input.operations as Schemas["JsonPatchOperationDto"][],
+      },
+    });
+    return { data: data!, etag: etagOf(response) };
+  },
+  /** `store.designs.getShared` read again (an edit link's latest document and ETag). */
+  async getShared(token: string): Promise<Saved<Schemas["SharedDesignDto"]>> {
+    const { data, response } = await browserApi().GET("/v1/store/shared-designs/{token}", {
+      params: { path: { token } },
     });
     return { data: data!, etag: etagOf(response) };
   },
