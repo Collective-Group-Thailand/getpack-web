@@ -70,6 +70,16 @@ function map(name: FunnelEvent, props: AnalyticsProperties): Mapped | null {
     case "cart_item_added":
     case "reorder_added_to_cart":
       return props.quantity === undefined ? null : { name: "add_to_cart", properties: { quantity: props.quantity } };
+    case "studio_started":
+    case "studio_box_confirmed":
+    case "studio_first_artwork":
+    case "studio_checks_clean":
+    case "studio_ordered":
+      return { name, properties: studioProperties(props) };
+    case "studio_add_to_cart":
+      return props.quantity === undefined
+        ? null
+        : { name, properties: { ...studioProperties(props), quantity: props.quantity } };
     case "checkout_started":
       return { name: "checkout_step", properties: { step: "started" } };
     case "order_placed":
@@ -79,6 +89,14 @@ function map(name: FunnelEvent, props: AnalyticsProperties): Mapped | null {
     default:
       return null;
   }
+}
+
+/** D-286: a studio event carries the print method and the style family, and nothing else. */
+function studioProperties(props: AnalyticsProperties): Record<string, string> {
+  return {
+    ...(props.printMethod ? { printMethod: props.printMethod } : {}),
+    ...(props.styleFamily && /^[a-z][a-z0-9_]{0,59}$/.test(props.styleFamily) ? { styleFamily: props.styleFamily } : {}),
+  };
 }
 
 /** One ingest event, or `null` when packio-api takes no such event (or it lacks what it requires). */

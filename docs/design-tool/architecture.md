@@ -43,6 +43,7 @@ src/features/designer  (shared by the customer and admin zones)
         │
         ▼
 Zones: src/features/customer/designer (price widget, order action, shared page)
+       src/features/customer/studio (U4: /studio/[designId] — step bar, price dock, studio spec)
        src/features/admin/prepress/AdminDesigner.tsx (read-only or a staff copy)
 ```
 
@@ -68,8 +69,22 @@ newer build.
 | Mode | Where | Saving |
 |---|---|---|
 | `local` | a guest's browser (localStorage) | on demand; imported to the account after sign-in |
-| `store` | `store.designs` | autosave 2.5 s after the last change under `If-Match`; 412 → conflict choice; IndexedDB draft meanwhile; version history and restore |
+| `store` | `store.designs` | autosave 2.5 s after the last change (0.4 s for a box change) under `If-Match`; in the studio a content-only change is a JSON Patch; 412 → conflict choice; IndexedDB draft meanwhile (also the offline queue, flushed on `online`); version history and restore |
 | `admin` | `admin.design-documents` | a customer's document is read-only; staff edit their own copy |
+
+## The studio (U4)
+
+`/[locale]/studio/[designId]` is the same `Editor` with a frame (`EditorProps.chrome`): a step bar
+under the header, a panel in place of the tool rail for the steps other than ③, and the price dock
+(a right rail on wide screens, a bar on phones). The editor never unmounts between steps; the step
+lives in `?step=`. For a signed-in design each version is saved with its **box** and the calculator
+**spec** (D-275, `studio/spec.ts` → `BoxFields`), built from the product's configurator exactly as
+the configurator would — so `store.studio.quote` prices the box on screen and refuses nothing as a
+mismatch. A save that changes neither the box nor the title is a JSON Patch (`patchDocument`,
+D-276); anything else is a PUT. The dock keys its query by the saved box + quantity (packio-api
+caches by the same spec's `specHash`) and sends the shown `specHash` back as `previousSpecHash`, so
+the API says why the price moved. A guest's dock prices the same configuration with
+`store.quotes.calculate`.
 
 ## Checks, live
 

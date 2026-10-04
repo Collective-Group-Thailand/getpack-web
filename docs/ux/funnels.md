@@ -44,8 +44,18 @@ Leak signal: `quote_abandoned` (declared, not sent yet — needs a session end t
 | 1 | `design_started` | the designer created a new design (`EditorSession.onCreated`) |
 | 2 | `design_saved` | first successful save after an edit, once per editing session (`EditorSession.onSaved`) |
 | 3 | `design_ordered` | "สั่งทำแบบนี้" in the studio opened the pre-filled configurator (`OrderAction.tsx`); from there the configurator funnel takes over |
-**U4.1 adds** the studio's own steps between 2 and 3 — box confirmed, first artwork, checks clean
-(`studio-spec.md` §1). They join this table; they are not invented here.
+
+### Studio funnel (U4.1, D-286) — `/studio/[designId]`, ingested as packio-api's `studio_*` events
+Each carries `printMethod` (once ② sets it) and `styleFamily` (the product type code) only.
+| Step | Event | Sent from |
+|---|---|---|
+| 1 | `studio_started` | the studio opened (`Studio.tsx`, once per page) |
+| 2 | `studio_box_confirmed` | the design has a box and the customer moved past ② (or opened a design that has one) |
+| 3 | `studio_first_artwork` | the first element or background was placed, once per page |
+| 4 | `studio_checks_clean` | the checks went from "has problems" to none, once per page |
+| 5 | `studio_add_to_cart` | the price dock's order action added the design (with `quantity`) |
+| 6 | `studio_ordered` | the order from the studio was accepted (U4.6) |
+Monthly report against the spec §1 targets: `admin.analytics.studioFunnel` (setting `studio.funnel_targets`).
 
 ### Claims — start → submit
 | Step | Event | Sent from |

@@ -2,7 +2,9 @@
   "extends": "./shared.json",
   "ci": {
     "collect": {
-      "url": ["http://localhost:3200/design/new"],
+      "url": [
+        "http://localhost:3200/design/new"
+      ],
       "numberOfRuns": 3,
       "settings": {
         "preset": "desktop",
@@ -17,7 +19,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 472000
+            "maxNumericValue": 474500
           }
         ],
         "largest-contentful-paint": [
@@ -29,5 +31,5 @@
       }
     }
   },
-  "$comment": "Designer: <= 3.0s to an interactive shell, <= 350 KB with the heavy modules lazy. Konva and the 3D preview are the reason this budget is its own. RATCHET: the target in docs/performance-budgets.md is 350 KB of initial JS; F4 Part D measures 456 KB (518 KB before jsPDF was removed in F4 Part C; three.js loads only with the 3D tab, ADR-0010), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md. U3.1 (2026-10-02) raised 460000 -> 468000: the recipe engine (ADR-0011: JSON recipes, module declarations, expression evaluator) measures 467144 against main's 459739 on the same build; recipe data must leave the initial bundle before U3.4 wave 1 (PROGRESS U3.1)."
+  "$comment": "Designer: <= 3.0s to an interactive shell, <= 350 KB with the heavy modules lazy. Konva and the 3D preview are the reason this budget is its own. RATCHET: the target in docs/performance-budgets.md is 350 KB of initial JS; F4 Part D measures 456 KB (518 KB before jsPDF was removed in F4 Part C; three.js loads only with the 3D tab, ADR-0010), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md. U3.1 (2026-10-02) raised 460000 -> 468000: the recipe engine (ADR-0011: JSON recipes, module declarations, expression evaluator) measures 467144 against main's 459739 on the same build; recipe data must leave the initial bundle before U3.4 wave 1 (PROGRESS U3.1). U4.1 (2026-10-05) raised 472000 -> 474500: the editor's studio frame slots and the JSON-Patch save client measure 473984 against 471492 (PROGRESS U4.1)."
 }

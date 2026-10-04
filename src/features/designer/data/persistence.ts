@@ -8,7 +8,8 @@ import { readDesign } from "../document";
 import { designRepo } from "../storage";
 import { useEditor } from "../store/editor";
 import type { DesignContent, DesignSpec } from "../types";
-import { adminDocuments, documentOf, storeDesigns, type CreateInput } from "./api";
+import type { JsonValue } from "../lib/json-patch";
+import { adminDocuments, documentOf, storeDesigns, type BoxFields, type CreateInput } from "./api";
 import { drafts, type Draft } from "./drafts";
 
 /**
@@ -46,10 +47,26 @@ export interface PersistenceConfig {
   onSaved?: () => void;
   /** A PNG data URL of the sheet for the design's card, or `null` while the canvas is not ready. */
   thumbnail: () => string | null;
+  /**
+   * The studio (U4.1): the box fields and calculator spec saved with each version (D-275), or
+   * `null` while they cannot be told (the product's configurator is loading). With it, an
+   * autosave that changes neither the box nor the name goes as JSON Patch (D-276).
+   */
+  box?: () => BoxFields | null;
+  /** The box fields the server's current version has, as the page read them. */
+  initialBox?: BoxFields | null;
+}
+
+/** What the server's current version was saved with: its number and box (the studio prices it). */
+export interface SavedBox {
+  versionNo: number | null;
+  box: BoxFields | null;
 }
 
 /** Autosave waits this long after the last change (ms). */
 export const AUTOSAVE_DELAY_MS = 2500;
+/** A change of the box itself is saved sooner: the studio's price waits for it (ms). */
+export const BOX_SAVE_DELAY_MS = 400;
 /** A draft is written this long after the last change (ms). */
 const DRAFT_DELAY_MS = 800;
 
@@ -71,6 +88,13 @@ export function usePersistence(config: PersistenceConfig) {
   const serverId = useRef(config.serverId);
   const etag = useRef(config.etag);
   const versionNo = useRef(config.versionNo);
+  /** The document and name the server's current version has — what the next patch is made against. */
+  const sent = useRef<{ document: JsonValue; name: string } | null>(null);
+  const [savedBox, setSavedBox] = useState<SavedBox>({
+    versionNo: config.versionNo,
+    box: config.initialBox ?? null,
+  });
+  const boxRef = useRef<BoxFields | null>(config.initialBox ?? null);
   const inFlight = useRef<Promise<boolean> | null>(null);
   const again = useRef<"autosave" | "manual" | null>(null);
   const configRef = useRef(config);
@@ -114,28 +138,50 @@ export function usePersistence(config: PersistenceConfig) {
             if (!ok) throw new Error("storage.full");
             if (!previous) cfg.onCreated?.(snapshot.designId);
           } else if (cfg.mode === "store") {
+            const box = cfg.box?.() ?? null;
+            // Only the studio patches (U4.1): the plain designer never loads the diff.
+            const patching = cfg.box ? await import("../lib/json-patch") : null;
+            const boxChanged = !!box && !!patching && !patching.sameJson(box, boxRef.current);
+            const document = { spec, content } as unknown as JsonValue;
+            let saved;
             if (!serverId.current) {
               if (!cfg.create) throw new Error("design.product_unknown");
-              const created = await storeDesigns.create({ ...cfg.create, name, spec, content });
+              saved = await storeDesigns.create({ ...cfg.create, name, spec, content, box });
               await drafts.remove(snapshot.designId);
-              serverId.current = created.data.id;
-              etag.current = created.etag;
-              versionNo.current = created.data.versionNo;
-              setLastSavedAt(created.data.updatedAt);
-              cfg.onCreated?.(created.data.id);
+              serverId.current = saved.data.id;
+              cfg.onCreated?.(saved.data.id);
             } else {
-              let thumbnailFileId: string | undefined;
-              const png = kind === "manual" ? cfg.thumbnail() : null;
-              if (png) thumbnailFileId = await storeDesigns.uploadThumbnail(png, name).catch(() => undefined);
-              const saved = await storeDesigns.save(
-                serverId.current,
-                { name, kind, spec, content, thumbnailFileId },
-                etag.current,
-              );
+              const operations =
+                patching && kind === "autosave" && !boxChanged && sent.current?.name === name
+                  ? patching.diff(sent.current.document, document)
+                  : null;
+              if (operations && operations.length > 0 && patching!.patchBytes(operations) <= patching!.MAX_PATCH_BYTES) {
+                saved = await storeDesigns.patch(serverId.current, { kind, operations }, etag.current);
+              } else if (operations && operations.length === 0) {
+                saved = null;
+              } else {
+                let thumbnailFileId: string | undefined;
+                const png = kind === "manual" ? cfg.thumbnail() : null;
+                if (png) thumbnailFileId = await storeDesigns.uploadThumbnail(png, name).catch(() => undefined);
+                saved = await storeDesigns.save(
+                  serverId.current,
+                  { name, kind, spec, content, thumbnailFileId, box: boxChanged ? box : null },
+                  etag.current,
+                );
+              }
+            }
+            sent.current = { document, name };
+            if (saved) {
               etag.current = saved.etag;
               versionNo.current = saved.data.versionNo;
               setLastSavedAt(saved.data.updatedAt);
             }
+            if (boxChanged) boxRef.current = box;
+            const savedVersion = saved?.data.versionNo ?? null;
+            if (savedVersion !== null)
+              setSavedBox((previous) =>
+                boxChanged || previous.versionNo === null ? { versionNo: savedVersion, box: boxRef.current } : previous,
+              );
           } else if (serverId.current) {
             const saved = await adminDocuments.save(
               serverId.current,
@@ -184,6 +230,7 @@ export function usePersistence(config: PersistenceConfig) {
     const unsubscribe = useEditor.subscribe((s, prev) => {
       if (s.content === prev.content && s.spec === prev.spec && s.name === prev.name) return;
       if (!s.dirty) return;
+      const delay = s.spec !== prev.spec ? BOX_SAVE_DELAY_MS : AUTOSAVE_DELAY_MS;
       if (stateRef.current !== "conflict") setState("dirty");
       clearTimeout(draft);
       draft = setTimeout(() => {
@@ -199,7 +246,7 @@ export function usePersistence(config: PersistenceConfig) {
       clearTimeout(autosave);
       autosave = setTimeout(() => {
         if (stateRef.current !== "conflict") void saveNow("autosave");
-      }, AUTOSAVE_DELAY_MS);
+      }, delay);
     });
     const onOnline = () => {
       if (useEditor.getState().dirty) void saveNow("autosave");
@@ -269,6 +316,9 @@ export function usePersistence(config: PersistenceConfig) {
         if (read) editor.load({ id: editor.designId, name, spec: read.spec, content: read.content });
         etag.current = latest.etag;
         versionNo.current = latest.data.versionNo ?? versionNo.current;
+        // Their version: the next save is made whole, with the box as it is then.
+        sent.current = null;
+        boxRef.current = null;
         await drafts.remove(draftKey());
         setState("saved");
         return;
@@ -304,6 +354,8 @@ export function usePersistence(config: PersistenceConfig) {
           editor.load({ id: editor.designId, name: restored.data.title, spec: read.spec, content: read.content });
         etag.current = restored.etag;
         versionNo.current = restored.data.versionNo;
+        sent.current = null;
+        boxRef.current = null;
         setLastSavedAt(restored.data.updatedAt);
         setState("saved");
         return true;
@@ -325,6 +377,8 @@ export function usePersistence(config: PersistenceConfig) {
     resolveConflict,
     restoreVersion,
     serverId: () => serverId.current,
+    /** The version the studio prices and the box it was saved with (U4.1). */
+    savedBox,
   };
 }
 

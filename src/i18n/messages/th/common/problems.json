@@ -127,7 +127,10 @@
     "document_too_large": "ไฟล์ออกแบบใหญ่เกินไป",
     "template_without_design": "เทมเพลตยังไม่มีแบบ",
     "read_only": "แก้ไขไม่ได้",
-    "version_required": "ต้องระบุเวอร์ชันของงานออกแบบ"
+    "version_required": "ต้องระบุเวอร์ชันของงานออกแบบ",
+    "nothing_to_patch": "ยังไม่มีเวอร์ชันให้แก้ไข",
+    "patch_too_large": "การแก้ไขครั้งนี้ใหญ่เกินไป",
+    "patch_failed": "แก้ไขแบบไม่สำเร็จ"
   },
   "discount_memos": {
     "not_usable": "ใช้บันทึกส่วนลดนี้ไม่ได้",
@@ -437,5 +440,10 @@
   },
   "styles": {
     "variant_not_found": "ไม่พบแบบกล่องนี้"
+  },
+  "studio": {
+    "spec_mismatch": "สเปกไม่ตรงกับกล่องของแบบนี้",
+    "spec_missing": "แบบนี้ยังไม่มีสเปกสำหรับคำนวณราคา",
+    "rate_limited": "คำนวณราคาถี่เกินไป รอสักครู่"
   }
 }
