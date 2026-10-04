@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { getStyle, hingeMapOf, REFERENCE_MATERIALS, resolveValues } from "@packio/dieline";
 
+import { MOCK_STUDIO_RULES } from "../../../../mocks/store/studio";
 import type { DesignElement, ShapeElement, TextElement } from "../types";
 import { alignMoves, distributeMoves } from "./align";
-import { designIssues, type CheckInput } from "./checks";
+import { activeRules, designIssues, type PrintRule, type CheckInput } from "./checks";
 import {
   barsPath,
   EAN_QUIET_LEFT,
@@ -121,8 +122,8 @@ describe("print checks", () => {
     ],
     glueAreas: [],
     outlines: [square],
-    bleedMm: 3,
-    minDpi: 300,
+    // The seeded catalogue plus the mock's 6 pt text minimum (contract/studio-rules.json).
+    rules: activeRules(MOCK_STUDIO_RULES.rules as PrintRule[], { printMethod: null, materialClass: null }),
   });
   const text = (x: number, fontSize = 5): TextElement => ({
     ...base,
@@ -140,9 +141,9 @@ describe("print checks", () => {
 
   it("flags text across a fold, in the danger zone, or too small", () => {
     expect(designIssues(input([text(10)]))).toEqual([]);
-    expect(designIssues(input([text(48)])).map((i) => i.code)).toContain("crosses_fold");
-    expect(designIssues(input([text(1)])).map((i) => i.code)).toContain("text_in_danger_zone");
-    expect(designIssues(input([text(10, 1.5)])).map((i) => i.code)).toContain("small_text");
+    expect(designIssues(input([text(48)])).map((i) => i.ruleId)).toContain("crosses_crease");
+    expect(designIssues(input([text(1)])).map((i) => i.ruleId)).toContain("safe_zone");
+    expect(designIssues(input([text(10, 1.5)])).map((i) => i.ruleId)).toContain("min_text_size");
   });
 
   it("flags low-resolution images, missing bleed and invalid codes", () => {
@@ -157,10 +158,11 @@ describe("print checks", () => {
       height: 20,
       naturalWidth: 400,
     };
-    const low = designIssues(input([image])).find((i) => i.code === "low_resolution");
-    expect(low?.data?.dpi).toBe(200);
-    expect(designIssues(input([rect("r", 1, 40)])).map((i) => i.code)).toContain("missing_bleed");
-    expect(designIssues(input([rect("r", 10, 40)])).map((i) => i.code)).not.toContain("missing_bleed");
+    const low = designIssues(input([{ ...image, naturalHeight: 400 }])).find((i) => i.ruleId === "image_resolution");
+    expect(low?.data?.ppi).toBe(200);
+    expect(low?.severity).toBe("warn");
+    expect(designIssues(input([rect("r", 1, 40)])).map((i) => i.ruleId)).toContain("bleed");
+    expect(designIssues(input([rect("r", 10, 40)])).map((i) => i.ruleId)).not.toContain("bleed");
     const code = {
       ...base,
       id: "c",
@@ -174,7 +176,7 @@ describe("print checks", () => {
       fill: "#000",
       background: "#fff",
     };
-    expect(designIssues(input([code])).map((i) => i.code)).toContain("code_invalid");
+    expect(designIssues(input([code])).map((i) => i.ruleId)).toContain("barcode_invalid");
   });
 });
 

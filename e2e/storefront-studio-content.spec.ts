@@ -85,13 +85,18 @@ test("Packio elements, a validated barcode, a nutrition block, a finish layer an
   // A handling mark is placed at once; a mark with legal meaning asks for the right first.
   await page.getByRole("button", { name: "ตั้งด้านนี้ขึ้น", exact: true }).click();
   await openRail(page, "องค์ประกอบ");
-  await page.getByRole("button", { name: /เครื่องหมายรับรอง \(ตัวอย่าง\) — ต้องยืนยันสิทธิ์ก่อนใช้/ }).click();
-  const declare = page.getByRole("dialog", { name: /ยืนยันสิทธิ์ใช้/ });
-  await expect(declare).toBeVisible();
-  await expectNoViolations(page);
-  await declare.getByRole("textbox", { name: "คำยืนยันสิทธิ์" }).fill("ใบรับรองเลขที่ TEST-001 ออกโดยหน่วยงานทดสอบ");
-  await declare.getByRole("button", { name: "ยืนยันและวางเครื่องหมาย" }).click();
-  await expect(declare).toBeHidden();
+  // The persona's declaration outlives the test in the mock: declare only when it is still asked for.
+  const mark = page.getByRole("button", { name: /^เครื่องหมายรับรอง \(ตัวอย่าง\)/ });
+  const needsRight = /ต้องยืนยันสิทธิ์ก่อนใช้/.test((await mark.getAttribute("aria-label")) ?? "");
+  await mark.click();
+  if (needsRight) {
+    const declare = page.getByRole("dialog", { name: /ยืนยันสิทธิ์ใช้/ });
+    await expect(declare).toBeVisible();
+    await expectNoViolations(page);
+    await declare.getByRole("textbox", { name: "คำยืนยันสิทธิ์" }).fill("ใบรับรองเลขที่ TEST-001 ออกโดยหน่วยงานทดสอบ");
+    await declare.getByRole("button", { name: "ยืนยันและวางเครื่องหมาย" }).click();
+    await expect(declare).toBeHidden();
+  }
 
   // EAN-8 with its check digit added by the validation service, at least its GS1 minimum width.
   await openRail(page, "องค์ประกอบ");
@@ -138,15 +143,17 @@ test("the company's brand kit: the Company Admin keeps it, one click restyles th
   const kits = page.getByRole("region", { name: /^ชุดแบรนด์ของ / });
   await kits.getByRole("button", { name: "สร้างชุดแบรนด์" }).click();
   const editor = page.getByRole("dialog", { name: "สร้างชุดแบรนด์" });
-  await editor.getByRole("textbox", { name: "ชื่อชุดแบรนด์" }).fill("แบรนด์ทดสอบ E2E");
+  // A name of this run's own: the mock keeps the company's kits between runs.
+  const kitName = `แบรนด์ทดสอบ ${Date.now().toString(36)}`;
+  await editor.getByRole("textbox", { name: "ชื่อชุดแบรนด์" }).fill(kitName);
   await editor.getByRole("textbox", { name: "สีหลัก" }).first().fill("#7a1fa2");
   await expectNoViolations(page);
   await editor.getByRole("button", { name: "บันทึกชุดแบรนด์" }).click();
   await expect(editor).toBeHidden();
 
-  const kit = kits.getByRole("listitem").filter({ hasText: "แบรนด์ทดสอบ E2E" });
+  const kit = kits.getByRole("listitem").filter({ hasText: kitName });
   await kit.getByRole("button", { name: "ใช้แบรนด์ของฉัน" }).click();
-  await expect(page.getByText("ใช้ชุดแบรนด์ แบรนด์ทดสอบ E2E แล้ว")).toBeVisible();
+  await expect(page.getByText(`ใช้ชุดแบรนด์ ${kitName} แล้ว`)).toBeVisible();
   const content = await saved(page, id);
   expect(content.elements.find((e) => e.name === "band")!.fill).toBe("#7a1fa2");
 });

@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import {
   allFaces,
-  DEFAULT_BLEED_MM,
   DEFAULT_SAFE_MM,
   dielineLines,
   flattenContour,
@@ -18,12 +17,10 @@ import {
 import { useEditor } from "../store/editor";
 import type { DesignElement } from "../types";
 import type { DesignerCatalog } from "../data/api";
-import { designIssues, type CheckInput, type DesignIssue } from "./checks";
+import { activeRules, designIssues, type CheckInput, type DesignIssue, type PrintRule } from "./checks";
+import type { FixContext } from "./fixes";
 import { elementCorners, localSize } from "./geometry";
 import { measureText } from "./measure";
-
-/** The minimum image resolution when the catalogue sends no artwork rules. */
-const DEFAULT_MIN_DPI = 300;
 
 export const cornersOf = (el: DesignElement): Pt[] =>
   elementCorners(el, localSize(el, el.type === "text" ? measureText(el) : undefined));
@@ -49,22 +46,54 @@ export function sheetOf(
   };
 }
 
+/** What the checks are run with besides the sheet (U4.5): the rule catalogue and the design's context. */
+export interface CheckContext {
+  /** The catalogue (`store.studio.getRules`), or the vendored one while it is not reachable. */
+  rules: PrintRule[];
+  printMethod: string | null;
+  materialClass: string | null;
+  /** Studio elements whose legal right is not declared. */
+  undeclared?: Set<string>;
+}
+
 /** The live print checks for the design on screen. */
-export function useDesignIssues(dieline: Dieline | null, catalog: DesignerCatalog | null): DesignIssue[] {
+export function useDesignIssues(dieline: Dieline | null, catalog: DesignerCatalog | null, context: CheckContext): DesignIssue[] {
   const elements = useEditor((s) => s.content.elements);
+  const pattern = useEditor((s) => s.content.pattern);
   const safeMm = catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM;
-  const bleedMm = catalog?.rules.bleedMm ?? DEFAULT_BLEED_MM;
-  const minDpi = catalog?.rules.minDpi ?? DEFAULT_MIN_DPI;
-  const sheet = useMemo(() => (dieline ? sheetOf(dieline, safeMm) : null), [dieline, safeMm]);
+  const rules = useMemo(
+    () => activeRules(context.rules, { printMethod: context.printMethod, materialClass: context.materialClass }),
+    [context.rules, context.printMethod, context.materialClass],
+  );
+  // The safe zone is the rule's when Prepress set it, else the catalogue's artwork rule.
+  const safe = Number(rules.find((r) => r.id === "safe_zone")?.thresholds?.safeZoneMm ?? safeMm);
+  const sheet = useMemo(() => (dieline ? sheetOf(dieline, safe) : null), [dieline, safe]);
   // Inside artwork (U4.3) sits on the sheet as seen from inside: checked against the mirrored die.
-  const inside = useMemo(() => (dieline ? sheetOf(mirrorDieline(dieline), safeMm) : null), [dieline, safeMm]);
+  const inside = useMemo(() => (dieline ? sheetOf(mirrorDieline(dieline), safe) : null), [dieline, safe]);
+  const undeclared = context.undeclared;
   return useMemo(() => {
     if (!sheet || !inside) return [];
     const outer = elements.filter((e) => e.side !== "inside");
     const inner = elements.filter((e) => e.side === "inside");
+    const common = { cornersOf, rules, undeclared };
     return [
-      ...designIssues({ ...sheet, elements: outer, cornersOf, bleedMm, minDpi }),
-      ...(inner.length ? designIssues({ ...inside, elements: inner, cornersOf, bleedMm, minDpi }) : []),
+      ...designIssues({ ...sheet, ...common, elements: outer, pattern }),
+      ...(inner.length ? designIssues({ ...inside, ...common, elements: inner }) : []),
     ];
-  }, [sheet, inside, elements, bleedMm, minDpi]);
+  }, [sheet, inside, elements, pattern, rules, undeclared]);
+}
+
+/** What a fix needs for a side of the board (U4.5): its die's safe zones and outlines, and the rules. */
+export function fixContextFor(
+  dieline: Dieline,
+  catalog: DesignerCatalog | null,
+  context: CheckContext,
+  side: "outside" | "inside",
+): FixContext {
+  const rules = activeRules(context.rules, { printMethod: context.printMethod, materialClass: context.materialClass });
+  const safe = Number(
+    rules.find((r) => r.id === "safe_zone")?.thresholds?.safeZoneMm ?? catalog?.rules.safeMarginMm ?? DEFAULT_SAFE_MM,
+  );
+  const sheet = sheetOf(side === "inside" ? mirrorDieline(dieline) : dieline, safe);
+  return { cornersOf, safeZones: sheet.safeZones, outlines: sheet.outlines, rules };
 }

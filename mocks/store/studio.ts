@@ -18,7 +18,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import { problem } from "../support";
 import { typeCodeOf } from "./catalog";
-import { designRowFor, versionBoxOf, type StudioBox } from "./designs";
+import { designRowFor, versionBoxOf, versionOf, type StudioBox } from "./designs";
 import { configuratorOf, inputsOf, productOfId, stepOf } from "./quotes";
 
 type Reason = Schemas["PriceChangeReason"];
@@ -189,7 +189,14 @@ export const MOCK_STUDIO_RULES: Schemas["StudioRulesDto"] = {
         ? { ...rule, thresholds: { minPt: 6 } }
         : rule,
   ),
-  softProof: { label: { th: "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา", en: "Preview, not a contract proof" }, profiles: [] },
+  // Fake soft-proof profiles (the seed has none until Prepress supplies them, D-279).
+  softProof: {
+    label: { th: "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา", en: "Preview, not a contract proof" },
+    profiles: [
+      { materialClass: "paperboard", label: "กระดาษแข็งขาว (จำลอง)", transform: { saturate: 0.9, multiply: "#f2efe8", multiplyOpacity: 0.4 } },
+      { materialClass: "corrugated", label: "กระดาษคราฟต์ (จำลอง)", transform: { saturate: 0.75, brightness: 0.93, multiply: "#c9a57a", multiplyOpacity: 0.55 } },
+    ],
+  },
 };
 
 storeStudioHandlers.push(http.get("*/v1/store/studio/rules", () => HttpResponse.json(MOCK_STUDIO_RULES)));
@@ -327,5 +334,169 @@ storeStudioHandlers.push(
       minWidthMm: nominal === undefined ? null : Math.round(nominal * 0.8 * 100) / 100,
     };
     return HttpResponse.json(result);
+  }),
+);
+
+/* ------------------------------------------------------------------ checks (D-278) */
+
+type Finding = Schemas["CheckFindingDto"];
+
+/**
+ * packio-api's `evaluateDocument` (studio/print-rules.ts) as the mock runs it: the rules evaluated on
+ * the document, with their thresholds, in the same units and rounding. Kept as a port so the web's
+ * checks can be held to the same ids for the same document (`checks-parity.test.ts`).
+ */
+export function evaluateDocumentLikeTheApi(
+  document: { content?: { elements?: unknown; pattern?: unknown } },
+  rules: Schemas["PrintRuleDto"][],
+  ctx: { undeclared: Set<string> },
+): Omit<Finding, "acknowledged">[] {
+  const content = document.content;
+  const elements = (Array.isArray(content?.elements) ? content.elements : []) as Record<string, unknown>[];
+  const out: Omit<Finding, "acknowledged">[] = [];
+  const PT = 72 / 25.4;
+  const num = (v: unknown): number | null => (v === undefined || v === null || v === "" ? null : Number(v));
+  const on = (id: string) => rules.find((r) => r.id === id && r.evaluatedOn.includes("document") && r.thresholds !== null);
+  const scale = (el: Record<string, unknown>, k: string) => Math.abs(num(el[k]) ?? 1) || 1;
+  const id = (el: Record<string, unknown>) => (typeof el.id === "string" ? el.id : "");
+  const round = (n: number) => Math.round(n * 100) / 100;
+
+  const image = on("image_resolution");
+  if (image) {
+    const warn = num(image.thresholds!.warnBelowPpi);
+    const block = num(image.thresholds!.blockBelowPpi);
+    for (const el of elements.filter((e) => e.type === "image")) {
+      const pxW = num(el.naturalWidth);
+      const pxH = num(el.naturalHeight);
+      const crop = (el.crop as { width?: number; height?: number } | undefined) ?? {};
+      const mmW = (num(el.width) ?? 0) * scale(el, "scaleX");
+      const mmH = (num(el.height) ?? 0) * scale(el, "scaleY");
+      if (!pxW || !pxH || mmW <= 0 || mmH <= 0) continue;
+      const ppi = Math.floor(Math.min((pxW * (crop.width ?? 1)) / (mmW / 25.4), (pxH * (crop.height ?? 1)) / (mmH / 25.4)));
+      const severity = block !== null && ppi < block ? "block" : warn !== null && ppi < warn ? image.severity : null;
+      if (severity) out.push({ ruleId: image.id, severity, elementId: id(el), details: { ppi } });
+    }
+  }
+  const text = on("min_text_size");
+  const minPt = text ? num(text.thresholds!.minPt) : null;
+  if (text && minPt !== null)
+    for (const el of elements.filter((e) => e.type === "text")) {
+      const pt = (num(el.fontSize) ?? 0) * scale(el, "scaleY") * PT;
+      if (pt > 0 && pt < minPt) out.push({ ruleId: text.id, severity: text.severity, elementId: id(el), details: { pt: round(pt) } });
+    }
+  const hairline = on("hairline");
+  const minStroke = hairline ? num(hairline.thresholds!.minStrokePt) : null;
+  if (hairline && minStroke !== null)
+    for (const el of elements.filter((e) => ["rect", "circle", "shape"].includes(String(e.type)))) {
+      const stroke = typeof el.stroke === "string" && el.stroke !== "" && el.stroke !== "transparent";
+      const pt = (num(el.strokeWidth) ?? 0) * Math.max(scale(el, "scaleX"), scale(el, "scaleY")) * PT;
+      if (stroke && pt > 0 && pt < minStroke)
+        out.push({ ruleId: hairline.id, severity: hairline.severity, elementId: id(el), details: { pt: round(pt) } });
+    }
+  const barcode = on("barcode_invalid");
+  if (barcode)
+    for (const el of elements.filter((e) => e.type === "code")) {
+      const kind = el.kind === "ean13" ? "ean13" : el.kind === "qr" ? "qr" : null;
+      if (!kind) continue;
+      const value = typeof el.value === "string" ? el.value : "";
+      const problems: string[] = [];
+      if (kind === "ean13") {
+        if (!/^[0-9]+$/.test(value)) problems.push("digits_only");
+        else if (value.length !== 13) problems.push("wrong_length");
+        else if (gs1Check(value.slice(0, -1)) !== Number(value.at(-1))) problems.push("check_digit");
+      } else {
+        const bytes = new TextEncoder().encode(value).length;
+        if (bytes === 0) problems.push("empty");
+        if (bytes > QR_BYTES[(typeof el.level === "string" ? el.level : "M") as "M"]) problems.push("too_long_for_level");
+      }
+      const widthMm = (num(el.width) ?? 0) * scale(el, "scaleX");
+      const minWidth = kind === "ean13" ? Math.round(37.29 * 0.8 * 100) / 100 : null;
+      if (minWidth !== null && widthMm > 0 && widthMm < minWidth) problems.push("too_small");
+      if (problems.length > 0) out.push({ ruleId: barcode.id, severity: barcode.severity, elementId: id(el), details: { problems } });
+    }
+  const rights = on("element_right_missing");
+  if (rights && ctx.undeclared.size)
+    for (const el of elements)
+      if (typeof el.studioElementId === "string" && ctx.undeclared.has(el.studioElementId))
+        out.push({ ruleId: rights.id, severity: rights.severity, elementId: id(el), details: { studioElementId: el.studioElementId } });
+  const spots = on("spot_colour_count");
+  const maxColours = spots ? num(spots.thresholds!.maxColours) : null;
+  if (spots && maxColours !== null) {
+    const colours = new Set<string>();
+    const add = (c: unknown) => {
+      if (typeof c === "string" && c !== "" && c !== "transparent") colours.add(c.toLowerCase());
+    };
+    for (const el of elements) for (const k of ["fill", "stroke", "background"]) add(el[k]);
+    const pattern = content?.pattern as { kind?: string; color?: string; background?: string } | undefined;
+    if (pattern && pattern.kind !== "none") {
+      add(pattern.color);
+      add(pattern.background);
+    }
+    if (colours.size > maxColours)
+      out.push({ ruleId: spots.id, severity: spots.severity, elementId: "", details: { colours: colours.size, max: maxColours } });
+  }
+  return out;
+}
+
+/** The rules in force for a version: on, and for its print method (the mock knows no material class). */
+const activeFor = (printMethod: string | null) =>
+  MOCK_STUDIO_RULES.rules.filter(
+    (r) => r.thresholds !== null && (r.printMethods === null || (printMethod !== null && r.printMethods.includes(printMethod as never))),
+  );
+
+const checkRuns = new Map<string, Schemas["CheckRunDto"]>();
+const acks = new Map<string, Set<string>>();
+
+function runFor(row: Parameters<typeof versionOf>[0], versionNo: number | undefined, viewer: string): Schemas["CheckRunDto"] | null {
+  const version = versionOf(row, versionNo);
+  if (!version) return null;
+  const mine = declared.get(viewer) ?? new Set<string>();
+  const undeclared = new Set(ELEMENTS.filter((e) => e.requiresRight && !mine.has(e.id)).map((e) => e.id));
+  const key = `${(row as { design: { id: string } }).design.id}:${version.versionNo}`;
+  const done = acks.get(key) ?? new Set<string>();
+  const findings = evaluateDocumentLikeTheApi(
+    version.document as never,
+    activeFor(version.box?.printMethod ?? null),
+    { undeclared },
+  ).map((f) => ({ ...f, acknowledged: done.has(`${f.ruleId}:${f.elementId ?? ""}`) }));
+  const counts = { block: 0, warn: 0, info: 0 };
+  for (const f of findings) counts[f.severity] += 1;
+  const run: Schemas["CheckRunDto"] = {
+    versionNo: version.versionNo,
+    source: "document",
+    rulesVersion: MOCK_STUDIO_RULES.version,
+    evaluatedAt: new Date().toISOString(),
+    findings,
+    counts,
+    ready: counts.block === 0 && findings.every((f) => f.severity !== "warn" || f.acknowledged),
+  };
+  checkRuns.set(key, run);
+  return run;
+}
+
+storeStudioHandlers.push(
+  http.post("*/v1/store/studio/:designId/checks", async ({ params, request }) => {
+    const row = designRowFor(request, String(params.designId));
+    if (row instanceof Response) return row;
+    const body = (await request.json().catch(() => ({}))) as Schemas["RunChecksDto"];
+    const run = runFor(row, body.versionNo, request.headers.get("authorization") ?? "");
+    return run ? HttpResponse.json(run) : problem(404, "http.not_found", "ไม่พบเวอร์ชันนี้");
+  }),
+  http.post("*/v1/store/studio/:designId/checks/acknowledgements", async ({ params, request }) => {
+    const row = designRowFor(request, String(params.designId));
+    if (row instanceof Response) return row;
+    const body = (await request.json()) as Schemas["AcknowledgeCheckDto"];
+    const viewer = request.headers.get("authorization") ?? "";
+    const version = versionOf(row, body.versionNo);
+    if (!version) return problem(404, "http.not_found", "ไม่พบเวอร์ชันนี้");
+    const key = `${row.design.id}:${version.versionNo}`;
+    const before = checkRuns.get(key) ?? runFor(row, version.versionNo, viewer);
+    if (!before) return problem(409, "studio.checks_not_run", "ยังไม่ได้ตรวจเวอร์ชันนี้");
+    const finding = before.findings.find((f) => f.ruleId === body.ruleId && (f.elementId ?? "") === (body.elementId ?? ""));
+    if (!finding)
+      return problem(422, "validation.failed", "ไม่พบผลตรวจนี้", [{ path: "ruleId", code: "not_found", message: "no such finding" }]);
+    if (finding.severity === "block") return problem(409, "studio.block_not_acknowledgeable", "ต้องแก้ไข ยอมรับไม่ได้");
+    acks.set(key, new Set([...(acks.get(key) ?? []), `${body.ruleId}:${body.elementId ?? ""}`]));
+    return HttpResponse.json(runFor(row, version.versionNo, viewer));
   }),
 );

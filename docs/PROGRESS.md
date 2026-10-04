@@ -48,6 +48,35 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.5 — ④ Check: continuous checks, one-click fixes, soft proof — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.5, on `feat/u4.5-checks` (worktree `../packio-web-u4`, from `main` at `e2fde40`, U4.4 merged). Post-launch (D-219); "auto mode".
+
+### Gap → done
+| Item | F4 had | Done |
+|---|---|---|
+| 1 Checks engine on shared rules | its own codes and fixed thresholds (`lib/checks.ts`) | Rewritten on **packio-api's catalogue** (`store.studio.getRules`; `contract/studio-rules.json` vendored at the lock's tag as the fallback and for the back office): the same **rule ids** (all 15), severities (block / warn / info) and thresholds from settings — a rule with unset thresholds is **off** (D-278), rules apply by print method and material class. The six rules packio-api evaluates on the document are computed exactly as its `evaluateDocument`; the die-geometry rules (safe zone, bleed, creases, glue, barcode across a fold), the CMYK gamut, finish feature size and undeclared marks are the studio's. Messages th/en per rule with the element and its face. |
+| 2 Panel, fixes, acknowledgements | a list that selects | Counts by severity; click selects (turning to the other side when needed); **one-click safe fixes** (`lib/fixes.ts`: move into the safe area, extend to the bleed, enlarge text / thicken a hairline / enlarge a barcode to the rule's minimum, the nearest allowed spot colours, an in-gamut colour); **warnings accepted per version** — on packio-api for the rules it finds (`acknowledgeCheck`, on the version it has, whose run is fetched first), in the design (`content.acknowledged`) for the studio-only ones. Blocks are never accepted. |
+| 3 Soft proof | — | A toggle on the stage when Prepress has a profile for the material class (`softProof.profiles`, D-279): the simplified transform as a CSS filter and a multiply overlay (kraft absorption), always labelled with the API's "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา". The seed has no profiles yet; the mock carries two fake ones. |
+| 4 Acceptance | — | Fixture designs triggering **each rule**, each safe fix leaving **no violation** of it (`checks-rules.test.ts`); **parity**: the client and packio-api's evaluator (the mock's port) find the same ids, elements and severities for every fixture; on the **real API** `e2e/integration/checks.spec.ts` shows the studio and packio-api's run of the saved version agreeing (a bad EAN-13 check digit). |
+
+### Found on the real API
+**`store.studio.runChecks` answers 500 on a second run of the same version** (unique index on the stored run). Recorded in `docs/integration.md` ("Defects found in packio-api"); the studio asks for a version's run once (versions are immutable).
+
+### Decisions taken
+- **Material class = the board kind** (`paperboard`, `corrugated` …) until packio-api's style-variant material class reaches the document; every seeded rule applies to all classes.
+- **The F4 QR module-size warning is dropped** — it is not in the catalogue, and the catalogue is Prepress's (D-278).
+- **`rich_black_small_text` and `white_ink_needed`** are recognised but not evaluated: their thresholds are unset in the seed and their keys undefined; they run once Prepress defines them (follow-up).
+- **The step panel is rendered once** and placed by CSS order (it was in the DOM twice, desktop and phone).
+
+### Tests
+Unit 1,033 (the rule fixtures and parity, the checks panel with fixes and acceptances, the old F4 cases moved to rule ids). e2e `storefront-studio-checks.spec.ts`: two too-small headings — one fixed in a click, one accepted and stored by packio-api with the version — and the soft proof; axe on the check step. Repeated runs of the studio suites green (the content suite made idempotent: declared rights and kits persist in the mock).
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; mock e2e full run 398 passed (failures fixed above; the known `storefront-account` timeouts green on re-run). Real API: `checks.spec.ts` and `studio.spec.ts` green. Lighthouse studio 496,235 B (ratchet 497,000).
+
+---
+
 ## U4.4 — ③ Design content: templates, brand kit, elements, data blocks, images, background, finishes — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.4, on `feat/u4.4-design-content` (worktree `../packio-web-u4`, from `main` at `34b19dc`, U4.3 merged). Post-launch (D-219); "auto mode".

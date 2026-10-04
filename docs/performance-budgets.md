@@ -212,3 +212,14 @@ kits with palette extraction, backgrounds — are `next/dynamic` rail panels (in
 496,380). What the canvas itself needs stays in the first load: finish layers, gradients and the
 full-wrap picture, the EAN-8 / UPC-A / Code 128 encoders (the canvas draws every symbol) and the
 image-quality badge of the properties panel. Orbit performance alone (`pnpm e2e:perf`): 56.1 fps.
+
+## U4.5 — ④ Check (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` | 492,619 | 496,235 (performance 0.98) | studio 493,000 → **497,000** |
+
+The checks now run packio-api's rule catalogue (ids, severities, thresholds, print methods,
+material classes) with the vendored catalogue as the fallback while `getRules` has not answered;
+the panel groups findings by severity with their fixes and acceptances; the soft proof is a CSS
+filter. The fixes themselves load on first use.

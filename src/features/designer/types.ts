@@ -151,6 +151,11 @@ export interface DesignSpec extends DielineSpec {
 export interface DesignContent {
   elements: DesignElement[];
   pattern: PatternSettings;
+  /**
+   * Warnings the customer accepted that only the studio can see (U4.5, `ruleId:elementId`), kept with
+   * the design version; the ones packio-api also finds are acknowledged with it (`acknowledgeCheck`).
+   */
+  acknowledged?: string[];
 }
 
 export interface SavedDesign {
