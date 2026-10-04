@@ -34,6 +34,7 @@ import {
   makeThumbnail,
   renderDieline,
 } from "@/features/designer/export";
+import { finishesIn, finishMask, type Finish } from "@/features/designer/lib/finishes";
 import { uprightAngles } from "@/features/designer/lib/upright";
 import { useFaceNames } from "@/features/designer/lib/useFaceNames";
 import type { DesignIssue } from "@/features/designer/lib/checks";
@@ -93,18 +94,36 @@ function useArtwork(
   side: "outside" | "inside",
   longSidePx: number,
 ) {
-  const [urls, setUrls] = useState<{ outside: string | null; inside: string | null }>({ outside: null, inside: null });
+  const [urls, setUrls] = useState<{
+    outside: string | null;
+    inside: string | null;
+    finishes: Partial<Record<Finish, string>>;
+  }>({ outside: null, inside: null, finishes: {} });
   useEffect(() => {
     if (!active || !dieline) return;
     const draw = () => {
       const s = stage();
       if (!s) return;
-      const url = renderDieline(s, dieline, {
-        pxPerMm: longSidePx / Math.max(dieline.width, dieline.height),
-        withGuides: false,
-        marginMm: 0,
-      });
-      setUrls((current) => ({ ...current, [side]: url }));
+      const pxPerMm = longSidePx / Math.max(dieline.width, dieline.height);
+      const url = renderDieline(s, dieline, { pxPerMm, withGuides: false, marginMm: 0 });
+      // The outside's finishes as masks for the model (U4.4): the window's inverted (the board stays).
+      const elements = useEditor.getState().content.elements;
+      const finishes =
+        side === "outside"
+          ? Object.fromEntries(
+              finishesIn(elements).map((f) => {
+                const mask = finishMask(elements, f, dieline, Math.min(pxPerMm, 4));
+                if (f === "window") {
+                  const ctx = mask.getContext("2d")!;
+                  ctx.globalCompositeOperation = "difference";
+                  ctx.fillStyle = "#ffffff";
+                  ctx.fillRect(0, 0, mask.width, mask.height);
+                }
+                return [f, mask.toDataURL("image/png")];
+              }),
+            )
+          : null;
+      setUrls((current) => ({ ...current, [side]: url, ...(finishes ? { finishes } : {}) }));
     };
     const first = setTimeout(draw, 50);
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -244,8 +263,13 @@ export interface EditorProps {
 function withAssetUrls(content: DesignContent, assets: InitialDesign["assets"]): DesignContent {
   if (!assets?.length) return content;
   const urls = new Map(assets.map((a) => [a.id, a.url]));
+  const wrap = content.pattern.image;
   return {
     ...content,
+    pattern:
+      wrap?.assetId && urls.has(wrap.assetId)
+        ? { ...content.pattern, image: { ...wrap, src: urls.get(wrap.assetId)! } }
+        : content.pattern,
     elements: content.elements.map((el) =>
       el.type === "image" && el.assetId && urls.has(el.assetId) ? { ...el, src: urls.get(el.assetId)! } : el,
     ),
@@ -380,6 +404,25 @@ export default function Editor({
     return useEditor.subscribe((s) => {
       const designId = persistence.serverId();
       if (!designId) return;
+      // The full-wrap background picture (U4.4) is a design asset too.
+      const wrap = s.content.pattern.image;
+      if (wrap && !wrap.assetId && wrap.src.startsWith("data:") && !uploading.current.has("pattern")) {
+        uploading.current.add("pattern");
+        void (async () => {
+          try {
+            const blob = await (await fetch(wrap.src)).blob();
+            const file = new File([blob], `background.${blob.type.split("/")[1] ?? "png"}`, { type: blob.type });
+            const asset = await storeDesigns.attachAsset(designId, file);
+            const now = useEditor.getState().content.pattern.image;
+            if (now?.src === wrap.src)
+              useEditor.getState().setPattern({ image: { ...now, src: asset.url, assetId: asset.id } });
+          } catch {
+            // Left as a data URL: saved with the document.
+          } finally {
+            uploading.current.delete("pattern");
+          }
+        })();
+      }
       for (const el of s.content.elements) {
         if (el.type !== "image" || el.assetId || !el.src.startsWith("data:") || uploading.current.has(el.id)) continue;
         uploading.current.add(el.id);
@@ -497,6 +540,7 @@ export default function Editor({
   const show3d = chrome?.views ? view !== "flat" : sideTab === "preview" || mobilePanel === "preview";
   const artworks = useArtwork(show3d, stage, canvasDieline, side, view === "split" ? 1024 : 2048);
   const artwork = artworks.outside;
+  const finishMasks = artworks.finishes;
 
   const switchSide = async (next: "outside" | "inside") => {
     if (next === side) return;
@@ -572,6 +616,7 @@ export default function Editor({
           ? {
               fill: true,
               insideArtwork: artworks.inside,
+              finishMasks,
               faceLabels: Object.fromEntries(faceNames),
               focusedFaceId,
               pickLabel: t("stage.pick"),

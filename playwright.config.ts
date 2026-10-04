@@ -109,7 +109,16 @@ export default defineConfig({
           name: "chromium",
           use: { ...devices["Desktop Chrome"] },
           // The mock project: every spec here is written against the mock API's fixtures.
-          testIgnore: [/visual\.spec\.ts/, /journeys\//, /integration\//],
+          testIgnore: [/visual\.spec\.ts/, /journeys\//, /integration\//, /studio-perf\.spec\.ts/],
+        },
+        /*
+         * The studio's orbit performance (U4.3): measured alone (`pnpm e2e:perf`, one worker), so the
+         * frame rate is the studio's and not the load of the rest of the suite running beside it.
+         */
+        {
+          name: "perf",
+          testMatch: /studio-perf\.spec\.ts/,
+          use: { ...devices["Desktop Chrome"] },
         },
         /*
          * Step counters for the scorecard's tasks T1–T12 (U5.0, `e2e/journeys/`). Registered always,

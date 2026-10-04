@@ -73,7 +73,14 @@
     "color": "Pattern colour",
     "background": "Background colour",
     "size": "Pattern size {size} mm",
-    "hexLabel": "Hex colour"
+    "hexLabel": "Hex colour",
+    "gradientTo": "Fade to",
+    "angle": "Direction {angle}°",
+    "wrapHint": "One picture over the whole sheet and its bleed; use a high-resolution image",
+    "wrapAlt": "The full-wrap background",
+    "wrapUpload": "Upload a background picture",
+    "wrapReplace": "Replace the background picture",
+    "wrapFailed": "This picture cannot be used"
   },
   "properties": {
     "text": "Text",
@@ -148,7 +155,24 @@
     "clip": "Clip to",
     "clipHint": "Shows only the part inside the chosen face",
     "clipSheet": "Whole sheet (wraps across folds)",
-    "wrapWarning": "Artwork across a fold can shift a little within the folding tolerance; keep text and barcodes off the folds"
+    "wrapWarning": "Artwork across a fold can shift a little within the folding tolerance; keep text and barcodes off the folds",
+    "finish": "Finish (its own layer)",
+    "finishHint": "Drawn as a separate layer for the finishing plate, not printed in ink",
+    "finishes": {
+      "none": "None",
+      "foil": "Foil stamping",
+      "spot_uv": "Spot UV",
+      "emboss": "Embossing",
+      "window": "Window film"
+    },
+    "ppi": "{ppi} ppi",
+    "ppiVerdict": {
+      "success": "Sharp enough to print",
+      "warning": "Low resolution: it may print soft",
+      "danger": "Too low to print"
+    },
+    "colourRgb": "RGB images are converted to CMYK for print; some vivid colours may soften",
+    "colourCmyk": "CMYK images may look different on screen but print as saved"
   },
   "setup": {
     "title": "Box setup",
@@ -330,7 +354,74 @@
     "qrHint": "E.g. your shop's link — 25 mm by default, with its quiet zone",
     "eanHint": "Type 12 digits and the check digit is added",
     "invalid": "A code cannot be made from this value",
-    "addCode": "Add code"
+    "addCode": "Add code",
+    "packio": "Packio elements",
+    "kinds": {
+      "shape": "Shapes",
+      "icon": "Icons",
+      "mark": "Packaging marks"
+    },
+    "needsRight": "{name} — declare your right first",
+    "rightBadge": "Right",
+    "declareTitle": "Declare your right to use {name}",
+    "declareBody": "This mark has legal meaning. Use it only when you or your company are authorised; your statement is recorded with your account.",
+    "declareConfirm": "Declare and place",
+    "declareStatement": "Your statement",
+    "declareHint": "E.g. the certificate number and who issued it (at least 10 characters)",
+    "declareFailed": "Could not record the declaration",
+    "symbology": {
+      "qr": "QR code",
+      "ean13": "EAN-13",
+      "ean8": "EAN-8",
+      "upca": "UPC-A",
+      "code128": "Code 128"
+    },
+    "qrLevel": "Error correction",
+    "qrLevelHint": "Higher levels read even when part of the code is damaged, but hold less",
+    "qrLevels": {
+      "L": "L — low (7%)",
+      "M": "M — medium (15%)",
+      "Q": "Q — quartile (25%)",
+      "H": "H — high (30%)"
+    },
+    "barValue": "The barcode's number or text",
+    "hints": {
+      "qr": "E.g. your shop's link — 25 mm by default with its quiet zone",
+      "ean13": "Type 12 digits; the check digit is added",
+      "ean8": "Type 7 digits; the check digit is added",
+      "upca": "Type 11 digits; the check digit is added",
+      "code128": "Latin letters, digits and common symbols"
+    },
+    "problems": {
+      "check_digit": "The check digit is wrong",
+      "digits_only": "Digits only",
+      "empty": "Nothing entered yet",
+      "not_ascii": "Has characters this barcode cannot carry",
+      "too_long_for_level": "Too long for this level",
+      "wrong_length": "Wrong number of digits",
+      "too_small": "Smaller than the minimum that scans"
+    },
+    "minWidth": "At least {mm, number} mm wide to scan",
+    "blocks": {
+      "title": "Label information",
+      "kind": "Information",
+      "ingredients": "Ingredients",
+      "nutrition": "Nutrition",
+      "manufacturer": "Manufacturer",
+      "ingredientsHint": "Type it as it should read; Thai lines never break inside a word",
+      "add": "Place it on the box",
+      "fields": {
+        "serving": "Serving size",
+        "energyKcal": "Energy",
+        "fatG": "Total fat",
+        "sugarG": "Sugar",
+        "sodiumMg": "Sodium",
+        "name": "Manufacturer",
+        "address": "Address",
+        "phone": "Tel.",
+        "fdaNumber": "Thai FDA no."
+      }
+    }
   },
   "uploads": {
     "upload": "Upload images",
@@ -351,7 +442,10 @@
     "logoFailed": "The logo could not be opened",
     "selectFirst": "Select something first, then pick a colour to apply",
     "apply": "Apply {colour} to the selection",
-    "remove": "Remove {colour}"
+    "remove": "Remove {colour}",
+    "browserOnly": "Kept in this browser",
+    "applyMine": "Use my brand",
+    "appliedLocal": "Your colours and logo are on the template"
   },
   "layers": {
     "empty": "No elements yet",
@@ -380,7 +474,8 @@
     "none": "No templates for this product yet",
     "replaceTitle": "Replace the current design?",
     "replaceBody": "The template replaces every element on this box. You can undo it afterwards.",
-    "replace": "Use template"
+    "replace": "Use template",
+    "productTitle": "This product's templates"
   },
   "arrange": {
     "heading": "Arrange ({count} selected)",
@@ -562,5 +657,56 @@
     "model": "The box in 3D",
     "pick": "Pick a face to design",
     "editing": "Editing: {face}"
+  },
+  "studioTemplates": {
+    "title": "Packio templates",
+    "useCase": "Made for",
+    "all": "Everything",
+    "useCases": {
+      "coffee": "Coffee",
+      "cosmetics": "Cosmetics",
+      "snacks": "Snacks",
+      "e_commerce": "Online shop",
+      "gift": "Gift",
+      "electronics": "Electronics",
+      "pharmacy": "Pharmacy & health"
+    },
+    "none": "No templates for this yet",
+    "applied": "Template {name} applied and fitted to this box",
+    "failed": "This template cannot be used",
+    "replaceTitle": "Replace the outside artwork?",
+    "replaceBody": "The template replaces all outside artwork. You can undo it.",
+    "replace": "Use this template"
+  },
+  "brandKits": {
+    "title": "{company}'s brand kits",
+    "none": "Your company has no brand kit yet",
+    "apply": "Use my brand",
+    "edit": "Edit",
+    "create": "Create a brand kit",
+    "applied": "Brand kit {name} applied",
+    "applyFailed": "Could not apply the brand kit",
+    "editTitle": "Edit brand kit",
+    "createTitle": "Create a brand kit",
+    "editorBody": "Everyone in the company can use it; the Company Admin edits it",
+    "name": "Kit name",
+    "logo": "Main logo",
+    "noLogos": "Add a logo to the company's brand assets first",
+    "palette": "Palette",
+    "extract": "Take colours from the logo",
+    "noColours": "No colours found in this logo",
+    "extractFailed": "Could not take the colours",
+    "roles": {
+      "primary": "Primary",
+      "accent": "Accent",
+      "ink": "Text",
+      "paper": "Background"
+    },
+    "heading": "Heading font",
+    "body": "Body font",
+    "notes": "Usage notes",
+    "save": "Save brand kit",
+    "saveFailed": "Could not save",
+    "adminOnly": "Only the Company Admin can edit brand kits"
   }
 }

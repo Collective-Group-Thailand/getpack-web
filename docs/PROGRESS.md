@@ -48,6 +48,35 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.4 — ③ Design content: templates, brand kit, elements, data blocks, images, background, finishes — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.4, on `feat/u4.4-design-content` (worktree `../packio-web-u4`, from `main` at `34b19dc`, U4.3 merged). Post-launch (D-219); "auto mode".
+
+### Gap → done
+| Item | F4 had | Done |
+|---|---|---|
+| 1 Templates | the product's semi-designs, mapped proportionally | Packio's **constraint layouts** (`templates/layout.ts`, schema v1, owned by the web, stored by packio-api as given): slots on face **roles** (front, back, sides, top, main) as fractions of each face's safe area, upright on lids, text sized within a point range, colours and fonts as roles. **21 templates** — 7 use cases × 3 layouts (classic, colour band, pattern), all original (`templates/library.ts`, D-216's 20+). `store.studio.listTemplates` with a use-case filter in the Templates panel; applying re-flows onto the box on screen (one undo step). Tested: every template on every core box style lands each piece on its face, text within its range. Guide: `docs/design-tool/template-authoring.md`. |
+| 2 Brand kit | colours and a logo in the browser | **Company kits** on `store.brandKits` (D-227, D-282): logos from the company's brand assets, a palette **extracted from the logo** (median cut, editable), font pairs from the studio fonts, usage notes; created / edited by the Company Admin (If-Match; a 403 says so); **"ใช้แบรนด์ของฉัน"** restyles every template piece by role and puts the logo into the logo slots. A customer without a company keeps the browser kit, with the same one-click apply. |
+| 3 Elements | Packio shapes | + `store.studio.listElements`: shapes, icons, packaging marks; a mark with legal meaning asks for the **right declaration** first (`declareRight`, D-282) and the placed shape keeps its `studioElementId` (packio-api's `element_right_missing` rule reads it). |
+| 4 Data blocks | QR, EAN-13 | + **EAN-8, UPC-A, Code 128** encoders with quiet zones; every code checked by packio-api's **validation service** (check digit, character set, QR capacity per level, GS1 minimum width — the symbol is placed at least that wide, D-283); **ingredients / nutrition / manufacturer** blocks typed as facts and set with **Thai line breaks at word boundaries** (`Intl.Segmenter`, measured). |
+| 5 Images | upload (multipart with per-part retry), crop / replace | + the **effective-ppi badge** against the `image_resolution` thresholds (300 / 150, D-278) and a **colour-space note** (a CMYK JPEG is detected from its frame header). Background removal is not built (D-214 / D-284: after launch, self-hosted). |
+| 6 Background | colour, four tiled patterns in mm | + **gradient** (two colours, angle) and a **full-wrap picture** over the sheet and its bleed (uploaded as a design asset). |
+| 7 Finishes as layers | — | Any shape or text can be **foil, spot UV, emboss or window film**: previewed on the flat sheet, **left out of the ink artwork**, drawn as masks from the document (`lib/finishes.ts`) that the 3D model renders physically (metallic foil, clear-coated spot UV, embossed relief, a see-through window) and that the print PDF carries as **separation pages** — a 1-bit stencil in a spot colour of the finish's name with the die lines (`@packio/dieline` `PdfFinish`, tested). |
+
+### Decisions taken
+- **Template palettes map to a kit's palette in order** (primary, accent, ink, paper) — the kit DTO's colours have names but no roles.
+- **The template set lives in the repo** and is imported into packio-api by Marketing (maker-checker); the dev seed publishes none, so the real API's list is empty until then.
+- **Placed finishes** (foil or window film priced by area) stay out of ②'s finish options; they are drawn as layers here and priced once the calculator takes their area from the design (follow-up).
+- **The browser kit stays** for a customer with no company: brand kits are company-scoped (D-227).
+
+### Tests
+Unit: template re-flow on every core box style × every template, brand application, faces by role; palette extraction; Thai wrapping and data blocks; EAN-8 / UPC-A / Code 128 (check digits, quiet zones, start B); engine PDF finish pages. e2e `storefront-studio-content.spec.ts` (3): a template re-flowed and restyled with my brand; Packio elements with a declared right, an EAN-8 checked and placed at its minimum width, a nutrition block, a foil layer, a gradient — all read back from the saved document; the company kit created by the Company Admin and applied in one click (axe on the panels and dialogs).
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` 1,005, `pnpm test:dieline` 5,393. Mock e2e full run 396 passed (a load-related fulfilment sign-in timeout green on re-run). The orbit perf test moved to its own project (`pnpm e2e:perf`, one worker; 56.1 fps): in the parallel suite it measured the machine's load (38 fps). **Real API**: `studio.spec.ts` green — the template list answers (none published yet), packio-api refuses an EAN-8 with a wrong check digit and gives 21.38 mm as the minimum for a good one. Lighthouse studio 492,619 B (ratchet 493,000; content tools load on demand).
+
+---
+
 ## U4.3 — ③ Design core: split view and face-aware 3D editing — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.3, on `feat/u4.3-design-core` (worktree `../packio-web-u4`, from `main` at `daa5219`, U4.2 merged). Post-launch (D-219); "auto mode".

@@ -58,6 +58,8 @@ export interface Preview3DProps {
   focusedFaceId?: string | null;
   /** A face picked in 3D (a click or tap on it), or `null` for a click beside the box. */
   onPickFace?: (faceId: string | null) => void;
+  /** The outside's finishes as masks over the sheet (U4.4): foil, spot UV, emboss; the window inverted. */
+  finishMasks?: Partial<Record<"foil" | "spot_uv" | "emboss" | "window", string>>;
   /** Fill the parent (the studio's split view) instead of a square card. */
   fill?: boolean;
   /** Face-pick buttons for keyboard and screen readers (every canvas action has a panel equivalent). */
@@ -235,8 +237,10 @@ function Box({
   rotation,
   focusedFaceId,
   onPickFace,
+  finishMasks,
 }: {
   geometry: Geometry;
+  finishMasks?: Preview3DProps["finishMasks"];
   artwork: string | null;
   insideArtwork?: string | null;
   boardColour: string;
@@ -246,6 +250,10 @@ function Box({
 }) {
   const texture = useTexture(artwork);
   const inside = useTexture(insideArtwork);
+  const foil = useTexture(finishMasks?.foil);
+  const spotUv = useTexture(finishMasks?.spot_uv);
+  const emboss = useTexture(finishMasks?.emboss);
+  const window_ = useTexture(finishMasks?.window);
   const highlight = useHighlight(geometry, focusedFaceId);
   useEffect(
     () => () => {
@@ -274,8 +282,54 @@ function Box({
           color={texture ? "#ffffff" : boardColour}
           side={THREE.FrontSide}
           roughness={0.75}
+          {...(window_ ? { alphaMap: window_, transparent: true, alphaTest: 0.5 } : {})}
         />
       </mesh>
+      {/* Finishes as layers of their own (U4.4), each over the printed surface where its mask is light. */}
+      {foil ? (
+        <mesh geometry={geometry.printed} renderOrder={1}>
+          <meshStandardMaterial
+            color="#d4af37"
+            metalness={1}
+            roughness={0.28}
+            alphaMap={foil}
+            transparent
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+          />
+        </mesh>
+      ) : null}
+      {spotUv ? (
+        <mesh geometry={geometry.printed} renderOrder={1}>
+          <meshPhysicalMaterial
+            color="#ffffff"
+            roughness={0.04}
+            clearcoat={1}
+            opacity={0.35}
+            alphaMap={spotUv}
+            transparent
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+          />
+        </mesh>
+      ) : null}
+      {emboss ? (
+        <mesh geometry={geometry.printed} renderOrder={1}>
+          <meshStandardMaterial
+            color="#ffffff"
+            opacity={0.18}
+            bumpMap={emboss}
+            bumpScale={4}
+            alphaMap={emboss}
+            transparent
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+          />
+        </mesh>
+      ) : null}
       <mesh geometry={geometry.board}>
         <meshStandardMaterial
           attach="material-0"
@@ -338,6 +392,7 @@ export default function Preview3D({
   onPickFace,
   fill = false,
   pickLabel,
+  finishMasks,
 }: Preview3DProps) {
   const [progress, setProgress] = useState(1);
   const [rotation, setRotation] = useState(INITIAL);
@@ -430,6 +485,7 @@ export default function Preview3D({
             rotation={rotation}
             focusedFaceId={focusedFaceId}
             onPickFace={onPickFace}
+            finishMasks={finishMasks}
           />
         </Canvas>
       </div>

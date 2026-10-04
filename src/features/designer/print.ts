@@ -1,9 +1,10 @@
 "use client";
 
 import type Konva from "konva";
-import { dielineToPdf, type Dieline, type PdfImage } from "@packio/dieline";
+import { dielineToPdf, type Dieline, type PdfFinish, type PdfImage } from "@packio/dieline";
 
 import { withFlatWorld } from "./lib/capture";
+import { deflate, FINISH_SEPARATIONS, finishesIn, finishMask, maskBits } from "./lib/finishes";
 import { useEditor } from "./store/editor";
 
 /**
@@ -85,6 +86,17 @@ export async function buildPrintPdf(stage: Konva.Stage, d: Dieline, opts: PrintO
     editor.setPrintMode(false);
     stage.batchDraw();
   }
-  const bytes = dielineToPdf(d, { margin: bleed + 7, bleedMm: bleed, images, title: opts.name });
+  // Each finish on its own separation page (U4.4): its stencil at the artwork's resolution.
+  const finishes: PdfFinish[] = [];
+  const elements = useEditor.getState().content.elements;
+  for (const finish of finishesIn(elements)) {
+    const mask = maskBits(finishMask(elements, finish, d, pxPerMm));
+    const packed = await deflate(mask.bits);
+    finishes.push({
+      ...FINISH_SEPARATIONS[finish],
+      mask: { ...mask, bits: packed ?? mask.bits, flate: packed !== null, x: 0, y: 0, width: d.width, height: d.height },
+    });
+  }
+  const bytes = dielineToPdf(d, { margin: bleed + 7, bleedMm: bleed, images, title: opts.name, finishes });
   return new Blob([bytes.buffer as ArrayBuffer], { type: "application/pdf" });
 }

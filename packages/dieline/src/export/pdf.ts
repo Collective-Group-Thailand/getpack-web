@@ -17,6 +17,19 @@ export interface PdfImage {
   height: number;
 }
 
+/**
+ * A finish (foil, spot UV, emboss, window) as its own separation page: a 1-bit stencil over the
+ * sheet (`1` = finish), painted in a spot colour of its name, with the die lines for registration.
+ * `flate` says the bits are zlib-compressed (FlateDecode).
+ */
+export interface PdfFinish {
+  /** The spot colour and layer name, e.g. `Foil`, `SpotUV`. */
+  name: string;
+  /** The tint a viewer shows the spot in. */
+  cmyk: [number, number, number, number];
+  mask: { bits: Uint8Array; widthPx: number; heightPx: number; flate?: boolean; x: number; y: number; width: number; height: number };
+}
+
 export interface PdfOptions {
   /** Paper around the trim, mm. Default 10 (room for bleed and marks). */
   margin?: number;
@@ -29,6 +42,8 @@ export interface PdfOptions {
   title?: string;
   /** Stroke width in mm. Default 0.25. */
   strokeMm?: number;
+  /** Finishes, each on a page of its own after the artwork's (U4.4). */
+  finishes?: PdfFinish[];
 }
 
 const PT_PER_MM = 72 / 25.4;
@@ -120,6 +135,24 @@ export function dielineToPdf(d: Dieline, opts: PdfOptions = {}): Uint8Array {
   );
   const info = add(`<< /Producer (Packio @packio/dieline) /Title ${pdfText(opts.title ?? `Dieline ${d.styleId}`)} >>`);
 
+  // Finishes: a separation, a layer, the stencil, a page and its content each.
+  const finishes = (opts.finishes ?? []).map((f) => {
+    const name = f.name.replace(/[^A-Za-z0-9_]/g, "");
+    const separation = add(`[/Separation /${name} /DeviceCMYK ${tint(f.cmyk)}]`);
+    const ocg = add(`<< /Type /OCG /Name ${pdfText(name)} >>`);
+    const mask = add([
+      new TextEncoder().encode(
+        `<< /Type /XObject /Subtype /Image /Width ${f.mask.widthPx} /Height ${f.mask.heightPx} /ImageMask true /BitsPerComponent 1 /Decode [1 0]${f.mask.flate ? " /Filter /FlateDecode" : ""} /Length ${f.mask.bits.length} >>\nstream\n`,
+      ),
+      f.mask.bits,
+      new TextEncoder().encode("\nendstream"),
+    ]);
+    const finishPage = add("");
+    const finishContent = add("");
+    return { f, name, separation, ocg, mask, page: finishPage, content: finishContent };
+  });
+  for (const fp of finishes) ocgs.set(fp.name, fp.ocg);
+
   // Content: mm units, y down, origin at the trim's top-left.
   const k = PT_PER_MM;
   const ops: string[] = [`${n(k)} 0 0 ${n(-k)} ${n(margin * k)} ${n(pageH - margin * k)} cm`];
@@ -152,11 +185,28 @@ export function dielineToPdf(d: Dieline, opts: PdfOptions = {}): Uint8Array {
 
   objects[catalog - 1] =
     `<< /Type /Catalog /Pages ${pages} 0 R /OCProperties << /OCGs [${[...ocgs.values()].map((id) => `${id} 0 R`).join(" ")}] /D << /Order [${[...ocgs.values()].map((id) => `${id} 0 R`).join(" ")}] /ON [${[...ocgs.values()].map((id) => `${id} 0 R`).join(" ")}] >> >> >>`;
-  objects[pages - 1] = `<< /Type /Pages /Kids [${page} 0 R] /Count 1 >>`;
+  objects[pages - 1] =
+    `<< /Type /Pages /Kids [${[page, ...finishes.map((fp) => fp.page)].map((id) => `${id} 0 R`).join(" ")}] /Count ${1 + finishes.length} >>`;
   objects[page - 1] =
     `<< /Type /Page /Parent ${pages} 0 R /MediaBox [0 0 ${n(pageW)} ${n(pageH)}] /TrimBox [${trim.map(n).join(" ")}] /BleedBox [${bleedBox.map(n).join(" ")}] ` +
     `/Resources << /ExtGState << /GS0 ${gs} 0 R >> /ColorSpace << ${colorSpaces} >> /Properties << ${properties} >>${xobjects ? ` /XObject << ${xobjects} >>` : ""} >> /Contents ${content} 0 R >>`;
   objects[content - 1] = `<< /Length ${new TextEncoder().encode(stream).length} >>\nstream\n${stream}\nendstream`;
+  const dieOps = ops.slice(images.length ? images.length + 3 : 1);
+  for (const fp of finishes) {
+    const m = fp.f.mask;
+    const body = [
+      ops[0]!,
+      `/OC /${fp.name} BDC q /GS0 gs /CS_${fp.name} cs 1 scn`,
+      `q ${n(m.width)} 0 0 ${n(-m.height)} ${n(m.x)} ${n(m.y + m.height)} cm /Mk Do Q`,
+      "Q EMC",
+      ...dieOps,
+    ].join("\n");
+    const finishProps = [...ocgs].map(([name, id]) => `/${name} ${id} 0 R`).join(" ");
+    objects[fp.page - 1] =
+      `<< /Type /Page /Parent ${pages} 0 R /MediaBox [0 0 ${n(pageW)} ${n(pageH)}] /TrimBox [${trim.map(n).join(" ")}] /BleedBox [${bleedBox.map(n).join(" ")}] ` +
+      `/Resources << /ExtGState << /GS0 ${gs} 0 R >> /ColorSpace << ${colorSpaces} /CS_${fp.name} ${fp.separation} 0 R >> /Properties << ${finishProps} >> /XObject << /Mk ${fp.mask} 0 R >> >> /Contents ${fp.content} 0 R >>`;
+    objects[fp.content - 1] = `<< /Length ${new TextEncoder().encode(body).length} >>\nstream\n${body}\nendstream`;
+  }
 
   // Serialise with a byte-exact cross-reference table.
   const enc = new TextEncoder();

@@ -13,6 +13,7 @@ import { http, HttpResponse } from "msw";
 
 import { canonicalJson } from "@/features/designer/lib/json-patch";
 import studioRules from "../../contract/studio-rules.json";
+import { TEMPLATE_LIBRARY } from "@/features/designer/templates/library";
 import type { Schemas } from "@/lib/api/types";
 
 import { problem } from "../support";
@@ -192,3 +193,139 @@ export const MOCK_STUDIO_RULES: Schemas["StudioRulesDto"] = {
 };
 
 storeStudioHandlers.push(http.get("*/v1/store/studio/rules", () => HttpResponse.json(MOCK_STUDIO_RULES)));
+
+/* ------------------------------------------------------------------ templates and elements (U4.4) */
+
+const templateId = (index: number) => `00000000-0000-4000-8000-74706c${String(index).padStart(6, "0")}`;
+
+/** The studio's template set as packio-api serves it once Marketing has published it (D-216, D-282). */
+const TEMPLATES: Schemas["StudioTemplateDto"][] = TEMPLATE_LIBRARY.map((t, index) => ({
+  id: templateId(index + 1),
+  code: t.code,
+  nameTh: t.nameTh,
+  nameEn: t.nameEn,
+  useCases: t.useCases,
+  styleFamilies: t.styleFamilies,
+  layoutSchemaVersion: t.layoutSchemaVersion,
+  layout: t.layout as unknown as Record<string, never>,
+  status: "published",
+  thumbnailFileId: null,
+}));
+
+/**
+ * Packio-drawn elements in a 100 × 100 box (D-282): plain shapes, handling marks (this way up, keep
+ * dry, fragile, recyclable, food contact) and one mark with legal meaning that needs the company's
+ * declared right before it can be placed. Fake, original drawings — never a real certification logo.
+ */
+type ElementSeed = Pick<Schemas["StoreStudioElementDto"], "code" | "kind" | "nameTh" | "nameEn" | "path">;
+const ELEMENT_SEEDS: ElementSeed[] = [
+  { code: "PK-EL-STAR", kind: "shape", nameTh: "ดาวป้าย", nameEn: "Badge star", path: "M50 4 L61 37 L96 37 L68 58 L79 92 L50 71 L21 92 L32 58 L4 37 L39 37 Z" },
+  { code: "PK-EL-RIBBON", kind: "shape", nameTh: "ริบบิ้น", nameEn: "Ribbon", path: "M0 30 L100 30 L88 50 L100 70 L0 70 L12 50 Z" },
+  { code: "PK-EL-TAG", kind: "shape", nameTh: "ป้ายห้อย", nameEn: "Tag", path: "M20 10 L95 10 L95 90 L20 90 L2 50 Z M22 44 A6 6 0 1 0 22 56 A6 6 0 1 0 22 44 Z" },
+  { code: "PK-EL-THISWAYUP", kind: "mark", nameTh: "ตั้งด้านนี้ขึ้น", nameEn: "This way up", path: "M15 90 L45 90 L45 40 L58 40 L30 8 L2 40 L15 40 Z M55 90 L85 90 L85 40 L98 40 L70 8 L42 40 L55 40 Z" },
+  { code: "PK-EL-KEEPDRY", kind: "mark", nameTh: "ห้ามเปียกน้ำ", nameEn: "Keep dry", path: "M50 8 C20 8 4 30 4 48 L96 48 C96 30 80 8 50 8 Z M47 48 L47 82 C47 92 33 92 33 82 L39 82 C39 86 41 86 41 82 L41 48 Z" },
+  { code: "PK-EL-FRAGILE", kind: "mark", nameTh: "ระวังแตก", nameEn: "Fragile", path: "M25 6 L75 6 L72 40 C70 52 58 58 54 58 L54 86 L70 90 L30 90 L46 86 L46 58 C42 58 30 52 28 40 Z" },
+  { code: "PK-EL-RECYCLE", kind: "mark", nameTh: "รีไซเคิลได้", nameEn: "Recyclable", path: "M50 6 L66 34 L56 34 L74 66 L86 66 L70 94 L30 94 L40 76 L66 76 L50 48 L42 62 L26 34 Z" },
+  { code: "PK-EL-FOOD", kind: "icon", nameTh: "สัมผัสอาหารได้", nameEn: "Food contact", path: "M20 6 L26 6 L26 40 L32 40 L32 6 L38 6 L38 44 C38 50 34 52 32 52 L32 94 L26 94 L26 52 C24 52 20 50 20 44 Z M60 6 L80 6 L76 50 L72 50 L72 94 L66 94 L66 50 L62 50 Z" },
+  { code: "PK-EL-CERT", kind: "mark", nameTh: "เครื่องหมายรับรอง (ตัวอย่าง)", nameEn: "Certification mark (sample)", path: "M50 4 A46 46 0 1 0 50 96 A46 46 0 1 0 50 4 Z M50 16 A34 34 0 1 1 50 84 A34 34 0 1 1 50 16 Z M30 50 L44 64 L72 36 L66 30 L44 52 L36 44 Z" },
+];
+const ELEMENTS: Omit<Schemas["StoreStudioElementDto"], "usable">[] = ELEMENT_SEEDS.map((e) => ({
+  ...e,
+  id: mockStudioId(e.code),
+  status: "published",
+  tags: [],
+  requiresRight: e.code === "PK-EL-CERT",
+}));
+
+function mockStudioId(code: string): string {
+  let hash = 0;
+  for (const ch of code) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return `00000000-0000-4000-8000-656c${hash.toString(16).padStart(8, "0")}`;
+}
+
+/** Rights declared per customer (D-282: who, when, the statement). */
+const declared = new Map<string, Set<string>>();
+
+storeStudioHandlers.push(
+  http.get("*/v1/store/studio/templates", ({ request }) => {
+    const query = new URL(request.url).searchParams;
+    const useCase = query.get("useCase");
+    const family = query.get("styleFamily");
+    return HttpResponse.json(
+      TEMPLATES.filter(
+        (t) => (!useCase || t.useCases.includes(useCase as never)) && (!family || t.styleFamilies.includes(family)),
+      ),
+    );
+  }),
+  http.get("*/v1/store/studio/templates/:templateId", ({ params }) => {
+    const found = TEMPLATES.find((t) => t.id === params.templateId);
+    return found ? HttpResponse.json(found) : problem(404, "http.not_found", "ไม่พบแม่แบบนี้");
+  }),
+  http.get("*/v1/store/studio/elements", ({ request }) => {
+    const kind = new URL(request.url).searchParams.get("kind");
+    const mine = declared.get(request.headers.get("authorization") ?? "") ?? new Set<string>();
+    return HttpResponse.json(
+      ELEMENTS.filter((e) => !kind || e.kind === kind).map((e) => ({ ...e, usable: !e.requiresRight || mine.has(e.id) })),
+    );
+  }),
+  http.post("*/v1/store/studio/elements/:elementId/right-declarations", async ({ params, request }) => {
+    const element = ELEMENTS.find((e) => e.id === params.elementId);
+    if (!element) return problem(404, "http.not_found", "ไม่พบองค์ประกอบนี้");
+    const body = (await request.json()) as Schemas["DeclareRightDto"];
+    if (!body.statement?.trim()) return problem(422, "validation.failed", "กรุณาระบุคำรับรองสิทธิ์");
+    const key = request.headers.get("authorization") ?? "";
+    declared.set(key, new Set([...(declared.get(key) ?? []), element.id]));
+    const result: Schemas["RightDeclarationDto"] = {
+      id: mockStudioId(`${element.code}-${key}`),
+      elementId: element.id,
+      companyId: body.companyId ?? null,
+      statement: body.statement,
+      declaredAt: new Date().toISOString(),
+    };
+    return HttpResponse.json(result, { status: 201 });
+  }),
+);
+
+/* ------------------------------------------------------------------ barcode validation (D-283) */
+
+const GS1_LENGTH: Partial<Record<Schemas["BarcodeSymbology"], number>> = { ean13: 13, ean8: 8, upca: 12 };
+const GS1_NOMINAL_MM: Partial<Record<Schemas["BarcodeSymbology"], number>> = { ean13: 37.29, upca: 37.29, ean8: 26.73 };
+const QR_BYTES: Record<Schemas["QrErrorCorrection"], number> = { L: 2953, M: 2331, Q: 1663, H: 1273 };
+
+function gs1Check(body: string): number {
+  let sum = 0;
+  for (let i = 0; i < body.length; i++) sum += Number(body[body.length - 1 - i]) * (i % 2 === 0 ? 3 : 1);
+  return (10 - (sum % 10)) % 10;
+}
+
+/** packio-api's `validateBarcode` (studio/barcodes.ts), as the mock answers it. */
+storeStudioHandlers.push(
+  http.post("*/v1/store/studio/barcodes/actions/validate", async ({ request }) => {
+    const body = (await request.json()) as Schemas["ValidateBarcodeDto"];
+    const { symbology, value } = body;
+    const problems: string[] = [];
+    let normalised: string | null = value;
+    const length = GS1_LENGTH[symbology];
+    if (length !== undefined) {
+      if (!/^[0-9]+$/.test(value)) problems.push("digits_only");
+      else if (value.length === length - 1) normalised = value + String(gs1Check(value));
+      else if (value.length !== length) problems.push("wrong_length");
+      else if (gs1Check(value.slice(0, -1)) !== Number(value.at(-1))) problems.push("check_digit");
+    } else if (symbology === "code128") {
+      if (value.length === 0) problems.push("empty");
+      if ([...value].some((ch) => ch.charCodeAt(0) > 127)) problems.push("not_ascii");
+    } else {
+      const bytes = new TextEncoder().encode(value).length;
+      if (bytes === 0) problems.push("empty");
+      if (bytes > QR_BYTES[body.level ?? "M"]) problems.push("too_long_for_level");
+    }
+    const nominal = GS1_NOMINAL_MM[symbology];
+    const result: Schemas["BarcodeCheckDto"] = {
+      valid: problems.length === 0,
+      problems,
+      normalised: problems.length ? null : normalised,
+      minWidthMm: nominal === undefined ? null : Math.round(nominal * 0.8 * 100) / 100,
+    };
+    return HttpResponse.json(result);
+  }),
+);

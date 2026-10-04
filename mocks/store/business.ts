@@ -198,6 +198,27 @@ function capabilitiesOf(member: Member | undefined): Schemas["CompanyCapabilitie
  * A company as the published contract has it (`CompanyDto`), from the back office's row; `me` is
  * the caller's membership, whose roles `myRoles` and `can` answer.
  */
+/** Brand kits per company (D-282); the logo is the company's brand asset of that id. */
+const brandKits = new Map<string, Schemas["BrandKitDto"][]>();
+
+function kitOf(companyId: string, id: string, body: Schemas["BrandKitInputDto"]): Schemas["BrandKitDto"] {
+  const library = assets.get(companyId) ?? [];
+  return {
+    id,
+    companyId,
+    name: body.name.trim(),
+    status: "active",
+    logos: body.logos.flatMap((l) => {
+      const asset = library.find((a) => a.id === l.brandAssetId);
+      return asset ? [{ brandAssetId: asset.id, fileId: asset.fileId, name: asset.name, role: l.role }] : [];
+    }),
+    palette: body.palette,
+    fontPairs: body.fontPairs,
+    usageNotes: body.usageNotes ?? null,
+    updatedAt: new Date(Date.now() + Math.random()).toISOString(),
+  };
+}
+
 export function toCompanyDto(store: CompanyStore, me?: Member): Schemas["CompanyDto"] {
   const presented = presentCompany(store);
   return {
@@ -583,6 +604,45 @@ export const storeBusinessHandlers = [
     };
     assets.set(found.store.company.id, [asset, ...list]);
     return HttpResponse.json(asset, { status: 201 });
+  }),
+
+  // store.brandKits.* (U4.B5, D-282): every member reads the company's kits, the Company Admin keeps them.
+  http.get("*/v1/store/companies/:companyId/brand-kits", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    return found instanceof Response ? found : HttpResponse.json(brandKits.get(found.store.company.id) ?? []);
+  }),
+  http.get("*/v1/store/companies/:companyId/brand-kits/:kitId", ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    const kit = (brandKits.get(found.store.company.id) ?? []).find((k) => k.id === params.kitId);
+    return kit
+      ? HttpResponse.json(kit, { headers: { ETag: `"${kit.updatedAt}"` } })
+      : problem(404, "http.not_found", "ไม่พบชุดแบรนด์นี้");
+  }),
+  http.post("*/v1/store/companies/:companyId/brand-kits", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin")) return forbidden();
+    const body = (await request.json()) as Schemas["BrandKitInputDto"];
+    if (!body.name?.trim()) return problem(422, "validation.failed", "ต้องตั้งชื่อชุดแบรนด์");
+    const list = brandKits.get(found.store.company.id) ?? [];
+    const kit = kitOf(found.store.company.id, mockId("bkt", 100 + list.length), body);
+    brandKits.set(found.store.company.id, [...list, kit]);
+    return HttpResponse.json(kit, { status: 201 });
+  }),
+  http.put("*/v1/store/companies/:companyId/brand-kits/:kitId", async ({ params, request }) => {
+    const found = companyContext(request, String(params.companyId));
+    if (found instanceof Response) return found;
+    if (!has(found.member, "company_admin")) return forbidden();
+    const list = brandKits.get(found.store.company.id) ?? [];
+    const index = list.findIndex((k) => k.id === params.kitId);
+    if (index < 0) return problem(404, "http.not_found", "ไม่พบชุดแบรนด์นี้");
+    if (request.headers.get("if-match") !== `"${list[index]!.updatedAt}"`)
+      return problem(412, "concurrency.stale", "ชุดแบรนด์ถูกแก้จากที่อื่น");
+    const body = (await request.json()) as Schemas["BrandKitInputDto"];
+    const kit = kitOf(found.store.company.id, list[index]!.id, body);
+    brandKits.set(found.store.company.id, list.map((k, i) => (i === index ? kit : k)));
+    return HttpResponse.json(kit);
   }),
 
   // store.companyAssets.remove: Company Admin only; the file itself is kept.

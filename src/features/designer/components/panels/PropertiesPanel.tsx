@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { allFaces } from "@packio/dieline";
 
 import { formatNumber } from "@/i18n/format";
+import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { ColorField } from "@/ui/components/ColorField";
 import { Field } from "@/ui/components/Field";
@@ -17,9 +18,10 @@ import { toast } from "@/ui/components/Toast";
 
 import { FONT_FAMILIES } from "../../catalog";
 import { MIN_TEXT_MM } from "../../lib/checks";
-import { isValidEan13, qrMatrix } from "../../lib/codes";
+import { barModules, qrMatrix } from "../../lib/codes";
 import { outOfPrintGamut } from "../../lib/colour";
 import { newImage } from "../../lib/create";
+import { threshold, useStudioRules } from "../../data/rules";
 import { useFaceNames } from "../../lib/useFaceNames";
 import { useEditor } from "../../store/editor";
 import type { DesignElement, ImageElement } from "../../types";
@@ -235,7 +237,9 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
           <Field
             label={el.kind === "qr" ? t("qrValue") : t("eanValue")}
             error={
-              (el.kind === "qr" ? qrMatrix(el.value) === null : !isValidEan13(el.value)) ? t("codeInvalid") : undefined
+              (el.kind === "qr" ? qrMatrix(el.value) === null : barModules(el.kind, el.value) === null)
+                ? t("codeInvalid")
+                : undefined
             }
           >
             <Input
@@ -253,6 +257,7 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
 
       {el.type === "image" && (
         <>
+          <ImageQuality el={el} />
           <input
             ref={fileRef}
             type="file"
@@ -376,6 +381,22 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
         </Field>
       </div>
 
+      {el.type !== "image" && el.type !== "code" ? (
+        <Field label={t("finish")} hint={t("finishHint")}>
+          <Select
+            value={el.finish ?? "none"}
+            disabled={locked}
+            onValueChange={(value) =>
+              set({ finish: value === "none" ? undefined : (value as NonNullable<DesignElement["finish"]>) })
+            }
+            options={(["none", "foil", "spot_uv", "emboss", "window"] as const).map((value) => ({
+              value,
+              label: t(`finishes.${value}`),
+            }))}
+          />
+        </Field>
+      ) : null}
+
       {faces.length > 1 ? (
         <Field label={t("clip")} hint={t("clipHint")}>
           <Select
@@ -412,6 +433,41 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
           ))}
         </div>
       </Field>
+    </div>
+  );
+}
+
+/**
+ * The image's effective resolution at the size it is placed (U4.4): its pixels over its printed
+ * inches, crop included, against the print-check thresholds (`image_resolution`, D-278: warn below
+ * 300, block below 150 as seeded; the catalogue's artwork rule when the rules are not reachable),
+ * and a note on its colour space — a CMYK JPEG shows differently on screen, an RGB image is
+ * converted for print.
+ */
+function ImageQuality({ el }: { el: ImageElement }) {
+  const t = useTranslations("designer.properties");
+  const locale = useLocale() as "th" | "en";
+  const { catalog, mode } = useDesigner();
+  const rules = useStudioRules(mode !== "admin");
+  if (!el.naturalWidth || !el.naturalHeight) return null;
+  const crop = el.crop ?? { x: 0, y: 0, width: 1, height: 1 };
+  const inches = (mm: number) => mm / 25.4;
+  const ppi = Math.floor(
+    Math.min(
+      (el.naturalWidth * crop.width) / inches(el.width * Math.abs(el.scaleX)),
+      (el.naturalHeight * crop.height) / inches(el.height * Math.abs(el.scaleY)),
+    ),
+  );
+  const warn = threshold(rules.data, "image_resolution", "warnBelowPpi") ?? catalog?.rules.minDpi ?? null;
+  const block = threshold(rules.data, "image_resolution", "blockBelowPpi");
+  const tone = block !== null && ppi < block ? "danger" : warn !== null && ppi < warn ? "warning" : "success";
+  return (
+    <div className="space-y-2">
+      <p className="flex items-center gap-2 text-sm">
+        <Badge tone={tone}>{t("ppi", { ppi: formatNumber(ppi, locale) })}</Badge>
+        <span className="text-muted text-xs">{t(`ppiVerdict.${tone}`)}</span>
+      </p>
+      <p className="text-muted text-xs">{t(el.colourSpace === "cmyk" ? "colourCmyk" : "colourRgb")}</p>
     </div>
   );
 }
