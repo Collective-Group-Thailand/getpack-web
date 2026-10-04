@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "id": "ft-snap",
+  "base": "PK-FT-01",
+  "variant": {
+    "tuck_bottom": "snap_lock_123"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาพับเปิดปิด ก้นล็อก 1-2-3",
+    "en": "Hinged flip-top carton, snap-lock (1-2-3) bottom"
+  },
+  "description": {
+    "th": "กล่องฝาพับติดด้านหลัง ลิ้นปิดทับด้านหน้าจากภายนอก ก้นล็อก 1-2-3 เลือกหน้าต่างและตัวรองได้",
+    "en": "A lid hinged on the back closes with a lip over the outside of the front; snap-lock (1-2-3) bottom, with an optional window and insert"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "dustFlapDepth",
+    "lockTongue",
+    "insert",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "insert": "none"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "flipTop"
+    },
+    "bottom": {
+      "module": "snapLock123",
+      "preset": "default"
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t"
+  }
+}

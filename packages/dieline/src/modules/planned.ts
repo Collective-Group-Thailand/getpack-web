@@ -51,7 +51,6 @@ export const PLANNED_MODULES: ModuleDef[] = [
   planned("dispenser", "feature", t("ช่องดึงสินค้า", "Dispenser opening"), ["die_cut"]),
   planned("neckLock", "feature", t("ล็อกคอขวด", "Neck lock"), ["die_cut"]),
   planned("dustFlapLock", "feature", t("ล็อกปีกกันฝุ่น", "Dust-flap lock"), ["die_cut"]),
-  planned("slitLock", "feature", t("ล็อกร่อง", "Slit lock"), ["die_cut"]),
   planned("bodyAndInsert", "pieceSet", t("ตัวกล่อง + ตัวรอง", "Body and insert"), ["die_cut", "hand_assembly"]),
   planned("partitionGrid", "pieceSet", t("ช่องกั้นตาราง", "Partition grid (rows × columns)"), [
     "die_cut",

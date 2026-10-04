@@ -393,6 +393,31 @@
     "max": 60,
     "step": 0.5
   },
+  "insert": {
+    "key": "insert",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "ตัวรองสินค้า",
+      "en": "Insert"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "die_cut",
+        "label": {
+          "th": "ตัวรองไดคัท",
+          "en": "Die-cut insert"
+        }
+      }
+    ]
+  },
   "length": {
     "key": "length",
     "kind": "length",
@@ -444,6 +469,31 @@
       "key": "lid",
       "in": ["partial"]
     }
+  },
+  "lock": {
+    "key": "lock",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "แบบล็อกลิ้นเสียบ",
+      "en": "Tuck lock"
+    },
+    "options": [
+      {
+        "value": "friction",
+        "label": {
+          "th": "ล็อกด้วยแรงเสียดทาน",
+          "en": "Friction lock"
+        }
+      },
+      {
+        "value": "slit",
+        "label": {
+          "th": "ล็อกร่อง",
+          "en": "Slit lock"
+        }
+      }
+    ]
   },
   "lockTongue": {
     "key": "lockTongue",

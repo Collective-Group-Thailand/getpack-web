@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "ft-tuck",
+  "base": "PK-FT-01",
+  "variant": {
+    "tuck_bottom": "tuck"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาพับเปิดปิด ก้นเสียบ",
+    "en": "Hinged flip-top carton, tuck bottom"
+  },
+  "description": {
+    "th": "กล่องฝาพับติดด้านหลัง ลิ้นปิดทับด้านหน้าจากภายนอก ก้นเสียบ เลือกหน้าต่างและตัวรองได้",
+    "en": "A lid hinged on the back closes with a lip over the outside of the front; tuck bottom, with an optional window and insert"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "dustFlapDepth",
+    "tuckDepth",
+    "tuckCorners",
+    "insert",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "insert": "none"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "flipTop"
+    },
+    "bottom": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t"
+  }
+}
