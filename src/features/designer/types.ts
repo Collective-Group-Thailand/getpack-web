@@ -13,7 +13,7 @@ export interface BoxDims {
   height: number;
 }
 
-export type PatternKind = "none" | "solid" | "stripes" | "dots" | "grid" | "checker";
+export type PatternKind = "none" | "solid" | "stripes" | "dots" | "grid" | "checker" | "gradient" | "image";
 
 export interface PatternSettings {
   kind: PatternKind;
@@ -21,6 +21,10 @@ export interface PatternSettings {
   background: string;
   /** Tile size in mm */
   size: number;
+  /** `gradient`: from `color` to `background`, at this angle (degrees, 90 = top to bottom). */
+  angle?: number;
+  /** `image` (U4.4 full wrap): one picture over the whole sheet and its bleed, cover-fitted. */
+  image?: { src: string; assetId?: string; naturalWidth: number; naturalHeight: number };
 }
 
 interface BaseElement {
@@ -44,6 +48,17 @@ interface BaseElement {
    * (the dieline mirrored, `mirrorDieline`), so it reads the right way round once folded.
    */
   side?: "inside";
+  /** Placed by a studio template (U4.4): its slot and roles, so a brand kit can restyle it. */
+  templateRole?: {
+    slot: string;
+    role: "logo" | "headline" | "subhead" | "body" | "info" | "band" | "badge";
+    colour: "primary" | "accent" | "ink" | "paper";
+    font?: "heading" | "body";
+  };
+  /** A Packio studio element it was placed from (D-282): marks with legal meaning are checked by it. */
+  studioElementId?: string;
+  /** A finish painted as its own layer (U4.4): produced as a separation, not as ink. */
+  finish?: "foil" | "spot_uv" | "emboss" | "window";
 }
 
 export interface TextElement extends BaseElement {
@@ -65,6 +80,8 @@ export interface ImageElement extends BaseElement {
   /** The image's own pixel size, for the effective-resolution check. */
   naturalWidth?: number;
   naturalHeight?: number;
+  /** As the file was saved (U4.4 colour-space warning): CMYK JPEGs show differently on screen. */
+  colourSpace?: "rgb" | "cmyk";
   width: number;
   height: number;
   /** The part of the image shown, as fractions of its natural size (0–1). */
@@ -84,10 +101,10 @@ export interface ShapeElement extends BaseElement {
   path?: string;
 }
 
-/** A QR code or an EAN-13 barcode, generated from its value; the quiet zone is part of its size. */
+/** A QR code or a barcode (EAN-13, EAN-8, UPC-A, Code 128), generated from its value; the quiet zone is part of its size. */
 export interface CodeElement extends BaseElement {
   type: "code";
-  kind: "qr" | "ean13";
+  kind: "qr" | "ean13" | "ean8" | "upca" | "code128";
   value: string;
   width: number;
   height: number;

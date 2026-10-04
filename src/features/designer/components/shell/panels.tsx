@@ -1,18 +1,25 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import type { IconName } from "@/ui/icons";
 
 import { ArrangePanel } from "../panels/ArrangePanel";
-import { BackgroundPanel } from "../panels/BackgroundPanel";
+
 import { BoxPanel } from "../panels/BoxPanel";
-import { BrandPanel } from "../panels/BrandPanel";
-import { ElementsPanel } from "../panels/ElementsPanel";
+
 import { LayersPanel } from "../panels/LayersPanel";
 import { PropertiesPanel } from "../panels/PropertiesPanel";
-import { TemplatesPanel } from "../panels/TemplatesPanel";
+
 import { TextPanel } from "../panels/TextPanel";
 import { UploadsPanel } from "../panels/UploadsPanel";
 import { useEditor } from "../../store/editor";
+
+// The content tools load when first opened (U4.4): templates, elements and codes, brand, background.
+const TemplatesPanel = dynamic(() => import("../panels/TemplatesPanel").then((m) => m.TemplatesPanel), { ssr: false });
+const ElementsPanel = dynamic(() => import("../panels/ElementsPanel").then((m) => m.ElementsPanel), { ssr: false });
+const BrandPanel = dynamic(() => import("../panels/BrandPanel").then((m) => m.BrandPanel), { ssr: false });
+const BackgroundPanel = dynamic(() => import("../panels/BackgroundPanel").then((m) => m.BackgroundPanel), { ssr: false });
 
 /** The left rail's tools, in order. */
 export const RAIL = [

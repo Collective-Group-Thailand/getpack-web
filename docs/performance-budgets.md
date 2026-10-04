@@ -200,3 +200,15 @@ the distance labels and the engine's `mirrorDieline` for inside printing are in 
 three.js still loads only with the 3D view. **Orbit performance** (`e2e/studio-perf.spec.ts`): a
 150-object design orbited in 3D with the CPU throttled 4× — **59.6 fps** on the CI machine's
 software WebGL; the floor is 45 fps (`STUDIO_ORBIT_FPS_FLOOR`).
+
+## U4.4 — ③ Design content (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` | 486,106 | 492,619 (performance 0.98) | studio 487,000 → **493,000** |
+
+The content tools — Packio templates and their re-flow, elements, codes and data blocks, brand
+kits with palette extraction, backgrounds — are `next/dynamic` rail panels (inline they measured
+496,380). What the canvas itself needs stays in the first load: finish layers, gradients and the
+full-wrap picture, the EAN-8 / UPC-A / Code 128 encoders (the canvas draws every symbol) and the
+image-quality badge of the properties panel. Orbit performance alone (`pnpm e2e:perf`): 56.1 fps.

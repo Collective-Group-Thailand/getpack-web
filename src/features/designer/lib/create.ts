@@ -3,7 +3,7 @@
 import { ARTWORK_DEFAULTS } from "../canvas-colors";
 import { FONT_FAMILIES } from "../catalog";
 import type { NewElement } from "../types";
-import { ean13CheckDigit } from "./codes";
+import { barModules, ean13CheckDigit, gs1CheckDigit } from "./codes";
 
 /*
  * New elements, centred on a point of the sheet (the middle of the view, or of the focused face).
@@ -64,14 +64,43 @@ export function newShape(
   };
 }
 
+/** The X-dimension (module width) of a barcode at 100 % magnification, mm (GS1). */
+const NOMINAL_MODULE_MM = 0.33;
+/** Bar heights at 100 % (GS1 nominal, quiet zones aside); Code 128's is a practical default. */
+const BAR_HEIGHT_MM: Record<"ean13" | "ean8" | "upca" | "code128", number> = {
+  ean13: 25.93,
+  upca: 25.93,
+  ean8: 21.31,
+  code128: 15,
+};
+
 /**
- * A QR code (25 mm square: comfortably above the minimum module size for a short URL) or an
- * EAN-13 at its nominal 100 % size (37.29 × 25.93 mm incl. quiet zones). Twelve barcode digits
- * get their check digit.
+ * A QR code (25 mm square: comfortably above the minimum module size for a short URL) or a barcode
+ * at its nominal 100 % size — modules × 0.33 mm, quiet zones included — and never narrower than the
+ * minimum the validation service gave (`minWidthMm`, D-283). Barcode digits get their check digit.
  */
-export function newCode(c: Center, kind: "qr" | "ean13", value: string): NewElement {
-  const digits = kind === "ean13" && /^\d{12}$/.test(value) ? value + ean13CheckDigit(value) : value;
-  const [width, height] = kind === "qr" ? [25, 25] : [37.29, 25.93];
+export function newCode(
+  c: Center,
+  kind: "qr" | "ean13" | "ean8" | "upca" | "code128",
+  value: string,
+  minWidthMm: number | null = null,
+): NewElement {
+  const digits =
+    kind === "ean13" && /^\d{12}$/.test(value)
+      ? value + ean13CheckDigit(value)
+      : (kind === "ean8" && /^\d{7}$/.test(value)) || (kind === "upca" && /^\d{11}$/.test(value))
+        ? value + gs1CheckDigit(value)
+        : value;
+  let [width, height] = [25, 25];
+  if (kind !== "qr") {
+    const modules = barModules(kind, digits)?.length ?? 113;
+    width = modules * NOMINAL_MODULE_MM;
+    height = BAR_HEIGHT_MM[kind];
+  }
+  if (minWidthMm && width < minWidthMm) {
+    height *= minWidthMm / width;
+    width = minWidthMm;
+  }
   return {
     ...base,
     type: "code",
@@ -86,14 +115,34 @@ export function newCode(c: Center, kind: "qr" | "ean13", value: string): NewElem
   };
 }
 
+/**
+ * The colour space a JPEG was saved in, from its frame header (SOF: 3 components = RGB / YCbCr,
+ * 4 = CMYK); PNG, WebP and SVG are always RGB. Read from the first 64 KB, so it costs nothing.
+ */
+export function colourSpaceOf(bytes: Uint8Array, mimeType: string): "rgb" | "cmyk" {
+  if (mimeType !== "image/jpeg") return "rgb";
+  for (let i = 2; i + 9 < bytes.length; ) {
+    if (bytes[i] !== 0xff) return "rgb";
+    const marker = bytes[i + 1]!;
+    const length = (bytes[i + 2]! << 8) | bytes[i + 3]!;
+    // SOF0–SOF15, except DHT (C4), JPG (C8) and DAC (CC).
+    if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc)
+      return bytes[i + 9] === 4 ? "cmyk" : "rgb";
+    i += 2 + length;
+  }
+  return "rgb";
+}
+
 /** Reads an image file into an element 80 mm wide, keeping its pixel size for the resolution check. */
 export function newImage(c: Center, file: File): Promise<NewElement> {
   return new Promise((resolve, reject) => {
     if (file.size > MAX_IMAGE_BYTES) return reject(new Error("too_large"));
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("unreadable"));
-    reader.onload = () => {
+    const head = file.slice(0, 65536).arrayBuffer();
+    reader.onload = async () => {
       const src = reader.result as string;
+      const colourSpace = colourSpaceOf(new Uint8Array(await head.catch(() => new ArrayBuffer(0))), file.type);
       const img = new window.Image();
       img.onerror = () => reject(new Error("unreadable"));
       img.onload = () => {
@@ -105,6 +154,7 @@ export function newImage(c: Center, file: File): Promise<NewElement> {
           src,
           naturalWidth: img.naturalWidth,
           naturalHeight: img.naturalHeight,
+          colourSpace,
           x: c.x - width / 2,
           y: c.y - height / 2,
           width,

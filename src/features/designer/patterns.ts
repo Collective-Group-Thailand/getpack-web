@@ -2,7 +2,7 @@ import type { PatternSettings } from "./types";
 
 /** Builds a repeatable tile canvas. `pxPerMm` sets tile resolution. */
 export function buildPatternTile(p: PatternSettings, pxPerMm = 8): HTMLCanvasElement | null {
-  if (typeof document === "undefined" || p.kind === "none" || p.kind === "solid") return null;
+  if (typeof document === "undefined" || ["none", "solid", "gradient", "image"].includes(p.kind)) return null;
   const s = Math.max(4, Math.round(p.size * pxPerMm));
   const c = document.createElement("canvas");
   c.width = s;
@@ -50,4 +50,6 @@ export const PATTERN_OPTIONS: { kind: PatternSettings["kind"]; label: string }[]
   { kind: "dots", label: "ลายจุด" },
   { kind: "grid", label: "ตาราง" },
   { kind: "checker", label: "ตาหมากรุก" },
+  { kind: "gradient", label: "ไล่สี" },
+  { kind: "image", label: "ภาพเต็มรอบกล่อง" },
 ];

@@ -22,12 +22,12 @@ import {
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { formatMm } from "@/i18n/format";
-import { barsPath, ean13Modules, qrMatrix, qrPath } from "@/features/designer/lib/codes";
+import { barModules, barsPath, qrMatrix, qrPath } from "@/features/designer/lib/codes";
 import { linesOf, snapBox, type SnapTargets } from "@/features/designer/lib/snapping";
 import { buildPatternTile } from "@/features/designer/patterns";
 import { useEditor, ZOOM_MAX, ZOOM_MIN } from "@/features/designer/store/editor";
 import { useCanvasStatus } from "@/features/designer/store/status";
-import type { CodeElement, DesignElement, Dieline, ImageElement } from "@/features/designer/types";
+import type { CodeElement, DesignContent, DesignElement, Dieline, ImageElement } from "@/features/designer/types";
 
 export const SAFE_ZONE_MM = 3;
 const TILE_PX_PER_MM = 8;
@@ -83,7 +83,7 @@ function CodeNode({ el, ...rest }: { el: CodeElement } & NodeProps) {
       const m = qrMatrix(el.value);
       return m ? { d: qrPath(m), sx: el.width / m.size, sy: el.height / m.size, digits: null } : null;
     }
-    const modules = ean13Modules(el.value);
+    const modules = barModules(el.kind, el.value);
     if (!modules) return null;
     return { d: barsPath(modules), sx: el.width / modules.length, sy: el.height * 0.82, digits: el.value };
   }, [el.kind, el.value, el.width, el.height]);
@@ -122,6 +122,14 @@ interface Props {
   upright?: Record<string, number>;
   safeMm?: number;
 }
+
+/** How each finish shows on the flat sheet (a preview: the 3D model and the print file use masks). */
+const FINISH_LOOK: Record<NonNullable<DesignElement["finish"]>, string> = {
+  foil: "#c9a227",
+  spot_uv: "rgba(110, 150, 255, 0.4)",
+  emboss: "rgba(150, 110, 200, 0.4)",
+  window: "rgba(140, 200, 255, 0.5)",
+};
 
 /** The inside carries no background pattern (yet): only the outside has one. */
 const NO_PATTERN = { kind: "none", color: "#000000", background: "#ffffff", size: 12 } as const;
@@ -296,7 +304,8 @@ export default function DesignCanvas({
 
   const common = (el: DesignElement) => ({
     id: el.id,
-    name: "design-element",
+    // A finish is previewed on screen but is not ink: captures of the artwork leave it out (`.guide`).
+    name: el.finish ? "design-element guide" : "design-element",
     x: el.x,
     y: el.y,
     rotation: el.rotation,
@@ -377,7 +386,11 @@ export default function DesignCanvas({
     },
   });
 
-  const renderElement = (el: DesignElement) => {
+  const renderElement = (source: DesignElement) => {
+    // Finishes are their own layers (U4.4): not in the print artwork, previewed in their look here.
+    if (source.finish && printMode) return null;
+    const el =
+      source.finish && "fill" in source ? ({ ...source, fill: FINISH_LOOK[source.finish] } as DesignElement) : source;
     switch (el.type) {
       case "text":
         return (
@@ -588,6 +601,30 @@ export default function DesignCanvas({
                   fill={pattern.color}
                 />
               )}
+              {pattern.kind === "gradient" && (
+                <Rect
+                  x={-bleedMm}
+                  y={-bleedMm}
+                  width={dieline.width + 2 * bleedMm}
+                  height={dieline.height + 2 * bleedMm}
+                  fillLinearGradientStartPoint={
+                    gradientEnds(pattern.angle ?? 90, dieline.width + 2 * bleedMm, dieline.height + 2 * bleedMm)[0]
+                  }
+                  fillLinearGradientEndPoint={
+                    gradientEnds(pattern.angle ?? 90, dieline.width + 2 * bleedMm, dieline.height + 2 * bleedMm)[1]
+                  }
+                  fillLinearGradientColorStops={[0, pattern.color, 1, pattern.background]}
+                />
+              )}
+              {pattern.kind === "image" && pattern.image ? (
+                <WrapImage
+                  image={pattern.image}
+                  x={-bleedMm}
+                  y={-bleedMm}
+                  width={dieline.width + 2 * bleedMm}
+                  height={dieline.height + 2 * bleedMm}
+                />
+              ) : null}
               {tile && (
                 <Rect
                   x={-bleedMm}
@@ -867,4 +904,40 @@ function DistanceLabels({
       ) : null}
     </Group>
   );
+}
+
+/** A linear gradient across a box at an angle (degrees, 0 = left to right), as Konva's start and end points. */
+function gradientEnds(
+  angle: number,
+  width: number,
+  height: number,
+): [{ x: number; y: number }, { x: number; y: number }] {
+  const r = (angle * Math.PI) / 180;
+  const half = (Math.abs(width * Math.cos(r)) + Math.abs(height * Math.sin(r))) / 2;
+  const [cx, cy] = [width / 2, height / 2];
+  return [
+    { x: cx - Math.cos(r) * half, y: cy - Math.sin(r) * half },
+    { x: cx + Math.cos(r) * half, y: cy + Math.sin(r) * half },
+  ];
+}
+
+/** The full-wrap background (U4.4): one picture covering the sheet and its bleed, centred. */
+function WrapImage({
+  image,
+  x,
+  y,
+  width,
+  height,
+}: {
+  image: NonNullable<DesignContent["pattern"]["image"]>;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}) {
+  const img = useHtmlImage(image.src);
+  if (!img) return null;
+  const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+  const [w, h] = [image.naturalWidth * scale, image.naturalHeight * scale];
+  return <KImage image={img} x={x + (width - w) / 2} y={y + (height - h) / 2} width={w} height={h} />;
 }

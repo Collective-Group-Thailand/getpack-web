@@ -19,7 +19,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 487000
+            "maxNumericValue": 493000
           }
         ],
         "largest-contentful-paint": [
@@ -31,5 +31,5 @@
       }
     }
   },
-  "$comment": "Studio (U4.1): the designer inside the five-step frame with the price dock — the same lazy Konva / three.js split as the designer set (ADR-0010). Target in docs/performance-budgets.md: 350 KB of initial JS, <= 3.0 s to an interactive shell (studio-spec §1). RATCHET pinned just above the U4.1 measure; lower it whenever a change wins headroom, never raise it without saying why in docs/PROGRESS.md. U4.2 (2026-10-05) raised 479000 -> 485000: the print-method inks, the rules catalogue and the typed-quantity field measure 484482; ① and ② themselves load on demand (PROGRESS U4.2). U4.3 (2026-10-05) raised 485000 -> 487000: the stage views, the layers tree, distance labels and the mirrored die for inside printing measure 486106 (PROGRESS U4.3)."
+  "$comment": "Studio (U4.1): the designer inside the five-step frame with the price dock — the same lazy Konva / three.js split as the designer set (ADR-0010). Target in docs/performance-budgets.md: 350 KB of initial JS, <= 3.0 s to an interactive shell (studio-spec §1). RATCHET pinned just above the U4.1 measure; lower it whenever a change wins headroom, never raise it without saying why in docs/PROGRESS.md. U4.2 (2026-10-05) raised 479000 -> 485000: the print-method inks, the rules catalogue and the typed-quantity field measure 484482; ① and ② themselves load on demand (PROGRESS U4.2). U4.3 (2026-10-05) raised 485000 -> 487000: the stage views, the layers tree, distance labels and the mirrored die for inside printing measure 486106 (PROGRESS U4.3). U4.4 (2026-10-05) raised 487000 -> 493000: the canvas's finish, gradient and full-wrap layers, the EAN-8 / UPC-A / Code 128 encoders and the image-quality badge measure 492619; the content tools (templates, elements, brand, background) load on demand (PROGRESS U4.4)."
 }

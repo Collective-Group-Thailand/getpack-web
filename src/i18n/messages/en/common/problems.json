@@ -444,6 +444,7 @@
   "studio": {
     "spec_mismatch": "The spec does not match this design's box",
     "spec_missing": "This design has no spec to price yet",
-    "rate_limited": "Priced too often, wait a moment"
+    "rate_limited": "Priced too often, wait a moment",
+    "right_not_required": "This mark needs no declaration"
   }
 }
