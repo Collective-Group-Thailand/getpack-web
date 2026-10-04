@@ -6,6 +6,7 @@ import { LAYER_OF } from "../export/layers";
 import { allFaces } from "../faces";
 import { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "../materials";
 import { MODULES, PROCESSES } from "../modules";
+import { ALL_RECIPES as RECIPES } from "../library";
 import { getStyle, hingeMapOf, resolveValues, STYLES } from "../styles";
 import { EXPRESSION_FUNCTIONS } from "./context";
 import {
@@ -15,7 +16,7 @@ import {
   describeVariant,
   parseRecipe,
   presetsOf,
-  RECIPES,
+  RECIPES as CORE,
   RecipeError,
   variantsOf,
   type StyleRecipe,
@@ -42,7 +43,7 @@ describe("recipes", () => {
   });
 
   it("are the registry: one recipe per style, in the same order", () => {
-    expect(RECIPES.map((r) => r.id)).toEqual(STYLES.map((s) => s.id));
+    expect(CORE.map((r) => r.id)).toEqual(STYLES.map((s) => s.id));
   });
 
   it("build exactly what the style builds, and fold the same way", () => {

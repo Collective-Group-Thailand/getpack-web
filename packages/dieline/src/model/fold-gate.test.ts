@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "../materials";
-import { buildFromRecipe, defaultsOf, outerSizeOf, presetsOf, RECIPES } from "../recipes";
+import { ALL_RECIPES as RECIPES } from "../library";
+import { buildFromRecipe, defaultsOf, outerSizeOf, presetsOf } from "../recipes";
 import { resolveParam } from "../recipes/params";
 import type { StyleRecipe } from "../recipes/types";
 import { isBuildable, validRanges } from "../solver";

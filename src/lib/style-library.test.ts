@@ -1,4 +1,5 @@
-import { MODULES, RECIPES } from "@packio/dieline";
+import { MODULES } from "@packio/dieline";
+import { ALL_RECIPES as RECIPES } from "@packio/dieline/library";
 import { describe, expect, it } from "vitest";
 
 import master from "../../docs/design-tool/style-library-master.json" with { type: "json" };

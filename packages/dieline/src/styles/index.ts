@@ -9,6 +9,23 @@ import { RECIPES, styleFromRecipe } from "../recipes";
 export const STYLES: readonly BoxStyleDef[] = RECIPES.map(styleFromRecipe);
 
 const BY_ID = new Map(STYLES.map((s) => [s.id, s]));
+const REGISTERED: BoxStyleDef[] = [];
+
+/**
+ * Adds styles to the registry after load — the style library's recipes
+ * (`@packio/dieline/library`, `registerLibrary()`), kept out of the main entry so pages that draw
+ * the core styles do not carry the whole library (U3.4). A style already known is left as it is.
+ */
+export function registerStyles(defs: readonly BoxStyleDef[]): void {
+  for (const def of defs) {
+    if (BY_ID.has(def.id)) continue;
+    BY_ID.set(def.id, def);
+    REGISTERED.push(def);
+  }
+}
+
+/** Every style the registry knows: the core styles, then any registered since. */
+export const allStyles = (): readonly BoxStyleDef[] => [...STYLES, ...REGISTERED];
 
 /**
  * Keys the catalogue may carry in `pattern.dielineKey` that are not style ids: short codes

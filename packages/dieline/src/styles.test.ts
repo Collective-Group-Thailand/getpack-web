@@ -7,7 +7,12 @@ import { allFaces } from "./faces";
 import { foldedBounds } from "./fold";
 import { faceLabel, pieceLabel } from "./labels";
 import { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "./materials";
-import { hingeMapOf, resolveValues, STYLES } from "./styles";
+import { registerLibrary } from "./library";
+import { allStyles, hingeMapOf, resolveValues } from "./styles";
+
+registerLibrary();
+/** The core styles and the library's (U3.4). */
+const STYLES = allStyles();
 import type { BoxStyleDef, MaterialSpec } from "./types";
 
 /**
