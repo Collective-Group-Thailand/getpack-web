@@ -16,10 +16,12 @@ import {
   svgPathData,
   type EdgeRole,
   type Face,
+  type Bounds,
   type Pt,
 } from "@packio/dieline";
 
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
+import { formatMm } from "@/i18n/format";
 import { barsPath, ean13Modules, qrMatrix, qrPath } from "@/features/designer/lib/codes";
 import { linesOf, snapBox, type SnapTargets } from "@/features/designer/lib/snapping";
 import { buildPatternTile } from "@/features/designer/patterns";
@@ -121,6 +123,9 @@ interface Props {
   safeMm?: number;
 }
 
+/** The inside carries no background pattern (yet): only the outside has one. */
+const NO_PATTERN = { kind: "none", color: "#000000", background: "#ffffff", size: 12 } as const;
+
 export default function DesignCanvas({
   dieline,
   paperColor,
@@ -149,12 +154,21 @@ export default function DesignCanvas({
     bleedMm,
     focusedFaceId,
     focusFace,
+    side,
   } = useEditor();
+  // The side being edited (U4.3): its elements only; the background pattern is the outside's.
+  const elements = useMemo(
+    () => content.elements.filter((e) => (e.side ?? "outside") === side),
+    [content.elements, side],
+  );
+  const pattern = side === "inside" ? NO_PATTERN : content.pattern;
   const locale = useLocale() as "th" | "en";
   const trRef = useRef<Konva.Transformer>(null);
   const worldRef = useRef<Konva.Group>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [guides, setGuides] = useState<{ axis: "x" | "y"; at: number }[]>([]);
+  /** While dragging one element: its box and the face it is on, for the distance labels in mm (U4.3). */
+  const [gaps, setGaps] = useState<{ box: Bounds; face: Bounds } | null>(null);
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const dragStart = useRef<Map<string, { x: number; y: number }> | null>(null);
   const scale = zoom * PX_PER_MM;
@@ -162,7 +176,7 @@ export default function DesignCanvas({
   const faces = useMemo(() => allFaces(dieline), [dieline]);
   const faceById = useMemo(() => new Map(faces.map((f) => [f.id, f])), [faces]);
   const lines = useMemo(() => dielineLines(dieline).filter((l) => l.role !== "bleed"), [dieline]);
-  const tile = useMemo(() => buildPatternTile(content.pattern, TILE_PX_PER_MM), [content.pattern]);
+  const tile = useMemo(() => buildPatternTile(pattern, TILE_PX_PER_MM), [pattern]);
   const safe = useMemo(() => faces.flatMap((f) => safeZone(f, safeMm)), [faces, safeMm]);
   const facePolys = useMemo(() => faces.map((f) => ({ id: f.id, poly: flattenContour(f.outline, 0.5) })), [faces]);
   // Flattened outlines and holes: the sheet clip (holes stay clear) and each face's own clip.
@@ -173,7 +187,7 @@ export default function DesignCanvas({
   const angle = focused ? (upright[focused.id] ?? 0) : 0;
   const focusBox = focused ? faceBounds(focused) : null;
   const pivot = focusBox ? { x: focusBox.x + focusBox.width / 2, y: focusBox.y + focusBox.height / 2 } : { x: 0, y: 0 };
-  const selectable = new Set(content.elements.filter((e) => !e.locked).map((e) => e.id));
+  const selectable = new Set(elements.filter((e) => !e.locked).map((e) => e.id));
 
   // Snap targets: face edges and centres, safe-zone lines, the sheet's centre, and the other
   // elements' edges and centres (read from their nodes, so text is measured, not guessed).
@@ -190,7 +204,7 @@ export default function DesignCanvas({
     );
     const world = worldRef.current;
     const others = world
-      ? content.elements
+      ? elements
           .filter((e) => !exclude.has(e.id))
           .map((e) => world.findOne(`#${e.id}`)?.getClientRect({ relativeTo: world }))
           .filter((r): r is NonNullable<typeof r> => !!r)
@@ -322,6 +336,12 @@ export default function DesignCanvas({
         node.y(node.y() + snapped.dy);
         setGuides(snapped.guides);
       }
+      if (start.size === 1) {
+        const box = node.getClientRect({ relativeTo: world });
+        const centre: Pt = [box.x + box.width / 2, box.y + box.height / 2];
+        const on = facePolys.find((f) => pointInPolygon(centre, f.poly));
+        setGaps(on ? { box, face: faceBounds(faceById.get(on.id)!) } : null);
+      }
       // Dragging one selected element moves the whole selection with it.
       const origin = start.get(el.id);
       if (origin && start.size > 1) {
@@ -340,6 +360,7 @@ export default function DesignCanvas({
       const start = dragStart.current;
       dragStart.current = null;
       setGuides([]);
+      setGaps(null);
       if (!world || !start) return;
       updateElements(
         [...start.keys()].flatMap((id) => {
@@ -423,7 +444,7 @@ export default function DesignCanvas({
   // Consecutive elements with the same clip share one clip group — order is kept, and 200
   // elements do not mean 200 clip paths per frame.
   const batches: { key: string; elements: DesignElement[] }[] = [];
-  for (const el of content.elements) {
+  for (const el of elements) {
     const key = el.clipFaceId && faceById.has(el.clipFaceId) && !printMode ? el.clipFaceId : "sheet";
     const last = batches.at(-1);
     if (last && last.key === key) last.elements.push(el);
@@ -470,7 +491,7 @@ export default function DesignCanvas({
     const y1 = Math.max(marquee.y0, marquee.y1);
     setMarquee(null);
     if (!world) return;
-    const hits = content.elements.filter((el) => {
+    const hits = elements.filter((el) => {
       if (el.locked) return false;
       const r = world.findOne(`#${el.id}`)?.getClientRect({ relativeTo: world });
       return r && r.x < x1 && r.x + r.width > x0 && r.y < y1 && r.y + r.height > y0;
@@ -558,13 +579,13 @@ export default function DesignCanvas({
 
             {/* Background pattern, then the artwork in clip batches. */}
             <Group clipFunc={sheetClip} listening={false}>
-              {content.pattern.kind === "solid" && (
+              {pattern.kind === "solid" && (
                 <Rect
                   x={-bleedMm}
                   y={-bleedMm}
                   width={dieline.width + 2 * bleedMm}
                   height={dieline.height + 2 * bleedMm}
-                  fill={content.pattern.color}
+                  fill={pattern.color}
                 />
               )}
               {tile && (
@@ -662,6 +683,7 @@ export default function DesignCanvas({
                   strokeScaleEnabled={false}
                 />
               ))}
+              {gaps ? <DistanceLabels box={gaps.box} face={gaps.face} scale={scale} locale={locale} /> : null}
               {marquee ? (
                 <Rect
                   x={Math.min(marquee.x0, marquee.x1)}
@@ -778,5 +800,71 @@ function Rulers({
         ))}
       </svg>
     </>
+  );
+}
+
+/**
+ * The gaps between a dragged element and the edges of the face it is on, in millimetres
+ * (studio-spec §③ "distance labels in mm"): a line from the face's left edge and one from its top
+ * edge to the element, each with its length.
+ */
+function DistanceLabels({
+  box,
+  face,
+  scale,
+  locale,
+}: {
+  box: Bounds;
+  face: Bounds;
+  scale: number;
+  locale: "th" | "en";
+}) {
+  const size = 11 / scale;
+  const left = box.x - face.x;
+  const top = box.y - face.y;
+  const midY = box.y + box.height / 2;
+  const midX = box.x + box.width / 2;
+  const label = (mm: number) => formatMm(mm, locale, 1);
+  return (
+    <Group listening={false}>
+      {left > 0.05 ? (
+        <>
+          <Line
+            points={[face.x, midY, box.x, midY]}
+            stroke={CANVAS_COLORS.selection}
+            strokeWidth={1}
+            strokeScaleEnabled={false}
+            dash={[4, 3]}
+          />
+          <Text
+            x={face.x}
+            y={midY - size * 1.4}
+            width={left}
+            align="center"
+            text={label(left)}
+            fontSize={size}
+            fill={CANVAS_COLORS.selection}
+          />
+        </>
+      ) : null}
+      {top > 0.05 ? (
+        <>
+          <Line
+            points={[midX, face.y, midX, box.y]}
+            stroke={CANVAS_COLORS.selection}
+            strokeWidth={1}
+            strokeScaleEnabled={false}
+            dash={[4, 3]}
+          />
+          <Text
+            x={midX + size * 0.4}
+            y={face.y + top / 2 - size / 2}
+            text={label(top)}
+            fontSize={size}
+            fill={CANVAS_COLORS.selection}
+          />
+        </>
+      ) : null}
+    </Group>
   );
 }

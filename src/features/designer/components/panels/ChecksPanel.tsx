@@ -42,7 +42,14 @@ export function ChecksPanel({ issues }: { issues: DesignIssue[] }) {
           <li key={`${issue.elementId}-${issue.code}-${index}`}>
             <button
               type="button"
-              onClick={() => select(issue.elementId)}
+              onClick={() => {
+                // An issue on the other side of the board turns the view to it first (U4.3).
+                const editor = useEditor.getState();
+                const el = editor.content.elements.find((e) => e.id === issue.elementId);
+                const side = el?.side === "inside" ? "inside" : "outside";
+                if (el && side !== editor.side) editor.setSide(side);
+                select(issue.elementId);
+              }}
               className="hover:bg-surface-subtle focus-visible:ring-focus-ring flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-start text-sm outline-none focus-visible:ring-2"
             >
               <Icon

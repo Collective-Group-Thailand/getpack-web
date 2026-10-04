@@ -67,6 +67,7 @@ export {
   triangulate,
 } from "./offset";
 export { checkDieline, CLOSURE_TOLERANCE_MM, type GeometryProblem } from "./checks";
+export { mirrorDieline, mirrorPoint } from "./mirror";
 export {
   applyMat4,
   foldDieline,

@@ -187,5 +187,11 @@
     "none": "No print: structure only",
     "flexo": "Flexo: {used, number} colours",
     "flexoLimited": "Flexo: {used, number} of {max, number} colours"
+  },
+  "inside": {
+    "title": "Print the inside too?",
+    "body": "Printing the inside costs more. The price dock shows the new price and why.",
+    "confirm": "Print the inside too",
+    "cancel": "Not now"
   }
 }

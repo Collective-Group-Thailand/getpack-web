@@ -12,9 +12,10 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
   j.expectEvents("studio_started");
 
   const focused = (face: string) => page.getByRole("status").filter({ hasText: `กำลังแก้: ${face}` });
-  await tool(j, page, "กล่อง");
-  await j.decide("focus the top", async () => {
-    await page.getByRole("button", { name: /^ฝาบน/ }).first().click();
+  // Faces are picked on the 3D model itself (U4.3), not from the Box tool.
+  const faces = page.getByRole("group", { name: "เลือกด้านที่จะออกแบบ" });
+  await j.decide("focus the top (on the 3D model)", async () => {
+    await faces.getByRole("button", { name: /^ฝาบน/ }).first().click();
     await expect(focused("ฝาบน")).toBeVisible();
   });
   await tool(j, page, "อัปโหลด");
@@ -24,19 +25,14 @@ test("T2 put the logo on the top and the front, then see it in 3D", async ({ pag
   });
 
   j.gap("no way to place one image on several faces at once (U4.4)");
-  await tool(j, page, "กล่อง");
-  await j.decide("focus the front", async () => {
-    await page.getByRole("button", { name: "ด้านหน้า", exact: true }).click();
+  await j.decide("focus the front (on the 3D model)", async () => {
+    await faces.getByRole("button", { name: "ด้านหน้า", exact: true }).click();
     await expect(focused("ด้านหน้า")).toBeVisible();
   });
-  await tool(j, page, "อัปโหลด");
   await j.decide("place the logo again", () => page.getByRole("button", { name: "วางรูปนี้อีกครั้ง" }).click());
 
-  await j.screen(
-    "3D",
-    () => page.getByRole("tab", { name: "3 มิติ" }).click(),
-    () => expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible(),
-  );
+  // The studio shows the model beside the sheet (U4.3 split view): no step to reach the 3D.
+  await expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
 
-  await j.done(() => expect(page.getByRole("tab", { name: "3 มิติ" })).toHaveAttribute("aria-selected", "true"));
+  await j.done(() => expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible());
 });

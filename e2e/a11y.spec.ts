@@ -90,7 +90,7 @@ test.describe("axe, in a real browser", () => {
     const checks = await scan(page);
     expect(checks.violations, report(checks.violations)).toEqual([]);
 
-    await page.getByRole("tab", { name: "3 มิติ" }).click();
+    // The studio shows the model beside the sheet (U4.3).
     await expect(page.getByRole("img", { name: /^ภาพสามมิติ/ })).toBeVisible();
     const preview = await scan(page);
     expect(preview.violations, report(preview.violations)).toEqual([]);
@@ -186,7 +186,8 @@ test.describe("keyboard paths", () => {
     await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
     await expect(page.locator("canvas").first()).toBeVisible();
 
-    // Reopen it from the toolbar, so there is a trigger for focus to return to.
+    // Reopen it from the Box tool, so there is a trigger for focus to return to.
+    await page.getByRole("navigation", { name: "เครื่องมือออกแบบ" }).getByRole("button", { name: "กล่อง", exact: true }).click();
     const trigger = page.getByRole("button", { name: "ตั้งค่ากล่อง" }).first();
     await trigger.click();
     await expect(dialog).toBeVisible();

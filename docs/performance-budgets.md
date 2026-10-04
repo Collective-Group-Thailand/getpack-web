@@ -188,3 +188,15 @@ the API's conversion, materials, print method, finishes, the Structure Advisor) 
 and load only when shown — a design opened on ③ never loads them (they measured +12 KB inline).
 What stays in the first load is the print method's ink rule, the rules catalogue query and the
 dock's typed quantity.
+
+## U4.3 — ③ Design core (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` | 484,482 | 486,106 (performance 0.98) | studio 485,000 → **487,000** |
+
+The stage's view bar (split / flat / 3D, outside / inside), the layers panel as an accessible tree,
+the distance labels and the engine's `mirrorDieline` for inside printing are in the editor's chunk;
+three.js still loads only with the 3D view. **Orbit performance** (`e2e/studio-perf.spec.ts`): a
+150-object design orbited in 3D with the CPU throttled 4× — **59.6 fps** on the CI machine's
+software WebGL; the floor is 45 fps (`STUDIO_ORBIT_FPS_FLOOR`).

@@ -5,7 +5,8 @@ import { DEFAULT_BLEED_MM } from "@packio/dieline";
 import { DEFAULT_PATTERN } from "@/features/designer/catalog";
 import type { DesignContent, DesignElement, DesignSpec, NewElement, PatternSettings } from "@/features/designer/types";
 
-const HISTORY_LIMIT = 100;
+/** Undo steps kept (studio-spec §6: at least 200). */
+export const HISTORY_LIMIT = 200;
 
 type Toggle = "showLabels" | "showSafeZone" | "showGrid" | "showRulers" | "snapping";
 
@@ -35,6 +36,9 @@ interface EditorState {
   bleedMm: number;
   /** Copied elements, for paste. */
   clipboard: DesignElement[];
+  /** Which side of the board is being edited (U4.3); new elements go on it. */
+  side: "outside" | "inside";
+  setSide: (side: "outside" | "inside") => void;
   setBleed: (mm: number) => void;
 
   load: (p: { id: string; name: string; spec: DesignSpec | null; content?: DesignContent }) => void;
@@ -104,6 +108,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   printMode: false,
   bleedMm: DEFAULT_BLEED_MM,
   clipboard: [],
+  side: "outside",
+  setSide: (side) => set({ side, selectedId: null, selectedIds: [], focusedFaceId: null }),
   setBleed: (bleedMm) => set({ bleedMm }),
 
   load: ({ id, name, spec, content }) =>
@@ -117,6 +123,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       selectedId: null,
       selectedIds: [],
       focusedFaceId: null,
+      side: "outside",
       dirty: false,
     }),
 
@@ -132,7 +139,12 @@ export const useEditor = create<EditorState>((set, get) => ({
 
   addElement: (el) => {
     const id = nanoid(8);
-    get().commit((c) => ({ ...c, elements: [...c.elements, { ...el, id } as DesignElement] }));
+    const side = get().side === "inside" ? { side: "inside" as const } : {};
+    // Face-aware editing (U4.3): placed while a face is focused, it is clipped to that face —
+    // wrapping across a fold is the explicit choice in its properties.
+    const focused = get().focusedFaceId;
+    const clip = focused && !el.clipFaceId ? { clipFaceId: focused } : {};
+    get().commit((c) => ({ ...c, elements: [...c.elements, { ...el, ...clip, ...side, id } as DesignElement] }));
     set({ selectedId: id, selectedIds: [id] });
   },
 
@@ -271,8 +283,9 @@ export const useEditor = create<EditorState>((set, get) => ({
 
   selectMany: (ids) => set({ selectedIds: ids, selectedId: ids.at(-1) ?? null }),
   selectAll: () => {
+    const side = get().side;
     const ids = get()
-      .content.elements.filter((e) => !e.locked)
+      .content.elements.filter((e) => !e.locked && (e.side ?? "outside") === side)
       .map((e) => e.id);
     set({ selectedIds: ids, selectedId: ids.at(-1) ?? null });
   },
@@ -296,9 +309,13 @@ export const useEditor = create<EditorState>((set, get) => ({
   paste: () => {
     const { clipboard } = get();
     if (!clipboard.length) return;
-    const copies = clipboard.map(
-      (e) => ({ ...e, id: nanoid(8), x: e.x + 10, y: e.y + 10, locked: false }) as DesignElement,
-    );
+    // Pasted onto the side being edited.
+    const inside = get().side === "inside";
+    const copies = clipboard.map((e) => {
+      const { side: _side, ...rest } = e;
+      void _side;
+      return { ...rest, ...(inside ? { side: "inside" } : {}), id: nanoid(8), x: e.x + 10, y: e.y + 10, locked: false } as DesignElement;
+    });
     get().commit((c) => ({ ...c, elements: [...c.elements, ...copies] }));
     set({ selectedIds: copies.map((e) => e.id), selectedId: copies.at(-1)?.id ?? null, clipboard: copies });
   },
