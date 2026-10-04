@@ -1,8 +1,8 @@
 import { TRAY_CORNER_FLAP_MAX_MM, TRAY_CORNER_FLAP_SHARE, TUCK_CORNER_RADIUS_MM, tuckDepthFor } from "../../constants";
 import { tuckOnEdge } from "../../construct/closures";
 import { face } from "../../faces";
-import { num } from "../../params";
-import { line, polygon, rectangle } from "../../path";
+import { bool, num, str } from "../../params";
+import { ellipse, line, polygon, rectangle } from "../../path";
 import { t } from "../../styles/_shared";
 import type { Face, Pt } from "../../types";
 import type { BuildContext, ClosureModule, ModuleConfig, TrayExtras, TrayFrame } from "../types";
@@ -95,9 +95,20 @@ function tuckFrontLid(ctx: BuildContext, f: TrayFrame): Face[] {
     ]),
     earFace("ear-left", "left"),
     earFace("ear-right", "right"),
-    face("lid-front", "front", "flap", rectangle(x0, yFront, L, H, { top: "crease", bottom: "crease" })),
+    face("lid-front", "front", "flap", rectangle(x0, yFront, L, H, { top: "crease", bottom: "crease" }), {
+      // `fingerHole` (the master `thumb` axis): a finger hole in the front flap to lift the lid. ⚠
+      holes: bool(ctx.v, "fingerHole", false)
+        ? [ellipse(x0 + L / 2, yFront + H / 2, Math.min(10, H / 4), Math.min(10, H / 4))]
+        : [],
+    }),
     // Walked left to right, so the tuck lies on its upper side, away from the front flap.
-    tuckOnEdge("tuck", [x0, yFront], [x1, yFront], tuckDepth, Math.min(TUCK_CORNER_RADIUS_MM, tuckDepth / 2)),
+    tuckOnEdge(
+      "tuck",
+      [x0, yFront],
+      [x1, yFront],
+      tuckDepth,
+      str(ctx.v, "tuckCorners", "rounded") === "square" ? 0 : Math.min(TUCK_CORNER_RADIUS_MM, tuckDepth / 2),
+    ),
   ];
 }
 

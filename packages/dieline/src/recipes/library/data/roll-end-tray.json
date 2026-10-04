@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "id": "roll-end-tray",
+  "base": "PK-TR-04",
+  "variants": {
+    "tuck_corner": {
+      "square": {
+        "tuckCorners": "square"
+      },
+      "rounded": {
+        "tuckCorners": "rounded"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    },
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "ถาดพับขอบม้วน ฝาเสียบ (กระดาษแข็ง)",
+    "en": "Roll-end tray with tuck lid (paperboard mailer)"
+  },
+  "description": {
+    "th": "ถาดพับผนังสองชั้นด้านหน้าและด้านข้าง ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบ ทำจากกระดาษแข็ง",
+    "en": "A tray with rolled double front and end walls and a tuck lid hinged on the back, in paperboard"
+  },
+  "codes": {
+    "fefco": "0427"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 250
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "grain",
+    "tuckCorners",
+    "fingerHole",
+    "insert"
+  ],
+  "defaults": {
+    "length": 250,
+    "width": 180,
+    "height": 80,
+    "grain": "across",
+    "tuckCorners": "rounded",
+    "fingerHole": false,
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "เล็ก 200 × 150 × 50",
+        "en": "Small 200 × 150 × 50"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 50
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "กลาง 250 × 180 × 80",
+        "en": "Medium 250 × 180 × 80"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 80
+      }
+    },
+    {
+      "id": "large",
+      "label": {
+        "th": "ใหญ่ 350 × 250 × 100",
+        "en": "Large 350 × 250 × 100"
+      },
+      "values": {
+        "length": 350,
+        "width": 250,
+        "height": 100
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "rollOverWalls",
+      "with": {
+        "walls": ["front", "left", "right"]
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t",
+        "inset": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}

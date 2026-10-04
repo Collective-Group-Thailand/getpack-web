@@ -11,8 +11,10 @@ import { buildTube } from "../../construct/tube";
 import { assemble, piece, prefixFaces } from "../../faces";
 import { bool, num, str } from "../../params";
 import { ellipse } from "../../path";
-import { grainOn, t } from "../../styles/_shared";
-import type { ParamValues } from "../../types";
+import { grainOn, t, windowHole } from "../../styles/_shared";
+import type { Contour, ParamValues } from "../../types";
+import { extraPieces } from "../body/tube";
+import { lockCornerHoles } from "../feature/tray-features";
 import type { PieceSetModule } from "../types";
 
 /** How deep the lid is: the base's height (full telescope) or `lidDepth` (partial, default a third). */
@@ -51,15 +53,28 @@ export const lidAndBase: PieceSetModule = {
     const W = num(v, "width", 150);
     const H = num(v, "height", 60);
     const c = LID_CLEARANCE_MM;
-    const tray = (l: number, w: number, h: number) =>
-      buildTray({
-        length: l + a.panel,
-        width: w + a.panel,
-        height: h + a.trayDepth,
-        cornerFlap: Math.min((h + a.trayDepth) * TRAY_CORNER_FLAP_SHARE, TRAY_CORNER_FLAP_MAX_MM),
+    const lock = str(v, "cornerLock", "glued") === "lock";
+    const tray = (l: number, w: number, h: number, lid: boolean) => {
+      const f = { length: l + a.panel, width: w + a.panel, height: h + a.trayDepth };
+      const holes: Record<string, Contour[]> = lock ? lockCornerHoles(f) : {};
+      if (lid) {
+        // A top window in the lid's top (`windowPanel` = `lid-base`); a finger hole in its front and back walls.
+        holes.base = windowHole(v, "lid-base", f.height, f.height + f.length, f.height, f.height + f.width);
+        if (bool(v, "fingerHole", false)) {
+          const r = Math.min(8, f.height / 4);
+          const cx = f.height + f.length / 2;
+          holes["wall-back"] = [...(holes["wall-back"] ?? []), ellipse(cx, f.height / 2, r, r)];
+          holes["wall-front"] = [...(holes["wall-front"] ?? []), ellipse(cx, f.height + f.width + f.height / 2, r, r)];
+        }
+      }
+      return buildTray({
+        ...f,
+        cornerFlap: Math.min(f.height * TRAY_CORNER_FLAP_SHARE, TRAY_CORNER_FLAP_MAX_MM),
+        holes,
       });
-    const base = tray(L, W, H);
-    const lid = prefixFaces(tray(L + 2 * t0 + 2 * c, W + 2 * t0 + 2 * c, lidDepthOf(v)), "lid-");
+    };
+    const base = tray(L, W, H, false);
+    const lid = prefixFaces(tray(L + 2 * t0 + 2 * c, W + 2 * t0 + 2 * c, lidDepthOf(v), true), "lid-");
     return assemble(ctx.styleId, [
       piece("base", "base", base, grainOn(v, base, "base")),
       piece("lid", "lid", lid, grainOn(v, lid, "lid-base")),
@@ -96,7 +111,7 @@ export const sleeveAndDrawer: PieceSetModule = {
     },
   ],
   contributes: { kinds: ["panel", "glue_flap", "base", "wall", "flap"], roles: ["cut", "crease", "glue_area"] },
-  build(ctx) {
+  build(ctx, _cfg, parts) {
     const { v, m } = ctx;
     const a = allowancesOf(m);
     const t0 = m.caliperMm;
@@ -137,10 +152,13 @@ export const sleeveAndDrawer: PieceSetModule = {
       depth: drawerL + 2 * t0,
       glue: num(v, "glueWidth", glueWidthFor(W, m)),
       glueId: "sleeve-glue",
+      // A window in the sleeve's top (`windowPanel` = `sleeve-top`).
+      holes: (p) => windowHole(v, p.id, p.x0, p.x1, p.y0, p.y1),
     });
     return assemble(ctx.styleId, [
       piece("sleeve", "sleeve", sleeve, grainOn(v, sleeve, "sleeve-top")),
       piece("drawer", "drawer", drawer, grainOn(v, drawer, "base")),
+      ...extraPieces(ctx, parts),
     ]);
   },
   hinges: (ctx) => ({

@@ -42,6 +42,7 @@ export const FACE_LABELS = {
   panel: { th: "แผง", en: "Panel" },
   platform: { th: "แผ่นรองสินค้า", en: "Insert platform" },
   insert_leg: { th: "ขาตัวรอง", en: "Insert leg" },
+  header: { th: "แผ่นหัวโชว์", en: "Header card" },
 } as const satisfies Record<string, Localized>;
 
 export type FaceLabel = keyof typeof FACE_LABELS;

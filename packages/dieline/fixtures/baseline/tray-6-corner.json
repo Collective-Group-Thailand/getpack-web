@@ -1,5 +1,5 @@
 {
-  "definition": "06499f130ffc73",
+  "definition": "03f090e01c5b04",
   "cake · board-350": {
     "build": "0d721fb9d02ecd",
     "hinges": "1e07ab69c64715",
@@ -117,6 +117,18 @@
   "cake · board-350 · grain=along": {
     "build": "0f37134090d46f",
     "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cake · board-350 · insert=none": {
+    "build": "0d721fb9d02ecd",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cake · board-350 · insert=die_cut": {
+    "build": "0c4af9f6b4d500",
+    "hinges": "19b9ec754364a0",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }

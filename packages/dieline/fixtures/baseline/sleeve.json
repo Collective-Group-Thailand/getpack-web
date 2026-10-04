@@ -1,5 +1,5 @@
 {
-  "definition": "074e2e4fa4ec14",
+  "definition": "181dd0d6a7d36f",
   "soap · board-350": {
     "build": "17c3d30880c50f",
     "hinges": "0ab38896a79cd8",
@@ -325,6 +325,12 @@
     "closed": "15e0da69fcb93a"
   },
   "soap · board-350 · windowRadius>max": {
+    "build": "17c3d30880c50f",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "soap · board-350 · thumbNotch=true": {
     "build": "17c3d30880c50f",
     "hinges": "0ab38896a79cd8",
     "validate": "15202279b28c9e",

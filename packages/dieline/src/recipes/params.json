@@ -61,6 +61,31 @@
     "max": 60,
     "step": 0.5
   },
+  "cornerLock": {
+    "key": "cornerLock",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "มุมถาด",
+      "en": "Corners"
+    },
+    "options": [
+      {
+        "value": "glued",
+        "label": {
+          "th": "ทากาว",
+          "en": "Glued"
+        }
+      },
+      {
+        "value": "lock",
+        "label": {
+          "th": "มุมล็อก ไม่ใช้กาว",
+          "en": "Lock corners, no glue"
+        }
+      }
+    ]
+  },
   "cornerRadius": {
     "key": "cornerRadius",
     "kind": "length",
@@ -336,6 +361,19 @@
     "min": 15,
     "max": 120,
     "step": 0.5
+  },
+  "headerHeight": {
+    "key": "headerHeight",
+    "kind": "number",
+    "group": "options",
+    "unit": "mm",
+    "label": {
+      "th": "ความสูงแผ่นหัวโชว์",
+      "en": "Header height"
+    },
+    "min": 40,
+    "max": 400,
+    "step": 1
   },
   "height": {
     "key": "height",

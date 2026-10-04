@@ -3,6 +3,10 @@ import ftFourflap from "./data/ft-fourflap.json" with { type: "json" };
 import ftSeal from "./data/ft-seal.json" with { type: "json" };
 import ftSnap from "./data/ft-snap.json" with { type: "json" };
 import ftTuck from "./data/ft-tuck.json" with { type: "json" };
+import gableCrash from "./data/gable-crash.json" with { type: "json" };
+import gableFourflap from "./data/gable-fourflap.json" with { type: "json" };
+import gableSeal from "./data/gable-seal.json" with { type: "json" };
+import gableTuck from "./data/gable-tuck.json" with { type: "json" };
 import teAirplaneCrash from "./data/te-airplane-crash.json" with { type: "json" };
 import teAirplaneFourflap from "./data/te-airplane-fourflap.json" with { type: "json" };
 import teAirplaneSeal from "./data/te-airplane-seal.json" with { type: "json" };
@@ -20,6 +24,10 @@ import teStraightSeal from "./data/te-straight-seal.json" with { type: "json" };
 import te2Airplane from "./data/te2-airplane.json" with { type: "json" };
 import te2Reverse from "./data/te2-reverse.json" with { type: "json" };
 import te2Straight from "./data/te2-straight.json" with { type: "json" };
+import rollEndTray from "./data/roll-end-tray.json" with { type: "json" };
+import trayInsert from "./data/tray-insert.json" with { type: "json" };
+import displayTray from "./data/display-tray.json" with { type: "json" };
+import cavityInsert from "./data/cavity-insert.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -34,6 +42,10 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   ftSeal,
   ftSnap,
   ftTuck,
+  gableCrash,
+  gableFourflap,
+  gableSeal,
+  gableTuck,
   teAirplaneCrash,
   teAirplaneFourflap,
   teAirplaneSeal,
@@ -51,4 +63,8 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   te2Airplane,
   te2Reverse,
   te2Straight,
+  rollEndTray,
+  trayInsert,
+  displayTray,
+  cavityInsert,
 ] as unknown as StyleRecipe[];

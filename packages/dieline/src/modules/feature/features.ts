@@ -11,7 +11,7 @@ export const windowFeature: FeatureModule = {
   id: "window",
   slot: "feature",
   status: "implemented",
-  fits: ["tube"],
+  fits: ["tube", "special"],
   label: t("หน้าต่าง", "Window"),
   params: ["window", "windowPanel", "windowWidth", "windowHeight", "windowOffsetX", "windowOffsetY", "windowRadius"],
   processes: ["window_patching"],
@@ -31,6 +31,28 @@ export const thumbNotch: FeatureModule = {
   processes: ["die_cut"],
   contributes: { kinds: [], roles: ["cut"] },
 };
+
+/** A hang hole centred on (cx, cy): `euro` slot, `round` hole or `sombrero` header; none for `none`. */
+export function hangHoleShape(kind: string, cx: number, cy: number): Contour[] {
+  switch (kind) {
+    case "euro":
+      return [
+        roundedRectangle(
+          cx - EURO_SLOT_WIDTH_MM / 2,
+          cy - EURO_SLOT_HEIGHT_MM / 2,
+          EURO_SLOT_WIDTH_MM,
+          EURO_SLOT_HEIGHT_MM,
+          EURO_SLOT_HEIGHT_MM / 2,
+        ),
+      ];
+    case "round":
+      return [ellipse(cx, cy, HANG_HOLE_DIAMETER_MM / 2, HANG_HOLE_DIAMETER_MM / 2)];
+    case "sombrero":
+      return [sombreroHole(cx, cy)];
+    default:
+      return [];
+  }
+}
 
 /** A top edge from (x0, y + r) to (x1, y + r) with rounded corners. */
 function roundedTop(x0: number, x1: number, y: number, r: number) {
@@ -96,22 +118,7 @@ export const hangTab: FeatureModule = {
     const cx = (back.x0 + back.x1) / 2;
     const cy = -h * 0.55;
     const kind = str(ctx.v, "hangHole", "euro");
-    const holes: Contour[] =
-      kind === "euro"
-        ? [
-            roundedRectangle(
-              cx - EURO_SLOT_WIDTH_MM / 2,
-              cy - EURO_SLOT_HEIGHT_MM / 2,
-              EURO_SLOT_WIDTH_MM,
-              EURO_SLOT_HEIGHT_MM,
-              EURO_SLOT_HEIGHT_MM / 2,
-            ),
-          ]
-        : kind === "round"
-          ? [ellipse(cx, cy, HANG_HOLE_DIAMETER_MM / 2, HANG_HOLE_DIAMETER_MM / 2)]
-          : kind === "sombrero"
-            ? [sombreroHole(cx, -h * 0.4)]
-            : [];
+    const holes = kind === "sombrero" ? [sombreroHole(cx, -h * 0.4)] : hangHoleShape(kind, cx, cy);
     const r = Math.min(6, h / 3, (back.x1 - back.x0) / 4);
     const hanger = face(
       `hanger-${c.end}`,

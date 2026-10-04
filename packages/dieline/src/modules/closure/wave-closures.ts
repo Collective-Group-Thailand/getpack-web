@@ -1,7 +1,7 @@
-import { DUST_FLAP_LENGTH_SHARE, TUCK_CORNER_RADIUS_MM, tuckDepthFor } from "../../constants";
+import { DUST_FLAP_LENGTH_SHARE, THUMB_NOTCH_RADIUS_MM, TUCK_CORNER_RADIUS_MM, tuckDepthFor } from "../../constants";
 import { airplaneClosure, fourFlapClosure } from "../../construct/closures";
 import { face } from "../../faces";
-import { num, str } from "../../params";
+import { bool, num, str } from "../../params";
 import { line, polygon, rectangle } from "../../path";
 import type { Closure } from "../../construct/tube";
 import type { Face, Pt } from "../../types";
@@ -168,5 +168,28 @@ export const slitLock: FeatureModule = {
     const slits = [0.2, 0.8].map((k) => rectangle(x0 + (x1 - x0) * k - len / 2, y + 2, len, 1));
     lid.holes = [...lid.holes, ...slits];
     return out;
+  },
+};
+
+/**
+ * An open end (a sleeve's): nothing hinged, and with `thumbNotch` (the master `thumb` axis) a
+ * half-round notch in the front panel's edge to push the product out.
+ */
+export const openEnd: ClosureModule = {
+  id: "openEnd",
+  slot: "closure",
+  status: "implemented",
+  fits: ["tube"],
+  label: t("ปลายเปิด", "Open end"),
+  params: ["thumbNotch"],
+  processes: ["die_cut"],
+  contributes: { kinds: [], roles: ["cut"] },
+  tube(ctx) {
+    const on = bool(ctx.v, "thumbNotch", false);
+    return ({ panels }) => {
+      const p = panels[0];
+      const r = Math.min(THUMB_NOTCH_RADIUS_MM, (p.x1 - p.x0) / 4, ctx.dims.depth / 4);
+      return { attachments: [], notches: on ? [{ panel: 0, center: (p.x0 + p.x1) / 2, radius: r }] : [] };
+    };
   },
 };

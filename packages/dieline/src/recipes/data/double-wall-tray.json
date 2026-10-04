@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "id": "double-wall-tray",
   "base": "PK-TR-03",
+  "variants": {
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
   "category": "tray_lid",
   "name": {
     "th": "ถาดผนังสองชั้น",
@@ -28,13 +38,15 @@
       "min": 20,
       "max": 250
     },
-    "grain"
+    "grain",
+    "insert"
   ],
   "defaults": {
     "length": 250,
     "width": 180,
     "height": 60,
-    "grain": "across"
+    "grain": "across",
+    "insert": "none"
   },
   "presets": [
     {
@@ -71,6 +83,13 @@
       "module": "rollOverWalls",
       "with": {
         "walls": ["back", "front"]
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t",
+        "inset": "t"
       }
     }
   ],
