@@ -15,9 +15,10 @@ import {
 } from "../../construct/closures";
 import type { FaceLabel } from "../../labels";
 import { bool, num, str } from "../../params";
-import { t } from "../../styles/_shared";
+import { t, windowHole } from "../../styles/_shared";
 import type { FaceKind, Pt } from "../../types";
-import type { ClosureModule, Constraint, ModuleConfig } from "../types";
+import type { Closure } from "../../construct/tube";
+import type { BuildContext, ClosureModule, Constraint, ModuleConfig } from "../types";
 
 /*
  * Closures on the end of a tube. Each reads the body's named sizes (`front`, `side`, `depth`, or
@@ -77,7 +78,7 @@ export const tuck: ClosureModule = {
     const W = num(v, "width", 40);
     const tuckDepth = num(v, "tuckDepth", tuckDepthFor(L));
     const notch = parts.features.some((f) => f.def.id === "thumbNotch" && f.cfg.end === end);
-    return tuckClosure({
+    const closure = tuckClosure({
       lidPanel: PANEL_INDEX[(cfg.lid as string) ?? "back"],
       lidDepth: ctx.dims.side,
       tuckDepth,
@@ -87,8 +88,30 @@ export const tuck: ClosureModule = {
       caliper: m.caliperMm,
       thumbNotch: notch && bool(v, "thumbNotch", false) ? THUMB_NOTCH_RADIUS_MM : 0,
     });
+    return end === "top" ? withLidWindow(ctx, closure, "lid-top") : closure;
   },
 };
+
+/**
+ * A window in the top lid (`windowPanel` = `lid`, the master file's `top_window`): the hole is cut
+ * in the lid face the closure drew, in its local frame.
+ */
+export function withLidWindow(ctx: BuildContext, closure: Closure, lidId: string): Closure {
+  if (str(ctx.v, "windowPanel", "front") !== "lid" || str(ctx.v, "window", "none") === "none") return closure;
+  return (c) => {
+    const out = closure(c);
+    const lid = [...out.attachments.map((a) => a.face), ...(out.faces ?? [])].find((f) => f.id === lidId);
+    if (lid) {
+      const xs = lid.outline.flatMap((e) => [e.from[0], e.to[0]]);
+      const ys = lid.outline.flatMap((e) => [e.from[1], e.to[1]]);
+      lid.holes = [
+        ...lid.holes,
+        ...windowHole(ctx.v, "lid", Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)),
+      ];
+    }
+    return out;
+  };
+}
 
 /**
  * A flap on every panel, separated by slots — the closure of the slotted-container family and of
@@ -117,7 +140,7 @@ function flapSet(
     constraints,
     processes,
     contributes: { kinds: ["flap", "dust_flap", "lid"], roles: ["cut", "crease", "glue_area"] },
-    tube(ctx, raw) {
+    tube(ctx, raw, end) {
       const cfg = { ...defaults, ...raw };
       return slottedFlaps({
         depths: (cfg.depths as string[]).map((e) => ctx.num(e)),
@@ -125,6 +148,13 @@ function flapSet(
         ...(cfg.labels ? { labels: cfg.labels as FaceLabel[] | FaceLabel } : {}),
         ...(cfg.kinds ? { kinds: cfg.kinds as FaceKind[] } : {}),
         ...(cfg.glue ? { glue: cfg.glue as number[] } : {}),
+        // A top window in the outer flap that covers the end (a seal end's `windowFlap`).
+        ...(typeof cfg.windowFlap === "number" && end === "top"
+          ? {
+              holes: (i: number, x0: number, x1: number, d: number) =>
+                i === cfg.windowFlap ? windowHole(ctx.v, "lid", x0, x1, -d, 0) : [],
+            }
+          : {}),
       });
     },
     hinges(_ctx, raw, end) {
@@ -205,6 +235,7 @@ export const seal = flapSet(
     kinds: ["flap", "dust_flap", "lid", "dust_flap"],
     glue: [2],
     stages: { front: 2, back: 3 },
+    windowFlap: 2,
   },
   ["die_cut", "folder_gluer_straight"],
 );

@@ -4,6 +4,7 @@ import { pouchWeb } from "./body/pouch";
 import { tray } from "./body/tray";
 import { tube } from "./body/tube";
 import { hingedLid } from "./closure/tray-closures";
+import { airplaneTuck, fourFlapLock } from "./closure/wave-closures";
 import {
   crashLock,
   cssc,
@@ -41,6 +42,8 @@ export const MODULES: readonly ModuleDef[] = [
   gableHandle,
   polygonTuckLid,
   hingedLid,
+  airplaneTuck,
+  fourFlapLock,
   windowFeature,
   thumbNotch,
   hangTab,

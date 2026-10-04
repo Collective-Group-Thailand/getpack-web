@@ -1,0 +1,525 @@
+{
+  "definition": "1365b9195dfb37",
+  "cosmetic · board-350": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-450": {
+    "build": "13f4586ac57de8",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · flute-e": {
+    "build": "0ccc559f5be517",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "supplement · board-350": {
+    "build": "133fc4f9f3eadd",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "supplement · board-450": {
+    "build": "024b475e636aca",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "supplement · flute-e": {
+    "build": "084271533e5a1f",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · board-350": {
+    "build": "11142189e12895",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · board-450": {
+    "build": "044d94f76e559c",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · flute-e": {
+    "build": "1f2adb1cc11ece",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length=min": {
+    "build": "11c3656861a2d9",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length=max": {
+    "build": "08ab46e3b863b7",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length<min": {
+    "build": "01fa495e10a12e",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "1ac0f387f9565a",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length>max": {
+    "build": "019368545f3308",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "0342ab00bc9bf5",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width=min": {
+    "build": "09d614b64aa069",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width=max": {
+    "build": "1bc6917a77ee39",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width<min": {
+    "build": "07f55bdc566a86",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "19a93c4f03bfb9",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width>max": {
+    "build": "0e44d3fdb471cf",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "12d95301466f9d",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height=min": {
+    "build": "12bbcb6141b706",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height=max": {
+    "build": "011323d732db10",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height<min": {
+    "build": "1f02c1bcb7d95d",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "04687d714f274f",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height>max": {
+    "build": "05ac52085a6f5e",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "1368bab973bcd3",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · tuckDepth=min": {
+    "build": "0cf9cce875bc2b",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · tuckDepth=max": {
+    "build": "07b828fbb6142f",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · tuckDepth<min": {
+    "build": "1702decbf2b2c5",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "1f64e335b5377c",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · tuckDepth>max": {
+    "build": "098acded260f55",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "0e378a7e3f8c74",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · tuckCorners=rounded": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · tuckCorners=square": {
+    "build": "01818a56b6508b",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth=min": {
+    "build": "0b1eba0651d022",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth=max": {
+    "build": "0ae9f231eee828",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth<min": {
+    "build": "046cb2ca551901",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "0c32a3e2e88197",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth>max": {
+    "build": "0710d80df773ea",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "081c1247b3d958",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · thumbNotch=true": {
+    "build": "1667894d38874e",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth=min": {
+    "build": "023d54a3bdaa5e",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth=max": {
+    "build": "0596a2be5b5571",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth<min": {
+    "build": "19d410b1d874a9",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "1048c2ed5cf584",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth>max": {
+    "build": "14b4a17bb3951f",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "17e3d349f15997",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueSide=left": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueSide=right": {
+    "build": "00a25bbc42e46b",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · grain=across": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · grain=along": {
+    "build": "0ed400fe80d100",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=none": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect": {
+    "build": "1703aa63bcfde0",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded": {
+    "build": "0434319df0d308",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse": {
+    "build": "021ad7a5b12e10",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowPanel=front": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowPanel=back": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowPanel=right": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowPanel=left": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowPanel=lid": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowWidth=min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowWidth=max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowWidth<min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowWidth>max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowHeight=min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowHeight=max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowHeight<min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowHeight>max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetX=min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetX=max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetX<min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetX>max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetY=min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetY=max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetY<min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowOffsetY>max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowRadius=min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowRadius=max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowRadius<min": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · windowRadius>max": {
+    "build": "075bd6e16cae72",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect@front": {
+    "build": "1703aa63bcfde0",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect@back": {
+    "build": "0e776d8c67b0b4",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect@right": {
+    "build": "0254148e7ed3b1",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect@left": {
+    "build": "1c40f8939cc120",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect@lid": {
+    "build": "1f3827ed3e1ca5",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rect:oversized": {
+    "build": "1c98895a341172",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded@front": {
+    "build": "0434319df0d308",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded@back": {
+    "build": "0f7a87ddee9c9e",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded@right": {
+    "build": "066a4c8a85c69f",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded@left": {
+    "build": "1487e7a6a06a67",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded@lid": {
+    "build": "049d63b9b42781",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=rounded:oversized": {
+    "build": "07a9a4ddd25f9f",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse@front": {
+    "build": "021ad7a5b12e10",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse@back": {
+    "build": "19c2e77b42205b",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse@right": {
+    "build": "0e0da7e803b293",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse@left": {
+    "build": "13d13b9858c8a1",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse@lid": {
+    "build": "141a8f62764534",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · window=ellipse:oversized": {
+    "build": "160906f8a23c9b",
+    "hinges": "1bc5fd28380fa9",
+    "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  }
+}

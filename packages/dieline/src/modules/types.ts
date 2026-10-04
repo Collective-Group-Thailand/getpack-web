@@ -12,6 +12,7 @@ import type {
   Localized,
   MaterialSpec,
   ParamValues,
+  Piece,
 } from "../types";
 
 /**
@@ -153,6 +154,8 @@ export interface FeatureModule extends ModuleBase {
   tray?(ctx: BuildContext, cfg: ModuleConfig, frame: TrayFrame): TrayExtras;
   /** Holes in a flat piece. */
   flatHoles?(ctx: BuildContext, cfg: ModuleConfig): Contour[];
+  /** Separate pieces cut with the body (a die-cut insert), assembled into the same dieline. */
+  pieces?(ctx: BuildContext, cfg: ModuleConfig): Piece[];
 }
 
 export interface PieceSetModule extends ModuleBase {

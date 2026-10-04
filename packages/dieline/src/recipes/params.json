@@ -306,6 +306,13 @@
         }
       },
       {
+        "value": "sombrero",
+        "label": {
+          "th": "หัวแขวนทรงหมวก",
+          "en": "Sombrero header"
+        }
+      },
+      {
         "value": "none",
         "label": {
           "th": "ไม่เจาะ",
@@ -766,6 +773,13 @@
         "label": {
           "th": "ด้านข้างซ้าย",
           "en": "Left side"
+        }
+      },
+      {
+        "value": "lid",
+        "label": {
+          "th": "ฝาบน",
+          "en": "Top lid"
         }
       }
     ],

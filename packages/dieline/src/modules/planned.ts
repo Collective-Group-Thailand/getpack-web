@@ -36,8 +36,6 @@ export const PLANNED_MODULES: ModuleDef[] = [
     "folder_gluer_straight",
   ]),
   planned("taperedPail", "body", t("ถังทรงสอบ", "Tapered pail"), ["die_cut", "folder_gluer_straight"]),
-  planned("airplaneTuck", "closure", t("ฝาเสียบแบบเครื่องบิน", "Airplane tuck"), ["die_cut", "folder_gluer_straight"]),
-  planned("fourFlapLock", "closure", t("ก้นล็อก 4 ปีก", "Four-flap lock bottom"), ["die_cut", "hand_assembly"]),
   planned("petal", "closure", t("ฝากลีบดอก", "Petal closure"), ["die_cut", "hand_assembly"]),
   planned("lockCorners", "feature", t("มุมล็อก (ไม่ใช้กาว)", "Lock corners (no glue)"), ["die_cut"], ["tray"]),
   planned("sombreroHeader", "feature", t("หูแขวนทรงหมวก", "Sombrero hang header"), ["die_cut"]),

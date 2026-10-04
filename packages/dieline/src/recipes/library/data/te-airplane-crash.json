@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "id": "te-airplane-crash",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "airplane_tuck",
+    "tuck_bottom": "crash_lock"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบแบบเครื่องบิน ก้นล็อกอัตโนมัติ",
+    "en": "Airplane tuck top, crash-lock bottom"
+  },
+  "description": {
+    "th": "กล่องกระดาษแข็งฝาเสียบแบบเครื่องบินและก้นล็อกอัตโนมัติ ตามโครงสร้างตระกูลฝาเสียบ",
+    "en": "Folding carton with a airplane tuck top and a crash-lock bottom — the tuck-end family's closure pair"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "hangerHeight",
+    "hangHole",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "hangHole": "none"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "airplaneTuck",
+      "with": {
+        "lid": "front"
+      }
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top",
+        "optional": true
+      }
+    },
+    {
+      "module": "window"
+    }
+  ]
+}

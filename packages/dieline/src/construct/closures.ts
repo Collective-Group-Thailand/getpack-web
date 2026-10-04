@@ -2,7 +2,7 @@ import { DUST_FLAP_CLEARANCE_MM, GLUE_AREA_INSET_MM, TUCK_SHOULDER_MM } from "..
 import { face } from "../faces";
 import type { FaceLabel } from "../labels";
 import { arc, line, mapEdge, polygon, roundedRectangle } from "../path";
-import type { Edge, EdgeRole, Face, FaceKind, Pt } from "../types";
+import type { Contour, Edge, EdgeRole, Face, FaceKind, Pt } from "../types";
 import type { Attachment, Closure, Notch, PanelSpan } from "./tube";
 
 /*
@@ -126,6 +126,8 @@ export interface SlottedFlapsSpec {
   glue?: number[];
   /** Face kind; dust flaps close before the flaps that lie over them. */
   kinds?: FaceKind[];
+  /** Holes in a flap (a window in a seal end's outer flap), in the closure's local frame. */
+  holes?: (index: number, x0: number, x1: number, depth: number) => Contour[];
 }
 
 /**
@@ -165,7 +167,10 @@ export function slottedFlaps(spec: SlottedFlapsSpec): Closure {
           )
         : [];
       return {
-        face: face(idOf(end, `flap-${s.id}`), label, spec.kinds?.[i] ?? "flap", polygon(pts, roles), { marks }),
+        face: face(idOf(end, `flap-${s.id}`), label, spec.kinds?.[i] ?? "flap", polygon(pts, roles), {
+          marks,
+          holes: spec.holes?.(i, a, b, d) ?? [],
+        }),
         span: [a, b],
       };
     });
@@ -421,4 +426,102 @@ export function tuckOnEdge(id: string, a: Pt, b: Pt, depth: number, radius: numb
     "tuck",
     local.map((e) => mapEdge(e, map)),
   );
+}
+
+export interface AirplaneClosureSpec {
+  /** Index of the panel the lid hinges on. */
+  lidPanel: number;
+  lidDepth: number;
+  tuckDepth: number;
+  tuckRadius: number;
+  /** How far the wings hang down inside the box. */
+  wingReach: number;
+  caliper: number;
+}
+
+/**
+ * An airplane-style tuck end: the lid hinges on one panel with a tuck on its far edge, and its
+ * dust flaps — the "wings" — hinge on the lid's own sides and fold down inside the box along the
+ * side panels, which carry no flaps of their own. ⚠ Wing proportions to be confirmed by Prepress.
+ */
+export function airplaneClosure(spec: AirplaneClosureSpec): Closure {
+  return ({ panels, end }) => {
+    const lid = panels[spec.lidPanel];
+    const y = -spec.lidDepth;
+    const lidFace = face(idOf(end, "lid"), "lid", "lid", [
+      line([lid.x0, 0], [lid.x0, y], "crease"),
+      line([lid.x0, y], [lid.x1, y], "crease"),
+      line([lid.x1, y], [lid.x1, 0], "crease"),
+      line([lid.x1, 0], [lid.x0, 0], "crease"),
+    ]);
+    const tuck = face(
+      idOf(end, "tuck"),
+      "tuck",
+      "tuck",
+      tuckOutline(lid.x0, lid.x1, y, spec.tuckDepth, spec.tuckRadius),
+    );
+    const reach = spec.wingReach;
+    // Cut back at the panel corner (the wing must clear the side panel's crease) and at the tuck.
+    const nearPanel = Math.min(reach * 0.3 + spec.caliper, spec.lidDepth / 4);
+    const nearTuck = Math.min(reach * 0.15 + spec.caliper, spec.lidDepth / 4);
+    const wing = (side: "left" | "right"): Face => {
+      const x = side === "left" ? lid.x0 : lid.x1;
+      const out = side === "left" ? x - reach : x + reach;
+      const pts: Pt[] =
+        side === "left"
+          ? [
+              [x, 0],
+              [out, -nearPanel],
+              [out, y + nearTuck],
+              [x, y],
+            ]
+          : [
+              [x, y],
+              [out, y + nearTuck],
+              [out, -nearPanel],
+              [x, 0],
+            ];
+      return face(idOf(end, `wing-${side}`), "dust_flap", "dust_flap", polygon(pts, ["cut", "cut", "cut", "crease"]));
+    };
+    return {
+      attachments: [{ face: lidFace, span: [lid.x0, lid.x1] }],
+      faces: [tuck, wing("left"), wing("right")],
+    };
+  };
+}
+
+/**
+ * A four-flap end: a flap on every panel, cut at 45° so the four tile the end exactly and meet
+ * along its diagonals. Folded in turn they lie flat and hold each other closed.
+ * ⚠ Simplified — the interlocking hooks of a production four-flap lock come from a die sample
+ * (Prepress); this draws the flaps' footprint.
+ */
+export function fourFlapClosure(): Closure {
+  return ({ panels, end }) => {
+    const widths = panels.map((s) => s.x1 - s.x0);
+    const d = Math.min(...widths) / 2;
+    const attachments: Attachment[] = panels.map((s) => {
+      const w = s.x1 - s.x0;
+      const reach = Math.min(d, w / 2);
+      const pts: Pt[] =
+        w - 2 * reach > 0.05
+          ? [
+              [s.x0, 0],
+              [s.x0 + reach, -reach],
+              [s.x1 - reach, -reach],
+              [s.x1, 0],
+            ]
+          : [
+              [s.x0, 0],
+              [(s.x0 + s.x1) / 2, -reach],
+              [s.x1, 0],
+            ];
+      const roles: EdgeRole[] = pts.map((_, k) => (k === pts.length - 1 ? "crease" : "cut"));
+      return {
+        face: face(idOf(end, `lock-${s.id}`), "lock_flap", "lock", polygon(pts, roles)),
+        span: [s.x0, s.x1],
+      };
+    });
+    return { attachments };
+  };
 }

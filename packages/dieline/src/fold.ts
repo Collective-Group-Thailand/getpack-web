@@ -244,7 +244,9 @@ export function foldDieline(d: Dieline, map: HingeMap, progress = 1): Map<string
         // Over: sits on top, lifted by `lift` × progress so the closed state is assembled.
         const dy = rule.over
           ? ref.max[1] - b.min[1] - (rule.sink ?? 0) + (rule.lift ?? 0) * (1 - progress)
-          : (ref.min[1] + ref.max[1]) / 2 - (b.min[1] + b.max[1]) / 2;
+          : rule.floor !== undefined
+            ? ref.min[1] + rule.floor - b.min[1] + (rule.lift ?? 0) * (1 - progress)
+            : (ref.min[1] + ref.max[1]) / 2 - (b.min[1] + b.max[1]) / 2;
         const slide = rule.inside ? (rule.slide ?? 0) * (1 - progress) : 0;
         const move = translation(dx + slide, dy, dz);
         transforms = new Map([...transforms].map(([id, m]) => [id, multiply(move, m)]));
