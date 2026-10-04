@@ -262,7 +262,21 @@
       "autosave": "Autosaved",
       "restore": "Restored",
       "import": "Imported"
-    }
+    },
+    "nameLabel": "Name this version",
+    "name": "Save as a version",
+    "pick": "Pick version {version} to compare",
+    "pickTwo": "Pick two versions to compare",
+    "picked": "Comparing version {older} with {newer}",
+    "compare": "Compare",
+    "compareTitle": "Version {older} and {newer}",
+    "compareMode": "How to compare",
+    "sideBySide": "Side by side",
+    "overlay": "Overlay",
+    "fade": "Version {newer} over version {older}",
+    "fadeValue": "{percent}%",
+    "unreadable": "This version cannot be opened",
+    "named": "Saved version “{label}”"
   },
   "conflict": {
     "title": "Saved somewhere else",
@@ -641,7 +655,8 @@
     "uploads": "Uploads",
     "brand": "Brand",
     "background": "Background",
-    "layers": "Layers"
+    "layers": "Layers",
+    "comments": "Comments"
   },
   "side": {
     "label": "Details",
@@ -665,7 +680,8 @@
     "revoked": "Link revoked; the old link no longer opens",
     "revokeFailed": "The link could not be revoked",
     "failed": "The link could not be created. Try again.",
-    "expires": "The link works until {date}"
+    "expires": "The link works until {date}",
+    "openStudio": "Share"
   },
   "shared": {
     "metaTitle": "A shared box design",
@@ -677,7 +693,18 @@
     "viewOnly": "View only",
     "viewOnlyBody": "Someone shared this design with you. To make a box of your own, start designing for free.",
     "start": "Design your own box",
-    "expiresAt": "The link works until {time}"
+    "expiresAt": "The link works until {time}",
+    "badges": {
+      "view": "Shared design · view only",
+      "comment": "Shared design · comments open",
+      "edit": "Shared design · editable"
+    },
+    "canComment": "You can comment",
+    "canCommentBody": "Pin comments on the flat sheet; the design's owner sees them in the studio",
+    "canEdit": "You can edit this design",
+    "canEditBody": "This link lets company members edit the artwork on the box. Every edit is saved as a new version of the same design",
+    "edit": "Edit this design",
+    "editTitle": "Edit a shared design"
   },
   "account": {
     "browserOnly": "Saved in this browser (no product chosen yet)"
@@ -746,5 +773,42 @@
     "save": "Save brand kit",
     "saveFailed": "Could not save",
     "adminOnly": "Only the Company Admin can edit brand kits"
+  },
+  "present": {
+    "title": "Present the box",
+    "body": "Turn it, open and close it, pick a scene, then save a picture or a video — or see it at real size in AR",
+    "canvas": "The {name} box in presentation",
+    "scene": "Scene",
+    "scenes": {
+      "studio": "Studio",
+      "kraft": "Kraft table",
+      "shelf": "Store shelf",
+      "daylight": "Daylight"
+    },
+    "turntable": "Turntable",
+    "png": "Save picture (PNG)",
+    "video": "Record one turn",
+    "recording": "Recording…",
+    "videoSaved": "MP4 video saved",
+    "videoSavedWebm": "Video saved (this browser records WebM)",
+    "noVideo": "This browser cannot record video",
+    "ar": "Real size (AR)",
+    "dieline": "Download the die line (PDF)",
+    "free": "Pictures, videos and die lines are free to download",
+    "launch": "Present & AR",
+    "openLid": "Open the lid",
+    "closeLid": "Close the lid"
+  },
+  "ar": {
+    "title": "Real size in AR",
+    "body": "Place the box in your room at its real size, on a phone that supports AR",
+    "alt": "The {name} box, {size} mm",
+    "size": "Closed box: {size} mm (width × height × depth)",
+    "open": "Place it in my room",
+    "noAr": "This device cannot open AR",
+    "noArBody": "Open this page on a phone, or download the 3D file for an app that supports it",
+    "glb": "3D file (GLB)",
+    "usdz": "3D file for iPhone (USDZ)",
+    "failed": "Could not build the 3D model"
   }
 }

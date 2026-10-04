@@ -62,13 +62,15 @@ test("a signed-in design is saved in the account, autosaved, and keeps its versi
 
   await page.getByRole("button", { name: "ประวัติการบันทึก" }).click();
   const history = page.getByRole("dialog", { name: "ประวัติการบันทึก" });
-  await expect(history.getByText("เวอร์ชัน 2")).toBeVisible();
+  await expect(history.getByText("เวอร์ชัน 2", { exact: true })).toBeVisible();
   await history.getByRole("button", { name: "คืนค่า" }).first().click();
   await expect(page.getByText(/คืนค่าเวอร์ชัน \d+ แล้ว/)).toBeVisible();
 
   // A view-only link opens the design for anyone, without the editor.
-  await page.getByRole("button", { name: "แชร์ลิงก์ดูแบบ" }).click();
-  const share = page.getByRole("dialog", { name: "แชร์ลิงก์ดูแบบ" });
+  // In the studio: a view link from the share dialog (U4.7, D-285).
+  await page.getByRole("button", { name: "แชร์", exact: true }).click();
+  const share = page.getByRole("dialog", { name: "แชร์แบบนี้" });
+  await share.getByRole("button", { name: "สร้างลิงก์" }).click();
   const link = share.getByRole("textbox", { name: "ลิงก์" });
   await expect(link).toHaveValue(/\/design\/shared\/[A-Za-z0-9_-]{43}$/);
   const url = await link.inputValue();
@@ -146,7 +148,10 @@ test("a design for an order is sent to print and prepress takes it", async ({ pa
 
   // ⑤ opens once the box has artwork.
   await addHeading(page);
-  await page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /สั่งผลิต/ }).click();
+  await page
+    .getByRole("navigation", { name: "ขั้นตอนการออกแบบ" })
+    .getByRole("button", { name: /สั่งผลิต/ })
+    .click();
   await page.getByRole("button", { name: "ส่งเข้าผลิต" }).click();
   const confirm = page.getByRole("alertdialog", { name: /^ส่งแบบนี้เป็นไฟล์งานของคำสั่งซื้อ/ });
   await expect(confirm).toBeVisible();

@@ -22,7 +22,7 @@ import { drafts, type Draft } from "./drafts";
  * - `admin` — prepress's own copy of a design (`admin.design-documents`), same rules; a
  *   customer's document opens read-only and is never saved from here.
  */
-export type PersistenceMode = "local" | "store" | "admin";
+export type PersistenceMode = "local" | "store" | "admin" | "shared";
 
 export type SaveState = "saved" | "dirty" | "saving" | "offline" | "conflict" | "error" | "readonly";
 
@@ -55,6 +55,11 @@ export interface PersistenceConfig {
   box?: () => BoxFields | null;
   /** The box fields the server's current version has, as the page read them. */
   initialBox?: BoxFields | null;
+  /**
+   * An edit link (U4.7, D-285, mode `shared`): its token, and the document as packio-api answered it
+   * — every save is a JSON Patch from that document, under the link's ETag.
+   */
+  shared?: { token: string; document: { spec: unknown; content: unknown } };
 }
 
 /** What the server's current version was saved with: its number and box (the studio prices it). */
@@ -108,7 +113,7 @@ export function usePersistence(config: PersistenceConfig) {
 
   /** Saves the editor's current document; resolves `true` when the server (or browser) has it. */
   const saveNow = useCallback(
-    async (kind: "autosave" | "manual"): Promise<boolean> => {
+    async (kind: "autosave" | "manual", label?: string): Promise<boolean> => {
       const cfg = configRef.current;
       if (!cfg.editable) return false;
       if (inFlight.current) {
@@ -155,7 +160,11 @@ export function usePersistence(config: PersistenceConfig) {
                 patching && kind === "autosave" && !boxChanged && sent.current?.name === name
                   ? patching.diff(sent.current.document, document)
                   : null;
-              if (operations && operations.length > 0 && patching!.patchBytes(operations) <= patching!.MAX_PATCH_BYTES) {
+              if (
+                operations &&
+                operations.length > 0 &&
+                patching!.patchBytes(operations) <= patching!.MAX_PATCH_BYTES
+              ) {
                 saved = await storeDesigns.patch(serverId.current, { kind, operations }, etag.current);
               } else if (operations && operations.length === 0) {
                 saved = null;
@@ -165,7 +174,15 @@ export function usePersistence(config: PersistenceConfig) {
                 if (png) thumbnailFileId = await storeDesigns.uploadThumbnail(png, name).catch(() => undefined);
                 saved = await storeDesigns.save(
                   serverId.current,
-                  { name, kind, spec, content, thumbnailFileId, box: boxChanged ? box : null },
+                  {
+                    name,
+                    kind,
+                    spec,
+                    content,
+                    thumbnailFileId,
+                    box: boxChanged ? box : null,
+                    ...(label ? { label } : {}),
+                  },
                   etag.current,
                 );
               }
@@ -182,6 +199,24 @@ export function usePersistence(config: PersistenceConfig) {
               setSavedBox((previous) =>
                 boxChanged || previous.versionNo === null ? { versionNo: savedVersion, box: boxRef.current } : previous,
               );
+          } else if (cfg.mode === "shared" && cfg.shared) {
+            const patching = await import("../lib/json-patch");
+            const document = { spec, content } as unknown as JsonValue;
+            const from = sent.current?.document ?? (cfg.shared.document as unknown as JsonValue);
+            const operations = patching.diff(from, document);
+            if (operations.length > 0) {
+              if (patching.patchBytes(operations) > patching.MAX_PATCH_BYTES)
+                throw new Error("designs.patch_too_large");
+              const saved = await storeDesigns.patchShared(
+                cfg.shared.token,
+                { kind, operations, ...(label ? { label } : {}) },
+                etag.current,
+              );
+              etag.current = saved.etag;
+              versionNo.current = saved.data.versionNo;
+              setLastSavedAt(saved.data.updatedAt);
+            }
+            sent.current = { document, name };
           } else if (serverId.current) {
             const saved = await adminDocuments.save(
               serverId.current,
@@ -298,9 +333,29 @@ export function usePersistence(config: PersistenceConfig) {
    */
   const resolveConflict = useCallback(
     async (choice: "mine" | "theirs" | "copy") => {
+      const cfg = configRef.current;
+      if (cfg.mode === "shared" && cfg.shared) {
+        // An edit link: the latest through the link (no copy — the design is not this user's).
+        const latest = await storeDesigns.getShared(cfg.shared.token);
+        etag.current = latest.etag;
+        if (choice === "theirs") {
+          const document = latest.data.document as { spec?: unknown; content?: unknown } | null;
+          const read = document ? readDesign(document.spec, document.content) : null;
+          const editor = useEditor.getState();
+          if (read)
+            editor.load({ id: editor.designId, name: latest.data.title, spec: read.spec, content: read.content });
+          sent.current = document ? { document: document as JsonValue, name: latest.data.title } : null;
+          setState("saved");
+          return;
+        }
+        // Mine over theirs: patched from their document, so the patch applies.
+        sent.current = { document: latest.data.document as JsonValue, name: latest.data.title };
+        setState("dirty");
+        await saveNow("manual");
+        return;
+      }
       const id = serverId.current;
       if (!id) return;
-      const cfg = configRef.current;
       const latest = cfg.mode === "admin" ? await adminDocuments.get(id) : await storeDesigns.get(id);
       if (choice === "mine") {
         etag.current = latest.etag;

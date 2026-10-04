@@ -7,6 +7,7 @@ import VENDORED from "../../../../contract/studio-rules.json";
 
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
+import type { PersistenceMode } from "./persistence";
 import type { Schemas } from "@/lib/api/types";
 
 import type { CheckContext } from "../lib/useIssues";
@@ -57,7 +58,7 @@ export function maxSpotColours(rules: StudioRules | undefined): number | null {
  */
 export function useCheckContext(
   spec: { studio?: { printMethod?: string | null }; material: { kind: string } } | null,
-  mode: "local" | "store" | "admin",
+  mode: PersistenceMode,
 ): CheckContext {
   const rules = useStudioRules(mode !== "admin");
   const elements = useQuery({

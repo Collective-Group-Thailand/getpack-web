@@ -130,7 +130,9 @@
     "version_required": "A design version is required",
     "nothing_to_patch": "No version to change yet",
     "patch_too_large": "This change is too large",
-    "patch_failed": "The change could not be applied"
+    "patch_failed": "The change could not be applied",
+    "share_scope": "This link does not allow that. Editing through a link is for members of the design's company",
+    "comment_not_thread": "Only a thread's first comment can be resolved"
   },
   "discount_memos": {
     "not_usable": "Memo cannot be used",

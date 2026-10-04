@@ -254,5 +254,62 @@
     "needsQuantity": "Enter a quantity in the price bar to see this design's price",
     "networkFailed": "The print files could not be sent. Check your connection and try again."
   },
-  "locked": "Version {versionNo} is ordered ({orderCode}) — editing makes a new version"
+  "locked": "Version {versionNo} is ordered ({orderCode}) — editing makes a new version",
+  "share": {
+    "open": "Share",
+    "title": "Share this design",
+    "body": "Make as many links as you need, each with its own access, an expiry date, and revocable at any time",
+    "scope": "Link access",
+    "scopes": {
+      "view": "View only",
+      "comment": "Comment",
+      "edit": "Edit"
+    },
+    "hints": {
+      "view": "Anyone with the link can see the design without signing in, but not change it",
+      "comment": "Signed-in people can see the design and pin comments on it",
+      "edit": "Signed-in members of the same company can edit this design"
+    },
+    "create": "Create link",
+    "created": "{scope} link created",
+    "link": "Link",
+    "once": "This link is shown once — copy it before closing",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "copyFailed": "Could not copy — select the link and copy it yourself",
+    "links": "Active links",
+    "none": "No active links yet",
+    "expires": "Valid until {date}",
+    "revoke": "Revoke",
+    "revokeOne": "Revoke the {scope} link made on {date}",
+    "revoked": "Link revoked — it will not open again",
+    "revokeFailed": "Could not revoke the link",
+    "failed": "Could not create the link — try again"
+  },
+  "comments": {
+    "place": "Pin a comment",
+    "cancelPlacing": "Cancel pinning",
+    "placingHint": "Click the 3D box or the flat sheet where you mean (Esc to cancel)",
+    "pinnedAt": "Pinned {place}",
+    "unpinned": "Not pinned to a face",
+    "body": "Comment",
+    "mention": "Notify members",
+    "send": "Send",
+    "cancel": "Cancel",
+    "threads": "{count, plural, one {# comment} other {# comments}}",
+    "showResolved": "Show resolved",
+    "none": "No comments yet",
+    "threadLabel": "Comment {n} by {author}",
+    "resolved": "Resolved",
+    "mentioned": "Notified {names}",
+    "reply": "Reply",
+    "resolve": "Resolve",
+    "resolveLabel": "Resolve comment {n}",
+    "failed": "Could not send — try again",
+    "loadFailed": "Could not load the comments",
+    "signIn": "Sign in to read and write comments",
+    "onFace": "on {face}",
+    "onFlat": "on the flat sheet",
+    "panel": "Comments"
+  }
 }

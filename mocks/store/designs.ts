@@ -105,7 +105,7 @@ function boxFrom(body: Record<string, unknown>): StudioBox | null {
   return "spec" in box || "printSides" in box || "lengthMm" in box ? (box as StudioBox) : null;
 }
 
-interface Row {
+export interface Row {
   /** The current box (D-275); a version saved without studio fields keeps the one before. */
   box: StudioBox | null;
   owner: string;
@@ -122,6 +122,17 @@ const importedLocalIds = new Map<string, string>();
 /** View links (D-226): token → design id, and each design's live token. */
 const shares = new Map<string, { designId: string; createdAt: string; expiresAt: string | null }>();
 const shareOf = new Map<string, string>();
+/** Studio share links (D-285): many per design, each with its scope; token → link. */
+export interface StudioLink {
+  id: string;
+  designId: string;
+  scope: Schemas["ShareScope"];
+  createdAt: string;
+  expiresAt: string;
+  revokedAt: string | null;
+}
+const studioLinks = new Map<string, StudioLink>();
+let linkSeq = 1;
 let counter = 0;
 /** `configurations.share_link_days` (D-185, D-226). */
 const SHARE_LINK_DAYS = 15;
@@ -341,6 +352,38 @@ function studioFieldsOf(box: StudioBox | null): Partial<Schemas["DesignDocumentD
   };
 }
 
+/** A new studio share link; the token is answered once (`store.studio.createShareLink`). */
+export function addStudioLink(designId: string, scope: Schemas["ShareScope"]): StudioLink & { token: string } {
+  const n = linkSeq++;
+  // 43 base64url characters, as packio-api's (32 random bytes).
+  const token = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
+  const link: StudioLink = {
+    id: `0192f3a0-7c1e-7d2a-9b1f-${String(0xfb00 + n).padStart(12, "0")}`,
+    designId,
+    scope,
+    createdAt: bangkokIso(),
+    expiresAt: bangkokIso(SHARE_LINK_DAYS * 24 * 60),
+    revokedAt: null,
+  };
+  studioLinks.set(token, link);
+  return { ...link, token };
+}
+
+export function studioLinksOf(designId: string): StudioLink[] {
+  return [...studioLinks.values()].filter((link) => link.designId === designId);
+}
+
+/** A live studio link by its token (not revoked, not expired). */
+export function studioLinkOf(token: string): StudioLink | null {
+  const link = studioLinks.get(token);
+  return link && !link.revokedAt && link.expiresAt > bangkokIso() ? link : null;
+}
+
+/** A design row by id, whoever owns it (behind a share link). */
+export function designById(designId: string): Row | undefined {
+  return designs.get(designId);
+}
+
 /** The signed-in customer's design row (the studio mocks price and check it), or the problem to answer. */
 export function designRowFor(request: Request, designId: string) {
   return rowOf(request, designId);
@@ -360,6 +403,33 @@ export function versionBoxOf(row: Row, versionNo?: number): { versionNo: number;
 
 const withDesignEtag = (row: Row, status = 200) =>
   HttpResponse.json(toDto(row), { status, headers: { ETag: etagOf(row.design) } });
+
+/** `patchDocument`'s rules, for the owner and for an edit link (`store.studio.editShared`). */
+export async function patchRow(request: Request, row: Row): Promise<Response> {
+  const stale = checkMatch(request, row);
+  if (stale) return stale;
+  const body = (await request.json()) as Schemas["PatchDesignDocumentDto"];
+  if (JSON.stringify(body.operations ?? []).length > 256 * 1024)
+    return problem(413, "designs.patch_too_large", "การแก้ไขครั้งนี้ใหญ่เกินไป");
+  let next: JsonValue;
+  try {
+    next = applyPatch(
+      { spec: row.design.document.spec, content: row.design.document.content } as unknown as JsonValue,
+      body.operations as PatchOperation[],
+    );
+  } catch (error) {
+    return problem(422, "designs.patch_failed", "แก้ไขแบบไม่สำเร็จ", [
+      { path: "operations", code: "patch", message: (error as Error).message },
+    ]);
+  }
+  const document = documentFrom({
+    document: next,
+    schemaVersion: body.schemaVersion ?? row.design.document.schemaVersion,
+  });
+  if (!document) return problem(422, "designs.patch_failed", "เอกสารแบบไม่ถูกต้อง");
+  saveVersion(row, body.kind ?? "autosave", document, body.label ?? null, body.spec ? { spec: body.spec } : null);
+  return withDesignEtag(row);
+}
 
 /** The published body's document, back in the request's shape the rows keep. */
 function documentFrom(body: { document?: unknown; schemaVersion?: number | null }): DesignDocument | null {
@@ -597,29 +667,37 @@ export const storeDesignHandlers = [
   }),
 
   // store.designs.getShared (public): the current version, never its owner; 404 once revoked or expired.
-  http.get("*/v1/store/shared-designs/:token", ({ params }) => {
-    const share = shares.get(String(params.token));
+  // A studio link (D-285) carries its scope; comment and edit links need a signed-in user.
+  http.get("*/v1/store/shared-designs/:token", ({ params, request }) => {
+    const link = studioLinkOf(String(params.token));
+    const share = link
+      ? { designId: link.designId, createdAt: link.createdAt, expiresAt: link.expiresAt }
+      : shares.get(String(params.token));
     const row = share ? designs.get(share.designId) : undefined;
     if (!share || !row || (share.expiresAt && share.expiresAt < bangkokIso()))
       return problem(404, "http.not_found", "ลิงก์นี้ไม่มีอยู่หรือหมดอายุแล้ว");
+    if (link && link.scope !== "view" && !customerOf(request)) return unauthenticated();
     const dto = toDto(row);
-    return HttpResponse.json({
-      title: dto.title,
-      product: dto.product,
-      dielineKey: row.design.styleId,
-      document: dto.document,
-      schemaVersion: dto.schemaVersion,
-      versionNo: dto.versionNo,
-      lengthMm: dto.lengthMm,
-      widthMm: dto.widthMm,
-      heightMm: dto.heightMm,
-      measurementBasis: dto.measurementBasis,
-      scope: "view",
-      thumbnailUrl: dto.thumbnailUrl,
-      assets: dto.assets,
-      sharedAt: share.createdAt,
-      expiresAt: share.expiresAt ?? bangkokIso(SHARE_LINK_DAYS * 24 * 60),
-    } satisfies Schemas["SharedDesignDto"]);
+    return HttpResponse.json(
+      {
+        title: dto.title,
+        product: dto.product,
+        dielineKey: row.design.styleId,
+        document: dto.document,
+        schemaVersion: dto.schemaVersion,
+        versionNo: dto.versionNo,
+        lengthMm: dto.lengthMm,
+        widthMm: dto.widthMm,
+        heightMm: dto.heightMm,
+        measurementBasis: dto.measurementBasis,
+        scope: link?.scope ?? "view",
+        thumbnailUrl: dto.thumbnailUrl,
+        assets: dto.assets,
+        sharedAt: share.createdAt,
+        expiresAt: share.expiresAt ?? bangkokIso(SHARE_LINK_DAYS * 24 * 60),
+      } satisfies Schemas["SharedDesignDto"],
+      link?.scope === "edit" ? { headers: { ETag: etagOf(row.design) } } : undefined,
+    );
   }),
 
   // store.designs.list (published, U-F0.2): newest first; bodies are left out of a list.
@@ -713,29 +791,7 @@ export const storeDesignHandlers = [
   http.patch("*/v1/store/designs/:designId/document", async ({ params, request }) => {
     const row = rowOf(request, String(params.designId));
     if (row instanceof Response) return row;
-    const stale = checkMatch(request, row);
-    if (stale) return stale;
-    const body = (await request.json()) as Schemas["PatchDesignDocumentDto"];
-    if (JSON.stringify(body.operations ?? []).length > 256 * 1024)
-      return problem(413, "designs.patch_too_large", "การแก้ไขครั้งนี้ใหญ่เกินไป");
-    let next: JsonValue;
-    try {
-      next = applyPatch(
-        { spec: row.design.document.spec, content: row.design.document.content } as unknown as JsonValue,
-        body.operations as PatchOperation[],
-      );
-    } catch (error) {
-      return problem(422, "designs.patch_failed", "แก้ไขแบบไม่สำเร็จ", [
-        { path: "operations", code: "patch", message: (error as Error).message },
-      ]);
-    }
-    const document = documentFrom({
-      document: next,
-      schemaVersion: body.schemaVersion ?? row.design.document.schemaVersion,
-    });
-    if (!document) return problem(422, "designs.patch_failed", "เอกสารแบบไม่ถูกต้อง");
-    saveVersion(row, body.kind ?? "autosave", document, body.label ?? null, body.spec ? { spec: body.spec } : null);
-    return withDesignEtag(row);
+    return patchRow(request, row);
   }),
 
   // store.designs.delete (published): a soft delete — an order keeps the version it used.
