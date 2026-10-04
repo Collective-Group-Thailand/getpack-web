@@ -6,7 +6,9 @@ import { LAYER_OF } from "../export/layers";
 import { allFaces } from "../faces";
 import { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "../materials";
 import { MODULES, PROCESSES } from "../modules";
-import { ALL_RECIPES as RECIPES } from "../library";
+import { ALL_RECIPES as RECIPES, registerLibrary } from "../library";
+
+registerLibrary();
 import { getStyle, hingeMapOf, resolveValues, STYLES } from "../styles";
 import { EXPRESSION_FUNCTIONS } from "./context";
 import {
@@ -119,10 +121,10 @@ describe("modules", () => {
     const planned = MODULES.filter((x) => x.status === "planned");
     expect(planned.length).toBeGreaterThan(0);
     const r = clone(tuckEnd);
-    r.closures!.bottom = { module: "fourFlapLock" };
-    const parsed = parseRecipe(r);
-    expect(() => buildFromRecipe(parsed, presetsOf(parsed)[0].values, REFERENCE_MATERIALS["board-350"])).toThrow(
-      /module\.not_implemented: fourFlapLock/,
+    const still = planned.find((x) => x.slot === "feature" && x.fits.includes("tube"))!;
+    r.features = [...(r.features ?? []), { module: still.id }];
+    expect(() => buildFromRecipe(r, presetsOf(r)[0].values, REFERENCE_MATERIALS["board-350"])).toThrow(
+      new RegExp(`module\\.not_implemented: ${still.id}`),
     );
   });
 

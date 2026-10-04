@@ -1,7 +1,7 @@
 import { EURO_SLOT_HEIGHT_MM, EURO_SLOT_WIDTH_MM, HANG_HOLE_DIAMETER_MM } from "../../constants";
 import { face } from "../../faces";
 import { num, str } from "../../params";
-import { ellipse, line, rectangle, roundedRectangle } from "../../path";
+import { arc, ellipse, line, rectangle, roundedRectangle } from "../../path";
 import { t, windowHole, windowIssues } from "../../styles/_shared";
 import type { Contour, Face } from "../../types";
 import type { FeatureModule, TrayExtras, TrayWall } from "../types";
@@ -41,9 +41,30 @@ function roundedTop(x0: number, x1: number, y: number, r: number) {
 }
 
 /**
- * A hang tab standing up from the back panel at `end`, with a euro slot or a round hole
- * (`hangHole`). The crease at its foot lets it fold flat for shipping; on the shelf it stands in
- * line with the back.
+ * A sombrero (hat-shaped) hang hole centred on (cx, cy): a crown 12 mm across rising from a brim
+ * slot 30 × 3 mm — it takes a peg and a hook alike. ⚠ Proportions to be confirmed by Prepress.
+ */
+function sombreroHole(cx: number, cy: number): Contour {
+  const brim = 15;
+  const crown = 6;
+  const y = cy + 2;
+  return [
+    line([cx - brim, y], [cx - crown, y], "cut"),
+    line([cx - crown, y], [cx - crown, y - 6], "cut"),
+    arc([cx - crown, y - 6], [cx + crown, y - 6], [cx, y - 6], true, "cut"),
+    line([cx + crown, y - 6], [cx + crown, y], "cut"),
+    line([cx + crown, y], [cx + brim, y], "cut"),
+    line([cx + brim, y], [cx + brim, y + 3], "cut"),
+    line([cx + brim, y + 3], [cx - brim, y + 3], "cut"),
+    line([cx - brim, y + 3], [cx - brim, y], "cut"),
+  ];
+}
+
+/**
+ * A hang tab standing up from the back panel at `end`, with a euro slot, a round hole or a
+ * sombrero header hole (`hangHole`). The crease at its foot lets it fold flat for shipping; on the
+ * shelf it stands in line with the back. With `optional` in its settings, `hangHole` = `none`
+ * leaves the tab off altogether (the master file's `hang` = `none`, U3.4).
  */
 export const hangTab: FeatureModule = {
   id: "hangTab",
@@ -60,15 +81,16 @@ export const hangTab: FeatureModule = {
       code: "hanger.too_narrow",
       severity: "error",
       param: "hangHole",
-      require: "not (hangHole == 'euro' and front < C.EURO_SLOT_WIDTH_MM + 12)",
+      require: "not ((hangHole == 'euro' or hangHole == 'sombrero') and front < C.EURO_SLOT_WIDTH_MM + 12)",
       message: t(
         "กล่องแคบเกินกว่าจะเจาะรูยูโร เลือกรูกลมแทน",
         "The box is too narrow for a euro slot — choose a round hole",
       ),
     },
   ],
-  wrapClosure: (ctx, _cfg, _end, inner) => (c) => {
+  wrapClosure: (ctx, cfg, _end, inner) => (c) => {
     const base = inner(c);
+    if (cfg.optional === true && str(ctx.v, "hangHole", "none") === "none") return base;
     const back = c.panels[2];
     const h = num(ctx.v, "hangerHeight", Math.max(25, Math.min(45, ctx.dims.side)));
     const cx = (back.x0 + back.x1) / 2;
@@ -87,7 +109,9 @@ export const hangTab: FeatureModule = {
           ]
         : kind === "round"
           ? [ellipse(cx, cy, HANG_HOLE_DIAMETER_MM / 2, HANG_HOLE_DIAMETER_MM / 2)]
-          : [];
+          : kind === "sombrero"
+            ? [sombreroHole(cx, -h * 0.4)]
+            : [];
     const r = Math.min(6, h / 3, (back.x1 - back.x0) / 4);
     const hanger = face(
       `hanger-${c.end}`,

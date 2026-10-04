@@ -196,6 +196,8 @@ export interface PiecePlacement {
   lift?: number;
   /** How far it is slid out while open, for the animation. */
   slide?: number;
+  /** Inside: rests this far above the piece's bottom (an insert on the closed bottom's layers). */
+  floor?: number;
 }
 
 /**

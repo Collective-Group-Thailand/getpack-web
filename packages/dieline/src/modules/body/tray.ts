@@ -1,4 +1,5 @@
 import { buildTray } from "../../construct/tray";
+import { extraPieces } from "./tube";
 import { assemble, piece } from "../../faces";
 import type { PieceLabel } from "../../labels";
 import { grainOn, t } from "../../styles/_shared";
@@ -58,7 +59,10 @@ export const tray: BodyModule = {
     }
     const faces = buildTray({ ...frame, cornerFlap: ctx.num(cfg.cornerFlap as string), wallExtras });
     const p = (cfg.piece ?? { id: "blank", label: "blank" }) as { id: string; label: PieceLabel };
-    return assemble(ctx.styleId, [piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string))]);
+    return assemble(ctx.styleId, [
+      piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string)),
+      ...extraPieces(ctx, parts),
+    ]);
   },
   hinges: () => ({ roots: { blank: "base" }, upright: "base" }),
 };

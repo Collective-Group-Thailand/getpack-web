@@ -13,6 +13,9 @@
       },
       "round_hole": {
         "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
       }
     },
     "window": {
@@ -22,6 +25,10 @@
       "front_window": {
         "window": "rect",
         "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
       }
     }
   },

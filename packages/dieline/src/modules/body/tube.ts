@@ -33,6 +33,10 @@ const closureFor = (ctx: BuildContext, parts: Parts, end: "top" | "bottom"): Clo
   return closure;
 };
 
+/** The separate pieces features cut with the body (a die-cut insert). */
+export const extraPieces = (ctx: BuildContext, parts: Parts) =>
+  parts.features.flatMap((f) => (f.def.slot === "feature" ? (f.def.pieces?.(ctx, f.cfg) ?? []) : []));
+
 const pieceOf = (cfg: ModuleConfig) =>
   (cfg.piece ?? { id: "blank", label: "blank" }) as { id: string; label: PieceLabel };
 
@@ -92,7 +96,10 @@ export const tube: BodyModule = {
         : {}),
     });
     const p = pieceOf(cfg);
-    return assemble(ctx.styleId, [piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string))]);
+    return assemble(ctx.styleId, [
+      piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string)),
+      ...extraPieces(ctx, parts),
+    ]);
   },
   hinges(_ctx, cfg) {
     const p = pieceOf(cfg);
