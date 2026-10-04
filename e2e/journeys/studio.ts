@@ -4,7 +4,9 @@ import type { Journey } from "./fixture";
 
 /** Opens a new guest design with the setup's defaults — the task cards' "a design open in the studio". */
 export async function openNewDesign(page: Page): Promise<void> {
-  await page.goto("/design/new");
+  await page.goto("/studio/new");
+  await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
+  await page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" }).click();
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(dialog).toBeHidden();

@@ -11,6 +11,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { codeOfSlug, styleHref, styleSlug, STYLES_HREF } from "@/features/customer/styles/paths";
+import { studioHref as studioEntry } from "@/features/customer/studio/paths";
 import { StyleDetailActions } from "@/features/customer/styles/StyleDetailActions";
 import { VariantPicker } from "@/features/customer/styles/VariantPicker";
 import { getPathname, Link, redirect } from "@/i18n/navigation";
@@ -45,8 +46,7 @@ function studioHref(code: string, productSlug: string): string | null {
   const values = { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values };
   const [l, w, h] = [values.length, values.width, values.height];
   if (typeof l !== "number" || typeof w !== "number" || typeof h !== "number") return null;
-  const query = new URLSearchParams({ product: productSlug, style: recipe.id, l: String(l), w: String(w), h: String(h) });
-  return `/studio/new?${query.toString()}`;
+  return studioEntry({ product: productSlug, style: recipe.id, dims: { l, w, h }, step: "box" });
 }
 
 async function load(slug: string) {

@@ -12,6 +12,7 @@
 import { http, HttpResponse } from "msw";
 
 import { canonicalJson } from "@/features/designer/lib/json-patch";
+import studioRules from "../../contract/studio-rules.json";
 import type { Schemas } from "@/lib/api/types";
 
 import { problem } from "../support";
@@ -170,3 +171,24 @@ export const storeStudioHandlers = [
     return HttpResponse.json(result);
   }),
 ];
+
+/**
+ * `store.studio.getRules` (D-278): packio-api's seeded catalogue (`contract/studio-rules.json`, vendored at the
+ * lock's tag) — except that the mock turns on the flexo spot-colour limit (`maxColours: 3`, the seed leaves it
+ * off until Prepress sets it) and the minimum text size (6 pt), so the studio's flexo mode and the text check
+ * can be exercised. Fake values, never a business decision.
+ */
+export const MOCK_STUDIO_RULES: Schemas["StudioRulesDto"] = {
+  version: 1,
+  effectiveFrom: "2026-10-03T00:00:00+07:00",
+  rules: (studioRules.rules as Schemas["PrintRuleDto"][]).map((rule) =>
+    rule.id === "spot_colour_count"
+      ? { ...rule, thresholds: { maxColours: 3 } }
+      : rule.id === "min_text_size"
+        ? { ...rule, thresholds: { minPt: 6 } }
+        : rule,
+  ),
+  softProof: { label: { th: "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา", en: "Preview, not a contract proof" }, profiles: [] },
+};
+
+storeStudioHandlers.push(http.get("*/v1/store/studio/rules", () => HttpResponse.json(MOCK_STUDIO_RULES)));

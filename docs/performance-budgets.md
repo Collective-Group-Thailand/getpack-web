@@ -5,7 +5,7 @@
 | Marketing / catalogue / product (customer zone) | ≤ 2.0 s | ≤ 200 ms | ≤ 0.05 | ≤ 150 KB | `customer-marketing` |
 | Checkout / account (customer zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 200 KB | `customer-app` |
 | Admin list/detail (admin zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 250 KB | `admin` (shell), `admin-lists`, `admin-crud` |
-| Designer / 3D (`/design/[id]`) | ≤ 3.0 s to interactive shell | ≤ 200 ms | ≤ 0.1 | ≤ 350 KB, heavy modules lazy | `designer` |
+| Designer / 3D (`/design/[id]`, redirects to the studio since U4.2) | — | — | — | — | retired → `studio` |
 | Studio (`/studio/[designId]`, U4) | ≤ 3.0 s to interactive shell (studio-spec §1) | ≤ 100 ms input latency | ≤ 0.1 | ≤ 350 KB, heavy modules lazy | `studio` |
 | Partner zone (installable PWA) | ≤ 2.5 s on 4G mid-range | ≤ 200 ms | ≤ 0.1 | ≤ 180 KB | `partner` (mobile preset) |
 
@@ -174,3 +174,17 @@ price widget already shipped. The designer grows by the editor's frame slots and
 client (box fields, `patchDocument`); the JSON-Patch diff itself loads only when a studio save
 runs (dynamic import). The target stays 350 KB for both; the gap is the U3/U4 follow-up of moving
 the configurator's build out of the initial chunk.
+
+## U4.2 — ① Start and ② Box (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` | 478,237 | 484,482 (performance 0.98) | studio 479,000 → **485,000** |
+| `/design/new` | 473,984 | redirects to the studio | `designer` set retired |
+
+`/design/[id]` is a redirect into the studio now, so its URL set measured the studio twice and is
+retired. ① (the "describe your product" helper) and ② (the box step: variant picker, size with
+the API's conversion, materials, print method, finishes, the Structure Advisor) are `next/dynamic`
+and load only when shown — a design opened on ③ never loads them (they measured +12 KB inline).
+What stays in the first load is the print method's ink rule, the rules catalogue query and the
+dock's typed quantity.

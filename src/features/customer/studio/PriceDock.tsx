@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { buildCalculateBody } from "@/features/customer/configurator/build";
 import type { Configurator } from "@/features/customer/configurator/model";
 import { useLivePrice } from "@/features/customer/configurator/pricing";
-import { stateForDesign } from "@/features/customer/designer/PriceWidget";
+import { stateForDesign } from "./state";
 import type { Persistence } from "@/features/designer/data/persistence";
 import { canonicalJson, sameJson } from "@/features/designer/lib/json-patch";
 import { useEditor } from "@/features/designer/store/editor";
@@ -31,6 +31,8 @@ export interface PriceDockProps {
   /** `studio` prices the saved version (signed in); `guest` prices the same configuration directly. */
   source: "studio" | "guest";
   persistence: Persistence;
+  /** The flexo spot-colour limit (D-278), so the spec counts no more inks than flexo may print. */
+  maxSpot: number | null;
   layout: "rail" | "bar";
   quantity: number | null;
   onQuantity: (quantity: number) => void;
@@ -51,6 +53,7 @@ export function PriceDock({
   configurator,
   source,
   persistence,
+  maxSpot,
   layout,
   quantity,
   onQuantity,
@@ -66,7 +69,7 @@ export function PriceDock({
 
   // The version on the server must hold this box before the studio can price it: once the
   // product's configurator is known, a design whose saved spec differs is saved (then priced).
-  const fields = configurator && source === "studio" ? studioFieldsOf(configurator, spec, content) : null;
+  const fields = configurator && source === "studio" ? studioFieldsOf(configurator, spec, content, maxSpot) : null;
   const behind = !!fields && !sameJson(fields, savedBox.box);
   const fieldsKey = fields ? canonicalJson(fields) : null;
   const tried = useRef<string | null>(null);
@@ -85,7 +88,7 @@ export function PriceDock({
   });
   const guestBody =
     source === "guest" && configurator?.instant && spec && qty
-      ? buildCalculateBody(configurator, stateForDesign(configurator, spec, content, qty))
+      ? buildCalculateBody(configurator, stateForDesign(configurator, spec, content, qty, maxSpot))
       : null;
   const guest = useLivePrice(guestBody);
 

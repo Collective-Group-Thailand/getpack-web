@@ -25,6 +25,7 @@ import { Icon } from "@/ui/icons";
 import { findingsOf, loadArtwork, MAX_SUBMISSION_FILES, type Artwork, type Submission } from "./artwork";
 import { DesignServicePanel } from "./DesignServicePanel";
 import { artworkKey } from "./keys";
+import { studioHref } from "@/features/customer/studio/paths";
 
 export type { Artwork } from "./artwork";
 
@@ -133,16 +134,13 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
   const style = resolveStyleId(rules?.dieline?.dielineKey ?? rules?.dieline?.patternCode);
   const designerHref =
     rules?.dieline && style && (order.designOption === "online_designer" || order.designOption === "own_file")
-      ? `/design/new?${new URLSearchParams({
+      ? studioHref({
           style,
-          l: String(rules.dieline.lengthMm),
-          w: String(rules.dieline.widthMm),
-          h: String(rules.dieline.depthMm),
-          ...(order.summary.product ? { product: order.summary.product.slug } : {}),
-          order: order.id,
-          item: order.id,
-          orderCode: order.orderCode,
-        }).toString()}`
+          dims: { l: rules.dieline.lengthMm, w: rules.dieline.widthMm, h: rules.dieline.depthMm },
+          product: order.summary.product?.slug ?? null,
+          order: { orderId: order.id, itemId: order.id, orderCode: order.orderCode },
+          step: "design",
+        })
       : null;
 
   async function add(files: File[]) {

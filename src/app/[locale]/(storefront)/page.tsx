@@ -68,7 +68,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                 <Link href="/products">{t("hero.browse")}</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="/design/new">{tCommon("nav.startDesigning")}</Link>
+                <Link href="/studio/new">{tCommon("nav.startDesigning")}</Link>
               </Button>
             </div>
           </div>
