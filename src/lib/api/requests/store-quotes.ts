@@ -1,20 +1,8 @@
 /**
- * Shapes the storefront's configurator and instant quote still describe beyond packio-api's
- * contract (F3 3.2, D-100, D-043, D-051, D-072). No endpoint is requested here any more.
- *
- * - **The configurator's choices** moved onto the published `store.catalog.getConfigurator`
- *   (U-F0.5): `features/customer/configurator/from-contract.ts` reads it into the view the
- *   screens use, until U2.F1 rebuilds them on the contract.
- * - **The five other instant calculators.** `CalculateQuoteDto.configuration` is
- *   `FoldingConfigurationDto` or `CorrugateConfigurationDto`. The storefront sends the others one
- *   generic shape (`StoreGenericConfigurationDto` below) on the same published endpoint. →
- *   docs-only `store.quote-configurations`; mocked, and cast in exactly one place
- *   (`features/customer/configurator/pricing.ts`).
- * - **The mock's saved quotation** (`storeQuote`): the shape the cart, checkout, RFQ and reorder
- *   mocks share their records in.
- *
- * The configurator never computes a price, a date or a discount. It sends a configuration and
- * shows what comes back.
+ * The mock's saved quotation (`storeQuote`): the shape the cart, checkout, RFQ and reorder mocks
+ * share their records in. No endpoint is requested here any more — the configurator reads the
+ * published `store.catalog.getConfigurator` and sends every calculator its own published
+ * configuration (U2.F1, contract v0.41.0).
  */
 
 import { z } from "zod";
@@ -25,46 +13,10 @@ import { currency, date, dateTime, money, nextAction, pct, uuid } from "./define
 /* ------------------------------------------------------------------------------------ enums */
 
 export const quoteStatus = z
-  .enum(["calculated", "saved", "shared", "converted", "expired", "superseded"])
+  .enum(["calculated", "saved", "shared", "converted", "expired", "superseded", "declined", "routed_to_rfq"])
   .meta({ id: "QuoteStatus" });
 export const quoteSource = z.enum(["instant", "rfq"]).meta({ id: "QuoteSource" });
 
-/* ----------------------------------------------------------- the six other calculators */
-
-/**
- * CONTRACT-REQUEST store.quote-configurations — the configuration the storefront sends
- * `POST /v1/store/quotes/actions/calculate` for every instant calculator that is not folding:
- * the configurator's selection by group kind, which the API maps onto its own calculator.
- * Proposed as a second member of `CalculateQuoteDto.configuration` (`oneOf`, by
- * `productTypeCode`). Not an endpoint, so it is not in the registry; it types the one call and
- * the mock.
- */
-export const storeGenericConfiguration = z
-  .object({
-    catalogProductId: uuid(),
-    patternId: uuid().optional(),
-    standardSizeCode: z.string().optional(),
-    l: z.number().positive().optional(),
-    w: z.number().positive().optional(),
-    d: z.number().positive().optional(),
-    gusset: z.number().nonnegative().optional(),
-    /** Group kind → the chosen option id (single) or ids (multiple). */
-    options: z.record(z.string(), z.union([uuid(), z.array(uuid())])),
-    /** Per option id: count and sizes of placed finishes/assemblies. */
-    areas: z
-      .array(
-        z.object({
-          optionId: uuid(),
-          amount: z.number().int().min(1).optional(),
-          w: z.array(z.number().nonnegative()).optional(),
-          l: z.array(z.number().nonnegative()).optional(),
-        }),
-      )
-      .optional(),
-    quantities: z.array(z.number().int().min(1).max(10_000_000)).min(1).max(10),
-    design: z.object({ graphic: z.boolean(), structure: z.boolean() }),
-  })
-  .meta({ id: "StoreGenericConfigurationDto" });
 
 /* ----------------------------------------------------------------------------- saved quotes */
 

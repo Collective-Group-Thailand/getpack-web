@@ -8,20 +8,27 @@ import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
+import { browserApi } from "@/lib/api/browser";
+import type { LengthUnit } from "@/ui/components/DimensionInput";
 import { QuoteDockSpacer } from "@/ui/components/QuoteDock";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Stepper, type StepStatus } from "@/ui/components/Stepper";
 
 import { quantityBand } from "../analytics/bands";
-import { buildCalculateBody } from "./build";
+import { loadOf, useAdvisor, useAdvisorMethod, type AdvisorOption } from "./advisor";
+import { buildCalculateBody, seedFromConfiguration } from "./build";
 import { ConfiguratorDock } from "./ConfiguratorDock";
 import { boxStyleOf, ConfiguratorPreview } from "./ConfiguratorPreview";
+import { useConversion, usePatternBases } from "./conversion";
 import { configurationSummary, lineChatUrl } from "./line";
+import { basesOf, groupsOf, optionsById, sizeKindOf } from "./model";
 import { useLivePrice } from "./pricing";
 import { SizeStep } from "./SizeStep";
 import {
+  axesOf,
   groupsIn,
   initialState,
+  isConverted,
   missingAreas,
   missingChoices,
   patternOf,
@@ -29,19 +36,26 @@ import {
   readyToPrice,
   sizeProblems,
   stepsOf,
+  TARGET,
   type Configurator as ConfiguratorData,
   type ConfiguratorState,
   type StepKey,
 } from "./state";
-import { useQuoteActions } from "./useQuoteActions";
+import { useDraft, type Draft } from "./useDraft";
+import { useQuoteActions, type SavedQuote } from "./useQuoteActions";
 
 /*
  * Only the first step is in the initial load; the others arrive when first opened (they are a
- * click away, and the configurator is an app-type page with a 200 KB budget,
- * docs/performance-budgets.md).
+ * click away, and the configurator is an app-type page with a budget, docs/performance-budgets.md).
  */
 const stepLoading = () => <Skeleton className="h-24 w-full" />;
 const ChoicesStep = dynamic(() => import("./ChoicesStep").then((module) => module.ChoicesStep), {
+  loading: stepLoading,
+});
+const LogisticsStep = dynamic(() => import("./LogisticsStep").then((module) => module.LogisticsStep), {
+  loading: stepLoading,
+});
+const AdvisorPanel = dynamic(() => import("./AdvisorPanel").then((module) => module.AdvisorPanel), {
   loading: stepLoading,
 });
 const QuantityStep = dynamic(() => import("./QuantityStep").then((module) => module.QuantityStep), {
@@ -51,6 +65,12 @@ const DeliveryStep = dynamic(() => import("./DeliveryStep").then((module) => mod
   loading: stepLoading,
 });
 const DesignStep = dynamic(() => import("./DesignStep").then((module) => module.DesignStep), {
+  loading: stepLoading,
+});
+const SummaryStep = dynamic(() => import("./SummaryStep").then((module) => module.SummaryStep), {
+  loading: stepLoading,
+});
+const TargetPanel = dynamic(() => import("./TargetPanel").then((module) => module.TargetPanel), {
   loading: stepLoading,
 });
 
@@ -63,8 +83,10 @@ export interface ConfiguratorProps {
   productName: { th: string; en: string };
   signedIn: boolean;
   lineOaId: string | null;
-  /** A shared or saved quotation reopened here: its answers become the starting point. */
+  /** A draft, a shared or saved quote reopened here: its answers become the starting point. */
   seed?: Partial<ConfiguratorState>;
+  /** The draft this visit resumed (D-185), so saving again updates it. */
+  draft?: Draft | null;
   /** The RFQ form for this product's category. */
   rfqPath: string;
   /** This page's canonical address, for the link in a LINE message. */
@@ -72,12 +94,14 @@ export interface ConfiguratorProps {
 }
 
 /**
- * The configurator (F3 3.2): an adaptive stepper — the steps this product has, and no others —
+ * The configurator v2 (U2.F1): an adaptive stepper — the steps this product has, and no others —
  * beside a live preview and the instant-quote dock.
  *
- * Every change re-prices after a pause (`useLivePrice`); nothing is computed here. The steps can
- * be opened in any order, and a closed step shows its answer, so the configuration reads as one
- * summary from top to bottom.
+ * The size is entered on a chosen basis and shown on every other one by the API's conversion
+ * (D-182); corrugated boxes may ask the Structure Advisor which board to use (D-235–D-240); an
+ * optional target price brings the API's levers (D-247–D-251); the summary keeps the whole
+ * configuration as a draft or a link (D-185). Every change re-prices after a pause; nothing is
+ * priced, converted or rated here.
  */
 export function Configurator({
   configurator,
@@ -85,36 +109,113 @@ export function Configurator({
   signedIn,
   lineOaId,
   seed,
+  draft: resumed = null,
   rfqPath,
   pageUrl,
 }: ConfiguratorProps) {
   const t = useTranslations("configurator");
+  const tUnits = useTranslations("catalog.stock.units");
   const locale = useLocale();
   const format = useFormat();
   const router = useRouter();
-  const [state, setState] = useState(() => initialState(configurator, seed));
-  const steps = useMemo(() => stepsOf(configurator), [configurator]);
-  const [current, setCurrent] = useState<StepKey>(steps[0]!);
+  const [entered, setState] = useState(() => initialState(configurator, seed));
   const [session, setSession] = useState(signedIn);
   const [signIn, setSignIn] = useState<{ open: boolean; then: (() => void) | null }>({ open: false, then: null });
   const name = pick(locale, productName.th, productName.en);
+  const unit = tUnits(configurator.unit);
+  const requestSignIn = (then: () => void) => setSignIn({ open: true, then });
+
+  const method = useAdvisorMethod(configurator);
+  const advisorOn = method.data?.available === true;
+  const steps = useMemo(() => stepsOf(configurator, { advisor: advisorOn }), [configurator, advisorOn]);
+  const [current, setCurrent] = useState<StepKey>(steps[0]!);
 
   const update = (patch: Partial<ConfiguratorState>) => setState((previous) => ({ ...previous, ...patch }));
 
-  const problems = sizeProblems(configurator, state);
+  // D-182: the bases this pattern is measured on, as the API's conversion knows its construction.
+  // A style the API builds flat is measured on its finished size only, so that is its basis; a
+  // basis this pattern is not measured on is not an answer.
+  const patternBases = usePatternBases(configurator, patternOf(configurator, entered)?.id ?? null);
+  const bases = patternBases ?? basesOf(configurator);
+  const flatStyle = patternBases?.length === 1 && patternBases[0] === "product";
+  const state: ConfiguratorState = {
+    ...entered,
+    flatStyle,
+    basis: flatStyle ? "product" : entered.basis && bases.includes(entered.basis) ? entered.basis : null,
+  };
+
+  const conversion = useConversion(configurator, state);
+  const problems = sizeProblems(configurator, state, conversion.internal);
   const missingGroups = missingChoices(configurator, state);
   const missingArea = missingAreas(configurator, state);
-  const ready = readyToPrice(configurator, state);
+  const ready = readyToPrice(configurator, state, conversion.internal);
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
+  const priced = price.data?.steps.find((step) => step.quantity === state.quantity && step.instant) ?? null;
+  const gap = price.data?.target?.steps.find((step) => step.quantity === state.quantity) ?? null;
+
+  const advisor = useAdvisor(configurator);
+  const load = loadOf(state.load);
+  const sizeOk = Object.keys(problems).length === 0;
+  const materialGroup = groupsOf(configurator).find((group) => group.kind === "material");
+  // The advisor needs a box it can price; it swaps the board itself, so any offered one starts it.
+  const advisorReady = load !== null && sizeOk && state.quantities.length > 0 && materialGroup !== undefined;
+  const recommend = () => {
+    if (!load || !materialGroup) return;
+    const material = state.choices.material?.[0] ?? materialGroup.options[0]!.id;
+    advisor.recommend.mutate({ load, state: { ...state, choices: { ...state.choices, material: [material] } } });
+  };
+  const chooseBoard = async (option: AdvisorOption) => {
+    const recommendation = advisor.recommend.data;
+    if (!recommendation) return;
+    await advisor.choose.mutateAsync({ recommendationId: recommendation.id, option });
+    update({
+      choices: { ...state.choices, material: [option.board.id] },
+      advisory: { recommendationId: recommendation.id, boardId: option.board.id },
+    });
+  };
+
+  const reseed = (quote: SavedQuote) =>
+    setState((previous) => ({
+      ...initialState(
+        configurator,
+        seedFromConfiguration(configurator, (quote.configuration ?? {}) as Record<string, unknown>, {
+          quantity: quote.options[0]?.quantity,
+          target: quote.targetPricePerUnit,
+        }),
+      ),
+      unit: previous.unit,
+      postcode: previous.postcode,
+      load: previous.load,
+      designOption: previous.designOption,
+    }));
 
   const actions = useQuoteActions({
     configurator,
     state,
     productName: name,
     signedIn: session,
-    requestSignIn: (then) => setSignIn({ open: true, then }),
+    requestSignIn,
+    anonymousId: advisor.anonymousId,
+    onLeverApplied: reseed,
   });
+  const drafts = useDraft({
+    configurator,
+    state,
+    title: name,
+    signedIn: session,
+    requestSignIn,
+    initial: resumed,
+  });
+
+  /** D-183: the display unit is the customer's preference, kept on their profile when signed in. */
+  const changeUnit = (next: LengthUnit) => {
+    update({ unit: next });
+    if (session)
+      void browserApi()
+        .PATCH("/v1/store/me/preferences", { body: { displayUnit: next } })
+        .catch(() => undefined);
+  };
 
   // D-102: the funnel's "configure" step, once per visit; "quote shown" when a price arrives.
   const opened = useRef(false);
@@ -124,7 +225,6 @@ export function Configurator({
     track("configurator_opened", { route: "/configure/[slug]", productType: configurator.productTypeCode });
   }, [configurator.productTypeCode]);
   const shownFor = useRef<string | null>(null);
-  const priced = price.data?.steps.find((step) => step.quantity === state.quantity && step.instant);
   useEffect(() => {
     if (!priced) return;
     const band = quantityBand(priced.quantity);
@@ -142,48 +242,91 @@ export function Configurator({
 
   /* -------------------------------------------------------------------- step summaries */
 
-  const byId = new Map(configurator.groups.flatMap((group) => group.options.map((option) => [option.id, option])));
+  const byId = optionsById(configurator);
+  const kind = sizeKindOf(configurator);
+  const pattern = patternOf(configurator, state);
   const sizeSummary = (() => {
-    const pattern = patternOf(configurator, state);
-    const dims = [state.dims.l, state.dims.w, configurator.size.kind === "box" ? state.dims.d : null]
+    const dims = axesOf(configurator, state)
+      .map((axis) => state.dims[axis])
       .filter((value): value is number => value !== null)
       .map((value) => format.number(value))
       .join(" × ");
     return [
-      pattern && configurator.size.patterns.length > 1 ? pattern.name : null,
+      pattern ? [pattern.name, pattern.styleCode].filter(Boolean).join(" ") : null,
       dims ? `${dims} ${t("size.units.mm")}` : null,
+      dims && state.basis && kind === "box" ? t(`size.bases.${state.basis}.label`) : null,
     ]
       .filter(Boolean)
       .join(" · ");
   })();
-  const choiceSummary = (step: StepKey) =>
-    groupsIn(configurator, step)
+  const choiceSummary = (step: StepKey) => {
+    const chosen = groupsIn(configurator, step)
       .flatMap((group) => state.choices[group.kind] ?? [])
       .map((id) => byId.get(id))
       .filter((option) => option !== undefined)
-      .map((option) => pick(locale, option.nameTh, option.nameEn))
-      .join(", ");
+      .map((option) => pick(locale, option.nameTh, option.nameEn));
+    return [...new Set(chosen)].join(", ");
+  };
+  const loadSummary = load
+    ? t("logistics.summary", {
+        weight: format.number(load.productWeightG),
+        units: format.number(load.unitsPerBox),
+        layers: format.number(load.stackLayers),
+      })
+    : undefined;
 
   const statusOf = (step: StepKey): StepStatus => {
-    if (step === current) return Object.keys(problems).length > 0 && step === "size" ? "error" : "current";
-    if (step === "size") return Object.keys(problems).length > 0 ? "error" : "complete";
-    if (["material", "printing", "finishing", "assembly"].includes(step)) {
-      const groups = groupsIn(configurator, step);
-      if (groups.some((group) => missingGroups.includes(group))) return "upcoming";
-      if (missingArea.some((option) => groups.some((group) => group.options.includes(option)))) return "error";
+    const own = ((): StepStatus => {
+      if (step === "size") return sizeOk ? "complete" : state.basis === null ? "upcoming" : "error";
+      if (step === "logistics") return load ? "complete" : "upcoming";
+      if (["material", "printing", "finishing", "assembly"].includes(step)) {
+        const groups = groupsIn(configurator, step);
+        if (groups.some((group) => missingGroups.includes(group))) return "upcoming";
+        if (missingArea.some((option) => groups.some((group) => group.options.includes(option)))) return "error";
+        return "complete";
+      }
+      if (step === "delivery")
+        return state.postcode === "" ? "upcoming" : POSTCODE.test(state.postcode) ? "complete" : "error";
+      // A product without a default quantity (packio-api's may have none) starts with this step open.
+      if (step === "quantity")
+        return state.target !== "" && !TARGET.test(state.target)
+          ? "error"
+          : state.quantities.length === 0
+            ? "upcoming"
+            : "complete";
+      if (step === "summary") return ready ? "complete" : "upcoming";
       return "complete";
-    }
-    if (step === "delivery")
-      return state.postcode === "" ? "upcoming" : POSTCODE.test(state.postcode) ? "complete" : "error";
-    // A product without a default quantity (packio-api's may have none) starts with this step open.
-    if (step === "quantity") return state.quantities.length === 0 ? "upcoming" : "complete";
-    return "complete";
+    })();
+    if (step !== current) return own;
+    return own === "error" ? "error" : "current";
   };
 
-  const next = (step: StepKey) => {
-    const index = steps.indexOf(step);
-    return steps[index + 1];
+  const summaryOf = (step: StepKey): string | undefined => {
+    switch (step) {
+      case "size":
+        return sizeSummary || undefined;
+      case "logistics":
+        return loadSummary;
+      case "quantity":
+        if (state.quantities.length === 0) return undefined;
+        return [
+          t("quantity.summary", { quantity: format.number(state.quantity), unit, tiers: state.quantities.length }),
+          TARGET.test(state.target) ? t("quantity.targetSummary", { target: format.thb(state.target), unit }) : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+      case "delivery":
+        return state.postcode || undefined;
+      case "design":
+        return t(`design.options.${state.designOption}.label`);
+      case "summary":
+        return undefined;
+      default:
+        return choiceSummary(step) || undefined;
+    }
   };
+
+  const next = (step: StepKey) => steps[steps.indexOf(step) + 1];
   const nextButton = (step: StepKey) => {
     const following = next(step);
     return following ? (
@@ -197,24 +340,59 @@ export function Configurator({
     ) : null;
   };
 
+  const materialName = (() => {
+    const material = state.choices.material?.[0] ? byId.get(state.choices.material[0]) : undefined;
+    return material ? pick(locale, material.nameTh, material.nameEn) : null;
+  })();
+
   const contentOf = (step: StepKey): React.ReactNode => {
     switch (step) {
       case "size":
-        return <SizeStep configurator={configurator} state={state} onChange={update} />;
+        return (
+          <SizeStep
+            configurator={configurator}
+            state={state}
+            onChange={update}
+            onUnitChange={changeUnit}
+            bases={bases}
+            conversion={conversion}
+            materialName={materialName}
+          />
+        );
+      case "logistics":
+        return <LogisticsStep load={state.load} onChange={update} />;
       case "material":
       case "printing":
       case "finishing":
       case "assembly":
         return (
-          <ChoicesStep
-            groups={groupsIn(configurator, step)}
-            state={state}
-            onChange={update}
-            missing={new Set(missingGroups.map((group) => group.kind))}
-          />
+          <div className="flex flex-col gap-5">
+            {step === "material" && advisorOn && method.data ? (
+              <AdvisorPanel
+                method={method.data}
+                ready={advisorReady}
+                recommendation={advisor.recommend.data ?? null}
+                recommending={advisor.recommend.isPending}
+                recommendError={advisor.recommend.error}
+                onRecommend={recommend}
+                onEditLoad={() => setCurrent("logistics")}
+                chosenBoardId={state.advisory?.boardId ?? null}
+                onChoose={chooseBoard}
+                choosing={advisor.choose.isPending}
+                rfqHref={rfqHref}
+              />
+            ) : null}
+            <ChoicesStep
+              configurator={configurator}
+              groups={groupsIn(configurator, step)}
+              state={state}
+              onChange={update}
+              missing={new Set(missingGroups.map((group) => group.kind))}
+            />
+          </div>
         );
       case "quantity":
-        return <QuantityStep configurator={configurator} state={state} onChange={update} />;
+        return <QuantityStep configurator={configurator} state={state} onChange={update} unit={unit} />;
       case "delivery":
         return <DeliveryStep state={state} onChange={update} />;
       case "design":
@@ -226,41 +404,45 @@ export function Configurator({
             designerAvailable={boxStyleOf(configurator, state) !== null}
           />
         );
-    }
-  };
-
-  const summaryOf = (step: StepKey): string | undefined => {
-    switch (step) {
-      case "size":
-        return sizeSummary || undefined;
-      case "quantity":
-        if (state.quantities.length === 0) return undefined;
-        return t("quantity.summary", {
-          quantity: format.number(state.quantity),
-          unit: configurator.unit,
-          tiers: state.quantities.length,
-        });
-      case "delivery":
-        return state.postcode || undefined;
-      case "design":
-        return t(`design.options.${state.designOption}.label`);
-      default:
-        return choiceSummary(step) || undefined;
+      case "summary":
+        return (
+          <SummaryStep
+            sections={steps
+              .filter((section) => section !== "summary")
+              .map((section) => ({
+                step: section,
+                label: t(`steps.${section}`),
+                summary: summaryOf(section),
+                status: statusOf(section) === "current" ? "complete" : statusOf(section),
+              }))}
+            onEdit={setCurrent}
+            pattern={pattern}
+            priced={priced}
+            unit={unit}
+            draft={drafts.draft}
+            draftBusy={drafts.busy}
+            onDraft={drafts.run}
+          />
+        );
     }
   };
 
   /* ------------------------------------------------------------------------- the dock */
 
   const missing = [
-    ...(Object.keys(problems).length > 0 ? [t("missing.size")] : []),
+    ...(problems.basis ? [t("missing.basis")] : []),
+    ...(Object.keys(problems).some((key) => key !== "basis") ? [t("missing.size")] : []),
     ...missingGroups.map((group) => t(`choices.groups.${group.kind}`)),
     ...missingArea.map((option) => t("missing.area", { name: pick(locale, option.nameTh, option.nameEn) })),
     ...(state.quantities.length === 0 ? [t("missing.quantity")] : []),
+    ...(state.target !== "" && !TARGET.test(state.target) ? [t("missing.target")] : []),
   ];
   const style = boxStyleOf(configurator, state);
+  // The designer draws the inside size (F4): as entered, or as the API converted it.
+  const inside = isConverted(state.basis) ? conversion.internal : state.basis === "internal" ? state.dims : null;
   const designHref =
-    style && configurator.design.options.includes("online_designer") && state.dims.l && state.dims.w && state.dims.d
-      ? `/design/new?style=${style}&l=${state.dims.l}&w=${state.dims.w}&h=${state.dims.d}&product=${encodeURIComponent(configurator.slug)}`
+    style && configurator.design.options.includes("online_designer") && inside?.l && inside.w && inside.d
+      ? `/design/new?style=${style}&l=${inside.l}&w=${inside.w}&h=${inside.d}&product=${encodeURIComponent(configurator.slug)}`
       : null;
   const facts = [
     ...(sizeSummary ? [{ label: t("steps.size"), value: sizeSummary }] : []),
@@ -269,7 +451,7 @@ export function Configurator({
       return value ? [{ label: t(`steps.${step}`), value }] : [];
     }),
     ...(state.quantities.length > 0
-      ? [{ label: t("steps.quantity"), value: `${format.number(state.quantity)} ${configurator.unit}` }]
+      ? [{ label: t("steps.quantity"), value: `${format.number(state.quantity)} ${unit}` }]
       : []),
     ...(priced ? [{ label: t("dock.title"), value: format.thb(priced.grossAmount) }] : []),
   ];
@@ -310,12 +492,27 @@ export function Configurator({
             ),
           }))}
         />
+        {gap && TARGET.test(state.target) ? (
+          <TargetPanel
+            configurator={configurator}
+            target={state.target}
+            gap={gap}
+            unit={unit}
+            levers={actions.levers}
+            onShowLevers={() => actions.run("levers")}
+            onApply={(lever) => void actions.applyLever(lever)}
+            onSendToCs={(notes) => actions.run("sendToCs", notes)}
+            busy={actions.busy === "levers" || actions.busy === "sendToCs"}
+          />
+        ) : null}
         <QuoteDockSpacer />
       </div>
 
       <ConfiguratorDock
         configurator={configurator}
         state={state}
+        unit={unit}
+        gap={gap}
         onSelectQuantity={(quantity) => update({ quantity })}
         missing={missing}
         steps={price.data?.steps}

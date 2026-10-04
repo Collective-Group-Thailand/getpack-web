@@ -284,6 +284,65 @@ const notFound = () => problem(404, "rfq.not_found", "ไม่พบคำข�
 
 let submitted = 0;
 
+/**
+ * `store.quotes.sendToCs` and `store.configurations.convertToRfq` (D-251, D-185): an RFQ pre-filled
+ * from a quotation or a draft — product type, size and basis, quantities, postcode, target and the
+ * customer's note — on the desk's own queue, as `POST /v1/store/rfqs` files one.
+ */
+export function fileRoutedRfq(
+  customer: MockCustomer,
+  input: {
+    productTypeCode: string;
+    quantities: number[];
+    size: { l: number; w: number; d: number | null } | null;
+    deliveryPostcode: string | null;
+    notes: string | null;
+    spec: { label: string; value: string }[];
+  },
+): AdminRfq {
+  const form = formOf(input.productTypeCode);
+  submitted += 1;
+  const n = 900 + submitted;
+  const now = bangkokIso();
+  const rfq: AdminRfq = {
+    id: mockId("rfq", n),
+    rfqCode: `RFQ-2569-${String(n).padStart(5, "0")}`,
+    channel: "web",
+    status: "submitted",
+    productType: { code: input.productTypeCode, name: form?.nameTh ?? input.productTypeCode },
+    customer: ownerOf(customer),
+    quantities: [...input.quantities].sort((a, b) => a - b),
+    dimensions: input.size ? { lengthMm: input.size.l, widthMm: input.size.w, heightMm: input.size.d } : null,
+    targetDate: null,
+    province: null,
+    assignee: null,
+    slaTargetHours: form?.slaTargetHours ?? 8,
+    slaDueAt: bangkokIso((form?.slaTargetHours ?? 8) * 60),
+    firstResponseAt: null,
+    urgency: "normal",
+    consultationCounts: { requested: 0, responded: 0 },
+    latestQuote: null,
+    routedFromCalculator: true,
+    submittedAt: now,
+    contact: { phone: customer.phone, email: customer.email },
+    spec: input.spec,
+    specSchemaVersion: form?.specSchemaVersion ?? 1,
+    notes: input.notes,
+    deliveryPostcode: input.deliveryPostcode ?? "",
+    files: [],
+    routedFrom: null,
+    declineReason: null,
+    declineNote: null,
+    acceptedQuotation: null,
+    consultations: [],
+    quotes: [],
+    quoteDefaults: { validUntil: bangkokIso(QUOTE_VALIDITY_DAYS * DAY).slice(0, 10) },
+    events: [],
+    nextActions: [],
+  };
+  return addCustomerRfq(rfq);
+}
+
 export const storeRfqHandlers = [
   // store.rfqs.getForm (public): any active type has one (D-043).
   http.get("*/v1/store/rfq-forms/:productTypeCode", ({ params }) => {

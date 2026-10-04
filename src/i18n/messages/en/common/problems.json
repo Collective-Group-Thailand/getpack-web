@@ -313,7 +313,8 @@
     "not_live": "Quotation not valid",
     "not_repriceable": "Cannot re-price",
     "nothing_to_save": "Nothing to save",
-    "still_valid": "Price still locked"
+    "still_valid": "Price still locked",
+    "no_target": "This quotation has no target price"
   },
   "receivables": {
     "allowance_rates_unset": "Allowance rates not set",
@@ -421,9 +422,17 @@
   },
   "advisory": {
     "choice_mismatch": "The material does not match the board chosen from the recommendation",
-    "choice_required": "Choose a board from the recommendation before saving the quotation"
+    "choice_required": "Choose a board from the recommendation before saving the quotation",
+    "disabled": "Board advice is not switched on yet",
+    "not_configured": "Board advice is not set up yet",
+    "not_supported": "Board advice covers supported corrugated boxes only",
+    "acknowledgement_required": "Acknowledge this board's cautions before choosing it",
+    "option_unknown": "That board is not part of this advice"
   },
   "samples": {
     "evidence_missing": "Record the measured size, the material used and at least one photo before shipping the sample"
+  },
+  "configurations": {
+    "converted": "This draft has already been converted and can't change"
   }
 }

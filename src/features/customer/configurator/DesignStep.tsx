@@ -13,7 +13,7 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
 
-import type { Configurator, ConfiguratorState, DesignOption, MockupOption } from "./state";
+import type { Configurator, ConfiguratorState, DesignOption } from "./state";
 
 interface DesignStepProps {
   configurator: Configurator;
@@ -24,7 +24,8 @@ interface DesignStepProps {
 }
 
 /**
- * How the artwork gets made, the physical mockup add-on (D-072), and a promotion code.
+ * How the artwork gets made and a promotion code. (The physical mockup add-on became the sample
+ * of D-192: it is ordered on its own path, U2.F3, not chosen here.)
  *
  * The code is checked as soon as it is entered so the customer knows it works for this product
  * (`store.promotions.checkCode`, D-053); what it takes off is the quotation's and the checkout's
@@ -74,21 +75,6 @@ export function DesignStep({ configurator, state, onChange, designerAvailable }:
           }))}
         />
       </Field>
-
-      {configurator.mockup.options.length > 1 ? (
-        <Field label={t("mockup")} hint={t("mockupHint")}>
-          <RadioCards
-            columns={3}
-            value={state.mockupOption}
-            onValueChange={(mockupOption) => onChange({ mockupOption: mockupOption as MockupOption })}
-            options={configurator.mockup.options.map((option) => ({
-              value: option,
-              label: t(`mockups.${option}.label`),
-              description: t(`mockups.${option}.description`),
-            }))}
-          />
-        </Field>
-      ) : null}
 
       <form
         className="flex flex-col gap-2"

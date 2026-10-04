@@ -5,7 +5,7 @@ import { SPEC_VERSION } from "@packio/dieline";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
-import { fromContract } from "@/features/customer/configurator/from-contract";
+import { groupsOf } from "@/features/customer/configurator/model";
 import { seedFromDesign } from "@/features/customer/configurator/state";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";
 import { createApiClient } from "@/lib/api/client";
@@ -198,11 +198,14 @@ describe("the price widget's reading of a design", () => {
     const { data } = await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
       params: { path: { slug: "tuck-end-box" } },
     });
-    const configurator = fromContract(data!, { unit: (unit) => unit });
-    const material = configurator.groups.find((g) => g.kind === "material")!.options.at(-1)!;
+    const configurator = data!;
+    const material = groupsOf(configurator)
+      .find((g) => g.kind === "material")!
+      .options.at(-1)!;
     const state = stateForDesign(configurator, { ...spec, materialId: material.id }, blank, 1000);
     expect(state.dims).toMatchObject({ l: 70, w: 40, d: 150 });
     expect(state.choices.material).toEqual([material.id]);
+    expect(state.basis).toBe("internal");
     expect(state.quantity).toBe(1000);
 
     const seed = seedFromDesign(configurator, { l: "70", w: "40", d: "150", material: material.id });
