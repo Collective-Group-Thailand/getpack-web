@@ -447,6 +447,10 @@
     "rate_limited": "Priced too often, wait a moment",
     "right_not_required": "This mark needs no declaration",
     "checks_not_run": "This version has not been checked yet",
-    "block_not_acknowledgeable": "Must be fixed; it cannot be accepted"
+    "block_not_acknowledgeable": "Must be fixed; it cannot be accepted",
+    "checks_not_ready": "This design has not passed its checks",
+    "print_unavailable": "Print files cannot be made automatically for this box style yet",
+    "quote_not_of_version": "The quotation is not for this version",
+    "renders_missing": "The artwork of this version has not been sent"
   }
 }

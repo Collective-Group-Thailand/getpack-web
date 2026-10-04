@@ -101,7 +101,8 @@
     "deliveredTerm": "Delivered",
     "completedTerm": "Completed",
     "completedByYou": "{date} (you confirmed receipt)",
-    "completedAuto": "{date} (completed automatically)"
+    "completedAuto": "{date} (completed automatically)",
+    "designLink": "Design {title} (ordered version {versionNo})"
   },
   "tolerance": {
     "title": "Quantity received",

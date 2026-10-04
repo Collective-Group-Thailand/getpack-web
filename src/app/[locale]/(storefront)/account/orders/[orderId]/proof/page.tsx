@@ -5,6 +5,9 @@ import { getTranslations } from "next-intl/server";
 import { getMyArtwork } from "@/features/customer/artwork/api.server";
 import { ProofViewer } from "@/features/customer/artwork/ProofViewer";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
+import { findLockedDesignOf, getDesignVersion } from "@/features/customer/orders/api.server";
+import { DesignViewer } from "@/features/designer/components/DesignViewer";
+import { readDesign } from "@/features/designer/document";
 import { Link } from "@/i18n/navigation";
 import { EmptyState } from "@/ui/components/EmptyState";
 
@@ -29,8 +32,15 @@ export default async function Page({
 }) {
   await requireCustomer();
   const [{ orderId }, { version }] = await Promise.all([params, searchParams]);
-  const [t, artwork] = await Promise.all([getTranslations("proof"), getMyArtwork(orderId)]);
+  const [t, artwork, locked] = await Promise.all([
+    getTranslations("proof"),
+    getMyArtwork(orderId),
+    findLockedDesignOf(orderId).catch(() => null),
+  ]);
   if (!artwork) notFound();
+  // A studio order (U4.6): the version it locked, drawn as the studio drew it, beside the proof.
+  const ordered = locked ? await getDesignVersion(locked.designId, locked.versionNo).catch(() => null) : null;
+  const design = ordered ? readDesign(ordered.spec, ordered.content) : null;
   const requested = Number(version);
 
   return (
@@ -48,6 +58,27 @@ export default async function Page({
           <p className="text-muted text-sm">{t("styleCode", { code: artwork.rules.dieline.styleCode })}</p>
         ) : null}
       </header>
+      {locked && design ? (
+        <section aria-labelledby="studio-version" className="flex flex-col gap-2">
+          <h2 id="studio-version" className="font-semibold">
+            {t("studio.title", { versionNo: locked.versionNo })}
+          </h2>
+          <p className="text-muted text-sm">{t("studio.hint")}</p>
+          <div className="border-border bg-surface aspect-[4/3] max-h-96 rounded-lg border p-2">
+            <DesignViewer
+              {...design}
+              label={t("studio.label", { title: locked.title, versionNo: locked.versionNo })}
+              idPrefix="studio-version"
+            />
+          </div>
+          <Link
+            href={`/studio/${locked.designId}?step=design`}
+            className="text-primary text-sm underline-offset-4 hover:underline"
+          >
+            {t("studio.open")}
+          </Link>
+        </section>
+      ) : null}
       {artwork.proofs.length === 0 ? (
         <EmptyState icon="file-check" title={t("none")} description={t("noneHint")} />
       ) : (

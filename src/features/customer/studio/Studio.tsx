@@ -22,6 +22,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 
 import { loadLibrary, needsLibrary } from "./library";
@@ -38,6 +39,7 @@ import { useChecksClean, useStudioFunnel } from "./funnel";
 const STUDIO_ROUTE = "/studio/[designId]";
 
 // ① and ② load when they are shown: a design opened on ③ never pays for them.
+const OrderSheet = dynamic(() => import("./OrderSheet").then((m) => m.OrderSheet), { ssr: false });
 const BoxStep = dynamic(() => import("./BoxStep").then((m) => m.BoxStep), { ssr: false });
 const DescribeProduct = dynamic(() => import("./DescribeProduct").then((m) => m.DescribeProduct), { ssr: false });
 
@@ -53,6 +55,8 @@ export interface StudioProps {
   templateId?: string | null;
   /** `?step=` as the page was opened. */
   step?: string;
+  /** D-276: the version the latest order locked (editing makes a new version, never touches it). */
+  lock?: Schemas["DesignLockDto"] | null;
 }
 
 /**
@@ -77,6 +81,7 @@ export function Studio({
   catalogProductId,
   templateId,
   step: askedStep,
+  lock = null,
 }: StudioProps) {
   const t = useTranslations("studio");
   const locale = useLocale();
@@ -143,6 +148,14 @@ export function Studio({
   const printMethod = useEditor((s) => s.spec?.studio?.printMethod ?? undefined) ?? undefined;
   const colours = useEditor((s) => artworkColours(s.content));
   const funnel = useStudioFunnel({ route: STUDIO_ROUTE, styleFamily, printMethod });
+  // A company member's order may need the company's approval at checkout (D-281).
+  const companies = useQuery({
+    queryKey: [...queryKeys.zone("customer"), "my-companies"],
+    queryFn: async () => (await browserApi().GET("/v1/store/companies")).data!,
+    enabled: mode === "store",
+    staleTime: 10 * 60_000,
+  });
+
   // Inside printing (U4.3): its cost is shown before the first switch to the inside.
   const [insideAsk, setInsideAsk] = useState<((ok: boolean) => void) | null>(null);
   const onSide = useCallback(async (next: "outside" | "inside") => {
@@ -271,6 +284,22 @@ export function Studio({
           />
         );
       case "order":
+        // An account design not tied to an order line orders from the studio itself (U4.6).
+        if (mode === "store" && !link && configurator.data?.instant)
+          return (
+            <OrderSheet
+              ctx={ctx}
+              configurator={configurator.data}
+              rules={(rules.data?.rules ?? []) as PrintRule[]}
+              quantity={quantity}
+              onQuantity={setQuantity}
+              productSlug={productSlug}
+              companyBuyer={(companies.data?.length ?? 0) > 0}
+              styleFamily={styleFamily}
+              printMethod={printMethod ?? undefined}
+              onChecks={() => goTo("check")}
+            />
+          );
         return (
           <div className="space-y-4">
             <h2 className="font-semibold">{t("order.title")}</h2>
@@ -344,16 +373,22 @@ export function Studio({
               : printMethod === "flexo"
                 ? tool !== "uploads"
                 : true,
-          notice:
-            shown === "design" && printMethod === "none" ? (
-              <Badge tone="info">{t("mode.none")}</Badge>
-            ) : shown === "design" && printMethod === "flexo" ? (
-              <Badge tone={maxSpot !== null && colours > maxSpot ? "warning" : "info"}>
-                {maxSpot !== null
-                  ? t("mode.flexoLimited", { used: colours, max: maxSpot })
-                  : t("mode.flexo", { used: colours })}
-              </Badge>
-            ) : null,
+          notice: (
+            <>
+              {lock ? (
+                <Badge tone="neutral">{t("locked", { versionNo: lock.versionNo, orderCode: lock.orderCode })}</Badge>
+              ) : null}
+              {shown === "design" && printMethod === "none" ? (
+                <Badge tone="info">{t("mode.none")}</Badge>
+              ) : shown === "design" && printMethod === "flexo" ? (
+                <Badge tone={maxSpot !== null && colours > maxSpot ? "warning" : "info"}>
+                  {maxSpot !== null
+                    ? t("mode.flexoLimited", { used: colours, max: maxSpot })
+                    : t("mode.flexo", { used: colours })}
+                </Badge>
+              ) : null}
+            </>
+          ),
           dock: (ctx, layout) =>
             shown === "start" ? null : (
               <PriceDock

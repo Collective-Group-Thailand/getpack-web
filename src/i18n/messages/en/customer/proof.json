@@ -84,5 +84,11 @@
   "approvalNote": "Note (optional)",
   "decisionBy": "Decided by {name} on {date}",
   "approveType": "Type {code} to confirm",
-  "styleCode": "Style code {code}"
+  "styleCode": "Style code {code}",
+  "studio": {
+    "title": "The ordered design (version {versionNo})",
+    "hint": "The studio's drawing of the version locked to this order, to compare with the proof below. The proof is what confirms the print.",
+    "label": "Design {title}, version {versionNo}",
+    "open": "Open in the studio (editing makes a new version)"
+  }
 }

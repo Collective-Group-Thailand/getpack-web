@@ -230,6 +230,9 @@ export function CheckoutView({
         return;
       }
       track("order_placed", { route: "/checkout", orderGroupId: group!.id });
+      // The studio funnel's last step (D-286): an order with a design version from the studio.
+      if (cart.items.some((item) => item.designDocumentId && item.designVersionNo))
+        track("studio_ordered", { route: "/checkout" });
       if (!dueNow) {
         router.push(`/account/orders?placed=${encodeURIComponent(group!.groupCode)}`);
         return;

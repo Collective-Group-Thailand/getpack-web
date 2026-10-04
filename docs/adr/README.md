@@ -13,3 +13,4 @@
 | 0010 | The designer's 3D preview is WebGL, folded by the engine, loaded on demand | Accepted (F4 D) |
 | 0011 | Composable style recipes (modules + JSON recipes + expression constraints) | Accepted (U3.1) |
 | 0012 | Style asset pipeline and the thickness model (engine rasteriser, manifest committed) | Accepted (U3.3) |
+| 0013 | An order's print file is assembled by packio-api from the studio's renders (supersedes 0009 for orders) | Accepted (U4.6) |

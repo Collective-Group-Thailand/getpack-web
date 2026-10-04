@@ -38,17 +38,28 @@ function dataUrlBytes(url: string): Uint8Array {
   return out;
 }
 
-export async function buildPrintPdf(stage: Konva.Stage, d: Dieline, opts: PrintOptions): Promise<Blob> {
+/** One tile of the artwork as the print file places it: JPEG bytes and where on the sheet (mm). */
+export type ArtworkTile = PdfImage;
+
+/**
+ * The artwork at `dpi` with its bleed, in tiles (print mode: clipped to the bleed, on white, no
+ * guides, finishes left out). The browser print file and the studio's order renders (D-280) both
+ * take their artwork from here — one renderer.
+ */
+export async function captureArtworkTiles(
+  stage: Konva.Stage,
+  d: Dieline,
+  opts: { bleedMm: number; dpi?: number },
+): Promise<ArtworkTile[]> {
   const dpi = opts.dpi ?? 300;
   const pxPerMm = dpi / 25.4;
   const bleed = opts.bleedMm;
   const editor = useEditor.getState();
   editor.select(null);
   editor.setPrintMode(true);
-  // Two frames: one for React to render print mode, one for Konva to draw it.
   await nextFrame();
   await nextFrame();
-  const images: PdfImage[] = [];
+  const images: ArtworkTile[] = [];
   try {
     const scale = stage.scaleX();
     const x0 = -bleed;
@@ -86,6 +97,14 @@ export async function buildPrintPdf(stage: Konva.Stage, d: Dieline, opts: PrintO
     editor.setPrintMode(false);
     stage.batchDraw();
   }
+  return images;
+}
+
+export async function buildPrintPdf(stage: Konva.Stage, d: Dieline, opts: PrintOptions): Promise<Blob> {
+  const dpi = opts.dpi ?? 300;
+  const pxPerMm = dpi / 25.4;
+  const bleed = opts.bleedMm;
+  const images = await captureArtworkTiles(stage, d, { bleedMm: bleed, dpi });
   // Each finish on its own separation page (U4.4): its stencil at the artwork's resolution.
   const finishes: PdfFinish[] = [];
   const elements = useEditor.getState().content.elements;
@@ -94,7 +113,15 @@ export async function buildPrintPdf(stage: Konva.Stage, d: Dieline, opts: PrintO
     const packed = await deflate(mask.bits);
     finishes.push({
       ...FINISH_SEPARATIONS[finish],
-      mask: { ...mask, bits: packed ?? mask.bits, flate: packed !== null, x: 0, y: 0, width: d.width, height: d.height },
+      mask: {
+        ...mask,
+        bits: packed ?? mask.bits,
+        flate: packed !== null,
+        x: 0,
+        y: 0,
+        width: d.width,
+        height: d.height,
+      },
     });
   }
   const bytes = dielineToPdf(d, { margin: bleed + 7, bleedMm: bleed, images, title: opts.name, finishes });

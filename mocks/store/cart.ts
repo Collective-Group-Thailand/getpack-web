@@ -33,6 +33,8 @@ interface Line {
   repriceRequested: boolean;
   confirmedReprice: boolean;
   mockupOption: Schemas["MockupOption"];
+  /** D-276: the studio design version the line was ordered with (`store.studio.order`). */
+  design?: { documentId: string; versionNo: number };
 }
 
 const carts = new Map<string, Line[]>();
@@ -172,6 +174,12 @@ export function addToCart(customer: MockCustomer, quote: StoreQuote): string {
   return id;
 }
 
+/** Pins a studio design version on a cart line (D-276). */
+export function pinDesign(customer: MockCustomer, lineId: string, documentId: string, versionNo: number): void {
+  const line = linesOf(customer).find((candidate) => candidate.id === lineId);
+  if (line) line.design = { documentId, versionNo };
+}
+
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
 const notFound = () => problem(404, "http.not_found", "ไม่พบรายการนี้ในตะกร้า");
 
@@ -202,8 +210,8 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
       const shipping = quote.lines.find((entry) => entry.lineType === "shipping")?.netAmount ?? null;
       return {
         id: item.id,
-        // The mock pins no studio design version (D-276).
-        designVersionNo: null,
+        // The studio design version pinned at add-to-cart (D-276), when the line came from the studio.
+        designVersionNo: line.design?.versionNo ?? null,
         quoteId: quote.id,
         quoteOptionId: optionIdOf(quote),
         quoteCode: quote.quoteCode,
@@ -216,7 +224,7 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         designOption: item.designOption,
         mockupOption: line.mockupOption,
         designFeeAmount: designFee,
-        designDocumentId: null,
+        designDocumentId: line.design?.documentId ?? null,
         designNote: null,
         quoteShippingAmount: shipping,
         destinations: item.destinations.map((destination) => {
