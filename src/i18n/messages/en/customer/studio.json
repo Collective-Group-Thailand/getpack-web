@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "title": "Packio 3D Studio — design your box"
+  },
+  "steps": {
+    "label": "Design steps",
+    "start": "Pick a box",
+    "box": "Size & material",
+    "design": "Design",
+    "check": "Check",
+    "order": "Order",
+    "locked": {
+      "needsQuantity": "Enter a quantity to see the price",
+    "needsBox": "Pick a box first to open this step",
+      "needsContent": "Add artwork or text to the box first to open this step"
+    }
+  },
+  "start": {
+    "title": "Start from the right box",
+    "product": "Product: {name}",
+    "chooseBox": "Choose style and size",
+    "changeBox": "Change style or size",
+    "library": "Browse the style library",
+    "next": "Go to size & material"
+  },
+  "box": {
+    "confirm": "Use this box and start designing"
+  },
+  "check": {
+    "title": "Check before you order",
+    "next": "Go to order"
+  },
+  "order": {
+    "title": "Order this design",
+    "hasProblems": "Some things need fixing before you order",
+    "toChecks": "See what to fix",
+    "body": "This design is saved in your account. The price shown is for this design at the quantity you chose.",
+    "bodyGuest": "This design is kept in this browser. Sign in to save it to your account and order.",
+    "signIn": "Sign in to save the design"
+  },
+  "dock": {
+    "label": "Price and ordering",
+    "title": "Price of this design",
+    "quantity": "Quantity",
+    "pieces": "{count, number} pcs",
+    "perPiece": " /pc",
+    "total": "Total {amount}",
+    "vatIncluded": "Includes VAT, excludes shipping",
+    "leadTime": "{days, number} working days to produce",
+    "delivery": "earliest delivery {date}",
+    "changed": "Price changed",
+    "changedFromTo": "from {from} to {to}/pc",
+    "because": "because of {reasons}",
+    "reasons": {
+      "style_changed": "the box style",
+      "size_changed": "the size",
+      "material_changed": "the material",
+      "print_changed": "the printing",
+      "finishes_changed": "the coating or finishes",
+      "quantity_changed": "the quantity",
+      "delivery_changed": "the delivery address",
+      "options_changed": "an option",
+      "prices_changed": "updated material or production prices"
+    },
+    "onRequest": "Request a quote",
+    "sla": "We reply within {hours, number} working hours",
+    "requestQuote": "Request a quote",
+    "order": "Order",
+    "calculating": "Calculating the price…",
+    "updating": "Updating the price",
+    "failed": "Could not price this. Try another quantity or wait a moment.",
+    "needsQuantity": "Enter a quantity to see the price",
+    "needsBox": "Pick a box to see the price"
+  }
+}

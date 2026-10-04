@@ -18,6 +18,8 @@ import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
+import { apply as applyPatch, type JsonValue, type PatchOperation } from "@/features/designer/lib/json-patch";
+
 import { catalogueRows } from "../admin/catalogue";
 import { fileDataUrl, files } from "../admin/platform";
 import { bangkokIso, matchesQuery, mockId, paginate, problem } from "../support";
@@ -64,9 +66,48 @@ interface Version {
   savedAt: string;
   label: string | null;
   document: DesignDocument;
+  /** D-275: the box and calculator spec the version was saved with (the studio prices it). */
+  box?: StudioBox | null;
+}
+
+/** The studio fields of a design (D-275), as the save bodies send them. */
+export interface StudioBox {
+  patternId?: string;
+  materialId?: string;
+  lengthMm?: number;
+  widthMm?: number;
+  heightMm?: number;
+  measurementBasis?: Schemas["MeasurementBasis"];
+  printMethod?: Schemas["PrintMethod"];
+  printSides?: Schemas["PrintSides"];
+  finishes?: string[];
+  styleVariantCode?: string;
+  spec?: Record<string, unknown>;
+}
+
+const BOX_KEYS = [
+  "patternId",
+  "materialId",
+  "lengthMm",
+  "widthMm",
+  "heightMm",
+  "measurementBasis",
+  "printMethod",
+  "printSides",
+  "finishes",
+  "styleVariantCode",
+  "spec",
+] as const;
+
+/** The studio fields a body sends, or `null` when it sends none (the plain designer). */
+function boxFrom(body: Record<string, unknown>): StudioBox | null {
+  const box = Object.fromEntries(BOX_KEYS.filter((key) => body[key] !== undefined).map((key) => [key, body[key]]));
+  return "spec" in box || "printSides" in box || "lengthMm" in box ? (box as StudioBox) : null;
 }
 
 interface Row {
+  /** The current box (D-275); a version saved without studio fields keeps the one before. */
+  box: StudioBox | null;
   owner: string;
   design: StoreDesign;
   versions: Version[];
@@ -149,10 +190,17 @@ function productOf(slug: string | undefined): StoreDesign["product"] {
     : { slug, name: slug, productTypeCode: "folding_carton" };
 }
 
-function saveVersion(row: Row, kind: Version["kind"], document: DesignDocument, label: string | null = null) {
+function saveVersion(
+  row: Row,
+  kind: Version["kind"],
+  document: DesignDocument,
+  label: string | null = null,
+  box: StudioBox | null = null,
+) {
   const versionNo = row.design.versionNo + 1;
   const savedAt = bangkokIso();
-  row.versions.unshift({ versionNo, kind, savedAt, label, document });
+  if (box) row.box = { ...row.box, ...box };
+  row.versions.unshift({ versionNo, kind, savedAt, label, document, box: row.box });
   row.design = { ...row.design, document, versionNo, updatedAt: savedAt, styleId: styleOf(document) };
 }
 
@@ -168,6 +216,7 @@ function create(
     materialId?: string | null;
     catalogProductId?: string | null;
     semiDesignTemplateId?: string | null;
+    box?: StudioBox | null;
   },
 ): Row {
   counter += 1;
@@ -189,9 +238,10 @@ function create(
     assets: [],
   };
   const row: Row = {
+    box: input.box ?? null,
     owner,
     design,
-    versions: [{ versionNo: 1, kind: "manual", savedAt: now, label: null, document: input.document }],
+    versions: [{ versionNo: 1, kind: "manual", savedAt: now, label: null, document: input.document, box: input.box }],
     // A browser design imported by the (requested) import names no product; the mock files it under
     // the first one, since the published design always has one.
     catalogProductId: input.catalogProductId ?? String(catalogueRows("catalogProducts")[0]?.id ?? mockId("cpr", 1)),
@@ -234,13 +284,14 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     materialId: design.materialId,
     semiDesignTemplateId: row.semiDesignTemplateId,
     ...sizeOfDocument(design.document),
-    // U4.B1 studio fields (D-275, D-276): the mock keeps no box spec, print method or order lock.
+    // U4.B1 studio fields (D-275, D-276); the mock keeps no order lock.
     measurementBasis: "internal",
     styleVariantCode: null,
     printMethod: null,
     printSides: null,
     finishes: [],
     spec: null,
+    ...studioFieldsOf(row.box),
     lock: null,
     document: withDocument ? { spec: design.document.spec, content: design.document.content } : null,
     schemaVersion: design.document.schemaVersion,
@@ -265,6 +316,34 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     createdAt: design.createdAt,
     updatedAt: design.updatedAt,
   };
+}
+
+function studioFieldsOf(box: StudioBox | null): Partial<Schemas["DesignDocumentDto"]> {
+  if (!box) return {};
+  return {
+    ...(box.patternId ? { patternId: box.patternId } : {}),
+    ...(box.materialId ? { materialId: box.materialId } : {}),
+    ...(box.lengthMm ? { lengthMm: box.lengthMm } : {}),
+    ...(box.widthMm ? { widthMm: box.widthMm } : {}),
+    ...(box.heightMm ? { heightMm: box.heightMm } : {}),
+    ...(box.measurementBasis ? { measurementBasis: box.measurementBasis } : {}),
+    ...(box.printMethod ? { printMethod: box.printMethod } : {}),
+    ...(box.printSides ? { printSides: box.printSides } : {}),
+    ...(box.finishes ? { finishes: box.finishes } : {}),
+    ...(box.styleVariantCode ? { styleVariantCode: box.styleVariantCode } : {}),
+    ...(box.spec ? { spec: box.spec } : {}),
+  };
+}
+
+/** The signed-in customer's design row (the studio mocks price and check it), or the problem to answer. */
+export function designRowFor(request: Request, designId: string) {
+  return rowOf(request, designId);
+}
+
+/** The box a version of the design was saved with (the current one without a number). */
+export function versionBoxOf(row: Row, versionNo?: number): { versionNo: number; box: StudioBox | null } | null {
+  const version = versionNo === undefined ? row.versions[0] : row.versions.find((v) => v.versionNo === versionNo);
+  return version ? { versionNo: version.versionNo, box: version.box ?? null } : null;
 }
 
 const withDesignEtag = (row: Row, status = 200) =>
@@ -574,6 +653,7 @@ export const storeDesignHandlers = [
       materialId: body.materialId ?? null,
       catalogProductId: body.catalogProductId,
       semiDesignTemplateId: template?.semiDesignId ?? null,
+      box: boxFrom(body as unknown as Record<string, unknown>),
     });
     return withDesignEtag(row, 201);
   }),
@@ -592,7 +672,7 @@ export const storeDesignHandlers = [
     const body = (await request.json()) as Schemas["SaveDesignDto"];
     const document = documentFrom(body);
     if (!document) return problem(422, "validation.failed", "เอกสารแบบไม่ถูกต้อง");
-    saveVersion(row, body.kind ?? "manual", document, body.label ?? null);
+    saveVersion(row, body.kind ?? "manual", document, body.label ?? null, boxFrom(body as unknown as Record<string, unknown>));
     if (body.title) row.design = { ...row.design, name: body.title };
     if (body.materialId) row.design = { ...row.design, materialId: body.materialId };
     if (body.patternId) row.design = { ...row.design, patternId: body.patternId };
@@ -600,6 +680,32 @@ export const storeDesignHandlers = [
       row.thumbnailFileId = body.thumbnailFileId;
       row.design = { ...row.design, thumbnailUrl: fileDataUrl(body.thumbnailFileId) };
     }
+    return withDesignEtag(row);
+  }),
+
+  // store.designs.patchDocument (U4.B1, D-276): JSON Patch on the current document, under If-Match.
+  http.patch("*/v1/store/designs/:designId/document", async ({ params, request }) => {
+    const row = rowOf(request, String(params.designId));
+    if (row instanceof Response) return row;
+    const stale = checkMatch(request, row);
+    if (stale) return stale;
+    const body = (await request.json()) as Schemas["PatchDesignDocumentDto"];
+    if (JSON.stringify(body.operations ?? []).length > 256 * 1024)
+      return problem(413, "designs.patch_too_large", "การแก้ไขครั้งนี้ใหญ่เกินไป");
+    let next: JsonValue;
+    try {
+      next = applyPatch(
+        { spec: row.design.document.spec, content: row.design.document.content } as unknown as JsonValue,
+        body.operations as PatchOperation[],
+      );
+    } catch (error) {
+      return problem(422, "designs.patch_failed", "แก้ไขแบบไม่สำเร็จ", [
+        { path: "operations", code: "patch", message: (error as Error).message },
+      ]);
+    }
+    const document = documentFrom({ document: next, schemaVersion: body.schemaVersion ?? row.design.document.schemaVersion });
+    if (!document) return problem(422, "designs.patch_failed", "เอกสารแบบไม่ถูกต้อง");
+    saveVersion(row, body.kind ?? "autosave", document, body.label ?? null, body.spec ? { spec: body.spec } : null);
     return withDesignEtag(row);
   }),
 
@@ -626,6 +732,7 @@ export const storeDesignHandlers = [
       materialId: row.design.materialId,
       catalogProductId: row.catalogProductId,
       semiDesignTemplateId: row.semiDesignTemplateId,
+      box: row.box,
     });
     copy.design.assets = [...row.design.assets];
     return withDesignEtag(copy, 201);
@@ -681,6 +788,7 @@ export const storeDesignHandlers = [
     if (stale) return stale;
     const version = row.versions.find((candidate) => candidate.versionNo === Number(params.versionNo));
     if (!version) return problem(404, "http.not_found", "ไม่พบเวอร์ชันนี้");
+    row.box = version.box ?? null;
     saveVersion(row, "restore", structuredClone(version.document), `คืนค่าจากเวอร์ชัน ${version.versionNo}`);
     return withDesignEtag(row);
   }),

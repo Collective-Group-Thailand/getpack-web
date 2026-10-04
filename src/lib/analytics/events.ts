@@ -38,6 +38,13 @@ export const FUNNEL_EVENTS = [
   "claim_submitted",
   "reorder_started",
   "reorder_added_to_cart",
+  // The studio funnel (studio-spec §1, D-286), ingested under these names.
+  "studio_started",
+  "studio_box_confirmed",
+  "studio_first_artwork",
+  "studio_checks_clean",
+  "studio_add_to_cart",
+  "studio_ordered",
 ] as const;
 
 export type FunnelEvent = (typeof FUNNEL_EVENTS)[number];
@@ -73,6 +80,10 @@ export interface AnalyticsProperties {
   quoteMode?: string;
   /** Why a funnel step ended, e.g. `price_shown` for `quote_abandoned`. */
   reason?: string;
+  /** Studio events (D-286): the print method chosen in ② … */
+  printMethod?: "digital" | "offset" | "flexo" | "none";
+  /** … and the style family (the product type code), nothing that identifies. */
+  styleFamily?: string;
 }
 
 export interface AnalyticsEvent {

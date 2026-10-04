@@ -318,6 +318,7 @@
     "leadTime": "Made in {min}–{max} working days",
     "partners": "{count, plural, one {# partner factory can make it} other {# partner factories can make it}}",
     "configure": "Configure and price",
+    "designInStudio": "Design in 3D Studio",
     "requestQuote": "Request a quote",
     "preview": "Preview",
     "show3d": "Turn it round in 3D",
