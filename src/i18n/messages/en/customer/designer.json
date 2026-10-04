@@ -620,7 +620,12 @@
     "doubleClick": "Double-click",
     "focusFace": "Edit that face up close",
     "escape": "Clear the selection, then leave the face",
-    "overlay": "Show this list"
+    "overlay": "Show this list",
+    "groups": {
+      "edit": "Edit",
+      "selection": "Selection",
+      "view": "View"
+    }
   },
   "focus": {
     "editing": "Editing: {name}",

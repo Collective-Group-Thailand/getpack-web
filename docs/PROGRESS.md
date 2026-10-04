@@ -48,6 +48,39 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.6 — ⑤ Order from the studio — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.6, on `feat/u4.6-order` (worktree `../packio-web-u4`, from `main` at `e4308be`, U4.5 merged). Post-launch (D-219); "auto mode".
+
+### Gap → done
+| Item | Before | Done |
+|---|---|---|
+| 1 Order sheet | ⑤ linked to the configurator | **`OrderSheet`**: quantity tiers priced for the saved version (`store.studio.quote`, the presets plus the chosen quantity, ≤ 10), **best value per piece** marked (decimal-string compare, no arithmetic), and for the chosen tier the delivery date and lead time, what is included (product, tooling, design, VAT, shipping), the tolerances, a **target price** with the API's gap and a link to the levers, and a **sample** link. A final pass gates the buttons: no block, every warning accepted for this version. |
+| 2 ADR + order flow | browser print PDF only (ADR-0009) | **ADR-0013** (the prompt's "ADR-0012"; that number was taken): the studio renders, packio-api assembles; ADR-0009 stays for the customer's own download. "สั่งเลย" / "เพิ่มลงตะกร้า" / "ส่งขออนุมัติ": save the version → `store.studio.saveQuote` → render and upload 300 dpi tiles per printed side (the inside on the mirrored die) and one PNG mask per finish (`store.studio.addRender`) → carry the acceptances to the version → `store.studio.order` (202) → poll the print job with a progress dialog → client navigation to the cart or checkout. Idempotency keys are name-based uuids (retries dedupe). A company buyer's "ส่งขออนุมัติ" makes a view link for the approvers (D-281). `studio.print_unavailable` shows the upload-with-order route instead. Funnel: `studio_add_to_cart` after the job, `studio_ordered` after checkout. |
+| 3 Proof | the F3 proof screen | The proof screen of a studio order also shows the **locked version as the studio drew it** (read-only `DesignViewer`) beside the proof, with its approval checklist and evidence unchanged (B4). |
+| 4 After the order | — | The cart line carries `designDocumentId` / `designVersionNo`; placing the order locks the version (`DesignDocumentDto.lock`): the studio says "เวอร์ชัน N สั่งผลิตแล้ว — การแก้ไขจะสร้างเวอร์ชันใหม่", and the order page links to the design and its locked version (found among the customer's linked designs: no lookup by order exists). |
+| 5 Acceptance | — | Mock e2e `storefront-studio-order.spec.ts`: studio → order sheet → cart, the line's **product gross equals the studio's tier total** for the same options, then checkout places the order and the version is locked (studio notice, order link). Real API `e2e/integration/studio-order.spec.ts` (see below). |
+
+### Found on the real API
+- **Idempotency-Key must be a uuid** — the first keys were readable composites; now `stableIdempotencyKey()` (uuid v5 layout).
+- **The dev stack's storage is a placeholder** (`https://fake-s3.invalid`): no browser upload completes there, so the order flow stops at the renders with "ส่งไฟล์งานพิมพ์ไม่สำเร็จ…" and adds nothing to the cart; packio-api refuses an order of a version without renders. The full order (print job, cart, lock) is therefore proven on the mock only. Both in `docs/integration.md`.
+- **A thumbnail upload fetched a `data:` URL**, which our CSP's `connect-src` refuses (every studio save logged it): decoded in place now.
+- **`designer.shortcuts.group.*` were missing** (the `group` key is the "group" action's label): the shortcut sections are `shortcuts.groups.*` now.
+
+### Decisions taken
+- **The order sheet replaces the old ⑤ panel only where it can work**: a signed-in studio design of an instant-priced product, not opened from an order. Otherwise ⑤ is what it was.
+- **Proof approve → production job is not driven in the mock e2e**: the mock makes no proof from a studio order (it never assembles a print file). The F3 proof flow it would reuse is covered by its own suites; on the real API it needs storage in the stack (follow-up).
+- **The order's link to its design** reads the first 100 linked designs; a customer with more would lose the link (never the order). CONTRACT-GAP worth asking: `lock.orderId` filter on `store.designs.list`.
+- **The canvas for the renders** comes from a small registry the editor sets in an effect (`active-stage.ts`), not through the chrome context (the React compiler's ref rule).
+
+### Tests
+Unit 1,035 (+ `compareDecimal`, `stableIdempotencyKey`). e2e: the order spec above (axe on the sheet); the whole chromium mock suite 402 passed, 7 skipped. Perf: studio orbit 54 fps under 4× throttle.
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; real API `studio-order.spec.ts` green on v0.41.0 (the placeholder-storage path). Lighthouse studio 498,368 B (ratchet 497,000 → 499,000) and customer-app 339,234 B (339,000 → 340,000): the new copy rides in every customer page's messages (`docs/performance-budgets.md`).
+
+---
+
 ## U4.5 — ④ Check: continuous checks, one-click fixes, soft proof — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.5, on `feat/u4.5-checks` (worktree `../packio-web-u4`, from `main` at `e2fde40`, U4.4 merged). Post-launch (D-219); "auto mode".

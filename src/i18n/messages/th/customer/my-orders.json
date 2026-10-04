@@ -101,7 +101,8 @@
     "deliveredTerm": "ส่งถึงเมื่อ",
     "completedTerm": "เสร็จสิ้นเมื่อ",
     "completedByYou": "{date} (คุณยืนยันรับสินค้า)",
-    "completedAuto": "{date} (ระบบยืนยันอัตโนมัติ)"
+    "completedAuto": "{date} (ระบบยืนยันอัตโนมัติ)",
+    "designLink": "แบบ {title} (เวอร์ชัน {versionNo} ที่สั่งผลิต)"
   },
   "tolerance": {
     "title": "จำนวนที่ได้รับ",
