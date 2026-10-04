@@ -8,6 +8,8 @@ import designer from "@/i18n/messages/th/customer/designer.json";
 import { DEFAULT_PATTERN } from "../../catalog";
 import { dielineOf } from "../../document";
 import { newCode, newShape, newText } from "../../lib/create";
+import type { PrintRule } from "../../lib/checks";
+import VENDORED from "../../../../../contract/studio-rules.json";
 import { useDesignIssues } from "../../lib/useIssues";
 import { useEditor } from "../../store/editor";
 import type { DesignElement, DesignSpec, ImageElement } from "../../types";
@@ -144,7 +146,11 @@ export const Arrange: Story = {
 };
 
 function Checks() {
-  const issues = useDesignIssues(DIELINE, null);
+  const issues = useDesignIssues(DIELINE, null, {
+    rules: VENDORED.rules as PrintRule[],
+    printMethod: null,
+    materialClass: null,
+  });
   return <ChecksPanel issues={issues} />;
 }
 

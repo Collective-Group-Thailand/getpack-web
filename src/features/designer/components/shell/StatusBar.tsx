@@ -42,7 +42,7 @@ export function StatusBar({
   const names = useFaceNames(dieline);
   const face = dieline && faceId ? findFace(dieline, faceId) : undefined;
   const zoomPercent = Math.round(zoom * 100);
-  const errors = issues.filter((i) => i.severity === "error").length;
+  const errors = issues.filter((i) => i.severity === "block").length;
 
   return (
     <footer className="border-border bg-surface flex h-11 shrink-0 items-center gap-3 border-t px-3 text-sm">

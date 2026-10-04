@@ -377,6 +377,8 @@ export function usePersistence(config: PersistenceConfig) {
     resolveConflict,
     restoreVersion,
     serverId: () => serverId.current,
+    /** The server's current version number (U4.5: the checks run on it). */
+    versionNo: () => versionNo.current,
     /** The version the studio prices and the box it was saved with (U4.1). */
     savedBox,
   };

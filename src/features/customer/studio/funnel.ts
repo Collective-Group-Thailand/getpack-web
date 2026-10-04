@@ -62,7 +62,7 @@ export function useStudioFunnel({
 
 /** Checks clean: artwork on the sheet and no blocking problem left in the live checks. */
 export function useChecksClean(issues: DesignIssue[], onClean: () => void) {
-  const errors = issues.filter((issue) => issue.severity === "error").length;
+  const errors = issues.filter((issue) => issue.severity === "block").length;
   const hasArtwork = useEditor((s) => s.content.elements.length > 0);
   useEffect(() => {
     if (hasArtwork && errors === 0) onClean();
