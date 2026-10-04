@@ -48,12 +48,14 @@ describe("the contract-request registry", () => {
       return !(key in REQUESTS) || !published;
     });
     expect(stale).toEqual([]);
-    // U-F0.4 moved every zone onto contract v0.6.0; only the configurator parked for U2.F1 is left.
-    expect(PUBLISHED_AWAITING_MIGRATION.length).toBeLessThanOrEqual(1);
+    // U-F0.4 moved every zone onto contract v0.6.0, and U-F0.5 the configurator parked for U2.F1.
+    expect(PUBLISHED_AWAITING_MIGRATION.length).toBe(0);
   });
 
   it("leaves nothing published on a request but what is parked on purpose", () => {
     expect([...PUBLISHED_AWAITING_MIGRATION].sort()).toEqual([...CUSTOMER_ZONE_PARKED].sort());
+    // U-F0.5: nothing is parked any more.
+    expect(CUSTOMER_ZONE_PARKED).toEqual([]);
   });
 
   /**

@@ -1,16 +1,14 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
-import { createRequestClient } from "@/lib/api/requests/client";
-import { REQUESTS } from "@/lib/api/requests/registry";
 import type { Schemas } from "@/lib/api/types";
 
 import { buildCalculateBody, buildConfiguration, seedFromConfiguration } from "./build";
+import { fromContract } from "./from-contract";
 import {
   initialState,
   missingChoices,
@@ -22,9 +20,10 @@ import {
 } from "./state";
 
 /**
- * The configurator's pure core against the mock API, which serves the configurator from the
- * back office's catalogue rows and prices what it is sent: the body the storefront builds is
- * the body the calculator accepts, for folding (the published DTO) and the generic shape.
+ * The configurator's pure core against the mock API, which serves the published configurator
+ * from the back office's catalogue rows and prices what it is sent: the body the storefront
+ * builds is the body the calculator accepts, for folding and corrugate (the published DTOs) and
+ * the generic shape.
  */
 
 const server = setupServer(...handlers);
@@ -32,14 +31,12 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterAll(() => server.close());
 
 const anonymous = () => createApiClient({ baseUrl: "http://api.mock" });
-const requests = (token?: string) =>
-  createRequestClient(
-    REQUESTS,
-    createApiClient({ baseUrl: "http://api.mock", accessToken: token }) as unknown as Client<never>,
-  );
 
 async function configuratorOf(slug: string): Promise<Configurator> {
-  return requests().call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug } });
+  const { data } = await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
+    params: { path: { slug } },
+  });
+  return fromContract(data!, { unit: (unit) => unit });
 }
 
 async function price(body: ReturnType<typeof buildCalculateBody>) {
@@ -58,10 +55,10 @@ describe("the configurator state", () => {
     expect(state.quantities).toContain(state.quantity);
     expect(missingChoices(configurator, state)).toEqual([]);
     expect(readyToPrice(configurator, state)).toBe(true);
+    // No printing step: no print presets are published (CONTRACT-GAP store.configurator).
     expect(stepsOf(configurator)).toEqual([
       "size",
       "material",
-      "printing",
       "finishing",
       "assembly",
       "quantity",
@@ -105,8 +102,9 @@ describe("the calculate body", () => {
     const body = buildCalculateBody(configurator, state);
     const configuration = body.configuration as Schemas["FoldingConfigurationDto"];
     expect(configuration.patternId).toBe(configurator.size.patterns[0]!.id);
-    expect(configuration.difficultyLevelId).toBe(configurator.fixedInputs.difficultyLevelId);
-    expect(configuration.parts[0]!.printFront).toHaveLength(4);
+    expect(configuration.difficultyLevelId).toBe(configurator.difficultyLevelId);
+    // CONTRACT-GAP store.configurator — no print presets, so an unprinted part.
+    expect(configuration.parts[0]!.printFront).toEqual([]);
 
     const result = await price(body);
     expect(result.steps.map((step) => step.quantity)).toEqual(state.quantities);
@@ -124,12 +122,35 @@ describe("the calculate body", () => {
     expect(result.steps[0]!.shippingPending).toBe(false);
   });
 
+  it("is a corrugate configuration for a corrugated box", async () => {
+    const configurator = await configuratorOf("shipping-box");
+    // No standard sizes: the customer types one.
+    const state = {
+      ...initialState(configurator),
+      sizeMode: "custom" as const,
+      dims: { l: 400, w: 300, d: 250, gusset: null },
+    };
+    expect(readyToPrice(configurator, state)).toBe(true);
+    const body = buildCalculateBody(configurator, state);
+    const configuration = body.configuration as Schemas["CorrugateConfigurationDto"];
+    expect(configuration).toMatchObject({
+      catalogProductId: configurator.catalogProductId,
+      patternId: configurator.size.patterns[0]!.id,
+      materialId: state.choices.material![0],
+      difficultyLevelId: configurator.difficultyLevelId,
+      quantities: state.quantities,
+    });
+    expect(configuration.parts).toHaveLength(1);
+    const result = await price(body);
+    expect(result.steps.every((step) => step.instant)).toBe(true);
+  });
+
   it("is the generic shape for the other calculators", async () => {
     const configurator = await configuratorOf("stand-up-pouch");
     const state = initialState(configurator);
     const body = buildCalculateBody(configurator, state);
     expect(body.configuration).toMatchObject({ catalogProductId: configurator.catalogProductId, gusset: 0 });
-    expect(Object.keys((body.configuration as { options: object }).options)).toContain("pouch_type");
+    expect(Object.keys((body.configuration as { options: object }).options)).toContain("material");
     const result = await price(body);
     expect(result.steps.every((step) => step.instant)).toBe(true);
   });

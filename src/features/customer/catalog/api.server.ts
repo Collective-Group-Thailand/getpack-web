@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Client } from "openapi-fetch";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
@@ -10,6 +10,7 @@ import { REQUESTS, type Requests } from "@/lib/api/requests/registry";
 import type { ApiPaths, Schemas } from "@/lib/api/types";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 
+import { fromContract, type Configurator } from "@/features/customer/configurator/from-contract";
 import { toCatalogView, type DesignerCatalog } from "@/features/designer/data/catalog-view";
 
 import { pick } from "./localize";
@@ -105,7 +106,7 @@ export type BannerPosition = Schemas["BannerPosition"];
 export type SearchResult = Schemas["StoreSearchResultDto"];
 export type ShowcaseProduct = Schemas["StoreShowcaseProductDto"];
 export type Page<T> = { data: T[]; meta: Schemas["PageMeta"] };
-export type Configurator = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/configurator">;
+export type { Configurator };
 export type SharedQuote = Schemas["SavedQuoteDto"];
 export type SupportChannels = Schemas["StoreSupportChannelsDto"];
 export type RfqForm = Schemas["StoreRfqFormDto"];
@@ -230,11 +231,16 @@ export async function listShowcase(
 
 /**
  * What the configurator offers for a product, with the catalogue ids the calculator takes
- * (CONTRACT-REQUEST store.configurator). `null` for a product that is quoted on request only.
+ * (`store.catalog.getConfigurator`, public and cacheable), in the view the configurator reads
+ * (`from-contract.ts`, until U2.F1). `null` for a product whose type has no ported calculator —
+ * it is quoted on request only (D-100).
  */
 export async function getConfigurator(slug: string): Promise<Configurator | null> {
-  const requests = await publicRequests("catalogue");
-  return orNull(requests.call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug } }));
+  const [api, units] = await Promise.all([publicApi("catalogue"), getTranslations("catalog.stock.units")]);
+  const dto = await orNull(
+    api.GET("/v1/store/catalog/products/{slug}/configurator", { params: { path: { slug } } }).then(({ data }) => data!),
+  );
+  return dto ? fromContract(dto, { unit: (unit) => units(unit) }) : null;
 }
 
 /** A quotation someone shared (`store.quotes.getShared`); `null` once the link has expired. */

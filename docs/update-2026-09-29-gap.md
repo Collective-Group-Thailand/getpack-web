@@ -314,3 +314,30 @@ Generated from `triage.ts` and `awaiting-migration.ts` at the start of U-F0.4. "
 | `admin.staff-directory` | `GET /v1/admin/staff-directory` | `admin.staffDirectory.list` (same path) | v0.6.0 | 0 |
 | `admin.subledger-reconciliation` | `GET /v1/admin/financial-reports/subledger-reconciliation` | `admin.financialReports.subledgerReconciliation` (same path) | v0.6.0 | 0 |
 | `admin.unmet-demand-reasons` | `GET /v1/admin/unmet-demand-reasons` | `admin.rfqs.listUnmetDemandReasons` (same path) | v0.5.0 | 0 |
+
+---
+
+## U-F0.5 — Real-backend end to end — 2026-10-01
+
+Sources:
+- `docs/prompts/U1-update-2026-09-29.md` §U-F0.5;
+- packio-api `v0.6.0`: its `docker-compose.yml`, its dev seed `prisma/seed/dev-seed.ts` (+ `dev-folding.ts`, `dev-corrugate.ts`), and `INTEGRATIONS_MODE=fake`.
+
+Evidence is from `main` at `bb1fe7f`, run against a local packio-api `v0.6.0`:
+- API on port 3400, worker beside it;
+- database `packio_it_web`, Redis db 5, bucket `packio-it-web`;
+- all isolated from the dev API on port 3000.
+
+**User decisions (2026-10-01):**
+1. `e2e:integration` is a **new launch-path suite** (`e2e/integration/`). It creates its own data on the dev seed and walks the R1 path (D-110). The existing specs stay in the mock project, because they are written against mock fixtures.
+2. The storefront configurator gets a **thin adapter** onto the published `store.catalog.getConfigurator` now. U2.F1 still rebuilds the configurator, and deletes the adapter.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | An `e2e:integration` project runs Playwright against packio-api | missing | `playwright.config.ts` has chromium (mocks), journeys and visual; every server starts with `API_MOCKS=1` | Project `integration` (`e2e/integration/**`) with its own web server on port 3500: `API_INTERNAL_URL` = `INTEGRATION_API_URL` (default `http://localhost:3400`), no mocks. Script `pnpm e2e:integration` |
+| 2 | A local backend: docker compose + `db:seed:dev` + worker, sandbox fakes on | missing | packio-api's compose (Postgres, Redis, LocalStack, Mailpit) is up on this machine; nothing in packio-web starts an API | `scripts/integration-stack.sh up / reset / down`. It takes a packio-api checkout or worktree at the lock's tag and writes the isolated `.env` (port, database, Redis db, bucket). It migrates, seeds dev, and starts the API and worker with `INTEGRATIONS_MODE=fake`. Documented in `docs/integration.md` |
+| 3 | Accounts for each role on the real backend | partial | The dev seed has staff `<role>@example.invalid` with `DEV_SEED_PASSWORD`, one customer and factory F9001, but **no factory users**. Customer OTP codes stay inside the API's fake SMS sender | Global setup: staff sign in as seeded. A Partner Manager creates F9001's owner with an initial password (`factories.controller` owner endpoint), and the owner creates the other factory roles. Customers sign in with the fake Firebase verifier's readable tokens; the test gets their tokens from packio-api and plants the web's own session cookies (`pk_at`, `pk_ate`, `pk_rt` on http). Staff and factory users go through the real login forms |
+| 4 | Mock-only tests tagged and kept in the mock project | partial | The chromium project is the mock project and holds every fixture-bound spec | Project separation is the tag: `integration` runs only `e2e/integration/**`, and `chromium` ignores it. A test that needs mock-only behaviour (scenario switcher, time travel, fixture codes) never goes into `e2e/integration` |
+| 5 | No `CONTRACT-REQUEST` mock left in any R1 launch-path flow | partial | `/configure/[slug]` answers **500** on the real backend: the parked `store.configurator` request expects steps / size rules / print presets, while the published DTO is calculator-first. The other launch-path requests are deferred (guided help, sample kits: D-223, post-launch) or post-launch (journeys, D-219) | Configurator adapter (decision 2). `CUSTOMER_ZONE_PARKED` empties; the store request file shrinks to the deferred ones |
+| 6 | Launch-path specs pass on the real backend | missing | — | Specs: <br>• staff roles and menus; <br>• storefront browse; <br>• customer sign-in; <br>• configure → instant quote → cart → checkout (bank transfer) → slip → Finance; <br>• artwork → proof → approval → production start (D-073); <br>• factory accept → milestones → QC → pack → dispatch → POD; <br>• receipt and documents; <br>• RFQ → CS quote → acceptance into the cart. <br>Mismatches are fixed here, or raised as contract requests with the failing response attached |
+| 7 | PROGRESS lists what still waits on the backend | missing | — | §U-F0.5 |

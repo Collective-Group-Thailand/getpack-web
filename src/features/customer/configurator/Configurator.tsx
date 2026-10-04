@@ -130,10 +130,12 @@ export function Configurator({
     const band = quantityBand(priced.quantity);
     if (shownFor.current === band) return;
     shownFor.current = band;
+    // Once per band, so typing a quantity does not send a quote per keystroke; packio-api takes the
+    // exact quantity and bands it itself.
     track("quote_shown", {
       route: "/configure/[slug]",
       productType: configurator.productTypeCode,
-      quantityBand: band,
+      quantity: priced.quantity,
       quoteMode: "instant",
     });
   }, [priced, configurator.productTypeCode]);
@@ -173,6 +175,8 @@ export function Configurator({
     }
     if (step === "delivery")
       return state.postcode === "" ? "upcoming" : POSTCODE.test(state.postcode) ? "complete" : "error";
+    // A product without a default quantity (packio-api's may have none) starts with this step open.
+    if (step === "quantity") return state.quantities.length === 0 ? "upcoming" : "complete";
     return "complete";
   };
 
@@ -230,6 +234,7 @@ export function Configurator({
       case "size":
         return sizeSummary || undefined;
       case "quantity":
+        if (state.quantities.length === 0) return undefined;
         return t("quantity.summary", {
           quantity: format.number(state.quantity),
           unit: configurator.unit,
@@ -248,8 +253,9 @@ export function Configurator({
 
   const missing = [
     ...(Object.keys(problems).length > 0 ? [t("missing.size")] : []),
-    ...missingGroups.map((group) => pick(locale, group.nameTh, group.nameEn)),
+    ...missingGroups.map((group) => t(`choices.groups.${group.kind}`)),
     ...missingArea.map((option) => t("missing.area", { name: pick(locale, option.nameTh, option.nameEn) })),
+    ...(state.quantities.length === 0 ? [t("missing.quantity")] : []),
   ];
   const style = boxStyleOf(configurator, state);
   const designHref =
@@ -262,7 +268,9 @@ export function Configurator({
       const value = choiceSummary(step);
       return value ? [{ label: t(`steps.${step}`), value }] : [];
     }),
-    { label: t("steps.quantity"), value: `${format.number(state.quantity)} ${configurator.unit}` },
+    ...(state.quantities.length > 0
+      ? [{ label: t("steps.quantity"), value: `${format.number(state.quantity)} ${configurator.unit}` }]
+      : []),
     ...(priced ? [{ label: t("dock.title"), value: format.thb(priced.grossAmount) }] : []),
   ];
   const lineHref = lineOaId

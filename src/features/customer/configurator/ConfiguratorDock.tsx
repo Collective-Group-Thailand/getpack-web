@@ -71,7 +71,13 @@ export function ConfiguratorDock({
   const noPrice = step && !step.instant ? step : null;
   const ready = missing.length === 0;
 
-  const status = !ready ? (
+  // Quoted on request (`instant: false`, D-043): no price is asked for, the RFQ form is the way on.
+  const status = !configurator.instant ? (
+    <div>
+      <p className="font-semibold">{t("notInstant")}</p>
+      <p className="text-muted text-sm">{t("notInstantHint")}</p>
+    </div>
+  ) : !ready ? (
     <div>
       <p className="font-semibold">{t("notReady")}</p>
       <p className="text-muted text-sm">{t("stillNeeded", { items: missing.join(", ") })}</p>
@@ -121,7 +127,7 @@ export function ConfiguratorDock({
       {tActions("addToCart")}
     </Button>
   ) : (
-    <Button block asChild variant={noPrice ? "primary" : "secondary"}>
+    <Button block asChild variant={noPrice || !configurator.instant ? "primary" : "secondary"}>
       <Link href={rfqHref}>{tActions("requestQuote")}</Link>
     </Button>
   );

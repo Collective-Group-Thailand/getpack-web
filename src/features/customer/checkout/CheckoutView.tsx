@@ -229,7 +229,7 @@ export function CheckoutView({
         router.push(`/business/approvals?sent=${encodeURIComponent(group!.groupCode)}`);
         return;
       }
-      track("order_placed", { route: "/checkout", quoteMode: "instant" });
+      track("order_placed", { route: "/checkout", orderGroupId: group!.id });
       if (!dueNow) {
         router.push(`/account/orders?placed=${encodeURIComponent(group!.groupCode)}`);
         return;
