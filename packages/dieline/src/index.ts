@@ -86,7 +86,7 @@ export * as constants from "./constants";
 export { DEFAULT_BLEED_MM, DEFAULT_SAFE_MM } from "./constants";
 export { dielineToSvg, type SvgOptions } from "./export/svg";
 export { dielineToDxf } from "./export/dxf";
-export { dielineToPdf, type PdfImage, type PdfOptions } from "./export/pdf";
+export { dielineToPdf, type PdfFinish, type PdfImage, type PdfOptions } from "./export/pdf";
 export { LAYER_OF, LAYER_ORDER, LAYER_STYLE, type LayerName } from "./export/layers";
 export { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "./materials";
 export {

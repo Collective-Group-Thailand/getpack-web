@@ -3,7 +3,7 @@ import { allFaces, dielineLines, svgPathData } from "@packio/dieline";
 import { CANVAS_COLORS } from "@/features/designer/canvas-colors";
 import { boardColour } from "@/features/designer/catalog";
 import { dielineOf, readDesign } from "@/features/designer/document";
-import { barsPath, ean13Modules, qrMatrix, qrPath } from "@/features/designer/lib/codes";
+import { barModules, barsPath, qrMatrix, qrPath } from "@/features/designer/lib/codes";
 import type { DesignContent, DesignElement, DesignSpec } from "@/features/designer/types";
 
 /**
@@ -95,7 +95,7 @@ function Element({ element, idPrefix }: { element: DesignElement; idPrefix: stri
       );
     case "code": {
       const qr = element.kind === "qr" ? qrMatrix(element.value) : null;
-      const modules = element.kind === "ean13" ? ean13Modules(element.value) : null;
+      const modules = element.kind !== "qr" ? barModules(element.kind, element.value) : null;
       return (
         <g transform={transform(element)} opacity={element.opacity}>
           <rect width={element.width} height={element.height} fill={element.background} />
@@ -183,9 +183,9 @@ export function DesignViewer({ spec, content, label, idPrefix }: DesignViewerPro
   const pad = Math.max(dieline.width, dieline.height) * 0.04;
   const clipId = `${idPrefix}-clip`;
   const fill =
-    content.pattern.kind === "solid"
+    content.pattern.kind === "solid" || content.pattern.kind === "gradient"
       ? content.pattern.color
-      : content.pattern.kind === "none"
+      : content.pattern.kind === "none" || content.pattern.kind === "image"
         ? undefined
         : content.pattern.background;
 

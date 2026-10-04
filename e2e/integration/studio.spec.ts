@@ -53,4 +53,19 @@ test("studio → saved box and spec → studio price → quantity → new price,
   const rail = page.getByRole("navigation", { name: "เครื่องมือออกแบบ" });
   await expect(rail.getByRole("button", { name: "ข้อความ", exact: true })).toBeVisible();
   await expect(rail.getByRole("button", { name: "อัปโหลด", exact: true })).toHaveCount(0);
+
+  // ③ content on the real API (U4.4): the template list answers (the dev seed publishes none yet),
+  // and a barcode is checked by packio-api's validation service — its check digit and GS1 minimum.
+  await rail.getByRole("button", { name: "แม่แบบ", exact: true }).click();
+  const templates = page.getByRole("region", { name: "แม่แบบของ Packio" });
+  await expect(templates.getByText("ยังไม่มีแม่แบบสำหรับประเภทนี้").or(templates.getByRole("listitem").first())).toBeVisible({
+    timeout: 30_000,
+  });
+  await rail.getByRole("button", { name: "องค์ประกอบ", exact: true }).click();
+  await page.getByRole("combobox", { name: "ชนิดโค้ด" }).click();
+  await page.getByRole("option", { name: "EAN-8" }).click();
+  await page.getByRole("textbox", { name: "ตัวเลขหรือข้อความของบาร์โค้ด" }).fill("96385075");
+  await expect(page.getByText("หลักตรวจสอบไม่ถูกต้อง")).toBeVisible({ timeout: 30_000 });
+  await page.getByRole("textbox", { name: "ตัวเลขหรือข้อความของบาร์โค้ด" }).fill("9638507");
+  await expect(page.getByText(/กว้างอย่างน้อย 21\.38 มม\./)).toBeVisible({ timeout: 30_000 });
 });

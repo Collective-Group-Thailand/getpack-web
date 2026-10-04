@@ -172,6 +172,10 @@ jobs:
       - name: Step counters
         run: pnpm e2e:journeys
 
+      # The studio's 3D orbit under a 4× CPU throttle, alone on the runner (U4.3).
+      - name: Studio performance
+        run: pnpm e2e:perf
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

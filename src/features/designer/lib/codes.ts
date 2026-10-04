@@ -114,3 +114,88 @@ export function barsPath(modules: string): string {
   }
   return d;
 }
+
+/** EAN-8 / UPC-A quiet zones (GS1): 7 modules each side for EAN-8, 9 for UPC-A. */
+export const EAN8_QUIET = 7;
+export const UPCA_QUIET = 9;
+/** Code 128 quiet zone: 10 modules each side (ISO/IEC 15417). */
+export const CODE128_QUIET = 10;
+
+/** The GS1 check digit (mod 10, weights 3 and 1 from the right) for any length. */
+export function gs1CheckDigit(body: string): number {
+  const sum = [...body]
+    .reverse()
+    .reduce((acc, digit, i) => acc + Number(digit) * (i % 2 === 0 ? 3 : 1), 0);
+  return (10 - (sum % 10)) % 10;
+}
+
+const withCheck = (value: string, length: number) =>
+  new RegExp(`^\\d{${length - 1}}$`).test(value) ? value + gs1CheckDigit(value) : value;
+const validGs1 = (digits: string, length: number) =>
+  new RegExp(`^\\d{${length}}$`).test(digits) && gs1CheckDigit(digits.slice(0, -1)) === Number(digits.at(-1));
+
+/** EAN-8: start, four left digits in L, centre, four right in R, end, quiet zones. 7 digits get their check digit. */
+export function ean8Modules(value: string): string | null {
+  const digits = withCheck(value, 8);
+  if (!validGs1(digits, 8)) return null;
+  let bits = "101";
+  for (let i = 0; i < 4; i++) bits += L[Number(digits[i])];
+  bits += "01010";
+  for (let i = 4; i < 8; i++) bits += R[Number(digits[i])];
+  bits += "101";
+  return "0".repeat(EAN8_QUIET) + bits + "0".repeat(EAN8_QUIET);
+}
+
+/** UPC-A: the EAN-13 of "0" + its 12 digits, with UPC-A's own quiet zones. 11 digits get their check digit. */
+export function upcaModules(value: string): string | null {
+  const digits = withCheck(value, 12);
+  if (!validGs1(digits, 12)) return null;
+  const ean = ean13Modules(`0${digits}`);
+  return ean ? "0".repeat(UPCA_QUIET) + ean.slice(EAN_QUIET_LEFT, ean.length - EAN_QUIET_RIGHT) + "0".repeat(UPCA_QUIET) : null;
+}
+
+/** Code 128 bar/space widths for values 0–106 (ISO/IEC 15417, table 1). */
+const C128 = [
+  "212222", "222122", "222221", "121223", "121322", "131222", "122213", "122312", "132212", "221213",
+  "221312", "231212", "112232", "122132", "122231", "113222", "123122", "123221", "223211", "221132",
+  "221231", "213212", "223112", "312131", "311222", "321122", "321221", "312212", "322112", "322211",
+  "212123", "212321", "232121", "111323", "131123", "131321", "112313", "132113", "132311", "211313",
+  "231113", "231311", "112133", "112331", "132131", "113123", "113321", "133121", "313121", "211331",
+  "231131", "213113", "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111",
+  "314111", "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
+  "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112", "134111",
+  "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112", "421211", "212141",
+  "214121", "412121", "111143", "111341", "131141", "114113", "114311", "411113", "411311", "113141",
+  "114131", "311141", "411131", "211412", "211214", "211232", "2331112",
+];
+
+/**
+ * Code 128 in code set B (printable ASCII 32–126): start B, the characters, the mod-103 check
+ * character, stop, quiet zones. `null` for a character outside set B.
+ */
+export function code128Modules(value: string): string | null {
+  if (!value || [...value].some((ch) => ch.charCodeAt(0) < 32 || ch.charCodeAt(0) > 126)) return null;
+  const codes = [104, ...[...value].map((ch) => ch.charCodeAt(0) - 32)];
+  const check = codes.reduce((sum, code, i) => sum + code * Math.max(1, i), 0) % 103;
+  let bits = "";
+  for (const code of [...codes, check, 106]) {
+    [...C128[code]!].forEach((width, i) => (bits += (i % 2 === 0 ? "1" : "0").repeat(Number(width))));
+  }
+  return "0".repeat(CODE128_QUIET) + bits + "0".repeat(CODE128_QUIET);
+}
+
+export type BarSymbology = "ean13" | "ean8" | "upca" | "code128";
+
+/** The modules of any linear symbology the studio draws, quiet zones included. */
+export function barModules(kind: BarSymbology, value: string): string | null {
+  switch (kind) {
+    case "ean13":
+      return ean13Modules(value);
+    case "ean8":
+      return ean8Modules(value);
+    case "upca":
+      return upcaModules(value);
+    case "code128":
+      return code128Modules(value);
+  }
+}
