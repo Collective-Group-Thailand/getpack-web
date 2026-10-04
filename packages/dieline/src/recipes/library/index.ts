@@ -37,6 +37,27 @@ import rollEndTray from "./data/roll-end-tray.json" with { type: "json" };
 import trayInsert from "./data/tray-insert.json" with { type: "json" };
 import displayTray from "./data/display-tray.json" with { type: "json" };
 import cavityInsert from "./data/cavity-insert.json" with { type: "json" };
+import paperBag from "./data/paper-bag.json" with { type: "json" };
+import rollLabelCircle from "./data/roll-label-circle.json" with { type: "json" };
+import rollLabelCustom from "./data/roll-label-custom.json" with { type: "json" };
+import rollLabelOval from "./data/roll-label-oval.json" with { type: "json" };
+import rollLabelRect from "./data/roll-label-rect.json" with { type: "json" };
+import rollLabelRounded from "./data/roll-label-rounded.json" with { type: "json" };
+import wrapLabelRounded from "./data/wrap-label-rounded.json" with { type: "json" };
+import wrapLabelSquare from "./data/wrap-label-square.json" with { type: "json" };
+import standUpPouch from "./data/stand-up-pouch.json" with { type: "json" };
+import flatPouch from "./data/flat-pouch.json" with { type: "json" };
+import polyMailer from "./data/poly-mailer.json" with { type: "json" };
+import tagCircle from "./data/tag-circle.json" with { type: "json" };
+import tagCustom from "./data/tag-custom.json" with { type: "json" };
+import tagOval from "./data/tag-oval.json" with { type: "json" };
+import tagRect from "./data/tag-rect.json" with { type: "json" };
+import tagRounded from "./data/tag-rounded.json" with { type: "json" };
+import cardCircle from "./data/card-circle.json" with { type: "json" };
+import cardCustom from "./data/card-custom.json" with { type: "json" };
+import cardOval from "./data/card-oval.json" with { type: "json" };
+import cardRect from "./data/card-rect.json" with { type: "json" };
+import cardRounded from "./data/card-rounded.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -85,4 +106,25 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   trayInsert,
   displayTray,
   cavityInsert,
+  paperBag,
+  rollLabelCircle,
+  rollLabelCustom,
+  rollLabelOval,
+  rollLabelRect,
+  rollLabelRounded,
+  wrapLabelRounded,
+  wrapLabelSquare,
+  standUpPouch,
+  flatPouch,
+  polyMailer,
+  tagCircle,
+  tagCustom,
+  tagOval,
+  tagRect,
+  tagRounded,
+  cardCircle,
+  cardCustom,
+  cardOval,
+  cardRect,
+  cardRounded,
 ] as unknown as StyleRecipe[];

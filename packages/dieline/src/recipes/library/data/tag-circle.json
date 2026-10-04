@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "tag-circle",
+  "base": "PK-TG-01",
+  "variant": {
+    "shape_flat": "circle"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ป้ายแขวน วงกลม",
+    "en": "Hang tag, circle"
+  },
+  "description": {
+    "th": "ป้ายแขวนสินค้า เลือกรูแขวนได้",
+    "en": "A swing tag with a choice of hang hole"
+  },
+  "materials": ["paperboard"],
+  "params": ["diameter", "hangHole"],
+  "defaults": {
+    "diameter": 50,
+    "hangHole": "none"
+  },
+  "presets": [
+    {
+      "id": "d30",
+      "label": {
+        "th": "⌀ 30",
+        "en": "⌀ 30"
+      },
+      "values": {
+        "diameter": 30
+      }
+    },
+    {
+      "id": "d50",
+      "label": {
+        "th": "⌀ 50",
+        "en": "⌀ 50"
+      },
+      "values": {
+        "diameter": 50
+      }
+    },
+    {
+      "id": "d80",
+      "label": {
+        "th": "⌀ 80",
+        "en": "⌀ 80"
+      },
+      "values": {
+        "diameter": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "circle"
+    }
+  },
+  "features": [
+    {
+      "module": "hangHole",
+      "with": {
+        "cx": "diameter / 2",
+        "cy": "14"
+      }
+    }
+  ]
+}

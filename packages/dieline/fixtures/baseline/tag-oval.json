@@ -1,0 +1,99 @@
+{
+  "definition": "1497c3976d19f0",
+  "a · label-film": {
+    "build": "1bb75c9c6998e6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · board-350": {
+    "build": "1bb75c9c6998e6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "b · label-film": {
+    "build": "0a24bd0b30989b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "b · board-350": {
+    "build": "0a24bd0b30989b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · length=min": {
+    "build": "0e5aec2fb6c1e2",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · length=max": {
+    "build": "054583d2983181",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · length<min": {
+    "build": "1bc99830bef640",
+    "hinges": "15e0da69fcb93a",
+    "validate": "17035b9c4bf452",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · length>max": {
+    "build": "19f12513d52abf",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0d8f8f43364107",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · width=min": {
+    "build": "1aa23326ce1be8",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · width=max": {
+    "build": "0c0e2d38278ac9",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · width<min": {
+    "build": "18147d70ba6062",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1ea29e24d757f6",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · width>max": {
+    "build": "11a7fd5237e6fd",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1f15ade3708c37",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · hangHole=euro": {
+    "build": "06e39ca4e039ba",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · hangHole=round": {
+    "build": "0cfe77234488e1",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · hangHole=sombrero": {
+    "build": "176b1e65548700",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "a · label-film · hangHole=none": {
+    "build": "1bb75c9c6998e6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  }
+}

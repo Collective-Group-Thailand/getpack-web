@@ -1,6 +1,7 @@
 import { band, cone, flatShape } from "./body/flat";
 import { pillowTube } from "./body/pillow";
-import { pouchWeb } from "./body/pouch";
+import { paperBag } from "./body/bag";
+import { polyMailer, pouchWeb } from "./body/pouch";
 import { tray } from "./body/tray";
 import { tube } from "./body/tube";
 import { hingedLid } from "./closure/tray-closures";
@@ -44,6 +45,8 @@ export const MODULES: readonly ModuleDef[] = [
   cone,
   partitionSet,
   pouchWeb,
+  polyMailer,
+  paperBag,
   tuck,
   rsc,
   fol,

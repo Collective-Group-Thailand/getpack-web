@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "roll-label-rect",
+  "base": "PK-LA-01",
+  "variant": {
+    "shape_flat": "rectangle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากม้วน สี่เหลี่ยม",
+    "en": "Roll label, rectangle"
+  },
+  "description": {
+    "th": "ฉลากสติกเกอร์บนม้วน สำหรับเครื่องติดฉลาก",
+    "en": "Self-adhesive labels on a roll, for labelling machines"
+  },
+  "materials": ["label"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    }
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "roll-label-circle",
+  "base": "PK-LA-01",
+  "variant": {
+    "shape_flat": "circle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากม้วน วงกลม",
+    "en": "Roll label, circle"
+  },
+  "description": {
+    "th": "ฉลากสติกเกอร์บนม้วน สำหรับเครื่องติดฉลาก",
+    "en": "Self-adhesive labels on a roll, for labelling machines"
+  },
+  "materials": ["label"],
+  "params": ["diameter"],
+  "defaults": {
+    "diameter": 50
+  },
+  "presets": [
+    {
+      "id": "d30",
+      "label": {
+        "th": "⌀ 30",
+        "en": "⌀ 30"
+      },
+      "values": {
+        "diameter": 30
+      }
+    },
+    {
+      "id": "d50",
+      "label": {
+        "th": "⌀ 50",
+        "en": "⌀ 50"
+      },
+      "values": {
+        "diameter": 50
+      }
+    },
+    {
+      "id": "d80",
+      "label": {
+        "th": "⌀ 80",
+        "en": "⌀ 80"
+      },
+      "values": {
+        "diameter": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "circle"
+    }
+  }
+}

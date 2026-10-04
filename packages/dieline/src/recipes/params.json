@@ -31,6 +31,77 @@
       }
     ]
   },
+  "bagGusset": {
+    "key": "bagGusset",
+    "kind": "enum",
+    "group": "construction",
+    "label": {
+      "th": "ข้างถุง",
+      "en": "Gusset"
+    },
+    "options": [
+      {
+        "value": "gusseted",
+        "label": {
+          "th": "มีขยายข้าง",
+          "en": "Gusseted"
+        }
+      },
+      {
+        "value": "flat",
+        "label": {
+          "th": "แบบแบน",
+          "en": "Flat"
+        }
+      }
+    ]
+  },
+  "bagHandle": {
+    "key": "bagHandle",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "หูหิ้ว",
+      "en": "Handles"
+    },
+    "options": [
+      {
+        "value": "twisted_paper",
+        "label": {
+          "th": "เชือกกระดาษเกลียว",
+          "en": "Twisted paper"
+        }
+      },
+      {
+        "value": "flat_paper",
+        "label": {
+          "th": "กระดาษแบน",
+          "en": "Flat paper"
+        }
+      },
+      {
+        "value": "rope",
+        "label": {
+          "th": "เชือก",
+          "en": "Rope"
+        }
+      },
+      {
+        "value": "die_cut",
+        "label": {
+          "th": "ไดคัท",
+          "en": "Die-cut"
+        }
+      },
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      }
+    ]
+  },
   "bottom": {
     "key": "bottom",
     "kind": "length",
@@ -213,6 +284,18 @@
       "th": "รูดึงลิ้นชัก",
       "en": "Finger hole in the drawer"
     }
+  },
+  "flapDepth": {
+    "key": "flapDepth",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ความลึกฝาปิด",
+      "en": "Flap depth"
+    },
+    "min": 20,
+    "max": 150,
+    "step": 0.5
   },
   "glueSide": {
     "key": "glueSide",
@@ -410,9 +493,8 @@
   },
   "headerHeight": {
     "key": "headerHeight",
-    "kind": "number",
+    "kind": "length",
     "group": "options",
-    "unit": "mm",
     "label": {
       "th": "ความสูงแผ่นหัวโชว์",
       "en": "Header height"
@@ -726,6 +808,129 @@
       "th": "เส้นรอบรูป (SVG path)",
       "en": "Outline (SVG path data)"
     }
+  },
+  "pouchFeatures": {
+    "key": "pouchFeatures",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "อุปกรณ์เสริมของซอง",
+      "en": "Pouch features"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "hang_hole",
+        "label": {
+          "th": "รูแขวน",
+          "en": "hang hole"
+        }
+      },
+      {
+        "value": "tear_notch",
+        "label": {
+          "th": "รอยบากฉีก",
+          "en": "tear notch"
+        }
+      },
+      {
+        "value": "window",
+        "label": {
+          "th": "หน้าต่าง",
+          "en": "window"
+        }
+      },
+      {
+        "value": "zipper",
+        "label": {
+          "th": "ซิปล็อก",
+          "en": "zipper"
+        }
+      },
+      {
+        "value": "hang_hole+tear_notch",
+        "label": {
+          "th": "รูแขวน + รอยบากฉีก",
+          "en": "hang hole + tear notch"
+        }
+      },
+      {
+        "value": "hang_hole+window",
+        "label": {
+          "th": "รูแขวน + หน้าต่าง",
+          "en": "hang hole + window"
+        }
+      },
+      {
+        "value": "hang_hole+zipper",
+        "label": {
+          "th": "รูแขวน + ซิปล็อก",
+          "en": "hang hole + zipper"
+        }
+      },
+      {
+        "value": "tear_notch+window",
+        "label": {
+          "th": "รอยบากฉีก + หน้าต่าง",
+          "en": "tear notch + window"
+        }
+      },
+      {
+        "value": "tear_notch+zipper",
+        "label": {
+          "th": "รอยบากฉีก + ซิปล็อก",
+          "en": "tear notch + zipper"
+        }
+      },
+      {
+        "value": "window+zipper",
+        "label": {
+          "th": "หน้าต่าง + ซิปล็อก",
+          "en": "window + zipper"
+        }
+      },
+      {
+        "value": "hang_hole+tear_notch+window",
+        "label": {
+          "th": "รูแขวน + รอยบากฉีก + หน้าต่าง",
+          "en": "hang hole + tear notch + window"
+        }
+      },
+      {
+        "value": "hang_hole+tear_notch+zipper",
+        "label": {
+          "th": "รูแขวน + รอยบากฉีก + ซิปล็อก",
+          "en": "hang hole + tear notch + zipper"
+        }
+      },
+      {
+        "value": "hang_hole+window+zipper",
+        "label": {
+          "th": "รูแขวน + หน้าต่าง + ซิปล็อก",
+          "en": "hang hole + window + zipper"
+        }
+      },
+      {
+        "value": "tear_notch+window+zipper",
+        "label": {
+          "th": "รอยบากฉีก + หน้าต่าง + ซิปล็อก",
+          "en": "tear notch + window + zipper"
+        }
+      },
+      {
+        "value": "hang_hole+tear_notch+window+zipper",
+        "label": {
+          "th": "รูแขวน + รอยบากฉีก + หน้าต่าง + ซิปล็อก",
+          "en": "hang hole + tear notch + window + zipper"
+        }
+      }
+    ]
   },
   "pouchType": {
     "key": "pouchType",
