@@ -1,18 +1,16 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
-import { createRequestClient } from "@/lib/api/requests/client";
-import { REQUESTS } from "@/lib/api/requests/registry";
 import type { Schemas } from "@/lib/api/types";
 
 import { quantityBand } from "../analytics/bands";
 import { formatTaxId, isValidThaiTaxId } from "../account/tax-id";
 import { buildCalculateBody } from "../configurator/build";
+import { fromContract } from "../configurator/from-contract";
 import { initialState } from "../configurator/state";
 
 const server = setupServer(...handlers);
@@ -38,17 +36,6 @@ describe("tax ids and funnel bands", () => {
 /** The checkout mock's rules, as the storefront relies on them (the API's are the real ones). */
 describe("the checkout, against the mock", () => {
   // Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
-  const client = () =>
-    createRequestClient(
-      REQUESTS,
-      createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") }) as unknown as Client<never>,
-    );
-  const customer = {
-    call: ((...args: unknown[]) => (client().call as (...a: unknown[]) => unknown)(...args)) as ReturnType<
-      typeof client
-    >["call"],
-  };
-
   const api = () => createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer") });
 
   /** An empty cart, then one quotation of `quantity` in it — through the published cart. */
@@ -56,9 +43,10 @@ describe("the checkout, against the mock", () => {
     const { data: cart } = await api().GET("/v1/store/cart");
     for (const item of cart!.items)
       await api().DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } });
-    const configurator = await customer.call("GET /v1/store/catalog/products/{slug}/configurator", {
-      path: { slug: "tuck-end-box" },
+    const { data: published } = await api().GET("/v1/store/catalog/products/{slug}/configurator", {
+      params: { path: { slug: "tuck-end-box" } },
     });
+    const configurator = fromContract(published!, { unit: (unit) => unit });
     const state = { ...initialState(configurator), quantities: [quantity], quantity };
     const { data: quote } = await api().POST("/v1/store/quotes", {
       body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],

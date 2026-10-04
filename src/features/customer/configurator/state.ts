@@ -2,22 +2,31 @@
  * What the customer has chosen so far, and what is wrong with it — pure, so the rules are
  * tested without a browser and the component only renders them.
  *
- * Nothing here prices anything. The size rules come from the API (`ConfiguratorSizeRulesDto`)
- * and are checked here only so a mistake is explained as it is typed ("กว้างได้ไม่เกิน 500 มม.");
- * the API checks them again and is the authority.
+ * Nothing here prices anything. The size rules come from the API (`StoreSizeRulesDto`, read by
+ * `./from-contract.ts`) and are checked here only so a mistake is explained as it is typed
+ * ("กว้างได้ไม่เกิน 500 มม."); the API checks them again and is the authority.
  */
 
-import type { ResponseOf } from "@/lib/api/requests/client";
-import type { Requests } from "@/lib/api/requests/registry";
 import type { LengthUnit } from "@/ui/components/DimensionInput";
 
-export type Configurator = ResponseOf<Requests, "GET /v1/store/catalog/products/{slug}/configurator">;
-export type ConfiguratorGroup = Configurator["groups"][number];
-export type ConfiguratorOption = ConfiguratorGroup["options"][number];
-export type ConfiguratorPattern = Configurator["size"]["patterns"][number];
-export type GroupKind = ConfiguratorGroup["kind"];
-export type DesignOption = Configurator["design"]["default"];
-export type MockupOption = Configurator["mockup"]["options"][number];
+import type {
+  Configurator,
+  ConfiguratorGroup,
+  ConfiguratorOption,
+  DesignOption,
+  GroupKind,
+  MockupOption,
+} from "./from-contract";
+
+export type {
+  Configurator,
+  ConfiguratorGroup,
+  ConfiguratorOption,
+  ConfiguratorPattern,
+  DesignOption,
+  GroupKind,
+  MockupOption,
+} from "./from-contract";
 
 export type Axis = "l" | "w" | "d" | "gusset";
 
@@ -64,11 +73,14 @@ export function patternOf(configurator: Configurator, state: Pick<ConfiguratorSt
   );
 }
 
-/** Quantity tiers around the default: the presets the API offers, capped at `maxTiers`. */
+/**
+ * Quantity tiers around the default: the presets the API offers, capped at `maxTiers`. None when
+ * the API suggests nothing — the customer types the first quantity.
+ */
 function defaultTiers(configurator: Configurator): number[] {
   const { presets, maxTiers, default: preferred } = configurator.quantity;
-  const around = [...new Set([preferred, ...presets])].sort((a, b) => a - b);
-  const start = Math.max(0, around.indexOf(preferred) - 1);
+  const around = [...new Set([...(preferred === null ? [] : [preferred]), ...presets])].sort((a, b) => a - b);
+  const start = preferred === null ? 0 : Math.max(0, around.indexOf(preferred) - 1);
   return around.slice(start, start + Math.min(maxTiers, 4));
 }
 
@@ -100,7 +112,11 @@ export function initialState(configurator: Configurator, seed: Partial<Configura
     choices,
     areas: {},
     quantities: tiers,
-    quantity: tiers.includes(configurator.quantity.default) ? configurator.quantity.default : (tiers[0] ?? 1),
+    // No tier yet: nothing is priced or shown until the customer adds one (`readyToPrice`).
+    quantity:
+      configurator.quantity.default !== null && tiers.includes(configurator.quantity.default)
+        ? configurator.quantity.default
+        : (tiers[0] ?? 0),
     postcode: "",
     promoCode: "",
     designOption: configurator.design.default,
@@ -116,7 +132,9 @@ export type SizeProblem =
   | { code: "min"; limitMm: number }
   | { code: "max"; limitMm: number }
   | { code: "step"; stepMm: number }
-  | { code: "length_exceeds_width" };
+  | { code: "length_exceeds_width" }
+  | { code: "length_exceeds_height" }
+  | { code: "width_exceeds_height" };
 
 /** What is wrong with each axis, by the pattern's rules. An empty object is a valid size. */
 export function sizeProblems(
@@ -143,11 +161,22 @@ export function sizeProblems(
     }
     if (min !== null && value < min) problems[axis] = { code: "min", limitMm: min };
     else if (max !== null && value > max) problems[axis] = { code: "max", limitMm: max };
-    else if (rules.stepMm > 1 && value % rules.stepMm !== 0) problems[axis] = { code: "step", stepMm: rules.stepMm };
+    else if (rules.stepMm !== null && rules.stepMm > 1 && value % rules.stepMm !== 0)
+      problems[axis] = { code: "step", stepMm: rules.stepMm };
   }
-  const { l, w } = state.dims;
+  // Checked the way the CS desk checks them (`features/admin/cs/configuration.ts`). For
+  // `widthMustExceedHeight` the calculator allows the height only up to a share of the width, a
+  // share it does not publish: this catches a height at or over the width, the API the rest.
+  const { l, w, d } = state.dims;
+  const box = configurator.size.kind === "box";
   if (rules.lengthMustExceedWidth && l !== null && w !== null && !problems.l && !problems.w && l <= w) {
     problems.l = { code: "length_exceeds_width" };
+  }
+  if (rules.lengthMustExceedHeight && box && l !== null && d !== null && !problems.l && !problems.d && l <= d) {
+    problems.l = { code: "length_exceeds_height" };
+  }
+  if (rules.widthMustExceedHeight && box && w !== null && d !== null && !problems.w && !problems.d && w <= d) {
+    problems.w = { code: "width_exceeds_height" };
   }
   return problems;
 }
@@ -198,9 +227,10 @@ export function missingAreas(configurator: Configurator, state: ConfiguratorStat
 
 export const POSTCODE = /^\d{5}$/;
 
-/** Enough to ask for a price: a valid size and every required choice. */
+/** Enough to ask for a price: a product priced online, a valid size, every required choice and a quantity. */
 export function readyToPrice(configurator: Configurator, state: ConfiguratorState): boolean {
   return (
+    configurator.instant &&
     Object.keys(sizeProblems(configurator, state)).length === 0 &&
     missingChoices(configurator, state).length === 0 &&
     missingAreas(configurator, state).length === 0 &&
@@ -209,10 +239,11 @@ export function readyToPrice(configurator: Configurator, state: ConfiguratorStat
   );
 }
 
-/** Adds or removes a quantity tier, keeping them sorted and within the API's bounds. */
+/** Adds a quantity tier, keeping them sorted and within the API's bounds (where it gives any). */
 export function withTier(configurator: Configurator, tiers: number[], quantity: number): number[] | null {
   const { min, max, maxTiers } = configurator.quantity;
-  if (!Number.isInteger(quantity) || quantity < min || quantity > max) return null;
+  if (!Number.isInteger(quantity) || quantity < 1) return null;
+  if ((min !== null && quantity < min) || (max !== null && quantity > max)) return null;
   if (tiers.includes(quantity)) return tiers;
   if (tiers.length >= maxTiers) return null;
   return [...tiers, quantity].sort((a, b) => a - b);

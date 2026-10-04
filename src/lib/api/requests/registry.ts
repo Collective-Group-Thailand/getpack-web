@@ -8,11 +8,9 @@
 
 import { adminAnalyticsRequests } from "./admin-analytics";
 import { storeSupportRequests } from "./store-support";
-import { storeQuoteRequests } from "./store-quotes";
 
 export const REQUESTS = {
   ...adminAnalyticsRequests,
-  ...storeQuoteRequests,
   ...storeSupportRequests,
 } as const;
 

@@ -16,7 +16,6 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { toast } from "@/ui/components/Toast";
 
-import { quantityBand } from "../analytics/bands";
 import { editCart } from "../cart/cart-client";
 
 type Rfq = Schemas["RfqDto"];
@@ -77,7 +76,7 @@ export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null 
       track("cart_item_added", {
         route: "/account/rfqs/[rfqId]",
         productType: rfq.productTypeCode,
-        quantityBand: quantityBand(option.quantity),
+        quantity: option.quantity,
         quoteMode: "rfq",
       });
       router.push("/cart");
