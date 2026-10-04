@@ -50,17 +50,24 @@ export async function listMyDesigns(): Promise<MyDesign[]> {
 
 export type SharedDesignData = Schemas["SharedDesignDto"];
 
-/** A design shared by link (`store.designs.getShared`), or `null` when revoked, expired or unknown. Never cached. */
-export async function getSharedDesign(token: string): Promise<SharedDesignData | null> {
+/**
+ * A design shared by link (`store.designs.getShared`) with its ETag (an edit link's), `null` when
+ * revoked, expired or unknown, or `"sign-in"` for a comment or edit link opened signed out (D-285).
+ * Never cached.
+ */
+export async function getSharedDesign(
+  token: string,
+): Promise<{ data: SharedDesignData; etag: string | null } | "sign-in" | null> {
   try {
-    const { data } = await (
+    const { data, response } = await (
       await serverApi("customer")
     ).GET("/v1/store/shared-designs/{token}", {
       params: { path: { token } },
     });
-    return data!;
+    return { data: data!, etag: response.headers.get("etag") };
   } catch (error) {
     if (isApiError(error) && error.status === 404) return null;
+    if (isApiError(error) && error.status === 401) return "sign-in";
     throw error;
   }
 }

@@ -238,3 +238,15 @@ under its budget once it left `lib/api/client.ts`). What remains is copy: the zo
 sheet's th text, the lock notice, the proof and order-page links and the shortcut groups count on
 every customer page. Scoping client messages per route would take that back for all of them
 (follow-up, not U4.6's). Orbit performance (`pnpm e2e:perf`): 54.3 fps.
+
+## U4.7 — Collaboration, versions, presentation, AR (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` | 498,368 | 496,889 (performance 0.98–0.99) | studio 499,000 → **497,500** (lowered) |
+
+Comments, the share-links dialog, the presentation view, the AR view (`@google/model-viewer`, three's
+glTF / USDZ exporters) and the version history with its compare view all load on demand; the
+editor's first load only gained the comment pins (flat and 3D). Making the history and the old
+view-link dialog lazy too won back more than the session added. Partner stayed under 300,000 after the
+rebuild (the two new problem messages ride in every zone's `common` copy).

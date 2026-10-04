@@ -48,6 +48,39 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.7 — Collaboration, versions, presentation, AR — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.7, on `feat/u4.7-collab` (worktree `../packio-web-u4`, from `main` at `9509440`, U4.6 merged). Post-launch (D-219); "auto mode".
+
+### Gap → done
+| Item | Before | Done |
+|---|---|---|
+| 1 Share links | one view-only link (`store.designs.share`, D-226) | The studio's **share dialog** on `store.studio` share links (D-285): view / comment / edit, as many as wanted, each listed with its scope and expiry and revocable; the address shown once (packio-api keeps a hash). Edit is offered to company members only. `/design/shared/<token>` follows the link's scope: a comment or edit link asks to sign in and comes back; comment shows the threads beside the sheet with pinning; edit adds **"แก้ไขแบบนี้"** → `/design/shared/<token>/edit`, the designer in a new persistence mode `shared` (every save a JSON Patch through `store.studio.editShared` under the link's ETag; conflict → reload theirs or keep mine). Artwork only there: no box tool, no uploads. |
+| 1 Comments | — | A **"ความเห็น"** rail tool in the studio: "ปักหมุดความคิดเห็น" arms a click on the **3D box** (the hit's sheet UV → its face and the point on it: `faceId` + `u`, `v` as fractions of the face's bounds on the flat) or on the **flat sheet** (`xMm`, `yMm`); numbered pins on both views (`comments/pins.ts`, never in a capture); threads oldest first with replies, **@mentions** of the company's active members (from `store.companies.get`), resolve (owner side), resolved threads hidden by default. The same panel on the shared page over the server-drawn sheet. |
+| 2 Versions | list + restore | **Named versions** (save the current state with a label), and **compare** any two: side by side, or overlaid with a fader; restore as before. |
+| 3 Presentation | 3D preview: fold slider, three lightings, PNG | **"นำเสนอและ AR"**: the box alone on **our own scenes** (studio, kraft table, store shelf, daylight — colours and lighting, no stock environments), **turntable**, **open / close** the lid, **PNG**, a **video of one turn** (MP4 where the browser records it, WebM otherwise — said so), the **die line free to download** (vector PDF); the existing exports stay free (no plan gate). Reduced motion: no turntable by default, the lid jumps. |
+| 4 AR | — | **The box at real size**: the preview's own fold geometry in metres standing on the floor, glTF (`GLTFExporter`) + USDZ (`USDZExporter`), in **`@google/model-viewer`** (loaded on demand) — WebXR / Scene Viewer / Quick Look, `ar-scale="fixed"`; without AR (a desktop) the 3D model, its closed size and the GLB/USDZ to open on a phone. |
+
+### Found on the real API
+- packio-api **creates an edit link for a design with no company** and refuses its use (`403 designs.share_scope`); the studio offers edit links to company members only. Asserted in `e2e/integration/collab.spec.ts`.
+
+### Decisions taken
+- **Face anchors are face-local fractions** (`u` across, `v` down) of the face's bounds on the outside of the flat sheet: one point for the 3D view and the flat, and stable when the size changes. The contract leaves `u`, `v` undefined beyond "a face of the 3D box".
+- **A comment through a link is pinned on the flat** (the shared page has no 3D, so the engine stays off that page; face anchors from the studio are drawn from bounds computed on the server).
+- **Resolving is the owner side's** (`resolveComment` is design-scoped; a link holder replies).
+- **@mentions are a member list with checkboxes**, not inline `@` autocompletion (accessible, and the API takes ids, not text).
+- **`connect-src` gains `blob:` on the storefront only**: model-viewer fetches the model the page made (only same-origin documents can mint one). Tested per zone.
+- **`@google/model-viewer` 4.3.1** peers three ^0.183; we run 0.186 — it renders and exports here (e2e); watch on the next three bump.
+- Version labels are sent with a full save (`label`); an autosave never carries one.
+
+### Tests
+Unit 1,040 (+ anchors, CSP per zone). e2e: `storefront-studio-collab.spec.ts` (flat pin → comment → resolve; comment link by another customer; edit link → new version through the token), `storefront-studio-present.spec.ts` (two named versions compared side by side / overlay; presentation scene, lid, PNG, recorded turn; AR view with the closed size and the GLB). Real API: `collab.spec.ts` green on v0.41.0.
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; unit 1,040; mock e2e full run 398 passed — the two failures fixed (`designer-account`: the history's compare checkbox label and the studio's share dialog; mock link tokens now 43 characters like packio-api's) and the known `storefront-account` timeout green on re-run. Real API: `collab.spec.ts` green on v0.41.0. Lighthouse studio 496,889 B (ratchet lowered 499,000 → 497,500), all sets within budget.
+
+---
+
 ## U4.6 — ⑤ Order from the studio — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.6, on `feat/u4.6-order` (worktree `../packio-web-u4`, from `main` at `e4308be`, U4.5 merged). Post-launch (D-219); "auto mode".

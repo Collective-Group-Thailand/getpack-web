@@ -19,7 +19,9 @@ import { useEditor } from "../../store/editor";
 const TemplatesPanel = dynamic(() => import("../panels/TemplatesPanel").then((m) => m.TemplatesPanel), { ssr: false });
 const ElementsPanel = dynamic(() => import("../panels/ElementsPanel").then((m) => m.ElementsPanel), { ssr: false });
 const BrandPanel = dynamic(() => import("../panels/BrandPanel").then((m) => m.BrandPanel), { ssr: false });
-const BackgroundPanel = dynamic(() => import("../panels/BackgroundPanel").then((m) => m.BackgroundPanel), { ssr: false });
+const BackgroundPanel = dynamic(() => import("../panels/BackgroundPanel").then((m) => m.BackgroundPanel), {
+  ssr: false,
+});
 
 /** The left rail's tools, in order. */
 export const RAIL = [
@@ -31,6 +33,8 @@ export const RAIL = [
   { id: "brand", icon: "palette" },
   { id: "background", icon: "pattern" },
   { id: "layers", icon: "layers" },
+  // Offered only where the frame supplies the panel (the studio's comments, U4.7).
+  { id: "comments", icon: "chat" },
 ] as const satisfies readonly { id: string; icon: IconName }[];
 
 export type RailId = (typeof RAIL)[number]["id"];
@@ -39,12 +43,16 @@ export function RailPanel({
   id,
   onOpenSetup,
   onOpenRules,
+  comments,
 }: {
   id: RailId;
   onOpenSetup: () => void;
   onOpenRules: () => void;
+  comments?: React.ReactNode;
 }) {
   switch (id) {
+    case "comments":
+      return comments ?? null;
     case "box":
       return <BoxPanel onOpenSetup={onOpenSetup} onOpenRules={onOpenRules} />;
     case "templates":

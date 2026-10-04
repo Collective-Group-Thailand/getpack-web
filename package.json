@@ -46,6 +46,7 @@
     "styles:render:check": "tsx scripts/styles-render.ts --check"
   },
   "dependencies": {
+    "@google/model-viewer": "^4.3.1",
     "@hookform/resolvers": "^5.9.1",
     "@line/liff": "^2.31.0",
     "@packio/dieline": "workspace:*",

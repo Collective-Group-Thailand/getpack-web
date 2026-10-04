@@ -106,6 +106,9 @@ export function cspDirectives(zone: Zone, { nonce, isDev, origins }: CspOptions)
     "font-src": ["'self'"],
     "connect-src": [
       "'self'",
+      // The studio's AR view (U4.7): model-viewer fetches the model the page itself made, as a
+      // blob: URL. Only same-origin documents can mint one, so nothing outside is reachable by it.
+      ...(isCustomer ? ["blob:"] : []),
       ...extra,
       ...(isCustomer ? ANALYTICS_CONNECT : []),
       ...signInConnect,
