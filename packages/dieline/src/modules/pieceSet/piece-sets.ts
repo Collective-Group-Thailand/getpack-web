@@ -6,7 +6,7 @@ import {
   TRAY_CORNER_FLAP_MAX_MM,
   TRAY_CORNER_FLAP_SHARE,
 } from "../../constants";
-import { buildTray } from "../../construct/tray";
+import { buildTray, lockCornerHoles } from "../../construct/tray";
 import { buildTube } from "../../construct/tube";
 import { assemble, piece, prefixFaces } from "../../faces";
 import { bool, num, str } from "../../params";
@@ -15,7 +15,6 @@ import { grainOn, t, windowHole } from "../../styles/_shared";
 import type { Contour, ParamValues } from "../../types";
 import { extraPieces } from "../body/tube";
 import { HAND_HOLE_HEIGHT_MM, trayHandHoles } from "../feature/features";
-import { lockCornerHoles } from "../feature/tray-features";
 import type { PieceSetModule } from "../types";
 
 /** How deep the lid is: the base's height (full telescope) or `lidDepth` (partial, default a third). */

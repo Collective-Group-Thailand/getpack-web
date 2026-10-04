@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "hang-tag",
+  "base": "PK-TG-01",
   "variants": {
     "hang": {
       "round_hole": {

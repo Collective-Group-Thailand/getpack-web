@@ -1,6 +1,6 @@
 import { EURO_SLOT_HEIGHT_MM, EURO_SLOT_WIDTH_MM, HANG_HOLE_DIAMETER_MM } from "../../constants";
 import { face } from "../../faces";
-import { bool, num, str } from "../../params";
+import { num, str } from "../../params";
 import { arc, ellipse, line, mapEdge, rectangle, roundedRectangle } from "../../path";
 import { t, windowHole, windowIssues } from "../../styles/_shared";
 import type { Contour, Face } from "../../types";
@@ -222,43 +222,6 @@ export function trayHandHoles(kind: string, f: TrayFrame, fromRim: number): Reco
 export const HAND_HOLE_HEIGHT_MM = HAND_HOLE.height;
 
 /**
- * Vent holes (`vents`): `round` Ø 12 mm or `oblong` 30 × 10 mm, two in each end panel (tube) or
- * each long wall (tray), at mid height, a third of the way in from each side. ⚠ Size and spacing
- * to be confirmed by Prepress.
- */
-export const vents: FeatureModule = {
-  id: "vents",
-  slot: "feature",
-  status: "implemented",
-  fits: ["tube", "tray"],
-  label: t("รูระบายอากาศ", "Vent holes"),
-  params: ["vents"],
-  processes: ["die_cut"],
-  contributes: { kinds: [], roles: ["cut"] },
-  tubeHoles(ctx, _cfg, panel) {
-    const kind = str(ctx.v, "vents", "none");
-    if (kind === "none" || (panel.id !== "right" && panel.id !== "left")) return [];
-    return ventPair(kind, panel.x0, panel.x1, (panel.y0 + panel.y1) / 2);
-  },
-  trayHoles(ctx, _cfg, f) {
-    const kind = str(ctx.v, "vents", "none");
-    if (kind === "none") return {};
-    const { length: L, width: W, height: H } = f;
-    return {
-      "wall-back": ventPair(kind, H, H + L, H / 2),
-      "wall-front": ventPair(kind, H, H + L, H + W + H / 2),
-    };
-  },
-};
-
-function ventPair(kind: string, x0: number, x1: number, cy: number): Contour[] {
-  return [1 / 3, 2 / 3].map((k) => {
-    const cx = x0 + (x1 - x0) * k;
-    return kind === "oblong" ? roundedRectangle(cx - 15, cy - 5, 30, 10, 5) : ellipse(cx, cy, 6, 6);
-  });
-}
-
-/**
  * Inner walls rolled over a tray's walls (`walls`: back | front | left | right), the caliper
  * shorter than the wall — a double wall that traps the corner flaps (no corner glue) or the
  * rolled ends of a mailer.
@@ -322,25 +285,5 @@ export const hangHole: FeatureModule = {
     const w = num(ctx.v, "width", 40);
     const cy = num(ctx.v, "holeOffset", Math.max(8, d * 1.5));
     return [ellipse(w / 2, cy, d / 2, d / 2)];
-  },
-};
-
-/**
- * A finger notch in a flat pad (PK-CI-02 `thumb`): a stadium 30 × 12 mm centred 10 mm in from the
- * top edge, to lift the pad out. ⚠
- */
-export const fingerNotch: FeatureModule = {
-  id: "fingerNotch",
-  slot: "feature",
-  status: "implemented",
-  fits: ["flat"],
-  label: t("ช่องนิ้วดึง", "Finger notch"),
-  params: ["fingerHole"],
-  processes: ["die_cut"],
-  contributes: { kinds: [], roles: ["cut"] },
-  flatHoles(ctx) {
-    if (!bool(ctx.v, "fingerHole", false)) return [];
-    const l = num(ctx.v, "length", 100);
-    return [roundedRectangle(l / 2 - 15, 4, 30, 12, 6)];
   },
 };

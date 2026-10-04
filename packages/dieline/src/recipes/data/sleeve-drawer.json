@@ -10,23 +10,6 @@
       "none": {
         "fingerHole": false
       }
-    },
-    "window": {
-      "none": {
-        "window": "none"
-      },
-      "top_window": {
-        "window": "rect",
-        "windowPanel": "sleeve-top"
-      }
-    },
-    "insert": {
-      "none": {
-        "insert": "none"
-      },
-      "die_cut_insert": {
-        "insert": "die_cut"
-      }
     }
   },
   "category": "folding_carton",
@@ -57,41 +40,14 @@
     },
     "fingerHole",
     "glueWidth",
-    "grain",
-    "window",
-    {
-      "ref": "windowPanel",
-      "options": [
-        {
-          "value": "sleeve-top",
-          "label": {
-            "th": "ด้านบนปลอก",
-            "en": "Sleeve top"
-          }
-        }
-      ]
-    },
-    "windowWidth",
-    "windowHeight",
-    "windowOffsetX",
-    "windowOffsetY",
-    "windowRadius",
-    "insert"
+    "grain"
   ],
   "defaults": {
     "length": 150,
     "width": 100,
     "height": 40,
     "fingerHole": true,
-    "grain": "across",
-    "window": "none",
-    "windowWidth": 40,
-    "windowHeight": 30,
-    "windowOffsetX": 0,
-    "windowOffsetY": 0,
-    "windowRadius": 6,
-    "windowPanel": "sleeve-top",
-    "insert": "none"
+    "grain": "across"
   },
   "presets": [
     {
@@ -122,18 +78,6 @@
   "pieceSet": {
     "module": "sleeveAndDrawer"
   },
-  "features": [
-    {
-      "module": "window"
-    },
-    {
-      "module": "dieCutInsert",
-      "with": {
-        "target": "drawer",
-        "floor": "t"
-      }
-    }
-  ],
   "closedSize": {
     "length": "length + 2 * t",
     "width": "width + 2 * t + 2 * C.DRAWER_CLEARANCE_MM",

@@ -2,18 +2,8 @@
   "schemaVersion": 1,
   "id": "wrap-around",
   "base": "PK-CF-03",
-  "variants": {
-    "joint": {
-      "glue_flap": {
-        "joint": "glue"
-      },
-      "stitch_flap": {
-        "joint": "stitch"
-      },
-      "tape_joint": {
-        "joint": "tape"
-      }
-    }
+  "variant": {
+    "joint": "glue_flap"
   },
   "category": "corrugated",
   "name": {
@@ -41,7 +31,6 @@
       "min": 30,
       "max": 600
     },
-    "joint",
     "glueWidth",
     "glueSide",
     "grain"
@@ -51,8 +40,7 @@
     "width": 200,
     "height": 100,
     "glueSide": "left",
-    "grain": "across",
-    "joint": "glue"
+    "grain": "across"
   },
   "presets": [
     {
@@ -87,7 +75,7 @@
         "wall": "height + a.panel",
         "top": "width + a.panel",
         "depth": "length + a.depth",
-        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+        "glue": "glueWidth ?? glueWidthFor(width)"
       },
       "panels": [
         {
@@ -108,7 +96,7 @@
         {
           "id": "bottom",
           "label": "bottom",
-          "width": "joint == 'tape' ? top : top - a.gluePanel"
+          "width": "top - a.gluePanel"
         }
       ],
       "depth": "depth",

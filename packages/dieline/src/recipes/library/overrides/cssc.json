@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "id": "cssc",
+  "base": "PK-CS-04",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกฝาชนกลางทุกด้าน (CSSC)",
+    "en": "Centre special slotted container (CSSC)"
+  },
+  "description": {
+    "th": "ฝาในและฝานอกยาวมาชนกันกลางกล่องทั้งสองแนว ปิดด้านบนเต็มสองชั้น",
+    "en": "Inner and outer flaps all meet at the centre — a full double layer top and bottom"
+  },
+  "codes": {
+    "fefco": "0204"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue"
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.depth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "cssc"
+    },
+    "bottom": {
+      "module": "cssc"
+    }
+  },
+  "features": [
+    {
+      "module": "handHoles"
+    }
+  ],
+  "legacy": {
+    "patternKeys": []
+  }
+}

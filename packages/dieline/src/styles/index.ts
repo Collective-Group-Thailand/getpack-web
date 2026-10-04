@@ -24,8 +24,18 @@ export function registerStyles(defs: readonly BoxStyleDef[]): void {
   }
 }
 
-/** Every style the registry knows: the core styles, then any registered since. */
-export const allStyles = (): readonly BoxStyleDef[] => [...STYLES, ...REGISTERED];
+const REPLACED = new Map<string, BoxStyleDef>();
+
+/** Puts extended versions of core styles in place of them (the style library's, U3.4). */
+export function replaceStyles(defs: readonly BoxStyleDef[]): void {
+  for (const def of defs) {
+    REPLACED.set(def.id, def);
+    BY_ID.set(def.id, def);
+  }
+}
+
+/** Every style the registry knows: the core styles (as replaced), then any registered since. */
+export const allStyles = (): readonly BoxStyleDef[] => [...STYLES.map((s) => REPLACED.get(s.id) ?? s), ...REGISTERED];
 
 /**
  * Keys the catalogue may carry in `pattern.dielineKey` that are not style ids: short codes

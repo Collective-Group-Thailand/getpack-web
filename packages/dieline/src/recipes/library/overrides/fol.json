@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "fol",
+  "base": "PK-CS-03",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    },
+    "hand_holes": {
+      "none": {
+        "handles": "none"
+      },
+      "end_panels": {
+        "handles": "side"
+      },
+      "side_panels": {
+        "handles": "long"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกฝาซ้อนเต็ม (FOL)",
+    "en": "Full overlap slotted container (FOL)"
+  },
+  "description": {
+    "th": "ฝานอกยาวเท่าความกว้าง ซ้อนกันเต็มแผ่น แข็งแรงเมื่อวางซ้อนและกันกระแทกด้านบน",
+    "en": "Outer flaps as deep as the width, overlapping fully — stronger stacking and top protection"
+  },
+  "codes": {
+    "fefco": "0203"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue"
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.depth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "fol"
+    },
+    "bottom": {
+      "module": "fol"
+    }
+  },
+  "features": [
+    {
+      "module": "handHoles"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["pid:39", "mapping:73", "mapping:70", "corrugate-rsc-full-overlap"]
+  }
+}
