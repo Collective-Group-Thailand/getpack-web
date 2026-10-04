@@ -10,7 +10,8 @@
     "check": "Check",
     "order": "Order",
     "locked": {
-      "needsBox": "Pick a box first to open this step",
+      "needsQuantity": "Enter a quantity to see the price",
+    "needsBox": "Pick a box first to open this step",
       "needsContent": "Add artwork or text to the box first to open this step"
     }
   },
@@ -68,6 +69,7 @@
     "calculating": "Calculating the price…",
     "updating": "Updating the price",
     "failed": "Could not price this. Try another quantity or wait a moment.",
+    "needsQuantity": "Enter a quantity to see the price",
     "needsBox": "Pick a box to see the price"
   }
 }
