@@ -1,5 +1,5 @@
 {
-  "definition": "1f1202ebf917ca",
+  "definition": "157fa86b99ab46",
   "produce · board-350": {
     "build": "1730a7ebde491b",
     "hinges": "038ec59cd9033e",
@@ -117,6 +117,18 @@
   "produce · board-350 · grain=along": {
     "build": "190863d2bae054",
     "hinges": "038ec59cd9033e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "produce · board-350 · insert=none": {
+    "build": "1730a7ebde491b",
+    "hinges": "038ec59cd9033e",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "produce · board-350 · insert=die_cut": {
+    "build": "14fc74fe662474",
+    "hinges": "19432de48e033c",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }

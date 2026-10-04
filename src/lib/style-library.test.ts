@@ -64,8 +64,8 @@ describe("recipes and the style library master file", () => {
       "fol",
       "cssc",
       "window",
+      // The sombrero header is a hang tab's hole (`hangHole` = `sombrero`, U3.4).
       "hangTab",
-      "sombreroHeader",
       "thumbNotch",
       "tearStrip",
       "adhesiveStrip",
@@ -77,7 +77,9 @@ describe("recipes and the style library master file", () => {
       "slitLock",
       "lidAndBase",
       "sleeveAndDrawer",
-      "bodyAndInsert",
+      // Body and insert: the insert is a feature cut as its own piece (U3.4).
+      "dieCutInsert",
+      "lockCorners",
       "partitionGrid",
     ])
       expect(ids, id).toContain(id);

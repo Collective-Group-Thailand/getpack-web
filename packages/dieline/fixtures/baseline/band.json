@@ -1,5 +1,5 @@
 {
-  "definition": "0c4aca5edac85a",
+  "definition": "12da682d9b5190",
   "box · label-film": {
     "build": "1d3f674bc2f39a",
     "hinges": "15e0da69fcb93a",
@@ -94,6 +94,18 @@
     "build": "1463234bb6f0ed",
     "hinges": "15e0da69fcb93a",
     "validate": "03947d792d1d0a",
+    "closed": "15e0da69fcb93a"
+  },
+  "box · label-film · lock=friction": {
+    "build": "1d3f674bc2f39a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "box · label-film · lock=slit": {
+    "build": "00322845020b02",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }
 }

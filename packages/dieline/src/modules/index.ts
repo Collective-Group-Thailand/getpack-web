@@ -4,7 +4,7 @@ import { pouchWeb } from "./body/pouch";
 import { tray } from "./body/tray";
 import { tube } from "./body/tube";
 import { hingedLid } from "./closure/tray-closures";
-import { airplaneTuck, flipTop, fourFlapLock, slitLock } from "./closure/wave-closures";
+import { airplaneTuck, flipTop, fourFlapLock, openEnd, slitLock } from "./closure/wave-closures";
 import {
   crashLock,
   cssc,
@@ -18,7 +18,8 @@ import {
   tuck,
 } from "./closure/tube-closures";
 import { handHoles, hangHole, hangTab, rollOverWalls, thumbNotch, windowFeature } from "./feature/features";
-import { dieCutInsert } from "./feature/insert";
+import { dieCutInsert, insertBody } from "./feature/insert";
+import { displayHeader, lockCorners } from "./feature/tray-features";
 import { lidAndBase, sleeveAndDrawer } from "./pieceSet/piece-sets";
 import { PLANNED_MODULES } from "./planned";
 import type { ModuleDef } from "./types";
@@ -47,6 +48,7 @@ export const MODULES: readonly ModuleDef[] = [
   fourFlapLock,
   flipTop,
   slitLock,
+  openEnd,
   windowFeature,
   thumbNotch,
   hangTab,
@@ -54,6 +56,9 @@ export const MODULES: readonly ModuleDef[] = [
   rollOverWalls,
   hangHole,
   dieCutInsert,
+  insertBody,
+  lockCorners,
+  displayHeader,
   lidAndBase,
   sleeveAndDrawer,
   ...PLANNED_MODULES,

@@ -2,8 +2,23 @@
   "schemaVersion": 1,
   "id": "tray",
   "base": "PK-TR-01",
-  "variant": {
-    "corner": "glued"
+  "variants": {
+    "corner": {
+      "glued": {
+        "cornerLock": "glued"
+      },
+      "lock_corner": {
+        "cornerLock": "lock"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
   },
   "category": "tray_lid",
   "name": {
@@ -32,13 +47,17 @@
       "max": 200
     },
     "cornerFlap",
-    "grain"
+    "grain",
+    "cornerLock",
+    "insert"
   ],
   "defaults": {
     "length": 200,
     "width": 150,
     "height": 60,
-    "grain": "across"
+    "grain": "across",
+    "cornerLock": "glued",
+    "insert": "none"
   },
   "presets": [
     {
@@ -82,6 +101,17 @@
     "module": "tray",
     "preset": "glued"
   },
+  "features": [
+    {
+      "module": "lockCorners"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
+    }
+  ],
   "outerSize": {
     "height": "height + t"
   },

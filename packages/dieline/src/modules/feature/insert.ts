@@ -1,9 +1,9 @@
-import { face, piece } from "../../faces";
-import { num, str } from "../../params";
+import { assemble, face, piece } from "../../faces";
+import { bool, num, str } from "../../params";
 import { arc, line, rectangle, roundedRectangle } from "../../path";
 import { t } from "../../styles/_shared";
 import type { Contour, Face } from "../../types";
-import type { BuildContext, FeatureModule, ModuleConfig } from "../types";
+import type { BodyModule, BuildContext, FeatureModule, ModuleConfig } from "../types";
 
 /**
  * A die-cut platform insert: a platform with a cavity for the product, standing on two legs that
@@ -20,8 +20,8 @@ export interface InsertSize {
   legs: number;
 }
 
-export function insertSize(ctx: BuildContext, floor: number): InsertSize {
-  const c = INSERT_CLEARANCE_MM + ctx.m.caliperMm;
+export function insertSize(ctx: BuildContext, floor: number, inset = 0): InsertSize {
+  const c = INSERT_CLEARANCE_MM + ctx.m.caliperMm + inset;
   const H = num(ctx.v, "height", 60);
   return {
     length: num(ctx.v, "length", 100) - 2 * c,
@@ -67,7 +67,7 @@ export const dieCutInsert: FeatureModule = {
   id: "dieCutInsert",
   slot: "feature",
   status: "implemented",
-  fits: ["tube", "tray"],
+  fits: ["tube", "tray", "special"],
   label: t("ตัวรองไดคัท (ชิ้นแยก)", "Die-cut insert (separate piece)"),
   params: ["insert"],
   processes: ["die_cut", "hand_assembly"],
@@ -83,7 +83,15 @@ export const dieCutInsert: FeatureModule = {
     },
   ],
   pieces: (ctx, cfg) =>
-    on(ctx) ? [piece("insert", "insert", insertFaces(insertSize(ctx, floorOf(ctx, cfg)), "insert-"))] : [],
+    on(ctx)
+      ? [
+          piece(
+            "insert",
+            "insert",
+            insertFaces(insertSize(ctx, floorOf(ctx, cfg), ctx.num((cfg.inset ?? 0) as string)), "insert-"),
+          ),
+        ]
+      : [],
   hinges: (ctx, cfg) =>
     on(ctx)
       ? {
@@ -99,4 +107,35 @@ export const dieCutInsert: FeatureModule = {
           },
         }
       : {},
+};
+
+/**
+ * A die-cut cavity insert on its own (PK-IN-01), sized to its outside: platform and legs come in
+ * by one caliper so the folded insert is `length` × `width` × `height`. `fingerHole` (the master
+ * `thumb` axis) adds a finger notch on each long edge of the platform.
+ */
+export const insertBody: BodyModule = {
+  id: "insertBody",
+  slot: "body",
+  kind: "special",
+  status: "implemented",
+  folds: true,
+  label: t("ตัวรองไดคัท (แผ่นรอง + ขา)", "Die-cut insert (platform and legs)"),
+  params: ["fingerHole", "grain"],
+  processes: ["die_cut"],
+  contributes: { kinds: ["panel", "flap"], roles: ["cut", "crease"] },
+  build(ctx) {
+    const { v, m } = ctx;
+    const faces = insertFaces(
+      {
+        length: num(v, "length", 150) - 2 * m.caliperMm,
+        width: num(v, "width", 100),
+        legs: num(v, "height", 30) - m.caliperMm,
+      },
+      "",
+      bool(v, "fingerHole", false),
+    );
+    return assemble(ctx.styleId, [piece("blank", "insert", faces)]);
+  },
+  hinges: () => ({ roots: { blank: "platform" }, angles: { "leg-left": -90, "leg-right": -90 } }),
 };

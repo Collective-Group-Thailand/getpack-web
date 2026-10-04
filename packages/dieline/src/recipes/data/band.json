@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "id": "band",
   "base": "PK-SL-03",
+  "variants": {
+    "lock": {
+      "friction": {
+        "lock": "friction"
+      },
+      "slit_lock": {
+        "lock": "slit"
+      }
+    }
+  },
   "category": "flat",
   "name": {
     "th": "สายคาด",
@@ -34,12 +44,14 @@
     {
       "ref": "overlap",
       "max": 50
-    }
+    },
+    "lock"
   ],
   "defaults": {
     "length": 400,
     "width": 50,
-    "overlap": 15
+    "overlap": 15,
+    "lock": "friction"
   },
   "presets": [
     {

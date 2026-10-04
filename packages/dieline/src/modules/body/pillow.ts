@@ -1,9 +1,10 @@
 import { glueWidthFor } from "../../constants";
 import { glueFlap } from "../../construct/tube";
 import { assemble, face, piece } from "../../faces";
-import { num } from "../../params";
+import { num, str } from "../../params";
+import { hangHoleShape } from "../feature/features";
 import { arc, line } from "../../path";
-import { grainOn, t } from "../../styles/_shared";
+import { grainOn, t, windowHole } from "../../styles/_shared";
 import type { ArcEdge, Pt } from "../../types";
 import type { BodyModule } from "../types";
 
@@ -35,6 +36,17 @@ export const pillowTube: BodyModule = {
   params: ["length", "width", "thickness", "glueWidth", "grain"],
   processes: ["die_cut", "folder_gluer_straight"],
   contributes: { kinds: ["panel", "flap", "glue_flap"], roles: ["cut", "crease", "glue_area"] },
+  constraints: [
+    {
+      // Past half the width the end lenses bulge beyond a half circle and the neighbouring flaps overlap.
+      id: "pillowTube.thickness",
+      code: "pillow.too_thick",
+      severity: "error",
+      param: "thickness",
+      require: "thickness <= width / 2",
+      message: t("กล่องหมอนหนาเกินครึ่งหนึ่งของความกว้าง", "A pillow box can be at most half as thick as it is wide"),
+    },
+  ],
   build(ctx) {
     const { v, m } = ctx;
     const T = num(v, "thickness", 30);
@@ -45,18 +57,27 @@ export const pillowTube: BodyModule = {
     const g = num(v, "glueWidth", glueWidthFor(W, m));
     const x = [g, g + W, g + 2 * W];
     const faces = [glueFlap("glue", g, g, L, "left")];
+    // A hang hole through both panels, lined up when folded (`hangHole`, PK-SP-01); a window in the front. ⚠
+    const hang = (x0: number, x1: number) => hangHoleShape(str(v, "hangHole", "none"), (x0 + x1) / 2, 18);
     ["front", "back"].forEach((id, i) => {
       const x0 = x[i];
       const x1 = x[i + 1];
+      const holes = [...hang(x0, x1), ...(id === "front" ? windowHole(v, "front", x0, x1, 0, L) : [])];
       const topCrease = bulge([x0, 0], [x1, 0], sc, true, "crease");
       const bottomCrease = bulge([x0, L], [x1, L], sc, false, "crease");
       faces.push(
-        face(id, id === "front" ? "front" : "back", "panel", [
-          topCrease,
-          line([x1, 0], [x1, L], i === 0 ? "crease" : "cut"),
-          reverse(bottomCrease),
-          line([x0, L], [x0, 0], "crease"),
-        ]),
+        face(
+          id,
+          id === "front" ? "front" : "back",
+          "panel",
+          [
+            topCrease,
+            line([x1, 0], [x1, L], i === 0 ? "crease" : "cut"),
+            reverse(bottomCrease),
+            line([x0, L], [x0, 0], "crease"),
+          ],
+          { holes },
+        ),
         face(`end-${id}-top`, "end_flap", "flap", [bulge([x0, 0], [x1, 0], T, true, "cut"), reverse(topCrease)]),
         face(`end-${id}-bottom`, "end_flap", "flap", [reverse(bulge([x0, L], [x1, L], T, false, "cut")), bottomCrease]),
       );

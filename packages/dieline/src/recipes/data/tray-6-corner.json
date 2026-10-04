@@ -2,6 +2,16 @@
   "schemaVersion": 1,
   "id": "tray-6-corner",
   "base": "PK-TR-02",
+  "variants": {
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
   "category": "tray_lid",
   "name": {
     "th": "กล่องถาดฝาพับ 6 มุม",
@@ -28,13 +38,15 @@
       "min": 15,
       "max": 150
     },
-    "grain"
+    "grain",
+    "insert"
   ],
   "defaults": {
     "length": 200,
     "width": 150,
     "height": 60,
-    "grain": "across"
+    "grain": "across",
+    "insert": "none"
   },
   "presets": [
     {
@@ -74,6 +86,14 @@
       }
     }
   },
+  "features": [
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
+    }
+  ],
   "outerSize": {
     "height": "height + t"
   },
