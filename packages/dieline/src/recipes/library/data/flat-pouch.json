@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "id": "flat-pouch",
+  "base": "PK-PB-02",
+  "variants": {
+    "pouch_feat": {
+      "none": {
+        "pouchFeatures": "none"
+      },
+      "hang_hole": {
+        "pouchFeatures": "hang_hole"
+      },
+      "tear_notch": {
+        "pouchFeatures": "tear_notch"
+      },
+      "window": {
+        "pouchFeatures": "window"
+      },
+      "zipper": {
+        "pouchFeatures": "zipper"
+      },
+      "hang_hole+tear_notch": {
+        "pouchFeatures": "hang_hole+tear_notch"
+      },
+      "hang_hole+window": {
+        "pouchFeatures": "hang_hole+window"
+      },
+      "hang_hole+zipper": {
+        "pouchFeatures": "hang_hole+zipper"
+      },
+      "tear_notch+window": {
+        "pouchFeatures": "tear_notch+window"
+      },
+      "tear_notch+zipper": {
+        "pouchFeatures": "tear_notch+zipper"
+      },
+      "window+zipper": {
+        "pouchFeatures": "window+zipper"
+      },
+      "hang_hole+tear_notch+window": {
+        "pouchFeatures": "hang_hole+tear_notch+window"
+      },
+      "hang_hole+tear_notch+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+zipper"
+      },
+      "hang_hole+window+zipper": {
+        "pouchFeatures": "hang_hole+window+zipper"
+      },
+      "tear_notch+window+zipper": {
+        "pouchFeatures": "tear_notch+window+zipper"
+      },
+      "hang_hole+tear_notch+window+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+window+zipper"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ซองซีล 3 ด้าน",
+    "en": "Three-side-seal flat pouch"
+  },
+  "description": {
+    "th": "ซองฟิล์มแบน ซีลสามด้าน พับที่ก้น",
+    "en": "A flat film pouch sealed on three sides and folded at the bottom"
+  },
+  "materials": ["flexible"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 500
+    },
+    "sealWidth",
+    "pouchFeatures",
+    {
+      "ref": "windowWidth",
+      "omit": ["when"]
+    },
+    {
+      "ref": "windowHeight",
+      "omit": ["when"]
+    }
+  ],
+  "defaults": {
+    "pouchType": "three_side",
+    "width": 140,
+    "length": 200,
+    "sealWidth": 8,
+    "pouchFeatures": "none",
+    "windowWidth": 56,
+    "windowHeight": 60
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "100 × 150",
+        "en": "100 × 150"
+      },
+      "values": {
+        "width": 100,
+        "length": 150,
+        "windowWidth": 40,
+        "windowHeight": 45
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "140 × 200",
+        "en": "140 × 200"
+      },
+      "values": {
+        "width": 140,
+        "length": 200,
+        "windowWidth": 56,
+        "windowHeight": 60
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "200 × 280",
+        "en": "200 × 280"
+      },
+      "values": {
+        "width": 200,
+        "length": 280,
+        "windowWidth": 80,
+        "windowHeight": 84
+      }
+    }
+  ],
+  "body": {
+    "module": "pouchWeb"
+  }
+}

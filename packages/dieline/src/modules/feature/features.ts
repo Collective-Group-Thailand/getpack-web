@@ -298,7 +298,7 @@ export const hangHole: FeatureModule = {
   status: "implemented",
   fits: ["flat"],
   label: t("รูร้อยเชือก", "String hole"),
-  params: ["hole", "holeOffset"],
+  params: ["hole", "holeOffset", "hangHole"],
   processes: ["die_cut"],
   contributes: { kinds: [], roles: ["cut"] },
   constraints: [
@@ -311,7 +311,12 @@ export const hangHole: FeatureModule = {
       message: t("รูใกล้ขอบเกินไป (ต้องห่างอย่างน้อย 3 มม.)", "The hole is too close to the edge (at least 3 mm)"),
     },
   ],
-  flatHoles(ctx) {
+  flatHoles(ctx, cfg) {
+    // `hangHole` (euro | round | sombrero | none, PK-TG-01 wave 1) at the centre `cx`, `cy` (expressions).
+    if (cfg.cx !== undefined) {
+      const kind = str(ctx.v, "hangHole", "none");
+      return hangHoleShape(kind, ctx.num(cfg.cx as string), ctx.num(cfg.cy as string));
+    }
     const d = Number(str(ctx.v, "hole", "6"));
     if (!(d > 0)) return [];
     const w = num(ctx.v, "width", 40);

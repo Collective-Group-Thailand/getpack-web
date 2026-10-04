@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "wrap-label-rounded",
+  "base": "PK-LA-03",
+  "variant": {
+    "tuck_corner": "rounded"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากพันรอบขวด มุมมน",
+    "en": "Wrap-around bottle label, rounded corners"
+  },
+  "description": {
+    "th": "ฉลากพันรอบขวดหรือกระป๋อง ความยาวเท่าเส้นรอบวงบวกระยะทับ",
+    "en": "A label wrapped round a bottle or can: the circumference plus the overlap long"
+  },
+  "materials": ["label"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "cornerRadius"
+  ],
+  "defaults": {
+    "length": 230,
+    "width": 80,
+    "cornerRadius": 6
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "180 × 50",
+        "en": "180 × 50"
+      },
+      "values": {
+        "length": 180,
+        "width": 50
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "230 × 80",
+        "en": "230 × 80"
+      },
+      "values": {
+        "length": 230,
+        "width": 80
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "300 × 110",
+        "en": "300 × 110"
+      },
+      "values": {
+        "length": 300,
+        "width": 110
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rounded_rectangle"
+    }
+  }
+}

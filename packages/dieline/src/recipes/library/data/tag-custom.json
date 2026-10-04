@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "tag-custom",
+  "base": "PK-TG-01",
+  "variant": {
+    "shape_flat": "custom_path"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ป้ายแขวน รูปทรงอิสระ",
+    "en": "Hang tag, custom shape"
+  },
+  "description": {
+    "th": "ป้ายแขวนสินค้า เลือกรูแขวนได้",
+    "en": "A swing tag with a choice of hang hole"
+  },
+  "materials": ["paperboard"],
+  "params": ["size", "path", "hangHole"],
+  "defaults": {
+    "size": 60,
+    "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z",
+    "hangHole": "none"
+  },
+  "presets": [
+    {
+      "id": "star",
+      "label": {
+        "th": "ดาว 60 มม.",
+        "en": "Star, 60 mm"
+      },
+      "values": {
+        "size": 60,
+        "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "custom_path"
+    }
+  },
+  "features": [
+    {
+      "module": "hangHole",
+      "with": {
+        "cx": "size / 2",
+        "cy": "size / 2"
+      }
+    }
+  ]
+}
