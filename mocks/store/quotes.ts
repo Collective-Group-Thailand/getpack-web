@@ -773,6 +773,8 @@ function pricedSize(
   }
 }
 
+const FLUTE_FACTOR: Record<string, number> = { E: 1, B: 1.08, C: 1.15, BC: 1.35 };
+
 const TYPE_FAMILY_FLAT = new Set(["label_sticker", "tag_sleeve", "flexible_pouch", "standard_product", "service"]);
 
 /** Every option id a published configuration names, wherever it sits. */
@@ -799,7 +801,10 @@ export function inputsOf(productTypeCode: string, raw: Record<string, unknown>):
   const design = (raw.design ?? {}) as { graphic?: boolean; structure?: boolean };
   const materialFactorOf = (id: unknown) => {
     const row = byId(catalogueRows("materials"), id);
-    return row?.gsm ? Number(row.gsm) / 350 : 1;
+    if (row?.gsm) return Number(row.gsm) / 350;
+    // The corrugated mock's boards are its flutes: a heavier flute costs more (fake).
+    const flute = byId(catalogueRows("fluteTypes"), id);
+    return flute ? (FLUTE_FACTOR[String(flute.code)] ?? 1) : 1;
   };
   const kind = configurator.size.kind;
   const entered = { l: num(raw.l), w: num(raw.w), d: kind === "box" ? num(raw.d) : 0 };

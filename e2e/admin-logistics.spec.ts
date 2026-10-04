@@ -220,18 +220,18 @@ test.describe("demand analytics (D-102)", () => {
     await expect(page.getByText(/ช่องที่มีไม่ถึง 3 รายถูกซ่อน/)).toBeVisible();
   });
 
-  test("a journey's funnel shows the week's drop the API flagged (U5.0)", async ({ page }) => {
+  test("the scorecard journeys show the weekly drop the API flagged (U5.B6)", async ({ page }) => {
     await signInAsStaff(page, "marketing");
     await gotoHydrated(page, `${HOSTS.admin}/analytics`);
-    await expect(page.getByRole("heading", { name: "เส้นทางผู้ใช้" })).toBeVisible();
-    // The threshold is the API's setting, shown as it comes.
-    await expect(page.getByText(/ลดลงเกิน 15\s?%/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "เส้นทางผู้ใช้ตามแบบทดสอบ UX" })).toBeVisible();
+    // Whether a drop is alarming is the API's call (D-303): the mock's claim journey fell.
+    await expect(page.getByText("1 เส้นทางลดลงเกินเกณฑ์ในสัปดาห์ล่าสุด")).toBeVisible();
 
-    await page.getByRole("radio", { name: "แจ้งปัญหาสินค้า" }).click();
-    await expect(page.getByText("1 ขั้นลดลงเกินเกณฑ์ในสัปดาห์นี้")).toBeVisible();
-    const row = page.getByRole("row", { name: /ส่งเรื่อง/ });
-    await expect(row).toContainText("ลดลงผิดปกติ");
-    await expect(row).toContainText("52");
+    await page.getByRole("combobox", { name: "เส้นทาง" }).click();
+    await page.getByRole("option", { name: "T9 · แจ้งปัญหาสินค้า" }).click();
+    await expect(page.getByRole("row", { name: /ส่งเรื่อง/ })).toBeVisible();
+    const week = page.getByRole("table", { name: "การตรวจรายสัปดาห์" });
+    await expect(week).toContainText("ลดลงผิดปกติ");
     await expectAxeClean(page);
   });
 

@@ -130,3 +130,12 @@ initial bundle before U3.4 wave 1 (≈ 75 more recipes) — loaded per style, or
 (U3.B2). **`customer-app` was already over its ceiling on `main`** (319,069 against 293,000):
 that growth came with the U-F0 migrations and is not explained in their entries. It is a separate
 follow-up; the ratchet now covers both so the set stops failing on everything else.
+
+## U2.F1 — configurator v2 (2026-10-04)
+
+| Page | Before (U3.3) | After | Ratchet |
+|---|---|---|---|
+| `/configure/tuck-end-box` | 326,749 | 336,117 | customer-app 327,000 → **337,000** |
+
+The size step is the configurator's first step and carries the new measurement-basis logic: the basis cards, the API's conversion and per-pattern bases (`conversion.ts`), the derived-sizes panel and the diagrams; `build.ts` now writes six published configurations instead of two. Everything after the first step — the Structure Advisor and its inputs, the target price and levers, the summary and drafts — loads on demand (`next/dynamic`). Follow-up: move the quote and draft actions (save, share, PDF, levers, send to sales) behind a dynamic import on first click.
+

@@ -34,6 +34,23 @@ export async function prepareCatalogue(): Promise<string[]> {
     });
     done.push("corrugated → instant");
   }
+  // U2.F1: the Structure Advisor answers customers only with its flag on (D-237). The dev seed
+  // carries the proposed rule set and F9001's signed board sheets; a Superadmin switches it on
+  // here, as the business would once the golden cases are signed (D-189).
+  const superadmin = await staffToken("superadmin");
+  const flags = await api<{ key: string; enabled: boolean }[] | { data: { key: string; enabled: boolean }[] }>(
+    "GET",
+    "/v1/admin/feature-flags",
+    { token: superadmin },
+  );
+  const advisor = (Array.isArray(flags) ? flags : flags.data).find((flag) => flag.key === "advisory.structure_advisor");
+  if (advisor && !advisor.enabled) {
+    await api("PUT", "/v1/admin/feature-flags/advisory.structure_advisor", {
+      token: superadmin,
+      body: { enabled: true },
+    });
+    done.push("advisory.structure_advisor → on");
+  }
   const configurator = await api<{ instant: boolean }>(
     "GET",
     `/v1/store/catalog/products/${DEV_INSTANT_PRODUCT}/configurator`,

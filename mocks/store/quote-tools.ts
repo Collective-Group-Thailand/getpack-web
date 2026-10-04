@@ -122,10 +122,7 @@ function recommend(
     const estimate = RULES.mckeeConstant * ect * Math.sqrt(caliper * perimeterMm);
     const band = (estimate * RULES.uncertaintyPct) / 100;
     const priced = inputsOf(body.productTypeCode, { ...raw, materialId: flute.id, quantities: [quantity] });
-    const step =
-      priced instanceof Response
-        ? null
-        : stepOf({ ...priced, materialFactor: 1 + ect / 20 }, quantity, body.deliveryPostcode);
+    const step = priced instanceof Response ? null : stepOf(priced, quantity, body.deliveryPostcode);
     const low = round(estimate - band, 1);
     const passes = low >= requiredBctN;
     const marginPct = requiredBctN > 0 ? round(((low - requiredBctN) / requiredBctN) * 100, 1) : null;

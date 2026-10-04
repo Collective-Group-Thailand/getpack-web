@@ -957,7 +957,7 @@ const JOURNEYS: { journey: Journey; task: string; entries: number; steps: [strin
   {
     journey: "claim",
     task: "T9",
-    entries: 2,
+    entries: 6,
     steps: [
       ["started", 1],
       ["evidence_added", 0.7],
