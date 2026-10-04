@@ -17,7 +17,7 @@ import { files } from "../admin/platform";
 import { customers as fakeCustomers } from "../admin/commerce";
 import { addCustomerRfq, customerAcceptQuote, rfqMessages, rfqs } from "../admin/rfq";
 import type { RfqRow } from "../admin/rfq-model";
-import { bangkokIso, mockId, paginate, problem } from "../support";
+import { bangkokIso, mockId, paginate, problem, RFQ_V2_EMPTY } from "../support";
 import { customerOf, type MockCustomer } from "./customers";
 import { nextQuoteId, quotesOf, QUOTE_VALIDITY_DAYS, type StoreQuote } from "./quotes";
 
@@ -220,6 +220,7 @@ const messageFiles = new Map<string, Schemas["AttachedFileDto"][]>();
 function toRfqDto(rfq: AdminRfq): Schemas["RfqDto"] {
   const closed = ["accepted", "declined", "expired"].includes(rfq.status);
   return {
+    ...RFQ_V2_EMPTY,
     id: rfq.id,
     rfqCode: rfq.rfqCode,
     status: rfq.status,

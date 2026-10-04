@@ -20,7 +20,18 @@ import type { Schemas } from "@/lib/api/types";
 
 import { staffPersonaOf } from "../auth";
 import { can, PERSONAS, type StaffPersona } from "../personas";
-import { bangkokIso, matchesQuery, mockId, paginate, precondition, problem, sortBy, versionTag } from "../support";
+import {
+  bangkokIso,
+  matchesQuery,
+  mockId,
+  paginate,
+  precondition,
+  problem,
+  QUOTE_V2_EMPTY,
+  RFQ_V2_EMPTY,
+  sortBy,
+  versionTag,
+} from "../support";
 import { lineSummaryOf, productTypeRef } from "./catalog";
 import { baht, customers, FACTORY } from "./commerce";
 import { indexForSearch, registerQueue } from "./console";
@@ -582,6 +593,7 @@ function toQuotation(rfq: Rfq, quote: Quote, quantities: readonly number[], by: 
   const quoteCode = `QT-2569-${String(700 + quotations.length).padStart(5, "0")}`;
   // The published saved quotation (`AdminSavedQuoteDto`, U-F0.3) with the accepted lines as its options.
   quotations.unshift({
+    ...QUOTE_V2_EMPTY,
     id,
     quoteCode,
     productTypeCode: rfq.productType.code,
@@ -606,6 +618,10 @@ function toQuotation(rfq: Rfq, quote: Quote, quantities: readonly number[], by: 
       structureDesignFeeAmount: "0.00",
       // RFQ quotes split no plates or die blocks out.
       toolingAmount: null,
+      toolingWaiver: null,
+      toleranceDimensionalMm: null,
+      toleranceColourDeltaE: null,
+      targetGap: null,
       shippingAmount: null,
       shippingPending: true,
       shippingPendingReason: "no_postcode",
@@ -751,6 +767,7 @@ export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas[
   const margin = can(who, "margin.read");
   const customer = { id: rfq.customer.id, displayName: rfq.customer.displayName };
   return {
+    ...RFQ_V2_EMPTY,
     id: rfq.id,
     rfqCode: rfq.rfqCode,
     status: rfq.status,

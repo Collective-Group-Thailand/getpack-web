@@ -127,3 +127,26 @@ export function precondition(request: Request, current: string): Response | null
   if (match !== current) return problem(412, "concurrency.stale", "ข้อมูลนี้ถูกแก้ไขไปแล้ว กรุณาโหลดใหม่");
   return null;
 }
+
+/**
+ * The saved-quotation fields U2.1–U3.B4 added (v0.13.0–v0.20.0) at their empty values: no frozen
+ * dimensions (absent = internal, U2.1 assumption 4), no share expiry, no advisor choice, no target,
+ * no outcome yet, not from a lever, no dieline quantities.
+ */
+export const QUOTE_V2_EMPTY = {
+  dimensions: null,
+  shareExpiresAt: null,
+  advisory: null,
+  targetPricePerUnit: null,
+  outcome: null,
+  fromLever: null,
+  dielineQuantities: null,
+} as const;
+
+/** The RFQ fields U2.1, U2.3 and U3.B4 added: the basis (backfilled `internal`), no target, style or design. */
+export const RFQ_V2_EMPTY = {
+  measurementBasis: "internal",
+  targetPricePerUnit: null,
+  style: null,
+  design: null,
+} as const;

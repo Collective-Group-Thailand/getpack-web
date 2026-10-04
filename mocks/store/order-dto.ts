@@ -183,6 +183,8 @@ export function toOrderDto(order: MockOrder): Schemas["OrderDto"] {
     mockupOption: order.mockupOption,
     toleranceShortagePct: order.tolerance.shortagePct,
     toleranceOveragePct: order.tolerance.overagePct,
+    toleranceDimensionalMm: null,
+    toleranceColourDeltaE: null,
     leadTimeDays: order.leadTimeDays,
     promisedShipDate: order.promisedShipDate,
     totals: {

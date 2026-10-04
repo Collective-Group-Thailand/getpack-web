@@ -84,13 +84,28 @@ const TABLES: Record<string, TableConfig> = {
     filters: ["productTypeId"],
     unique: "code",
     variants: [
-      { code: "RSC-01", name: "กล่องฝาชน (RSC)", technicalName: "Regular slotted container", dielineKey: "rsc" },
-      { code: "TRAY-01", name: "ถาดพับขึ้นรูป", technicalName: "Four-corner tray", dielineKey: "tray" },
+      {
+        code: "RSC-01",
+        name: "กล่องฝาชน (RSC)",
+        technicalName: "Regular slotted container",
+        dielineKey: "rsc",
+        styleCode: "PK-CS-01",
+      },
+      {
+        code: "TRAY-01",
+        name: "ถาดพับขึ้นรูป",
+        technicalName: "Four-corner tray",
+        dielineKey: "tray",
+        styleCode: "PK-TR-01",
+      },
       {
         code: "STE-01",
         name: "ฝาเสียบทางเดียว",
         technicalName: "Straight tuck end",
         dielineKey: null,
+        // D-184: a code is required to publish; a draft has none yet.
+        styleCode: null,
+        publishedAt: null,
         status: "draft",
       },
     ],

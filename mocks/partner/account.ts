@@ -21,6 +21,7 @@ import {
   claimInfoOf,
   claims,
   type Claim,
+  claimTrustFactsOf,
 } from "../admin/logistics";
 import { fileDataUrl, files } from "../admin/platform";
 import { orders } from "../admin/commerce";
@@ -47,6 +48,7 @@ const PARTNER_CLAIM_ACTIONS: ActionRule<ReturnType<typeof claimFactsOf>>[] = [
 function toPartnerClaimDto(claim: Claim, who: PartnerPersona): Schemas["PartnerClaimDto"] {
   const job = orders.find((order) => order.id === claim.order.id)?.jobs[0];
   return {
+    ...claimTrustFactsOf(claim.status),
     id: claim.id,
     claimNo: claim.claimNo,
     type: claim.type,
@@ -107,6 +109,9 @@ function scorecards(factoryId: string, months: number): Schemas["ScorecardDto"][
       qcFirstPassPct: (96 - Math.abs(wobble) / 2).toFixed(4),
       claimRatePct: (1.5 + Math.abs(wobble) / 4).toFixed(4),
       onTimeUpdatesPct: (90 + wobble).toFixed(4),
+      sampleJobsCount: 0,
+      sampleOnTimePct: null,
+      sampleAvgLeadDays: null,
       // The month in progress is recomputed nightly; the closed ones on the first of the next month.
       computedAt: index === 0 ? bangkokIso(-60 * 6) : `${month.slice(0, 8)}01T02:00:00+07:00`,
     };

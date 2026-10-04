@@ -259,7 +259,9 @@
     "shared": "Shared",
     "converted": "Converted",
     "expired": "Expired",
-    "superseded": "Superseded"
+    "superseded": "Superseded",
+    "declined": "Declined",
+    "routedToRfq": "Sent to sales"
   },
   "referral": {
     "pending": "Pending",

@@ -3,7 +3,7 @@
  * published surface; see each module for what it stands in for.
  */
 
-import { analyticsContractHandlers, analyticsHandlers } from "./analytics";
+import { analyticsContractHandlers } from "./analytics";
 import { artworkContractHandlers } from "./artwork";
 import { catalogueHandlers } from "./catalogue";
 import { companyHandlers } from "./companies";
@@ -44,6 +44,5 @@ export const adminHandlers = [
   ...shipmentHandlers,
   ...logisticsHandlers,
   ...analyticsContractHandlers,
-  ...analyticsHandlers,
   ...platformHandlers,
 ];

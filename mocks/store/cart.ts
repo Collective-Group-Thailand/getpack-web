@@ -202,6 +202,8 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
       const shipping = quote.lines.find((entry) => entry.lineType === "shipping")?.netAmount ?? null;
       return {
         id: item.id,
+        // The mock pins no studio design version (D-276).
+        designVersionNo: null,
         quoteId: quote.id,
         quoteOptionId: optionIdOf(quote),
         quoteCode: quote.quoteCode,
