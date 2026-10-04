@@ -1,5 +1,5 @@
 {
-  "definition": "0a8b628d40599c",
+  "definition": "181dd0d6a7d36f",
   "soap · board-350": {
     "build": "17c3d30880c50f",
     "hinges": "0ab38896a79cd8",
@@ -204,6 +204,12 @@
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
+  "soap · board-350 · windowPanel=lid": {
+    "build": "17c3d30880c50f",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
   "soap · board-350 · windowWidth=min": {
     "build": "17c3d30880c50f",
     "hinges": "0ab38896a79cd8",
@@ -324,6 +330,12 @@
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   },
+  "soap · board-350 · thumbNotch=true": {
+    "build": "17c3d30880c50f",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
   "soap · board-350 · window=rect@front": {
     "build": "12c670fce36dca",
     "hinges": "0ab38896a79cd8",
@@ -346,6 +358,12 @@
     "build": "119ed8c20c798a",
     "hinges": "0ab38896a79cd8",
     "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "soap · board-350 · window=rect@lid": {
+    "build": "17c3d30880c50f",
+    "hinges": "0ab38896a79cd8",
+    "validate": "0f8e4b1550d257",
     "closed": "15e0da69fcb93a"
   },
   "soap · board-350 · window=rect:oversized": {
@@ -378,6 +396,12 @@
     "validate": "15d5ae4dea7f7e",
     "closed": "15e0da69fcb93a"
   },
+  "soap · board-350 · window=rounded@lid": {
+    "build": "17c3d30880c50f",
+    "hinges": "0ab38896a79cd8",
+    "validate": "0f8e4b1550d257",
+    "closed": "15e0da69fcb93a"
+  },
   "soap · board-350 · window=rounded:oversized": {
     "build": "1ecbd87ec5b1f7",
     "hinges": "0ab38896a79cd8",
@@ -406,6 +430,12 @@
     "build": "1f076ea5aabc7f",
     "hinges": "0ab38896a79cd8",
     "validate": "15d5ae4dea7f7e",
+    "closed": "15e0da69fcb93a"
+  },
+  "soap · board-350 · window=ellipse@lid": {
+    "build": "17c3d30880c50f",
+    "hinges": "0ab38896a79cd8",
+    "validate": "0f8e4b1550d257",
     "closed": "15e0da69fcb93a"
   },
   "soap · board-350 · window=ellipse:oversized": {

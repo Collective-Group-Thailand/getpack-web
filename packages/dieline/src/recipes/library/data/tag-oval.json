@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "id": "tag-oval",
+  "base": "PK-TG-01",
+  "variant": {
+    "shape_flat": "oval"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ป้ายแขวน วงรี",
+    "en": "Hang tag, oval"
+  },
+  "description": {
+    "th": "ป้ายแขวนสินค้า เลือกรูแขวนได้",
+    "en": "A swing tag with a choice of hang hole"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "hangHole"
+  ],
+  "defaults": {
+    "length": 80,
+    "width": 50,
+    "hangHole": "none"
+  },
+  "presets": [
+    {
+      "id": "a",
+      "label": {
+        "th": "60 × 40",
+        "en": "60 × 40"
+      },
+      "values": {
+        "length": 60,
+        "width": 40
+      }
+    },
+    {
+      "id": "b",
+      "label": {
+        "th": "100 × 60",
+        "en": "100 × 60"
+      },
+      "values": {
+        "length": 100,
+        "width": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "oval"
+    }
+  },
+  "features": [
+    {
+      "module": "hangHole",
+      "with": {
+        "cx": "length / 2",
+        "cy": "width / 4 + 6"
+      }
+    }
+  ]
+}

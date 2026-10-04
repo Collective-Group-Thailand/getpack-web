@@ -45,6 +45,63 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-02 | **U3.2** — constraint solver & manufacturability | Material classes (`paperboard`, `food_board`, `corrugated` per flute, `rigid`, `flexible`, `paper`, `label_stock`, `shrink_film`) with rule sets; manufacturing rules as recipe data (`rule.*`, `stage: "manufacturing"`) plus coded rules in `rules/`; `explain()` (codes, expected/actual, parameters read), `validRanges()` / `sizeRanges()`, `fitsEnvelope()` for partner machine envelopes, `recipeProcesses()`; seeded property tests on every recipe × reference board; `validate()` and the baseline unchanged | UI on `explain()` (U3.5); envelope data from the API (U3.B3) | ⚠ new rule values await prepress; see U3.2 below |
 | 2026-10-02 | **U3.3** — automatic 3D, virtual fold test, assets | Thickness model (`foldModel`: walls centred, closures inward and stacked in fold order, rolled walls, wrapping flaps, back-to-back walls, rigid wrap) also drawn by the designer's 3D preview; recipe `outerSize`; fold gate (min / typical / max × 2 calipers, ± 1 mm, collision check) on all 21 foldable recipes; inflated pouch surface; structural variants (46) with generated TH/EN names pending review; engine rasteriser + `pnpm styles:render` (166 assets, manifest committed, reproducibility checked in CI); ADR-0012 | Name review (D-212); curved pillow panels; U3.4 waves | New rule `mfg.glue_flap_too_wide`; one preset finding for prepress — see U3.3 below |
 | 2026-10-04 | **U2.F1** — configurator v2 | Contract **`v0.41.0`** adopted (U2.1–U2.3, U3.B1–B6, U4.B, U5.B in one bump; the journeys dashboard moved to the published `admin.analytics.journeys`, the last admin request). The configurator reads `StoreConfiguratorDto` directly (adapter deleted) and sends every calculator its own published configuration (generic request retired); print colours from the published inks; size on a chosen **basis** with every other basis live from `store.specs.convertDimensions`, limits checked through the API's conversion, style-specific errors, display unit on the profile; goods-and-shipping inputs + **Structure Advisor** (recommended board, range + indicative notice, alternatives, acknowledgement, why sheet); **target price** with the API's gap, levers as cards, send to sales; **summary** step (completeness, edit, style code / verified international name, tolerances, next steps), **drafts** saved / resumed / shared; style code on artwork and proof; lint rule `packio/no-money-arithmetic`. 939 unit, 6 new e2e + the real-API journey (green on packio-api v0.41.0) | Account list of drafts (drafts name no product slug — CONTRACT-GAP store.catalog-product-ref); `journey_step` events for T6 (U5) | See §U2.F1 — process ink ×4, advisor defaults, basis reset, flat styles |
+| 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
+---
+
+## U3.4 wave 1 → U3.5 — Style library waves and library UX — 2026-10-04
+
+`docs/prompts/U3-style-library.md` §U3.4 (wave 1) and §U3.5, on `feat/u3.4-wave1-u3.5-library` (worktree `../packio-web-u3`, from `main` at `8982cd6`, U2.F1 merged). Gap analysis and outcome: `docs/update-2026-09-29-gap.md` §U3.4 / §U3.5. Post-launch per D-219.
+
+### U3.4 — engine, wave 1
+| Slice | What |
+|---|---|
+| Library entry + variant gate | `@packio/dieline/library` (`WAVE_RECIPES`, `OVERRIDE_RECIPES`, `ALL_RECIPES`, `registerLibrary()`): the wave recipes, the 15 wave modules, their parameters and axis words register from it; the 21 core styles the waves extend keep their pre-wave form in the main entry and are replaced by id with their extended form in the library — the designer and configurator draw exactly what they did. Tests, `styles:render` and the mocks read `ALL_RECIPES`. `model/variant-gate.test.ts`: every variant of every recipe builds a clean blank at the first preset it is valid at and, when it folds, closes to its outer size ± 1 mm with no collision; variant keys unique per base. |
+| Tuck end | Airplane tuck, four-flap lock, lid (top) window, hang `none`/sombrero; the 19 allowed tuck pairs; PK-TE-02 (friction / slit lock × tuck corners); PK-FT-01 flip-top (lip outside the front) × bottoms × window × die-cut insert. |
+| Trays, sleeves, inserts, display | Lock corners, display header card, die-cut insert as its own piece placed on the box floor (`pieces` hook, `floor` placement), open ends with thumb notches, slit-lock band, pillow hang holes and window, gable with every bottom, cavity insert, tray insert, roll-end paperboard tray; window/insert on the sleeve-drawer; corners, top window and finger holes on the telescope. |
+| Corrugated | Joints (glued / stitched / taped), hand holes in end or long panels and clip-in handle slots, vents, mailer fronts (tuck / tab lock, tear strip, adhesive strips), full telescope, HSC with a telescope lid, lock-corner / archive / produce / pizza trays, cross partitions (2D), pads. |
+| Flexible, bags, labels, tags | Pouch features as packio-api's multi-select key (`hang_hole+zipper`…): zipper, tear notch, hang hole, window (cut-out + film); poly mailer; paper carrier bag (2D); roll labels, wrap labels, cards, hang tags per shape. |
+| Words, mapping, assets | `AXIS_PHRASES` for every wave-1 axis value (pending review, D-212); `style-mapping.md` regenerated with coverage and the not-drawn reasons; `pnpm styles:render` manifest current (reproducible check passes). |
+
+### Counts (structure; publishable is the API's, D-243)
+| Category | Bases | Master variants | Drawn |
+|---|---|---|---|
+| Folding carton | 14 | 365 | 257 |
+| Inserts and partitions | 4 | 11 | 11 |
+| Corrugated | 13 | 116 | 116 |
+| Flexible and bags | 4 | 48 | 48 |
+| Labels | 3 | 12 | 12 |
+| Tags and sleeves | 3 | 26 | 24 |
+| **Total** | **41** (every wave-1 base) | **578** | **468** |
+Not drawn (110): hang tabs on straight-tuck and seal tops (81 — the back panel carries the lid), seal × lock (4), top windows on an open sleeve / pillow / gable (2 + 4 + 5), front windows on the matchbox and telescope (4 + 8), euro / sombrero on a custom tag outline (2).
+
+### U3.5 — library UX
+- `/styles`: category tabs and facets as links (counts from the API; filtered views `noindex`), search (synonyms and typos are the API's — the mock finds "หูช้าง" → PK-CF-01), sort, save (signed in) and compare ≤ 3 (per-viewer, browser storage) with a docked tray; a virtual grid (`src/ui/components/VirtualGrid`, page scroll, `aria-posinset`/`aria-setsize`, server-rendered first cells in the same column rule — no shift) growing by the API's cursor.
+- `/styles/<code>-<name>`: one indexable page per base, the name in the page's language (`/styles/pk-te-01-tuck-end-carton…`, `/th/styles/pk-te-01-กล่องฝาเสียบ…`, percent-encoded); any other name redirects to it; `hreflang` per language URL; BreadcrumbList + CreativeWork JSON-LD; the list has an ItemList. The variant picker offers only the API's published combinations; an option that cannot go with the rest is disabled and names the conflict; the chosen variant's code and price path; configure (instant) or request a quote; the engine's 3D model of exactly that variant on request (`next/dynamic`).
+- `/styles/compare?codes=` (≤ 3, `noindex`); sitemap lists every published style; header link "แบบกล่อง".
+- Mock `store.styles.*` / `store.styleFavourites.*`: 105 bases and 960 variants from the master file, wave 1's from the engine.
+
+### Decisions taken (most conservative option)
+- **Not drawn when it cannot be made**: such a variant stays `no_recipe` in the API rather than being drawn wrong.
+- **⚠ geometry for Prepress** (listed in `style-mapping.md` §5): slit and lock-corner slits, flip-top lip, insert proportions, mailer tab lock (no receiving slots), tear strips, adhesive strips, vents, hand-hole and handle-slot sizes, partition slots, pouch feature positions, paper-bag turn-over.
+- **In the library, the F4 chamfered hang tag left PK-TG-01**: packio-api reads an axis a recipe does not name as any value, so it could be returned for any shape; the `tag-*` recipes draw PK-TG-01 (the main entry's `hang-tag` keeps its base). A test now holds every multi-recipe base to naming all its axes.
+- **A pillow box is at most half as thick as it is wide** (`pillow.too_thick`): beyond that its end flaps overlap — found by the property test.
+- **Card thumbnails**: `StyleCardDto` has none; the card shows a neutral glyph (`CONTRACT-GAP store.styles.card-thumbnail`, request row written). The detail uses the API's signed assets.
+- **Marketing budget kept**: the first page's cards render on the server and only the save / compare islands run in the browser; sort and facets are links; favourites are a small store; the API client and the card renderer load on interaction.
+- **Two ratchets raised** (`docs/performance-budgets.md` §U3.4): customer-app 337,000 → 339,000 (338,896) and designer 468,000 → 472,000 (471,492) — the core modules' shared extension code left in the main entry; library-only copies of those modules would have to be kept in step by hand.
+
+### Verification
+- `pnpm typecheck`, `pnpm lint` clean; `pnpm test` 949 app + 5,390 engine tests (13 files; the variant gate 474 cases); `pnpm styles:render:check` reproducible.
+- Mock e2e (chromium): `storefront-styles.spec.ts` 5 / 5 with axe on the list, compare and detail; full suite 390 passed, 7 skipped, 1 load-related timeout (`storefront-account` saved quotation) green on re-run.
+- **Real API** (packio-api `v0.41.0`, integration stack): `e2e/integration/styles.spec.ts` green — the dev seed publishes no style yet (no approved recipes), so the library shows its empty state and an unknown code is a 404.
+- Lighthouse `customer-marketing` (now with `/styles` and a style page): `/styles` 269,148 B, style page 269,242 B initial JS (budget 270,000), performance / SEO / a11y 100; `customer-app` and `designer` green on the raised ratchets.
+
+### Follow-ups (not done)
+- **packio-api must read `ALL_RECIPES`** (`@packio/dieline/library`) instead of `RECIPES` in `recipesByBase` / facts to see the wave-1 recipes; until it does it draws exactly what it drew before.
+- Split the core modules' wave extensions into the library to win back the two ratchets.
+- Card thumbnails once `store.styles.card-thumbnail` ships (AVIF `sizes` then).
+- Prepress sign-off of every ⚠ above; Marketing / Prepress review of the generated names (D-212).
+- Waves 2 and 3 (64 bases).
+
 ---
 
 ## U2.F1 — Configurator v2 — 2026-10-04

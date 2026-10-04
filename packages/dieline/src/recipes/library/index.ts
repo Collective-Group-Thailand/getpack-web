@@ -1,0 +1,130 @@
+import ftCrash from "./data/ft-crash.json" with { type: "json" };
+import ftFourflap from "./data/ft-fourflap.json" with { type: "json" };
+import ftSeal from "./data/ft-seal.json" with { type: "json" };
+import ftSnap from "./data/ft-snap.json" with { type: "json" };
+import ftTuck from "./data/ft-tuck.json" with { type: "json" };
+import gableCrash from "./data/gable-crash.json" with { type: "json" };
+import gableFourflap from "./data/gable-fourflap.json" with { type: "json" };
+import gableSeal from "./data/gable-seal.json" with { type: "json" };
+import gableTuck from "./data/gable-tuck.json" with { type: "json" };
+import teAirplaneCrash from "./data/te-airplane-crash.json" with { type: "json" };
+import teAirplaneFourflap from "./data/te-airplane-fourflap.json" with { type: "json" };
+import teAirplaneSeal from "./data/te-airplane-seal.json" with { type: "json" };
+import teAirplaneSnap from "./data/te-airplane-snap.json" with { type: "json" };
+import teAirplaneTuck from "./data/te-airplane-tuck.json" with { type: "json" };
+import teReverseCrash from "./data/te-reverse-crash.json" with { type: "json" };
+import teReverseFourflap from "./data/te-reverse-fourflap.json" with { type: "json" };
+import teReverseSeal from "./data/te-reverse-seal.json" with { type: "json" };
+import teReverseSnap from "./data/te-reverse-snap.json" with { type: "json" };
+import teSealCrash from "./data/te-seal-crash.json" with { type: "json" };
+import teSealSnap from "./data/te-seal-snap.json" with { type: "json" };
+import teSealTuck from "./data/te-seal-tuck.json" with { type: "json" };
+import teStraightFourflap from "./data/te-straight-fourflap.json" with { type: "json" };
+import teStraightSeal from "./data/te-straight-seal.json" with { type: "json" };
+import te2Airplane from "./data/te2-airplane.json" with { type: "json" };
+import te2Reverse from "./data/te2-reverse.json" with { type: "json" };
+import te2Straight from "./data/te2-straight.json" with { type: "json" };
+import pizzaBox from "./data/pizza-box.json" with { type: "json" };
+import lockCornerTray from "./data/lock-corner-tray.json" with { type: "json" };
+import archiveBox from "./data/archive-box.json" with { type: "json" };
+import produceTray from "./data/produce-tray.json" with { type: "json" };
+import partitionSet from "./data/partition-set.json" with { type: "json" };
+import padSheet from "./data/pad-sheet.json" with { type: "json" };
+import rscHandHoles from "./data/rsc-hand-holes.json" with { type: "json" };
+import fullTelescope from "./data/full-telescope.json" with { type: "json" };
+import hscLid from "./data/hsc-lid.json" with { type: "json" };
+import rollEndTray from "./data/roll-end-tray.json" with { type: "json" };
+import trayInsert from "./data/tray-insert.json" with { type: "json" };
+import displayTray from "./data/display-tray.json" with { type: "json" };
+import cavityInsert from "./data/cavity-insert.json" with { type: "json" };
+import paperBag from "./data/paper-bag.json" with { type: "json" };
+import rollLabelCircle from "./data/roll-label-circle.json" with { type: "json" };
+import rollLabelCustom from "./data/roll-label-custom.json" with { type: "json" };
+import rollLabelOval from "./data/roll-label-oval.json" with { type: "json" };
+import rollLabelRect from "./data/roll-label-rect.json" with { type: "json" };
+import rollLabelRounded from "./data/roll-label-rounded.json" with { type: "json" };
+import wrapLabelRounded from "./data/wrap-label-rounded.json" with { type: "json" };
+import wrapLabelSquare from "./data/wrap-label-square.json" with { type: "json" };
+import standUpPouch from "./data/stand-up-pouch.json" with { type: "json" };
+import flatPouch from "./data/flat-pouch.json" with { type: "json" };
+import polyMailer from "./data/poly-mailer.json" with { type: "json" };
+import tagCircle from "./data/tag-circle.json" with { type: "json" };
+import tagCustom from "./data/tag-custom.json" with { type: "json" };
+import tagOval from "./data/tag-oval.json" with { type: "json" };
+import tagRect from "./data/tag-rect.json" with { type: "json" };
+import tagRounded from "./data/tag-rounded.json" with { type: "json" };
+import cardCircle from "./data/card-circle.json" with { type: "json" };
+import cardCustom from "./data/card-custom.json" with { type: "json" };
+import cardOval from "./data/card-oval.json" with { type: "json" };
+import cardRect from "./data/card-rect.json" with { type: "json" };
+import cardRounded from "./data/card-rounded.json" with { type: "json" };
+import type { StyleRecipe } from "../types";
+
+/**
+ * The style library's recipes (U3.4 waves): every base structure beyond the core styles the
+ * designer and configurator ship with (`recipes/index.ts`). Kept out of the package's main entry
+ * — imported as `@packio/dieline/library` — so a page that only draws the core styles does not
+ * carry the library's data (U3.1 follow-up). In the catalogue's reading order: category, then base.
+ */
+export const WAVE_RECIPES: readonly StyleRecipe[] = [
+  ftCrash,
+  ftFourflap,
+  ftSeal,
+  ftSnap,
+  ftTuck,
+  gableCrash,
+  gableFourflap,
+  gableSeal,
+  gableTuck,
+  teAirplaneCrash,
+  teAirplaneFourflap,
+  teAirplaneSeal,
+  teAirplaneSnap,
+  teAirplaneTuck,
+  teReverseCrash,
+  teReverseFourflap,
+  teReverseSeal,
+  teReverseSnap,
+  teSealCrash,
+  teSealSnap,
+  teSealTuck,
+  teStraightFourflap,
+  teStraightSeal,
+  te2Airplane,
+  te2Reverse,
+  te2Straight,
+  pizzaBox,
+  lockCornerTray,
+  archiveBox,
+  produceTray,
+  partitionSet,
+  padSheet,
+  rscHandHoles,
+  fullTelescope,
+  hscLid,
+  rollEndTray,
+  trayInsert,
+  displayTray,
+  cavityInsert,
+  paperBag,
+  rollLabelCircle,
+  rollLabelCustom,
+  rollLabelOval,
+  rollLabelRect,
+  rollLabelRounded,
+  wrapLabelRounded,
+  wrapLabelSquare,
+  standUpPouch,
+  flatPouch,
+  polyMailer,
+  tagCircle,
+  tagCustom,
+  tagOval,
+  tagRect,
+  tagRounded,
+  cardCircle,
+  cardCustom,
+  cardOval,
+  cardRect,
+  cardRounded,
+] as unknown as StyleRecipe[];

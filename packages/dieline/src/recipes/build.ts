@@ -63,7 +63,7 @@ export function recipeContext(
 
 export function drawRecipe(recipe: StyleRecipe, ctx: BuildContext): Dieline {
   const { main, parts } = uses(recipe);
-  if (main.def.slot === "pieceSet") return main.def.build(ctx, main.cfg);
+  if (main.def.slot === "pieceSet") return main.def.build(ctx, main.cfg, parts);
   if (main.def.slot !== "body") throw new Error(`recipe.no_body: ${recipe.id}`);
   return main.def.build(ctx, main.cfg, parts);
 }

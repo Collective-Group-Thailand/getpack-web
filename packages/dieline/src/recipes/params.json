@@ -279,6 +279,20 @@
           "th": "ที่ด้านข้างทั้งสอง",
           "en": "In both end panels"
         }
+      },
+      {
+        "value": "long",
+        "label": {
+          "th": "ที่ด้านยาวทั้งสอง",
+          "en": "In both long panels"
+        }
+      },
+      {
+        "value": "insert",
+        "label": {
+          "th": "ช่องเสียบหูหิ้วที่ด้านข้าง",
+          "en": "Clip-in handle slots in the end panels"
+        }
       }
     ]
   },
@@ -303,6 +317,13 @@
         "label": {
           "th": "รูกลม",
           "en": "Round hole"
+        }
+      },
+      {
+        "value": "sombrero",
+        "label": {
+          "th": "หัวแขวนทรงหมวก",
+          "en": "Sombrero header"
         }
       },
       {
@@ -766,6 +787,13 @@
         "label": {
           "th": "ด้านข้างซ้าย",
           "en": "Left side"
+        }
+      },
+      {
+        "value": "lid",
+        "label": {
+          "th": "ฝาบน",
+          "en": "Top lid"
         }
       }
     ],

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "pillow",
+  "base": "PK-SP-01",
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "กล่องหมอน",
+    "en": "Pillow box"
+  },
+  "description": {
+    "th": "ปลายโค้งพับเข้าหากัน ตัวกล่องโป่งเหมือนหมอน สวยสำหรับของชำร่วย เครื่องประดับ",
+    "en": "Curved ends fold in and bow the box into a pillow — favours, jewellery, small gifts"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "label": {
+        "th": "ความยาวรวม (กึ่งกลาง)",
+        "en": "Overall length (at the middle)"
+      },
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "label": {
+        "th": "ความกว้าง",
+        "en": "Width"
+      },
+      "min": 40,
+      "max": 300
+    },
+    "thickness",
+    "glueWidth",
+    "grain",
+    "hangHole",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "length": 150,
+    "width": 100,
+    "thickness": 30,
+    "grain": "across",
+    "hangHole": "none",
+    "windowPanel": "front",
+    "window": "none",
+    "windowWidth": 40,
+    "windowHeight": 30,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "เล็ก 120 × 80 × 25",
+        "en": "Small 120 × 80 × 25"
+      },
+      "values": {
+        "length": 120,
+        "width": 80,
+        "thickness": 25
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "กลาง 180 × 110 × 35",
+        "en": "Medium 180 × 110 × 35"
+      },
+      "values": {
+        "length": 180,
+        "width": 110,
+        "thickness": 35
+      }
+    }
+  ],
+  "body": {
+    "module": "pillowTube"
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ],
+  "constraints": [
+    {
+      "id": "pillow.hang_width",
+      "code": "hanger.too_narrow",
+      "severity": "error",
+      "param": "hangHole",
+      "require": "not ((hangHole == 'euro' or hangHole == 'sombrero') and width < C.EURO_SLOT_WIDTH_MM + 12)",
+      "message": {
+        "th": "กล่องแคบเกินกว่าจะเจาะรูยูโร เลือกรูกลมแทน",
+        "en": "The box is too narrow for a euro slot — choose a round hole"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "thickness"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "width + t",
+    "height": "thickness"
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

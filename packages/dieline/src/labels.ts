@@ -40,6 +40,10 @@ export const FACE_LABELS = {
   tag: { th: "ป้าย", en: "Tag" },
   band: { th: "สายคาด", en: "Band" },
   panel: { th: "แผง", en: "Panel" },
+  platform: { th: "แผ่นรองสินค้า", en: "Insert platform" },
+  insert_leg: { th: "ขาตัวรอง", en: "Insert leg" },
+  header: { th: "แผ่นหัวโชว์", en: "Header card" },
+  partition: { th: "แผ่นกั้นช่อง", en: "Partition strip" },
 } as const satisfies Record<string, Localized>;
 
 export type FaceLabel = keyof typeof FACE_LABELS;
@@ -50,6 +54,7 @@ export const PIECE_LABELS = {
   base: { th: "ตัวกล่อง", en: "Base" },
   sleeve: { th: "ปลอก", en: "Sleeve" },
   drawer: { th: "ลิ้นชัก", en: "Drawer" },
+  insert: { th: "ตัวรองสินค้า", en: "Insert" },
 } as const satisfies Record<string, Localized>;
 
 export type PieceLabel = keyof typeof PIECE_LABELS;

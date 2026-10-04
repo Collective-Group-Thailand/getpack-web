@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "id": "stand-up-pouch",
+  "base": "PK-PB-01",
+  "variants": {
+    "pouch_feat": {
+      "none": {
+        "pouchFeatures": "none"
+      },
+      "hang_hole": {
+        "pouchFeatures": "hang_hole"
+      },
+      "tear_notch": {
+        "pouchFeatures": "tear_notch"
+      },
+      "window": {
+        "pouchFeatures": "window"
+      },
+      "zipper": {
+        "pouchFeatures": "zipper"
+      },
+      "hang_hole+tear_notch": {
+        "pouchFeatures": "hang_hole+tear_notch"
+      },
+      "hang_hole+window": {
+        "pouchFeatures": "hang_hole+window"
+      },
+      "hang_hole+zipper": {
+        "pouchFeatures": "hang_hole+zipper"
+      },
+      "tear_notch+window": {
+        "pouchFeatures": "tear_notch+window"
+      },
+      "tear_notch+zipper": {
+        "pouchFeatures": "tear_notch+zipper"
+      },
+      "window+zipper": {
+        "pouchFeatures": "window+zipper"
+      },
+      "hang_hole+tear_notch+window": {
+        "pouchFeatures": "hang_hole+tear_notch+window"
+      },
+      "hang_hole+tear_notch+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+zipper"
+      },
+      "hang_hole+window+zipper": {
+        "pouchFeatures": "hang_hole+window+zipper"
+      },
+      "tear_notch+window+zipper": {
+        "pouchFeatures": "tear_notch+window+zipper"
+      },
+      "hang_hole+tear_notch+window+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+window+zipper"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ซองตั้งได้",
+    "en": "Stand-up pouch"
+  },
+  "description": {
+    "th": "ซองฟิล์มก้นขยาย ตั้งบนชั้นวางได้",
+    "en": "A film pouch with a gusseted bottom that stands on the shelf"
+  },
+  "materials": ["flexible"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 500
+    },
+    {
+      "ref": "bottom",
+      "omit": ["when"]
+    },
+    "sealWidth",
+    "pouchFeatures",
+    {
+      "ref": "windowWidth",
+      "omit": ["when"]
+    },
+    {
+      "ref": "windowHeight",
+      "omit": ["when"]
+    }
+  ],
+  "defaults": {
+    "pouchType": "standing",
+    "width": 160,
+    "length": 230,
+    "sealWidth": 8,
+    "pouchFeatures": "none",
+    "windowWidth": 64,
+    "windowHeight": 69,
+    "bottom": 50
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "120 × 180",
+        "en": "120 × 180"
+      },
+      "values": {
+        "width": 120,
+        "length": 180,
+        "windowWidth": 48,
+        "windowHeight": 54,
+        "bottom": 40
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "160 × 230",
+        "en": "160 × 230"
+      },
+      "values": {
+        "width": 160,
+        "length": 230,
+        "windowWidth": 64,
+        "windowHeight": 69,
+        "bottom": 50
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "200 × 300",
+        "en": "200 × 300"
+      },
+      "values": {
+        "width": 200,
+        "length": 300,
+        "windowWidth": 80,
+        "windowHeight": 90,
+        "bottom": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "pouchWeb"
+  }
+}

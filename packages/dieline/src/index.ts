@@ -89,10 +89,12 @@ export { dielineToPdf, type PdfImage, type PdfOptions } from "./export/pdf";
 export { LAYER_OF, LAYER_ORDER, LAYER_STYLE, type LayerName } from "./export/layers";
 export { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "./materials";
 export {
+  allStyles,
   buildStyle,
   getStyle,
   hingeMapOf,
   isStyleId,
+  registerStyles,
   resolveStyleId,
   resolveValues,
   STYLE_ALIASES,

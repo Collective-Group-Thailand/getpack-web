@@ -25,7 +25,6 @@ import {
   inflatedPouch,
   presetsOf,
   recipeProcesses,
-  RECIPES,
   REFERENCE_BY_CATEGORY,
   REFERENCE_MATERIALS,
   render2D,
@@ -35,6 +34,7 @@ import {
   type Image,
   type StyleRecipe,
 } from "@packio/dieline";
+import { ALL_RECIPES } from "@packio/dieline/library";
 
 const PACKAGE = new URL("../packages/dieline/", import.meta.url).pathname;
 const MANIFEST = join(PACKAGE, "generated", "manifest.json");
@@ -74,7 +74,7 @@ const slug = (key: string) => key.replace(/=/g, "-").replace(/;/g, "__") || "sta
 function render(out: string) {
   const version = JSON.parse(readFileSync(join(PACKAGE, "package.json"), "utf8")).version as string;
   const entries = [];
-  for (const recipe of RECIPES as readonly StyleRecipe[]) {
+  for (const recipe of ALL_RECIPES as readonly StyleRecipe[]) {
     const materialId = REFERENCE_BY_CATEGORY[recipe.category][0];
     const material = REFERENCE_MATERIALS[materialId];
     for (const variant of variantsOf(recipe)) {

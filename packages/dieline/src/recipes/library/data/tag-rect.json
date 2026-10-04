@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "tag-rect",
+  "base": "PK-TG-01",
+  "variant": {
+    "shape_flat": "rectangle"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ป้ายแขวน สี่เหลี่ยม",
+    "en": "Hang tag, rectangle"
+  },
+  "description": {
+    "th": "ป้ายแขวนสินค้า เลือกรูแขวนได้",
+    "en": "A swing tag with a choice of hang hole"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "hangHole"
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60,
+    "hangHole": "none"
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "hangHole",
+      "with": {
+        "cx": "length / 2",
+        "cy": "14"
+      }
+    }
+  ]
+}

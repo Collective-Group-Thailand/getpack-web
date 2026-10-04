@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "te-straight-seal",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "straight_tuck",
+    "tuck_bottom": "seal",
+    "hang": "none"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบ ก้นปิดกาว",
+    "en": "Tuck top, seal bottom"
+  },
+  "description": {
+    "th": "กล่องกระดาษแข็งฝาเสียบและก้นปิดกาว ตามโครงสร้างตระกูลฝาเสียบ",
+    "en": "Folding carton with a tuck top and a seal bottom — the tuck-end family's closure pair"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "seal"
+    }
+  },
+  "features": [
+    {
+      "module": "thumbNotch",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "window"
+    }
+  ]
+}

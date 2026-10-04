@@ -378,3 +378,61 @@ export async function getDesignerCatalog(product?: string): Promise<DesignerCata
     null,
   );
 }
+
+/* ------------------------------------------------------------------------- style library */
+
+export type StyleCard = Schemas["StyleCardDto"];
+export type StyleDetail = Schemas["StyleDetailDto"];
+export type StyleList = Schemas["StyleListDto"];
+export type StyleSort = Schemas["StyleSort"];
+
+export interface StyleListQuery {
+  category?: string;
+  family?: string;
+  closure?: string;
+  feature?: string;
+  materialClass?: string;
+  pricePath?: Schemas["QuoteMode"];
+  useCase?: string;
+  q?: string;
+  sort?: StyleSort;
+  cursor?: string;
+  limit?: number;
+}
+
+/**
+ * A page of the style library with its facets (`store.styles.list`, U3.5). Public and cached like
+ * the catalogue: `favourite` is the signed-in customer's and is left to the browser
+ * (`store.styleFavourites.list`), so a cached page is never one customer's view.
+ */
+export async function listStyles(query: StyleListQuery = {}): Promise<StyleList> {
+  const { data } = await (await publicApi("catalogue")).GET("/v1/store/styles", { params: { query } });
+  return data!;
+}
+
+/** Every published style, for the sitemap: the list's pages followed to the end (at most 20). */
+export async function listAllStyles(): Promise<StyleCard[]> {
+  const out: StyleCard[] = [];
+  let cursor: string | undefined;
+  for (let page = 0; page < 20; page += 1) {
+    const list = await listStyles({ limit: 100, sort: "name", ...(cursor ? { cursor } : {}) });
+    out.push(...list.data);
+    if (!list.meta.nextCursor) break;
+    cursor = list.meta.nextCursor;
+  }
+  return out;
+}
+
+export async function getStyle(code: string): Promise<StyleDetail | null> {
+  const api = await publicApi("catalogue");
+  return orNull(api.GET("/v1/store/styles/{code}", { params: { path: { code } } }).then((r) => r.data!));
+}
+
+/** Up to three styles side by side (`store.styles.compare`, D-246); `null` when one is unknown. */
+export async function compareStyles(codes: string[]): Promise<StyleDetail[] | null> {
+  if (codes.length === 0) return [];
+  const api = await publicApi("catalogue");
+  return orNull(
+    api.GET("/v1/store/styles/compare", { params: { query: { codes: codes.join(",") } } }).then((r) => r.data!),
+  );
+}

@@ -1,3 +1,4 @@
+import { TRAY_CORNER_FLAP_MAX_MM, TRAY_CORNER_FLAP_SHARE } from "../constants";
 import { face } from "../faces";
 import type { FaceLabel } from "../labels";
 import { polygon, rectangle } from "../path";
@@ -174,4 +175,29 @@ export function buildTray(spec: TraySpec): Face[] {
   }
   faces.push(...extraBack, ...extraFront, ...extraLeft, ...extraRight);
   return faces;
+}
+
+/** The corner flap reach a tray body draws (`tray` preset `glued`). */
+export const cornerFlapOf = (height: number) =>
+  Math.min(height * TRAY_CORNER_FLAP_SHARE, TRAY_CORNER_FLAP_MAX_MM, height - 0.5);
+
+/**
+ * Lock-corner slits: where each corner flap's tip lands on the front and back walls, a slit
+ * 1.5 mm wide over the middle 40 % of the wall that the flap's tip is pushed through — the corners
+ * hold without glue. Drawn only where the flap reaches 8 mm or more. ⚠ Slit width and position to
+ * be confirmed by Prepress (a lock tab on the flap is not drawn).
+ */
+export function lockCornerHoles(
+  f: { length: number; width: number; height: number },
+  cornerFlap = cornerFlapOf(f.height),
+): Record<string, Contour[]> {
+  const { length: L, width: W, height: H } = f;
+  const cf = Math.min(cornerFlap, (L - 1) / 2, (W - 1) / 2);
+  if (cf < 8) return {};
+  const slit = (x: number, y: number) => rectangle(x - 0.75, y, 1.5, H * 0.4);
+  const xs = [H + cf - 3, H + L - cf + 3];
+  return {
+    "wall-back": xs.map((x) => slit(x, H * 0.3)),
+    "wall-front": xs.map((x) => slit(x, H + W + H * 0.3)),
+  };
 }

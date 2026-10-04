@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "card-custom",
+  "base": "PK-TG-05",
+  "variant": {
+    "shape_flat": "custom_path"
+  },
+  "category": "flat",
+  "name": {
+    "th": "การ์ดขอบคุณ / การ์ดสอด รูปทรงอิสระ",
+    "en": "Insert / thank-you card, custom shape"
+  },
+  "description": {
+    "th": "การ์ดกระดาษแข็งสำหรับใส่ในกล่องพร้อมสินค้า",
+    "en": "A card to go in the box with the goods"
+  },
+  "materials": ["paperboard"],
+  "params": ["size", "path"],
+  "defaults": {
+    "size": 60,
+    "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+  },
+  "presets": [
+    {
+      "id": "star",
+      "label": {
+        "th": "ดาว 60 มม.",
+        "en": "Star, 60 mm"
+      },
+      "values": {
+        "size": 60,
+        "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "custom_path"
+    }
+  }
+}

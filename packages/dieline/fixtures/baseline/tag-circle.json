@@ -1,0 +1,87 @@
+{
+  "definition": "13170b4bdaaffd",
+  "d30 · label-film": {
+    "build": "1547894186e2a5",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · board-350": {
+    "build": "1547894186e2a5",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d50 · label-film": {
+    "build": "0591af2fa0a03b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d50 · board-350": {
+    "build": "0591af2fa0a03b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d80 · label-film": {
+    "build": "135bfc83fc2e0c",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d80 · board-350": {
+    "build": "135bfc83fc2e0c",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter=min": {
+    "build": "13de1ad96d9287",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter=max": {
+    "build": "0503af1da3d9bb",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter<min": {
+    "build": "037ee3d93ade3a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1521b7792e280f",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · diameter>max": {
+    "build": "0cca0dba0c5311",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1d44afcdeca0cf",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · hangHole=euro": {
+    "build": "169d173046924c",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · hangHole=round": {
+    "build": "154a24f629c34d",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · hangHole=sombrero": {
+    "build": "01d33433d612c9",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "d30 · label-film · hangHole=none": {
+    "build": "1547894186e2a5",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  }
+}

@@ -1,9 +1,10 @@
 import { buildTray } from "../../construct/tray";
+import { extraPieces } from "./tube";
 import { assemble, piece } from "../../faces";
 import type { PieceLabel } from "../../labels";
 import { grainOn, t } from "../../styles/_shared";
-import type { Face } from "../../types";
-import type { BodyModule, TrayExtras, TrayFrame, TrayWall } from "../types";
+import type { Contour, Face } from "../../types";
+import type { BodyModule, BuildContext, Parts, TrayExtras, TrayFrame, TrayWall } from "../types";
 
 /**
  * A cross-shaped tray — a base, four walls and corner glue flaps — the body of trays, six-corner
@@ -11,6 +12,16 @@ import type { BodyModule, TrayExtras, TrayFrame, TrayWall } from "../types";
  * `height`, `cornerFlap`, usually through the recipe's `dims`); a lid closure and wall features
  * hang their faces on the walls' free edges.
  */
+
+/** Every feature's holes in the tray's faces, merged per face id. */
+export function trayHolesOf(ctx: BuildContext, parts: Parts, frame: TrayFrame): Partial<Record<string, Contour[]>> {
+  const out: Partial<Record<string, Contour[]>> = {};
+  for (const f of parts.features)
+    if (f.def.slot === "feature" && f.def.trayHoles)
+      for (const [id, holes] of Object.entries(f.def.trayHoles(ctx, f.cfg, frame)))
+        out[id] = [...(out[id] ?? []), ...holes!];
+  return out;
+}
 
 const WALLS: TrayWall[] = ["wall-back", "wall-front", "wall-left", "wall-right"];
 
@@ -56,9 +67,17 @@ export const tray: BodyModule = {
       const faces = extras.flatMap((e) => e[w] ?? []);
       if (faces.length) wallExtras[w] = () => faces;
     }
-    const faces = buildTray({ ...frame, cornerFlap: ctx.num(cfg.cornerFlap as string), wallExtras });
+    const faces = buildTray({
+      ...frame,
+      cornerFlap: ctx.num(cfg.cornerFlap as string),
+      wallExtras,
+      holes: trayHolesOf(ctx, parts, frame),
+    });
     const p = (cfg.piece ?? { id: "blank", label: "blank" }) as { id: string; label: PieceLabel };
-    return assemble(ctx.styleId, [piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string))]);
+    return assemble(ctx.styleId, [
+      piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string)),
+      ...extraPieces(ctx, parts),
+    ]);
   },
   hinges: () => ({ roots: { blank: "base" }, upright: "base" }),
 };

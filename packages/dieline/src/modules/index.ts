@@ -22,7 +22,7 @@ import { PLANNED_MODULES } from "./planned";
 import type { ModuleDef } from "./types";
 
 /** Every module, implemented first (body, closure, feature, piece set), then the planned ones. */
-export const MODULES: readonly ModuleDef[] = [
+export const MODULES: ModuleDef[] = [
   tube,
   tray,
   pillowTube,
@@ -53,6 +53,19 @@ export const MODULES: readonly ModuleDef[] = [
 ];
 
 const BY_ID = new Map(MODULES.map((m) => [m.id, m]));
+
+/**
+ * Adds modules after load — the style library's (`@packio/dieline/library`), kept out of the main
+ * entry with the recipes that use them (U3.4). A module declared `planned` is replaced.
+ */
+export function registerModules(defs: readonly ModuleDef[]): void {
+  for (const def of defs) {
+    const at = MODULES.findIndex((m) => m.id === def.id);
+    if (at >= 0) MODULES[at] = def;
+    else MODULES.push(def);
+    BY_ID.set(def.id, def);
+  }
+}
 
 export function getModule(id: string): ModuleDef | undefined {
   return BY_ID.get(id);

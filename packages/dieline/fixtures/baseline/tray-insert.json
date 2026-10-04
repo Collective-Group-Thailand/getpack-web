@@ -1,0 +1,165 @@
+{
+  "definition": "1dde95eb03a533",
+  "small · board-350": {
+    "build": "109ac0e91c9ff4",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e": {
+    "build": "1e5d69dab6abf6",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-b": {
+    "build": "193aa0a0134e49",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "medium · board-350": {
+    "build": "177edae2a741d0",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "medium · flute-e": {
+    "build": "1c8050771a0e83",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "medium · flute-b": {
+    "build": "0772f5e094deff",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "large · board-350": {
+    "build": "0d139a3fbaee72",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "large · flute-e": {
+    "build": "1626d23b22f12d",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "large · flute-b": {
+    "build": "1e8bfa34bbc14f",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · length=min": {
+    "build": "1602fd47367a5a",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · length=max": {
+    "build": "0b27d76b3531de",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · length<min": {
+    "build": "116f77a1a3dad9",
+    "hinges": "1e07ab69c64715",
+    "validate": "122fc3f2966a85",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · length>max": {
+    "build": "02bc78b39647e7",
+    "hinges": "1e07ab69c64715",
+    "validate": "07572170e7282f",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · width=min": {
+    "build": "054d33d3bca385",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · width=max": {
+    "build": "187d4119934e31",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · width<min": {
+    "build": "11f62690c9d212",
+    "hinges": "1e07ab69c64715",
+    "validate": "14605db2e52ecc",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · width>max": {
+    "build": "1f210f65616584",
+    "hinges": "1e07ab69c64715",
+    "validate": "12cfd53dd9d4dd",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · height=min": {
+    "build": "016f60e6a18788",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · height=max": {
+    "build": "04637c873a6dde",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · height<min": {
+    "build": "1a548d48dd2b95",
+    "hinges": "1e07ab69c64715",
+    "validate": "04efa7b25ac6c9",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · height>max": {
+    "build": "1f506d33cd7a68",
+    "hinges": "1e07ab69c64715",
+    "validate": "0ee6176d79b403",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · cornerFlap=min": {
+    "build": "0c60e7aedf3110",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · cornerFlap=max": {
+    "build": "11caaf60cef2a6",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · cornerFlap<min": {
+    "build": "18a9b1a2a312bf",
+    "hinges": "1e07ab69c64715",
+    "validate": "16a815f51405ad",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · cornerFlap>max": {
+    "build": "11caaf60cef2a6",
+    "hinges": "1e07ab69c64715",
+    "validate": "1d63732e13b996",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · grain=across": {
+    "build": "109ac0e91c9ff4",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · grain=along": {
+    "build": "054f98bfdd97ce",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  }
+}

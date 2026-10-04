@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "card-oval",
+  "base": "PK-TG-05",
+  "variant": {
+    "shape_flat": "oval"
+  },
+  "category": "flat",
+  "name": {
+    "th": "การ์ดขอบคุณ / การ์ดสอด วงรี",
+    "en": "Insert / thank-you card, oval"
+  },
+  "description": {
+    "th": "การ์ดกระดาษแข็งสำหรับใส่ในกล่องพร้อมสินค้า",
+    "en": "A card to go in the box with the goods"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    }
+  ],
+  "defaults": {
+    "length": 80,
+    "width": 50
+  },
+  "presets": [
+    {
+      "id": "a",
+      "label": {
+        "th": "60 × 40",
+        "en": "60 × 40"
+      },
+      "values": {
+        "length": 60,
+        "width": 40
+      }
+    },
+    {
+      "id": "b",
+      "label": {
+        "th": "100 × 60",
+        "en": "100 × 60"
+      },
+      "values": {
+        "length": 100,
+        "width": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "oval"
+    }
+  }
+}

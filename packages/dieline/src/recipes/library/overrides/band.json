@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "band",
+  "base": "PK-SL-03",
+  "variants": {
+    "lock": {
+      "friction": {
+        "lock": "friction"
+      },
+      "slit_lock": {
+        "lock": "slit"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "สายคาด",
+    "en": "Band (strap)"
+  },
+  "description": {
+    "th": "แถบกระดาษคาดรอบสินค้า ทับกาวที่ปลาย ความยาวคือรอบวงรวมระยะทับ",
+    "en": "A paper strip round a product, glued where it overlaps; the length includes the overlap"
+  },
+  "materials": ["paperboard", "label"],
+  "params": [
+    {
+      "ref": "length",
+      "label": {
+        "th": "ความยาวรวม",
+        "en": "Total length"
+      },
+      "min": 50,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "label": {
+        "th": "ความกว้างแถบ",
+        "en": "Band width"
+      },
+      "min": 10,
+      "max": 300
+    },
+    {
+      "ref": "overlap",
+      "max": 50
+    },
+    "lock"
+  ],
+  "defaults": {
+    "length": 400,
+    "width": 50,
+    "overlap": 15,
+    "lock": "friction"
+  },
+  "presets": [
+    {
+      "id": "box",
+      "label": {
+        "th": "คาดกล่อง 400 × 50",
+        "en": "Box band 400 × 50"
+      },
+      "values": {
+        "length": 400,
+        "width": 50
+      }
+    },
+    {
+      "id": "jar",
+      "label": {
+        "th": "คาดขวดโหล 280 × 40",
+        "en": "Jar band 280 × 40"
+      },
+      "values": {
+        "length": 280,
+        "width": 40
+      }
+    }
+  ],
+  "body": {
+    "module": "band"
+  },
+  "legacy": {
+    "patternKeys": ["mapping:66", "strap"]
+  }
+}

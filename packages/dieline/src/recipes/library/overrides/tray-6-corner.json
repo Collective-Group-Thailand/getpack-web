@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "tray-6-corner",
+  "base": "PK-TR-02",
+  "variants": {
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "กล่องถาดฝาพับ 6 มุม",
+    "en": "Six-corner box (tray with hinged lid)"
+  },
+  "description": {
+    "th": "ถาดทากาว 4 มุม มีฝาพับติดผนังหลังและขอบฝาทากาวอีก 2 มุม ส่งแบบแบนแล้วกางใช้ได้ทันที",
+    "en": "A glued tray with a lid hinged on the back and its lips glued at two more corners — ships flat, pops up ready"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 40,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 30,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 15,
+      "max": 150
+    },
+    "grain",
+    "insert"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 150,
+    "height": 60,
+    "grain": "across",
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "cake",
+      "label": {
+        "th": "เค้ก 200 × 200 × 80",
+        "en": "Cake 200 × 200 × 80"
+      },
+      "values": {
+        "length": 200,
+        "width": 200,
+        "height": 80
+      }
+    },
+    {
+      "id": "dessert",
+      "label": {
+        "th": "ขนม 200 × 150 × 60",
+        "en": "Desserts 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "glued_lips"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "height": "height + t"
+  },
+  "legacy": {
+    "patternKeys": ["pid:10", "pid:11"]
+  }
+}

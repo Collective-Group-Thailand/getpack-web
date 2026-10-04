@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { REFERENCE_BY_CATEGORY, REFERENCE_MATERIALS } from "./materials";
 import { isActive } from "./params";
-import { hingeMapOf, resolveValues, STYLES } from "./styles";
+import { registerLibrary } from "./library";
+import { allStyles, hingeMapOf, resolveValues } from "./styles";
+
+registerLibrary();
+/** The core styles and the library's (U3.4). */
+const STYLES = allStyles();
 import type { BoxStyleDef, MaterialSpec, ParamValues } from "./types";
 
 /**

@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "paper-bag",
+  "base": "PK-PG-01",
+  "variants": {
+    "bag_handle": {
+      "twisted_paper": {
+        "bagHandle": "twisted_paper"
+      },
+      "flat_paper": {
+        "bagHandle": "flat_paper"
+      },
+      "rope": {
+        "bagHandle": "rope"
+      },
+      "die_cut": {
+        "bagHandle": "die_cut"
+      },
+      "none": {
+        "bagHandle": "none"
+      }
+    },
+    "bag_gusset": {
+      "gusseted": {
+        "bagGusset": "gusseted"
+      },
+      "flat": {
+        "bagGusset": "flat"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "ถุงกระดาษหูหิ้ว",
+    "en": "Paper carrier bag"
+  },
+  "description": {
+    "th": "ถุงกระดาษพับขอบบน ก้นทากาว เลือกหูหิ้วและขยายข้างได้",
+    "en": "A paper carrier bag with a turned-over top and a glued bottom, with a choice of handles and gussets"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 120,
+      "max": 600
+    },
+    {
+      "ref": "gusset",
+      "min": 40,
+      "max": 250,
+      "omit": ["when"]
+    },
+    {
+      "ref": "height",
+      "min": 150,
+      "max": 700
+    },
+    "bagGusset",
+    "bagHandle",
+    "glueWidth",
+    "grain"
+  ],
+  "defaults": {
+    "width": 260,
+    "gusset": 100,
+    "height": 330,
+    "bagGusset": "gusseted",
+    "bagHandle": "twisted_paper",
+    "grain": "along"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "180 × 80 × 230",
+        "en": "180 × 80 × 230"
+      },
+      "values": {
+        "width": 180,
+        "gusset": 80,
+        "height": 230
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "260 × 100 × 330",
+        "en": "260 × 100 × 330"
+      },
+      "values": {
+        "width": 260,
+        "gusset": 100,
+        "height": 330
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "320 × 120 × 420",
+        "en": "320 × 120 × 420"
+      },
+      "values": {
+        "width": 320,
+        "gusset": 120,
+        "height": 420
+      }
+    }
+  ],
+  "body": {
+    "module": "paperBag"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "roll-label-rounded",
+  "base": "PK-LA-01",
+  "variant": {
+    "shape_flat": "rounded_rectangle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากม้วน สี่เหลี่ยมมุมมน",
+    "en": "Roll label, rounded rectangle"
+  },
+  "description": {
+    "th": "ฉลากสติกเกอร์บนม้วน สำหรับเครื่องติดฉลาก",
+    "en": "Self-adhesive labels on a roll, for labelling machines"
+  },
+  "materials": ["label"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "cornerRadius"
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60,
+    "cornerRadius": 6
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rounded_rectangle"
+    }
+  }
+}
