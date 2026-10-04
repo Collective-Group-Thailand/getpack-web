@@ -234,6 +234,14 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     materialId: design.materialId,
     semiDesignTemplateId: row.semiDesignTemplateId,
     ...sizeOfDocument(design.document),
+    // U4.B1 studio fields (D-275, D-276): the mock keeps no box spec, print method or order lock.
+    measurementBasis: "internal",
+    styleVariantCode: null,
+    printMethod: null,
+    printSides: null,
+    finishes: [],
+    spec: null,
+    lock: null,
     document: withDocument ? { spec: design.document.spec, content: design.document.content } : null,
     schemaVersion: design.document.schemaVersion,
     versionNo: design.versionNo,
@@ -514,6 +522,8 @@ export const storeDesignHandlers = [
       lengthMm: dto.lengthMm,
       widthMm: dto.widthMm,
       heightMm: dto.heightMm,
+      measurementBasis: dto.measurementBasis,
+      scope: "view",
       thumbnailUrl: dto.thumbnailUrl,
       assets: dto.assets,
       sharedAt: share.createdAt,
@@ -637,6 +647,8 @@ export const storeDesignHandlers = [
         // The versions keep no thumbnail of their own.
         thumbnailFileId: null,
         thumbnailUrl: null,
+        box: null,
+        spec: null,
       })) satisfies Schemas["DesignVersionDto"][],
     );
   }),
@@ -656,6 +668,8 @@ export const storeDesignHandlers = [
       label: version.label,
       thumbnailFileId: null,
       thumbnailUrl: null,
+      box: null,
+      spec: null,
     } satisfies Schemas["DesignVersionDto"]);
   }),
 

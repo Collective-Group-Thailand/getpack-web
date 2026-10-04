@@ -363,6 +363,8 @@ function build(seed: Seed, index: number): Store {
         current: version({
           tier: seed.tiers[code]!,
           envelopeNote: seed.tiers[code] === "B" ? "ขนาดมาตรฐานเท่านั้น" : null,
+          // D-234: a tier-B envelope restricts at least one dimension — here the quantity range.
+          envelope: seed.tiers[code] === "B" ? { quantity: { min: 500, max: 20_000 } } : null,
         }),
         upcoming: [],
       })),
@@ -370,7 +372,7 @@ function build(seed: Seed, index: number): Store {
         {
           productTypeId: null,
           productTypeCode: null,
-          current: version({ shortagePct: "5.0000", overagePct: "5.0000" }),
+          current: version({ shortagePct: "5.0000", overagePct: "5.0000", dimensionalMm: null, colourDeltaE: null }),
           upcoming:
             seed.code === "F002"
               ? [
@@ -382,6 +384,8 @@ function build(seed: Seed, index: number): Store {
                     versionNo: 2,
                     shortagePct: "8.0000",
                     overagePct: "5.0000",
+                    dimensionalMm: null,
+                    colourDeltaE: null,
                   },
                 ]
               : [],
@@ -782,6 +786,10 @@ export function coverageOf(type: {
           factoryStatus: store.factory.status,
           capabilityStatus: capability.status,
           tier,
+          envelope:
+            store.config.participations.find((item) => item.productTypeId === type.id)?.current?.envelope ?? null,
+          envelopeNote:
+            store.config.participations.find((item) => item.productTypeId === type.id)?.current?.envelopeNote ?? null,
           priceListVersionNo: list?.current?.versionNo ?? null,
           weeklyCapacity: capacity?.weeklyCapacity ?? null,
           capacityUnit: capacity?.capacityUnit ?? null,
@@ -800,11 +808,16 @@ export function coverageOf(type: {
           : priced.some((item) => item.tier === "A")
             ? "instant_available"
             : "envelope_not_covered";
+  const tierA = priced.some((item) => item.tier === "A");
   return {
     productTypeId: type.id,
     productTypeCode: type.code,
     quoteMode: type.quoteMode,
     instantPath,
+    // D-234: instant through a tier-A factory, partial when only tier-B envelopes price it.
+    availability: type.quoteMode !== "instant" || priced.length === 0 ? "rfq" : tierA ? "instant" : "partial",
+    // The mock records no calculations or RFQs per type (U-B3 coverage).
+    last90Days: { calculations: 0, instantCalculations: 0, instantCoveragePct: null, rfqs: 0 },
     factories: candidates,
   };
 }

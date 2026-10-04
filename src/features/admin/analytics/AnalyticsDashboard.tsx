@@ -70,8 +70,6 @@ export function AnalyticsDashboard() {
   const [dimension, setDimension] = useState<Dimension>("product_type");
   const period = useMemo(() => periodOf(range, custom), [range, custom]);
   const before = period ? previousPeriod(period) : null;
-  // The journey funnels are still a request that takes the preset itself (admin.analytics-journeys).
-  const journeyQuery = range === "custom" ? { range, ...custom } : { range };
   const labels = { showTable: t("showTable"), hideTable: t("hideTable") };
   const nameOf = (ref: Ref | null) => (ref ? (format.locale === "en" ? ref.nameEn : ref.nameTh) : "—");
   const onDay = (day: string) => format.date(`${day}T00:00:00+07:00`);
@@ -329,7 +327,7 @@ export function AnalyticsDashboard() {
         </Section>
       </div>
 
-      <JourneyFunnels query={journeyQuery} enabled={period !== null} />
+      <JourneyFunnels period={period} />
 
       <Section
         title={t("demand.title")}

@@ -2,6 +2,8 @@ import coreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 import prettier from "eslint-config-prettier";
 
+import noMoneyArithmetic from "./eslint-rules/no-money-arithmetic.mjs";
+
 /**
  * A zone may not import another zone's features (00-master-plan.md §3). One app serves
  * three audiences, so this is the rule that keeps admin code out of the storefront bundle —
@@ -236,6 +238,14 @@ const eslintConfig = [
     // Stories may show anything, but kraft is still never text.
     files: ["src/**/*.stories.tsx"],
     rules: { "no-restricted-syntax": ["error", ...KRAFT_AS_TEXT] },
+  },
+
+  {
+    // The storefront formats prices and strengths and never computes them (CLAUDE.md; U2.F1 §7).
+    files: ["src/features/customer/**/*.{ts,tsx}", "src/features/shared/**/*.{ts,tsx}"],
+    ignores: ["**/*.test.{ts,tsx}", "**/*.stories.tsx"],
+    plugins: { packio: { rules: { "no-money-arithmetic": noMoneyArithmetic } } },
+    rules: { "packio/no-money-arithmetic": "error" },
   },
 
   zoneBoundary("customer", ["admin", "partner"]),

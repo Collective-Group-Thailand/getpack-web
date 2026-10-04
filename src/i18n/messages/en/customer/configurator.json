@@ -17,7 +17,9 @@
     "assembly": "Die-cut and assembly",
     "quantity": "Quantity",
     "delivery": "Delivery",
-    "design": "Artwork and samples"
+    "design": "Artwork and samples",
+    "logistics": "Goods and shipping",
+    "summary": "Summary and save"
   },
   "stepper": {
     "complete": "done",
@@ -27,7 +29,11 @@
   "next": "Next: {step}",
   "missing": {
     "size": "a valid size",
-    "area": "the size of the {name}"
+    "area": "the size of the {name}",
+    "quantity": "a quantity",
+    "basis": "the measurement basis",
+    "target": "a valid target price",
+    "caliper": "the inside size (this material's thickness is unknown)"
   },
   "lineMessage": "A question about {name}",
   "size": {
@@ -37,8 +43,6 @@
     "custom": "Custom size",
     "standardSizes": "Standard sizes",
     "standardHint": "Popular sizes, with templates ready to design on",
-    "customLegendBox": "Inside dimensions",
-    "customLegendFlat": "Flat size",
     "unitToggle": "Units shown",
     "units": {
       "mm": "mm",
@@ -49,18 +53,67 @@
       "l": "Length",
       "w": "Width",
       "d": "Height",
-      "gusset": "Gusset"
+      "height": "Height",
+      "b": "Bottom gusset",
+      "s": "Side gusset",
+      "cs": "Centre seal"
     },
     "range": "{min}–{max}",
     "errors": {
       "required": "Enter a size",
-      "min": "At least {limit}",
-      "max": "At most {limit}",
-      "step": "In steps of {step}",
-      "lengthExceedsWidth": "For this style the length must be greater than the width"
+      "min": "At least {limit} for {style}",
+      "max": "At most {limit} for {style}",
+      "lengthExceedsWidth": "{style} must be longer than it is wide",
+      "lengthExceedsHeight": "{style} must be longer than it is tall",
+      "widthExceedsHeight": "{style} must be wider than it is tall",
+      "basisRequired": "Choose which size you entered",
+      "minInside": "The inside must be at least {limit} for {style}",
+      "maxInside": "The inside can be at most {limit} for {style}",
+      "convertedTo": "(your size is {size} inside with {material})",
+      "theMaterial": "the chosen material"
     },
-    "insideNote": "Measured inside the box, a little larger than your product. Switch units freely — sizes are always kept in millimetres.",
-    "flatNote": "The item's flat size. Switch units freely — sizes are always kept in millimetres."
+    "flatNote": "The finished size. You can change the unit shown; sizes are always kept in millimetres.",
+    "styleCode": "Style code",
+    "basis": "Which size do you have?",
+    "basisHint": "Pick the one that matches your measurements — we show the others straight away",
+    "bases": {
+      "internal": {
+        "label": "Inside size",
+        "description": "The space inside for your product — best when you know the product's size"
+      },
+      "external": {
+        "label": "Outside size",
+        "description": "Measured outside the box — best when it must fit a carton or shelf"
+      },
+      "over_crease": {
+        "label": "Over the creases",
+        "description": "Crease to crease, as the factory works on the flat blank"
+      },
+      "product": {
+        "label": "Finished size",
+        "description": "The size of the piece you receive"
+      }
+    },
+    "legend": {
+      "box": "Box size",
+      "internal": "Inside of the box",
+      "external": "Outside of the box",
+      "over_crease": "Over the creases",
+      "product": "Finished size",
+      "flat": "Finished size",
+      "pouch": "Pouch size (seals included)"
+    },
+    "rangeInside": "Inside {min}–{max}",
+    "derived": {
+      "title": "Your size on each basis",
+      "converting": "Converting the size",
+      "entered": "(entered)",
+      "caliper": "Worked out with a material thickness of {caliper} — a reference size the factory confirms on the drawing",
+      "caliperMissing": "We don't know this material's thickness yet, so the size can't be converted. Choose another material or enter the inside size.",
+      "failed": "Couldn't convert the size — try again",
+      "empty": "Enter every dimension to see the other sizes",
+      "chooseBasis": "Choose a basis and the other sizes appear straight away"
+    }
   },
   "choices": {
     "areaAmount": "Places",
@@ -70,8 +123,43 @@
     "mm": "mm",
     "required": "required",
     "pickOne": "Choose a {name}",
-    "none": "None",
-    "noneHint": "You can skip this"
+    "none": {
+      "material": "None",
+      "print_front": "No print",
+      "print_back": "No print",
+      "print_set": "No print",
+      "coating_front": "No coating",
+      "coating_back": "No coating",
+      "finish": "None",
+      "diecut": "None",
+      "assembly": "None"
+    },
+    "groups": {
+      "material": "Material",
+      "coating_front": "Outside coating",
+      "coating_back": "Inside coating",
+      "finish": "Special finishes",
+      "diecut": "Die-cut",
+      "assembly": "Assembly",
+      "print_front": "Outside print colours",
+      "print_back": "Inside print colours",
+      "print_set": "Print colour set"
+    },
+    "ink": {
+      "hint": "Choose the colours to print; choose none to leave that side unprinted",
+      "process": "Full-colour images (4-colour CMYK)",
+      "spot": "One special colour",
+      "white": "White underprint",
+      "metallic": "Metallic colour"
+    },
+    "printArea": "Where does it print?",
+    "printAreaHint": "Every chosen colour prints in the same area",
+    "printAreas": {
+      "top": "Top flaps",
+      "side": "Sides",
+      "top_side": "Top and sides",
+      "all_round": "All round"
+    }
   },
   "quantity": {
     "tiers": "Quantities to compare",
@@ -84,7 +172,12 @@
     "presets": "Popular quantities",
     "tooMany": "You can compare up to {count} quantities. Remove one first.",
     "outOfRange": "Order between {min} and {max} {unit}",
-    "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}"
+    "summary": "{quantity} {unit} · comparing {tiers, plural, one {# quantity} other {# quantities}}",
+    "invalid": "Enter a whole number of 1 or more",
+    "target": "Target price per {unit} (optional)",
+    "targetHint": "Baht per {unit}, VAT included, shipping excluded — compared with the real price; never shown to the factory",
+    "targetInvalid": "Enter an amount in baht with up to two decimals",
+    "targetSummary": "target {target}/{unit}"
   },
   "delivery": {
     "postcode": "Delivery postcode",
@@ -112,22 +205,6 @@
       "free_design": {
         "label": "Free design",
         "description": "Free design from a promotion that applies to this product"
-      }
-    },
-    "mockup": "Physical sample before production",
-    "mockupHint": "An add-on: see and hold the real thing before the whole run is made",
-    "mockups": {
-      "none": {
-        "label": "No sample",
-        "description": "Approve from a digital proof"
-      },
-      "with_print": {
-        "label": "Printed sample",
-        "description": "With the print and finishes"
-      },
-      "without_print": {
-        "label": "Blank sample",
-        "description": "To check the size and structure"
       }
     },
     "promo": "Promo code",
@@ -179,7 +256,11 @@
     "reasons": {
       "no_price_path": "Our team prices this spec by hand — send a quote request.",
       "not_priceable": "This spec cannot be priced automatically — send a quote request.",
-      "capacity_unavailable": "Production is fully booked for now — try a smaller quantity, or send a quote request."
+      "capacity_unavailable": "Production is fully booked for now — try a smaller quantity, or send a quote request.",
+      "envelope_not_covered": "This size or spec is outside what our instant-price factory covers — send a request for quote",
+      "delivery_unavailable": "We can't deliver to this area yet — try another postcode or send a request for quote",
+      "style_variant_not_publishable": "This style isn't open for instant pricing yet — send a request for quote",
+      "rfq_required": "This style needs our team to price it — send a request for quote"
     },
     "product": "{quantity} {unit}",
     "vatIncluded": "VAT included",
@@ -201,14 +282,18 @@
     "receiveBy": "Arrives around {date}",
     "tolerance": "You may receive up to {shortage} fewer or {overage} more, as is normal in production; any shortfall comes back as credit.",
     "validity": "Save it as a quotation and this price holds for {days} days.",
-    "appliedOnQuote": "The mockup is priced on the cart line; discount codes are applied at checkout",
+    "appliedOnQuote": "Promotion codes are applied at checkout",
     "breaksCaption": "Price per quantity",
     "breaksQuantity": "Quantity",
     "breaksPerPiece": "Each",
     "breaksTotal": "Total",
     "breaksSelect": "{quantity} {unit}",
     "breaksChoose": "Choose",
-    "breaksChosen": "Chosen"
+    "breaksChosen": "Chosen",
+    "notInstant": "No instant price for this product yet",
+    "notInstantHint": "Our team prices the spec you chose: send a quote request",
+    "targetMet": "Within your target price",
+    "targetAbove": "{gap}/{unit} above your target"
   },
   "actions": {
     "addToCart": "Add to cart",
@@ -228,8 +313,288 @@
     "pdfPending": "The PDF is still being made. Try again in a moment.",
     "openPdf": "Open PDF",
     "noInstantPrice": "This quantity no longer has an instant price. Choose another or request a quote.",
-    "failed": "That did not work. Please try again."
+    "failed": "That did not work. Please try again.",
+    "linkValidUntil": "The link works until {date}",
+    "sentToCs": "Sent to sales — request {code}",
+    "viewRfqs": "View requests",
+    "leverApplied": "Created quotation {code} from this option",
+    "leverAppliedNoCode": "Created a new quotation from this option"
   },
   "savedFrom": "Opened from your saved quotation {code}. The price below is worked out again at today's prices.",
-  "savedFromNoCode": "Opened from a quotation you saved — priced again at today’s prices"
+  "savedFromNoCode": "Opened from a quotation you saved — priced again at today’s prices",
+  "sharedConfigExpired": "This configuration link has expired, been revoked or replaced. Start a new one below.",
+  "sharedConfigFrom": "Opened from a shared configuration “{title}” ({pct}% complete) — carry on from here.",
+  "draftGone": "We couldn't find this draft — it may have been deleted or turned into a quotation.",
+  "draftResumed": "Carrying on from the draft “{title}” — save again to update it.",
+  "draftsTitle": "You have {count, plural, one {# saved draft} other {# saved drafts}} for this product",
+  "draftResume": "Carry on with “{title}” ({pct}% complete)",
+  "logistics": {
+    "intro": "Tell us about the goods and how they travel, and we'll suggest a suitable board. You can order without it.",
+    "weight": "Weight per item",
+    "weightHint": "The weight of one item that goes in the box",
+    "grams": "g",
+    "units": "Items per box",
+    "unitsHint": "How many go in one box",
+    "pieces": "pcs",
+    "stack": "Boxes stacked",
+    "stackHint": "Count the bottom box too; on stacked pallets, count every layer",
+    "layers": "high",
+    "defaultHint": "Set to the middle option — change it to match how the boxes are used",
+    "fragility": "How fragile are the goods?",
+    "fragilities": {
+      "low": {
+        "label": "Robust",
+        "description": "Clothes, dry goods"
+      },
+      "medium": {
+        "label": "Medium",
+        "description": "Cosmetics, plastic bottles"
+      },
+      "high": {
+        "label": "Fragile",
+        "description": "Glass, ceramics, electronics"
+      }
+    },
+    "transport": "How do they travel?",
+    "transports": {
+      "pickup": {
+        "label": "Pick-up / local",
+        "description": "No sorting hub"
+      },
+      "parcel_domestic": {
+        "label": "Domestic parcel",
+        "description": "Through a carrier's sorting hubs"
+      },
+      "pallet_domestic": {
+        "label": "Domestic pallet",
+        "description": "By truck, stacked on pallets"
+      },
+      "sea_export": {
+        "label": "Sea export",
+        "description": "Long journey, high humidity"
+      }
+    },
+    "humidity": "How humid is storage?",
+    "humidities": {
+      "dry": {
+        "label": "Dry",
+        "description": "Up to 50% RH"
+      },
+      "normal": {
+        "label": "Normal",
+        "description": "Up to 70% RH"
+      },
+      "humid": {
+        "label": "Humid",
+        "description": "Up to 85% RH"
+      },
+      "very_humid": {
+        "label": "Very humid",
+        "description": "Over 85% RH, e.g. cold rooms"
+      }
+    },
+    "storage": "How long are they stored?",
+    "storages": {
+      "up_to_10_days": "Up to 10 days",
+      "up_to_30_days": "Up to 30 days",
+      "up_to_90_days": "Up to 90 days",
+      "over_90_days": "Over 90 days"
+    },
+    "pallet": "On pallets",
+    "palletHint": "Turn on if the boxes are stacked on pallets",
+    "palletPattern": "Pallet pattern",
+    "palletPatterns": {
+      "column": {
+        "label": "Column stacked",
+        "description": "Corners line up — stronger"
+      },
+      "interlocked": {
+        "label": "Interlocked",
+        "description": "Turned each layer for stability, but weaker boxes"
+      }
+    },
+    "overhang": "Boxes overhang the pallet",
+    "overhangHint": "Box edges past the pallet edge carry less load",
+    "summary": "{weight} g × {units} per box · {layers} high"
+  },
+  "advisor": {
+    "title": "Board advice",
+    "why": "Why this advice",
+    "needLoad": "Enter the item weight, items per box and how many boxes are stacked to see the suggested board",
+    "editLoad": "Enter goods and shipping",
+    "recommend": "Get advice",
+    "refresh": "Update the advice",
+    "failed": "Couldn't get advice — please try again",
+    "notices": {
+      "advisory_indicative": "An estimate, not a guarantee — real strength depends on use and storage"
+    },
+    "recommended": "Suggested",
+    "closest": "Closest",
+    "alternatives": "Other options",
+    "roles": {
+      "recommended": "Suggested",
+      "cheapest": "Cheapest",
+      "strongest": "Strongest",
+      "fastest": "Fastest",
+      "closest": "Closest"
+    },
+    "strength": "Estimated strength",
+    "strengthRange": "{low}–{high} N",
+    "needed": "Needed",
+    "strengthNeeded": "At least {required} N",
+    "price": "Price",
+    "perPiece": "{price} / pc",
+    "noInstantPrice": "No instant price yet",
+    "leadTime": "Lead time",
+    "days": "{days} business days",
+    "priceDelta": "{amount} per piece",
+    "leadDelta": "lead time {delta} days",
+    "warnings": {
+      "no_board_meets_load": "No board carries this load in the conditions given",
+      "thin_margin": "Carries the load, but with little to spare",
+      "below_requirement": "Weaker than needed"
+    },
+    "chosen": "Using this board",
+    "useBoard": "Use this board",
+    "reasonsLabel": "Factors used",
+    "reasonFactor": "{factor}: {band}",
+    "reasons": {
+      "factor": "Usage factor"
+    },
+    "factors": {
+      "humidity": "Humidity",
+      "storage": "Storage time",
+      "palletPattern": "Pallet pattern",
+      "palletOverhang": "Pallet overhang",
+      "transport": "Transport",
+      "fragility": "Fragility"
+    },
+    "bands": {
+      "dry": "Dry",
+      "normal": "Normal",
+      "humid": "Humid",
+      "very_humid": "Very humid",
+      "up_to_10_days": "Up to 10 days",
+      "up_to_30_days": "Up to 30 days",
+      "up_to_90_days": "Up to 90 days",
+      "over_90_days": "Over 90 days",
+      "column": "Column",
+      "interlocked": "Interlocked",
+      "yes": "Overhangs",
+      "no": "No overhang",
+      "pickup": "Pick-up",
+      "parcel_domestic": "Domestic parcel",
+      "pallet_domestic": "Domestic pallet",
+      "sea_export": "Sea export",
+      "low": "Robust",
+      "medium": "Medium",
+      "high": "Fragile",
+      "none": "No pallet",
+      "overhang": "Overhangs"
+    },
+    "noBoardTitle": "No board carries this load yet",
+    "noBoardBody": "Try fewer boxes high or fewer items per box, or let our sales team design a suitable structure",
+    "askSales": "Talk to sales",
+    "whyTitle": "Why we suggest this board",
+    "whyIntro": "We estimate the load on the bottom box and allow for how the boxes are used. The suggested board is the cheapest whose lowest estimated strength still passes.",
+    "whyRows": {
+      "layers": "Boxes stacked",
+      "boxWeight": "Packed box weight",
+      "tare": "Empty box weight",
+      "load": "Load on the bottom box",
+      "perimeter": "Inside perimeter",
+      "combined": "Combined usage factor",
+      "required": "Strength needed"
+    },
+    "whyFactors": "Usage factors and their effect",
+    "whyFactorsNote": "The smaller the number, the more strength is allowed for",
+    "whyMethod": "Rule set version {version} · engine {engine}",
+    "whyEffective": "in force from {date}",
+    "kg": "{value} kg",
+    "newtons": "{value} N",
+    "mm": "{value} mm",
+    "close": "Close",
+    "acknowledgeTitle": "This board comes with a caution",
+    "acknowledgeBody": "You can still choose it; we record that you were told.",
+    "acknowledge": "Understood — use this board",
+    "cancel": "Cancel"
+  },
+  "target": {
+    "title": "Target price {target} / {unit}",
+    "meets": "This price meets your target",
+    "meetsBody": "{gap} per {unit} below your target",
+    "above": "Above your target",
+    "aboveBody": "{gap} per {unit} above your target ({pct})",
+    "showLevers": "See ways to lower the price",
+    "askSales": "Talk to sales",
+    "leversLabel": "Ways to lower the price",
+    "levers": {
+      "quantity": "Order {quantities} {unit}",
+      "material": "Switch to {name}",
+      "back_print": "No inside print",
+      "special_finish": "No special finish (foil, spot UV)",
+      "coating": "No coating",
+      "assembly": "No extra assembly"
+    },
+    "anotherMaterial": "another material",
+    "step": "{quantity} {unit} → {price}/{unit}",
+    "meetsBadge": "Meets target",
+    "saving": "Saves up to {pct}",
+    "validUntil": "valid until {date}",
+    "apply": "Use this option",
+    "status": {
+      "computed": "No instant way to lower the price — talk to sales for other options",
+      "meets_target": "This quotation already meets your target",
+      "not_instant": "This spec has no instant price — talk to sales"
+    },
+    "private": "Your target price is yours — factories never see it",
+    "askTitle": "Ask sales to find a price",
+    "askBody": "We'll send this spec, quantity and target to our sales team as a request for quote, and they'll get back to you",
+    "notes": "Message to sales (optional)",
+    "notesHint": "e.g. flexible on material, or a date you need it by",
+    "send": "Send to sales",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "draft": {
+    "saved": "Draft saved — kept until {date}",
+    "linkCopied": "Configuration link copied",
+    "linkValidUntil": "The link works until {date}",
+    "converted": "This draft is already a quotation and can't change",
+    "failed": "Couldn't save the draft — please try again"
+  },
+  "summary": {
+    "completeness": "Completeness",
+    "completenessDraft": "{pct}% complete",
+    "completenessSections": "{answered} of {total} sections answered",
+    "missingFields": "{count, plural, one {# field} other {# fields}} still needed before it can be priced",
+    "notAnswered": "Not answered yet",
+    "edit": "Edit",
+    "editSection": "Edit {section}",
+    "styleCode": "Style code",
+    "noStyleCode": "No code yet",
+    "internationalName": "International name",
+    "noInternationalName": "Shown once our team has verified it",
+    "tolerances": "Tolerances",
+    "tolerancesPending": "Shown once there is a price",
+    "toleranceQuantity": "Quantity: up to {shortage} short or {overage} over",
+    "toleranceDimensional": "Size: ± {mm} mm",
+    "toleranceColour": "Colour: ΔE2000 up to {deltaE} against the approved proof",
+    "next": "What happens next",
+    "nextSteps": {
+      "artwork": "Send your artwork or design it online",
+      "proof": "Check and approve the proof",
+      "production": "Production starts after the proof is approved",
+      "productionDays": "About {days} business days of production after the proof is approved",
+      "delivery": "Delivery once production is done",
+      "shipBy": "Ready to ship from {ship}",
+      "deliveryBy": "Ready to ship from {ship}, with you around {receive}"
+    },
+    "nextNote": "Dates are for the chosen quantity, in business days",
+    "saveDraft": "Save as draft",
+    "updateDraft": "Update draft",
+    "shareDraft": "Share the configuration",
+    "draftKept": "Draft kept until {date}",
+    "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days"
+  }
 }

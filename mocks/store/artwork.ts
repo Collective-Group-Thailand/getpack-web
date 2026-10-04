@@ -29,6 +29,7 @@ import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
+import { catalogueRows } from "../admin/catalogue";
 import { baht, orders, refreshOrder, satang } from "../admin/commerce";
 import {
   customerAnnotate,
@@ -652,6 +653,9 @@ export const storeArtworkHandlers = [
       dieline: dieline.patternCode
         ? {
             patternCode: dieline.patternCode,
+            styleCode:
+              (catalogueRows("patterns").find((row) => row.code === dieline.patternCode)?.styleCode as
+                string | null | undefined) ?? null,
             dielineKey: DIELINE_KEYS[dieline.patternCode] ?? null,
             lengthMm: dieline.lengthMm ?? 80,
             widthMm: dieline.widthMm ?? 50,

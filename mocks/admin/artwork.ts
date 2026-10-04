@@ -339,6 +339,7 @@ export const artworkContractHandlers = [
             engineVersion: job.engineVersion,
             error: job.error,
             patternId: mockId("pat", 1),
+            measurementBasis: "internal",
             lengthMm: detail.dieline.lengthMm ?? 0,
             widthMm: detail.dieline.widthMm ?? 0,
             heightMm: detail.dieline.heightMm ?? 0,

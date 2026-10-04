@@ -186,6 +186,9 @@ export function customerOf(request: Request): MockCustomer | null {
   return customers[persona && persona in customers ? persona : "returning"];
 }
 
+/** D-183: each customer's display unit, changed with `store.me.updatePreferences`. */
+export const displayUnits = new Map<string, Schemas["DisplayUnit"]>();
+
 export function customerMe(customer: MockCustomer): Schemas["StoreMeDto"] {
   return {
     id: customer.id,
@@ -197,6 +200,7 @@ export function customerMe(customer: MockCustomer): Schemas["StoreMeDto"] {
     permissions: [],
     scopes: [],
     identities: customer.identities,
+    displayUnit: displayUnits.get(customer.id) ?? "mm",
   };
 }
 

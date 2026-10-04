@@ -17,7 +17,14 @@ import type { Schemas } from "@/lib/api/types";
 import type { StoreQuote } from "./quotes";
 
 import { baht, orders, refreshOrder, satang, type MockOrder } from "../admin/commerce";
-import { adoptClaim, claimRow, customerClaimReply, fileCustomerClaim, type LogisticsClaim } from "../admin/logistics";
+import {
+  adoptClaim,
+  claimRow,
+  claimTrustFactsOf,
+  customerClaimReply,
+  fileCustomerClaim,
+  type LogisticsClaim,
+} from "../admin/logistics";
 import { files } from "../admin/platform";
 import { bangkokIso, paginate, problem } from "../support";
 import { addToCart, edited } from "./cart";
@@ -81,6 +88,7 @@ function toClaim(row: LogisticsClaim): Schemas["StoreClaimDto"] {
     (message) => message.audience === "customer" && message.author !== order?.customer.displayName,
   );
   return {
+    ...claimTrustFactsOf(row.status),
     id: row.id,
     claimNo: row.claimNo,
     orderId: row.order.id,
@@ -221,6 +229,7 @@ function previewOf(order: MockOrder, quantity: number, reuse: boolean): Schemas[
     designFeeAmount: "0.00",
     // Plate and die-block reuse waits for the tooling register (D-205).
     toolingAmount: null,
+    toolingWaiver: null,
     shippingAmount: null,
     vatAmount: baht(priced.vatAmount),
     grossAmount,

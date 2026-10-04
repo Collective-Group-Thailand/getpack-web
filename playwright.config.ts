@@ -1,8 +1,17 @@
 import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 
+/**
+ * Which backend the app under test talks to. `mock` (default): the in-process MSW mock API with
+ * its fixtures (`API_MOCKS=1`). `real`: a packio-api at `INTEGRATION_API_URL`
+ * (`pnpm e2e:integration`, U-F0.5, `docs/integration.md`). An environment variable rather than
+ * argv, because Playwright re-evaluates this file in every worker with different arguments.
+ */
+const REAL_BACKEND = process.env.E2E_BACKEND === "real";
+
 // Deliberately not 3000: `pnpm dev` is for humans, the suite gets its own port so a
-// dev server (ours or another project's) can never make the run pass or fail by accident.
-const PORT = Number(process.env.E2E_PORT ?? 3100);
+// dev server (ours or another project's) can never make the run pass or fail by accident. The
+// real-backend run has another, so a mock-backed build left running is never reused by it.
+const PORT = Number(process.env.E2E_PORT ?? (REAL_BACKEND ? 3500 : 3100));
 const baseURL = `http://localhost:${PORT}`;
 
 /** The static Storybook build the visual-snapshot project is served from. */
@@ -48,6 +57,14 @@ const zoneEnv = {
   NEXT_PUBLIC_GTM_ID: "GTM-TEST0000",
 };
 
+/** The same build against a real packio-api: no mock, the API the integration stack started. */
+const realEnv = {
+  PUBLIC_HOST: `localhost:${PORT}`,
+  ADMIN_HOST: `admin.localhost:${PORT}`,
+  PARTNER_HOST: `partner.localhost:${PORT}`,
+  API_INTERNAL_URL: process.env.INTEGRATION_API_URL ?? "http://localhost:3400",
+};
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -71,41 +88,58 @@ export default defineConfig({
    */
   snapshotPathTemplate: "{testDir}/__screenshots__/{platform}/{arg}{ext}",
 
-  projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-      testIgnore: [/visual\.spec\.ts/, /journeys\//],
-    },
-    /*
-     * Step counters for the scorecard's tasks T1–T12 (U5.0, `e2e/journeys/`). Registered always,
-     * like `visual`, and reached through `pnpm e2e:journeys`. They walk the same mock-backed build
-     * as the suite; mobile tasks (T7 in LINE, T11 on the floor) set their own phone viewport.
-     */
-    {
-      name: "journeys",
-      testMatch: /journeys\/.*\.spec\.ts/,
-      use: { ...devices["Desktop Chrome"] },
-    },
-    /*
-     * Visual snapshots, against the built Storybook rather than the app — see
-     * `e2e/visual.spec.ts`.
-     *
-     * Always registered, never in the default run. Playwright re-evaluates this config in
-     * every worker with different argv, so a project added conditionally exists in the main
-     * process and not in the worker ("Project 'visual' not found in the worker process").
-     * `pnpm e2e` therefore names `--project=chromium`, and this one is reached through
-     * `pnpm e2e:visual` — which needs `pnpm build-storybook` first.
-     */
-    {
-      name: "visual",
-      testMatch: /visual\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        baseURL: `http://localhost:${STORYBOOK_PORT}`,
-      },
-    },
-  ],
+  projects: REAL_BACKEND
+    ? [
+        /*
+         * The launch path on a real packio-api (U-F0.5). Its specs create their own data on the dev
+         * seed; the setup project first provisions what the seed lacks (factory users, customers)
+         * through the API, into `e2e/integration/.state/`. Only these exist in a real-backend run,
+         * so a spec written against the mock's fixtures can never run against the real API.
+         */
+        { name: "integration-setup", testMatch: /integration\/global\.setup\.ts/ },
+        {
+          name: "integration",
+          testMatch: /integration\/.*\.spec\.ts/,
+          dependencies: ["integration-setup"],
+          use: { ...devices["Desktop Chrome"] },
+        },
+      ]
+    : [
+        {
+          name: "chromium",
+          use: { ...devices["Desktop Chrome"] },
+          // The mock project: every spec here is written against the mock API's fixtures.
+          testIgnore: [/visual\.spec\.ts/, /journeys\//, /integration\//],
+        },
+        /*
+         * Step counters for the scorecard's tasks T1–T12 (U5.0, `e2e/journeys/`). Registered always,
+         * like `visual`, and reached through `pnpm e2e:journeys`. They walk the same mock-backed build
+         * as the suite; mobile tasks (T7 in LINE, T11 on the floor) set their own phone viewport.
+         */
+        {
+          name: "journeys",
+          testMatch: /journeys\/.*\.spec\.ts/,
+          use: { ...devices["Desktop Chrome"] },
+        },
+        /*
+         * Visual snapshots, against the built Storybook rather than the app — see
+         * `e2e/visual.spec.ts`.
+         *
+         * Always registered, never in the default run. Playwright re-evaluates this config in
+         * every worker with different argv, so a project added conditionally exists in the main
+         * process and not in the worker ("Project 'visual' not found in the worker process").
+         * `pnpm e2e` therefore names `--project=chromium`, and this one is reached through
+         * `pnpm e2e:visual` — which needs `pnpm build-storybook` first.
+         */
+        {
+          name: "visual",
+          testMatch: /visual\.spec\.ts/,
+          use: {
+            ...devices["Desktop Chrome"],
+            baseURL: `http://localhost:${STORYBOOK_PORT}`,
+          },
+        },
+      ],
   webServer: [
     // Storybook is only started when the visual project is actually being run. Playwright has
     // no per-project servers, so without this check every `pnpm e2e` would build and serve
@@ -136,7 +170,7 @@ export default defineConfig({
       timeout: 180_000,
       // `next start` runs with NODE_ENV=production, where the env schema has no defaults —
       // which is the point of the schema, so the suite supplies real values.
-      env: zoneEnv,
+      env: REAL_BACKEND ? realEnv : zoneEnv,
     },
   ],
 });

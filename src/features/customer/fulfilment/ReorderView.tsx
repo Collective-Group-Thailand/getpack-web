@@ -91,8 +91,8 @@ export function ReorderView({
         body: { quantity: preview.quantity, reuseArtwork, previewToken: preview.previewToken },
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
-      // The reorder funnel (docs/ux/funnels.md): the band, never the quantity; where it went next.
-      track("reorder_added_to_cart", { quantityBand: quantityBand(preview.quantity), reason: then });
+      // The reorder funnel (docs/ux/funnels.md): packio-api bands the quantity before storing it.
+      track("reorder_added_to_cart", { quantity: preview.quantity, reason: then });
       router.push(then === "checkout" ? "/checkout" : "/cart");
     } catch (failure) {
       key.current = newKey();

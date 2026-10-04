@@ -180,6 +180,7 @@ export function toAdminOrderDto(order: MockOrder, who: StaffPersona | null): Sch
     nextActions: adminOrderActionsOf(order, who),
     internal: {
       buyCostNet: seesCost ? (order.margin?.buyCostNet ?? null) : null,
+      buyPriceNet: seesCost ? (order.margin?.buyCostNet ?? null) : null,
       marginAmount: seesMargin ? (order.margin?.marginAmount ?? null) : null,
       marginPct: seesMargin ? (order.margin?.marginPct ?? null) : null,
       belowMarginFloor: order.margin?.belowMarginFloor ?? false,

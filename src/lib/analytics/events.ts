@@ -9,9 +9,9 @@
  *
  * These events go to Packio's own API, not to GTM. They are necessary to operate the service,
  * carry no advertising identifier and never leave Packio, so they are not gated on consent —
- * unlike GA4, which is. See `./consent.ts`.
- *
- * CONTRACT-REQUEST `analytics.events`, `analytics.journey-events`.
+ * unlike GA4, which is; the visitor and session ids that travel with them are kept by packio-api
+ * only with analytics consent. See `./consent.ts`, and `./ingest.ts` for how these names map onto
+ * the five packio-api ingests (`store.analytics.ingest`).
  */
 
 /**
@@ -48,15 +48,26 @@ export type FunnelEvent = (typeof FUNNEL_EVENTS)[number];
  * Deliberately narrow and deliberately not `Record<string, unknown>`. D-102 promises the
  * partner prospectus contains "aggregated, anonymised data only", and the way that promise
  * gets broken is a helpful `{ customerName }` added to one call site. Nothing here identifies
- * a person: a product type, a quantity band, a province — the dimensions the report is sliced
- * by (D-102) and no more.
+ * a person: a product type, a quantity, a postcode — the dimensions the report is sliced by
+ * (D-102) and no more. packio-api stores the quantity as a band and the postcode as its
+ * province (backend wins, triage `analytics.events`).
  */
 export interface AnalyticsProperties {
   /** Route pattern, never the URL — see the same rule in `src/lib/observability`. */
   route?: string;
   productType?: string;
-  /** A band such as `"500-999"`, not the exact number a quote could be matched on. */
+  /** The exact quantity; packio-api bands it before storing (`quote_shown`, `add_to_cart`). */
+  quantity?: number;
+  /** Lead time and unit price of a shown quote (decimal string, never computed here). */
+  leadTimeDays?: number | null;
+  unitPrice?: string | null;
+  /** The placed order group (`order_placed` only), which links the session to its payment. */
+  orderGroupId?: string;
+  /** A delivery postcode; packio-api keeps only its province, and only with consent. */
+  postcode?: string;
+  /** Not sent: packio-api takes the exact `quantity` and bands it itself. */
   quantityBand?: string;
+  /** Not sent: packio-api takes a `postcode`. */
   province?: string;
   /** `instant` or `rfq` (D-043). */
   quoteMode?: string;

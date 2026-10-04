@@ -12,6 +12,7 @@ import { resolveStyleId } from "@packio/dieline";
 import type { BoxStyleId } from "@/features/designer/types";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
+import { optionsById, sizeKindOf } from "./model";
 import { patternOf, type Configurator, type ConfiguratorState } from "./state";
 
 /** The `@packio/dieline` style of the chosen pattern, when it draws one (aliases like `rte` resolved). */
@@ -43,20 +44,20 @@ export function ConfiguratorPreview({
   const locale = useLocale();
   const [view, setView] = useState<"3d" | "flat">("3d");
 
-  const byId = new Map(configurator.groups.flatMap((group) => group.options.map((option) => [option.id, option])));
+  const byId = optionsById(configurator);
   const chosen = Object.values(state.choices)
     .flat()
     .flatMap((id) => (id && byId.has(id) ? [byId.get(id)!] : []));
-  const material = chosen.find((option) => option.swatchHex);
+  const material = state.choices.material?.[0] ? byId.get(state.choices.material[0]) : undefined;
   const colour = material?.swatchHex ?? "#e8e2d6";
-  const print = chosen.find((option) => option.print);
-  const printed = print ? (print.print?.front.length ?? 0) > 0 : false;
+  const printed = (state.choices.print_front?.length ?? 0) > 0 || (state.choices.print_set?.length ?? 0) > 0;
   const codes = new Set(chosen.map((option) => option.code));
   const materialName = material ? pick(locale, material.nameTh, material.nameEn) : "";
 
-  const { l, w, d, gusset } = state.dims;
+  const { l, w, d } = state.dims;
+  const gusset = state.dims.b ?? state.dims.s ?? 0;
   const style = boxStyleOf(configurator, state);
-  const kind = configurator.size.kind;
+  const kind = sizeKindOf(configurator);
 
   if (kind === "none") return null;
 

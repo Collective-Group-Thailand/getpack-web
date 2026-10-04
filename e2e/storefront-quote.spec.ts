@@ -40,13 +40,14 @@ test.describe("the configurator", () => {
 
     // A custom size: the preview and the price follow it.
     await page.getByRole("radio", { name: "กำหนดเอง" }).click();
+    await page.getByRole("radio", { name: /ขนาดภายใน/ }).click();
     await page.getByRole("textbox", { name: "ยาว" }).fill("220");
     await expect(page.getByRole("img", { name: /ขนาด 220 × 100 × 50 มม./ })).toBeVisible();
     await expect(headline).not.toHaveText(first!);
 
     // A size outside the pattern's rules is explained and not priced.
     await page.getByRole("textbox", { name: "กว้าง" }).fill("900");
-    await expect(page.getByText("ต้องไม่เกิน 500 มม.")).toBeVisible();
+    await expect(page.getByText(/^สูงสุด 500 มม\. สำหรับ/)).toBeVisible();
     await expect(dock(page)).toContainText("เลือกอีกนิดเพื่อดูราคา");
     await page.getByRole("textbox", { name: "กว้าง" }).fill("150");
 
@@ -76,6 +77,7 @@ test.describe("the configurator", () => {
   test("a spec the factory cannot price routes to RFQ with the reason", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
     await page.getByRole("radio", { name: "กำหนดเอง" }).click();
+    await page.getByRole("radio", { name: /ขนาดภายใน/ }).click();
     await page.getByRole("textbox", { name: "ยาว" }).fill("480");
     await expect(dock(page)).toContainText("จำนวนนี้ยังไม่มีราคาทันที");
     await expect(dock(page)).toContainText("สเปกนี้ต้องให้ทีมงานประเมินราคา");
@@ -134,6 +136,7 @@ test.describe("keeping the price", () => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"]);
     await signInAsCustomer(page, "/configure/tuck-end-box");
     await page.getByRole("radio", { name: "กำหนดเอง" }).click();
+    await page.getByRole("radio", { name: /ขนาดภายใน/ }).click();
     await page.getByRole("textbox", { name: "ยาว" }).fill("180");
     await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible();
     await dock(page).getByRole("button", { name: "แชร์" }).click();
