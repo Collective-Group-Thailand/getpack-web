@@ -7126,10 +7126,9 @@
     },
     {
       "style": "hang-tag",
-      "base": "PK-TG-01",
-      "variant": "hang=round_hole;shape_flat=tag",
+      "base": null,
+      "variant": "hang=round_hole",
       "axes": {
-        "shape_flat": "tag",
         "hang": "round_hole"
       },
       "name": {
@@ -7144,7 +7143,7 @@
       "processes": [
         "die_cut"
       ],
-      "recipeSha256": "9284e66f5704937973d2691fdedf014bab78830cf73c5d7a20032b4b8899f70f",
+      "recipeSha256": "41cbc9edaf19f2fcf11b80e5c65a8e4815bdd6aef914b1d38adc81e045595004",
       "material": "label-film",
       "preset": "s",
       "values": {
@@ -7155,16 +7154,15 @@
         "hole": "6"
       },
       "assets": {
-        "hang-tag/hang-round_hole__shape_flat-tag/dieline.svg": "703d145b5b6cddccb93ecd36633887191e62067c64009a63914abe4997bbb4cc",
-        "hang-tag/hang-round_hole__shape_flat-tag/thumb-2d.png": "0eadf78006db60688d119d47fd539e04c1488f72516ab85b38a031a1f11a7777"
+        "hang-tag/hang-round_hole/dieline.svg": "703d145b5b6cddccb93ecd36633887191e62067c64009a63914abe4997bbb4cc",
+        "hang-tag/hang-round_hole/thumb-2d.png": "0eadf78006db60688d119d47fd539e04c1488f72516ab85b38a031a1f11a7777"
       }
     },
     {
       "style": "hang-tag",
-      "base": "PK-TG-01",
-      "variant": "hang=none;shape_flat=tag",
+      "base": null,
+      "variant": "hang=none",
       "axes": {
-        "shape_flat": "tag",
         "hang": "none"
       },
       "name": {
@@ -7179,7 +7177,7 @@
       "processes": [
         "die_cut"
       ],
-      "recipeSha256": "9284e66f5704937973d2691fdedf014bab78830cf73c5d7a20032b4b8899f70f",
+      "recipeSha256": "41cbc9edaf19f2fcf11b80e5c65a8e4815bdd6aef914b1d38adc81e045595004",
       "material": "label-film",
       "preset": "s",
       "values": {
@@ -7190,8 +7188,8 @@
         "hole": "0"
       },
       "assets": {
-        "hang-tag/hang-none__shape_flat-tag/dieline.svg": "8593a3246b67cea4dc7abfe59bddca37019133b0da1d16c2a6b0022a5f9492b4",
-        "hang-tag/hang-none__shape_flat-tag/thumb-2d.png": "e34c780fd96e789c6fcceba0d316eab83eba7b222c46e314888fbc10b000f12b"
+        "hang-tag/hang-none/dieline.svg": "8593a3246b67cea4dc7abfe59bddca37019133b0da1d16c2a6b0022a5f9492b4",
+        "hang-tag/hang-none/thumb-2d.png": "e34c780fd96e789c6fcceba0d316eab83eba7b222c46e314888fbc10b000f12b"
       }
     },
     {
@@ -18484,8 +18482,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-gusseted__bag_handle-twisted_paper/dieline.svg": "3775c96bdc59f33c9f4a73dac4ddd2b9db5a42e121fbeec249422b7b92f2e88c",
-        "paper-bag/bag_gusset-gusseted__bag_handle-twisted_paper/thumb-2d.png": "a5d34fd4d7b7d40ee420889f3520ddfafed007788cf356111a4bc99905a7bc48"
+        "paper-bag/bag_gusset-gusseted__bag_handle-twisted_paper/dieline.svg": "67bae21e724c965c01b7809449601b5dd12aed5d4097896578bca56f9828070b",
+        "paper-bag/bag_gusset-gusseted__bag_handle-twisted_paper/thumb-2d.png": "f2a592bd4dd2b1d9207cef23776b65a6b6aba4ebacba1560e73f6bc16e4cf7f5"
       }
     },
     {
@@ -18521,8 +18519,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-flat__bag_handle-twisted_paper/dieline.svg": "cf36b667b582b6b79697c7a49a44a0dc20fb8d7580e27d495702a7aa60907884",
-        "paper-bag/bag_gusset-flat__bag_handle-twisted_paper/thumb-2d.png": "40985e9c7297af5842ed6e62789f09aae5e0c01a503c77e6881508a44fa293ee"
+        "paper-bag/bag_gusset-flat__bag_handle-twisted_paper/dieline.svg": "18f251903afe4c326260bf82b3825c7e8e11fee1889f45101c405f66a70a6283",
+        "paper-bag/bag_gusset-flat__bag_handle-twisted_paper/thumb-2d.png": "21c040452e36d147f3aa7669e3db81057ba065de4dd57c84d52f62fccb536e7e"
       }
     },
     {
@@ -18558,8 +18556,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-gusseted__bag_handle-flat_paper/dieline.svg": "3775c96bdc59f33c9f4a73dac4ddd2b9db5a42e121fbeec249422b7b92f2e88c",
-        "paper-bag/bag_gusset-gusseted__bag_handle-flat_paper/thumb-2d.png": "a5d34fd4d7b7d40ee420889f3520ddfafed007788cf356111a4bc99905a7bc48"
+        "paper-bag/bag_gusset-gusseted__bag_handle-flat_paper/dieline.svg": "67bae21e724c965c01b7809449601b5dd12aed5d4097896578bca56f9828070b",
+        "paper-bag/bag_gusset-gusseted__bag_handle-flat_paper/thumb-2d.png": "f2a592bd4dd2b1d9207cef23776b65a6b6aba4ebacba1560e73f6bc16e4cf7f5"
       }
     },
     {
@@ -18595,8 +18593,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-flat__bag_handle-flat_paper/dieline.svg": "cf36b667b582b6b79697c7a49a44a0dc20fb8d7580e27d495702a7aa60907884",
-        "paper-bag/bag_gusset-flat__bag_handle-flat_paper/thumb-2d.png": "40985e9c7297af5842ed6e62789f09aae5e0c01a503c77e6881508a44fa293ee"
+        "paper-bag/bag_gusset-flat__bag_handle-flat_paper/dieline.svg": "18f251903afe4c326260bf82b3825c7e8e11fee1889f45101c405f66a70a6283",
+        "paper-bag/bag_gusset-flat__bag_handle-flat_paper/thumb-2d.png": "21c040452e36d147f3aa7669e3db81057ba065de4dd57c84d52f62fccb536e7e"
       }
     },
     {
@@ -18632,8 +18630,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-gusseted__bag_handle-rope/dieline.svg": "f32baa37cc877b3f37c14ba35ff1abc65aaa56af310e34b1e63008e640012925",
-        "paper-bag/bag_gusset-gusseted__bag_handle-rope/thumb-2d.png": "b06bc12cad2e754af1086e8ad565df29491d2c9a88b68821a081b6980d739a55"
+        "paper-bag/bag_gusset-gusseted__bag_handle-rope/dieline.svg": "6590354ebe1f3461bf423ad2b46e0e85064579f73b270ae80e05ca305945615e",
+        "paper-bag/bag_gusset-gusseted__bag_handle-rope/thumb-2d.png": "199442c6f65e4005206ee639bdd1fda2bf002b0c2d06237b62f45387dbbffbe1"
       }
     },
     {
@@ -18669,8 +18667,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-flat__bag_handle-rope/dieline.svg": "ca5f2b5dd7b82dc155f1c50e19870df61dd73d59acc7f4a9db22e24e1b2b7f43",
-        "paper-bag/bag_gusset-flat__bag_handle-rope/thumb-2d.png": "7d7d1d85c1dca4b883ad9552f43c8151c82487b50d4e3f76331c390119ed4d24"
+        "paper-bag/bag_gusset-flat__bag_handle-rope/dieline.svg": "97948c37ed2034ae5c05b22f5cee815c6bf59583fe150be629e35bcb3ece49d7",
+        "paper-bag/bag_gusset-flat__bag_handle-rope/thumb-2d.png": "be6dc419a224b69a12a3ab4a3820f14414f06f6c7495903fafb1c4e2d5259be6"
       }
     },
     {
@@ -18706,8 +18704,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-gusseted__bag_handle-die_cut/dieline.svg": "566017d828a5f26ebfefa37b79bcf8b6cd6a46cdfcdb875663ad120e975fbcb6",
-        "paper-bag/bag_gusset-gusseted__bag_handle-die_cut/thumb-2d.png": "194b18c870a1c710068e165ea1fa47957ff2eae2723141b2a47672c3057a61a4"
+        "paper-bag/bag_gusset-gusseted__bag_handle-die_cut/dieline.svg": "c8d699a378cc10177887acd814274ed3a06410706bad474faa52daaf7446cfd0",
+        "paper-bag/bag_gusset-gusseted__bag_handle-die_cut/thumb-2d.png": "4c685d44fd6a410fec6c7b66b22f3ec7509f3f43abd1da760a671af1aafd21fa"
       }
     },
     {
@@ -18743,8 +18741,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-flat__bag_handle-die_cut/dieline.svg": "e426d2f3849b15af5506a8f121e8c9bda735784762129cac7ae364183d94ec6f",
-        "paper-bag/bag_gusset-flat__bag_handle-die_cut/thumb-2d.png": "5af5942a99cf5e8ba496b4a4e6059550dc4b87e6886998725b9007ddf4c5b820"
+        "paper-bag/bag_gusset-flat__bag_handle-die_cut/dieline.svg": "2b0f2b8d20f1c3dbd0ab0fec77a12159c252ab22bdc997f2701aa6f1e5f42958",
+        "paper-bag/bag_gusset-flat__bag_handle-die_cut/thumb-2d.png": "483eefe0c835b044273b7370e5741068ea8f991fdb55611a754a3a75d2ade682"
       }
     },
     {
@@ -18780,8 +18778,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-gusseted__bag_handle-none/dieline.svg": "b9f695b10fba4c7e9a57dc19424f6075ed343ab02da81de58c205dce471390ef",
-        "paper-bag/bag_gusset-gusseted__bag_handle-none/thumb-2d.png": "7680135d602df76e55bda8767bed37073b9251a025c4e9018cf99cc4facb55cf"
+        "paper-bag/bag_gusset-gusseted__bag_handle-none/dieline.svg": "4991fa5a1b501d17e917ec2ba307e405a7835b31d1ed80facf3a40a3fdf7aa49",
+        "paper-bag/bag_gusset-gusseted__bag_handle-none/thumb-2d.png": "03de727092cb09e980aeb60ed53d0be35f9d3fed9b96988c62aaceedc3b2fc58"
       }
     },
     {
@@ -18817,8 +18815,8 @@
         "grain": "along"
       },
       "assets": {
-        "paper-bag/bag_gusset-flat__bag_handle-none/dieline.svg": "ef4c8c0ad052000e6636238991f44707478c8ec75148da5cae37ac6377674511",
-        "paper-bag/bag_gusset-flat__bag_handle-none/thumb-2d.png": "0da43e154823ace32479f4ce3393ed2c38d014d7959aa41d639f31625beace42"
+        "paper-bag/bag_gusset-flat__bag_handle-none/dieline.svg": "96c621cdcf1a8645981c0c3244a1581003dcdb89cd21a0d54250323d5113dbe4",
+        "paper-bag/bag_gusset-flat__bag_handle-none/thumb-2d.png": "624299884fd64008690dcfe00bcec26f6a33659e5c69fea128940c05c995a4f6"
       }
     },
     {

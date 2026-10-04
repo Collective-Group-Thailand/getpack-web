@@ -158,40 +158,169 @@ Every style is now a recipe (`packages/dieline/src/recipes/data/<id>.json`, ADR-
 modules. `base` is the master-file row (`style-library-master.json`) the style is a variant of,
 and `variant` the axis values it stands for — informational; the public code and its immutability
 are the API's (D-184). `pouch` draws several master rows (stand-up, three-side, centre-seal,
-side-gusset pouches) through `pouchType`, so it names none. Regenerate this table when a recipe changes.
+side-gusset pouches) through `pouchType`, so it names none. Regenerate this table when a recipe changes. Since U3.4 the wave recipes live in the
+`@packio/dieline/library` entry (`Entry` = library), registered on demand with `registerLibrary()`;
+`ALL_RECIPES` is both. `Varies along` lists the master axes a recipe varies (values in brackets);
+every combination is one variant (`variantsOf`).
 
-| Style | Body / piece set | Top | Bottom | Features | Base | Variant |
-| --- | --- | --- | --- | --- | --- | --- |
-| `tuck-end` | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=tuck; hang=none |
-| `reverse-tuck-end` | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: front) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck; hang=none |
-| `snap-lock-bottom` | `tube` (preset carton) | `tuck` (lid: back) | `snapLock123` (preset default) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=snap_lock_123; hang=none |
-| `crash-lock-bottom` | `tube` (preset carton) | `tuck` (lid: back) | `crashLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=crash_lock; hang=none |
-| `seal-end` | `tube` (preset carton) | `seal` | `seal` | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=seal; hang=none |
-| `hang-tab-tuck` | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `hangTab` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck |
-| `sleeve` | `tube` (preset carton) | — | — | `window` | PK-SL-01 | — |
-| `sleeve-drawer` | `sleeveAndDrawer` | — | — | — | PK-SL-02 | — |
-| `gable` | `tube` (preset carton) | `gableHandle` | `snapLock123` (preset default) | `window` | PK-SP-02 | tuck_bottom=snap_lock_123 |
-| `hexagonal` | `tube` | `polygonTuckLid` | `polygonTuckLid` | — | PK-SP-03 | — |
-| `rsc` | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-01 | joint=glue_flap |
-| `hsc` | `tube` (preset carton) | — | `rsc` | `handHoles` | PK-CS-02 | joint=glue_flap |
-| `fol` | `tube` (preset carton) | `fol` | `fol` | `handHoles` | PK-CS-03 | joint=glue_flap |
-| `cssc` | `tube` (preset carton) | `cssc` | `cssc` | `handHoles` | PK-CS-04 | joint=glue_flap |
-| `mailer` | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: ['front', 'left', 'right']) | PK-CF-01 | mailer_front=tuck |
-| `wrap-around` | `tube` | `endFlaps` | `endFlaps` | — | PK-CF-03 | joint=glue_flap |
-| `tray` | `tray` (preset glued) | — | — | — | PK-TR-01 | corner=glued |
-| `tray-6-corner` | `tray` (preset glued) | `hingedLid` (front: glued_lips) | — | — | PK-TR-02 | — |
-| `double-wall-tray` | `tray` (preset glued) | — | — | `rollOverWalls` (walls: ['back', 'front']) | PK-TR-03 | — |
-| `telescope` | `lidAndBase` | — | — | — | PK-LB-01 | — |
-| `pillow` | `pillowTube` | — | — | — | PK-SP-01 | — |
-| `flat-rect` | `flatShape` (shape: rectangle) | — | — | — | PK-LA-02 | shape_flat=rectangle |
-| `flat-rounded-rect` | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-02 | shape_flat=rounded_rectangle |
-| `flat-circle` | `flatShape` (shape: circle) | — | — | — | PK-LA-02 | shape_flat=circle |
-| `flat-oval` | `flatShape` (shape: oval) | — | — | — | PK-LA-02 | shape_flat=oval |
-| `flat-custom` | `flatShape` (shape: custom_path) | — | — | — | PK-LA-02 | shape_flat=custom_path |
-| `hang-tag` | `flatShape` (shape: tag) | — | — | `hangHole` | PK-TG-01 | — |
-| `cup-sleeve` | `cone` | — | — | — | PK-TG-02 | — |
-| `band` | `band` | — | — | — | PK-SL-03 | — |
-| `pouch` | `pouchWeb` | — | — | — | — | — |
+| Style | Entry | Body / piece set | Top | Bottom | Features | Base | Fixed axes | Varies along | Variants |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `hang-tag` | main | `flatShape` (shape: tag) | — | — | `hangHole` | — | — | hang (2) | 2 |
+| `pouch` | main | `pouchWeb` | — | — | — | — | — | — | 1 |
+| `mailer` | main | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right), `dieCutInsert` (floor: t; inset: t) | PK-CF-01 | — | mailer_front (2), tear_strip (2), adhesive (3), thumb (2), insert (2) | 48 |
+| `pizza-box` | library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right) | PK-CF-02 | — | thumb (2) | 2 |
+| `wrap-around` | main | `tube` | `endFlaps` | `endFlaps` | — | PK-CF-03 | — | joint (3) | 3 |
+| `lock-corner-tray` | library | `tray` (preset glued) | — | — | `lockCorners`, `handHoles` | PK-CF-05 | — | handle (3) | 3 |
+| `archive-box` | library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `handHoles` | PK-CF-06 | — | handle (3) | 3 |
+| `produce-tray` | library | `tray` (preset glued) | — | — | `lockCorners`, `handHoles`, `vents` | PK-CF-08 | — | hand_holes (3), vents (3) | 9 |
+| `partition-set` | library | `partitionSet` | — | — | — | PK-CI-01 | — | partition (6) | 6 |
+| `pad-sheet` | library | `flatShape` (shape: rectangle) | — | — | `fingerNotch` | PK-CI-02 | — | thumb (2) | 2 |
+| `rsc` | main | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-01 | — | joint (3), hand_holes (3) | 9 |
+| `hsc` | main | `tube` (preset carton) | — | `rsc` | `handHoles` | PK-CS-02 | — | joint (3), hand_holes (3) | 9 |
+| `fol` | main | `tube` (preset carton) | `fol` | `fol` | `handHoles` | PK-CS-03 | — | joint (3), hand_holes (3) | 9 |
+| `cssc` | main | `tube` (preset carton) | `cssc` | `cssc` | `handHoles` | PK-CS-04 | — | joint (3) | 3 |
+| `rsc-hand-holes` | library | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-06 | — | joint (3) | 3 |
+| `full-telescope` | library | `lidAndBase` | — | — | `handHoles` | PK-CT-01 | — | lid_depth (2), hand_holes (3) | 6 |
+| `hsc-lid` | library | `tube` (preset carton) | — | `rsc` | `handHoles` (fromTop: (lidDepth ?? max(15, round(height / 3))) + 15), `vents`, `telescopeLid` | PK-CT-02 | — | hand_holes (3), vents (3) | 9 |
+| `display-tray` | library | `tray` (preset glued) | — | — | `displayHeader`, `lockCorners`, `dieCutInsert` (floor: t) | PK-DS-01 | — | corner (2), insert (2) | 4 |
+| `ft-crash` | library | `tube` (preset carton) | `flipTop` | `crashLock` | `window`, `dieCutInsert` (rotate: true; floor: 3 * t) | PK-FT-01 | tuck_bottom=crash_lock | window (3), insert (2) | 6 |
+| `ft-fourflap` | library | `tube` (preset carton) | `flipTop` | `fourFlapLock` | `window`, `dieCutInsert` (rotate: true; floor: 3 * t) | PK-FT-01 | tuck_bottom=four_flap_lock | window (3), insert (2) | 6 |
+| `ft-seal` | library | `tube` (preset carton) | `flipTop` | `seal` | `window`, `dieCutInsert` (rotate: true; floor: 3 * t) | PK-FT-01 | tuck_bottom=seal | window (3), insert (2) | 6 |
+| `ft-snap` | library | `tube` (preset carton) | `flipTop` | `snapLock123` (preset default) | `window`, `dieCutInsert` (rotate: true; floor: 3 * t) | PK-FT-01 | tuck_bottom=snap_lock_123 | window (3), insert (2) | 6 |
+| `ft-tuck` | library | `tube` (preset carton) | `flipTop` | `tuck` (lid: back) | `window`, `dieCutInsert` (rotate: true; floor: 3 * t) | PK-FT-01 | tuck_bottom=tuck | window (3), insert (2) | 6 |
+| `cavity-insert` | library | `insertBody` | — | — | — | PK-IN-01 | — | thumb (2) | 2 |
+| `tray-insert` | library | `tray` (preset glued) | — | — | — | PK-IN-03 | — | — | 1 |
+| `roll-label-circle` | library | `flatShape` (shape: circle) | — | — | — | PK-LA-01 | shape_flat=circle | — | 1 |
+| `roll-label-custom` | library | `flatShape` (shape: custom_path) | — | — | — | PK-LA-01 | shape_flat=custom_path | — | 1 |
+| `roll-label-oval` | library | `flatShape` (shape: oval) | — | — | — | PK-LA-01 | shape_flat=oval | — | 1 |
+| `roll-label-rect` | library | `flatShape` (shape: rectangle) | — | — | — | PK-LA-01 | shape_flat=rectangle | — | 1 |
+| `roll-label-rounded` | library | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-01 | shape_flat=rounded_rectangle | — | 1 |
+| `flat-circle` | main | `flatShape` (shape: circle) | — | — | — | PK-LA-02 | shape_flat=circle | — | 1 |
+| `flat-custom` | main | `flatShape` (shape: custom_path) | — | — | — | PK-LA-02 | shape_flat=custom_path | — | 1 |
+| `flat-oval` | main | `flatShape` (shape: oval) | — | — | — | PK-LA-02 | shape_flat=oval | — | 1 |
+| `flat-rect` | main | `flatShape` (shape: rectangle) | — | — | — | PK-LA-02 | shape_flat=rectangle | — | 1 |
+| `flat-rounded-rect` | main | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-02 | shape_flat=rounded_rectangle | — | 1 |
+| `wrap-label-rounded` | library | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-03 | tuck_corner=rounded | — | 1 |
+| `wrap-label-square` | library | `flatShape` (shape: rectangle) | — | — | — | PK-LA-03 | tuck_corner=square | — | 1 |
+| `telescope` | main | `lidAndBase` | — | — | `window` | PK-LB-01 | — | lid_depth (2), corner (2), window (2), thumb (2) | 16 |
+| `stand-up-pouch` | library | `pouchWeb` | — | — | — | PK-PB-01 | — | pouch_feat (16) | 16 |
+| `flat-pouch` | library | `pouchWeb` | — | — | — | PK-PB-02 | — | pouch_feat (16) | 16 |
+| `poly-mailer` | library | `polyMailer` | — | — | — | PK-PB-06 | — | adhesive (3), tear_strip (2) | 6 |
+| `paper-bag` | library | `paperBag` | — | — | — | PK-PG-01 | — | bag_handle (5), bag_gusset (2) | 10 |
+| `sleeve` | main | `tube` (preset carton) | `openEnd` | `openEnd` | `window` | PK-SL-01 | — | window (2), thumb (2) | 4 |
+| `sleeve-drawer` | main | `sleeveAndDrawer` | — | — | `window`, `dieCutInsert` (target: drawer; floor: t) | PK-SL-02 | — | thumb (2), window (2), insert (2) | 8 |
+| `band` | main | `band` | — | — | — | PK-SL-03 | — | lock (2) | 2 |
+| `pillow` | main | `pillowTube` | — | — | `window` | PK-SP-01 | — | hang (4), window (2) | 8 |
+| `gable` | main | `tube` (preset carton) | `gableHandle` | `snapLock123` (preset default; tongue: snapLockTongueFor(width)) | `window` | PK-SP-02 | tuck_bottom=snap_lock_123 | window (2) | 2 |
+| `gable-crash` | library | `tube` (preset carton) | `gableHandle` | `crashLock` | `window` | PK-SP-02 | tuck_bottom=crash_lock | window (2) | 2 |
+| `gable-fourflap` | library | `tube` (preset carton) | `gableHandle` | `fourFlapLock` | `window` | PK-SP-02 | tuck_bottom=four_flap_lock | window (2) | 2 |
+| `gable-seal` | library | `tube` (preset carton) | `gableHandle` | `seal` | `window` | PK-SP-02 | tuck_bottom=seal | window (2) | 2 |
+| `gable-tuck` | library | `tube` (preset carton) | `gableHandle` | `tuck` (lid: back) | `window` | PK-SP-02 | tuck_bottom=tuck | window (2) | 2 |
+| `hexagonal` | main | `tube` (turn: 60) | `polygonTuckLid` | `polygonTuckLid` | — | PK-SP-03 | — | — | 1 |
+| `crash-lock-bottom` | main | `tube` (preset carton) | `tuck` (lid: back) | `crashLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=crash_lock; hang=none | window (3) | 3 |
+| `hang-tab-tuck` | main | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `hangTab` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck | hang (3), window (3) | 9 |
+| `reverse-tuck-end` | main | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: front) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck; hang=none | window (3) | 3 |
+| `seal-end` | main | `tube` (preset carton) | `seal` | `seal` | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=seal; hang=none | window (3) | 3 |
+| `snap-lock-bottom` | main | `tube` (preset carton) | `tuck` (lid: back) | `snapLock123` (preset default) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=snap_lock_123; hang=none | window (3) | 3 |
+| `te-airplane-crash` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `crashLock` | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=crash_lock | hang (4), window (3) | 12 |
+| `te-airplane-fourflap` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `fourFlapLock` | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=four_flap_lock | hang (4), window (3) | 12 |
+| `te-airplane-seal` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `seal` | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=seal | hang (4), window (3) | 12 |
+| `te-airplane-snap` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `snapLock123` (preset default) | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=snap_lock_123 | hang (4), window (3) | 12 |
+| `te-airplane-tuck` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `tuck` (lid: back) | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=tuck | hang (4), window (3) | 12 |
+| `te-reverse-crash` | library | `tube` (preset carton) | `tuck` (lid: front) | `crashLock` | `thumbNotch` (end: top), `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=crash_lock | hang (4), window (3) | 12 |
+| `te-reverse-fourflap` | library | `tube` (preset carton) | `tuck` (lid: front) | `fourFlapLock` | `thumbNotch` (end: top), `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=four_flap_lock | hang (4), window (3) | 12 |
+| `te-reverse-seal` | library | `tube` (preset carton) | `tuck` (lid: front) | `seal` | `thumbNotch` (end: top), `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=seal | hang (4), window (3) | 12 |
+| `te-reverse-snap` | library | `tube` (preset carton) | `tuck` (lid: front) | `snapLock123` (preset default) | `thumbNotch` (end: top), `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=snap_lock_123 | hang (4), window (3) | 12 |
+| `te-seal-crash` | library | `tube` (preset carton) | `seal` | `crashLock` | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=crash_lock; hang=none | window (3) | 3 |
+| `te-seal-snap` | library | `tube` (preset carton) | `seal` | `snapLock123` (preset default) | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=snap_lock_123; hang=none | window (3) | 3 |
+| `te-seal-tuck` | library | `tube` (preset carton) | `seal` | `tuck` (lid: back) | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=tuck; hang=none | window (3) | 3 |
+| `te-straight-fourflap` | library | `tube` (preset carton) | `tuck` (lid: back) | `fourFlapLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=four_flap_lock; hang=none | window (3) | 3 |
+| `te-straight-seal` | library | `tube` (preset carton) | `tuck` (lid: back) | `seal` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=seal; hang=none | window (3) | 3 |
+| `tuck-end` | main | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=tuck; hang=none | window (3) | 3 |
+| `te2-airplane` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `tuck` (lid: back) | `slitLock` (end: top) | PK-TE-02 | tuck_top=airplane_tuck | lock (2), tuck_corner (2) | 4 |
+| `te2-reverse` | library | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `slitLock` (end: top) | PK-TE-02 | tuck_top=reverse_tuck | lock (2), tuck_corner (2) | 4 |
+| `te2-straight` | library | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `slitLock` (end: top) | PK-TE-02 | tuck_top=straight_tuck | lock (2), tuck_corner (2) | 4 |
+| `tag-circle` | library | `flatShape` (shape: circle) | — | — | `hangHole` (cx: diameter / 2; cy: 14) | PK-TG-01 | shape_flat=circle | hang (4) | 4 |
+| `tag-custom` | library | `flatShape` (shape: custom_path) | — | — | `hangHole` (cx: size / 2; cy: size / 2) | PK-TG-01 | shape_flat=custom_path | hang (2) | 2 |
+| `tag-oval` | library | `flatShape` (shape: oval) | — | — | `hangHole` (cx: length / 2; cy: width / 4 + 6) | PK-TG-01 | shape_flat=oval | hang (4) | 4 |
+| `tag-rect` | library | `flatShape` (shape: rectangle) | — | — | `hangHole` (cx: length / 2; cy: 14) | PK-TG-01 | shape_flat=rectangle | hang (4) | 4 |
+| `tag-rounded` | library | `flatShape` (shape: rounded_rectangle) | — | — | `hangHole` (cx: length / 2; cy: 14) | PK-TG-01 | shape_flat=rounded_rectangle | hang (4) | 4 |
+| `cup-sleeve` | main | `cone` | — | — | — | PK-TG-02 | — | — | 1 |
+| `card-circle` | library | `flatShape` (shape: circle) | — | — | — | PK-TG-05 | shape_flat=circle | — | 1 |
+| `card-custom` | library | `flatShape` (shape: custom_path) | — | — | — | PK-TG-05 | shape_flat=custom_path | — | 1 |
+| `card-oval` | library | `flatShape` (shape: oval) | — | — | — | PK-TG-05 | shape_flat=oval | — | 1 |
+| `card-rect` | library | `flatShape` (shape: rectangle) | — | — | — | PK-TG-05 | shape_flat=rectangle | — | 1 |
+| `card-rounded` | library | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-TG-05 | shape_flat=rounded_rectangle | — | 1 |
+| `tray` | main | `tray` (preset glued) | — | — | `lockCorners`, `dieCutInsert` (floor: t) | PK-TR-01 | — | corner (2), insert (2) | 4 |
+| `tray-6-corner` | main | `tray` (preset glued) | `hingedLid` (front: glued_lips) | — | `dieCutInsert` (floor: t) | PK-TR-02 | — | insert (2) | 2 |
+| `double-wall-tray` | main | `tray` (preset glued) | — | — | `rollOverWalls` (walls: back/front), `dieCutInsert` (floor: t; inset: t) | PK-TR-03 | — | insert (2) | 2 |
+| `roll-end-tray` | library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right), `dieCutInsert` (floor: t; inset: t) | PK-TR-04 | — | tuck_corner (2), insert (2), thumb (2) | 8 |
+
+### Wave 1 coverage (U3.4)
+
+All 41 wave-1 bases have engine recipes; **468 of the master's 578 variants are drawn** (folding
+carton 257 / 365, inserts 11 / 11, corrugated 116 / 116, flexible 48 / 48, labels 12 / 12, tags and
+sleeves 24 / 26). A variant that cannot be made is not drawn — packio-api leaves it `no_recipe`
+(D-243) and the library never shows it. `hang-tag` (the F4 chamfered tag) no longer names PK-TG-01:
+its shape is not a master `shape_flat`, and packio-api reads an axis a recipe does not name as any
+value — the `tag-*` recipes draw PK-TG-01. Every drawn variant passes the variant
+gate (`model/variant-gate.test.ts`): a clean blank at the first preset it is valid at, and — when it
+folds — the thick model closes to its outer size ± 1 mm with no collision.
+
+| Base | Name | Category | Master variants | Drawn | Not drawn |
+| --- | --- | --- | --- | --- | --- |
+| PK-TE-01 | Tuck-end carton (configurable ends) | folding_carton | 228 | 147 | 81 |
+| PK-TE-02 | Tuck-end with slit or friction lock | folding_carton | 16 | 12 | 4 |
+| PK-FT-01 | Hinged flip-top carton | folding_carton | 30 | 30 | 0 |
+| PK-DS-01 | Counter display tray with header card | folding_carton | 4 | 4 | 0 |
+| PK-TR-01 | Four-corner glued tray | folding_carton | 4 | 4 | 0 |
+| PK-TR-02 | Six-corner glued tray | folding_carton | 2 | 2 | 0 |
+| PK-TR-03 | Double-wall tray | folding_carton | 2 | 2 | 0 |
+| PK-TR-04 | Roll-end tray with tuck lid (paperboard mailer) | folding_carton | 8 | 8 | 0 |
+| PK-SL-01 | Open-end sleeve | folding_carton | 6 | 4 | 2 |
+| PK-SL-02 | Sleeve and drawer (matchbox) | folding_carton | 12 | 8 | 4 |
+| PK-SL-03 | Belly band / wrap band | folding_carton | 2 | 2 | 0 |
+| PK-LB-01 | Two-piece telescope (paperboard) | folding_carton | 24 | 16 | 8 |
+| PK-SP-01 | Pillow box | folding_carton | 12 | 8 | 4 |
+| PK-SP-02 | Gable handle box | folding_carton | 15 | 10 | 5 |
+| PK-IN-01 | Die-cut cavity insert | insert | 2 | 2 | 0 |
+| PK-IN-03 | Tray insert | insert | 1 | 1 | 0 |
+| PK-CS-01 | Regular slotted container | corrugated | 9 | 9 | 0 |
+| PK-CS-02 | Half slotted container | corrugated | 9 | 9 | 0 |
+| PK-CS-03 | Full overlap slotted container | corrugated | 9 | 9 | 0 |
+| PK-CS-04 | Centre special slotted container | corrugated | 3 | 3 | 0 |
+| PK-CS-06 | Slotted container with hand holes | corrugated | 3 | 3 | 0 |
+| PK-CT-01 | Full telescope, two trays | corrugated | 6 | 6 | 0 |
+| PK-CT-02 | Half-slotted body with telescope lid | corrugated | 9 | 9 | 0 |
+| PK-CF-01 | Roll-end tuck-front mailer | corrugated | 48 | 48 | 0 |
+| PK-CF-02 | Pizza box | corrugated | 2 | 2 | 0 |
+| PK-CF-03 | Wrap-around blank | corrugated | 3 | 3 | 0 |
+| PK-CF-05 | Corrugated lock-corner tray | corrugated | 3 | 3 | 0 |
+| PK-CF-06 | Archive / document box | corrugated | 3 | 3 | 0 |
+| PK-CF-08 | Produce tray / die-cut fruit box | corrugated | 9 | 9 | 0 |
+| PK-CI-01 | Cross partition set | insert | 6 | 6 | 0 |
+| PK-CI-02 | Pad and divider sheet | insert | 2 | 2 | 0 |
+| PK-PB-01 | Stand-up pouch | flexible | 16 | 16 | 0 |
+| PK-PB-02 | Three-side-seal flat pouch | flexible | 16 | 16 | 0 |
+| PK-PB-06 | Courier poly mailer | flexible | 6 | 6 | 0 |
+| PK-PG-01 | Paper carrier bag | flexible | 10 | 10 | 0 |
+| PK-LA-01 | Roll label | label | 5 | 5 | 0 |
+| PK-LA-02 | Sheet sticker | label | 5 | 5 | 0 |
+| PK-LA-03 | Wrap-around bottle label | label | 2 | 2 | 0 |
+| PK-TG-01 | Hang tag | tag_sleeve | 20 | 18 | 2 |
+| PK-TG-02 | Cup sleeve | tag_sleeve | 1 | 1 | 0 |
+| PK-TG-05 | Insert / thank-you card | tag_sleeve | 5 | 5 | 0 |
+
+Not drawn, and why:
+
+- **PK-TE-01** — `hang` ≠ none on a straight-tuck or seal top (19 pairs × 3 windows less the 10 pairs with a free back panel): the hang tab stands on the back panel, which carries the lid or the closing flap.
+- **PK-TE-02** — `tuck_top` = seal × lock × corner: a seal end has no tuck to lock.
+- **PK-SL-01** — `window` = top_window: an open sleeve has no top panel.
+- **PK-SL-02** — `window` = front_window: the matchbox shows its sleeve's top (drawn as top_window); its ends are open.
+- **PK-LB-01** — `window` = front_window: the lid covers the base's front; a window in a partial lid's wall does not fit.
+- **PK-SP-01** — `window` = top_window: a pillow has no top panel.
+- **PK-SP-02** — `window` = top_window: the gable roof carries the handle, there is no top panel.
+- **PK-TG-01** — `shape_flat` = custom_path with a euro slot or sombrero: a 32 mm slot does not fit inside an arbitrary outline (round hole only).
 
 ## 4. Patterns the engine does not draw
 
@@ -201,7 +330,7 @@ shows no 3D preview and the designer is not offered.
 
 | Legacy | Why not yet |
 | --- | --- |
-| pid 5 ไส้ (folding cushion / insert with `x` cells) | An insert's construction (`dw = d + l + 2r`, `dl = r(x+1) + wx + d`) depends on the product it holds; needs a sample and a partition model |
+| pid 5 ไส้ (folding cushion / insert with `x` cells) | The legacy `x`-cell cushion (`dw = d + l + 2r`, `dl = r(x+1) + wx + d`) depends on the product it holds and needs a sample. Since U3.4 a die-cut cavity insert (`cavity-insert`, PK-IN-01), inserts inside boxes (`insert` axis) and partition sets (`partition-set`, PK-CI-01) are drawn |
 | pid 11 กล่องขนมญี่ปุ่น / ฝาสองชั้น | Double-lid construction cannot be read from the formula alone (`w − w/8 + d + …`) |
 | pid 12, 13 snack boxes | Formulas suggest trays with side tucks; shape of the tucks unknown |
 | pid 45–48 food boxes (fixed sizes) | Each standard size had its own SVG (`pattern_rel_standard_sizes.svg_file`, S3) — not in the repository; they are fixed-size stock dies, best uploaded as files |
@@ -221,3 +350,18 @@ shows no 3D preview and the designer is not offered.
 - Pillow crease bow = a third of the thickness; cup-sleeve presets are indicative, not measured cups.
 - Dust flap reach = min(0.45 L, 0.9 W); tuck shoulder 1.5 mm; tuck corner radius 6 mm (capped at half
   the tuck).
+- **Wave 1 (U3.4)**, all ⚠ until Prepress signs them off: airplane-tuck wings cut back 0.3 × reach
+  at the panel and 0.15 × reach at the tuck; four-flap lock flaps tiled at 45°; slit lock = two
+  10 × 1 mm slits 2 mm from the tuck crease; flip-top lid = side + t with a lip of a third of the
+  height (12–25 mm) outside the front; lid window in the lid face; sombrero hole 30 mm brim, 12 mm
+  crown; lock corners = 1.5 mm slits where each corner flap lands (no lock tab drawn); display header
+  in line with the back wall; die-cut insert = platform with a 60 % cavity on legs of a third of the
+  height, 1.5 mm + t clearance; mailer tab lock = two tabs at ¼ and ¾ (no receiving slots drawn),
+  tear strip = two perforations 8 mm apart, adhesive strips 6 mm wide; finger holes Ø ≤ 20 mm;
+  hand holes 90 × 30 mm and clip-in handle slots 20 × 6 mm 50 mm apart; vents Ø 12 mm or 30 × 10 mm;
+  stitched joint = flap ≥ 35 mm without a glue area, taped joint = no flap; partition slots
+  t + 1 mm wide, half the height; pouch zipper 8 mm under the top seal, tear notch 3 mm deep 4 mm
+  under it, hang hole Ø 6 mm in the top seal, window = cut-out with a film patch; poly-mailer
+  strips 8 mm on the flap; paper bag turn-over 50 mm, bottom flaps half the gusset + 15 mm.
+- A pillow box is at most half as thick as it is wide (`pillow.too_thick`): beyond that its end
+  lenses pass a half circle and the neighbouring flaps overlap (found by the property test, U3.4).

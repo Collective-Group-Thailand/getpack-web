@@ -28,8 +28,22 @@ describe("recipes and the style library master file", () => {
       const row = bases.get(r.base!)!;
       for (const [axis, options] of Object.entries(r.variants!)) {
         expect(row.variant_axes.split(";"), `${r.id}: ${axis} on ${r.base}`).toContain(axis);
-        for (const value of Object.keys(options)) expect(axes[axis], `${r.id}: ${axis}=${value}`).toContain(value);
+        for (const value of Object.keys(options))
+          // A multi-select axis (`pouch_feat`) is keyed by its sorted set joined by `+`, `none` for none.
+          for (const part of value === "none" && !axes[axis].includes("none") ? [] : value.split("+"))
+            expect(axes[axis], `${r.id}: ${axis}=${value}`).toContain(part);
       }
+    }
+  });
+
+  it("name every axis of their base when the base has several recipes (packio-api reads an unnamed axis as any value)", () => {
+    const byBase = new Map<string, typeof RECIPES>();
+    for (const r of RECIPES.filter((x) => x.base)) byBase.set(r.base!, [...(byBase.get(r.base!) ?? []), r]);
+    for (const [base, recipes] of byBase) {
+      if (recipes.length < 2) continue;
+      const wanted = bases.get(base)!.variant_axes.split(";").filter(Boolean);
+      for (const r of recipes)
+        expect(Object.keys({ ...r.variant, ...r.variants }).sort(), `${r.id} on ${base}`).toEqual([...wanted].sort());
     }
   });
 
@@ -80,7 +94,8 @@ describe("recipes and the style library master file", () => {
       // Body and insert: the insert is a feature cut as its own piece (U3.4).
       "dieCutInsert",
       "lockCorners",
-      "partitionGrid",
+      // The partition grid is a set of slotted strips, cut flat (U3.4).
+      "partitionSet",
     ])
       expect(ids, id).toContain(id);
   });

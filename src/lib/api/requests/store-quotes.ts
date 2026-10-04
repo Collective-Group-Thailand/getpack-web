@@ -17,7 +17,6 @@ export const quoteStatus = z
   .meta({ id: "QuoteStatus" });
 export const quoteSource = z.enum(["instant", "rfq"]).meta({ id: "QuoteSource" });
 
-
 /* ----------------------------------------------------------------------------- saved quotes */
 
 export const quoteLine = z
