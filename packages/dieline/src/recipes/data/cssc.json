@@ -2,8 +2,18 @@
   "schemaVersion": 1,
   "id": "cssc",
   "base": "PK-CS-04",
-  "variant": {
-    "joint": "glue_flap"
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    }
   },
   "category": "corrugated",
   "name": {
@@ -34,18 +44,29 @@
       "min": 40,
       "max": 1000
     },
+    "joint",
     "glueWidth",
     "glueSide",
     "handles",
     "grain"
   ],
   "defaults": {
-    "@extends": "slotted"
+    "@extends": "slotted",
+    "joint": "glue"
   },
   "presets": "slotted",
   "body": {
     "module": "tube",
-    "preset": "carton"
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.depth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
   },
   "closures": {
     "top": {

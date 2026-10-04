@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "archive-box",
+  "base": "PK-CF-06",
+  "variants": {
+    "handle": {
+      "none": {
+        "handles": "none"
+      },
+      "die_cut_handle": {
+        "handles": "side"
+      },
+      "insert_handle": {
+        "handles": "insert"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องเก็บเอกสาร",
+    "en": "Archive / document box"
+  },
+  "description": {
+    "th": "กล่องลูกฟูกเก็บแฟ้มเอกสาร ฝาพับติดผนังหลังปิดด้วยลิ้นเสียบ",
+    "en": "A corrugated box for files, with a tuck lid hinged on the back"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 150,
+      "max": 800
+    },
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    "cornerFlap",
+    "tuckDepth",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "length": 390,
+    "width": 270,
+    "height": 260,
+    "grain": "across",
+    "handles": "none"
+  },
+  "presets": [
+    {
+      "id": "a4",
+      "label": {
+        "th": "A4 330 × 250 × 100",
+        "en": "A4 330 × 250 × 100"
+      },
+      "values": {
+        "length": 330,
+        "width": 250,
+        "height": 100
+      }
+    },
+    {
+      "id": "fs",
+      "label": {
+        "th": "FS 390 × 270 × 260",
+        "en": "FS 390 × 270 × 260"
+      },
+      "values": {
+        "length": 390,
+        "width": 270,
+        "height": 260
+      }
+    },
+    {
+      "id": "xl",
+      "label": {
+        "th": "XL 440 × 320 × 280",
+        "en": "XL 440 × 320 × 280"
+      },
+      "values": {
+        "length": 440,
+        "width": 320,
+        "height": 280
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "handHoles"
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}

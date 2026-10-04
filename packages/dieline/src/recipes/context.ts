@@ -21,7 +21,7 @@ import type { MaterialSpec, ParamValue, ParamValues } from "../types";
  * - `rule.<name>` the material class's manufacturing rules (`rule.minPanel`, `rule.seal.min`…),
  *   when the solver supplies them — unset otherwise, so a manufacturing rule is unknown, never failed;
  * - `C.<NAME>` any numeric constant in `constants.ts`;
- * - `min max abs floor ceil round sqrt sin cos tan number`, and the legacy tables
+ * - `min max abs floor ceil round sqrt sin cos tan number`, `gridCount(grid, i)` (rows or columns of "r x c"), and the legacy tables
  *   `tuckDepthFor(L)`, `glueWidthFor(W)`, `snapLockTongueFor(W)`, `slotWidth()`.
  */
 
@@ -49,6 +49,8 @@ function functionsFor(m: MaterialSpec): Record<string, ExprFunction> {
     cos: math(Math.cos),
     tan: math(Math.tan),
     number: (x) => (typeof x === "number" ? x : typeof x === "string" ? Number(x) : undefined),
+    // "rows x columns" (a partition grid): the count at index 0 (rows) or 1 (columns).
+    gridCount: (g, i) => (typeof g === "string" && typeof i === "number" ? Number(g.split("x")[i]) : undefined),
     tuckDepthFor: math(tuckDepthFor),
     glueWidthFor: math((w) => glueWidthFor(w, m)),
     snapLockTongueFor: math(snapLockTongueFor),

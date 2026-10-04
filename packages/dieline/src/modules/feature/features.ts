@@ -1,10 +1,10 @@
 import { EURO_SLOT_HEIGHT_MM, EURO_SLOT_WIDTH_MM, HANG_HOLE_DIAMETER_MM } from "../../constants";
 import { face } from "../../faces";
-import { num, str } from "../../params";
-import { arc, ellipse, line, rectangle, roundedRectangle } from "../../path";
+import { bool, num, str } from "../../params";
+import { arc, ellipse, line, mapEdge, rectangle, roundedRectangle } from "../../path";
 import { t, windowHole, windowIssues } from "../../styles/_shared";
 import type { Contour, Face } from "../../types";
-import type { FeatureModule, TrayExtras, TrayWall } from "../types";
+import type { FeatureModule, TrayExtras, TrayFrame, TrayWall } from "../types";
 
 /** A window cut in one panel (`windowPanel`), kept 6 mm inside it; film patched on by the factory. */
 export const windowFeature: FeatureModule = {
@@ -137,15 +137,49 @@ export const hangTab: FeatureModule = {
   hinges: (_ctx, cfg) => ({ angles: { [`hanger-${cfg.end as string}`]: 0 } }),
 };
 
-/** Hand hole in each end panel: a stadium 90 × 30 mm (narrower on small boxes), 30 mm below the top crease. ⚠ */
+/** Hand hole: a stadium 90 × 30 mm (narrower on small boxes), 30 mm below the top crease. ⚠ */
 const HAND_HOLE = { width: 90, height: 30, fromTop: 30, margin: 20 };
+/** Insert-handle slots: two 20 × 6 mm slots per panel that a plastic handle clips into. ⚠ */
+const HANDLE_SLOT = { width: 20, height: 6, gap: 50 };
 
-/** Hand holes in the end panels (`handles` = side). */
+/** The panels (tube) or walls (tray) that take hand holes: `side` = the end panels, `long` = the long ones. */
+const HAND_PANELS: Record<string, { tube: string[]; tray: string[] }> = {
+  side: { tube: ["right", "left"], tray: ["wall-left", "wall-right"] },
+  insert: { tube: ["right", "left"], tray: ["wall-left", "wall-right"] },
+  long: { tube: ["front", "back"], tray: ["wall-front", "wall-back"] },
+};
+
+/**
+ * Hand holes or handle slots across a panel `along` wide, starting `y` below its top edge, with the
+ * panel's horizontal centre at `cx` — in the frame where the panel's top is at the smaller y.
+ */
+function handCutouts(kind: string, cx: number, y: number, along: number): Contour[] {
+  if (kind === "insert")
+    return [-1, 1].map((k) =>
+      roundedRectangle(
+        cx + (k * HANDLE_SLOT.gap) / 2 - HANDLE_SLOT.width / 2,
+        y + HAND_HOLE.height / 2 - HANDLE_SLOT.height / 2,
+        HANDLE_SLOT.width,
+        HANDLE_SLOT.height,
+        HANDLE_SLOT.height / 2,
+      ),
+    );
+  const w = Math.min(HAND_HOLE.width, along - 2 * HAND_HOLE.margin);
+  return [roundedRectangle(cx - w / 2, y, w, HAND_HOLE.height, HAND_HOLE.height / 2)];
+}
+
+/** A contour turned a quarter: (x, y) → (y, x) — for a tray's left and right walls, whose height runs along x. */
+const transpose = (c: Contour): Contour => c.map((e) => mapEdge(e, (p) => [p[1], p[0]], true));
+
+/**
+ * Hand holes (`handles`): `side` in the end panels, `long` in the long panels, `insert` two slots
+ * per end panel for a clip-in handle. On a tube, below the top crease; on a tray, below the rim.
+ */
 export const handHoles: FeatureModule = {
   id: "handHoles",
   slot: "feature",
   status: "implemented",
-  fits: ["tube"],
+  fits: ["tube", "tray", "special"],
   label: t("ช่องมือจับ", "Hand holes"),
   params: ["handles"],
   processes: ["die_cut"],
@@ -156,18 +190,73 @@ export const handHoles: FeatureModule = {
       code: "handle.too_small",
       severity: "error",
       param: "handles",
-      require: "not (handles == 'side' and (width < 60 + 2 * 20 or height < 80))",
+      require: "not (handles != 'none' and ((handles == 'long' ? length : width) < 60 + 2 * 20 or height < 80))",
       message: t("กล่องเล็กเกินกว่าจะเจาะช่องมือจับ", "The box is too small for hand holes"),
     },
   ],
+  // `fromTop` (an expression) moves them down, below a telescope lid.
+  tubeHoles(ctx, cfg, panel) {
+    const kind = str(ctx.v, "handles", "none");
+    if (!HAND_PANELS[kind]?.tube.includes(panel.id)) return [];
+    const y = panel.y0 + ctx.num((cfg.fromTop ?? HAND_HOLE.fromTop) as string);
+    return handCutouts(kind, (panel.x0 + panel.x1) / 2, y, panel.x1 - panel.x0);
+  },
+  trayHoles: (ctx, _cfg, f) => trayHandHoles(str(ctx.v, "handles", "none"), f, HAND_HOLE.fromTop),
+};
+
+/** Hand holes in a tray's walls, `fromRim` below each wall's free edge (see `handHoles`). */
+export function trayHandHoles(kind: string, f: TrayFrame, fromRim: number): Record<string, Contour[]> {
+  const walls = HAND_PANELS[kind]?.tray ?? [];
+  const { length: L, width: W, height: H } = f;
+  const out: Record<string, Contour[]> = {};
+  for (const id of walls) {
+    if (id === "wall-back") out[id] = handCutouts(kind, H + L / 2, fromRim, L);
+    if (id === "wall-front") out[id] = handCutouts(kind, H + L / 2, H + W + H - fromRim - HAND_HOLE.height, L);
+    if (id === "wall-left") out[id] = handCutouts(kind, H + W / 2, fromRim, W).map(transpose);
+    if (id === "wall-right")
+      out[id] = handCutouts(kind, H + W / 2, H + L + H - fromRim - HAND_HOLE.height, W).map(transpose);
+  }
+  return out;
+}
+
+export const HAND_HOLE_HEIGHT_MM = HAND_HOLE.height;
+
+/**
+ * Vent holes (`vents`): `round` Ø 12 mm or `oblong` 30 × 10 mm, two in each end panel (tube) or
+ * each long wall (tray), at mid height, a third of the way in from each side. ⚠ Size and spacing
+ * to be confirmed by Prepress.
+ */
+export const vents: FeatureModule = {
+  id: "vents",
+  slot: "feature",
+  status: "implemented",
+  fits: ["tube", "tray"],
+  label: t("รูระบายอากาศ", "Vent holes"),
+  params: ["vents"],
+  processes: ["die_cut"],
+  contributes: { kinds: [], roles: ["cut"] },
   tubeHoles(ctx, _cfg, panel) {
-    if (str(ctx.v, "handles", "none") !== "side" || (panel.id !== "right" && panel.id !== "left")) return [];
-    const w = Math.min(HAND_HOLE.width, panel.x1 - panel.x0 - 2 * HAND_HOLE.margin);
-    const cx = (panel.x0 + panel.x1) / 2;
-    const y = panel.y0 + HAND_HOLE.fromTop;
-    return [roundedRectangle(cx - w / 2, y, w, HAND_HOLE.height, HAND_HOLE.height / 2)];
+    const kind = str(ctx.v, "vents", "none");
+    if (kind === "none" || (panel.id !== "right" && panel.id !== "left")) return [];
+    return ventPair(kind, panel.x0, panel.x1, (panel.y0 + panel.y1) / 2);
+  },
+  trayHoles(ctx, _cfg, f) {
+    const kind = str(ctx.v, "vents", "none");
+    if (kind === "none") return {};
+    const { length: L, width: W, height: H } = f;
+    return {
+      "wall-back": ventPair(kind, H, H + L, H / 2),
+      "wall-front": ventPair(kind, H, H + L, H + W + H / 2),
+    };
   },
 };
+
+function ventPair(kind: string, x0: number, x1: number, cy: number): Contour[] {
+  return [1 / 3, 2 / 3].map((k) => {
+    const cx = x0 + (x1 - x0) * k;
+    return kind === "oblong" ? roundedRectangle(cx - 15, cy - 5, 30, 10, 5) : ellipse(cx, cy, 6, 6);
+  });
+}
 
 /**
  * Inner walls rolled over a tray's walls (`walls`: back | front | left | right), the caliper
@@ -228,5 +317,25 @@ export const hangHole: FeatureModule = {
     const w = num(ctx.v, "width", 40);
     const cy = num(ctx.v, "holeOffset", Math.max(8, d * 1.5));
     return [ellipse(w / 2, cy, d / 2, d / 2)];
+  },
+};
+
+/**
+ * A finger notch in a flat pad (PK-CI-02 `thumb`): a stadium 30 × 12 mm centred 10 mm in from the
+ * top edge, to lift the pad out. ⚠
+ */
+export const fingerNotch: FeatureModule = {
+  id: "fingerNotch",
+  slot: "feature",
+  status: "implemented",
+  fits: ["flat"],
+  label: t("ช่องนิ้วดึง", "Finger notch"),
+  params: ["fingerHole"],
+  processes: ["die_cut"],
+  contributes: { kinds: [], roles: ["cut"] },
+  flatHoles(ctx) {
+    if (!bool(ctx.v, "fingerHole", false)) return [];
+    const l = num(ctx.v, "length", 100);
+    return [roundedRectangle(l / 2 - 15, 4, 30, 12, 6)];
   },
 };

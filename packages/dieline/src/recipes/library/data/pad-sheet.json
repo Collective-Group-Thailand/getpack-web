@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "pad-sheet",
+  "base": "PK-CI-02",
+  "variants": {
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "แผ่นรองและแผ่นคั่น",
+    "en": "Pad and divider sheet"
+  },
+  "description": {
+    "th": "แผ่นลูกฟูกเรียบสำหรับรองพื้นหรือคั่นระหว่างชั้นสินค้า",
+    "en": "A flat corrugated sheet to line a box or separate layers of goods"
+  },
+  "materials": ["corrugated", "paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 1000
+    },
+    "fingerHole"
+  ],
+  "defaults": {
+    "length": 400,
+    "width": 300,
+    "fingerHole": false
+  },
+  "presets": [
+    {
+      "id": "m",
+      "label": {
+        "th": "400 × 300",
+        "en": "400 × 300"
+      },
+      "values": {
+        "length": 400,
+        "width": 300
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "600 × 400",
+        "en": "600 × 400"
+      },
+      "values": {
+        "length": 600,
+        "width": 400
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "fingerNotch"
+    }
+  ]
+}

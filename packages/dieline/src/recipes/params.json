@@ -1,4 +1,36 @@
 {
+  "adhesive": {
+    "key": "adhesive",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "แถบกาวปิดผนึก",
+      "en": "Adhesive strip"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "single",
+        "label": {
+          "th": "หนึ่งเส้น",
+          "en": "Single strip"
+        }
+      },
+      {
+        "value": "dual",
+        "label": {
+          "th": "สองเส้น (ส่งคืนได้)",
+          "en": "Dual strips (returnable)"
+        }
+      }
+    ]
+  },
   "bottom": {
     "key": "bottom",
     "kind": "length",
@@ -304,6 +336,20 @@
           "th": "ที่ด้านข้างทั้งสอง",
           "en": "In both end panels"
         }
+      },
+      {
+        "value": "long",
+        "label": {
+          "th": "ที่ด้านยาวทั้งสอง",
+          "en": "In both long panels"
+        }
+      },
+      {
+        "value": "insert",
+        "label": {
+          "th": "ช่องเสียบหูหิ้วที่ด้านข้าง",
+          "en": "Clip-in handle slots in the end panels"
+        }
       }
     ]
   },
@@ -456,6 +502,38 @@
       }
     ]
   },
+  "joint": {
+    "key": "joint",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "การต่อตะเข็บ",
+      "en": "Manufacturer's joint"
+    },
+    "options": [
+      {
+        "value": "glue",
+        "label": {
+          "th": "ปีกกาว",
+          "en": "Glued flap"
+        }
+      },
+      {
+        "value": "stitch",
+        "label": {
+          "th": "เย็บลวด",
+          "en": "Stitched flap"
+        }
+      },
+      {
+        "value": "tape",
+        "label": {
+          "th": "เทป",
+          "en": "Taped"
+        }
+      }
+    ]
+  },
   "length": {
     "key": "length",
     "kind": "length",
@@ -550,6 +628,31 @@
     "step": 0.5,
     "legacyKey": "b"
   },
+  "mailerFront": {
+    "key": "mailerFront",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "การปิดด้านหน้า",
+      "en": "Front closure"
+    },
+    "options": [
+      {
+        "value": "tuck",
+        "label": {
+          "th": "ลิ้นเสียบ",
+          "en": "Tuck"
+        }
+      },
+      {
+        "value": "tab",
+        "label": {
+          "th": "ลิ้นล็อกสองข้าง",
+          "en": "Two lock tabs"
+        }
+      }
+    ]
+  },
   "overlap": {
     "key": "overlap",
     "kind": "length",
@@ -561,6 +664,59 @@
     "min": 5,
     "max": 30,
     "step": 0.5
+  },
+  "partition": {
+    "key": "partition",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "จำนวนช่อง (แถว × คอลัมน์)",
+      "en": "Cells (rows × columns)"
+    },
+    "options": [
+      {
+        "value": "2x2",
+        "label": {
+          "th": "2 × 2",
+          "en": "2 × 2"
+        }
+      },
+      {
+        "value": "2x3",
+        "label": {
+          "th": "2 × 3",
+          "en": "2 × 3"
+        }
+      },
+      {
+        "value": "3x3",
+        "label": {
+          "th": "3 × 3",
+          "en": "3 × 3"
+        }
+      },
+      {
+        "value": "3x4",
+        "label": {
+          "th": "3 × 4",
+          "en": "3 × 4"
+        }
+      },
+      {
+        "value": "4x4",
+        "label": {
+          "th": "4 × 4",
+          "en": "4 × 4"
+        }
+      },
+      {
+        "value": "4x6",
+        "label": {
+          "th": "4 × 6",
+          "en": "4 × 6"
+        }
+      }
+    ]
   },
   "path": {
     "key": "path",
@@ -653,6 +809,15 @@
     "max": 1000,
     "step": 0.5
   },
+  "tearStrip": {
+    "key": "tearStrip",
+    "kind": "boolean",
+    "group": "options",
+    "label": {
+      "th": "แถบดึงฉีก",
+      "en": "Zip tear strip"
+    }
+  },
   "thickness": {
     "key": "thickness",
     "kind": "length",
@@ -727,6 +892,38 @@
     "max": 60,
     "step": 0.5,
     "legacyKey": "f"
+  },
+  "vents": {
+    "key": "vents",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "รูระบายอากาศ",
+      "en": "Vent holes"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "round",
+        "label": {
+          "th": "รูกลม",
+          "en": "Round"
+        }
+      },
+      {
+        "value": "oblong",
+        "label": {
+          "th": "รูยาว",
+          "en": "Oblong"
+        }
+      }
+    ]
   },
   "width": {
     "key": "width",

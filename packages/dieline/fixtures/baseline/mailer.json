@@ -1,5 +1,5 @@
 {
-  "definition": "0d2cfac9f62fb2",
+  "definition": "0329ba222ebea9",
   "small · flute-e": {
     "build": "1f9aff5891f501",
     "hinges": "0b5c2191493d74",
@@ -159,6 +159,60 @@
   "small · flute-e · grain=along": {
     "build": "07029a7bc6e63c",
     "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · mailerFront=tuck": {
+    "build": "1f9aff5891f501",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · mailerFront=tab": {
+    "build": "1e03fa16cfeb6d",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · tearStrip=true": {
+    "build": "0fd1a156616acf",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · adhesive=none": {
+    "build": "1f9aff5891f501",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · adhesive=single": {
+    "build": "0c73e00349f217",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · adhesive=dual": {
+    "build": "195d4a4b761c33",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · fingerHole=true": {
+    "build": "056778766ed33b",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · insert=none": {
+    "build": "1f9aff5891f501",
+    "hinges": "0b5c2191493d74",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · flute-e · insert=die_cut": {
+    "build": "0d3d1d0efd6c6d",
+    "hinges": "19ff99a8686479",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }

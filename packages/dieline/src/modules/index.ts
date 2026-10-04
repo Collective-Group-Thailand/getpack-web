@@ -17,9 +17,19 @@ import {
   snapLock123,
   tuck,
 } from "./closure/tube-closures";
-import { handHoles, hangHole, hangTab, rollOverWalls, thumbNotch, windowFeature } from "./feature/features";
+import {
+  fingerNotch,
+  handHoles,
+  hangHole,
+  hangTab,
+  rollOverWalls,
+  thumbNotch,
+  vents,
+  windowFeature,
+} from "./feature/features";
 import { dieCutInsert, insertBody } from "./feature/insert";
-import { displayHeader, lockCorners } from "./feature/tray-features";
+import { displayHeader, lockCorners, telescopeLid } from "./feature/tray-features";
+import { partitionSet } from "./body/partition";
 import { lidAndBase, sleeveAndDrawer } from "./pieceSet/piece-sets";
 import { PLANNED_MODULES } from "./planned";
 import type { ModuleDef } from "./types";
@@ -32,6 +42,7 @@ export const MODULES: readonly ModuleDef[] = [
   flatShape,
   band,
   cone,
+  partitionSet,
   pouchWeb,
   tuck,
   rsc,
@@ -53,12 +64,15 @@ export const MODULES: readonly ModuleDef[] = [
   thumbNotch,
   hangTab,
   handHoles,
+  vents,
   rollOverWalls,
   hangHole,
   dieCutInsert,
   insertBody,
   lockCorners,
   displayHeader,
+  telescopeLid,
+  fingerNotch,
   lidAndBase,
   sleeveAndDrawer,
   ...PLANNED_MODULES,

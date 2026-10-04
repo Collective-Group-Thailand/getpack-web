@@ -14,6 +14,7 @@ import { ellipse } from "../../path";
 import { grainOn, t, windowHole } from "../../styles/_shared";
 import type { Contour, ParamValues } from "../../types";
 import { extraPieces } from "../body/tube";
+import { HAND_HOLE_HEIGHT_MM, trayHandHoles } from "../feature/features";
 import { lockCornerHoles } from "../feature/tray-features";
 import type { PieceSetModule } from "../types";
 
@@ -57,6 +58,15 @@ export const lidAndBase: PieceSetModule = {
     const tray = (l: number, w: number, h: number, lid: boolean) => {
       const f = { length: l + a.panel, width: w + a.panel, height: h + a.trayDepth };
       const holes: Record<string, Contour[]> = lock ? lockCornerHoles(f) : {};
+      // Hand holes (CT-01): through a full lid and the base under it, 30 mm below the top; under a
+      // partial lid, in the base only, 15 mm below the lid's edge. ⚠
+      const handles = str(v, "handles", "none");
+      const full = str(v, "lid", "partial") === "full";
+      const add = (more: Record<string, Contour[]>) => {
+        for (const [id, hs] of Object.entries(more)) holes[id] = [...(holes[id] ?? []), ...hs];
+      };
+      if (handles !== "none" && !lid) add(trayHandHoles(handles, f, full ? 30 : lidDepthOf(v) + 15));
+      if (handles !== "none" && lid && full) add(trayHandHoles(handles, f, f.height - 30 - HAND_HOLE_HEIGHT_MM));
       if (lid) {
         // A top window in the lid's top (`windowPanel` = `lid-base`); a finger hole in its front and back walls.
         holes.base = windowHole(v, "lid-base", f.height, f.height + f.length, f.height, f.height + f.width);
