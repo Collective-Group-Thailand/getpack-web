@@ -60,30 +60,35 @@ beforeEach(() => {
 });
 
 describe("layers panel", () => {
-  it("lists elements topmost first, locks one, and is accessible", async () => {
-    const { container } = mount(<LayersPanel />);
-    const items = within(screen.getByRole("list", { name: "ชั้นขององค์ประกอบ บนสุดก่อน" })).getAllByRole("listitem");
-    expect(items).toHaveLength(5);
-    expect(items[1]).toHaveTextContent("ชาไทย");
+  const tree = () => screen.getByRole("tree", { name: "ชั้นขององค์ประกอบ บนสุดก่อน" });
 
+  it("is a tree of the sides and their elements, topmost first, with the selection's lock", async () => {
+    const { container } = mount(<LayersPanel />);
+    const items = within(tree()).getAllByRole("treeitem");
+    expect(items).toHaveLength(6);
+    expect(items[0]).toHaveTextContent("ด้านนอก (5)");
+    expect(items[2]).toHaveTextContent("ชาไทย");
+
+    await userEvent.click(items[2]!);
     await userEvent.click(screen.getByRole("button", { name: "ล็อก ชาไทย" }));
     expect(s().content.elements.find((e) => e.id === "t")!.locked).toBe(true);
     expect(screen.getByRole("button", { name: "ปลดล็อก ชาไทย" })).toHaveAttribute("aria-pressed", "true");
     await expectNoA11yViolations(container);
   });
 
-  it("selects from the list, Shift adding to the selection", async () => {
+  it("moves by arrow keys, selects with Enter, Shift adding to the selection", async () => {
     mount(<LayersPanel />);
-    const list = screen.getByRole("list", { name: "ชั้นขององค์ประกอบ บนสุดก่อน" });
-    const [top, second] = within(list)
-      .getAllByRole("button", { pressed: false })
-      .filter((b) => !b.getAttribute("aria-label"));
     const user = userEvent.setup();
-    await user.click(top!);
-    await user.keyboard("{Shift>}");
-    await user.click(second!);
-    await user.keyboard("{/Shift}");
+    const [side, top] = within(tree()).getAllByRole("treeitem");
+    side!.focus();
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(top).toHaveFocus();
+    expect(s().selectedIds).toEqual(["q"]);
+    await user.keyboard("{ArrowDown}{Shift>}{Enter}{/Shift}");
     expect(s().selectedIds).toEqual(["q", "t"]);
+    expect(within(tree()).getAllByRole("treeitem", { selected: true })).toHaveLength(2);
+    await user.keyboard("{ArrowLeft}");
+    expect(side).toHaveFocus();
   });
 });
 

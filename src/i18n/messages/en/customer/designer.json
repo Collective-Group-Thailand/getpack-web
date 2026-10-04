@@ -147,7 +147,8 @@
     "height": "Height (mm)",
     "clip": "Clip to",
     "clipHint": "Shows only the part inside the chosen face",
-    "clipSheet": "Whole sheet"
+    "clipSheet": "Whole sheet (wraps across folds)",
+    "wrapWarning": "Artwork across a fold can shift a little within the folding tolerance; keep text and barcodes off the folds"
   },
   "setup": {
     "title": "Box setup",
@@ -365,7 +366,13 @@
     },
     "grouped": "Group",
     "lock": "Lock {name}",
-    "unlock": "Unlock {name}"
+    "unlock": "Unlock {name}",
+    "locked": "Locked",
+    "actions": "Manage {name}",
+    "side": {
+      "outside": "Outside ({count, number})",
+      "inside": "Inside ({count, number})"
+    }
   },
   "templates": {
     "applied": "Template {name} applied",
@@ -542,5 +549,18 @@
   },
   "account": {
     "browserOnly": "Saved in this browser (no product chosen yet)"
+  },
+  "stage": {
+    "label": "View",
+    "mode": "Stage view",
+    "split": "3D with flat",
+    "flat": "Flat",
+    "3d": "3D",
+    "side": "Side being designed",
+    "outside": "Outside",
+    "inside": "Inside",
+    "model": "The box in 3D",
+    "pick": "Pick a face to design",
+    "editing": "Editing: {face}"
   }
 }

@@ -8,6 +8,7 @@ import {
   dielineLines,
   flattenContour,
   flattenOpen,
+  mirrorDieline,
   pieceOutline,
   safeZone,
   type Dieline,
@@ -55,8 +56,15 @@ export function useDesignIssues(dieline: Dieline | null, catalog: DesignerCatalo
   const bleedMm = catalog?.rules.bleedMm ?? DEFAULT_BLEED_MM;
   const minDpi = catalog?.rules.minDpi ?? DEFAULT_MIN_DPI;
   const sheet = useMemo(() => (dieline ? sheetOf(dieline, safeMm) : null), [dieline, safeMm]);
-  return useMemo(
-    () => (sheet ? designIssues({ ...sheet, elements, cornersOf, bleedMm, minDpi }) : []),
-    [sheet, elements, bleedMm, minDpi],
-  );
+  // Inside artwork (U4.3) sits on the sheet as seen from inside: checked against the mirrored die.
+  const inside = useMemo(() => (dieline ? sheetOf(mirrorDieline(dieline), safeMm) : null), [dieline, safeMm]);
+  return useMemo(() => {
+    if (!sheet || !inside) return [];
+    const outer = elements.filter((e) => e.side !== "inside");
+    const inner = elements.filter((e) => e.side === "inside");
+    return [
+      ...designIssues({ ...sheet, elements: outer, cornersOf, bleedMm, minDpi }),
+      ...(inner.length ? designIssues({ ...inside, elements: inner, cornersOf, bleedMm, minDpi }) : []),
+    ];
+  }, [sheet, inside, elements, bleedMm, minDpi]);
 }
