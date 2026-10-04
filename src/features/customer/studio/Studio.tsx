@@ -27,10 +27,12 @@ import { Callout } from "@/ui/components/Callout";
 import { loadLibrary, needsLibrary } from "./library";
 import { PriceDock } from "./PriceDock";
 import { maxSpotColours, useStudioRules } from "./rules";
+import type { PrintRule } from "@/features/designer/lib/checks";
 import { artworkColours } from "./state";
 import { studioFieldsOf } from "./spec";
 import { StepBar } from "./StepBar";
 import { initialStep, lockedReason, type StepFacts, type StudioStep } from "./steps";
+import { useStudioChecks } from "./checks";
 import { useChecksClean, useStudioFunnel } from "./funnel";
 
 const STUDIO_ROUTE = "/studio/[designId]";
@@ -261,19 +263,18 @@ export function Studio({
         );
       case "check":
         return (
-          <div className="space-y-5">
-            <h2 className="font-semibold">{t("check.title")}</h2>
-            <ChecksPanel issues={ctx.issues} />
-            <Button className="w-full" onClick={() => goTo("order")}>
-              {t("check.next")}
-            </Button>
-          </div>
+          <CheckStep
+            ctx={ctx}
+            rules={(rules.data?.rules ?? []) as PrintRule[]}
+            serverChecks={mode === "store"}
+            onNext={() => goTo("order")}
+          />
         );
       case "order":
         return (
           <div className="space-y-4">
             <h2 className="font-semibold">{t("order.title")}</h2>
-            {ctx.issues.some((issue) => issue.severity === "error") ? (
+            {ctx.issues.some((issue) => issue.severity === "block") ? (
               <Callout tone="warning" title={t("order.hasProblems")}>
                 <Button size="sm" variant="secondary" className="mt-2" onClick={() => goTo("check")}>
                   {t("order.toChecks")}
@@ -405,4 +406,44 @@ function StartPanel({
 function ChecksCleanWatch({ issues, onClean }: { issues: EditorChromeContext["issues"]; onClean: () => void }) {
   useChecksClean(issues, onClean);
   return null;
+}
+
+/**
+ * ④ Check (studio-spec §2): the live findings with their fixes, the warnings accepted for this
+ * version (packio-api's run of the saved version for the rules it evaluates too), and the way on.
+ */
+function CheckStep({
+  ctx,
+  rules,
+  serverChecks,
+  onNext,
+}: {
+  ctx: EditorChromeContext;
+  rules: PrintRule[];
+  serverChecks: boolean;
+  onNext: () => void;
+}) {
+  const t = useTranslations("studio");
+  const saveState = ctx.persistence.state;
+  const checks = useStudioChecks(
+    ctx.persistence.serverId(),
+    ctx.persistence.versionNo(),
+    rules,
+    serverChecks && saveState === "saved",
+    ctx.persistence.versionNo,
+  );
+  return (
+    <div className="space-y-5">
+      <h2 className="font-semibold">{t("check.title")}</h2>
+      <ChecksPanel
+        issues={ctx.issues}
+        onFix={ctx.fix}
+        acknowledged={checks.acknowledged}
+        onAcknowledge={checks.acknowledge}
+      />
+      <Button className="w-full" onClick={onNext}>
+        {t("check.next")}
+      </Button>
+    </div>
+  );
 }

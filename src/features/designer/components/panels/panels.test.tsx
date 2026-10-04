@@ -1,7 +1,8 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { REFERENCE_MATERIALS, SPEC_VERSION } from "@packio/dieline";
 
 import common from "@/i18n/messages/th/common/common.json";
@@ -38,11 +39,16 @@ const handle: DesignerHandle = {
   mode: "local",
 };
 
+// Panels read the studio's rule catalogue through TanStack Query; the back office mode never fetches it.
+const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
 function mount(ui: React.ReactNode) {
   return render(
-    <NextIntlClientProvider locale="th" messages={{ common, designer }} timeZone="Asia/Bangkok">
-      <DesignerContext.Provider value={handle}>{ui}</DesignerContext.Provider>
-    </NextIntlClientProvider>,
+    <QueryClientProvider client={client}>
+      <NextIntlClientProvider locale="th" messages={{ common, designer }} timeZone="Asia/Bangkok">
+        <DesignerContext.Provider value={handle}>{ui}</DesignerContext.Provider>
+      </NextIntlClientProvider>
+    </QueryClientProvider>,
   );
 }
 
@@ -95,13 +101,23 @@ describe("layers panel", () => {
 describe("checks panel", () => {
   it("says what is wrong in words and selects the element", async () => {
     const issues: DesignIssue[] = [
-      { code: "low_resolution", severity: "error", elementId: "a", data: { dpi: 127, min: 300 } },
-      { code: "crosses_fold", severity: "warning", elementId: "t" },
+      { ruleId: "image_resolution", severity: "block", elementId: "a", data: { ppi: 127, min: 300 } },
+      { ruleId: "crosses_crease", severity: "warn", elementId: "t" },
+      { ruleId: "min_text_size", severity: "warn", elementId: "t", data: { pt: 4, min: 6 }, fix: "min_text" },
     ];
-    const { container } = mount(<ChecksPanel issues={issues} />);
-    expect(screen.getByRole("status")).toHaveTextContent("ต้องแก้ 1 รายการ · ควรตรวจ 1 รายการ");
-    await userEvent.click(screen.getByRole("button", { name: /127 dpi ต่ำกว่า 300 dpi/ }));
+    const onFix = vi.fn();
+    const onAcknowledge = vi.fn();
+    const { container } = mount(
+      <ChecksPanel issues={issues} onFix={onFix} acknowledged={() => false} onAcknowledge={onAcknowledge} />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("ต้องแก้ 1");
+    expect(screen.getByRole("status")).toHaveTextContent("ควรตรวจ 2");
+    await userEvent.click(screen.getByRole("button", { name: /127 ppi ต่ำกว่า 300 ppi/ }));
     expect(s().selectedIds).toEqual(["a"]);
+    await userEvent.click(screen.getByRole("button", { name: "ขยายตัวอักษร" }));
+    expect(onFix).toHaveBeenCalledWith(issues[2]);
+    // A block is fixed, never accepted: only the warnings offer acceptance.
+    expect(screen.getAllByRole("button", { name: "รับทราบ ใช้แบบนี้" })).toHaveLength(2);
     await expectNoA11yViolations(container);
   });
 
@@ -157,11 +173,13 @@ describe("properties panel", () => {
     await userEvent.click(screen.getByRole("button", { name: "ปลดล็อก" }));
     expect(s().content.elements.find((e) => e.id === "q")!.locked).toBe(false);
     rerender(
-      <NextIntlClientProvider locale="th" messages={{ common, designer }} timeZone="Asia/Bangkok">
-        <DesignerContext.Provider value={handle}>
-          <PropertiesPanel el={s().content.elements.find((e) => e.id === "q")!} />
-        </DesignerContext.Provider>
-      </NextIntlClientProvider>,
+      <QueryClientProvider client={client}>
+        <NextIntlClientProvider locale="th" messages={{ common, designer }} timeZone="Asia/Bangkok">
+          <DesignerContext.Provider value={handle}>
+            <PropertiesPanel el={s().content.elements.find((e) => e.id === "q")!} />
+          </DesignerContext.Provider>
+        </NextIntlClientProvider>
+      </QueryClientProvider>,
     );
     expect(screen.getByRole("button", { name: "ลบ (Delete)" })).toBeEnabled();
   });

@@ -38,7 +38,8 @@ import { finishesIn, finishMask, type Finish } from "@/features/designer/lib/fin
 import { uprightAngles } from "@/features/designer/lib/upright";
 import { useFaceNames } from "@/features/designer/lib/useFaceNames";
 import type { DesignIssue } from "@/features/designer/lib/checks";
-import { useDesignIssues } from "@/features/designer/lib/useIssues";
+import { softProofStyle, useCheckContext, useStudioRules } from "@/features/designer/data/rules";
+import { fixContextFor, useDesignIssues } from "@/features/designer/lib/useIssues";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor } from "@/features/designer/store/editor";
 import type { BoxDims, BoxStyleId, DesignContent, DesignSpec, ImageElement } from "@/features/designer/types";
@@ -52,6 +53,7 @@ import { IconButton } from "@/ui/components/IconButton";
 import { useModKey } from "@/ui/components/CommandPalette";
 import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
 import { Skeleton } from "@/ui/components/Skeleton";
+import { Switch } from "@/ui/components/Switch";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
@@ -200,6 +202,8 @@ export interface EditorSession {
 export interface EditorChromeContext {
   persistence: Persistence;
   issues: DesignIssue[];
+  /** Applies a finding's safe fix, as one undo step (U4.5). */
+  fix: (issue: DesignIssue) => void;
   openSetup: () => void;
   openRules: () => void;
 }
@@ -340,7 +344,17 @@ export default function Editor({
         ? "split"
         : "3d",
   );
-  const issues = useDesignIssues(dieline, catalog);
+  const checkContext = useCheckContext(spec, session.mode);
+  // Soft proof (U4.5, D-279): the substrate's simplified transform, when Prepress has set one.
+  const rulesQuery = useStudioRules(session.mode !== "admin");
+  const proofProfile =
+    (chrome?.views &&
+      spec &&
+      rulesQuery.data?.softProof.profiles.find((p) => p.materialClass === spec.material.kind)) ||
+    null;
+  const [softProof, setSoftProof] = useState(false);
+  const proofStyle = softProof ? softProofStyle(proofProfile) : {};
+  const issues = useDesignIssues(dieline, catalog, checkContext);
 
   const persistence = usePersistence({
     mode: session.mode,
@@ -580,8 +594,18 @@ export default function Editor({
     setSideTab("checks");
     if (!window.matchMedia("(min-width: 64rem)").matches) setMobilePanel("checks");
   };
-  const errors = issues.filter((i) => i.severity === "error").length;
-  const chromeContext: EditorChromeContext = { persistence, issues, openSetup, openRules };
+  const errors = issues.filter((i) => i.severity === "block").length;
+  const fix = (issue: DesignIssue) => {
+    if (!dieline) return;
+    const editor = useEditor.getState();
+    const target = editor.content.elements.find((e) => e.id === issue.elementId);
+    const ctx = fixContextFor(dieline, catalog, checkContext, target?.side === "inside" ? "inside" : "outside");
+    // The fixes load on first use: most sessions never need one.
+    void import("@/features/designer/lib/fixes").then(({ applyFix }) =>
+      useEditor.getState().commit((content) => applyFix(content, issue, ctx)),
+    );
+  };
+  const chromeContext: EditorChromeContext = { persistence, issues, fix, openSetup, openRules };
   const stepPanel = chrome?.panel?.(chromeContext) ?? null;
   const railTools = RAIL.filter((item) => chrome?.rail?.(item.id) ?? true);
 
@@ -632,7 +656,7 @@ export default function Editor({
     tab === "properties" ? (
       <SelectionPanel empty={selectionEmpty} />
     ) : tab === "checks" ? (
-      <ChecksPanel issues={issues} />
+      <ChecksPanel issues={issues} onFix={fix} />
     ) : (
       preview
     );
@@ -796,11 +820,12 @@ export default function Editor({
 
           {chrome?.below?.(chromeContext)}
 
-          <div className="flex min-h-0 flex-1">
+          {/* One step panel: beside the stage on wide screens, under it on phones (CSS order). */}
+          <div className={cn("flex min-h-0 flex-1", stepPanel && "flex-col lg:flex-row")}>
             {stepPanel ? (
               <section
                 aria-label={t("rail.label")}
-                className="border-border bg-surface hidden w-80 shrink-0 overflow-y-auto border-e p-4 lg:block"
+                className="border-border bg-surface order-last max-h-[45dvh] w-full shrink-0 overflow-y-auto border-t p-4 lg:order-first lg:max-h-none lg:w-80 lg:border-t-0 lg:border-e"
               >
                 {stepPanel}
               </section>
@@ -844,7 +869,17 @@ export default function Editor({
             ) : null}
 
             <div className="relative flex min-w-0 flex-1 flex-col">
-              <div className="relative flex min-h-0 flex-1">
+              <div
+                className="relative flex min-h-0 flex-1"
+                style={proofStyle.filter ? { filter: proofStyle.filter } : undefined}
+              >
+                {proofStyle.overlay ? (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 z-10 mix-blend-multiply"
+                    style={{ background: proofStyle.overlay.background, opacity: proofStyle.overlay.opacity }}
+                  />
+                ) : null}
                 <div
                   ref={wrapRef}
                   className={cn(
@@ -918,6 +953,20 @@ export default function Editor({
                     onValueChange={(next) => void switchSide(next as "outside" | "inside")}
                     options={(["outside", "inside"] as const).map((value) => ({ value, label: t(`stage.${value}`) }))}
                   />
+                  {proofProfile ? (
+                    <Switch
+                      label={t("stage.softProof")}
+                      checked={softProof}
+                      onCheckedChange={setSoftProof}
+                      className="text-xs"
+                    />
+                  ) : null}
+                  {softProof && proofProfile ? (
+                    <span className="text-muted text-xs" role="status">
+                      {locale === "en" ? rulesQuery.data!.softProof.label.en : rulesQuery.data!.softProof.label.th}
+                      {proofProfile.label ? ` · ${proofProfile.label}` : null}
+                    </span>
+                  ) : null}
                   {focusedFaceId && faceNames.get(focusedFaceId) ? (
                     // The canvas's focus chip announces it; this repeats it beside the views, quietly.
                     <span aria-hidden="true" className="text-xs">
@@ -961,12 +1010,6 @@ export default function Editor({
               </aside>
             ) : null}
           </div>
-
-          {stepPanel ? (
-            <section className="border-border bg-surface max-h-[45dvh] overflow-y-auto border-t p-4 lg:hidden">
-              {stepPanel}
-            </section>
-          ) : null}
 
           {/* Phones: the tools as a bottom bar; a tool's panel opens above it, the canvas stays in view. */}
           {spec && mobilePanel ? (

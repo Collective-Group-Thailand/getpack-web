@@ -340,6 +340,12 @@ export function designRowFor(request: Request, designId: string) {
   return rowOf(request, designId);
 }
 
+/** A version of the design (the current one without a number): its number, document and box. */
+export function versionOf(row: Row, versionNo?: number) {
+  const version = versionNo === undefined ? row.versions[0] : row.versions.find((v) => v.versionNo === versionNo);
+  return version ? { versionNo: version.versionNo, document: version.document, box: version.box ?? null } : null;
+}
+
 /** The box a version of the design was saved with (the current one without a number). */
 export function versionBoxOf(row: Row, versionNo?: number): { versionNo: number; box: StudioBox | null } | null {
   const version = versionNo === undefined ? row.versions[0] : row.versions.find((v) => v.versionNo === versionNo);

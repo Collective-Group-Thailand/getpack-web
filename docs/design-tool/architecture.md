@@ -88,10 +88,18 @@ the API says why the price moved. A guest's dock prices the same configuration w
 
 ## Checks, live
 
-`lib/checks.ts` takes the elements' corners (text measured with Konva), the engine's safe zones,
-fold segments, glue flaps and piece outlines (`lib/useIssues.ts`, computed once per box) and the
-catalogue's artwork rules. It runs on every change and is pure, so it is unit-tested without a
-browser.
+`lib/checks.ts` (U4.5) runs **packio-api's rule catalogue** (D-278: `store.studio.getRules`, the
+vendored `contract/studio-rules.json` until it answers or in the back office): the same rule ids,
+severities (block / warn / info) and thresholds — a rule with unset thresholds is off, a rule names
+the print methods and material classes it applies to. The rules packio-api evaluates on the document
+are computed exactly as its `evaluateDocument` (units, rounding), held to it by
+`checks-rules.test.ts` (against the mock's port) and `e2e/integration/checks.spec.ts` (against the
+real API); the rest need the die (`lib/useIssues.ts` gives the safe zones, folds, glue areas and
+outlines, once per box; the inside against the mirrored die). Safe one-click fixes are in
+`lib/fixes.ts`. Warnings are accepted per version: packio-api keeps the ones it finds
+(`acknowledgeCheck`); the studio-only ones are kept in the document (`content.acknowledged`).
+Soft proof: the material class's simplified transform (`studio.soft_proof_profiles`, D-279) as a CSS
+filter and a multiply overlay on the stage, labelled "preview, not a contract proof".
 
 ## Face focus
 

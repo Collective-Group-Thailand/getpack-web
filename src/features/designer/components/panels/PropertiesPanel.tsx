@@ -17,7 +17,6 @@ import { Slider } from "@/ui/components/Slider";
 import { toast } from "@/ui/components/Toast";
 
 import { FONT_FAMILIES } from "../../catalog";
-import { MIN_TEXT_MM } from "../../lib/checks";
 import { barModules, qrMatrix } from "../../lib/codes";
 import { outOfPrintGamut } from "../../lib/colour";
 import { newImage } from "../../lib/create";
@@ -184,7 +183,7 @@ export function PropertiesPanel({ el }: { el: DesignElement }) {
               />
             </Field>
           </div>
-          {el.fontSize * el.scaleY < MIN_TEXT_MM && <Callout tone="warning" title={t("tooSmall")} />}
+          <SmallTextNote fontSizeMm={el.fontSize * el.scaleY} />
           <Field label={t("align")}>
             <SegmentedControl
               label={t("align")}
@@ -470,4 +469,14 @@ function ImageQuality({ el }: { el: ImageElement }) {
       <p className="text-muted text-xs">{t(el.colourSpace === "cmyk" ? "colourCmyk" : "colourRgb")}</p>
     </div>
   );
+}
+
+/** The text is under the `min_text_size` rule's minimum (D-278) — said where its size is set. */
+function SmallTextNote({ fontSizeMm }: { fontSizeMm: number }) {
+  const t = useTranslations("designer.properties");
+  const { mode } = useDesigner();
+  const rules = useStudioRules(mode !== "admin");
+  const minPt = threshold(rules.data, "min_text_size", "minPt");
+  if (minPt === null || fontSizeMm * (72 / 25.4) >= minPt) return null;
+  return <Callout tone="warning" title={t("tooSmall", { min: minPt })} />;
 }

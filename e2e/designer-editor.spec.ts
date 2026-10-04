@@ -65,7 +65,7 @@ test("flags small text in the checks and selects it from there", async ({ page }
   await expect(page.getByText("ตัวอักษรเล็กกว่า 6pt อาจพิมพ์ไม่ชัด")).toBeVisible();
 
   await page.getByRole("button", { name: /ควรตรวจ \d+ รายการ/ }).click();
-  const issue = page.getByRole("button", { name: /ตัวอักษรสูง 1\.5 มม\./ });
+  const issue = page.getByRole("button", { name: /ตัวอักษร [\d.]+ pt เล็กกว่า 6 pt/ });
   await expect(issue).toBeVisible();
   await page.keyboard.press("Escape");
   await issue.click();
