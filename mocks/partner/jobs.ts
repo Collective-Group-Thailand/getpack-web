@@ -317,7 +317,8 @@ export function jobCore(order: MockOrder, job: Job) {
     title: `${titleOf(order)} · ${order.quantity.toLocaleString("th-TH")} ชิ้น`,
     // A snapshot of what to make, without the selling price (the order's spec lines).
     spec: Object.fromEntries(order.specs.map((line) => [line.label, line.value])),
-    tolerance: { ...order.tolerance },
+    // The mock orders froze no dimensional or colour tolerance (orders before D-186).
+    tolerance: { ...order.tolerance, dimensionalMm: null, colourDeltaE: null },
     artwork: proof
       ? { proofId: proof.id, versionNo: proof.versionNo, approvedAt: proof.decidedAt ?? proof.sentAt }
       : null,

@@ -83,5 +83,6 @@
   "checklistHint": "ติ๊กให้ครบทุกข้อจึงจะอนุมัติได้",
   "approvalNote": "หมายเหตุ (ไม่บังคับ)",
   "decisionBy": "{name} ตัดสินใจเมื่อ {date}",
-  "approveType": "พิมพ์ {code} เพื่อยืนยัน"
+  "approveType": "พิมพ์ {code} เพื่อยืนยัน",
+  "styleCode": "รหัสแบบ {code}"
 }

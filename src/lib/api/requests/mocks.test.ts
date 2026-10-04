@@ -41,9 +41,7 @@ function asSurface(key: RequestKey) {
 }
 
 /** A valid query for each GET that needs one. */
-const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {
-  "GET /v1/admin/analytics/journeys": { range: "7d", journey: "claims" },
-};
+const SAMPLE_QUERIES: Partial<Record<RequestKey, Record<string, unknown>>> = {};
 
 /** The partner zone's own factory: every partner read is under `/factories/{factoryId}`. */
 const F001 = "00000000-0000-4000-8000-0000000000f1";
@@ -76,11 +74,6 @@ describe("the mock API answers every contract request in its requested shape", (
     await expect(anonymous.call("GET /v1/store/sample-kits")).resolves.toMatchObject({ data: expect.any(Array) });
   });
 
-  it("refuses a staff request without a session, like the API", async () => {
-    const api = createApiClient({ baseUrl: "http://api.mock" });
-    const requests = createRequestClient(REQUESTS, api as unknown as Client<never>);
-    await expect(
-      requests.call("GET /v1/admin/analytics/journeys", { query: { range: "7d", journey: "claims" } }),
-    ).rejects.toMatchObject({ status: 401 });
-  });
+  // No staff request is left since `admin.analytics.journeys` shipped (v0.36.0, U2.F1's contract
+  // bump); the published operations' sessions are covered by their own mocks.
 });

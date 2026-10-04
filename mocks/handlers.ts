@@ -91,8 +91,30 @@ export const handlers = [
   // Realtime: the stream is deliberately not mocked — `NEXT_PUBLIC_REALTIME_DRIVER` is unset in
   // development and in the e2e run, so nothing opens one.
 
-  // CONTRACT-REQUEST analytics.events — the D-102 funnel, accepted and discarded.
-  http.post("*/v1/store/analytics/events", () => new HttpResponse(null, { status: 202 })),
+  // store.analytics.ingest — the D-102 funnel, checked for packio-api's shape (a batch of up to
+  // 50, five names, the ids every event needs) and discarded. Anything else is the 422 the real
+  // API answers, so a sender drifting from the contract fails here rather than in production.
+  http.post("*/v1/store/analytics/events", async ({ request }) => {
+    const body = (await request.json().catch(() => null)) as Schemas["AnalyticsEventBatchDto"] | null;
+    const names = new Set(["page_view", "configurator_step", "quote_shown", "add_to_cart", "checkout_step"]);
+    const valid =
+      Array.isArray(body?.events) &&
+      body.events.length >= 1 &&
+      body.events.length <= 50 &&
+      body.events.every(
+        (event) => names.has(event.name) && event.eventId && event.anonymousId && event.sessionId && event.occurredAt,
+      );
+    if (!valid) {
+      return HttpResponse.json(
+        { type: "about:blank", title: "Validation failed", status: 422, code: "validation.failed" },
+        { status: 422, headers: { "content-type": "application/problem+json" } },
+      );
+    }
+    return HttpResponse.json(
+      { accepted: body!.events.length, dropped: 0, duplicates: 0 } satisfies Schemas["AnalyticsIngestResultDto"],
+      { status: 202 },
+    );
+  }),
 
   // `{surface}.rum.recordWebVital` — accepted and discarded, on all three surfaces, so
   // `pnpm dev:mock` and the e2e run do not fill the console with warnings on every page load.

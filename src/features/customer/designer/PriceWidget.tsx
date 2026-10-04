@@ -5,13 +5,14 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { buildCalculateBody } from "@/features/customer/configurator/build";
+import { groupsOf, isProcessInk, type Configurator } from "@/features/customer/configurator/model";
 import { useLivePrice } from "@/features/customer/configurator/pricing";
-import { initialState, type Configurator, type ConfiguratorState } from "@/features/customer/configurator/state";
+import { initialState, NO_DIMS, type ConfiguratorState } from "@/features/customer/configurator/state";
 import { insideSize } from "@/features/designer/document";
 import { useEditor } from "@/features/designer/store/editor";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";
 import { formatTHB } from "@/i18n/format";
-import { browserRequests } from "@/lib/api/requests/browser";
+import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import { Select } from "@/ui/components/Select";
 import { Spinner } from "@/ui/components/Spinner";
@@ -44,8 +45,9 @@ export function inferPrint(content: DesignContent): { printed: boolean; colours:
 }
 
 /**
- * The configurator's state for this design: its pattern, inside size and material, the print
- * option that covers the artwork's colours, and the quantity chosen here. Everything else stays
+ * The configurator's state for this design: its pattern, inside size and material, the front
+ * colours that cover the artwork's — the process ink for full colour, else as many of the
+ * product's inks as the artwork has colours — and the quantity chosen here. Everything else stays
  * at the product's defaults. Pure, for tests.
  */
 export function stateForDesign(
@@ -57,28 +59,32 @@ export function stateForDesign(
   const base = initialState(configurator);
   const size = insideSize(spec);
   const choices = { ...base.choices };
-  const material = configurator.groups
-    .find((g) => g.kind === "material")
-    ?.options.find((o) => o.id === spec.materialId);
+  const groups = groupsOf(configurator);
+  const material = groups.find((g) => g.kind === "material")?.options.find((o) => o.id === spec.materialId);
   if (material) choices.material = [material.id];
-  const printGroup = configurator.groups.find((g) => g.kind === "print");
-  if (printGroup) {
+  const inks = groups.find((g) => g.kind === "print_front")?.options ?? [];
+  if (inks.length > 0) {
     const need = inferPrint(content);
-    const byColours = [...printGroup.options].sort(
-      (a, b) => (a.print?.front.length ?? 0) - (b.print?.front.length ?? 0),
-    );
-    const fit = need.printed
-      ? (byColours.find((o) => (o.print?.front.length ?? 0) >= need.colours) ?? byColours[byColours.length - 1])
-      : (byColours.find((o) => (o.print?.front.length ?? 0) === 0) ?? byColours[0]);
-    if (fit) choices.print = [fit.id];
+    const process = inks.find(isProcessInk);
+    choices.print_front = !need.printed
+      ? []
+      : need.colours >= 4 && process
+        ? [process.id]
+        : inks
+            .filter((ink) => !isProcessInk(ink))
+            .slice(0, need.colours)
+            .map((ink) => ink.id);
+    if (need.printed && choices.print_front.length === 0 && process) choices.print_front = [process.id];
   }
-  const pattern = configurator.size.patterns.find((p) => p.id === spec.patternId) ?? configurator.size.patterns[0];
+  const pattern = configurator.patterns.find((p) => p.id === spec.patternId) ?? configurator.patterns[0];
   return {
     ...base,
     patternId: pattern?.id ?? null,
     sizeMode: "custom",
     standardSizeCode: null,
-    dims: { l: size.length || null, w: size.width || null, d: size.height || null, gusset: base.dims.gusset },
+    dims: { ...NO_DIMS, l: size.length || null, w: size.width || null, d: size.height || null },
+    // The designer draws the inside of the box (F4).
+    basis: "internal",
     choices,
     quantities: [quantity],
     quantity,
@@ -98,22 +104,36 @@ export function PriceWidget({ productSlug }: { productSlug: string }) {
   const content = useEditor((s) => s.content);
 
   const configurator = useQuery({
-    queryKey: [...queryKeys.zone("customer"), "configurator", productSlug],
-    queryFn: () =>
-      browserRequests().call("GET /v1/store/catalog/products/{slug}/configurator", { path: { slug: productSlug } }),
+    queryKey: [...queryKeys.zone("customer"), "configurator", productSlug, locale],
+    queryFn: async () => {
+      const { data } = await browserApi().GET("/v1/store/catalog/products/{slug}/configurator", {
+        params: { path: { slug: productSlug } },
+      });
+      return data!;
+    },
     staleTime: 5 * 60_000,
   });
   const [quantity, setQuantity] = useState<number | null>(null);
   const qty = quantity ?? configurator.data?.quantity.default ?? null;
 
+  // A product quoted on request (`instant: false`) is never priced here.
   const body =
-    configurator.data && spec && qty
+    configurator.data?.instant && spec && qty
       ? buildCalculateBody(configurator.data, stateForDesign(configurator.data, spec, content, qty))
       : null;
   const price = useLivePrice(body);
   const step = price.data?.steps[0];
 
   if (!configurator.data) return configurator.isError ? null : <Spinner size={16} label={t("loading")} />;
+  if (!configurator.data.instant)
+    return (
+      <div className="flex items-center gap-2 text-xs" aria-live="polite">
+        <span>{t("onRequest")}</span>
+      </div>
+    );
+
+  // No quantity suggested by the API: nothing to choose from here, so nothing is priced.
+  if (configurator.data.quantity.presets.length === 0) return null;
 
   return (
     <div className="flex items-center gap-2 text-xs" aria-live="polite">

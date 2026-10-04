@@ -25,6 +25,7 @@ import {
   paginate,
   precondition,
   problem,
+  QUOTE_V2_EMPTY,
   sortBy,
   versionTag,
   withEtag,
@@ -253,6 +254,8 @@ function internalOf(who: StaffPersona, step: Schemas["QuoteStepDto"]): Schemas["
     belowMarginFloor: false,
     parts: [],
     shipping: null,
+    // The mock prices no plates or die blocks apart (D-289).
+    tooling: null,
   };
 }
 
@@ -264,6 +267,8 @@ function calculate(calculator: Calculator, who: StaffPersona, config: Configurat
   const body: Schemas["AdminQuoteCalculationDto"] = {
     calculatorVersion: `${calculator}-mock-1`,
     options: [],
+    // Priced on the internal size as entered (absent basis = internal, D-182).
+    dimensions: null,
     steps: steps.map((step) => ({
       ...step,
       // Plates and die blocks: corrugate flexo only; folding keeps them at 0.00 (v0.3.0).
@@ -296,6 +301,10 @@ function option(quantity: number, unit: string, lead: number): Schemas["AdminSav
     structureDesignFeeAmount: "0.00",
     // The seeded quotes split no plates or die blocks out.
     toolingAmount: null,
+    toolingWaiver: null,
+    toleranceDimensionalMm: null,
+    toleranceColourDeltaE: null,
+    targetGap: null,
     shippingAmount: null,
     shippingPending: true,
     shippingPendingReason: "no_postcode",
@@ -313,6 +322,7 @@ function option(quantity: number, unit: string, lead: number): Schemas["AdminSav
 
 export const quotations: Quote[] = [
   {
+    ...QUOTE_V2_EMPTY,
     id: mockId("quo", 900),
     quoteCode: "QT-2569-00118",
     productTypeCode: "folding_carton",
@@ -336,6 +346,7 @@ export const quotations: Quote[] = [
     createdAt: bangkokIso(-DAY * 3),
   },
   {
+    ...QUOTE_V2_EMPTY,
     id: mockId("quo", 901),
     quoteCode: "QT-2569-00121",
     productTypeCode: "label_sticker",
@@ -525,6 +536,7 @@ export const salesHandlers = [
     const instant = result.steps.filter((step) => step.instant);
     if (instant.length === 0) return problem(422, "pricing.not_instant", "ราคานี้คำนวณทันทีไม่ได้ ส่งเป็น RFQ");
     const quote: Quote = {
+      ...QUOTE_V2_EMPTY,
       id: mockId("quo", 902 + quotations.length),
       quoteCode: `QT-2569-${String(200 + quotations.length).padStart(5, "0")}`,
       productTypeCode: body.productTypeCode,
@@ -548,6 +560,10 @@ export const salesHandlers = [
         designFeeAmount: step.designFeeAmount ?? "0.00",
         structureDesignFeeAmount: step.structureDesignFeeAmount ?? "0.00",
         toolingAmount: step.toolingAmount,
+        toolingWaiver: null,
+        toleranceDimensionalMm: null,
+        toleranceColourDeltaE: null,
+        targetGap: null,
         shippingAmount: step.shippingAmount,
         shippingPending: step.shippingPending,
         shippingPendingReason: step.shippingPendingReason,
@@ -649,6 +665,7 @@ export const salesHandlers = [
       id: mockId("cti", entry.cart.items.length + 1 + Math.floor(Math.random() * 1e4)),
       quoteId: quote.id,
       quoteOptionId: chosen.id,
+      designVersionNo: null,
       quoteCode: quote.quoteCode,
       productTypeCode: quote.productTypeCode,
       summary: quote.summary,

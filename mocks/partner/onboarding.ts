@@ -49,6 +49,10 @@ const changeRequests = new Map<string, ChangeRequest[]>([
         factoryId: F001,
         factoryCode: "F001",
         topic: "capacity",
+        // A tier change names its product type and envelope (D-234); other topics carry none.
+        productTypeId: null,
+        proposedTier: null,
+        proposedEnvelope: null,
         message: "[กล่องพับ] เพิ่มเครื่องพิมพ์อีกหนึ่งเครื่อง ขอปรับกำลังผลิตกล่องพับเป็น 12,000 แผ่นต่อสัปดาห์",
         preferredDates: [],
         status: "done",
@@ -136,6 +140,10 @@ export const onboardingHandlers = [
         factoryId: ok.store.factory.id,
         factoryCode: ok.store.factory.code,
         topic: body.topic,
+        // A tier change names its product type and envelope (D-234); other topics carry none.
+        productTypeId: null,
+        proposedTier: null,
+        proposedEnvelope: null,
         message,
         preferredDates,
         status: "open",

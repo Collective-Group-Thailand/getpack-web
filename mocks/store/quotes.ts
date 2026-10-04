@@ -1,13 +1,14 @@
 /**
  * The configurator and instant quote, mocked (F3 3.2):
  *
- *   published  `POST /v1/store/quotes/actions/calculate` (B2.3) — for all seven instant types,
- *              folding in its own `FoldingConfigurationDto`, the others in the generic shape of
- *              CONTRACT-REQUEST store.quote-configurations
+ *   published  `POST /v1/store/quotes/actions/calculate` (B2.3) — every instant type in its own
+ *              published configuration (U2.F1), on the basis it was entered (D-182), with the
+ *              target's gap (D-247)
  *   published  saved quotations (`store.quotes.save` / `.list` / `.get` / `.share` / `.getShared` /
  *              `.requestPdf` / `.getPdf`, U-F0.2) — projected from the records below, which the
  *              cart, checkout, RFQ and reorder mocks share
- *   requested  store.configurator (parked for U2.F1)
+ *   published  `store.catalog.getConfigurator` — the published `StoreConfiguratorDto`, converted from the
+ *              mock's own, richer view below (`toStoreConfiguratorDto`)
  *   published  the code check (`store.promotions.checkCode`) and the CS channels (`store.support.getChannels`)
  *
  * The configurator is built from the back office's own catalogue rows (`../admin/catalogue.ts`)
@@ -23,23 +24,18 @@ import { resolveStyleId } from "@packio/dieline";
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type { z } from "zod";
 
-import type { storeConfigurator, storeGenericConfiguration, storeQuote } from "@/lib/api/requests/store-quotes";
+import type { storeQuote } from "@/lib/api/requests/store-quotes";
 import type { Schemas } from "@/lib/api/types";
 
 import { lineSummaryOf } from "../admin/catalog";
 import { catalogueRows } from "../admin/catalogue";
 import { baht } from "../admin/commerce";
-import { mockRequest } from "../route";
-import { bangkokIso, mockId, paginate, problem } from "../support";
+import { bangkokIso, mockId, paginate, problem, QUOTE_V2_EMPTY } from "../support";
 import { byId, catalogProducts, imageUrl, live, typeCodeOf, type Row } from "./catalog";
 import { customerOf } from "./customers";
+import { BasisError, caliperOf, convert, familyOf, type Basis, type Size } from "./specs";
 import { unitOf } from "./order-dto";
 
-type Configurator = z.output<typeof storeConfigurator>;
-type Group = Configurator["groups"][number];
-type Option = Group["options"][number];
-type GenericConfiguration = z.output<typeof storeGenericConfiguration>;
-type FoldingConfiguration = Schemas["FoldingConfigurationDto"];
 type Step = Schemas["QuoteStepDto"];
 export type StoreQuote = z.output<typeof storeQuote>;
 
@@ -50,6 +46,109 @@ const str = (value: unknown) => (typeof value === "string" ? value : null);
 export const QUOTE_VALIDITY_DAYS = 15;
 
 /* ---------------------------------------------------------------------------- configurator */
+
+/*
+ * The mock's own view of a product's configurator: what F3 3.2 first asked for (typed groups per
+ * calculator input, print presets, swatches and explainers), richer than what packio-api
+ * publishes. The fake price below reads it; the configurator endpoint converts it to the
+ * published `StoreConfiguratorDto` (`toStoreConfiguratorDto`), dropping what the contract has no
+ * place for, so the storefront sees exactly what the real API can say.
+ */
+type GroupKind =
+  | "material"
+  | "print"
+  | "coating_front"
+  | "coating_back"
+  | "finish"
+  | "diecut"
+  | "assembly"
+  | "shape"
+  | "pouch_type"
+  | "closure"
+  | "window";
+type SizeKind = "box" | "flat" | "pouch" | "none";
+interface PrintColour {
+  inkColourId: string;
+  percent: number;
+}
+interface Option {
+  id: string;
+  code: string;
+  nameTh: string;
+  nameEn: string;
+  descriptionTh: string | null;
+  descriptionEn: string | null;
+  imageUrl: string | null;
+  swatchHex: string | null;
+  isDefault: boolean;
+  print: { front: PrintColour[]; back: PrintColour[] } | null;
+  area: { requiresAmount: boolean; requiresWidth: boolean; requiresLength: boolean; maxAmount: number } | null;
+  /** The catalogue row's published attributes (gsm, finish kind…). */
+  attributes?: Record<string, unknown>;
+}
+interface Group {
+  kind: GroupKind;
+  step: "material" | "printing" | "finishing" | "assembly";
+  nameTh: string;
+  nameEn: string;
+  helpTh: string | null;
+  helpEn: string | null;
+  selection: "single" | "multiple";
+  required: boolean;
+  options: Option[];
+}
+interface Rules {
+  minLengthMm: number;
+  maxLengthMm: number;
+  minWidthMm: number;
+  maxWidthMm: number;
+  minHeightMm: number | null;
+  maxHeightMm: number | null;
+  minGussetMm: number | null;
+  maxGussetMm: number | null;
+  lengthMustExceedWidth: boolean;
+  stepMm: number;
+}
+interface Pattern {
+  id: string;
+  code: string;
+  name: string;
+  dielineKey: string | null;
+  imageUrl: string | null;
+  parts: { subPatternId: string | null; name: string }[];
+  rules: Rules;
+  /** D-184: the public code, once the pattern has one; the international name only when verified (D-211). */
+  styleCode: string | null;
+  internationalName: string | null;
+}
+interface Configurator {
+  slug: string;
+  catalogProductId: string;
+  productTypeCode: string;
+  calculator: Schemas["CalculatorKey"];
+  unit: string;
+  size: {
+    kind: SizeKind;
+    patterns: Pattern[];
+    standardSizes: {
+      id: string;
+      code: string;
+      name: string;
+      patternId: string | null;
+      lengthMm: number;
+      widthMm: number;
+      heightMm: number | null;
+      gussetMm: number | null;
+    }[];
+    customAllowed: boolean;
+  };
+  groups: Group[];
+  quantity: { presets: number[]; min: number; max: number; default: number; maxTiers: number };
+  design: { options: Schemas["DesignOption"][]; default: Schemas["DesignOption"] };
+  mockup: { options: Schemas["MockupOption"][] };
+  fixedInputs: Record<string, string>;
+  quoteValidityDays: number;
+}
 
 const CALCULATOR_OF: Record<string, Configurator["calculator"]> = {
   folding_carton: "folding",
@@ -127,16 +226,17 @@ function materials(kind: "paper" | "board"): Option[] {
     );
 }
 
+/** The process set is one ink laid four times, as packio-api's engine takes it; black is a spot ink. */
 function processColours() {
   const inks = live(catalogueRows("inkColours"));
-  const process = inks.filter((row) => row.colourKind === "process").map((row) => String(row.id));
-  const black = String(inks.find((row) => row.code === "cmyk-k")?.id ?? process[0]);
+  const process = String(inks.find((row) => row.colourKind === "process")?.id ?? "");
+  const black = String(inks.find((row) => row.code === "black")?.id ?? process);
   return { process, black };
 }
 
 function printPresets(maxColours: number): Option[] {
   const { process, black } = processColours();
-  const full = process.map((inkColourId) => ({ inkColourId, percent: 100 }));
+  const full = [1, 2, 3, 4].map(() => ({ inkColourId: process, percent: 100 }));
   const presets = [
     fake("print-none", "ไม่พิมพ์", "No print", {
       print: { front: [], back: [] },
@@ -168,6 +268,12 @@ function finishes(kinds: string[], area = false): Option[] {
     .filter((row) => kinds.includes(String(row.finishKind)))
     .map((row) =>
       option(row as never, {
+        attributes: {
+          finishKind: row.finishKind,
+          requiresAmount: Boolean(row.requiresAmount),
+          requiresWidth: Boolean(row.requiresWidth),
+          requiresLength: Boolean(row.requiresLength),
+        },
         area:
           area && (row.requiresWidth || row.requiresLength || row.requiresAmount)
             ? {
@@ -183,7 +289,7 @@ function finishes(kinds: string[], area = false): Option[] {
 
 const rows = (table: "diecutTypes" | "assemblies") => live(catalogueRows(table)).map((row) => option(row as never));
 
-function rulesOf(pattern: Row, kind: Configurator["size"]["kind"]): Configurator["size"]["patterns"][number]["rules"] {
+function rulesOf(pattern: Row, kind: SizeKind): Rules {
   const constraints = (pattern.constraints as Record<string, number> | undefined) ?? {};
   return {
     minLengthMm: constraints.minL ?? 30,
@@ -199,7 +305,7 @@ function rulesOf(pattern: Row, kind: Configurator["size"]["kind"]): Configurator
   };
 }
 
-function patternsOf(product: Row, kind: Configurator["size"]["kind"]): Configurator["size"]["patterns"] {
+function patternsOf(product: Row, kind: SizeKind): Pattern[] {
   if (kind === "none") return [];
   const entries = (product.patterns as { patternId: string }[] | undefined) ?? [];
   const patterns = entries.flatMap((entry) => {
@@ -219,6 +325,8 @@ function patternsOf(product: Row, kind: Configurator["size"]["kind"]): Configura
         // A single-part box prices its body only; multi-part patterns list their parts.
         parts: subs.length > 0 ? [{ subPatternId: String(subs[0]!.id), name: String(subs[0]!.name) }] : [],
         rules: rulesOf(pattern, kind),
+        styleCode: str(pattern.styleCode),
+        internationalName: pattern.internationalNameVerifiedAt ? str(pattern.internationalName) : null,
       };
     });
   }
@@ -233,6 +341,8 @@ function patternsOf(product: Row, kind: Configurator["size"]["kind"]): Configura
       imageUrl: null,
       parts: [],
       rules: rulesOf({ constraints: { minW: 20, maxW: 400, minL: 20, maxL: 500 } } as unknown as Row, kind),
+      styleCode: null,
+      internationalName: null,
     },
   ];
 }
@@ -244,7 +354,7 @@ export function configuratorOf(product: Row): Configurator | null {
   if (!calculator || type?.quoteMode !== "instant") return null;
   synthetic = 0;
 
-  const kind: Configurator["size"]["kind"] =
+  const kind: SizeKind =
     calculator === "folding" || calculator === "corrugate"
       ? "box"
       : calculator === "pouch"
@@ -256,6 +366,7 @@ export function configuratorOf(product: Row): Configurator | null {
   const standardSizes = live(catalogueRows("standardSizes"))
     .filter((size) => size.catalogProductId === product.id)
     .map((size) => ({
+      id: String(size.id),
       code: String(size.code),
       name: String(size.name),
       patternId: null,
@@ -453,11 +564,140 @@ export function configuratorOf(product: Row): Configurator | null {
   };
 }
 
+/** The published kinds the mock's groups become; a kind the contract has no place for is dropped. */
+const PUBLISHED_KIND: Partial<Record<GroupKind, Schemas["OfferableOptionKind"]>> = {
+  material: "material",
+  coating_front: "coating",
+  coating_back: "coating",
+  finish: "finish",
+  diecut: "diecut",
+  assembly: "assembly",
+  // A pouch's zip and window are catalogue assemblies (`PouchConfigurationDto.optionIds`).
+  closure: "assembly",
+  window: "assembly",
+};
+
+const UNIT: Record<string, Schemas["ProductUnit"]> = { ชิ้น: "piece", ดวง: "piece", ซอง: "pouch" };
+
+/**
+ * The mock's view → the published `StoreConfiguratorDto`. What the contract does not carry is
+ * left behind: print presets become the ink colours they print with, group names, help, steps,
+ * the shapes and pouch styles of the unported calculators, the mockup add-on, the cutting step
+ * and the gusset limits.
+ */
+export function toStoreConfiguratorDto(configurator: Configurator): Schemas["StoreConfiguratorDto"] {
+  const published = (option: Option): Schemas["StoreOptionDto"] => ({
+    id: option.id,
+    code: option.code,
+    nameTh: option.nameTh,
+    nameEn: option.nameEn,
+    descriptionTh: option.descriptionTh,
+    descriptionEn: option.descriptionEn,
+    imageUrl: option.imageUrl,
+    swatchHex: option.swatchHex,
+    isDefault: option.isDefault,
+    attributes: option.attributes ?? {},
+  });
+  const optionGroups: Schemas["StoreOptionGroupDto"][] = [];
+  for (const group of configurator.groups) {
+    const kind = PUBLISHED_KIND[group.kind];
+    if (!kind) continue;
+    const existing = optionGroups.find((entry) => entry.kind === kind);
+    if (existing) {
+      // One coating list for both sides.
+      for (const option of group.options)
+        if (!existing.options.some((known) => known.id === option.id)) existing.options.push(published(option));
+      continue;
+    }
+    optionGroups.push({ kind, options: group.options.map(published) });
+  }
+  if (configurator.groups.some((group) => group.kind === "print")) {
+    optionGroups.push({
+      kind: "ink_colour",
+      options: live(catalogueRows("inkColours")).map((row) => ({
+        id: String(row.id),
+        code: String(row.code),
+        nameTh: String(row.name),
+        nameEn: String(row.name),
+        descriptionTh: null,
+        descriptionEn: null,
+        imageUrl: null,
+        swatchHex: null,
+        isDefault: false,
+        attributes: { colourKind: row.colourKind },
+      })),
+    });
+  }
+  const box = configurator.size.kind === "box";
+  return {
+    slug: configurator.slug,
+    catalogProductId: configurator.catalogProductId,
+    productTypeCode: configurator.productTypeCode,
+    calculator: configurator.calculator,
+    instant: configurator.fixedInputs.difficultyLevelId !== undefined,
+    difficultyLevelId: configurator.fixedInputs.difficultyLevelId ?? null,
+    patterns: configurator.size.patterns.map((pattern) => ({
+      id: pattern.id,
+      code: pattern.code,
+      name: pattern.name,
+      styleCode: pattern.styleCode,
+      internationalName: pattern.internationalName,
+      // The mock's one pouch shape stands up on a bottom gusset (`b`).
+      pouch:
+        configurator.size.kind === "pouch"
+          ? {
+              formula: "stand_up",
+              needs: ["b"],
+              minBMm: 30,
+              maxBMm: 120,
+              minSMm: null,
+              maxSMm: null,
+              minCsMm: null,
+              maxCsMm: null,
+            }
+          : null,
+      dielineKey: pattern.dielineKey,
+      imageUrl: pattern.imageUrl,
+      descriptionTh: null,
+      descriptionEn: null,
+      parts: pattern.parts.flatMap((part, index) =>
+        part.subPatternId ? [{ subPatternId: part.subPatternId, seq: index + 1, name: part.name }] : [],
+      ),
+      fluteTypeIds: [],
+      rules: {
+        minLMm: pattern.rules.minLengthMm,
+        maxLMm: pattern.rules.maxLengthMm,
+        minWMm: pattern.rules.minWidthMm,
+        maxWMm: pattern.rules.maxWidthMm,
+        minHMm: pattern.rules.minHeightMm,
+        maxHMm: pattern.rules.maxHeightMm,
+        lengthMustExceedWidth: pattern.rules.lengthMustExceedWidth,
+        lengthMustExceedHeight: false,
+        widthMustExceedHeight: false,
+      },
+    })),
+    standardSizes: configurator.size.standardSizes.map((size) => ({
+      id: size.id,
+      code: size.code,
+      name: size.name,
+      lengthMm: size.lengthMm,
+      widthMm: size.widthMm,
+      heightMm: box ? (size.heightMm ?? 0) : 0,
+    })),
+    optionGroups,
+    printAreas: configurator.calculator === "corrugate" ? ["top", "side", "top_side", "all_round"] : [],
+    quoteValidityDays: configurator.quoteValidityDays,
+    unit: UNIT[configurator.unit] ?? "piece",
+    quantity: { ...configurator.quantity },
+    design: configurator.design,
+  };
+}
+
 function productOfSlug(slug: string | undefined): Row | undefined {
   return catalogProducts().find((row) => row.slug === slug);
 }
 
-function productOfId(id: string | undefined): Row | undefined {
+export function productOfId(id: string | undefined): Row | undefined {
   return catalogProducts().find((row) => row.id === id);
 }
 
@@ -476,6 +716,10 @@ interface Inputs {
   materialFactor: number;
   graphic: boolean;
   structure: boolean;
+  /** The size on every basis, as `store.quotes.calculate` freezes it (D-182). */
+  dimensions: Schemas["QuoteDimensionsDto"] | null;
+  /** Every option id the configuration names. */
+  ids: Set<string>;
 }
 
 const invalid = (path: string, message: string) =>
@@ -496,66 +740,118 @@ function checkSize(configurator: Configurator, patternId: string | undefined, l:
   return null;
 }
 
-function inputsOf(productTypeCode: string, raw: Record<string, unknown>): Inputs | Response {
+/** The size the mock prices: a box's inside size (D-182, converted as packio-api does), else as entered. */
+function pricedSize(
+  productTypeCode: string,
+  raw: Record<string, unknown>,
+  size: Size,
+): { size: Size; dimensions: Schemas["QuoteDimensionsDto"] | null } | Response {
+  const basis = (raw.basis as Basis | undefined) ?? (TYPE_FAMILY_FLAT.has(productTypeCode) ? "product" : "internal");
+  const family = familyOf(productTypeCode, raw.patternId as string | undefined, size.d);
+  try {
+    const converted = convert(size, basis, family, caliperOf(raw.materialId as string | undefined));
+    const priced = family === "flat" ? size : converted.sizes.internal;
+    if (!priced) return problem(422, "specs.caliper_missing", "ไม่ทราบความหนาของวัสดุ จึงแปลงขนาดไม่ได้");
+    return {
+      size: priced,
+      dimensions: {
+        basis,
+        basisAssumed: raw.basis === undefined,
+        bases: converted.bases,
+        caliperMm: converted.caliperMm,
+        conversionVersion: "1.0.0",
+        entered: size,
+        family,
+        priced,
+        pricedBasis: family === "flat" ? "product" : "internal",
+        sizes: converted.sizes,
+      },
+    };
+  } catch (error) {
+    if (error instanceof BasisError) return problem(422, error.code, "แบบนี้ไม่ได้วัดด้วยฐานนี้");
+    throw error;
+  }
+}
+
+const FLUTE_FACTOR: Record<string, number> = { E: 1, B: 1.08, C: 1.15, BC: 1.35 };
+
+const TYPE_FAMILY_FLAT = new Set(["label_sticker", "tag_sleeve", "flexible_pouch", "standard_product", "service"]);
+
+/** Every option id a published configuration names, wherever it sits. */
+function idsIn(value: unknown, into = new Set<string>()): Set<string> {
+  if (typeof value === "string") into.add(value);
+  else if (Array.isArray(value)) for (const item of value) idsIn(item, into);
+  else if (value && typeof value === "object")
+    for (const [key, item] of Object.entries(value as Record<string, unknown>))
+      if (!["catalogProductId", "patternId", "difficultyLevelId", "basis", "styleVariantCode", "area"].includes(key))
+        idsIn(item, into);
+  return into;
+}
+
+export function inputsOf(productTypeCode: string, raw: Record<string, unknown>): Inputs | Response {
   const product = productOfId(str(raw.catalogProductId) ?? undefined);
   if (!product || typeCodeOf(product) !== productTypeCode)
     return invalid("configuration.catalogProductId", "ไม่พบสินค้านี้");
   const configurator = configuratorOf(product);
   if (!configurator) return problem(422, "pricing.not_instant", "สินค้านี้ขอใบเสนอราคาเท่านั้น");
-  const optionById = new Map(configurator.groups.flatMap((entry) => entry.options.map((item) => [item.id, item])));
+  if (Object.keys(raw).some((key) => /unit/i.test(key)))
+    return problem(422, "specs.unit_not_accepted", "ระบบรับขนาดเป็นมิลลิเมตรเท่านั้น");
+  const num = (value: unknown) => (typeof value === "number" ? value : 0);
+  const quantities = Array.isArray(raw.quantities) ? (raw.quantities as number[]) : [];
+  const design = (raw.design ?? {}) as { graphic?: boolean; structure?: boolean };
   const materialFactorOf = (id: unknown) => {
     const row = byId(catalogueRows("materials"), id);
-    return row?.gsm ? Number(row.gsm) / 350 : 1;
+    if (row?.gsm) return Number(row.gsm) / 350;
+    // The corrugated mock's boards are its flutes: a heavier flute costs more (fake).
+    const flute = byId(catalogueRows("fluteTypes"), id);
+    return flute ? (FLUTE_FACTOR[String(flute.code)] ?? 1) : 1;
   };
-
-  if (configurator.calculator === "folding") {
-    const config = raw as unknown as FoldingConfiguration;
-    const bad = checkSize(configurator, config.patternId, config.l, config.w, config.d);
+  const kind = configurator.size.kind;
+  const entered = { l: num(raw.l), w: num(raw.w), d: kind === "box" ? num(raw.d) : 0 };
+  const sized = kind === "none" ? { size: entered, dimensions: null } : pricedSize(productTypeCode, raw, entered);
+  if (sized instanceof Response) return sized;
+  const { l, w, d } = sized.size;
+  if (kind !== "none") {
+    const bad = checkSize(configurator, raw.patternId as string | undefined, l, w, kind === "box" ? d : 0);
     if (bad) return bad;
-    const part = config.parts[0];
-    return {
-      configurator,
-      product,
-      l: config.l,
-      w: config.w,
-      d: config.d,
-      gusset: 0,
-      quantities: config.quantities,
-      colours: (part?.printFront?.length ?? 0) + (part?.printBack?.length ?? 0),
-      extras:
-        (part?.finish1FrontId ? 1 : 0) +
-        (part?.finish1BackId ? 1 : 0) +
-        (part?.finish2?.length ?? 0) +
-        (part?.assemblies?.length ?? 0),
-      materialFactor: materialFactorOf(config.materialId),
-      graphic: config.design?.graphic ?? false,
-      structure: config.design?.structure ?? false,
-    };
   }
-
-  const config = raw as unknown as GenericConfiguration;
-  const size = configurator.size.standardSizes.find((entry) => entry.code === config.standardSizeCode);
-  const l = config.l ?? size?.lengthMm ?? 100;
-  const w = config.w ?? size?.widthMm ?? 100;
-  const d = config.d ?? size?.heightMm ?? 0;
-  const bad = checkSize(configurator, config.patternId, l, w, configurator.size.kind === "box" ? d : 0);
-  if (bad && configurator.size.kind !== "none") return bad;
-  const chosen = Object.values(config.options ?? {}).flatMap((value) => (Array.isArray(value) ? value : [value]));
-  const print = chosen.map((id) => optionById.get(id)?.print).find(Boolean);
-  const material = chosen.map((id) => optionById.get(id)).find((item) => item?.swatchHex);
+  const list = (value: unknown) => (Array.isArray(value) ? (value as unknown[]) : []);
+  const part = (list(raw.parts)[0] ?? raw) as Record<string, unknown>;
+  const colours = (() => {
+    switch (configurator.calculator) {
+      case "label":
+        return (
+          list((raw.printFront as { inkColourIds?: unknown[] } | undefined)?.inkColourIds).length +
+          list((raw.printBack as { inkColourIds?: unknown[] } | undefined)?.inkColourIds).length
+        );
+      case "pouch":
+        return raw.printColourId ? 4 : 0;
+      default:
+        return list(part.printFront).length + list(part.printBack).length;
+    }
+  })();
+  const extras =
+    configurator.calculator === "pouch"
+      ? list(raw.optionIds).length
+      : (part.finish1FrontId || part.coatingFrontId || raw.finishFrontId ? 1 : 0) +
+        (part.finish1BackId || part.coatingBackId || raw.finishBackId ? 1 : 0) +
+        list(part.finish2).length +
+        list(part.assemblies).length;
   return {
     configurator,
     product,
     l,
     w,
     d,
-    gusset: config.gusset ?? 0,
-    quantities: config.quantities,
-    colours: (print?.front.length ?? 0) + (print?.back.length ?? 0),
-    extras: chosen.filter((id) => !optionById.get(id)?.print && !optionById.get(id)?.swatchHex).length,
-    materialFactor: material ? 1 + (material.code.length % 3) * 0.1 : 1,
-    graphic: config.design?.graphic ?? false,
-    structure: config.design?.structure ?? false,
+    gusset: num(raw.b) || num(raw.s),
+    quantities,
+    colours,
+    extras,
+    materialFactor: materialFactorOf(raw.materialId),
+    graphic: design.graphic ?? false,
+    structure: design.structure ?? false,
+    dimensions: sized.dimensions,
+    ids: idsIn(raw),
   };
 }
 
@@ -586,13 +882,18 @@ function unitNetOf(inputs: Inputs, quantity: number): number {
 }
 
 const DAY = 24 * 60;
+const DIMENSIONAL_TOLERANCE: Partial<Record<Configurator["calculator"], string>> = {
+  folding: "1.00",
+  tag_sleeve: "1.00",
+  corrugate: "3.00",
+};
 const vat = (net: number) => Math.round(net * 0.07);
 const shippingNetOf = (quantity: number) => 15_000 + Math.ceil(quantity / 1000) * 4_000;
 const leadTimeOf = (quantity: number) => Math.min(25, 7 + Math.ceil(quantity / 5000));
 const DESIGN_FEE_NET = 150_000;
 const STRUCTURE_FEE_NET = 200_000;
 
-function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined): Step {
+export function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined): Step {
   const noPrice = (reason: Step["reason"]): Step => ({
     quantity,
     instant: false,
@@ -602,6 +903,9 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     designFeeAmount: null,
     structureDesignFeeAmount: null,
     toolingAmount: null,
+    toolingWaiver: null,
+    toleranceDimensionalMm: null,
+    toleranceColourDeltaE: null,
     shippingAmount: null,
     vatAmount: null,
     grossAmount: null,
@@ -630,12 +934,18 @@ function stepOf(inputs: Inputs, quantity: number, postcode: string | undefined):
     quantity,
     instant: true,
     reason: null,
-    unitPrice: baht(Math.round((productGross + shippingGross) / quantity)),
+    // Per piece incl. VAT, excluding shipping — the basis a target is compared on (D-247).
+    unitPrice: baht(Math.round(productGross / quantity)),
     productAmount: baht(productGross),
     designFeeAmount: baht(designNet + vat(designNet)),
     structureDesignFeeAmount: baht(structureNet + vat(structureNet)),
     // The mock prices no plates or die blocks (v0.3.0 `toolingAmount`); the engine does.
     toolingAmount: baht(0),
+    toolingWaiver: null,
+    // D-186 platform defaults: ± 1 mm folding cartons (and tags & sleeves), ± 3 mm corrugated;
+    // ΔE2000 ≤ 3 on printed work.
+    toleranceDimensionalMm: DIMENSIONAL_TOLERANCE[inputs.configurator.calculator] ?? null,
+    toleranceColourDeltaE: inputs.colours > 0 ? "3.00" : null,
     shippingAmount: baht(shippingGross),
     vatAmount: baht(vat(productNet) + vat(designNet) + vat(structureNet) + vat(shippingNet)),
     grossAmount: baht(productGross + designNet + vat(designNet) + structureNet + vat(structureNet) + shippingGross),
@@ -667,6 +977,8 @@ export function boxStepsOf(
     product: {} as Row,
     gusset: 0,
     quantities,
+    dimensions: null,
+    ids: new Set<string>(),
     ...box,
     ...design,
   } satisfies Inputs;
@@ -751,48 +1063,62 @@ function specsOf(inputs: Inputs, raw: Record<string, unknown>, en: boolean): Sto
   const specs: StoreQuote["specs"] = [];
   const pattern = configurator.size.patterns.find((entry) => entry.id === raw.patternId);
   if (pattern) specs.push({ label: en ? "Style" : "รูปแบบ", value: pattern.name });
+  // D-184: the style code rides on every summary (packio-api `line-summary.ts`).
+  if (pattern?.styleCode) specs.push({ label: en ? "Style code" : "รหัสแบบ", value: pattern.styleCode });
   if (configurator.size.kind !== "none") {
-    const dims = [inputs.l, inputs.w, configurator.size.kind === "box" ? inputs.d : null]
+    const size = inputs.dimensions?.entered ?? { l: inputs.l, w: inputs.w, d: inputs.d };
+    const dims = [size.l, size.w, configurator.size.kind === "box" && size.d ? size.d : null]
       .filter((value): value is number => value !== null)
       .join(" × ");
-    specs.push({ label: en ? "Size" : "ขนาด", value: `${dims} ${en ? "mm" : "มม."}` });
-  }
-  const ids = new Set<string>();
-  if (configurator.calculator === "folding") {
-    const config = raw as unknown as FoldingConfiguration;
-    ids.add(config.materialId);
-    const part = config.parts[0];
-    if (part?.finish1FrontId) ids.add(part.finish1FrontId);
-    for (const finish of part?.finish2 ?? []) ids.add(finish.finishId);
-    if (part?.diecutTypeId) ids.add(part.diecutTypeId);
-    for (const assembly of (part?.assemblies ?? []) as unknown as { assemblyId: string }[])
-      ids.add(assembly.assemblyId);
-    const print = configurator.groups
-      .find((entry) => entry.kind === "print")
-      ?.options.find(
-        (item) =>
-          (item.print?.front.length ?? 0) === (part?.printFront?.length ?? 0) &&
-          (item.print?.back.length ?? 0) === (part?.printBack?.length ?? 0),
-      );
-    if (print) ids.add(print.id);
-  } else {
-    const config = raw as unknown as GenericConfiguration;
-    for (const value of Object.values(config.options ?? {})) for (const id of [value].flat()) ids.add(id);
+    const basis = inputs.dimensions?.basis;
+    const on = basis && basis !== "product" ? ` (${en ? BASIS_EN[basis] : BASIS_TH[basis]})` : "";
+    specs.push({ label: en ? "Size" : "ขนาด", value: `${dims} ${en ? "mm" : "มม."}${on}` });
   }
   for (const entry of configurator.groups) {
-    const chosen = entry.options.filter((item) => ids.has(item.id));
+    const chosen = entry.options.filter((item) => inputs.ids.has(item.id));
     if (chosen.length > 0)
       specs.push({
         label: en ? entry.nameEn : entry.nameTh,
         value: chosen.map((item) => (en ? item.nameEn : item.nameTh)).join(", "),
       });
   }
+  const inks = live(catalogueRows("inkColours")).filter((row) => inputs.ids.has(String(row.id)));
+  if (inks.length > 0)
+    specs.push({ label: en ? "Print colours" : "สีพิมพ์", value: inks.map((row) => String(row.name)).join(", ") });
   return specs;
+}
+
+const BASIS_TH: Record<Basis, string> = {
+  internal: "ขนาดภายใน",
+  external: "ขนาดภายนอก",
+  over_crease: "ตามทับเส้น",
+  product: "ขนาดชิ้นงาน",
+};
+const BASIS_EN: Record<Basis, string> = {
+  internal: "inside",
+  external: "outside",
+  over_crease: "over the creases",
+  product: "finished size",
+};
+
+/**
+ * D-247: the gap of each instant quantity to the target (unit price incl. VAT excl. shipping, as
+ * packio-api compares it). The mock's own arithmetic on its own fake prices.
+ */
+export function gapOf(unitPrice: string, target: string): { gapPerUnit: string; gapPct: string; meetsTarget: boolean } {
+  const unit = Math.round(Number(unitPrice) * 100);
+  const goal = Math.round(Number(target) * 100);
+  const gap = unit - goal;
+  return {
+    gapPerUnit: (gap / 100).toFixed(2),
+    gapPct: ((gap / goal) * 100).toFixed(2),
+    meetsTarget: gap <= 0,
+  };
 }
 
 const MOCKUP_NET: Record<StoreQuote["mockupOption"], number> = { none: 0, with_print: 180_000, without_print: 90_000 };
 
-function buildQuote(
+export function buildQuote(
   inputs: Inputs,
   raw: Record<string, unknown>,
   body: {
@@ -934,8 +1260,25 @@ function buildQuote(
 
 const TOKEN_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 /** Quotations saved by the storefront, which have no code until shared or put in a PDF. */
-const uncoded = new Set<string>();
+export const uncoded = new Set<string>();
 const sharedAt = new Map<string, string>();
+
+/** What U2.1–U2.3 added to a saved quotation, kept beside the mock's own record. */
+export interface QuoteFacts {
+  dimensions?: Schemas["QuoteDimensionsDto"] | null;
+  target?: string | null;
+  advisory?: Schemas["QuoteAdvisoryDto"];
+  fromLever?: Schemas["QuoteFromLeverDto"];
+  outcome?: Schemas["QuoteOutcomeDto"];
+}
+export const quoteFacts = new Map<string, QuoteFacts>();
+
+/** The board chosen from a recommendation (`./advisory.ts`), looked up when a quotation names it. */
+let advisoryChoiceOf: (recommendationId: string) => { boardId: string; ref: Schemas["QuoteAdvisoryDto"] } | null = () =>
+  null;
+export function setAdvisoryLookup(lookup: typeof advisoryChoiceOf) {
+  advisoryChoiceOf = lookup;
+}
 const pdfs = new Map<string, Schemas["QuotePdfStatus"]>();
 
 /** A quotation's one option, as a stable id of its own. */
@@ -971,10 +1314,28 @@ export function quoteSummaryOf(quote: StoreQuote): Schemas["LineSummaryDto"] {
   };
 }
 
+/** D-185: a share link lasts `configurations.share_link_days` (15) from when it was made. */
+const SHARE_LINK_DAYS = 15;
+const shareExpiryOf = (quoteId: string): string | null => {
+  const at = sharedAt.get(quoteId);
+  return at
+    ? new Date(Date.parse(at) + SHARE_LINK_DAYS * 86_400_000 + 7 * 3_600_000).toISOString().replace("Z", "+07:00")
+    : null;
+};
+
 export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
   const expired = Date.parse(quote.validUntil) < Date.now();
   const shipping = quote.lines.find((line) => line.lineType === "shipping");
+  const facts = quoteFacts.get(quote.id) ?? {};
+  const target = facts.target ?? null;
   return {
+    ...QUOTE_V2_EMPTY,
+    dimensions: facts.dimensions ?? null,
+    advisory: facts.advisory ?? null,
+    targetPricePerUnit: target,
+    fromLever: facts.fromLever ?? null,
+    outcome: facts.outcome ?? null,
+    shareExpiresAt: shareExpiryOf(quote.id),
     id: quote.id,
     quoteCode: uncoded.has(quote.id) ? null : quote.quoteCode,
     status: expired ? "expired" : quote.status,
@@ -993,6 +1354,10 @@ export function toSavedQuote(quote: StoreQuote): Schemas["SavedQuoteDto"] {
         structureDesignFeeAmount: netOf(quote, "structure_design_fee"),
         // The mock prices no plates or die blocks apart.
         toolingAmount: null,
+        toolingWaiver: null,
+        toleranceDimensionalMm: null,
+        toleranceColourDeltaE: null,
+        targetGap: target ? gapOf(quote.unitPrice, target) : null,
         shippingAmount: shipping ? shipping.netAmount : null,
         shippingPending: !shipping,
         shippingPendingReason: shipping ? null : "no_postcode",
@@ -1021,8 +1386,7 @@ const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พ
 const notFound = () => problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
 
 export const storeQuoteHandlers: HttpHandler[] = [
-  // Published (B2.3), mocked for every instant type: folding in its own DTO, the others in the
-  // generic shape of CONTRACT-REQUEST store.quote-configurations.
+  // Published (B2.3), mocked for every instant type in its own published configuration.
   http.post("*/v1/store/quotes/actions/calculate", async ({ request }) => {
     const body = (await request.json().catch(() => null)) as Schemas["CalculateQuoteDto"] | null;
     if (!body?.productTypeCode || !body.configuration)
@@ -1033,20 +1397,32 @@ export const storeQuoteHandlers: HttpHandler[] = [
     if (inputs instanceof Response) return inputs;
     if (!Array.isArray(inputs.quantities) || inputs.quantities.length === 0 || inputs.quantities.length > 10)
       return invalid("configuration.quantities", "ระบุจำนวน 1–10 ระดับ");
+    const steps = inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode));
+    const target = body.targetPricePerUnit;
     const result: Schemas["QuoteCalculationDto"] = {
       // The mock records no calculations.
       calculationId: null,
       calculatorVersion: "mock-0.0.0",
-      steps: inputs.quantities.map((quantity) => stepOf(inputs, quantity, body.deliveryPostcode)),
+      dimensions: inputs.dimensions,
+      target: target
+        ? {
+            targetPricePerUnit: target,
+            steps: steps
+              .filter((step) => step.instant && step.unitPrice)
+              .map((step) => ({ quantity: step.quantity, ...gapOf(step.unitPrice!, target) })),
+          }
+        : null,
+      steps,
     };
     return HttpResponse.json(result);
   }),
 
-  // CONTRACT-REQUEST store.configurator
-  mockRequest("GET /v1/store/catalog/products/{slug}/configurator", ({ params }) => {
-    const product = productOfSlug(params.slug);
+  // Published (`store.catalog.getConfigurator`, v0.3.0): the mock's view in the published shape.
+  http.get("*/v1/store/catalog/products/:slug/configurator", ({ params }) => {
+    const product = productOfSlug(params.slug as string);
     const configurator = product ? configuratorOf(product) : null;
-    return configurator ?? problem(404, "http.not_found", "สินค้านี้ขอใบเสนอราคาเท่านั้น");
+    if (!configurator) return problem(404, "http.not_found", "สินค้านี้ขอใบเสนอราคาเท่านั้น");
+    return HttpResponse.json(toStoreConfiguratorDto(configurator));
   }),
 
   // Published (U-F0.2): the saved quotation. One option per quantity it was given — the storefront
@@ -1076,6 +1452,18 @@ export const storeQuoteHandlers: HttpHandler[] = [
       english(request),
     );
     if (quote instanceof Response) return quote;
+    if (body.advisoryRecommendationId) {
+      const chosen = advisoryChoiceOf(body.advisoryRecommendationId);
+      if (!chosen) return problem(409, "advisory.choice_required", "เลือกบอร์ดจากคำแนะนำก่อนบันทึกใบเสนอราคา");
+      if (chosen.boardId !== raw.materialId)
+        return problem(409, "advisory.choice_mismatch", "วัสดุไม่ตรงกับบอร์ดที่เลือกจากคำแนะนำ");
+      quoteFacts.set(quote.id, { ...quoteFacts.get(quote.id), advisory: chosen.ref });
+    }
+    quoteFacts.set(quote.id, {
+      ...quoteFacts.get(quote.id),
+      dimensions: inputs.dimensions,
+      target: body.targetPricePerUnit ?? null,
+    });
     quotesOf(customer.persona).unshift(quote);
     uncoded.add(quote.id);
     return HttpResponse.json(toSavedQuote(quote), { status: 201 });
@@ -1125,6 +1513,7 @@ export const storeQuoteHandlers: HttpHandler[] = [
     sharedAt.set(quote.id, bangkokIso());
     const result: Schemas["ShareQuoteResultDto"] = {
       quote: toSavedQuote(quote),
+      expiresAt: shareExpiryOf(quote.id)!,
       shareToken,
       sharePath: `/quotes/shared/${shareToken}`,
     };

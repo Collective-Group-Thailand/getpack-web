@@ -232,6 +232,7 @@ export function ArtworkWorkspace({ initial }: { initial: Artwork }) {
               <li>{t("rules.safeZone", { mm: rules.safeZoneMm })}</li>
               <li>{t("rules.resolution", { ppi: format.number(rules.minEffectivePpi) })}</li>
               <li>{t("rules.colour", { mode: rules.colourMode.toUpperCase() })}</li>
+              {rules.dieline?.styleCode ? <li>{t("rules.styleCode", { code: rules.dieline.styleCode })}</li> : null}
               {rules.dieline ? (
                 <li>
                   {t("rules.box", {

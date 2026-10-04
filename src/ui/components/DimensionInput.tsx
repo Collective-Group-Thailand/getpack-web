@@ -47,6 +47,11 @@ export interface DimensionInputProps {
   legend: React.ReactNode;
   /** A picture of which side is which — the box diagram. */
   diagram?: React.ReactNode;
+  /**
+   * The axis being edited, or `null` when none is — so the diagram can highlight that side
+   * (U2.F1). Called on focus and blur of each field.
+   */
+  onActiveAxisChange?: (key: string | null) => void;
   className?: string;
 }
 
@@ -67,6 +72,7 @@ export function DimensionInput({
   unitToggleLabel,
   legend,
   diagram,
+  onActiveAxisChange,
   className,
 }: DimensionInputProps) {
   const baseId = useId();
@@ -89,7 +95,7 @@ export function DimensionInput({
       </div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         {diagram ? <div className="w-full shrink-0 sm:w-40">{diagram}</div> : null}
-        <div className={cn("grid flex-1 gap-3", axes.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+        <div className={cn("grid flex-1 gap-3", axes.length >= 3 ? "grid-cols-3" : "grid-cols-2")}>
           {axes.map((axis) => {
             const inputId = `${baseId}-${axis.key}`;
             const hintId = `${inputId}-hint`;
@@ -115,13 +121,15 @@ export function DimensionInput({
                       setDrafts((current) => ({ ...current, [axis.key]: text }));
                       onChange(axis.key, text.trim() === "" ? null : toMm(text, unit));
                     }}
-                    onBlur={() =>
+                    onFocus={() => onActiveAxisChange?.(axis.key)}
+                    onBlur={() => {
+                      onActiveAxisChange?.(null);
                       setDrafts((current) => {
                         const next = { ...current };
                         delete next[axis.key];
                         return next;
-                      })
-                    }
+                      });
+                    }}
                     className={cn(controlVariants({ tone: axis.error ? "invalid" : "default" }), "pe-11 tabular-nums")}
                   />
                   <span

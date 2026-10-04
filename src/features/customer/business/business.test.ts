@@ -1,14 +1,11 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
-import { createRequestClient } from "@/lib/api/requests/client";
-import { REQUESTS } from "@/lib/api/requests/registry";
 import type { Schemas } from "@/lib/api/types";
 
 import { buildCalculateBody } from "../configurator/build";
@@ -20,19 +17,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterAll(() => server.close());
 
 // Built per call: a client made before `server.listen()` would hold the unpatched `fetch`.
-const as = (persona: string) => ({
-  token: accessToken("customer", persona),
-  call: ((...args: unknown[]) =>
-    (
-      createRequestClient(
-        REQUESTS,
-        createApiClient({
-          baseUrl: "http://api.mock",
-          accessToken: accessToken("customer", persona),
-        }) as unknown as Client<never>,
-      ).call as (...a: unknown[]) => unknown
-    )(...args)) as ReturnType<typeof createRequestClient<typeof REQUESTS>>["call"],
-});
+const as = (persona: string) => ({ token: accessToken("customer", persona) });
 const admin = as("companyadmin");
 const buyer = as("companybuyer");
 const uuid = () => crypto.randomUUID();
@@ -48,9 +33,10 @@ async function cartWith(customer: typeof admin, quantity: number) {
   const { data: cart } = await api.GET("/v1/store/cart");
   for (const item of cart!.items)
     await api.DELETE("/v1/store/cart/items/{itemId}", { params: { path: { itemId: item.id } } });
-  const configurator = await customer.call("GET /v1/store/catalog/products/{slug}/configurator", {
-    path: { slug: "tuck-end-box" },
+  const { data: published } = await api.GET("/v1/store/catalog/products/{slug}/configurator", {
+    params: { path: { slug: "tuck-end-box" } },
   });
+  const configurator = published!;
   const state = { ...initialState(configurator), quantities: [quantity], quantity };
   const { data: quote } = await api.POST("/v1/store/quotes", {
     body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],

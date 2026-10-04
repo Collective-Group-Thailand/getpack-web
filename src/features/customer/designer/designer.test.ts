@@ -1,17 +1,15 @@
 // @vitest-environment node
 import { setupServer } from "msw/node";
-import type { Client } from "openapi-fetch";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { SPEC_VERSION } from "@packio/dieline";
 
 import { handlers } from "../../../../mocks/handlers";
 import { accessToken } from "../../../../mocks/support";
+import { groupsOf } from "@/features/customer/configurator/model";
 import { seedFromDesign } from "@/features/customer/configurator/state";
 import type { DesignContent, DesignSpec } from "@/features/designer/types";
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
-import { createRequestClient } from "@/lib/api/requests/client";
-import { REQUESTS } from "@/lib/api/requests/registry";
 
 import { toCatalogView } from "@/features/designer/data/catalog-view";
 
@@ -42,8 +40,6 @@ const blank: DesignContent = {
 const api = (persona?: string) =>
   createApiClient({ baseUrl: "http://api.mock", accessToken: accessToken("customer", persona) });
 const anonymous = () => createApiClient({ baseUrl: "http://api.mock" });
-/** The configurator, parked as a request until U2.F1. */
-const client = () => createRequestClient(REQUESTS, anonymous() as unknown as Client<never>);
 /** A catalogue product's id, as its designer catalogue names it: a published design needs one. */
 const PRODUCT = async () =>
   (await anonymous().GET("/v1/store/designer/catalog", { params: { query: { product: "tuck-end-box" } } })).data!
@@ -197,14 +193,19 @@ describe("the price widget's reading of a design", () => {
     expect(inferPrint({ ...blank, elements: [text, image] })).toEqual({ printed: true, colours: 4 });
   });
 
-  it("maps a design onto the product's configurator: size, material, print that covers the artwork", async () => {
-    const configurator = await client().call("GET /v1/store/catalog/products/{slug}/configurator", {
-      path: { slug: "tuck-end-box" },
+  // The print that covers the artwork waits for print presets (CONTRACT-GAP store.configurator).
+  it("maps a design onto the product's configurator: size and material", async () => {
+    const { data } = await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
+      params: { path: { slug: "tuck-end-box" } },
     });
-    const material = configurator.groups.find((g) => g.kind === "material")!.options.at(-1)!;
+    const configurator = data!;
+    const material = groupsOf(configurator)
+      .find((g) => g.kind === "material")!
+      .options.at(-1)!;
     const state = stateForDesign(configurator, { ...spec, materialId: material.id }, blank, 1000);
     expect(state.dims).toMatchObject({ l: 70, w: 40, d: 150 });
     expect(state.choices.material).toEqual([material.id]);
+    expect(state.basis).toBe("internal");
     expect(state.quantity).toBe(1000);
 
     const seed = seedFromDesign(configurator, { l: "70", w: "40", d: "150", material: material.id });

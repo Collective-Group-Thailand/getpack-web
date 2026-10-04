@@ -47,9 +47,40 @@ export function catalogProducts(): Row[] {
   );
 }
 
+/**
+ * The U-B4 card facts (D-307, D-220, D-308). The mock keeps no reference configurations, so no
+ * starting price (the card shows the RFQ route), no lead-time band and no live promotion badge.
+ */
+function cardFacts(
+  quoteMode: unknown,
+  moq: unknown,
+  tags: string[],
+): Pick<
+  Schemas["StoreProductCardDto"],
+  | "startingPricePerPiece"
+  | "startingPriceAssumes"
+  | "moq"
+  | "leadTimeDays"
+  | "availability"
+  | "campaignBadge"
+  | "cacheTags"
+> {
+  return {
+    startingPricePerPiece: null,
+    startingPriceAssumes: null,
+    moq: typeof moq === "number" ? moq : null,
+    leadTimeDays: null,
+    availability: quoteMode === "instant" ? "instant" : "rfq",
+    campaignBadge: null,
+    cacheTags: tags,
+  };
+}
+
 function card(product: Row): Schemas["StoreProductCardDto"] {
   const images = (product.images as { fileId: string }[] | undefined) ?? [];
+  const type = byId(catalogueRows("productTypes"), product.productTypeId);
   return {
+    ...cardFacts(type?.quoteMode, product.quantityMin, [`catalog:type:${type?.id}`, `catalog:product:${product.slug}`]),
     slug: String(product.slug),
     nameTh: String(product.nameTh),
     nameEn: String(product.nameEn),
@@ -122,6 +153,8 @@ function detail(product: Row, request: Request): Schemas["StoreProductDetailDto"
             {
               code: String(pattern.code),
               name: String(pattern.name),
+              styleCode: str(pattern.styleCode),
+              internationalName: str(pattern.internationalName),
               dielineKey: str(pattern.dielineKey),
               constraints: (pattern.constraints as Record<string, unknown>) ?? {},
             },
@@ -160,6 +193,8 @@ function stock(product: Row): Schemas["StoreStockProductDto"] {
   const attributes = (product.attributes as { attribute: string; valueId: string; valueCode: string }[]) ?? [];
   const num = (value: unknown) => (typeof value === "number" ? value : null);
   return {
+    campaignBadge: null,
+    cacheTags: [`catalog:type:${String(product.productTypeId)}`],
     sku: String(product.sku),
     nameTh: String(product.nameTh),
     nameEn: String(product.nameEn),
@@ -367,6 +402,7 @@ export const storeCatalogHandlers: HttpHandler[] = [
   http.get("*/v1/store/catalog/product-types", () =>
     HttpResponse.json(
       productTypes().map((type): Schemas["StoreProductTypeDto"] => ({
+        ...cardFacts(type.quoteMode, null, [`catalog:type:${String(type.id)}`]),
         code: String(type.code),
         categoryCode: categoryCodeOf(type),
         nameTh: String(type.nameTh),
