@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
-import { getSitemapEntries, type SitemapEntry } from "@/features/customer/catalog/api.server";
+import { getSitemapEntries, listAllStyles, type SitemapEntry } from "@/features/customer/catalog/api.server";
+import { styleHref } from "@/features/customer/styles/paths";
 import { articleHref, categoryHref, productHref, stockProductHref } from "@/features/customer/catalog/paths";
 import { routing } from "@/i18n/routing";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
@@ -25,6 +26,7 @@ const STATIC_ROUTES: {
 }[] = [
   { path: "/", priority: 1, changeFrequency: "weekly" },
   { path: "/products", priority: 0.9, changeFrequency: "weekly" },
+  { path: "/styles", priority: 0.8, changeFrequency: "weekly" },
   { path: "/help", priority: 0.5, changeFrequency: "monthly" },
   { path: "/help/how-it-works", priority: 0.6, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.5, changeFrequency: "monthly" },
@@ -43,13 +45,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // The proxy 404s this on a non-indexed zone; an empty sitemap is the safe second answer.
   if (!ZONE_CONFIG[zone].indexable) return [];
 
-  const [origin, catalogue] = await Promise.all([publicOrigin(), getSitemapEntries()]);
+  // The style library (U3.5 §5): one page per published base, at its Thai URL (the default locale);
+  // a read that fails leaves the styles out, like the catalogue.
+  const [origin, catalogue, styles] = await Promise.all([
+    publicOrigin(),
+    getSitemapEntries(),
+    listAllStyles().catch(() => []),
+  ]);
 
   const entries: { path: string; priority: number; changeFrequency: Frequency; lastModified?: string }[] = [
     ...STATIC_ROUTES,
     ...catalogue
       .filter((entry) => entry.kind in ENTRY)
       .map((entry) => ({ ...ENTRY[entry.kind](entry), lastModified: entry.lastModified })),
+    ...styles.map((style) => ({
+      path: styleHref(style.code, style.nameTh),
+      priority: 0.7,
+      changeFrequency: "monthly" as const,
+    })),
   ];
 
   return entries.map(({ path, priority, changeFrequency, lastModified }) => {

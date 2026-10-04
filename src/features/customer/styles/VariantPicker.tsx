@@ -1,0 +1,190 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
+import { useId, useState } from "react";
+
+import type { StyleDetail } from "@/features/customer/catalog/api.server";
+import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
+import { Spinner } from "@/ui/components/Spinner";
+import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
+
+import { axisLabel, valueLabel, type StylesT } from "./labels";
+import { change, optionsOf, selectionOf, variantOf, type Selection } from "./variants";
+
+const StylePreview3D = dynamic(() => import("./StylePreview3D"), {
+  ssr: false,
+  loading: () => <Loading3D />,
+});
+
+function Loading3D() {
+  const t = useTranslations("styles.detail");
+  return (
+    <p className="text-muted flex items-center gap-2 text-sm" role="status">
+      <Spinner label={t("loading3d")} /> {t("loading3d")}
+    </p>
+  );
+}
+
+/**
+ * Toggles for each structural option of a style (U3.5 §2) over the API's publishable variants, the
+ * chosen variant's code and price path, the API's rendered thumbnail of it when there is one, and
+ * the engine's 3D model on request. An option that cannot go with the rest is disabled and says
+ * what it conflicts with.
+ */
+export function VariantPicker({
+  style,
+  name,
+  instantActions,
+  rfqActions,
+}: {
+  style: StyleDetail;
+  name: string;
+  /** What to offer for a variant with an instant price (configure) and for one quoted on request. */
+  instantActions: React.ReactNode;
+  rfqActions: React.ReactNode;
+}) {
+  const t = useTranslations("styles") as unknown as StylesT & ReturnType<typeof useTranslations>;
+  const id = useId();
+  const [selection, setSelection] = useState<Selection>(() =>
+    style.variants[0] ? selectionOf(style.variants[0], style.axes) : {},
+  );
+  const [show3d, setShow3d] = useState(false);
+  const variant = variantOf(style.variants, selection);
+  const thumb =
+    style.assets.find((a) => a.variantCode === variant?.code && a.kind === "thumbnail_3d") ??
+    style.assets.find((a) => a.variantCode === null && a.kind === "thumbnail_3d") ??
+    style.assets.find((a) => a.variantCode === null && a.kind === "thumbnail_2d");
+  const describe = (axis: string, value: unknown) =>
+    Array.isArray(value)
+      ? value.length
+        ? value.map((v) => valueLabel(t, axis, String(v))).join(" + ")
+        : t("detail.noneSelected")
+      : valueLabel(t, axis, String(value));
+
+  return (
+    <div className="grid gap-8 md:grid-cols-2">
+      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3">
+        <h2 id={`${id}-preview`} className="text-lg font-semibold">
+          {t("detail.preview")}
+        </h2>
+        <div className="bg-bg-subtle rounded-card flex min-h-64 items-center justify-center overflow-hidden p-2">
+          {show3d && variant ? (
+            <StylePreview3D code={style.code} options={variant.options} name={variant.code} />
+          ) : thumb ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a signed URL on the API's file host (ProductCard)
+            <img
+              src={thumb.url}
+              alt={t("detail.thumbnailAlt", { name, code: variant?.code ?? style.code })}
+              width={640}
+              height={480}
+              className="h-auto max-w-full"
+            />
+          ) : (
+            <Icon name="box" size={64} className="text-subtle" aria-hidden="true" />
+          )}
+        </div>
+        {!show3d ? (
+          <Button variant="secondary" iconStart="box" onClick={() => setShow3d(true)} disabled={!variant}>
+            {t("detail.show3d")}
+          </Button>
+        ) : null}
+      </section>
+
+      <section aria-labelledby={`${id}-options`} className="flex flex-col gap-4">
+        <div>
+          <h2 id={`${id}-options`} className="text-lg font-semibold">
+            {t("detail.options")}
+          </h2>
+          <p className="text-muted text-sm">{t("detail.optionsIntro")}</p>
+        </div>
+        {style.axes.map((axis) => {
+          const options = optionsOf(axis, selection, style.variants);
+          const chosen = selection[axis.axis];
+          return (
+            <fieldset key={axis.axis} className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-medium">{axisLabel(t, axis.axis)}</legend>
+              <div className="flex flex-wrap gap-2">
+                {options.map((option) => {
+                  const on = Array.isArray(chosen) ? chosen.includes(option.value) : chosen === option.value;
+                  const reason = option.available
+                    ? undefined
+                    : t("detail.unavailable", {
+                        choice:
+                          option.conflicts.map((a) => `${axisLabel(t, a)} ${describe(a, selection[a])}`).join(", ") ||
+                          axisLabel(t, axis.axis),
+                      });
+                  const reasonId = `${id}-${axis.axis}-${option.value}`;
+                  return (
+                    <div key={option.value} className="flex flex-col">
+                      <button
+                        type="button"
+                        role={axis.multiSelect ? "checkbox" : "radio"}
+                        aria-checked={on}
+                        aria-disabled={!option.available || undefined}
+                        aria-describedby={reason ? reasonId : undefined}
+                        onClick={() => option.available && setSelection((s) => change(s, axis, option.value))}
+                        className={cn(
+                          "focus-visible:ring-focus-ring rounded-full border px-3 py-1.5 text-sm outline-none focus-visible:ring-2",
+                          on
+                            ? "border-primary bg-primary-subtle text-primary-subtle-fg font-medium"
+                            : "border-border hover:bg-bg-subtle",
+                          !option.available &&
+                            "text-muted cursor-not-allowed line-through opacity-70 hover:bg-transparent",
+                        )}
+                      >
+                        {valueLabel(t, axis.axis, option.value)}
+                      </button>
+                      {reason ? (
+                        <span id={reasonId} className="sr-only">
+                          {reason}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+              {options.some((o) => !o.available) ? (
+                <ul className="text-muted text-xs">
+                  {options
+                    .filter((o) => !o.available)
+                    .map((o) => (
+                      <li key={o.value} aria-hidden="true">
+                        {valueLabel(t, axis.axis, o.value)}:{" "}
+                        {t("detail.unavailable", {
+                          choice:
+                            (o.available ? [] : o.conflicts)
+                              .map((a) => `${axisLabel(t, a)} ${describe(a, selection[a])}`)
+                              .join(", ") || axisLabel(t, axis.axis),
+                        })}
+                      </li>
+                    ))}
+                </ul>
+              ) : null}
+            </fieldset>
+          );
+        })}
+
+        <div className="border-border rounded-card flex flex-col gap-2 border p-4" aria-live="polite">
+          <p className="text-sm font-medium">{t("detail.variant")}</p>
+          {variant ? (
+            <>
+              <p className="font-mono text-sm">{t("detail.variantCode", { code: variant.code })}</p>
+              <p className="text-sm">
+                <span className="text-muted me-2">{t("detail.price")}</span>
+                <Badge tone={variant.pricePath === "instant" ? "success" : "info"}>
+                  {t(`pricePaths.${variant.pricePath}`)}
+                </Badge>
+              </p>
+            </>
+          ) : null}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {variant?.pricePath === "instant" ? instantActions : rfqActions}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
