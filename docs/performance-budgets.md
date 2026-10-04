@@ -139,3 +139,23 @@ follow-up; the ratchet now covers both so the set stops failing on everything el
 
 The size step is the configurator's first step and carries the new measurement-basis logic: the basis cards, the API's conversion and per-pattern bases (`conversion.ts`), the derived-sizes panel and the diagrams; `build.ts` now writes six published configurations instead of two. Everything after the first step — the Structure Advisor and its inputs, the target price and levers, the summary and drafts — loads on demand (`next/dynamic`). Follow-up: move the quote and draft actions (save, share, PDF, levers, send to sales) behind a dynamic import on first click.
 
+## U3.4 wave 1 → U3.5 — style library (2026-10-04)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/styles`, `/styles/<code>-<name>` (new, `customer-marketing`) | — | 269,148 / 269,242 | 270,000 (unchanged) |
+| `/configure/tuck-end-box` | 336,117 | 338,896 | customer-app 337,000 → **339,000** |
+| `/design/new` | ≤ 468,000 | 471,492 | designer 468,000 → **472,000** |
+
+Wave 1 adds 60 recipes and 15 modules; all of them, their parameters and their words live in
+`@packio/dieline/library`, and the core styles the designer and configurator draw stay in their
+pre-wave form in the main entry (the library replaces them by id with their extended versions).
+What is left in the main entry is the code of core modules that the extended versions share:
+joints (stitched / taped), hand holes in long panels and trays, the insert-piece hook and the
+`floor` placement, mailer fronts, pouch features, the slit-lock band and pillow hang holes —
+about 2.8 KB on the configurator and 3.5 KB on the designer. Splitting those into library-only
+copies of the modules would leave two versions of each to keep in step, so the ratchets move
+instead. The library pages fit the marketing budget without a change: the first page's cards are
+rendered on the server, facets and sort are links, favourites are a small store, and the API
+client, the card renderer and the 3D model load on interaction.
+

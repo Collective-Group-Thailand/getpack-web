@@ -1,6 +1,7 @@
 import { buildTube, type Closure, type PanelSpan } from "../../construct/tube";
 import { assemble, piece } from "../../faces";
 import type { FaceLabel, PieceLabel } from "../../labels";
+import { str } from "../../params";
 import { grainOn, t } from "../../styles/_shared";
 import type { BodyModule, BuildContext, ModuleConfig, Parts } from "../types";
 
@@ -32,6 +33,10 @@ const closureFor = (ctx: BuildContext, parts: Parts, end: "top" | "bottom"): Clo
   }
   return closure;
 };
+
+/** The separate pieces features cut with the body (a die-cut insert). */
+export const extraPieces = (ctx: BuildContext, parts: Parts) =>
+  parts.features.flatMap((f) => (f.def.slot === "feature" ? (f.def.pieces?.(ctx, f.cfg) ?? []) : []));
 
 const pieceOf = (cfg: ModuleConfig) =>
   (cfg.piece ?? { id: "blank", label: "blank" }) as { id: string; label: PieceLabel };
@@ -81,6 +86,8 @@ export const tube: BodyModule = {
       depth: ctx.num(cfg.depth as string),
       glue: ctx.num((cfg.glue ?? 0) as string),
       glueId: cfg.glueId as string | undefined,
+      // The joint (`joint`): glued, stitched (no glue area) or taped (no flap, `glue` gives 0).
+      glueMarks: str(ctx.v, "joint", "glue") !== "stitch",
       glueRight: cfg.glueRight === undefined ? undefined : ctx.test(cfg.glueRight as string),
       top: closureFor(ctx, parts, "top"),
       bottom: closureFor(ctx, parts, "bottom"),
@@ -92,7 +99,10 @@ export const tube: BodyModule = {
         : {}),
     });
     const p = pieceOf(cfg);
-    return assemble(ctx.styleId, [piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string))]);
+    return assemble(ctx.styleId, [
+      piece(p.id, p.label, faces, grainOn(ctx.v, faces, cfg.grain as string)),
+      ...extraPieces(ctx, parts),
+    ]);
   },
   hinges(_ctx, cfg) {
     const p = pieceOf(cfg);

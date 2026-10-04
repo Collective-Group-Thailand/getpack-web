@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "crash-lock-bottom",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "straight_tuck",
+    "tuck_bottom": "crash_lock",
+    "hang": "none"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบบน ก้นล็อกอัตโนมัติ (ป๊อปอัพ)",
+    "en": "Tuck top, crash-lock (auto) bottom"
+  },
+  "description": {
+    "th": "ก้นทากาวมาจากโรงงาน กางกล่องแล้วก้นล็อกเป็นรูปทันที เร็วที่สุดในไลน์บรรจุ",
+    "en": "The bottom is pre-glued at the factory and snaps square as the carton is opened — fastest to pack"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [
+    {
+      "module": "thumbNotch",
+      "with": {
+        "end": "top"
+      }
+    },
+    {
+      "module": "window"
+    }
+  ],
+  "legacy": {
+    "patternKeys": ["pid:7"]
+  }
+}

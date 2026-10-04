@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "listTitle": "Box and packaging style library",
+    "listDescription": "Browse over 100 box, bag, pouch, label and tag structures — style codes, the sizes each can be made in and starting prices — and order them from Packio",
+    "detailTitle": "{name} ({code})",
+    "detailDescription": "{name}, style code {code} — {count, plural, one {# variant} other {# variants}}: its structural options, the sizes it can be made in and prices",
+    "compareTitle": "Compare styles"
+  },
+  "breadcrumbs": {
+    "library": "Style library"
+  },
+  "list": {
+    "heading": "Box and packaging style library",
+    "intro": "Pick the structure, then its closures, window or insert — every style shows its code, the sizes it can be made in and how it is priced",
+    "resultsFor": "Results for “{q}”",
+    "results": "{count, plural, one {# style} other {# styles}}",
+    "searchLabel": "Search styles",
+    "searchPlaceholder": "e.g. mailer, tuck end, PK-TE-01",
+    "searchSubmit": "Search",
+    "clear": "Clear all filters",
+    "categories": "Packaging types",
+    "allCategories": "All",
+    "filters": "Filters",
+    "apply": "Apply filters",
+    "any": "Any",
+    "sort": "Sort by",
+    "emptyTitle": "No style matches",
+    "emptyBody": "Try fewer filters or other words. If the style you need is not here, ask us for a quotation",
+    "loadMore": "Show more",
+    "loading": "Loading…",
+    "shown": "Showing {shown} of {total, plural, one {# style} other {# styles}}",
+    "shownMore": "Showing {shown} styles",
+    "grid": "Styles",
+    "count": "({count})"
+  },
+  "sorts": {
+    "relevance": "Best match",
+    "popular": "Popular",
+    "new": "Newest",
+    "instant_first": "Instant price first",
+    "name": "Name A–Z"
+  },
+  "facets": {
+    "category": "Type",
+    "closure": "Closure",
+    "feature": "Features",
+    "useCase": "Use",
+    "materialClass": "Material",
+    "pricePath": "Price",
+    "family": "Structure family"
+  },
+  "categories": {
+    "folding_carton": "Folding cartons",
+    "corrugated": "Corrugated",
+    "rigid": "Rigid boxes",
+    "flexible": "Bags and pouches",
+    "label": "Labels",
+    "tag_sleeve": "Tags and sleeves",
+    "insert": "Inserts and partitions"
+  },
+  "materialClasses": {
+    "corrugated": "Corrugated board",
+    "flexible": "Flexible film",
+    "food_board": "Food-grade board",
+    "label_stock": "Label stock",
+    "paper": "Paper",
+    "paperboard": "Paperboard",
+    "rigid": "Rigid board",
+    "shrink_film": "Shrink film"
+  },
+  "pricePaths": {
+    "instant": "Instant price",
+    "rfq": "Request a quote"
+  },
+  "families": {
+    "bulk": "Bulk",
+    "display": "Display",
+    "flip_top": "Flip-top",
+    "folder": "Folder",
+    "insert": "Insert",
+    "label": "Label",
+    "lid_base": "Lid and base",
+    "mailer": "Mailer",
+    "paper_bag": "Paper bag",
+    "pouch": "Pouch",
+    "ready_glued": "Ready-glued",
+    "rigid": "Rigid",
+    "sleeve": "Sleeve",
+    "slide": "Slide",
+    "slotted": "Slotted",
+    "specialty": "Specialty",
+    "tag": "Tag",
+    "telescope": "Telescope",
+    "tray": "Tray",
+    "tuck_end": "Tuck end"
+  },
+  "useCases": {
+    "cosmetics": "Cosmetics",
+    "food": "Food",
+    "retail": "Retail",
+    "shipping": "Shipping",
+    "ecommerce": "E-commerce",
+    "gift": "Gifts",
+    "luxury": "Premium goods",
+    "protection": "Protection",
+    "branding": "Branding"
+  },
+  "axes": {
+    "tuck_top": "Top closure",
+    "tuck_bottom": "Bottom",
+    "hang": "Hang hole",
+    "window": "Window",
+    "tuck_corner": "Tuck corners",
+    "lock": "Lock",
+    "handle": "Handle",
+    "lid_depth": "Lid depth",
+    "joint": "Joint",
+    "hand_holes": "Hand holes",
+    "vents": "Vents",
+    "mailer_front": "Front",
+    "tear_strip": "Tear strip",
+    "adhesive": "Adhesive strip",
+    "shelves": "Shelves",
+    "header": "Header card",
+    "insert": "Insert",
+    "thumb": "Finger pull",
+    "corner": "Corners",
+    "closure_rigid": "Lid closure",
+    "shape_flat": "Shape",
+    "pouch_feat": "Features",
+    "bag_gusset": "Gusset",
+    "bag_handle": "Handles",
+    "partition": "Cells"
+  },
+  "values": {
+    "tuck_top": {
+      "straight_tuck": "Straight tuck",
+      "reverse_tuck": "Reverse tuck",
+      "airplane_tuck": "Airplane tuck",
+      "seal": "Seal"
+    },
+    "tuck_bottom": {
+      "tuck": "Tuck",
+      "snap_lock_123": "Snap lock (1-2-3)",
+      "crash_lock": "Crash lock",
+      "seal": "Seal",
+      "four_flap_lock": "Four-flap lock"
+    },
+    "hang": {
+      "none": "None",
+      "euro_slot": "Euro slot",
+      "round_hole": "Round hole",
+      "sombrero_header": "Sombrero header"
+    },
+    "window": {
+      "none": "None",
+      "front_window": "Front",
+      "top_window": "Top"
+    },
+    "tuck_corner": {
+      "square": "Square",
+      "rounded": "Rounded"
+    },
+    "lock": {
+      "friction": "Friction",
+      "slit_lock": "Slit lock"
+    },
+    "handle": {
+      "none": "None",
+      "die_cut_handle": "Die-cut",
+      "insert_handle": "Clip-in"
+    },
+    "lid_depth": {
+      "full": "Full depth",
+      "partial": "Partial"
+    },
+    "joint": {
+      "glue_flap": "Glued",
+      "stitch_flap": "Stitched",
+      "tape_joint": "Taped"
+    },
+    "hand_holes": {
+      "none": "None",
+      "end_panels": "End panels",
+      "side_panels": "Long sides"
+    },
+    "vents": {
+      "none": "None",
+      "round": "Round",
+      "oblong": "Oblong"
+    },
+    "mailer_front": {
+      "tuck": "Tuck",
+      "tab_lock": "Tab lock"
+    },
+    "tear_strip": {
+      "none": "None",
+      "zip_tear_strip": "Zip tear strip"
+    },
+    "adhesive": {
+      "none": "None",
+      "single_strip": "Single strip",
+      "dual_strip_return": "Dual (returnable)"
+    },
+    "shelves": {
+      "1": "1",
+      "2": "2",
+      "3": "3",
+      "4": "4"
+    },
+    "header": {
+      "none": "None",
+      "header_card": "Header card"
+    },
+    "insert": {
+      "none": "None",
+      "die_cut_insert": "Die-cut insert"
+    },
+    "thumb": {
+      "none": "None",
+      "thumb_notch": "Finger pull"
+    },
+    "corner": {
+      "glued": "Glued",
+      "lock_corner": "Lock corners"
+    },
+    "closure_rigid": {
+      "none": "None",
+      "magnetic": "Magnetic",
+      "ribbon": "Ribbon"
+    },
+    "shape_flat": {
+      "rectangle": "Rectangle",
+      "rounded_rectangle": "Rounded rectangle",
+      "circle": "Circle",
+      "oval": "Oval",
+      "custom_path": "Custom shape"
+    },
+    "pouch_feat": {
+      "zipper": "Zipper",
+      "tear_notch": "Tear notch",
+      "hang_hole": "Hang hole",
+      "window": "Window"
+    },
+    "bag_gusset": {
+      "gusseted": "Gusseted",
+      "flat": "Flat"
+    },
+    "bag_handle": {
+      "twisted_paper": "Twisted paper",
+      "flat_paper": "Flat paper",
+      "rope": "Rope",
+      "die_cut": "Die-cut",
+      "none": "None"
+    },
+    "partition": {
+      "2x2": "2 × 2",
+      "2x3": "2 × 3",
+      "3x3": "3 × 3",
+      "3x4": "3 × 4",
+      "4x4": "4 × 4",
+      "4x6": "4 × 6"
+    }
+  },
+  "card": {
+    "code": "Style code",
+    "variants": "{count, plural, one {# variant} other {# variants}}",
+    "from": "From {price} each",
+    "fromQuantity": "at {quantity} pieces",
+    "reference": "International code {code}",
+    "featured": "Featured"
+  },
+  "favourites": {
+    "add": "Save this style",
+    "remove": "Remove from saved",
+    "signIn": "Sign in to save styles",
+    "added": "Saved",
+    "removed": "Removed from saved"
+  },
+  "compare": {
+    "add": "Compare",
+    "remove": "Remove from comparison",
+    "limit": "Up to 3 styles can be compared",
+    "tray": "Styles to compare",
+    "now": "Compare {count}",
+    "clear": "Clear",
+    "heading": "Compare styles",
+    "emptyTitle": "No styles chosen",
+    "emptyBody": "Choose “Compare” on up to 3 styles in the library",
+    "back": "Back to the library",
+    "attribute": "Attribute",
+    "rows": {
+      "code": "Style code",
+      "category": "Type",
+      "material": "Material",
+      "size": "Sizes (inside)",
+      "variants": "Variants",
+      "price": "Price",
+      "leadTime": "Lead time",
+      "options": "Structural options"
+    }
+  },
+  "detail": {
+    "code": "Style code",
+    "internationalName": "International code",
+    "construction": "Construction",
+    "options": "Structural options",
+    "optionsIntro": "Choose the options; one that cannot be combined says why",
+    "variant": "Chosen variant",
+    "variantCode": "Variant {code}",
+    "unavailable": "Not made with {choice}",
+    "noneSelected": "None",
+    "sizes": "Sizes it can be made in (inside)",
+    "size": "{material}: length {l} · width {w}{h, select, none {} other { · height {h}}} mm",
+    "range": "{min}–{max}",
+    "sizeSource": "From the style's rules",
+    "price": "Price",
+    "leadTime": "Made in {min}–{max} working days",
+    "partners": "{count, plural, one {# partner factory can make it} other {# partner factories can make it}}",
+    "configure": "Configure and price",
+    "requestQuote": "Request a quote",
+    "preview": "Preview",
+    "show3d": "Turn it round in 3D",
+    "loading3d": "Preparing the 3D view…",
+    "no3d": "No 3D view for this one yet",
+    "flatOnly": "A flat piece, shown as its die line",
+    "thumbnailAlt": "{name}, variant {code}",
+    "useCases": "Good for",
+    "back": "Style library",
+    "makers": "Made by"
+  },
+  "preview3d": {
+    "canvas": "The box in 3D — drag to turn",
+    "fold": "Fold",
+    "play": "Play the fold",
+    "rotateLeft": "Turn left",
+    "rotateRight": "Turn right",
+    "tiltUp": "Tilt up",
+    "tiltDown": "Tilt down",
+    "reset": "Reset the view",
+    "lighting": "Lighting",
+    "studio": "Studio",
+    "daylight": "Daylight",
+    "warm": "Warm",
+    "exportPng": "Save as PNG",
+    "flat": "Flat"
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "definition": "05c509d4474c16",
+  "s · label-film": {
+    "build": "027cd4b043052b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · board-350": {
+    "build": "027cd4b043052b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · label-film": {
+    "build": "0f3dd9d1d6e783",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · board-350": {
+    "build": "0f3dd9d1d6e783",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · label-film": {
+    "build": "1cddb7b37c48d6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · board-350": {
+    "build": "1cddb7b37c48d6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · width=min": {
+    "build": "083ebd437a48f6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · width=max": {
+    "build": "1b5da1b53fd3a8",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · width<min": {
+    "build": "1e7f4cbcfa58ad",
+    "hinges": "15e0da69fcb93a",
+    "validate": "037e334237469a",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · width>max": {
+    "build": "1520199203c039",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1c9408b0d83315",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · length=min": {
+    "build": "1a4457de44242f",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · length=max": {
+    "build": "1f453dd4ce3f78",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · length<min": {
+    "build": "012b8043fa23c1",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0e3a687fcc1fb8",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · length>max": {
+    "build": "0d6fb829480c01",
+    "hinges": "15e0da69fcb93a",
+    "validate": "172fd4acb099a6",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · flapDepth=min": {
+    "build": "1429a3d14ddba6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · flapDepth=max": {
+    "build": "09406d79f3d519",
+    "hinges": "15e0da69fcb93a",
+    "validate": "000bc07939db59",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · flapDepth<min": {
+    "build": "1b2f76274f9493",
+    "hinges": "15e0da69fcb93a",
+    "validate": "17cae5e7dc7d4c",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · flapDepth>max": {
+    "build": "01a17d9c1ef7fd",
+    "hinges": "15e0da69fcb93a",
+    "validate": "19ac40ca4ac8e8",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · sealWidth=min": {
+    "build": "0503a1977fad7f",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · sealWidth=max": {
+    "build": "1b04346ef431d4",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · sealWidth<min": {
+    "build": "08d42a44290acb",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1e0dc99de96ba0",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · sealWidth>max": {
+    "build": "00eafa21e8e703",
+    "hinges": "15e0da69fcb93a",
+    "validate": "16bebf5051e800",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · adhesive=none": {
+    "build": "1a17008b3e7cc2",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · adhesive=single": {
+    "build": "027cd4b043052b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · adhesive=dual": {
+    "build": "015bc27af1fb25",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · tearStrip=true": {
+    "build": "08b853ba43ea56",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  }
+}

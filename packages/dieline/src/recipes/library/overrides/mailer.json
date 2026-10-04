@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "id": "mailer",
+  "base": "PK-CF-01",
+  "variants": {
+    "mailer_front": {
+      "tuck": {
+        "mailerFront": "tuck"
+      },
+      "tab_lock": {
+        "mailerFront": "tab"
+      }
+    },
+    "tear_strip": {
+      "none": {
+        "tearStrip": false
+      },
+      "zip_tear_strip": {
+        "tearStrip": true
+      }
+    },
+    "adhesive": {
+      "none": {
+        "adhesive": "none"
+      },
+      "single_strip": {
+        "adhesive": "single"
+      },
+      "dual_strip_return": {
+        "adhesive": "dual"
+      }
+    },
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องไปรษณีย์ฝาเสียบหน้า (Mailer)",
+    "en": "Roll-end tuck-front mailer"
+  },
+  "description": {
+    "th": "ผนังพับม้วนสองชั้น ฝาเสียบด้านหน้าพร้อมปีกข้าง ไม่ต้องใช้เทปหรือกาว เหมาะกับอีคอมเมิร์ซและ subscription box",
+    "en": "Rolled double walls, a tuck-front lid with side ears, no tape or glue — e-commerce and subscription boxes"
+  },
+  "codes": {
+    "fefco": "0427"
+  },
+  "materials": ["corrugated", "paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 250
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "grain",
+    "mailerFront",
+    "tearStrip",
+    "adhesive",
+    "fingerHole",
+    "insert"
+  ],
+  "defaults": {
+    "length": 250,
+    "width": 180,
+    "height": 80,
+    "grain": "across",
+    "mailerFront": "tuck",
+    "tearStrip": false,
+    "adhesive": "none",
+    "fingerHole": false,
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "เล็ก 200 × 150 × 50",
+        "en": "Small 200 × 150 × 50"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 50
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "กลาง 250 × 180 × 80",
+        "en": "Medium 250 × 180 × 80"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 80
+      }
+    },
+    {
+      "id": "large",
+      "label": {
+        "th": "ใหญ่ 350 × 250 × 100",
+        "en": "Large 350 × 250 × 100"
+      },
+      "values": {
+        "length": 350,
+        "width": 250,
+        "height": 100
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "rollOverWalls",
+      "with": {
+        "walls": ["front", "left", "right"]
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t",
+        "inset": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  },
+  "legacy": {
+    "patternKeys": [
+      "pid:20",
+      "pid:21",
+      "pid:22",
+      "pid:23",
+      "pid:25",
+      "mapping:31",
+      "mapping:32",
+      "mapping:48",
+      "mapping:49",
+      "pid:10"
+    ]
+  }
+}

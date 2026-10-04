@@ -1,5 +1,5 @@
 {
-  "definition": "1122859fac26bc",
+  "definition": "06af68971c55e8",
   "small · board-350": {
     "build": "0f06f135d16bfa",
     "hinges": "1e07ab69c64715",
@@ -159,6 +159,30 @@
   "small · board-350 · grain=along": {
     "build": "01779d76618482",
     "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · cornerLock=glued": {
+    "build": "0f06f135d16bfa",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · cornerLock=lock": {
+    "build": "10f5a455caae6f",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · insert=none": {
+    "build": "0f06f135d16bfa",
+    "hinges": "1e07ab69c64715",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "small · board-350 · insert=die_cut": {
+    "build": "1e9cdfe58f4f0f",
+    "hinges": "0afc50d656d3f3",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"
   }

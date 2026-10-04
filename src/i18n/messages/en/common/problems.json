@@ -434,5 +434,8 @@
   },
   "configurations": {
     "converted": "This draft has already been converted and can't change"
+  },
+  "styles": {
+    "variant_not_found": "This style was not found"
   }
 }

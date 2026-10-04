@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "hsc",
+  "base": "PK-CS-02",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    },
+    "hand_holes": {
+      "none": {
+        "handles": "none"
+      },
+      "end_panels": {
+        "handles": "side"
+      },
+      "side_panels": {
+        "handles": "long"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกฝาเดียว (HSC)",
+    "en": "Half slotted container (HSC)"
+  },
+  "description": {
+    "th": "เหมือนกล่องฝาชนแต่ไม่มีฝาบน ใช้คู่กับฝาครอบหรือเป็นถาดลึก",
+    "en": "An RSC without top flaps — used with a separate lid or as a deep tray"
+  },
+  "codes": {
+    "fefco": "0200"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue"
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.trayDepth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "closures": {
+    "bottom": {
+      "module": "rsc"
+    }
+  },
+  "features": [
+    {
+      "module": "handHoles"
+    }
+  ],
+  "outerSize": {
+    "height": "height + t"
+  },
+  "legacy": {
+    "patternKeys": []
+  }
+}

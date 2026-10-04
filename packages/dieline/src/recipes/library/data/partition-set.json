@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "id": "partition-set",
+  "base": "PK-CI-01",
+  "variants": {
+    "partition": {
+      "2x2": {
+        "partition": "2x2"
+      },
+      "2x3": {
+        "partition": "2x3"
+      },
+      "3x3": {
+        "partition": "3x3"
+      },
+      "3x4": {
+        "partition": "3x4"
+      },
+      "4x4": {
+        "partition": "4x4"
+      },
+      "4x6": {
+        "partition": "4x6"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "ชุดแผ่นกั้นช่อง",
+    "en": "Cross partition set"
+  },
+  "description": {
+    "th": "แผ่นลูกฟูกเซาะร่องสอดขัดกันเป็นช่อง สำหรับขวดหรือสินค้าแตกง่าย",
+    "en": "Slotted corrugated strips that cross into cells, for bottles and fragile goods"
+  },
+  "materials": ["corrugated", "paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 800
+    },
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    "partition"
+  ],
+  "defaults": {
+    "length": 300,
+    "width": 200,
+    "height": 150,
+    "partition": "2x3"
+  },
+  "presets": [
+    {
+      "id": "bottles",
+      "label": {
+        "th": "ขวด 300 × 200 × 250",
+        "en": "Bottles 300 × 200 × 250"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 250
+      }
+    },
+    {
+      "id": "large",
+      "label": {
+        "th": "ใหญ่ 480 × 320 × 200",
+        "en": "Large 480 × 320 × 200"
+      },
+      "values": {
+        "length": 480,
+        "width": 320,
+        "height": 200
+      }
+    }
+  ],
+  "body": {
+    "module": "partitionSet"
+  }
+}

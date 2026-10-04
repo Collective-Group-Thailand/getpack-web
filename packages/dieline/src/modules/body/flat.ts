@@ -155,7 +155,7 @@ export const band: BodyModule = {
   status: "implemented",
   folds: false,
   label: t("สายคาด (แถบทับกาวที่ปลาย)", "Band glued on its overlap"),
-  params: ["length", "width", "overlap"],
+  params: ["length", "width", "overlap", "lock"],
   processes: ["die_cut"],
   contributes: { kinds: ["flat"], roles: ["cut", "glue_area"] },
   build(ctx) {
@@ -163,6 +163,30 @@ export const band: BodyModule = {
     const l = num(v, "length", 400);
     const w = num(v, "width", 50);
     const o = num(v, "overlap", 15);
+    if (str(v, "lock", "friction") === "slit") {
+      // Slit lock (PK-SL-03): a slit from one edge at each end, halfway across, that hook into
+      // each other — no glue. 1 mm wide. ⚠ To be confirmed by Prepress.
+      const a = o / 2 - 0.5;
+      const b = l - o / 2 - 0.5;
+      return flatDieline(
+        ctx.styleId,
+        polygon([
+          [0, 0],
+          [a, 0],
+          [a, w / 2],
+          [a + 1, w / 2],
+          [a + 1, 0],
+          [l, 0],
+          [l, w],
+          [b + 1, w],
+          [b + 1, w / 2],
+          [b, w / 2],
+          [b, w],
+          [0, w],
+        ]),
+        "band",
+      );
+    }
     const i = Math.min(GLUE_AREA_INSET_MM, o / 4, w / 4);
     return flatDieline(ctx.styleId, rectangle(0, 0, l, w), "band", {
       marks: polygon(

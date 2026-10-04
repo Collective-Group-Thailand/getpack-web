@@ -12,6 +12,7 @@ import type {
   Localized,
   MaterialSpec,
   ParamValues,
+  Piece,
 } from "../types";
 
 /**
@@ -151,13 +152,18 @@ export interface FeatureModule extends ModuleBase {
   wrapClosure?(ctx: BuildContext, cfg: ModuleConfig, end: "top" | "bottom", inner: Closure): Closure;
   /** Faces hinged on a tray's walls (inner walls rolled over). */
   tray?(ctx: BuildContext, cfg: ModuleConfig, frame: TrayFrame): TrayExtras;
+  /** Holes in a tray's faces by face id, in the tray frame (lock-corner slits). */
+  trayHoles?(ctx: BuildContext, cfg: ModuleConfig, frame: TrayFrame): Partial<Record<string, Contour[]>>;
   /** Holes in a flat piece. */
   flatHoles?(ctx: BuildContext, cfg: ModuleConfig): Contour[];
+  /** Separate pieces cut with the body (a die-cut insert), assembled into the same dieline. */
+  pieces?(ctx: BuildContext, cfg: ModuleConfig): Piece[];
 }
 
 export interface PieceSetModule extends ModuleBase {
   slot: "pieceSet";
-  build(ctx: BuildContext, cfg: ModuleConfig): Dieline;
+  /** `parts.features`: the recipe's features, for the pieces they apply to (a window, an insert). */
+  build(ctx: BuildContext, cfg: ModuleConfig, parts: Parts): Dieline;
 }
 
 export type ModuleDef = BodyModule | ClosureModule | FeatureModule | PieceSetModule;

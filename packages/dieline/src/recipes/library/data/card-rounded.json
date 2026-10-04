@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "card-rounded",
+  "base": "PK-TG-05",
+  "variant": {
+    "shape_flat": "rounded_rectangle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "การ์ดขอบคุณ / การ์ดสอด สี่เหลี่ยมมุมมน",
+    "en": "Insert / thank-you card, rounded rectangle"
+  },
+  "description": {
+    "th": "การ์ดกระดาษแข็งสำหรับใส่ในกล่องพร้อมสินค้า",
+    "en": "A card to go in the box with the goods"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "cornerRadius"
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60,
+    "cornerRadius": 6
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rounded_rectangle"
+    }
+  }
+}

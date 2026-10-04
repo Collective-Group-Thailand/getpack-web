@@ -69,6 +69,8 @@ export interface TubeSpec {
   depth: number;
   /** Glue flap width; 0 or absent for none. It sits left of the first panel before any mirroring. */
   glue?: number;
+  /** False for a stitched joint: the flap is stapled, not glued, so no glue area is marked. */
+  glueMarks?: boolean;
   /** The glue flap's face id (default `glue`) — unique when a dieline has two tubes. */
   glueId?: string;
   /** Put the glue flap on the right: the whole blank is mirrored (the box is the same, seam at the other corner). */
@@ -197,7 +199,10 @@ export function buildTube(spec: TubeSpec): Face[] {
     ) as Record<number, Pt[]>,
   };
 
-  if (glue > 0) faces.push(glueFlap(spec.glueId ?? "glue", glue, glue, depth, "left"));
+  if (glue > 0) {
+    const flap = glueFlap(spec.glueId ?? "glue", glue, glue, depth, "left");
+    faces.push(spec.glueMarks === false ? { ...flap, marks: [] } : flap);
+  }
 
   for (const s of spans) {
     const within = (a: Attachment) => a.span[0] >= s.x0 - 1e-9 && a.span[1] <= s.x1 + 1e-9;

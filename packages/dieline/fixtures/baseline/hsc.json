@@ -1,5 +1,5 @@
 {
-  "definition": "11930f709c08e6",
+  "definition": "11107b40d6f026",
   "s · flute-e": {
     "build": "19295130c64692",
     "hinges": "0ab38896a79cd8",
@@ -144,6 +144,24 @@
     "validate": "13b4187a8e3a98",
     "closed": "15e0da69fcb93a"
   },
+  "s · flute-e · joint=glue": {
+    "build": "19295130c64692",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · flute-e · joint=stitch": {
+    "build": "146f225d072c98",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · flute-e · joint=tape": {
+    "build": "1640ec35033f02",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
   "s · flute-e · glueWidth=min": {
     "build": "18417fbf3f1668",
     "hinges": "0ab38896a79cd8",
@@ -188,6 +206,18 @@
   },
   "s · flute-e · handles=side": {
     "build": "015a2de4dd4ed7",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · flute-e · handles=long": {
+    "build": "0d9f2c4d814d9b",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · flute-e · handles=insert": {
+    "build": "0842e1e1dc8c8f",
     "hinges": "0ab38896a79cd8",
     "validate": "15202279b28c9e",
     "closed": "15e0da69fcb93a"

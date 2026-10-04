@@ -1,10 +1,10 @@
 import { TRAY_CORNER_FLAP_MAX_MM, TRAY_CORNER_FLAP_SHARE, TUCK_CORNER_RADIUS_MM, tuckDepthFor } from "../../constants";
 import { tuckOnEdge } from "../../construct/closures";
 import { face } from "../../faces";
-import { num } from "../../params";
-import { line, polygon, rectangle } from "../../path";
+import { bool, num, str } from "../../params";
+import { ellipse, line, polygon, rectangle } from "../../path";
 import { t } from "../../styles/_shared";
-import type { Face, Pt } from "../../types";
+import type { Edge, Face, Pt } from "../../types";
 import type { BuildContext, ClosureModule, ModuleConfig, TrayExtras, TrayFrame } from "../types";
 
 /**
@@ -95,10 +95,75 @@ function tuckFrontLid(ctx: BuildContext, f: TrayFrame): Face[] {
     ]),
     earFace("ear-left", "left"),
     earFace("ear-right", "right"),
-    face("lid-front", "front", "flap", rectangle(x0, yFront, L, H, { top: "crease", bottom: "crease" })),
-    // Walked left to right, so the tuck lies on its upper side, away from the front flap.
-    tuckOnEdge("tuck", [x0, yFront], [x1, yFront], tuckDepth, Math.min(TUCK_CORNER_RADIUS_MM, tuckDepth / 2)),
+    ...mailerFront(ctx, x0, x1, yFront, H, tuckDepth),
   ];
+}
+
+/**
+ * The front flap of a mailer lid and what closes it (U3.4, PK-CF-01): `mailerFront` = `tuck` (one
+ * tuck) or `tab` (two lock tabs at a quarter and three quarters); `fingerHole` (the `thumb` axis)
+ * a finger hole in the flap; `tearStrip` a zip tear strip (two perforations 8 mm apart across the
+ * flap); `adhesive` = `single` / `dual` peel-and-seal strips on the flap's inside (the second one to
+ * send the box back). ⚠ Tab sizes, strip positions and widths to be confirmed by Prepress.
+ */
+function mailerFront(ctx: BuildContext, x0: number, x1: number, yFront: number, H: number, tuckDepth: number): Face[] {
+  const L = x1 - x0;
+  const radius = str(ctx.v, "tuckCorners", "rounded") === "square" ? 0 : Math.min(TUCK_CORNER_RADIUS_MM, tuckDepth / 2);
+  const tabs = str(ctx.v, "mailerFront", "tuck") === "tab";
+  const spans: [number, number][] = tabs
+    ? [
+        [x0 + L * 0.15, x0 + L * 0.4],
+        [x0 + L * 0.6, x0 + L * 0.85],
+      ]
+    : [[x0, x1]];
+  // The top edge, walked left to right: creased under each tuck or tab, cut between.
+  const top: Edge[] = [];
+  let at = x0;
+  for (const [a, b] of spans) {
+    if (a > at + 1e-9) top.push(line([at, yFront], [a, yFront], "cut"));
+    top.push(line([a, yFront], [b, yFront], "crease"));
+    at = b;
+  }
+  if (x1 > at + 1e-9) top.push(line([at, yFront], [x1, yFront], "cut"));
+  const strip = (k: number) =>
+    polygon(
+      [
+        [x0 + 10, yFront + H * k - 3],
+        [x1 - 10, yFront + H * k - 3],
+        [x1 - 10, yFront + H * k + 3],
+        [x0 + 10, yFront + H * k + 3],
+      ],
+      "glue_area",
+    );
+  const adhesive = str(ctx.v, "adhesive", "none");
+  const marks: Edge[] = [
+    ...(adhesive !== "none" ? strip(0.15) : []),
+    ...(adhesive === "dual" ? strip(0.85) : []),
+    ...(bool(ctx.v, "tearStrip", false)
+      ? [0.35 * H - 4, 0.35 * H + 4].map((dy) => line([x0, yFront + dy], [x1, yFront + dy], "perforation"))
+      : []),
+  ];
+  const r = Math.min(10, H / 8);
+  const front = face(
+    "lid-front",
+    "front",
+    "flap",
+    [
+      ...top,
+      line([x1, yFront], [x1, yFront + H], "cut"),
+      line([x1, yFront + H], [x0, yFront + H], "crease"),
+      line([x0, yFront + H], [x0, yFront], "cut"),
+    ],
+    {
+      holes: bool(ctx.v, "fingerHole", false) ? [ellipse(x0 + L / 2, yFront + H * 0.6, r, r)] : [],
+      marks,
+    },
+  );
+  const tucks = spans.map(([a, b], i) =>
+    // Walked left to right, so each tuck lies on its upper side, away from the front flap.
+    tuckOnEdge(tabs ? `tab-${i === 0 ? "left" : "right"}` : "tuck", [a, yFront], [b, yFront], tuckDepth, radius),
+  );
+  return [front, ...tucks];
 }
 
 /** A lid hinged on a tray's back wall: `front` is `glued_lips` (six-corner box) or `tuck` (mailer). */

@@ -3,8 +3,15 @@ import LIBRARY from "./params.json" with { type: "json" };
 import SETS from "./sets.json" with { type: "json" };
 import type { RecipeParam, StyleRecipe } from "./types";
 
-/** The shared parameter definitions recipes refer to by key (`params.json`). */
-export const PARAM_LIBRARY = LIBRARY as unknown as Readonly<Record<string, ParamSchema>>;
+/**
+ * The shared parameter definitions recipes refer to by key (`params.json`), plus those the style
+ * library registers on load (`registerParams`, `recipes/library/params.json`).
+ */
+export const PARAM_LIBRARY: Record<string, ParamSchema> = { ...(LIBRARY as unknown as Record<string, ParamSchema>) };
+
+export function registerParams(defs: Readonly<Record<string, ParamSchema>>): void {
+  for (const [key, def] of Object.entries(defs)) PARAM_LIBRARY[key] ??= def;
+}
 
 /** A recipe that cannot be used, with where and why — the drawing service and the import tool show it. */
 export class RecipeError extends Error {

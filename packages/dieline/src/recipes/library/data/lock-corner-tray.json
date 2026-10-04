@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "lock-corner-tray",
+  "base": "PK-CF-05",
+  "variants": {
+    "handle": {
+      "none": {
+        "handles": "none"
+      },
+      "die_cut_handle": {
+        "handles": "side"
+      },
+      "insert_handle": {
+        "handles": "insert"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "ถาดลูกฟูกมุมล็อก",
+    "en": "Corrugated lock-corner tray"
+  },
+  "description": {
+    "th": "ถาดลูกฟูกพับขึ้นรูป มุมล็อกไม่ใช้กาว",
+    "en": "A corrugated tray whose corners lock without glue"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 150,
+      "max": 800
+    },
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    "cornerFlap",
+    "cornerLock",
+    "handles",
+    "grain"
+  ],
+  "defaults": {
+    "length": 400,
+    "width": 300,
+    "height": 120,
+    "grain": "across",
+    "cornerLock": "lock",
+    "handles": "none"
+  },
+  "presets": [
+    {
+      "id": "m",
+      "label": {
+        "th": "M 300 × 200 × 100",
+        "en": "M 300 × 200 × 100"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 100
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 400 × 300 × 120",
+        "en": "L 400 × 300 × 120"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 120
+      }
+    },
+    {
+      "id": "xl",
+      "label": {
+        "th": "XL 500 × 350 × 150",
+        "en": "XL 500 × 350 × 150"
+      },
+      "values": {
+        "length": 500,
+        "width": 350,
+        "height": 150
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "features": [
+    {
+      "module": "lockCorners"
+    },
+    {
+      "module": "handHoles"
+    }
+  ],
+  "outerSize": {
+    "height": "height + t"
+  }
+}

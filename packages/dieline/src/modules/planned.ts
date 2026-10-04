@@ -36,11 +36,7 @@ export const PLANNED_MODULES: ModuleDef[] = [
     "folder_gluer_straight",
   ]),
   planned("taperedPail", "body", t("ถังทรงสอบ", "Tapered pail"), ["die_cut", "folder_gluer_straight"]),
-  planned("airplaneTuck", "closure", t("ฝาเสียบแบบเครื่องบิน", "Airplane tuck"), ["die_cut", "folder_gluer_straight"]),
-  planned("fourFlapLock", "closure", t("ก้นล็อก 4 ปีก", "Four-flap lock bottom"), ["die_cut", "hand_assembly"]),
   planned("petal", "closure", t("ฝากลีบดอก", "Petal closure"), ["die_cut", "hand_assembly"]),
-  planned("lockCorners", "feature", t("มุมล็อก (ไม่ใช้กาว)", "Lock corners (no glue)"), ["die_cut"], ["tray"]),
-  planned("sombreroHeader", "feature", t("หูแขวนทรงหมวก", "Sombrero hang header"), ["die_cut"]),
   planned("tearStrip", "feature", t("แถบดึงฉีก", "Tear strip"), ["die_cut", "tear_strip_applicator"], ["tube", "tray"]),
   planned(
     "adhesiveStrip",
@@ -49,15 +45,7 @@ export const PLANNED_MODULES: ModuleDef[] = [
     ["adhesive_strip_applicator"],
     ["tube", "tray"],
   ),
-  planned("vents", "feature", t("รูระบายอากาศ", "Vent holes"), ["die_cut"], ["tube", "tray"]),
   planned("dispenser", "feature", t("ช่องดึงสินค้า", "Dispenser opening"), ["die_cut"]),
   planned("neckLock", "feature", t("ล็อกคอขวด", "Neck lock"), ["die_cut"]),
   planned("dustFlapLock", "feature", t("ล็อกปีกกันฝุ่น", "Dust-flap lock"), ["die_cut"]),
-  planned("slitLock", "feature", t("ล็อกร่อง", "Slit lock"), ["die_cut"]),
-  planned("bodyAndInsert", "pieceSet", t("ตัวกล่อง + ตัวรอง", "Body and insert"), ["die_cut", "hand_assembly"]),
-  planned("partitionGrid", "pieceSet", t("ช่องกั้นตาราง", "Partition grid (rows × columns)"), [
-    "die_cut",
-    "slotter",
-    "hand_assembly",
-  ]),
 ];

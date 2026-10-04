@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "id": "te-seal-snap",
+  "base": "PK-TE-01",
+  "variant": {
+    "tuck_top": "seal",
+    "tuck_bottom": "snap_lock_123",
+    "hang": "none"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาปิดกาว ก้นล็อก 1-2-3",
+    "en": "Seal top, snap-lock (1-2-3) bottom"
+  },
+  "description": {
+    "th": "กล่องกระดาษแข็งฝาปิดกาวและก้นล็อก 1-2-3 ตามโครงสร้างตระกูลฝาเสียบ",
+    "en": "Folding carton with a seal top and a snap-lock (1-2-3) bottom — the tuck-end family's closure pair"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "lockTongue",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "@extends": "carton"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "seal"
+    },
+    "bottom": {
+      "module": "snapLock123",
+      "preset": "default"
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "definition": "184370694bf2f7",
+  "m · flute-e": {
+    "build": "0200d1b8d6e122",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-b": {
+    "build": "0200d1b8d6e122",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-bc": {
+    "build": "0200d1b8d6e122",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · flute-e": {
+    "build": "0c8325bf2088d6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · flute-b": {
+    "build": "0c8325bf2088d6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · flute-bc": {
+    "build": "0c8325bf2088d6",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · length=min": {
+    "build": "146de1c936d965",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · length=max": {
+    "build": "119c9a27fbd679",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · length<min": {
+    "build": "0ff2f7ccd820cf",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0a1d3653daaaea",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · length>max": {
+    "build": "058396bd668e56",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0b5b1081c8c123",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · width=min": {
+    "build": "001f97d72f3a0a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · width=max": {
+    "build": "149852d4b04eb7",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · width<min": {
+    "build": "01ddc95d14592e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "04fb7caf63d77e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · width>max": {
+    "build": "023d0f32f4956e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1f15ade3708c37",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · flute-e · fingerHole=true": {
+    "build": "0932f75fd9dab8",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  }
+}

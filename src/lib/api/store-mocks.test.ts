@@ -99,3 +99,31 @@ describe("the storefront's customers", () => {
     ).rejects.toMatchObject({ status: 401 });
   });
 });
+
+describe("the style library mock", () => {
+  it("publishes every master base with facets, pages by cursor and finds a Thai synonym", async () => {
+    const api = anonymous();
+    const { data: first } = await api.GET("/v1/store/styles", { params: { query: { limit: 24 } } });
+    expect(first!.data).toHaveLength(24);
+    expect(first!.facets.category.reduce((n, f) => n + f.count, 0)).toBe(105);
+    const { data: second } = await api.GET("/v1/store/styles", {
+      params: { query: { limit: 24, cursor: first!.meta.nextCursor! } },
+    });
+    expect(second!.data[0]!.code).not.toBe(first!.data[0]!.code);
+    const { data: found } = await api.GET("/v1/store/styles", { params: { query: { q: "หูช้าง" } } });
+    expect(found!.data.map((s) => s.code)).toContain("PK-CF-01");
+  });
+
+  it("publishes a wave-1 style's variants as the engine draws them", async () => {
+    const { data } = await anonymous().GET("/v1/store/styles/{code}", { params: { path: { code: "PK-TE-01" } } });
+    expect(data!.variants).toHaveLength(147);
+    expect(data!.axes.map((a) => a.axis)).toEqual(["tuck_top", "tuck_bottom", "hang", "window"]);
+  });
+
+  it("keeps a customer's favourites", async () => {
+    const api = await signInByOtp(MOCK_NEW_CUSTOMER_PHONE);
+    await api.PUT("/v1/store/style-favourites/{code}", { params: { path: { code: "PK-TE-01" } } });
+    const { data } = await api.GET("/v1/store/style-favourites");
+    expect(data!.map((f) => f.style.code)).toContain("PK-TE-01");
+  });
+});

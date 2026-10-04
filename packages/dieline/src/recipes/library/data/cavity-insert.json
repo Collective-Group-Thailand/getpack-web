@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "cavity-insert",
+  "base": "PK-IN-01",
+  "variants": {
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "แผ่นรองสินค้าไดคัทเว้าช่อง",
+    "en": "Die-cut cavity insert"
+  },
+  "description": {
+    "th": "แผ่นรองมีช่องเว้ารับสินค้า ยืนบนขาพับสองด้าน วางในกล่องเพื่อยึดสินค้า",
+    "en": "A platform with a cavity for the product, standing on two folded legs, to hold it in its box"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 50,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 40,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 15,
+      "max": 150
+    },
+    "fingerHole",
+    "grain"
+  ],
+  "defaults": {
+    "length": 180,
+    "width": 120,
+    "height": 30,
+    "fingerHole": false,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "small",
+      "label": {
+        "th": "เล็ก 120 × 80 × 20",
+        "en": "Small 120 × 80 × 20"
+      },
+      "values": {
+        "length": 120,
+        "width": 80,
+        "height": 20
+      }
+    },
+    {
+      "id": "medium",
+      "label": {
+        "th": "กลาง 180 × 120 × 30",
+        "en": "Medium 180 × 120 × 30"
+      },
+      "values": {
+        "length": 180,
+        "width": 120,
+        "height": 30
+      }
+    },
+    {
+      "id": "large",
+      "label": {
+        "th": "ใหญ่ 300 × 200 × 50",
+        "en": "Large 300 × 200 × 50"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 50
+      }
+    }
+  ],
+  "body": {
+    "module": "insertBody"
+  },
+  "closedSize": {
+    "length": "length - 2 * t",
+    "width": "width",
+    "height": "height - t"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height"
+  }
+}

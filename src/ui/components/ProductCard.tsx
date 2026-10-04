@@ -21,6 +21,11 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   price?: React.ReactNode;
   /** Lead time, minimum order — one quiet line. */
   meta?: React.ReactNode;
+  /**
+   * Buttons of their own (save, compare), in a row under the facts — raised above the stretched
+   * title link so they stay separately clickable and focusable.
+   */
+  actions?: React.ReactNode;
   /** Badges over the image corner ("ราคาทันที", "ขอใบเสนอราคา"). */
   badges?: React.ReactNode;
   /** The heading level in the page outline. */
@@ -46,6 +51,7 @@ export function ProductCard({
   price,
   meta,
   badges,
+  actions,
   headingLevel: Heading = "h3",
   priority = false,
   as: Component = "article",
@@ -87,6 +93,7 @@ export function ProductCard({
         </Heading>
         {price ? <p className="mt-auto pt-2 text-sm font-medium tabular-nums">{price}</p> : null}
         {meta ? <p className="text-muted text-xs">{meta}</p> : null}
+        {actions ? <div className="relative z-10 mt-2 flex flex-wrap items-center gap-1">{actions}</div> : null}
       </div>
     </Component>
   );
