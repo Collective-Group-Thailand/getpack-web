@@ -16,6 +16,7 @@ import {
   PX_PER_MM,
   SPEC_VERSION,
 } from "@packio/dieline";
+import { setActiveStage } from "@/features/designer/active-stage";
 import { boardColour, fallbackMaterial, materialsFor, withMaterial } from "@/features/designer/catalog";
 import { storeDesigns, type DesignerCatalog } from "@/features/designer/data/api";
 import {
@@ -204,6 +205,8 @@ export interface EditorChromeContext {
   issues: DesignIssue[];
   /** Applies a finding's safe fix, as one undo step (U4.5). */
   fix: (issue: DesignIssue) => void;
+  /** The outside's die, for the studio's order renders (U4.6; the canvas: `activeStage()`). */
+  dieline: DesignerHandle["dieline"];
   openSetup: () => void;
   openRules: () => void;
 }
@@ -551,6 +554,10 @@ export default function Editor({
   };
 
   const stage = useCallback(() => stageRef.current, []);
+  useEffect(() => {
+    setActiveStage(stage);
+    return () => setActiveStage(null);
+  }, [stage]);
   const show3d = chrome?.views ? view !== "flat" : sideTab === "preview" || mobilePanel === "preview";
   const artworks = useArtwork(show3d, stage, canvasDieline, side, view === "split" ? 1024 : 2048);
   const artwork = artworks.outside;
@@ -605,7 +612,14 @@ export default function Editor({
       useEditor.getState().commit((content) => applyFix(content, issue, ctx)),
     );
   };
-  const chromeContext: EditorChromeContext = { persistence, issues, fix, openSetup, openRules };
+  const chromeContext: EditorChromeContext = {
+    persistence,
+    issues,
+    fix,
+    openSetup,
+    openRules,
+    dieline,
+  };
   const stepPanel = chrome?.panel?.(chromeContext) ?? null;
   const railTools = RAIL.filter((item) => chrome?.rail?.(item.id) ?? true);
 
@@ -825,7 +839,7 @@ export default function Editor({
             {stepPanel ? (
               <section
                 aria-label={t("rail.label")}
-                className="border-border bg-surface order-last max-h-[45dvh] w-full shrink-0 overflow-y-auto border-t p-4 lg:order-first lg:max-h-none lg:w-80 lg:border-t-0 lg:border-e"
+                className="border-border bg-surface order-last max-h-[45dvh] w-full shrink-0 overflow-y-auto border-t p-4 lg:order-first lg:max-h-none lg:w-80 lg:border-e lg:border-t-0"
               >
                 {stepPanel}
               </section>

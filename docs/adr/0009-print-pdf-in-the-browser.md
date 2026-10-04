@@ -1,6 +1,6 @@
 # ADR-0009 — The designer's print file is made in the browser, on the engine's PDF writer
 
-**Status:** Accepted (2026-09-27) · F4 Part C.6
+**Status:** Accepted (2026-09-27) · F4 Part C.6 · superseded for orders by [ADR-0013](0013-server-print-pdf-for-orders.md) (the browser file stays for the customer's own download)
 
 ## Context
 

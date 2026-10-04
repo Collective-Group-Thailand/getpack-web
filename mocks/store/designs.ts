@@ -271,6 +271,12 @@ const sizeOfDocument = (document: DesignDocument) => {
   return { lengthMm: mm("length"), widthMm: mm("width"), heightMm: mm("height") };
 };
 
+/** D-276: the version the latest order locked, per design (set by the checkout mock). */
+const locks = new Map<string, Schemas["DesignLockDto"]>();
+export function lockDesign(designId: string, lock: Schemas["DesignLockDto"]): void {
+  locks.set(designId, lock);
+}
+
 /** A design as `store.designs` answers it: the document opaque, its schema version beside it. */
 function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
   const { design } = row;
@@ -284,7 +290,7 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     materialId: design.materialId,
     semiDesignTemplateId: row.semiDesignTemplateId,
     ...sizeOfDocument(design.document),
-    // U4.B1 studio fields (D-275, D-276); the mock keeps no order lock.
+    // U4.B1 studio fields (D-275, D-276).
     measurementBasis: "internal",
     styleVariantCode: null,
     printMethod: null,
@@ -292,7 +298,7 @@ function toDto(row: Row, withDocument = true): Schemas["DesignDocumentDto"] {
     finishes: [],
     spec: null,
     ...studioFieldsOf(row.box),
-    lock: null,
+    lock: locks.get(design.id) ?? null,
     document: withDocument ? { spec: design.document.spec, content: design.document.content } : null,
     schemaVersion: design.document.schemaVersion,
     versionNo: design.versionNo,
@@ -625,6 +631,14 @@ export const storeDesignHandlers = [
     const rows = [...designs.values()]
       .filter((row) => row.owner === owner)
       .filter((row) => matchesQuery(query.q, row.design.name))
+      // `linked`: used by an order — in the mock, locked by one (D-276).
+      .filter((row) =>
+        query.linked === "linked"
+          ? locks.has(row.design.id)
+          : query.linked === "unlinked"
+            ? !locks.has(row.design.id)
+            : true,
+      )
       .sort((a, b) => b.design.updatedAt.localeCompare(a.design.updatedAt))
       .map((row) => toDto(row, false));
     return HttpResponse.json(paginate(rows, { page: Number(query.page ?? 1), perPage: Number(query.perPage ?? 25) }));
@@ -678,7 +692,13 @@ export const storeDesignHandlers = [
     const body = (await request.json()) as Schemas["SaveDesignDto"];
     const document = documentFrom(body);
     if (!document) return problem(422, "validation.failed", "เอกสารแบบไม่ถูกต้อง");
-    saveVersion(row, body.kind ?? "manual", document, body.label ?? null, boxFrom(body as unknown as Record<string, unknown>));
+    saveVersion(
+      row,
+      body.kind ?? "manual",
+      document,
+      body.label ?? null,
+      boxFrom(body as unknown as Record<string, unknown>),
+    );
     if (body.title) row.design = { ...row.design, name: body.title };
     if (body.materialId) row.design = { ...row.design, materialId: body.materialId };
     if (body.patternId) row.design = { ...row.design, patternId: body.patternId };
@@ -709,7 +729,10 @@ export const storeDesignHandlers = [
         { path: "operations", code: "patch", message: (error as Error).message },
       ]);
     }
-    const document = documentFrom({ document: next, schemaVersion: body.schemaVersion ?? row.design.document.schemaVersion });
+    const document = documentFrom({
+      document: next,
+      schemaVersion: body.schemaVersion ?? row.design.document.schemaVersion,
+    });
     if (!document) return problem(422, "designs.patch_failed", "เอกสารแบบไม่ถูกต้อง");
     saveVersion(row, body.kind ?? "autosave", document, body.label ?? null, body.spec ? { spec: body.spec } : null);
     return withDesignEtag(row);
