@@ -293,11 +293,29 @@ const TABLES: Record<string, TableConfig> = {
     search: ["code", "name"],
     filters: ["groupId"],
     unique: "code",
-    variants: [
-      { code: "cmyk-m", name: "Magenta" },
-      { code: "cmyk-y", name: "Yellow" },
-      { code: "cmyk-k", name: "Black" },
-    ],
+    // As packio-api's catalogue and engine model them: the process set is one ink ("CMYK"), laid
+    // four times for full colour (`FoldingPartDto.printFront`, its golden cases' `cmyk()`); spot,
+    // white and metallic inks are one colour each (U2.F1).
+    examples: false,
+    rows: [
+      ["cmyk", "CMYK (4 สี)", "process", null],
+      ["black", "ดำ", "spot", "#1F1F1F"],
+      ["pms-485", "แดง PMS 485", "spot", "#DA291C"],
+      ["white", "ขาว (รองพื้น)", "white", "#FFFFFF"],
+      ["gold", "ทอง (เมทัลลิก)", "metallic", "#B8963E"],
+    ].map(([code, name, colourKind, swatchHex], index) => ({
+      id: mockId("ink", index + 1),
+      code,
+      name,
+      colourKind,
+      swatchHex,
+      groupId: mockId("ing", 1),
+      descriptionTh: null,
+      descriptionEn: null,
+      imageFileId: null,
+      status: "active",
+      updatedAt: bangkokIso(-(index + 2) * 60 * 24),
+    })),
   },
   diecutGroups: {
     path: "/v1/admin/catalog/diecut-groups",

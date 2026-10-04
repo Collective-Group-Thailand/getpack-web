@@ -6,30 +6,34 @@ import { useTranslations } from "next-intl";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
-import { NumberInput } from "@/ui/components/Input";
+import { Input, NumberInput } from "@/ui/components/Input";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { withTier, type Configurator, type ConfiguratorState } from "./state";
+import { TARGET, withTier, type Configurator, type ConfiguratorState } from "./state";
 
 interface QuantityStepProps {
   configurator: Configurator;
   state: ConfiguratorState;
   onChange: (patch: Partial<ConfiguratorState>) => void;
+  /** The sales unit in the reader's language (`ชิ้น`, `ซอง`). */
+  unit: string;
 }
 
 /**
  * The quantities to compare and the one to order. Several are priced at once so the customer
  * sees how the price per piece falls with the run (the dock's price breaks); the API caps how
  * many one calculation may price (`maxTiers`) and the range it accepts.
+ *
+ * And an optional target price per piece (U2.F1 §4, D-247): the API answers with the gap at each
+ * quantity, and above it the ways to get there. It is the customer's private figure (D-190).
  */
-export function QuantityStep({ configurator, state, onChange }: QuantityStepProps) {
+export function QuantityStep({ configurator, state, onChange, unit }: QuantityStepProps) {
   const t = useTranslations("configurator.quantity");
   const format = useFormat();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const { min, max, maxTiers, presets } = configurator.quantity;
-  const unit = configurator.unit;
 
   // The range is the API's; where it publishes none, any whole number is sent and the API decides.
   const range = min !== null && max !== null ? { min: format.number(min), max: format.number(max), unit } : null;
@@ -148,6 +152,20 @@ export function QuantityStep({ configurator, state, onChange }: QuantityStepProp
           </div>
         </div>
       ) : null}
+
+      <Field
+        label={t("target")}
+        hint={t("targetHint", { unit })}
+        error={state.target !== "" && !TARGET.test(state.target) ? t("targetInvalid") : undefined}
+      >
+        <Input
+          inputMode="decimal"
+          autoComplete="off"
+          value={state.target}
+          onChange={(event) => onChange({ target: event.target.value.replace(/[^\d.]/g, "").slice(0, 12) })}
+          className="max-w-48 tabular-nums"
+        />
+      </Field>
     </div>
   );
 }

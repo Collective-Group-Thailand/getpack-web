@@ -7,16 +7,17 @@ import {
   getConfigurator,
   getProduct,
   getProductTypes,
+  getSharedConfiguration,
   getSharedQuote,
   getSupportChannels,
 } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { productHref, rfqHref } from "@/features/customer/catalog/paths";
-import { getMyQuote } from "@/features/customer/configurator/api.server";
+import { getMyDisplayUnit, getMyDraft, getMyQuote, listMyDraftsOf } from "@/features/customer/configurator/api.server";
 import { seedFromConfiguration } from "@/features/customer/configurator/build";
-import { seedFromDesign } from "@/features/customer/configurator/state";
 import { Configurator } from "@/features/customer/configurator/Configurator";
-import { getPathname, redirect } from "@/i18n/navigation";
+import { seedFromDesign, type ConfiguratorState } from "@/features/customer/configurator/state";
+import { getPathname, Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
 import { publicOrigin } from "@/lib/seo";
@@ -27,6 +28,8 @@ type Params = { slug: string };
 type Search = {
   share?: string;
   quote?: string;
+  draft?: string;
+  config?: string;
   pattern?: string;
   material?: string;
   l?: string;
@@ -44,9 +47,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 /**
- * The configurator and instant quote for one catalogue product (F3 3.2). Rendered per request:
- * it reads the session cookie (whether "add to cart" can act at once) and a shared quote's token.
- * The catalogue reads underneath are cached (`api.server.ts`).
+ * The configurator and instant quote for one catalogue product (F3 3.2, U2.F1). Rendered per
+ * request: it reads the session cookie (whether "add to cart" can act at once, the customer's
+ * display unit and drafts) and a shared quote's or configuration's token. The catalogue reads
+ * underneath are cached (`api.server.ts`).
  */
 export default async function Page({
   params,
@@ -56,7 +60,7 @@ export default async function Page({
   searchParams: Promise<Search>;
 }) {
   const [{ slug }, search] = await Promise.all([params, searchParams]);
-  const { share, quote: quoteId } = search;
+  const { share, quote: quoteId, draft: draftId, config } = search;
   const [t, tCatalog, locale, product, configurator, types, support, jar, origin] = await Promise.all([
     getTranslations("configurator"),
     getTranslations("catalog"),
@@ -75,18 +79,34 @@ export default async function Page({
   if (!configurator) return redirect({ href: `${rfqPath}?from=${encodeURIComponent(slug)}`, locale });
 
   const signedIn = Boolean(readAccessToken(jar));
-  const shared = share ? await getSharedQuote(share) : null;
-  // One of the customer's own saved quotations, reopened from the account (F3 3.4).
-  const saved = quoteId && signedIn ? await getMyQuote(quoteId) : null;
-  const source = saved ?? shared;
-  // A saved or shared quote wins; otherwise a design's "order this" may have filled the size in.
-  const seed = source
-    ? seedFromConfiguration(
-        configurator,
-        (source.configuration ?? {}) as unknown as Record<string, unknown>,
-        source.options[0]?.quantity,
-      )
-    : seedFromDesign(configurator, search);
+  const [shared, saved, draft, sharedConfig, unit, drafts] = await Promise.all([
+    share ? getSharedQuote(share) : null,
+    // One of the customer's own saved quotations, reopened from the account (F3 3.4).
+    quoteId && signedIn ? getMyQuote(quoteId) : null,
+    // One of the customer's drafts, resumed (D-185); another product's draft is not this page's.
+    draftId && signedIn ? getMyDraft(draftId) : null,
+    config ? getSharedConfiguration(config) : null,
+    signedIn ? getMyDisplayUnit() : ("mm" as const),
+    signedIn && !draftId ? listMyDraftsOf(configurator.catalogProductId) : [],
+  ]);
+  const ownDraft = draft && draft.catalogProductId === configurator.catalogProductId ? draft : null;
+  const ownShared =
+    sharedConfig && sharedConfig.catalogProductId === configurator.catalogProductId ? sharedConfig : null;
+  const quote = saved ?? shared;
+  // A draft, a shared configuration or a saved / shared quote wins; otherwise a design's
+  // "order this" may have filled the size in.
+  const source = ownDraft ?? ownShared;
+  const seed: Partial<ConfiguratorState> = {
+    unit,
+    ...(source
+      ? seedFromConfiguration(configurator, source.configuration, { target: ownDraft?.targetPricePerUnit ?? null })
+      : quote
+        ? seedFromConfiguration(configurator, (quote.configuration ?? {}) as unknown as Record<string, unknown>, {
+            quantity: quote.options[0]?.quantity,
+            target: quote.targetPricePerUnit,
+          })
+        : seedFromDesign(configurator, search)),
+  };
   const name = pick(locale, product.nameTh, product.nameEn);
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
 
@@ -108,6 +128,19 @@ export default async function Page({
           {t("sharedExpired")}
         </Callout>
       ) : null}
+      {config && !ownShared ? (
+        <Callout tone="warning" className="mt-4 max-w-2xl">
+          {t("sharedConfigExpired")}
+        </Callout>
+      ) : null}
+      {ownShared ? (
+        <Callout tone="info" className="mt-4 max-w-2xl">
+          {t("sharedConfigFrom", {
+            title: ownShared.title ?? name,
+            pct: Math.round(ownShared.completenessPct),
+          })}
+        </Callout>
+      ) : null}
       {shared ? (
         <Callout tone="info" className="mt-4 max-w-2xl">
           {shared.quoteCode ? t("sharedFrom", { code: shared.quoteCode }) : t("sharedFromNoCode")}
@@ -118,6 +151,35 @@ export default async function Page({
           {saved.quoteCode ? t("savedFrom", { code: saved.quoteCode }) : t("savedFromNoCode")}
         </Callout>
       ) : null}
+      {draftId && !ownDraft ? (
+        <Callout tone="warning" className="mt-4 max-w-2xl">
+          {t("draftGone")}
+        </Callout>
+      ) : null}
+      {ownDraft ? (
+        <Callout tone="info" className="mt-4 max-w-2xl">
+          {t("draftResumed", { title: ownDraft.title ?? name })}
+        </Callout>
+      ) : null}
+      {!source && !quote && drafts.length > 0 ? (
+        <Callout tone="info" className="mt-4 max-w-2xl" title={t("draftsTitle", { count: drafts.length })}>
+          <ul className="mt-1 flex flex-col gap-1">
+            {drafts.slice(0, 3).map((entry) => (
+              <li key={entry.id}>
+                <Link
+                  href={`/configure/${slug}?draft=${entry.id}`}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  {t("draftResume", {
+                    title: entry.title ?? name,
+                    pct: Math.round(entry.completenessPct),
+                  })}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Callout>
+      ) : null}
       <div className="mt-6">
         <Configurator
           configurator={configurator}
@@ -125,6 +187,7 @@ export default async function Page({
           signedIn={signedIn}
           lineOaId={support?.lineOaId ?? null}
           seed={seed}
+          draft={ownDraft}
           rfqPath={rfqPath}
           pageUrl={`${origin}${localised(`/configure/${slug}`)}`}
         />

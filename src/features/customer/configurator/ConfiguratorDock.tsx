@@ -10,6 +10,8 @@ import { QuoteDock } from "@/ui/components/QuoteDock";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon } from "@/ui/icons";
 
+import type { Schemas } from "@/lib/api/types";
+
 import type { PriceStep } from "./pricing";
 import type { Configurator, ConfiguratorState } from "./state";
 import type { KeptQuote, QuoteAction } from "./useQuoteActions";
@@ -17,6 +19,10 @@ import type { KeptQuote, QuoteAction } from "./useQuoteActions";
 export interface ConfiguratorDockProps {
   configurator: Configurator;
   state: ConfiguratorState;
+  /** The sales unit in the reader's language. */
+  unit: string;
+  /** The API's gap to the target for the quantity on screen (D-247), when a target was given. */
+  gap: Schemas["QuoteStepGapDto"] | null;
   onSelectQuantity: (quantity: number) => void;
   /** Why no price can be asked for yet ("เลือกวัสดุ"), in the order the stepper asks. */
   missing: string[];
@@ -48,6 +54,8 @@ export interface ConfiguratorDockProps {
 export function ConfiguratorDock({
   configurator,
   state,
+  unit,
+  gap,
   onSelectQuantity,
   missing,
   steps,
@@ -65,7 +73,6 @@ export function ConfiguratorDock({
   const t = useTranslations("configurator.dock");
   const tActions = useTranslations("configurator.actions");
   const format = useFormat();
-  const unit = configurator.unit;
   const step = steps?.find((candidate) => candidate.quantity === state.quantity);
   const priced = step?.instant ? step : null;
   const noPrice = step && !step.instant ? step : null;
@@ -211,6 +218,12 @@ export function ConfiguratorDock({
                 {t("receiveBy", { date: format.date(lastQuote.option.earliestDeliveryDate) })}
               </li>
             ) : null}
+            {gap ? (
+              <li className="flex items-start gap-2">
+                <Icon name="flag" size={16} aria-hidden="true" className="mt-0.5" />
+                {gap.meetsTarget ? t("targetMet") : t("targetAbove", { gap: format.thb(gap.gapPerUnit), unit })}
+              </li>
+            ) : null}
             {priced.toleranceShortagePct && priced.toleranceOveragePct ? (
               <li className="flex items-start gap-2">
                 <Icon name="scale" size={16} aria-hidden="true" className="mt-0.5" />
@@ -222,9 +235,7 @@ export function ConfiguratorDock({
             ) : null}
           </ul>
           <p className="text-muted mt-3 text-xs">{t("validity", { days: configurator.quoteValidityDays })}</p>
-          {state.mockupOption !== "none" || state.promoCode.trim() ? (
-            <p className="text-muted mt-1 text-xs">{t("appliedOnQuote")}</p>
-          ) : null}
+          {state.promoCode.trim() ? <p className="text-muted mt-1 text-xs">{t("appliedOnQuote")}</p> : null}
         </div>
       ) : null}
 

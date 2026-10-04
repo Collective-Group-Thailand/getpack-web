@@ -9,7 +9,6 @@ import { isApiError } from "@/lib/api/problem";
 import type { Schemas } from "@/lib/api/types";
 
 import { buildCalculateBody } from "../configurator/build";
-import { fromContract } from "../configurator/from-contract";
 import { initialState } from "../configurator/state";
 import { parseReorderCsv } from "./csv";
 
@@ -37,7 +36,7 @@ async function cartWith(customer: typeof admin, quantity: number) {
   const { data: published } = await api.GET("/v1/store/catalog/products/{slug}/configurator", {
     params: { path: { slug: "tuck-end-box" } },
   });
-  const configurator = fromContract(published!, { unit: (unit) => unit });
+  const configurator = published!;
   const state = { ...initialState(configurator), quantities: [quantity], quantity };
   const { data: quote } = await api.POST("/v1/store/quotes", {
     body: buildCalculateBody(configurator, state) as unknown as Schemas["SaveQuoteDto"],

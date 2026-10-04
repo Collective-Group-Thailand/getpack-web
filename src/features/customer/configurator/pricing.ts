@@ -16,30 +16,26 @@ export type PriceStep = Schemas["QuoteStepDto"];
 export const PRICE_DEBOUNCE_MS = 400;
 
 /**
- * The published `store.quotes.calculate` (packio-api B2.3).
- *
- * The one place the storefront's body meets the generated type: for folding it is the published
- * `FoldingConfigurationDto` apart from the quote part's assemblies (the contract kept the wrong
- * `AssemblyDto`); for the six other calculators it is CONTRACT-REQUEST
- * store.quote-configurations. Both are described in `./build.ts`.
+ * The published `store.quotes.calculate`: every calculator's own configuration (`./build.ts`), the
+ * basis it was entered on (D-182) and the optional target (D-247, answered as `target` per quantity).
  */
 export async function calculate(body: CalculateBody, signal?: AbortSignal): Promise<Calculation> {
-  const { data } = await browserApi().POST("/v1/store/quotes/actions/calculate", {
-    body: body as unknown as Schemas["CalculateQuoteDto"],
-    signal,
-  });
+  const { data } = await browserApi().POST("/v1/store/quotes/actions/calculate", { body, signal });
   return data!;
 }
 
 export type SavedQuote = Schemas["SavedQuoteDto"];
 
 /**
- * `store.quotes.save`: keeps a price for its validity (D-051). The body is `calculate`'s, cast the
- * same way, with the one quantity the customer chose — the saved quotation holds one option per
- * quantity it was given.
+ * `store.quotes.save`: keeps a price for its validity (D-051) — `calculate`'s body with the one
+ * quantity the customer chose (the saved quotation holds one option per quantity it was given),
+ * the target (write-once, D-247) and the Structure Advisor's recommendation when a board was taken
+ * from it (D-240; the API refuses a different board).
  */
-export async function saveQuote(body: CalculateBody): Promise<SavedQuote> {
-  const { data } = await browserApi().POST("/v1/store/quotes", { body: body as unknown as Schemas["SaveQuoteDto"] });
+export async function saveQuote(
+  body: CalculateBody & Pick<Schemas["SaveQuoteDto"], "advisoryRecommendationId" | "anonymousId">,
+): Promise<SavedQuote> {
+  const { data } = await browserApi().POST("/v1/store/quotes", { body });
   return data!;
 }
 

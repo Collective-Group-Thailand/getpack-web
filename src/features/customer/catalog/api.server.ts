@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Client } from "openapi-fetch";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 
 import { createApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
@@ -10,7 +10,7 @@ import { REQUESTS, type Requests } from "@/lib/api/requests/registry";
 import type { ApiPaths, Schemas } from "@/lib/api/types";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 
-import { fromContract, type Configurator } from "@/features/customer/configurator/from-contract";
+import type { Configurator } from "@/features/customer/configurator/model";
 import { toCatalogView, type DesignerCatalog } from "@/features/designer/data/catalog-view";
 
 import { pick } from "./localize";
@@ -231,16 +231,26 @@ export async function listShowcase(
 
 /**
  * What the configurator offers for a product, with the catalogue ids the calculator takes
- * (`store.catalog.getConfigurator`, public and cacheable), in the view the configurator reads
- * (`from-contract.ts`, until U2.F1). `null` for a product whose type has no ported calculator —
- * it is quoted on request only (D-100).
+ * (`store.catalog.getConfigurator`, public and cacheable) — read as published (U2.F1). `null` for
+ * a product whose type has no ported calculator — it is quoted on request only (D-100).
  */
 export async function getConfigurator(slug: string): Promise<Configurator | null> {
-  const [api, units] = await Promise.all([publicApi("catalogue"), getTranslations("catalog.stock.units")]);
-  const dto = await orNull(
+  const api = await publicApi("catalogue");
+  return orNull(
     api.GET("/v1/store/catalog/products/{slug}/configurator", { params: { path: { slug } } }).then(({ data }) => data!),
   );
-  return dto ? fromContract(dto, { unit: (unit) => units(unit) }) : null;
+}
+
+/**
+ * A configuration someone shared (`store.configurations.getShared`, D-185); `null` once the link
+ * has expired, been revoked or replaced, or the draft converted.
+ */
+export async function getSharedConfiguration(token: string): Promise<Schemas["SharedConfigurationDraftDto"] | null> {
+  return orNull(
+    (await publicApi("prices"))
+      .GET("/v1/store/shared-configurations/{token}", { params: { path: { token } } })
+      .then(({ data }) => data!),
+  );
 }
 
 /** A quotation someone shared (`store.quotes.getShared`); `null` once the link has expired. */

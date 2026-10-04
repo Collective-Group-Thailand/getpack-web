@@ -13,12 +13,16 @@ import { storeDesignHandlers } from "./designs";
 import { storeFulfilmentHandlers } from "./fulfilment";
 import { storeOrderHandlers } from "./orders";
 import { storeCatalogHandlers } from "./catalog";
+import { quoteToolHandlers } from "./quote-tools";
 import { storeQuoteHandlers } from "./quotes";
+import { specsHandlers } from "./specs";
 import { storeSupportHandlers } from "./support";
 import { storeRfqHandlers } from "./rfq";
 
 export const storeHandlers = [
   ...storeAccountHandlers,
+  ...quoteToolHandlers,
+  ...specsHandlers,
   ...storeQuoteHandlers,
   ...storeRfqHandlers,
   ...storeCartHandlers,
