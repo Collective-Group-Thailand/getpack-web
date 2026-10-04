@@ -22,7 +22,8 @@
     "safeZone": "Keep text {mm} mm inside the cut line",
     "resolution": "At least {ppi} ppi",
     "colour": "{mode} colour",
-    "box": "Box {l} × {w} × {h} mm"
+    "box": "Box {l} × {w} × {h} mm",
+    "styleCode": "Style code {code}"
   },
   "upload": {
     "title": "Upload artwork",

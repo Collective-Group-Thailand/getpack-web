@@ -35,7 +35,13 @@ interface SizeStepProps {
   /** The bases this pattern is measured on (the API's, `usePatternBases`). */
   bases: MeasurementBasis[];
   /** The API's conversion of the entered size (`store.specs.convertDimensions`), boxes only. */
-  conversion: { converted: Converted | null; internal: InternalSize; pending: boolean; problem: string | null };
+  conversion: {
+    converted: Converted | null;
+    internal: InternalSize;
+    pending: boolean;
+    problem: string | null;
+    caliperUnknown: boolean;
+  };
   /** The chosen material's name, for messages that depend on its caliper. */
   materialName: string | null;
 }
@@ -146,7 +152,7 @@ export function SizeStep({
   const problems = state.sizeMode === "custom" ? sizeProblems(configurator, state, conversion.internal) : {};
   const unitLabels: Record<LengthUnit, string> = { mm: t("units.mm"), cm: t("units.cm"), in: t("units.in") };
   const axisLabels: Record<Axis, string> = {
-    l: kind === "box" ? t("axes.l") : t("axes.height"),
+    l: kind === "pouch" ? t("axes.height") : t("axes.l"),
     w: t("axes.w"),
     d: t("axes.d"),
     b: t("axes.b"),
@@ -268,7 +274,8 @@ export function SizeStep({
                     dims: { ...NO_DIMS, l: first.lengthMm, w: first.widthMm, d: first.heightMm },
                     advisory: null,
                   }
-                : { sizeMode },
+                : // A typed size is measured on the basis the customer chooses again (D-182).
+                  { sizeMode, basis: bases.length === 1 ? bases[0]! : null, advisory: null },
             );
           }}
           options={[
@@ -394,9 +401,9 @@ function DerivedSizes({
         </h3>
         {pending ? <Spinner size={14} label={t("derived.converting")} /> : null}
       </div>
-      {problem ? (
+      {problem || conversion.caliperUnknown ? (
         <p className="text-muted mt-2 text-sm">
-          {problem === "specs.caliper_missing" ? t("derived.caliperMissing") : t("derived.failed")}
+          {problem && problem !== "specs.caliper_missing" ? t("derived.failed") : t("derived.caliperMissing")}
         </p>
       ) : rows.length > 0 ? (
         <>

@@ -62,6 +62,12 @@ export function useConversion(configurator: Configurator, state: ConfiguratorSta
   return {
     converted: current ?? null,
     internal,
+    /**
+     * Entered on another basis, but the API knows no caliper for the material ("without a caliper
+     * only the given basis is known"): the inside size it would price cannot be had, so nothing
+     * is priced until another material or the inside size is chosen.
+     */
+    caliperUnknown: Boolean(current && current.caliperMm === null && state.basis !== "internal"),
     pending: key !== null && (key !== settled || query.isFetching),
     /** `specs.caliper_missing` and the like — the API's reason it could not convert. */
     problem: query.isError && settled === key ? (isApiError(query.error) ? query.error.code : "unknown") : null,

@@ -83,5 +83,6 @@
   "checklistHint": "Tick every item to approve",
   "approvalNote": "Note (optional)",
   "decisionBy": "Decided by {name} on {date}",
-  "approveType": "Type {code} to confirm"
+  "approveType": "Type {code} to confirm",
+  "styleCode": "Style code {code}"
 }

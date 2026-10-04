@@ -32,7 +32,8 @@
     "area": "the size of the {name}",
     "quantity": "a quantity",
     "basis": "the measurement basis",
-    "target": "a valid target price"
+    "target": "a valid target price",
+    "caliper": "the inside size (this material's thickness is unknown)"
   },
   "lineMessage": "A question about {name}",
   "size": {
@@ -487,7 +488,9 @@
       "sea_export": "Sea export",
       "low": "Robust",
       "medium": "Medium",
-      "high": "Fragile"
+      "high": "Fragile",
+      "none": "No pallet",
+      "overhang": "Overhangs"
     },
     "noBoardTitle": "No board carries this load yet",
     "noBoardBody": "Try fewer boxes high or fewer items per box, or let our sales team design a suitable structure",

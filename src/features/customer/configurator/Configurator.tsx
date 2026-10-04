@@ -148,7 +148,7 @@ export function Configurator({
   const problems = sizeProblems(configurator, state, conversion.internal);
   const missingGroups = missingChoices(configurator, state);
   const missingArea = missingAreas(configurator, state);
-  const ready = readyToPrice(configurator, state, conversion.internal);
+  const ready = readyToPrice(configurator, state, conversion.internal) && !conversion.caliperUnknown;
   const body = ready ? buildCalculateBody(configurator, state) : null;
   const price = useLivePrice(body);
   const priced = price.data?.steps.find((step) => step.quantity === state.quantity && step.instant) ?? null;
@@ -431,6 +431,7 @@ export function Configurator({
 
   const missing = [
     ...(problems.basis ? [t("missing.basis")] : []),
+    ...(conversion.caliperUnknown ? [t("missing.caliper")] : []),
     ...(Object.keys(problems).some((key) => key !== "basis") ? [t("missing.size")] : []),
     ...missingGroups.map((group) => t(`choices.groups.${group.kind}`)),
     ...missingArea.map((option) => t("missing.area", { name: pick(locale, option.nameTh, option.nameEn) })),
