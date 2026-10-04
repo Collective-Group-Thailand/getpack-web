@@ -6,6 +6,8 @@ import { uploadFile } from "@/features/shared/files/upload";
 
 import type { DesignContent, DesignSpec } from "../types";
 import { DOCUMENT_SCHEMA_VERSION } from "../document";
+import type { PatchOperation } from "../lib/json-patch";
+import type { BoxFields } from "./published";
 
 /*
  * The designer's calls to the API, one place per surface: the customer's own designs
@@ -23,6 +25,8 @@ export type DesignVersion = Schemas["DesignVersionDto"];
 export type { DesignerCatalog, DesignerMaterial, DesignerPattern, DesignerTemplate } from "./catalog-view";
 /** A design as the back office reads it: the document, its `owner` and whether the reader may edit it. */
 export type AdminDesignDocument = Schemas["AdminDesignDocumentDto"];
+
+export { boxFieldsOf, type BoxFields } from "./published";
 
 export interface Saved<T> {
   data: T;
@@ -54,6 +58,7 @@ export interface CreateInput {
   patternId?: string;
   materialId?: string;
   semiDesignTemplateId?: string;
+  box?: BoxFields | null;
 }
 
 const etagOf = (response: Response) => response.headers.get("etag");
@@ -74,6 +79,7 @@ export const storeDesigns = {
         ...(input.patternId ? { patternId: input.patternId } : {}),
         ...(input.materialId ? { materialId: input.materialId } : {}),
         ...(input.semiDesignTemplateId ? { semiDesignTemplateId: input.semiDesignTemplateId } : {}),
+        ...(input.box ?? {}),
       },
     });
     return { data: data!, etag: etagOf(response) };
@@ -91,6 +97,7 @@ export const storeDesigns = {
       spec: DesignSpec;
       content: DesignContent;
       thumbnailFileId?: string;
+      box?: BoxFields | null;
     },
     etag: string | null,
   ): Promise<Saved<StoreDesign>> {
@@ -103,6 +110,26 @@ export const storeDesigns = {
         ...(isUuid(input.spec.materialId) ? { materialId: input.spec.materialId } : {}),
         ...(isUuid(input.spec.patternId) ? { patternId: input.spec.patternId } : {}),
         ...(input.thumbnailFileId ? { thumbnailFileId: input.thumbnailFileId } : {}),
+        ...(input.box ?? {}),
+      },
+    });
+    return { data: data!, etag: etagOf(response) };
+  },
+  /**
+   * `store.designs.patchDocument` (D-276): the changes since the version the server has, as JSON
+   * Patch, under `If-Match`; the server keeps the box and spec of the version before.
+   */
+  async patch(
+    designId: string,
+    input: { kind: Schemas["DesignSaveKind"]; operations: PatchOperation[] },
+    etag: string | null,
+  ): Promise<Saved<StoreDesign>> {
+    const { data, response } = await browserApi().PATCH("/v1/store/designs/{designId}/document", {
+      params: { path: { designId }, header: { "If-Match": etag ?? "" } },
+      body: {
+        kind: input.kind,
+        schemaVersion: DOCUMENT_SCHEMA_VERSION,
+        operations: input.operations as Schemas["JsonPatchOperationDto"][],
       },
     });
     return { data: data!, etag: etagOf(response) };

@@ -6,6 +6,7 @@
 | Checkout / account (customer zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 200 KB | `customer-app` |
 | Admin list/detail (admin zone) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 250 KB | `admin` (shell), `admin-lists`, `admin-crud` |
 | Designer / 3D (`/design/[id]`) | ≤ 3.0 s to interactive shell | ≤ 200 ms | ≤ 0.1 | ≤ 350 KB, heavy modules lazy | `designer` |
+| Studio (`/studio/[designId]`, U4) | ≤ 3.0 s to interactive shell (studio-spec §1) | ≤ 100 ms input latency | ≤ 0.1 | ≤ 350 KB, heavy modules lazy | `studio` |
 | Partner zone (installable PWA) | ≤ 2.5 s on 4G mid-range | ≤ 200 ms | ≤ 0.1 | ≤ 180 KB | `partner` (mobile preset) |
 
 `lighthouse/shared.json` holds the assertions every set inherits; `lighthouse/<set>.json` is one file per row above (the admin row has three: its shell, its lists and details, and a list with a create form — one ceiling cannot ratchet all three). `pnpm lhci` (`scripts/lhci.ts`) starts one `next start` in mock mode (MSW) that answers all three hosts and runs each set against it; `pnpm lhci admin` runs one. Admin and partner URLs carry the mock's fixed access token as a cookie, so the real shell is measured rather than a redirect to `/login`. Because zones have separate root layouts, admin/partner providers must never appear in customer bundles — the budget per URL set catches regressions. Web Vitals RUM is posted through the zone BFF to the API.
@@ -159,3 +160,17 @@ instead. The library pages fit the marketing budget without a change: the first 
 rendered on the server, facets and sort are links, favourites are a small store, and the API
 client, the card renderer and the 3D model load on interaction.
 
+
+## U4.1 — Packio 3D Studio shell (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` (new, `studio`) | — | 478,237 (performance 0.98) | **479,000** (new set) |
+| `/design/new` | ≤ 472,000 | 473,984 | designer 472,000 → **474,500** |
+
+The studio is the designer (same lazy Konva and three.js chunks, ADR-0010) inside the step bar and
+the price dock; the dock reuses the configurator's configuration builder, which the designer's
+price widget already shipped. The designer grows by the editor's frame slots and the studio save
+client (box fields, `patchDocument`); the JSON-Patch diff itself loads only when a studio save
+runs (dynamic import). The target stays 350 KB for both; the gap is the U3/U4 follow-up of moving
+the configurator's build out of the initial chunk.

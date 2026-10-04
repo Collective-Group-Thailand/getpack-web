@@ -28,6 +28,7 @@ export { replayEnabled };
 export const REPLAY_ROUTES: readonly RegExp[] = [
   /^\/configure\/\[[^\]]+\]$/,
   /^\/design\/\[[^\]]+\]$/,
+  /^\/studio\/\[[^\]]+\]$/,
   /^\/cart$/,
   /^\/checkout(\/.*)?$/,
   /^\/account\/orders\/\[orderId\]\/(claim|reorder)$/,

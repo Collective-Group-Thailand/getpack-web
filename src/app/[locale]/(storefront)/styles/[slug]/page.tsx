@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { defaultsOf, presetsOf, RECIPES } from "@packio/dieline";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -32,6 +33,20 @@ function languages(origin: string, style: StyleDetail) {
     ...(Object.fromEntries(routing.locales.map((l) => [l, url(l)])) as Record<Locale, string>),
     "x-default": url(routing.defaultLocale),
   };
+}
+
+/**
+ * The studio for this style (U4.1): the engine's recipe of the base, at its first starting size, on
+ * the product the style is priced through — or `null` when the engine draws no recipe of the base.
+ */
+function studioHref(code: string, productSlug: string): string | null {
+  const recipe = RECIPES.find((candidate) => candidate.base === code);
+  if (!recipe) return null;
+  const values = { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values };
+  const [l, w, h] = [values.length, values.width, values.height];
+  if (typeof l !== "number" || typeof w !== "number" || typeof h !== "number") return null;
+  const query = new URLSearchParams({ product: productSlug, style: recipe.id, l: String(l), w: String(w), h: String(h) });
+  return `/studio/new?${query.toString()}`;
 }
 
 async function load(slug: string) {
@@ -176,9 +191,18 @@ export default async function StylePage({ params }: { params: Params }) {
           name={name}
           instantActions={
             style.startingPrice ? (
-              <Button asChild>
-                <Link href={configureHref(style.startingPrice.catalogProductSlug)}>{t("detail.configure")}</Link>
-              </Button>
+              <>
+                <Button asChild>
+                  <Link href={configureHref(style.startingPrice.catalogProductSlug)}>{t("detail.configure")}</Link>
+                </Button>
+                {studioHref(style.code, style.startingPrice.catalogProductSlug) ? (
+                  <Button asChild variant="secondary" iconStart="sparkles">
+                    <Link href={studioHref(style.code, style.startingPrice.catalogProductSlug)!}>
+                      {t("detail.designInStudio")}
+                    </Link>
+                  </Button>
+                ) : null}
+              </>
             ) : (
               <Button asChild variant="secondary">
                 <Link href={rfqCategory ? rfqHref(rfqCategory.code) : "/contact"}>{t("detail.requestQuote")}</Link>

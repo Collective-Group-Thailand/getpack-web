@@ -1,0 +1,35 @@
+{
+  "extends": "./shared.json",
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:3200/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150"
+      ],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "extraHeaders": {
+          "Cookie": "pk_consent=a1m1"
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 479000
+          }
+        ],
+        "largest-contentful-paint": [
+          "warn",
+          {
+            "maxNumericValue": 3000
+          }
+        ]
+      }
+    }
+  },
+  "$comment": "Studio (U4.1): the designer inside the five-step frame with the price dock — the same lazy Konva / three.js split as the designer set (ADR-0010). Target in docs/performance-budgets.md: 350 KB of initial JS, <= 3.0 s to an interactive shell (studio-spec §1). RATCHET pinned just above the U4.1 measure; lower it whenever a change wins headroom, never raise it without saying why in docs/PROGRESS.md."
+}
