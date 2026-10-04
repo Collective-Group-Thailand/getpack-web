@@ -13,6 +13,7 @@ import { useEditor } from "../../store/editor";
 import type { DesignContent, DesignElement } from "../../types";
 import type { DesignerTemplate } from "../../data/api";
 import { useDesigner } from "../DesignerContext";
+import { StudioTemplates } from "./StudioTemplates";
 
 /**
  * Starting points from the product's semi-designs (F4 C.5): applying a template brings its
@@ -67,10 +68,12 @@ export function TemplatesPanel() {
     }
   };
 
-  if (mode === "admin" || !templates.length) return <p className="text-muted text-sm">{t("none")}</p>;
+  if (mode === "admin") return <p className="text-muted text-sm">{t("none")}</p>;
 
   return (
-    <>
+    <div className="space-y-6">
+      <StudioTemplates />
+      {templates.length ? <h3 className="text-sm font-semibold">{t("productTitle")}</h3> : null}
       <ul className="grid grid-cols-2 gap-2">
         {templates.map((template) => (
           <li key={template.id}>
@@ -102,6 +105,6 @@ export function TemplatesPanel() {
         cancelLabel={tCommon("actions.cancel")}
         onConfirm={() => pending && void apply(pending)}
       />
-    </>
+    </div>
   );
 }

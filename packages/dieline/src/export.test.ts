@@ -81,3 +81,25 @@ describe("PDF", () => {
     expect(withArt).toContain("/Im0 Do");
   });
 });
+
+describe("finish separation pages (U4.4)", () => {
+  it("adds one page per finish: its stencil in a spot colour of its name, with the die lines", async () => {
+    const { dielineToPdf } = await import("./export/pdf");
+    const { getStyle } = await import("./styles");
+    const d = getStyle("tuck-end").build({ length: 70, width: 40, height: 150 }, { caliperMm: 0.45, kind: "paperboard" });
+    const bits = new Uint8Array(Math.ceil(16 / 8) * 16).fill(0xff);
+    const pdf = new TextDecoder("latin1").decode(
+      dielineToPdf(d, {
+        finishes: [
+          { name: "Foil", cmyk: [0, 0.2, 0.6, 0.2], mask: { bits, widthPx: 16, heightPx: 16, x: 0, y: 0, width: d.width, height: d.height } },
+          { name: "SpotUV", cmyk: [0.3, 0, 0, 0], mask: { bits, widthPx: 16, heightPx: 16, x: 0, y: 0, width: d.width, height: d.height } },
+        ],
+      }),
+    );
+    expect(pdf).toMatch(/\/Count 3/);
+    expect(pdf).toContain("/Separation /Foil");
+    expect(pdf).toContain("/Separation /SpotUV");
+    expect(pdf.match(/\/ImageMask true/g)).toHaveLength(2);
+    expect(pdf.match(/CS_CUT CS/g)!.length).toBe(3);
+  });
+});

@@ -12,7 +12,9 @@ import { toast } from "@/ui/components/Toast";
 import { newImage } from "../../lib/create";
 import { useEditor } from "../../store/editor";
 import type { DesignElement, ImageElement } from "../../types";
+import { applyBrand } from "../../templates/layout";
 import { useDesigner } from "../DesignerContext";
+import { CompanyBrandKits } from "./CompanyBrandKits";
 
 const KEY = "packio.brandkit";
 
@@ -105,10 +107,26 @@ export function BrandPanel() {
     </li>
   );
 
+  // "ใช้แบรนด์ของฉัน" for the browser's kit: its colours by role (primary, accent, ink, paper) and its logo.
+  const applyLocal = () => {
+    const editor = useEditor.getState();
+    const roles = ["primary", "accent", "ink", "paper"] as const;
+    editor.commit((content) =>
+      applyBrand(content, {
+        palette: Object.fromEntries(kit.colours.slice(0, 4).map((hex, i) => [roles[i], hex])),
+        fonts: {},
+        logo: kit.logo,
+      }),
+    );
+    toast.success(t("appliedLocal"));
+  };
+
   return (
     <div className="space-y-5">
+      <CompanyBrandKits />
       <section>
         <h3 className="mb-2 text-sm font-semibold">{t("myColours")}</h3>
+        <p className="text-muted mb-2 text-xs">{t("browserOnly")}</p>
         <ul className="flex flex-wrap gap-2">{kit.colours.map((hex) => swatch(hex, hex, true))}</ul>
         <Field label={t("addColour")} className="mt-3">
           <div className="flex items-end gap-2">
@@ -129,6 +147,12 @@ export function BrandPanel() {
           <h3 className="mb-2 text-sm font-semibold">{t("catalogColours")}</h3>
           <ul className="flex flex-wrap gap-2">{catalog.colours.map((c) => swatch(c.hex, c.name))}</ul>
         </section>
+      ) : null}
+
+      {kit.colours.length || kit.logo ? (
+        <Button size="sm" onClick={applyLocal}>
+          {t("applyMine")}
+        </Button>
       ) : null}
 
       <section className="space-y-2">
