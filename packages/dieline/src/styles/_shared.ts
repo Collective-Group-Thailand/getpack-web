@@ -54,8 +54,7 @@ export function windowIssues(v: ParamValues, d: Dieline): Issue[] {
   if (kind === "none") return [];
   const panelId = str(v, "windowPanel", "front");
   // A top window sits in the top lid (a tuck end's lid, a seal end's outer flap).
-  const panel =
-    panelId === "lid" ? (findFace(d, "lid-top") ?? findFace(d, "flap-back-top")) : findFace(d, panelId);
+  const panel = panelId === "lid" ? (findFace(d, "lid-top") ?? findFace(d, "flap-back-top")) : findFace(d, panelId);
   const hole = panel?.holes[0];
   if (!panel || !hole)
     return [

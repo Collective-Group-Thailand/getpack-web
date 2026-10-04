@@ -24,7 +24,9 @@ function boardFor(r: StyleRecipe) {
   return { id, m: REFERENCE_MATERIALS[id] };
 }
 
-const cases = ALL_RECIPES.flatMap((r) => variantsOf(r).map((variant) => ({ r, variant, key: `${r.id} · ${variant.key}` })));
+const cases = ALL_RECIPES.flatMap((r) =>
+  variantsOf(r).map((variant) => ({ r, variant, key: `${r.id} · ${variant.key}` })),
+);
 
 describe("variant gate", () => {
   it("covers every variant of every recipe once", () => {
@@ -34,8 +36,7 @@ describe("variant gate", () => {
   it.each(cases)("$key", ({ r, variant }) => {
     const { m } = boardFor(r);
     const style = styleFromRecipe(r);
-    const errors = (v: Record<string, unknown>) =>
-      style.validate(v as never, m).filter((i) => i.severity === "error");
+    const errors = (v: Record<string, unknown>) => style.validate(v as never, m).filter((i) => i.severity === "error");
     const at = presetsOf(r).map((p) => ({ ...defaultsOf(r), ...p.values, ...variant.values }));
     const values = at.find((v) => errors(v).length === 0);
     expect(values, `${materialClassOf(m)}: ${JSON.stringify(errors(at[0]).map((i) => i.code))}`).toBeDefined();
@@ -47,7 +48,9 @@ describe("variant gate", () => {
     const size = [0, 1, 2].map((i) => b.max[i] - b.min[i]).sort((p, q) => p - q);
     const o = outerSizeOf(r, values, m);
     const expected = [o.length, o.width, o.height].sort((p, q) => p - q);
-    size.forEach((s, i) => expect(Math.abs(s - expected[i]), `axis ${i}: ${s} vs ${expected[i]}`).toBeLessThanOrEqual(1));
+    size.forEach((s, i) =>
+      expect(Math.abs(s - expected[i]), `axis ${i}: ${s} vs ${expected[i]}`).toBeLessThanOrEqual(1),
+    );
     expect(collisions(built.dieline, built.hinges)).toEqual([]);
   });
 });

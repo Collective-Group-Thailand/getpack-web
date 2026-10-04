@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "id": "te2-straight",
+  "base": "PK-TE-02",
+  "variant": {
+    "tuck_top": "straight_tuck"
+  },
+  "variants": {
+    "lock": {
+      "friction": {
+        "lock": "friction"
+      },
+      "slit_lock": {
+        "lock": "slit"
+      }
+    },
+    "tuck_corner": {
+      "square": {
+        "tuckCorners": "square"
+      },
+      "rounded": {
+        "tuckCorners": "rounded"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบ ล็อกลิ้นเสียบ",
+    "en": "Tuck top with a tuck lock"
+  },
+  "description": {
+    "th": "กล่องกระดาษแข็งฝาเสียบ ลิ้นเสียบล็อกด้วยแรงเสียดทานหรือล็อกร่อง ก้นเสียบ",
+    "en": "Folding carton with a tuck top held by friction or slit locks, and a tuck bottom"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "lock",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "lock": "friction"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "slitLock",
+      "with": {
+        "end": "top"
+      }
+    }
+  ]
+}
