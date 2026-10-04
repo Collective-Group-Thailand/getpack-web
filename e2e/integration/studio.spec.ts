@@ -27,12 +27,15 @@ test("studio → saved box and spec → studio price → quantity → new price,
 
   const dock = page.getByRole("region", { name: "ราคาและการสั่งผลิต" });
   const perPiece = dock.locator("span.font-semibold").filter({ hasText: "฿" });
+  // The dev seed's product suggests no quantity: the dock asks for one.
+  const quantity = dock.getByRole("spinbutton", { name: "จำนวน" });
+  await expect(dock.getByText("ระบุจำนวนเพื่อดูราคา")).toBeVisible({ timeout: 30_000 });
+  await quantity.fill("1000");
   await expect(perPiece.or(dock.getByText("ขอใบเสนอราคา").first())).toBeVisible({ timeout: 30_000 });
   test.skip(!(await perPiece.isVisible()), "the dev seed quotes this product on request");
   const first = await perPiece.textContent();
 
-  await dock.getByRole("combobox", { name: "จำนวน" }).click();
-  await page.getByRole("option").last().click();
+  await quantity.fill("3000");
   await expect(perPiece).not.toHaveText(first!, { timeout: 30_000 });
   await expect(dock.getByText(/เปลี่ยนจำนวน/)).toBeVisible();
 });

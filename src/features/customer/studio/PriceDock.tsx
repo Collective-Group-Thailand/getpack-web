@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { buildCalculateBody } from "@/features/customer/configurator/build";
 import type { Configurator } from "@/features/customer/configurator/model";
@@ -16,6 +16,7 @@ import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { Input } from "@/ui/components/Input";
 import { Select } from "@/ui/components/Select";
 import { Spinner } from "@/ui/components/Spinner";
 import { cn } from "@/ui/lib/cn";
@@ -108,19 +109,28 @@ export function PriceDock({
   const change = studio.data?.changes.find((c) => c.quantity === qty);
   const reasons = studio.data?.reasons ?? [];
 
-  const quantityChip =
-    configurator && configurator.quantity.presets.length > 0 && qty ? (
-      <Select
-        aria-label={t("quantity")}
-        value={String(qty)}
-        onValueChange={(value) => onQuantity(Number(value))}
-        options={configurator.quantity.presets.map((preset) => ({
-          value: String(preset),
-          label: t("pieces", { count: preset }),
-        }))}
-        className={layout === "bar" ? "h-9 w-28" : "w-full"}
-      />
-    ) : null;
+  // The API's suggested quantities when it has some; otherwise any quantity in its range.
+  const quantityChip = !configurator ? null : configurator.quantity.presets.length > 0 && qty ? (
+    <Select
+      aria-label={t("quantity")}
+      value={String(qty)}
+      onValueChange={(value) => onQuantity(Number(value))}
+      options={configurator.quantity.presets.map((preset) => ({
+        value: String(preset),
+        label: t("pieces", { count: preset }),
+      }))}
+      className={layout === "bar" ? "h-9 w-28" : "w-full"}
+    />
+  ) : (
+    <QuantityField
+      label={t("quantity")}
+      value={qty}
+      min={configurator.quantity.min}
+      max={configurator.quantity.max}
+      onCommit={onQuantity}
+      className={layout === "bar" ? "w-28" : "w-full"}
+    />
+  );
 
   const orderButton = (
     <Button onClick={onOrder} disabled={orderDisabled} className={layout === "rail" ? "w-full" : undefined}>
@@ -147,6 +157,8 @@ export function PriceDock({
     <p className="text-danger text-sm">{t("failed")}</p>
   ) : !configurator || !spec ? (
     <p className="text-muted text-sm">{t("needsBox")}</p>
+  ) : !qty ? (
+    <p className="text-muted text-sm">{t("needsQuantity")}</p>
   ) : (
     <p className="text-muted text-sm">{t("calculating")}</p>
   );
@@ -205,5 +217,41 @@ export function PriceDock({
       {!rfq ? <p className="text-muted text-xs">{t("vatIncluded")}</p> : null}
       {orderButton}
     </section>
+  );
+}
+
+/** A typed quantity, committed when it is a whole number in the product's range. */
+function QuantityField({
+  label,
+  value,
+  min,
+  max,
+  onCommit,
+  className,
+}: {
+  label: string;
+  value: number | null;
+  min: number | null;
+  max: number | null;
+  onCommit: (quantity: number) => void;
+  className?: string;
+}) {
+  const [text, setText] = useState(value ? String(value) : "");
+  return (
+    <Input
+      type="number"
+      inputMode="numeric"
+      aria-label={label}
+      placeholder={label}
+      min={min ?? 1}
+      max={max ?? undefined}
+      value={text}
+      className={className}
+      onChange={(event) => {
+        setText(event.target.value);
+        const n = Number(event.target.value);
+        if (Number.isInteger(n) && n >= (min ?? 1) && (max === null || n <= max)) onCommit(n);
+      }}
+    />
   );
 }

@@ -48,6 +48,39 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.1 — Packio 3D Studio shell, step bar, price dock, instrumentation — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.1 with `docs/design-tool/studio-spec.md`, on `feat/u4.1-studio-shell` (worktree `../packio-web-u4`, from `main` at `6de9599`). Gap analysis: `docs/update-2026-09-29-gap.md` §U4. Post-launch per D-219. The user approved running U4.1 → U4.8 straight through ("auto mode"); decisions below are the most conservative option each time.
+
+### Done
+| Item | What |
+|---|---|
+| 1 Route, layout, steps | `/[locale]/studio/[designId]` (`/studio/new?product=&style=&l=&w=&h=` to start) wraps the F4 `Editor` — no second editor — through new `chrome` slots: the step bar under the header, a step panel in place of the tool rail for ① ② ④ ⑤, the dock as a right rail (desktop) or a bottom bar (phones). The editor never unmounts, so every step is reversible with canvas, history and selection intact; the step is kept in `?step=` (`history.replaceState`, no navigation) and a reload reopens it. ② onwards needs a box, ④ ⑤ need content; a locked step says why. Entry: "ออกแบบใน 3D Studio" on a style page (the engine recipe of the base at its first preset, on the style's priced product). |
+| 2 Price dock | `PriceDock`: per piece, quantity chip, total incl. VAT, lead time + earliest delivery, why the price moved ("จาก ฿x เป็น ฿y/ชิ้น เพราะเปลี่ยนจำนวน" — the API's `changes` + `reasons`, no subtraction here), RFQ types → "ขอใบเสนอราคา" with the RFQ form's `slaTargetHours`. Signed in: `store.studio.quote` on the saved version, debounced 400 ms, cancelled when stale (signal), keyed by the saved box + quantity so a version that only moved artwork is never priced again; the shown `specHash` goes back as `previousSpecHash`. Guest: `store.quotes.calculate` with the same configuration. Never computes money: `packio/no-money-arithmetic` covers `features/customer/**`; a test lints a studio-path fixture through the real config. |
+| 3 Studio document | Each version carries its **box** and calculator **spec** (D-275) — `studioFieldsOf` builds both from the product's configurator (`stateForDesign` + `buildConfiguration`), so `studio.spec_mismatch` cannot happen; print sides from the spec's colours as packio-api reads them. A save that changes neither box nor title is **JSON Patch** (`store.designs.patchDocument`, D-276, ≤ 256 KiB else PUT); a box change saves after 0.4 s so the price follows. ETag / 412 conflict dialog, IndexedDB draft (now also the offline queue, flushed on `online`) as before. |
+| 4 Analytics | `studio_started`, `studio_box_confirmed`, `studio_first_artwork`, `studio_checks_clean` (artwork and no blocking check), `studio_add_to_cart` (U4.6), `studio_ordered` (U4.6) ingested as packio-api's names with `printMethod` / `styleFamily` only (D-286); `docs/ux/funnels.md`. The studio route joins the replay journeys; Web Vitals report it by route pattern like every route. |
+
+### Decisions taken (most conservative option)
+- **Guests keep a browser design** in the studio (the studio API needs an owner; `store.designs.import` exists for sign-in). "Replace local storage" applies to account designs, which have none.
+- **No price arithmetic for the reason line**: the dock shows from → to instead of "+฿0.42".
+- **Print method / finishes / style variant** are not sent until ② sets them (U4.2); the spec is the configurator's defaults plus the inks the artwork needs (as the F4 price widget did).
+- **The studio's own ADR is 0013** when U4.6 writes it (0012 is the style asset pipeline).
+
+### Tests
+Unit: JSON Patch diff/apply/size/canonical (5), steps (3), studio fields + mock `store.studio.quote` / `patchDocument` journey (4: box and spec agree, print sides, reasons `print_changed` and unit change, patch keeps the spec and answers `cached`, stale patch 412, `studio.spec_missing`), ingest studio events, money-lint coverage. e2e `storefront-studio.spec.ts`: style card → studio → price → quantity → new price with its reason → steps back and forth → printing re-prices → reload keeps the step; axe on non-canvas UI at ④ and ③. Existing designer e2e (account, editor, smoke) and styles green.
+
+### Verification
+- `pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` green.
+- Lighthouse: new `studio` set 478,237 B initial JS (performance 0.98) → ratchet 479,000; `designer` 473,984 → ratchet 472,000 → 474,500 (`docs/performance-budgets.md` §U4.1).
+- **Real API** (packio-api `v0.41.0`, integration stack): `e2e/integration/studio.spec.ts` green — the design is created with its box and spec, `store.studio.quote` prices it, a new quantity is re-priced with the API's `quantity_changed`; the whole integration suite 34 passed (2 skipped as before). Found on the way: the dev seed's carton suggests **no quantities** (`presets: []`, no default), so the dock now takes a typed quantity in the product's range when there are no presets.
+- `pnpm test:app` 964, `pnpm test:dieline` 5,390; mock e2e studio + designer account green.
+
+### Follow-ups
+- U4.2: print method, finishes, style variant into the box fields; RFQ from the dock pre-filled with the design (`store.studio.requestQuote`) — U4.1's CTA opens ⑤.
+- Win back the designer ratchet (configurator build out of the initial chunk).
+
+---
+
 ## U3.4 wave 1 → U3.5 — Style library waves and library UX — 2026-10-04
 
 `docs/prompts/U3-style-library.md` §U3.4 (wave 1) and §U3.5, on `feat/u3.4-wave1-u3.5-library` (worktree `../packio-web-u3`, from `main` at `8982cd6`, U2.F1 merged). Gap analysis and outcome: `docs/update-2026-09-29-gap.md` §U3.4 / §U3.5. Post-launch per D-219.

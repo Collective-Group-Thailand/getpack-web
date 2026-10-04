@@ -420,4 +420,6 @@ Sources: `docs/prompts/U4-3d-studio.md`, `docs/design-tool/studio-spec.md`, deci
 | U4.7 | Share scopes, comments on 3D, versions diff, presentation, AR | partial | View-only share (D-226), version history + restore, 3D PNG | U4.7 on `store.studio.*shareLinks|comments` |
 | U4.8 | Reorder library, design-service hand-off, usability, release checklist | partial | Account designs list; design service on orders | U4.8 |
 
+**U4.1 outcome (2026-10-05):** the U4.1 rows are met (PROGRESS U4.1); guests keep a browser copy, and the RFQ pre-filled from the dock moves to U4.2 / U4.6.
+
 **U4.1 plan (slices, each green):** 1 studio route + `Editor` chrome slots + step bar · 2 studio spec builder (box fields + calculator configuration from the product's configurator) and JSON-Patch autosave · 3 price dock (studio quote / guest calculate / RFQ) · 4 funnel events + vitals · 5 mocks (`patchDocument`, studio fields, `store.studio.quote` with `specHash` and reasons), unit + e2e (style card → studio → price → quantity → new price, axe), Lighthouse studio budget · PROGRESS · merge.
