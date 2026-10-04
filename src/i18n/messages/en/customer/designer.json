@@ -97,7 +97,7 @@
     "styleBold": "Bold",
     "styleItalic": "Italic",
     "styleBoldItalic": "Bold italic",
-    "tooSmall": "Text under 6 pt may not print clearly",
+    "tooSmall": "Text under {min}pt may not print clearly",
     "align": "Align",
     "alignLeft": "Left",
     "alignCenter": "Centre",
@@ -501,7 +501,6 @@
   "checks": {
     "empty": "Add some artwork and its print checks appear here",
     "allClear": "No print issues found",
-    "summary": "{errors, plural, =0 {} one {# to fix · } other {# to fix · }}{warnings} to review",
     "element": {
       "text": "Text",
       "image": "Image",
@@ -511,21 +510,54 @@
       "code": "Code"
     },
     "severity": {
-      "error": "Must fix",
-      "warning": "Review"
+      "block": "Must fix",
+      "warn": "Check",
+      "info": "Note"
     },
-    "issue": {
-      "text_in_danger_zone": "Too close to a cut or fold — move it inside the safe zone",
-      "small_text": "Text {mm} mm tall is below 6 pt and may not print clearly",
-      "thin_stroke": "The line is too thin and may break up in print",
-      "low_resolution": "The image is {dpi} dpi, below {min} dpi — it may print soft",
-      "crosses_fold": "Crosses a fold — the text will bend at the box's edge",
-      "on_glue_area": "On the glue flap — it will be covered when the box is glued",
-      "missing_bleed": "Near a cut — extend it {mm} mm past the edge (bleed)",
-      "off_sheet": "Outside the sheet — it will not be printed",
-      "code_invalid": "The code's value is not valid",
-      "code_too_small": "The code is too small — make it at least {mm} mm wide"
-    }
+    "count": {
+      "block": "{count, number} to fix",
+      "warn": "{count, number} to check",
+      "info": "{count, number} notes"
+    },
+    "onFace": "{name} · {face}",
+    "rule": {
+      "image_resolution": "Image at {ppi} ppi, under {min} ppi: it may print soft",
+      "bleed": "Near a cut edge: extend it {mm} mm past the edge (bleed)",
+      "safe_zone": "Too close to a cut or a fold — move it into the safe area",
+      "min_text_size": "Text at {pt} pt is under {min} pt and may not print clearly",
+      "hairline": "A {pt} pt line is under {min} pt and may break up",
+      "rich_black_small_text": "Small text in a rich black may print out of register",
+      "rgb_out_of_gamut": "{colour} is brighter than CMYK inks print; it will come out duller",
+      "spot_colour_count": "{colours} colours, more than flexo prints ({max})",
+      "crosses_crease": "Across a fold — the text will break at the box's edge",
+      "crosses_glue": "On the glue flap: it will be covered when the box is glued",
+      "barcode_across_fold": "A barcode across a fold will not scan",
+      "barcode_invalid": "The barcode cannot be used: {problems}",
+      "white_ink_needed": "This material needs a white ink underlay",
+      "finish_min_feature": "A {mm} mm finish detail is under {min} mm and may not be made",
+      "element_right_missing": "The right to use this mark is not declared yet",
+      "off_sheet": "Off the sheet: it will not be printed"
+    },
+    "problems": {
+      "check_digit": "wrong check digit",
+      "digits_only": "digits only",
+      "empty": "no value",
+      "not_ascii": "unsupported characters",
+      "too_long_for_level": "too long",
+      "wrong_length": "wrong number of digits",
+      "too_small": "smaller than its minimum"
+    },
+    "fix": {
+      "move_inside": "Move into the safe area",
+      "extend_to_bleed": "Extend to the bleed",
+      "min_text": "Enlarge the text",
+      "min_stroke": "Thicken the line",
+      "min_code": "Enlarge the barcode",
+      "nearest_spot": "Use the nearest allowed colours",
+      "in_gamut": "Adjust the colour to print"
+    },
+    "acknowledge": "Accept as it is",
+    "acknowledged": "Accepted"
   },
   "box": {
     "change": "Box setup",
@@ -656,7 +688,8 @@
     "inside": "Inside",
     "model": "The box in 3D",
     "pick": "Pick a face to design",
-    "editing": "Editing: {face}"
+    "editing": "Editing: {face}",
+    "softProof": "Soft proof"
   },
   "studioTemplates": {
     "title": "Packio templates",

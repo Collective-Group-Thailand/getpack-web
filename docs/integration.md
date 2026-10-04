@@ -55,3 +55,9 @@ The setup project also prices the folding test product online. The dev seed leav
 - Go through the app. Call packio-api directly only for setup that has no screen (`support.ts` → `api()`).
 - Expect the dev seed's values: `DEV`-prefixed document numbers (D-210), the test area at postcode `99999`, factory F9001.
 - A mismatch between the app and the API is fixed here, or raised in `docs/contract-requests.md` with the failing response attached.
+
+## Defects found in packio-api by this suite
+
+| Found | Operation | What happens | Workaround here | Status |
+|---|---|---|---|---|
+| 2026-10-05 (U4.5) | `store.studio.runChecks` | A second run of the same version under the same rules version answers **500** — `designCheckRun.create` breaks the unique index `ux_design_check_runs__version__rules__source__context` instead of returning (or replacing) the stored run. | The studio runs a version's checks once per version (versions are immutable; `staleTime: Infinity`), and `e2e/integration/checks.spec.ts` reads the run the studio made. | To report to packio-api: return the existing run for an unchanged version and rules version. |
