@@ -187,8 +187,10 @@ export const storeDesigns = {
   },
   /** A thumbnail PNG, uploaded as a file for the next save to reference. */
   async uploadThumbnail(dataUrl: string, name: string): Promise<string> {
-    const blob = await (await fetch(dataUrl)).blob();
-    const uploaded = await uploadFile("customer", new File([blob], `${name}.png`, { type: "image/png" }), "artwork");
+    // Decoded here, not fetched: the CSP's `connect-src` does not allow `data:` (found on the real stack, U4.6).
+    const binary = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const uploaded = await uploadFile("customer", new File([bytes], `${name}.png`, { type: "image/png" }), "artwork");
     return uploaded.id;
   },
   /**

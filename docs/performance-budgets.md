@@ -223,3 +223,18 @@ The checks now run packio-api's rule catalogue (ids, severities, thresholds, pri
 material classes) with the vendored catalogue as the fallback while `getRules` has not answered;
 the panel groups findings by severity with their fixes and acceptances; the soft proof is a CSS
 filter. The fixes themselves load on first use.
+
+## U4.6 — ⑤ Order (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| `/studio/new?product=tuck-end-box…` | 496,235 | 498,368 | studio 497,000 → **499,000** |
+| `/configure/tuck-end-box` | 338,896 | 339,234 | customer-app 339,000 → **340,000** |
+
+The order sheet, the render upload and the print-job polling are `next/dynamic` (on first open of
+⑤); the stable idempotency key has its own module so no other zone loads it (partner went back
+under its budget once it left `lib/api/client.ts`). What remains is copy: the zone's
+`NextIntlClientProvider` carries every customer namespace in each page's flight data, so the order
+sheet's th text, the lock notice, the proof and order-page links and the shortcut groups count on
+every customer page. Scoping client messages per route would take that back for all of them
+(follow-up, not U4.6's). Orbit performance (`pnpm e2e:perf`): 54.3 fps.

@@ -51,6 +51,7 @@ export default async function StudioPage({
       productSlug={productSlug ?? null}
       catalogProductId={saved?.data.catalogProductId ?? catalog?.product.id ?? null}
       step={text(query.step) ?? undefined}
+      lock={saved?.data.lock ?? null}
       design={
         saved
           ? {

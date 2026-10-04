@@ -7,7 +7,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { PayInstalmentButton } from "@/features/customer/checkout/PayInstalmentButton";
 import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
 import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
-import { getMyOrder } from "@/features/customer/orders/api.server";
+import { findLockedDesignOf, getMyOrder } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { ToleranceOutcome } from "@/features/customer/orders/ToleranceOutcome";
@@ -61,12 +61,14 @@ const SUCCESS = new Set(["payment.received", "proof.approved", "shipment.deliver
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, tCatalog, format, locale, detail] = await Promise.all([
+  const [t, tCatalog, format, locale, detail, design] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("catalog"),
     getFormat(),
     getLocale(),
     getMyOrder(orderId),
+    // A link to the studio design is a convenience: the order page never fails over it.
+    findLockedDesignOf(orderId).catch(() => null),
   ]);
   if (!detail) notFound();
   const { order, group, instalments } = detail;
@@ -116,6 +118,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           >
             {t("detail.artworkLink")}
           </Link>
+          {design ? (
+            <>
+              {" · "}
+              <Link
+                href={`/studio/${design.designId}?step=design`}
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                {t("detail.designLink", { title: design.title, versionNo: design.versionNo })}
+              </Link>
+            </>
+          ) : null}
         </p>
         {group?.expiresAt && order.status === "waiting_payment" ? (
           <Callout tone="warning">{t("detail.expires", { date: format.dateTime(group.expiresAt) })}</Callout>

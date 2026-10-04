@@ -25,6 +25,7 @@ import { bangkokIso, mockId, paginate, problem } from "../support";
 import { bookOf } from "./book";
 import { cartLines, cartOf, clearCart, codes as cartCodes } from "./cart";
 import { customerOf, type MockCustomer } from "./customers";
+import { lockDesign } from "./designs";
 import type { Input, Payment, Preview } from "./model";
 import { toStoreOrderDto } from "./order-dto";
 import { ownerIdOf } from "./owner";
@@ -567,6 +568,10 @@ function placeOrders(customer: MockCustomer, input: Input, priced: Priced): Grou
     };
     orders.unshift(refreshOrder(order));
     group.orderIds.push(orderId);
+    // D-276: the studio design version of the line is now locked by this order.
+    const pinned = cartLines(customer).find((line) => line.id === item.id)?.design;
+    if (pinned)
+      lockDesign(pinned.documentId, { orderId, orderCode, versionNo: pinned.versionNo, lockedAt: bangkokIso(0) });
     if (quote) quote.status = "converted";
   });
   if (owner) owner.ordersCount += cart.items.length;

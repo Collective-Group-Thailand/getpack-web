@@ -121,3 +121,28 @@ export async function getMyOrder(orderId: string): Promise<OrderDetail | null> {
     actions: order.nextActions,
   };
 }
+
+/**
+ * The studio design an order locked (D-276): the customer's linked designs, the one whose lock
+ * names this order. The API has no lookup by order, so the first page of linked designs is read.
+ */
+export async function findLockedDesignOf(
+  orderId: string,
+): Promise<{ designId: string; title: string; versionNo: number } | null> {
+  const { data } = await (
+    await serverApi("customer")
+  ).GET("/v1/store/designs", { params: { query: { linked: "linked", perPage: 100 } } });
+  const design = data?.data.find((candidate) => candidate.lock?.orderId === orderId);
+  return design?.lock ? { designId: design.id, title: design.title, versionNo: design.lock.versionNo } : null;
+}
+
+/** The document of a design version, as the studio saved it (read-only, for the proof screen). */
+export async function getDesignVersion(
+  designId: string,
+  versionNo: number,
+): Promise<{ spec: unknown; content: unknown } | null> {
+  const { data } = await (
+    await serverApi("customer")
+  ).GET("/v1/store/designs/{designId}/versions/{versionNo}", { params: { path: { designId, versionNo } } });
+  return data?.document ? { spec: data.document.spec, content: data.document.content } : null;
+}

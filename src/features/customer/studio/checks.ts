@@ -42,8 +42,8 @@ export function useStudioChecks(
     queryKey: keyOf(versionNo),
     queryFn: fetchRun(versionNo!),
     enabled: enabled && !!designId && !!versionNo,
-    // A version never changes, so its run is asked for once (packio-api answers a second run of the
-    // same version with a 500 today — docs/integration.md, "Defects found in packio-api").
+    // A version never changes, so its run is asked for once (and never twice at the same time:
+    // packio-api answers concurrent runs of a version with a 500 — docs/integration.md).
     staleTime: Infinity,
     gcTime: 30 * 60_000,
     retry: false,
@@ -59,7 +59,11 @@ export function useStudioChecks(
     mutationFn: async (issue: DesignIssue) => {
       const version = currentVersion();
       if (!designId || !version) throw new Error("not saved");
-      const latest = await client.fetchQuery({ queryKey: keyOf(version), queryFn: fetchRun(version), staleTime: Infinity });
+      const latest = await client.fetchQuery({
+        queryKey: keyOf(version),
+        queryFn: fetchRun(version),
+        staleTime: Infinity,
+      });
       const found = latest.findings.some(
         (f) => f.ruleId === issue.ruleId && (f.elementId ?? "") === issue.elementId && f.severity === "warn",
       );
@@ -83,7 +87,10 @@ export function useStudioChecks(
     if (content.acknowledged?.includes(k)) return true;
     const runs = [run.data, client.getQueryData<CheckRun>(keyOf(currentVersion()))];
     return runs.some(
-      (r) => r?.findings.some((f) => f.ruleId === issue.ruleId && (f.elementId ?? "") === issue.elementId && f.acknowledged) ?? false,
+      (r) =>
+        r?.findings.some(
+          (f) => f.ruleId === issue.ruleId && (f.elementId ?? "") === issue.elementId && f.acknowledged,
+        ) ?? false,
     );
   };
 
@@ -92,7 +99,34 @@ export function useStudioChecks(
     else acknowledgeInDesign(issue);
   };
 
-  return { run, acknowledged, acknowledge };
+  /**
+   * Before ordering (U4.6): the version to be ordered carries every acceptance — the warnings the
+   * customer accepted on an earlier version (or in the design) are accepted again on this one where
+   * packio-api finds them, so its run of the version is `ready`.
+   */
+  const carryAcknowledgements = async (version: number, issues: DesignIssue[]) => {
+    if (!designId) return;
+    const latest = await client.fetchQuery({
+      queryKey: keyOf(version),
+      queryFn: fetchRun(version),
+      staleTime: Infinity,
+    });
+    let run = latest;
+    for (const issue of issues) {
+      if (issue.severity !== "warn" || !onServer(issue.ruleId) || !acknowledged(issue)) continue;
+      const finding = run.findings.find((f) => f.ruleId === issue.ruleId && (f.elementId ?? "") === issue.elementId);
+      if (!finding || finding.acknowledged) continue;
+      const { data } = await browserApi().POST("/v1/store/studio/{designId}/checks/acknowledgements", {
+        params: { path: { designId } },
+        body: { ruleId: issue.ruleId, versionNo: version, ...(issue.elementId ? { elementId: issue.elementId } : {}) },
+      });
+      run = data!;
+    }
+    client.setQueryData(keyOf(version), run);
+    return run;
+  };
+
+  return { run, acknowledged, acknowledge, carryAcknowledgements };
 }
 
 function acknowledgeInDesign(issue: DesignIssue) {
