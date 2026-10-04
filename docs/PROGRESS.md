@@ -48,6 +48,33 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.3 — ③ Design core: split view and face-aware 3D editing — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.3, on `feat/u4.3-design-core` (worktree `../packio-web-u4`, from `main` at `daa5219`, U4.2 merged). Post-launch (D-219); "auto mode".
+
+### Gap → done
+| Item | F4 had | Done |
+|---|---|---|
+| 1 Split view, mobile 3D-first | 3D in a side tab | The studio's stage (`EditorChrome.views`): **split** (3D beside the flat sheet) by default on wide screens, **3D** first on phones, **flat**; selection and focus shared (one store); the flat canvas stays mounted in 3D-only to draw the model's artwork. Swipe: a view toggle instead (a swipe would fight the orbit drag) — deviation recorded. |
+| 2 Face picking in 3D | double-click a face on the flat | Click / tap a face on the model (raycast → the face's triangles) or its button (keyboard path): the box **turns to face the camera** (`facing()`, unit-tested for every side), the face is highlighted and named ("กำลังแก้: …"), and the next element lands on it **clipped to that face**; wrapping across a fold is the explicit "ทั้งแผ่นคลี่ (ข้ามรอยพับได้)" choice with its tolerance warning. |
+| 3 Guides, distances, rulers, layers, undo, shortcuts | snapping, rulers, a layers list, undo 100, "?" overlay | **Distance labels in mm** from the face edges while dragging; the layers panel is an **accessible tree** (sides → elements, arrow keys / Home / End / Left, Enter or Space to select, Shift adds; lock and order for the selection); **undo ≥ 200**; the shortcuts overlay as before. |
+| 4 Outside / inside | outside only | An **inside** side: the sheet as seen from inside (`mirrorDieline` in `@packio/dieline`, winding kept, tested), its own elements (`side: "inside"`), checks against the mirrored die, the inside texture on the model's inner surface; the **cost is shown before the first switch** ("พิมพ์ด้านในด้วยไหม?") and confirming sets print sides to both, which the dock re-prices. Exports always draw the outside. |
+| 5 Performance | one sheet texture | One draw call per surface with the sheet as the texture atlas; level of detail: 1024 px in split view, 2048 alone. Perf test with 150 objects under a 4× CPU throttle: **59.6 fps** (floor 45). |
+| 6 Acceptance | — | e2e: text on the lid picked in 3D lands on the matching flat panel **within 0.5 mm** (saved document + engine geometry), clicking the model picks the face under the pointer, inside printing after its cost; perf spec. |
+
+### Decisions taken
+- **Face name**: our face names call the top lid "ฝา (บน)" on a tuck end (the prompt's "ฝาบน" is that face, `lid-top`).
+- **The studio opens on the stage**: the tool panel starts closed; the dock sits at the top of the right panel (three side columns left ~300 px for the stage).
+- **Inside artwork is placed on the mirrored sheet** so it reads correctly once folded; an issue on the other side turns the view to it.
+
+### Journeys
+T2 (logo on top and front, then 3D) **5 steps, within its budget of 6** (was 8): faces are picked on the model and the model is already in view. T1 had been failing since U2.F1 (the size basis is asked first) — its walk now includes that step (8 / 4). T12 is one step longer (① offers the box setup).
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; `pnpm test:app` 978, `pnpm test:dieline` 5,392. Mock e2e full run 393 passed; the failures were tests still driving the old designer layout (3D tab, open rail) — moved to the studio stage and re-run green — and the known load-related `storefront-account` timeout (green on re-run). Journeys 10 / 10 walks pass. Real API: `e2e/integration/studio.spec.ts` green. Lighthouse studio 486,106 B (ratchet 487,000).
+
+---
+
 ## U4.2 — ① Start and ② Box — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.2, on `feat/u4.2-start-box` (worktree `../packio-web-u4`, from `main` at `13cc467`, U4.1 merged). Gap: `docs/update-2026-09-29-gap.md` §U4. Post-launch (D-219); run straight through under the user's "auto mode" instruction.
