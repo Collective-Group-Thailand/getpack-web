@@ -27,6 +27,7 @@ describe("session replay", () => {
   it.each([
     ["/configure/[slug]", true],
     ["/design/[id]", true],
+    ["/studio/[designId]", true],
     ["/cart", true],
     ["/checkout", true],
     ["/checkout/pay/[paymentId]", true],

@@ -1,43 +1,13 @@
 import { notFound } from "next/navigation";
-import { resolveStyleId } from "@packio/dieline";
 
 import { getDesignerCatalog } from "@/features/customer/catalog/api.server";
 import { CustomerDesigner } from "@/features/customer/designer/CustomerDesigner";
 import { getMyDesign } from "@/features/customer/designer/api.server";
+import { seedOf, text, uuid, type Query } from "@/features/customer/designer/seed";
 import { documentOf } from "@/features/designer/data/published";
-import type { EditorSeed } from "@/features/designer/components/Editor";
 import { getActor } from "@/lib/auth/actor";
 
 export const metadata = { title: "ออกแบบกล่อง" };
-
-type Query = Record<string, string | string[] | undefined>;
-const text = (value: unknown) => (typeof value === "string" && value.length > 0 && value.length < 120 ? value : null);
-const uuid = (value: unknown) =>
-  typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
-    ? value
-    : null;
-const mm = (value: unknown) => (typeof value === "string" && /^\d{1,4}(\.\d)?$/.test(value) ? Number(value) : null);
-
-/**
- * A new design's starting point (F4 C.2): `?style=&l=&w=&h=` from the configurator or an order's
- * artwork page, plus `product`, `pattern` and `material` to preselect the catalogue's choices.
- * Anything malformed is ignored — the setup dialog still opens. A saved design names its product
- * (`DesignDocumentDto.product`); the order line it is being made for (`order`, `item`, `orderCode`)
- * stays in the address once the design has its own id, since a design names only the orders it was
- * used in (`orders`), not the line waiting for it.
- */
-function seedOf(query: Query): EditorSeed | undefined {
-  const style = typeof query.style === "string" ? resolveStyleId(query.style) : null;
-  const [length, width, height] = [mm(query.l), mm(query.w), mm(query.h)];
-  if (!style || !length || !width || !height) return undefined;
-  return {
-    style,
-    dims: { length, width, height },
-    productSlug: text(query.product),
-    patternId: uuid(query.pattern),
-    materialId: uuid(query.material),
-  };
-}
 
 export default async function DesignPage({
   params,

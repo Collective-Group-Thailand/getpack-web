@@ -19,6 +19,7 @@ import { specsHandlers } from "./specs";
 import { storeSupportHandlers } from "./support";
 import { storeRfqHandlers } from "./rfq";
 import { storeStyleHandlers } from "./styles";
+import { storeStudioHandlers } from "./studio";
 
 export const storeHandlers = [
   ...storeAccountHandlers,
@@ -35,6 +36,7 @@ export const storeHandlers = [
   ...storeSupportHandlers,
   ...storeBusinessHandlers,
   ...storeDesignHandlers,
+  ...storeStudioHandlers,
   ...storeCatalogHandlers,
   ...storeStyleHandlers,
 ];

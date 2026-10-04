@@ -10,7 +10,12 @@ import { nanoid } from "nanoid";
 import { allFaces, DEFAULT_SAFE_MM, faceBounds, getStyle, PX_PER_MM, SPEC_VERSION } from "@packio/dieline";
 import { boardColour, fallbackMaterial, materialsFor, withMaterial } from "@/features/designer/catalog";
 import { storeDesigns, type DesignerCatalog } from "@/features/designer/data/api";
-import { usePersistence, type PersistenceConfig, type PersistenceMode } from "@/features/designer/data/persistence";
+import {
+  usePersistence,
+  type Persistence,
+  type PersistenceConfig,
+  type PersistenceMode,
+} from "@/features/designer/data/persistence";
 import { dielineOf, hingesOf, insideSize, readDesign, sizeOf } from "@/features/designer/document";
 import {
   exportDielineDxf,
@@ -22,6 +27,7 @@ import {
   renderDieline,
 } from "@/features/designer/export";
 import { uprightAngles } from "@/features/designer/lib/upright";
+import type { DesignIssue } from "@/features/designer/lib/checks";
 import { useDesignIssues } from "@/features/designer/lib/useIssues";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor } from "@/features/designer/store/editor";
@@ -146,6 +152,29 @@ export interface EditorSession {
   create?: PersistenceConfig["create"];
   /** After each confirmed save — the zone's wrapper decides what, if anything, to record. */
   onSaved?: () => void;
+  /** The studio's box fields and spec, saved with each version (U4.1, D-275). */
+  box?: PersistenceConfig["box"];
+  initialBox?: PersistenceConfig["initialBox"];
+}
+
+/** What the studio's frame is handed: the editor's own actions and facts. */
+export interface EditorChromeContext {
+  persistence: Persistence;
+  issues: DesignIssue[];
+  openSetup: () => void;
+  openRules: () => void;
+}
+
+/**
+ * The studio's frame around the editor (U4.1): a bar under the header (the step bar), a panel in
+ * place of the tool rail for the steps other than ③ (`null` keeps the rail), and the price dock —
+ * a rail on wide screens, a bar on phones. The editor stays mounted whatever the step, so nothing
+ * on the canvas is lost going back and forth.
+ */
+export interface EditorChrome {
+  below?: (ctx: EditorChromeContext) => React.ReactNode;
+  panel?: (ctx: EditorChromeContext) => React.ReactNode;
+  dock?: (ctx: EditorChromeContext, layout: "rail" | "bar") => React.ReactNode;
 }
 
 /**
@@ -173,6 +202,7 @@ export interface EditorProps {
   primaryAction?: React.ReactNode;
   /** A route base for the design's own page, `/design` for the storefront. */
   designHref?: (id: string) => string;
+  chrome?: EditorChrome;
 }
 
 /** Refreshes image sources from the assets' current signed URLs (they expire; ids do not). */
@@ -197,6 +227,7 @@ export default function Editor({
   topBarExtra,
   primaryAction,
   designHref = (designId) => `/design/${designId}`,
+  chrome,
 }: EditorProps) {
   const t = useTranslations("designer");
   const tCommon = useTranslations("common");
@@ -245,6 +276,8 @@ export default function Editor({
       if (id !== designId) nav.replace(designHref(designId));
     },
     onSaved: session.onSaved,
+    box: session.box,
+    initialBox: session.initialBox,
     thumbnail: () => (stageRef.current && dieline ? makeThumbnail(stageRef.current, dieline) : null),
   });
 
@@ -434,6 +467,8 @@ export default function Editor({
     if (!window.matchMedia("(min-width: 64rem)").matches) setMobilePanel("checks");
   };
   const errors = issues.filter((i) => i.severity === "error").length;
+  const chromeContext: EditorChromeContext = { persistence, issues, openSetup, openRules };
+  const stepPanel = chrome?.panel?.(chromeContext) ?? null;
 
   const preview =
     dieline && paperColour && spec ? (
@@ -633,8 +668,17 @@ export default function Editor({
             </Callout>
           ) : null}
 
+          {chrome?.below?.(chromeContext)}
+
           <div className="flex min-h-0 flex-1">
-            {spec && editable ? (
+            {stepPanel ? (
+              <section
+                aria-label={t("rail.label")}
+                className="border-border bg-surface hidden w-80 shrink-0 overflow-y-auto border-e p-4 lg:block"
+              >
+                {stepPanel}
+              </section>
+            ) : spec && editable ? (
               <>
                 <nav
                   aria-label={t("rail.label")}
@@ -724,7 +768,18 @@ export default function Editor({
                 />
               </aside>
             ) : null}
+            {chrome?.dock ? (
+              <aside className="border-border bg-surface hidden w-72 shrink-0 overflow-y-auto border-s p-4 lg:block">
+                {chrome.dock(chromeContext, "rail")}
+              </aside>
+            ) : null}
           </div>
+
+          {stepPanel ? (
+            <section className="border-border bg-surface max-h-[45dvh] overflow-y-auto border-t p-4 lg:hidden">
+              {stepPanel}
+            </section>
+          ) : null}
 
           {/* Phones: the tools as a bottom bar; a tool's panel opens above it, the canvas stays in view. */}
           {spec && mobilePanel ? (
@@ -759,7 +814,12 @@ export default function Editor({
               )}
             </section>
           ) : null}
-          {spec ? (
+          {chrome?.dock ? (
+            <div className="border-border bg-surface shrink-0 border-t px-3 py-2 lg:hidden">
+              {chrome.dock(chromeContext, "bar")}
+            </div>
+          ) : null}
+          {spec && !stepPanel ? (
             <nav
               aria-label={t("rail.label")}
               className="border-border bg-surface flex shrink-0 gap-1 overflow-x-auto border-t px-1 py-1 lg:hidden"
