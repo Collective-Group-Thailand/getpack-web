@@ -160,25 +160,26 @@ and `variant` the axis values it stands for — informational; the public code a
 are the API's (D-184). `pouch` draws several master rows (stand-up, three-side, centre-seal,
 side-gusset pouches) through `pouchType`, so it names none. Regenerate this table when a recipe changes. Since U3.4 the wave recipes live in the
 `@packio/dieline/library` entry (`Entry` = library), registered on demand with `registerLibrary()`;
-`ALL_RECIPES` is both. `Varies along` lists the master axes a recipe varies (values in brackets);
+a core style the waves extend keeps its pre-wave form in the main entry and its extended form in the
+library, which replaces it by id (`main, extended in library`); `ALL_RECIPES` is the library's view. `Varies along` lists the master axes a recipe varies (values in brackets);
 every combination is one variant (`variantsOf`).
 
 | Style | Entry | Body / piece set | Top | Bottom | Features | Base | Fixed axes | Varies along | Variants |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `hang-tag` | main | `flatShape` (shape: tag) | — | — | `hangHole` | — | — | hang (2) | 2 |
+| `hang-tag` | main, extended in library | `flatShape` (shape: tag) | — | — | `hangHole` | — | — | hang (2) | 2 |
 | `pouch` | main | `pouchWeb` | — | — | — | — | — | — | 1 |
-| `mailer` | main | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right), `dieCutInsert` (floor: t; inset: t) | PK-CF-01 | — | mailer_front (2), tear_strip (2), adhesive (3), thumb (2), insert (2) | 48 |
+| `mailer` | main, extended in library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right), `dieCutInsert` (floor: t; inset: t) | PK-CF-01 | — | mailer_front (2), tear_strip (2), adhesive (3), thumb (2), insert (2) | 48 |
 | `pizza-box` | library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right) | PK-CF-02 | — | thumb (2) | 2 |
-| `wrap-around` | main | `tube` | `endFlaps` | `endFlaps` | — | PK-CF-03 | — | joint (3) | 3 |
+| `wrap-around` | main, extended in library | `tube` | `endFlaps` | `endFlaps` | — | PK-CF-03 | — | joint (3) | 3 |
 | `lock-corner-tray` | library | `tray` (preset glued) | — | — | `lockCorners`, `handHoles` | PK-CF-05 | — | handle (3) | 3 |
 | `archive-box` | library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `handHoles` | PK-CF-06 | — | handle (3) | 3 |
 | `produce-tray` | library | `tray` (preset glued) | — | — | `lockCorners`, `handHoles`, `vents` | PK-CF-08 | — | hand_holes (3), vents (3) | 9 |
 | `partition-set` | library | `partitionSet` | — | — | — | PK-CI-01 | — | partition (6) | 6 |
 | `pad-sheet` | library | `flatShape` (shape: rectangle) | — | — | `fingerNotch` | PK-CI-02 | — | thumb (2) | 2 |
-| `rsc` | main | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-01 | — | joint (3), hand_holes (3) | 9 |
-| `hsc` | main | `tube` (preset carton) | — | `rsc` | `handHoles` | PK-CS-02 | — | joint (3), hand_holes (3) | 9 |
-| `fol` | main | `tube` (preset carton) | `fol` | `fol` | `handHoles` | PK-CS-03 | — | joint (3), hand_holes (3) | 9 |
-| `cssc` | main | `tube` (preset carton) | `cssc` | `cssc` | `handHoles` | PK-CS-04 | — | joint (3) | 3 |
+| `rsc` | main, extended in library | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-01 | — | joint (3), hand_holes (3) | 9 |
+| `hsc` | main, extended in library | `tube` (preset carton) | — | `rsc` | `handHoles` | PK-CS-02 | — | joint (3), hand_holes (3) | 9 |
+| `fol` | main, extended in library | `tube` (preset carton) | `fol` | `fol` | `handHoles` | PK-CS-03 | — | joint (3), hand_holes (3) | 9 |
+| `cssc` | main, extended in library | `tube` (preset carton) | `cssc` | `cssc` | `handHoles` | PK-CS-04 | — | joint (3) | 3 |
 | `rsc-hand-holes` | library | `tube` (preset carton) | `rsc` | `rsc` | `handHoles` | PK-CS-06 | — | joint (3) | 3 |
 | `full-telescope` | library | `lidAndBase` | — | — | `handHoles` | PK-CT-01 | — | lid_depth (2), hand_holes (3) | 6 |
 | `hsc-lid` | library | `tube` (preset carton) | — | `rsc` | `handHoles` (fromTop: (lidDepth ?? max(15, round(height / 3))) + 15), `vents`, `telescopeLid` | PK-CT-02 | — | hand_holes (3), vents (3) | 9 |
@@ -202,26 +203,26 @@ every combination is one variant (`variantsOf`).
 | `flat-rounded-rect` | main | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-02 | shape_flat=rounded_rectangle | — | 1 |
 | `wrap-label-rounded` | library | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-LA-03 | tuck_corner=rounded | — | 1 |
 | `wrap-label-square` | library | `flatShape` (shape: rectangle) | — | — | — | PK-LA-03 | tuck_corner=square | — | 1 |
-| `telescope` | main | `lidAndBase` | — | — | `window` | PK-LB-01 | — | lid_depth (2), corner (2), window (2), thumb (2) | 16 |
+| `telescope` | main, extended in library | `lidAndBase` | — | — | `window` | PK-LB-01 | — | lid_depth (2), corner (2), window (2), thumb (2) | 16 |
 | `stand-up-pouch` | library | `pouchWeb` | — | — | — | PK-PB-01 | — | pouch_feat (16) | 16 |
 | `flat-pouch` | library | `pouchWeb` | — | — | — | PK-PB-02 | — | pouch_feat (16) | 16 |
 | `poly-mailer` | library | `polyMailer` | — | — | — | PK-PB-06 | — | adhesive (3), tear_strip (2) | 6 |
 | `paper-bag` | library | `paperBag` | — | — | — | PK-PG-01 | — | bag_handle (5), bag_gusset (2) | 10 |
-| `sleeve` | main | `tube` (preset carton) | `openEnd` | `openEnd` | `window` | PK-SL-01 | — | window (2), thumb (2) | 4 |
-| `sleeve-drawer` | main | `sleeveAndDrawer` | — | — | `window`, `dieCutInsert` (target: drawer; floor: t) | PK-SL-02 | — | thumb (2), window (2), insert (2) | 8 |
-| `band` | main | `band` | — | — | — | PK-SL-03 | — | lock (2) | 2 |
-| `pillow` | main | `pillowTube` | — | — | `window` | PK-SP-01 | — | hang (4), window (2) | 8 |
+| `sleeve` | main, extended in library | `tube` (preset carton) | `openEnd` | `openEnd` | `window` | PK-SL-01 | — | window (2), thumb (2) | 4 |
+| `sleeve-drawer` | main, extended in library | `sleeveAndDrawer` | — | — | `window`, `dieCutInsert` (target: drawer; floor: t) | PK-SL-02 | — | thumb (2), window (2), insert (2) | 8 |
+| `band` | main, extended in library | `band` | — | — | — | PK-SL-03 | — | lock (2) | 2 |
+| `pillow` | main, extended in library | `pillowTube` | — | — | `window` | PK-SP-01 | — | hang (4), window (2) | 8 |
 | `gable` | main | `tube` (preset carton) | `gableHandle` | `snapLock123` (preset default; tongue: snapLockTongueFor(width)) | `window` | PK-SP-02 | tuck_bottom=snap_lock_123 | window (2) | 2 |
 | `gable-crash` | library | `tube` (preset carton) | `gableHandle` | `crashLock` | `window` | PK-SP-02 | tuck_bottom=crash_lock | window (2) | 2 |
 | `gable-fourflap` | library | `tube` (preset carton) | `gableHandle` | `fourFlapLock` | `window` | PK-SP-02 | tuck_bottom=four_flap_lock | window (2) | 2 |
 | `gable-seal` | library | `tube` (preset carton) | `gableHandle` | `seal` | `window` | PK-SP-02 | tuck_bottom=seal | window (2) | 2 |
 | `gable-tuck` | library | `tube` (preset carton) | `gableHandle` | `tuck` (lid: back) | `window` | PK-SP-02 | tuck_bottom=tuck | window (2) | 2 |
 | `hexagonal` | main | `tube` (turn: 60) | `polygonTuckLid` | `polygonTuckLid` | — | PK-SP-03 | — | — | 1 |
-| `crash-lock-bottom` | main | `tube` (preset carton) | `tuck` (lid: back) | `crashLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=crash_lock; hang=none | window (3) | 3 |
-| `hang-tab-tuck` | main | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `hangTab` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck | hang (3), window (3) | 9 |
-| `reverse-tuck-end` | main | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: front) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck; hang=none | window (3) | 3 |
-| `seal-end` | main | `tube` (preset carton) | `seal` | `seal` | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=seal; hang=none | window (3) | 3 |
-| `snap-lock-bottom` | main | `tube` (preset carton) | `tuck` (lid: back) | `snapLock123` (preset default) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=snap_lock_123; hang=none | window (3) | 3 |
+| `crash-lock-bottom` | main, extended in library | `tube` (preset carton) | `tuck` (lid: back) | `crashLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=crash_lock; hang=none | window (3) | 3 |
+| `hang-tab-tuck` | main, extended in library | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `hangTab` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck | hang (3), window (3) | 9 |
+| `reverse-tuck-end` | main, extended in library | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: front) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=reverse_tuck; tuck_bottom=tuck; hang=none | window (3) | 3 |
+| `seal-end` | main, extended in library | `tube` (preset carton) | `seal` | `seal` | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=seal; hang=none | window (3) | 3 |
+| `snap-lock-bottom` | main, extended in library | `tube` (preset carton) | `tuck` (lid: back) | `snapLock123` (preset default) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=snap_lock_123; hang=none | window (3) | 3 |
 | `te-airplane-crash` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `crashLock` | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=crash_lock | hang (4), window (3) | 12 |
 | `te-airplane-fourflap` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `fourFlapLock` | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=four_flap_lock | hang (4), window (3) | 12 |
 | `te-airplane-seal` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `seal` | `hangTab` (end: top; optional: true), `window` | PK-TE-01 | tuck_top=airplane_tuck; tuck_bottom=seal | hang (4), window (3) | 12 |
@@ -236,7 +237,7 @@ every combination is one variant (`variantsOf`).
 | `te-seal-tuck` | library | `tube` (preset carton) | `seal` | `tuck` (lid: back) | `window` | PK-TE-01 | tuck_top=seal; tuck_bottom=tuck; hang=none | window (3) | 3 |
 | `te-straight-fourflap` | library | `tube` (preset carton) | `tuck` (lid: back) | `fourFlapLock` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=four_flap_lock; hang=none | window (3) | 3 |
 | `te-straight-seal` | library | `tube` (preset carton) | `tuck` (lid: back) | `seal` | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=seal; hang=none | window (3) | 3 |
-| `tuck-end` | main | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=tuck; hang=none | window (3) | 3 |
+| `tuck-end` | main, extended in library | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `thumbNotch` (end: top), `window` | PK-TE-01 | tuck_top=straight_tuck; tuck_bottom=tuck; hang=none | window (3) | 3 |
 | `te2-airplane` | library | `tube` (preset carton) | `airplaneTuck` (lid: front) | `tuck` (lid: back) | `slitLock` (end: top) | PK-TE-02 | tuck_top=airplane_tuck | lock (2), tuck_corner (2) | 4 |
 | `te2-reverse` | library | `tube` (preset carton) | `tuck` (lid: front) | `tuck` (lid: back) | `slitLock` (end: top) | PK-TE-02 | tuck_top=reverse_tuck | lock (2), tuck_corner (2) | 4 |
 | `te2-straight` | library | `tube` (preset carton) | `tuck` (lid: back) | `tuck` (lid: back) | `slitLock` (end: top) | PK-TE-02 | tuck_top=straight_tuck | lock (2), tuck_corner (2) | 4 |
@@ -251,9 +252,9 @@ every combination is one variant (`variantsOf`).
 | `card-oval` | library | `flatShape` (shape: oval) | — | — | — | PK-TG-05 | shape_flat=oval | — | 1 |
 | `card-rect` | library | `flatShape` (shape: rectangle) | — | — | — | PK-TG-05 | shape_flat=rectangle | — | 1 |
 | `card-rounded` | library | `flatShape` (shape: rounded_rectangle) | — | — | — | PK-TG-05 | shape_flat=rounded_rectangle | — | 1 |
-| `tray` | main | `tray` (preset glued) | — | — | `lockCorners`, `dieCutInsert` (floor: t) | PK-TR-01 | — | corner (2), insert (2) | 4 |
-| `tray-6-corner` | main | `tray` (preset glued) | `hingedLid` (front: glued_lips) | — | `dieCutInsert` (floor: t) | PK-TR-02 | — | insert (2) | 2 |
-| `double-wall-tray` | main | `tray` (preset glued) | — | — | `rollOverWalls` (walls: back/front), `dieCutInsert` (floor: t; inset: t) | PK-TR-03 | — | insert (2) | 2 |
+| `tray` | main, extended in library | `tray` (preset glued) | — | — | `lockCorners`, `dieCutInsert` (floor: t) | PK-TR-01 | — | corner (2), insert (2) | 4 |
+| `tray-6-corner` | main, extended in library | `tray` (preset glued) | `hingedLid` (front: glued_lips) | — | `dieCutInsert` (floor: t) | PK-TR-02 | — | insert (2) | 2 |
+| `double-wall-tray` | main, extended in library | `tray` (preset glued) | — | — | `rollOverWalls` (walls: back/front), `dieCutInsert` (floor: t; inset: t) | PK-TR-03 | — | insert (2) | 2 |
 | `roll-end-tray` | library | `tray` (preset glued) | `hingedLid` (front: tuck) | — | `rollOverWalls` (walls: front/left/right), `dieCutInsert` (floor: t; inset: t) | PK-TR-04 | — | tuck_corner (2), insert (2), thumb (2) | 8 |
 
 ### Wave 1 coverage (U3.4)
@@ -261,9 +262,9 @@ every combination is one variant (`variantsOf`).
 All 41 wave-1 bases have engine recipes; **468 of the master's 578 variants are drawn** (folding
 carton 257 / 365, inserts 11 / 11, corrugated 116 / 116, flexible 48 / 48, labels 12 / 12, tags and
 sleeves 24 / 26). A variant that cannot be made is not drawn — packio-api leaves it `no_recipe`
-(D-243) and the library never shows it. `hang-tag` (the F4 chamfered tag) no longer names PK-TG-01:
-its shape is not a master `shape_flat`, and packio-api reads an axis a recipe does not name as any
-value — the `tag-*` recipes draw PK-TG-01. Every drawn variant passes the variant
+(D-243) and the library never shows it. In the library `hang-tag` (the F4 chamfered tag) no longer names
+PK-TG-01: its shape is not a master `shape_flat`, and packio-api reads an axis a recipe does not
+name as any value — the `tag-*` recipes draw PK-TG-01 (the main entry's `hang-tag` still names it). Every drawn variant passes the variant
 gate (`model/variant-gate.test.ts`): a clean blank at the first preset it is valid at, and — when it
 folds — the thick model closes to its outer size ± 1 mm with no collision.
 

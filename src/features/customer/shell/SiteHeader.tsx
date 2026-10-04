@@ -74,6 +74,9 @@ export async function SiteHeader() {
             </Button>
           )}
           <Button asChild variant="ghost" size="sm">
+            <Link href="/styles">{t("nav.styles")}</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
             <Link href="/design/new">{tCommon("nav.startDesigning")}</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">

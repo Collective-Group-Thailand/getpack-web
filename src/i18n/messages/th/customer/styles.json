@@ -1,0 +1,348 @@
+{
+  "meta": {
+    "listTitle": "คลังแบบกล่องและบรรจุภัณฑ์",
+    "listDescription": "เลือกแบบโครงสร้างกล่อง ถุง ซอง ฉลาก และป้าย กว่า 100 แบบ ดูรหัสแบบ ขนาดที่ทำได้ และราคาเริ่มต้น แล้วสั่งผลิตกับ Packio",
+    "detailTitle": "{name} ({code})",
+    "detailDescription": "{name} รหัสแบบ {code} — {count, plural, other {# แบบย่อย}} ดูตัวเลือกโครงสร้าง ขนาดที่ทำได้ และราคา",
+    "compareTitle": "เปรียบเทียบแบบกล่อง"
+  },
+  "breadcrumbs": {
+    "library": "คลังแบบกล่อง"
+  },
+  "list": {
+    "heading": "คลังแบบกล่องและบรรจุภัณฑ์",
+    "intro": "เลือกโครงสร้างที่ใช่ แล้วปรับฝา ก้น หน้าต่าง หรือตัวรองได้ในแต่ละแบบ ทุกแบบบอกรหัส ขนาดที่ทำได้ และวิธีคิดราคา",
+    "resultsFor": "ผลการค้นหา “{q}”",
+    "results": "{count, plural, other {# แบบ}}",
+    "searchLabel": "ค้นหาแบบกล่อง",
+    "searchPlaceholder": "เช่น หูช้าง กล่องฝาเสียบ PK-TE-01",
+    "searchSubmit": "ค้นหา",
+    "clear": "ล้างตัวกรองทั้งหมด",
+    "categories": "ประเภทบรรจุภัณฑ์",
+    "allCategories": "ทั้งหมด",
+    "filters": "ตัวกรอง",
+    "apply": "ใช้ตัวกรอง",
+    "any": "ทั้งหมด",
+    "sort": "เรียงตาม",
+    "emptyTitle": "ไม่พบแบบกล่องที่ตรงกับเงื่อนไข",
+    "emptyBody": "ลองลดตัวกรองหรือเปลี่ยนคำค้น หากไม่เจอแบบที่ต้องการ ส่งคำขอใบเสนอราคาได้",
+    "loadMore": "แสดงเพิ่ม",
+    "loading": "กำลังโหลด…",
+    "shown": "แสดง {shown} จาก {total, plural, other {# แบบ}}",
+    "shownMore": "แสดง {shown} แบบ",
+    "grid": "แบบกล่อง",
+    "count": "({count})"
+  },
+  "sorts": {
+    "relevance": "ตรงคำค้นที่สุด",
+    "popular": "ยอดนิยม",
+    "new": "มาใหม่",
+    "instant_first": "ราคาทันทีก่อน",
+    "name": "ชื่อ ก–ฮ"
+  },
+  "facets": {
+    "category": "ประเภท",
+    "closure": "ฝาและการปิด",
+    "feature": "ลูกเล่น",
+    "useCase": "เหมาะกับ",
+    "materialClass": "วัสดุ",
+    "pricePath": "ราคา",
+    "family": "ตระกูลโครงสร้าง"
+  },
+  "categories": {
+    "folding_carton": "กล่องกระดาษแข็ง",
+    "corrugated": "กล่องลูกฟูก",
+    "rigid": "กล่องแข็ง",
+    "flexible": "ถุงและซอง",
+    "label": "ฉลาก",
+    "tag_sleeve": "แท็กและปลอก",
+    "insert": "ตัวรอง/ช่องกั้น"
+  },
+  "materialClasses": {
+    "corrugated": "กระดาษลูกฟูก",
+    "flexible": "ฟิล์มอ่อน",
+    "food_board": "กระดาษฟู้ดเกรด",
+    "label_stock": "กระดาษสติกเกอร์",
+    "paper": "กระดาษ",
+    "paperboard": "กระดาษแข็ง",
+    "rigid": "กระดาษจั่วแข็ง",
+    "shrink_film": "ฟิล์มหด"
+  },
+  "pricePaths": {
+    "instant": "ราคาทันที",
+    "rfq": "ขอใบเสนอราคา"
+  },
+  "families": {
+    "bulk": "บรรจุขนาดใหญ่",
+    "display": "กล่องโชว์สินค้า",
+    "flip_top": "ฝาพับเปิดปิด",
+    "folder": "แฟ้ม/โฟลเดอร์",
+    "insert": "ตัวรอง",
+    "label": "ฉลาก",
+    "lid_base": "ฝาครอบ + ตัวกล่อง",
+    "mailer": "กล่องไปรษณีย์",
+    "paper_bag": "ถุงกระดาษ",
+    "pouch": "ซอง",
+    "ready_glued": "ขึ้นรูปสำเร็จ",
+    "rigid": "กล่องแข็ง",
+    "sleeve": "ปลอก",
+    "slide": "ลิ้นชัก",
+    "slotted": "กล่องลูกฟูกฝาชน",
+    "specialty": "ทรงพิเศษ",
+    "tag": "ป้าย",
+    "telescope": "ฝาครอบสวม",
+    "tray": "ถาด",
+    "tuck_end": "ฝาเสียบ"
+  },
+  "useCases": {
+    "cosmetics": "เครื่องสำอาง",
+    "food": "อาหาร",
+    "retail": "ค้าปลีก",
+    "shipping": "ขนส่ง",
+    "ecommerce": "ขายออนไลน์",
+    "gift": "ของขวัญ",
+    "luxury": "สินค้าพรีเมียม",
+    "protection": "กันกระแทก",
+    "branding": "แบรนด์และป้าย"
+  },
+  "axes": {
+    "tuck_top": "ฝาบน",
+    "tuck_bottom": "ก้นกล่อง",
+    "hang": "รูแขวน",
+    "window": "หน้าต่าง",
+    "tuck_corner": "มุมลิ้นเสียบ",
+    "lock": "การล็อก",
+    "handle": "หูหิ้ว",
+    "lid_depth": "ความลึกฝา",
+    "joint": "การต่อตะเข็บ",
+    "hand_holes": "ช่องมือจับ",
+    "vents": "รูระบายอากาศ",
+    "mailer_front": "ด้านหน้ากล่อง",
+    "tear_strip": "แถบดึงฉีก",
+    "adhesive": "แถบกาว",
+    "shelves": "จำนวนชั้น",
+    "header": "แผ่นหัวโชว์",
+    "insert": "ตัวรอง",
+    "thumb": "รูดึง",
+    "corner": "มุม",
+    "closure_rigid": "การปิดฝา",
+    "shape_flat": "รูปทรง",
+    "pouch_feat": "อุปกรณ์เสริม",
+    "bag_gusset": "ข้างถุง",
+    "bag_handle": "หูถุง",
+    "partition": "จำนวนช่อง"
+  },
+  "values": {
+    "tuck_top": {
+      "straight_tuck": "ฝาเสียบ",
+      "reverse_tuck": "ฝาเสียบสลับ",
+      "airplane_tuck": "ฝาเสียบแบบเครื่องบิน",
+      "seal": "ปิดกาว"
+    },
+    "tuck_bottom": {
+      "tuck": "ก้นเสียบ",
+      "snap_lock_123": "ก้นล็อก 1-2-3",
+      "crash_lock": "ก้นล็อกอัตโนมัติ",
+      "seal": "ก้นปิดกาว",
+      "four_flap_lock": "ก้นล็อก 4 ปีก"
+    },
+    "hang": {
+      "none": "ไม่มี",
+      "euro_slot": "รูยูโร",
+      "round_hole": "รูกลม",
+      "sombrero_header": "หัวแขวนทรงหมวก"
+    },
+    "window": {
+      "none": "ไม่มี",
+      "front_window": "ด้านหน้า",
+      "top_window": "ด้านบน"
+    },
+    "tuck_corner": {
+      "square": "เหลี่ยม",
+      "rounded": "มน"
+    },
+    "lock": {
+      "friction": "แรงเสียดทาน",
+      "slit_lock": "ล็อกร่อง"
+    },
+    "handle": {
+      "none": "ไม่มี",
+      "die_cut_handle": "ไดคัท",
+      "insert_handle": "หูแบบสอด"
+    },
+    "lid_depth": {
+      "full": "เต็มความสูง",
+      "partial": "บางส่วน"
+    },
+    "joint": {
+      "glue_flap": "ปีกกาว",
+      "stitch_flap": "เย็บลวด",
+      "tape_joint": "เทป"
+    },
+    "hand_holes": {
+      "none": "ไม่มี",
+      "end_panels": "ด้านข้าง",
+      "side_panels": "ด้านยาว"
+    },
+    "vents": {
+      "none": "ไม่มี",
+      "round": "รูกลม",
+      "oblong": "รูยาว"
+    },
+    "mailer_front": {
+      "tuck": "ลิ้นเสียบ",
+      "tab_lock": "ลิ้นล็อก"
+    },
+    "tear_strip": {
+      "none": "ไม่มี",
+      "zip_tear_strip": "มีแถบดึงฉีก"
+    },
+    "adhesive": {
+      "none": "ไม่มี",
+      "single_strip": "หนึ่งเส้น",
+      "dual_strip_return": "สองเส้น (ส่งคืนได้)"
+    },
+    "shelves": {
+      "1": "1 ชั้น",
+      "2": "2 ชั้น",
+      "3": "3 ชั้น",
+      "4": "4 ชั้น"
+    },
+    "header": {
+      "none": "ไม่มี",
+      "header_card": "มีแผ่นหัวโชว์"
+    },
+    "insert": {
+      "none": "ไม่มี",
+      "die_cut_insert": "ตัวรองไดคัท"
+    },
+    "thumb": {
+      "none": "ไม่มี",
+      "thumb_notch": "มีรูดึง"
+    },
+    "corner": {
+      "glued": "ทากาว",
+      "lock_corner": "มุมล็อก"
+    },
+    "closure_rigid": {
+      "none": "ไม่มี",
+      "magnetic": "แม่เหล็ก",
+      "ribbon": "ริบบิ้น"
+    },
+    "shape_flat": {
+      "rectangle": "สี่เหลี่ยม",
+      "rounded_rectangle": "สี่เหลี่ยมมุมมน",
+      "circle": "วงกลม",
+      "oval": "วงรี",
+      "custom_path": "รูปทรงอิสระ"
+    },
+    "pouch_feat": {
+      "zipper": "ซิปล็อก",
+      "tear_notch": "รอยบากฉีก",
+      "hang_hole": "รูแขวน",
+      "window": "หน้าต่าง"
+    },
+    "bag_gusset": {
+      "gusseted": "มีขยายข้าง",
+      "flat": "แบน"
+    },
+    "bag_handle": {
+      "twisted_paper": "เชือกกระดาษเกลียว",
+      "flat_paper": "กระดาษแบน",
+      "rope": "เชือก",
+      "die_cut": "ไดคัท",
+      "none": "ไม่มี"
+    },
+    "partition": {
+      "2x2": "2 × 2 ช่อง",
+      "2x3": "2 × 3 ช่อง",
+      "3x3": "3 × 3 ช่อง",
+      "3x4": "3 × 4 ช่อง",
+      "4x4": "4 × 4 ช่อง",
+      "4x6": "4 × 6 ช่อง"
+    }
+  },
+  "card": {
+    "code": "รหัสแบบ",
+    "variants": "{count, plural, other {# แบบย่อย}}",
+    "from": "เริ่มต้น {price} / ชิ้น",
+    "fromQuantity": "ที่ {quantity} ชิ้น",
+    "reference": "รหัสสากล {code}",
+    "featured": "แนะนำ"
+  },
+  "favourites": {
+    "add": "บันทึกแบบนี้ไว้",
+    "remove": "เลิกบันทึก",
+    "signIn": "เข้าสู่ระบบเพื่อบันทึกแบบที่ชอบ",
+    "added": "บันทึกแบบนี้ไว้แล้ว",
+    "removed": "เลิกบันทึกแล้ว"
+  },
+  "compare": {
+    "add": "เปรียบเทียบ",
+    "remove": "เอาออกจากการเปรียบเทียบ",
+    "limit": "เปรียบเทียบได้สูงสุด 3 แบบ",
+    "tray": "แบบที่เลือกเปรียบเทียบ",
+    "now": "เปรียบเทียบ {count} แบบ",
+    "clear": "ล้าง",
+    "heading": "เปรียบเทียบแบบกล่อง",
+    "emptyTitle": "ยังไม่ได้เลือกแบบกล่อง",
+    "emptyBody": "เลือก “เปรียบเทียบ” ที่แบบกล่องในคลังได้สูงสุด 3 แบบ",
+    "back": "กลับไปที่คลังแบบกล่อง",
+    "attribute": "รายการ",
+    "rows": {
+      "code": "รหัสแบบ",
+      "category": "ประเภท",
+      "material": "วัสดุ",
+      "size": "ขนาดที่ทำได้ (ภายใน)",
+      "variants": "แบบย่อย",
+      "price": "ราคา",
+      "leadTime": "ระยะเวลาผลิต",
+      "options": "ตัวเลือกโครงสร้าง"
+    }
+  },
+  "detail": {
+    "code": "รหัสแบบ",
+    "internationalName": "รหัสสากล",
+    "construction": "โครงสร้าง",
+    "options": "ตัวเลือกโครงสร้าง",
+    "optionsIntro": "เลือกตัวเลือก แบบที่ไม่มีให้เลือกจะแสดงเหตุผลไว้",
+    "variant": "แบบย่อยที่เลือก",
+    "variantCode": "รหัสแบบย่อย {code}",
+    "unavailable": "ไม่มีแบบนี้คู่กับ {choice}",
+    "noneSelected": "ไม่มี",
+    "sizes": "ขนาดที่ทำได้ (ภายใน)",
+    "size": "{material}: ยาว {l} · กว้าง {w}{h, select, none {} other { · สูง {h}}} มม.",
+    "range": "{min}–{max}",
+    "sizeSource": "จากกติกาของแบบ",
+    "price": "ราคา",
+    "leadTime": "ระยะเวลาผลิต {min}–{max} วันทำการ",
+    "partners": "{count, plural, other {# โรงงานพาร์ทเนอร์ผลิตได้}}",
+    "configure": "ตั้งค่าและดูราคา",
+    "requestQuote": "ขอใบเสนอราคา",
+    "preview": "ภาพตัวอย่าง",
+    "show3d": "หมุนดูแบบ 3 มิติ",
+    "loading3d": "กำลังเตรียมภาพ 3 มิติ…",
+    "no3d": "แบบนี้ยังไม่มีภาพ 3 มิติ",
+    "flatOnly": "ชิ้นงานแบน แสดงเป็นแบบคลี่",
+    "thumbnailAlt": "{name} แบบย่อย {code}",
+    "useCases": "เหมาะกับ",
+    "back": "คลังแบบกล่อง",
+    "makers": "ผู้ผลิต"
+  },
+  "preview3d": {
+    "canvas": "แบบกล่อง 3 มิติ ลากเพื่อหมุน",
+    "fold": "การพับ",
+    "play": "เล่นการพับ",
+    "rotateLeft": "หมุนไปทางซ้าย",
+    "rotateRight": "หมุนไปทางขวา",
+    "tiltUp": "เอียงขึ้น",
+    "tiltDown": "เอียงลง",
+    "reset": "กลับมุมเดิม",
+    "lighting": "แสง",
+    "studio": "สตูดิโอ",
+    "daylight": "แสงกลางวัน",
+    "warm": "แสงอุ่น",
+    "exportPng": "บันทึกภาพ PNG",
+    "flat": "แบบคลี่"
+  }
+}
