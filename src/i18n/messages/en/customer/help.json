@@ -30,6 +30,18 @@
       "business": {
         "title": "For business",
         "body": "Company accounts, approvals and credit terms"
+      },
+      "learn": {
+        "title": "Learn before you order",
+        "body": "Short lessons, from a first order to preparing print files."
+      },
+      "materials": {
+        "title": "Materials library",
+        "body": "Thickness, grammage, printing and food safety, side by side."
+      },
+      "glossary": {
+        "title": "Packaging glossary",
+        "body": "E-flute, bleed, spot UV — explained plainly."
       }
     },
     "faq": "Frequently asked",
@@ -175,6 +187,120 @@
     "guestPhone": "Mobile number",
     "handoffPageBody": "The team sees which page you came from. Chat in LINE, or ask us to call you back.",
     "chatTitle": "Talk to the Packio team",
-    "chatIntro": "Customer service helps you choose a box, answers questions about prices and follows up on your orders."
+    "chatIntro": "Customer service helps you choose a box, answers questions about prices and follows up on your orders.",
+    "inAppTitle": "Talk to the team on the web",
+    "inAppBody": "Send the Packio team a message, photo or file and read the answer under Messages in your account.",
+    "inAppAction": "Open messages"
+  },
+  "glossary": {
+    "title": "Packaging glossary",
+    "intro": "The words printers and designers use, explained briefly in plain language.",
+    "search": "Search the glossary",
+    "clear": "Clear the search",
+    "noMatch": "Nothing matches “{query}”. Try another spelling, or ask the team.",
+    "learn": "Learn step by step",
+    "ask": "Ask the team",
+    "chipLabel": "What is {term}?",
+    "more": "Read it in the glossary",
+    "loading": "Loading the explanation…",
+    "unavailable": "The explanation could not be loaded; see the glossary page.",
+    "thisTerm": "this term"
+  },
+  "materials": {
+    "title": "Materials library",
+    "intro": "See each material's real specification, compare up to three, then press “Use this material” to configure a box with it straight away.",
+    "compare": "Compare",
+    "compareTitle": "Comparing {count} materials",
+    "clearCompare": "Clear comparison",
+    "property": "Property",
+    "use": "Use this material",
+    "askAbout": "Ask the team about it",
+    "mm": "{value} mm",
+    "gsmValue": "{value} gsm",
+    "facts": {
+      "caliper": "Thickness",
+      "gsm": "Weight",
+      "flute": "Flute",
+      "print": "Prints with",
+      "food": "Food contact",
+      "recycle": "Recycling"
+    },
+    "food": {
+      "approved": "Food-safe",
+      "not_approved": "Not food-certified"
+    },
+    "recycle": {
+      "recyclable": "Recyclable",
+      "recyclable_if_clean": "Recyclable when clean",
+      "not_recyclable": "Not recyclable",
+      "unknown": "No data yet"
+    },
+    "kinds": {
+      "paper": "Paper",
+      "board": "Board",
+      "corrugated": "Corrugated",
+      "film": "Film",
+      "other": "Other"
+    },
+    "empty": {
+      "title": "No materials yet",
+      "body": "Order a sample kit to feel the real thing before deciding.",
+      "action": "See samples"
+    }
+  },
+  "learn": {
+    "title": "Learn before you order",
+    "intro": "Short lessons that end with doing — a few minutes' reading, then start your order.",
+    "steps": "{count} articles",
+    "back": "← All lessons",
+    "readyTitle": "Ready — carry on from here",
+    "empty": {
+      "title": "No lessons yet",
+      "body": "In the meantime, read all the articles.",
+      "action": "See articles"
+    }
+  },
+  "intent": {
+    "title": "What would you like to start with?",
+    "body": "Choose, and we take you the shortest way.",
+    "skip": "Skip",
+    "reopen": "Not sure how to start? Let us suggest",
+    "have_product": {
+      "title": "I have a product and need a box",
+      "go": "Size a box from your product",
+      "here": "Start right here: enter a size or let us suggest one from your product"
+    },
+    "have_file": {
+      "title": "I already have a design file",
+      "go": "Set the specification, then send your file after ordering",
+      "here": "Set the specification here, choose “I have artwork” and upload it after ordering"
+    },
+    "need_design": {
+      "title": "No design yet — help me design",
+      "go": "Go to the design studio",
+      "here": "Design it here, or hire our designers in the design step"
+    },
+    "reorder": {
+      "title": "Reorder",
+      "go": "Go to your account and reorder a past job",
+      "here": "Go to your account"
+    }
+  },
+  "demo": {
+    "measurement-basis": {
+      "alt": "A box whose outer and inner outlines take turns standing out",
+      "label": "outside ↔ inside",
+      "caption": "The inside size is the space for the goods; the outside is larger by the board's thickness."
+    },
+    "bleed": {
+      "alt": "Artwork running past a cut line that shifts slightly",
+      "label": "artwork 3 mm past the cut",
+      "caption": "Even if the cut is slightly off, artwork past the edge means no white shows."
+    },
+    "offset": {
+      "alt": "Cyan, magenta, yellow and black bars printing one after another",
+      "label": "cyan · magenta · yellow · black",
+      "caption": "Offset prints one colour at a time from plates, which pays off on large runs."
+    }
   }
 }

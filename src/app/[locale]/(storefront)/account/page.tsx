@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { getPoints } from "@/features/customer/account/api.server";
+import { getDefaults, getLaunchpad, getPoints } from "@/features/customer/account/api.server";
+import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
-import { latestDocuments, listSuggestions } from "@/features/customer/repeat/api.server";
-import { SuggestionCard } from "@/features/customer/repeat/SuggestionCard";
+import { latestDocuments } from "@/features/customer/repeat/api.server";
 import { listMyRfqs } from "@/features/customer/rfq/api.server";
 import { Stat } from "@/ui/components/Stat";
 import { TierProgress } from "@/features/customer/account/TierProgress";
@@ -23,11 +23,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("title"), robots: { index: false, follow: false } };
 }
 
-/** The account's front page (F3 3.4): what needs doing across orders, points, the latest orders. */
+/**
+ * The account's front page (F3 3.4), a personal launchpad since U5.1 (D-297): the recommended next
+ * step, the designs to continue and what to order again lead; then where things stand, what needs
+ * doing, documents and points.
+ */
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, active, points, rfqs, suggestions, documents] = await Promise.all([
+  const [t, tNav, format, active, points, rfqs, launchpad, defaults, documents] = await Promise.all([
     getTranslations("account.home"),
     getTranslations("account.nav"),
     getFormat(),
@@ -35,7 +39,8 @@ export default async function Page() {
     getPoints(),
     // The dashboard's other reads never take the page down with them.
     listMyRfqs().catch(() => []),
-    listSuggestions().catch(() => []),
+    getLaunchpad().catch(() => null),
+    getDefaults().catch(() => null),
     latestDocuments(5).catch(() => []),
   ]);
   // Where things stand, by the API's own statuses (U2.F5): nothing is computed from dates here.
@@ -53,6 +58,10 @@ export default async function Page() {
         <h1 className="text-2xl font-bold">{t("greeting", { name: me.displayName })}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
+
+      {launchpad ? (
+        <LaunchpadPanel launchpad={launchpad} hasBrandKit={defaults?.companies.some((c) => c.hasBrandKit) ?? false} />
+      ) : null}
 
       <section aria-labelledby="account-where">
         <h2 id="account-where" className="text-lg font-semibold">
@@ -106,24 +115,6 @@ export default async function Page() {
           </ul>
         )}
       </section>
-
-      {suggestions.length > 0 ? (
-        <section aria-labelledby="account-suggestions">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 id="account-suggestions" className="text-lg font-semibold">
-              {t("suggestions")}
-            </h2>
-            <Link href="/account/replenishment" className="text-primary text-sm underline-offset-4 hover:underline">
-              {t("allSuggestions")}
-            </Link>
-          </div>
-          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-            {suggestions.slice(0, 2).map((suggestion) => (
-              <SuggestionCard key={suggestion.id} suggestion={suggestion} />
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       {documents.length > 0 ? (
         <section aria-labelledby="account-documents">

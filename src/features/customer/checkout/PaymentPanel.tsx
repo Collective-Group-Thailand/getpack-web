@@ -24,6 +24,8 @@ import { QRCode } from "@/ui/components/QRCode";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
+import { WhatHappensNext } from "./WhatHappensNext";
+
 export type Payment = Schemas["PaymentDto"];
 type Method = Payment["method"];
 
@@ -117,6 +119,14 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
         <Callout tone="success" live title={t("paidTitle")}>
           {t("paidBody", { date: format.dateTime(data.paidAt) })}
         </Callout>
+        {data.groupId ? (
+          <section aria-labelledby="paid-next" className="flex flex-col gap-3">
+            <h2 id="paid-next" className="font-semibold">
+              {t("whatNext")}
+            </h2>
+            <WhatHappensNext groupId={data.groupId} />
+          </section>
+        ) : null}
         <div className="flex flex-wrap gap-3">
           <Button asChild>
             <Link href="/account/orders">{t("toOrders")}</Link>

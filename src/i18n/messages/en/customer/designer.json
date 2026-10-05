@@ -571,7 +571,8 @@
       "in_gamut": "Adjust the colour to print"
     },
     "acknowledge": "Accept as it is",
-    "acknowledged": "Accepted"
+    "acknowledged": "Accepted",
+    "why": "Why it matters"
   },
   "box": {
     "change": "Box setup",

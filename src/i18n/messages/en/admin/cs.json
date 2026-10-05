@@ -352,5 +352,58 @@
     "openApproval": "Open approval",
     "empty": "No discount memos",
     "mine": "Mine"
+  },
+  "inbox": {
+    "title": "Customer inbox",
+    "description": "Every customer conversation from the web and LINE, latest activity first, with the first-response clock.",
+    "back": "← Inbox",
+    "queuesLabel": "Queues by response time",
+    "all": "All",
+    "mine": "Mine",
+    "unassigned": "Unassigned",
+    "unknownCustomer": "Customer not linked yet",
+    "empty": "Nothing in this queue — try another queue or clear the filters.",
+    "columns": {
+      "customer": "Customer",
+      "subject": "About",
+      "channel": "Channel",
+      "sla": "Response",
+      "status": "Status",
+      "assignee": "Assignee",
+      "last": "Latest"
+    },
+    "subjects": {
+      "support": "General question",
+      "order": "Order",
+      "design": "Design",
+      "rfq": "Quote request",
+      "rfq_basket": "Quote request basket"
+    },
+    "channels": {
+      "web": "Web",
+      "line": "LINE",
+      "contact": "Contact form"
+    },
+    "filters": {
+      "assigned": "Assignee",
+      "status": "Status",
+      "subject": "About"
+    },
+    "loadFailed": "Messages could not be loaded. Refresh the page.",
+    "noteLabel": "Internal note (not shown to the customer)",
+    "replyLabel": "Reply to the customer",
+    "addNote": "Add note",
+    "send": "Send reply",
+    "asNote": "Internal note",
+    "sendFailed": "Not sent",
+    "actionFailed": "That did not work",
+    "details": "Conversation details",
+    "firstResponseDue": "First response due",
+    "overdueBy": "{minutes} min overdue",
+    "dueIn": "{minutes} min left",
+    "replyChannel": "Replies go to",
+    "canned": "Canned response",
+    "assignToMe": "Take this",
+    "close": "Close conversation"
   }
 }
