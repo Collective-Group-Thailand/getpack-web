@@ -905,6 +905,78 @@ export const billingHandlers = [
       .map((row) => toScheduleJobDto(factoryId, row));
     return HttpResponse.json(paginate(rows, pageQuery(url)));
   }),
+  // The payout calendar (U2.F7): what is still open, when it is expected to be paid and on what basis,
+  // and the runs of the last 90 days. Mock-only run days: Tuesday and Friday.
+  http.get("*/v1/partner/factories/:factoryId/payout-calendar", ({ request, params }) => {
+    const ok = own(request, params.factoryId, "factory_payables.read");
+    if (ok instanceof Response) return ok;
+    const factoryId = ok.store.factory.id;
+    const weekdays = [2, 5];
+    const nextRunDay = (from: string) => {
+      for (let step = 0; step < 7; step++) {
+        const day = addDays(from, step);
+        if (weekdays.includes(new Date(`${day}T12:00:00+07:00`).getUTCDay())) return day;
+      }
+      return from;
+    };
+    const payables = scheduleRows(factoryId).flatMap((row) =>
+      row.items
+        .filter((item) => item.status !== "paid")
+        .map((item): Schemas["CalendarPayableDto"] => {
+          const expectedPayOn = item.eligibleOn
+            ? nextRunDay(item.eligibleOn < today() ? today() : item.eligibleOn)
+            : null;
+          return {
+            id: item.id,
+            source: item.source,
+            status: item.status,
+            purchaseOrderId: row.purchaseOrderId,
+            poNumber: row.poNumber,
+            netAmount: baht(item.net),
+            vatAmount: baht(item.vat),
+            openNetAmount: baht(item.net),
+            openVatAmount: baht(item.vat),
+            eligibleAt: item.eligibleOn ? startOf(item.eligibleOn) : null,
+            expectedPayOn,
+            expectedBasis: expectedPayOn ? "run_calendar" : "eligibility_pending",
+            runId: null,
+          };
+        }),
+    );
+    const since = addDays(today(), -90);
+    const runs = payouts(factoryId)
+      .filter((payout) => payout.payOn >= since)
+      .map((payout): Schemas["CalendarRunDto"] => ({
+        id: mockId("prn", dayNumber(payout.payOn)),
+        runNo: `RUN-${payout.payOn.replace(/-/g, "")}`,
+        payOn: payout.payOn,
+        status: "confirmed",
+        lines: [
+          {
+            payoutId: payout.id,
+            pvNumber: payout.pvNumber,
+            kind: payout.kind,
+            status: payout.status,
+            paidOn: payout.paidOn,
+            apNetAmount: payout.apNetAmount,
+            vatAmount: payout.vatAmount,
+            whtAmount: payout.whtAmount,
+            retentionAmount: payout.retentionAmount,
+            cashAmount: payout.cashAmount,
+          },
+        ],
+      }));
+    const merged = [
+      ...runs
+        .reduce((byDay, run) => {
+          const seen = byDay.get(run.payOn);
+          byDay.set(run.payOn, seen ? { ...seen, lines: [...seen.lines, ...run.lines] } : run);
+          return byDay;
+        }, new Map<string, Schemas["CalendarRunDto"]>())
+        .values(),
+    ];
+    return HttpResponse.json({ currency: "THB", payables, runCalendar: { weekdays }, runs: merged });
+  }),
   http.get("*/v1/partner/factories/:factoryId/payouts", ({ request, params }) => {
     const ok = own(request, params.factoryId, "factory_payables.read");
     if (ok instanceof Response) return ok;

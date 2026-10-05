@@ -48,6 +48,41 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U2.F7 — Partner zone parity — 2026-10-05
+
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F7, on `feat/u2.f7-partner` (worktree `../packio-web-u2`, from `main` at `cf520ea`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F7. **U2.F6 was skipped** in this pass, by agreement, until the backend seed and decisions it needs exist.
+
+### Done
+- **Today:** two more counters, sample jobs waiting for evidence and open claims, each linked to its queue.
+- **Working hours** (`/settings/hours`, linked from settings):
+  - Weekly hours, effective from tomorrow at the earliest; the version in force and the next one waiting.
+  - Holidays and the factory's own closures, added and removed.
+  - Changes need `factory_profile.manage`; other roles read only.
+  - The effect on acceptance deadlines is stated in words. Nothing is computed in the browser.
+- **Payout calendar** (`/payouts/calendar`, linked from payouts):
+  - Two views: by purchase order and by payout run.
+  - By purchase order: open amount and VAT, the expected pay date, and the basis the API gives.
+  - By run: the runs of the last 90 days, each line with its PV and transfer.
+  - The run days are shown. No totals are added up; the statement of account is linked for those.
+- **Knowledge base:**
+  - `/knowledge` with search and categories; `/knowledge/[slug]` renders the API's rich text.
+  - Listed in "more".
+  - The QC step links the QC photo standard.
+- **Release hygiene:** `pnpm release:hygiene` scans the client bundles and prerendered HTML for mock-API markers, mock-data copy, mock scenario switches, `debugger` and browser source maps. It runs in CI after the build.
+- **Mocks:**
+  - Hours versions, closures and the knowledge base (`mocks/partner/calendar.ts`).
+  - The payout calendar, derived from the payout schedule (`mocks/partner/billing.ts`).
+- **e2e:** `e2e/partner-parity.spec.ts`, at 390 × 844 with axe on every new screen.
+
+### Deferred / assumptions
+- Period-over-period figures on Today → CONTRACT-REQUEST `partner.today-comparison`.
+- A computed preview of new hours → CONTRACT-REQUEST `partner.hours-preview`.
+- Logistics settings stay where they already are (`/prices/shipping`).
+- The hygiene scan reads the build output rather than crawling routes. The e2e server runs on the mock API, so its rendered pages legitimately carry mock copy. A production build's prerendered HTML is the honest sample. (Conservative choice.)
+- Third-party code that references `console.debug` is not flagged.
+
+---
+
 ## U2.F5 — Buyer dashboard and repeat business — 2026-10-05
 
 `docs/prompts/U2-benchmark-2026-09-29.md` §U2.F5, on `feat/u2.f5-repeat` (worktree `../packio-web-u2`, from `main` at `24f175a`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F5.

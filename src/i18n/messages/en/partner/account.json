@@ -201,10 +201,59 @@
     "labelSize": "Label printer",
     "language": "Language",
     "theme": "Theme",
-    "themeHint": "Use high contrast where the floor is bright"
+    "themeHint": "Use high contrast where the floor is bright",
+    "hours": "Working hours and holidays",
+    "hoursBody": "The factory's working time and the days it closes",
+    "hoursLink": "Set working hours"
   },
   "files": {
     "failed": "Could not open the file",
     "file": "{label} {no}"
+  },
+  "hours": {
+    "title": "Working hours",
+    "body": "The factory's hours set the acceptance deadlines and ship dates of new jobs",
+    "weekTitle": "Weekly hours",
+    "inForce": "In force since {date}",
+    "platformDefault": "Packio's standard hours apply for now",
+    "upcoming": "New hours start on {dates}",
+    "days": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "opens": "{day} opens",
+    "closes": "{day} closes",
+    "closed": "Closed",
+    "effectiveFrom": "In force from",
+    "effectiveHint": "Tomorrow at the earliest",
+    "effect": "Applies to new jobs from that day: closed days do not count for acceptance deadlines and ship dates. Accepted jobs keep their dates",
+    "save": "Save hours",
+    "saved": "Saved — in force from {date}",
+    "failed": "Could not save",
+    "readOnly": "Only the factory owner can change the hours"
+  },
+  "closures": {
+    "title": "Holidays and closures",
+    "body": "Public holidays and the days the factory closes do not count as working days",
+    "none": "No upcoming holidays",
+    "row": "{date} · {name}",
+    "kinds": {
+      "holiday": "Holiday",
+      "closure": "Factory closed",
+      "extra_working_day": "Extra working day"
+    },
+    "remove": "Remove",
+    "removed": "Closure on {date} removed",
+    "day": "Closed on",
+    "name": "Name",
+    "nameHint": "e.g. Machine maintenance",
+    "add": "Add a closure",
+    "added": "Closure on {date} added",
+    "failed": "Could not do that"
   }
 }
