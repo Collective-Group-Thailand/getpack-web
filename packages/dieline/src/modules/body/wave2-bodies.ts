@@ -307,3 +307,40 @@ export const paperTube: BodyModule = {
     ]);
   },
 };
+
+/**
+ * A shrink sleeve label (PK-LA-07) laid flat as printed: the container's largest circumference
+ * (`diameter`) and the seam overlap (`sealWidth`, default 8 mm) across, the label `height` plus the
+ * shrink allowance (`shrinkAllowance`, default 5 %) tall; the seam band marked on the right edge.
+ * Its lay-flat width, as the factory quotes it, is half the across size. 2D only (D-152). ⚠ Allowance
+ * per film to be confirmed with the converter.
+ */
+export const shrinkSleeve: BodyModule = {
+  id: "shrinkSleeve",
+  slot: "body",
+  kind: "flat",
+  status: "implemented",
+  folds: false,
+  label: t("ฉลากฟิล์มหด", "Shrink sleeve label"),
+  params: ["diameter", "height", "sealWidth", "shrinkAllowance"],
+  processes: ["shrink_sleeve"],
+  contributes: { kinds: ["flat"], roles: ["cut", "glue_area"] },
+  build(ctx) {
+    const { v } = ctx;
+    const seam = num(v, "sealWidth", 8);
+    const across = Math.PI * num(v, "diameter", 70) + seam;
+    const tall = num(v, "height", 150) * (1 + num(v, "shrinkAllowance", 5) / 100);
+    const marks = polygon(
+      [
+        [across - seam + 0.5, 0.5],
+        [across - 0.5, 0.5],
+        [across - 0.5, tall - 0.5],
+        [across - seam + 0.5, tall - 0.5],
+      ],
+      "glue_area",
+    );
+    return assemble(ctx.styleId, [
+      piece("blank", "blank", [face("label", "label", "flat", rectangle(0, 0, across, tall), { marks })]),
+    ]);
+  },
+};

@@ -39,7 +39,8 @@ const pocket = (cx: number, cy: number, w: number, h: number): Edge[] =>
  * A rigid box in a case (PK-RG-03 book-style, PK-RG-06 hinged lid): a greyboard tray with stayed
  * corners (`length` × `width` × `height` inside), set in a wrapped case of three boards — back, spine
  * and front — that close over it. `spine` = `side` hinges the front on the tray's left end (a book);
- * `back` on its back wall (a hinged lid). The boards stand `CASE_OVERHANG_MM` proud of the tray.
+ * `back` on its back wall (a hinged lid); `doors` puts a spine on each end and a door on each,
+ * meeting at the centre (PK-RG-08). The boards stand `CASE_OVERHANG_MM` proud of the tray.
  * `closure`: `magnetic` marks the magnet pockets (half-cut) in the front board's free edge and the
  * tray's facing wall; `ribbon` two slots in the front and back boards' free edges the ribbon runs
  * through. A `window` is cut in the front board (`case-front`) or the tray's front wall (`wall-front`).
@@ -104,6 +105,38 @@ export const rigidCase: PieceSetModule = {
       return holes;
     };
     const frontMarks = closure === "magnetic" ? pocket(along / 2, across + S + across - 8, 20, 6) : [];
+    if (cfg.spine === "doors") {
+      // PK-RG-08: spines on both ends, a door on each meeting at the centre (a 1 mm gap).
+      const half = L / 2 - 0.5;
+      const doorExtras = (meet: number) => ({
+        holes: closure === "ribbon" ? [slot(meet, W / 2, 3, 16)] : [],
+        marks: closure === "magnetic" ? pocket(meet, W / 2, 6, 20) : [],
+      });
+      const doors = [
+        face("case-back", "back", "panel", rectangle(0, 0, L, W, { left: "crease", right: "crease" })),
+        face("case-spine-left", "left", "panel", rectangle(-S, 0, S, W, { left: "crease", right: "crease" })),
+        face("case-spine-right", "right", "panel", rectangle(L, 0, S, W, { left: "crease", right: "crease" })),
+        face(
+          "case-door-left",
+          "lid",
+          "lid",
+          rectangle(-S - half, 0, half, W, { right: "crease" }),
+          doorExtras(-S - half + 8),
+        ),
+        face(
+          "case-door-right",
+          "lid",
+          "lid",
+          rectangle(L + S, 0, half, W, { left: "crease" }),
+          doorExtras(L + S + half - 8),
+        ),
+      ];
+      return assemble(ctx.styleId, [
+        piece("case", "lid", doors, grainOn(v, doors, "case-back")),
+        piece("base", "base", tray, grainOn(v, tray, "base")),
+        ...extraPieces(ctx, parts),
+      ]);
+    }
     const caseFaces = [
       face("case-back", "back", "panel", rectangle(0, 0, along, across, { bottom: "crease" }), {
         holes: boardHoles("case-back", 0),

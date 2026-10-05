@@ -121,6 +121,19 @@ import bookWrap from "./data/book-wrap.json" with { type: "json" };
 import rigidHinged from "./data/rigid-hinged.json" with { type: "json" };
 import rigidBook from "./data/rigid-book.json" with { type: "json" };
 import rigidShoulderNeck from "./data/rigid-shoulder-neck.json" with { type: "json" };
+import octagonal from "./data/octagonal.json" with { type: "json" };
+import octagonalReverse from "./data/octagonal-reverse.json" with { type: "json" };
+import sleeveLid from "./data/sleeve-lid.json" with { type: "json" };
+import bulkBin from "./data/bulk-bin.json" with { type: "json" };
+import palletSleeve from "./data/pallet-sleeve.json" with { type: "json" };
+import rigidDoubleDoor from "./data/rigid-double-door.json" with { type: "json" };
+import spoutedPouch from "./data/spouted-pouch.json" with { type: "json" };
+import bookletLabelRect from "./data/booklet-label-rect.json" with { type: "json" };
+import bookletLabelRounded from "./data/booklet-label-rounded.json" with { type: "json" };
+import bookletLabelCircle from "./data/booklet-label-circle.json" with { type: "json" };
+import bookletLabelOval from "./data/booklet-label-oval.json" with { type: "json" };
+import bookletLabelCustom from "./data/booklet-label-custom.json" with { type: "json" };
+import shrinkSleeve from "./data/shrink-sleeve.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -253,4 +266,17 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   rigidHinged,
   rigidBook,
   rigidShoulderNeck,
+  octagonal,
+  octagonalReverse,
+  sleeveLid,
+  bulkBin,
+  palletSleeve,
+  rigidDoubleDoor,
+  spoutedPouch,
+  bookletLabelRect,
+  bookletLabelRounded,
+  bookletLabelCircle,
+  bookletLabelOval,
+  bookletLabelCustom,
+  shrinkSleeve,
 ] as unknown as StyleRecipe[];
