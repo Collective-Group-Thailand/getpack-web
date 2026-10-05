@@ -18,6 +18,10 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async (namespace: string) =>
     createTranslator({ locale: "th", messages: { storefront }, namespace: namespace as never }),
 }));
+// The next action every empty state now offers (U5.1 §3), as a plain link: it reads the client intl context.
+vi.mock("@/features/customer/shell/NextStep", () => ({
+  NextStep: ({ to }: { to: string }) => <a href={`/${to}`}>{`next.${to}`}</a>,
+}));
 vi.mock("@/features/shared/format/server", () => ({
   getFormat: async () => ({
     date: (iso: string) => iso.slice(0, 10),

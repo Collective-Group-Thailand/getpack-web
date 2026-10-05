@@ -349,22 +349,34 @@ export function fileRoutedRfq(
   return addCustomerRfq(rfq);
 }
 
-/** A customer's RFQ as `store.rfqs.submit` files it — also one item of a submitted basket (D-301). */
-export function createStoreRfq(
-  customer: MockCustomer,
-  body: Schemas["SubmitRfqDto"],
-  en: boolean,
-): AdminRfq | Response {
+/** Why an RFQ would be refused (an unknown type, a required answer missing), or `null` — checked before anything is filed. */
+export function rfqRefusal(
+  body: Pick<Schemas["SubmitRfqDto"], "productTypeCode" | "spec">,
+  path = "",
+): Response | null {
   const spec = body.spec as Record<string, unknown>;
   const form = formOf(body.productTypeCode);
   if (!form) return problem(422, "validation.failed", "ไม่พบประเภทสินค้านี้");
   const missing = form.fields.find(
     (field) => field.required && (spec[field.key] === undefined || spec[field.key] === ""),
   );
-  if (missing)
-    return problem(422, "validation.failed", "กรุณากรอกข้อมูลที่จำเป็น", [
-      { path: `spec.${missing.key}`, code: "required", message: "required" },
-    ]);
+  return missing
+    ? problem(422, "validation.failed", "กรุณากรอกข้อมูลที่จำเป็น", [
+        { path: `${path}spec.${missing.key}`, code: "required", message: "required" },
+      ])
+    : null;
+}
+
+/** A customer's RFQ as `store.rfqs.submit` files it — also one item of a submitted basket (D-301). */
+export function createStoreRfq(
+  customer: MockCustomer,
+  body: Schemas["SubmitRfqDto"],
+  en: boolean,
+): AdminRfq | Response {
+  const refused = rfqRefusal(body);
+  if (refused) return refused;
+  const spec = body.spec as Record<string, unknown>;
+  const form = formOf(body.productTypeCode)!;
   const labelOf = (key: string) => {
     const field = form.fields.find((candidate) => candidate.key === key);
     return field ? (en ? field.labelEn : field.labelTh) : key;
