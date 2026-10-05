@@ -344,3 +344,176 @@ export const shrinkSleeve: BodyModule = {
     ]);
   },
 };
+
+/**
+ * A pyramid carton (PK-SP-15): a square base `length` × `length` and four isosceles triangles to an
+ * apex `height` above it, each folded up by the angle that brings the apexes together; three of
+ * them carry a glue flap on their right edge, folded to lie inside the next triangle. A hang hole
+ * (`hangHole`) goes through the back triangle near the apex. ⚠ Glue flap width and hole position to
+ * be confirmed by Prepress.
+ */
+export const pyramid: BodyModule = {
+  id: "pyramid",
+  slot: "body",
+  kind: "special",
+  status: "implemented",
+  folds: true,
+  label: t("กล่องปิรามิด", "Pyramid carton"),
+  params: ["length", "height", "hangHole"],
+  processes: ["die_cut", "folder_gluer_straight"],
+  contributes: { kinds: ["base", "panel", "glue_flap"], roles: ["cut", "crease", "glue_area"] },
+  build(ctx) {
+    const { v } = ctx;
+    const a = num(v, "length", 100);
+    const h = num(v, "height", 100);
+    const s = Math.hypot(h, a / 2);
+    const g = Math.min(12, a / 6);
+    const hang = str(v, "hangHole", "none");
+    // The base [0, a]²; each triangle's apex `s` out from its base edge's midpoint.
+    // Edges: the base crease, then corner → apex (creased where a glue flap hangs), apex → corner.
+    const tri = (
+      id: string,
+      label: "front" | "back" | "left" | "right",
+      pts: Pt[],
+      flapped: boolean,
+      holes: Contour[] = [],
+    ) => face(id, label, "panel", polygon(pts, ["crease", flapped ? "crease" : "cut", "cut"]), { holes });
+    // Glue flap on the edge apex → b of a triangle (b is the base corner), on its outside.
+    const flap = (id: string, apex: Pt, b: Pt) => {
+      const len = Math.hypot(b[0] - apex[0], b[1] - apex[1]);
+      const [ux, uy] = [(b[0] - apex[0]) / len, (b[1] - apex[1]) / len];
+      // Outward normal: to the right of apex → b in the y-down sheet frame.
+      const [nx, ny] = [-uy, ux];
+      const p = (along: number, out: number): Pt => [apex[0] + ux * along + nx * out, apex[1] + uy * along + ny * out];
+      return face(
+        id,
+        "glue_flap",
+        "glue_flap",
+        polygon([b, apex, p(g * 2, g), p(len - g, g)], ["crease", "cut", "cut", "cut"]),
+      );
+    };
+    const top: Pt = [a / 2, -s];
+    const right: Pt = [a + s, a / 2];
+    const bottom: Pt = [a / 2, a + s];
+    const left: Pt = [-s, a / 2];
+    const d = hang === "euro" || hang === "sombrero" ? Math.max(18, (44 * s) / a + 6) : Math.max(12, (14 * s) / a + 6);
+    const holes = hang === "none" ? [] : hangHoleShape(hang, a / 2, -s + d);
+    const faces = [
+      face(
+        "base",
+        "base",
+        "base",
+        rectangle(0, 0, a, a, { top: "crease", right: "crease", bottom: "crease", left: "crease" }),
+      ),
+      tri("side-back", "back", [[a, 0], [0, 0], top], true, holes),
+      tri("side-right", "right", [[a, a], [a, 0], right], true),
+      tri("side-front", "front", [[0, a], [a, a], bottom], true),
+      tri("side-left", "left", [[0, 0], [0, a], left], false),
+      flap("glue-back", top, [0, 0]),
+      flap("glue-right", right, [a, 0]),
+      flap("glue-front", bottom, [a, a]),
+    ];
+    return assemble(ctx.styleId, [piece("blank", "blank", faces)]);
+  },
+  hinges(ctx) {
+    const a = num(ctx.v, "length", 100);
+    const h = num(ctx.v, "height", 100);
+    const s = Math.hypot(h, a / 2);
+    const up = (Math.acos(-(a / 2) / s) * 180) / Math.PI;
+    // Between two neighbouring triangles: the angle between their normals.
+    const n1 = [0, -h, a / 2];
+    const n2 = [h, 0, a / 2];
+    const cos = (n1[0] * n2[0] + n1[1] * n2[1] + n1[2] * n2[2]) / (Math.hypot(...n1) * Math.hypot(...n2));
+    const glue = 180 - (Math.acos(cos) * 180) / Math.PI;
+    return {
+      roots: { blank: "base" },
+      upright: "base",
+      angles: {
+        "side-back": up,
+        "side-right": up,
+        "side-front": up,
+        "side-left": up,
+        "glue-back": glue,
+        "glue-right": glue,
+        "glue-front": glue,
+      },
+      stages: {
+        "glue-back": 1,
+        "glue-right": 1,
+        "glue-front": 1,
+        "side-back": 2,
+        "side-right": 2,
+        "side-front": 2,
+        "side-left": 3,
+      },
+    };
+  },
+};
+
+/**
+ * An easel-back display (PK-DS-04): the printed panel `length` × `height`; a back ply over its upper
+ * part (45 % of the height) folded behind it at the top and glued; on the back ply's lower edge a
+ * strut a third of the width, swung out 25° behind as the easel leg (it stands proud, like a hanger).
+ * `fingerHole` (the `thumb` axis) cuts a finger hole through both plies near the top. ⚠ Strut width,
+ * angle and length to be confirmed by Prepress.
+ */
+export const easel: BodyModule = {
+  id: "easel",
+  slot: "body",
+  kind: "special",
+  status: "implemented",
+  folds: true,
+  label: t("ป้ายตั้งโต๊ะมีขาตั้ง", "Easel-back display"),
+  params: ["length", "height", "fingerHole"],
+  processes: ["die_cut", "hand_assembly"],
+  contributes: { kinds: ["panel", "hanger"], roles: ["cut", "crease", "glue_area"] },
+  build(ctx) {
+    const { v } = ctx;
+    const W = num(v, "length", 200);
+    const H = num(v, "height", 280);
+    const B = H * 0.45;
+    const sw = W / 3;
+    const SH = (H - B) * 1.02;
+    const finger = bool(v, "fingerHole", false);
+    const r = Math.min(10, W / 10);
+    const x0 = W / 2 - sw / 2;
+    const x1 = W / 2 + sw / 2;
+    const back = face(
+      "back",
+      "back",
+      "panel",
+      [
+        line([0, 0], [0, -B], "cut"),
+        line([0, -B], [x0, -B], "cut"),
+        line([x0, -B], [x1, -B], "crease"),
+        line([x1, -B], [W, -B], "cut"),
+        line([W, -B], [W, 0], "cut"),
+        line([W, 0], [0, 0], "crease"),
+      ],
+      {
+        holes: finger ? [ellipse(W / 2, -18, r, r)] : [],
+        marks: polygon(
+          [
+            [6, -B + 6],
+            [W - 6, -B + 6],
+            [W - 6, -6],
+            [6, -6],
+          ],
+          "glue_area",
+        ),
+      },
+    );
+    const faces = [
+      face("front", "front", "panel", rectangle(0, 0, W, H, { top: "crease" }), {
+        holes: finger ? [ellipse(W / 2, 18, r, r)] : [],
+      }),
+      back,
+      face("strut", "panel", "hanger", rectangle(x0, -B - SH, sw, SH, { bottom: "crease" })),
+    ];
+    return assemble(ctx.styleId, [piece("blank", "blank", faces)]);
+  },
+  hinges: (_ctx, cfg) => ({
+    roots: { blank: "front" },
+    angles: { back: 180, strut: (cfg.strutAngle as number | undefined) ?? -25 },
+  }),
+};

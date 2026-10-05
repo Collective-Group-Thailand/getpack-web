@@ -134,6 +134,14 @@ import bookletLabelCircle from "./data/booklet-label-circle.json" with { type: "
 import bookletLabelOval from "./data/booklet-label-oval.json" with { type: "json" };
 import bookletLabelCustom from "./data/booklet-label-custom.json" with { type: "json" };
 import shrinkSleeve from "./data/shrink-sleeve.json" with { type: "json" };
+import pyramid from "./data/pyramid.json" with { type: "json" };
+import petalTuck from "./data/petal-tuck.json" with { type: "json" };
+import petalSnap from "./data/petal-snap.json" with { type: "json" };
+import petalCrash from "./data/petal-crash.json" with { type: "json" };
+import petalSeal from "./data/petal-seal.json" with { type: "json" };
+import petalFourflap from "./data/petal-fourflap.json" with { type: "json" };
+import easelDisplay from "./data/easel-display.json" with { type: "json" };
+import floorDisplay from "./data/floor-display.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -279,4 +287,12 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   bookletLabelOval,
   bookletLabelCustom,
   shrinkSleeve,
+  pyramid,
+  petalTuck,
+  petalSnap,
+  petalCrash,
+  petalSeal,
+  petalFourflap,
+  easelDisplay,
+  floorDisplay,
 ] as unknown as StyleRecipe[];

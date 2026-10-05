@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "pyramid",
+  "base": "PK-SP-15",
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "กล่องปิรามิด",
+    "en": "Pyramid carton"
+  },
+  "description": {
+    "th": "ฐานสี่เหลี่ยมจัตุรัส ด้านข้างสามเหลี่ยมสี่ด้านพบกันที่ยอด เลือกรูแขวนได้",
+    "en": "A square base with four triangular sides meeting at the apex; with an optional hang hole"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 40,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    "hangHole"
+  ],
+  "defaults": {
+    "length": 100,
+    "height": 120,
+    "hangHole": "none"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "ฐาน 70 สูง 90",
+        "en": "Base 70 × 90"
+      },
+      "values": {
+        "length": 70,
+        "height": 90
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "ฐาน 100 สูง 120",
+        "en": "Base 100 × 120"
+      },
+      "values": {
+        "length": 100,
+        "height": 120
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ฐาน 150 สูง 180",
+        "en": "Base 150 × 180"
+      },
+      "values": {
+        "length": 150,
+        "height": 180
+      }
+    }
+  ],
+  "body": {
+    "module": "pyramid"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "length",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length + t",
+    "width": "length + t",
+    "height": "height + t / 2"
+  }
+}
