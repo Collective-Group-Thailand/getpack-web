@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "floor-display",
+  "base": "PK-CD-02",
+  "variants": {
+    "shelves": {
+      "1": {
+        "shelves": "1"
+      },
+      "2": {
+        "shelves": "2"
+      },
+      "3": {
+        "shelves": "3"
+      },
+      "4": {
+        "shelves": "4"
+      }
+    },
+    "header": {
+      "none": {
+        "header": "none"
+      },
+      "header_card": {
+        "header": "card"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "ชั้นวางโชว์สินค้าตั้งพื้น",
+    "en": "Floor display unit"
+  },
+  "description": {
+    "th": "ชั้นวางลูกฟูกตั้งพื้น ตัวสามด้าน ชั้นวาง 1–4 ชั้น เลือกป้ายหัวได้",
+    "en": "A corrugated floor stand: a three-sided body with one to four shelves; with an optional header card"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 250,
+      "max": 800
+    },
+    {
+      "ref": "width",
+      "min": 200,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 600,
+      "max": 1800
+    },
+    "shelves",
+    "header",
+    "grain"
+  ],
+  "defaults": {
+    "length": 400,
+    "width": 300,
+    "height": 1400,
+    "shelves": "3",
+    "header": "none",
+    "grain": "along"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 300 × 250 × 1000",
+        "en": "S 300 × 250 × 1000"
+      },
+      "values": {
+        "length": 300,
+        "width": 250,
+        "height": 1000
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 400 × 300 × 1400",
+        "en": "M 400 × 300 × 1400"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 1400
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 600 × 400 × 1600",
+        "en": "L 600 × 400 × 1600"
+      },
+      "values": {
+        "length": 600,
+        "width": 400,
+        "height": 1600
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "floorDisplay"
+  },
+  "outerSize": {
+    "length": "length + 2 * t",
+    "width": "width + 1.5 * t",
+    "height": "height"
+  }
+}

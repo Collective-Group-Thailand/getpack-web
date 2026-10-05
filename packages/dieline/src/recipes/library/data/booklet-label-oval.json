@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "booklet-label-oval",
+  "base": "PK-LA-06",
+  "variant": {
+    "shape_flat": "oval"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากเล่มลอกเปิด วงรี",
+    "en": "Peel-back booklet label, oval"
+  },
+  "description": {
+    "th": "ฉลากหลายชั้น ชั้นบนเป็นเล่มพับลอกเปิดอ่านได้และปิดกลับได้",
+    "en": "A multi-ply label whose top ply is a folded booklet that peels open to read and reseals"
+  },
+  "materials": ["label"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    }
+  ],
+  "defaults": {
+    "length": 80,
+    "width": 50
+  },
+  "presets": [
+    {
+      "id": "a",
+      "label": {
+        "th": "60 × 40",
+        "en": "60 × 40"
+      },
+      "values": {
+        "length": 60,
+        "width": 40
+      }
+    },
+    {
+      "id": "b",
+      "label": {
+        "th": "100 × 60",
+        "en": "100 × 60"
+      },
+      "values": {
+        "length": 100,
+        "width": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "oval"
+    }
+  },
+  "features": [
+    {
+      "module": "bookletHinge"
+    }
+  ]
+}
