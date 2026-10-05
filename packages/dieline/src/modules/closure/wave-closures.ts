@@ -73,6 +73,9 @@ export const fourFlapLock: ClosureModule = {
  * dust wings on its sides and a lip that folds down **outside** the front panel — it opens and
  * closes on the lip, no tuck. The lip is a third of the height, 12–25 mm. ⚠ Lip depth and wing
  * cut-backs to be confirmed by Prepress.
+ *
+ * `extended` (PK-FT-02): the wings reach three quarters of the way down the side walls instead of
+ * two fifths, so the lid stays square and keeps dust out on a tall box.
  */
 export const flipTop: ClosureModule = {
   id: "flipTop",
@@ -83,7 +86,7 @@ export const flipTop: ClosureModule = {
   params: ["dustFlapDepth"],
   processes: ["die_cut", "folder_gluer_straight"],
   contributes: { kinds: ["lid", "flap", "dust_flap"], roles: ["cut", "crease"] },
-  tube(ctx, _cfg, end) {
+  tube(ctx, cfg, end) {
     const { v, m } = ctx;
     const L = num(v, "length", 70);
     const lidDepth = ctx.dims.side + m.caliperMm;
@@ -91,7 +94,9 @@ export const flipTop: ClosureModule = {
     const reach = num(
       v,
       "dustFlapDepth",
-      Math.min(ctx.dims.depth * 0.4, L * DUST_FLAP_LENGTH_SHARE, ctx.dims.front * 0.45),
+      cfg.extended
+        ? Math.min(ctx.dims.depth * 0.75, ctx.dims.front * 0.9)
+        : Math.min(ctx.dims.depth * 0.4, L * DUST_FLAP_LENGTH_SHARE, ctx.dims.front * 0.45),
     );
     const closure: Closure = ({ panels }) => {
       const back = panels[2];

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "id": "bubble-mailer",
+  "base": "PK-PB-07",
+  "category": "flat",
+  "name": {
+    "th": "ซองกันกระแทกบับเบิล",
+    "en": "Bubble mailer"
+  },
+  "description": {
+    "th": "ซองไปรษณีย์ด้านในบุแผ่นกันกระแทก ปิดด้วยเทปกาวในตัว",
+    "en": "A courier envelope lined with bubble cushioning, closed with a peel-and-seal strip"
+  },
+  "materials": ["flexible"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 600
+    },
+    {
+      "ref": "length",
+      "min": 120,
+      "max": 800
+    },
+    "flapDepth",
+    "sealWidth"
+  ],
+  "defaults": {
+    "width": 250,
+    "length": 350,
+    "flapDepth": 50,
+    "sealWidth": 8,
+    "adhesive": "single",
+    "tearStrip": false
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "170 × 250",
+        "en": "170 × 250"
+      },
+      "values": {
+        "width": 170,
+        "length": 250
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "250 × 350",
+        "en": "250 × 350"
+      },
+      "values": {
+        "width": 250,
+        "length": 350
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "350 × 450",
+        "en": "350 × 450"
+      },
+      "values": {
+        "width": 350,
+        "length": 450
+      }
+    }
+  ],
+  "body": {
+    "module": "polyMailer"
+  }
+}

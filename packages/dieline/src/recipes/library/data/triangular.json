@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "id": "triangular",
+  "base": "PK-SP-05",
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องสามเหลี่ยม",
+    "en": "Triangular prism carton"
+  },
+  "description": {
+    "th": "กล่องปริซึมสามเหลี่ยม ฝาสามเหลี่ยมเสียบลิ้น เลือกหูแขวนและหน้าต่างได้",
+    "en": "A three-sided prism carton with triangular tuck lids; hang tab and window are options"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    "side",
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "tuckCorners",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "hangerHeight",
+    "hangHole",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "side-1",
+          "label": {
+            "th": "ด้านหน้า",
+            "en": "Front"
+          }
+        },
+        {
+          "value": "lid",
+          "label": {
+            "th": "บนฝา",
+            "en": "Lid top"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "side": 70,
+    "height": 150,
+    "tuckCorners": "rounded",
+    "glueSide": "left",
+    "grain": "across",
+    "window": "none",
+    "windowPanel": "side-1",
+    "windowWidth": 20,
+    "windowHeight": 40,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 4,
+    "hangHole": "none"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "ด้าน 60 สูง 120",
+        "en": "Side 60 × 120"
+      },
+      "values": {
+        "side": 60,
+        "height": 120
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "ด้าน 80 สูง 180",
+        "en": "Side 80 × 180"
+      },
+      "values": {
+        "side": 80,
+        "height": 180
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ด้าน 100 สูง 220",
+        "en": "Side 100 × 220"
+      },
+      "values": {
+        "side": 100,
+        "height": 220
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "with": {
+      "dims": {
+        "panel": "side + t * tan(pi / 3)",
+        "front": "panel",
+        "side": "panel",
+        "depth": "height + 2 * t",
+        "glue": "glueWidth ?? glueWidthFor(panel)"
+      },
+      "panels": [
+        {
+          "id": "side-1",
+          "label": "front",
+          "width": "panel"
+        },
+        {
+          "id": "side-2",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-3",
+          "label": "back",
+          "width": "panel"
+        }
+      ],
+      "depth": "depth",
+      "glue": "glue",
+      "glueRight": "glueSide == 'right'",
+      "grain": "side-1",
+      "root": "side-1",
+      "turn": 120
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "polygonTuckLid",
+      "with": {
+        "sides": 3
+      }
+    },
+    "bottom": {
+      "module": "polygonTuckLid",
+      "with": {
+        "sides": 3
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "triangular.tuck_depth",
+      "code": "tuck.too_deep",
+      "severity": "error",
+      "param": "tuckDepth",
+      "require": "(tuckDepth ?? tuckDepthFor(panel)) < height - 5",
+      "message": {
+        "th": "ลิ้นเสียบลึกเกินความสูงกล่อง",
+        "en": "The tuck is deeper than the box is tall"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "panel - sqrt(3) * t",
+    "width": "sqrt(3) / 2 * (panel - sqrt(3) * t)",
+    "height": "height"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "side-1",
+        "windowWidth": 20,
+        "windowHeight": 40,
+        "windowOffsetY": 0
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid",
+        "windowWidth": 16,
+        "windowHeight": 12,
+        "windowOffsetY": 8
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top",
+        "optional": true
+      }
+    },
+    {
+      "module": "window"
+    }
+  ],
+  "outerSize": {
+    "length": "panel + 0.5 * sqrt(3) * t",
+    "width": "sqrt(3) / 2 * panel + 1.5 * t",
+    "height": "height + 2 * t"
+  }
+}

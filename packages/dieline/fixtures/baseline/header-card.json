@@ -1,0 +1,135 @@
+{
+  "definition": "1051a5c355b026",
+  "s · label-film": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · board-350": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "15202279b28c9e",
+    "closed": "0ad21136dd908e"
+  },
+  "m · label-film": {
+    "build": "1ac795e27ffd0f",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0a3fbd2ce00afc"
+  },
+  "m · board-350": {
+    "build": "1ac795e27ffd0f",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "15202279b28c9e",
+    "closed": "0a3fbd2ce00afc"
+  },
+  "l · label-film": {
+    "build": "110e58eaf4c9d8",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "06b11ece95ef4b"
+  },
+  "l · board-350": {
+    "build": "110e58eaf4c9d8",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "15202279b28c9e",
+    "closed": "06b11ece95ef4b"
+  },
+  "s · label-film · length=min": {
+    "build": "0b2b669a68f5fa",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "1ced41e5ed06e0"
+  },
+  "s · label-film · length=max": {
+    "build": "1819b32ea2a6cc",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad9944f548812"
+  },
+  "s · label-film · length<min": {
+    "build": "15dab09c05736c",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "0a1d3653daaaea",
+    "closed": "1aa24dd88aac32"
+  },
+  "s · label-film · length>max": {
+    "build": "0edab36129169c",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "0746f84b875b12",
+    "closed": "14c6a2273acbaa"
+  },
+  "s · label-film · height=min": {
+    "build": "17fcc0540f31fa",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0f8b9332e502cd"
+  },
+  "s · label-film · height=max": {
+    "build": "1a590cb1585806",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "1b441f1c151aa1"
+  },
+  "s · label-film · height<min": {
+    "build": "0f10147fa74d98",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "1c1d1b95b51779",
+    "closed": "050dee26d7e31b"
+  },
+  "s · label-film · height>max": {
+    "build": "09843735bf3bd6",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "0f6fb43bda6ebd",
+    "closed": "12d077ccd0117a"
+  },
+  "s · label-film · hangHole=euro": {
+    "build": "0d80ef2700535e",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangHole=round": {
+    "build": "0b14b912af564a",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangHole=sombrero": {
+    "build": "0fa0575f8ce60d",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangHole=none": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangFromFold=min": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangFromFold=max": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "177ada375a3441",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangFromFold<min": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "07cbae9bcbcae0",
+    "closed": "0ad21136dd908e"
+  },
+  "s · label-film · hangFromFold>max": {
+    "build": "0efdf063b23687",
+    "hinges": "1d1867cac5ecb6",
+    "validate": "03d7ca3698c9ea",
+    "closed": "0ad21136dd908e"
+  }
+}

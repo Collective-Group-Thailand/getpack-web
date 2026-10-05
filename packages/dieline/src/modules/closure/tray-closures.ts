@@ -3,7 +3,7 @@ import { tuckOnEdge } from "../../construct/closures";
 import { face } from "../../faces";
 import { bool, num, str } from "../../params";
 import { ellipse, line, polygon, rectangle } from "../../path";
-import { t } from "../../styles/_shared";
+import { t, windowHole } from "../../styles/_shared";
 import type { Edge, Face, Pt } from "../../types";
 import type { BuildContext, ClosureModule, ModuleConfig, TrayExtras, TrayFrame } from "../types";
 
@@ -198,7 +198,18 @@ export const hingedLid: ClosureModule = {
           },
         ]
       : [],
-  tray: (ctx, cfg, frame): TrayExtras => ({
-    "wall-back": cfg.front === "tuck" ? tuckFrontLid(ctx, frame) : gluedLipsLid(frame),
-  }),
+  tray: (ctx, cfg, frame): TrayExtras => {
+    const faces = cfg.front === "tuck" ? tuckFrontLid(ctx, frame) : gluedLipsLid(frame);
+    // A window in the lid (`windowPanel` = `lid`, the master file's `top_window`; U3.4 wave 2).
+    const lid = faces.find((f) => f.id === "lid");
+    if (lid) {
+      const xs = lid.outline.flatMap((e) => [e.from[0], e.to[0]]);
+      const ys = lid.outline.flatMap((e) => [e.from[1], e.to[1]]);
+      lid.holes = [
+        ...lid.holes,
+        ...windowHole(ctx.v, "lid", Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)),
+      ];
+    }
+    return { "wall-back": faces };
+  },
 };

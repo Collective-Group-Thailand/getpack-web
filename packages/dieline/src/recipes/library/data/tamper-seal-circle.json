@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "tamper-seal-circle",
+  "base": "PK-LA-04",
+  "variant": {
+    "shape_flat": "circle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "สติกเกอร์ซีลกันแกะ วงกลม",
+    "en": "Tamper-evident seal, circle"
+  },
+  "description": {
+    "th": "สติกเกอร์ปิดผนึกมีรอยกรีดรอบขอบ ฉีกขาดเมื่อถูกแกะ",
+    "en": "A seal label with security cuts round its edge, so it tears when lifted"
+  },
+  "materials": ["label"],
+  "params": ["diameter"],
+  "defaults": {
+    "diameter": 50
+  },
+  "presets": [
+    {
+      "id": "d30",
+      "label": {
+        "th": "⌀ 30",
+        "en": "⌀ 30"
+      },
+      "values": {
+        "diameter": 30
+      }
+    },
+    {
+      "id": "d50",
+      "label": {
+        "th": "⌀ 50",
+        "en": "⌀ 50"
+      },
+      "values": {
+        "diameter": 50
+      }
+    },
+    {
+      "id": "d80",
+      "label": {
+        "th": "⌀ 80",
+        "en": "⌀ 80"
+      },
+      "values": {
+        "diameter": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "circle"
+    }
+  },
+  "features": [
+    {
+      "module": "securityCuts"
+    }
+  ]
+}

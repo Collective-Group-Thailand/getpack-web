@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "id": "rigid-lid-base",
+  "base": "PK-RG-01",
+  "variants": {
+    "lid_depth": {
+      "partial": {
+        "lid": "partial"
+      },
+      "full": {
+        "lid": "full"
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid-base"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    },
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "กล่องแข็งตัวกล่องและฝาครอบ",
+    "en": "Rigid lid and base box"
+  },
+  "description": {
+    "th": "กล่องแข็งสองชิ้นหุ้มกระดาษ ฝาครอบเต็มหรือบางส่วน เลือกหน้าต่าง รูดึง และตัวรองได้",
+    "en": "A two-piece wrapped greyboard box with a full or partial lid; window, finger pull and insert are options"
+  },
+  "materials": ["rigid"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 200
+    },
+    "lid",
+    "lidDepth",
+    "grain",
+    "fingerHole",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "lid-base",
+          "label": {
+            "th": "ด้านบนฝา",
+            "en": "Lid top"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius",
+    "insert"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 150,
+    "height": 60,
+    "lid": "partial",
+    "grain": "across",
+    "cornerLock": "glued",
+    "fingerHole": false,
+    "window": "none",
+    "windowWidth": 40,
+    "windowHeight": 30,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6,
+    "windowPanel": "lid-base",
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "gift",
+      "label": {
+        "th": "ของขวัญ 200 × 150 × 60",
+        "en": "Gift 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "apparel",
+      "label": {
+        "th": "เสื้อผ้า 300 × 250 × 80",
+        "en": "Apparel 300 × 250 × 80"
+      },
+      "values": {
+        "length": 300,
+        "width": 250,
+        "height": 80,
+        "lid": "full"
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "lidAndBase"
+  },
+  "features": [
+    {
+      "module": "window"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "target": "base",
+        "floor": "t"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "length + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "width + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height"
+  }
+}

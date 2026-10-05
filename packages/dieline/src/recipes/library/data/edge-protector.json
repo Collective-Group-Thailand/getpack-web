@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "id": "edge-protector",
+  "base": "PK-CI-03",
+  "category": "corrugated",
+  "name": {
+    "th": "แผ่นกันมุมและขอบ",
+    "en": "Corner and edge protector"
+  },
+  "description": {
+    "th": "แผ่นพับเป็นมุมฉาก ครอบขอบสินค้าหรือพาเลทกันกระแทก",
+    "en": "A strip folded to a right angle that guards the edges of goods or a pallet"
+  },
+  "materials": ["corrugated", "paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 50,
+      "max": 1500
+    },
+    {
+      "ref": "width",
+      "min": 20,
+      "max": 100
+    }
+  ],
+  "defaults": {
+    "length": 300,
+    "width": 40
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "ยาว 150 ขา 30",
+        "en": "150 long, legs 30"
+      },
+      "values": {
+        "length": 150,
+        "width": 30
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "ยาว 300 ขา 40",
+        "en": "300 long, legs 40"
+      },
+      "values": {
+        "length": 300,
+        "width": 40
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "ยาว 600 ขา 50",
+        "en": "600 long, legs 50"
+      },
+      "values": {
+        "length": 600,
+        "width": 50
+      }
+    }
+  ],
+  "body": {
+    "module": "foldedCard",
+    "with": {
+      "across": "length",
+      "leaf": "width",
+      "angle": 90
+    }
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "width"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "width + t / 2",
+    "height": "width + t / 2"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "neck-insert",
+  "base": "PK-IN-02",
+  "category": "specialty",
+  "name": {
+    "th": "แผ่นรองล็อกคอขวด",
+    "en": "Bottle-neck insert"
+  },
+  "description": {
+    "th": "แผ่นการ์ดเจาะรูรับคอขวด วางในกล่องให้ขวดตั้งตรงไม่โยก",
+    "en": "A die-cut card with a hole for the bottle neck, set in the carton to hold the bottle upright"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 30,
+      "max": 300
+    },
+    {
+      "ref": "width",
+      "min": 30,
+      "max": 300
+    },
+    "neckDiameter"
+  ],
+  "defaults": {
+    "length": 80,
+    "width": 80,
+    "neckDiameter": 28
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "60 × 60 คอ 26",
+        "en": "60 × 60, neck 26"
+      },
+      "values": {
+        "length": 60,
+        "width": 60,
+        "neckDiameter": 26
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "80 × 80 คอ 28",
+        "en": "80 × 80, neck 28"
+      },
+      "values": {
+        "length": 80,
+        "width": 80,
+        "neckDiameter": 28
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "100 × 100 คอ 36",
+        "en": "100 × 100, neck 36"
+      },
+      "values": {
+        "length": 100,
+        "width": 100,
+        "neckDiameter": 36
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "neckHole"
+    }
+  ]
+}

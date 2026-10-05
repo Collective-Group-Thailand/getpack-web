@@ -122,7 +122,7 @@ export function withLidWindow(ctx: BuildContext, closure: Closure, lidId: string
 /** The default settings of each flap set, for rules that read them (`rules/module-rules.ts`). */
 export const FLAP_DEFAULTS: Record<string, ModuleConfig> = {};
 
-function flapSet(
+export function flapSet(
   id: string,
   label: ReturnType<typeof t>,
   defaults: ModuleConfig,
@@ -166,10 +166,10 @@ function flapSet(
   };
 }
 
-const MEET = "side / 2 + a.flap";
+export const MEET = "side / 2 + a.flap";
 
 /** Legacy `l_must_more_than_w` (on by default) for the slotted family, as a warning. */
-const SLOTTED: Constraint[] = [
+export const SLOTTED: Constraint[] = [
   {
     id: "slotted.width_vs_length",
     code: "size.width_exceeds_length",
@@ -337,6 +337,22 @@ export const gableHandle: ClosureModule = {
  * A regular-polygon lid with a tuck on its far edge, hinged on the first panel of an n-sided tube
  * (the hexagonal box): `panel` is the body's compensated side.
  */
+/**
+ * The vertices of a regular `n`-gon built upwards (negative y) on the edge x0 → x1 at y = 0, after
+ * that edge: walking on from (x1, 0), turning by the exterior angle at each vertex.
+ */
+export function regularPolygonRest(n: number, x0: number, x1: number): Pt[] {
+  const a = x1 - x0;
+  const out: Pt[] = [];
+  let p: Pt = [x1, 0];
+  for (let k = 1; k <= n - 2; k++) {
+    const angle = (-2 * Math.PI * k) / n;
+    p = [p[0] + a * Math.cos(angle), p[1] + a * Math.sin(angle)];
+    out.push(p);
+  }
+  return out;
+}
+
 export const polygonTuckLid: ClosureModule = {
   id: "polygonTuckLid",
   slot: "closure",
@@ -357,26 +373,32 @@ export const polygonTuckLid: ClosureModule = {
       stage: "manufacturing",
     },
   ],
-  tube(ctx) {
+  tube(ctx, cfg, end) {
     const a = ctx.dims.panel;
+    const n = (cfg.sides as number | undefined) ?? 6;
     const h = (a * Math.sqrt(3)) / 2;
-    const tuckDepth = num(ctx.v, "tuckDepth", tuckDepthFor(2 * a));
+    const tuckDepth = num(ctx.v, "tuckDepth", tuckDepthFor(n === 3 ? a : 2 * a));
     const radius =
       str(ctx.v, "tuckCorners", "rounded") === "rounded" ? Math.min(TUCK_CORNER_RADIUS_MM, tuckDepth / 2) : 0;
-    return polygonLid({
-      panel: 0,
-      points: (s) => {
-        const pts: Pt[] = [
-          [s.x1 + a / 2, -h],
-          [s.x1, -2 * h],
-          [s.x0, -2 * h],
-          [s.x0 - a / 2, -h],
-        ];
-        return pts;
-      },
-      tuckEdge: 1,
+    // `panel`: the panel the lid hinges on, per end (a reverse tuck puts the bottom lid opposite).
+    const at = cfg.panel as Record<string, number> | number | undefined;
+    const panel = typeof at === "number" ? at : (at?.[end] ?? 0);
+    const closure = polygonLid({
+      panel,
+      points: (s) =>
+        n === 6
+          ? [
+              [s.x1 + a / 2, -h],
+              [s.x1, -2 * h],
+              [s.x0, -2 * h],
+              [s.x0 - a / 2, -h],
+            ]
+          : regularPolygonRest(n, s.x0, s.x1),
+      // The edge opposite the hinge on an even polygon; on a triangle the edge back to the hinge's left end.
+      tuckEdge: n % 2 === 0 ? n / 2 - 2 : n - 3,
       tuckDepth,
       tuckRadius: radius,
     });
+    return end === "top" ? withLidWindow(ctx, closure, "lid-top") : closure;
   },
 };

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "te-tamper-fourflap",
+  "base": "PK-TE-05",
+  "variant": {
+    "tuck_bottom": "four_flap_lock"
+  },
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาเสียบกันแกะ ก้นล็อกสี่ปีก",
+    "en": "Tamper-evident tuck-end carton, four-flap lock bottom"
+  },
+  "description": {
+    "th": "ลิ้นเสียบฝาบนทากาว เปิดได้โดยฉีกตามเส้นปรุเท่านั้น เห็นได้ชัดว่าถูกเปิดแล้ว เลือกหูแขวนได้",
+    "en": "The top tuck is glued; the lid opens only by tearing along a perforation, so opening shows; with an optional hang tab"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "hangerHeight",
+    "hangHole",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "hangHole": "none"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "front"
+      }
+    },
+    "bottom": {
+      "module": "fourFlapLock"
+    }
+  },
+  "features": [
+    {
+      "module": "hangTab",
+      "with": {
+        "end": "top",
+        "optional": true
+      }
+    },
+    {
+      "module": "tamperTuck",
+      "with": {
+        "end": "top"
+      }
+    }
+  ]
+}

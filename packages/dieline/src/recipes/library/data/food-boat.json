@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "id": "food-boat",
+  "base": "PK-SP-10",
+  "category": "specialty",
+  "name": {
+    "th": "ถาดใส่อาหาร (เรือ)",
+    "en": "Food boat tray"
+  },
+  "description": {
+    "th": "ถาดเปิดติดกาวมุม ใส่อาหารทานเล่น",
+    "en": "An open tray with glued corners for snacks"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 300
+    },
+    {
+      "ref": "width",
+      "min": 40,
+      "max": 200
+    },
+    {
+      "ref": "height",
+      "min": 15,
+      "max": 80
+    },
+    "grain"
+  ],
+  "defaults": {
+    "length": 150,
+    "width": 90,
+    "height": 40,
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 120 × 70 × 35",
+        "en": "S 120 × 70 × 35"
+      },
+      "values": {
+        "length": 120,
+        "width": 70,
+        "height": 35
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 150 × 90 × 40",
+        "en": "M 150 × 90 × 40"
+      },
+      "values": {
+        "length": 150,
+        "width": 90,
+        "height": 40
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 200 × 120 × 50",
+        "en": "L 200 × 120 × 50"
+      },
+      "values": {
+        "length": 200,
+        "width": 120,
+        "height": 50
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "features": [],
+  "outerSize": {
+    "height": "height + t"
+  }
+}
