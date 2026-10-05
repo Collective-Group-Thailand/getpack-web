@@ -76,6 +76,18 @@ import cakeBox from "./data/cake-box.json" with { type: "json" };
 import foodBoat from "./data/food-boat.json" with { type: "json" };
 import hexagonalReverse from "./data/hexagonal-reverse.json" with { type: "json" };
 import triangular from "./data/triangular.json" with { type: "json" };
+import centerSealPouch from "./data/center-seal-pouch.json" with { type: "json" };
+import sideGussetBag from "./data/side-gusset-bag.json" with { type: "json" };
+import flatBottomPouch from "./data/flat-bottom-pouch.json" with { type: "json" };
+import sosBag from "./data/sos-bag.json" with { type: "json" };
+import bubbleMailer from "./data/bubble-mailer.json" with { type: "json" };
+import tamperSealRect from "./data/tamper-seal-rect.json" with { type: "json" };
+import tamperSealRounded from "./data/tamper-seal-rounded.json" with { type: "json" };
+import tamperSealCircle from "./data/tamper-seal-circle.json" with { type: "json" };
+import tamperSealOval from "./data/tamper-seal-oval.json" with { type: "json" };
+import tamperSealCustom from "./data/tamper-seal-custom.json" with { type: "json" };
+import neckCollar from "./data/neck-collar.json" with { type: "json" };
+import neckInsert from "./data/neck-insert.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -163,4 +175,16 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   foodBoat,
   hexagonalReverse,
   triangular,
+  centerSealPouch,
+  sideGussetBag,
+  flatBottomPouch,
+  sosBag,
+  bubbleMailer,
+  tamperSealRect,
+  tamperSealRounded,
+  tamperSealCircle,
+  tamperSealOval,
+  tamperSealCustom,
+  neckCollar,
+  neckInsert,
 ] as unknown as StyleRecipe[];

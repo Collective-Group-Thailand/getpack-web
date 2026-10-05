@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "id": "flat-bottom-pouch",
+  "base": "PK-PB-04",
+  "variants": {
+    "pouch_feat": {
+      "none": {
+        "pouchFeatures": "none"
+      },
+      "hang_hole": {
+        "pouchFeatures": "hang_hole"
+      },
+      "tear_notch": {
+        "pouchFeatures": "tear_notch"
+      },
+      "window": {
+        "pouchFeatures": "window"
+      },
+      "zipper": {
+        "pouchFeatures": "zipper"
+      },
+      "hang_hole+tear_notch": {
+        "pouchFeatures": "hang_hole+tear_notch"
+      },
+      "hang_hole+window": {
+        "pouchFeatures": "hang_hole+window"
+      },
+      "hang_hole+zipper": {
+        "pouchFeatures": "hang_hole+zipper"
+      },
+      "tear_notch+window": {
+        "pouchFeatures": "tear_notch+window"
+      },
+      "tear_notch+zipper": {
+        "pouchFeatures": "tear_notch+zipper"
+      },
+      "window+zipper": {
+        "pouchFeatures": "window+zipper"
+      },
+      "hang_hole+tear_notch+window": {
+        "pouchFeatures": "hang_hole+tear_notch+window"
+      },
+      "hang_hole+tear_notch+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+zipper"
+      },
+      "hang_hole+window+zipper": {
+        "pouchFeatures": "hang_hole+window+zipper"
+      },
+      "tear_notch+window+zipper": {
+        "pouchFeatures": "tear_notch+window+zipper"
+      },
+      "hang_hole+tear_notch+window+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+window+zipper"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ซองก้นแบนทรงกล่อง",
+    "en": "Flat-bottom box pouch"
+  },
+  "description": {
+    "th": "ซองฟิล์มข้างขยาย ก้นแบนเป็นทรงกล่อง ตั้งได้มั่นคง",
+    "en": "A gusseted film pouch with a flat box bottom that stands square on the shelf"
+  },
+  "materials": ["flexible"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 500
+    },
+    {
+      "ref": "gusset",
+      "omit": ["when"]
+    },
+    "sealWidth",
+    "pouchFeatures",
+    {
+      "ref": "windowWidth",
+      "omit": ["when"]
+    },
+    {
+      "ref": "windowHeight",
+      "omit": ["when"]
+    }
+  ],
+  "defaults": {
+    "pouchType": "flat_bottom",
+    "width": 140,
+    "length": 220,
+    "sealWidth": 8,
+    "pouchFeatures": "none",
+    "windowWidth": 50,
+    "windowHeight": 60,
+    "gusset": 60
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 100 × 180 ข้าง 50",
+        "en": "S 100 × 180 ข้าง 50"
+      },
+      "values": {
+        "width": 100,
+        "length": 180,
+        "gusset": 50
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 130 × 230 ข้าง 70",
+        "en": "M 130 × 230 ข้าง 70"
+      },
+      "values": {
+        "width": 130,
+        "length": 230,
+        "gusset": 70
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 160 × 300 ข้าง 90",
+        "en": "L 160 × 300 ข้าง 90"
+      },
+      "values": {
+        "width": 160,
+        "length": 300,
+        "gusset": 90
+      }
+    }
+  ],
+  "body": {
+    "module": "pouchWeb"
+  }
+}

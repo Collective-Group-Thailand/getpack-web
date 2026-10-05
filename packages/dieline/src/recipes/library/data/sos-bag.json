@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "id": "sos-bag",
+  "base": "PK-PG-02",
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "ถุงกระดาษก้นสี่เหลี่ยม (SOS)",
+    "en": "SOS paper bag"
+  },
+  "description": {
+    "th": "ถุงกระดาษข้างขยาย ก้นพับเป็นสี่เหลี่ยมตั้งได้เอง ปากถุงตัดเรียบ ไม่มีหูหิ้ว เลือกหน้าต่างได้",
+    "en": "A gusseted paper bag whose square bottom opens and stands by itself; plain top, no handles; with an optional window"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 400
+    },
+    {
+      "ref": "gusset",
+      "min": 40,
+      "max": 250,
+      "omit": ["when"]
+    },
+    {
+      "ref": "height",
+      "min": 120,
+      "max": 500
+    },
+    "glueWidth",
+    "grain",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "front",
+          "label": {
+            "th": "ด้านหน้า",
+            "en": "Front"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "width": 180,
+    "gusset": 100,
+    "height": 300,
+    "bagGusset": "gusseted",
+    "bagHandle": "none",
+    "grain": "along",
+    "window": "none",
+    "windowPanel": "front",
+    "windowWidth": 80,
+    "windowHeight": 100,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "120 × 70 × 230",
+        "en": "120 × 70 × 230"
+      },
+      "values": {
+        "width": 120,
+        "gusset": 70,
+        "height": 230
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "180 × 100 × 300",
+        "en": "180 × 100 × 300"
+      },
+      "values": {
+        "width": 180,
+        "gusset": 100,
+        "height": 300
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "250 × 150 × 400",
+        "en": "250 × 150 × 400"
+      },
+      "values": {
+        "width": 250,
+        "gusset": 150,
+        "height": 400
+      }
+    }
+  ],
+  "body": {
+    "module": "paperBag",
+    "with": {
+      "sos": true
+    }
+  },
+  "variant": {
+    "bag_handle": "none",
+    "bag_gusset": "gusseted"
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ]
+}

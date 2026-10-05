@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "id": "side-gusset-bag",
+  "base": "PK-PB-05",
+  "variants": {
+    "pouch_feat": {
+      "none": {
+        "pouchFeatures": "none"
+      },
+      "hang_hole": {
+        "pouchFeatures": "hang_hole"
+      },
+      "tear_notch": {
+        "pouchFeatures": "tear_notch"
+      },
+      "window": {
+        "pouchFeatures": "window"
+      },
+      "zipper": {
+        "pouchFeatures": "zipper"
+      },
+      "hang_hole+tear_notch": {
+        "pouchFeatures": "hang_hole+tear_notch"
+      },
+      "hang_hole+window": {
+        "pouchFeatures": "hang_hole+window"
+      },
+      "hang_hole+zipper": {
+        "pouchFeatures": "hang_hole+zipper"
+      },
+      "tear_notch+window": {
+        "pouchFeatures": "tear_notch+window"
+      },
+      "tear_notch+zipper": {
+        "pouchFeatures": "tear_notch+zipper"
+      },
+      "window+zipper": {
+        "pouchFeatures": "window+zipper"
+      },
+      "hang_hole+tear_notch+window": {
+        "pouchFeatures": "hang_hole+tear_notch+window"
+      },
+      "hang_hole+tear_notch+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+zipper"
+      },
+      "hang_hole+window+zipper": {
+        "pouchFeatures": "hang_hole+window+zipper"
+      },
+      "tear_notch+window+zipper": {
+        "pouchFeatures": "tear_notch+window+zipper"
+      },
+      "hang_hole+tear_notch+window+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+window+zipper"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ซองข้างขยาย",
+    "en": "Side-gusset bag"
+  },
+  "description": {
+    "th": "ซองฟิล์มซีลกลางหลัง ข้างพับขยายสองด้าน จุของได้มาก เช่น กาแฟ",
+    "en": "A centre-seal film bag with folded gussets in both sides, for bulky goods such as coffee"
+  },
+  "materials": ["flexible"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 500
+    },
+    {
+      "ref": "gusset",
+      "omit": ["when"]
+    },
+    {
+      "ref": "centerSeal",
+      "omit": ["when"]
+    },
+    "sealWidth",
+    "pouchFeatures",
+    {
+      "ref": "windowWidth",
+      "omit": ["when"]
+    },
+    {
+      "ref": "windowHeight",
+      "omit": ["when"]
+    }
+  ],
+  "defaults": {
+    "pouchType": "center_seal_gusset",
+    "width": 140,
+    "length": 220,
+    "sealWidth": 8,
+    "pouchFeatures": "none",
+    "windowWidth": 50,
+    "windowHeight": 60,
+    "gusset": 50,
+    "centerSeal": 10
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 90 × 220 ข้าง 50",
+        "en": "S 90 × 220 ข้าง 50"
+      },
+      "values": {
+        "width": 90,
+        "length": 220,
+        "gusset": 50
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 120 × 300 ข้าง 70",
+        "en": "M 120 × 300 ข้าง 70"
+      },
+      "values": {
+        "width": 120,
+        "length": 300,
+        "gusset": 70
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 150 × 360 ข้าง 90",
+        "en": "L 150 × 360 ข้าง 90"
+      },
+      "values": {
+        "width": 150,
+        "length": 360,
+        "gusset": 90
+      }
+    }
+  ],
+  "body": {
+    "module": "pouchWeb"
+  }
+}

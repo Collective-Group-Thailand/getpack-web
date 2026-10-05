@@ -4,6 +4,7 @@ import type { Closure, PanelSpan } from "../construct/tube";
 import type {
   Contour,
   Dieline,
+  Edge,
   EdgeRole,
   Face,
   FaceKind,
@@ -156,6 +157,8 @@ export interface FeatureModule extends ModuleBase {
   trayHoles?(ctx: BuildContext, cfg: ModuleConfig, frame: TrayFrame): Partial<Record<string, Contour[]>>;
   /** Holes in a flat piece. */
   flatHoles?(ctx: BuildContext, cfg: ModuleConfig): Contour[];
+  /** Lines on a flat piece that do not cut it out (a tamper seal's half-cut nicks), given its outline. */
+  flatMarks?(ctx: BuildContext, cfg: ModuleConfig, outline: Contour): Edge[];
   /** Separate pieces cut with the body (a die-cut insert), assembled into the same dieline. */
   pieces?(ctx: BuildContext, cfg: ModuleConfig): Piece[];
 }
