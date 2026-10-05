@@ -16,7 +16,7 @@ import Editor, {
 import type { BoxFields, DesignerCatalog } from "@/features/designer/data/api";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor } from "@/features/designer/store/editor";
-import { Link, useRouter } from "@/i18n/navigation";
+import { getPathname, Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import { AlertDialog } from "@/ui/components/AlertDialog";
@@ -31,7 +31,11 @@ import { maxSpotColours, useStudioRules } from "./rules";
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { artworkColours } from "./state";
 import { studioFieldsOf } from "./spec";
+import { IntentPicker } from "@/features/customer/help/IntentPickerLazy";
+import { RULE_HELP } from "./help";
+import { SampleDesignLink } from "./SampleDesign";
 import { StepBar } from "./StepBar";
+import { StudioGuide } from "./StudioGuide";
 import { initialStep, lockedReason, type StepFacts, type StudioStep } from "./steps";
 import { useStudioChecks } from "./checks";
 import { useChecksClean, useStudioFunnel } from "./funnel";
@@ -255,6 +259,7 @@ export function Studio({
               productName={
                 catalog?.product ? (locale === "en" ? catalog.product.nameEn : catalog.product.nameTh) : null
               }
+              productSlug={productSlug}
               hasBox={hasBox}
               onChooseBox={ctx.openSetup}
               onNext={() => goTo(hasBox ? "box" : "start")}
@@ -395,6 +400,7 @@ export function Studio({
                 : true,
           notice: (
             <>
+              <StudioGuide />
               {lock ? (
                 <Badge tone="neutral">{t("locked", { versionNo: lock.versionNo, orderCode: lock.orderCode })}</Badge>
               ) : null}
@@ -431,11 +437,13 @@ export function Studio({
 
 function StartPanel({
   productName,
+  productSlug,
   hasBox,
   onChooseBox,
   onNext,
 }: {
   productName: string | null;
+  productSlug: string | null;
   hasBox: boolean;
   onChooseBox: () => void;
   onNext: () => void;
@@ -452,8 +460,9 @@ function StartPanel({
         <Button asChild variant="secondary" iconStart="layers">
           <Link href="/styles">{t("library")}</Link>
         </Button>
-        {hasBox ? <Button onClick={onNext}>{t("next")}</Button> : null}
+        {hasBox ? <Button onClick={onNext}>{t("next")}</Button> : <SampleDesignLink productSlug={productSlug} />}
       </div>
+      {hasBox ? null : <IntentPicker here="studio" productSlug={productSlug} />}
     </div>
   );
 }
@@ -479,6 +488,7 @@ function CheckStep({
   onNext: () => void;
 }) {
   const t = useTranslations("studio");
+  const locale = useLocale();
   const saveState = ctx.persistence.state;
   const checks = useStudioChecks(
     ctx.persistence.serverId(),
@@ -495,6 +505,10 @@ function CheckStep({
         onFix={ctx.fix}
         acknowledged={checks.acknowledged}
         onAcknowledge={checks.acknowledge}
+        helpHref={(issue) => {
+          const [path, hash] = RULE_HELP[issue.ruleId].split("#");
+          return `${getPathname({ href: path!, locale })}${hash ? `#${hash}` : ""}`;
+        }}
       />
       <Button className="w-full" onClick={onNext}>
         {t("check.next")}

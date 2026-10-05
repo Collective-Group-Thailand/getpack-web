@@ -959,3 +959,11 @@ export const storeDesignHandlers = [
     } satisfies Schemas["DesignerTemplateDetailDto"]);
   }),
 ];
+
+/** An owner's designs, latest change first, each with the order that locked it (the launchpad, D-297). */
+export function designsOwnedBy(owner: string): (Row & { lockedByOrderCode: string | null })[] {
+  return [...designs.values()]
+    .filter((row) => row.owner === owner)
+    .sort((a, b) => b.design.updatedAt.localeCompare(a.design.updatedAt))
+    .map((row) => ({ ...row, lockedByOrderCode: locks.get(row.design.id)?.orderCode ?? null }));
+}

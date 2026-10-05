@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { getMyArtwork } from "@/features/customer/artwork/api.server";
 import { ProofViewer } from "@/features/customer/artwork/ProofViewer";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
@@ -80,7 +81,12 @@ export default async function Page({
         </section>
       ) : null}
       {artwork.proofs.length === 0 ? (
-        <EmptyState icon="file-check" title={t("none")} description={t("noneHint")} />
+        <EmptyState
+          icon="file-check"
+          title={t("none")}
+          description={t("noneHint")}
+          action={<NextStep to="messages" variant="secondary" />}
+        />
       ) : (
         <ProofViewer
           initial={artwork}

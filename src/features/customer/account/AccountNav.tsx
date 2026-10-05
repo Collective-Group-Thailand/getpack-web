@@ -10,6 +10,7 @@ import { cn } from "@/ui/lib/cn";
 const ITEMS: { key: string; href: string; icon: IconName }[] = [
   { key: "overview", href: "/account", icon: "dashboard" },
   { key: "orders", href: "/account/orders", icon: "package" },
+  { key: "messages", href: "/account/messages", icon: "chat" },
   { key: "instalments", href: "/account/instalments", icon: "wallet" },
   { key: "quotes", href: "/account/quotes", icon: "receipt" },
   { key: "rfqs", href: "/account/rfqs", icon: "inbox" },

@@ -67,7 +67,8 @@
     "privacy": "Privacy",
     "samples": "Samples",
     "replenishment": "Replenishment",
-    "callOffs": "Call-offs"
+    "callOffs": "Call-offs",
+    "messages": "Messages"
   },
   "home": {
     "title": "My account",
@@ -367,5 +368,102 @@
       "send": "Send the request",
       "failed": "Could not send the request"
     }
+  },
+  "launchpad": {
+    "nextLabel": "Recommended next step",
+    "due": "by {date}",
+    "next": {
+      "amount": "Amount due {amount}",
+      "pay": {
+        "title": "Pay for {code}",
+        "body": "Once paid, the job moves on to production.",
+        "action": "Pay now"
+      },
+      "approve_proof": {
+        "title": "Approve the proof for {code}",
+        "body": "Check the proof fully before approving; production starts after approval.",
+        "action": "Check the proof"
+      },
+      "upload_artwork": {
+        "title": "Send the artwork for {code}",
+        "body": "Send your files; prepress checks them before printing.",
+        "action": "Send artwork"
+      },
+      "confirm_receipt": {
+        "title": "Confirm you received {code}",
+        "body": "If everything arrived, confirm to close the order.",
+        "action": "Confirm receipt"
+      },
+      "reorder": {
+        "title": "Time to reorder",
+        "body": "Same specification and files — no need to start again.",
+        "action": "Reorder"
+      },
+      "resume_design": {
+        "title": "Continue “{name}”",
+        "body": "Your latest saved design is waiting in the studio.",
+        "action": "Continue designing"
+      },
+      "start_configuration": {
+        "title": "Start your first box",
+        "body": "Pick a box type, enter the size and see the price straight away.",
+        "action": "Choose a box"
+      }
+    },
+    "designs": "Pick up where you left off",
+    "allDesigns": "All designs",
+    "brandKit": "Your company's brand kit is ready in the studio — logo, colours and fonts.",
+    "noThumbnail": "No preview yet",
+    "locked": "Used for {order}",
+    "reorder": "Order again",
+    "allReorder": "All suggestions",
+    "dueNow": "Due now",
+    "lastOrder": "Last time {code} · {quantity} pcs",
+    "suggested": "Suggested {quantity} pcs by {date}",
+    "reorderAction": "Reorder"
+  },
+  "messages": {
+    "title": "Messages",
+    "intro": "Talk to the Packio team about an order, a design or a quote request. We answer here, or on LINE if you choose.",
+    "threads": "Conversations",
+    "about": "{kind} {label}",
+    "kinds": {
+      "support": "General question",
+      "order": "Order",
+      "design": "Design",
+      "rfq": "Quote request",
+      "rfq_basket": "Quote request basket"
+    },
+    "unread": "{count} new",
+    "closed": "Closed",
+    "noText": "Attachment",
+    "newSupport": "Message the team",
+    "continueSupport": "You already have a conversation with the team",
+    "newSupportBody": "Ask anything not about a particular order here. For an order, “Ask the team” on that order's page is faster.",
+    "empty": "No conversations yet. Ask your first question — the team replies during business hours.",
+    "openSupport": "Open the conversation",
+    "compose": "Type a message",
+    "send": "Send",
+    "quick": {
+      "status": "Where is my job now?",
+      "file": "I'd like to send more artwork",
+      "change": "I'd like to change a detail"
+    },
+    "loadFailed": "Messages could not be loaded. Refresh the page.",
+    "closedNote": "This conversation is closed. Send a new message to reopen it.",
+    "replyChannel": "Get answers by",
+    "channels": {
+      "web": "On the web",
+      "line": "LINE"
+    },
+    "channelFailed": "The channel could not be changed",
+    "back": "← All messages",
+    "readByPackio": "Team last read {at}",
+    "responseTarget": "The team replies during business hours",
+    "openSubject": "Open it",
+    "askAbout": "Ask the team",
+    "askTitle": "Ask the team about {label}",
+    "askBody": "The team sees this item attached to your message — no need to type its number.",
+    "close": "Close"
   }
 }

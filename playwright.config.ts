@@ -36,6 +36,9 @@ export const HOSTS = {
   partner: `http://partner.localhost:${PORT}`,
 };
 
+/** Every first-run hint the storefront shows once (`useFirstRun` keys). */
+export const FIRST_RUN_KEYS = ["studio-coach-v1", "intent-v1"] as const;
+
 const zoneEnv = {
   PUBLIC_HOST: `localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
@@ -79,6 +82,17 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
+    // First-run hints (U5.2) are marked seen, so a coach mark never sits over what an older test
+    // clicks; the first-run tests clear this with their own empty storage state.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: baseURL,
+          localStorage: FIRST_RUN_KEYS.map((name) => ({ name: `packio.firstRun.${name}`, value: "1" })),
+        },
+      ],
+    },
     launchOptions: { args: ["--host-resolver-rules=MAP *.localhost 127.0.0.1"] },
   },
   /*

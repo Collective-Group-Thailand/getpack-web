@@ -24,3 +24,9 @@ export async function trustedProxyHops(): Promise<number> {
   const { serverEnv } = await import("./server");
   return serverEnv.TRUSTED_PROXY_HOPS;
 }
+
+/** The host each zone answers on, for a link that belongs to another zone (notification deep links, D-299). */
+export async function zoneHostOf(zone: "customer" | "admin" | "partner"): Promise<string> {
+  const { zoneHosts } = await import("./server");
+  return zoneHosts[zone];
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { pick } from "@/features/customer/catalog/localize";
 import { getNetworkStats } from "@/features/customer/trust/api.server";
 import { getFormat } from "@/features/shared/format/server";
@@ -37,7 +38,13 @@ export default async function NetworkPage({ params }: { params: Promise<{ locale
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       {!stats || !figures ? (
-        <EmptyState className="mt-8" icon="factory" title={t("emptyTitle")} description={t("emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="factory"
+          title={t("emptyTitle")}
+          description={t("emptyBody")}
+          action={<NextStep to="products" />}
+        />
       ) : (
         <div className="mt-8 flex flex-col gap-10">
           <section aria-labelledby="network-figures">

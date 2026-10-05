@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { reportError } from "@/lib/observability/report";
 import { Button } from "@/ui/components/Button";
 import { ErrorState } from "@/ui/components/ErrorState";
@@ -31,9 +32,13 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
         description={t("errors.genericBody")}
         code={error.digest}
         action={
-          <Button variant="secondary" onClick={reset}>
-            {t("actions.retry")}
-          </Button>
+          <>
+            <Button variant="secondary" onClick={reset}>
+              {t("actions.retry")}
+            </Button>
+            {/* Never a dead end (U5.1 §3): someone can still help, with the code above. */}
+            <NextStep to="chat" variant="ghost" />
+          </>
         }
       />
     </main>

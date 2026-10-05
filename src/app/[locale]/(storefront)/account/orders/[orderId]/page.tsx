@@ -8,6 +8,7 @@ import { PayInstalmentButton } from "@/features/customer/checkout/PayInstalmentB
 import { OrderStages } from "@/features/customer/fulfilment/OrderStages";
 import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
 import { findLockedDesignOf, getMyOrder } from "@/features/customer/orders/api.server";
+import { AskAbout } from "@/features/customer/messages/StartThread";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { SpecSheet } from "@/features/customer/orders/SpecSheet";
@@ -112,7 +113,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           <StatusChip map={ORDER_STATUS} value={order.status} size="md" />
           <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />
         </div>
-        <p className="text-muted text-sm">
+        <p className="text-muted flex flex-wrap items-center gap-x-1 gap-y-2 text-sm">
           <span className="font-mono">{order.orderCode}</span>
           {group ? (
             <>
@@ -120,6 +121,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
               {t("detail.placed", { date: format.dateTime(group.placedAt), group: group.groupCode })}
             </>
           ) : null}
+          <span className="ms-2">
+            <AskAbout subject={{ type: "order", id: order.id, label: order.orderCode }} variant="ghost" />
+          </span>
         </p>
         {detail.actions.length > 0 || payable ? (
           <OrderActions orderId={order.id} orderCode={order.orderCode} actions={detail.actions} payable={payable} />
