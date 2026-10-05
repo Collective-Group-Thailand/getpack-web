@@ -7,6 +7,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { SearchInput } from "@/ui/components/SearchInput";
 
 import type { GlossaryTerm } from "./api.server";
+import { DemoLoop, hasDemo } from "./DemoLoop";
 
 /**
  * The glossary for customers (U5.6, U5.2 §3): each term in Thai and English with a plain
@@ -47,6 +48,11 @@ export function GlossaryList({ terms }: { terms: GlossaryTerm[] }) {
                 ) : null}
               </dt>
               <dd className="text-muted mt-1 text-sm">{pick(locale, term.definitionTh, term.definitionEn)}</dd>
+              {hasDemo(term.slug) ? (
+                <dd className="mt-2 max-w-xs">
+                  <DemoLoop demo={term.slug} />
+                </dd>
+              ) : null}
             </div>
           ))}
         </dl>

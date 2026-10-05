@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { INSTALMENT_STATUS } from "@/domain/status";
@@ -27,7 +28,15 @@ export function InstalmentList({ instalments }: { instalments: Instalment[] }) {
   const locale = useLocale();
 
   if (instalments.length === 0) {
-    return <EmptyState className="mt-8" icon="wallet" title={t("emptyTitle")} description={t("emptyBody")} />;
+    return (
+      <EmptyState
+        className="mt-8"
+        icon="wallet"
+        title={t("emptyTitle")}
+        description={t("emptyBody")}
+        action={<NextStep to="orders" />}
+      />
+    );
   }
 
   return (

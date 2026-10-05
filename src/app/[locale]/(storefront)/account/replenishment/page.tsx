@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listSuggestions } from "@/features/customer/repeat/api.server";
 import { SuggestionCard } from "@/features/customer/repeat/SuggestionCard";
@@ -20,7 +21,13 @@ export default async function Page() {
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
       {suggestions.length === 0 ? (
-        <EmptyState className="mt-8" icon="calendar" title={t("emptyTitle")} description={t("emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="calendar"
+          title={t("emptyTitle")}
+          description={t("emptyBody")}
+          action={<NextStep to="orders" />}
+        />
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
           {suggestions.map((suggestion) => (

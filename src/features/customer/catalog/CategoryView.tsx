@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -122,7 +123,12 @@ export async function CategoryView({
           {items.length > 0 ? (
             <ProductGrid items={items} types={types} hints={hints} headingLevel="h2" />
           ) : (
-            <EmptyState icon="box" title={t("list.emptyTitle")} description={t("list.emptyBody")} />
+            <EmptyState
+              icon="box"
+              title={t("list.emptyTitle")}
+              description={t("list.emptyBody")}
+              action={<NextStep to="products" />}
+            />
           )}
 
           <LinkPagination

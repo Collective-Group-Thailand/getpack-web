@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { PriceBreakTable, PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
 import { QuoteDock } from "@/ui/components/QuoteDock";
@@ -77,6 +79,7 @@ export function ConfiguratorDock({
   const priced = step?.instant ? step : null;
   const noPrice = step && !step.instant ? step : null;
   const ready = missing.length === 0;
+  const reason = usePriceChange(priced?.unitPrice ? { unitPrice: priced.unitPrice, quantity: priced.quantity } : null);
 
   // Quoted on request (`instant: false`, D-043): no price is asked for, the RFQ form is the way on.
   const status = !configurator.instant ? (
@@ -184,7 +187,24 @@ export function ConfiguratorDock({
   return (
     <QuoteDock
       title={t("title")}
-      headline={priced ? t("perPiece", { price: format.thb(priced.unitPrice), unit }) : ""}
+      headline={
+        priced ? (
+          // A changed price is highlighted once, with why it changed (U5.7 §1): what the customer
+          // changed, never a computed difference — the figures are the API's.
+          <span className="flex flex-wrap items-center gap-2">
+            <span key={priced.unitPrice ?? "none"} className={reason ? "pk-flash rounded-sm px-1" : undefined}>
+              {t("perPiece", { price: format.thb(priced.unitPrice), unit })}
+            </span>
+            {reason ? (
+              <Badge size="sm" tone="info" icon="info">
+                {t(`changed.${reason}`)}
+              </Badge>
+            ) : null}
+          </span>
+        ) : (
+          ""
+        )
+      }
       subline={
         priced
           ? t("total", { total: format.thb(priced.grossAmount), quantity: format.number(priced.quantity), unit })
@@ -263,4 +283,21 @@ export function ConfiguratorDock({
       ) : null}
     </QuoteDock>
   );
+}
+
+/**
+ * Why the per-piece price just changed: the quantity, or the specification (anything else the
+ * customer chose). `null` until the first change, so a page that opens with a price is calm.
+ */
+function usePriceChange(current: { unitPrice: string; quantity: number } | null): "quantity" | "spec" | null {
+  const previous = useRef(current);
+  const [reason, setReason] = useState<"quantity" | "spec" | null>(null);
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = current;
+    if (!before || !current || before.unitPrice === current.unitPrice) return;
+    // Derived from what the API sent, after it arrived.
+    setReason(before.quantity !== current.quantity ? "quantity" : "spec");
+  }, [current?.unitPrice, current?.quantity]); // eslint-disable-line react-hooks/exhaustive-deps
+  return reason;
 }

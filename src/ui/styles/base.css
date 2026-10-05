@@ -174,3 +174,78 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * U5.2 demo loops and U5.7 interaction moments, on the motion tokens (D-180). Under reduced motion
+ * the rule above runs each once in ~0ms, so every animation is written to *end* on its meaningful
+ * frame: the inside size shown, the bleed past the cut, the price settled, the item in the cart.
+ */
+@layer components {
+  .pk-demo-swap {
+    animation: pk-demo-swap 4s var(--ease-standard) infinite alternate;
+  }
+  .pk-demo-swap-alt {
+    animation: pk-demo-swap 4s var(--ease-standard) infinite alternate-reverse;
+  }
+  .pk-demo-trim {
+    animation: pk-demo-trim 3s var(--ease-standard) infinite alternate;
+  }
+  .pk-demo-pass {
+    animation: pk-demo-pass 4s var(--ease-standard) infinite;
+    transform-box: fill-box;
+    transform-origin: left center;
+  }
+  .pk-flash {
+    animation: pk-flash calc(var(--duration-slow) * 4) var(--ease-standard) 1;
+  }
+  .pk-pop {
+    animation: pk-pop var(--duration-slow) var(--ease-emphasised) 1;
+  }
+}
+
+@keyframes pk-demo-swap {
+  0%,
+  40% {
+    opacity: 0.15;
+  }
+  60%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes pk-demo-trim {
+  from {
+    transform: translateX(-3px);
+  }
+  to {
+    transform: translateX(3px);
+  }
+}
+@keyframes pk-demo-pass {
+  0% {
+    transform: scaleX(0);
+  }
+  60%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes pk-flash {
+  0% {
+    background-color: var(--color-primary-subtle);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+@keyframes pk-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

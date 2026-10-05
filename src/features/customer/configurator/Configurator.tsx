@@ -209,14 +209,28 @@ export function Configurator({
     initial: resumed,
   });
 
-  /** D-183: the display unit is the customer's preference, kept on their profile when signed in. */
+  /**
+   * D-183: the display unit is the customer's preference, kept on their profile when signed in. A
+   * guest's last choice is remembered in this browser only (U5.1 §1) — a convenience, never data.
+   */
   const changeUnit = (next: LengthUnit) => {
     update({ unit: next });
     if (session)
       void browserApi()
         .PATCH("/v1/store/me/preferences", { body: { displayUnit: next } })
         .catch(() => undefined);
+    else rememberGuestUnit(next);
   };
+  const guestUnitRead = useRef(false);
+  useEffect(() => {
+    if (session || guestUnitRead.current) return;
+    guestUnitRead.current = true;
+    const remembered = recallGuestUnit();
+    if (!remembered) return;
+    // Read after hydration: the server cannot see this browser's choice.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setState((previous) => (previous.unit === remembered ? previous : { ...previous, unit: remembered }));
+  }, [session]);
 
   // D-102: the funnel's "configure" step, once per visit; "quote shown" when a price arrives.
   const opened = useRef(false);
@@ -552,4 +566,24 @@ export function Configurator({
       ) : null}
     </div>
   );
+}
+
+const GUEST_UNIT_KEY = "packio.displayUnit";
+const UNITS: readonly LengthUnit[] = ["mm", "cm", "in"];
+
+function rememberGuestUnit(unit: LengthUnit) {
+  try {
+    window.localStorage.setItem(GUEST_UNIT_KEY, unit);
+  } catch {
+    // Storage blocked (private window): the choice lasts for this page only.
+  }
+}
+
+function recallGuestUnit(): LengthUnit | null {
+  try {
+    const value = window.localStorage.getItem(GUEST_UNIT_KEY) as LengthUnit | null;
+    return value && UNITS.includes(value) ? value : null;
+  } catch {
+    return null;
+  }
 }

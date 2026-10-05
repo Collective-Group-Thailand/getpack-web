@@ -258,5 +258,48 @@
       "body": "In the meantime, read all the articles.",
       "action": "See articles"
     }
+  },
+  "intent": {
+    "title": "What would you like to start with?",
+    "body": "Choose, and we take you the shortest way.",
+    "skip": "Skip",
+    "reopen": "Not sure how to start? Let us suggest",
+    "have_product": {
+      "title": "I have a product and need a box",
+      "go": "Size a box from your product",
+      "here": "Start right here: enter a size or let us suggest one from your product"
+    },
+    "have_file": {
+      "title": "I already have a design file",
+      "go": "Set the specification, then send your file after ordering",
+      "here": "Set the specification here, choose “I have artwork” and upload it after ordering"
+    },
+    "need_design": {
+      "title": "No design yet — help me design",
+      "go": "Go to the design studio",
+      "here": "Design it here, or hire our designers in the design step"
+    },
+    "reorder": {
+      "title": "Reorder",
+      "go": "Go to your account and reorder a past job",
+      "here": "Go to your account"
+    }
+  },
+  "demo": {
+    "measurement-basis": {
+      "alt": "A box whose outer and inner outlines take turns standing out",
+      "label": "outside ↔ inside",
+      "caption": "The inside size is the space for the goods; the outside is larger by the board's thickness."
+    },
+    "bleed": {
+      "alt": "Artwork running past a cut line that shifts slightly",
+      "label": "artwork 3 mm past the cut",
+      "caption": "Even if the cut is slightly off, artwork past the edge means no white shows."
+    },
+    "offset": {
+      "alt": "Cyan, magenta, yellow and black bars printing one after another",
+      "label": "cyan · magenta · yellow · black",
+      "caption": "Offset prints one colour at a time from plates, which pays off on large runs."
+    }
   }
 }
