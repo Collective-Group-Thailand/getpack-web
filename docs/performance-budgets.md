@@ -299,3 +299,13 @@ Measured with the assistant **built out** (`NEXT_PUBLIC_ASSISTANT` unset — the
 | `/configure/tuck-end-box` | 345,833 | within 346,000 | unchanged |
 
 What remains is copy every zone loads: the assistant's outcome labels (`status`) and its four problem titles. The assistant's own copy is a namespace loaded only in a build that has it, and its button lives in the header's existing client module — a server component's reference to the launcher cost every header page 2.6 KB even behind a false constant, and was moved for that reason.
+
+## U3.6 — dieline intake and structural requests (2026-10-06)
+
+Three script ratchets, each by the copy and entry points U3.6 adds to every page of its zone (the
+screens themselves load on their own routes; the DXF reader and the style library only on the
+offer's page): `customer-app` 340200 → **340300** (measured 340232: the account menu entry),
+`customer-marketing` 270000 → **270100** (270018: the call to action on `/styles`), `partner`
+301000 → **301400** (301307: the "more" menu entry). After merging main's U5 layer: `partner`
+301400 → **301600** (301490); `studio` stays at U5.5's **505800** (the dieline core's
+share of the wave 2 / 3 extensions fits under it).

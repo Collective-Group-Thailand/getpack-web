@@ -68,7 +68,8 @@
     "samples": "ตัวอย่างสินค้า",
     "replenishment": "สั่งซ้ำตามรอบ",
     "callOffs": "สัญญาเรียกของ",
-    "messages": "ข้อความ"
+    "messages": "ข้อความ",
+    "structuralRequests": "คำขอออกแบบโครงสร้าง"
   },
   "home": {
     "title": "บัญชีของฉัน",

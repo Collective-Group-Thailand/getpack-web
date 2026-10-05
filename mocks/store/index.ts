@@ -22,6 +22,7 @@ import { storeStyleHandlers } from "./styles";
 import { storeCollabHandlers } from "./collab";
 import { repeatHandlers } from "./repeat";
 import { sampleHandlers } from "./samples";
+import { structuralHandlers } from "./structural";
 import { storeStudioHandlers } from "./studio";
 import { storeConversationHandlers } from "./conversations";
 import { launchpadHandlers } from "./launchpad";
@@ -37,6 +38,7 @@ export const storeHandlers = [
   ...rfqBasketHandlers,
   ...contentHandlers,
   ...assistantHandlers,
+  ...structuralHandlers,
   ...repeatHandlers,
   ...storeAccountHandlers,
   ...quoteToolHandlers,

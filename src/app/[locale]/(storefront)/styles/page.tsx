@@ -26,6 +26,7 @@ import type { Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
 import { alternateUrls, publicOrigin } from "@/lib/seo";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Input } from "@/ui/components/Input";
 import { cn } from "@/ui/lib/cn";
@@ -265,6 +266,21 @@ export default async function StylesPage({
               signInHref={signInHref}
             />
           )}
+          {/* "ไม่เจอแบบที่ต้องการ" (U3.6, D-273): a structure the library lacks, asked of Packio's designers. */}
+          <Callout className="mt-8" icon="ruler" title={t("request.ctaTitle")}>
+            <p>{t("request.ctaBody")}</p>
+            <Button asChild variant="secondary" className="mt-3">
+              <Link
+                href={
+                  signedIn
+                    ? "/account/structural-requests/new"
+                    : `/sign-in?returnTo=${encodeURIComponent("/account/structural-requests/new")}`
+                }
+              >
+                {t("request.cta")}
+              </Link>
+            </Button>
+          </Callout>
         </div>
       </div>
       <CompareTray />

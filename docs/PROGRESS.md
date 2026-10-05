@@ -152,6 +152,57 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 
 ---
 
+## U3.6 — Partner dieline intake and structural design requests — 2026-10-06
+
+`docs/prompts/U3-style-library.md` §U3.6, on `feat/u3.6-intake` (worktree `../packio-web-u3`, from `main` at `f46582d`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.6.
+
+### Done
+- **Reading a DXF** (`@packio/dieline/library`):
+  - `parseDxf` reads LINE, ARC, CIRCLE, LWPOLYLINE with bulges, POLYLINE and SPLINE, honouring `$INSUNITS`. It skips text and blocks and says how many.
+  - `deviationFrom` lays the drawing over a dieline, top-left corners together and mirrored if that is closer. It measures cut and crease lines both ways, so a line missing on either side counts. A match is within **0.5 mm** (`INTAKE_TOLERANCE_MM`).
+  - Tested round-trip on five styles from the engine's own DXF (< 0.05 mm), mirrored, and a 3 mm longer box refused.
+- **Admin, dieline offers** (`/style-intakes`, D-272):
+  - The provenance: factory, file and its SHA-256, terms version, reviewer.
+  - The matcher: open the offer's DXF, pick the recipe and board, adjust its sizes, see both drawings overlaid and the deviation.
+  - Saving the match sends the deviation report (`aspect`, `note`: largest and mean deviation, size difference, mirrored, the sizes used). Approve as a new style or as a template of a base; reject with a reason.
+  - `styles.import` matches; `styles.approve_recipe` decides.
+  - The matcher and the style library load on that page only.
+- **Partner** (`/style-intakes`, in "more"):
+  - The intake terms in force. With none set, offers are closed (D-272).
+  - DXF/PDF upload, name, closest library style, note and acceptance.
+  - The factory's offers with the decision.
+- **Customer** (D-273):
+  - "ไม่เจอแบบที่ต้องการ?" on `/styles`, signing in first if needed.
+  - `/account/structural-requests`: the form (type, description, sizes on a basis, quantity, up to 5 files, the fee note), the list, and the detail with what each step means, the progress, the delivered dieline once approved, the published style, and cancel while nothing is delivered.
+  - Entry in the account menu.
+- **Admin, structural requests** (`/structural-requests`):
+  - CS (`structural_requests.manage`) assigns a designer, links the service RFQ, or declines.
+  - The designer (`structural_requests.design`) uploads the dieline.
+  - Prepress (`styles.approve_recipe`) approves and publishes it with its style code.
+- **Wiring:**
+  - Status maps `STRUCTURAL_REQUEST_STATUS` and `STYLE_INTAKE_STATUS`.
+  - Problem copy (`file.not_ready`, `structural_requests.invalid_transition`, `styles.intake_*`).
+  - Stateful mocks for the three zones (`mocks/store/structural.ts`).
+- **e2e:** `e2e/style-intake.spec.ts` walks all three zones with axe.
+
+### Deferred / assumptions
+- **CONTRACT-REQUEST `admin.structural-request-designers`.** CS assigns but cannot list staff (`users.read`). Mocked.
+- **CONTRACT-REQUEST `admin.menu-styles`.** No menu entries yet. Linked from the catalogue, prepress and orders pages.
+- **Which permission gates which action is not in the published contract.** Assumed from the role grants and D-272 / D-273:
+  - Intakes: `styles.import` reads and matches; `styles.approve_recipe` decides.
+  - Requests: `.manage` assigns, links and declines; `.design` delivers; `styles.approve_recipe` approves and publishes.
+- **The reviewer opens the DXF from disk.** A signed URL on the file host is not fetched by the page. **A PDF is compared by eye** — no PDF renderer is added.
+- **Deviation is laid by bounding corners, not best fit.** A drawing with extra lines around it (a frame, notes on a CUT layer) does not match until those are removed. Its CUT / CREASE layers are used when it has them.
+- **An approved "new style" still goes through the library import (D-242).** The web does not write recipes.
+- **Lighthouse ratchets:** `customer-app` +100 B, `customer-marketing` +100 B, `partner` +400 B, for the entry points and copy every page of those zones now carries (`docs/performance-budgets.md` §U3.6).
+- **Checks:**
+  - Before the merge: typecheck, 1048 app tests, 10 513 dieline tests, reproducible render, release hygiene; e2e 96 / 96 across the touched suites.
+  - Main moved twice during this step (another session's U5.1–U5.7, then U5.5) and was merged into the branch each time. Conflicts were registries, message files and budgets; both sides were kept and main's rewritten problem copy won.
+  - After: 1076 app tests; the full chromium e2e (438 / 443, the 5 passing alone); the touched suites 106 / 107 (the known `storefront-account` shared-session flake); Lighthouse within budget (partner 301600, studio at U5.5's 505800).
+  - U5's zero-dead-ends rule now covers the requests list's empty state.
+
+---
+
 ## U3.4 wave 3 — Style library, third wave — 2026-10-06
 
 `docs/prompts/U3-style-library.md` §U3.4 (wave 3), on `feat/u3.4-wave3` (worktree `../packio-web-u3`, from `main` at `c1f8967`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 3.
