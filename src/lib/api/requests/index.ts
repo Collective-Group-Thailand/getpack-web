@@ -17,5 +17,6 @@ export {
 } from "./client";
 export { REQUESTS, type RequestKey, type Requests } from "./registry";
 export * from "./admin-logistics";
+export * from "./admin-structural";
 export * from "./admin-orders";
 export * from "./store-quotes";
