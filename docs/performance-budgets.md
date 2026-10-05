@@ -261,3 +261,11 @@ The U2 sessions added copy that every zone loads: the sample status vocabulary (
 sample-evidence form and the `samples.*` / `dielines.*` problem messages (`common`). The factory app
 itself only gained the sample-jobs screen, on its own route. Splitting `common` per zone would win
 this back for everyone (follow-up).
+
+## U3.4 wave 2 — style library (2026-10-06)
+
+`customer-app` script ratchet 340000 → **340200**. The configurator measured 340092, 92 B over. The
+core engine (main entry) carries the shared parts of the wave-2 extensions that the configurator draws
+with: the n-sided polygon lid, marks on tube panels, `under`/`offset` piece placement and the lid
+window lookup. The 63 new recipes and 19 new modules stay in `@packio/dieline/library`, loaded on
+demand on the style pages; every other set is within budget.

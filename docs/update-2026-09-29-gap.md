@@ -508,3 +508,16 @@ Sources: `docs/prompts/U3-style-library.md` §U3.4; `style-library-program.md` �
 | 8 | Library and configurator on the real API | partial | `/styles` reads `store.styles.*`; packio-api reads `ALL_RECIPES` | No web change: new recipes appear once packio-api's catalogue imports them (noted for the backend team) |
 
 **Plan (slices, each green):** 1 recipes over existing modules (folding, corrugated, trays, food boat, hexagon/triangle) · 2 rigid + flexible + bags + labels · 3 tube marks → tear strip, adhesive strip, dispenser, tear-away, tamper-evident, shelf-ready, tape-free · 4 partition insert, folded card/strip bodies (header card, edge protector, folders, envelope), raised-back display, neck lock · 5 hard constructions as far as they pass the gates · 6 names, mapping, render manifest, counts · merge.
+
+**Outcome (2026-10-06):**
+- **Row 1:** 43 of 49 bases. Six are deferred with the construction each needs (`style-mapping.md` §3).
+- **Rows 2–6 met:**
+  - 283 of 331 variants drawn. 18 cannot be made, with reasons; 30 are deferred.
+  - Every planned module wave 2 needed is implemented.
+  - Every drawn variant passes both gates.
+  - Words are pending review.
+  - Mapping, render manifest and counts are done.
+- **Row 7:** packio-api's.
+- **Row 8:** no web change.
+- **The 881 milestone:** 751 drawn. See the note above the table.
+
