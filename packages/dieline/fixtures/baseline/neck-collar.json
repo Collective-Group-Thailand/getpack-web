@@ -1,0 +1,87 @@
+{
+  "definition": "0dae55e80aa2b7",
+  "s · label-film": {
+    "build": "18d1cfd2933801",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · board-350": {
+    "build": "18d1cfd2933801",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · label-film": {
+    "build": "176cab32d0a312",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "m · board-350": {
+    "build": "176cab32d0a312",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · label-film": {
+    "build": "04857be8897054",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "l · board-350": {
+    "build": "04857be8897054",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · diameter=min": {
+    "build": "053767959444bf",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1c52ad0e751757",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · diameter=max": {
+    "build": "031c12da3bf8ab",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · diameter<min": {
+    "build": "0b1cc5fd205c2a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0ad9e520c4ec5e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · diameter>max": {
+    "build": "137877e16be89d",
+    "hinges": "15e0da69fcb93a",
+    "validate": "058f70476b8a6f",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · neckDiameter=min": {
+    "build": "08a420a9ae8764",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · neckDiameter=max": {
+    "build": "019e5dafd32c4b",
+    "hinges": "15e0da69fcb93a",
+    "validate": "1c52ad0e751757",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · neckDiameter<min": {
+    "build": "11934fe4721c23",
+    "hinges": "15e0da69fcb93a",
+    "validate": "125d2e735fe736",
+    "closed": "15e0da69fcb93a"
+  },
+  "s · label-film · neckDiameter>max": {
+    "build": "16be76a5fc2e5e",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0e2625abc639a0",
+    "closed": "15e0da69fcb93a"
+  }
+}

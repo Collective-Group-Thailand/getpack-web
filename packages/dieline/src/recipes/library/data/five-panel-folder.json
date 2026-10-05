@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "five-panel-folder",
+  "base": "PK-CF-09",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องห่อห้าแผง (FPF)",
+    "en": "Five-panel folder"
+  },
+  "description": {
+    "th": "แผ่นห่อสินค้ายาว แผงที่ห้าซ้อนทับแผงล่างเต็มแผ่น ปิดหัวท้ายด้วยปีก",
+    "en": "A wrap for long goods whose fifth panel overlaps the bottom panel in full, ends closed by flaps"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 600
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "length": 300,
+    "width": 200,
+    "height": 100,
+    "glueSide": "left",
+    "grain": "across",
+    "joint": "glue"
+  },
+  "presets": [
+    {
+      "id": "drinks",
+      "label": {
+        "th": "เครื่องดื่ม 6 ขวด 260 × 180 × 230",
+        "en": "Six bottles 260 × 180 × 230"
+      },
+      "values": {
+        "length": 260,
+        "width": 180,
+        "height": 230
+      }
+    },
+    {
+      "id": "flat",
+      "label": {
+        "th": "สินค้าแบน 400 × 300 × 60",
+        "en": "Flat goods 400 × 300 × 60"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "with": {
+      "dims": {
+        "wall": "height + a.panel",
+        "top": "width + a.panel",
+        "depth": "length + a.depth",
+        "glue": "top - a.gluePanel"
+      },
+      "panels": [
+        {
+          "id": "wall-front",
+          "label": "wall_front",
+          "width": "wall"
+        },
+        {
+          "id": "top",
+          "label": "top",
+          "width": "top"
+        },
+        {
+          "id": "wall-back",
+          "label": "wall_back",
+          "width": "wall"
+        },
+        {
+          "id": "bottom",
+          "label": "bottom",
+          "width": "top - a.gluePanel"
+        }
+      ],
+      "depth": "depth",
+      "glue": "glue",
+      "glueRight": "glueSide == 'right'",
+      "grain": "top",
+      "root": "wall-front"
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "endFlaps"
+    },
+    "bottom": {
+      "module": "endFlaps"
+    }
+  }
+}

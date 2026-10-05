@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "id": "tray-lid-lock",
+  "base": "PK-TR-05",
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "ถาดมุมล็อกฝาพับ",
+    "en": "Lock-corner tray with hinged lid"
+  },
+  "description": {
+    "th": "ถาดมุมล็อกไม่ใช้กาว ฝาพับติดผนังหลังเสียบลิ้นด้านหน้า เลือกหน้าต่างบนฝาและตัวรองได้",
+    "en": "A tray whose corners lock without glue, with a lid hinged on the back that tucks in at the front; lid window and insert are options"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 40,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 150
+    },
+    "cornerLock",
+    "tuckDepth",
+    "grain",
+    "insert",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "lid",
+          "label": {
+            "th": "บนฝา",
+            "en": "Lid top"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "length": 200,
+    "width": 150,
+    "height": 60,
+    "grain": "across",
+    "cornerLock": "lock",
+    "insert": "none",
+    "window": "none",
+    "windowPanel": "lid",
+    "windowWidth": 60,
+    "windowHeight": 40,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 150 × 100 × 50",
+        "en": "S 150 × 100 × 50"
+      },
+      "values": {
+        "length": 150,
+        "width": 100,
+        "height": 50
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 200 × 150 × 60",
+        "en": "M 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 300 × 200 × 80",
+        "en": "L 300 × 200 × 80"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "lockCorners"
+    },
+    {
+      "module": "trayWindow"
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "floor": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}

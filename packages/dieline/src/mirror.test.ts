@@ -34,7 +34,7 @@ describe("mirrorDieline (inside printing, U4.3)", () => {
   });
 
   it("stays a clean dieline with safe zones, and mirrors back to itself", () => {
-    expect(checkDieline(m).filter((p) => p.severity === "error")).toEqual([]);
+    expect(checkDieline(m)).toEqual([]);
     for (const f of allFaces(m)) expect(safeZone(f, 3).length).toBeGreaterThanOrEqual(0);
     const rounded = (value: unknown) =>
       JSON.stringify(value, (_k, v: unknown) => (typeof v === "number" ? Math.round(v * 1e6) / 1e6 : v));

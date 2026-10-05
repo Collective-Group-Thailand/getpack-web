@@ -5,6 +5,41 @@ import { t } from "../../styles/_shared";
 import type { Pt } from "../../types";
 import type { BodyModule } from "../types";
 
+/** Evenly spaced divider positions for `n` cells over `total`. */
+export const dividers = (n: number, total: number) => Array.from({ length: n - 1 }, (_x, i) => ((i + 1) * total) / n);
+
+/**
+ * The strips of a rows × cols partition grid inside L × W, `H` tall, with slots `s` wide: one long
+ * strip per row divider slotted from the top, one cross strip per column divider slotted from the
+ * bottom. Piece and face ids carry `prefix` (a grid inside a box: `cells-`).
+ */
+export function partitionStrips(L: number, W: number, H: number, s: number, rows: number, cols: number, prefix = "") {
+  const strip = (len: number, slots: number[], fromTop: boolean): Pt[] => {
+    // Walked clockwise from the top-left corner; each slot a notch half the height deep.
+    const pts: Pt[] = [[0, 0]];
+    if (fromTop)
+      for (const x of slots) pts.push([x - s / 2, 0], [x - s / 2, H / 2], [x + s / 2, H / 2], [x + s / 2, 0]);
+    pts.push([len, 0], [len, H]);
+    if (!fromTop)
+      for (const x of [...slots].reverse())
+        pts.push([x + s / 2, H], [x + s / 2, H / 2], [x - s / 2, H / 2], [x - s / 2, H]);
+    pts.push([0, H]);
+    return pts;
+  };
+  return [
+    ...dividers(rows, W).map((_y, i) =>
+      piece(`${prefix}long-${i + 1}`, "blank", [
+        face(`${prefix}long-${i + 1}`, "partition", "flat", polygon(strip(L, dividers(cols, L), true))),
+      ]),
+    ),
+    ...dividers(cols, L).map((_x, i) =>
+      piece(`${prefix}cross-${i + 1}`, "blank", [
+        face(`${prefix}cross-${i + 1}`, "partition", "flat", polygon(strip(W, dividers(rows, W), false))),
+      ]),
+    ),
+  ];
+}
+
 /**
  * A cross partition set (PK-CI-01): for `partition` = rows × columns cells inside L × W, strips
  * along the length (one per row divider) slotted from the top at each column divider, and strips
@@ -35,35 +70,14 @@ export const partitionSet: BodyModule = {
   build(ctx) {
     const { v, m } = ctx;
     const [rows, cols] = str(v, "partition", "2x2").split("x").map(Number);
-    const L = num(v, "length", 300);
-    const W = num(v, "width", 200);
-    const H = num(v, "height", 100);
-    const s = m.caliperMm + 1;
-    const strip = (len: number, slots: number[], fromTop: boolean): Pt[] => {
-      // Walked clockwise from the top-left corner; each slot a notch half the height deep.
-      const pts: Pt[] = [[0, 0]];
-      if (fromTop)
-        for (const x of slots) pts.push([x - s / 2, 0], [x - s / 2, H / 2], [x + s / 2, H / 2], [x + s / 2, 0]);
-      pts.push([len, 0], [len, H]);
-      if (!fromTop)
-        for (const x of [...slots].reverse())
-          pts.push([x + s / 2, H], [x + s / 2, H / 2], [x - s / 2, H / 2], [x - s / 2, H]);
-      pts.push([0, H]);
-      return pts;
-    };
-    const at = (n: number, total: number) => Array.from({ length: n - 1 }, (_x, i) => ((i + 1) * total) / n);
-    const pieces = [
-      ...at(rows, W).map((_y, i) =>
-        piece(`long-${i + 1}`, "blank", [
-          face(`long-${i + 1}`, "partition", "flat", polygon(strip(L, at(cols, L), true))),
-        ]),
-      ),
-      ...at(cols, L).map((_x, i) =>
-        piece(`cross-${i + 1}`, "blank", [
-          face(`cross-${i + 1}`, "partition", "flat", polygon(strip(W, at(rows, W), false))),
-        ]),
-      ),
-    ];
+    const pieces = partitionStrips(
+      num(v, "length", 300),
+      num(v, "width", 200),
+      num(v, "height", 100),
+      m.caliperMm + 1,
+      rows,
+      cols,
+    );
     return assemble(ctx.styleId, pieces);
   },
 };
