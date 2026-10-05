@@ -10,6 +10,7 @@ export interface MoreItem {
     | "payouts"
     | "claims"
     | "performance"
+    | "knowledge"
     | "requests"
     | "settings";
   href: string;
@@ -28,6 +29,7 @@ export const MORE_ITEMS: MoreItem[] = [
   { key: "payouts", href: "/payouts", icon: "coins", permission: "factory_payables.read" },
   { key: "claims", href: "/claims", icon: "shield-alert", permission: "factory_claims.read" },
   { key: "performance", href: "/performance", icon: "chart-line", permission: "factory_scorecard.read" },
+  { key: "knowledge", href: "/knowledge", icon: "article" },
   { key: "requests", href: "/requests", icon: "send" },
   { key: "settings", href: "/settings", icon: "settings" },
 ];
