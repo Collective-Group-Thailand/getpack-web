@@ -8,6 +8,7 @@
 import { stores } from "../admin/partners";
 import { accountHandlers } from "./account";
 import { billingHandlers } from "./billing";
+import { calendarHandlers } from "./calendar";
 import { factoryHandlers } from "./factories";
 import { registerFactoryNames } from "./factory-names";
 import { jobHandlers } from "./jobs";
@@ -24,6 +25,7 @@ export const partnerZoneHandlers = [
   ...jobHandlers,
   ...shipmentHandlers,
   ...billingHandlers,
+  ...calendarHandlers,
   ...accountHandlers,
   ...factoryHandlers,
 ];

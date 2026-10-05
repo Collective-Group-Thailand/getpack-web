@@ -114,7 +114,8 @@
       "major": "Major",
       "minor": "Minor"
     },
-    "severityFor": "Severity for {item}"
+    "severityFor": "Severity for {item}",
+    "photoStandard": "See the QC photo standard"
   },
   "issue": {
     "tooShort": "Describe the issue in at least 3 characters",
@@ -251,5 +252,17 @@
     "emptyBody": "Samples to make will show here",
     "noRight": "Your role cannot record evidence — ask the Owner, a Planner or QC",
     "failed": "Could not record — try again"
+  },
+  "knowledge": {
+    "title": "Factory guides",
+    "body": "Standards and how to work with Packio",
+    "search": "Search",
+    "searchPlaceholder": "Search the guides",
+    "categories": "Categories",
+    "all": "All",
+    "empty": "No guides yet",
+    "noResults": "No guide matches",
+    "published": "Published {date}",
+    "back": "Back to all guides"
   }
 }
