@@ -67,7 +67,8 @@
     "privacy": "Privacy",
     "samples": "Samples",
     "replenishment": "Replenishment",
-    "callOffs": "Call-offs"
+    "callOffs": "Call-offs",
+    "structuralRequests": "Structural design requests"
   },
   "home": {
     "title": "My account",

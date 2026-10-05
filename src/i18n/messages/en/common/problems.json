@@ -446,7 +446,10 @@
     "converted": "This draft has already been converted and can't change"
   },
   "styles": {
-    "variant_not_found": "This style was not found"
+    "variant_not_found": "This style was not found",
+    "intake_closed": "Dieline offers are not open yet (no intake terms are in force)",
+    "intake_decided": "This offer has already been decided",
+    "intake_terms_outdated": "The intake terms have changed — please read and accept them again"
   },
   "studio": {
     "spec_mismatch": "The spec does not match this design's box",
@@ -478,5 +481,8 @@
   "b2b": {
     "client_limit": "The company already has the most active keys allowed",
     "client_revoked": "This key is already revoked"
+  },
+  "structural_requests": {
+    "invalid_transition": "This request is at a step where that cannot be done"
   }
 }

@@ -269,3 +269,11 @@ core engine (main entry) carries the shared parts of the wave-2 extensions that 
 with: the n-sided polygon lid, marks on tube panels, `under`/`offset` piece placement and the lid
 window lookup. The 63 new recipes and 19 new modules stay in `@packio/dieline/library`, loaded on
 demand on the style pages; every other set is within budget.
+
+## U3.6 — dieline intake and structural requests (2026-10-06)
+
+Three script ratchets, each by the copy and entry points U3.6 adds to every page of its zone (the
+screens themselves load on their own routes; the DXF reader and the style library only on the
+offer's page): `customer-app` 340200 → **340300** (measured 340232: the account menu entry),
+`customer-marketing` 270000 → **270100** (270018: the call to action on `/styles`), `partner`
+301000 → **301400** (301307: the "more" menu entry).
