@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { getPoints } from "@/features/customer/account/api.server";
+import { DocumentLink } from "@/features/customer/orders/DocumentLink";
+import { latestDocuments, listSuggestions } from "@/features/customer/repeat/api.server";
+import { SuggestionCard } from "@/features/customer/repeat/SuggestionCard";
+import { listMyRfqs } from "@/features/customer/rfq/api.server";
+import { Stat } from "@/ui/components/Stat";
 import { TierProgress } from "@/features/customer/account/TierProgress";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders } from "@/features/customer/orders/api.server";
@@ -22,13 +27,23 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, active, points] = await Promise.all([
+  const [t, tNav, format, active, points, rfqs, suggestions, documents] = await Promise.all([
     getTranslations("account.home"),
     getTranslations("account.nav"),
     getFormat(),
     listMyOrders("active"),
     getPoints(),
+    // The dashboard's other reads never take the page down with them.
+    listMyRfqs().catch(() => []),
+    listSuggestions().catch(() => []),
+    latestDocuments(5).catch(() => []),
   ]);
+  // Where things stand, by the API's own statuses (U2.F5): nothing is computed from dates here.
+  const openRfqs = rfqs.filter((rfq) => ["submitted", "in_review", "need_info", "quoted"].includes(rfq.status)).length;
+  const making = active.filter(({ order }) =>
+    ["paid_for_production", "artwork_approved", "in_production"].includes(order.status),
+  ).length;
+  const onTheWay = active.filter(({ order }) => order.status === "shipping").length;
   // What needs doing: the orders' own actions, and a group waiting for its payment.
   const todo = active.filter((row) => row.actions.length > 0 || row.group.status === "waiting_payment");
 
@@ -38,6 +53,23 @@ export default async function Page() {
         <h1 className="text-2xl font-bold">{t("greeting", { name: me.displayName })}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
+
+      <section aria-labelledby="account-where">
+        <h2 id="account-where" className="text-lg font-semibold">
+          {t("where")}
+        </h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <Stat as={Link} href="/account/rfqs" label={t("openRequests")} value={format.number(openRfqs)} icon="inbox" />
+          <Stat
+            as={Link}
+            href="/account/orders"
+            label={t("inProduction")}
+            value={format.number(making)}
+            icon="factory"
+          />
+          <Stat as={Link} href="/account/orders" label={t("onTheWay")} value={format.number(onTheWay)} icon="truck" />
+        </div>
+      </section>
 
       <section aria-labelledby="account-todo">
         <h2 id="account-todo" className="text-lg font-semibold">
@@ -74,6 +106,49 @@ export default async function Page() {
           </ul>
         )}
       </section>
+
+      {suggestions.length > 0 ? (
+        <section aria-labelledby="account-suggestions">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="account-suggestions" className="text-lg font-semibold">
+              {t("suggestions")}
+            </h2>
+            <Link href="/account/replenishment" className="text-primary text-sm underline-offset-4 hover:underline">
+              {t("allSuggestions")}
+            </Link>
+          </div>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            {suggestions.slice(0, 2).map((suggestion) => (
+              <SuggestionCard key={suggestion.id} suggestion={suggestion} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {documents.length > 0 ? (
+        <section aria-labelledby="account-documents">
+          <h2 id="account-documents" className="text-lg font-semibold">
+            {t("documents")}
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {documents.map((doc) => (
+              <li
+                key={doc.id}
+                className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
+              >
+                <span>
+                  {t("documentRow", {
+                    number: doc.docNumber,
+                    date: format.date(doc.documentDate),
+                    amount: format.thb(doc.grossAmount),
+                  })}
+                </span>
+                <DocumentLink documentId={doc.id} number={doc.docNumber} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <section aria-labelledby="account-points" className="border-border rounded-xl border p-4">

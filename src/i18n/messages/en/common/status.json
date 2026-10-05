@@ -644,5 +644,17 @@
   "sampleKind": {
     "attached": "Order sample",
     "standalone": "Sample before ordering"
+  },
+  "callOff": {
+    "pendingFactory": "Waiting for the factory",
+    "active": "Active",
+    "declined": "Declined",
+    "cancelled": "Cancelled",
+    "expired": "Expired"
+  },
+  "callOffRelease": {
+    "quoted": "To pay",
+    "ordered": "Ordered",
+    "lapsed": "Lapsed"
   }
 }
