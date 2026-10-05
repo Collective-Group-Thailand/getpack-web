@@ -178,7 +178,7 @@
 /*
  * U5.2 demo loops and U5.7 interaction moments, on the motion tokens (D-180). Under reduced motion
  * the rule above runs each once in ~0ms, so every animation is written to *end* on its meaningful
- * frame: the inside size shown, the bleed past the cut, the price settled, the item in the cart.
+ * frame: the inside size shown, the bleed past the cut, the price settled.
  */
 @layer components {
   .pk-demo-swap {
@@ -197,9 +197,6 @@
   }
   .pk-flash {
     animation: pk-flash calc(var(--duration-slow) * 4) var(--ease-standard) 1;
-  }
-  .pk-pop {
-    animation: pk-pop var(--duration-slow) var(--ease-emphasised) 1;
   }
 }
 
@@ -236,16 +233,5 @@
   }
   100% {
     background-color: transparent;
-  }
-}
-@keyframes pk-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
   }
 }

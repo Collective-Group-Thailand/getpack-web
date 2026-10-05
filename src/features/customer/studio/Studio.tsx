@@ -31,7 +31,7 @@ import { maxSpotColours, useStudioRules } from "./rules";
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { artworkColours } from "./state";
 import { studioFieldsOf } from "./spec";
-import { IntentPicker } from "@/features/customer/help/IntentPicker";
+import { IntentPicker } from "@/features/customer/help/IntentPickerLazy";
 import { RULE_HELP } from "./help";
 import { SampleDesignLink } from "./SampleDesign";
 import { StepBar } from "./StepBar";

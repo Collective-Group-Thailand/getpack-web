@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
-import { announceCartAdd } from "@/features/customer/cart/CartPulse";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { RFQ_QUOTE_STATUS } from "@/domain/status";
@@ -74,7 +73,6 @@ export function RfqQuotes({ rfq, accepted }: { rfq: Rfq; accepted: Saved | null 
           body: { quoteId: saved.id, quoteOptionId: option.id, designOption: "own_file" },
         }),
       );
-      announceCartAdd();
       track("cart_item_added", {
         route: "/account/rfqs/[rfqId]",
         productType: rfq.productTypeCode,

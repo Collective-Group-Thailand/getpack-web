@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 
-import { useFirstRun } from "@/features/shared/first-run/useFirstRun";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { Icon, type IconName } from "@/ui/icons";
@@ -36,23 +35,21 @@ function pathFor(intent: Intent, here: Here, productSlug: string | null): string
 /**
  * "What brings you here?" on a first visit to the studio or the configurator (U5.2 §1): four
  * intents, each sent the shortest way — or told this page is already it. Inline, never a modal;
- * dismissed for good with "ข้าม", and re-opened from the link it leaves behind.
+ * dismissed for good with "ข้าม" (the wrapper then shows the link that re-opens it).
  */
-export function IntentPicker({ here, productSlug = null }: { here: Here; productSlug?: string | null }) {
+export function IntentPicker({
+  here,
+  productSlug = null,
+  firstRun,
+}: {
+  here: Here;
+  productSlug?: string | null;
+  /** This browser's first-run memory, owned by the lazy wrapper (`IntentPickerLazy`). */
+  firstRun: { dismiss: () => void };
+}) {
   const t = useTranslations("help.intent");
   const router = useRouter();
-  const { show, dismiss, reopen } = useFirstRun("intent-v1");
-
-  if (!show)
-    return (
-      <button
-        type="button"
-        onClick={reopen}
-        className="text-primary self-start text-sm underline-offset-4 hover:underline"
-      >
-        {t("reopen")}
-      </button>
-    );
+  const { dismiss } = firstRun;
 
   return (
     <section

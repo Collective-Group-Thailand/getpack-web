@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { AccountButton } from "@/features/customer/auth/AccountButton";
-import { CartPulse } from "@/features/customer/cart/CartPulse";
 import { readAccessToken } from "@/lib/auth/session";
 
 import { getCatalogueTree } from "@/features/customer/catalog/api.server";
@@ -100,11 +99,9 @@ export async function SiteHeader() {
             <Link href="/help/chat" />
           </IconButton>
 
-          <CartPulse>
-            <IconButton asChild name="cart" variant="ghost" size="sm" label={t("nav.cart")}>
-              <Link href="/cart" />
-            </IconButton>
-          </CartPulse>
+          <IconButton asChild name="cart" variant="ghost" size="sm" label={t("nav.cart")}>
+            <Link href="/cart" />
+          </IconButton>
 
           <AccountButton signedIn={signedIn} label={t("nav.account")} />
 
