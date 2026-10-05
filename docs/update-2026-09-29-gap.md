@@ -423,3 +423,14 @@ Sources: `docs/prompts/U4-3d-studio.md`, `docs/design-tool/studio-spec.md`, deci
 **U4.1 outcome (2026-10-05):** the U4.1 rows are met (PROGRESS U4.1); guests keep a browser copy, and the RFQ pre-filled from the dock moves to U4.2 / U4.6.
 
 **U4.1 plan (slices, each green):** 1 studio route + `Editor` chrome slots + step bar · 2 studio spec builder (box fields + calculator configuration from the product's configurator) and JSON-Patch autosave · 3 price dock (studio quote / guest calculate / RFQ) · 4 funnel events + vitals · 5 mocks (`patchDocument`, studio fields, `store.studio.quote` with `specHash` and reasons), unit + e2e (style card → studio → price → quantity → new price, axe), Lighthouse studio budget · PROGRESS · merge.
+
+## U2.F2 — Style library & free self-service artefacts — 2026-10-05
+
+Precedence: the library page is U3.5's (merged at `6de9599`). Only the dieline download and the spec sheet are in scope. Evidence is from `main` at `f80f1ec`.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Library page (search, filters, cards, favourites, "ใช้แบบนี้") | met (U3.5) | `/styles`, `/styles/[slug]`, `/styles/compare`; `e2e/storefront-styles.spec.ts` | — |
+| 2 | Free dieline download (PDF / DXF / SVG) at any configured size, no plan gate, layers explained, nudge, no paywall | missing | `store.dielines.download` is in the contract and used nowhere; the designer's own exports draw locally | A download panel under the chosen variant on the style page (sizes on a basis, material class, format; signed-in; the API's range errors and rate limit shown as given); a layer explainer; an "order this" nudge after a download |
+| 3 | Packaging spec sheet on approved orders and approved samples, preview before download | missing | `store.orders.getSpecSheet` unused | A section on the order page once the artwork is approved: Thai or English, preview (the browser's PDF viewer, because the CSP forbids embedding the signed file) and download. A sample is an order, so it gets the same section once its sample is approved (`409 orders.spec_sheet_unavailable` otherwise) |
+| 4 | SEO, virtualised cards, e2e for downloads | partial | SEO and virtual grid met by U3.5 | e2e for both downloads; a real-API spec (skipped on the dev seed: no published styles) |

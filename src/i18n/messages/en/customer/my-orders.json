@@ -102,7 +102,17 @@
     "completedTerm": "Completed",
     "completedByYou": "{date} (you confirmed receipt)",
     "completedAuto": "{date} (completed automatically)",
-    "designLink": "Design {title} (ordered version {versionNo})"
+    "designLink": "Design {title} (ordered version {versionNo})",
+    "specSheet": {
+      "title": "Packaging spec sheet",
+      "body": "Sizes on every basis, style code, material, print and finishing, tolerances, packing and the approved artwork — to pass to your team or reorder",
+      "language": "Language of the sheet",
+      "th": "ไทย",
+      "en": "English",
+      "preview": "Preview",
+      "download": "Download PDF",
+      "failed": "Could not open the sheet — try again"
+    }
   },
   "tolerance": {
     "title": "Quantity received",
