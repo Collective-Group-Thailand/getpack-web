@@ -182,6 +182,12 @@ function formOf(code: string): Form | null {
   };
 }
 
+/** A category's names, for a basket item (D-301). */
+export function rfqTypeNames(code: string): [string, string] | null {
+  const form = formOf(code);
+  return form ? [form.nameTh, form.nameEn] : null;
+}
+
 /* ---------------------------------------------------------------------------------- the rfqs */
 
 /** Which fake commerce customer a store persona is (the same mapping as their orders). */
@@ -343,6 +349,160 @@ export function fileRoutedRfq(
   return addCustomerRfq(rfq);
 }
 
+/** A customer's RFQ as `store.rfqs.submit` files it — also one item of a submitted basket (D-301). */
+export function createStoreRfq(
+  customer: MockCustomer,
+  body: Schemas["SubmitRfqDto"],
+  en: boolean,
+): AdminRfq | Response {
+  const spec = body.spec as Record<string, unknown>;
+  const form = formOf(body.productTypeCode);
+  if (!form) return problem(422, "validation.failed", "ไม่พบประเภทสินค้านี้");
+  const missing = form.fields.find(
+    (field) => field.required && (spec[field.key] === undefined || spec[field.key] === ""),
+  );
+  if (missing)
+    return problem(422, "validation.failed", "กรุณากรอกข้อมูลที่จำเป็น", [
+      { path: `spec.${missing.key}`, code: "required", message: "required" },
+    ]);
+  const labelOf = (key: string) => {
+    const field = form.fields.find((candidate) => candidate.key === key);
+    return field ? (en ? field.labelEn : field.labelTh) : key;
+  };
+  const valueOf = (key: string, value: unknown) => {
+    const field = form.fields.find((candidate) => candidate.key === key);
+    const values = [value].flat().map((item) => {
+      const hit = field?.options.find((candidate) => candidate.value === String(item));
+      if (hit) return en ? hit.labelEn : hit.labelTh;
+      if (typeof item === "boolean") return item ? (en ? "Yes" : "ใช่") : en ? "No" : "ไม่";
+      return `${String(item)}${field?.unit ? ` ${field.unit}` : ""}`;
+    });
+    return values.join(", ");
+  };
+  submitted += 1;
+  const n = 900 + submitted;
+  const owner = ownerOf(customer);
+  const now = bangkokIso();
+  const fileIds = body.fileIds ?? [];
+  const rfq: AdminRfq = {
+    id: mockId("rfq", n),
+    rfqCode: `RFQ-2569-${String(n).padStart(5, "0")}`,
+    channel: "web",
+    status: "submitted",
+    productType: { code: form.productTypeCode, name: form.nameTh },
+    customer: owner,
+    quantities: [...body.quantities].sort((a, b) => a - b),
+    dimensions:
+      body.lengthMm && body.widthMm
+        ? { lengthMm: body.lengthMm, widthMm: body.widthMm, heightMm: body.heightMm ?? null }
+        : null,
+    targetDate: body.targetDate ?? null,
+    province: null,
+    assignee: null,
+    slaTargetHours: form.slaTargetHours ?? 8,
+    slaDueAt: bangkokIso((form.slaTargetHours ?? 8) * 60),
+    firstResponseAt: null,
+    urgency: "normal",
+    consultationCounts: { requested: 0, responded: 0 },
+    latestQuote: null,
+    // The calculation that routed this configuration here (D-102), when the configurator sent one.
+    routedFromCalculator: Boolean(body.routedFrom?.calculationId),
+    submittedAt: now,
+    contact: { phone: customer.phone, email: customer.email },
+    spec: Object.entries(spec).map(([key, value]) => ({ label: labelOf(key), value: valueOf(key, value) })),
+    specSchemaVersion: form.specSchemaVersion,
+    notes: body.notes ?? null,
+    deliveryPostcode: body.deliveryPostcode,
+    files: fileIds.map((id, index) => ({
+      id,
+      originalName: `file-${index + 1}`,
+      mimeType: "application/octet-stream",
+      sizeBytes: 0,
+      thumbnailUrl: null,
+      url: null,
+    })),
+    routedFrom: null,
+    declineReason: null,
+    declineNote: null,
+    acceptedQuotation: null,
+    consultations: [],
+    quotes: [],
+    quoteDefaults: { validUntil: bangkokIso(QUOTE_VALIDITY_DAYS * DAY).slice(0, 10) },
+    events: [],
+    nextActions: [],
+  };
+  rawSpecs.set(rfq.id, spec);
+  return addCustomerRfq(rfq);
+}
+
+export { toRfqDto as storeRfqDto };
+
+/** Accepting one quantity of a sent quote: the saved quotation the cart takes (`store.rfqs.accept`, basket items too). */
+export function acceptStoreRfq(
+  customer: MockCustomer,
+  rfq: AdminRfq,
+  rfqQuoteId: string,
+  quantity: number,
+  en: boolean,
+): StoreQuote | Response {
+  const sentQuote = rfq.quotes.find((candidate) => candidate.id === rfqQuoteId);
+  const accepted = customerAcceptQuote(rfq, rfqQuoteId, quantity);
+  if (accepted instanceof Response) return accepted;
+  const { line } = accepted;
+  const net = line.netAmount;
+  const quote: StoreQuote = {
+    ...nextQuoteId(),
+    status: "saved",
+    productType: rfq.productType,
+    product: { slug: rfq.productType.code, name: rfq.productType.name, imageUrl: null },
+    specs: rfq.spec,
+    quantity: line.quantity,
+    unit: en ? "pcs" : "ชิ้น",
+    lines: [
+      {
+        lineType: "product",
+        description: `${rfq.productType.name} ${line.quantity.toLocaleString("th-TH")} ชิ้น (${rfq.rfqCode})`,
+        quantity: `${line.quantity}.000`,
+        unit: "ชิ้น",
+        unitPrice: line.unitPrice,
+        netAmount: net,
+        vatAmount: line.vatAmount,
+        grossAmount: line.grossAmount,
+        oneOff: false,
+        waivedReason: null,
+      },
+    ],
+    unitPrice: line.unitPrice,
+    netAmount: net,
+    discountAmount: "0.00",
+    shippingAmount: "0.00",
+    vatAmount: line.vatAmount,
+    grossAmount: line.grossAmount,
+    currency: "THB",
+    promotion: null,
+    designOption: "own_file",
+    mockupOption: "none",
+    leadTimeDays: line.leadTimeDays,
+    earliestShipDate: bangkokIso(Math.round(line.leadTimeDays * 1.4) * DAY).slice(0, 10),
+    estimatedDeliveryDate: null,
+    deliveryPostcode: rfq.deliveryPostcode,
+    tolerance: { shortagePct: "5.0000", overagePct: "5.0000" },
+    validUntil: `${sentQuote!.validUntil}T23:59:59+07:00`,
+    configuration: { rfqId: rfq.id },
+    source: "rfq",
+    nextActions: [{ key: "quote.add_to_cart" }, { key: "quote.export_pdf" }],
+    createdAt: bangkokIso(),
+  };
+  // The admin desk's quotation and the customer's are the same record in the API.
+  quote.id = accepted.id;
+  quote.quoteCode = accepted.quoteCode;
+  quotesOf(customer.persona).unshift(quote);
+  return quote;
+}
+
+/** The customer's own RFQ by id. */
+export const myRfq = (customer: MockCustomer, rfqId: string) => mine(customer).find((rfq) => rfq.id === rfqId);
+
 export const storeRfqHandlers = [
   // store.rfqs.getForm (public): any active type has one (D-043).
   http.get("*/v1/store/rfq-forms/:productTypeCode", ({ params }) => {
@@ -357,85 +517,8 @@ export const storeRfqHandlers = [
     const customer = customerOf(request);
     if (!customer) return unauthenticated();
     const body = (await request.json()) as Schemas["SubmitRfqDto"];
-    const spec = body.spec as Record<string, unknown>;
-    const form = formOf(body.productTypeCode);
-    if (!form) return problem(422, "validation.failed", "ไม่พบประเภทสินค้านี้");
-    const missing = form.fields.find(
-      (field) => field.required && (spec[field.key] === undefined || spec[field.key] === ""),
-    );
-    if (missing)
-      return problem(422, "validation.failed", "กรุณากรอกข้อมูลที่จำเป็น", [
-        { path: `spec.${missing.key}`, code: "required", message: "required" },
-      ]);
-    const en = english(request);
-    const labelOf = (key: string) => {
-      const field = form.fields.find((candidate) => candidate.key === key);
-      return field ? (en ? field.labelEn : field.labelTh) : key;
-    };
-    const valueOf = (key: string, value: unknown) => {
-      const field = form.fields.find((candidate) => candidate.key === key);
-      const values = [value].flat().map((item) => {
-        const hit = field?.options.find((candidate) => candidate.value === String(item));
-        if (hit) return en ? hit.labelEn : hit.labelTh;
-        if (typeof item === "boolean") return item ? (en ? "Yes" : "ใช่") : en ? "No" : "ไม่";
-        return `${String(item)}${field?.unit ? ` ${field.unit}` : ""}`;
-      });
-      return values.join(", ");
-    };
-    submitted += 1;
-    const n = 900 + submitted;
-    const owner = ownerOf(customer);
-    const now = bangkokIso();
-    const fileIds = body.fileIds ?? [];
-    const rfq: AdminRfq = {
-      id: mockId("rfq", n),
-      rfqCode: `RFQ-2569-${String(n).padStart(5, "0")}`,
-      channel: "web",
-      status: "submitted",
-      productType: { code: form.productTypeCode, name: form.nameTh },
-      customer: owner,
-      quantities: [...body.quantities].sort((a, b) => a - b),
-      dimensions:
-        body.lengthMm && body.widthMm
-          ? { lengthMm: body.lengthMm, widthMm: body.widthMm, heightMm: body.heightMm ?? null }
-          : null,
-      targetDate: body.targetDate ?? null,
-      province: null,
-      assignee: null,
-      slaTargetHours: form.slaTargetHours ?? 8,
-      slaDueAt: bangkokIso((form.slaTargetHours ?? 8) * 60),
-      firstResponseAt: null,
-      urgency: "normal",
-      consultationCounts: { requested: 0, responded: 0 },
-      latestQuote: null,
-      // The calculation that routed this configuration here (D-102), when the configurator sent one.
-      routedFromCalculator: Boolean(body.routedFrom?.calculationId),
-      submittedAt: now,
-      contact: { phone: customer.phone, email: customer.email },
-      spec: Object.entries(spec).map(([key, value]) => ({ label: labelOf(key), value: valueOf(key, value) })),
-      specSchemaVersion: form.specSchemaVersion,
-      notes: body.notes ?? null,
-      deliveryPostcode: body.deliveryPostcode,
-      files: fileIds.map((id, index) => ({
-        id,
-        originalName: `file-${index + 1}`,
-        mimeType: "application/octet-stream",
-        sizeBytes: 0,
-        thumbnailUrl: null,
-        url: null,
-      })),
-      routedFrom: null,
-      declineReason: null,
-      declineNote: null,
-      acceptedQuotation: null,
-      consultations: [],
-      quotes: [],
-      quoteDefaults: { validUntil: bangkokIso(QUOTE_VALIDITY_DAYS * DAY).slice(0, 10) },
-      events: [],
-      nextActions: [],
-    };
-    rawSpecs.set(rfq.id, spec);
-    return HttpResponse.json(toRfqDto(addCustomerRfq(rfq)), { status: 201 });
+    const created = createStoreRfq(customer, body, english(request));
+    return created instanceof Response ? created : HttpResponse.json(toRfqDto(created), { status: 201 });
   }),
 
   // store.rfqs.list / get (published, U-F0.2).
@@ -499,61 +582,9 @@ export const storeRfqHandlers = [
     const rfq = mine(customer).find((candidate) => candidate.id === params.rfqId);
     if (!rfq) return notFound();
     const body = (await request.json()) as Schemas["AcceptRfqQuoteDto"];
-    const sentQuote = rfq.quotes.find((candidate) => candidate.id === body.rfqQuoteId);
-    const quantity = body.quantities?.[0] ?? sentQuote?.lines[0]?.quantity ?? 0;
-    const accepted = customerAcceptQuote(rfq, body.rfqQuoteId, quantity);
-    if (accepted instanceof Response) return accepted;
-    const { line } = accepted;
-    const net = line.netAmount;
-    const en = english(request);
-    const quote: StoreQuote = {
-      ...nextQuoteId(),
-      status: "saved",
-      productType: rfq.productType,
-      product: { slug: rfq.productType.code, name: rfq.productType.name, imageUrl: null },
-      specs: rfq.spec,
-      quantity: line.quantity,
-      unit: en ? "pcs" : "ชิ้น",
-      lines: [
-        {
-          lineType: "product",
-          description: `${rfq.productType.name} ${line.quantity.toLocaleString("th-TH")} ชิ้น (${rfq.rfqCode})`,
-          quantity: `${line.quantity}.000`,
-          unit: "ชิ้น",
-          unitPrice: line.unitPrice,
-          netAmount: net,
-          vatAmount: line.vatAmount,
-          grossAmount: line.grossAmount,
-          oneOff: false,
-          waivedReason: null,
-        },
-      ],
-      unitPrice: line.unitPrice,
-      netAmount: net,
-      discountAmount: "0.00",
-      shippingAmount: "0.00",
-      vatAmount: line.vatAmount,
-      grossAmount: line.grossAmount,
-      currency: "THB",
-      promotion: null,
-      designOption: "own_file",
-      mockupOption: "none",
-      leadTimeDays: line.leadTimeDays,
-      earliestShipDate: bangkokIso(Math.round(line.leadTimeDays * 1.4) * DAY).slice(0, 10),
-      estimatedDeliveryDate: null,
-      deliveryPostcode: rfq.deliveryPostcode,
-      tolerance: { shortagePct: "5.0000", overagePct: "5.0000" },
-      validUntil: `${sentQuote!.validUntil}T23:59:59+07:00`,
-      configuration: { rfqId: rfq.id },
-      source: "rfq",
-      nextActions: [{ key: "quote.add_to_cart" }, { key: "quote.export_pdf" }],
-      createdAt: bangkokIso(),
-    };
-    // The admin desk's quotation and the customer's are the same record in the API.
-    quote.id = accepted.id;
-    quote.quoteCode = accepted.quoteCode;
-    quotesOf(customer.persona).unshift(quote);
-    return HttpResponse.json(toRfqDto(rfq));
+    const quantity = body.quantities?.[0] ?? rfq.quotes.find((q) => q.id === body.rfqQuoteId)?.lines[0]?.quantity ?? 0;
+    const quote = acceptStoreRfq(customer, rfq, body.rfqQuoteId, quantity, english(request));
+    return quote instanceof Response ? quote : HttpResponse.json(toRfqDto(rfq));
   }),
   // store.rfqs.decline: the customer closes their own request (`customer_declined`, D-102).
   http.post("*/v1/store/rfqs/:rfqId/actions/decline", async ({ params, request }) => {

@@ -22,6 +22,9 @@ const TOPICS: { key: string; href: string; icon: IconName }[] = [
   { key: "payment", href: "/faq#payment", icon: "wallet" },
   // Sample kits wait for the samples work (U2.4, D-223); the topic comes back with them.
   { key: "business", href: "/business", icon: "building" },
+  { key: "learn", href: "/learn", icon: "article" },
+  { key: "materials", href: "/materials", icon: "layers" },
+  { key: "glossary", href: "/help/glossary", icon: "help" },
 ];
 
 /**

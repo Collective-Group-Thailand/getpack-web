@@ -48,7 +48,9 @@ export function stepHref(step: Step, launchpad: Launchpad): string {
     case "approve_proof":
     case "upload_artwork":
     case "confirm_receipt":
-      return id ? actionHref({ action: step.kind, subject: step.target === "order_group" ? "order_group" : "order", id }) : "/account/orders";
+      return id
+        ? actionHref({ action: step.kind, subject: step.target === "order_group" ? "order_group" : "order", id })
+        : "/account/orders";
     case "reorder": {
       if (step.target === "order_reorder" && id) return `/account/orders/${id}/reorder`;
       const candidate = launchpad.reorderCandidates.find((c) => c.suggestionId === id);
@@ -89,9 +91,7 @@ export async function LaunchpadPanel({ launchpad, hasBrandKit }: { launchpad: La
               {t(`next.${step.kind}.title`, { code: item?.code ?? "", name: design?.title ?? "" })}
             </h2>
             <p className="text-muted text-sm">
-              {item?.amount
-                ? t("next.amount", { amount: format.thb(item.amount) })
-                : t(`next.${step.kind}.body`)}
+              {item?.amount ? t("next.amount", { amount: format.thb(item.amount) }) : t(`next.${step.kind}.body`)}
               {item?.dueAt ? ` · ${t("due", { date: format.date(item.dueAt) })}` : ""}
             </p>
           </div>

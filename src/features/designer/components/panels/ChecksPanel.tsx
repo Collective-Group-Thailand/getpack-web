@@ -20,6 +20,8 @@ export interface ChecksPanelProps {
   /** Whether a warning has been accepted for this version (stored by packio-api, D-278). */
   acknowledged?: (issue: DesignIssue) => boolean;
   onAcknowledge?: (issue: DesignIssue) => void;
+  /** Where a finding is explained (U5.2 §4) — the customer's help pages; none on the staff side. */
+  helpHref?: (issue: DesignIssue) => string | null;
 }
 
 const ORDER = { block: 0, warn: 1, info: 2 } as const;
@@ -30,7 +32,7 @@ const ORDER = { block: 0, warn: 1, info: 2 } as const;
  * where one is safe and, for a warning, an explicit acknowledgement kept with the design version.
  * Blocks must be fixed before ordering; the proof and prepress remain the authority.
  */
-export function ChecksPanel({ issues, onFix, acknowledged, onAcknowledge }: ChecksPanelProps) {
+export function ChecksPanel({ issues, onFix, acknowledged, onAcknowledge, helpHref }: ChecksPanelProps) {
   const t = useTranslations("designer.checks");
   const locale = useLocale() as "th" | "en";
   const elements = useEditor((s) => s.content.elements);
@@ -109,12 +111,22 @@ export function ChecksPanel({ issues, onFix, acknowledged, onAcknowledge }: Chec
                   {issue.elementId ? <span className="text-muted block text-xs">{nameOf(issue.elementId)}</span> : null}
                 </span>
               </button>
-              {(issue.fix && onFix) || (issue.severity === "warn" && onAcknowledge) ? (
-                <div className="flex flex-wrap gap-2 ps-8">
+              {(issue.fix && onFix) || (issue.severity === "warn" && onAcknowledge) || helpHref?.(issue) ? (
+                <div className="flex flex-wrap items-center gap-2 ps-8">
                   {issue.fix && onFix ? (
                     <Button size="sm" variant="secondary" onClick={() => onFix(issue)}>
                       {t(`fix.${issue.fix}`)}
                     </Button>
+                  ) : null}
+                  {helpHref?.(issue) ? (
+                    <a
+                      href={helpHref(issue)!}
+                      target="_blank"
+                      rel="noopener"
+                      className="text-primary text-xs underline-offset-4 hover:underline"
+                    >
+                      {t("why")}
+                    </a>
                   ) : null}
                   {issue.severity === "warn" && onAcknowledge ? (
                     accepted ? (

@@ -25,12 +25,16 @@ import { sampleHandlers } from "./samples";
 import { storeStudioHandlers } from "./studio";
 import { storeConversationHandlers } from "./conversations";
 import { launchpadHandlers } from "./launchpad";
+import { rfqBasketHandlers } from "./rfq-baskets";
+import { contentHandlers } from "./content";
 
 export const storeHandlers = [
   // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
   ...sampleHandlers,
   ...launchpadHandlers,
   ...storeConversationHandlers,
+  ...rfqBasketHandlers,
+  ...contentHandlers,
   ...repeatHandlers,
   ...storeAccountHandlers,
   ...quoteToolHandlers,

@@ -2,9 +2,8 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { studioHref } from "@/features/customer/studio/paths";
 import { uploadFile } from "@/features/shared/files/upload";
-import type { ContextCard, Draft } from "@/features/shared/conversations/ThreadView";
+import type { Draft } from "@/features/shared/conversations/ThreadView";
 import { browserApi } from "@/lib/api/browser";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -46,22 +45,4 @@ export function usePostMessage(conversationId: string) {
 export async function uploadAttachment(file: File) {
   const uploaded = await uploadFile("customer", file, "evidence");
   return { id: uploaded.id, name: file.name };
-}
-
-/** Where a context card opens on the storefront. */
-export function storeCardHref(card: Pick<ContextCard, "id"> & { type: string }): string | null {
-  switch (card.type) {
-    case "order":
-      return `/account/orders/${card.id}`;
-    case "design":
-      return studioHref({ designId: card.id });
-    case "rfq":
-      return `/account/rfqs/${card.id}`;
-    case "quote":
-      return "/account/quotes";
-    case "rfq_basket":
-      return `/account/rfq-baskets/${card.id}`;
-    default:
-      return null;
-  }
 }

@@ -17,7 +17,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = await params;
   const t = await getTranslations("cs.inbox");
-  const conversation = await (await serverApi("admin"))
+  const conversation = await (
+    await serverApi("admin")
+  )
     .GET("/v1/admin/conversations/{conversationId}", { params: { path: { conversationId } } })
     .then((response) => response.data!)
     .catch((error: unknown) => {

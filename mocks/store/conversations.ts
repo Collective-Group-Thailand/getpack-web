@@ -48,9 +48,24 @@ const nextId = () => mockId("c0nv", ++seq);
 export const threads: Thread[] = [];
 
 const CANNED: Schemas["CannedResponseDto"][] = [
-  canned(1, "ทักทาย", "สวัสดีค่ะ ทีม Packio ยินดีช่วยค่ะ ขอดูรายละเอียดสักครู่นะคะ", "Hello, this is the Packio team — give us a moment to check the details."),
-  canned(2, "สถานะการผลิต", "คำสั่งซื้อของคุณอยู่ระหว่างผลิตตามแผนค่ะ จะแจ้งทันทีเมื่อจัดส่ง", "Your order is in production on schedule; we will tell you as soon as it ships."),
-  canned(3, "ขอไฟล์งานเพิ่ม", "รบกวนส่งไฟล์งานเป็น PDF หรือ AI พร้อมระยะตัดตก 3 มม. ได้เลยค่ะ", "Please send the artwork as PDF or AI with a 3 mm bleed."),
+  canned(
+    1,
+    "ทักทาย",
+    "สวัสดีค่ะ ทีม Packio ยินดีช่วยค่ะ ขอดูรายละเอียดสักครู่นะคะ",
+    "Hello, this is the Packio team — give us a moment to check the details.",
+  ),
+  canned(
+    2,
+    "สถานะการผลิต",
+    "คำสั่งซื้อของคุณอยู่ระหว่างผลิตตามแผนค่ะ จะแจ้งทันทีเมื่อจัดส่ง",
+    "Your order is in production on schedule; we will tell you as soon as it ships.",
+  ),
+  canned(
+    3,
+    "ขอไฟล์งานเพิ่ม",
+    "รบกวนส่งไฟล์งานเป็น PDF หรือ AI พร้อมระยะตัดตก 3 มม. ได้เลยค่ะ",
+    "Please send the artwork as PDF or AI with a 3 mm bleed.",
+  ),
 ];
 
 function canned(n: number, title: string, bodyTh: string, bodyEn: string): Schemas["CannedResponseDto"] {
@@ -99,10 +114,17 @@ function cardOf(thread: Pick<Thread, "ownerId">, input: Schemas["ContextCardInpu
     if (!order) return { card: null, refused: true };
     return { card: { type: input.type, id: input.id, label: order.orderCode, status: order.status }, refused: false };
   }
-  return { card: { type: input.type, id: input.id, label: input.id.slice(0, 8).toUpperCase(), status: null }, refused: false };
+  return {
+    card: { type: input.type, id: input.id, label: input.id.slice(0, 8).toUpperCase(), status: null },
+    refused: false,
+  };
 }
 
-function subjectOf(ownerId: string, type: Subject, id: string | undefined): Schemas["SubjectRefDto"] | null | "refused" {
+function subjectOf(
+  ownerId: string,
+  type: Subject,
+  id: string | undefined,
+): Schemas["SubjectRefDto"] | null | "refused" {
   if (type === "support") return null;
   if (!id) return "refused";
   if (type === "order") {
@@ -120,7 +142,10 @@ const fileOf = (fileId: string): Message["file"] => ({
 
 const unread = (thread: Thread) =>
   thread.messages.filter(
-    (m) => m.direction === "outbound" && m.visibility === "customer" && (!thread.customerReadAt || m.sentAt > thread.customerReadAt),
+    (m) =>
+      m.direction === "outbound" &&
+      m.visibility === "customer" &&
+      (!thread.customerReadAt || m.sentAt > thread.customerReadAt),
   ).length;
 
 const visible = (thread: Thread) => thread.messages.filter((m) => m.visibility === "customer");
@@ -142,7 +167,8 @@ export function storeThreadDto(thread: Thread): Schemas["StoreThreadDto"] {
 }
 
 function slaOf(thread: Thread): Schemas["ConversationSlaDto"] {
-  const overdue = thread.firstResponseDueAt !== null && thread.firstRespondedAt === null && thread.firstResponseDueAt < bangkokIso();
+  const overdue =
+    thread.firstResponseDueAt !== null && thread.firstRespondedAt === null && thread.firstResponseDueAt < bangkokIso();
   return {
     state: thread.firstRespondedAt ? "answered" : overdue ? "overdue" : "waiting",
     firstResponseDueAt: thread.firstResponseDueAt,
@@ -171,7 +197,11 @@ export function adminThreadDto(thread: Thread): Schemas["ConversationDto"] {
     replyChannel: thread.replyChannel,
     sla: slaOf(thread),
     participants: [
-      { user: { id: thread.customerId, displayName: thread.customerName }, role: "customer", lastReadAt: thread.customerReadAt },
+      {
+        user: { id: thread.customerId, displayName: thread.customerName },
+        role: "customer",
+        lastReadAt: thread.customerReadAt,
+      },
       ...(thread.assignee ? [{ user: thread.assignee, role: "staff" as const, lastReadAt: thread.staffReadAt }] : []),
     ],
     mergedIntoId: null,
@@ -193,7 +223,10 @@ function composed(
 ): Message[] | Response {
   const text = body.body?.trim();
   const { card, refused } = cardOf(thread, body.contextCard);
-  if (refused) return problem(422, "validation.failed", "อ้างถึงรายการที่ไม่ใช่ของคุณไม่ได้", [{ path: "contextCard.id", code: "not_found", message: "not found" }]);
+  if (refused)
+    return problem(422, "validation.failed", "อ้างถึงรายการที่ไม่ใช่ของคุณไม่ได้", [
+      { path: "contextCard.id", code: "not_found", message: "not found" },
+    ]);
   const files = body.fileIds ?? [];
   if (!text && !card && files.length === 0)
     return problem(422, "validation.failed", "พิมพ์ข้อความ แนบไฟล์ หรือแนบการ์ดอย่างน้อยหนึ่งอย่าง", [
@@ -249,7 +282,10 @@ function staffOf(request: Request): StaffPersona | null {
   return personaByKey(principal.persona ?? "cs") ?? null;
 }
 
-const staffRef = (persona: StaffPersona): Schemas["UserRefDto"] => ({ id: persona.id, displayName: persona.displayName });
+const staffRef = (persona: StaffPersona): Schemas["UserRefDto"] => ({
+  id: persona.id,
+  displayName: persona.displayName,
+});
 
 const page = (rows: Message[], url: URL) => {
   const limit = Math.min(Number(url.searchParams.get("limit") ?? 50), 100);
@@ -278,7 +314,9 @@ export const storeConversationHandlers = [
     const ownerId = ownerIdOf(customer);
     const subject = subjectOf(ownerId, body.subjectType, body.subjectId);
     if (subject === "refused")
-      return problem(422, "validation.failed", "อ้างถึงรายการที่ไม่ใช่ของคุณไม่ได้", [{ path: "subjectId", code: "not_found", message: "not found" }]);
+      return problem(422, "validation.failed", "อ้างถึงรายการที่ไม่ใช่ของคุณไม่ได้", [
+        { path: "subjectId", code: "not_found", message: "not found" },
+      ]);
     let thread = threads.find(
       (row) =>
         row.customerId === customer.id &&
@@ -310,7 +348,9 @@ export const storeConversationHandlers = [
     if (sent instanceof Response) return sent;
     if (created) threads.push(thread);
     customerSays(thread, sent);
-    return HttpResponse.json({ conversationId: thread.id, messages: sent } satisfies Schemas["SentDto"], { status: 201 });
+    return HttpResponse.json({ conversationId: thread.id, messages: sent } satisfies Schemas["SentDto"], {
+      status: 201,
+    });
   }),
 
   http.get("*/v1/store/conversations/:conversationId", ({ request, params }) => {
@@ -340,7 +380,9 @@ export const storeConversationHandlers = [
     const sent = composed(thread, (await request.json()) as Schemas["PostMessageDto"], "inbound", null);
     if (sent instanceof Response) return sent;
     customerSays(thread, sent);
-    return HttpResponse.json({ conversationId: thread.id, messages: sent } satisfies Schemas["SentDto"], { status: 201 });
+    return HttpResponse.json({ conversationId: thread.id, messages: sent } satisfies Schemas["SentDto"], {
+      status: 201,
+    });
   }),
 
   http.put("*/v1/store/conversations/:conversationId/reply-channel", async ({ request, params }) => {
@@ -378,7 +420,12 @@ export const adminConversationHandlers = [
       to: "2026-10-05",
       opened: threads.length,
       closed: threads.filter((t) => t.status === "closed").length,
-      firstResponse: { count: answered.length, medianMinutes: answered.length ? "20" : null, p90Minutes: answered.length ? "45" : null, withinTargetPct: answered.length ? "100" : null },
+      firstResponse: {
+        count: answered.length,
+        medianMinutes: answered.length ? "20" : null,
+        p90Minutes: answered.length ? "45" : null,
+        withinTargetPct: answered.length ? "100" : null,
+      },
       resolution: { count: 0, medianMinutes: null, p90Minutes: null },
       overdueNow: threads.filter((t) => slaOf(t).state === "overdue").length,
     } satisfies Schemas["ConversationStatsDto"]);
@@ -403,7 +450,7 @@ export const adminConversationHandlers = [
     const pageNo = Number(q.get("page") ?? 1);
     return HttpResponse.json({
       data: rows.slice((pageNo - 1) * perPage, pageNo * perPage),
-      meta: { page: pageNo, perPage, total: rows.length},
+      meta: { page: pageNo, perPage, total: rows.length },
     });
   }),
 
@@ -450,7 +497,12 @@ export const adminConversationHandlers = [
     if ("error" in found) return found.error;
     const body = (await request.json()) as Schemas["StaffReplyDto"];
     const template = body.cannedResponseId ? CANNED.find((c) => c.id === body.cannedResponseId) : undefined;
-    const sent = composed(found.thread, { ...body, body: body.body ?? template?.bodyTh }, "outbound", staffRef(found.persona));
+    const sent = composed(
+      found.thread,
+      { ...body, body: body.body ?? template?.bodyTh },
+      "outbound",
+      staffRef(found.persona),
+    );
     if (sent instanceof Response) return sent;
     const { thread } = found;
     thread.messages.push(...sent);
@@ -465,7 +517,9 @@ export const adminConversationHandlers = [
     if ("error" in found) return found.error;
     const body = (await request.json()) as Schemas["ConversationNoteDto"];
     if (!body.body?.trim())
-      return problem(422, "validation.failed", "พิมพ์บันทึกก่อน", [{ path: "body", code: "required", message: "required" }]);
+      return problem(422, "validation.failed", "พิมพ์บันทึกก่อน", [
+        { path: "body", code: "required", message: "required" },
+      ]);
     const note = message("outbound", staffRef(found.persona), { body: body.body.trim() }, "internal");
     found.thread.messages.push(note);
     return HttpResponse.json(note, { status: 201 });
@@ -475,7 +529,7 @@ export const adminConversationHandlers = [
     const persona = staffOf(request);
     if (!persona) return unauthenticated();
     const rows = CANNED.filter((c) => !c.archived);
-    return HttpResponse.json({ data: rows, meta: { page: 1, perPage: 100, total: rows.length} });
+    return HttpResponse.json({ data: rows, meta: { page: 1, perPage: 100, total: rows.length } });
   }),
 ];
 

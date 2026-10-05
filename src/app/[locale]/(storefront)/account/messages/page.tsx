@@ -84,7 +84,10 @@ export default async function Page() {
         </h2>
         <p className="text-muted text-sm">{threads.length === 0 ? t("empty") : t("newSupportBody")}</p>
         {support ? (
-          <Link href={`/account/messages/${support.id}`} className="text-primary text-sm underline-offset-4 hover:underline">
+          <Link
+            href={`/account/messages/${support.id}`}
+            className="text-primary text-sm underline-offset-4 hover:underline"
+          >
             {t("openSupport")}
           </Link>
         ) : (

@@ -220,7 +220,7 @@ function stock(product: Row): Schemas["StoreStockProductDto"] {
   };
 }
 
-function articles(): Row[] {
+export function articles(): Row[] {
   const now = Date.now();
   return live(catalogueRows("articles"))
     .filter((row) => typeof row.publishedAt === "string" && Date.parse(row.publishedAt) <= now)

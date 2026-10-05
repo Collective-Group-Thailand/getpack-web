@@ -380,6 +380,24 @@
       "Bleed": "Bleed: run the artwork out to this line, past the cut",
       "Safe": "Safe area: keep text and logos inside this line",
       "HalfCut": "Half-cut through the board (some styles only)"
+    },
+    "guideTitle": "How to open the {format}",
+    "guide": {
+      "pdf": {
+        "1": "Open it in Illustrator (File › Open), not Place, so the layers are kept.",
+        "2": "CutContour, Crease, Bleed and Safe are separate layers — put your artwork on a new layer below CutContour.",
+        "3": "Do not edit or delete the dieline layers; the factory makes the cutting die from them."
+      },
+      "dxf": {
+        "1": "Open it in a CAD program or Illustrator; the units are millimetres.",
+        "2": "Import at 1:1 scale, then measure one side against the size you asked for.",
+        "3": "Before the die is made, check the cut and crease lines are still told apart after import."
+      },
+      "svg": {
+        "1": "Opens in a browser, Illustrator, Inkscape or Figma.",
+        "2": "Sizes are in millimetres — in Figma, check the scale before placing artwork.",
+        "3": "Good for previews and mock-ups; use the PDF for print."
+      }
     }
   }
 }

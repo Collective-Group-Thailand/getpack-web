@@ -9,10 +9,7 @@ import { zoneHosts } from "@/lib/env/server";
 import type { Zone } from "@/lib/zones";
 
 export type DeepLinkOutcome =
-  | { kind: "go"; path: string }
-  | { kind: "elsewhere"; url: string }
-  | { kind: "expired" }
-  | { kind: "not-found" };
+  { kind: "go"; path: string } | { kind: "elsewhere"; url: string } | { kind: "expired" } | { kind: "not-found" };
 
 const ZONE_OF_PREFIX: Record<string, Zone> = { s: "customer", a: "admin", p: "partner" };
 const TOKEN = /^[sap][A-Za-z0-9_-]{8,400}$/;

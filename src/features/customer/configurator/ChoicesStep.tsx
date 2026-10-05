@@ -11,6 +11,7 @@ import { RadioCards } from "@/ui/components/RadioCards";
 
 import { isProcessInk, placementOf, type ChoiceGroup, type Placement, type StoreOption } from "./model";
 import type { AreaInput, Configurator, ConfiguratorState } from "./state";
+import { GlossaryChip } from "@/features/customer/learn/GlossaryChip";
 
 /** "None" for a single-choice group the customer may leave unanswered. */
 const NONE = "__none__";
@@ -135,7 +136,11 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
         return (
           <fieldset key={group.kind} className="flex flex-col gap-2">
             <legend className="text-sm font-medium">{name}</legend>
-            {group.step === "printing" ? <p className="text-muted text-xs">{t("ink.hint")}</p> : null}
+            {group.step === "printing" ? (
+              <p className="text-muted text-xs">
+                {t("ink.hint")} <GlossaryChip slug="offset" /> <GlossaryChip slug="digital-print" />
+              </p>
+            ) : null}
             <ul className="mt-1 flex flex-col gap-3">
               {group.options.map((option) => {
                 const checked = chosen.includes(option.id);

@@ -68,7 +68,11 @@ export const launchpadHandlers = [
     const needsAction: Schemas["LaunchpadActionItemDto"][] = [];
     for (const order of orders) {
       const dto = toOrderDto(order);
-      const actions = new Set(storeOrderActions(order).map((a) => ACTION_OF[a.key]).filter(Boolean));
+      const actions = new Set(
+        storeOrderActions(order)
+          .map((a) => ACTION_OF[a.key])
+          .filter(Boolean),
+      );
       if (dto.status === "waiting_payment") actions.add("pay");
       for (const action of ORDER.filter((a) => actions.has(a))) {
         needsAction.push({
@@ -103,34 +107,30 @@ export const launchpadHandlers = [
 
     const suggested = suggestionsOf(customer)
       .filter((s) => s.status === "open")
-      .map(
-        (s): Schemas["ReorderCandidateDto"] => ({
-          source: "suggestion",
-          suggestionId: s.id,
-          orderId: s.lastOrder.orderId,
-          orderCode: s.lastOrder.orderCode,
-          productType: s.productType,
-          quantity: s.lastOrder.quantity,
-          suggestedOn: s.suggestedOn,
-          suggestedQuantity: s.suggestedQuantity,
-          due: s.suggestedOn !== null && s.suggestedOn <= bangkokIso().slice(0, 10),
-        }),
-      );
+      .map((s): Schemas["ReorderCandidateDto"] => ({
+        source: "suggestion",
+        suggestionId: s.id,
+        orderId: s.lastOrder.orderId,
+        orderCode: s.lastOrder.orderCode,
+        productType: s.productType,
+        quantity: s.lastOrder.quantity,
+        suggestedOn: s.suggestedOn,
+        suggestedQuantity: s.suggestedQuantity,
+        due: s.suggestedOn !== null && s.suggestedOn <= bangkokIso().slice(0, 10),
+      }));
     const past = orders
       .filter((order) => order.status === "completed" && !suggested.some((s) => s.orderId === order.id))
-      .map(
-        (order): Schemas["ReorderCandidateDto"] => ({
-          source: "past_order",
-          suggestionId: null,
-          orderId: order.id,
-          orderCode: order.orderCode,
-          productType: typeRef(order.productType),
-          quantity: order.quantity,
-          suggestedOn: null,
-          suggestedQuantity: null,
-          due: false,
-        }),
-      );
+      .map((order): Schemas["ReorderCandidateDto"] => ({
+        source: "past_order",
+        suggestionId: null,
+        orderId: order.id,
+        orderCode: order.orderCode,
+        productType: typeRef(order.productType),
+        quantity: order.quantity,
+        suggestedOn: null,
+        suggestedQuantity: null,
+        due: false,
+      }));
     const reorderCandidates = [...suggested, ...past].slice(0, 5);
 
     // The fixed order of D-297: pay → proof → artwork → receipt → due reorder → design → configure.
@@ -146,7 +146,12 @@ export const launchpadHandlers = [
           ? { kind: "resume_design", target: "design", targetId: designs[0].id }
           : { kind: "start_configuration", target: null, targetId: null };
 
-    return HttpResponse.json({ designs, reorderCandidates, needsAction: needsAction.slice(0, 20), nextStep } satisfies Schemas["LaunchpadDto"]);
+    return HttpResponse.json({
+      designs,
+      reorderCandidates,
+      needsAction: needsAction.slice(0, 20),
+      nextStep,
+    } satisfies Schemas["LaunchpadDto"]);
   }),
 
   http.get("*/v1/store/me/defaults", ({ request }) => {
@@ -185,6 +190,9 @@ export const launchpadHandlers = [
     const link = readMockLink(token);
     if (!link || link.customerId !== customer.id) return problem(404, "http.not_found", "ไม่พบลิงก์นี้");
     if (link.expired) return problem(410, "deep_links.expired", "ลิงก์นี้หมดอายุแล้ว");
-    return HttpResponse.json({ path: link.path, expiresAt: bangkokIso(72 * 60) } satisfies Schemas["DeepLinkTargetDto"]);
+    return HttpResponse.json({
+      path: link.path,
+      expiresAt: bangkokIso(72 * 60),
+    } satisfies Schemas["DeepLinkTargetDto"]);
   }),
 ];
