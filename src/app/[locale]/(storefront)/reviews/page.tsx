@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { pick } from "@/features/customer/catalog/localize";
 import { getReviewSummary, listReviews } from "@/features/customer/trust/api.server";
 import { getFormat } from "@/features/shared/format/server";
@@ -35,7 +36,13 @@ export default async function ReviewsPage({ params }: { params: Promise<{ locale
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       {!summary || summary.count === 0 || list.reviews.length === 0 ? (
-        <EmptyState className="mt-8" icon="star" title={t("emptyTitle")} description={t("emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="star"
+          title={t("emptyTitle")}
+          description={t("emptyBody")}
+          action={<NextStep to="products" />}
+        />
       ) : (
         <div className="mt-8 flex flex-col gap-8">
           <section aria-labelledby="reviews-summary" className="flex flex-col gap-3">

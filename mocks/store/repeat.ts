@@ -36,7 +36,7 @@ const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พ
 
 const dismissed = new Map<string, Set<string>>();
 
-function suggestionsOf(customer: MockCustomer): Schemas["ReorderSuggestionDto"][] {
+export function suggestionsOf(customer: MockCustomer): Schemas["ReorderSuggestionDto"][] {
   const gone = dismissed.get(customer.persona) ?? new Set<string>();
   const latestByType = new Map<string, ReturnType<typeof ordersOf>[number]>();
   for (const order of ordersOf(customer)) {

@@ -11,6 +11,9 @@
 export { defineStatusMap, statusMeta, UNKNOWN_STATUS, type StatusMeta, type StatusTone } from "./types";
 
 export type {
+  ConversationSlaState,
+  ConversationStatus,
+  RfqBasketStatus,
   ApprovalStatus,
   ApprovalStepStatus,
   ArtworkStatus,
@@ -87,6 +90,7 @@ import { ARTWORK_STATUS } from "./artwork";
 import { CALL_OFF_RELEASE_STATUS, CALL_OFF_STATUS } from "./calloff";
 import { STRUCTURAL_REQUEST_STATUS, STYLE_INTAKE_STATUS } from "./structural";
 import { SAMPLE_KIND, SAMPLE_STATUS } from "./sample";
+import { CONVERSATION_SLA, CONVERSATION_STATUS, RFQ_BASKET_STATUS } from "./conversation";
 import { CATALOG_STATUS, CONTENT_STATUS } from "./catalogue";
 import { CLAIM_STATUS } from "./claim";
 import {
@@ -205,6 +209,9 @@ export {
   ARTWORK_STATUS,
   SAMPLE_KIND,
   SAMPLE_STATUS,
+  CONVERSATION_SLA,
+  CONVERSATION_STATUS,
+  RFQ_BASKET_STATUS,
   CALL_OFF_STATUS,
   STRUCTURAL_REQUEST_STATUS,
   STYLE_INTAKE_STATUS,
@@ -280,6 +287,9 @@ export const STATUS_MAPS = {
   structuralRequest: STRUCTURAL_REQUEST_STATUS,
   styleIntake: STYLE_INTAKE_STATUS,
   sampleKind: SAMPLE_KIND,
+  conversation: CONVERSATION_STATUS,
+  conversationSla: CONVERSATION_SLA,
+  rfqBasket: RFQ_BASKET_STATUS,
   auditOutcome: AUDIT_OUTCOME_STATUS,
   bankAccount: BANK_ACCOUNT_STATUS,
   campaign: CAMPAIGN_STATUS,

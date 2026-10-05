@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { getGuarantee } from "@/features/customer/trust/api.server";
 import { getFormat } from "@/features/shared/format/server";
 import type { Schemas } from "@/lib/api/types";
@@ -38,7 +39,13 @@ export default async function GuaranteePage({ params }: { params: Promise<{ loca
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       {!guarantee ? (
-        <EmptyState className="mt-8" icon="shield" title={t("emptyTitle")} description={t("emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="shield"
+          title={t("emptyTitle")}
+          description={t("emptyBody")}
+          action={<NextStep to="chat" />}
+        />
       ) : (
         <div className="mt-8 flex flex-col gap-10">
           <section aria-labelledby="guarantee-times">

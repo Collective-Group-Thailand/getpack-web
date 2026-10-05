@@ -79,3 +79,18 @@ export async function getPreferences() {
   ]);
   return { preferences, consents, me };
 }
+
+export type Launchpad = Schemas["LaunchpadDto"];
+export type Defaults = Schemas["DefaultsDto"];
+
+/** The signed-in home in one read (`store.me.getLaunchpad`, D-297): designs, reorders, what waits, the next step. */
+export async function getLaunchpad(): Promise<Launchpad> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/me/launchpad");
+  return data!;
+}
+
+/** What to pre-fill from (`store.me.getDefaults`, D-298): address, tax profile, last material per type, brand kits. */
+export async function getDefaults(): Promise<Defaults> {
+  const { data } = await (await serverApi("customer")).GET("/v1/store/me/defaults");
+  return data!;
+}

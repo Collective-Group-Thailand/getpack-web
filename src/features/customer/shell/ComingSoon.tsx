@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 
+import { NextStep } from "./NextStep";
+
 /**
  * A storefront destination the shell links to but F3 has not built yet.
  *
@@ -30,9 +32,12 @@ export async function ComingSoon({ titleKey }: { titleKey: string }) {
         title={t(titleKey)}
         description={t("comingSoon.body")}
         action={
-          <Button asChild>
-            <Link href="/">{tCommon("nav.home")}</Link>
-          </Button>
+          <>
+            <Button asChild>
+              <Link href="/">{tCommon("nav.home")}</Link>
+            </Button>
+            <NextStep to="help" variant="secondary" />
+          </>
         }
       />
     </div>

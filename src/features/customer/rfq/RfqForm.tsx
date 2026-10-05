@@ -73,6 +73,9 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [adding, setAdding] = useState(false);
+  /** What the sign-in sheet continues with once the guest is signed in. */
+  const [after, setAfter] = useState<"submit" | "basket">("submit");
   const [session, setSession] = useState(signedIn);
   const [signIn, setSignIn] = useState(false);
   const idempotencyKey = useRef(newKey());
@@ -81,7 +84,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
   const label = (field: Form["fields"][number]) => pick(locale, field.labelTh, field.labelEn);
   const uploading = files.some((file) => !file.file && !file.failed);
 
-  function validate(): Record<string, string> {
+  function validate(forBasket = false): Record<string, string> {
     const found: Record<string, string> = {};
     for (const field of form.fields) {
       const value = spec[field.key];
@@ -110,7 +113,8 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
       if (!/^\d+$/.test(value) || Number(value) < form.quantity.min)
         found[`quantities.${index}`] = t("quantityMin", { min: format.number(form.quantity.min) });
     });
-    if (!/^\d{5}$/.test(postcode)) found.postcode = t("postcodeInvalid");
+    // A basket's postcode is the basket's (D-301), asked for when it is sent; one given here is kept.
+    if (!(forBasket && postcode === "") && !/^\d{5}$/.test(postcode)) found.postcode = t("postcodeInvalid");
     if (uploading) found.files = t("stillUploading");
     return found;
   }
@@ -160,6 +164,65 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
     }
   }
 
+  /**
+   * The same answers as one item of the multi-item RFQ basket (U5.4, D-301): the draft basket takes
+   * up to 20 items and is sent once, one RFQ per item with one conversation. The delivery postcode,
+   * target date and notes typed here become the basket's.
+   */
+  async function addToBasket() {
+    setAdding(true);
+    setFailure(null);
+    try {
+      const api = browserApi();
+      await api.POST("/v1/store/rfq-baskets/draft/items", {
+        params: { header: { "Idempotency-Key": idempotencyKey.current } },
+        body: {
+          productTypeCode: form.productTypeCode,
+          specSchemaVersion: form.specSchemaVersion,
+          spec,
+          ...(form.dimensions.asked && dims.l && dims.w
+            ? {
+                lengthMm: Number(dims.l),
+                widthMm: Number(dims.w),
+                ...(form.dimensions.height && dims.h ? { heightMm: Number(dims.h) } : {}),
+              }
+            : {}),
+          quantities: [...new Set(quantities.filter((value) => value.trim() !== "").map(Number))],
+          fileIds: files.flatMap((file) => (file.file ? [file.file.id] : [])),
+        },
+      });
+      if (postcode || targetDate || notes.trim())
+        await api.PATCH("/v1/store/rfq-baskets/draft", {
+          body: {
+            ...(postcode ? { deliveryPostcode: postcode } : {}),
+            ...(targetDate ? { targetDate } : {}),
+            ...(notes.trim() ? { notes: notes.trim() } : {}),
+          },
+        });
+      router.push("/rfq/basket?added=1");
+    } catch (error) {
+      idempotencyKey.current = newKey();
+      if (isApiError(error) && error.errors.length > 0) {
+        setErrors(Object.fromEntries(error.errors.map((item) => [item.path, item.message])));
+      }
+      setFailure(isApiError(error) ? error.detail : t("failed"));
+      setAdding(false);
+    }
+  }
+
+  function onAddToBasket() {
+    const found = validate(true);
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      requestAnimationFrame(() => summaryRef.current?.focus());
+      return;
+    }
+    if (!session) {
+      setAfter("basket");
+      setSignIn(true);
+    } else void addToBasket();
+  }
+
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     const found = validate();
@@ -169,8 +232,10 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
       requestAnimationFrame(() => summaryRef.current?.focus());
       return;
     }
-    if (!session) setSignIn(true);
-    else void submit();
+    if (!session) {
+      setAfter("submit");
+      setSignIn(true);
+    } else void submit();
   }
 
   async function attach(selected: File[]) {
@@ -407,9 +472,23 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
         {form.slaTargetHours !== null ? (
           <p className="text-muted text-sm">{t("sla", { hours: form.slaTargetHours })}</p>
         ) : null}
-        <Button type="submit" size="lg" loading={submitting} className="self-start">
-          {t("submit")}
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button type="submit" size="lg" loading={submitting} disabled={adding}>
+            {t("submit")}
+          </Button>
+          <Button
+            type="button"
+            size="lg"
+            variant="secondary"
+            iconStart="plus"
+            loading={adding}
+            disabled={submitting}
+            onClick={onAddToBasket}
+          >
+            {t("addToBasket")}
+          </Button>
+        </div>
+        <p className="text-muted text-xs">{t("basketHint")}</p>
         {!session ? <p className="text-muted text-xs">{t("signInNote")}</p> : null}
       </div>
 
@@ -421,7 +500,7 @@ export function RfqForm({ form, signedIn, fromProduct, calculationId = null }: R
             setSignIn(false);
             setSession(true);
             router.refresh();
-            void submit();
+            void (after === "basket" ? addToBasket() : submit());
           }}
         />
       ) : null}

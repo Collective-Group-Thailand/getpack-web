@@ -657,6 +657,21 @@
     "ordered": "สั่งแล้ว",
     "lapsed": "หมดสิทธิ์"
   },
+  "conversation": {
+    "open": "รอทีมตอบ",
+    "pending": "รอลูกค้า",
+    "closed": "ปิดแล้ว"
+  },
+  "conversationSla": {
+    "waiting": "รอตอบ (ยังทันเวลา)",
+    "overdue": "เลยเวลาตอบ",
+    "answered": "ตอบแล้ว"
+  },
+  "rfqBasket": {
+    "draft": "ร่าง",
+    "submitted": "ส่งแล้ว",
+    "discarded": "ยกเลิกแล้ว"
+  },
   "structuralRequest": {
     "submitted": "ส่งคำขอแล้ว",
     "assigned": "มีผู้ออกแบบรับงาน",

@@ -293,7 +293,11 @@
     "notInstant": "No instant price for this product yet",
     "notInstantHint": "Our team prices the spec you chose: send a quote request",
     "targetMet": "Within your target price",
-    "targetAbove": "{gap}/{unit} above your target"
+    "targetAbove": "{gap}/{unit} above your target",
+    "changed": {
+      "quantity": "Price per piece changed with the quantity",
+      "spec": "Price changed with the specification"
+    }
   },
   "actions": {
     "addToCart": "Add to cart",
