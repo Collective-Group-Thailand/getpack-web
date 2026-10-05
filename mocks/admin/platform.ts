@@ -41,11 +41,7 @@ export const ROLES: Schemas["RoleDto"][] = roleCatalogue.map((role) => ({
 }));
 
 /** Permission keys the backend flags as sensitive (cost and margin, D-141). */
-export const SENSITIVE_PERMISSIONS = new Set([
-  "factory_buy_prices.read",
-  "margin.read",
-  "margin.read_pct_when_discounting",
-]);
+export const SENSITIVE_PERMISSIONS = new Set(["factory_buy_prices.read", "margin.read", "margin.read_pct_when_discounting"]);
 export const PERMISSION_DESCRIPTIONS = Object.fromEntries(permissionCatalogue.map((p) => [p.key, p.description]));
 
 /** The SoD rules as `admin.sodRules.list` returns them (packio-api `SodRulesController`, v0.6.0). */
