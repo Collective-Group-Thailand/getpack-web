@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { FACTORY_USER_STATUS } from "@/domain/status";
@@ -112,6 +113,11 @@ export default async function SettingsPage() {
         </PartnerSection>
       ) : null}
 
+      <PartnerSection title={t("hours")} description={t("hoursBody")}>
+        <Link href="/settings/hours" className="text-primary inline-flex min-h-12 items-center underline">
+          {t("hoursLink")}
+        </Link>
+      </PartnerSection>
       <PartnerSection title={t("notifications")} description={t("notificationsBody")}>
         <Card padding="lg" className="flex flex-col gap-4">
           <PushOnThisDevice />

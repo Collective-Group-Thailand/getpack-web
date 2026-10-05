@@ -195,7 +195,16 @@ export default async function JobPage({ params }: Props) {
                     <>
                       {qcFirst ? (
                         offered.has("job.record_qc") ? (
-                          <QcForm job={job} />
+                          <>
+                            <QcForm job={job} />
+                            {/* The guide that applies here (U2.F7): the knowledge base's QC photo standard. */}
+                            <Link
+                              href="/knowledge?category=qc-photo-standard"
+                              className="text-primary inline-flex min-h-12 items-center underline"
+                            >
+                              {tQc("photoStandard")}
+                            </Link>
+                          </>
                         ) : (
                           <p className="text-muted">{tQc("qcOnly")}</p>
                         )

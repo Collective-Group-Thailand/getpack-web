@@ -49,10 +49,16 @@ export default async function PayoutsPage() {
       description={t("body")}
       back={{ href: "/billing", label: t("back") }}
       actions={
-        <Link href="/payouts/statement" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
-          <Icon name="spreadsheet" size={20} />
-          {t("statementLink")}
-        </Link>
+        <span className="flex flex-wrap gap-4">
+          <Link href="/payouts/calendar" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
+            <Icon name="calendar" size={20} />
+            {t("calendarLink")}
+          </Link>
+          <Link href="/payouts/statement" className="text-primary inline-flex min-h-12 items-center gap-1 underline">
+            <Icon name="spreadsheet" size={20} />
+            {t("statementLink")}
+          </Link>
+        </span>
       }
       wide
     >

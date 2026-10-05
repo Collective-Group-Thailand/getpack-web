@@ -32,7 +32,9 @@
       "dueToday": "Due today",
       "atRisk": "At risk",
       "onHold": "On hold",
-      "inspections": "Inspections planned"
+      "inspections": "Inspections planned",
+      "samples": "Samples to record",
+      "claims": "Claims to answer"
     },
     "queue": "Your queue",
     "allJobs": "All jobs",

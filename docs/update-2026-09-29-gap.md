@@ -471,3 +471,21 @@ Evidence from `main` at `24f175a`.
 | 4 | Call-off orders: commitment, release schedule, remaining balance, create release, stock | missing | `store.callOffs.*` unused | request on a saved quotation; `/account/call-offs` and detail (committed / released / left, window, locked price, releases), release into the cart, cancel. Stock is not in the contract (D-290: no stock) |
 | 5 | B2B: API keys and webhook subscriptions (create, scope, rotate, revoke, delivery log, copy-once secrets, audit) | missing | `store.companyApiClients.*` unused; webhooks only on the B2B API | `/business/api` for the Company Admin: issue with scopes, the secret once, last used, revoke (rotate = issue then revoke); webhooks explained (CONTRACT-REQUEST `store.company-webhooks`) |
 | 6 | e2e reorder and release; permission tests | missing | — | `e2e/storefront-repeat.spec.ts` (incl. the buyer without the admin right); release and call-off actions only with the company's `order` right |
+
+## U2.F6 — skipped
+
+Not run in this pass, by agreement (2026-10-05): U2.F6 waits for the seed fixes and the decisions it needs from the backend team. U2.F7 follows directly.
+
+## U2.F7 — Partner zone parity — 2026-10-05
+
+Evidence from `main` at `cf520ea`.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Today: period-over-period earnings and jobs; counters include sample jobs and claims | partial | `/` (partner): five floor counters (to accept, due today, at risk, on hold, inspections); the scorecard on `/performance` | samples (`factory_samples.record_evidence` queue) and claims (open, `factory_claims.read`) counters, linked. No previous-period figures in the contract (CONTRACT-REQUEST `partner.today-comparison`) |
+| 2 | Settings: business hours with holidays and shutdowns, a preview of the effect on acceptance deadlines; logistics settings | missing (hours) / covered (logistics) | `partner.calendar.*` unused; shipping rates on `/prices/shipping` | `/settings/hours`: weekly hours from tomorrow, the version in force and the next, closures added and removed, for `factory_profile.manage`; the effect stated in words. A computed preview is not in the contract (CONTRACT-REQUEST `partner.hours-preview`) |
+| 3 | Billing: "by purchase order / by payout line" toggle, totals that match the statement, payout calendar, statement downloads | partial | `/payouts` (schedule per PO, payouts), `/payouts/statement` (downloads) | `/payouts/calendar` (`partner.payables.payoutCalendar`): by purchase order (open amount, expected pay date and its basis) or by run (lines, transfer, PV); run days. No totals computed in the browser; the statement of account is linked for those |
+| 4 | Knowledge base with search, from the API, linked in context | missing | `partner.knowledgeBase.*` unused | `/knowledge` (search, categories) and `/knowledge/[slug]`; in "more"; the QC step links the QC photo standard |
+| 5 | Release hygiene: fail CI on debug strings or mock flags in production bundles or rendered HTML | missing | — | `pnpm release:hygiene` over `.next/static` and the prerendered HTML, after the CI build |
+| 6 | Partner e2e on a phone, axe, Lighthouse partner budget | partial | partner specs exist per F5 session | `e2e/partner-parity.spec.ts` (390 × 844, axe on every new screen); the partner Lighthouse set re-run |
+
