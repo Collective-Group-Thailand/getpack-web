@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="340mm" height="241mm" viewBox="0 0 340 241" data-style="board-envelope">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M60 170 L5 159"/><path d="M5 159 L5 71"/><path d="M5 71 L60 60"/><path d="M280 60 L335 71"/><path d="M335 71 L335 159"/><path d="M335 159 L280 170"/><path d="M280 170 L269 236"/><path d="M269 236 L71 236"/><path d="M71 236 L60 170"/><path d="M60 60 L71 5"/><path d="M71 5 L269 5"/><path d="M269 5 L280 60"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M60 60 L280 60"/><path d="M280 60 L280 170"/><path d="M280 170 L60 170"/><path d="M60 170 L60 60"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M73 174 L106 174"/><path d="M106 174 L106 230"/><path d="M106 230 L73 230"/><path d="M73 230 L73 174"/><path d="M234 174 L267 174"/><path d="M267 174 L267 230"/><path d="M267 230 L234 230"/><path d="M234 230 L234 174"/></g>
+</svg>

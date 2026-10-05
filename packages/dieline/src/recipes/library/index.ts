@@ -112,6 +112,12 @@ import headerCard from "./data/header-card.json" with { type: "json" };
 import edgeProtector from "./data/edge-protector.json" with { type: "json" };
 import displayRaisedBack from "./data/display-raised-back.json" with { type: "json" };
 import bottleNeckCarton from "./data/bottle-neck-carton.json" with { type: "json" };
+import designTelescope from "./data/design-telescope.json" with { type: "json" };
+import fivePanelFolder from "./data/five-panel-folder.json" with { type: "json" };
+import presentationFolder from "./data/presentation-folder.json" with { type: "json" };
+import boardEnvelope from "./data/board-envelope.json" with { type: "json" };
+import paperTube from "./data/paper-tube.json" with { type: "json" };
+import bookWrap from "./data/book-wrap.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -235,4 +241,10 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   edgeProtector,
   displayRaisedBack,
   bottleNeckCarton,
+  designTelescope,
+  fivePanelFolder,
+  presentationFolder,
+  boardEnvelope,
+  paperTube,
+  bookWrap,
 ] as unknown as StyleRecipe[];

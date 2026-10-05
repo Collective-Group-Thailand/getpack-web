@@ -184,6 +184,8 @@ export interface Issue {
 export interface PiecePlacement {
   /** Sits on top of this piece — a telescope lid over its base. */
   over?: string;
+  /** Sits under this piece — a design-style telescope's bottom cover. */
+  under?: string;
   /** Sits inside this piece — a drawer in its sleeve. */
   inside?: string;
   /** Turned upside down first (a lid's open side faces down). */

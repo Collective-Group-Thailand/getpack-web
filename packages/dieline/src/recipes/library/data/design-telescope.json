@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "design-telescope",
+  "base": "PK-CT-03",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกฝาครอบบนล่าง (ตัวกล่องไม่มีฝา)",
+    "en": "Design-style telescope (double cover)"
+  },
+  "description": {
+    "th": "ตัวกล่องเป็นปลอกสี่ด้านไม่มีฝา สวมด้วยฝาครอบทั้งด้านบนและด้านล่าง",
+    "en": "A four-sided body with no flaps, closed by a telescoping cover at each end"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "lidDepth"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue"
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "telescopeLid"
+    },
+    {
+      "module": "telescopeLid",
+      "with": {
+        "end": "bottom"
+      }
+    }
+  ],
+  "constraints": [
+    {
+      "id": "hsc-lid.hand_holes_below_lid",
+      "code": "handle.too_small",
+      "severity": "error",
+      "param": "handles",
+      "require": "not (handles != 'none' and height < (lidDepth ?? max(15, round(height / 3))) + 15 + 30 + 20)",
+      "message": {
+        "th": "ใต้ฝาครอบเหลือที่ไม่พอสำหรับช่องมือจับ",
+        "en": "Below the lid there is no room for hand holes"
+      }
+    }
+  ],
+  "outerSize": {
+    "length": "length + 4 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "width + 4 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height + 2 * t"
+  },
+  "closedSize": {
+    "length": "length + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "width + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height"
+  }
+}

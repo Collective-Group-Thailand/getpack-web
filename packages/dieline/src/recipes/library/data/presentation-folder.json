@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "presentation-folder",
+  "base": "PK-SP-12",
+  "variants": {
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "แฟ้มเสนองานมีกระเป๋า",
+    "en": "Presentation folder"
+  },
+  "description": {
+    "th": "แฟ้มกระดาษแข็งพับครึ่ง มีกระเป๋าด้านในทากาวสองข้าง เลือกรอยเว้านิ้วที่กระเป๋าได้",
+    "en": "A folded paperboard folder with an inside pocket glued at both sides; with an optional finger notch in the pocket"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 150,
+      "max": 330
+    },
+    {
+      "ref": "height",
+      "min": 200,
+      "max": 450
+    },
+    "spine",
+    "pocketDepth",
+    "fingerHole"
+  ],
+  "defaults": {
+    "length": 220,
+    "height": 305,
+    "spine": 4,
+    "pocketDepth": 100,
+    "fingerHole": false
+  },
+  "presets": [
+    {
+      "id": "a5",
+      "label": {
+        "th": "A5 160 × 220",
+        "en": "A5 160 × 220"
+      },
+      "values": {
+        "length": 160,
+        "height": 220,
+        "pocketDepth": 75
+      }
+    },
+    {
+      "id": "a4",
+      "label": {
+        "th": "A4 220 × 305",
+        "en": "A4 220 × 305"
+      },
+      "values": {
+        "length": 220,
+        "height": 305,
+        "pocketDepth": 100
+      }
+    },
+    {
+      "id": "letter",
+      "label": {
+        "th": "Letter 230 × 300",
+        "en": "Letter 230 × 300"
+      },
+      "values": {
+        "length": 230,
+        "height": 300,
+        "pocketDepth": 100
+      }
+    }
+  ],
+  "body": {
+    "module": "presentationFolder"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "spine",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length + t / 2",
+    "width": "spine + 1.5 * t",
+    "height": "height"
+  }
+}

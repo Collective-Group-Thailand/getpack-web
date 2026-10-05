@@ -1,0 +1,99 @@
+{
+  "definition": "0fef5e9dc063fe",
+  "c6 · board-350": {
+    "build": "060b5ddad534e2",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1c6f0844aa0ab4"
+  },
+  "c6 · board-450": {
+    "build": "060b5ddad534e2",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1c6f0844aa0ab4"
+  },
+  "dl · board-350": {
+    "build": "1e07b77a5bcddf",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1a3f140460b567"
+  },
+  "dl · board-450": {
+    "build": "1e07b77a5bcddf",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1a3f140460b567"
+  },
+  "c5 · board-350": {
+    "build": "03d28676c87558",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1d1c118adefa19"
+  },
+  "c5 · board-450": {
+    "build": "03d28676c87558",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1d1c118adefa19"
+  },
+  "c6 · board-350 · length=min": {
+    "build": "1416391bdbaae7",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "0944ae3bce787c"
+  },
+  "c6 · board-350 · length=max": {
+    "build": "13897f9bda0102",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "0779ada7ff119e"
+  },
+  "c6 · board-350 · length<min": {
+    "build": "03d4a30d33ba38",
+    "hinges": "0563c397937051",
+    "validate": "0991d0b539713d",
+    "closed": "198cd05542fd20"
+  },
+  "c6 · board-350 · length>max": {
+    "build": "06963f02a3807a",
+    "hinges": "0563c397937051",
+    "validate": "0342ab00bc9bf5",
+    "closed": "0fd13bbdf17201"
+  },
+  "c6 · board-350 · height=min": {
+    "build": "1419c3a9c14598",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "0b29a66669fea1"
+  },
+  "c6 · board-350 · height=max": {
+    "build": "0b7058790f3ab1",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "036b9fb33a2751"
+  },
+  "c6 · board-350 · height<min": {
+    "build": "10c7dc9211188a",
+    "hinges": "0563c397937051",
+    "validate": "07ed049500a1de",
+    "closed": "06d8ac4a0aee05"
+  },
+  "c6 · board-350 · height>max": {
+    "build": "17ef3dbd536f5f",
+    "hinges": "0563c397937051",
+    "validate": "1ab4a866b54622",
+    "closed": "0d0dd7442cdc5c"
+  },
+  "c6 · board-350 · lock=friction": {
+    "build": "060b5ddad534e2",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1c6f0844aa0ab4"
+  },
+  "c6 · board-350 · lock=slit": {
+    "build": "112baf0a055137",
+    "hinges": "0563c397937051",
+    "validate": "15202279b28c9e",
+    "closed": "1c6f0844aa0ab4"
+  }
+}
