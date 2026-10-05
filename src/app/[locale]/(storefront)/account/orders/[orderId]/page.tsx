@@ -350,10 +350,17 @@ export default async function Page({ params }: { params: Promise<Params> }) {
                   ? [
                       {
                         term: t("detail.toleranceTerms"),
-                        description: t("detail.toleranceValue", {
-                          shortage: format.percent(order.toleranceShortagePct, 1),
-                          overage: format.percent(order.toleranceOveragePct, 1),
-                        }),
+                        description: (
+                          <>
+                            {t("detail.toleranceValue", {
+                              shortage: format.percent(order.toleranceShortagePct, 1),
+                              overage: format.percent(order.toleranceOveragePct, 1),
+                            })}{" "}
+                            <Link href="/guarantee" className="text-primary underline underline-offset-4">
+                              {t("detail.guarantee")}
+                            </Link>
+                          </>
+                        ),
                       },
                     ]
                   : []),

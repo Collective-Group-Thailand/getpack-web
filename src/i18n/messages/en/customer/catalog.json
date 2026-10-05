@@ -80,7 +80,8 @@
       "print_type": "Printing",
       "pattern": "Style"
     },
-    "priceBasisSpecs": "Priced at: {specs}"
+    "priceBasisSpecs": "Priced at: {specs}",
+    "guarantee": "Packio guarantees the work — see what we do if something goes wrong"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",

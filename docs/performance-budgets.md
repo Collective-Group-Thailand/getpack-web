@@ -250,3 +250,14 @@ glTF / USDZ exporters) and the version history with its compare view all load on
 editor's first load only gained the comment pins (flat and 3D). Making the history and the old
 view-link dialog lazy too won back more than the session added. Partner stayed under 300,000 after the
 rebuild (the two new problem messages ride in every zone's `common` copy).
+
+## U2.F4 — partner ratchet (2026-10-05)
+
+| Page | Before | After | Ratchet |
+|---|---|---|---|
+| partner `/jobs` | ≤ 300,000 | 300,067 | partner 300,000 → **301,000** |
+
+The U2 sessions added copy that every zone loads: the sample status vocabulary (`status`), the shared
+sample-evidence form and the `samples.*` / `dielines.*` problem messages (`common`). The factory app
+itself only gained the sample-jobs screen, on its own route. Splitting `common` per zone would win
+this back for everyone (follow-up).

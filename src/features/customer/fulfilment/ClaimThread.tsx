@@ -32,8 +32,7 @@ const newKey = () =>
  * stands, what the team asked for, the photos sent and the outcome in words. When the API offers
  * `claim.answer_info` the customer answers it (`store.claims.respondInfo`). There is no free thread
  * by decision (D-225): anything else goes to the CS conversation.
- *
- * CONTRACT-GAP store.claims — no date the team answers by (`respondBy`, U2.5 per D-199).
+ * The team's response and decision times are the timeline's (`ClaimTimeline`, U2.F4).
  */
 export function ClaimThread({ initial }: { initial: Claim }) {
   const t = useTranslations("fulfilment.claimView");

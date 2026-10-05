@@ -71,7 +71,8 @@
     "taxInvoice": "Tax invoice to {name} ({taxId}), {branch}",
     "minus": "−{amount}",
     "net": "Before VAT",
-    "pointsToEarn": "Earns {points} points once completed"
+    "pointsToEarn": "Earns {points} points once completed",
+    "guarantee": "See our guarantee"
   },
   "repriced": {
     "title": "The price changed",

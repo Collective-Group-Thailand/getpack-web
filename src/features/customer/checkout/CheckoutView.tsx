@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 
 import { ONLINE_PAYMENT_METHODS, type PaymentMethod } from "@/domain/payment-methods";
 import { useFormat } from "@/features/shared/format/useFormat";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
 import { isApiError } from "@/lib/api/problem";
@@ -571,6 +571,11 @@ export function CheckoutView({
               rows={totalsRows(data.totals)}
               total={{ label: t("summary.total"), value: format.thb(data.totals.grossAmount) }}
             />
+            <p className="text-muted mt-2 text-xs">
+              <Link href="/guarantee" className="text-primary underline underline-offset-4">
+                {t("summary.guarantee")}
+              </Link>
+            </p>
             {data.points && data.points.toEarn > 0 ? (
               <p className="text-muted mt-2 text-xs">
                 {t("summary.pointsToEarn", { points: format.number(data.points.toEarn) })}
