@@ -1,3 +1,4 @@
+import { ASSISTANT_BUILT_IN } from "@/features/customer/assistant/flag";
 import type { Zone } from "@/lib/zones";
 
 import { pickProblems, problemCodesFor } from "../problems";
@@ -43,6 +44,7 @@ const NAMESPACES = [
   "liff",
   "styles",
   "studio",
+  "assistant",
   "admin",
   "console",
   "approvals",
@@ -86,6 +88,12 @@ export type Namespace = (typeof NAMESPACES)[number];
  * the same row. The copy each zone does *not* use is a handful of strings, which is cheaper
  * than three near-identical namespaces that drift.
  */
+/**
+ * Namespaces a zone loads only in a build that has the feature (`NEXT_PUBLIC_ASSISTANT`, U5.5): the
+ * code that reads them is not built in either, so a build without the feature never misses them.
+ */
+export const FLAGGED_NAMESPACES: Partial<Record<Zone, readonly Namespace[]>> = { customer: ["assistant"] };
+
 export const ZONE_NAMESPACES = {
   customer: [
     "common",
@@ -113,6 +121,8 @@ export const ZONE_NAMESPACES = {
     "liff",
     "styles",
     "studio",
+    // Packio Assistant's copy rides in the client messages only in a build that has it (U5.5, D-218).
+    ...(ASSISTANT_BUILT_IN ? (["assistant"] as const) : []),
   ],
   admin: [
     "common",
@@ -188,6 +198,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     liff: () => import("./th/customer/liff.json"),
     styles: () => import("./th/customer/styles.json"),
     studio: () => import("./th/customer/studio.json"),
+    assistant: () => import("./th/customer/assistant.json"),
     admin: () => import("./th/admin/admin.json"),
     reports: () => import("./th/admin/reports.json"),
     finance: () => import("./th/admin/finance.json"),
@@ -244,6 +255,7 @@ const LOADERS: Record<Locale, Record<Namespace, Loader>> = {
     liff: () => import("./en/customer/liff.json"),
     styles: () => import("./en/customer/styles.json"),
     studio: () => import("./en/customer/studio.json"),
+    assistant: () => import("./en/customer/assistant.json"),
     admin: () => import("./en/admin/admin.json"),
     reports: () => import("./en/admin/reports.json"),
     finance: () => import("./en/admin/finance.json"),

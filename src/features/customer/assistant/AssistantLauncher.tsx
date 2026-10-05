@@ -14,7 +14,7 @@ const AssistantPanel = lazy(() => import("./AssistantPanel").then((module) => ({
  * first press, in a side sheet that leaves the page as it was.
  */
 export function AssistantLauncher({ signedIn, signInHref }: { signedIn: boolean; signInHref: string }) {
-  const t = useTranslations("help.assistant");
+  const t = useTranslations("assistant");
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   return (
