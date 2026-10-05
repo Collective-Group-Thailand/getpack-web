@@ -446,3 +446,15 @@ Evidence from `main` at `fea0100`. The contract has the full arc (`store.samples
 | 3 | Partner: sample jobs with the extra evidence | missing | — | `/samples` in the factory app ("more"): jobs to record (size, basis, material used, photos) on a phone |
 | 4 | Timeline and notifications treat the sample arc as first-class | partial | notifications are the API's | the sample's own progress tracker; the order page shows its sample and that production waits for it |
 | 5 | e2e customer + admin + partner, visual snapshot of the approval screen, a11y on the checklist | missing | — | `e2e/storefront-samples.spec.ts`, the `customer-samples--decision` story in the visual suite, axe on every step |
+
+## U2.F4 — Trust surfaces — 2026-10-05
+
+Evidence from `main` at `ebbfc32`. `store.guarantee.get`, `store.network.getStats`, `store.claims.getTimeline`, `store.reviews.listPublic` and `getSummary` are in the contract and used nowhere.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Guarantee page: remedies matrix from the API, tolerances in plain Thai, timelines, evidence needed; linked from product pages, checkout, order detail | missing | no page | `/guarantee` from `PublicGuaranteeDto` (matrix by claim type × severity, time limits, version); tolerances and evidence are not in the DTO, so the page says where they are shown (CONTRACT-REQUEST `store.guarantee-evidence`); links from the product page, the checkout summary and the order's tolerances, plus the footer |
+| 2 | Network page: audited-partner count, audit criteria, regional capability map, aggregate on-time and quality figures with the window; no factory identity; empty state when not available | missing | no page | `/network`: figures only when `published` (with the window), otherwise why not (the API's thresholds); audit criteria; coverage per product type. Regions are not in the DTO (CONTRACT-REQUEST `store.network-regions`) |
+| 3 | Claim timeline: status, SLA countdown, who owns it, what we need, decision and remedy | partial | `ClaimThread` (F3 3.6) shows the claim, what was asked and the outcome; no clock (`CONTRACT-GAP store.claims respondBy`) | `ClaimTimeline` on the claim page: current owner, response and decision due times (relative) with overdue, the clock stopping while Packio waits for the customer, events, guarantee version |
+| 4 | Verified reviews: order-backed only, product type and date; honest empty state | missing | no page | `/reviews`: summary and distribution, reviews with product type, date and Packio's reply; empty state |
+| 5 | Content from the API in both languages; axe; e2e claim timeline; snapshot tests for empty states | missing | — | `e2e/storefront-trust.spec.ts`, the claim e2e extended, `trust/empty-states.test.tsx` snapshots; a real-API spec |
