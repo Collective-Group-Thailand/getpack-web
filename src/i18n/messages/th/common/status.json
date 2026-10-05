@@ -627,5 +627,22 @@
     "inactive": "ยังไม่เปิดใช้",
     "disabled": "ปิดใช้งาน",
     "notYours": "ไม่ใช่โค้ดของบัญชีนี้"
+  },
+  "sample": {
+    "requested": "รอใบเสนอราคา",
+    "quoted": "เสนอราคาแล้ว",
+    "paid": "ชำระแล้ว",
+    "inProduction": "กำลังทำตัวอย่าง",
+    "shipped": "ส่งแล้ว",
+    "delivered": "ถึงแล้ว รอตรวจ",
+    "approved": "อนุมัติแล้ว",
+    "changesRequested": "ขอแก้ไข",
+    "rejected": "ไม่ผ่าน",
+    "cancelled": "ยกเลิก",
+    "expired": "หมดอายุ"
+  },
+  "sampleKind": {
+    "attached": "ตัวอย่างของคำสั่งซื้อ",
+    "standalone": "ตัวอย่างก่อนสั่ง"
   }
 }

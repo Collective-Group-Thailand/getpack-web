@@ -434,3 +434,15 @@ Precedence: the library page is U3.5's (merged at `6de9599`). Only the dieline d
 | 2 | Free dieline download (PDF / DXF / SVG) at any configured size, no plan gate, layers explained, nudge, no paywall | missing | `store.dielines.download` is in the contract and used nowhere; the designer's own exports draw locally | A download panel under the chosen variant on the style page (sizes on a basis, material class, format; signed-in; the API's range errors and rate limit shown as given); a layer explainer; an "order this" nudge after a download |
 | 3 | Packaging spec sheet on approved orders and approved samples, preview before download | missing | `store.orders.getSpecSheet` unused | A section on the order page once the artwork is approved: Thai or English, preview (the browser's PDF viewer, because the CSP forbids embedding the signed file) and download. A sample is an order, so it gets the same section once its sample is approved (`409 orders.spec_sheet_unavailable` otherwise) |
 | 4 | SEO, virtualised cards, e2e for downloads | partial | SEO and virtual grid met by U3.5 | e2e for both downloads; a real-API spec (skipped on the dev seed: no published styles) |
+
+## U2.F3 — Sample / prototype flow — 2026-10-05
+
+Evidence from `main` at `fea0100`. The contract has the full arc (`store.samples.*`, `admin.samples.*`, `partner.samples.*`, D-253–D-257); the web used none of it.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Customer: request from the configurator or a quote; sample quote card (cost, lead time, credit rule as the API states it); pay; track; approve with a checklist and evidence; on approval a pre-filled bulk order with the spec and artwork locked | missing | no sample screens; `/samples` is the sample-kit page | "ขอตัวอย่างก่อนสั่งผลิต" on each saved quotation; `/account/samples` and the detail: the arc, the sample quotation bought through the cart, the factory's evidence (sizes, material, photos with sha256), the checklist-gated approval / changes / reject, the bulk order with the locked specification and the API's credit |
+| 2 | Admin: sample queue, sample vs bulk everywhere, evidence review, re-sample loop | missing | no admin sample screens; RBAC grants pinned at v0.6.0 (no `samples.*`) | `/samples` queue by status and kind, detail (quote, evidence, decision record, cancel, new sample after changes), the order page links to it; RBAC regenerated at v0.41.0 |
+| 3 | Partner: sample jobs with the extra evidence | missing | — | `/samples` in the factory app ("more"): jobs to record (size, basis, material used, photos) on a phone |
+| 4 | Timeline and notifications treat the sample arc as first-class | partial | notifications are the API's | the sample's own progress tracker; the order page shows its sample and that production waits for it |
+| 5 | e2e customer + admin + partner, visual snapshot of the approval screen, a11y on the checklist | missing | — | `e2e/storefront-samples.spec.ts`, the `customer-samples--decision` story in the visual suite, axe on every step |

@@ -80,6 +80,8 @@ export type ReferralStatus = Schemas["ReferralStatus"];
 
 /** The artwork of one order item. Production waits on this and on payment independently (D-073). **Source: contract** (U-F0.3). */
 export type ArtworkStatus = Schemas["ArtworkStatus"];
+export type SampleStatus = Schemas["SampleStatus"];
+export type SampleKind = Schemas["SampleKind"];
 
 /** A proof version sent to the customer (B4.1). **Source: contract** (U-F0.3). */
 export type ProofStatus = Schemas["ProofStatus"];

@@ -31,7 +31,7 @@
       "notification_templates.manage",
       "notification_routes.manage",
       "outbox.manage",
-      "factory_cost.read",
+      "factory_buy_prices.read",
       "margin.read",
       "margin.read_pct_when_discounting"
     ]
@@ -50,7 +50,7 @@
       "approvals.delegate",
       "approvals.act",
       "settings.read",
-      "factory_cost.read",
+      "factory_buy_prices.read",
       "margin.read",
       "settings.read_sensitive",
       "audit_logs.read"
@@ -70,7 +70,7 @@
       "approvals.delegate",
       "approvals.act",
       "settings.read",
-      "factory_cost.read",
+      "factory_buy_prices.read",
       "margin.read"
     ]
   },
@@ -163,7 +163,7 @@
       "approvals.delegate",
       "approvals.act",
       "settings.read",
-      "factory_cost.read",
+      "factory_buy_prices.read",
       "margin.read",
       "audit_logs.read"
     ]
@@ -182,7 +182,7 @@
       "approvals.delegate",
       "approvals.act",
       "settings.read",
-      "factory_cost.read",
+      "factory_buy_prices.read",
       "margin.read",
       "settings.read_sensitive",
       "audit_logs.read",
@@ -226,7 +226,7 @@
       "approvals.delegate",
       "approvals.act",
       "settings.read",
-      "factory_cost.read",
+      "factory_buy_prices.read",
       "margin.read"
     ]
   },

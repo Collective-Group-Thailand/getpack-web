@@ -151,7 +151,7 @@ async function replayable(request: Request, run: () => Promise<Response> | Respo
 
 /** The lean staff order: the storefront's `OrderDto` plus `internal`, masked by D-141. */
 export function toAdminOrderDto(order: MockOrder, who: StaffPersona | null): Schemas["AdminOrderDto"] {
-  const seesCost = Boolean(who && can(who, "factory_cost.read"));
+  const seesCost = Boolean(who && can(who, "factory_buy_prices.read"));
   const seesMargin = Boolean(who && can(who, "margin.read"));
   const base = toOrderDto(order);
   return {

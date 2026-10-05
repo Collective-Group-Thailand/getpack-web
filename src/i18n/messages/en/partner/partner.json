@@ -60,6 +60,10 @@
       "settings": {
         "title": "Settings",
         "body": "Users, notifications, this device"
+      },
+      "samples": {
+        "title": "Sample jobs",
+        "body": "Samples to make, and their evidence before shipping"
       }
     }
   }

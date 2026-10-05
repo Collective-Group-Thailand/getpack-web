@@ -11,13 +11,21 @@ import { findLockedDesignOf, getMyOrder } from "@/features/customer/orders/api.s
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
 import { SpecSheet } from "@/features/customer/orders/SpecSheet";
+import { listMySamples } from "@/features/customer/samples/api.server";
 import { ToleranceOutcome } from "@/features/customer/orders/ToleranceOutcome";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
 import { timelineTitle } from "@/features/customer/orders/timeline";
 import { TrackingLinkButton } from "@/features/customer/orders/TrackingLinkButton";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import { ARTWORK_STATUS, CLAIM_STATUS, DOCUMENT_STATUS, INSTALMENT_STATUS, ORDER_STATUS } from "@/domain/status";
+import {
+  ARTWORK_STATUS,
+  CLAIM_STATUS,
+  DOCUMENT_STATUS,
+  SAMPLE_STATUS,
+  INSTALMENT_STATUS,
+  ORDER_STATUS,
+} from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -62,7 +70,7 @@ const SUCCESS = new Set(["payment.received", "proof.approved", "shipment.deliver
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId } = await params;
-  const [t, tCatalog, format, locale, detail, design] = await Promise.all([
+  const [t, tCatalog, format, locale, detail, design, samples] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("catalog"),
     getFormat(),
@@ -70,6 +78,10 @@ export default async function Page({ params }: { params: Promise<Params> }) {
     getMyOrder(orderId),
     // A link to the studio design is a convenience: the order page never fails over it.
     findLockedDesignOf(orderId).catch(() => null),
+    // The order's sample, if it has one (U2.F3): production waits for its approval (D-256).
+    listMySamples()
+      .then((list) => list.filter((sample) => sample.orderId === orderId))
+      .catch(() => []),
   ]);
   if (!detail) notFound();
   const { order, group, instalments } = detail;
@@ -218,6 +230,26 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </section>
           ) : null}
 
+          {samples.length > 0 ? (
+            <section aria-labelledby="order-samples" className="flex flex-col gap-2">
+              <h2 id="order-samples" className="text-lg font-semibold">
+                {t("detail.samples")}
+              </h2>
+              <ul className="flex flex-col gap-2">
+                {samples.map((sample) => (
+                  <li key={sample.id} className="flex flex-wrap items-center gap-3 text-sm">
+                    <StatusChip map={SAMPLE_STATUS} value={sample.status} />
+                    <Link href={`/account/samples/${sample.id}`} className="text-primary underline underline-offset-4">
+                      {t("detail.sampleOpen", { date: format.date(sample.createdAt) })}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {samples.some((sample) => !["approved", "cancelled", "rejected", "expired"].includes(sample.status)) ? (
+                <p className="text-muted text-sm">{t("detail.sampleHold")}</p>
+              ) : null}
+            </section>
+          ) : null}
           {order.artworkStatus === "approved" ? <SpecSheet orderId={order.id} /> : null}
           <section aria-labelledby="order-documents">
             <h2 id="order-documents" className="text-lg font-semibold">

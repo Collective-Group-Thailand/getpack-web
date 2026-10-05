@@ -71,5 +71,30 @@
     "typeToConfirm": "Type {phrase} to confirm",
     "reasonRequired": "Enter a reason",
     "reasonTooShort": "Enter a reason of at least {min} characters"
+  },
+  "sampleEvidence": {
+    "basis": "Measured as",
+    "bases": {
+      "internal": "Inside size",
+      "external": "Outside size",
+      "over_crease": "Over crease"
+    },
+    "sizes": {
+      "l": "Length (mm)",
+      "w": "Width (mm)",
+      "d": "Height (mm)"
+    },
+    "material": "Material actually used",
+    "materialHint": "e.g. Art card 350 gsm",
+    "photos": "Photos of the sample (at least one)",
+    "photosHint": "Images up to 15 MB each, at most 10",
+    "drop": "Drop photos here, or",
+    "browse": "Choose photos",
+    "chosen": "Chosen: {names}",
+    "tooLarge": "{name} is too large",
+    "wrongType": "{name} is not an image",
+    "submit": "Record the evidence",
+    "once": "Recorded once, before the sample ships",
+    "recorded": "Evidence recorded"
   }
 }

@@ -1427,7 +1427,7 @@ export const partnerHandlers: HttpHandler[] = [
   }),
   http.get("*/v1/admin/price-list-versions/:versionId/lines", ({ request, params }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "partners.read") || !can(who, "factory_cost.read")) return forbidden();
+    if (!can(who, "partners.read") || !can(who, "factory_buy_prices.read")) return forbidden();
     const url = new URL(request.url);
     const component = url.searchParams.get("component") as Schemas["PriceComponent"] | null;
     const rows: Row[] = [
@@ -1497,7 +1497,7 @@ export const partnerHandlers: HttpHandler[] = [
   }),
   http.get("*/v1/admin/price-proposals/:proposalId", ({ request, params }) => {
     const who = staffPersonaOf(request);
-    if (!can(who, "price_proposals.review") || !can(who, "factory_cost.read")) return forbidden();
+    if (!can(who, "price_proposals.review") || !can(who, "factory_buy_prices.read")) return forbidden();
     const item = proposals.find((candidate) => candidate.id === params.proposalId);
     return item ? HttpResponse.json(item) : problem(404, "http.not_found", "ไม่พบข้อเสนอราคานี้");
   }),

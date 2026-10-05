@@ -69,7 +69,7 @@ function lineErrors(line: LineDraft, all: LineDraft[]) {
 
 /**
  * Composes a draft quote version (F2 2.3): one line per quantity, priced by CS. A factory's answer
- * (published to `factory_cost.read` only) can be copied in — its lead time, and its factory and
+ * (published to `factory_buy_prices.read` only) can be copied in — its lead time, and its factory and
  * buy price, which the API uses to flag the margin floor (D-012). CONTRACT-GAP admin.rfq-quotes —
  * the API publishes no suggested sell price, so CS always types the price. The browser checks only
  * the shape of what is typed; the API prices the amounts, and those figures are what show.

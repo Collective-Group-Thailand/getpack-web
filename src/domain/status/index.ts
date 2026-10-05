@@ -84,6 +84,7 @@ export type {
 // Imported rather than re-exported straight through, because `STATUS_MAPS` below needs them
 // in scope; `export { … } from` would not put them there.
 import { ARTWORK_STATUS } from "./artwork";
+import { SAMPLE_KIND, SAMPLE_STATUS } from "./sample";
 import { CATALOG_STATUS, CONTENT_STATUS } from "./catalogue";
 import { CLAIM_STATUS } from "./claim";
 import {
@@ -200,6 +201,8 @@ export {
   APPROVAL_STATUS,
   APPROVAL_STEP_STATUS,
   ARTWORK_STATUS,
+  SAMPLE_KIND,
+  SAMPLE_STATUS,
   AUDIT_OUTCOME_STATUS,
   BANK_ACCOUNT_STATUS,
   CAMPAIGN_STATUS,
@@ -265,6 +268,8 @@ export const STATUS_MAPS = {
   approvalStep: APPROVAL_STEP_STATUS,
   opsSignal: OPS_SIGNAL_STATUS,
   artwork: ARTWORK_STATUS,
+  sample: SAMPLE_STATUS,
+  sampleKind: SAMPLE_KIND,
   auditOutcome: AUDIT_OUTCOME_STATUS,
   bankAccount: BANK_ACCOUNT_STATUS,
   campaign: CAMPAIGN_STATUS,
