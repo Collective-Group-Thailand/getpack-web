@@ -232,5 +232,24 @@
       "closure": "{date} · {name} (factory closed)",
       "extra_working_day": "{date} · {name} (extra working day)"
     }
+  },
+  "samples": {
+    "title": "Sample jobs",
+    "body": "Samples to make for customers. Before shipping, measure the size, name the material actually used and take at least one photo",
+    "job": "Job {job}",
+    "kind": "Kind",
+    "quantity": "Quantity",
+    "size": "Size (mm)",
+    "material": "Material ordered",
+    "mockup": {
+      "with_print": "Printed",
+      "without_print": "Plain"
+    },
+    "recordTitle": "Record the evidence before shipping",
+    "others": "Other samples",
+    "empty": "No sample jobs yet",
+    "emptyBody": "Samples to make will show here",
+    "noRight": "Your role cannot record evidence — ask the Owner, a Planner or QC",
+    "failed": "Could not record — try again"
   }
 }

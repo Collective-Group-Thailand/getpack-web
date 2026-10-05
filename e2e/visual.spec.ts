@@ -56,6 +56,8 @@ const STORIES = [
   "designer-panels--layers",
   "designer-panels--box",
   "designer-panels--elements",
+  // The sample approval screen (U2.F3).
+  "customer-samples--decision",
 ];
 
 /**

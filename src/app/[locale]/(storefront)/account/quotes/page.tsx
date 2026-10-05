@@ -5,6 +5,7 @@ import { getSavedQuotes } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { configureHref } from "@/features/customer/catalog/paths";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
+import { RequestSample } from "@/features/customer/samples/RequestSample";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { QUOTE_STATUS } from "@/domain/status";
@@ -73,6 +74,9 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusChip map={QUOTE_STATUS} value={quote.status} />
+                  {quote.status === "saved" ? (
+                    <RequestSample quoteId={quote.id} label={quote.quoteCode ?? productNameOf(locale, quote.summary)} />
+                  ) : null}
                   {quote.summary.product && quote.source === "instant" ? (
                     <Button asChild size="sm" variant="secondary">
                       <Link href={`${configureHref(quote.summary.product.slug)}?quote=${quote.id}`}>

@@ -436,7 +436,11 @@
     "option_unknown": "That board is not part of this advice"
   },
   "samples": {
-    "evidence_missing": "Record the measured size, the material used and at least one photo before shipping the sample"
+    "evidence_missing": "A measured size, the material used and at least one photo are needed",
+    "invalid_status": "This sample's status does not allow that",
+    "evidence_recorded": "This sample's evidence is already recorded",
+    "exists": "This order already has a sample in progress",
+    "freight_unavailable": "The sample's delivery cannot be priced yet"
   },
   "configurations": {
     "converted": "This draft has already been converted and can't change"

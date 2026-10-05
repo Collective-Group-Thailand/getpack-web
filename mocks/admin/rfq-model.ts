@@ -28,7 +28,7 @@ export interface ConsultationTierRow {
   quantity: number;
   /** Sell price per unit derived from the buy price — kept in the fixture, not published. */
   suggestedUnitPrice: string;
-  /** The factory's own price — leaves only for `factory_cost.read` (D-141). */
+  /** The factory's own price — leaves only for `factory_buy_prices.read` (D-141). */
   buyUnitPrice?: string;
 }
 

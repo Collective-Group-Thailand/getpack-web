@@ -133,7 +133,7 @@
     "description": "List dead-lettered domain events and replay them"
   },
   {
-    "key": "factory_cost.read",
+    "key": "factory_buy_prices.read",
     "audience": "staff",
     "description": "See full factory buy prices and costs",
     "sensitive": true,

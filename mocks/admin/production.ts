@@ -39,9 +39,9 @@ export function toAdminJobDto(order: MockOrder, job: Job, who: StaffPersona | nu
     escalatedAt: null,
     // The SLA engine's predicted finish, past the promise when the job is at risk (D-075).
     predictedFinishOn: job.atRisk ? bangkokIso(60 * 24 * 3).slice(0, 10) : null,
-    // D-141: what Packio pays the factory, for factory_cost.read only.
-    buyCostNet: who && can(who, "factory_cost.read") ? (order.margin?.buyCostNet ?? null) : null,
-    buyPriceNet: who && can(who, "factory_cost.read") ? (order.margin?.buyCostNet ?? null) : null,
+    // D-141: what Packio pays the factory, for factory_buy_prices.read only.
+    buyCostNet: who && can(who, "factory_buy_prices.read") ? (order.margin?.buyCostNet ?? null) : null,
+    buyPriceNet: who && can(who, "factory_buy_prices.read") ? (order.margin?.buyCostNet ?? null) : null,
     inspectionReasons: inspection?.reasons ?? (core.inspectionRequired ? ["value_band_sample"] : []),
     assignments: [],
     nextActions: adminJobActions({ status: job.status, jobKind: job.kind }, new Set(who?.permissions ?? [])),

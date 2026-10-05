@@ -64,7 +64,8 @@
     "wallet": "Store credit",
     "addresses": "Addresses and tax invoices",
     "notifications": "Notifications",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "samples": "Samples"
   },
   "home": {
     "title": "My account",

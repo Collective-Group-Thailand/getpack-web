@@ -40,7 +40,7 @@ export function missingPermissions(role: Role, grantorPermissions: readonly stri
 
 /** D-141: permissions that expose factory buy prices or margins, marked wherever roles are shown. */
 export const SENSITIVE_PERMISSIONS = new Set([
-  "factory_cost.read",
+  "factory_buy_prices.read",
   "margin.read",
   "margin.read_pct_when_discounting",
   "settings.read_sensitive",

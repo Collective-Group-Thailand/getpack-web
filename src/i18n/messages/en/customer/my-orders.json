@@ -112,7 +112,10 @@
       "preview": "Preview",
       "download": "Download PDF",
       "failed": "Could not open the sheet — try again"
-    }
+    },
+    "samples": "This order's sample",
+    "sampleOpen": "Open the sample asked for on {date}",
+    "sampleHold": "This order starts production once you approve the sample"
   },
   "tolerance": {
     "title": "Quantity received",
@@ -147,5 +150,112 @@
     "order_cancelled": "Order cancelled",
     "other": "Order updated"
   },
-  "arrivesBy": "Expected by {date}"
+  "arrivesBy": "Expected by {date}",
+  "samples": {
+    "title": "Samples",
+    "intro": "Samples asked for before ordering and samples of your orders: where each stands, check and approve them here",
+    "emptyTitle": "No samples yet",
+    "emptyBody": "Ask for a sample from a saved quotation before ordering",
+    "toQuotes": "Go to quotations",
+    "asked": "Asked on {date}",
+    "detailTitle": "Sample",
+    "back": "Back to all samples",
+    "forOrder": "for order {code}",
+    "attachedHold": "The order starts production once you approve this sample",
+    "arc": "The sample's steps",
+    "state": {
+      "done": " · done",
+      "current": " · current step",
+      "upcoming": " · not yet",
+      "skipped": " · skipped"
+    },
+    "mockup": {
+      "with_print": "Printed sample",
+      "without_print": "Plain sample (structure)"
+    },
+    "request": {
+      "open": "Ask for a sample first",
+      "title": "Ask for a sample before ordering",
+      "body": "Our team quotes the sample, its delivery and lead time; you buy it like any quotation",
+      "kind": "Kind of sample",
+      "withPrint": "Printed",
+      "withPrintHint": "See colour, material and print close to the real thing",
+      "withoutPrint": "Plain",
+      "withoutPrintHint": "See the size and the structure, for less",
+      "quantity": "Sample pieces",
+      "note": "To our team (optional)",
+      "noteHint": "e.g. I want to match the colour to my product",
+      "send": "Send the request",
+      "failed": "Could not send — try again",
+      "postcode": "Postcode to deliver the sample to",
+      "postcodeHint": "Used to price the sample's delivery"
+    },
+    "detail": {
+      "spec": "The sample's specification",
+      "lockedSpec": "Locked specification",
+      "lockedHint": "The approved specification and proof are locked for ordering from this sample. To change them, ask for a new quotation from the product page",
+      "size": "Size",
+      "mm": "mm",
+      "material": "Material",
+      "kind": "Kind",
+      "quantity": "Quantity",
+      "mockup": {
+        "with_print": "Printed",
+        "without_print": "Plain"
+      },
+      "quoteTitle": "Sample quotation",
+      "leadTime": "Ready in {days, plural, one {# day} other {# days}}",
+      "validUntil": "Valid until {date}",
+      "creditRule": "Once approved, the sample's price can be credited against your order on the terms shown after approval",
+      "buy": "Buy this sample",
+      "waitingQuote": "Our team is quoting the sample — we will let you know",
+      "evidenceTitle": "Evidence from the factory",
+      "evidenceIntro": "Measured and photographed before shipping, on {date}",
+      "measured": "Measured size ({basis})",
+      "bases": {
+        "internal": "inside",
+        "external": "outside",
+        "over_crease": "over crease",
+        "product": "product"
+      },
+      "materialUsed": "Material used",
+      "photo": "Sample photo {n}",
+      "decideTitle": "Check the sample",
+      "checklist": "Check every point before approving",
+      "checks": {
+        "dimensions": "The size is right",
+        "colour": "The colour is as wanted",
+        "material": "The material is right",
+        "construction": "It assembles and folds correctly"
+      },
+      "checkHints": {
+        "dimensions": "Against the factory's measurement and your product",
+        "colour": "In daylight, against the proof",
+        "material": "Thickness, feel, stiffness",
+        "construction": "Lids close, folds follow the creases, nothing tears"
+      },
+      "note": "Note",
+      "noteHint": "Required to ask for changes or reject",
+      "approve": "Approve the sample",
+      "requestChanges": "Ask for changes",
+      "reject": "Reject",
+      "checklistHint": "Tick every point to approve",
+      "approveHint": "Approving records the time and the evidence photos you saw, and locks the specification",
+      "checkedNote": "Checked: {items}",
+      "approved": "Sample approved",
+      "decisionTitle": "Decision",
+      "decidedAt": "On {date}",
+      "photosSeen": "{count, plural, one {# evidence photo} other {# evidence photos}} recorded as seen",
+      "bulkTitle": "Order from this sample",
+      "credit": "Order by {date} to have the sample credited",
+      "creditAmount": "Credit: {amount}",
+      "bulkQuantity": "Quantity to order",
+      "bulk": "Add to cart to order",
+      "bulkHint": "Today's prices; the approved specification and proof",
+      "bulkAdded": "Added to the cart",
+      "bulkWithCredit": "Added to the cart — the sample is credited at checkout",
+      "failed": "Could not do that — try again",
+      "sha": "sha256 {hash}…"
+    }
+  }
 }
