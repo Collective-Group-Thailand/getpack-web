@@ -23,6 +23,7 @@ const ITEMS: { key: string; href: string; icon: IconName; when?: keyof Can }[] =
   { key: "branches", href: "/business/branches", icon: "building" },
   { key: "assets", href: "/business/assets", icon: "image" },
   { key: "settings", href: "/business/settings", icon: "settings", when: "manageSettings" },
+  { key: "api", href: "/business/api", icon: "key", when: "manageSettings" },
 ];
 
 /** The company's sections (F3 3.7), only those the member's roles open. */

@@ -206,7 +206,11 @@
     "shipping": "Delivery",
     "shippingAtCheckout": "Priced at checkout",
     "arrives": "Earliest delivery {date}",
-    "holds": "This price holds until {date}"
+    "holds": "This price holds until {date}",
+    "toolingWaived": "No repeat plate/die cost — you save {amount}",
+    "toolingWaivedBody": "The factory kept {count, plural, one {# plate or die block} other {# plates or die blocks}} of this specification: reused, not charged again",
+    "toolingWaiver": "Plates / die block not charged",
+    "toolingWaiverValue": "Waived ({amount})"
   },
   "track": {
     "title": "Track an order",
