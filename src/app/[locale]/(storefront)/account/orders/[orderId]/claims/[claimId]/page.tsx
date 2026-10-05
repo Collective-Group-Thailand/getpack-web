@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
-import { getMyClaim } from "@/features/customer/fulfilment/api.server";
+import { getClaimTimeline, getMyClaim } from "@/features/customer/fulfilment/api.server";
+import { ClaimTimeline } from "@/features/customer/fulfilment/ClaimTimeline";
 import { ClaimThread } from "@/features/customer/fulfilment/ClaimThread";
 import { Link } from "@/i18n/navigation";
 
@@ -25,7 +26,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function Page({ params }: { params: Promise<Params> }) {
   await requireCustomer();
   const { orderId, claimId } = await params;
-  const [t, claim] = await Promise.all([getTranslations("fulfilment.claimView"), getMyClaim(claimId)]);
+  const [t, claim, timeline] = await Promise.all([
+    getTranslations("fulfilment.claimView"),
+    getMyClaim(claimId),
+    // The clock is the API's; the claim page still shows without it.
+    getClaimTimeline(claimId).catch(() => null),
+  ]);
   if (!claim) notFound();
 
   return (
@@ -36,6 +42,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         </Link>
         <h1 className="text-2xl font-bold">{t("title", { claim: claim.claimNo })}</h1>
       </header>
+      {timeline ? <ClaimTimeline timeline={timeline} /> : null}
       <ClaimThread initial={claim} />
     </div>
   );

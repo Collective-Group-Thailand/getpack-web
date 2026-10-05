@@ -32,6 +32,15 @@ export async function getMyClaim(claimId: string): Promise<Schemas["StoreClaimDt
   );
 }
 
+/** Who must act on a claim now and by when, and what has happened (`store.claims.getTimeline`, D-263). */
+export async function getClaimTimeline(claimId: string): Promise<Schemas["ClaimTimelineDto"] | null> {
+  return orNull(
+    (await serverApi("customer"))
+      .GET("/v1/store/claims/{claimId}/timeline", { params: { path: { claimId } } })
+      .then(({ data }) => data!),
+  );
+}
+
 /** The same order at today's price, for its past quantity (`store.claims.previewReorder`, D-153). */
 export async function getReorder(orderId: string): Promise<Schemas["ReorderPreviewDto"] | null> {
   return orNull(

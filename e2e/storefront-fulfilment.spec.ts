@@ -120,6 +120,14 @@ test.describe("after production", () => {
     await expect(page.getByText("2 รูป", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "รูปที่ 2" })).toBeVisible();
     await expect(page.getByLabel("ตอบกลับ")).toHaveCount(0);
+    // The claim's clock (U2.F4, D-263): who acts now, by when, and the guarantee it follows.
+    const clock = page.getByRole("region", { name: "สถานะเคลม" });
+    await expect(clock.getByText("รอทีม Packio")).toBeVisible();
+    await expect(clock.getByText(/ตัดสินภายใน/)).toBeVisible();
+    await expect(clock.getByRole("link", { name: "ตามเงื่อนไขการรับประกันฉบับที่ 1" })).toHaveAttribute(
+      "href",
+      "/guarantee",
+    );
     // The "received" toast animates over the header; axe reads it mid-fade.
     await expect(page.locator("[data-sonner-toast]")).toHaveCount(0, { timeout: 10_000 });
     await expectNoViolations(page);

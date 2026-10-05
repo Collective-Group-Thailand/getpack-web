@@ -189,7 +189,7 @@ test.describe("users and roles", () => {
     await signInAsStaff(page, "superadmin");
     await gotoHydrated(page, `${HOSTS.admin}/users/roles`);
     const table = page.getByRole("table");
-    await expect(table.getByRole("rowheader", { name: /factory_cost\.read.*ข้อมูลอ่อนไหว/ })).toBeVisible();
+    await expect(table.getByRole("rowheader", { name: /factory_buy_prices\.read.*ข้อมูลอ่อนไหว/ })).toBeVisible();
     await expectAxeClean(page);
   });
 });

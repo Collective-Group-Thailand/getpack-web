@@ -47,7 +47,7 @@ type Lifetime = keyof typeof LIFETIME;
  */
 const DATA_CACHE = process.env.API_MOCKS !== "1";
 
-async function publicApi(lifetime: Lifetime): Promise<Client<ApiPaths>> {
+export async function publicApi(lifetime: Lifetime): Promise<Client<ApiPaths>> {
   const [baseUrl, locale] = await Promise.all([apiInternalUrl(), getLocale()]);
   return createApiClient({
     baseUrl,

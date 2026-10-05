@@ -228,5 +228,30 @@
     "shipmentNo": "Delivery {shipment}",
     "arrivesBy": "Expected by {date}",
     "delivered": "Delivered on {date}"
+  },
+  "claimTimeline": {
+    "title": "Claim status",
+    "owner": {
+      "packio": "Waiting for Packio",
+      "customer": "Waiting for your information",
+      "factory": "Waiting for the factory's review",
+      "none": "Done"
+    },
+    "responseDue": "We respond by",
+    "responded": "We responded on",
+    "decisionDue": "We decide by",
+    "overdue": "Overdue",
+    "clockStopped": "The decision clock stops until you send the information",
+    "events": {
+      "submitted": "Claim reported",
+      "under_review": "Under review",
+      "info_requested": "More information asked for",
+      "info_provided": "You sent the information",
+      "approved": "Claim approved",
+      "rejected": "Claim rejected",
+      "resolved": "Remedy given",
+      "closed": "Claim closed"
+    },
+    "guarantee": "Under guarantee version {version}"
   }
 }

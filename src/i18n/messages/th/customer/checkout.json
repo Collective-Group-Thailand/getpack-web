@@ -71,7 +71,8 @@
     "taxInvoice": "ใบกำกับภาษีในนาม {name} ({taxId}) {branch}",
     "minus": "−{amount}",
     "net": "ยอดก่อนภาษี",
-    "pointsToEarn": "รับ {points} คะแนนเมื่อคำสั่งซื้อเสร็จสิ้น"
+    "pointsToEarn": "รับ {points} คะแนนเมื่อคำสั่งซื้อเสร็จสิ้น",
+    "guarantee": "ดูการรับประกันงาน"
   },
   "repriced": {
     "title": "ราคาเปลี่ยนไป",
