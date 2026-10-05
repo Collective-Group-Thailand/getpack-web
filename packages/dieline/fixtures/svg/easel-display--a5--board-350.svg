@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="158mm" height="432.31mm" viewBox="0 0 158 432.31" data-style="easel-display">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M153 217.31 L153 427.31"/><path d="M153 427.31 L5 427.31"/><path d="M5 427.31 L5 217.31"/><path d="M5 217.31 L5 122.81"/><path d="M5 122.81 L54.333 122.81"/><path d="M103.667 122.81 L153 122.81"/><path d="M153 122.81 L153 217.31"/><path d="M54.333 5 L103.667 5"/><path d="M103.667 5 L103.667 122.81"/><path d="M54.333 122.81 L54.333 5"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M5 217.31 L153 217.31"/><path d="M54.333 122.81 L103.667 122.81"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M11 128.81 L147 128.81"/><path d="M147 128.81 L147 211.31"/><path d="M147 211.31 L11 211.31"/><path d="M11 211.31 L11 128.81"/></g>
+</svg>

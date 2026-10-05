@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "id": "easel-display",
+  "base": "PK-DS-04",
+  "variants": {
+    "thumb": {
+      "none": {
+        "fingerHole": false
+      },
+      "thumb_notch": {
+        "fingerHole": true
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "ป้ายตั้งโต๊ะมีขาตั้ง",
+    "en": "Easel-back display stand"
+  },
+  "description": {
+    "th": "แผ่นป้ายพิมพ์ ด้านหลังมีขาตั้งพับกางออกตั้งบนโต๊ะได้ เลือกรูนิ้วได้",
+    "en": "A printed panel with a fold-out strut behind it, standing on a counter; with an optional finger hole"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 100,
+      "max": 800
+    },
+    "fingerHole"
+  ],
+  "defaults": {
+    "length": 210,
+    "height": 297,
+    "fingerHole": false
+  },
+  "presets": [
+    {
+      "id": "a5",
+      "label": {
+        "th": "A5 148 × 210",
+        "en": "A5 148 × 210"
+      },
+      "values": {
+        "length": 148,
+        "height": 210
+      }
+    },
+    {
+      "id": "a4",
+      "label": {
+        "th": "A4 210 × 297",
+        "en": "A4 210 × 297"
+      },
+      "values": {
+        "length": 210,
+        "height": 297
+      }
+    },
+    {
+      "id": "a3",
+      "label": {
+        "th": "A3 297 × 420",
+        "en": "A3 297 × 420"
+      },
+      "values": {
+        "length": 297,
+        "height": 420
+      }
+    }
+  ],
+  "body": {
+    "module": "easel"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "0",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "2 * t",
+    "height": "height"
+  }
+}
