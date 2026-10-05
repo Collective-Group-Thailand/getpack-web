@@ -412,6 +412,44 @@ window), `pouchWeb` (features on side-by-side webs, `flat_bottom`), `telescopeLi
 piece placement (`under`, `offset`). ⚠ Every new construction carries its "to be confirmed by
 Prepress" note in its module's documentation.
 
+### Wave 3 coverage (U3.4)
+
+**12 of the 15 wave-3 bases have engine recipes; 45 of the master's 51 variants are drawn** (folding
+carton 19 / 23, corrugated 13 / 15, rigid 6 / 6, flexible 1 / 1, labels 6 / 6). **All three waves: 96
+of 105 bases, 796 of 960 variants.** Same gates, review state and code rules as wave 2.
+
+| Base | Name | Category | Master variants | Drawn | Not drawn | Recipes |
+| --- | --- | --- | --- | --- | --- | --- |
+| PK-DS-04 | Easel-back display stand | folding_carton | 2 | 2 | 0 | `easel-display` |
+| PK-SP-04 | Octagonal carton | folding_carton | 4 | 2 | 2 | `octagonal`, `octagonal-reverse` |
+| PK-SP-11 | Cone / popcorn box | folding_carton | 1 | 0 | 1 | — |
+| PK-CD-02 | Floor display unit | corrugated | 8 | 8 | 0 | `floor-display` |
+| PK-CB-01 | Bulk bin / pallet box | corrugated | 2 | 2 | 0 | `bulk-bin` |
+| PK-SL-04 | Sleeve with hinged lid | folding_carton | 6 | 6 | 0 | `sleeve-lid` |
+| PK-SP-14 | Petal-close carton | folding_carton | 5 | 5 | 0 | `petal-tuck`, `petal-snap`, `petal-crash`, `petal-seal`, `petal-fourflap` |
+| PK-SP-15 | Pyramid carton | folding_carton | 4 | 4 | 0 | `pyramid` |
+| PK-SP-17 | Hot dog / snack tray | folding_carton | 1 | 0 | 1 | — |
+| PK-CB-02 | Octagonal bulk bin | corrugated | 2 | 0 | 2 | — |
+| PK-CB-03 | Pallet sleeve with cap and base tray | corrugated | 3 | 3 | 0 | `pallet-sleeve` |
+| PK-RG-08 | Double-door rigid box | rigid | 6 | 6 | 0 | `rigid-double-door` |
+| PK-PB-08 | Spouted pouch | flexible | 1 | 1 | 0 | `spouted-pouch` |
+| PK-LA-06 | Peel-back booklet label | label | 5 | 5 | 0 | `booklet-label-rect`, `booklet-label-rounded`, `booklet-label-circle`, `booklet-label-oval`, `booklet-label-custom` |
+| PK-LA-07 | Shrink sleeve label | label | 1 | 1 | 0 | `shrink-sleeve` |
+
+Not drawn because it cannot be made (2):
+
+- **PK-SP-04** — `tuck_top` = airplane_tuck or seal: an octagon's end is a polygon lid (as PK-SP-03).
+
+Not drawn yet — makeable, waiting for the work named (4):
+
+- **PK-SP-11** (1) — tapered walls (as PK-SP-08).
+- **PK-SP-17** (1) — a cradle cut into the end walls' free edges; tray walls cannot be shaped yet.
+- **PK-CB-02** (2) — an eight-sided slotted flap bottom for the octagonal bin.
+
+New modules: `petal` (closure; replaces its `planned` entry), `bookletHinge` (feature), `easel`,
+`pyramid`, `shrinkSleeve` (bodies), `floorDisplay` (piece set); `rigidCase` gains `doors`,
+`pouchWeb` a `spout`, `telescopeLid` a full-depth `lid`.
+
 ## 4. Patterns the engine does not draw
 
 For these, prepress supplies the die file through the drawing job's upload (admin prepress, F2 2.4)

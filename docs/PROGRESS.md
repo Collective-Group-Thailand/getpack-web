@@ -48,6 +48,58 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U3.4 wave 3 — Style library, third wave — 2026-10-06
+
+`docs/prompts/U3-style-library.md` §U3.4 (wave 3), on `feat/u3.4-wave3` (worktree `../packio-web-u3`, from `main` at `c1f8967`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 3.
+
+### Counts
+| | Bases | Master variants | Drawn |
+|---|---|---|---|
+| Wave 3 | **12 / 15** | 51 | **45** |
+| Waves 1–3 | **96 / 105** | 960 | **796** |
+
+- **By category (wave 3):** folding carton 19 / 23, corrugated 13 / 15, rigid 6 / 6, flexible 1 / 1, labels 6 / 6.
+- **Publishable:** packio-api's (D-243).
+
+### Done
+- 21 recipes:
+  - Octagonal cartons: straight and reverse tuck.
+  - Sleeve with a hinged lid.
+  - Bulk bin with a full or partial lid.
+  - Pallet sleeve with cap and base tray.
+  - Double-door rigid box.
+  - Spouted pouch.
+  - Peel-back booklet labels in five shapes.
+  - Shrink sleeve.
+  - Pyramid.
+  - Petal-close cartons on five bottoms.
+  - Easel-back display.
+  - Floor display unit, 1–4 shelves, with or without a header.
+- **New modules:**
+  - `petal`, replacing its `planned` entry.
+  - `bookletHinge`, `easel`, `pyramid`, `shrinkSleeve`, `floorDisplay`.
+- **Extended:**
+  - `rigidCase`: `doors`.
+  - `pouchWeb`: `spout`.
+  - `telescopeLid`: `lid` = `full`.
+- **Gates:** every drawn variant passes the variant gate and, when it folds, the fold gate.
+- **Docs and words:** mapping table, render manifest and axis phrases (`shelves`); all words `pending` (D-212).
+
+### Deferred / assumptions
+- **Not drawn yet** (4 variants):
+  - SP-11: tapered walls.
+  - SP-17: a cradle cut into tray wall edges.
+  - CB-02: an eight-sided flap bottom.
+- **Cannot be made** (2): the octagon's airplane and seal tops.
+- **The octagon's presets start at a 40 mm side.** At 30 mm its glue flap is wider than the material rule allows.
+- **Shelves in the floor display rest on the side walls in the model.** The real supports (clips or ledges) are for Prepress (⚠).
+- **The 881 / ≈ 960 targets:** 796 producible variants are drawn. See wave 2's note.
+- **Checks:**
+  - Lint, typecheck and app tests green; release hygiene clean; every Lighthouse set within budget (no ratchet change).
+  - Style, studio and designer e2e 13 / 13 with one worker. In parallel, 5 lost their sign-in to another worker — the known shared-persona flake.
+
+---
+
 ## U3.4 wave 2 — Style library, second wave — 2026-10-06
 
 `docs/prompts/U3-style-library.md` §U3.4 (wave 2), on `feat/u3.4-wave2` (worktree `../packio-web-u3`, from `main` at `fe20338`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 2.
