@@ -61,7 +61,13 @@ export function NewSupportMessage({ quickReplies }: { quickReplies: string[] }) 
  * "Ask about this" on an order, a design or an RFQ (U5.3 §2): the question goes to that record's
  * thread with its card attached, so the team never has to ask which order it is.
  */
-export function AskAbout({ subject, variant = "secondary" }: { subject: Exclude<Subject, { type: "support" }>; variant?: "secondary" | "ghost" }) {
+export function AskAbout({
+  subject,
+  variant = "secondary",
+}: {
+  subject: Exclude<Subject, { type: "support" }>;
+  variant?: "secondary" | "ghost";
+}) {
   const t = useTranslations("account.messages");
   const router = useRouter();
   const [openSheet, setOpenSheet] = useState(false);

@@ -157,6 +157,15 @@ export function DielineDownload({ variantCode, sizeRanges, signedIn, signInHref,
           <Button iconStart="download" loading={busy} disabled={!ready} onClick={() => void download()}>
             {t("download")}
           </Button>
+          {/* How to open what comes down, in three lines per format (U5.4 §2). */}
+          <ol
+            className="text-muted list-decimal ps-5 text-xs"
+            aria-label={t("guideTitle", { format: format.toUpperCase() })}
+          >
+            {(["1", "2", "3"] as const).map((n) => (
+              <li key={n}>{t(`guide.${format}.${n}`)}</li>
+            ))}
+          </ol>
           {problem ? <Callout tone="danger" title={problem} /> : null}
           {done ? (
             <Callout tone="success" title={t("done", { file: done.fileName })}>

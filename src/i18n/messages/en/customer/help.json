@@ -30,6 +30,18 @@
       "business": {
         "title": "For business",
         "body": "Company accounts, approvals and credit terms"
+      },
+      "learn": {
+        "title": "Learn before you order",
+        "body": "Short lessons, from a first order to preparing print files."
+      },
+      "materials": {
+        "title": "Materials library",
+        "body": "Thickness, grammage, printing and food safety, side by side."
+      },
+      "glossary": {
+        "title": "Packaging glossary",
+        "body": "E-flute, bleed, spot UV — explained plainly."
       }
     },
     "faq": "Frequently asked",
@@ -179,5 +191,72 @@
     "inAppTitle": "Talk to the team on the web",
     "inAppBody": "Send the Packio team a message, photo or file and read the answer under Messages in your account.",
     "inAppAction": "Open messages"
+  },
+  "glossary": {
+    "title": "Packaging glossary",
+    "intro": "The words printers and designers use, explained briefly in plain language.",
+    "search": "Search the glossary",
+    "clear": "Clear the search",
+    "noMatch": "Nothing matches “{query}”. Try another spelling, or ask the team.",
+    "learn": "Learn step by step",
+    "ask": "Ask the team",
+    "chipLabel": "What is {term}?",
+    "more": "Read it in the glossary",
+    "loading": "Loading the explanation…",
+    "unavailable": "The explanation could not be loaded; see the glossary page."
+  },
+  "materials": {
+    "title": "Materials library",
+    "intro": "See each material's real specification, compare up to three, then press “Use this material” to configure a box with it straight away.",
+    "compare": "Compare",
+    "compareTitle": "Comparing {count} materials",
+    "clearCompare": "Clear comparison",
+    "property": "Property",
+    "use": "Use this material",
+    "askAbout": "Ask the team about it",
+    "mm": "{value} mm",
+    "gsmValue": "{value} gsm",
+    "facts": {
+      "caliper": "Thickness",
+      "gsm": "Weight",
+      "flute": "Flute",
+      "print": "Prints with",
+      "food": "Food contact",
+      "recycle": "Recycling"
+    },
+    "food": {
+      "approved": "Food-safe",
+      "not_approved": "Not food-certified"
+    },
+    "recycle": {
+      "recyclable": "Recyclable",
+      "recyclable_if_clean": "Recyclable when clean",
+      "not_recyclable": "Not recyclable",
+      "unknown": "No data yet"
+    },
+    "kinds": {
+      "paper": "Paper",
+      "board": "Board",
+      "corrugated": "Corrugated",
+      "film": "Film",
+      "other": "Other"
+    },
+    "empty": {
+      "title": "No materials yet",
+      "body": "Order a sample kit to feel the real thing before deciding.",
+      "action": "See samples"
+    }
+  },
+  "learn": {
+    "title": "Learn before you order",
+    "intro": "Short lessons that end with doing — a few minutes' reading, then start your order.",
+    "steps": "{count} articles",
+    "back": "← All lessons",
+    "readyTitle": "Ready — carry on from here",
+    "empty": {
+      "title": "No lessons yet",
+      "body": "In the meantime, read all the articles.",
+      "action": "See articles"
+    }
   }
 }

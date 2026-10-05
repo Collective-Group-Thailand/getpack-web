@@ -66,7 +66,8 @@ export function InboxThread({ initial }: { initial: Conversation }) {
   const canned = useQuery({
     queryKey: queryKeys.list("admin", "canned-response", { archived: false }),
     queryFn: async () =>
-      (await api.GET("/v1/admin/canned-responses", { params: { query: { archived: false, perPage: 100 } } })).data!.data,
+      (await api.GET("/v1/admin/canned-responses", { params: { query: { archived: false, perPage: 100 } } })).data!
+        .data,
     enabled: canReply,
   });
 
@@ -142,19 +143,23 @@ export function InboxThread({ initial }: { initial: Conversation }) {
               const uploaded = await uploadFile("admin", file, "evidence");
               return { id: uploaded.id, name: file.name };
             }}
-            extra={
-              <Switch label={t("asNote")} checked={asNote} onCheckedChange={setAsNote} />
-            }
+            extra={<Switch label={t("asNote")} checked={asNote} onCheckedChange={setAsNote} />}
             onSend={async (draft) => {
               try {
                 if (asNote)
                   await api.POST("/v1/admin/conversations/{conversationId}/notes", {
-                    params: { path: { conversationId: initial.id }, header: { "Idempotency-Key": newIdempotencyKey() } },
+                    params: {
+                      path: { conversationId: initial.id },
+                      header: { "Idempotency-Key": newIdempotencyKey() },
+                    },
                     body: { body: draft.body, ...(draft.fileIds.length ? { fileIds: draft.fileIds } : {}) },
                   });
                 else
                   await api.POST("/v1/admin/conversations/{conversationId}/messages", {
-                    params: { path: { conversationId: initial.id }, header: { "Idempotency-Key": newIdempotencyKey() } },
+                    params: {
+                      path: { conversationId: initial.id },
+                      header: { "Idempotency-Key": newIdempotencyKey() },
+                    },
                     body: {
                       ...(draft.body ? { body: draft.body } : {}),
                       ...(draft.fileIds.length ? { fileIds: draft.fileIds } : {}),
@@ -184,7 +189,9 @@ export function InboxThread({ initial }: { initial: Conversation }) {
               state={conversation.sla.state === "overdue" ? "breached" : "on_track"}
               absolute={format.dateTime(conversation.sla.firstResponseDueAt)}
               format={(ms, overdue) =>
-                overdue ? t("overdueBy", { minutes: Math.round(ms / 60_000) }) : t("dueIn", { minutes: Math.round(ms / 60_000) })
+                overdue
+                  ? t("overdueBy", { minutes: Math.round(ms / 60_000) })
+                  : t("dueIn", { minutes: Math.round(ms / 60_000) })
               }
             />
           </div>
@@ -254,4 +261,3 @@ export function InboxThread({ initial }: { initial: Conversation }) {
     </div>
   );
 }
-

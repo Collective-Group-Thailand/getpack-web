@@ -478,5 +478,12 @@
   "b2b": {
     "client_limit": "The company already has the most active keys allowed",
     "client_revoked": "This key is already revoked"
+  },
+  "rfq_baskets": {
+    "changed": "Something in the basket changed. Check it again, then send.",
+    "not_submitted": "This basket has not been sent yet. Send it before accepting quotes."
+  },
+  "deep_links": {
+    "expired": "This link has expired. Open the same thing from your account."
   }
 }

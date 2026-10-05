@@ -16,7 +16,7 @@ import Editor, {
 import type { BoxFields, DesignerCatalog } from "@/features/designer/data/api";
 import { designRepo } from "@/features/designer/storage";
 import { useEditor } from "@/features/designer/store/editor";
-import { Link, useRouter } from "@/i18n/navigation";
+import { getPathname, Link, useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
 import { queryKeys } from "@/lib/api/query-keys";
 import { AlertDialog } from "@/ui/components/AlertDialog";
@@ -31,6 +31,7 @@ import { maxSpotColours, useStudioRules } from "./rules";
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { artworkColours } from "./state";
 import { studioFieldsOf } from "./spec";
+import { RULE_HELP } from "./help";
 import { StepBar } from "./StepBar";
 import { initialStep, lockedReason, type StepFacts, type StudioStep } from "./steps";
 import { useStudioChecks } from "./checks";
@@ -479,6 +480,7 @@ function CheckStep({
   onNext: () => void;
 }) {
   const t = useTranslations("studio");
+  const locale = useLocale();
   const saveState = ctx.persistence.state;
   const checks = useStudioChecks(
     ctx.persistence.serverId(),
@@ -495,6 +497,10 @@ function CheckStep({
         onFix={ctx.fix}
         acknowledged={checks.acknowledged}
         onAcknowledge={checks.acknowledge}
+        helpHref={(issue) => {
+          const [path, hash] = RULE_HELP[issue.ruleId].split("#");
+          return `${getPathname({ href: path!, locale })}${hash ? `#${hash}` : ""}`;
+        }}
       />
       <Button className="w-full" onClick={onNext}>
         {t("check.next")}

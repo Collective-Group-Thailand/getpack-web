@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { getThread } from "@/features/customer/messages/api.server";
 import { ConversationPanel } from "@/features/customer/messages/ConversationPanel";
-import { storeCardHref } from "@/features/customer/messages/hooks";
+import { storeCardHref } from "@/features/customer/messages/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 
@@ -40,7 +40,9 @@ export default async function Page({ params }: { params: Promise<{ conversationI
             : t("kinds.support")}
         </h1>
         <p className="text-muted mt-1 text-sm">
-          {thread.readByPackioAt ? t("readByPackio", { at: format.dateTime(thread.readByPackioAt) }) : t("responseTarget")}
+          {thread.readByPackioAt
+            ? t("readByPackio", { at: format.dateTime(thread.readByPackioAt) })
+            : t("responseTarget")}
           {subjectHref ? (
             <>
               {" · "}

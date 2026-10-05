@@ -38,8 +38,16 @@ export function InboxList({ initial }: { initial: InitialPage<Conversation> | nu
       cell: (row) => (row.subject ? `${t(`subjects.${row.subjectType}`)} ${row.subject.label}` : t("subjects.support")),
     },
     { id: "channel", header: t("columns.channel"), cell: (row) => t(`channels.${row.channel}`) },
-    { id: "sla", header: t("columns.sla"), cell: (row) => (row.sla.state ? <StatusChip map={CONVERSATION_SLA} value={row.sla.state} /> : "—") },
-    { id: "status", header: t("columns.status"), cell: (row) => <StatusChip map={CONVERSATION_STATUS} value={row.status} /> },
+    {
+      id: "sla",
+      header: t("columns.sla"),
+      cell: (row) => (row.sla.state ? <StatusChip map={CONVERSATION_SLA} value={row.sla.state} /> : "—"),
+    },
+    {
+      id: "status",
+      header: t("columns.status"),
+      cell: (row) => <StatusChip map={CONVERSATION_STATUS} value={row.status} />,
+    },
     { id: "assignee", header: t("columns.assignee"), cell: (row) => row.assignee?.displayName ?? t("unassigned") },
     { id: "lastMessageAt", header: t("columns.last"), cell: (row) => <When at={row.lastMessageAt} /> },
   ];
