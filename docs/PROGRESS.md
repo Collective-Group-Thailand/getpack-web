@@ -195,7 +195,11 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 - **Deviation is laid by bounding corners, not best fit.** A drawing with extra lines around it (a frame, notes on a CUT layer) does not match until those are removed. Its CUT / CREASE layers are used when it has them.
 - **An approved "new style" still goes through the library import (D-242).** The web does not write recipes.
 - **Lighthouse ratchets:** `customer-app` +100 B, `customer-marketing` +100 B, `partner` +400 B, for the entry points and copy every page of those zones now carries (`docs/performance-budgets.md` §U3.6).
-- **Checks:** typecheck, 1048 app tests, 10 513 dieline tests, reproducible render, release hygiene; e2e 96 / 96 across the touched suites.
+- **Checks:**
+  - Before the merge: typecheck, 1048 app tests, 10 513 dieline tests, reproducible render, release hygiene; e2e 96 / 96 across the touched suites.
+  - Main moved twice during this step (another session's U5.1–U5.7, then U5.5) and was merged into the branch each time. Conflicts were registries, message files and budgets; both sides were kept and main's rewritten problem copy won.
+  - After: 1076 app tests; the full chromium e2e (438 / 443, the 5 passing alone); the touched suites 106 / 107 (the known `storefront-account` shared-session flake); Lighthouse within budget (partner 301600, studio at U5.5's 505800).
+  - U5's zero-dead-ends rule now covers the requests list's empty state.
 
 ---
 
