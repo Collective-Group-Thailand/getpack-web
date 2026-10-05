@@ -474,5 +474,110 @@
         }
       }
     ]
+  },
+  "flapOverlap": {
+    "key": "flapOverlap",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ระยะเกยของฝานอก",
+      "en": "Outer flap overlap"
+    },
+    "help": {
+      "th": "ฝานอกสองแผ่นซ้อนกันกลางกล่องเท่านี้",
+      "en": "How far the two outer flaps overlap at the centre"
+    },
+    "min": 20,
+    "max": 150,
+    "step": 1
+  },
+  "neckDiameter": {
+    "key": "neckDiameter",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "เส้นผ่านศูนย์กลางคอขวด",
+      "en": "Bottle-neck diameter"
+    },
+    "min": 10,
+    "max": 80,
+    "step": 0.5
+  },
+  "srpHeader": {
+    "key": "srpHeader",
+    "kind": "boolean",
+    "group": "options",
+    "label": {
+      "th": "ด้านหลังสูงเป็นป้ายหัว",
+      "en": "Back stays full height as a header"
+    }
+  },
+  "hangFromFold": {
+    "key": "hangFromFold",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ระยะรูแขวนจากรอยพับ",
+      "en": "Hang hole below the fold"
+    },
+    "min": 8,
+    "max": 60,
+    "step": 0.5
+  },
+  "pocketDepth": {
+    "key": "pocketDepth",
+    "kind": "length",
+    "group": "options",
+    "label": {
+      "th": "ความลึกกระเป๋า",
+      "en": "Pocket depth"
+    },
+    "min": 40,
+    "max": 200,
+    "step": 1
+  },
+  "spine": {
+    "key": "spine",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "ความหนาสันแฟ้ม",
+      "en": "Spine"
+    },
+    "min": 0,
+    "max": 30,
+    "step": 0.5
+  },
+  "closureRigid": {
+    "key": "closureRigid",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "การปิดกล่อง",
+      "en": "Closure"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "magnetic",
+        "label": {
+          "th": "แม่เหล็ก",
+          "en": "Magnetic"
+        }
+      },
+      {
+        "value": "ribbon",
+        "label": {
+          "th": "ริบบิ้น",
+          "en": "Ribbon"
+        }
+      }
+    ]
   }
 }

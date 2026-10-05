@@ -138,12 +138,14 @@ export const flatShape: BodyModule = {
   build(ctx, cfg, parts) {
     const shape = cfg.shape as Shape;
     const holes = holesOf(ctx, parts);
-    return flatDieline(
-      ctx.styleId,
-      outlineOf(shape, ctx.v),
-      shape === "tag" ? "tag" : "label",
-      holes.length ? { holes } : {},
+    const outline = outlineOf(shape, ctx.v);
+    const marks = parts.features.flatMap((f) =>
+      f.def.slot === "feature" ? (f.def.flatMarks?.(ctx, f.cfg, outline) ?? []) : [],
     );
+    return flatDieline(ctx.styleId, outline, shape === "tag" ? "tag" : "label", {
+      ...(holes.length ? { holes } : {}),
+      ...(marks.length ? { marks } : {}),
+    });
   },
 };
 

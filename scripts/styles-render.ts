@@ -75,7 +75,14 @@ function render(out: string) {
   const version = JSON.parse(readFileSync(join(PACKAGE, "package.json"), "utf8")).version as string;
   const entries = [];
   for (const recipe of ALL_RECIPES as readonly StyleRecipe[]) {
-    const materialId = REFERENCE_BY_CATEGORY[recipe.category][0];
+    // The category's first board; a rigid-only recipe (U3.4 wave 2) on the rigid reference board, as
+    // the gates fold it. ⚠ Some wave-1 recipes render on a board they do not allow (tags and cards
+    // on label film, the roll-end tray on E flute) — kept until a deliberate re-render (PROGRESS).
+    const boards = REFERENCE_BY_CATEGORY[recipe.category];
+    const rigid = recipe.materials.every((k) => k === "rigid");
+    const materialId = rigid
+      ? (Object.keys(REFERENCE_MATERIALS).find((id) => REFERENCE_MATERIALS[id].kind === "rigid") ?? boards[0])
+      : boards[0];
     const material = REFERENCE_MATERIALS[materialId];
     for (const variant of variantsOf(recipe)) {
       const words = describeVariant(recipe, variant);

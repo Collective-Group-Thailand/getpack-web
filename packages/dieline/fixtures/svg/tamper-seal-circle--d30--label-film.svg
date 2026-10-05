@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="40mm" viewBox="0 0 40 40" data-style="tamper-seal-circle">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M35 20 A15 15 0 0 1 20 35"/><path d="M20 35 A15 15 0 0 1 5 20"/><path d="M5 20 A15 15 0 0 1 20 5"/><path d="M20 5 A15 15 0 0 1 35 20"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"><path d="M33.729 23.826 L30.787 23.24"/><path d="M30.084 30.355 L28.417 27.86"/><path d="M23.248 33.844 L22.662 30.902"/><path d="M15.597 33.614 L16.182 30.672"/><path d="M9.318 29.594 L11.813 27.927"/><path d="M6.041 22.67 L8.983 22.085"/><path d="M6.501 15.019 L9.443 15.604"/><path d="M10.896 8.991 L12.563 11.485"/><path d="M17.908 5.926 L18.493 8.868"/><path d="M25.559 6.616 L24.974 9.558"/><path d="M31.336 11.386 L28.842 13.052"/><path d="M34.189 18.486 L31.247 19.071"/></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"></g>
+</svg>

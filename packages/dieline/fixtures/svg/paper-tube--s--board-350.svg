@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="595.617mm" height="160mm" viewBox="0 0 595.617 160" data-style="paper-tube">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M5 5 L204.909 5"/><path d="M204.909 5 L204.909 155"/><path d="M204.909 155 L5 155"/><path d="M5 155 L5 5"/><path d="M224.909 5 L429.217 5"/><path d="M429.217 5 L429.217 55"/><path d="M429.217 55 L224.909 55"/><path d="M224.909 55 L224.909 5"/><path d="M509.217 35 A30 30 0 0 1 479.217 65"/><path d="M479.217 65 A30 30 0 0 1 449.217 35"/><path d="M449.217 35 A30 30 0 0 1 479.217 5"/><path d="M479.217 5 A30 30 0 0 1 509.217 35"/><path d="M590.617 35.7 A30.7 30.7 0 0 1 559.917 66.4"/><path d="M559.917 66.4 A30.7 30.7 0 0 1 529.217 35.7"/><path d="M529.217 35.7 A30.7 30.7 0 0 1 559.917 5"/><path d="M559.917 5 A30.7 30.7 0 0 1 590.617 35.7"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"></g>
+</svg>

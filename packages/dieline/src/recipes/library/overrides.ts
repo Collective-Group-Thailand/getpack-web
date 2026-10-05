@@ -19,6 +19,7 @@ import telescope from "./overrides/telescope.json" with { type: "json" };
 import pillow from "./overrides/pillow.json" with { type: "json" };
 import hangTag from "./overrides/hang-tag.json" with { type: "json" };
 import band from "./overrides/band.json" with { type: "json" };
+import hexagonal from "./overrides/hexagonal.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -49,4 +50,5 @@ export const OVERRIDE_RECIPES: readonly StyleRecipe[] = [
   pillow,
   hangTag,
   band,
+  hexagonal,
 ] as unknown as StyleRecipe[];

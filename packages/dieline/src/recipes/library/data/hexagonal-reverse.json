@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "id": "hexagonal-reverse",
+  "base": "PK-SP-03",
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องหกเหลี่ยม ฝาเสียบสลับ",
+    "en": "Hexagonal reverse tuck box"
+  },
+  "description": {
+    "th": "กล่องหกเหลี่ยม ฝาบนและฝาล่างพับจากด้านตรงข้ามกัน",
+    "en": "A hexagonal box whose top and bottom lids hinge on opposite sides"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    "side",
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 400
+    },
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "tuckCorners",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "side-1",
+          "label": {
+            "th": "ด้านหน้า",
+            "en": "Front"
+          }
+        },
+        {
+          "value": "lid",
+          "label": {
+            "th": "บนฝา",
+            "en": "Lid top"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "side": 50,
+    "height": 120,
+    "tuckCorners": "rounded",
+    "glueSide": "left",
+    "grain": "across",
+    "window": "none",
+    "windowPanel": "side-1",
+    "windowWidth": 24,
+    "windowHeight": 30,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 4
+  },
+  "presets": [
+    {
+      "id": "tea",
+      "label": {
+        "th": "ชา ด้าน 40 สูง 100",
+        "en": "Tea, side 40 × 100"
+      },
+      "values": {
+        "side": 40,
+        "height": 100
+      }
+    },
+    {
+      "id": "gift",
+      "label": {
+        "th": "ของขวัญ ด้าน 60 สูง 150",
+        "en": "Gift, side 60 × 150"
+      },
+      "values": {
+        "side": 60,
+        "height": 150
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "with": {
+      "dims": {
+        "panel": "side + t * tan(pi / 6)",
+        "depth": "height + 2 * t",
+        "glue": "glueWidth ?? glueWidthFor(panel)"
+      },
+      "panels": [
+        {
+          "id": "side-1",
+          "label": "front",
+          "width": "panel"
+        },
+        {
+          "id": "side-2",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-3",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-4",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-5",
+          "label": "side",
+          "width": "panel"
+        },
+        {
+          "id": "side-6",
+          "label": "side",
+          "width": "panel"
+        }
+      ],
+      "depth": "depth",
+      "glue": "glue",
+      "glueRight": "glueSide == 'right'",
+      "grain": "side-1",
+      "root": "side-1",
+      "turn": 60
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "polygonTuckLid"
+    },
+    "bottom": {
+      "module": "polygonTuckLid",
+      "with": {
+        "panel": 3
+      }
+    }
+  },
+  "constraints": [
+    {
+      "id": "hexagonal.tuck_depth",
+      "code": "tuck.too_deep",
+      "severity": "error",
+      "param": "tuckDepth",
+      "require": "(tuckDepth ?? tuckDepthFor(2 * side)) < height - 5",
+      "message": {
+        "th": "ลิ้นเสียบลึกเกินความสูงกล่อง",
+        "en": "The tuck is deeper than the box is tall"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "2 * side",
+    "width": "sqrt(3) * side",
+    "height": "height"
+  },
+  "variant": {
+    "tuck_top": "reverse_tuck"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "side-1"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ]
+}

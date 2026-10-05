@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "id": "center-seal-pouch",
+  "base": "PK-PB-03",
+  "variants": {
+    "pouch_feat": {
+      "none": {
+        "pouchFeatures": "none"
+      },
+      "hang_hole": {
+        "pouchFeatures": "hang_hole"
+      },
+      "tear_notch": {
+        "pouchFeatures": "tear_notch"
+      },
+      "window": {
+        "pouchFeatures": "window"
+      },
+      "zipper": {
+        "pouchFeatures": "zipper"
+      },
+      "hang_hole+tear_notch": {
+        "pouchFeatures": "hang_hole+tear_notch"
+      },
+      "hang_hole+window": {
+        "pouchFeatures": "hang_hole+window"
+      },
+      "hang_hole+zipper": {
+        "pouchFeatures": "hang_hole+zipper"
+      },
+      "tear_notch+window": {
+        "pouchFeatures": "tear_notch+window"
+      },
+      "tear_notch+zipper": {
+        "pouchFeatures": "tear_notch+zipper"
+      },
+      "window+zipper": {
+        "pouchFeatures": "window+zipper"
+      },
+      "hang_hole+tear_notch+window": {
+        "pouchFeatures": "hang_hole+tear_notch+window"
+      },
+      "hang_hole+tear_notch+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+zipper"
+      },
+      "hang_hole+window+zipper": {
+        "pouchFeatures": "hang_hole+window+zipper"
+      },
+      "tear_notch+window+zipper": {
+        "pouchFeatures": "tear_notch+window+zipper"
+      },
+      "hang_hole+tear_notch+window+zipper": {
+        "pouchFeatures": "hang_hole+tear_notch+window+zipper"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "ซองซีลกลางหลัง (ทรงหมอน)",
+    "en": "Centre-seal (pillow) pouch"
+  },
+  "description": {
+    "th": "ซองฟิล์มพับรอบ ซีลตะเข็บกลางด้านหลัง ซีลบนและล่าง",
+    "en": "A film web folded round and sealed down the centre of the back, then top and bottom"
+  },
+  "materials": ["flexible"],
+  "params": [
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 500
+    },
+    {
+      "ref": "centerSeal",
+      "omit": ["when"]
+    },
+    "sealWidth",
+    "pouchFeatures",
+    {
+      "ref": "windowWidth",
+      "omit": ["when"]
+    },
+    {
+      "ref": "windowHeight",
+      "omit": ["when"]
+    }
+  ],
+  "defaults": {
+    "pouchType": "center_seal",
+    "width": 140,
+    "length": 220,
+    "sealWidth": 8,
+    "pouchFeatures": "none",
+    "windowWidth": 50,
+    "windowHeight": 60,
+    "centerSeal": 10
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 100 × 160",
+        "en": "S 100 × 160"
+      },
+      "values": {
+        "width": 100,
+        "length": 160
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 140 × 220",
+        "en": "M 140 × 220"
+      },
+      "values": {
+        "width": 140,
+        "length": 220
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 180 × 280",
+        "en": "L 180 × 280"
+      },
+      "values": {
+        "width": 180,
+        "length": 280
+      }
+    }
+  ],
+  "body": {
+    "module": "pouchWeb"
+  }
+}

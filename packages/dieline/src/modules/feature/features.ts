@@ -11,7 +11,8 @@ export const windowFeature: FeatureModule = {
   id: "window",
   slot: "feature",
   status: "implemented",
-  fits: ["tube", "special"],
+  // On a flat body (the SOS bag's web) the body cuts the hole; the feature checks its margins.
+  fits: ["tube", "special", "flat"],
   label: t("หน้าต่าง", "Window"),
   params: ["window", "windowPanel", "windowWidth", "windowHeight", "windowOffsetX", "windowOffsetY", "windowRadius"],
   processes: ["window_patching"],

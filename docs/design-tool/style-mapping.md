@@ -323,6 +323,95 @@ Not drawn, and why:
 - **PK-SP-02** — `window` = top_window: the gable roof carries the handle, there is no top panel.
 - **PK-TG-01** — `shape_flat` = custom_path with a euro slot or sombrero: a 32 mm slot does not fit inside an arbitrary outline (round hole only).
 
+### Wave 2 coverage (U3.4)
+
+**43 of the 49 wave-2 bases have engine recipes; 283 of the master's 331 variants are drawn**
+(folding carton 105 / 137, inserts 8 / 8, corrugated 49 / 49, rigid 60 / 74, flexible and bags 51 / 52,
+labels 6 / 6, tags and sleeves 4 / 5). With wave 1, **84 bases and 751 of 909 variants**. Every drawn
+variant passes the variant gate and, when it folds, the fold gate at its minimum, typical and maximum
+sizes; rigid-only recipes are folded on the rigid reference board. All new names and descriptions are
+`pending` review (D-212); no industry codes are shown for the new bases (D-211).
+
+| Base | Name | Category | Master variants | Drawn | Not drawn | Recipes |
+| --- | --- | --- | --- | --- | --- | --- |
+| PK-TE-03 | Double-wall tuck-front carton | folding_carton | 6 | 0 | 6 | — |
+| PK-FT-02 | Flip-top with extended dust flaps | folding_carton | 10 | 10 | 0 | `ft2-tuck`, `ft2-snap`, `ft2-crash`, `ft2-seal`, `ft2-fourflap` |
+| PK-DS-02 | Tear-away display carton | folding_carton | 20 | 20 | 0 | `tear-display-tuck`, `tear-display-snap`, `tear-display-crash`, `tear-display-seal`, `tear-display-fourflap` |
+| PK-DS-03 | Auto-bottom display with raised back | folding_carton | 3 | 2 | 1 | `display-raised-back` |
+| PK-SP-03 | Hexagonal carton | folding_carton | 12 | 6 | 6 | `hexagonal`, `hexagonal-reverse` |
+| PK-SP-05 | Triangular prism carton | folding_carton | 12 | 12 | 0 | `triangular` |
+| PK-SP-06 | Bottle carrier with handle | folding_carton | 6 | 6 | 0 | `bottle-carrier` |
+| PK-SP-07 | Cake box | folding_carton | 9 | 2 | 7 | `cake-box` |
+| PK-SP-08 | Food pail / noodle box | folding_carton | 3 | 0 | 3 | — |
+| PK-SP-09 | Clamshell burger box | folding_carton | 1 | 0 | 1 | — |
+| PK-SP-10 | Food boat tray | folding_carton | 1 | 1 | 0 | `food-boat` |
+| PK-SP-12 | Presentation folder | folding_carton | 2 | 2 | 0 | `presentation-folder` |
+| PK-SP-13 | Paperboard envelope / wallet | folding_carton | 2 | 2 | 0 | `board-envelope` |
+| PK-IN-02 | Bottle-neck insert | insert | 1 | 1 | 0 | `neck-insert` |
+| PK-CS-05 | Overlap slotted container | corrugated | 3 | 3 | 0 | `osc` |
+| PK-CT-03 | Design-style telescope (double cover) | corrugated | 3 | 3 | 0 | `design-telescope` |
+| PK-CF-04 | Book wrap folder | corrugated | 2 | 2 | 0 | `book-wrap` |
+| PK-CF-07 | Shoe box | corrugated | 2 | 2 | 0 | `shoe-box` |
+| PK-CZ-01 | Corrugated slide box | corrugated | 2 | 2 | 0 | `slide-corr` |
+| PK-CG-01 | Corrugated crash-lock bottom box | corrugated | 9 | 9 | 0 | `rsc-crash` |
+| PK-CG-02 | Corrugated carry box with handle | corrugated | 1 | 1 | 0 | `gable-carry-corr` |
+| PK-CD-01 | Shelf-ready tray with tear-off top | corrugated | 6 | 6 | 0 | `srp-tray` |
+| PK-CI-03 | Corner and edge protector | insert | 1 | 1 | 0 | `edge-protector` |
+| PK-CI-04 | Bottle shipper with cells | insert | 6 | 6 | 0 | `bottle-shipper` |
+| PK-RG-01 | Rigid lid and base | rigid | 24 | 16 | 8 | `rigid-lid-base` |
+| PK-RG-02 | Rigid shoulder-neck box | rigid | 2 | 2 | 0 | `rigid-shoulder-neck` |
+| PK-RG-03 | Rigid book-style box | rigid | 18 | 18 | 0 | `rigid-book` |
+| PK-RG-04 | Collapsible rigid box | rigid | 6 | 0 | 6 | — |
+| PK-RG-05 | Rigid drawer box | rigid | 4 | 4 | 0 | `rigid-drawer` |
+| PK-RG-06 | Rigid hinged-lid box | rigid | 18 | 18 | 0 | `rigid-hinged` |
+| PK-RG-07 | Paper tube / cylinder | rigid | 2 | 2 | 0 | `paper-tube` |
+| PK-PB-03 | Centre-seal (pillow) pouch | flexible | 16 | 16 | 0 | `center-seal-pouch` |
+| PK-PB-04 | Flat-bottom box pouch | flexible | 16 | 16 | 0 | `flat-bottom-pouch` |
+| PK-PB-05 | Side-gusset bag | flexible | 16 | 16 | 0 | `side-gusset-bag` |
+| PK-PB-07 | Bubble mailer | flexible | 1 | 1 | 0 | `bubble-mailer` |
+| PK-PG-02 | SOS paper bag | flexible | 3 | 2 | 1 | `sos-bag` |
+| PK-LA-04 | Tamper-evident seal | label | 5 | 5 | 0 | `tamper-seal-rect`, `tamper-seal-rounded`, `tamper-seal-circle`, `tamper-seal-oval`, `tamper-seal-custom` |
+| PK-TG-03 | Cup carrier | tag_sleeve | 1 | 0 | 1 | — |
+| PK-TE-04 | Tuck-end with integral partition | folding_carton | 4 | 0 | 4 | — |
+| PK-TE-05 | Tamper-evident tuck-end | folding_carton | 20 | 20 | 0 | `te-tamper-tuck`, `te-tamper-snap`, `te-tamper-crash`, `te-tamper-seal`, `te-tamper-fourflap` |
+| PK-TR-05 | Lock-corner tray with hinged lid | folding_carton | 6 | 4 | 2 | `tray-lid-lock` |
+| PK-SP-16 | Lock-corner food box with window lid | folding_carton | 3 | 1 | 2 | `food-box-lock` |
+| PK-SP-18 | Tall bottle carton with neck lock | folding_carton | 12 | 12 | 0 | `bottle-neck-carton` |
+| PK-SP-19 | Dispenser carton | folding_carton | 5 | 5 | 0 | `dispenser-tuck`, `dispenser-snap`, `dispenser-crash`, `dispenser-seal`, `dispenser-fourflap` |
+| PK-CF-09 | Five-panel folder | corrugated | 3 | 3 | 0 | `five-panel-folder` |
+| PK-CF-10 | Self-seal e-commerce mailer | corrugated | 12 | 12 | 0 | `ecom-mailer` |
+| PK-CG-03 | Tape-free shipping box | corrugated | 6 | 6 | 0 | `tape-free-box` |
+| PK-LA-05 | Neck collar label | label | 1 | 1 | 0 | `neck-collar` |
+| PK-TG-04 | Bag header card | tag_sleeve | 4 | 4 | 0 | `header-card` |
+
+Not drawn because it cannot be made (18):
+
+- **PK-DS-03** — `window` = top_window: an open display has no top panel.
+- **PK-SP-03** — `tuck_top` = airplane_tuck or seal (× 3 windows): a hexagon's end is a polygon lid on one panel; airplane and seal ends are four-panel closures. Straight and reverse polygon tucks are drawn.
+- **PK-TR-05** — `window` = front_window (× 2 inserts): the tuck-front lid's front flap covers the front wall.
+- **PK-RG-01** — `window` = front_window (× 2 lid depths × 2 inserts × 2 thumbs): the lid covers the base's front (as PK-LB-01).
+- **PK-PG-02** — `window` = top_window: a bag has no top panel.
+
+Not drawn yet — makeable, waiting for the work named (30):
+
+- **PK-TE-03** (6) — as drafted, a double-wall tray with a tuck-front lid is the roll-end tray (PK-TR-04): the back wall carries the lid, so it cannot roll over. Prepress to confirm the intended construction before a recipe is written.
+- **PK-TE-04** (4) — needs an integral divider module (a fifth panel folded in as a partition).
+- **PK-SP-08** (3) — needs tapered (trapezoid) tube walls for the pail.
+- **PK-SP-09** (1) — with straight walls it is the six-corner tray (PK-TR-02); needs sloped clamshell walls and a front lock.
+- **PK-TG-03** (1) — needs a carrier construction with a handle (a holder without one is not a carrier).
+- **PK-RG-04** (6) — needs a collapsible rigid construction (hinged walls that fold flat).
+- **PK-SP-07** (7) — a front window and side handles sit under the six-corner lid's lips; both need positions below the lip.
+- **PK-SP-16** (2) — the lid's ears line the side walls where hand holes would go; needs handle positions clear of the ears.
+
+New modules: `osc`, `displayTop`, `coverFlaps` (closures); `trayWindow`, `securityCuts`, `neckHole`,
+`tearStrip`, `adhesiveStrip`, `dispenser`, `tearLine`, `tamperTuck`, `partitionInsert`, `neckLock`
+(features); `foldedCard`, `presentationFolder`, `envelope`, `paperTube` (bodies); `rigidCase`,
+`shoulderNeck` (piece sets). Extended: `flipTop` (`extended` wings), `polygonTuckLid` (any n, either
+panel, a lid window), `hingedLid` (a lid window), `lidAndBase` (inserts), `paperBag` (`sos`, a front
+window), `pouchWeb` (features on side-by-side webs, `flat_bottom`), `telescopeLid` (a bottom cover),
+piece placement (`under`, `offset`). ⚠ Every new construction carries its "to be confirmed by
+Prepress" note in its module's documentation.
+
 ## 4. Patterns the engine does not draw
 
 For these, prepress supplies the die file through the drawing job's upload (admin prepress, F2 2.4)
