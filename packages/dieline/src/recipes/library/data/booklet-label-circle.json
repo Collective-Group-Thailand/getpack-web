@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "booklet-label-circle",
+  "base": "PK-LA-06",
+  "variant": {
+    "shape_flat": "circle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากเล่มลอกเปิด วงกลม",
+    "en": "Peel-back booklet label, circle"
+  },
+  "description": {
+    "th": "ฉลากหลายชั้น ชั้นบนเป็นเล่มพับลอกเปิดอ่านได้และปิดกลับได้",
+    "en": "A multi-ply label whose top ply is a folded booklet that peels open to read and reseals"
+  },
+  "materials": ["label"],
+  "params": ["diameter"],
+  "defaults": {
+    "diameter": 50
+  },
+  "presets": [
+    {
+      "id": "d30",
+      "label": {
+        "th": "⌀ 30",
+        "en": "⌀ 30"
+      },
+      "values": {
+        "diameter": 30
+      }
+    },
+    {
+      "id": "d50",
+      "label": {
+        "th": "⌀ 50",
+        "en": "⌀ 50"
+      },
+      "values": {
+        "diameter": 50
+      }
+    },
+    {
+      "id": "d80",
+      "label": {
+        "th": "⌀ 80",
+        "en": "⌀ 80"
+      },
+      "values": {
+        "diameter": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "circle"
+    }
+  },
+  "features": [
+    {
+      "module": "bookletHinge"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="175.08mm" height="115mm" viewBox="0 0 175.08 115" data-style="shrink-sleeve">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M5 5 L170.08 5"/><path d="M170.08 5 L170.08 110"/><path d="M170.08 110 L5 110"/><path d="M5 110 L5 5"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M162.58 5.5 L169.58 5.5"/><path d="M169.58 5.5 L169.58 109.5"/><path d="M169.58 109.5 L162.58 109.5"/><path d="M162.58 109.5 L162.58 5.5"/></g>
+</svg>

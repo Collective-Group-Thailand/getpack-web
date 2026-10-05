@@ -521,3 +521,19 @@ Sources: `docs/prompts/U3-style-library.md` §U3.4; `style-library-program.md` �
 - **Row 8:** no web change.
 - **The 881 milestone:** 751 drawn. See the note above the table.
 
+
+## U3.4 wave 3 — 2026-10-06
+
+Sources: `docs/prompts/U3-style-library.md` §U3.4 (wave 3: 15 bases, 51 variants, cumulative 105 / ≈ 960). Evidence from `main` at `c1f8967` (wave 2 merged: 84 / 90 bases, 751 / 909 variants). Modules still `planned`: `ngonTube` (a plain tube with `turn` covers it), `taperedPail`, `petal`, `dustFlapLock`.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Every wave-3 base has engine recipes | missing | 0 of 15 | **Over existing modules**: SP-04 octagon (8-panel tube, n-gon lid; straight and reverse), SL-04 sleeve with one hinged tuck lid, CB-01 bulk bin (heavy slotted body with a telescope lid), CB-03 pallet sleeve with cap and base tray (design-style telescope with hand holes), PB-08 spouted pouch, LA-06 booklet labels, LA-07 shrink sleeve. **New constructions**: RG-08 double-door rigid case, DS-04 easel-back display, SP-14 petal closure, SP-15 pyramid, CD-02 floor display (body, shelves, header). **Deferred unless they pass the gates**: SP-11 cone (tapered walls, as SP-08), SP-17 hot-dog tray (a cradle cut into the end walls' free edges, which trays cannot shape yet), CB-02 octagonal bulk bin (an eight-sided flap bottom) |
+| 2–6 | Variants on master axes; modules first; gates; names; mapping, render, counts | missing | wave-2 machinery in place | as wave 2 |
+| 7–8 | Publishable by the API; real API | met (API-side) / no web change | D-243 | — |
+
+**Outcome (2026-10-06):**
+- **Row 1:** 12 of 15 bases. SP-11, SP-17 and CB-02 are deferred with the construction each needs.
+- **Rows 2–6 met:** 45 of 51 variants drawn (2 cannot be made, 4 deferred); new modules implemented; gates pass; words pending; mapping and manifest updated.
+- **Rows 7–8:** API-side.
+

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "shrink-sleeve",
+  "base": "PK-LA-07",
+  "category": "flat",
+  "name": {
+    "th": "ฉลากฟิล์มหด",
+    "en": "Shrink sleeve label"
+  },
+  "description": {
+    "th": "ฉลากฟิล์มหดรอบภาชนะ ความกว้างตามเส้นรอบวงที่ใหญ่สุดบวกตะเข็บ ความสูงเผื่อการหด",
+    "en": "A shrink film sleeve: across, the largest circumference and the seam; tall, the label plus its shrink allowance"
+  },
+  "materials": ["flexible", "label"],
+  "params": [
+    {
+      "ref": "diameter",
+      "min": 20,
+      "max": 200
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 300
+    },
+    "sealWidth",
+    "shrinkAllowance"
+  ],
+  "defaults": {
+    "diameter": 70,
+    "height": 150,
+    "sealWidth": 8,
+    "shrinkAllowance": 5
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "⌀ 50 × 100",
+        "en": "⌀ 50 × 100"
+      },
+      "values": {
+        "diameter": 50,
+        "height": 100
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "⌀ 70 × 150",
+        "en": "⌀ 70 × 150"
+      },
+      "values": {
+        "diameter": 70,
+        "height": 150
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "⌀ 90 × 200",
+        "en": "⌀ 90 × 200"
+      },
+      "values": {
+        "diameter": 90,
+        "height": 200
+      }
+    }
+  ],
+  "body": {
+    "module": "shrinkSleeve"
+  }
+}

@@ -579,5 +579,90 @@
         }
       }
     ]
+  },
+  "spout": {
+    "key": "spout",
+    "kind": "boolean",
+    "group": "options",
+    "label": {
+      "th": "จุกเทแบบมีฝา",
+      "en": "Spout fitment"
+    }
+  },
+  "shrinkAllowance": {
+    "key": "shrinkAllowance",
+    "kind": "number",
+    "group": "options",
+    "label": {
+      "th": "เผื่อการหด (%)",
+      "en": "Shrink allowance (%)"
+    },
+    "min": 0,
+    "max": 20,
+    "step": 0.5
+  },
+  "shelves": {
+    "key": "shelves",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "จำนวนชั้น",
+      "en": "Shelves"
+    },
+    "options": [
+      {
+        "value": "1",
+        "label": {
+          "th": "1 ชั้น",
+          "en": "1 shelf"
+        }
+      },
+      {
+        "value": "2",
+        "label": {
+          "th": "2 ชั้น",
+          "en": "2 shelves"
+        }
+      },
+      {
+        "value": "3",
+        "label": {
+          "th": "3 ชั้น",
+          "en": "3 shelves"
+        }
+      },
+      {
+        "value": "4",
+        "label": {
+          "th": "4 ชั้น",
+          "en": "4 shelves"
+        }
+      }
+    ]
+  },
+  "header": {
+    "key": "header",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "ป้ายหัว",
+      "en": "Header"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "card",
+        "label": {
+          "th": "มีป้ายหัว",
+          "en": "Header card"
+        }
+      }
+    ]
   }
 }

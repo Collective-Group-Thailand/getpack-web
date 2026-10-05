@@ -1,0 +1,111 @@
+{
+  "definition": "19f650924a94ef",
+  "s · board-350": {
+    "build": "1fb86112f66a23",
+    "hinges": "05baa4f1914fbb",
+    "validate": "15202279b28c9e",
+    "closed": "10600dfcc8b4e3"
+  },
+  "s · board-450": {
+    "build": "1fb86112f66a23",
+    "hinges": "05baa4f1914fbb",
+    "validate": "15202279b28c9e",
+    "closed": "10600dfcc8b4e3"
+  },
+  "m · board-350": {
+    "build": "1df600a2d01c74",
+    "hinges": "1d9801be5485fb",
+    "validate": "15202279b28c9e",
+    "closed": "15490dbcd6a5b8"
+  },
+  "m · board-450": {
+    "build": "1df600a2d01c74",
+    "hinges": "1d9801be5485fb",
+    "validate": "15202279b28c9e",
+    "closed": "15490dbcd6a5b8"
+  },
+  "l · board-350": {
+    "build": "1c850d312d1823",
+    "hinges": "1d9801be5485fb",
+    "validate": "15202279b28c9e",
+    "closed": "16b46438ec0cc6"
+  },
+  "l · board-450": {
+    "build": "1c850d312d1823",
+    "hinges": "1d9801be5485fb",
+    "validate": "15202279b28c9e",
+    "closed": "16b46438ec0cc6"
+  },
+  "s · board-350 · length=min": {
+    "build": "0ad4a41acf50eb",
+    "hinges": "1df410cb2ec66f",
+    "validate": "15202279b28c9e",
+    "closed": "0d753fed837ce5"
+  },
+  "s · board-350 · length=max": {
+    "build": "142e5ce2352a25",
+    "hinges": "163bfb0a372466",
+    "validate": "15202279b28c9e",
+    "closed": "0e552be1f4b14d"
+  },
+  "s · board-350 · length<min": {
+    "build": "1b9595b68a4ed4",
+    "hinges": "186e49b0f5f374",
+    "validate": "0481af8584fc69",
+    "closed": "0123326048f4b0"
+  },
+  "s · board-350 · length>max": {
+    "build": "130825f3c88a78",
+    "hinges": "1d46193ee54aad",
+    "validate": "0746f84b875b12",
+    "closed": "0f1c80051161c3"
+  },
+  "s · board-350 · height=min": {
+    "build": "19693b2fa1ef56",
+    "hinges": "141feb8b85ea70",
+    "validate": "15202279b28c9e",
+    "closed": "1961802806e924"
+  },
+  "s · board-350 · height=max": {
+    "build": "18360951265901",
+    "hinges": "18d0b78dc6c6c9",
+    "validate": "15202279b28c9e",
+    "closed": "187e1945c9943b"
+  },
+  "s · board-350 · height<min": {
+    "build": "0f42dcaaa1300e",
+    "hinges": "1f70f16f57f788",
+    "validate": "16b9f2ce53c341",
+    "closed": "0d5267275c5112"
+  },
+  "s · board-350 · height>max": {
+    "build": "09f08dd038eb5e",
+    "hinges": "16f4a6dcc60b60",
+    "validate": "14d7671a6d7dfb",
+    "closed": "00b6b40380d6da"
+  },
+  "s · board-350 · hangHole=euro": {
+    "build": "1c91078edee7ec",
+    "hinges": "05baa4f1914fbb",
+    "validate": "15202279b28c9e",
+    "closed": "10600dfcc8b4e3"
+  },
+  "s · board-350 · hangHole=round": {
+    "build": "15f7be35e2cd9c",
+    "hinges": "05baa4f1914fbb",
+    "validate": "15202279b28c9e",
+    "closed": "10600dfcc8b4e3"
+  },
+  "s · board-350 · hangHole=sombrero": {
+    "build": "01ab74d5933cc0",
+    "hinges": "05baa4f1914fbb",
+    "validate": "15202279b28c9e",
+    "closed": "10600dfcc8b4e3"
+  },
+  "s · board-350 · hangHole=none": {
+    "build": "1fb86112f66a23",
+    "hinges": "05baa4f1914fbb",
+    "validate": "15202279b28c9e",
+    "closed": "10600dfcc8b4e3"
+  }
+}

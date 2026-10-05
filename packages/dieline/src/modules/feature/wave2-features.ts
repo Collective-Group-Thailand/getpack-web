@@ -398,3 +398,54 @@ export const neckLock: FeatureModule = {
     return { ...out, attachments };
   },
 };
+
+/** Where the vertical line x crosses a closed outline: the lowest and highest y, or null. */
+function chord(pts: Pt[], x: number): [number, number] | null {
+  const ys: number[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const [a, b] = [pts[i], pts[(i + 1) % pts.length]];
+    if ((a[0] - x) * (b[0] - x) <= 0 && a[0] !== b[0]) ys.push(a[1] + ((x - a[0]) / (b[0] - a[0])) * (b[1] - a[1]));
+  }
+  return ys.length >= 2 ? [Math.min(...ys), Math.max(...ys)] : null;
+}
+
+/**
+ * A peel-back booklet label (PK-LA-06): the booklet's pages are glued to the base label along a
+ * hinge strip 6 mm wide at a fifth of the label's width from its left edge, folded there; a peel tab
+ * half-cut at the right edge lifts the top ply to read it and reseals. ⚠ Strip and tab to be
+ * confirmed with the label printer.
+ */
+export const bookletHinge: FeatureModule = {
+  id: "bookletHinge",
+  slot: "feature",
+  status: "implemented",
+  fits: ["flat"],
+  label: t("ฉลากเล่มลอกเปิด (แนวพับ + ลิ้นลอก)", "Peel-back booklet (hinge strip and peel tab)"),
+  params: [],
+  processes: ["label_press"],
+  contributes: { kinds: [], roles: ["glue_area", "crease", "half_cut"] },
+  flatMarks(_ctx, _cfg, outline) {
+    const pts = flattenContour(outline, 0.5);
+    const xs = pts.map((p) => p[0]);
+    const [x0, x1] = [Math.min(...xs), Math.max(...xs)];
+    const at = x0 + (x1 - x0) / 5;
+    const out: Edge[] = [];
+    const a = chord(pts, at);
+    const b = chord(pts, at + 6);
+    if (a && b) {
+      const top = Math.max(a[0], b[0]) + 1;
+      const bottom = Math.min(a[1], b[1]) - 1;
+      if (bottom - top > 4) {
+        out.push(...band(at, at + 6, top, bottom));
+        out.push(line([at + 6, top], [at + 6, bottom], "crease"));
+      }
+    }
+    const c = chord(pts, x1 - 6);
+    if (c) {
+      const cy = (c[0] + c[1]) / 2;
+      const h = Math.min(10, (c[1] - c[0]) / 3);
+      out.push(line([x1 - 6, cy - h / 2], [x1 - 6, cy + h / 2], "half_cut"));
+    }
+    return out;
+  },
+};
