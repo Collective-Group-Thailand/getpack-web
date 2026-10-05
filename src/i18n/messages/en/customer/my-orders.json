@@ -115,7 +115,8 @@
     },
     "samples": "This order's sample",
     "sampleOpen": "Open the sample asked for on {date}",
-    "sampleHold": "This order starts production once you approve the sample"
+    "sampleHold": "This order starts production once you approve the sample",
+    "guarantee": "Our guarantee"
   },
   "tolerance": {
     "title": "Quantity received",

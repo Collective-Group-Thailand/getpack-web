@@ -29,7 +29,10 @@
       "heading": "Company",
       "about": "About Packio",
       "partner": "Become a partner factory",
-      "contact": "Contact us"
+      "contact": "Contact us",
+      "guarantee": "Our guarantee",
+      "network": "Factory network",
+      "reviews": "Customer reviews"
     },
     "legal": {
       "heading": "Legal and privacy",
@@ -67,5 +70,83 @@
     "order_receipt": "Confirm receipt",
     "order_claim": "Report a problem",
     "order_reorder": "Reorder"
+  },
+  "trust": {
+    "guarantee": {
+      "title": "Our guarantee",
+      "intro": "If what you receive has a problem, this is what Packio does, by the kind of problem and how serious it is",
+      "emptyTitle": "The guarantee is not published yet",
+      "emptyBody": "We are preparing it. If an order has a problem, report a claim from its page",
+      "timesTitle": "Time limits",
+      "window": "Report a claim within",
+      "response": "We respond within",
+      "decision": "We decide within",
+      "days": "{count, plural, one {# day} other {# days}} of delivery",
+      "businessDays": "{count, plural, one {# business day} other {# business days}}",
+      "clock": "While we wait for more information from you, the decision clock stops",
+      "matrixTitle": "What we do",
+      "problem": "Problem",
+      "severities": {
+        "minor": "Minor",
+        "major": "Major",
+        "critical": "Critical"
+      },
+      "types": {
+        "damaged": "Damaged",
+        "wrong_spec": "Wrong specification",
+        "print_defect": "Print defect",
+        "quantity_short": "Short quantity",
+        "late": "Late delivery",
+        "other": "Other"
+      },
+      "remedies": {
+        "reprint": "Reprint",
+        "refund": "Refund",
+        "partial_credit": "Partial credit"
+      },
+      "noRemedy": "Case by case",
+      "severityHint": "The team rates the severity from the evidence you send",
+      "evidenceTitle": "Evidence and tolerances",
+      "evidenceBody": "When you report a claim, it tells you the evidence each kind of problem needs, such as photos",
+      "tolerances": "Each order's tolerances (short or over quantity, size variation) are on its quotation and order page",
+      "toOrders": "Go to my orders",
+      "version": "Version {version}, in force from {date}",
+      "link": "Our guarantee"
+    },
+    "network": {
+      "title": "Packio's factory network",
+      "intro": "Your boxes are made by audited partner factories. We do not name them; we publish how they are audited and how the network performs",
+      "emptyTitle": "No network figures yet",
+      "emptyBody": "They will show here when ready",
+      "figuresTitle": "How the network performs",
+      "partners": "Active partner factories",
+      "onTime": "Shipped on time",
+      "firstPass": "Passed QC first time",
+      "pct": "{value, number}%",
+      "window": "Last {days, number} days, as of {date}",
+      "notYet": "Figures not published yet",
+      "notYetBody": "We publish them once at least {factories, number} factories and {jobs, number} completed jobs are in the last {days, number} days, so the figures mean something",
+      "auditTitle": "How factories are audited",
+      "coverageTitle": "What the network makes",
+      "available": "available",
+      "notAvailable": "not yet",
+      "coverageItem": "{name} · {state}",
+      "link": "Factory network"
+    },
+    "reviews": {
+      "title": "Customer reviews",
+      "intro": "Only from customers who received their order",
+      "emptyTitle": "No reviews yet",
+      "emptyBody": "Reviews appear when customers who received their order write one. We never use sample reviews",
+      "average": "{rating} out of 5 · {count, plural, one {# review} other {# reviews}}",
+      "countOnly": "{count, plural, one {# review} other {# reviews}}",
+      "stars": "{rating} stars",
+      "starsCount": "{rating} stars: {count, number}",
+      "listTitle": "All reviews",
+      "reviewHead": "{rating}/5 · {name} · {product} · {date}",
+      "reply": "Packio replied on {date}",
+      "verified": "Verified from a real order",
+      "link": "Customer reviews"
+    }
   }
 }

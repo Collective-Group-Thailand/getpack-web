@@ -31,6 +31,9 @@ export async function SiteFooter() {
       key: "company",
       links: [
         { key: "about", href: "/about" },
+        { key: "guarantee", href: "/guarantee" },
+        { key: "network", href: "/network" },
+        { key: "reviews", href: "/reviews" },
         { key: "partner", href: "/partner-with-us" },
         { key: "contact", href: "/contact" },
       ],

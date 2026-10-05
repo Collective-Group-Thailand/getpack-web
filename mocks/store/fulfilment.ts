@@ -423,6 +423,64 @@ export const storeFulfilmentHandlers = [
     return row ? HttpResponse.json(toClaim(row)) : problem(404, "http.not_found", "ไม่พบเคลมนี้");
   }),
 
+  // store.claims.getTimeline (U2.F4, D-263): what happened, who must act now and by when. The mock
+  // derives it from the claim's status: a day to respond, three to decide (the guarantee's example),
+  // the clock stopped while Packio waits for the customer.
+  http.get("*/v1/store/claims/:claimId/timeline", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const row = claimsOf(customer).find((candidate) => candidate.id === params.claimId);
+    if (!row) return problem(404, "http.not_found", "ไม่พบเคลมนี้");
+    const at = (hours: number) => {
+      const date = new Date(Date.parse(row.submittedAt) + hours * 3_600_000 + 7 * 3_600_000);
+      return `${date.toISOString().slice(0, 19)}+07:00`;
+    };
+    const ORDER = [
+      "submitted",
+      "under_review",
+      "need_info",
+      "factory_review",
+      "approved",
+      "rejected",
+      "resolved",
+      "closed",
+    ] as const;
+    const reached = ORDER.indexOf(row.status as (typeof ORDER)[number]);
+    const events: Schemas["ClaimTimelineEventDto"][] = [{ type: "claim.submitted", at: row.submittedAt }];
+    if (reached >= 1) events.push({ type: "claim.under_review", at: at(4) });
+    if (row.status === "need_info") events.push({ type: "claim.info_requested", at: at(6) });
+    if (["approved", "resolved", "closed"].includes(row.status)) events.push({ type: "claim.approved", at: at(30) });
+    if (row.status === "rejected") events.push({ type: "claim.rejected", at: at(30) });
+    if (["resolved", "closed"].includes(row.status)) events.push({ type: "claim.resolved", at: at(50) });
+    if (row.status === "closed") events.push({ type: "claim.closed", at: at(60) });
+    const decided = ["approved", "rejected", "resolved", "closed"].includes(row.status);
+    const owner: Schemas["ClaimOwner"] =
+      row.status === "need_info"
+        ? "customer"
+        : row.status === "factory_review"
+          ? "factory"
+          : decided
+            ? "none"
+            : "packio";
+    const responseDueAt = at(24);
+    const decisionDueAt = decided || row.status === "need_info" ? null : at(72);
+    const now = Date.now();
+    return HttpResponse.json({
+      claimId: row.id,
+      status: row.status,
+      events,
+      sla: {
+        currentOwner: owner,
+        guaranteeVersionNo: 1,
+        respondedAt: reached >= 1 ? at(4) : null,
+        responseDueAt,
+        responseOverdue: reached < 1 && Date.parse(responseDueAt) < now,
+        decisionDueAt,
+        decisionOverdue: decisionDueAt !== null && Date.parse(decisionDueAt) < now,
+      },
+    } satisfies Schemas["ClaimTimelineDto"]);
+  }),
+
   // store.claims.respondInfo (published, U-F0.2): only while the team is waiting for more.
   http.post("*/v1/store/claims/:claimId/info", async ({ params, request }) => {
     const refused = keyRequired(request);

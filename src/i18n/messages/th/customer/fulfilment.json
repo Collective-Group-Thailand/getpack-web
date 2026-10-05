@@ -228,5 +228,30 @@
     "shipmentNo": "รอบจัดส่ง {shipment}",
     "arrivesBy": "คาดว่าจะได้รับ {date}",
     "delivered": "ส่งถึงเมื่อ {date}"
+  },
+  "claimTimeline": {
+    "title": "สถานะเคลม",
+    "owner": {
+      "packio": "รอทีม Packio",
+      "customer": "รอข้อมูลเพิ่มจากคุณ",
+      "factory": "รอโรงงานตรวจสอบ",
+      "none": "ดำเนินการเสร็จแล้ว"
+    },
+    "responseDue": "ทีมงานตอบกลับภายใน",
+    "responded": "ทีมงานตอบกลับแล้วเมื่อ",
+    "decisionDue": "ตัดสินภายใน",
+    "overdue": "เลยกำหนด",
+    "clockStopped": "การนับเวลาตัดสินหยุดไว้จนกว่าคุณจะส่งข้อมูล",
+    "events": {
+      "submitted": "แจ้งเคลม",
+      "under_review": "ทีมงานกำลังตรวจสอบ",
+      "info_requested": "ขอข้อมูลเพิ่ม",
+      "info_provided": "คุณส่งข้อมูลแล้ว",
+      "approved": "อนุมัติเคลม",
+      "rejected": "ไม่อนุมัติเคลม",
+      "resolved": "ชดเชยแล้ว",
+      "closed": "ปิดเคลม"
+    },
+    "guarantee": "ตามเงื่อนไขการรับประกันฉบับที่ {version}"
   }
 }

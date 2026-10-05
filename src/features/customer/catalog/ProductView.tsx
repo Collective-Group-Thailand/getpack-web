@@ -150,9 +150,7 @@ export async function ProductView({
             {product.templateAvailability === "online_template" ? (
               <Button asChild size="lg" variant="secondary">
                 {/* With the product, so the designer offers its patterns and materials and prices it. */}
-                <Link href={studioHref({ product: product.slug, step: "start" })}>
-                  {t("product.designOnline")}
-                </Link>
+                <Link href={studioHref({ product: product.slug, step: "start" })}>{t("product.designOnline")}</Link>
               </Button>
             ) : null}
             {product.templateAvailability === "drawing" ? (
@@ -164,6 +162,12 @@ export async function ProductView({
               <Link href="/help/chat">{t("product.askCs")}</Link>
             </Button>
           </div>
+          <p className="text-muted mt-3 text-sm">
+            <Icon name="shield" size={14} className="me-1 inline" aria-hidden="true" />
+            <Link href="/guarantee" className="text-primary underline underline-offset-4">
+              {t("product.guarantee")}
+            </Link>
+          </p>
         </div>
       </div>
 

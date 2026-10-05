@@ -80,7 +80,8 @@
       "print_type": "การพิมพ์",
       "pattern": "รูปแบบ"
     },
-    "priceBasisSpecs": "ราคาอ้างอิง: {specs}"
+    "priceBasisSpecs": "ราคาอ้างอิง: {specs}",
+    "guarantee": "Packio รับประกันงาน — ดูว่าเราทำอะไรให้ถ้ามีปัญหา"
   },
   "stock": {
     "minOrder": "สั่งขั้นต่ำ {quantity} {unit}",
