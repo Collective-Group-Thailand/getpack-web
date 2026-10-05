@@ -287,3 +287,15 @@ Measured on a private port (`LHCI_PORT`) against `main` at `c1f8967` built the s
 - **Studio +6,224 B of its own**: the first-visit coach marks and intent picker (same first-visit rule), the guide's "?", the sample design, and the checks' "why" links.
 - Taken back on the way: a header cart-icon animation (2.5 KB on every page, removed), the glossary chip's popover and request client (were loading after hydration), the configurator's defaults seed (server only now).
 - **`pnpm lhci` and parallel worktrees**: two sessions measuring at once both used port 3200, so one measured the other's server (this session's first figures, and possibly the 340,092 recorded for U3.4 wave 2, came from whichever server answered). `scripts/lhci.ts` now refuses a port that already answers and rewrites the configs' URLs to `LHCI_PORT`.
+
+## U5.5 — Packio Assistant (2026-10-06)
+
+Measured with the assistant **built out** (`NEXT_PUBLIC_ASSISTANT` unset — the launch configuration, D-218), private port:
+
+| Page | U5.1 | U5.5 | Ratchet |
+|---|---|---|---|
+| a style page | 272,879 | 273,064 | customer-marketing 273,000 → **273,300** |
+| `/studio/new?…` | 505,412 | 505,649 | studio 505,500 → **505,800** |
+| `/configure/tuck-end-box` | 345,833 | within 346,000 | unchanged |
+
+What remains is copy every zone loads: the assistant's outcome labels (`status`) and its four problem titles. The assistant's own copy is a namespace loaded only in a build that has it, and its button lives in the header's existing client module — a server component's reference to the launcher cost every header page 2.6 KB even behind a false constant, and was moved for that reason.
