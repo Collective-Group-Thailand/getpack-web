@@ -186,7 +186,7 @@ export function AssistantPanel({ signedIn, signInHref }: { signedIn: boolean; si
               {line.outcome !== "answered" ? (
                 <p className={cn("text-xs", line.outcome === "failed" ? "text-danger" : "text-muted")}>
                   {t(`outcomes.${line.outcome}`)}{" "}
-                  <Link href="/account/messages" className="text-primary underline-offset-4 hover:underline">
+                  <Link href="/account/messages" className="text-primary underline underline-offset-4">
                     {t("talkToTeam")}
                   </Link>
                 </p>

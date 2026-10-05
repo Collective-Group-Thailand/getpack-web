@@ -1,7 +1,6 @@
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { AssistantEntry } from "@/features/customer/assistant/AssistantEntry";
 import { AccountButton } from "@/features/customer/auth/AccountButton";
 import { readAccessToken } from "@/lib/auth/session";
 
@@ -11,7 +10,7 @@ import { HeaderSearch } from "@/features/customer/search/HeaderSearch";
 import { categoryHref } from "@/features/customer/catalog/paths";
 
 import { CustomerBell } from "./CustomerBell";
-import { DeferredLocaleMenu, DeferredThemeMenu } from "./DeferredMenus";
+import { DeferredAssistant, DeferredLocaleMenu, DeferredThemeMenu } from "./DeferredMenus";
 import { ProductsMenu } from "./ProductsMenu";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
@@ -104,7 +103,7 @@ export async function SiteHeader() {
             <Link href="/cart" />
           </IconButton>
 
-          <AssistantEntry signedIn={signedIn} signInHref="/sign-in" />
+          <DeferredAssistant signedIn={signedIn} />
           <AccountButton signedIn={signedIn} label={t("nav.account")} />
 
           {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}

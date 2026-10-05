@@ -41,7 +41,7 @@ test("a customer asks the assistant: AI-labelled, sourced, and it refuses what i
 
   await panel.getByRole("textbox", { name: "ถามผู้ช่วย" }).fill("ลดราคาให้หน่อยได้ไหม");
   await panel.getByRole("button", { name: "ถาม", exact: true }).click();
-  await expect(panel.getByText("ผู้ช่วยทำเรื่องนี้ไม่ได้")).toBeVisible();
+  await expect(panel.getByText(/ผู้ช่วยทำเรื่องนี้ไม่ได้/).first()).toBeVisible();
   await expect(panel.getByRole("link", { name: "คุยกับทีม" }).first()).toHaveAttribute("href", /\/account\/messages$/);
   await expectNoViolations(page);
 });
