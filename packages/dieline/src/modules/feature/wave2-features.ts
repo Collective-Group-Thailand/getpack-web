@@ -2,6 +2,8 @@ import { bool, num, str } from "../../params";
 import { ellipse, flattenContour, line, polygon, roundedRectangle } from "../../path";
 import { t, windowHole, windowIssues } from "../../styles/_shared";
 import type { Edge, Face, Pt } from "../../types";
+import { face } from "../../faces";
+import { dividers, partitionStrips } from "../body/partition";
 import type { FeatureModule } from "../types";
 
 /*
@@ -279,5 +281,120 @@ export const tamperTuck: FeatureModule = {
       tuck.marks = [...tuck.marks, ...band(cx - w / 2, cx + w / 2, y0 + (y1 - y0) * 0.3, y0 + (y1 - y0) * 0.7)];
     }
     return out;
+  },
+};
+
+/**
+ * A partition grid inside a box (PK-CI-04 bottle shipper, PK-SP-06 bottle carrier): the strips of
+ * `partitionSet` sized to the inside — `length` − 2 mm along, `width` − 2 mm across, `height` less
+ * four calipers tall — cut with the box and set in it, each at its divider (`partition` = rows ×
+ * columns). ⚠ Clearances to be confirmed by Prepress.
+ */
+export const partitionInsert: FeatureModule = {
+  id: "partitionInsert",
+  slot: "feature",
+  status: "implemented",
+  fits: ["tube"],
+  label: t("ช่องกั้นในกล่อง", "Partition grid inside the box"),
+  params: ["partition"],
+  processes: ["die_cut", "slotter", "hand_assembly"],
+  contributes: { kinds: ["flat"], roles: ["cut"] },
+  constraints: [
+    {
+      id: "partitionInsert.cell",
+      code: "partition.cell_too_small",
+      severity: "error",
+      param: "partition",
+      require: "length / gridCount(partition, 1) >= 25 and width / gridCount(partition, 0) >= 25",
+      message: t("ช่องเล็กเกินไป (อย่างน้อย 25 มม.)", "The cells are too small (25 mm at least)"),
+    },
+  ],
+  pieces(ctx) {
+    const { v, m } = ctx;
+    const [rows, cols] = str(v, "partition", "2x2").split("x").map(Number);
+    const L = num(v, "length", 300) - 2;
+    const W = num(v, "width", 200) - 2;
+    const H = num(v, "height", 100) - 4 * m.caliperMm;
+    return partitionStrips(L, W, H, m.caliperMm + 1, rows, cols, "cells-");
+  },
+  hinges(ctx, cfg) {
+    const { v } = ctx;
+    const [rows, cols] = str(v, "partition", "2x2").split("x").map(Number);
+    const L = num(v, "length", 300) - 2;
+    const W = num(v, "width", 200) - 2;
+    const target = (cfg.target as string) ?? "blank";
+    const roots: Record<string, string> = {};
+    // Standing on the closed bottom (`floor`, default three calipers: its layers and a clearance).
+    const floor = ctx.num((cfg.floor as string) ?? "3 * t");
+    const placement: Record<
+      string,
+      { inside: string; floor: number; rotate?: [number, number, number]; offset: [number, number, number] }
+    > = {};
+    dividers(rows, W).forEach((z, i) => {
+      const id = `cells-long-${i + 1}`;
+      roots[id] = id;
+      placement[id] = { inside: target, floor, offset: [0, 0, z - W / 2] };
+    });
+    dividers(cols, L).forEach((x, i) => {
+      const id = `cells-cross-${i + 1}`;
+      roots[id] = id;
+      placement[id] = { inside: target, floor, rotate: [0, 90, 0], offset: [x - L / 2, 0, 0] };
+    });
+    return { roots, placement };
+  },
+};
+
+/**
+ * A neck lock under the top lid (PK-SP-18): the right panel's dust flap becomes an inner flap the
+ * whole length of the box, with a hole (`neckDiameter`) at its centre that the bottle's neck passes
+ * through, so a tall bottle cannot rock. ⚠ Hole clearance to be confirmed by Prepress.
+ */
+export const neckLock: FeatureModule = {
+  id: "neckLock",
+  slot: "feature",
+  status: "implemented",
+  fits: ["tube"],
+  label: t("ล็อกคอขวด", "Neck lock"),
+  params: ["neckDiameter"],
+  processes: ["die_cut"],
+  contributes: { kinds: ["flap"], roles: ["cut", "crease"] },
+  constraints: [
+    {
+      id: "neckLock.fits",
+      code: "hole.too_large",
+      severity: "error",
+      param: "neckDiameter",
+      require: "neckDiameter < min(length, width) - 12",
+      message: t("รูคอขวดใหญ่เกินขนาดกล่อง", "The neck hole is too large for the box"),
+    },
+  ],
+  wrapClosure: (ctx, _cfg, end, inner) => (c) => {
+    const out = inner(c);
+    const right = c.panels[1];
+    const at = out.attachments.findIndex((a) => a.face.id === `dust-${right.id}-${end}`);
+    if (at < 0) return out;
+    const tc = ctx.m.caliperMm;
+    const reach = ctx.dims.front - 2 - tc;
+    const inset = 2 + tc;
+    const r = num(ctx.v, "neckDiameter", 28) / 2;
+    const cx = (right.x0 + right.x1) / 2;
+    const flap = face(
+      `neck-${end}`,
+      "inner_flap",
+      "flap",
+      polygon(
+        [
+          [right.x0, 0],
+          [right.x0 + inset, -reach],
+          [right.x1 - inset, -reach],
+          [right.x1, 0],
+        ],
+        ["cut", "cut", "cut", "crease"],
+      ),
+      { holes: [ellipse(cx, -reach / 2, r, r)] },
+    );
+    const attachments = [...out.attachments];
+    attachments[at] = { face: flap, span: [right.x0, right.x1] };
+    return { ...out, attachments };
   },
 };

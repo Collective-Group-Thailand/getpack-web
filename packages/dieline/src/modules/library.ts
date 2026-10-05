@@ -1,11 +1,14 @@
 import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
 import { polyMailer } from "./body/poly-mailer";
-import { osc } from "./closure/wave2-closures";
+import { foldedCard } from "./body/wave2-bodies";
+import { displayTop, osc } from "./closure/wave2-closures";
 import {
   adhesiveStrip,
   dispenser,
   neckHole,
+  neckLock,
+  partitionInsert,
   securityCuts,
   tamperTuck,
   tearLine,
@@ -44,4 +47,8 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   dispenser,
   tearLine,
   tamperTuck,
+  partitionInsert,
+  foldedCard,
+  displayTop,
+  neckLock,
 ];

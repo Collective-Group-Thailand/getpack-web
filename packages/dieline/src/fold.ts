@@ -251,6 +251,10 @@ export function foldDieline(d: Dieline, map: HingeMap, progress = 1): Map<string
         const move = translation(dx + slide, dy, dz);
         transforms = new Map([...transforms].map(([id, m]) => [id, multiply(move, m)]));
       }
+      if (rule.offset) {
+        const shift = translation(...rule.offset);
+        transforms = new Map([...transforms].map(([id, m]) => [id, multiply(shift, m)]));
+      }
     }
     placedBounds.set(p.id, boundsOfTransformed(p.faces, transforms));
     for (const [id, m] of transforms) out.set(id, m);

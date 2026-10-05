@@ -106,6 +106,12 @@ import dispenserFourflap from "./data/dispenser-fourflap.json" with { type: "jso
 import tapeFreeBox from "./data/tape-free-box.json" with { type: "json" };
 import srpTray from "./data/srp-tray.json" with { type: "json" };
 import ecomMailer from "./data/ecom-mailer.json" with { type: "json" };
+import bottleShipper from "./data/bottle-shipper.json" with { type: "json" };
+import bottleCarrier from "./data/bottle-carrier.json" with { type: "json" };
+import headerCard from "./data/header-card.json" with { type: "json" };
+import edgeProtector from "./data/edge-protector.json" with { type: "json" };
+import displayRaisedBack from "./data/display-raised-back.json" with { type: "json" };
+import bottleNeckCarton from "./data/bottle-neck-carton.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -223,4 +229,10 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   tapeFreeBox,
   srpTray,
   ecomMailer,
+  bottleShipper,
+  bottleCarrier,
+  headerCard,
+  edgeProtector,
+  displayRaisedBack,
+  bottleNeckCarton,
 ] as unknown as StyleRecipe[];

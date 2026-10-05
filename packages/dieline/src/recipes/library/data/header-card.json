@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "header-card",
+  "base": "PK-TG-04",
+  "variants": {
+    "hang": {
+      "none": {
+        "hangHole": "none"
+      },
+      "euro_slot": {
+        "hangHole": "euro"
+      },
+      "round_hole": {
+        "hangHole": "round"
+      },
+      "sombrero_header": {
+        "hangHole": "sombrero"
+      }
+    }
+  },
+  "category": "flat",
+  "name": {
+    "th": "การ์ดหัวถุง",
+    "en": "Bag header card"
+  },
+  "description": {
+    "th": "การ์ดพับครึ่งครอบปากถุงแล้วเย็บแม็ก เลือกรูแขวนได้",
+    "en": "A card folded over the top of a bag and stapled; with an optional hang hole"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 25,
+      "max": 120
+    },
+    "hangHole",
+    "hangFromFold"
+  ],
+  "defaults": {
+    "length": 120,
+    "height": 45,
+    "hangHole": "none",
+    "hangFromFold": 14
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "80 × 35",
+        "en": "80 × 35"
+      },
+      "values": {
+        "length": 80,
+        "height": 35
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "120 × 45",
+        "en": "120 × 45"
+      },
+      "values": {
+        "length": 120,
+        "height": 45
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "180 × 60",
+        "en": "180 × 60"
+      },
+      "values": {
+        "length": 180,
+        "height": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "foldedCard"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "0",
+    "height": "height"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "2 * t",
+    "height": "height"
+  }
+}
