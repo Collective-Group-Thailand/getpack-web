@@ -47,7 +47,7 @@ const UNAVAILABLE = new Set(["assistant.disabled", "assistant.not_configured"]);
  * Nothing here computes or states a fact of its own.
  */
 export function AssistantPanel({ signedIn, signInHref }: { signedIn: boolean; signInHref: string }) {
-  const t = useTranslations("help.assistant");
+  const t = useTranslations("assistant");
   const [lines, setLines] = useState<Line[]>([]);
   const [text, setText] = useState("");
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -225,7 +225,7 @@ export function AssistantPanel({ signedIn, signInHref }: { signedIn: boolean; si
 }
 
 function AiNote({ retentionDays = null }: { retentionDays?: number | null }) {
-  const t = useTranslations("help.assistant");
+  const t = useTranslations("assistant");
   return (
     <div className="border-border flex flex-col gap-1 rounded-lg border p-3 text-xs">
       <p className="flex items-center gap-2 font-medium">
