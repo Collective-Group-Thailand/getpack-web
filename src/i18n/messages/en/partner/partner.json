@@ -64,6 +64,10 @@
       "samples": {
         "title": "Sample jobs",
         "body": "Samples to make, and their evidence before shipping"
+      },
+      "knowledge": {
+        "title": "Factory guides",
+        "body": "Standards and how to work with Packio"
       }
     }
   }

@@ -72,6 +72,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Release hygiene (no mock or debug traces in the build)
+        run: pnpm release:hygiene
+
   contract:
     name: contract (no drift from packio-api)
     runs-on: ubuntu-latest

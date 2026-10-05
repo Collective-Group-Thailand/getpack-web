@@ -56,7 +56,7 @@ export default async function PartnerHomePage() {
         )
       : null,
   ]);
-  const [statements, claims] = await Promise.all([
+  const [statements, claims, samples] = await Promise.all([
     canAt(context, "factory_payables.manage")
       ? attempt(
           async () =>
@@ -73,7 +73,22 @@ export default async function PartnerHomePage() {
             (await contract.GET("/v1/partner/claims", { params: { query: { status: "factory_review" } } })).data!,
         )
       : null,
+    // Sample jobs to make and record (U2.F7): counted on Today like the rest of the work.
+    producing
+      ? attempt(
+          async () =>
+            (
+              await contract.GET("/v1/partner/factories/{factoryId}/samples", {
+                params: { path: { factoryId: context.factoryId } },
+              })
+            ).data!,
+        )
+      : null,
   ]);
+  const samplesToRecord = (samples?.data?.data ?? []).filter(
+    (sample) => !sample.evidence.recordedAt && ["paid", "in_production"].includes(sample.status),
+  ).length;
+  const claimsToAnswer = claims?.data?.data.length ?? 0;
   const [tFloor, format] = await Promise.all([getTranslations("partnerToday.floor"), getFormat()]);
 
   const tasks: { key: string; href: string; icon: IconName; title: string; body: string }[] = [];
@@ -160,7 +175,7 @@ export default async function PartnerHomePage() {
 
       {floor?.data ? (
         <>
-          <ul className="grid grid-cols-2 gap-2 md:grid-cols-5" aria-label={tFloor("countersLabel")}>
+          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label={tFloor("countersLabel")}>
             {(
               [
                 ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
@@ -168,6 +183,8 @@ export default async function PartnerHomePage() {
                 ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
                 ["onHold", "/jobs?view=all", "pause", floor.data.counters.onHold],
                 ["inspections", "/jobs?view=all", "shield", floor.data.counters.inspectionsPlanned],
+                ["samples", "/samples", "package-check", samplesToRecord],
+                ["claims", "/claims", "shield-alert", claimsToAnswer],
               ] as const
             ).map(([key, href, icon, value]) => {
               const overdue = key === "toAccept" ? floor.data!.counters.acceptanceOverdue : 0;
@@ -181,7 +198,7 @@ export default async function PartnerHomePage() {
                     icon={icon}
                     hint={overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined}
                     tone={
-                      (key === "atRisk" && value > 0) || overdue > 0
+                      (key === "atRisk" && value > 0) || overdue > 0 || (key === "claims" && value > 0)
                         ? "danger"
                         : key === "toAccept" && value > 0
                           ? "warning"

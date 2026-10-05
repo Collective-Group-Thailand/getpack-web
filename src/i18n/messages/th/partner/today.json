@@ -32,7 +32,9 @@
       "dueToday": "ครบกำหนดวันนี้",
       "atRisk": "เสี่ยงล่าช้า",
       "onHold": "พักงาน",
-      "inspections": "Packio นัดตรวจ"
+      "inspections": "Packio นัดตรวจ",
+      "samples": "ตัวอย่างที่ต้องบันทึก",
+      "claims": "เคลมที่ต้องตอบ"
     },
     "queue": "คิวงาน",
     "allJobs": "งานทั้งหมด",
