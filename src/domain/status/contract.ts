@@ -85,6 +85,7 @@ export type SampleKind = Schemas["SampleKind"];
 export type ConversationStatus = Schemas["ConversationStatus"];
 export type ConversationSlaState = Schemas["ConversationSlaState"];
 export type RfqBasketStatus = Schemas["RfqBasketStatus"];
+export type AssistantTurnOutcome = Schemas["AssistantTurnOutcome"];
 export type CallOffStatus = Schemas["CallOffStatus"];
 export type CallOffReleaseStatus = Schemas["CallOffReleaseStatus"];
 

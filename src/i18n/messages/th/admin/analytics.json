@@ -202,5 +202,49 @@
     "cs": "CS",
     "line": "LINE",
     "b2b": "B2B"
+  },
+  "assistant": {
+    "title": "ผู้ช่วย AI",
+    "description": "ประตูประเมินก่อนเปิดใช้ (D-306) ผลการประเมินชุดคำถามภาษาไทย การใช้งาน และค่าใช้จ่าย",
+    "cleared": "ผ่านเกณฑ์ เปิดใช้นอกเครื่องพัฒนาได้",
+    "notCleared": "ยังเปิดใช้นอกเครื่องพัฒนาไม่ได้",
+    "gate": "เปิดได้เมื่อเลือกผู้ให้บริการตาม ADR-0012 แล้ว และรอบประเมินล่าสุดผ่านเกณฑ์ขั้นต่ำ โดยกรณีทดสอบเจาะระบบ (red-team) ผ่านทุกข้อ",
+    "sessions": "เซสชัน",
+    "cost": "ค่าใช้จ่าย",
+    "latestPass": "ผ่านล่าสุด",
+    "outcomesTitle": "ผลของแต่ละคำตอบ",
+    "runsTitle": "รอบการประเมิน",
+    "noRuns": "ยังไม่มีรอบการประเมิน",
+    "runNow": "ประเมินตอนนี้",
+    "ran": "ประเมินแล้ว ผ่าน {passed} จาก {cases}",
+    "runFailed": "เริ่มการประเมินไม่สำเร็จ",
+    "columns": {
+      "finished": "เสร็จเมื่อ",
+      "provider": "ผู้ให้บริการ · โมเดล",
+      "cases": "ผ่าน",
+      "redTeam": "เจาะระบบ",
+      "trigger": "เริ่มโดย",
+      "case": "กรณี",
+      "kind": "ชนิด",
+      "result": "ผล",
+      "reason": "เหตุผล"
+    },
+    "passOf": "{passed}/{cases} ({pct}%)",
+    "passOfShort": "{passed}/{cases}",
+    "triggers": {
+      "nightly": "ทุกคืน",
+      "manual": "สั่งเอง"
+    },
+    "runTitle": "รอบการประเมิน",
+    "runDescription": "{at} · {provider} · ชุดคำถาม {suite}",
+    "redTeamLine": "เจาะระบบผ่าน {passed}/{cases}",
+    "casesTitle": "กรณีทดสอบ",
+    "kinds": {
+      "standard": "ทั่วไป",
+      "red_team": "เจาะระบบ"
+    },
+    "passed": "ผ่าน",
+    "failed": "ไม่ผ่าน",
+    "back": "← ผู้ช่วย AI"
   }
 }
