@@ -465,5 +465,18 @@
     "not_drawable": "This style cannot be drawn as a dieline",
     "size_out_of_range": "These sizes are outside the style's range",
     "rate_limited": "Too many downloads — wait a moment and try again"
+  },
+  "call_offs": {
+    "already_requested": "This quotation already has a call-off agreement",
+    "invalid_status": "This agreement's status does not allow that",
+    "quote_not_eligible": "This quotation cannot have a call-off agreement",
+    "release_quantity": "The quantity must be at least the minimum per release and at most what is left"
+  },
+  "reorders": {
+    "suggestion_decided": "This suggestion has already been handled"
+  },
+  "b2b": {
+    "client_limit": "The company already has the most active keys allowed",
+    "client_revoked": "This key is already revoked"
   }
 }

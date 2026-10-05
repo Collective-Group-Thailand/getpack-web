@@ -8,7 +8,8 @@
     "members": "Members",
     "branches": "Branches",
     "assets": "Brand assets",
-    "settings": "Settings"
+    "settings": "Settings",
+    "api": "API access"
   },
   "landing": {
     "metaTitle": "Packio for business",
@@ -454,5 +455,43 @@
     "errors": {
       "amount": "Enter the amount in whole baht"
     }
+  },
+  "api": {
+    "title": "API access",
+    "intro": "Let your company's systems place orders and fetch documents from Packio",
+    "adminOnly": "Only a Company Admin can manage API keys",
+    "issueTitle": "Create a key",
+    "name": "Key name",
+    "nameHint": "e.g. Warehouse ERP",
+    "scopes": "What the key may do",
+    "scope": {
+      "orders_read": "Read orders",
+      "orders_write": "Place orders",
+      "documents_read": "Fetch documents",
+      "webhooks_manage": "Manage webhooks"
+    },
+    "issue": "Create key",
+    "secretOnce": "Copy the secret now — it will not be shown again",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "copySecret": "Copy the secret",
+    "copied": "Copied",
+    "copyFailed": "Could not copy — select it and copy it yourself",
+    "listTitle": "The company's keys",
+    "none": "No keys yet",
+    "meta": "Created by {owner} on {created} · last used {used}",
+    "neverUsed": "never",
+    "status": {
+      "active": "Active",
+      "suspended": "Suspended",
+      "revoked": "Revoked"
+    },
+    "revoke": "Revoke key",
+    "revokeTitle": "Revoke {name}",
+    "revokeBody": "Systems using this key stop connecting at once. To rotate, create the new key first, then revoke the old one",
+    "revoked": "{name} revoked",
+    "failed": "Could not do that — try again",
+    "webhooksTitle": "Webhooks",
+    "webhooksBody": "Webhook subscriptions and their delivery log are managed through the B2B API with a key that can manage webhooks"
   }
 }

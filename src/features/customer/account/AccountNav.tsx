@@ -14,6 +14,8 @@ const ITEMS: { key: string; href: string; icon: IconName }[] = [
   { key: "quotes", href: "/account/quotes", icon: "receipt" },
   { key: "rfqs", href: "/account/rfqs", icon: "inbox" },
   { key: "samples", href: "/account/samples", icon: "package-check" },
+  { key: "replenishment", href: "/account/replenishment", icon: "refresh" },
+  { key: "callOffs", href: "/account/call-offs", icon: "calendar" },
   { key: "designs", href: "/account/designs", icon: "palette" },
   { key: "points", href: "/account/points", icon: "star" },
   { key: "referral", href: "/account/referral", icon: "gift" },

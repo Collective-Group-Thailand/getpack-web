@@ -5,6 +5,7 @@ import { getSavedQuotes } from "@/features/customer/account/api.server";
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { configureHref } from "@/features/customer/catalog/paths";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
+import { RequestCallOff } from "@/features/customer/repeat/RequestCallOff";
 import { RequestSample } from "@/features/customer/samples/RequestSample";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -76,6 +77,13 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   <StatusChip map={QUOTE_STATUS} value={quote.status} />
                   {quote.status === "saved" ? (
                     <RequestSample quoteId={quote.id} label={quote.quoteCode ?? productNameOf(locale, quote.summary)} />
+                  ) : null}
+                  {quote.status === "saved" && option ? (
+                    <RequestCallOff
+                      quoteId={quote.id}
+                      optionId={option.id}
+                      label={quote.quoteCode ?? productNameOf(locale, quote.summary)}
+                    />
                   ) : null}
                   {quote.summary.product && quote.source === "instant" ? (
                     <Button asChild size="sm" variant="secondary">

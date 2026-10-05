@@ -458,3 +458,16 @@ Evidence from `main` at `ebbfc32`. `store.guarantee.get`, `store.network.getStat
 | 3 | Claim timeline: status, SLA countdown, who owns it, what we need, decision and remedy | partial | `ClaimThread` (F3 3.6) shows the claim, what was asked and the outcome; no clock (`CONTRACT-GAP store.claims respondBy`) | `ClaimTimeline` on the claim page: current owner, response and decision due times (relative) with overdue, the clock stopping while Packio waits for the customer, events, guarantee version |
 | 4 | Verified reviews: order-backed only, product type and date; honest empty state | missing | no page | `/reviews`: summary and distribution, reviews with product type, date and Packio's reply; empty state |
 | 5 | Content from the API in both languages; axe; e2e claim timeline; snapshot tests for empty states | missing | — | `e2e/storefront-trust.spec.ts`, the claim e2e extended, `trust/empty-states.test.tsx` snapshots; a real-API spec |
+
+## U2.F5 — Buyer dashboard & repeat business — 2026-10-05
+
+Evidence from `main` at `24f175a`.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Account dashboard: spend over time, open requests, in production, arriving this week, reorder suggestions, documents | partial | `/account`: to-dos, points (12-month spend), shortcuts; company spend on `/business` (`store.companies.spend`) | "Where your boxes are" (open requests, in production, on the way, by the API's statuses), up to two suggestions, the latest documents with signed downloads |
+| 2 | Reorder: one click, "no repeat plate/block cost" saving, artwork version shown and lockable, price differences explained | partial | `ReorderView` (F3 3.6): one click, re-priced, artwork reuse; `toolingWaiver` ignored | The waiver as a saving callout and a price line (D-289) |
+| 3 | Replenishment: suggested date/quantity with reasoning; snooze and remind settings | missing | `store.reorderSuggestions.*` unused | `/account/replenishment` with the API's reasoning, reorder and dismiss; snooze/settings not in the contract (CONTRACT-REQUEST `store.reorder-suggestion-snooze`) |
+| 4 | Call-off orders: commitment, release schedule, remaining balance, create release, stock | missing | `store.callOffs.*` unused | request on a saved quotation; `/account/call-offs` and detail (committed / released / left, window, locked price, releases), release into the cart, cancel. Stock is not in the contract (D-290: no stock) |
+| 5 | B2B: API keys and webhook subscriptions (create, scope, rotate, revoke, delivery log, copy-once secrets, audit) | missing | `store.companyApiClients.*` unused; webhooks only on the B2B API | `/business/api` for the Company Admin: issue with scopes, the secret once, last used, revoke (rotate = issue then revoke); webhooks explained (CONTRACT-REQUEST `store.company-webhooks`) |
+| 6 | e2e reorder and release; permission tests | missing | — | `e2e/storefront-repeat.spec.ts` (incl. the buyer without the admin right); release and call-off actions only with the company's `order` right |

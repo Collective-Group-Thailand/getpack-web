@@ -54,6 +54,12 @@ const memberships = new Map<string, { companyId: string; memberId: string }>([
   ["companybuyer", { companyId: companyStores[0]!.company.id, memberId: companyStores[0]!.members[1]!.id }],
 ]);
 
+/** The customer's company and roles, for the other store mocks (API clients, U2.F5). */
+export function companyMembershipOf(customer: MockCustomer): { companyId: string; roles: string[] } | null {
+  const found = membershipOf(customer);
+  return found ? { companyId: found.store.company.id, roles: [...(found.member.roles as string[])] } : null;
+}
+
 function membershipOf(customer: MockCustomer): { store: CompanyStore; member: Member } | null {
   const link = memberships.get(customer.persona);
   if (!link) return null;
@@ -641,7 +647,10 @@ export const storeBusinessHandlers = [
       return problem(412, "concurrency.stale", "ชุดแบรนด์ถูกแก้จากที่อื่น");
     const body = (await request.json()) as Schemas["BrandKitInputDto"];
     const kit = kitOf(found.store.company.id, list[index]!.id, body);
-    brandKits.set(found.store.company.id, list.map((k, i) => (i === index ? kit : k)));
+    brandKits.set(
+      found.store.company.id,
+      list.map((k, i) => (i === index ? kit : k)),
+    );
     return HttpResponse.json(kit);
   }),
 

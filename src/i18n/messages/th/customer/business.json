@@ -8,7 +8,8 @@
     "members": "สมาชิก",
     "branches": "สาขา",
     "assets": "ไฟล์แบรนด์",
-    "settings": "ตั้งค่า"
+    "settings": "ตั้งค่า",
+    "api": "เชื่อมต่อระบบ (API)"
   },
   "landing": {
     "metaTitle": "Packio สำหรับธุรกิจ",
@@ -454,5 +455,43 @@
     "errors": {
       "amount": "ใส่ยอดเป็นจำนวนบาท"
     }
+  },
+  "api": {
+    "title": "เชื่อมต่อระบบ (API)",
+    "intro": "ให้ระบบของบริษัทสั่งซื้อและดึงเอกสารจาก Packio ได้เอง",
+    "adminOnly": "เฉพาะผู้ดูแลบริษัทที่จัดการคีย์ API ได้",
+    "issueTitle": "สร้างคีย์ใหม่",
+    "name": "ชื่อคีย์",
+    "nameHint": "เช่น ระบบ ERP ของคลัง",
+    "scopes": "สิทธิ์ของคีย์",
+    "scope": {
+      "orders_read": "ดูคำสั่งซื้อ",
+      "orders_write": "สั่งซื้อ",
+      "documents_read": "ดึงเอกสาร",
+      "webhooks_manage": "จัดการ webhook"
+    },
+    "issue": "สร้างคีย์",
+    "secretOnce": "คัดลอกรหัสลับเก็บไว้ตอนนี้ — จะไม่แสดงอีก",
+    "clientId": "Client ID",
+    "clientSecret": "รหัสลับ (client secret)",
+    "copySecret": "คัดลอกรหัสลับ",
+    "copied": "คัดลอกแล้ว",
+    "copyFailed": "คัดลอกไม่ได้ เลือกแล้วคัดลอกเอง",
+    "listTitle": "คีย์ของบริษัท",
+    "none": "ยังไม่มีคีย์",
+    "meta": "สร้างโดย {owner} เมื่อ {created} · ใช้ล่าสุด {used}",
+    "neverUsed": "ยังไม่เคยใช้",
+    "status": {
+      "active": "ใช้งาน",
+      "suspended": "ระงับ",
+      "revoked": "ยกเลิกแล้ว"
+    },
+    "revoke": "ยกเลิกคีย์",
+    "revokeTitle": "ยกเลิกคีย์ {name}",
+    "revokeBody": "ระบบที่ใช้คีย์นี้จะเชื่อมต่อไม่ได้ทันที ถ้าจะเปลี่ยนคีย์ ให้สร้างคีย์ใหม่ก่อนแล้วจึงยกเลิกคีย์เดิม",
+    "revoked": "ยกเลิกคีย์ {name} แล้ว",
+    "failed": "ทำรายการไม่สำเร็จ ลองอีกครั้ง",
+    "webhooksTitle": "Webhook",
+    "webhooksBody": "การสมัครรับ webhook และประวัติการส่ง จัดการผ่าน B2B API ด้วยคีย์ที่มีสิทธิ์ “จัดการ webhook”"
   }
 }
