@@ -35,5 +35,23 @@
     "action": "Import to my account",
     "done": "{count, plural, one {# design} other {# designs}} imported",
     "failed": "Could not import — try again"
+  },
+  "products": {
+    "title": "My products",
+    "body": "Designs you have ordered: reorder in one click, change only the quantity, or make a new size from the same design",
+    "size": "{l}×{w}×{h} mm",
+    "styleCode": "Style code",
+    "artwork": "Artwork",
+    "version": "Version {version}",
+    "lastOrder": "Last order",
+    "reorder": "Reorder",
+    "reorderLabel": "Reorder {name}",
+    "quantity": "Change quantity",
+    "quantityLabel": "Order {name} in another quantity",
+    "newSize": "New size",
+    "newSizeLabel": "Make {name} in a new size",
+    "copyName": "{name} (new size)",
+    "editedSince": "Edited since — now version {version}",
+    "failed": "Could not make the copy — try again"
   }
 }

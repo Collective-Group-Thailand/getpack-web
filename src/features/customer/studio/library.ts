@@ -34,7 +34,8 @@ export async function recipeOfVariant(
         wanted.every(([axis, value]) => v.axes[axis] === value) &&
         Object.keys(v.axes).every((a) => options[a] !== undefined || a in (recipe.variant ?? {})),
     );
-    if (variant) return { recipe, values: { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values, ...variant.values } };
+    if (variant)
+      return { recipe, values: { ...defaultsOf(recipe), ...presetsOf(recipe)[0]?.values, ...variant.values } };
   }
   return null;
 }

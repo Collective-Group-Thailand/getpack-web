@@ -639,7 +639,10 @@ storeStudioHandlers.push(
       {
         quantity,
         ...(body.deliveryPostcode ? { deliveryPostcode: body.deliveryPostcode } : {}),
-        designOption: "online_designer",
+        // The design service asks for graphic design in the spec (U4.8): the design fee is priced.
+        designOption: ((configuration as Record<string, unknown>).design as { graphic?: boolean } | undefined)?.graphic
+          ? "hired_design"
+          : "online_designer",
         mockupOption: "none",
       },
       new URL(request.url).searchParams.get("lang") === "en",
@@ -720,5 +723,30 @@ storeStudioHandlers.push(
       });
     }
     return HttpResponse.json(job);
+  }),
+);
+
+/*
+ * "ให้ทีมออกแบบให้" (U4.8, D-286): the version in the cart with the design service — the studio
+ * quotation of that version, the line's design option `hired_design` — answered as the cart line.
+ */
+storeStudioHandlers.push(
+  http.post("*/v1/store/studio/:designId/design-service", async ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+    const designId = String(params.designId);
+    const row = designRowFor(request, designId);
+    if (row instanceof Response) return row;
+    const body = (await request.json()) as Schemas["StudioOrderDto"];
+    const version = versionBoxOf(row, body.versionNo);
+    if (!version) return problem(422, "designs.version_required", "ต้องระบุเวอร์ชันของงานออกแบบ");
+    const quote = quotesOf(customer.persona).find((q) => q.id === body.quoteId);
+    if (!quote) return problem(404, "http.not_found", "ไม่พบใบเสนอราคานี้");
+    const lineId = addToCart(customer, quote);
+    pinDesign(customer, lineId, designId, version.versionNo, "hired_design");
+    return HttpResponse.json(
+      { cartItemId: lineId, designVersionNo: version.versionNo } satisfies Schemas["StudioCartItemRefDto"],
+      { status: 201 },
+    );
   }),
 );

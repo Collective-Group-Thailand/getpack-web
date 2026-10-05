@@ -48,6 +48,36 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U4.8 — Reorder, product library, design-service hand-off, polish — 2026-10-05
+
+`docs/prompts/U4-3d-studio.md` §U4.8, on `feat/u4.8-reorder-polish` (worktree `../packio-web-u4`, from `main` at `049e978`, U4.7 merged). Post-launch (D-219); "auto mode".
+
+### Gap → done
+| Item | Before | Done |
+|---|---|---|
+| 1 Library and reorder | "My designs" with duplicate; the order's reorder page (F3 3.6) | **สินค้าของฉัน** on `/account/designs`: every design an order locked, as a product — style code, size, product, the artwork version that was made, the last order. **สั่งซ้ำ** goes to the order's one-click reorder; **เปลี่ยนจำนวน** opens the studio's order sheet on the design (quantity tiers); **ทำขนาดใหม่** duplicates it and opens ② on the copy. A **size change in ②** now re-fits the artwork (`lib/refit.ts`): each element keeps its place on its face as a fraction of the face, scaled by the smaller face ratio, on the mirrored die for the inside; one undo step; the checks run again as on any edit. |
+| 2 Design-service hand-off | — | **"ให้ทีมออกแบบให้"** in ⑤ (where the product offers hired design): a brief pre-filled from the box, size, material, print method, the colours used, every text placed and the picture count (`brief.ts`); the customer adds to it. The version is marked for the design service (its spec asks for graphic design, so its quotation carries the fee), saved, quoted, handed over with `store.studio.requestDesignService` (D-286), and the brief goes on the cart line (`designNote`). The designer then works in the same document; the customer comments (U4.7) and approves the proof there. |
+| 3 Usability pass | — | `docs/design-tool/usability-2026-Q4.md`: the protocol (5 first-time Thai SME participants, six tasks mapped to the §1 targets, SEQ/SUS, severity ranking) and the session log, **not yet run** — that needs a moderator and recruited participants. Recorded separately, and labelled as not user research: an expert walkthrough of U4.6–U4.8 with the nine issues found and fixed, and the instrumentation status of each §1 metric. |
+| 4 Release checklist | §7 unticked | `studio-spec.md` §7: **9 of 12 ticked**, each with its test evidence. Three are left open with the reason: ordering in one step and the server proof both wait on real storage in the integration stack, and AR placement needs a check on a real Android phone and a real iPhone. |
+
+### Found on the real API
+- **The design service needs a design fee in the quotation** (`422 cart.design_option_unavailable` otherwise). It comes from the version's spec asking for graphic design. Handled as above; `e2e/integration/handoff.spec.ts` is green. See `docs/integration.md`.
+- **The studio's funnel events were refused by the mock** (its analytics allow-list predates `studio_*`); packio-api v0.41.0 accepts them (checked). The mock now takes every published name.
+
+### Decisions taken
+- **Re-fit on every size change in ②**, not only for "ทำขนาดใหม่": artwork left at its old millimetres is never what is wanted, and the change is one undo step with a message.
+- **The library is the account's designs with a lock**, the order that locked them and that version; reorder reuses F3's reorder (the order's lines and destinations) rather than a second path.
+- **The hand-off's brief is the cart line's `designNote`** (≤ 4,000 characters): the request is created at checkout by packio-api from that line (D-286).
+- **The usability log stays empty until real sessions run**; nothing in it is inferred.
+
+### Tests
+Unit 1,045 (+ `refit`, `brief`). e2e: `storefront-studio-order.spec.ts` (+ the product library, new size re-fitted; the company buyer's approval link), `storefront-studio-library.spec.ts` (hand-off with the brief on the line), `storefront-studio-collab.spec.ts` (+ a 3D pin anchored to its face). Real API: `handoff.spec.ts` green on v0.41.0.
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; unit 1,045; mock e2e full run 409 passed (the known `storefront-account` timeout green on re-run, 13/13). Real API: `handoff.spec.ts` green on v0.41.0. Lighthouse: all sets within budget, studio 496,946 B (ratchet 497,500), performance 0.98.
+
+---
+
 ## U4.7 — Collaboration, versions, presentation, AR — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.7, on `feat/u4.7-collab` (worktree `../packio-web-u4`, from `main` at `9509440`, U4.6 merged). Post-launch (D-219); "auto mode".
