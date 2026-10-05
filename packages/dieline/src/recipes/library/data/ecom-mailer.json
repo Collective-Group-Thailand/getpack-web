@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "id": "ecom-mailer",
+  "base": "PK-CF-10",
+  "variants": {
+    "tear_strip": {
+      "none": {
+        "tearStrip": false
+      },
+      "zip_tear_strip": {
+        "tearStrip": true
+      }
+    },
+    "adhesive": {
+      "none": {
+        "adhesive": "none"
+      },
+      "single_strip": {
+        "adhesive": "single"
+      },
+      "dual_strip_return": {
+        "adhesive": "dual"
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องส่งของออนไลน์ ปิดด้วยแถบกาวในตัว",
+    "en": "Self-seal e-commerce mailer"
+  },
+  "description": {
+    "th": "กล่องลูกฟูกก้นล็อกอัตโนมัติ ฝาเสียบปิดด้วยแถบกาวในตัว เปิดด้วยแถบดึงฉีก เลือกตัวรองได้",
+    "en": "A corrugated box with a crash-lock bottom; the tuck lid seals with a built-in adhesive strip and opens with a tear strip; with an optional insert"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 400
+    },
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "tearStrip",
+    "adhesive",
+    "insert"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "length": 300,
+    "width": 200,
+    "height": 100,
+    "tearStrip": false,
+    "adhesive": "single",
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 250 × 170 × 80",
+        "en": "S 250 × 170 × 80"
+      },
+      "values": {
+        "length": 250,
+        "width": 170,
+        "height": 80
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 300 × 200 × 100",
+        "en": "M 300 × 200 × 100"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 100
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 400 × 300 × 150",
+        "en": "L 400 × 300 × 150"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 150
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [
+    {
+      "module": "adhesiveStrip",
+      "with": {
+        "end": "top",
+        "faces": ["tuck-top"]
+      }
+    },
+    {
+      "module": "tearStrip",
+      "with": {
+        "onPanels": [0, 1, 3],
+        "from": "min(25, depth / 4)"
+      }
+    },
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
+    }
+  ]
+}

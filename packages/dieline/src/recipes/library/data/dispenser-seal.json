@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "dispenser-seal",
+  "base": "PK-SP-19",
+  "variant": {
+    "tuck_bottom": "seal"
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องดึงหยิบ (มีช่องปรุ) ก้นกาว",
+    "en": "Dispenser carton, glued seal bottom"
+  },
+  "description": {
+    "th": "ด้านหน้ามีช่องเส้นปรุ กดออกแล้วหยิบสินค้าทีละชิ้น",
+    "en": "A perforated opening in the front presses out to take the contents one at a time"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "tuckDepth",
+    "tuckCorners",
+    "dustFlapDepth",
+    "thumbNotch",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "carton"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "seal"
+    }
+  },
+  "features": [
+    {
+      "module": "dispenser"
+    }
+  ]
+}

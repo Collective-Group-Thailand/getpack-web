@@ -502,5 +502,14 @@
     "min": 10,
     "max": 80,
     "step": 0.5
+  },
+  "srpHeader": {
+    "key": "srpHeader",
+    "kind": "boolean",
+    "group": "options",
+    "label": {
+      "th": "ด้านหลังสูงเป็นป้ายหัว",
+      "en": "Back stays full height as a header"
+    }
   }
 }
