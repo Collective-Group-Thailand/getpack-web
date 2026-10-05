@@ -58,6 +58,8 @@ const zoneEnv = {
    * refusal path, and the id is obviously fake.
    */
   NEXT_PUBLIC_GTM_ID: "GTM-TEST0000",
+  // Packio Assistant built in (U5.5) so its panel is tested; production builds leave it out (D-218).
+  NEXT_PUBLIC_ASSISTANT: "1",
 };
 
 /** The same build against a real packio-api: no mock, the API the integration stack started. */
@@ -66,6 +68,8 @@ const realEnv = {
   ADMIN_HOST: `admin.localhost:${PORT}`,
   PARTNER_HOST: `partner.localhost:${PORT}`,
   API_INTERNAL_URL: process.env.INTEGRATION_API_URL ?? "http://localhost:3400",
+  // Built in, so the real API's own refusal (off at launch, D-218) is what the panel shows.
+  NEXT_PUBLIC_ASSISTANT: "1",
 };
 
 export default defineConfig({

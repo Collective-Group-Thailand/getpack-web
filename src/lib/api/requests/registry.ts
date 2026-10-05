@@ -6,12 +6,14 @@
  * entry is well-formed and not already in the contract.
  */
 
+import { storeAssistantRequests } from "./store-assistant";
 import { storeContentRequests } from "./store-content";
 import { storeSupportRequests } from "./store-support";
 
 export const REQUESTS = {
   ...storeSupportRequests,
   ...storeContentRequests,
+  ...storeAssistantRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

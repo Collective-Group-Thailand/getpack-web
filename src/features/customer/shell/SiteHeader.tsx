@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { AssistantEntry } from "@/features/customer/assistant/AssistantEntry";
 import { AccountButton } from "@/features/customer/auth/AccountButton";
 import { readAccessToken } from "@/lib/auth/session";
 
@@ -103,6 +104,7 @@ export async function SiteHeader() {
             <Link href="/cart" />
           </IconButton>
 
+          <AssistantEntry signedIn={signedIn} signInHref="/sign-in" />
           <AccountButton signedIn={signedIn} label={t("nav.account")} />
 
           {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}
