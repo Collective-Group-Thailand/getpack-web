@@ -294,4 +294,6 @@ Three script ratchets, each by the copy and entry points U3.6 adds to every page
 screens themselves load on their own routes; the DXF reader and the style library only on the
 offer's page): `customer-app` 340200 → **340300** (measured 340232: the account menu entry),
 `customer-marketing` 270000 → **270100** (270018: the call to action on `/styles`), `partner`
-301000 → **301400** (301307: the "more" menu entry).
+301000 → **301400** (301307: the "more" menu entry). After merging main's U5 layer: `partner`
+301400 → **301600** (301490) and `studio` 505500 → **505700** (505558: the dieline core's share of the
+wave 2 / 3 extensions, on U5's own measure).
