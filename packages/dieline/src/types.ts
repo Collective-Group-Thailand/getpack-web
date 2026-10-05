@@ -198,6 +198,8 @@ export interface PiecePlacement {
   slide?: number;
   /** Inside: rests this far above the piece's bottom (an insert on the closed bottom's layers). */
   floor?: number;
+  /** Moved this far after it is placed, mm (x, y, z) — one strip of a partition grid to its row. */
+  offset?: [number, number, number];
 }
 
 /**

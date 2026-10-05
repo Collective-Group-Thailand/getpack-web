@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "id": "bottle-carrier",
+  "base": "PK-SP-06",
+  "variants": {
+    "partition": {
+      "2x2": {
+        "partition": "2x2"
+      },
+      "2x3": {
+        "partition": "2x3"
+      },
+      "3x3": {
+        "partition": "3x3"
+      },
+      "3x4": {
+        "partition": "3x4"
+      },
+      "4x4": {
+        "partition": "4x4"
+      },
+      "4x6": {
+        "partition": "4x6"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "กล่องหิ้วขวดพร้อมช่องกั้น",
+    "en": "Bottle carrier with handle"
+  },
+  "description": {
+    "th": "กล่องหิ้วหลังคาจั่วมีหูหิ้ว ก้นล็อกอัตโนมัติ ภายในมีช่องกั้นแยกขวด",
+    "en": "A gabled carrier with a handle and a crash-lock bottom, with a partition grid inside for the bottles"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 150,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 100,
+      "max": 350
+    },
+    "handleHeight",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "partition"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "length": 200,
+    "width": 140,
+    "height": 220,
+    "handleHeight": 50,
+    "partition": "2x3"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 160 × 110 × 200",
+        "en": "S 160 × 110 × 200"
+      },
+      "values": {
+        "length": 160,
+        "width": 110,
+        "height": 200
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 200 × 140 × 220",
+        "en": "M 200 × 140 × 220"
+      },
+      "values": {
+        "length": 200,
+        "width": 140,
+        "height": 220
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 260 × 180 × 260",
+        "en": "L 260 × 180 × 260"
+      },
+      "values": {
+        "length": 260,
+        "width": 180,
+        "height": 260
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "gableHandle"
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [
+    {
+      "module": "partitionInsert"
+    }
+  ],
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height + side / 2"
+  }
+}
