@@ -547,5 +547,37 @@
     "min": 0,
     "max": 30,
     "step": 0.5
+  },
+  "closureRigid": {
+    "key": "closureRigid",
+    "kind": "enum",
+    "group": "options",
+    "label": {
+      "th": "การปิดกล่อง",
+      "en": "Closure"
+    },
+    "options": [
+      {
+        "value": "none",
+        "label": {
+          "th": "ไม่มี",
+          "en": "None"
+        }
+      },
+      {
+        "value": "magnetic",
+        "label": {
+          "th": "แม่เหล็ก",
+          "en": "Magnetic"
+        }
+      },
+      {
+        "value": "ribbon",
+        "label": {
+          "th": "ริบบิ้น",
+          "en": "Ribbon"
+        }
+      }
+    ]
   }
 }

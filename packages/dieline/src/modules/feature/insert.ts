@@ -102,7 +102,12 @@ export const dieCutInsert: FeatureModule = {
               inside: (cfg.target as string) ?? "blank",
               floor: floorOf(ctx, cfg),
               lift: num(ctx.v, "height", 60),
-              ...(cfg.rotate ? { rotate: [90, 0, 0] as [number, number, number] } : {}),
+              // `rotate`: true stands it up (a tube's insert); an angle triple turns it with its tray.
+              ...(Array.isArray(cfg.rotate)
+                ? { rotate: cfg.rotate as [number, number, number] }
+                : cfg.rotate
+                  ? { rotate: [90, 0, 0] as [number, number, number] }
+                  : {}),
             },
           },
         }

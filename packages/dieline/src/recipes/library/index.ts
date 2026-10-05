@@ -118,6 +118,9 @@ import presentationFolder from "./data/presentation-folder.json" with { type: "j
 import boardEnvelope from "./data/board-envelope.json" with { type: "json" };
 import paperTube from "./data/paper-tube.json" with { type: "json" };
 import bookWrap from "./data/book-wrap.json" with { type: "json" };
+import rigidHinged from "./data/rigid-hinged.json" with { type: "json" };
+import rigidBook from "./data/rigid-book.json" with { type: "json" };
+import rigidShoulderNeck from "./data/rigid-shoulder-neck.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -247,4 +250,7 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   boardEnvelope,
   paperTube,
   bookWrap,
+  rigidHinged,
+  rigidBook,
+  rigidShoulderNeck,
 ] as unknown as StyleRecipe[];
