@@ -108,3 +108,24 @@ test("an edit link saves a new version of the owner's design", async ({ page }) 
   expect(after.versionNo).toBeGreaterThan(before);
   expect(after.document.content.elements.length).toBe(2);
 });
+
+test("a comment pinned on the 3D box is anchored to the face it hit", async ({ page }) => {
+  test.setTimeout(120_000);
+  const id = await newDesign(page, MOCK_DESIGNER_PHONE);
+  await openRail(page, "ความเห็น");
+  await page.getByRole("button", { name: "ปักหมุดความคิดเห็น" }).click();
+  // The 3D view of the split stage: its centre is on the box.
+  const box = page.locator("div[role='img'] canvas").first();
+  await expect(box).toBeVisible({ timeout: 15_000 });
+  await box.click();
+  await expect(page.getByText(/^ปักไว้บน/)).toBeVisible();
+  await page.getByRole("textbox", { name: "ความคิดเห็น" }).fill("มุมนี้สีเพี้ยน");
+  await page.getByRole("button", { name: "ส่ง", exact: true }).click();
+  await expect(page.getByRole("listitem").filter({ hasText: "มุมนี้สีเพี้ยน" })).toBeVisible();
+  const comments = await (await page.request.get(`${HOSTS.customer}/bff/v1/store/studio/${id}/comments`)).json();
+  expect(comments.at(-1).anchor).toMatchObject({
+    faceId: expect.any(String),
+    u: expect.any(Number),
+    v: expect.any(Number),
+  });
+});

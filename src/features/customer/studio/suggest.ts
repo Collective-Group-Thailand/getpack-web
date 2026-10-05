@@ -9,7 +9,13 @@ import {
   type ParamValues,
 } from "@packio/dieline";
 
-import { dimsFromProduct, fallbackMaterial, materialSpecOf, materialsFor, withMaterial } from "@/features/designer/catalog";
+import {
+  dimsFromProduct,
+  fallbackMaterial,
+  materialSpecOf,
+  materialsFor,
+  withMaterial,
+} from "@/features/designer/catalog";
 import type { DesignerCatalog } from "@/features/designer/data/api";
 import type { BoxDims, DesignSpec } from "@/features/designer/types";
 

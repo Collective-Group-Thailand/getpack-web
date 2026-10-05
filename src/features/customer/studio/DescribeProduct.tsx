@@ -35,8 +35,7 @@ export function DescribeProduct({
   const [size, setSize] = useState<Record<"l" | "w" | "h", number | null>>({ l: null, w: null, h: null });
   const [shipsBy, setShipsBy] = useState<ShipsBy>("parcel");
   const [asked, setAsked] = useState<Suggestion[] | null>(null);
-  const product: BoxDims | null =
-    size.l && size.w && size.h ? { length: size.l, width: size.w, height: size.h } : null;
+  const product: BoxDims | null = size.l && size.w && size.h ? { length: size.l, width: size.w, height: size.h } : null;
 
   const suggest = () => {
     if (!product) return;

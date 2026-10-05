@@ -40,7 +40,10 @@ test("a finding fixed in one click, a warning accepted with the version, and the
   }
   await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
 
-  await page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" }).getByRole("button", { name: /ตรวจงาน/ }).click();
+  await page
+    .getByRole("navigation", { name: "ขั้นตอนการออกแบบ" })
+    .getByRole("button", { name: /ตรวจงาน/ })
+    .click();
   await expect(page.getByRole("heading", { name: "ตรวจงานก่อนสั่งผลิต" })).toBeVisible();
   const panel = page;
   const small = panel.getByRole("button", { name: /เล็กกว่า 6 pt อาจพิมพ์ไม่ชัด/ });
@@ -62,7 +65,11 @@ test("a finding fixed in one click, a warning accepted with the version, and the
       data: {},
     })
   ).json();
-  expect(run.findings.filter((f: { ruleId: string; acknowledged: boolean }) => f.ruleId === "min_text_size" && f.acknowledged)).toHaveLength(1);
+  expect(
+    run.findings.filter(
+      (f: { ruleId: string; acknowledged: boolean }) => f.ruleId === "min_text_size" && f.acknowledged,
+    ),
+  ).toHaveLength(1);
 
   // The soft proof: the substrate's preview transform, labelled as a preview.
   await page.getByRole("switch", { name: "ดูแบบพิมพ์จริง" }).click();

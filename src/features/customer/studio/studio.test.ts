@@ -53,12 +53,12 @@ const printed: DesignContent = {
 };
 
 async function setup() {
-  const configurator = (await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
-    params: { path: { slug: "tuck-end-box" } },
-  })).data! as Configurator;
-  const material = configurator.optionGroups
-    .find((g) => g.kind === "material")!
-    .options[0]!.id;
+  const configurator = (
+    await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
+      params: { path: { slug: "tuck-end-box" } },
+    })
+  ).data! as Configurator;
+  const material = configurator.optionGroups.find((g) => g.kind === "material")!.options[0]!.id;
   const spec: DesignSpec = {
     specVersion: SPEC_VERSION,
     styleId: "tuck-end",

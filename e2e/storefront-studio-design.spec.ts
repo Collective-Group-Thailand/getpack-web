@@ -8,7 +8,7 @@ import { addHeading } from "./helpers/designer";
 
 /**
  * U4.3, ③ Design core in Packio 3D Studio against the mock API: the split view (3D beside the flat
-  * sheet), a face picked in 3D (the lid on top — "ฝา (บน)", the prompt's "ฝาบน") turning to the camera and taking the next text — which lands on the
+ * sheet), a face picked in 3D (the lid on top — "ฝา (บน)", the prompt's "ฝาบน") turning to the camera and taking the next text — which lands on the
  * matching flat panel within 0.5 mm (read back from the saved document and the engine) — picking
  * by clicking the model, and printing on the inside after its cost is shown. As the mock's
  * `designer` persona, so nothing here shares state with the other suites.
@@ -41,7 +41,17 @@ async function openStudio(page: Page) {
 interface SavedDocument {
   document: {
     spec: { styleId: string; values: ParamValues; material: MaterialSpec };
-    content: { elements: { type: string; text?: string; fontSize?: number; x: number; y: number; clipFaceId?: string; side?: string }[] };
+    content: {
+      elements: {
+        type: string;
+        text?: string;
+        fontSize?: number;
+        x: number;
+        y: number;
+        clipFaceId?: string;
+        side?: string;
+      }[];
+    };
   };
 }
 
@@ -88,7 +98,10 @@ test("clicking the model picks the face under the pointer", async ({ page }) => 
   await model.getByRole("button", { name: "มุมมองเริ่มต้น" }).click();
   const box = (await picture.boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  const editing = page.getByRole("status").filter({ hasText: /^กำลังแก้: / }).first();
+  const editing = page
+    .getByRole("status")
+    .filter({ hasText: /^กำลังแก้: / })
+    .first();
   await expect(editing).toBeVisible();
   await expect(editing).not.toHaveText("กำลังแก้: ฝา (บน)");
 });

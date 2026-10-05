@@ -83,18 +83,19 @@ Layout (desktop): left **tool rail** (Templates · Brand kit · Uploads · Text 
 - Privacy: uploaded images stay private to the customer/company; never used for training or as templates.
 
 ## 7. What makes it better than the benchmark (checklist for release)
-- [ ] Live **real** price and lead time inside the editor, identical to checkout
-- [ ] Order from the studio in one step; no RFQ for instant types
-- [ ] Print method configures the editor (flexo spot colours, digital CMYK)
-- [ ] Face-aware 3D editing + synchronised flat view (benchmark edits flat with a small 3D preview)
-- [ ] Continuous print checks with one-click fixes and soft proof
-- [ ] Brand kit and templates that re-flow to any size
-- [ ] Finishes (foil, spot UV, emboss, window) rendered in 3D and produced as separations
-- [ ] Barcode/QR/data blocks with production validation
-- [ ] Digital proof generated from the studio; approval in context
-- [ ] Collaboration: share, comment on 3D, versions, company approval
-- [ ] Free downloads of dieline and mockup exports (no plan gate)
-- [ ] AR at real size
+Ticked only with evidence (U4.8, 2026-10-05). The evidence is tests in this repository: e2e on the mock API, `e2e/integration/` on packio-api v0.41.0.
+- [x] Live **real** price and lead time inside the editor, identical to checkout — price dock on `store.studio.quote` (`e2e/storefront-studio.spec.ts`, `e2e/integration/studio.spec.ts`); the cart line equals the studio's tier total (`e2e/storefront-studio-order.spec.ts`)
+- [ ] Order from the studio in one step; no RFQ for instant types — one step on the mock: save, quote, renders, print job, cart, checkout and lock (`storefront-studio-order.spec.ts`). On packio-api the render upload cannot complete because the integration stack's storage is a placeholder (`docs/integration.md`); tick once it runs there
+- [x] Print method configures the editor (flexo spot colours, digital CMYK) — `storefront-studio.spec.ts` (flexo limit, no-print structure only), `e2e/integration/studio.spec.ts` (method saved with the box)
+- [x] Face-aware 3D editing + synchronised flat view — `storefront-studio-design.spec.ts`, `studio-perf.spec.ts`
+- [x] Continuous print checks with one-click fixes and soft proof — `storefront-studio-checks.spec.ts`, `checks-rules.test.ts`, `e2e/integration/checks.spec.ts` (same rule ids as packio-api)
+- [x] Brand kit and templates that re-flow to any size — `storefront-studio-content.spec.ts`, `templates/layout.test.ts`; a design re-fitted to a new box size (`lib/refit.test.ts`, `storefront-studio-order.spec.ts`)
+- [x] Finishes (foil, spot UV, emboss, window) rendered in 3D and produced as separations — `storefront-studio-content.spec.ts` (finish layer), `@packio/dieline` PDF finish separation tests
+- [x] Barcode/QR/data blocks with production validation — `storefront-studio-content.spec.ts`, `e2e/integration/studio.spec.ts` (packio-api's validation service)
+- [ ] Digital proof generated from the studio; approval in context — the proof screen shows the locked version beside the proof and keeps the approval checklist and its evidence. The server's proof of a studio order is not yet seen end to end: the mock makes none, and packio-api waits on storage in the stack
+- [x] Collaboration: share, comment on 3D, versions, company approval — `storefront-studio-collab.spec.ts` (flat and 3D pins, comment and edit links), `storefront-studio-present.spec.ts` (named versions, compare), `storefront-studio-order.spec.ts` (approval link), `e2e/integration/collab.spec.ts`
+- [x] Free downloads of dieline and mockup exports (no plan gate) — the export menu (PDF, PNG, SVG, DXF, die-line PDF) and the presentation's PNG, video and die line, with no plan check anywhere (`storefront-studio-present.spec.ts`)
+- [ ] AR at real size — the model is built at real size and shown in `model-viewer`, with the desktop fallback (`storefront-studio-present.spec.ts`). Placing it in a room needs a check on a real Android phone and a real iPhone
 
 ## 8. Out of scope for the first release
 Freehand vector drawing tools, multi-page artboards unrelated to packaging, generative-AI images (possible later behind a flag with clear licensing), printing on non-listed materials.

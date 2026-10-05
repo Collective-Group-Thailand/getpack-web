@@ -15,7 +15,8 @@ import { change, optionsOf, selectionOf, variantOf, type Selection } from "@/fea
 import { boardColour, materialSpecOf, materialsFor, withMaterial } from "@/features/designer/catalog";
 import { patternIssues } from "@/features/designer/components/SetupModal";
 import type { DesignerCatalog } from "@/features/designer/data/api";
-import { insideSize } from "@/features/designer/document";
+import { dielineOf, insideSize } from "@/features/designer/document";
+import { refitContent } from "@/features/designer/lib/refit";
 import { useEditor } from "@/features/designer/store/editor";
 import type { DesignSpec, StudioChoices } from "@/features/designer/types";
 import { formatDimensions } from "@/i18n/format";
@@ -31,6 +32,7 @@ import { DimensionInput, type LengthUnit } from "@/ui/components/DimensionInput"
 import { Field } from "@/ui/components/Field";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { toast } from "@/ui/components/Toast";
 import { Select } from "@/ui/components/Select";
 
 import { recipeOfVariant } from "./library";
@@ -85,7 +87,11 @@ export function BoxStep({ catalog, configurator, maxSpot, openSetup, onDone }: B
         onMethod={(method) =>
           update({
             printMethod: method === "auto" ? null : method,
-            ...(method === "none" ? { printSides: "none" as const } : studio.printSides === "none" ? { printSides: "outside" as const } : {}),
+            ...(method === "none"
+              ? { printSides: "none" as const }
+              : studio.printSides === "none"
+                ? { printSides: "outside" as const }
+                : {}),
           })
         }
         onSides={(printSides) => update({ printSides })}
@@ -242,8 +248,7 @@ function SizeSection({
   });
   const converted = conversion.data ?? null;
   // The engine draws the inside: entered on another basis, the API's conversion gives it.
-  const target =
-    basis === "internal" ? draft : converted?.sizes.internal ? converted.sizes.internal : null;
+  const target = basis === "internal" ? draft : converted?.sizes.internal ? converted.sizes.internal : null;
   const values: ParamValues | null =
     target?.l && target.w && target.d ? { ...spec.values, length: target.l, width: target.w, height: target.d } : null;
   const pattern = spec.patternId ? catalog?.patterns.find((p) => p.id === spec.patternId) : undefined;
@@ -254,13 +259,23 @@ function SizeSection({
       ].filter((issue) => issue.severity === "error")
     : [];
   const same =
-    values && values.length === spec.values.length && values.width === spec.values.width && values.height === spec.values.height;
+    values &&
+    values.length === spec.values.length &&
+    values.width === spec.values.width &&
+    values.height === spec.values.height;
   const caliperUnknown = basis !== "internal" && converted && converted.caliperMm === null;
 
   const apply = () => {
     if (!values) return;
     const editor = useEditor.getState();
-    editor.setSpec({ ...editor.spec!, values, studio: { ...editor.spec!.studio, basis } });
+    const next = { ...editor.spec!, values, studio: { ...editor.spec!.studio, basis } };
+    // The artwork follows the box (U4.8): each element keeps its place on its face, scaled with it.
+    if (editor.content.elements.length > 0) {
+      const [from, to] = [dielineOf(editor.spec!), dielineOf(next)];
+      editor.commit((content) => refitContent(content, from, to));
+      toast.success(t("refitted"));
+    }
+    editor.setSpec(next);
     setConfirm(false);
   };
 
@@ -319,7 +334,7 @@ function SizeSection({
                 </dd>
               </div>
             ) : null;
-          }          )}
+          })}
         </dl>
       ) : null}
       {caliperUnknown ? <Callout tone="info" title={t("caliperUnknown")} /> : null}
@@ -386,7 +401,9 @@ function MaterialSection({ spec, catalog }: { spec: DesignSpec; catalog: Designe
             <span
               aria-hidden="true"
               className="border-border block size-8 shrink-0 rounded-md border"
-              style={{ background: boardColour({ material: materialSpecOf(m), boardColour: m.swatchHex ?? undefined }) }}
+              style={{
+                background: boardColour({ material: materialSpecOf(m), boardColour: m.swatchHex ?? undefined }),
+              }}
             />
           ),
         }))}

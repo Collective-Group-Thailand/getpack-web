@@ -25,6 +25,8 @@ import { Input } from "@/ui/components/Input";
 import { toast } from "@/ui/components/Toast";
 import { studioHref } from "@/features/customer/studio/paths";
 
+import { OrderedProducts } from "./OrderedProducts";
+
 /** One card's worth, whichever store the design lives in. */
 interface Row {
   id: string;
@@ -186,6 +188,8 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
           </Button>
         </div>
       </div>
+
+      {signedIn && account ? <OrderedProducts designs={account} /> : null}
 
       {waiting.length > 0 ? (
         <Callout tone="info" title={t("import.title", { count: waiting.length })} className="mb-6">
