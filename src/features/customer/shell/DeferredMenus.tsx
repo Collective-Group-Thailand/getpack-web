@@ -3,6 +3,7 @@
 import { lazy, Suspense, useState } from "react";
 import { useTranslations } from "next-intl";
 
+import { ASSISTANT_BUILT_IN } from "@/features/customer/assistant/flag";
 import { IconButton } from "@/ui/components/IconButton";
 import type { IconName } from "@/ui/icons";
 import { useTheme } from "@/ui/theme/ThemeProvider";
@@ -83,6 +84,28 @@ export function DeferredThemeMenu({
   return (
     <Suspense fallback={placeholder}>
       <ThemeToggle label={label} choiceLabels={choiceLabels} open={open} onOpenChange={setOpen} autoFocus />
+    </Suspense>
+  );
+}
+
+/**
+ * Packio Assistant's button (U5.5), in this module so the header gains no client boundary of its
+ * own. Without `NEXT_PUBLIC_ASSISTANT=1` the constant is false at build time and the launcher, its
+ * import and its copy are dropped from the bundle (D-218: off at launch).
+ */
+const AssistantLauncher = ASSISTANT_BUILT_IN
+  ? lazy(() =>
+      import("@/features/customer/assistant/AssistantLauncher").then((module) => ({
+        default: module.AssistantLauncher,
+      })),
+    )
+  : null;
+
+export function DeferredAssistant({ signedIn }: { signedIn: boolean }) {
+  if (!AssistantLauncher) return null;
+  return (
+    <Suspense fallback={null}>
+      <AssistantLauncher signedIn={signedIn} signInHref="/sign-in" />
     </Suspense>
   );
 }

@@ -421,7 +421,11 @@
     "unit_not_accepted": "Sizes are accepted in millimetres only"
   },
   "assistant": {
-    "not_cleared": "The assistant has not passed the required evaluation and cannot be switched on"
+    "not_cleared": "The assistant has not passed the required evaluation and cannot be switched on",
+    "disabled": "The AI assistant is not available yet. Talk to the team instead.",
+    "not_configured": "The AI assistant is not set up yet. Talk to the team instead.",
+    "session_ended": "This conversation has ended. Ask again to start a new one.",
+    "rate_limited": "Too many questions just now. Wait a moment and try again."
   },
   "feature_flags": {
     "dev_only": "This flag is for development only and cannot be switched on here"

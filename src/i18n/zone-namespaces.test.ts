@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ZONE_NAMESPACES } from "./messages";
+import { FLAGGED_NAMESPACES, ZONE_NAMESPACES } from "./messages";
 
 /**
  * Every namespace a zone's own code reads is loaded for that zone.
@@ -29,7 +29,7 @@ function files(dir: string): string[] {
 
 describe("zone namespaces", () => {
   it.each(Object.keys(ROOTS) as (keyof typeof ROOTS)[])("the %s zone loads every namespace its code reads", (zone) => {
-    const loaded = new Set<string>(ZONE_NAMESPACES[zone]);
+    const loaded = new Set<string>([...ZONE_NAMESPACES[zone], ...(FLAGGED_NAMESPACES[zone] ?? [])]);
     const missing = new Set<string>();
     for (const file of ROOTS[zone].flatMap(files)) {
       const source = readFileSync(file, "utf8");

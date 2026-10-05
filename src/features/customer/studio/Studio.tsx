@@ -400,7 +400,7 @@ export function Studio({
                 : true,
           notice: (
             <>
-              <StudioGuide />
+              <StudioGuide signedIn={signedIn} />
               {lock ? (
                 <Badge tone="neutral">{t("locked", { versionNo: lock.versionNo, orderCode: lock.orderCode })}</Badge>
               ) : null}
