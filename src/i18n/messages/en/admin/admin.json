@@ -52,7 +52,8 @@
     "notification_routes": "Notification routes",
     "outbox": "Event outbox",
     "cms": "Site content",
-    "ops": "Ops monitor"
+    "ops": "Ops monitor",
+    "inbox": "Customer inbox"
   },
   "palette": {
     "screens": "Screens",

@@ -656,5 +656,20 @@
     "quoted": "To pay",
     "ordered": "Ordered",
     "lapsed": "Lapsed"
+  },
+  "conversation": {
+    "open": "Waiting for the team",
+    "pending": "Waiting for the customer",
+    "closed": "Closed"
+  },
+  "conversationSla": {
+    "waiting": "Waiting (in time)",
+    "overdue": "Response overdue",
+    "answered": "Answered"
+  },
+  "rfqBasket": {
+    "draft": "Draft",
+    "submitted": "Sent",
+    "discarded": "Discarded"
   }
 }

@@ -23,10 +23,14 @@ import { storeCollabHandlers } from "./collab";
 import { repeatHandlers } from "./repeat";
 import { sampleHandlers } from "./samples";
 import { storeStudioHandlers } from "./studio";
+import { storeConversationHandlers } from "./conversations";
+import { launchpadHandlers } from "./launchpad";
 
 export const storeHandlers = [
   // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
   ...sampleHandlers,
+  ...launchpadHandlers,
+  ...storeConversationHandlers,
   ...repeatHandlers,
   ...storeAccountHandlers,
   ...quoteToolHandlers,
