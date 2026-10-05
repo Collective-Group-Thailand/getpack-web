@@ -11,7 +11,7 @@
  */
 
 import { spawn, spawnSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const PORT = Number(process.env.LHCI_PORT ?? 3200);
@@ -59,7 +59,35 @@ if (configs.length === 0) {
 
 // Wrapped in a function rather than using top-level await: `tsx` compiles this to CJS, where
 // there is no such thing.
+/** Whether something already answers on the port — another worktree's `pnpm lhci`, a dev server. */
+async function portTaken(): Promise<boolean> {
+  try {
+    await fetch(`http://localhost:${PORT}/`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * The set's config with its URLs on `LHCI_PORT`, written beside the original (so `extends` still
+ * resolves) and removed afterwards. The checked-in configs name port 3200; running on another port
+ * is how two worktrees measure at the same time without measuring each other's server.
+ */
+function configFor(name: string): { path: string; cleanup: () => void } {
+  if (PORT === 3200) return { path: `lighthouse/${name}.json`, cleanup: () => undefined };
+  const path = `lighthouse/.port-${PORT}-${name}.json`;
+  writeFileSync(join(ROOT, path), readFileSync(join(ROOT, `lighthouse/${name}.json`), "utf8").replaceAll(":3200/", `:${PORT}/`));
+  return { path, cleanup: () => rmSync(join(ROOT, path), { force: true }) };
+}
+
 async function main(): Promise<void> {
+  // A server already on the port would be measured instead of this build — and `pnpm start` would
+  // fail to bind without saying so. Refuse rather than report someone else's numbers.
+  if (await portTaken()) {
+    console.error(`Port ${PORT} is already in use (another \`pnpm lhci\`?). Set LHCI_PORT to a free port.`);
+    process.exit(1);
+  }
   const server = spawn("pnpm", ["start", "-p", String(PORT)], { cwd: ROOT, env, stdio: "ignore" });
   const failures: string[] = [];
 
@@ -68,11 +96,13 @@ async function main(): Promise<void> {
 
     for (const name of configs) {
       console.info(`\n── lighthouse: ${name} ──`);
-      const result = spawnSync("pnpm", ["exec", "lhci", "autorun", `--config=lighthouse/${name}.json`], {
+      const config = configFor(name);
+      const result = spawnSync("pnpm", ["exec", "lhci", "autorun", `--config=${config.path}`], {
         cwd: ROOT,
         env,
         stdio: "inherit",
       });
+      config.cleanup();
       if (result.status !== 0) failures.push(name);
     }
   } finally {

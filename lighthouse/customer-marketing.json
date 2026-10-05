@@ -25,7 +25,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 270000
+            "maxNumericValue": 273000
           }
         ],
         "categories:seo": [
@@ -49,5 +49,5 @@
       }
     }
   },
-  "$comment": "Marketing, catalogue and product pages: LCP <= 2.0s, initial JS <= 150 KB (docs/performance-budgets.md). RATCHET: the target in docs/performance-budgets.md is 150 KB of initial JS; this build measures 256–257 KB (F3 3.1; 374 KB in F1.3), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md."
+  "$comment": "Marketing, catalogue and product pages: LCP <= 2.0s, initial JS <= 150 KB (docs/performance-budgets.md). RATCHET: the target in docs/performance-budgets.md is 150 KB of initial JS; this build measures 256–257 KB (F3 3.1; 374 KB in F1.3), so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md. U5.1–U5.7 (2026-10-06) raised 270000 -> 273000: /styles 272419 and a style page 272879 against main's 269459 / 269917 — the 2,960 B every customer page gained (U5 copy in the client messages, new routes in the router's table, the error boundary's next step); main had 83 B left (docs/performance-budgets.md U5.1)."
 }
