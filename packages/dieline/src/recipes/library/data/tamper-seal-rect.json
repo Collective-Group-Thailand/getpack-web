@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "tamper-seal-rect",
+  "base": "PK-LA-04",
+  "variant": {
+    "shape_flat": "rectangle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "สติกเกอร์ซีลกันแกะ สี่เหลี่ยม",
+    "en": "Tamper-evident seal, rectangle"
+  },
+  "description": {
+    "th": "สติกเกอร์ปิดผนึกมีรอยกรีดรอบขอบ ฉีกขาดเมื่อถูกแกะ",
+    "en": "A seal label with security cuts round its edge, so it tears when lifted"
+  },
+  "materials": ["label"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    }
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "securityCuts"
+    }
+  ]
+}

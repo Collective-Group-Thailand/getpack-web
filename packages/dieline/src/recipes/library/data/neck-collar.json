@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "neck-collar",
+  "base": "PK-LA-05",
+  "category": "flat",
+  "name": {
+    "th": "ฉลากคอขวด",
+    "en": "Neck collar label"
+  },
+  "description": {
+    "th": "ฉลากวงแหวนสวมคอขวด",
+    "en": "A ring label that slips over a bottle neck"
+  },
+  "materials": ["label", "paperboard"],
+  "params": [
+    {
+      "ref": "diameter",
+      "min": 40,
+      "max": 150
+    },
+    "neckDiameter"
+  ],
+  "defaults": {
+    "diameter": 70,
+    "neckDiameter": 28
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "⌀ 60 คอ 26",
+        "en": "⌀ 60, neck 26"
+      },
+      "values": {
+        "diameter": 60,
+        "neckDiameter": 26
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "⌀ 70 คอ 28",
+        "en": "⌀ 70, neck 28"
+      },
+      "values": {
+        "diameter": 70,
+        "neckDiameter": 28
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "⌀ 90 คอ 36",
+        "en": "⌀ 90, neck 36"
+      },
+      "values": {
+        "diameter": 90,
+        "neckDiameter": 36
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "circle"
+    }
+  },
+  "features": [
+    {
+      "module": "neckHole",
+      "with": {
+        "center": "diameter"
+      }
+    }
+  ]
+}

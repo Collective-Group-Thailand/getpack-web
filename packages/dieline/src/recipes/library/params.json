@@ -490,5 +490,17 @@
     "min": 20,
     "max": 150,
     "step": 1
+  },
+  "neckDiameter": {
+    "key": "neckDiameter",
+    "kind": "length",
+    "group": "size",
+    "label": {
+      "th": "เส้นผ่านศูนย์กลางคอขวด",
+      "en": "Bottle-neck diameter"
+    },
+    "min": 10,
+    "max": 80,
+    "step": 0.5
   }
 }

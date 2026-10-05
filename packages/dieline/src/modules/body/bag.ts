@@ -3,7 +3,7 @@ import { buildTube, type Closure } from "../../construct/tube";
 import { assemble, face, piece } from "../../faces";
 import { num, str } from "../../params";
 import { ellipse, polygon, rectangle, roundedRectangle } from "../../path";
-import { grainOn, t } from "../../styles/_shared";
+import { grainOn, t, windowHole } from "../../styles/_shared";
 import type { Contour, Edge } from "../../types";
 import type { BodyModule } from "../types";
 
@@ -17,6 +17,9 @@ const TURN_OVER_MM = 50;
  * glue patches on the turn-over for the handles, `rope` two punched holes through the panel and its
  * turn-over each side, `die_cut` a hand hole through both, `none`. 2D only (D-152). ⚠ Turn-over,
  * bottom and handle positions to be confirmed by Prepress.
+ *
+ * `sos` (PK-PG-02, U3.4 wave 2): a self-opening square-bottom grocery bag — no turn-over and no
+ * handles, the top a plain cut edge; a `window` (film patched) may be cut in the front.
  */
 export const paperBag: BodyModule = {
   id: "paperBag",
@@ -38,13 +41,14 @@ export const paperBag: BodyModule = {
       message: t("ถุงแคบเกินกว่าจะเจาะหูหิ้ว", "The bag is too narrow for a die-cut handle"),
     },
   ],
-  build(ctx) {
+  build(ctx, cfg) {
     const { v, m } = ctx;
+    const sos = cfg.sos === true;
     const w = num(v, "width", 250);
     const h = num(v, "height", 300);
     const gusseted = str(v, "bagGusset", "gusseted") === "gusseted";
     const g = gusseted ? num(v, "gusset", 100) : 0;
-    const handle = str(v, "bagHandle", "twisted_paper");
+    const handle = sos ? "none" : str(v, "bagHandle", "twisted_paper");
     const panels = gusseted
       ? [
           { id: "front", label: "front" as const, width: w },
@@ -116,9 +120,12 @@ export const paperBag: BodyModule = {
       panels,
       depth: h,
       glue: num(v, "glueWidth", glueWidthFor(w, m)),
-      top,
+      ...(sos ? {} : { top }),
       bottom,
-      holes: (p) => (isMain(p.id) ? cutouts(p.x0, p.x1, (d) => p.y0 + d) : []),
+      holes: (p) => [
+        ...(isMain(p.id) ? cutouts(p.x0, p.x1, (d) => p.y0 + d) : []),
+        ...windowHole(v, p.id, p.x0, p.x1, p.y0, p.y1),
+      ],
     });
     return assemble(ctx.styleId, [piece("blank", "blank", faces, grainOn(v, faces, "front"))]);
   },
