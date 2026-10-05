@@ -1,11 +1,12 @@
 import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
 import { polyMailer } from "./body/poly-mailer";
-import { envelope, foldedCard, paperTube, presentationFolder } from "./body/wave2-bodies";
+import { envelope, foldedCard, paperTube, presentationFolder, shrinkSleeve } from "./body/wave2-bodies";
 import { coverFlaps, displayTop, osc } from "./closure/wave2-closures";
 import { rigidCase, shoulderNeck } from "./pieceSet/wave2-piece-sets";
 import {
   adhesiveStrip,
+  bookletHinge,
   dispenser,
   neckHole,
   neckLock,
@@ -58,4 +59,6 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   coverFlaps,
   rigidCase,
   shoulderNeck,
+  bookletHinge,
+  shrinkSleeve,
 ];

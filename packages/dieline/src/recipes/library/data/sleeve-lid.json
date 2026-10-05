@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "id": "sleeve-lid",
+  "base": "PK-SL-04",
+  "variants": {
+    "thumb": {
+      "none": {
+        "thumbNotch": false
+      },
+      "thumb_notch": {
+        "thumbNotch": true
+      }
+    },
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "front_window": {
+        "window": "rect",
+        "windowPanel": "front"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "ปลอกมีฝาพับ",
+    "en": "Sleeve with hinged lid"
+  },
+  "description": {
+    "th": "ปลอกสี่ด้าน ด้านบนมีฝาเสียบพับเปิดปิด ด้านล่างเปิด เลือกรอยเว้านิ้วที่ปลายเปิดและหน้าต่างได้",
+    "en": "A four-sided sleeve with a hinged tuck lid at the top and an open bottom; finger notch at the open end and window are options"
+  },
+  "materials": ["paperboard", "corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 10,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 15,
+      "max": 400
+    },
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "window",
+    "windowPanel",
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius",
+    "thumbNotch",
+    {
+      "ref": "tuckDepth",
+      "omit": ["help"]
+    },
+    "tuckCorners"
+  ],
+  "defaults": {
+    "length": 120,
+    "width": 80,
+    "height": 60,
+    "glueSide": "left",
+    "grain": "across",
+    "windowPanel": "front",
+    "window": "none",
+    "windowWidth": 40,
+    "windowHeight": 30,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6,
+    "thumbNotch": false,
+    "tuckCorners": "rounded"
+  },
+  "presets": [
+    {
+      "id": "soap",
+      "label": {
+        "th": "สบู่ 90 × 60 × 40",
+        "en": "Soap bar 90 × 60 × 40"
+      },
+      "values": {
+        "length": 90,
+        "width": 60,
+        "height": 40
+      }
+    },
+    {
+      "id": "gift",
+      "label": {
+        "th": "ของขวัญ 200 × 150 × 80",
+        "en": "Gift 200 × 150 × 80"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 80
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "side - a.gluePanel",
+        "glue": "glueWidth ?? glueWidthFor(width)"
+      },
+      "depth": "height + t",
+      "piece": {
+        "id": "blank",
+        "label": "sleeve"
+      }
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "tuck",
+      "with": {
+        "lid": "back"
+      }
+    },
+    "bottom": {
+      "module": "openEnd"
+    }
+  },
+  "features": [
+    {
+      "module": "window"
+    }
+  ],
+  "outerSize": {
+    "height": "height + 1.5 * t"
+  }
+}

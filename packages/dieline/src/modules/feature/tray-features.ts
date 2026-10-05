@@ -103,4 +103,7 @@ export const telescopeLid: FeatureModule = {
 };
 
 export const telescopeLidDepth = (v: ParamValues) =>
-  num(v, "lidDepth", Math.max(15, Math.round(num(v, "height", 150) / 3)));
+  // `lid` = `full` (a bulk bin's lid to the floor, U3.4 wave 3): the whole height.
+  str(v, "lid", "partial") === "full"
+    ? num(v, "height", 150)
+    : num(v, "lidDepth", Math.max(15, Math.round(num(v, "height", 150) / 3)));
