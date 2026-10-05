@@ -28,6 +28,7 @@ import { storeConversationHandlers } from "./conversations";
 import { launchpadHandlers } from "./launchpad";
 import { rfqBasketHandlers } from "./rfq-baskets";
 import { contentHandlers } from "./content";
+import { assistantHandlers } from "./assistant";
 
 export const storeHandlers = [
   // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
@@ -36,6 +37,7 @@ export const storeHandlers = [
   ...storeConversationHandlers,
   ...rfqBasketHandlers,
   ...contentHandlers,
+  ...assistantHandlers,
   ...structuralHandlers,
   ...repeatHandlers,
   ...storeAccountHandlers,

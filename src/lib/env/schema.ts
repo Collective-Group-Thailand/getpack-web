@@ -136,6 +136,11 @@ export function clientEnvSchema() {
      * the U2.0 data-terms answer, and a new consent version (PROGRESS, U5.0).
      */
     NEXT_PUBLIC_REPLAY_ENABLED: z.enum(["0", "1"]).optional(),
+    /**
+     * Packio Assistant (U5.5): its code is built in only when `1`. D-218 keeps it off at launch;
+     * even built in, packio-api decides per customer (`assistant.enabled`, the D-306 gate).
+     */
+    NEXT_PUBLIC_ASSISTANT: z.enum(["0", "1"]).optional(),
     /** Share of consented visits recorded, 0–1 (default 0.1). */
     NEXT_PUBLIC_REPLAY_SAMPLE_RATE: z
       .string()

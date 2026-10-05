@@ -50,6 +50,43 @@
         }
       }
     },
+    "/v1/store/assistant/availability": {
+      "get": {
+        "operationId": "store.assistant.availability.list",
+        "summary": "Whether the assistant can be used by me now, and why not",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.assistant-availability",
+        "x-decisions": [
+          "D-218",
+          "D-305",
+          "D-306"
+        ],
+        "responses": {
+          "200": {
+            "description": "Whether the assistant can be used by me now, and why not",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantAvailabilityDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/catalog/glossary-terms": {
       "get": {
         "operationId": "store.catalog.glossaryTerms.list",
@@ -461,6 +498,50 @@
   },
   "components": {
     "schemas": {
+      "AssistantAvailabilityDto": {
+        "type": "object",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/AssistantUnavailableReason"
+          },
+          "logRetentionDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "available",
+          "reason",
+          "logRetentionDays"
+        ],
+        "additionalProperties": false
+      },
+      "AssistantUnavailableReason": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "not_configured",
+              "rate_limited"
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "FoodContactStatus": {
         "type": "string",
         "enum": [

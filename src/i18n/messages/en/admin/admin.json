@@ -53,7 +53,8 @@
     "outbox": "Event outbox",
     "cms": "Site content",
     "ops": "Ops monitor",
-    "inbox": "Customer inbox"
+    "inbox": "Customer inbox",
+    "assistant": "AI assistant"
   },
   "palette": {
     "screens": "Screens",

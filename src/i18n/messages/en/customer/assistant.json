@@ -1,0 +1,43 @@
+{
+  "open": "Ask the AI assistant",
+  "title": "Packio assistant",
+  "close": "Close",
+  "aiLabel": "AI",
+  "aiTitle": "This assistant is an AI",
+  "aiBody": "It answers only from Packio's own data — box styles, starting prices, your orders, the glossary and help articles. It never guesses a price, a date or a policy, and conversations are not used to train models.",
+  "retention": "Conversations are kept {days} days, then deleted. You can turn keeping off below.",
+  "retentionPolicy": "Conversations are kept under our privacy policy. You can turn keeping off below.",
+  "optOut": "Don't keep this conversation",
+  "conversation": "Conversation with the assistant",
+  "empty": "Try “Which mailer fits two glasses?” or “Where is order PK-2569-00125?”",
+  "you": "You",
+  "assistant": "AI assistant",
+  "sources": "From",
+  "ask": "Ask the assistant",
+  "placeholder": "Type a question",
+  "send": "Ask",
+  "talkToTeam": "Talk to the team",
+  "signIn": "The assistant can answer about your orders and prices, so please sign in first.",
+  "signInAction": "Sign in",
+  "failed": "The question was not sent. Try again.",
+  "sessionEnded": "The previous conversation ended. Ask again.",
+  "unavailable": {
+    "off": "The AI assistant is not available yet — our team answers during business hours.",
+    "rate_limited": "Too many questions just now. Try again shortly, or talk to the team."
+  },
+  "outcomes": {
+    "blocked_unsupported_fact": "The assistant could not answer this with certainty, so it did not guess.",
+    "refused": "The assistant can't help with this.",
+    "handed_off": "Passed to the team.",
+    "failed": "The assistant could not answer."
+  },
+  "tools": {
+    "search_styles": "Style library",
+    "recommend_structure": "Structure advisor",
+    "get_quote": "Starting prices",
+    "get_order_status": "Your orders",
+    "lookup_glossary": "Glossary",
+    "search_help": "Help articles",
+    "create_handoff": "Hand-off to the team"
+  }
+}
