@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "id": "srp-tray",
+  "base": "PK-CD-01",
+  "variants": {
+    "joint": {
+      "glue_flap": {
+        "joint": "glue"
+      },
+      "stitch_flap": {
+        "joint": "stitch"
+      },
+      "tape_joint": {
+        "joint": "tape"
+      }
+    },
+    "header": {
+      "none": {
+        "srpHeader": false
+      },
+      "header_card": {
+        "srpHeader": true
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องพร้อมวางชั้น (ฉีกฝาบนออก)",
+    "en": "Shelf-ready tray with tear-off top"
+  },
+  "description": {
+    "th": "กล่องขนส่งลูกฟูก ฉีกส่วนบนออกตามเส้นปรุ เหลือเป็นถาดวางบนชั้นวางได้ทันที เลือกให้ด้านหลังสูงเป็นป้ายหัวได้",
+    "en": "A corrugated shipper whose top tears away along a perforation to leave a tray ready for the shelf; the back can stay full height as a header"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 1200
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 800
+    },
+    {
+      "ref": "height",
+      "min": 40,
+      "max": 1000
+    },
+    "joint",
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "srpHeader"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue",
+    "srpHeader": false
+  },
+  "presets": "slotted",
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.depth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "rsc"
+    },
+    "bottom": {
+      "module": "rsc"
+    }
+  },
+  "features": [
+    {
+      "module": "tearLine",
+      "with": {
+        "front": "depth * 0.6",
+        "back": "srpHeader ? 0 : depth * 0.4"
+      }
+    }
+  ]
+}

@@ -88,6 +88,24 @@ import tamperSealOval from "./data/tamper-seal-oval.json" with { type: "json" };
 import tamperSealCustom from "./data/tamper-seal-custom.json" with { type: "json" };
 import neckCollar from "./data/neck-collar.json" with { type: "json" };
 import neckInsert from "./data/neck-insert.json" with { type: "json" };
+import teTamperTuck from "./data/te-tamper-tuck.json" with { type: "json" };
+import tearDisplayTuck from "./data/tear-display-tuck.json" with { type: "json" };
+import dispenserTuck from "./data/dispenser-tuck.json" with { type: "json" };
+import teTamperSnap from "./data/te-tamper-snap.json" with { type: "json" };
+import tearDisplaySnap from "./data/tear-display-snap.json" with { type: "json" };
+import dispenserSnap from "./data/dispenser-snap.json" with { type: "json" };
+import teTamperCrash from "./data/te-tamper-crash.json" with { type: "json" };
+import tearDisplayCrash from "./data/tear-display-crash.json" with { type: "json" };
+import dispenserCrash from "./data/dispenser-crash.json" with { type: "json" };
+import teTamperSeal from "./data/te-tamper-seal.json" with { type: "json" };
+import tearDisplaySeal from "./data/tear-display-seal.json" with { type: "json" };
+import dispenserSeal from "./data/dispenser-seal.json" with { type: "json" };
+import teTamperFourflap from "./data/te-tamper-fourflap.json" with { type: "json" };
+import tearDisplayFourflap from "./data/tear-display-fourflap.json" with { type: "json" };
+import dispenserFourflap from "./data/dispenser-fourflap.json" with { type: "json" };
+import tapeFreeBox from "./data/tape-free-box.json" with { type: "json" };
+import srpTray from "./data/srp-tray.json" with { type: "json" };
+import ecomMailer from "./data/ecom-mailer.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -187,4 +205,22 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   tamperSealCustom,
   neckCollar,
   neckInsert,
+  teTamperTuck,
+  tearDisplayTuck,
+  dispenserTuck,
+  teTamperSnap,
+  tearDisplaySnap,
+  dispenserSnap,
+  teTamperCrash,
+  tearDisplayCrash,
+  dispenserCrash,
+  teTamperSeal,
+  tearDisplaySeal,
+  dispenserSeal,
+  teTamperFourflap,
+  tearDisplayFourflap,
+  dispenserFourflap,
+  tapeFreeBox,
+  srpTray,
+  ecomMailer,
 ] as unknown as StyleRecipe[];

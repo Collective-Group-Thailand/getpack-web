@@ -149,6 +149,8 @@ export interface FeatureModule extends ModuleBase {
   fits: BodyKind[];
   /** Cut-outs in a tube panel. */
   tubeHoles?(ctx: BuildContext, cfg: ModuleConfig, panel: PanelSpan & { y0: number; y1: number }): Contour[];
+  /** Lines on a tube panel that do not cut it out (perforations, adhesive strips). */
+  tubeMarks?(ctx: BuildContext, cfg: ModuleConfig, panel: PanelSpan & { y0: number; y1: number }): Edge[];
   /** Wraps one end's closure (a hang tab standing on the back panel's lid end). */
   wrapClosure?(ctx: BuildContext, cfg: ModuleConfig, end: "top" | "bottom", inner: Closure): Closure;
   /** Faces hinged on a tray's walls (inner walls rolled over). */

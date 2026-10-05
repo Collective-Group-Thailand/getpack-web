@@ -79,6 +79,8 @@ export interface TubeSpec {
   bottom?: Closure;
   /** Holes per panel, drawn in the tube frame (after glue offset, before mirroring). */
   holes?: (panel: PanelSpan & { y0: number; y1: number }) => Contour[];
+  /** Lines per panel that do not cut it out (perforations, adhesive strips), in the same frame. */
+  marks?: (panel: PanelSpan & { y0: number; y1: number }) => Edge[];
 }
 
 /** Edges along a panel's top edge from x0 to x1 at y, creased under attachments, cut elsewhere. */
@@ -235,7 +237,8 @@ export function buildTube(spec: TubeSpec): Face[] {
       line([s.x0, depth], [s.x0, 0], hasLeft ? "crease" : "cut"),
     ];
     const holes = spec.holes?.({ ...s, y0: 0, y1: depth }) ?? [];
-    faces.push(face(s.id, s.label, "panel", outline, { holes }));
+    const marks = spec.marks?.({ ...s, y0: 0, y1: depth }) ?? [];
+    faces.push(face(s.id, s.label, "panel", outline, marks.length ? { holes, marks } : { holes }));
   }
   faces.push(...top.attachments.map((a) => a.face), ...(top.faces ?? []));
   faces.push(...bottom.attachments.map((a) => a.face), ...bottom.faces);

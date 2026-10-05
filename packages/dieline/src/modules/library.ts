@@ -2,7 +2,16 @@ import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
 import { polyMailer } from "./body/poly-mailer";
 import { osc } from "./closure/wave2-closures";
-import { neckHole, securityCuts, trayWindow } from "./feature/wave2-features";
+import {
+  adhesiveStrip,
+  dispenser,
+  neckHole,
+  securityCuts,
+  tamperTuck,
+  tearLine,
+  tearStrip,
+  trayWindow,
+} from "./feature/wave2-features";
 import { airplaneTuck, flipTop, fourFlapLock, openEnd, slitLock } from "./closure/wave-closures";
 import { dieCutInsert, insertBody } from "./feature/insert";
 import { displayHeader, lockCorners, telescopeLid } from "./feature/tray-features";
@@ -30,4 +39,9 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   trayWindow,
   securityCuts,
   neckHole,
+  tearStrip,
+  adhesiveStrip,
+  dispenser,
+  tearLine,
+  tamperTuck,
 ];
