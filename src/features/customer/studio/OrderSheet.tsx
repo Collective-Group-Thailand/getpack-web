@@ -29,6 +29,7 @@ import { OrderAction } from "@/features/customer/designer/OrderAction";
 
 import { useStudioChecks } from "./checks";
 import { compareDecimal } from "./decimal";
+import { DesignService } from "./DesignService";
 import { studioQuote } from "./pricing";
 import { uploadRenders } from "./renders";
 
@@ -374,6 +375,12 @@ export function OrderSheet({
           </Button>
         ) : null}
       </div>
+
+      <DesignService
+        ctx={ctx}
+        quantity={qty}
+        offered={configurator?.design.options.includes("hired_design") ?? false}
+      />
 
       <Dialog
         open={phase !== null && phase !== "done"}

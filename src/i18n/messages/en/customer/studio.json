@@ -99,7 +99,8 @@
     "noCoating": "No coating",
     "finishPrice": "The price dock shows what changes, and why",
     "advisor": "Let Packio suggest the board",
-    "advisorOpen": "Tell us the weight and journey"
+    "advisorOpen": "Tell us the weight and journey",
+    "refitted": "The artwork was fitted to the new size (undo to go back)"
   },
   "check": {
     "title": "Check before you order",
@@ -311,5 +312,35 @@
     "onFace": "on {face}",
     "onFlat": "on the flat sheet",
     "panel": "Comments"
+  },
+  "designService": {
+    "title": "Rather not design it yourself?",
+    "body": "Packio's design team carries on from what you placed, in this same design; you comment and approve in the studio",
+    "open": "Have our team design it",
+    "dialogTitle": "Brief for the design team",
+    "dialogBody": "The brief starts from your box and what is on it — add what you want. The design fee shows in the cart",
+    "briefLabel": "Brief",
+    "briefHint": "The team edits this design itself, not a new one",
+    "send": "Add to cart with the design service",
+    "saveFailed": "Could not save the design",
+    "failed": "Could not send — try again",
+    "brief": {
+      "box": "Box",
+      "size": "Size",
+      "material": "Material",
+      "print": "Print",
+      "methods": {
+        "digital": "Digital",
+        "offset": "Offset",
+        "flexo": "Flexo",
+        "none": "No print"
+      },
+      "colours": "Colours used",
+      "texts": "Text on the box",
+      "images": "Pictures",
+      "none": "none yet",
+      "mm": "mm",
+      "wishes": "What I would like"
+    }
   }
 }

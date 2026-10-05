@@ -19,14 +19,36 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterAll(() => server.close());
 const anonymous = () => createApiClient({ baseUrl: "http://api.mock" });
 
-const blank: DesignContent = { elements: [], pattern: { kind: "none", color: "#000000", background: "#ffffff", size: 12 } };
+const blank: DesignContent = {
+  elements: [],
+  pattern: { kind: "none", color: "#000000", background: "#ffffff", size: 12 },
+};
 const text = (fill: string) =>
-  ({ id: fill, type: "text", x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1, opacity: 1, text: "A", fontFamily: "Sarabun", fontSize: 10, fontStyle: "normal", fill, align: "left", width: 10 }) as unknown as DesignContent["elements"][number];
+  ({
+    id: fill,
+    type: "text",
+    x: 0,
+    y: 0,
+    rotation: 0,
+    scaleX: 1,
+    scaleY: 1,
+    opacity: 1,
+    text: "A",
+    fontFamily: "Sarabun",
+    fontSize: 10,
+    fontStyle: "normal",
+    fill,
+    align: "left",
+    width: 10,
+  }) as unknown as DesignContent["elements"][number];
 const twoColours: DesignContent = { ...blank, elements: [text("#c0392b"), text("#1f6f78")] };
 
 async function configurator() {
-  return (await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", { params: { path: { slug: "tuck-end-box" } } }))
-    .data! as Configurator;
+  return (
+    await anonymous().GET("/v1/store/catalog/products/{slug}/configurator", {
+      params: { path: { slug: "tuck-end-box" } },
+    })
+  ).data! as Configurator;
 }
 
 describe("the print method configures the inks (U4.2)", () => {
@@ -65,7 +87,13 @@ describe("the print method configures the inks (U4.2)", () => {
   });
 
   it("reads the flexo limit from the rules only when Prepress set it", () => {
-    const rule = { id: "spot_colour_count", severity: "warn", evaluatedOn: ["web"], printMethods: ["flexo"], materialClasses: null };
+    const rule = {
+      id: "spot_colour_count",
+      severity: "warn",
+      evaluatedOn: ["web"],
+      printMethods: ["flexo"],
+      materialClasses: null,
+    };
     expect(maxSpotColours({ rules: [{ ...rule, thresholds: null }] } as never)).toBeNull();
     expect(maxSpotColours({ rules: [{ ...rule, thresholds: { maxColours: 3 } }] } as never)).toBe(3);
     expect(maxSpotColours({ rules: [{ ...rule, thresholds: { maxColours: "2" } }] } as never)).toBe(2);
@@ -81,7 +109,11 @@ describe("describe your product (U4.2)", () => {
     expect(parcel[0]!.style.category).toBe("corrugated");
     for (const s of parcel) {
       expect(s.spec.values.length).toBeGreaterThan(product.length);
-      expect(getStyle(s.spec.styleId).validate(s.spec.values, s.spec.material).filter((i) => i.severity === "error")).toEqual([]);
+      expect(
+        getStyle(s.spec.styleId)
+          .validate(s.spec.values, s.spec.material)
+          .filter((i) => i.severity === "error"),
+      ).toEqual([]);
       expect(s.reasons.map((r) => r.code)).toContain("fits");
     }
     expect(suggestBoxes(product, "shelf", null, "th")[0]!.style.category).toBe("folding_carton");

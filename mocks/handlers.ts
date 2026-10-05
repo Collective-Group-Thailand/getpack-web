@@ -96,7 +96,21 @@ export const handlers = [
   // API answers, so a sender drifting from the contract fails here rather than in production.
   http.post("*/v1/store/analytics/events", async ({ request }) => {
     const body = (await request.json().catch(() => null)) as Schemas["AnalyticsEventBatchDto"] | null;
-    const names = new Set(["page_view", "configurator_step", "quote_shown", "add_to_cart", "checkout_step"]);
+    // Every name the contract publishes (`AnalyticsEventName`): the studio funnel too (D-286).
+    const names = new Set<Schemas["AnalyticsEventName"]>([
+      "page_view",
+      "configurator_step",
+      "quote_shown",
+      "add_to_cart",
+      "checkout_step",
+      "studio_started",
+      "studio_box_confirmed",
+      "studio_first_artwork",
+      "studio_checks_clean",
+      "studio_add_to_cart",
+      "studio_ordered",
+      "journey_step",
+    ]);
     const valid =
       Array.isArray(body?.events) &&
       body.events.length >= 1 &&

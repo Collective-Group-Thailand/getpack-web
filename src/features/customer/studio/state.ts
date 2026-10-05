@@ -111,6 +111,12 @@ export function stateForDesign(
     choices,
     quantities: [quantity],
     quantity,
-    designOption: configurator.design.options.includes("online_designer") ? "online_designer" : base.designOption,
+    // Handed to the design service (U4.8): priced with the graphic design fee (D-286).
+    designOption:
+      studio.designService && configurator.design.options.includes("hired_design")
+        ? "hired_design"
+        : configurator.design.options.includes("online_designer")
+          ? "online_designer"
+          : base.designOption,
   };
 }
