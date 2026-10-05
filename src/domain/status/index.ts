@@ -85,6 +85,7 @@ export type {
 // in scope; `export { … } from` would not put them there.
 import { ARTWORK_STATUS } from "./artwork";
 import { CALL_OFF_RELEASE_STATUS, CALL_OFF_STATUS } from "./calloff";
+import { STRUCTURAL_REQUEST_STATUS, STYLE_INTAKE_STATUS } from "./structural";
 import { SAMPLE_KIND, SAMPLE_STATUS } from "./sample";
 import { CATALOG_STATUS, CONTENT_STATUS } from "./catalogue";
 import { CLAIM_STATUS } from "./claim";
@@ -205,6 +206,8 @@ export {
   SAMPLE_KIND,
   SAMPLE_STATUS,
   CALL_OFF_STATUS,
+  STRUCTURAL_REQUEST_STATUS,
+  STYLE_INTAKE_STATUS,
   CALL_OFF_RELEASE_STATUS,
   AUDIT_OUTCOME_STATUS,
   BANK_ACCOUNT_STATUS,
@@ -274,6 +277,8 @@ export const STATUS_MAPS = {
   sample: SAMPLE_STATUS,
   callOff: CALL_OFF_STATUS,
   callOffRelease: CALL_OFF_RELEASE_STATUS,
+  structuralRequest: STRUCTURAL_REQUEST_STATUS,
+  styleIntake: STYLE_INTAKE_STATUS,
   sampleKind: SAMPLE_KIND,
   auditOutcome: AUDIT_OUTCOME_STATUS,
   bankAccount: BANK_ACCOUNT_STATUS,

@@ -5,6 +5,7 @@ import { ConsolePage } from "@/features/admin/console/ConsolePage";
 import { prefetchList } from "@/features/admin/console/prefetch.server";
 import { PrepressList } from "@/features/admin/prepress";
 import { prepressList } from "@/features/admin/prepress/resources";
+import { StyleWorkLinks } from "@/features/admin/structural/StyleWorkLinks";
 import { PageHeader } from "@/ui/components/PageHeader";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,7 +19,7 @@ export default async function PrepressPage({ searchParams }: Props) {
   const initial = await prefetchList(prepressList, await searchParams);
   return (
     <ConsolePage>
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader title={t("title")} description={t("description")} actions={<StyleWorkLinks />} />
       <PrepressList initial={initial} />
     </ConsolePage>
   );

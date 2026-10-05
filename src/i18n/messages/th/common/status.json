@@ -656,5 +656,22 @@
     "quoted": "รอชำระ",
     "ordered": "สั่งแล้ว",
     "lapsed": "หมดสิทธิ์"
+  },
+  "structuralRequest": {
+    "submitted": "ส่งคำขอแล้ว",
+    "assigned": "มีผู้ออกแบบรับงาน",
+    "quoted": "เสนอค่าออกแบบแล้ว",
+    "delivered": "ส่งแบบแล้ว",
+    "approved": "อนุมัติแบบแล้ว",
+    "published": "เผยแพร่ในคลังแบบแล้ว",
+    "declined": "ไม่รับคำขอ",
+    "cancelled": "ยกเลิกแล้ว"
+  },
+  "styleIntake": {
+    "submitted": "รอตรวจ",
+    "matched": "จับคู่แบบแล้ว",
+    "approvedRecipe": "อนุมัติเป็นแบบใหม่",
+    "approvedTemplate": "อนุมัติเป็นเทมเพลต",
+    "rejected": "ไม่รับ"
   }
 }

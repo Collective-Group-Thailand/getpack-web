@@ -67,7 +67,8 @@
     "privacy": "ความเป็นส่วนตัว",
     "samples": "ตัวอย่างสินค้า",
     "replenishment": "สั่งซ้ำตามรอบ",
-    "callOffs": "สัญญาเรียกของ"
+    "callOffs": "สัญญาเรียกของ",
+    "structuralRequests": "คำขอออกแบบโครงสร้าง"
   },
   "home": {
     "title": "บัญชีของฉัน",

@@ -8,7 +8,7 @@ import { OPERATION_TRIAGE } from "./triage";
  * `registry.test.ts` can tell "not triaged yet" from "forgotten", and it leaves as soon as
  * `pnpm gen:triage` brings in a verdict for it.
  */
-export const AWAITING_TRIAGE: readonly string[] = [];
+export const AWAITING_TRIAGE: readonly string[] = ["GET /v1/admin/structural-requests/designers"];
 
 /**
  * Whether packio-api still has to build this operation — the ones `contract-requests.openapi.json`

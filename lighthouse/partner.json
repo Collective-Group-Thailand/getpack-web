@@ -25,11 +25,11 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 301000
+            "maxNumericValue": 301400
           }
         ]
       }
     }
   },
-  "$comment": "Partner PWA on the mobile preset: <= 2.5s on 4G mid-range, initial JS <= 180 KB. Mobile, because a desktop run would not measure the device the shop floor actually uses. RATCHET: the target in docs/performance-budgets.md is 180 KB of initial JS; F5 5.2 measures 251 KB on /login (361 KB before F5, 316 KB after 5.1 until its form stopped importing the `@/ui` barrel) and 264–286 KB on the zone's screens, /jobs the largest, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md. U2.F4 (2026-10-05) raised 300000 -> 301000: /jobs measures 300067 — the sample status vocabulary, the shared sample-evidence form copy and the samples.* / dielines.* problem messages every zone loads (U2.F2–U2.F3); the factory app itself added only the sample jobs screen, on its own route."
+  "$comment": "Partner PWA on the mobile preset: <= 2.5s on 4G mid-range, initial JS <= 180 KB. Mobile, because a desktop run would not measure the device the shop floor actually uses. RATCHET: the target in docs/performance-budgets.md is 180 KB of initial JS; F5 5.2 measures 251 KB on /login (361 KB before F5, 316 KB after 5.1 until its form stopped importing the `@/ui` barrel) and 264–286 KB on the zone's screens, /jobs the largest, so the assertion is pinned just above the current figure. It stops the number growing while the gap is worked down — it is not the budget. Lower the ceiling whenever a change wins headroom; never raise it without saying why in docs/PROGRESS.md. U2.F4 (2026-10-05) raised 300000 -> 301000: /jobs measures 300067 — the sample status vocabulary, the shared sample-evidence form copy and the samples.* / dielines.* problem messages every zone loads (U2.F2–U2.F3); the factory app itself added only the sample jobs screen, on its own route. U3.6 (2026-10-06) raised 301000 -> 301400: 301307: the more menu's dieline offers entry and its copy, in every partner page's messages."
 }
