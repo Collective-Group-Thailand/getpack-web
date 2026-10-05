@@ -1,6 +1,6 @@
 import { assemble, face, piece } from "../../faces";
 import type { FaceLabel } from "../../labels";
-import { num, str } from "../../params";
+import { bool, num, str } from "../../params";
 import { ellipse, line, polygon, rectangle, roundedRectangle } from "../../path";
 import { t } from "../../styles/_shared";
 import type { Contour, Edge, Face, ParamValues } from "../../types";
@@ -94,6 +94,22 @@ function topFeatures(v: ParamValues, id: string, across: number, top: number, di
     );
   }
   if (f.has("hang_hole")) holes.push(ellipse(across / 2, y(seal / 2), 3, 3));
+  // A spout fitment sealed into the top seal's centre (PK-PB-08): its boat seal zone, 24 × 14 mm. ⚠
+  if (bool(v, "spout", false)) {
+    const a = y(0.5);
+    const b = y(14);
+    marks.push(
+      ...polygon(
+        [
+          [across / 2 - 12, Math.min(a, b)],
+          [across / 2 + 12, Math.min(a, b)],
+          [across / 2 + 12, Math.max(a, b)],
+          [across / 2 - 12, Math.max(a, b)],
+        ],
+        "glue_area",
+      ),
+    );
+  }
   if (f.has("window") && id === "front") {
     const ww = num(v, "windowWidth", across * 0.4);
     const wh = num(v, "windowHeight", size * 0.3);

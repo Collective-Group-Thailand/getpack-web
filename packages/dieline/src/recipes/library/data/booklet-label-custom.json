@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "booklet-label-custom",
+  "base": "PK-LA-06",
+  "variant": {
+    "shape_flat": "custom_path"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากเล่มลอกเปิด รูปทรงอิสระ",
+    "en": "Peel-back booklet label, custom shape"
+  },
+  "description": {
+    "th": "ฉลากหลายชั้น ชั้นบนเป็นเล่มพับลอกเปิดอ่านได้และปิดกลับได้",
+    "en": "A multi-ply label whose top ply is a folded booklet that peels open to read and reseals"
+  },
+  "materials": ["label"],
+  "params": ["size", "path"],
+  "defaults": {
+    "size": 60,
+    "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+  },
+  "presets": [
+    {
+      "id": "star",
+      "label": {
+        "th": "ดาว 60 มม.",
+        "en": "Star, 60 mm"
+      },
+      "values": {
+        "size": 60,
+        "path": "M20 0 L25 14 L40 15 L28 24 L32 40 L20 31 L8 40 L12 24 L0 15 L15 14 Z"
+      }
+    }
+  ],
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "custom_path"
+    }
+  },
+  "features": [
+    {
+      "module": "bookletHinge"
+    }
+  ]
+}

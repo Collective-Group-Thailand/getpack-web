@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="307mm" height="854.62mm" viewBox="0 0 307 854.62" data-style="easel-display">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M302 429.62 L302 849.62"/><path d="M302 849.62 L5 849.62"/><path d="M5 849.62 L5 429.62"/><path d="M5 429.62 L5 240.62"/><path d="M5 240.62 L104 240.62"/><path d="M203 240.62 L302 240.62"/><path d="M302 240.62 L302 429.62"/><path d="M104 5 L203 5"/><path d="M203 5 L203 240.62"/><path d="M104 240.62 L104 5"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M5 429.62 L302 429.62"/><path d="M104 240.62 L203 240.62"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M11 246.62 L296 246.62"/><path d="M296 246.62 L296 423.62"/><path d="M296 423.62 L11 423.62"/><path d="M11 423.62 L11 246.62"/></g>
+</svg>

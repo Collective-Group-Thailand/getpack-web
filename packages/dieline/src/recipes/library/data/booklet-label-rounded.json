@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "booklet-label-rounded",
+  "base": "PK-LA-06",
+  "variant": {
+    "shape_flat": "rounded_rectangle"
+  },
+  "category": "flat",
+  "name": {
+    "th": "ฉลากเล่มลอกเปิด สี่เหลี่ยมมุมมน",
+    "en": "Peel-back booklet label, rounded rectangle"
+  },
+  "description": {
+    "th": "ฉลากหลายชั้น ชั้นบนเป็นเล่มพับลอกเปิดอ่านได้และปิดกลับได้",
+    "en": "A multi-ply label whose top ply is a folded booklet that peels open to read and reseals"
+  },
+  "materials": ["label"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 5,
+      "max": 1000
+    },
+    {
+      "ref": "width",
+      "min": 5,
+      "max": 1000
+    },
+    "cornerRadius"
+  ],
+  "defaults": {
+    "length": 100,
+    "width": 60,
+    "cornerRadius": 6
+  },
+  "presets": "label",
+  "body": {
+    "module": "flatShape",
+    "with": {
+      "shape": "rounded_rectangle"
+    }
+  },
+  "features": [
+    {
+      "module": "bookletHinge"
+    }
+  ]
+}

@@ -192,3 +192,50 @@ export const coverFlaps: ClosureModule = {
   },
   hinges: () => ({ stages: { "cover-left": 4, "cover-right": 4, "cover-front": 5, "cover-back": 6 } }),
 };
+
+/**
+ * A petal closure (PK-SP-14): four curved flaps, one on each panel, that fold in and overlap at the
+ * centre of the end, each laid over the one before (interlocked by hand: the last tucks under the
+ * first). Each reaches its far side's half plus `petalOverlap` (default 15 % of it). Drawn as a
+ * smooth outline through seven points. ⚠ Curve and overlap to be confirmed by Prepress.
+ */
+export const petal: ClosureModule = {
+  id: "petal",
+  slot: "closure",
+  status: "implemented",
+  fits: ["tube"],
+  label: t("ฝากลีบดอก", "Petal closure"),
+  params: [],
+  processes: ["die_cut", "hand_assembly"],
+  contributes: { kinds: ["flap"], roles: ["cut", "crease"] },
+  tube(ctx, _cfg, end) {
+    const reach = [ctx.dims.side, ctx.dims.front, ctx.dims.side, ctx.dims.front].map((x) => x / 2 + x * 0.15);
+    return ({ panels }) => ({
+      attachments: panels.slice(0, 4).map((p, i) => {
+        const w = p.x1 - p.x0;
+        const d = reach[i];
+        const pts: Pt[] = [
+          [p.x1, 0],
+          [p.x1 - 0.08 * w, -0.5 * d],
+          [p.x1 - 0.28 * w, -0.88 * d],
+          [p.x0 + 0.5 * w, -d],
+          [p.x0 + 0.28 * w, -0.88 * d],
+          [p.x0 + 0.08 * w, -0.5 * d],
+          [p.x0, 0],
+        ];
+        return {
+          face: face(
+            `petal-${p.id}-${end}`,
+            "inner_flap",
+            "flap",
+            polygon(pts, [...pts.slice(0, -1).map(() => "cut" as const), "crease"]),
+          ),
+          span: [p.x0, p.x1] as [number, number],
+        };
+      }),
+    });
+  },
+  hinges: (_ctx, _cfg, end) => ({
+    stages: Object.fromEntries(["front", "right", "back", "left"].map((id, i) => [`petal-${id}-${end}`, i + 1])),
+  }),
+};

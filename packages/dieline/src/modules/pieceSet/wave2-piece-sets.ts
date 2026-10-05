@@ -3,7 +3,7 @@ import { buildTray } from "../../construct/tray";
 import { buildTube } from "../../construct/tube";
 import { assemble, face, piece, prefixFaces } from "../../faces";
 import { num, str } from "../../params";
-import { polygon, rectangle } from "../../path";
+import { line, polygon, rectangle } from "../../path";
 import { grainOn, t, windowHole } from "../../styles/_shared";
 import type { Contour, Edge } from "../../types";
 import { extraPieces } from "../body/tube";
@@ -39,7 +39,8 @@ const pocket = (cx: number, cy: number, w: number, h: number): Edge[] =>
  * A rigid box in a case (PK-RG-03 book-style, PK-RG-06 hinged lid): a greyboard tray with stayed
  * corners (`length` × `width` × `height` inside), set in a wrapped case of three boards — back, spine
  * and front — that close over it. `spine` = `side` hinges the front on the tray's left end (a book);
- * `back` on its back wall (a hinged lid). The boards stand `CASE_OVERHANG_MM` proud of the tray.
+ * `back` on its back wall (a hinged lid); `doors` puts a spine on each end and a door on each,
+ * meeting at the centre (PK-RG-08). The boards stand `CASE_OVERHANG_MM` proud of the tray.
  * `closure`: `magnetic` marks the magnet pockets (half-cut) in the front board's free edge and the
  * tray's facing wall; `ribbon` two slots in the front and back boards' free edges the ribbon runs
  * through. A `window` is cut in the front board (`case-front`) or the tray's front wall (`wall-front`).
@@ -104,6 +105,38 @@ export const rigidCase: PieceSetModule = {
       return holes;
     };
     const frontMarks = closure === "magnetic" ? pocket(along / 2, across + S + across - 8, 20, 6) : [];
+    if (cfg.spine === "doors") {
+      // PK-RG-08: spines on both ends, a door on each meeting at the centre (a 1 mm gap).
+      const half = L / 2 - 0.5;
+      const doorExtras = (meet: number) => ({
+        holes: closure === "ribbon" ? [slot(meet, W / 2, 3, 16)] : [],
+        marks: closure === "magnetic" ? pocket(meet, W / 2, 6, 20) : [],
+      });
+      const doors = [
+        face("case-back", "back", "panel", rectangle(0, 0, L, W, { left: "crease", right: "crease" })),
+        face("case-spine-left", "left", "panel", rectangle(-S, 0, S, W, { left: "crease", right: "crease" })),
+        face("case-spine-right", "right", "panel", rectangle(L, 0, S, W, { left: "crease", right: "crease" })),
+        face(
+          "case-door-left",
+          "lid",
+          "lid",
+          rectangle(-S - half, 0, half, W, { right: "crease" }),
+          doorExtras(-S - half + 8),
+        ),
+        face(
+          "case-door-right",
+          "lid",
+          "lid",
+          rectangle(L + S, 0, half, W, { left: "crease" }),
+          doorExtras(L + S + half - 8),
+        ),
+      ];
+      return assemble(ctx.styleId, [
+        piece("case", "lid", doors, grainOn(v, doors, "case-back")),
+        piece("base", "base", tray, grainOn(v, tray, "base")),
+        ...extraPieces(ctx, parts),
+      ]);
+    }
     const caseFaces = [
       face("case-back", "back", "panel", rectangle(0, 0, along, across, { bottom: "crease" }), {
         holes: boardHoles("case-back", 0),
@@ -209,4 +242,80 @@ export const shoulderNeck: PieceSetModule = {
       },
     },
   }),
+};
+
+/**
+ * A floor display unit (PK-CD-02): a three-sided corrugated body — two sides `width` deep and a
+ * back `length` wide, `height` tall, open at the front — with `shelves` (1–4) trays set in it at
+ * even heights, each `length` × `width` with a 40 mm lip; `header` adds a header card standing on
+ * the back panel's top edge, in line with it. ⚠ Shelf supports (clips or ledges) and header height
+ * to be confirmed by Prepress; the shelves rest on the sides' inner faces here.
+ */
+export const floorDisplay: PieceSetModule = {
+  id: "floorDisplay",
+  slot: "pieceSet",
+  status: "implemented",
+  label: t("ชั้นวางโชว์ตั้งพื้น (ตัว ชั้น ป้ายหัว)", "Floor display unit (body, shelves, header)"),
+  params: ["length", "width", "height", "shelves", "header", "grain"],
+  processes: ["die_cut", "hand_assembly"],
+  contributes: { kinds: ["panel", "base", "wall", "hanger"], roles: ["cut", "crease"] },
+  build(ctx) {
+    const { v, m } = ctx;
+    const tc = m.caliperMm;
+    const L = num(v, "length", 400);
+    const D = num(v, "width", 300);
+    const H = num(v, "height", 1400);
+    const n = Number(str(v, "shelves", "3"));
+    const header = str(v, "header", "none") !== "none";
+    const hh = Math.min(300, H / 4);
+    const body = buildTube({
+      panels: [
+        { id: "side-left", label: "left", width: D + tc },
+        { id: "back", label: "back", width: L + tc },
+        { id: "side-right", label: "right", width: D + tc },
+      ],
+      depth: H,
+      ...(header
+        ? {
+            top: ({ panels }) => {
+              const b = panels[1];
+              return {
+                attachments: [
+                  {
+                    span: [b.x0, b.x1] as [number, number],
+                    face: face("header", "header", "hanger", [
+                      line([b.x0, 0], [b.x0, -hh], "cut"),
+                      line([b.x0, -hh], [b.x1, -hh], "cut"),
+                      line([b.x1, -hh], [b.x1, 0], "cut"),
+                      line([b.x1, 0], [b.x0, 0], "crease"),
+                    ]),
+                  },
+                ],
+              };
+            },
+          }
+        : {}),
+    });
+    const shelves = Array.from({ length: n }, (_x, i) =>
+      piece(
+        `shelf-${i + 1}`,
+        "base",
+        prefixFaces(buildTray({ length: L - 1, width: D - 1, height: 40, cornerFlap: 0 }), `shelf-${i + 1}-`),
+      ),
+    );
+    return assemble(ctx.styleId, [piece("body", "blank", body, grainOn(v, body, "back")), ...shelves]);
+  },
+  hinges(ctx) {
+    const H = num(ctx.v, "height", 1400);
+    const n = Number(str(ctx.v, "shelves", "3"));
+    const roots: Record<string, string> = { body: "back" };
+    const placement: Record<string, { inside: string; floor: number; rotate: [number, number, number] }> = {};
+    for (let i = 0; i < n; i++) {
+      const id = `shelf-${i + 1}`;
+      roots[id] = `${id}-base`;
+      // Shelf i of n at (i + 1) / (n + 1) of the height, the lowest a lip above the floor. ⚠
+      placement[id] = { inside: "body", floor: ((H - 40) * i) / n + 2, rotate: [-90, 0, 0] };
+    }
+    return { roots, angles: { header: 0 }, placement };
+  },
 };

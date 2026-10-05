@@ -1,0 +1,39 @@
+{
+  "definition": "1fc4f1c1ff8f9c",
+  "star · label-film": {
+    "build": "036b1685beda74",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · board-350": {
+    "build": "036b1685beda74",
+    "hinges": "15e0da69fcb93a",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size=min": {
+    "build": "0297096d4048a2",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size=max": {
+    "build": "04918f72b15624",
+    "hinges": "15e0da69fcb93a",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size<min": {
+    "build": "0bbbdb5a4feb3a",
+    "hinges": "15e0da69fcb93a",
+    "validate": "0f94e48fea30da",
+    "closed": "15e0da69fcb93a"
+  },
+  "star · label-film · size>max": {
+    "build": "1a02248f266135",
+    "hinges": "15e0da69fcb93a",
+    "validate": "09ab4bbd19163a",
+    "closed": "15e0da69fcb93a"
+  }
+}
