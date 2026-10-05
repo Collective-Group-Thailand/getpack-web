@@ -110,8 +110,16 @@ T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old desig
 ### Contract requests
 `store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths` (zod in `src/lib/api/requests/store-content.ts`, awaiting triage), `conversations.typing`, `admin.menu-inbox`.
 
+### Tooling
+- `scripts/lhci.ts` refuses a port that already answers and rewrites the configs' URLs to `LHCI_PORT`: two sessions measuring on 3200 at once were measuring each other's server.
+
 ### Verification
-VERIFICATION_PLACEHOLDER
+- `pnpm lint`, `pnpm typecheck`, `pnpm gen:api:check` clean; unit **1,069** app tests + the dieline package green; `pnpm release:hygiene` clean (603 files).
+- **Mock e2e, full run** (after merging U2.F7 and U3.4 wave 2): **438 passed**, 1 failed — this session's content test ran axe before a client navigation's streamed `<title>` arrived; it now waits for the title (passes alone). An earlier full run's 404s served as 200 were real (route `loading.tsx`, removed); `storefront-repeat` / `storefront-downloads` failed once on shared mock state and pass alone and in the last full run.
+- **Step counters** (`pnpm e2e:journeys`): 10 walks pass, T5/T6 pending; counts in the table above.
+- **Real API** (`e2e/integration/ux.spec.ts`, packio-api v0.41.0 on :3400): green — launchpad, a support thread answered from the inbox, a two-item basket; the malformed deep-link token finding above.
+- **Lighthouse** on a private port against `main` built the same way: three ratchets moved (`docs/performance-budgets.md` U5.1 — customer-app 346,000, customer-marketing 273,000, studio 505,500); every set meets its budget.
+- `pnpm format:check` lists the same 27 files `main` lists (none of this session's).
 
 ---
 

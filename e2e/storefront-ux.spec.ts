@@ -179,6 +179,8 @@ test.describe("U5.2 / U5.6 — content that teaches", () => {
       "href",
       /\/configure\/.+\?material=/,
     );
+    // After a client navigation the page's metadata streams in; axe reads the title.
+    await expect(page).toHaveTitle(/เลือกวัสดุให้ประหยัด/);
     await expectNoViolations(page);
   });
 
