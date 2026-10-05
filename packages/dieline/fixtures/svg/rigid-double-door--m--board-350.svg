@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="888.85mm" height="281.35mm" viewBox="0 0 888.85 281.35" data-style="rigid-double-door">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M170.3 5 L377.2 5"/><path d="M377.2 161.9 L170.3 161.9"/><path d="M107.95 5 L170.3 5"/><path d="M170.3 161.9 L107.95 161.9"/><path d="M377.2 5 L439.55 5"/><path d="M439.55 161.9 L377.2 161.9"/><path d="M5 5 L107.95 5"/><path d="M107.95 161.9 L5 161.9"/><path d="M5 161.9 L5 5"/><path d="M439.55 5 L542.5 5"/><path d="M542.5 5 L542.5 161.9"/><path d="M542.5 161.9 L439.55 161.9"/><path d="M622.95 5 L823.4 5"/><path d="M823.4 5 L823.4 65.45"/><path d="M622.95 65.45 L622.95 5"/><path d="M823.4 215.9 L823.4 276.35"/><path d="M823.4 276.35 L622.95 276.35"/><path d="M622.95 276.35 L622.95 215.9"/><path d="M562.5 65.45 L622.95 65.45"/><path d="M622.95 215.9 L562.5 215.9"/><path d="M562.5 215.9 L562.5 65.45"/><path d="M823.4 65.45 L883.85 65.45"/><path d="M883.85 65.45 L883.85 215.9"/><path d="M883.85 215.9 L823.4 215.9"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M377.2 5 L377.2 161.9"/><path d="M170.3 161.9 L170.3 5"/><path d="M107.95 161.9 L107.95 5"/><path d="M439.55 5 L439.55 161.9"/><path d="M622.95 65.45 L823.4 65.45"/><path d="M823.4 65.45 L823.4 215.9"/><path d="M823.4 215.9 L622.95 215.9"/><path d="M622.95 215.9 L622.95 65.45"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"></g>
+</svg>

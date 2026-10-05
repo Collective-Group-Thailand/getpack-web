@@ -71,6 +71,12 @@ export const WAVE_AXIS_PHRASES: Record<string, Record<string, Localized | null>>
   },
   tear_strip: { none: null, zip_tear_strip: { th: "มีแถบดึงฉีก", en: "zip tear strip" } },
   header: { none: null, header_card: { th: "มีป้ายหัว", en: "header card" } },
+  shelves: {
+    "1": { th: "1 ชั้น", en: "one shelf" },
+    "2": { th: "2 ชั้น", en: "two shelves" },
+    "3": { th: "3 ชั้น", en: "three shelves" },
+    "4": { th: "4 ชั้น", en: "four shelves" },
+  },
 
   closure_rigid: {
     none: null,
