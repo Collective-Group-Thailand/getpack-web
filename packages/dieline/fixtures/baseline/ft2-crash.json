@@ -1,0 +1,213 @@
+{
+  "definition": "060ab0fc9f5d8e",
+  "cosmetic · board-350": {
+    "build": "181479ef2935c5",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-450": {
+    "build": "0e21d8f9e5ce06",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · flute-e": {
+    "build": "009b74920bee58",
+    "hinges": "0ab38896a79cd8",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "supplement · board-350": {
+    "build": "06e7807d58633e",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "supplement · board-450": {
+    "build": "020f7b4addced6",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "supplement · flute-e": {
+    "build": "146b18eadc2729",
+    "hinges": "0ab38896a79cd8",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · board-350": {
+    "build": "0165e4479c62a1",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · board-450": {
+    "build": "118c48f1905ffa",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "snack · flute-e": {
+    "build": "1dca6905f2e941",
+    "hinges": "0ab38896a79cd8",
+    "validate": "177ada375a3441",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length=min": {
+    "build": "12b857cdff91ca",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length=max": {
+    "build": "16bd4449d5319a",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length<min": {
+    "build": "12d6d022ffb4a0",
+    "hinges": "0ab38896a79cd8",
+    "validate": "1ac0f387f9565a",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · length>max": {
+    "build": "0664cfa1096f64",
+    "hinges": "0ab38896a79cd8",
+    "validate": "0342ab00bc9bf5",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width=min": {
+    "build": "19f4cd9007c26b",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width=max": {
+    "build": "14394c38e0096d",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width<min": {
+    "build": "17c27580ba9d81",
+    "hinges": "0ab38896a79cd8",
+    "validate": "19a93c4f03bfb9",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · width>max": {
+    "build": "09b168a25c5aa4",
+    "hinges": "0ab38896a79cd8",
+    "validate": "12d95301466f9d",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height=min": {
+    "build": "0515ae1a4e90ef",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height=max": {
+    "build": "03b752afea5c2c",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height<min": {
+    "build": "17ee0cf30059a8",
+    "hinges": "0ab38896a79cd8",
+    "validate": "04687d714f274f",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · height>max": {
+    "build": "0d42f3c264d0d5",
+    "hinges": "0ab38896a79cd8",
+    "validate": "1368bab973bcd3",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth=min": {
+    "build": "0ce5644021b172",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth=max": {
+    "build": "0c2c7effe90f4a",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth<min": {
+    "build": "14550be4798f8e",
+    "hinges": "0ab38896a79cd8",
+    "validate": "0c32a3e2e88197",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · dustFlapDepth>max": {
+    "build": "125d9d98ebb190",
+    "hinges": "0ab38896a79cd8",
+    "validate": "081c1247b3d958",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · insert=none": {
+    "build": "181479ef2935c5",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · insert=die_cut": {
+    "build": "0c4cd4ac9550af",
+    "hinges": "0af15345974bd6",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth=min": {
+    "build": "0ebc60d0bf2a06",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth=max": {
+    "build": "1c1f06ca8a3120",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth<min": {
+    "build": "0bb5c7c5a40897",
+    "hinges": "0ab38896a79cd8",
+    "validate": "1048c2ed5cf584",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueWidth>max": {
+    "build": "06e5320b015372",
+    "hinges": "0ab38896a79cd8",
+    "validate": "17e3d349f15997",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueSide=left": {
+    "build": "181479ef2935c5",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · glueSide=right": {
+    "build": "156e6a012f94ef",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · grain=across": {
+    "build": "181479ef2935c5",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  },
+  "cosmetic · board-350 · grain=along": {
+    "build": "0890da2f5f647a",
+    "hinges": "0ab38896a79cd8",
+    "validate": "15202279b28c9e",
+    "closed": "15e0da69fcb93a"
+  }
+}

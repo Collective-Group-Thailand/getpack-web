@@ -1,6 +1,21 @@
 import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
 import { polyMailer } from "./body/poly-mailer";
+import { envelope, foldedCard, paperTube, presentationFolder } from "./body/wave2-bodies";
+import { coverFlaps, displayTop, osc } from "./closure/wave2-closures";
+import { rigidCase, shoulderNeck } from "./pieceSet/wave2-piece-sets";
+import {
+  adhesiveStrip,
+  dispenser,
+  neckHole,
+  neckLock,
+  partitionInsert,
+  securityCuts,
+  tamperTuck,
+  tearLine,
+  tearStrip,
+  trayWindow,
+} from "./feature/wave2-features";
 import { airplaneTuck, flipTop, fourFlapLock, openEnd, slitLock } from "./closure/wave-closures";
 import { dieCutInsert, insertBody } from "./feature/insert";
 import { displayHeader, lockCorners, telescopeLid } from "./feature/tray-features";
@@ -24,4 +39,23 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   telescopeLid,
   vents,
   fingerNotch,
+  osc,
+  trayWindow,
+  securityCuts,
+  neckHole,
+  tearStrip,
+  adhesiveStrip,
+  dispenser,
+  tearLine,
+  tamperTuck,
+  partitionInsert,
+  foldedCard,
+  displayTop,
+  neckLock,
+  presentationFolder,
+  envelope,
+  paperTube,
+  coverFlaps,
+  rigidCase,
+  shoulderNeck,
 ];

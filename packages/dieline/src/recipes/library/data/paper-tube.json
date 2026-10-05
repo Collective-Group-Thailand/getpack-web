@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "paper-tube",
+  "base": "PK-RG-07",
+  "variants": {
+    "lid_depth": {
+      "full": {
+        "lid": "full"
+      },
+      "partial": {
+        "lid": "partial"
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "กระบอกกระดาษ",
+    "en": "Paper tube"
+  },
+  "description": {
+    "th": "กระบอกกระดาษแข็งมีฝาสวม ฝายาวเต็มหรือบางส่วน",
+    "en": "A rigid paper tube with a slip-on lid, full or partial depth"
+  },
+  "materials": ["rigid"],
+  "params": [
+    {
+      "ref": "diameter",
+      "min": 30,
+      "max": 200
+    },
+    {
+      "ref": "height",
+      "min": 50,
+      "max": 500
+    },
+    "lid",
+    "lidDepth"
+  ],
+  "defaults": {
+    "diameter": 80,
+    "height": 200,
+    "lid": "partial"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "⌀ 60 × 150",
+        "en": "⌀ 60 × 150"
+      },
+      "values": {
+        "diameter": 60,
+        "height": 150
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "⌀ 80 × 200",
+        "en": "⌀ 80 × 200"
+      },
+      "values": {
+        "diameter": 80,
+        "height": 200
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "⌀ 110 × 300",
+        "en": "⌀ 110 × 300"
+      },
+      "values": {
+        "diameter": 110,
+        "height": 300
+      }
+    }
+  ],
+  "body": {
+    "module": "paperTube"
+  }
+}

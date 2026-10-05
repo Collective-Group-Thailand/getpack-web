@@ -40,7 +40,12 @@ const foldable = RECIPES.filter(
 );
 
 describe.each(foldable.map((r) => ({ r })))("fold gate · $r.id", ({ r }) => {
-  const calipers = REFERENCE_BY_CATEGORY[r.category].slice(0, 2);
+  // The category's boards the recipe allows (a rigid-only box is not folded in paperboard), else all.
+  const boards = REFERENCE_BY_CATEGORY[r.category];
+  const allowed = boards.filter((id) => r.materials.includes(REFERENCE_MATERIALS[id].kind));
+  // A material the category's boards do not cover (rigid greyboard): any reference board of that kind.
+  const other = Object.keys(REFERENCE_MATERIALS).filter((id) => r.materials.includes(REFERENCE_MATERIALS[id].kind));
+  const calipers = (allowed.length ? allowed : other.length ? other : boards).slice(0, 2);
   const cases = calipers.flatMap((id) => {
     const m = REFERENCE_MATERIALS[id];
     return [

@@ -81,6 +81,7 @@ export const tube: BodyModule = {
       width: ctx.num(p.width),
     }));
     const features = parts.features.filter((f) => f.def.slot === "feature" && f.def.tubeHoles);
+    const marking = parts.features.filter((f) => f.def.slot === "feature" && f.def.tubeMarks);
     const faces = buildTube({
       panels,
       depth: ctx.num(cfg.depth as string),
@@ -95,6 +96,12 @@ export const tube: BodyModule = {
         ? {
             holes: (p: PanelSpan & { y0: number; y1: number }) =>
               features.flatMap((f) => (f.def.slot === "feature" ? (f.def.tubeHoles?.(ctx, f.cfg, p) ?? []) : [])),
+          }
+        : {}),
+      ...(marking.length
+        ? {
+            marks: (p: PanelSpan & { y0: number; y1: number }) =>
+              marking.flatMap((f) => (f.def.slot === "feature" ? (f.def.tubeMarks?.(ctx, f.cfg, p) ?? []) : [])),
           }
         : {}),
     });

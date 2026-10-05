@@ -184,6 +184,8 @@ export interface Issue {
 export interface PiecePlacement {
   /** Sits on top of this piece — a telescope lid over its base. */
   over?: string;
+  /** Sits under this piece — a design-style telescope's bottom cover. */
+  under?: string;
   /** Sits inside this piece — a drawer in its sleeve. */
   inside?: string;
   /** Turned upside down first (a lid's open side faces down). */
@@ -198,6 +200,8 @@ export interface PiecePlacement {
   slide?: number;
   /** Inside: rests this far above the piece's bottom (an insert on the closed bottom's layers). */
   floor?: number;
+  /** Moved this far after it is placed, mm (x, y, z) — one strip of a partition grid to its row. */
+  offset?: [number, number, number];
 }
 
 /**

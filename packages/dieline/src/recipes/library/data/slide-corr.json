@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "slide-corr",
+  "base": "PK-CZ-01",
+  "variants": {
+    "thumb": {
+      "thumb_notch": {
+        "fingerHole": true
+      },
+      "none": {
+        "fingerHole": false
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกแบบสไลด์ (ลิ้นชัก)",
+    "en": "Corrugated slide box (sleeve and drawer)"
+  },
+  "description": {
+    "th": "ลิ้นชักลูกฟูกสไลด์เข้าปลอก แข็งแรงพอสำหรับส่งพัสดุ เลือกรูดึงได้",
+    "en": "A corrugated drawer sliding into a sleeve, strong enough to ship; with an optional finger pull"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 250
+    },
+    "fingerHole",
+    "glueWidth",
+    "grain"
+  ],
+  "defaults": {
+    "length": 250,
+    "width": 180,
+    "height": 80,
+    "fingerHole": true,
+    "grain": "across",
+    "window": "none",
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 200 × 150 × 60",
+        "en": "S 200 × 150 × 60"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 60
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 250 × 180 × 80",
+        "en": "M 250 × 180 × 80"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 80
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 350 × 250 × 100",
+        "en": "L 350 × 250 × 100"
+      },
+      "values": {
+        "length": 350,
+        "width": 250,
+        "height": 100
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "sleeveAndDrawer"
+  },
+  "features": [],
+  "closedSize": {
+    "length": "length + 2 * t",
+    "width": "width + 2 * t + 2 * C.DRAWER_CLEARANCE_MM",
+    "height": "height + t + 2 * C.DRAWER_CLEARANCE_MM"
+  },
+  "outerSize": {
+    "length": "length + 3 * t",
+    "width": "width + 4 * t + 2 * C.DRAWER_CLEARANCE_MM",
+    "height": "height + 3 * t + 2 * C.DRAWER_CLEARANCE_MM"
+  }
+}

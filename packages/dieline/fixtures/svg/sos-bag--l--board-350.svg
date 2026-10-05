@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="835mm" height="500mm" viewBox="0 0 835 500" data-style="sos-bag">
+  <g id="CUT" stroke="#ff0000" stroke-width="0.25" fill="none"><path d="M30 5 L5 11.699"/><path d="M5 11.699 L5 398.301"/><path d="M5 398.301 L30 405"/><path d="M30 5 L280 5"/><path d="M280 5 L355 5"/><path d="M355 5 L430 5"/><path d="M430 5 L680 5"/><path d="M680 5 L755 5"/><path d="M755 5 L830 5"/><path d="M830 5 L830 405"/><path d="M30 495 L280 495"/><path d="M30 405 L30 495"/><path d="M280 495 L355 495"/><path d="M355 495 L430 495"/><path d="M430 495 L680 495"/><path d="M680 495 L755 495"/><path d="M755 495 L830 495"/><path d="M830 495 L830 405"/></g>
+  <g id="CREASE" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="3 2" fill="none"><path d="M30 405 L30 5"/><path d="M280 5 L280 405"/><path d="M280 405 L30 405"/><path d="M355 5 L355 405"/><path d="M355 405 L280 405"/><path d="M430 5 L430 405"/><path d="M430 405 L355 405"/><path d="M680 5 L680 405"/><path d="M680 405 L430 405"/><path d="M755 5 L755 405"/><path d="M755 405 L680 405"/><path d="M830 405 L755 405"/><path d="M280 495 L280 405"/><path d="M355 495 L355 405"/><path d="M430 495 L430 405"/><path d="M680 495 L680 405"/><path d="M755 495 L755 405"/></g>
+  <g id="PERF" stroke="#00a651" stroke-width="0.25" stroke-dasharray="1 1" fill="none"></g>
+  <g id="HALFCUT" stroke="#ff00ff" stroke-width="0.25" stroke-dasharray="4 1 1 1" fill="none"></g>
+  <g id="GLUE" stroke="#ffb000" stroke-width="0.25" stroke-dasharray="2 1" fill="none"><path d="M7 13.699 L28 13.699"/><path d="M28 13.699 L28 396.301"/><path d="M28 396.301 L7 396.301"/><path d="M7 396.301 L7 13.699"/></g>
+</svg>

@@ -6,7 +6,7 @@ import { t } from "../../styles/_shared";
 import type { Contour, Edge, Face, ParamValues } from "../../types";
 import type { BodyModule } from "../types";
 
-type PouchType = "three_side" | "four_side" | "center_seal" | "center_seal_gusset" | "standing";
+type PouchType = "three_side" | "four_side" | "center_seal" | "center_seal_gusset" | "standing" | "flat_bottom";
 
 /**
  * Pouch print templates — legacy PouchCalculator blank formulas (without the factory's print
@@ -34,6 +34,7 @@ function panelsOf(type: PouchType, v: ParamValues): { id: string; label: FaceLab
         { id: "back", label: "back", size: l },
       ];
     case "four_side":
+    case "flat_bottom":
       return [
         { id: "front", label: "front", size: w },
         { id: "gusset-right", label: "side", size: s },
@@ -127,6 +128,47 @@ function panelOutline(
   ];
 }
 
+/**
+ * The pouch features on a web laid side by side (centre seal, gusseted, flat bottom; U3.4 wave 2),
+ * whose top seal runs along y = 0 across every panel: a `zipper` band under it across the front and
+ * back, and on the front a `hang_hole`, a `window`, and the `tear_notch` as the punch marks (V
+ * shapes) at its folded sides — a side edge that is a fold is notched after forming.
+ * ⚠ Positions to be confirmed by Prepress.
+ */
+function sideFeatures(v: ParamValues, id: string, x0: number, size: number, across: number) {
+  const f = featuresOf(v);
+  const seal = num(v, "sealWidth", 8);
+  const marks: Edge[] = [];
+  const holes: Contour[] = [];
+  if (id.startsWith("fin")) return { marks, holes };
+  if (f.has("zipper"))
+    marks.push(
+      ...polygon(
+        [
+          [x0 + 0.5, seal + 8],
+          [x0 + size - 0.5, seal + 8],
+          [x0 + size - 0.5, seal + 14],
+          [x0 + 0.5, seal + 14],
+        ],
+        "glue_area",
+      ),
+    );
+  if (id !== "front") return { marks, holes };
+  if (f.has("hang_hole")) holes.push(ellipse(x0 + size / 2, seal / 2, 3, 3));
+  if (f.has("window")) {
+    const ww = num(v, "windowWidth", size * 0.4);
+    const wh = num(v, "windowHeight", across * 0.3);
+    holes.push(roundedRectangle(x0 + size / 2 - ww / 2, across * 0.55 - wh / 2, ww, wh, Math.min(6, wh / 4)));
+  }
+  if (f.has("tear_notch"))
+    for (const [x, d] of [
+      [x0, 1],
+      [x0 + size, -1],
+    ] as const)
+      marks.push(line([x, seal + 2], [x + 3 * d, seal + 4], "cut"), line([x + 3 * d, seal + 4], [x, seal + 6], "cut"));
+  return { marks, holes };
+}
+
 function build(styleId: string, v: ParamValues) {
   const type = str(v, "pouchType", "three_side") as PouchType;
   const panels = panelsOf(type, v);
@@ -144,11 +186,17 @@ function build(styleId: string, v: ParamValues) {
       vertical && (first || last)
         ? topFeatures(v, p.id, across, first ? at : at + p.size, first ? 1 : -1, p.size)
         : undefined;
+    const side = vertical ? undefined : sideFeatures(v, p.id, at, p.size, across);
     const outline = vertical
       ? panelOutline(across, at, p.size, first, last, open?.notchAt)
-      : rectangle(at, 0, p.size, across, { left: first ? "cut" : "crease", right: last ? "cut" : "crease" });
+      : rectangle(at, 0, p.size, across, {
+          left: first ? "cut" : "crease",
+          right: last ? "cut" : "crease",
+          // A flat-bottom pouch's box bottom hangs on the front panel.
+          ...(type === "flat_bottom" && p.id === "front" ? { bottom: "crease" as const } : {}),
+        });
     // Seal bands: along the open edges (top and bottom, or both sides) and the whole of a fin.
-    const marks: Edge[] = [...(open?.marks ?? [])];
+    const marks: Edge[] = [...(open?.marks ?? []), ...(side?.marks ?? [])];
     const band = (x: number, y: number, w: number, h: number) => {
       if (w > 1 && h > 1)
         marks.push(
@@ -173,7 +221,25 @@ function build(styleId: string, v: ParamValues) {
       band(at + 0.5, 0.5, p.size - 1, seal);
       band(at + 0.5, across - seal - 0.5, p.size - 1, seal);
     }
-    faces.push(face(p.id, p.label, "flat", outline, { marks, holes: open?.holes ?? [] }));
+    faces.push(
+      face(p.id, p.label, "flat", outline, { marks, holes: [...(open?.holes ?? []), ...(side?.holes ?? [])] }),
+    );
+    if (type === "flat_bottom" && p.id === "front") {
+      // The box bottom: the front's width by the gusset, sealed round its three free edges.
+      const g = num(v, "gusset", 40);
+      const bottomMarks: Edge[] = polygon(
+        [
+          [at + 0.5, across + g - seal - 0.5],
+          [at + p.size - 0.5, across + g - seal - 0.5],
+          [at + p.size - 0.5, across + g - 0.5],
+          [at + 0.5, across + g - 0.5],
+        ],
+        "glue_area",
+      );
+      faces.push(
+        face("bottom", "bottom", "flat", rectangle(at, across, p.size, g, { top: "crease" }), { marks: bottomMarks }),
+      );
+    }
     at += p.size;
   });
   return assemble(styleId, [piece("blank", "blank", faces)]);

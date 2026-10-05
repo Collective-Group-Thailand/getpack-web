@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "id": "food-box-lock",
+  "base": "PK-SP-16",
+  "variant": {
+    "handle": "none"
+  },
+  "category": "specialty",
+  "name": {
+    "th": "กล่องอาหารมุมล็อก ฝามีหน้าต่าง",
+    "en": "Lock-corner food box with window lid"
+  },
+  "description": {
+    "th": "กล่องอาหารมุมล็อกไม่ใช้กาว ฝาพับมีหน้าต่างให้เห็นอาหาร เสียบลิ้นด้านหน้า",
+    "en": "A food box whose corners lock without glue; the hinged lid has a window onto the food and tucks in at the front"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 80,
+      "max": 350
+    },
+    {
+      "ref": "width",
+      "min": 60,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 30,
+      "max": 120
+    },
+    "cornerLock",
+    "tuckDepth",
+    "grain",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "lid",
+          "label": {
+            "th": "บนฝา",
+            "en": "Lid top"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "length": 180,
+    "width": 130,
+    "height": 60,
+    "grain": "across",
+    "cornerLock": "lock",
+    "window": "rect",
+    "windowPanel": "lid",
+    "windowWidth": 100,
+    "windowHeight": 60,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 150 × 110 × 50",
+        "en": "S 150 × 110 × 50"
+      },
+      "values": {
+        "length": 150,
+        "width": 110,
+        "height": 50
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 180 × 130 × 60",
+        "en": "M 180 × 130 × 60"
+      },
+      "values": {
+        "length": 180,
+        "width": 130,
+        "height": 60
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 240 × 180 × 70",
+        "en": "L 240 × 180 × 70"
+      },
+      "values": {
+        "length": 240,
+        "width": 180,
+        "height": 70
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "tuck"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "lockCorners"
+    },
+    {
+      "module": "trayWindow"
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t",
+    "height": "height + t"
+  }
+}

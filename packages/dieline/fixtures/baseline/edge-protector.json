@@ -1,0 +1,105 @@
+{
+  "definition": "12ed93f7998f3e",
+  "s · flute-e": {
+    "build": "182ae6039a94f7",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "100d3069cb2a42"
+  },
+  "s · flute-b": {
+    "build": "182ae6039a94f7",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "100d3069cb2a42"
+  },
+  "s · flute-bc": {
+    "build": "182ae6039a94f7",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "100d3069cb2a42"
+  },
+  "m · flute-e": {
+    "build": "1e420db3132b4d",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "054f12181ece00"
+  },
+  "m · flute-b": {
+    "build": "1e420db3132b4d",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "054f12181ece00"
+  },
+  "m · flute-bc": {
+    "build": "1e420db3132b4d",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "054f12181ece00"
+  },
+  "l · flute-e": {
+    "build": "15c1e541fe79eb",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "14f6e3212b03af"
+  },
+  "l · flute-b": {
+    "build": "15c1e541fe79eb",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "14f6e3212b03af"
+  },
+  "l · flute-bc": {
+    "build": "15c1e541fe79eb",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "14f6e3212b03af"
+  },
+  "s · flute-e · length=min": {
+    "build": "0d6c192b5d0c52",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "01d78fee14ce6e"
+  },
+  "s · flute-e · length=max": {
+    "build": "123318640af488",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "0e833477b6a774"
+  },
+  "s · flute-e · length<min": {
+    "build": "1b207d9ad37b9f",
+    "hinges": "04a65292e84115",
+    "validate": "094e7d939a8746",
+    "closed": "0f7012c13f2e67"
+  },
+  "s · flute-e · length>max": {
+    "build": "191175822c1670",
+    "hinges": "04a65292e84115",
+    "validate": "181bf5f825a119",
+    "closed": "070e58dc11bdb8"
+  },
+  "s · flute-e · width=min": {
+    "build": "02db40a7cdbcf0",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "0a3a5bd39d5e55"
+  },
+  "s · flute-e · width=max": {
+    "build": "14fe62f0092e24",
+    "hinges": "04a65292e84115",
+    "validate": "15202279b28c9e",
+    "closed": "1e2631b06a6cb3"
+  },
+  "s · flute-e · width<min": {
+    "build": "1c43061a2c2f5a",
+    "hinges": "04a65292e84115",
+    "validate": "070ce1faf742a9",
+    "closed": "151f874c375139"
+  },
+  "s · flute-e · width>max": {
+    "build": "01f76299c20673",
+    "hinges": "04a65292e84115",
+    "validate": "18997cf8efe36f",
+    "closed": "02817d97d07867"
+  }
+}

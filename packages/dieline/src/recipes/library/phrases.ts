@@ -70,6 +70,13 @@ export const WAVE_AXIS_PHRASES: Record<string, Record<string, Localized | null>>
     tab_lock: { th: "หน้าล็อกลิ้น", en: "tab-lock front" },
   },
   tear_strip: { none: null, zip_tear_strip: { th: "มีแถบดึงฉีก", en: "zip tear strip" } },
+  header: { none: null, header_card: { th: "มีป้ายหัว", en: "header card" } },
+
+  closure_rigid: {
+    none: null,
+    magnetic: { th: "ปิดด้วยแม่เหล็ก", en: "magnetic closure" },
+    ribbon: { th: "ผูกริบบิ้น", en: "ribbon closure" },
+  },
   adhesive: {
     none: null,
     single_strip: { th: "แถบกาวปิดผนึก", en: "adhesive strip" },

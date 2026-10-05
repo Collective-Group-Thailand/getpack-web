@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "id": "cake-box",
+  "base": "PK-SP-07",
+  "variant": {
+    "handle": "none"
+  },
+  "variants": {
+    "window": {
+      "none": {
+        "window": "none"
+      },
+      "top_window": {
+        "window": "rect",
+        "windowPanel": "lid"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "กล่องเค้ก",
+    "en": "Cake box"
+  },
+  "description": {
+    "th": "ถาดติดกาวสำเร็จ ฝาพับติดผนังหลัง ขอบฝาติดกาวกางพร้อมใช้ เลือกหน้าต่างบนฝาได้",
+    "en": "A ready-glued tray whose hinged lid pops up with it, lips glued; with an optional lid window"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 50,
+      "max": 200
+    },
+    "grain",
+    "window",
+    {
+      "ref": "windowPanel",
+      "options": [
+        {
+          "value": "lid",
+          "label": {
+            "th": "บนฝา",
+            "en": "Lid top"
+          }
+        }
+      ]
+    },
+    "windowWidth",
+    "windowHeight",
+    "windowOffsetX",
+    "windowOffsetY",
+    "windowRadius"
+  ],
+  "defaults": {
+    "length": 220,
+    "width": 220,
+    "height": 120,
+    "grain": "across",
+    "window": "none",
+    "windowPanel": "lid",
+    "windowWidth": 120,
+    "windowHeight": 120,
+    "windowOffsetX": 0,
+    "windowOffsetY": 0,
+    "windowRadius": 6
+  },
+  "presets": [
+    {
+      "id": "1lb",
+      "label": {
+        "th": "1LB 180 × 180 × 100",
+        "en": "1LB 180 × 180 × 100"
+      },
+      "values": {
+        "length": 180,
+        "width": 180,
+        "height": 100
+      }
+    },
+    {
+      "id": "2lb",
+      "label": {
+        "th": "2LB 220 × 220 × 120",
+        "en": "2LB 220 × 220 × 120"
+      },
+      "values": {
+        "length": 220,
+        "width": 220,
+        "height": 120
+      }
+    },
+    {
+      "id": "3lb",
+      "label": {
+        "th": "3LB 260 × 260 × 130",
+        "en": "3LB 260 × 260 × 130"
+      },
+      "values": {
+        "length": 260,
+        "width": 260,
+        "height": 130
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "hingedLid",
+      "with": {
+        "front": "glued_lips"
+      }
+    }
+  },
+  "features": [
+    {
+      "module": "trayWindow"
+    }
+  ],
+  "outerSize": {
+    "height": "height + t"
+  }
+}

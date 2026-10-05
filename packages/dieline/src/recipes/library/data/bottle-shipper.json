@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "id": "bottle-shipper",
+  "base": "PK-CI-04",
+  "variants": {
+    "partition": {
+      "2x2": {
+        "partition": "2x2"
+      },
+      "2x3": {
+        "partition": "2x3"
+      },
+      "3x3": {
+        "partition": "3x3"
+      },
+      "3x4": {
+        "partition": "3x4"
+      },
+      "4x4": {
+        "partition": "4x4"
+      },
+      "4x6": {
+        "partition": "4x6"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องส่งขวดพร้อมช่องกั้น",
+    "en": "Bottle shipper with cells"
+  },
+  "description": {
+    "th": "กล่องลูกฟูกฝาชน มีช่องกั้นตารางแยกขวดแต่ละใบไม่ให้กระทบกัน",
+    "en": "A slotted corrugated box with a partition grid that keeps each bottle apart"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 150,
+      "max": 800
+    },
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 600
+    },
+    {
+      "ref": "height",
+      "min": 80,
+      "max": 500
+    },
+    "glueWidth",
+    "glueSide",
+    "grain",
+    "partition"
+  ],
+  "defaults": {
+    "@extends": "slotted",
+    "joint": "glue",
+    "partition": "2x3",
+    "length": 300,
+    "width": 200,
+    "height": 330
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 200 × 150 × 300",
+        "en": "S 200 × 150 × 300"
+      },
+      "values": {
+        "length": 200,
+        "width": 150,
+        "height": 300
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 300 × 200 × 330",
+        "en": "M 300 × 200 × 330"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 330
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 400 × 300 × 330",
+        "en": "L 400 × 300 × 330"
+      },
+      "values": {
+        "length": 400,
+        "width": 300,
+        "height": 330
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton",
+    "with": {
+      "dims": {
+        "front": "length + a.panel",
+        "side": "width + a.panel",
+        "closingSide": "joint == 'tape' ? side : side - a.gluePanel",
+        "depth": "height + a.depth",
+        "glue": "joint == 'tape' ? 0 : (joint == 'stitch' ? max(35, glueWidth ?? glueWidthFor(width)) : (glueWidth ?? glueWidthFor(width)))"
+      }
+    }
+  },
+  "closures": {
+    "top": {
+      "module": "rsc"
+    },
+    "bottom": {
+      "module": "rsc"
+    }
+  },
+  "features": [
+    {
+      "module": "partitionInsert"
+    }
+  ]
+}

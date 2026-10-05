@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "rigid-shoulder-neck",
+  "base": "PK-RG-02",
+  "variants": {
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "กล่องแข็งมีคอ",
+    "en": "Rigid shoulder-neck box"
+  },
+  "description": {
+    "th": "กล่องแข็งสามชิ้น ตัวกล่องมีคอสูงขึ้นมา ฝาสวมลงถึงบ่า ฝากับตัวกล่องเสมอกัน เลือกตัวรองได้",
+    "en": "A three-piece rigid box: a neck rises from the base and the lid slides down to the shoulder, flush with the base; with an optional insert"
+  },
+  "materials": ["rigid"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 50,
+      "max": 300
+    },
+    "lidDepth",
+    "insert",
+    "grain"
+  ],
+  "defaults": {
+    "length": 150,
+    "width": 100,
+    "height": 80,
+    "lidDepth": 25,
+    "insert": "none",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 100 × 80 × 60",
+        "en": "S 100 × 80 × 60"
+      },
+      "values": {
+        "length": 100,
+        "width": 80,
+        "height": 60
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 150 × 100 × 80",
+        "en": "M 150 × 100 × 80"
+      },
+      "values": {
+        "length": 150,
+        "width": 100,
+        "height": 80
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 250 × 180 × 120",
+        "en": "L 250 × 180 × 120"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 120
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "shoulderNeck"
+  },
+  "features": [
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "target": "base",
+        "floor": "t"
+      }
+    }
+  ],
+  "outerSize": {
+    "length": "length + 2 * t + 0.8",
+    "width": "width + 2 * t + 0.8",
+    "height": "height + t + 0.3"
+  },
+  "closedSize": {
+    "length": "length + t + 0.5",
+    "width": "width + t + 0.5",
+    "height": "height"
+  }
+}
