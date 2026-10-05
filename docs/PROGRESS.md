@@ -48,6 +48,51 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U2.F3 — Samples and prototypes — 2026-10-05
+
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F3, on `feat/u2.f3-samples` (worktree `../packio-web-u2`, from `main` at `fea0100`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F3.
+
+### Done
+- **Customer:**
+  - "ขอตัวอย่างก่อนสั่งผลิต" on every saved quotation: printed or plain, how many, the delivery postcode and a note.
+  - **`/account/samples`** lists every sample, and each has a detail page with its own progress tracker (asked → quoted → paid → being made → shipped → delivered → decided).
+  - The **sample quotation** (price, lead time, validity, and the credit rule in words — the numbers only once the API states them) is **bought through the cart**.
+  - The **factory's evidence** shows the measured size on its basis, the material used, and photos with their sha256.
+  - **Approval is gated by a checklist** (dimensions, colour, material, construction): the ticked points go into the decision's note, and the API keeps the time and the photos seen. Asking for changes or rejecting needs a note.
+  - Once approved, the page shows the **locked specification** and the **credit window and amount** as the API gives them, and **orders the bulk** into the cart.
+  - The order page shows its attached sample and that production waits for it.
+- **Admin:**
+  - The **sample queue** (`/samples`: status tabs, kind filter; sample vs bulk on every row), reached from Orders.
+  - The detail shows the request with its postcode, the **quote** (service item, sell price, lead time, parcel weight, postcode), the **evidence** form, the **decision record** (time, IP, device, photos seen), **cancel** with a reason, and a **new sample** after changes are asked for (`previousSampleId`).
+- **Partner:** **งานตัวอย่าง** in "more": the jobs to record first, each with the evidence form (size, basis, material used, photos; Owner, Planner, QC), mobile-first. There is no customer and no price, as the API gives.
+- **Shared:**
+  - `SAMPLE_STATUS` / `SAMPLE_KIND` in `src/domain/status` (a new API status fails the build until it has copy).
+  - One evidence form for CS and the factory, and copy for every `samples.*` problem.
+
+### Found on the real API
+- **A sample needs a delivery postcode to be quoted** (`422`): the request now asks for it, and CS's quote carries it.
+- The dev seed has **no freight rate card** (`409 samples.freight_unavailable`), so a sample cannot be quoted end to end there. See `docs/integration.md`.
+- **The RBAC grants were still at v0.6.0** (no `samples.*`, among 124 lines of changes): regenerated at v0.41.0 (`pnpm gen:rbac`).
+
+### Decisions taken
+- **The admin queue is reached from Orders**: packio-api's menu has no sample entry at v0.41.0 (CONTRACT-REQUEST `admin.menu-samples`).
+- **The checklist goes into the decision's note**: `SampleDecisionDto` takes only a note. The API keeps the evidence photos seen.
+- **Requests start from a saved quotation**, not from the configurator. A draft configuration can be sampled too (`draftId`), but drafts have no product link to come back to (CONTRACT-GAP store.catalog-product-ref), so this is deferred.
+- **The mock seeds samples in each state** (the founder persona) instead of running payment, the factory job and delivery.
+
+### Tests
+- e2e `storefront-samples.spec.ts` (serial), across the three zones: request → CS quote → buy → factory evidence on a 390 px viewport → checklist approval → bulk order; axe on each step.
+- Visual: the `customer-samples--decision` story, baseline reviewed.
+- Real API: `samples.spec.ts` green on v0.41.0 (request, queue, quote refused for freight on the seed).
+
+### Verification
+- `pnpm typecheck` and `pnpm lint` are clean; unit tests 1,045.
+- Mock e2e full run: 412 passed. Four admin/partner tests failed after the RBAC regeneration: packio-api renamed `factory_cost.read` to `factory_buy_prices.read` at v0.41.0, and the web and its mocks still checked the old name. Renamed in 14 files; the three suites pass (41/41).
+- Lighthouse: all sets within budget (studio 495,306 B).
+- Real API: `samples.spec.ts` green.
+
+---
+
 ## U2.F2 — Free dieline download and packaging spec sheet — 2026-10-05
 
 `docs/prompts/U2-benchmark-2026-09-29.md` §U2.F2, on `feat/u2.f2` (worktree `../packio-web-u2`, from `main` at `f80f1ec`, U4 merged). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F2. The library page itself is U3.5's (precedence note), so only the two artefacts were built.

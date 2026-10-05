@@ -20,9 +20,12 @@ import { storeSupportHandlers } from "./support";
 import { storeRfqHandlers } from "./rfq";
 import { storeStyleHandlers } from "./styles";
 import { storeCollabHandlers } from "./collab";
+import { sampleHandlers } from "./samples";
 import { storeStudioHandlers } from "./studio";
 
 export const storeHandlers = [
+  // Samples first: they also serve the evidence photos (`files/:fileId/download`) of every zone.
+  ...sampleHandlers,
   ...storeAccountHandlers,
   ...quoteToolHandlers,
   ...specsHandlers,

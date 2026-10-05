@@ -85,7 +85,7 @@ export interface Shipment {
   } | null;
   /** A before-shipping instalment was unpaid when the trip was made (the shipping gate, B3.2). */
   blockedByPayment: boolean;
-  /** What Packio pays the factory or a fallback carrier (D-141: `factory_cost.read` only). */
+  /** What Packio pays the factory or a fallback carrier (D-141: `factory_buy_prices.read` only). */
   economics: { factoryPayout: string | null; carrierCost: string | null } | null;
   carrierRequest: Schemas["CarrierRequestDto"] | null;
   splitFrom: Schemas["ShipmentRefDto"] | null;
@@ -442,7 +442,7 @@ function common(item: Shipment) {
 
 /** A shipment as `admin.shipments.*` answers it, masked by D-141 and with the reader's actions. */
 export function toAdminShipmentDto(item: Shipment, who: StaffPersona | null): Schemas["AdminShipmentDto"] {
-  const seesCost = Boolean(who && can(who, "factory_cost.read"));
+  const seesCost = Boolean(who && can(who, "factory_buy_prices.read"));
   const failedOrReturned = item.status === "failed" || item.status === "returned" || item.resolution !== null;
   const exceptionEvent = item.events.findLast((event) => event.status === "failed" || event.status === "returned");
   return {
@@ -577,7 +577,7 @@ export const shipmentHandlers = [
     const item = shipmentOf(params.shipmentId);
     if (!item) return noShipment();
     if (item.status !== "ready") return invalidStatus("ขอราคาขนส่งได้เมื่อการจัดส่งพร้อมส่งเท่านั้น");
-    const seesCost = can(who, "factory_cost.read");
+    const seesCost = can(who, "factory_buy_prices.read");
     const remote = item.destination.postcode.startsWith("9");
     return HttpResponse.json([
       {

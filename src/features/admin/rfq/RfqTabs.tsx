@@ -130,7 +130,7 @@ export function RequestTab({ rfq }: { rfq: Rfq }) {
 /**
  * The factories asked and what they answered, and who asked. A consultation names its factory by
  * code; the name comes from the RFQ's candidate factories (`admin.rfqs.listCandidateFactories`).
- * A factory's buy prices are published only to `factory_cost.read` (D-141). CONTRACT-GAP
+ * A factory's buy prices are published only to `factory_buy_prices.read` (D-141). CONTRACT-GAP
  * admin.rfq-consultations — nobody sees a suggested sell price derived from the answer.
  */
 export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => void }) {
@@ -258,7 +258,7 @@ export function FactoriesTab({ rfq, onRequest }: { rfq: Rfq; onRequest?: () => v
 /* ------------------------------------------------------------------------------------- quotes */
 
 /**
- * One quotation version as the API priced it. The buy price shows to `factory_cost.read`, the
+ * One quotation version as the API priced it. The buy price shows to `factory_buy_prices.read`, the
  * margin to `margin.read` (D-141); a line below the margin floor is flagged (D-012), and the API
  * still lets it be sent. CONTRACT-GAP admin.rfq-quotes — no suggested price per line, no author or
  * creation time, no acceptance time.
