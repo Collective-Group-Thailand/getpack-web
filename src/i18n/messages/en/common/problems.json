@@ -28,13 +28,13 @@
     "otp_invalid": "Invalid OTP",
     "otp_rate_limited": "Too many OTP requests",
     "pin_invalid": "Invalid PIN",
-    "refresh_invalid": "Invalid refresh token",
-    "refresh_reused": "Refresh token reused",
+    "refresh_invalid": "Your session has ended. Please sign in again.",
+    "refresh_reused": "For your security we signed you out. Please sign in again.",
     "scope_unavailable": "Scope unavailable",
     "session_revoked": "Session revoked",
     "token_expired": "Token expired",
     "unauthenticated": "Authentication required",
-    "wrong_audience": "Token not valid here",
+    "wrong_audience": "This account cannot be used here. Sign in with the right account.",
     "identity_last_method": "Last sign-in method",
     "identity_not_unlinkable": "Sign-in method cannot be removed"
   },
@@ -108,8 +108,8 @@
     "last_admin": "Last Company Admin"
   },
   "concurrency": {
-    "precondition_required": "If-Match required",
-    "stale": "Stale data"
+    "precondition_required": "This page is out of date. Refresh it and try again.",
+    "stale": "Someone changed this before you. Refresh to see the latest, then try again."
   },
   "consent": {
     "purpose_unavailable": "Consent text not available"
@@ -164,9 +164,9 @@
     "run_exists": "Depreciation already run"
   },
   "http": {
-    "bad_request": "Bad request",
+    "bad_request": "Something in the request is missing or wrong. Check it and try again.",
     "conflict": "Conflict",
-    "malformed_json": "Malformed JSON",
+    "malformed_json": "That did not go through. Refresh the page and try again.",
     "not_found": "Not found",
     "too_many_requests": "Too many requests"
   },
@@ -178,13 +178,13 @@
     "user_exists": "User already exists"
   },
   "idempotency": {
-    "in_progress": "Request in progress",
-    "key_invalid": "Invalid Idempotency-Key",
-    "key_required": "Idempotency-Key required",
-    "key_reused": "Idempotency-Key reused"
+    "in_progress": "Your previous request is still being processed. Wait a moment, then check.",
+    "key_invalid": "That did not go through. Refresh the page and try again.",
+    "key_required": "That did not go through. Refresh the page and try again.",
+    "key_reused": "This was already sent. Check the list before sending again."
   },
   "internal": {
-    "unexpected": "Unexpected error"
+    "unexpected": "Something went wrong on our side. Try again, or tell the team with the reference code."
   },
   "ledger": {
     "account_exists": "Account code exists",
@@ -267,7 +267,7 @@
     "not_unidentified": "Not an unidentified receipt",
     "nothing_to_pay": "Nothing to pay",
     "schedule_has_payments": "Schedule already paid",
-    "slip_duplicate": "Duplicate slip",
+    "slip_duplicate": "This slip was sent before. Check it is the slip for this instalment.",
     "slip_not_in_review": "Slip not in review",
     "slip_not_scanned": "File not scanned yet",
     "nothing_due": "Nothing due",
@@ -396,7 +396,7 @@
     "report_not_payable": "Nothing to pay on this report"
   },
   "validation": {
-    "failed": "Validation failed"
+    "failed": "Some fields need fixing — see the message under each."
   },
   "bff": {
     "unknown_path": "This address is not available here",
@@ -481,6 +481,13 @@
   "b2b": {
     "client_limit": "The company already has the most active keys allowed",
     "client_revoked": "This key is already revoked"
+  },
+  "rfq_baskets": {
+    "changed": "Something in the basket changed. Check it again, then send.",
+    "not_submitted": "This basket has not been sent yet. Send it before accepting quotes."
+  },
+  "deep_links": {
+    "expired": "This link has expired. Open the same thing from your account."
   },
   "structural_requests": {
     "invalid_transition": "This request is at a step where that cannot be done"

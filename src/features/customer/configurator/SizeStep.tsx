@@ -9,6 +9,7 @@ import { Field } from "@/ui/components/Field";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Spinner } from "@/ui/components/Spinner";
+import { GlossaryChip } from "@/features/customer/learn/GlossaryChip";
 import { cn } from "@/ui/lib/cn";
 
 import type { Converted } from "./conversion";
@@ -310,7 +311,15 @@ export function SizeStep({
       ) : (
         <>
           {bases.length > 1 ? (
-            <Field label={t("basis")} hint={t("basisHint")} error={message(problems.basis)}>
+            <Field
+              label={t("basis")}
+              hint={
+                <>
+                  {t("basisHint")} <GlossaryChip slug="measurement-basis" />
+                </>
+              }
+              error={message(problems.basis)}
+            >
               <RadioCards
                 columns={3}
                 value={state.basis ?? undefined}

@@ -270,6 +270,24 @@ with: the n-sided polygon lid, marks on tube panels, `under`/`offset` piece plac
 window lookup. The 63 new recipes and 19 new modules stay in `@packio/dieline/library`, loaded on
 demand on the style pages; every other set is within budget.
 
+## U5.1–U5.7 — UX excellence layer (2026-10-06)
+
+Measured on a private port (`LHCI_PORT`) against `main` at `c1f8967` built the same way, median of three:
+
+| Page | `main` | U5 | Ratchet |
+|---|---|---|---|
+| `/` (every marketing page) | 264,657 | 267,617 | — |
+| `/styles` | 269,459 | 272,419 | customer-marketing 270,000 → **273,000** |
+| a style page | 269,917 | 272,879 | (same) |
+| `/configure/tuck-end-box` | 340,082 | 345,833 | customer-app 340,200 → **346,000** |
+| `/studio/new?…` | 496,228 | 505,412 | studio 497,500 → **505,500** |
+
+- **+2,960 B on every customer page**: the U5 copy (launchpad, messages, basket, glossary, materials, learning paths, first-run hints, problem titles) rides in each page's client messages — the zone's `NextIntlClientProvider` carries every customer namespace (the U4.6 follow-up, per-route client messages, would take it back); twelve new routes in the client router's route table; the error boundary's next-step link.
+- **Configurator +2,790 B of its own**: Lighthouse is always a first visit, so the intent picker loads (a returning browser gets only its re-open link); the price-change reason; the guest's display unit. The glossary chips are plain buttons until pressed — their popover, query and request client load on the first press.
+- **Studio +6,224 B of its own**: the first-visit coach marks and intent picker (same first-visit rule), the guide's "?", the sample design, and the checks' "why" links.
+- Taken back on the way: a header cart-icon animation (2.5 KB on every page, removed), the glossary chip's popover and request client (were loading after hydration), the configurator's defaults seed (server only now).
+- **`pnpm lhci` and parallel worktrees**: two sessions measuring at once both used port 3200, so one measured the other's server (this session's first figures, and possibly the 340,092 recorded for U3.4 wave 2, came from whichever server answered). `scripts/lhci.ts` now refuses a port that already answers and rewrites the configs' URLs to `LHCI_PORT`.
+
 ## U3.6 — dieline intake and structural requests (2026-10-06)
 
 Three script ratchets, each by the copy and entry points U3.6 adds to every page of its zone (the

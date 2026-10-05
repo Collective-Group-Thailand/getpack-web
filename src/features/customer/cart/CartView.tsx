@@ -7,7 +7,6 @@ import { useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
-import { track } from "@/lib/analytics/track";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import { browserApi } from "@/lib/api/browser";
@@ -413,9 +412,7 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
         ) : null}
         {blocked.length === 0 ? (
           <Button asChild block size="lg" className="mt-4">
-            <Link href="/checkout" onClick={() => track("checkout_started", { route: "/cart" })}>
-              {t("checkout")}
-            </Link>
+            <Link href="/checkout">{t("checkout")}</Link>
           </Button>
         ) : (
           <Button block size="lg" className="mt-4" disabled>

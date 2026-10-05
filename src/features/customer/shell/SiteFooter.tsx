@@ -24,6 +24,8 @@ export async function SiteFooter() {
         { key: "faq", href: "/faq" },
         { key: "articles", href: "/articles" },
         { key: "glossary", href: "/help/glossary" },
+        { key: "learn", href: "/learn" },
+        { key: "materials", href: "/materials" },
         { key: "track", href: "/track" },
       ],
     },

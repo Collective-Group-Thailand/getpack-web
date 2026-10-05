@@ -46,6 +46,81 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-02 | **U3.3** — automatic 3D, virtual fold test, assets | Thickness model (`foldModel`: walls centred, closures inward and stacked in fold order, rolled walls, wrapping flaps, back-to-back walls, rigid wrap) also drawn by the designer's 3D preview; recipe `outerSize`; fold gate (min / typical / max × 2 calipers, ± 1 mm, collision check) on all 21 foldable recipes; inflated pouch surface; structural variants (46) with generated TH/EN names pending review; engine rasteriser + `pnpm styles:render` (166 assets, manifest committed, reproducibility checked in CI); ADR-0012 | Name review (D-212); curved pillow panels; U3.4 waves | New rule `mfg.glue_flap_too_wide`; one preset finding for prepress — see U3.3 below |
 | 2026-10-04 | **U2.F1** — configurator v2 | Contract **`v0.41.0`** adopted (U2.1–U2.3, U3.B1–B6, U4.B, U5.B in one bump; the journeys dashboard moved to the published `admin.analytics.journeys`, the last admin request). The configurator reads `StoreConfiguratorDto` directly (adapter deleted) and sends every calculator its own published configuration (generic request retired); print colours from the published inks; size on a chosen **basis** with every other basis live from `store.specs.convertDimensions`, limits checked through the API's conversion, style-specific errors, display unit on the profile; goods-and-shipping inputs + **Structure Advisor** (recommended board, range + indicative notice, alternatives, acknowledgement, why sheet); **target price** with the API's gap, levers as cards, send to sales; **summary** step (completeness, edit, style code / verified international name, tolerances, next steps), **drafts** saved / resumed / shared; style code on artwork and proof; lint rule `packio/no-money-arithmetic`. 939 unit, 6 new e2e + the real-API journey (green on packio-api v0.41.0) | Account list of drafts (drafts name no product slug — CONTRACT-GAP store.catalog-product-ref); `journey_step` events for T6 (U5) | See §U2.F1 — process ink ×4, advisor defaults, basis reset, flat styles |
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
+| 2026-10-06 | **U5.1–U5.4, U5.6, U5.7** — UX excellence layer (U5.5 the assistant is its own session) | Signed-in **launchpad** (D-297) and **pre-fill** from defaults (D-298); notification **deep links** `/l/<token>` in all three zones (D-299); **zero dead ends** (every customer empty state, not-found and error offer a next action; an unknown storefront path gets our not-found; a test holds it); **messaging** — customer threads at `/account/messages`, "ask the team" on an order, the **CS inbox** `/admin/inbox` with SLA queues, canned responses, internal notes, assign, close (D-300); **RFQ basket** (D-301); dieline opening guide; first-run **intent picker**, studio **coach marks**, sample design, demo loops; **glossary** chips and page, check help links, **materials library**, **learning paths**; microcopy pass on problem titles; price-change highlight, paid-order stages, inbox skeleton, PR design-QA template. Step counts: T3 2→0, T4 6→4, T7 2→1, T10 4→2. | T1, T9, T12 over budget (U-F3 / API claim rules / sign-in for dielines); T11 is U2.F7's; typing indicator; inbox menu entry; content reads | CONTRACT-REQUESTs `store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths`, `conversations.typing`, `admin.menu-inbox`; see the section below |
+---
+
+## U5.1–U5.4, U5.6, U5.7 — UX excellence layer — 2026-10-06
+
+`docs/prompts/U5-ux-excellence.md` §U5.1–U5.4, U5.6, U5.7, on `feat/u5.1-ux-pack` (worktree `../packio-web-u5`, from `main` at `cf520ea`). Gap table: `docs/ux/u5.1-7-gap.md`. Contract **v0.41.0** (already adopted) carries U5.B1–B4, B6 (D-297–D-303); nothing new was adopted. All of it is post-launch (D-219). U2.F7 was running in `../packio-web-u2` at the same time, so the partner zone (T11) was left alone.
+
+### Done
+- **U5.1 Journeys and zero dead ends**
+  - `/account` leads with the **launchpad** (`store.me.getLaunchpad`, D-297): the one recommended step in the API's order, the designs to continue (thumbnails), what to order again. "Where things stand" and "what needs doing" stay.
+  - **Pre-fill** (D-298): a new configuration starts from the material of the customer's last quotation of that type, when this configurator offers it; a guest's last display unit is remembered in the browser (D-183 keeps mm as the default). Address and tax profile were already the defaults at checkout.
+  - **Deep links** (D-299): `/l/<token>` on every zone. A customer token resolves after sign-in and comes back; `a…`/`p…` tokens go to their own host; 404 / 410 say so and offer the account or messages.
+  - **Zero dead ends**: every customer `EmptyState` has an action (`NextStep`), the not-found offers home, search and help, the error boundary offers the team; an unknown storefront path now renders our not-found instead of Next's bare 404 (`(storefront)/[...rest]`). `dead-ends.test.ts` fails a new empty state without an action (three allow-listed, with why).
+  - **Documents** on the order list (T10) — the latest five with their signed downloads.
+- **U5.2 First-run guidance**
+  - **Intent picker** on a first visit to the configurator and the studio: four intents, each sent the shortest way or told this page is it; dismissed for good, re-opened from its link.
+  - **Coach marks** (`src/ui/components/CoachMarks.tsx`): three in the studio (steps, live price, the "?"), non-modal, Escape/skip, re-opened from the "?".
+  - **Sample design**: "ลองเล่นกับแบบตัวอย่าง" opens a ready tuck-end box in the design step.
+  - **Glossary chips** on the configurator's basis and print methods; **demo loops** (our own animated SVG, reduced motion rests on the last frame) for measurement basis, bleed and offset.
+  - Every studio **check links to its explanation** (glossary entry or the print-ready learning path).
+- **U5.3 Messaging** (D-300)
+  - `/account/messages` (threads, unread, a new support message with quick asks) and `/account/messages/{id}` (the thread, photos and files, context cards, read receipts, reply channel web/LINE). "ถามทีม" on an order opens its thread with the order's card.
+  - **CS inbox** `/admin/inbox` and `/admin/inbox/{id}` — the paths packio-api's notifications link to: queues by first-response state, filters, the thread with internal notes inline, canned responses (filled in, never sent unseen), assign to me, close, mark read on open, links to the customer, order, RFQ, quotation and design. Linked from the CS page until the menu has an entry.
+- **U5.4 Parity fixes**
+  - **RFQ basket** (D-301): "เพิ่มลงตะกร้าคำขอ" beside "ส่ง" on every RFQ form; `/rfq/basket` (items, remove, one delivery postcode / date / notes, send, discard); `/account/rfq-baskets/{id}` (each item's RFQ and sent quote, choose a quantity per item, accept into the cart — the dialog lists each item and amount as the API gave them); baskets listed on `/account/rfqs`.
+  - **Dieline guide**: three lines per format under the download (PDF layers already named per D-302).
+- **U5.6 Content**
+  - `/help/glossary` (was a stub), `/materials` (spec data, compare up to three, "ใช้วัสดุนี้" into the configurator), `/learn` and `/learn/{slug}` (articles in order, ending in a pre-filled action) — all three on contract requests, mocked from the catalogue's own rows.
+  - **Microcopy**: the developer-flavoured problem titles (`If-Match`, `Idempotency-Key`, refresh token, "Validation failed"…) rewritten as what to do next; all new strings th/en.
+- **U5.7 Polish**
+  - A changed per-piece price flashes once and says whether quantity or spec changed it (no money arithmetic); a paid order shows its own stages (`store.timeline.progress`); sending a message frees the box at once. `PageSkeleton` (dashboard, list, grid, thread shapes) loads the CS inbox; **no storefront route `loading.tsx`** — a route-level Suspense streams `200` before a page's `notFound()`, which turned the catalogue's and the style library's 404s into 200s in the first full run, so storefront skeletons stay inside components.
+  - Motion on the D-180 tokens (`pk-flash` and the demo keyframes in `base.css`).
+  - `.github/pull_request_template.md` with the design QA checklist.
+
+### Found on the real API (`v0.41.0`, `e2e/integration/ux.spec.ts`)
+- A new customer's launchpad recommends starting a configuration (D-297's last step).
+- A support message reaches the CS inbox, the reply comes back to the customer's thread.
+- A two-item RFQ basket submits as two RFQs.
+- **Deep-link tokens are exactly `[sap]` + 32 characters**: packio-api answers a malformed token `422` (the contract's `ResolveDeepLinkDto` does not state the pattern). The web treats `422` like `404` — "not this account's link", with a way on.
+
+### Step counts (mocks, `pnpm e2e:journeys`)
+| Task | `main` before | after | budget |
+|---|---|---|---|
+| T3 checks | walk broken (U5.0: 2 unexplained) | **0** | 0 |
+| T4 order from the studio | walk broken (U5.0: 6) | **4** | ≤ 5 |
+| T7 tracking | 2 (from the LIFF home) | **1** (from the notification's link) | ≤ 2 |
+| T10 documents | 4 | **2** | ≤ 2 |
+| T1, T2, T8, T9, T11, T12 | 8, 5, 3, 7, 7, 6 | unchanged | 4, 6, 3, 5, 4, 3 |
+
+T3 and T4 were re-walked on Packio 3D Studio (the U5.0 walks drove the old designer). Still over: **T1** (U-F3's quick-start strip, next session), **T9** (the carton photo is required by the API for every claim type, D-082), **T11** (partner floor, U2.F7), **T12** (the free dieline needs a signed-in customer, D-271, so the shortest signed-out path is still the designer).
+
+### Decisions taken (most conservative option; the user approved the plan up front)
+- **No new contract**: v0.41.0 already carries U5.B; the glossary, materials and learning paths are **CONTRACT-REQUESTs** (`store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths`), as are the **typing indicator** (`conversations.typing`) and the inbox's **menu entry** (`admin.menu-inbox`).
+- **No business value in the UI**: the first-response target is a setting (D-221), so the copy says "during business hours", never "within 1 day"; the price highlight says what changed, never by how much.
+- **First-run state is per browser** (local storage, a convenience): the e2e default storage marks the hints seen, so no older test meets a coach mark; the first-run tests opt back in.
+- **The sample design is an ordinary new design** — not saved unless the customer saves it, deleted like any other.
+- **No "fly to cart"**: the add-to-cart confirmation stays the toast with "ดูตะกร้า". A cart-icon pop was built and removed — the header's extra client component cost 2.5 KB of script on every storefront page and pushed `/styles` over its budget.
+- **First-run pieces load on demand** (glossary chip and its request client, intent picker, coach marks) so the configurator and the studio stay inside their script budgets.
+- **`checkout_started` fires on the checkout page**, not on the cart's link, so the studio's "order now" (straight to checkout) stays in the funnel.
+- **Admin conversations reuse one mock** with the store (`mocks/store/conversations.ts`), so a message crosses zones in tests as it does in packio-api.
+
+### Contract requests
+`store.catalog-glossary`, `store.catalog-materials`, `store.learning-paths` (zod in `src/lib/api/requests/store-content.ts`, awaiting triage), `conversations.typing`, `admin.menu-inbox`.
+
+### Tooling
+- `scripts/lhci.ts` refuses a port that already answers and rewrites the configs' URLs to `LHCI_PORT`: two sessions measuring on 3200 at once were measuring each other's server.
+
+### Verification
+- `pnpm lint`, `pnpm typecheck`, `pnpm gen:api:check` clean; unit **1,069** app tests + the dieline package green; `pnpm release:hygiene` clean (603 files).
+- **Mock e2e, full run** (after merging U2.F7 and U3.4 wave 2): **438 passed**, 1 failed — this session's content test ran axe before a client navigation's streamed `<title>` arrived; it now waits for the title (passes alone). An earlier full run's 404s served as 200 were real (route `loading.tsx`, removed); `storefront-repeat` / `storefront-downloads` failed once on shared mock state and pass alone and in the last full run.
+- **Step counters** (`pnpm e2e:journeys`): 10 walks pass, T5/T6 pending; counts in the table above.
+- **Real API** (`e2e/integration/ux.spec.ts`, packio-api v0.41.0 on :3400): green — launchpad, a support thread answered from the inbox, a two-item basket; the malformed deep-link token finding above.
+- **Lighthouse** on a private port against `main` built the same way: three ratchets moved (`docs/performance-budgets.md` U5.1 — customer-app 346,000, customer-marketing 273,000, studio 505,500); every set meets its budget.
+- `pnpm format:check` lists the same 27 files `main` lists (none of this session's).
+
 ---
 
 ## U3.6 — Partner dieline intake and structural design requests — 2026-10-06

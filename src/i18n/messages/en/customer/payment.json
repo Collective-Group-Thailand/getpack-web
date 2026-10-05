@@ -46,5 +46,6 @@
   "failure": {
     "declined": "Your bank or card issuer declined it. Try another method, or contact your bank.",
     "provider_error": "The payment provider had a problem; nothing was charged. Please try again."
-  }
+  },
+  "whatNext": "What happens to your job from here"
 }

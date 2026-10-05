@@ -193,7 +193,7 @@ export function PriceDock({
 
   if (layout === "bar")
     return (
-      <section aria-label={t("label")} aria-live="polite" className="flex items-center gap-3">
+      <section aria-label={t("label")} aria-live="polite" data-coach="studio-price" className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           {priceText}
           {pending ? <Spinner size={14} label={t("updating")} /> : null}
@@ -204,7 +204,7 @@ export function PriceDock({
     );
 
   return (
-    <section aria-label={t("label")} className="flex flex-col gap-3">
+    <section aria-label={t("label")} data-coach="studio-price" className="flex flex-col gap-3">
       <h2 className="font-semibold">{t("title")}</h2>
       {quantityChip}
       <div aria-live="polite" className="flex flex-col gap-1">

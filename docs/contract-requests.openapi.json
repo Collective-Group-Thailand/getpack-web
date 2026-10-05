@@ -50,6 +50,112 @@
         }
       }
     },
+    "/v1/store/catalog/glossary-terms": {
+      "get": {
+        "operationId": "store.catalog.glossaryTerms.list",
+        "summary": "The published glossary for customers: Thai and English term, definition, aliases, stable slug",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.catalog-glossary",
+        "x-decisions": [
+          "D-219"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The published glossary for customers: Thai and English term, definition, aliases, stable slug",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreGlossaryTermDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/catalog/materials": {
+      "get": {
+        "operationId": "store.catalog.materials.list",
+        "summary": "The materials library: published materials with spec data and where each can be ordered",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.catalog-materials",
+        "x-decisions": [
+          "D-219"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The materials library: published materials with spec data and where each can be ordered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreMaterialDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/guided-help/actions/recommend": {
       "post": {
         "operationId": "store.guidedHelp.recommend",
@@ -81,6 +187,59 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GuidedRecommendationDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/learning-paths": {
+      "get": {
+        "operationId": "store.learningPaths.list",
+        "summary": "Buyer learning paths: ordered articles ending in a pre-filled action",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.learning-paths",
+        "x-decisions": [
+          "D-219"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buyer learning paths: ordered articles ending in a pre-filled action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StoreLearningPathDto"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -302,6 +461,13 @@
   },
   "components": {
     "schemas": {
+      "FoodContactStatus": {
+        "type": "string",
+        "enum": [
+          "approved",
+          "not_approved"
+        ]
+      },
       "GuidedAnswersDto": {
         "type": "object",
         "properties": {
@@ -403,8 +569,64 @@
           "unsure"
         ]
       },
+      "LearningActionDto": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "$ref": "#/components/schemas/LearningActionTarget"
+          },
+          "productSlug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "materialOptionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "labelTh": {
+            "type": "string"
+          },
+          "labelEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "target",
+          "productSlug",
+          "materialOptionId",
+          "labelTh",
+          "labelEn"
+        ],
+        "additionalProperties": false
+      },
+      "LearningActionTarget": {
+        "type": "string",
+        "enum": [
+          "configurator",
+          "studio",
+          "styles",
+          "samples",
+          "rfq"
+        ]
+      },
       "ProblemDetails": {
         "description": "As defined in contract/openapi.json (api-conventions §3)."
+      },
+      "Recyclability": {
+        "type": "string",
+        "enum": [
+          "recyclable",
+          "recyclable_if_clean",
+          "not_recyclable",
+          "unknown"
+        ]
       },
       "SampleKitDto": {
         "type": "object",
@@ -465,6 +687,249 @@
         "enum": [
           "received",
           "awaiting_payment"
+        ]
+      },
+      "StoreGlossaryTermDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "termTh": {
+            "type": "string"
+          },
+          "termEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "definitionTh": {
+            "type": "string"
+          },
+          "definitionEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "termTh",
+          "termEn",
+          "definitionTh",
+          "definitionEn",
+          "aliases"
+        ],
+        "additionalProperties": false
+      },
+      "StoreLearningPathDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "titleTh": {
+            "type": "string"
+          },
+          "titleEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summaryTh": {
+            "type": "string"
+          },
+          "summaryEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "articleSlug": {
+                  "type": "string"
+                },
+                "titleTh": {
+                  "type": "string"
+                },
+                "titleEn": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "articleSlug",
+                "titleTh",
+                "titleEn"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "action": {
+            "$ref": "#/components/schemas/LearningActionDto"
+          }
+        },
+        "required": [
+          "slug",
+          "titleTh",
+          "titleEn",
+          "summaryTh",
+          "summaryEn",
+          "steps",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "StoreMaterialDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "nameTh": {
+            "type": "string"
+          },
+          "nameEn": {
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StoreMaterialKind"
+          },
+          "descriptionTh": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "descriptionEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "caliperMm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "gsm": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "flute": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "printMethods": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "nameTh": {
+                  "type": "string"
+                },
+                "nameEn": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "nameTh",
+                "nameEn"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "foodContact": {
+            "$ref": "#/components/schemas/FoodContactStatus"
+          },
+          "recyclability": {
+            "$ref": "#/components/schemas/Recyclability"
+          },
+          "offeredOn": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "productSlug": {
+                  "type": "string"
+                },
+                "nameTh": {
+                  "type": "string"
+                },
+                "nameEn": {
+                  "type": "string"
+                },
+                "materialOptionId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "productSlug",
+                "nameTh",
+                "nameEn",
+                "materialOptionId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "code",
+          "nameTh",
+          "nameEn",
+          "kind",
+          "descriptionTh",
+          "descriptionEn",
+          "imageUrl",
+          "caliperMm",
+          "gsm",
+          "flute",
+          "printMethods",
+          "foodContact",
+          "recyclability",
+          "offeredOn"
+        ],
+        "additionalProperties": false
+      },
+      "StoreMaterialKind": {
+        "type": "string",
+        "enum": [
+          "paper",
+          "board",
+          "corrugated",
+          "film",
+          "other"
         ]
       },
       "StructuralDesignerDto": {

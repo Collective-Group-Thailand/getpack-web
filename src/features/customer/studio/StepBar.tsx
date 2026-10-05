@@ -23,7 +23,11 @@ export function StepBar({
   const t = useTranslations("studio.steps");
   const current = STUDIO_STEPS.indexOf(step);
   return (
-    <nav aria-label={t("label")} className="border-border bg-surface shrink-0 overflow-x-auto border-b">
+    <nav
+      aria-label={t("label")}
+      data-coach="studio-steps"
+      className="border-border bg-surface shrink-0 overflow-x-auto border-b"
+    >
       <ol className="flex min-w-max items-center gap-1 px-3 py-1.5">
         {STUDIO_STEPS.map((id, index) => {
           const locked = lockedReason(id, facts);

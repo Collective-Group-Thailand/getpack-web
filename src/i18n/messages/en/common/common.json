@@ -96,5 +96,53 @@
     "submit": "Record the evidence",
     "once": "Recorded once, before the sample ships",
     "recorded": "Evidence recorded"
+  },
+  "deepLink": {
+    "expired": {
+      "title": "This link has expired",
+      "body": "Links in notifications only work for a while, for your security. The same thing can still be opened from your account."
+    },
+    "not-found": {
+      "title": "This link cannot be opened from this account",
+      "body": "It may belong to another account or be incomplete. Sign in with the account that got the notification, or find the same thing from your account."
+    },
+    "account": "Go to my account",
+    "messages": "See messages",
+    "home": "Back to home"
+  },
+  "conversation": {
+    "empty": "No messages yet. Start typing below.",
+    "messages": "Messages",
+    "you": "You",
+    "team": "Packio team",
+    "customer": "Customer",
+    "viaLine": "via LINE",
+    "internal": "Internal note — not shown to the customer",
+    "read": "Read",
+    "sent": "Sent",
+    "failed": "Not sent — your message is still here. Try again.",
+    "uploadFailed": "The file was not attached. Try again, or send a smaller file.",
+    "quickReplies": "Quick replies",
+    "attached": "Attached files",
+    "removeFile": "Remove {name}",
+    "attach": "Attach a photo or file",
+    "cards": {
+      "order": "Order",
+      "design": "Design",
+      "rfq": "Quote request",
+      "quote": "Quotation"
+    },
+    "open": "Open {name}"
+  },
+  "next": {
+    "home": "Back to home",
+    "products": "See all products",
+    "search": "Search",
+    "help": "Help centre",
+    "chat": "Talk to the team",
+    "orders": "See my orders",
+    "messages": "Message the team",
+    "styles": "See box styles",
+    "learn": "Learn before you order"
   }
 }

@@ -6,7 +6,7 @@ import { addHeading } from "../helpers/designer";
 import { gotoHydrated } from "../helpers/session";
 import { expect, test } from "./fixture";
 
-const dock = (page: Page) => page.getByRole("complementary", { name: "ราคาของคุณ" });
+const BOX = "/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&step=design";
 
 /** Whatever the buyer's cart already holds is not part of this task. */
 async function emptyCart(page: Page) {
@@ -19,56 +19,39 @@ async function emptyCart(page: Page) {
   }
 }
 
-/** T4 "สั่งผลิต 1,000 ใบ ส่งมาที่บริษัท" — from the studio to the payment page (nothing is paid). */
+/**
+ * T4 "สั่งผลิต 1,000 ใบ ส่งมาที่บริษัท" — from the studio to the payment page (nothing is paid). Since
+ * U4.6 the studio orders on its own: ⑤ Order prices the design, "สั่งเลย" goes straight to checkout.
+ */
 test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey }) => {
   test.slow();
   const j = journey("T4");
   await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
   await emptyCart(page);
-  // The task card's start: a design of the box open in the studio.
-  // Packio 3D Studio (U4.2): ① offers the setup; the box gets a heading so ⑤ opens.
-  await gotoHydrated(page, `${HOSTS.customer}/studio/new?product=shipping-box&step=start`);
-  await page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" }).click();
+  // The task card's start: a design of the box open in the studio, saved.
+  await gotoHydrated(page, `${HOSTS.customer}${BOX}`);
   const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
-  await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
-  await expect(setup).toBeHidden();
+  if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await addHeading(page);
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
   await j.startHere();
-  j.expectEvents("design_ordered", "configurator_opened", "cart_item_added", "checkout_started", "order_placed");
+  j.expectEvents("studio_add_to_cart", "checkout_started", "order_placed");
 
+  const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
   await j.screen(
     "the studio's order step",
-    () => page.getByRole("region", { name: "ราคาและการสั่งผลิต" }).getByRole("button", { name: "สั่งผลิต" }).click(),
+    () => steps.getByRole("button", { name: /สั่งผลิต/ }).click(),
     () => expect(page.getByRole("heading", { name: "สั่งผลิตแบบนี้" })).toBeVisible(),
   );
-  j.gap("ordering inside the studio without the configurator round trip is U4.6");
-
-  await j.screen(
-    "configurator, filled in from the design",
-    () => page.getByRole("link", { name: "สั่งผลิต" }).click(),
-    () => expect(dock(page)).toBeVisible(),
-  );
-  j.gap("the design is attached to the order only after checkout, not carried into the cart (U4.6)");
-
-  const breaks = dock(page).getByRole("table", { name: "ราคาต่อจำนวน" });
-  // The breaks load with the price; only then can the walk tell whether 1,000 is already chosen.
-  await expect(breaks.getByRole("button", { name: /^เลือกอยู่/ })).toBeVisible();
-  if ((await breaks.getByRole("button", { name: "เลือกอยู่ 1,000 ชิ้น" }).count()) === 0) {
-    await j.decide("quantity", () => breaks.getByRole("button", { name: /เลือก\S*\s*1,000 ชิ้น/ }).click());
+  const tiers = page.getByRole("table", { name: "ราคาตามจำนวน" });
+  await expect(tiers.getByRole("button", { pressed: true })).toHaveCount(1, { timeout: 15_000 });
+  if ((await tiers.getByRole("button", { name: /1,000/, pressed: true }).count()) === 0) {
+    await j.decide("quantity", () => tiers.getByRole("button", { name: /1,000/ }).first().click());
   }
-  await j.decide("add to cart", async () => {
-    await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
-    await expect(page.getByText(/ลงตะกร้าแล้ว/)).toBeVisible();
-  });
-  await j.screen(
-    "cart",
-    () => page.getByRole("button", { name: "ดูตะกร้า" }).click(),
-    () => expect(page.getByRole("list", { name: "รายการในตะกร้า" })).toBeVisible(),
-  );
   await j.screen(
     "checkout",
-    () => page.getByRole("link", { name: "ดำเนินการชำระเงิน" }).click(),
-    () => expect(page.getByRole("heading", { level: 1, name: "ชำระเงิน" })).toBeVisible(),
+    () => page.getByRole("button", { name: "สั่งเลย" }).click(),
+    () => expect(page.getByRole("heading", { level: 1, name: "ชำระเงิน" })).toBeVisible({ timeout: 60_000 }),
   );
   await page.locator("html[data-hydrated]").waitFor();
   // The company address and tax profile are the account's defaults: accepting them costs nothing.

@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ONLINE_PAYMENT_METHODS, type PaymentMethod } from "@/domain/payment-methods";
 import { useFormat } from "@/features/shared/format/useFormat";
@@ -134,6 +134,14 @@ export function CheckoutView({
   const [failure, setFailure] = useState<string | null>(null);
   const [repriced, setRepriced] = useState<{ before: string } | null>(null);
   const idempotencyKey = useRef(newKey());
+  // The funnel's checkout step, once per visit, however the customer got here — the cart, or the
+  // studio's "order now" straight to checkout (U4.6, U5.1).
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    track("checkout_started", { route: "/checkout" });
+  }, []);
 
   const api = browserApi();
   const edit = useMutation({

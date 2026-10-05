@@ -21,7 +21,9 @@
     "chooseBox": "Choose style and size",
     "changeBox": "Change style or size",
     "library": "Browse the style library",
-    "next": "Go to size & material"
+    "next": "Go to size & material",
+    "sample": "Try a sample design",
+    "sampleNote": "A ready box to try the tools on; it is not kept unless you save it."
   },
   "box": {
     "confirm": "Use this box and start designing",
@@ -341,6 +343,25 @@
       "none": "none yet",
       "mm": "mm",
       "wishes": "What I would like"
+    }
+  },
+  "guide": {
+    "open": "Open the studio guide",
+    "next": "Next",
+    "done": "Got it",
+    "skip": "Skip",
+    "progress": "Tip {current} of {total}",
+    "steps": {
+      "title": "One step at a time",
+      "body": "Choose the box → design → check → order. Press any step you have done to go back."
+    },
+    "price": {
+      "title": "The price updates as you go",
+      "body": "Change the box or the quantity and the price here is recalculated, with the reason it changed."
+    },
+    "help": {
+      "title": "Open these tips again here",
+      "body": "Not sure about something? This question mark is always here."
     }
   }
 }
