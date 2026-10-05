@@ -48,6 +48,31 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U2.F2 — Free dieline download and packaging spec sheet — 2026-10-05
+
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F2, on `feat/u2.f2` (worktree `../packio-web-u2`, from `main` at `f80f1ec`, U4 merged). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F2. The library page itself is U3.5's (precedence note), so only the two artefacts were built.
+
+### Done
+- **Free dieline download** on every style page, under the chosen variant (a button that loads the form). The customer enters sizes on a basis (inside, outside, over-crease: the API converts), picks a material class from the style's size ranges and a format (PDF, DXF, SVG). The download goes through `store.dielines.download`. The panel shows the sizes drawn and how many downloads are left today, and explains the layers (CutContour, Crease, Perf, Glue, Bleed, Safe, HalfCut). After a download it nudges to "ดูราคาและสั่งผลิต". There is no plan gate and no paywall. Signed out, it asks for sign-in, because the API counts downloads per customer. The API's own range, rate-limit and engine errors are shown as given.
+- **Packaging spec sheet** on the order page once the artwork is approved (`store.orders.getSpecSheet`, D-287): Thai or English, **preview** in the browser's PDF viewer in a new tab, and **download**.
+- Problem copy for `dielines.*` and `orders.spec_sheet_unavailable`; mocks for both operations.
+
+### Decisions taken
+- **The download panel lives on the style page**, not in the configurator: the style page knows the variant and its material classes, and the configurator's summary already links there through the style code.
+- **The preview opens the PDF in a new tab.** The app's CSP (`object-src 'none'`, `frame-src 'self'`) forbids embedding a signed file, and widening it for a preview was not worth it.
+- **A sample's spec sheet is the order's**: a sample is an order (U2.4), so it gets the same section once approved.
+
+### Found on the real API
+The dev seed publishes no styles and has no order with approved artwork, so neither download can run there. `e2e/integration/downloads.spec.ts` skips with that reason; noted in `docs/integration.md`.
+
+### Tests
+e2e `storefront-downloads.spec.ts`: signed out → sign-in link; a size out of range refused with its reason; an SVG downloaded with the remaining count, nudge and layers; the spec sheet in English downloaded; axe on both.
+
+### Verification
+`pnpm typecheck`, `pnpm lint` clean; unit 1,045; mock e2e full run 412 passed. Lighthouse: all sets within budget. The style page went 12.9 KB over `customer-marketing` with the form inline, so the panel is now one button that loads the form on click. Real API: `downloads.spec.ts` skipped (the dev seed publishes no styles).
+
+---
+
 ## U4.8 — Reorder, product library, design-service hand-off, polish — 2026-10-05
 
 `docs/prompts/U4-3d-studio.md` §U4.8, on `feat/u4.8-reorder-polish` (worktree `../packio-web-u4`, from `main` at `049e978`, U4.7 merged). Post-launch (D-219); "auto mode".

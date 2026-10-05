@@ -209,6 +209,12 @@ export default async function StylePage({ params }: { params: Params }) {
               </Button>
             )
           }
+          dieline={{
+            sizeRanges: style.sizeRanges,
+            signedIn,
+            signInHref: `/sign-in?returnTo=${encodeURIComponent(href)}`,
+            orderHref: style.startingPrice ? configureHref(style.startingPrice.catalogProductSlug) : null,
+          }}
           rfqActions={
             <Button asChild variant="secondary">
               <Link href={rfqCategory ? rfqHref(rfqCategory.code) : "/contact"}>{t("detail.requestQuote")}</Link>

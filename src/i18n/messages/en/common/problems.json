@@ -222,7 +222,8 @@
   "orders": {
     "reorder_unavailable": "Reorder unavailable",
     "reorder_preview_expired": "Preview expired",
-    "reorder_repriced": "Price changed"
+    "reorder_repriced": "Price changed",
+    "spec_sheet_unavailable": "The spec sheet is ready once the artwork is approved"
   },
   "outbox": {
     "not_replayable": "Event not replayable"
@@ -454,5 +455,11 @@
     "print_unavailable": "Print files cannot be made automatically for this box style yet",
     "quote_not_of_version": "The quotation is not for this version",
     "renders_missing": "The artwork of this version has not been sent"
+  },
+  "dielines": {
+    "material_class_not_offered": "This style is not offered in that material class",
+    "not_drawable": "This style cannot be drawn as a dieline",
+    "size_out_of_range": "These sizes are outside the style's range",
+    "rate_limited": "Too many downloads — wait a moment and try again"
   }
 }
