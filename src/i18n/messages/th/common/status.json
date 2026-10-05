@@ -672,6 +672,13 @@
     "submitted": "ส่งแล้ว",
     "discarded": "ยกเลิกแล้ว"
   },
+  "assistantOutcome": {
+    "answered": "ตอบแล้ว",
+    "blocked": "ไม่ตอบ (ไม่มีข้อมูลยืนยัน)",
+    "refused": "ปฏิเสธ",
+    "handedOff": "ส่งต่อทีม",
+    "failed": "ล้มเหลว"
+  },
   "structuralRequest": {
     "submitted": "ส่งคำขอแล้ว",
     "assigned": "มีผู้ออกแบบรับงาน",

@@ -288,6 +288,18 @@ Measured on a private port (`LHCI_PORT`) against `main` at `c1f8967` built the s
 - Taken back on the way: a header cart-icon animation (2.5 KB on every page, removed), the glossary chip's popover and request client (were loading after hydration), the configurator's defaults seed (server only now).
 - **`pnpm lhci` and parallel worktrees**: two sessions measuring at once both used port 3200, so one measured the other's server (this session's first figures, and possibly the 340,092 recorded for U3.4 wave 2, came from whichever server answered). `scripts/lhci.ts` now refuses a port that already answers and rewrites the configs' URLs to `LHCI_PORT`.
 
+## U5.5 — Packio Assistant (2026-10-06)
+
+Measured with the assistant **built out** (`NEXT_PUBLIC_ASSISTANT` unset — the launch configuration, D-218), private port:
+
+| Page | U5.1 | U5.5 | Ratchet |
+|---|---|---|---|
+| a style page | 272,879 | 273,064 | customer-marketing 273,000 → **273,300** |
+| `/studio/new?…` | 505,412 | 505,649 | studio 505,500 → **505,800** |
+| `/configure/tuck-end-box` | 345,833 | within 346,000 | unchanged |
+
+What remains is copy every zone loads: the assistant's outcome labels (`status`) and its four problem titles. The assistant's own copy is a namespace loaded only in a build that has it, and its button lives in the header's existing client module — a server component's reference to the launcher cost every header page 2.6 KB even behind a false constant, and was moved for that reason.
+
 ## U3.6 — dieline intake and structural requests (2026-10-06)
 
 Three script ratchets, each by the copy and entry points U3.6 adds to every page of its zone (the
@@ -295,5 +307,5 @@ screens themselves load on their own routes; the DXF reader and the style librar
 offer's page): `customer-app` 340200 → **340300** (measured 340232: the account menu entry),
 `customer-marketing` 270000 → **270100** (270018: the call to action on `/styles`), `partner`
 301000 → **301400** (301307: the "more" menu entry). After merging main's U5 layer: `partner`
-301400 → **301600** (301490) and `studio` 505500 → **505700** (505558: the dieline core's share of the
-wave 2 / 3 extensions, on U5's own measure).
+301400 → **301600** (301490); `studio` stays at U5.5's **505800** (the dieline core's
+share of the wave 2 / 3 extensions fits under it).

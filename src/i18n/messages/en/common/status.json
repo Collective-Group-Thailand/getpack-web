@@ -672,6 +672,13 @@
     "submitted": "Sent",
     "discarded": "Discarded"
   },
+  "assistantOutcome": {
+    "answered": "Answered",
+    "blocked": "Not answered (no supporting data)",
+    "refused": "Refused",
+    "handedOff": "Handed to the team",
+    "failed": "Failed"
+  },
   "structuralRequest": {
     "submitted": "Submitted",
     "assigned": "Designer assigned",

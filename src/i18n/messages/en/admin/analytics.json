@@ -202,5 +202,49 @@
     "cs": "CS",
     "line": "LINE",
     "b2b": "B2B"
+  },
+  "assistant": {
+    "title": "AI assistant",
+    "description": "The enabling gate (D-306), the Thai evaluation results, usage and cost.",
+    "cleared": "Cleared — it can be switched on outside local",
+    "notCleared": "Not cleared to be switched on outside local",
+    "gate": "It can be switched on once a provider is chosen under ADR-0012 and the latest evaluation meets the minimum pass rate with every red-team case passed.",
+    "sessions": "Sessions",
+    "cost": "Cost",
+    "latestPass": "Latest pass rate",
+    "outcomesTitle": "How answers ended",
+    "runsTitle": "Evaluation runs",
+    "noRuns": "No evaluation runs yet",
+    "runNow": "Run evaluation now",
+    "ran": "Evaluated: {passed} of {cases} passed",
+    "runFailed": "The evaluation could not be started",
+    "columns": {
+      "finished": "Finished",
+      "provider": "Provider · model",
+      "cases": "Passed",
+      "redTeam": "Red team",
+      "trigger": "Started by",
+      "case": "Case",
+      "kind": "Kind",
+      "result": "Result",
+      "reason": "Reason"
+    },
+    "passOf": "{passed}/{cases} ({pct}%)",
+    "passOfShort": "{passed}/{cases}",
+    "triggers": {
+      "nightly": "Nightly",
+      "manual": "Manual"
+    },
+    "runTitle": "Evaluation run",
+    "runDescription": "{at} · {provider} · suite {suite}",
+    "redTeamLine": "red team {passed}/{cases}",
+    "casesTitle": "Cases",
+    "kinds": {
+      "standard": "Standard",
+      "red_team": "Red team"
+    },
+    "passed": "Passed",
+    "failed": "Failed",
+    "back": "← AI assistant"
   }
 }
