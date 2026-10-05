@@ -71,7 +71,10 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 - Retention is shown only as the API states it; otherwise the copy points at the privacy policy (D-305's 30 days is a setting).
 
 ### Verification
-VERIFICATION_U55
+- `pnpm lint`, `pnpm typecheck`, `pnpm gen:api:check` clean; unit **1,075** (the assistant over the mock: tool-sourced answers, refusal of manipulation and other customers' orders, hand-off, the gate for `assistant.manage` only).
+- E2E (flag on): `storefront-assistant.spec.ts` 4/4 — AI label and retention, a sourced answer, opt-out, a refusal with the team link, packio-api's switch off (`?mock=store.assistant.startSession:assistant.disabled`), a guest, the evaluation gate with all 104 cases; axe clean (it caught an in-text link underlined only on hover — fixed). The header-sensitive specs (`storefront`, `storefront-studio`, `storefront-ux` messaging) pass run serially; under two parallel workers on a loaded machine they timed out once.
+- **Real API** (v0.41.0, flag on): `e2e/integration/assistant.spec.ts` — packio-api refuses the session (off at launch, D-218) and the panel offers the team; `ux.spec.ts` still green.
+- **Flag off** (production): `pnpm release:hygiene` clean; Lighthouse within budget after two ~200 B ratchet moves (`docs/performance-budgets.md` U5.5).
 
 ---
 
