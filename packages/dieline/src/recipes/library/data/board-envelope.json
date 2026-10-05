@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "id": "board-envelope",
+  "base": "PK-SP-13",
+  "variants": {
+    "lock": {
+      "friction": {
+        "lock": "friction"
+      },
+      "slit_lock": {
+        "lock": "slit"
+      }
+    }
+  },
+  "category": "specialty",
+  "name": {
+    "th": "ซองกระดาษแข็ง",
+    "en": "Paperboard envelope"
+  },
+  "description": {
+    "th": "ซองพับจากกระดาษแข็ง ปีกข้างพับเข้า ฝาล่างทากาว ฝาบนปิด เลือกลิ้นล็อกได้",
+    "en": "A folded paperboard envelope: side flaps in, the bottom flap glued over them, the top flap closing; with an optional tongue-and-slit lock"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 100,
+      "max": 400
+    },
+    {
+      "ref": "height",
+      "min": 80,
+      "max": 300
+    },
+    "lock"
+  ],
+  "defaults": {
+    "length": 230,
+    "height": 160,
+    "lock": "friction"
+  },
+  "presets": [
+    {
+      "id": "c6",
+      "label": {
+        "th": "C6 162 × 114",
+        "en": "C6 162 × 114"
+      },
+      "values": {
+        "length": 162,
+        "height": 114
+      }
+    },
+    {
+      "id": "dl",
+      "label": {
+        "th": "DL 220 × 110",
+        "en": "DL 220 × 110"
+      },
+      "values": {
+        "length": 220,
+        "height": 110
+      }
+    },
+    {
+      "id": "c5",
+      "label": {
+        "th": "C5 229 × 162",
+        "en": "C5 229 × 162"
+      },
+      "values": {
+        "length": 229,
+        "height": 162
+      }
+    }
+  ],
+  "body": {
+    "module": "envelope"
+  },
+  "outerSize": {
+    "length": "length",
+    "width": "4 * t",
+    "height": "height"
+  },
+  "closedSize": {
+    "length": "length",
+    "width": "0",
+    "height": "height"
+  }
+}

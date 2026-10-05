@@ -4,7 +4,7 @@ import { face, piece, prefixFaces } from "../../faces";
 import { num, str } from "../../params";
 import { rectangle } from "../../path";
 import { grainOn, t } from "../../styles/_shared";
-import type { ParamValues } from "../../types";
+import type { HingeMap, ParamValues } from "../../types";
 import type { FeatureModule } from "../types";
 
 /* Tray features of style-library wave 1 (U3.4). */
@@ -67,7 +67,7 @@ export const telescopeLid: FeatureModule = {
       message: t("ฝาครอบลึกกว่าตัวกล่อง", "The lid is deeper than the base"),
     },
   ],
-  pieces(ctx) {
+  pieces(ctx, cfg) {
     const { v, m } = ctx;
     const a = allowancesOf(m);
     const c = LID_CLEARANCE_MM + m.caliperMm;
@@ -81,12 +81,25 @@ export const telescopeLid: FeatureModule = {
       }),
       "lid-",
     );
-    return [piece("lid", "lid", faces, grainOn(v, faces, "lid-base"))];
+    // `end` = `bottom` (a design-style telescope's second cover, U3.4 wave 2): its own piece and face ids.
+    const bottom = cfg.end === "bottom";
+    const own = bottom ? prefixFaces(faces, "bottom-") : faces;
+    return [piece(bottom ? "lid-bottom" : "lid", "lid", own, grainOn(v, own, bottom ? "bottom-lid-base" : "lid-base"))];
   },
-  hinges: (ctx) => ({
-    roots: { lid: "lid-base" },
-    placement: { lid: { over: "blank", rotate: [90, 0, 0], flip: true, sink: telescopeLidDepth(ctx.v), lift: 40 } },
-  }),
+  hinges: (ctx, cfg): Partial<HingeMap> =>
+    cfg.end === "bottom"
+      ? {
+          roots: { "lid-bottom": "bottom-lid-base" },
+          placement: {
+            "lid-bottom": { under: "blank", rotate: [90, 0, 0], sink: telescopeLidDepth(ctx.v), lift: 40 },
+          },
+        }
+      : {
+          roots: { lid: "lid-base" },
+          placement: {
+            lid: { over: "blank", rotate: [90, 0, 0], flip: true, sink: telescopeLidDepth(ctx.v), lift: 40 },
+          },
+        },
 };
 
 export const telescopeLidDepth = (v: ParamValues) =>

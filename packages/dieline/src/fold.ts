@@ -235,7 +235,7 @@ export function foldDieline(d: Dieline, map: HingeMap, progress = 1): Map<string
         const flip = multiply(translation(0, cy, cz), multiply(rotation([1, 0, 0], Math.PI), translation(0, -cy, -cz)));
         transforms = new Map([...transforms].map(([id, m]) => [id, multiply(flip, m)]));
       }
-      const target = rule.over ?? rule.inside;
+      const target = rule.over ?? rule.under ?? rule.inside;
       const ref = target ? placedBounds.get(target) : undefined;
       if (ref) {
         const b = boundsOfTransformed(p.faces, transforms);
@@ -244,9 +244,11 @@ export function foldDieline(d: Dieline, map: HingeMap, progress = 1): Map<string
         // Over: sits on top, lifted by `lift` × progress so the closed state is assembled.
         const dy = rule.over
           ? ref.max[1] - b.min[1] - (rule.sink ?? 0) + (rule.lift ?? 0) * (1 - progress)
-          : rule.floor !== undefined
-            ? ref.min[1] + rule.floor - b.min[1] + (rule.lift ?? 0) * (1 - progress)
-            : (ref.min[1] + ref.max[1]) / 2 - (b.min[1] + b.max[1]) / 2;
+          : rule.under
+            ? ref.min[1] - b.max[1] + (rule.sink ?? 0) - (rule.lift ?? 0) * (1 - progress)
+            : rule.floor !== undefined
+              ? ref.min[1] + rule.floor - b.min[1] + (rule.lift ?? 0) * (1 - progress)
+              : (ref.min[1] + ref.max[1]) / 2 - (b.min[1] + b.max[1]) / 2;
         const slide = rule.inside ? (rule.slide ?? 0) * (1 - progress) : 0;
         const move = translation(dx + slide, dy, dz);
         transforms = new Map([...transforms].map(([id, m]) => [id, multiply(move, m)]));

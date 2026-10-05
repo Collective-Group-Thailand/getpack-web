@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "book-wrap",
+  "base": "PK-CF-04",
+  "variants": {
+    "lock": {
+      "friction": {
+        "lock": "friction"
+      },
+      "slit_lock": {
+        "lock": "slit"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องห่อหนังสือ",
+    "en": "Book wrap folder"
+  },
+  "description": {
+    "th": "ถาดลูกฟูกพับขึ้นรูป ฝาหน้าหลังพับห่อทับกันด้านบน ปีกข้างพับเข้าใต้ฝา เลือกลิ้นล็อกได้",
+    "en": "A corrugated tray whose front and back flaps wrap over the top and overlap, with end flaps folded in beneath; with an optional tongue-and-slit lock"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 120,
+      "max": 600
+    },
+    {
+      "ref": "width",
+      "min": 90,
+      "max": 450
+    },
+    {
+      "ref": "height",
+      "min": 10,
+      "max": 150
+    },
+    "grain",
+    "flapOverlap",
+    "lock"
+  ],
+  "defaults": {
+    "length": 240,
+    "width": 170,
+    "height": 40,
+    "grain": "across",
+    "flapOverlap": 30,
+    "lock": "friction"
+  },
+  "presets": [
+    {
+      "id": "a5",
+      "label": {
+        "th": "A5 220 × 160 × 30",
+        "en": "A5 220 × 160 × 30"
+      },
+      "values": {
+        "length": 220,
+        "width": 160,
+        "height": 30
+      }
+    },
+    {
+      "id": "a4",
+      "label": {
+        "th": "A4 310 × 230 × 40",
+        "en": "A4 310 × 230 × 40"
+      },
+      "values": {
+        "length": 310,
+        "width": 230,
+        "height": 40
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 350 × 260 × 60",
+        "en": "L 350 × 260 × 60"
+      },
+      "values": {
+        "length": 350,
+        "width": 260,
+        "height": 60
+      }
+    }
+  ],
+  "body": {
+    "module": "tray",
+    "preset": "glued"
+  },
+  "closures": {
+    "top": {
+      "module": "coverFlaps"
+    }
+  },
+  "outerSize": {
+    "height": "height + t"
+  }
+}
