@@ -15,7 +15,7 @@ import { addToCart, toCartDto } from "./cart";
 import { threads } from "./conversations";
 import { customerOf, type MockCustomer } from "./customers";
 import { ownerIdOf } from "./owner";
-import { acceptStoreRfq, createStoreRfq, myRfq, rfqTypeNames, storeRfqDto } from "./rfq";
+import { acceptStoreRfq, createStoreRfq, myRfq, rfqRefusal, rfqTypeNames, storeRfqDto } from "./rfq";
 
 type Basket = Schemas["RfqBasketDto"] & { customerId: string; inputs: Schemas["RfqBasketItemInputDto"][] };
 
@@ -162,7 +162,11 @@ export const rfqBasketHandlers = [
         { path: "deliveryPostcode", code: "required", message: "required" },
       ]);
     const en = english(request);
-    // Every item is checked first; nothing is filed unless all of them pass.
+    // Every item is checked first (errors under `items[i]`); nothing is filed unless all of them pass.
+    for (const [index, input] of draft.inputs.entries()) {
+      const refused = rfqRefusal(input, `items[${index}].`);
+      if (refused) return refused;
+    }
     const created = draft.inputs.map((input) =>
       createStoreRfq(
         customer,

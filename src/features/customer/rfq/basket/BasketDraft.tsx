@@ -115,7 +115,7 @@ export function BasketDraft({ initial }: { initial: Basket }) {
     );
 
   return (
-    <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-6">
+    <form noValidate onSubmit={(event) => void submit(event)} className="flex flex-col gap-6">
       <section aria-labelledby="basket-items">
         <h2 id="basket-items" className="text-lg font-semibold">
           {t("items", { count: basket.items.length })}
@@ -145,8 +145,8 @@ export function BasketDraft({ initial }: { initial: Basket }) {
                     {" · "}
                     {t("answers", { count: facts.answers })}
                   </p>
-                  {errors[`items[${index}]`] ? (
-                    <p className="text-danger mt-1 text-sm">{errors[`items[${index}]`]}</p>
+                  {itemError(errors, index) ? (
+                    <p className="text-danger mt-1 text-sm">{itemError(errors, index)}</p>
                   ) : null}
                 </div>
                 <Button
@@ -217,4 +217,11 @@ export function BasketDraft({ initial }: { initial: Basket }) {
       />
     </form>
   );
+}
+
+/** An item's refusal, wherever under `items[i]` the API put it (D-301: "errors under items[i]"). */
+function itemError(errors: Record<string, string>, index: number): string | null {
+  const prefix = `items[${index}]`;
+  const key = Object.keys(errors).find((path) => path === prefix || path.startsWith(`${prefix}.`));
+  return key ? errors[key]! : null;
 }

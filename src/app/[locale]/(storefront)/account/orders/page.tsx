@@ -3,7 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { requireCustomer } from "@/features/customer/auth/guard.server";
 import { listMyOrders, type OrderView } from "@/features/customer/orders/api.server";
+import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { latestDocuments } from "@/features/customer/repeat/api.server";
 import { productNameOf } from "@/features/customer/orders/summary";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -32,12 +34,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
   await requireCustomer();
   const { view: raw, placed } = await searchParams;
   const view = VIEWS.includes(raw as OrderView) ? (raw as OrderView) : "active";
-  const [t, tCatalog, format, locale, rows] = await Promise.all([
+  const [t, tCatalog, tHome, format, locale, rows, documents] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("catalog"),
+    getTranslations("account.home"),
     getFormat(),
     getLocale(),
     listMyOrders(view),
+    // The documents, one step away from the list (U5.1, T10); a failed read never hides the orders.
+    latestDocuments(5).catch(() => []),
   ]);
 
   return (
@@ -47,6 +52,27 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
         <Callout tone="success" live className="mt-4">
           {t("placed", { code: placed })}
         </Callout>
+      ) : null}
+      {documents.length > 0 ? (
+        <section aria-labelledby="orders-documents" className="border-border mt-4 rounded-xl border p-4">
+          <h2 id="orders-documents" className="font-medium">
+            {tHome("documents")}
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {documents.map((doc) => (
+              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span>
+                  {tHome("documentRow", {
+                    number: doc.docNumber,
+                    date: format.date(doc.documentDate),
+                    amount: format.thb(doc.grossAmount),
+                  })}
+                </span>
+                <DocumentLink documentId={doc.id} number={doc.docNumber} />
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
       <nav aria-label={t("viewsLabel")} className="mt-4">
         <ul className="border-border flex gap-1 border-b">
