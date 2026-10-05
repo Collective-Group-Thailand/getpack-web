@@ -138,7 +138,7 @@ export function ChoicesStep({ configurator, groups, state, onChange, missing }: 
             <legend className="text-sm font-medium">{name}</legend>
             {group.step === "printing" ? (
               <p className="text-muted text-xs">
-                {t("ink.hint")} <GlossaryChip slug="offset" /> <GlossaryChip slug="digital-print" />
+                {t("ink.hint")} <GlossaryChip slug="offset" />
               </p>
             ) : null}
             <ul className="mt-1 flex flex-col gap-3">

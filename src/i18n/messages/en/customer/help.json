@@ -203,7 +203,8 @@
     "chipLabel": "What is {term}?",
     "more": "Read it in the glossary",
     "loading": "Loading the explanation…",
-    "unavailable": "The explanation could not be loaded; see the glossary page."
+    "unavailable": "The explanation could not be loaded; see the glossary page.",
+    "thisTerm": "this term"
   },
   "materials": {
     "title": "Materials library",

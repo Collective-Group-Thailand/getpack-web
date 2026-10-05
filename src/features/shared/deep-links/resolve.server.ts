@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { safeReturnTo } from "@/features/shared/auth/return-to";
 import { isApiError } from "@/lib/api/problem";
 import { serverApi } from "@/lib/api/server";
-import { zoneHosts } from "@/lib/env/server";
+import { zoneHostOf } from "@/lib/env/lazy-server";
 import type { Zone } from "@/lib/zones";
 
 import { zoneOfToken } from "./token";
@@ -39,7 +39,7 @@ export async function resolveDeepLink(zone: Zone, token: string): Promise<DeepLi
   if (owner !== zone) {
     const forwarded = (await headers()).get("x-forwarded-proto");
     const scheme = forwarded ?? (process.env.NODE_ENV === "production" ? "https" : "http");
-    return { kind: "elsewhere", url: `${scheme}://${zoneHosts[owner]}/l/${encodeURIComponent(token)}` };
+    return { kind: "elsewhere", url: `${scheme}://${await zoneHostOf(owner)}/l/${encodeURIComponent(token)}` };
   }
   try {
     const path = safeReturnTo(await resolveOn(zone, token), "");

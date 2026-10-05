@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { handlers } from "../../../mocks/handlers";
 import { mockDeepLink } from "../../../mocks/store/launchpad";
 import { accessToken } from "../../../mocks/support";
-import { seedFromDefaults } from "@/features/customer/configurator/state";
+import { seedFromDefaults } from "@/features/customer/configurator/defaults";
 import { createApiClient, newIdempotencyKey } from "@/lib/api/client";
 
 /**

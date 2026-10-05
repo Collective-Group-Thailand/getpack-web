@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { DEFAULT_BLEED_MM } from "@packio/dieline";
 
-import { announceCartAdd } from "@/features/customer/cart/CartPulse";
 import type { Configurator } from "@/features/customer/configurator/model";
 import { activeStage } from "@/features/designer/active-stage";
 import type { EditorChromeContext } from "@/features/designer/components/Editor";
@@ -195,7 +194,6 @@ export function OrderSheet({
         ...(printMethod ? { printMethod } : {}),
       });
       setPhase("done");
-      announceCartAdd();
 
       if (next === "approval") {
         // The approvers' view link (D-281, D-226 rules: signed, expiring, revocable).

@@ -219,13 +219,13 @@ export function Configurator({
       void browserApi()
         .PATCH("/v1/store/me/preferences", { body: { displayUnit: next } })
         .catch(() => undefined);
-    else rememberGuestUnit(next);
+    else guestUnit(next);
   };
   const guestUnitRead = useRef(false);
   useEffect(() => {
     if (session || guestUnitRead.current) return;
     guestUnitRead.current = true;
-    const remembered = recallGuestUnit();
+    const remembered = guestUnit();
     if (!remembered) return;
     // Read after hydration: the server cannot see this browser's choice.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -569,21 +569,15 @@ export function Configurator({
 }
 
 const GUEST_UNIT_KEY = "packio.displayUnit";
-const UNITS: readonly LengthUnit[] = ["mm", "cm", "in"];
 
-function rememberGuestUnit(unit: LengthUnit) {
+/** A guest's display unit in this browser: remembers `next` when given, returns what is kept. */
+function guestUnit(next?: LengthUnit): LengthUnit | null {
   try {
-    window.localStorage.setItem(GUEST_UNIT_KEY, unit);
+    if (next) window.localStorage.setItem(GUEST_UNIT_KEY, next);
+    const value = window.localStorage.getItem(GUEST_UNIT_KEY);
+    return value === "mm" || value === "cm" || value === "in" ? value : null;
   } catch {
     // Storage blocked (private window): the choice lasts for this page only.
-  }
-}
-
-function recallGuestUnit(): LengthUnit | null {
-  try {
-    const value = window.localStorage.getItem(GUEST_UNIT_KEY) as LengthUnit | null;
-    return value && UNITS.includes(value) ? value : null;
-  } catch {
     return null;
   }
 }
