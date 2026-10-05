@@ -120,10 +120,6 @@
       "sos": true
     }
   },
-  "variant": {
-    "bag_handle": "none",
-    "bag_gusset": "gusseted"
-  },
   "features": [
     {
       "module": "window"

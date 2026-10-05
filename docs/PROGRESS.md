@@ -48,6 +48,69 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U3.4 wave 2 — Style library, second wave — 2026-10-06
+
+`docs/prompts/U3-style-library.md` §U3.4 (wave 2), on `feat/u3.4-wave2` (worktree `../packio-web-u3`, from `main` at `fe20338`). Gap analysis in `docs/update-2026-09-29-gap.md` §U3.4 wave 2.
+
+### Counts
+| | Bases | Master variants | Drawn |
+|---|---|---|---|
+| Wave 2 | **43 / 49** | 331 | **283** |
+| Waves 1 + 2 | 84 / 90 | 909 | **751** |
+
+- **By category (wave 2):** folding carton 105 / 137, inserts 8 / 8, corrugated 49 / 49, rigid 60 / 74, flexible and bags 51 / 52, labels 6 / 6, tags and sleeves 4 / 5.
+- **Publishable:** decided by packio-api (D-243: a pricing path and a capable partner). The engine has no flag; the library shows only what `store.styles.list` returns.
+- **The 881 milestone is not reached, and cannot be by drawing alone.**
+  - Wave 1 left 110 variants undrawn because they cannot be made. Even every wave-2 variant drawn would give 799.
+  - Today: 751 drawn. 18 of the 48 not drawn cannot be made; 30 are deferred, each with the work it needs (`style-mapping.md` §3).
+  - Passing 881 needs either more structural options in the master file (a product decision) or the deferred constructions. Not counted variants that cannot be made (`style-library-program.md` §1).
+
+### Done
+- 63 new recipes in `@packio/dieline/library` and an override of the core hexagon (window variants).
+- **New modules:**
+  - Closures: `osc`, `displayTop`, `coverFlaps`.
+  - Features: `trayWindow`, `securityCuts`, `neckHole`, `tearStrip`, `adhesiveStrip`, `dispenser`, `tearLine`, `tamperTuck`, `partitionInsert`, `neckLock`.
+  - Bodies: `foldedCard`, `presentationFolder`, `envelope`, `paperTube`.
+  - Piece sets: `rigidCase`, `shoulderNeck`.
+  - `tearStrip`, `adhesiveStrip` and `dispenser` replace their `planned` entries.
+- **Extended:**
+  - `flipTop`: extended wings.
+  - `polygonTuckLid`: any n, either panel, a lid window. The hexagon's geometry is unchanged, so its baseline hashes stand.
+  - `hingedLid`: a lid window.
+  - `lidAndBase`: inserts.
+  - `paperBag`: `sos` and a front window.
+  - `pouchWeb`: features on side-by-side webs, `flat_bottom`.
+  - `telescopeLid`: a bottom cover.
+  - Tube panels can now carry marks.
+  - Piece placement: `under` and `offset`.
+  - `window` checks on flat bodies.
+- **Gates:**
+  - Every drawn variant passes the variant gate.
+  - Every folding recipe passes the fold gate at minimum, typical and maximum sizes.
+  - Rigid-only recipes are folded on the rigid reference board; the gates fall back to a reference board of an allowed kind.
+- **Assets:**
+  - `pnpm styles:render` manifest: 754 entries, reproducible. Wave-1 entries are byte-identical; the hexagon's single entry is replaced by its window variants.
+  - Rigid-only recipes render on the rigid board.
+- **Docs and words:** `style-mapping.md` §3 wave-2 table with every not-drawn reason. Axis phrases for `header` and `closure_rigid`; all new words are `pending` (D-212). No industry codes for the new bases (D-211).
+- **Fixed:** the dieline package typecheck (`mirror.test.ts`, red since U4.3).
+- **Lighthouse:** `customer-app` script ratchet raised 340000 → 340200. The configurator measured 340092 (+92 B): the core engine's part of the shared extensions (n-sided polygon lid, tube-panel marks, `under`/`offset` placement). The new recipes and modules stay in the library entry, loaded on demand.
+- **Checks:** release hygiene clean; style and designer e2e 17 / 17; all other Lighthouse sets within budget.
+
+### Deferred / assumptions
+- **Not drawn yet** (30 variants), each needing a construction:
+  - TE-03: as drafted it equals PK-TR-04; Prepress to confirm.
+  - TE-04: integral divider.
+  - SP-08: tapered walls.
+  - SP-09: sloped clamshell.
+  - TG-03: carrier with a handle.
+  - RG-04: collapsible rigid.
+  - SP-07 and SP-16: positions below the lid's lips and ears.
+- **Every new construction is marked ⚠ "to be confirmed by Prepress"** in its module documentation: overlaps, perforation positions, tongue and slit, magnet pockets, case overhang (3 mm), neck clearance.
+- **Wave-1 boards in the render.** Some wave-1 recipes render on a board they do not allow: tags and cards on label film, the roll-end tray on E flute. Kept as they are so their published assets do not change; flagged for a deliberate re-render.
+- **For the backend team:** packio-api reads `ALL_RECIPES`. The new recipes reach the catalogue once it takes this package version and imports them; publishability is then its call.
+
+---
+
 ## U2.F7 — Partner zone parity — 2026-10-05
 
 `docs/prompts/U2-benchmark-2026-09-29.md` §U2.F7, on `feat/u2.f7-partner` (worktree `../packio-web-u2`, from `main` at `cf520ea`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F7. **U2.F6 was skipped** in this pass, by agreement, until the backend seed and decisions it needs exist.
