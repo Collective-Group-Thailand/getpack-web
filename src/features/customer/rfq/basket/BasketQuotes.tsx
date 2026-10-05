@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
+import { announceCartAdd } from "@/features/customer/cart/CartPulse";
 import { pick } from "@/features/customer/catalog/localize";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -50,6 +51,7 @@ export function BasketQuotes({ basket }: { basket: Basket }) {
         params: { path: { basketId: basket.id }, header: { "Idempotency-Key": key.current } },
         body: { items: chosen.map(({ itemId, rfqQuoteId, quantity }) => ({ itemId, rfqQuoteId, quantity })) },
       });
+      announceCartAdd();
       toast.success(t("accepted", { count: chosen.length }), {
         action: { label: t("viewCart"), onClick: () => router.push("/cart") },
       });

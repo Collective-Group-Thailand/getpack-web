@@ -16,7 +16,9 @@ import { productHref, rfqHref } from "@/features/customer/catalog/paths";
 import { getMyDisplayUnit, getMyDraft, getMyQuote, listMyDraftsOf } from "@/features/customer/configurator/api.server";
 import { seedFromConfiguration } from "@/features/customer/configurator/build";
 import { Configurator } from "@/features/customer/configurator/Configurator";
-import { seedFromDesign, type ConfiguratorState } from "@/features/customer/configurator/state";
+import { IntentPicker } from "@/features/customer/help/IntentPicker";
+import { seedFromDefaults, seedFromDesign, type ConfiguratorState } from "@/features/customer/configurator/state";
+import { getDefaults } from "@/features/customer/account/api.server";
 import { getPathname, Link, redirect } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { readAccessToken } from "@/lib/auth/session";
@@ -79,7 +81,7 @@ export default async function Page({
   if (!configurator) return redirect({ href: `${rfqPath}?from=${encodeURIComponent(slug)}`, locale });
 
   const signedIn = Boolean(readAccessToken(jar));
-  const [shared, saved, draft, sharedConfig, unit, drafts] = await Promise.all([
+  const [shared, saved, draft, sharedConfig, unit, drafts, defaults] = await Promise.all([
     share ? getSharedQuote(share) : null,
     // One of the customer's own saved quotations, reopened from the account (F3 3.4).
     quoteId && signedIn ? getMyQuote(quoteId) : null,
@@ -88,6 +90,8 @@ export default async function Page({
     config ? getSharedConfiguration(config) : null,
     signedIn ? getMyDisplayUnit() : ("mm" as const),
     signedIn && !draftId ? listMyDraftsOf(configurator.catalogProductId) : [],
+    // Pre-fill from the last quotation of this type (D-298); a failed read starts from the catalogue.
+    signedIn ? getDefaults().catch(() => null) : null,
   ]);
   const ownDraft = draft && draft.catalogProductId === configurator.catalogProductId ? draft : null;
   const ownShared =
@@ -105,7 +109,7 @@ export default async function Page({
             quantity: quote.options[0]?.quantity,
             target: quote.targetPricePerUnit,
           })
-        : seedFromDesign(configurator, search)),
+        : (seedFromDesign(configurator, search) ?? seedFromDefaults(configurator, defaults?.productTypes ?? []))),
   };
   const name = pick(locale, product.nameTh, product.nameEn);
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
@@ -123,6 +127,11 @@ export default async function Page({
       />
       <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t("heading", { name })}</h1>
       <p className="text-muted mt-2 max-w-2xl">{t("intro")}</p>
+      {!source && !quote ? (
+        <div className="mt-4 flex max-w-2xl flex-col">
+          <IntentPicker here="configurator" productSlug={slug} />
+        </div>
+      ) : null}
       {share && !shared ? (
         <Callout tone="warning" className="mt-4 max-w-2xl">
           {t("sharedExpired")}

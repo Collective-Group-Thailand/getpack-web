@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { announceCartAdd } from "@/features/customer/cart/CartPulse";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
@@ -142,6 +143,7 @@ export function useQuoteActions({
           }),
         );
         void queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
+        announceCartAdd();
         track("cart_item_added", {
           route: "/configure/[slug]",
           productType: configurator.productTypeCode,

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { listArticleCategories, listArticles } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
@@ -95,6 +96,7 @@ export default async function ArticlesPage({
           icon="article"
           title={t("articles.emptyTitle")}
           description={t("articles.emptyBody")}
+          action={<NextStep to="learn" />}
         />
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

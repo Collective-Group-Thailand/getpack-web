@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { getSampleKits } from "@/features/customer/catalog/api.server";
 import { SampleKitForm } from "@/features/customer/help/SampleKitForm";
 import { getFormat } from "@/features/shared/format/server";
@@ -21,7 +22,7 @@ export default async function Page() {
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       {kits.length === 0 ? (
-        <EmptyState icon="package" title={t("noneTitle")} description={t("noneBody")} />
+        <EmptyState icon="package" title={t("noneTitle")} description={t("noneBody")} action={<NextStep to="chat" />} />
       ) : (
         <>
           <ul className="grid gap-4 md:grid-cols-2">

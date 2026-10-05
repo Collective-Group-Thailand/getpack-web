@@ -10,6 +10,8 @@ import { queryKeys } from "@/lib/api/query-keys";
 import { Popover } from "@/ui/components/Popover";
 import { Icon } from "@/ui/icons";
 
+import { DemoLoop, hasDemo } from "./DemoLoop";
+
 /** The glossary, once per visit (`store.catalog-glossary`, CONTRACT-REQUEST). */
 export function useGlossary() {
   return useQuery({
@@ -50,6 +52,7 @@ export function GlossaryChip({ slug, label }: { slug: string; label?: string }) 
             {locale !== "en" && term.termEn ? <span className="text-muted ms-2 font-normal">{term.termEn}</span> : null}
           </p>
           <p>{pick(locale, term.definitionTh, term.definitionEn)}</p>
+          {hasDemo(term.slug) ? <DemoLoop demo={term.slug} /> : null}
           <Link
             href={`/help/glossary#${term.slug}`}
             className="text-primary text-xs underline-offset-4 hover:underline"

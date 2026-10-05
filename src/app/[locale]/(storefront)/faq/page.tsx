@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { NextStep } from "@/features/customer/shell/NextStep";
 import { listFaqs } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
@@ -43,7 +44,13 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
       </header>
 
       {entries.length === 0 ? (
-        <EmptyState className="mt-8" icon="help" title={t("faq.emptyTitle")} description={t("faq.emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="help"
+          title={t("faq.emptyTitle")}
+          description={t("faq.emptyBody")}
+          action={<NextStep to="chat" />}
+        />
       ) : (
         entries.map((entry) => (
           <section

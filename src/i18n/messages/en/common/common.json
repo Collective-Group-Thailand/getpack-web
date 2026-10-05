@@ -133,5 +133,16 @@
       "quote": "Quotation"
     },
     "open": "Open {name}"
+  },
+  "next": {
+    "home": "Back to home",
+    "products": "See all products",
+    "search": "Search",
+    "help": "Help centre",
+    "chat": "Talk to the team",
+    "orders": "See my orders",
+    "messages": "Message the team",
+    "styles": "See box styles",
+    "learn": "Learn before you order"
   }
 }
