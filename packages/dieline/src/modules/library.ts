@@ -1,6 +1,8 @@
 import { paperBag } from "./body/bag";
 import { partitionSet } from "./body/partition";
 import { polyMailer } from "./body/poly-mailer";
+import { osc } from "./closure/wave2-closures";
+import { trayWindow } from "./feature/wave2-features";
 import { airplaneTuck, flipTop, fourFlapLock, openEnd, slitLock } from "./closure/wave-closures";
 import { dieCutInsert, insertBody } from "./feature/insert";
 import { displayHeader, lockCorners, telescopeLid } from "./feature/tray-features";
@@ -24,4 +26,6 @@ export const WAVE_MODULES: readonly ModuleDef[] = [
   telescopeLid,
   vents,
   fingerNotch,
+  osc,
+  trayWindow,
 ];

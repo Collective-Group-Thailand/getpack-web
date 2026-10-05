@@ -20,7 +20,11 @@ import { foldModel, modelBounds } from "./thickness";
 
 function boardFor(r: StyleRecipe) {
   const ids = REFERENCE_BY_CATEGORY[r.category];
-  const id = ids.find((x) => r.materials.includes(REFERENCE_MATERIALS[x].kind)) ?? ids[0];
+  const id =
+    ids.find((x) => r.materials.includes(REFERENCE_MATERIALS[x].kind)) ??
+    // A material the category's boards do not cover (rigid greyboard): any reference board of that kind.
+    Object.keys(REFERENCE_MATERIALS).find((x) => r.materials.includes(REFERENCE_MATERIALS[x].kind)) ??
+    ids[0];
   return { id, m: REFERENCE_MATERIALS[id] };
 }
 

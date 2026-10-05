@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "shoe-box",
+  "base": "PK-CF-07",
+  "variants": {
+    "lid_depth": {
+      "full": {
+        "lid": "full"
+      },
+      "partial": {
+        "lid": "partial"
+      }
+    }
+  },
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องรองเท้า (ตัวกล่องและฝาครอบ)",
+    "en": "Shoe box (base and lid)"
+  },
+  "description": {
+    "th": "กล่องลูกฟูกลอนเล็กสองชิ้น ฝาครอบเต็มหรือบางส่วน",
+    "en": "A two-piece fine-flute box, with a full or partial lid"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 200,
+      "max": 450
+    },
+    {
+      "ref": "width",
+      "min": 100,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 70,
+      "max": 200
+    },
+    "lid",
+    "lidDepth",
+    "grain"
+  ],
+  "defaults": {
+    "length": 330,
+    "width": 200,
+    "height": 120,
+    "lid": "full",
+    "grain": "across"
+  },
+  "presets": [
+    {
+      "id": "kids",
+      "label": {
+        "th": "KIDS 250 × 160 × 90",
+        "en": "KIDS 250 × 160 × 90"
+      },
+      "values": {
+        "length": 250,
+        "width": 160,
+        "height": 90
+      }
+    },
+    {
+      "id": "adult",
+      "label": {
+        "th": "ADULT 330 × 200 × 120",
+        "en": "ADULT 330 × 200 × 120"
+      },
+      "values": {
+        "length": 330,
+        "width": 200,
+        "height": 120
+      }
+    },
+    {
+      "id": "boot",
+      "label": {
+        "th": "BOOT 400 × 280 × 150",
+        "en": "BOOT 400 × 280 × 150"
+      },
+      "values": {
+        "length": 400,
+        "width": 280,
+        "height": 150
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "lidAndBase"
+  },
+  "features": [],
+  "closedSize": {
+    "length": "length + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "width": "width + 2 * t + 2 * C.LID_CLEARANCE_MM",
+    "height": "height"
+  }
+}

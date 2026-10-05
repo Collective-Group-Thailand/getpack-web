@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "rigid-drawer",
+  "base": "PK-RG-05",
+  "variants": {
+    "thumb": {
+      "thumb_notch": {
+        "fingerHole": true
+      },
+      "none": {
+        "fingerHole": false
+      }
+    },
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "tray_lid",
+  "name": {
+    "th": "กล่องแข็งแบบลิ้นชัก",
+    "en": "Rigid drawer box"
+  },
+  "description": {
+    "th": "ลิ้นชักและปลอกจากกระดาษแข็งหุ้มกระดาษ เลือกรูดึงและตัวรองได้",
+    "en": "A wrapped greyboard drawer in a wrapped sleeve, with an optional finger pull and insert"
+  },
+  "materials": ["rigid"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 60,
+      "max": 450
+    },
+    {
+      "ref": "width",
+      "min": 50,
+      "max": 350
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 150
+    },
+    "fingerHole",
+    "grain",
+    "insert"
+  ],
+  "defaults": {
+    "length": 180,
+    "width": 120,
+    "height": 50,
+    "fingerHole": true,
+    "grain": "across",
+    "window": "none",
+    "insert": "none"
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 120 × 90 × 40",
+        "en": "S 120 × 90 × 40"
+      },
+      "values": {
+        "length": 120,
+        "width": 90,
+        "height": 40
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 180 × 120 × 50",
+        "en": "M 180 × 120 × 50"
+      },
+      "values": {
+        "length": 180,
+        "width": 120,
+        "height": 50
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 250 × 180 × 70",
+        "en": "L 250 × 180 × 70"
+      },
+      "values": {
+        "length": 250,
+        "width": 180,
+        "height": 70
+      }
+    }
+  ],
+  "pieceSet": {
+    "module": "sleeveAndDrawer"
+  },
+  "features": [
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "target": "drawer",
+        "floor": "t"
+      }
+    }
+  ],
+  "closedSize": {
+    "length": "length + 2 * t",
+    "width": "width + 2 * t + 2 * C.DRAWER_CLEARANCE_MM",
+    "height": "height + t + 2 * C.DRAWER_CLEARANCE_MM"
+  },
+  "outerSize": {
+    "length": "length + 3 * t",
+    "width": "width + 4 * t + 2 * C.DRAWER_CLEARANCE_MM",
+    "height": "height + 3 * t + 2 * C.DRAWER_CLEARANCE_MM"
+  }
+}
