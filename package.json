@@ -29,6 +29,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lhci": "tsx scripts/lhci.ts",
+    "release:hygiene": "tsx scripts/release-hygiene.ts",
     "e2e:journeys": "playwright test --project=journeys --workers=2",
     "e2e:perf": "playwright test --project=perf --workers=1",
     "e2e:integration": "E2E_BACKEND=real playwright test --project=integration",
