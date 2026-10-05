@@ -65,7 +65,9 @@
     "addresses": "Addresses and tax invoices",
     "notifications": "Notifications",
     "privacy": "Privacy",
-    "samples": "Samples"
+    "samples": "Samples",
+    "replenishment": "Replenishment",
+    "callOffs": "Call-offs"
   },
   "home": {
     "title": "My account",
@@ -86,7 +88,15 @@
     "shortcuts": "Shortcuts",
     "tierTop": "You are at {tier}, the top tier",
     "tierProgress": "12-month spend {spend} of the {needed} {tier} needs",
-    "tierProgressLabel": "Progress to {tier}"
+    "tierProgressLabel": "Progress to {tier}",
+    "where": "Where your boxes are",
+    "openRequests": "Open quotation requests",
+    "inProduction": "In production",
+    "onTheWay": "On the way",
+    "suggestions": "Time to order again?",
+    "allSuggestions": "See all",
+    "documents": "Latest documents",
+    "documentRow": "{number} · {date} · {amount}"
   },
   "quotes": {
     "title": "Saved quotations",
@@ -294,5 +304,68 @@
     "subdistrict": "Sub-district",
     "choose": "Choose a sub-district",
     "unknown": "We do not know this postcode"
+  },
+  "replenishment": {
+    "title": "Replenishment",
+    "intro": "From your order history: when you are likely to need each product again, and when to order to have it in time",
+    "emptyTitle": "No suggestions yet",
+    "emptyBody": "Once you order the same product a few times, we suggest when to reorder",
+    "suggest": "Order by {date}: {quantity} {unit}",
+    "why": {
+      "interval": "You order every {days} days on average ({count, plural, one {# order} other {# orders}})",
+      "need": "Likely needed again around {date}",
+      "lead": "Last time production took {days, plural, one {# day} other {# days}}",
+      "last": "Last order {code}, {quantity}"
+    },
+    "reorder": "Reorder",
+    "dismiss": "Don't remind me",
+    "dismissed": "We won't remind you about this",
+    "failed": "Could not do that — try again",
+    "remindNote": "Snoozing a suggestion and reminder settings come in a later version"
+  },
+  "callOffs": {
+    "title": "Call-offs",
+    "intro": "Lock the unit price, then call off what you need in releases — no deposit, no stock to keep",
+    "emptyTitle": "No call-off agreements yet",
+    "emptyBody": "Ask for one from a saved quotation",
+    "toQuotes": "Go to quotations",
+    "row": "Released {released} of {committed} {unit} · {left} left",
+    "until": "until {date}",
+    "detailTitle": "Call-off agreement",
+    "back": "Back to all agreements",
+    "pending": "Waiting for the factory to accept; releases start once it does",
+    "committed": "Committed",
+    "released": "The release is in your cart",
+    "left": "Left",
+    "minRelease": "Minimum per release",
+    "unitPrice": "Locked unit price",
+    "window": "Agreement period",
+    "windowValue": "{from} to {to}",
+    "windowPending": "{months, plural, one {# month} other {# months}} from the factory's acceptance",
+    "quote": "Quotation",
+    "releases": "Releases so far",
+    "noReleases": "Nothing released yet",
+    "releaseRow": "Release {seq} · {quantity} {unit} · {date}",
+    "oneOffs": "includes the one-off amounts",
+    "releaseTitle": "Release a new batch",
+    "releaseQuantity": "Quantity ({unit})",
+    "releaseHint": "At least {min} · at most {left}",
+    "release": "Release and add to cart",
+    "releaseNote": "Each release is a normal order at the locked price; shipping is priced at checkout",
+    "cancel": "Cancel the agreement",
+    "cancelTitle": "Cancel this agreement",
+    "cancelBody": "What is not released ({left} {unit}) lapses without charge",
+    "cancelled": "Agreement cancelled",
+    "noRight": "Your company role cannot place orders",
+    "failed": "Could not do that — try again",
+    "request": {
+      "open": "Lock the price for call-offs",
+      "title": "Ask for a call-off agreement",
+      "body": "The factory locks this quotation's unit price for its quantity; you release it in batches within the period",
+      "months": "Period",
+      "monthsValue": "{count, plural, one {# month} other {# months}}",
+      "send": "Send the request",
+      "failed": "Could not send the request"
+    }
   }
 }

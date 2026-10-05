@@ -48,6 +48,51 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-04 | **U3.4 wave 1 → U3.5** — style library waves and library UX | All **41** wave-1 bases have engine recipes (90 recipes, 60 in the new `@packio/dieline/library` entry); **468 of the master's 578 variants** drawn, every one through the new variant gate; 110 not drawn because they cannot be made (each with its reason in `style-mapping.md`). The `/styles` library (category tabs, API facets, Thai/English search, sort, save, compare ≤ 3, virtual grid), one indexable page per base with a variant picker and 3D on request, and `/styles/compare`. | Card thumbnails (CONTRACT-GAP `store.styles.card-thumbnail`); packio-api must read `ALL_RECIPES`; Prepress sign-off of the ⚠ geometry | See the U3.4 / U3.5 entry below |
 ---
 
+## U2.F5 — Buyer dashboard and repeat business — 2026-10-05
+
+`docs/prompts/U2-benchmark-2026-09-29.md` §U2.F5, on `feat/u2.f5-repeat` (worktree `../packio-web-u2`, from `main` at `24f175a`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F5.
+
+### Done
+- **Dashboard** (`/account`):
+  - "Where your boxes are": open quotation requests, in production, on the way — counted from the API's own statuses, linked.
+  - Up to two replenishment suggestions.
+  - The latest documents, with signed downloads.
+  - Company spend stays on `/business` (`store.companies.spend`).
+- **Reorder:** when the factory kept the plates or die block, the reorder says **"ไม่ต้องจ่ายค่าบล็อก/เพลทซ้ำ"** with the amount saved, as a callout and a price line (`toolingWaiver`, D-289).
+- **Replenishment** (`/account/replenishment`, D-288): when to order and how many, with the API's reasoning (average interval, next need, last lead time, last order), a one-click reorder, and dismiss.
+- **Call-offs** (D-290):
+  - "ล็อกราคาไว้เรียกทีละงวด" on each saved quotation (period in months).
+  - `/account/call-offs` and the detail: committed, released and left; the locked unit price; the window, or "from the factory's acceptance"; every release with its order.
+  - **Release into the cart** (≥ minimum, ≤ left) and **cancel** (what is left lapses without charge).
+  - Release and cancel need the company's `order` right for members.
+- **API access** (`/business/api`, D-291, Company Admin):
+  - Issue keys with scopes (read/place orders, documents, webhooks); the **secret is shown once**, with copy.
+  - The owner and when each key was last used; revoke. Rotating is issuing a new key, then revoking the old one.
+  - Webhooks are explained as managed through the B2B API.
+
+### Found on the real API
+- A call-off asked for on a fresh customer's saved quotation reaches the factory (`201 pending_factory`).
+- The dashboard and replenishment render for a new customer, with no history.
+
+### Decisions taken
+- **No date maths on the dashboard**: "on the way" is the `shipping` status, not "arriving within seven days".
+- **Snooze/remind settings and session-side webhooks are not in the contract**: CONTRACT-REQUESTs `store.reorder-suggestion-snooze` and `store.company-webhooks`.
+- **The mock's factory accepts a call-off on its next read**; the mock waives plates when the approved artwork is reused.
+
+### Tests
+- e2e `storefront-repeat.spec.ts`: the dashboard and replenishment, the reorder waiver, call-off request → accept → release → listed, API keys issued and revoked by the admin and refused for a buyer; axe throughout.
+- Real API: `repeat.spec.ts` green.
+
+### Verification
+- `pnpm typecheck` and `pnpm lint` are clean; unit tests 1,047.
+- Mock e2e full run: 421 passed.
+  - `storefront-fulfilment` reorder: the new "สั่งซ้ำตามรอบ" nav item also matched its "สั่งซ้ำ" link; the test now matches by the order code.
+  - `admin-finance-books` passed on re-run; `storefront-account` is the known shared-persona flake.
+- Lighthouse: all sets within budget.
+- Real API: `repeat.spec.ts` green.
+
+---
+
 ## U2.F4 — Trust surfaces — 2026-10-05
 
 `docs/prompts/U2-benchmark-2026-09-29.md` §U2.F4, on `feat/u2.f4-trust` (worktree `../packio-web-u2`, from `main` at `ebbfc32`). Gap analysis in `docs/update-2026-09-29-gap.md` §U2.F4.

@@ -33,7 +33,8 @@ const newKey = () =>
  * (`store.claims.previewReorder`), and whether the approved artwork carries over so no new proof
  * is needed. Confirming sends the preview's token, so the cart is not given a price other than the
  * one shown (409 `orders.reorder_repriced`), and goes straight to checkout, which places it like
- * any other order. Plate and die-block reuse is shown once the tooling register exists (D-205).
+ * any other order. Plates and die blocks the factory kept are not charged again, and the saving is
+ * said in words (`toolingWaiver`, D-289).
  */
 export function ReorderView({
   initial,
@@ -124,6 +125,15 @@ export function ReorderView({
         >
           {preview.proofSkipped ? t("proofSkippedNoVersion") : t("proofAgain")}
         </Callout>
+        {preview.toolingWaiver ? (
+          // D-289: the factory kept this specification's plates or die block — not charged again.
+          <Callout
+            tone="success"
+            title={t("toolingWaived", { amount: format.thb(preview.toolingWaiver.waivedAmount) })}
+          >
+            {t("toolingWaivedBody", { count: preview.toolingWaiver.tooling.length })}
+          </Callout>
+        ) : null}
         <Checkbox
           checked={!reuseArtwork}
           onCheckedChange={(checked) => setReuseArtwork(checked !== true)}
@@ -164,6 +174,15 @@ export function ReorderView({
                 : []),
               ...(preview.toolingAmount !== null
                 ? [{ label: t("tooling"), value: format.thb(preview.toolingAmount) }]
+                : []),
+              ...(preview.toolingWaiver
+                ? [
+                    {
+                      label: t("toolingWaiver"),
+                      value: t("toolingWaiverValue", { amount: format.thb(preview.toolingWaiver.waivedAmount) }),
+                      tone: "muted" as const,
+                    },
+                  ]
                 : []),
               {
                 label: t("shipping"),

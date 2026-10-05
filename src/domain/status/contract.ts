@@ -82,6 +82,8 @@ export type ReferralStatus = Schemas["ReferralStatus"];
 export type ArtworkStatus = Schemas["ArtworkStatus"];
 export type SampleStatus = Schemas["SampleStatus"];
 export type SampleKind = Schemas["SampleKind"];
+export type CallOffStatus = Schemas["CallOffStatus"];
+export type CallOffReleaseStatus = Schemas["CallOffReleaseStatus"];
 
 /** A proof version sent to the customer (B4.1). **Source: contract** (U-F0.3). */
 export type ProofStatus = Schemas["ProofStatus"];

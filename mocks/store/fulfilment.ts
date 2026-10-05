@@ -227,9 +227,15 @@ function previewOf(order: MockOrder, quantity: number, reuse: boolean): Schemas[
     unitPrice: priced.unitPrice.toFixed(6),
     productAmount: baht(priced.net),
     designFeeAmount: "0.00",
-    // Plate and die-block reuse waits for the tooling register (D-205).
-    toolingAmount: null,
-    toolingWaiver: null,
+    // D-289: the same specification reused keeps the factory's plates (a fake register entry and amount).
+    toolingAmount: proofSkipped ? "0.00" : null,
+    toolingWaiver: proofSkipped
+      ? {
+          reason: "tooling_reuse",
+          waivedAmount: "1500.00",
+          tooling: [{ id: `tool-${order.id.slice(-6)}`, kind: "plates" } as unknown as Schemas["ToolingRefDto"]],
+        }
+      : null,
     shippingAmount: null,
     vatAmount: baht(priced.vatAmount),
     grossAmount,

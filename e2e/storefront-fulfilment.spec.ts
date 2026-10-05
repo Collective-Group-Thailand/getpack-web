@@ -151,7 +151,10 @@ test.describe("after production", () => {
 
   test("one click reorders it, re-priced, into checkout (D-153)", async ({ page }) => {
     await signInAsCustomer(page, `/account/orders/${ORDER}`, MOCK_RECEIVER_PHONE);
-    await page.getByRole("link", { name: "สั่งซ้ำ" }).first().click();
+    await page
+      .getByRole("link", { name: new RegExp(`^สั่งซ้ำ ${CODE}`) })
+      .first()
+      .click();
     await expect(page.getByRole("heading", { level: 1, name: `สั่งซ้ำ ${CODE}` })).toBeVisible();
     await expect(page.getByText("ใช้ไฟล์งานเดิม")).toBeVisible();
     const total = page.getByRole("complementary", { name: "ราคาวันนี้" });

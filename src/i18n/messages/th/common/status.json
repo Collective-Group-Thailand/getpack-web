@@ -644,5 +644,17 @@
   "sampleKind": {
     "attached": "ตัวอย่างของคำสั่งซื้อ",
     "standalone": "ตัวอย่างก่อนสั่ง"
+  },
+  "callOff": {
+    "pendingFactory": "รอโรงงานตอบรับ",
+    "active": "ใช้งานได้",
+    "declined": "โรงงานไม่รับ",
+    "cancelled": "ยกเลิก",
+    "expired": "หมดอายุ"
+  },
+  "callOffRelease": {
+    "quoted": "รอชำระ",
+    "ordered": "สั่งแล้ว",
+    "lapsed": "หมดสิทธิ์"
   }
 }
