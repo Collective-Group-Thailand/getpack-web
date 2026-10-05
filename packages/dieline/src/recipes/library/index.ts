@@ -58,6 +58,24 @@ import cardCustom from "./data/card-custom.json" with { type: "json" };
 import cardOval from "./data/card-oval.json" with { type: "json" };
 import cardRect from "./data/card-rect.json" with { type: "json" };
 import cardRounded from "./data/card-rounded.json" with { type: "json" };
+import ft2Tuck from "./data/ft2-tuck.json" with { type: "json" };
+import ft2Snap from "./data/ft2-snap.json" with { type: "json" };
+import ft2Crash from "./data/ft2-crash.json" with { type: "json" };
+import ft2Seal from "./data/ft2-seal.json" with { type: "json" };
+import ft2Fourflap from "./data/ft2-fourflap.json" with { type: "json" };
+import osc from "./data/osc.json" with { type: "json" };
+import rscCrash from "./data/rsc-crash.json" with { type: "json" };
+import gableCarryCorr from "./data/gable-carry-corr.json" with { type: "json" };
+import slideCorr from "./data/slide-corr.json" with { type: "json" };
+import rigidDrawer from "./data/rigid-drawer.json" with { type: "json" };
+import shoeBox from "./data/shoe-box.json" with { type: "json" };
+import rigidLidBase from "./data/rigid-lid-base.json" with { type: "json" };
+import trayLidLock from "./data/tray-lid-lock.json" with { type: "json" };
+import foodBoxLock from "./data/food-box-lock.json" with { type: "json" };
+import cakeBox from "./data/cake-box.json" with { type: "json" };
+import foodBoat from "./data/food-boat.json" with { type: "json" };
+import hexagonalReverse from "./data/hexagonal-reverse.json" with { type: "json" };
+import triangular from "./data/triangular.json" with { type: "json" };
 import type { StyleRecipe } from "../types";
 
 /**
@@ -127,4 +145,22 @@ export const WAVE_RECIPES: readonly StyleRecipe[] = [
   cardOval,
   cardRect,
   cardRounded,
+  ft2Tuck,
+  ft2Snap,
+  ft2Crash,
+  ft2Seal,
+  ft2Fourflap,
+  osc,
+  rscCrash,
+  gableCarryCorr,
+  slideCorr,
+  rigidDrawer,
+  shoeBox,
+  rigidLidBase,
+  trayLidLock,
+  foodBoxLock,
+  cakeBox,
+  foodBoat,
+  hexagonalReverse,
+  triangular,
 ] as unknown as StyleRecipe[];

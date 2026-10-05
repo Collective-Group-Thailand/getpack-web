@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "gable-carry-corr",
+  "base": "PK-CG-02",
+  "category": "corrugated",
+  "name": {
+    "th": "กล่องลูกฟูกหูหิ้ว",
+    "en": "Corrugated carry box with handle"
+  },
+  "description": {
+    "th": "กล่องลูกฟูกติดกาวสำเร็จ หลังคาจั่วมีหูหิ้ว ก้นล็อกอัตโนมัติ",
+    "en": "A ready-glued corrugated box with a gabled carry handle and a crash-lock bottom"
+  },
+  "materials": ["corrugated"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 120,
+      "max": 500
+    },
+    {
+      "ref": "width",
+      "min": 80,
+      "max": 350
+    },
+    {
+      "ref": "height",
+      "min": 80,
+      "max": 500
+    },
+    "handleHeight",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "length": 300,
+    "width": 200,
+    "height": 250,
+    "handleHeight": 60
+  },
+  "presets": [
+    {
+      "id": "s",
+      "label": {
+        "th": "S 250 × 150 × 200",
+        "en": "S 250 × 150 × 200"
+      },
+      "values": {
+        "length": 250,
+        "width": 150,
+        "height": 200
+      }
+    },
+    {
+      "id": "m",
+      "label": {
+        "th": "M 300 × 200 × 250",
+        "en": "M 300 × 200 × 250"
+      },
+      "values": {
+        "length": 300,
+        "width": 200,
+        "height": 250
+      }
+    },
+    {
+      "id": "l",
+      "label": {
+        "th": "L 400 × 250 × 300",
+        "en": "L 400 × 250 × 300"
+      },
+      "values": {
+        "length": 400,
+        "width": 250,
+        "height": 300
+      }
+    }
+  ],
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "gableHandle"
+    },
+    "bottom": {
+      "module": "crashLock"
+    }
+  },
+  "features": [],
+  "closedSize": {
+    "length": "length",
+    "width": "width",
+    "height": "height + side / 2"
+  }
+}

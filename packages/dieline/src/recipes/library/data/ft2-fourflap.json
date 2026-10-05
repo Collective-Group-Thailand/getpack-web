@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "ft2-fourflap",
+  "base": "PK-FT-02",
+  "variant": {
+    "tuck_bottom": "four_flap_lock"
+  },
+  "variants": {
+    "insert": {
+      "none": {
+        "insert": "none"
+      },
+      "die_cut_insert": {
+        "insert": "die_cut"
+      }
+    }
+  },
+  "category": "folding_carton",
+  "name": {
+    "th": "กล่องฝาพับเปิดปิด ปีกกันฝุ่นยาว ก้นล็อกสี่ปีก",
+    "en": "Flip-top carton with extended dust flaps, four-flap lock bottom"
+  },
+  "description": {
+    "th": "กล่องฝาพับติดด้านหลัง ปีกกันฝุ่นของฝายาวลงตามผนังข้าง ฝาตั้งตรงและกันฝุ่นได้ดี เลือกตัวรองได้",
+    "en": "A lid hinged on the back whose dust flaps reach well down the side walls, keeping the lid square; with an optional insert"
+  },
+  "materials": ["paperboard"],
+  "params": [
+    {
+      "ref": "length",
+      "min": 20,
+      "max": 400
+    },
+    {
+      "ref": "width",
+      "min": 15,
+      "max": 300
+    },
+    {
+      "ref": "height",
+      "min": 20,
+      "max": 450
+    },
+    "dustFlapDepth",
+    "insert",
+    "glueWidth",
+    "glueSide",
+    "grain"
+  ],
+  "defaults": {
+    "@extends": "carton",
+    "insert": "none"
+  },
+  "presets": "carton",
+  "body": {
+    "module": "tube",
+    "preset": "carton"
+  },
+  "closures": {
+    "top": {
+      "module": "flipTop",
+      "with": {
+        "extended": true
+      }
+    },
+    "bottom": {
+      "module": "fourFlapLock"
+    }
+  },
+  "features": [
+    {
+      "module": "dieCutInsert",
+      "with": {
+        "rotate": true,
+        "floor": "3 * t"
+      }
+    }
+  ],
+  "outerSize": {
+    "width": "width + 3 * t"
+  }
+}

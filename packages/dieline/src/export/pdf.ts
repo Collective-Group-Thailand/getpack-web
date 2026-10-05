@@ -27,7 +27,16 @@ export interface PdfFinish {
   name: string;
   /** The tint a viewer shows the spot in. */
   cmyk: [number, number, number, number];
-  mask: { bits: Uint8Array; widthPx: number; heightPx: number; flate?: boolean; x: number; y: number; width: number; height: number };
+  mask: {
+    bits: Uint8Array;
+    widthPx: number;
+    heightPx: number;
+    flate?: boolean;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface PdfOptions {

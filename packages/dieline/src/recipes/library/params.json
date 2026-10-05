@@ -474,5 +474,21 @@
         }
       }
     ]
+  },
+  "flapOverlap": {
+    "key": "flapOverlap",
+    "kind": "length",
+    "group": "closure",
+    "label": {
+      "th": "ระยะเกยของฝานอก",
+      "en": "Outer flap overlap"
+    },
+    "help": {
+      "th": "ฝานอกสองแผ่นซ้อนกันกลางกล่องเท่านี้",
+      "en": "How far the two outer flaps overlap at the centre"
+    },
+    "min": 20,
+    "max": 150,
+    "step": 1
   }
 }

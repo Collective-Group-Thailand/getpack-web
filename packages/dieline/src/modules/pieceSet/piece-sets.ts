@@ -45,7 +45,7 @@ export const lidAndBase: PieceSetModule = {
       message: t("ฝาครอบลึกกว่าตัวกล่อง", "The lid is deeper than the base"),
     },
   ],
-  build(ctx) {
+  build(ctx, _cfg, parts) {
     const { v, m } = ctx;
     const a = allowancesOf(m);
     const t0 = m.caliperMm;
@@ -87,6 +87,8 @@ export const lidAndBase: PieceSetModule = {
     return assemble(ctx.styleId, [
       piece("base", "base", base, grainOn(v, base, "base")),
       piece("lid", "lid", lid, grainOn(v, lid, "lid-base")),
+      // A die-cut insert in the base (PK-RG-01).
+      ...extraPieces(ctx, parts),
     ]);
   },
   hinges: (ctx) => ({
