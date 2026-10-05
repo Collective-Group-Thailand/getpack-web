@@ -757,13 +757,13 @@ const specLinesOf = (rfq: Rfq): Schemas["SpecLineDto"][] =>
   }));
 
 /**
- * A row as `admin.rfqs.get` publishes it. Buy prices need `factory_cost.read`, the margin
+ * A row as `admin.rfqs.get` publishes it. Buy prices need `factory_buy_prices.read`, the margin
  * `margin.read` (D-141); `nextActions` keep what `rfqs.manage` allows. The suggested sell prices
  * and the events stay in the fixture (`suggestedUnitPrice` is left out by the API).
  */
 export function toStaffRfqDto(row: Rfq, who: StaffPersona | undefined): Schemas["StaffRfqDto"] {
   const rfq = refresh(row);
-  const cost = can(who, "factory_cost.read");
+  const cost = can(who, "factory_buy_prices.read");
   const margin = can(who, "margin.read");
   const customer = { id: rfq.customer.id, displayName: rfq.customer.displayName };
   return {

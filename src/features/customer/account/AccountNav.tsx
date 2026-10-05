@@ -13,6 +13,7 @@ const ITEMS: { key: string; href: string; icon: IconName }[] = [
   { key: "instalments", href: "/account/instalments", icon: "wallet" },
   { key: "quotes", href: "/account/quotes", icon: "receipt" },
   { key: "rfqs", href: "/account/rfqs", icon: "inbox" },
+  { key: "samples", href: "/account/samples", icon: "package-check" },
   { key: "designs", href: "/account/designs", icon: "palette" },
   { key: "points", href: "/account/points", icon: "star" },
   { key: "referral", href: "/account/referral", icon: "gift" },

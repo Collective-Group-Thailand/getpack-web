@@ -46,7 +46,7 @@ export function Pricing({ factory }: { factory: Factory }) {
   const format = useFormat();
   const { labelOf } = useProductTypes();
   const router = useRouter();
-  const canCost = useCan("factory_cost.read");
+  const canCost = useCan("factory_buy_prices.read");
   const canPropose = useCan("price_proposals.review");
   const lists = useFactoryPart(factory.id, "/v1/admin/factories/{factoryId}/price-lists");
   const [viewing, setViewing] = useState<string | null>(null);

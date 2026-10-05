@@ -241,7 +241,7 @@ function boxOf(calculator: Calculator, config: Configuration) {
 
 function internalOf(who: StaffPersona, step: Schemas["QuoteStepDto"]): Schemas["QuoteInternalDto"] | null {
   if (!step.instant) return null;
-  const seesCost = can(who, "factory_cost.read");
+  const seesCost = can(who, "factory_buy_prices.read");
   const seesMargin = seesCost || can(who, "margin.read") || can(who, "margin.read_pct_when_discounting");
   const product = Number(step.productAmount ?? 0);
   return {

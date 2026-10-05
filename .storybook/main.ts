@@ -20,6 +20,8 @@ const config: StorybookConfig = {
     "../src/features/designer/**/*.stories.@(ts|tsx)",
     // Shared patterns — the API problems story is the Storybook half of `?mock=` (U1 U-F0.1).
     "../src/features/shared/**/*.stories.@(ts|tsx)",
+    // The sample approval screen (U2.F3), a visual baseline.
+    "../src/features/customer/samples/**/*.stories.@(ts|tsx)",
   ],
   addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
   // `next/font` cannot run under Vite, so the same five woff2 files are declared by hand in

@@ -627,5 +627,22 @@
     "inactive": "Not active",
     "disabled": "Disabled",
     "notYours": "Another account's code"
+  },
+  "sample": {
+    "requested": "Awaiting quote",
+    "quoted": "Quoted",
+    "paid": "Paid",
+    "inProduction": "Being made",
+    "shipped": "Shipped",
+    "delivered": "Delivered — to check",
+    "approved": "Approved",
+    "changesRequested": "Changes requested",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled",
+    "expired": "Expired"
+  },
+  "sampleKind": {
+    "attached": "Order sample",
+    "standalone": "Sample before ordering"
   }
 }
