@@ -46,7 +46,8 @@ export async function resolveDeepLink(zone: Zone, token: string): Promise<DeepLi
     return path ? { kind: "go", path } : { kind: "not-found" };
   } catch (error) {
     if (isApiError(error) && error.status === 410) return { kind: "expired" };
-    if (isApiError(error) && error.status === 404) return { kind: "not-found" };
+    // 404: not this reader's; 422: not a token at all (packio-api checks its shape) — the same to the reader.
+    if (isApiError(error) && (error.status === 404 || error.status === 422)) return { kind: "not-found" };
     throw error;
   }
 }
