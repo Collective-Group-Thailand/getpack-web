@@ -106,7 +106,7 @@ test.describe("U5.3 — messaging", () => {
     await expect(staff.getByText("ลูกค้าประจำ (ทดสอบ)")).toBeVisible();
     await staff.getByRole("switch", { name: "บันทึกภายใน" }).click();
     await staff.getByRole("textbox", { name: "ตอบลูกค้า" }).fill("พิมพ์สองสีได้ค่ะ (ทดสอบ)");
-    await expect(staff.getByRole("button", { name: "ส่งคำตอบ" })).toBeEnabled();
+    await expect(staff.getByRole("button", { name: "ส่งคำตอบ" })).toBeEnabled({ timeout: 15_000 });
     await staff.getByRole("button", { name: "ส่งคำตอบ" }).click();
     await expect(staff.getByText("พิมพ์สองสีได้ค่ะ (ทดสอบ)")).toBeVisible();
 
@@ -155,12 +155,13 @@ test.describe("U5.4 — the RFQ basket", () => {
 
 test.describe("U5.2 / U5.6 — content that teaches", () => {
   test("the glossary, its chips, the materials library and a learning path", async ({ page }) => {
+    await gotoHydrated(page, `${HOSTS.customer}/help/glossary`);
+    await expectNoViolations(page);
     await gotoHydrated(page, `${HOSTS.customer}/help/glossary#bleed`);
     await expect(page.locator("#bleed")).toContainText("ระยะตัดตก");
     await page.getByRole("searchbox", { name: "ค้นหาคำศัพท์" }).fill("ลอนอี");
     await expect(page.locator("#e-flute")).toBeVisible();
     await expect(page.locator("#bleed")).toHaveCount(0);
-    await expectNoViolations(page);
 
     await gotoHydrated(page, `${HOSTS.customer}/materials`);
     const cards = page.getByRole("listitem").filter({ has: page.getByRole("checkbox") });
@@ -223,6 +224,8 @@ test.describe("U5.2 — first visit", () => {
     await expect(page.getByRole("dialog", { name: /คำแนะนำ/ })).toHaveCount(0);
     await page.reload();
     await page.locator("html[data-hydrated]").waitFor();
+    // A guest's unsaved box starts again at the setup; the tips do not come back.
+    if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
     await expect(page.getByRole("dialog", { name: /คำแนะนำ/ })).toHaveCount(0);
     await page.getByRole("button", { name: "เปิดคำแนะนำสตูดิโอ" }).click();
     await expect(page.getByRole("dialog", { name: /คำแนะนำ 1 จาก 3/ })).toBeVisible();

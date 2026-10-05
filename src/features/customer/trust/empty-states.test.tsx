@@ -35,7 +35,15 @@ vi.mock("@/features/customer/trust/api.server", () => ({
     auditCriteria: [],
     coverage: [],
     generatedAt: "2026-10-05T10:00:00+07:00",
-    network: { published: false, partnerCount: null, onTimePct: null, firstPassPct: null, windowDays: 90, minFactories: 3, minJobs: 30 },
+    network: {
+      published: false,
+      partnerCount: null,
+      onTimePct: null,
+      firstPassPct: null,
+      windowDays: 90,
+      minFactories: 3,
+      minJobs: 30,
+    },
   }),
 }));
 

@@ -37,7 +37,8 @@ export function usePostMessage(conversationId: string) {
         ...(draft.contextCard ? { contextCard: draft.contextCard } : {}),
       },
     });
-    await client.invalidateQueries({ queryKey: threadKey(conversationId) });
+    // The box frees at once; the thread catches up (U5.7 §2).
+    void client.invalidateQueries({ queryKey: threadKey(conversationId) });
   };
 }
 

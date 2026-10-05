@@ -167,7 +167,8 @@ export function InboxThread({ initial }: { initial: Conversation }) {
                     },
                   });
                 setTemplate("");
-                await refresh();
+                // The box frees at once; the thread catches up (U5.7 §2).
+                void refresh();
               } catch (error) {
                 throw new Error(problemMessage(error, t("sendFailed")));
               }
