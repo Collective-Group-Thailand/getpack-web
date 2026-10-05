@@ -40,6 +40,8 @@ const MENU_ICONS: Record<string, IconName> = {
   cs_calculators: "calculator",
   quotations: "receipt",
   rfq: "chat",
+  // CONTRACT-REQUEST admin.menu-inbox: ready for when packio-api adds the entry.
+  inbox: "inbox",
   discount_memos: "percent",
   prepress: "image",
   production: "factory",
@@ -71,7 +73,7 @@ const MENU_ICONS: Record<string, IconName> = {
  */
 export const MENU_GROUPS: readonly { key: string; entries: readonly string[] }[] = [
   { key: "overview", entries: ["dashboard", "approvals"] },
-  { key: "sales", entries: ["orders", "cs_calculators", "quotations", "rfq", "discount_memos"] },
+  { key: "sales", entries: ["orders", "inbox", "cs_calculators", "quotations", "rfq", "discount_memos"] },
   { key: "operations", entries: ["prepress", "production", "shipments", "claims"] },
   { key: "supply", entries: ["partners", "catalogue"] },
   { key: "growth", entries: ["marketing", "cms", "customers", "companies"] },

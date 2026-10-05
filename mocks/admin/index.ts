@@ -22,8 +22,10 @@ import { productionHandlers } from "./production";
 import { rfqHandlers } from "./rfq";
 import { salesHandlers } from "./sales";
 import { shipmentHandlers } from "./shipments";
+import { adminConversationHandlers } from "../store/conversations";
 
 export const adminHandlers = [
+  ...adminConversationHandlers,
   ...consoleHandlers,
   ...productionHandlers,
   ...orderHandlers,
