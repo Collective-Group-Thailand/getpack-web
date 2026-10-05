@@ -362,3 +362,84 @@ export const storeStyleHandlers: HttpHandler[] = [
     return new HttpResponse(null, { status: 204 });
   }),
 ];
+
+/*
+ * `store.dielines.download` (U2.F2, D-271): the variant's dieline at the customer's sizes, in its
+ * style's range for the material class, as a small fake file behind a data URL (the mock draws no
+ * dieline); 20 a day per customer, with what is left. The quantities are fake.
+ */
+const downloadsToday = new Map<string, number>();
+const DAILY = 20;
+const FAKE_FILE: Record<Schemas["DrawingFormat"], { mime: string; body: string }> = {
+  svg: {
+    mime: "image/svg+xml",
+    body: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="60"><rect x="1" y="1" width="98" height="58" fill="none" stroke="#e00"/></svg>',
+  },
+  pdf: { mime: "application/pdf", body: "%PDF-1.4\n% mock dieline\n%%EOF\n" },
+  dxf: { mime: "image/vnd.dxf", body: "0\nSECTION\n0\nENDSEC\n0\nEOF\n" },
+};
+
+storeStyleHandlers.push(
+  http.post("*/v1/store/dielines/downloads", async ({ request }) => {
+    const customer = customerOf(request);
+    if (!customer) return problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
+    const body = (await request.json().catch(() => null)) as Schemas["DownloadDielineDto"] | null;
+    if (!body || !["pdf", "dxf", "svg"].includes(body.format))
+      return problem(422, "validation.failed", "ข้อมูลไม่ครบ", [
+        { path: "format", code: "enum", message: "pdf|dxf|svg" },
+      ]);
+    const style = [...byCode.values()].find((s) => body.variantCode.startsWith(s.row.code));
+    if (!style) return problem(404, "styles.variant_not_found", "ไม่พบแบบกล่องนี้");
+    const range = detail(style, null).sizeRanges.find((r) => r.materialClass === body.materialClass);
+    if (!range) return problem(422, "dielines.material_class_not_offered", "แบบนี้ไม่มีวัสดุกลุ่มนี้");
+    const within = (v: number, min: number | null, max: number | null) =>
+      (min === null || v >= min) && (max === null || v <= max);
+    if (
+      !within(body.lengthMm, range.minLMm, range.maxLMm) ||
+      !within(body.widthMm, range.minWMm, range.maxWMm) ||
+      (range.maxHMm !== null && !within(body.heightMm, range.minHMm, range.maxHMm))
+    )
+      return problem(422, "dielines.size_out_of_range", "ขนาดนี้อยู่นอกช่วงที่แบบนี้ทำได้", [
+        { path: "lengthMm", code: "range", message: "out of the style's range" },
+      ]);
+    const used = downloadsToday.get(customer.id) ?? 0;
+    if (used >= DAILY) return problem(429, "dielines.rate_limited", "วันนี้ดาวน์โหลดครบจำนวนแล้ว ลองใหม่พรุ่งนี้");
+    downloadsToday.set(customer.id, used + 1);
+    const file = FAKE_FILE[body.format];
+    const sizes = { lengthMm: body.lengthMm, widthMm: body.widthMm, heightMm: body.heightMm };
+    return HttpResponse.json(
+      {
+        id: `0192f3a0-7c1e-7d2a-9b1f-${String(0xd1e0 + used).padStart(12, "0")}`,
+        variantCode: body.variantCode,
+        materialClass: body.materialClass,
+        measurementBasis: body.measurementBasis ?? "internal",
+        format: body.format,
+        entered: sizes,
+        drawn: sizes,
+        quantities: {
+          blankWidthMm: body.lengthMm * 2 + body.widthMm * 2 + 15,
+          blankHeightMm: body.heightMm + body.widthMm * 2,
+          cutMm: 1830,
+          creaseMm: 960,
+          perforationMm: 0,
+          halfCutMm: 0,
+          glueOutlineMm: 300,
+          blankAreaMm2: (body.lengthMm * 2 + body.widthMm * 2 + 15) * (body.heightMm + body.widthMm * 2),
+          cutoutAreaMm2: 0,
+          pieces: 1,
+        },
+        fileName: `${body.variantCode}-${body.lengthMm}x${body.widthMm}x${body.heightMm}.${body.format}`,
+        mimeType: file.mime,
+        sizeBytes: file.body.length,
+        url: `data:${file.mime};base64,${Buffer.from(file.body).toString("base64")}`,
+        expiresAt: bangkokIso(5),
+        createdAt: bangkokIso(),
+        cached: false,
+        engineVersion: "mock",
+        remainingToday: DAILY - used - 1,
+        violations: [],
+      } satisfies Schemas["DielineDownloadDto"],
+      { status: 201 },
+    );
+  }),
+);

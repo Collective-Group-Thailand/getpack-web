@@ -10,6 +10,7 @@ import { ShipmentCard } from "@/features/customer/fulfilment/ShipmentCard";
 import { findLockedDesignOf, getMyOrder } from "@/features/customer/orders/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { OrderActions } from "@/features/customer/orders/OrderActions";
+import { SpecSheet } from "@/features/customer/orders/SpecSheet";
 import { ToleranceOutcome } from "@/features/customer/orders/ToleranceOutcome";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
 import { timelineTitle } from "@/features/customer/orders/timeline";
@@ -217,6 +218,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </section>
           ) : null}
 
+          {order.artworkStatus === "approved" ? <SpecSheet orderId={order.id} /> : null}
           <section aria-labelledby="order-documents">
             <h2 id="order-documents" className="text-lg font-semibold">
               {t("detail.documents")}

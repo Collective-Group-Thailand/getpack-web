@@ -222,7 +222,8 @@
   "orders": {
     "reorder_unavailable": "สั่งซ้ำไม่ได้",
     "reorder_preview_expired": "ตัวอย่างหมดอายุ",
-    "reorder_repriced": "ราคาเปลี่ยนแล้ว"
+    "reorder_repriced": "ราคาเปลี่ยนแล้ว",
+    "spec_sheet_unavailable": "เอกสารสเปกพร้อมเมื่ออนุมัติงานพิมพ์แล้ว"
   },
   "outbox": {
     "not_replayable": "ส่งเหตุการณ์ซ้ำไม่ได้"
@@ -454,5 +455,11 @@
     "print_unavailable": "ยังสร้างไฟล์พิมพ์อัตโนมัติสำหรับแบบกล่องนี้ไม่ได้",
     "quote_not_of_version": "ใบเสนอราคาไม่ใช่ของเวอร์ชันนี้",
     "renders_missing": "ยังไม่ได้ส่งไฟล์งานของเวอร์ชันนี้"
+  },
+  "dielines": {
+    "material_class_not_offered": "แบบนี้ไม่มีวัสดุกลุ่มนี้",
+    "not_drawable": "แบบนี้วาดแผ่นคลี่ให้ไม่ได้",
+    "size_out_of_range": "ขนาดนี้อยู่นอกช่วงที่แบบนี้ทำได้",
+    "rate_limited": "ดาวน์โหลดถี่เกินไป รอสักครู่แล้วลองใหม่"
   }
 }

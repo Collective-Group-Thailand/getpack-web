@@ -345,5 +345,41 @@
     "warm": "Warm",
     "exportPng": "Save as PNG",
     "flat": "Flat"
+  },
+  "dieline": {
+    "title": "Free dieline download",
+    "body": "The dieline at your sizes as PDF, DXF or SVG — free, no watermark, to design on yourself or hand to a designer",
+    "signIn": "Sign in to download for free",
+    "material": "Material class",
+    "basis": "Sizes are",
+    "bases": {
+      "internal": "Inside sizes",
+      "external": "Outside sizes",
+      "over_crease": "Over-crease sizes"
+    },
+    "sizes": {
+      "l": "Length (mm)",
+      "w": "Width (mm)",
+      "h": "Height (mm)"
+    },
+    "range": "{span} mm possible",
+    "format": "File",
+    "download": "Download",
+    "failed": "Could not download — try again",
+    "done": "{file} downloaded",
+    "drawn": "Drawn at inside sizes {l} × {w} × {h} mm",
+    "remaining": "{count, plural, one {# more download} other {# more downloads}} today",
+    "nudge": "Packio can make this box at the same sizes",
+    "order": "See prices and order",
+    "layersTitle": "What the layers in the file mean",
+    "layers": {
+      "CutContour": "Cut lines",
+      "Crease": "Fold lines",
+      "Perf": "Perforation (tear line)",
+      "Glue": "Glue area",
+      "Bleed": "Bleed: run the artwork out to this line, past the cut",
+      "Safe": "Safe area: keep text and logos inside this line",
+      "HalfCut": "Half-cut through the board (some styles only)"
+    }
   }
 }

@@ -368,6 +368,23 @@ export const storeOrderHandlers = [
     return order ? HttpResponse.json(toStoreOrderDto(order)) : notFound();
   }),
 
+  // store.orders.getSpecSheet (U2.F2, D-287): once the artwork is approved; a fake PDF behind a data URL.
+  http.get("*/v1/store/orders/:orderId/spec-sheet", ({ params, request }) => {
+    const customer = customerOf(request);
+    if (!customer) return unauthenticated();
+    const order = orderOf(customer, String(params.orderId));
+    if (!order) return notFound();
+    if (order.artwork.status !== "approved")
+      return problem(409, "orders.spec_sheet_unavailable", "เอกสารสเปกพร้อมเมื่ออนุมัติงานพิมพ์แล้ว");
+    const lang = new URL(request.url).searchParams.get("lang") === "en" ? "en" : "th";
+    const pdf = `%PDF-1.4\n% mock spec sheet ${order.orderCode} ${lang}\n%%EOF\n`;
+    return HttpResponse.json({
+      fileName: `${order.orderCode}-spec-${lang}.pdf`,
+      url: `data:application/pdf;base64,${Buffer.from(pdf).toString("base64")}`,
+      expiresAt: bangkokIso(5),
+    } satisfies Schemas["SpecSheetDto"]);
+  }),
+
   // store.timeline.get / progress / shipments (published, U-F0.2).
   http.get("*/v1/store/orders/:orderId/timeline", ({ params, request }) => {
     const customer = customerOf(request);

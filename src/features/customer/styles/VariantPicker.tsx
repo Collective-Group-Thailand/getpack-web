@@ -11,6 +11,8 @@ import { Spinner } from "@/ui/components/Spinner";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
+import type { DielineDownloadProps } from "./DielineDownload";
+import { DielineDownloadEntry } from "./DielineDownloadEntry";
 import { axisLabel, valueLabel, type StylesT } from "./labels";
 import { change, optionsOf, selectionOf, variantOf, type Selection } from "./variants";
 
@@ -39,9 +41,12 @@ export function VariantPicker({
   name,
   instantActions,
   rfqActions,
+  dieline,
 }: {
   style: StyleDetail;
   name: string;
+  /** The free dieline of the chosen variant (U2.F2), when offered. */
+  dieline?: Omit<DielineDownloadProps, "variantCode">;
   /** What to offer for a variant with an instant price (configure) and for one quoted on request. */
   instantActions: React.ReactNode;
   rfqActions: React.ReactNode;
@@ -184,6 +189,7 @@ export function VariantPicker({
             {variant?.pricePath === "instant" ? instantActions : rfqActions}
           </div>
         </div>
+        {dieline && variant ? <DielineDownloadEntry variantCode={variant.code} {...dieline} /> : null}
       </section>
     </div>
   );
