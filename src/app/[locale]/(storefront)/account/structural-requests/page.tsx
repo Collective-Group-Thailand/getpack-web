@@ -38,7 +38,17 @@ export default async function Page() {
         </Button>
       </div>
       {requests.length === 0 ? (
-        <EmptyState className="mt-8" icon="ruler" title={t("emptyTitle")} description={t("emptyBody")} />
+        <EmptyState
+          className="mt-8"
+          icon="ruler"
+          title={t("emptyTitle")}
+          description={t("emptyBody")}
+          action={
+            <Button asChild>
+              <Link href="/account/structural-requests/new">{t("new")}</Link>
+            </Button>
+          }
+        />
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
           {requests.map((r) => (
