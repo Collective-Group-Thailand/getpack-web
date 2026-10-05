@@ -31,7 +31,16 @@ async function expectNoViolations(page: Page) {
 type Saved = {
   document: {
     content: {
-      elements: { type: string; name?: string; fill?: string; finish?: string; kind?: string; value?: string; studioElementId?: string; templateRole?: { role: string } }[];
+      elements: {
+        type: string;
+        name?: string;
+        fill?: string;
+        finish?: string;
+        kind?: string;
+        value?: string;
+        studioElementId?: string;
+        templateRole?: { role: string };
+      }[];
       pattern: { kind: string };
     };
   };
@@ -114,7 +123,10 @@ test("Packio elements, a validated barcode, a nutrition block, a finish layer an
 
   // The handling mark becomes a foil layer.
   await openRail(page, "ชั้น");
-  await page.getByRole("tree").getByRole("treeitem", { name: /ตั้งด้านนี้ขึ้น/ }).click();
+  await page
+    .getByRole("tree")
+    .getByRole("treeitem", { name: /ตั้งด้านนี้ขึ้น/ })
+    .click();
   await page.getByRole("combobox", { name: "งานตกแต่ง (ชั้นพิเศษ)" }).click();
   await page.getByRole("option", { name: "ปั๊มฟอยล์" }).click();
 

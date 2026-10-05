@@ -35,6 +35,8 @@ interface Line {
   mockupOption: Schemas["MockupOption"];
   /** D-276: the studio design version the line was ordered with (`store.studio.order`). */
   design?: { documentId: string; versionNo: number };
+  /** The brief for the design service (`designNote`, U4.8). */
+  designNote?: string | null;
 }
 
 const carts = new Map<string, Line[]>();
@@ -175,9 +177,17 @@ export function addToCart(customer: MockCustomer, quote: StoreQuote): string {
 }
 
 /** Pins a studio design version on a cart line (D-276). */
-export function pinDesign(customer: MockCustomer, lineId: string, documentId: string, versionNo: number): void {
+export function pinDesign(
+  customer: MockCustomer,
+  lineId: string,
+  documentId: string,
+  versionNo: number,
+  designOption?: Item["designOption"],
+): void {
   const line = linesOf(customer).find((candidate) => candidate.id === lineId);
-  if (line) line.design = { documentId, versionNo };
+  if (!line) return;
+  line.design = { documentId, versionNo };
+  if (designOption) line.designOption = designOption;
 }
 
 const unauthenticated = () => problem(401, "auth.unauthenticated", "ไม่พบเซสชัน กรุณาเข้าสู่ระบบ");
@@ -225,7 +235,7 @@ export function toCartDto(customer: MockCustomer): Schemas["CartDto"] {
         mockupOption: line.mockupOption,
         designFeeAmount: designFee,
         designDocumentId: line.design?.documentId ?? null,
-        designNote: null,
+        designNote: line.designNote ?? null,
         quoteShippingAmount: shipping,
         destinations: item.destinations.map((destination) => {
           const saved = addresses.find((candidate) => candidate.id === destination.addressId);
@@ -322,6 +332,7 @@ export const storeCartHandlers = [
       return problem(422, "cart.design_option_unavailable", "ใบเสนอราคาจากทีมงานเปลี่ยนงานออกแบบไม่ได้");
     if (body?.designOption) line.designOption = body.designOption;
     if (body?.mockupOption) line.mockupOption = body.mockupOption;
+    if (body?.designNote !== undefined) line.designNote = body.designNote;
     return edited(customer);
   }),
 

@@ -136,6 +136,8 @@ export interface StudioChoices {
   styleVariantCode?: string | null;
   /** The base the variant belongs to (`PK-TE-01`), for a library style the main entry does not name. */
   baseCode?: string | null;
+  /** Handed to Packio's design team (U4.8): the version is priced with the graphic design fee. */
+  designService?: boolean;
 }
 
 export interface DesignSpec extends DielineSpec {
