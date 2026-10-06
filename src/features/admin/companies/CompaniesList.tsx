@@ -84,6 +84,7 @@ export function CompaniesList({ initial }: { initial: InitialPage<Company> | nul
       <QueueTabs
         label={t("statusesLabel")}
         param="status"
+        hideEmpty
         tabs={[
           { value: null, label: t("all") },
           ...COMPANY_STATUSES.map((status) => ({

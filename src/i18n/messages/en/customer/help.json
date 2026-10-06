@@ -90,7 +90,8 @@
       "email": "That e-mail doesn't look right",
       "message": "Write at least 10 characters"
     },
-    "openLine": "Continue in LINE"
+    "openLine": "Continue in LINE",
+    "lineCta": "Chat with the team on LINE"
   },
   "samples": {
     "title": "Sample kits",

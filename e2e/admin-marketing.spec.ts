@@ -332,7 +332,7 @@ test.describe("B2B companies (D-120…D-125)", () => {
     await signInAsStaff(page, "finance");
     // The list filters by credit standing (v0.5.0) and the row carries the receivables.
     await gotoHydrated(page, `${HOSTS.admin}/companies?creditStatus=blocked_overdue`);
-    const table = page.getByRole("table", { name: "บริษัท (B2B)" });
+    const table = page.getByRole("table", { name: "บริษัทคู่ค้า" });
     const row = table.getByRole("row", { name: /อาหารเสริม/ });
     await expect(row).toContainText("ระงับเครดิต (ค้างชำระ)");
     await expect(row).toContainText(/เกินกำหนด ฿[\d,.]+ · \d+ วัน/);

@@ -234,7 +234,11 @@
     "shipBy": "Ships from the factory by {date}",
     "shipmentNo": "Delivery {shipment}",
     "arrivesBy": "Expected by {date}",
-    "delivered": "Delivered on {date}"
+    "delivered": "Delivered on {date}",
+    "codePlaceholder": "Paste the tracking link, or the 6–64 character code on the carton label",
+    "signInTitle": "Have a Packio account?",
+    "signInBody": "Sign in to see every order, the proofs waiting for you and the instalments due, in one place",
+    "signInCta": "Sign in to see all your orders"
   },
   "claimTimeline": {
     "title": "Claim status",

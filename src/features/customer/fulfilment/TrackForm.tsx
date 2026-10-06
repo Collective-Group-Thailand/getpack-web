@@ -9,10 +9,10 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 
 /** The tracking code from the carton label or the link someone shared, typed in. */
-export function TrackForm() {
+export function TrackForm({ initial = "" }: { initial?: string }) {
   const t = useTranslations("fulfilment.track");
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initial);
   const [error, setError] = useState<string>();
 
   function submit(event: React.FormEvent) {
@@ -29,7 +29,13 @@ export function TrackForm() {
   return (
     <form noValidate onSubmit={submit} className="flex max-w-md flex-col gap-3">
       <Field label={t("code")} hint={t("codeHint")} error={error}>
-        <Input value={code} autoComplete="off" spellCheck={false} onChange={(event) => setCode(event.target.value)} />
+        <Input
+          value={code}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={t("codePlaceholder")}
+          onChange={(event) => setCode(event.target.value)}
+        />
       </Field>
       <Button type="submit" className="self-start" iconStart="search">
         {t("submit")}
