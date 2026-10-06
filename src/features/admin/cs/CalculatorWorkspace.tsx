@@ -178,7 +178,9 @@ function Workspace({
   const priced = calculation?.steps.some((step) => step.instant) ?? false;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[24rem_minmax(0,1fr)]">
+    // 7:5, as the customer's configurator (UX audit, CS calculator): the steps on the left, the result
+    // and its actions on the right, sticky so they stay in view while the form scrolls.
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
       <form
         className="flex flex-col gap-4"
         onSubmit={(event) => {
@@ -345,7 +347,7 @@ function Workspace({
         ) : null}
       </form>
 
-      <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
         {!calculation ? (
           <EmptyState icon="calculator" title={t("noResultsTitle")} description={t("noResultsBody")} />
         ) : (

@@ -363,5 +363,26 @@
       "title": "Open these tips again here",
       "body": "Not sure about something? This question mark is always here."
     }
+  },
+  "startScreen": {
+    "title": "Where would you like to start?",
+    "lead": "Pick the way that fits your job; you can always change your mind",
+    "box": {
+      "title": "Choose a box",
+      "body": "Pick a style and a size, then design on the flat sheet and see it as a 3D box at once"
+    },
+    "product": {
+      "title": "I have the product",
+      "body": "Tell us its size; we suggest the box and the board, with the price"
+    },
+    "file": {
+      "title": "I have a finished file",
+      "body": "Choose the spec, see the price and attach your file; prepress checks it before production"
+    },
+    "reorder": {
+      "title": "Reorder",
+      "body": "Open an earlier order and order it again with its approved file in one click"
+    },
+    "recent": "Your recent designs →"
   }
 }
