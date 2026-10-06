@@ -219,3 +219,15 @@ export function ProductThumb({ family, className }: { family: ProductFamily; cla
     </span>
   );
 }
+
+/** A 4:3 kraft plate holding a family's drawing — a card's picture when there is no photo. */
+export function ProductPlate({ family, className }: { family: ProductFamily; className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn("bg-kraft text-fg/80 flex aspect-[4/3] items-center justify-center p-6", className)}
+    >
+      <ProductIllustration family={family} className="max-w-32" />
+    </div>
+  );
+}

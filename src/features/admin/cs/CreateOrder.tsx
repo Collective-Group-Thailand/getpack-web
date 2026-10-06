@@ -230,7 +230,11 @@ export function CreateOrder({
             <ul className="mt-2 space-y-1 text-sm">
               {others.map((item) => (
                 <li key={item.id} className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono">{item.quoteCode ?? item.quoteId.slice(0, 8)}</span>
+                  {item.quoteCode ? (
+                    <span className="font-mono">{item.quoteCode}</span>
+                  ) : (
+                    <span className="text-muted">{t("quoteNoCode")}</span>
+                  )}
                   <span>
                     {format.number(item.quantity)} · {format.thb(item.productGrossAmount)}
                   </span>

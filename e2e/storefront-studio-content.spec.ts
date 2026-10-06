@@ -47,7 +47,7 @@ type Saved = {
 };
 
 async function saved(page: Page, id: string): Promise<Saved["document"]["content"]> {
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   const response = await page.request.get(`${HOSTS.customer}/bff/v1/store/designs/${id}`);
   return ((await response.json()) as Saved).document.content;
 }

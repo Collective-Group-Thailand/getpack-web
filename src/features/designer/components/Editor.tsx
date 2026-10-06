@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+
+import { getPathname } from "@/i18n/navigation";
 import type Konva from "konva";
 import { nanoid } from "nanoid";
 
@@ -381,7 +383,12 @@ export default function Editor({
     updatedAt: session.design?.updatedAt ?? null,
     create: session.create,
     onCreated: (designId) => {
-      if (id !== designId) nav.replace(designHref(designId));
+      if (id === designId) return;
+      // A guest's design is autosaved from its first change, often mid-typing: a navigation would
+      // remount the editor and drop what was typed meanwhile, so only the address bar changes.
+      if (session.mode === "local")
+        window.history.replaceState(window.history.state, "", getPathname({ href: designHref(designId), locale }));
+      else nav.replace(designHref(designId));
     },
     onSaved: session.onSaved,
     box: session.box,
@@ -503,15 +510,10 @@ export default function Editor({
     [],
   );
 
-  // The browser's own unsaved-changes prompt, for a tab close we cannot intercept with a
-  // dialog of our own. An account design's draft is in IndexedDB by then, but say so anyway.
-  useEffect(() => {
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (useEditor.getState().dirty) event.preventDefault();
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, []);
+  // No `beforeunload` prompt: every design autosaves a moment after each change — a guest's in this
+  // browser, an account's to the server with an IndexedDB draft meanwhile — and the bar says when
+  // (UX audit, studio: the browser's dialog also stalled automation). Leaving from the studio's own
+  // button still asks while a save is pending.
 
   /** Where a new element goes: the middle of the focused face, or of the view. */
   const viewCenter = useCallback(() => {
@@ -607,7 +609,7 @@ export default function Editor({
     conflict: t("saveState.conflict"),
     error: t("saveState.error"),
     readonly: t("saveState.readonly"),
-  }[session.mode === "local" ? (dirty ? "dirty" : "saved") : persistence.state];
+  }[persistence.state];
 
   const openSetup = () => setSetupOpen(true);
   const openRules = () => setRulesOpen(true);
