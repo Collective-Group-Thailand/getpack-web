@@ -166,5 +166,14 @@
     "empty": "No delegations"
   },
   "waitingForOther": "Waiting for {role} to approve",
-  "waitingForOtherBody": "Your account cannot decide this step; the approver has been notified. Due"
+  "waitingForOtherBody": "Your account cannot decide this step; the approver has been notified. Due",
+  "waitingTitle": "Waiting for you ({count})",
+  "historyTitle": "Approval history",
+  "open": "Open",
+  "bulk": {
+    "approve": "Approve {count} selected",
+    "select": "Select {name}",
+    "done": "Approved {count, plural, one {# request} other {# requests}}",
+    "someFailed": "{count, plural, one {# request} other {# requests}} could not be approved"
+  }
 }

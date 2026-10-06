@@ -335,7 +335,9 @@
     "note": "Internal note",
     "specs": "Specification",
     "noCode": "No number yet",
-    "draftTitle": "Quotation (no number yet)"
+    "draftTitle": "Quotation (no number yet)",
+    "toOrder": "Create order",
+    "open": "Open"
   },
   "memos": {
     "title": "Discount memos",
@@ -354,7 +356,9 @@
     },
     "openApproval": "Open approval",
     "empty": "No discount memos",
-    "mine": "Mine"
+    "mine": "Mine",
+    "emptyBody": "A discount memo is raised while CS builds an order for a customer, at its discount step; it then goes to the approver for that discount band",
+    "create": "Raise a discount memo"
   },
   "inbox": {
     "title": "Customer inbox",

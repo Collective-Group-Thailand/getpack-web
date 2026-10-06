@@ -28,6 +28,7 @@ import { cn } from "@/ui/lib/cn";
 
 import {
   adminBrowserApis,
+  ConfirmAction,
   problemMessage,
   QueryError,
   ResourceList,
@@ -38,7 +39,7 @@ import {
   useStaffDirectory,
   type InitialPage,
 } from "../console";
-import { CRITICAL_FLAGS, currentStep, POLICY_ICONS, type Approval } from "./presentation";
+import { CRITICAL_FLAGS, currentStep, decisionBlocker, POLICY_ICONS, type Approval } from "./presentation";
 import { approvalsList, POLICIES } from "./resources";
 
 export type ApprovalsTab = "inbox" | "all" | "delegations";
@@ -101,6 +102,12 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
   const sla = useSlaFormat();
   const policyLabel = usePolicyLabel();
   const roleLabel = useRoleLabel();
+  const actor = useActor();
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [approving, setApproving] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState<Approval | null>(null);
 
   const inbox = useQuery({
     queryKey: queryKeys.list("admin", "approval", { inbox: true }),
@@ -117,43 +124,179 @@ function Inbox({ initial }: { initial: Approval[] | null }) {
     return <EmptyState icon="stamp" title={t("inboxEmptyTitle")} description={t("inboxEmptyBody")} />;
   }
 
+  const actorId = actor.id;
+  const decide = async (item: Approval, kind: "approve" | "reject", comment: string) => {
+    const api = adminBrowserApis().contract;
+    const path = { params: { path: { requestId: item.id } } };
+    if (kind === "approve")
+      await api.POST("/v1/admin/approvals/{requestId}/actions/approve", { ...path, body: comment ? { comment } : {} });
+    else await api.POST("/v1/admin/approvals/{requestId}/actions/reject", { ...path, body: { comment } });
+  };
+  const settle = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "approval") });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
+  };
+  // Several at once: one call each (there is no bulk endpoint), the failures reported by name.
+  const approveMany = async (chosen: Approval[]) => {
+    setBusy(true);
+    const failed: string[] = [];
+    for (const item of chosen) {
+      try {
+        await decide(item, "approve", "");
+      } catch {
+        failed.push(policyLabel(item.policy));
+      }
+    }
+    setBusy(false);
+    setSelected([]);
+    settle();
+    if (failed.length === 0) toast.success(t("bulk.done", { count: chosen.length }));
+    else toast.error(t("bulk.someFailed", { count: failed.length }), { description: failed.join(", ") });
+  };
+  const decidable = items.filter((item) => !decisionBlocker(item, actorId));
+  const chosen = decidable.filter((item) => selected.includes(item.id));
+
   return (
-    <ul className="flex flex-col gap-2" aria-label={t("tabs.inbox")}>
-      {items.map((item) => {
-        const step = currentStep(item);
-        return (
-          <li key={item.id}>
-            <Link
-              href={`/approvals/${item.id}`}
-              className="border-border bg-surface hover:bg-surface-subtle flex flex-wrap items-center gap-4 rounded-lg border p-4"
-            >
-              <Icon name={POLICY_ICONS[item.policy] ?? "stamp"} size={20} className="text-muted" />
-              <div className="min-w-0 flex-1">
-                <p className="flex flex-wrap items-center gap-2 font-medium">
-                  {policyLabel(item.policy)}
-                  {item.flags.map((flag) => (
-                    <Badge key={flag} size="sm" tone={CRITICAL_FLAGS.has(flag) ? "danger" : "warning"} icon="warning">
-                      {t.has(`flags.${flag}`) ? t(`flags.${flag}`) : flag}
-                    </Badge>
-                  ))}
-                </p>
-                <p className="text-muted text-sm">
-                  {t("requestedBy", { name: item.requester.displayName })}
-                  {step ? ` · ${t("stepOf", { no: step.stepNo, role: roleLabel(step.role) })}` : null}
-                </p>
-              </div>
-              {item.amount ? <span className="font-medium tabular-nums">{format.thb(item.amount)}</span> : null}
-              {item.pct ? <span className="text-muted tabular-nums">{format.percent(item.pct)}</span> : null}
-              <SlaTimer
-                dueAt={step?.dueAt ?? null}
-                format={sla}
-                absolute={step?.dueAt ? format.dateTime(step.dueAt) : undefined}
-              />
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="flex flex-col gap-8">
+      <section aria-labelledby="approvals-waiting" className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="approvals-waiting" className="text-lg font-semibold">
+            {t("waitingTitle", { count: items.length })}
+          </h2>
+          {chosen.length > 0 ? (
+            <Button iconStart="check" loading={busy} onClick={() => void approveMany(chosen)}>
+              {t("bulk.approve", { count: chosen.length })}
+            </Button>
+          ) : null}
+        </div>
+        <ul className="flex flex-col gap-3" aria-label={t("tabs.inbox")}>
+          {items.map((item) => {
+            const step = currentStep(item);
+            const blocked = decisionBlocker(item, actorId);
+            const reason = (item.payload as Record<string, unknown>).reason;
+            return (
+              <li
+                key={item.id}
+                className={cn(
+                  "border-border bg-surface rounded-card flex flex-wrap items-center gap-4 border p-5",
+                  item.flags.some((flag) => CRITICAL_FLAGS.has(flag)) && "border-s-danger border-s-4",
+                )}
+              >
+                {!blocked ? (
+                  <input
+                    type="checkbox"
+                    className="accent-primary size-4"
+                    checked={selected.includes(item.id)}
+                    onChange={(event) =>
+                      setSelected((current) =>
+                        event.target.checked ? [...current, item.id] : current.filter((id) => id !== item.id),
+                      )
+                    }
+                    aria-label={t("bulk.select", { name: policyLabel(item.policy) })}
+                  />
+                ) : null}
+                <Icon name={POLICY_ICONS[item.policy] ?? "stamp"} size={22} className="text-muted" />
+                <div className="min-w-0 flex-1">
+                  <p className="flex flex-wrap items-center gap-2 font-semibold">
+                    <Link href={`/approvals/${item.id}`} className="hover:underline">
+                      {policyLabel(item.policy)}
+                    </Link>
+                    {item.flags.map((flag) => (
+                      <Badge key={flag} size="sm" tone={CRITICAL_FLAGS.has(flag) ? "danger" : "warning"} icon="warning">
+                        {t.has(`flags.${flag}`) ? t(`flags.${flag}`) : flag}
+                      </Badge>
+                    ))}
+                  </p>
+                  <p className="text-muted text-sm">
+                    {t("requestedBy", { name: item.requester.displayName })}
+                    {step ? ` · ${t("stepOf", { no: step.stepNo, role: roleLabel(step.role) })}` : null}
+                  </p>
+                  {typeof reason === "string" && reason ? (
+                    <p className="mt-1 line-clamp-1 text-sm italic">{reason}</p>
+                  ) : null}
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  {item.amount ? (
+                    <span className="text-xl font-bold tabular-nums">{format.thb(item.amount)}</span>
+                  ) : null}
+                  {item.pct ? <span className="text-muted tabular-nums">{format.percent(item.pct)}</span> : null}
+                  <SlaTimer
+                    dueAt={step?.dueAt ?? null}
+                    format={sla}
+                    absolute={step?.dueAt ? format.dateTime(step.dueAt) : undefined}
+                  />
+                </div>
+                <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/approvals/${item.id}`}>{t("open")}</Link>
+                  </Button>
+                  {!blocked ? (
+                    <>
+                      <Button variant="secondary" size="sm" iconStart="ban" onClick={() => setRejecting(item)}>
+                        {t("reject")}
+                      </Button>
+                      <Button
+                        size="sm"
+                        iconStart="check"
+                        loading={busy && approving === item.id}
+                        onClick={async () => {
+                          setApproving(item.id);
+                          setBusy(true);
+                          try {
+                            await decide(item, "approve", "");
+                            toast.success(t("decided.approve"));
+                            settle();
+                          } catch (error) {
+                            toast.error(problemMessage(error, t("decideFailed")));
+                          } finally {
+                            setBusy(false);
+                            setApproving(null);
+                          }
+                        }}
+                      >
+                        {t("approve")}
+                      </Button>
+                    </>
+                  ) : (
+                    <span className="text-muted text-xs">
+                      {t(`blockers.${blocked === "own_request" ? "ownRequest" : "alreadyActed"}`)}
+                    </span>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section aria-labelledby="approvals-history" className="flex flex-col gap-3">
+        <h2 id="approvals-history" className="text-lg font-semibold">
+          {t("historyTitle")}
+        </h2>
+        <AllRequests initial={null} />
+      </section>
+
+      <ConfirmAction
+        open={rejecting !== null}
+        onOpenChange={(open) => (open ? undefined : setRejecting(null))}
+        title={t("confirm.rejectTitle")}
+        description={rejecting ? t("confirm.description", { summary: policyLabel(rejecting.policy) }) : ""}
+        confirmLabel={t("reject")}
+        tone="destructive"
+        reason={{ label: t("rejectReason"), required: true, hint: t("commentHint") }}
+        onConfirm={async ({ reason }) => {
+          if (!rejecting) return;
+          try {
+            await decide(rejecting, "reject", reason);
+            toast.success(t("decided.reject"));
+            settle();
+          } catch (error) {
+            toast.error(problemMessage(error, t("decideFailed")));
+            throw error;
+          }
+        }}
+      />
+    </div>
   );
 }
 

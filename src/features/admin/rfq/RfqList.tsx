@@ -1,20 +1,27 @@
 "use client";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { RFQ_STATUS, RFQ_QUOTE_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import type { DataTableColumn } from "@/ui/components/DataTable";
+import { queryKeys } from "@/lib/api/query-keys";
+import { Button } from "@/ui/components/Button";
 import { SlaTimer } from "@/ui/components/SlaTimer";
+import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import {
+  adminBrowserApis,
+  problemMessage,
   QueueTabs,
   ResourceList,
   StatusChip,
   useActor,
+  useCan,
   useProductTypes,
   useSlaFormat,
   type InitialPage,
@@ -41,6 +48,7 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
   const sla = useSlaFormat();
   const actor = useActor();
   const productTypes = useProductTypes();
+  const canManage = useCan("rfqs.manage");
 
   const columns: DataTableColumn<Rfq>[] = [
     {
@@ -140,7 +148,6 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
     {
       id: "assignee",
       header: t("columns.assignee"),
-      hideable: true,
       cell: (row) =>
         row.assignedTo ? (
           <span
@@ -149,6 +156,8 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
           >
             {row.assignedTo.id === actor.id ? t("you") : row.assignedTo.displayName}
           </span>
+        ) : canManage ? (
+          <ClaimButton rfqId={row.id} actorId={actor.id} />
         ) : (
           <span className="text-warning-subtle-fg text-xs font-medium">{t("unassigned")}</span>
         ),
@@ -167,13 +176,15 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
     <div className="flex flex-col gap-4">
       <QueueTabs
         label={t("queuesLabel")}
+        // Four queues people work from (UX audit, /rfq); "quoted" and "overdue" are the status filter
+        // and the red rows, sorted by SLA, rather than tabs of their own.
         tabs={[
-          { value: null, label: t("queues.all") },
-          ...RFQ_QUEUES.map((queue) => ({
+          ...(["new", "mine", "need_info", "awaiting_factory"] as const).map((queue) => ({
             value: queue,
             label: t(`queues.${queue}`),
             ...(COUNTED[queue] ? { countKey: COUNTED[queue] } : {}),
           })),
+          { value: null, label: t("queues.all") },
         ]}
       />
       <ResourceList
@@ -210,8 +221,41 @@ export function RfqList({ initial }: { initial: InitialPage<Rfq> | null }) {
           { id: "submittedTo", label: t("submittedTo"), kind: "date" },
         ]}
         rowTone={(row) => (row.overdue ? "danger" : undefined)}
+        rowHref={(row) => `/rfq/${row.id}`}
         empty={{ title: t("emptyTitle"), description: t("emptyBody") }}
       />
     </div>
+  );
+}
+
+/** "รับงาน" on an unassigned row: assigns it to me in one click (UX audit, /rfq). */
+function ClaimButton({ rfqId, actorId }: { rfqId: string; actorId: string }) {
+  const t = useTranslations("rfq.list");
+  const queryClient = useQueryClient();
+  const claim = useMutation({
+    mutationFn: async () =>
+      (
+        await adminBrowserApis().contract.POST("/v1/admin/rfqs/{rfqId}/actions/assign", {
+          params: { path: { rfqId } },
+          body: { userId: actorId },
+        })
+      ).data,
+    onSuccess: () => {
+      toast.success(t("claimed"));
+      void queryClient.invalidateQueries({ queryKey: queryKeys.resource("admin", "rfq") });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.list("admin", "dashboard") });
+    },
+    onError: (error) => toast.error(problemMessage(error, t("claimFailed"))),
+  });
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      iconStart="user-plus"
+      loading={claim.isPending}
+      onClick={() => claim.mutate()}
+    >
+      {t("claim")}
+    </Button>
   );
 }
