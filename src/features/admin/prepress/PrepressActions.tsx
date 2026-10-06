@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import type { AdminPrepressAction, AdminSubmissionAction } from "@/domain/next-actions/admin";
@@ -10,6 +10,7 @@ import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
+import { checklistRows, requestNewFileMessage } from "@/features/shared/artwork/PreflightChecklist";
 
 import { adminBrowserApis, AssignDialog, ConfirmAction, NextActionBar, problemMessage } from "../console";
 import type { Order } from "../orders/resources";
@@ -317,6 +318,8 @@ export function SubmissionDialogs({
   onClose: () => void;
 }) {
   const t = useTranslations("prepress.actions");
+  const tChecks = useTranslations("prepress.detail.artwork.checks");
+  const locale = useLocale();
   const settle = usePrepressSettle(order.id);
   const warnings = submission.preflightReport?.warnCount ?? 0;
   const common = { open: true, onOpenChange: (next: boolean) => (next ? undefined : onClose()) };
@@ -366,7 +369,21 @@ export function SubmissionDialogs({
         description={t("reject.body", { code: order.orderCode })}
         confirmLabel={t("reject.confirm")}
         tone="destructive"
-        reason={{ label: t("reject.reason"), required: true, minLength: 3, hint: t("reject.reasonHint") }}
+        reason={{
+          label: t("reject.reason"),
+          required: true,
+          minLength: 3,
+          hint: t("reject.reasonHint"),
+          // Drafted from the checks that did not pass, for prepress to edit (UX audit: "ขอไฟล์ใหม่"
+          // composes the customer's message from what failed).
+          initial: requestNewFileMessage(
+            checklistRows(
+              (submission.preflightReport?.files ?? []).flatMap((file) => file.checks),
+              locale,
+            ),
+            (check) => tChecks(check),
+          ),
+        }}
         onConfirm={async ({ reason }) => {
           try {
             await adminBrowserApis().contract.POST("/v1/admin/artwork-submissions/{submissionId}/actions/reject", {
