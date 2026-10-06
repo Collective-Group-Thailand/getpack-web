@@ -29,7 +29,7 @@ test("the home page: sections in order, the quick start lands in a priced config
   await gotoHydrated(page, HOSTS.customer);
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
-  for (const heading of ["ขั้นตอนการสั่งผลิต", "ทำไมต้อง Packio", "ผลงานและเสียงจากลูกค้า", "รับข่าวสารจาก Packio"])
+  for (const heading of ["สั่งผลิตง่าย ๆ ใน 4 ขั้นตอน", "ทำไมต้อง Packio", "ผลงานและเสียงจากลูกค้า", "รับข่าวสารจาก Packio"])
     await expect(main.getByRole("heading", { level: 2, name: heading })).toBeVisible();
   await expect(page.getByRole("contentinfo")).toContainText(/เลขประจำตัวผู้เสียภาษี/);
   await expectNoViolations(page);

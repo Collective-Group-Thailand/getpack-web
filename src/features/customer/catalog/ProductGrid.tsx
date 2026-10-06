@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { Badge } from "@/ui/components/Badge";
 import { ProductCard } from "@/ui/components/ProductCard";
 
 import type { PriceHint, ProductCard as ProductCardDto, ProductType, StockProduct } from "./api.server";
@@ -23,6 +24,8 @@ export interface ProductGridProps {
   eager?: number;
   /** The catalogue's view toggle: cards in a grid, or fewer and wider in a list. */
   layout?: "grid" | "list";
+  /** Stock cards on a square plate — for a row of stock alone (the home page), not a mixed grid. */
+  stockAspect?: "landscape" | "square";
 }
 
 /**
@@ -36,6 +39,7 @@ export async function ProductGrid({
   headingLevel = "h3",
   eager = 2,
   layout = "grid",
+  stockAspect = "landscape",
 }: ProductGridProps) {
   const [locale, t, format] = await Promise.all([getLocale(), getTranslations("catalog"), getFormat()]);
 
@@ -77,6 +81,13 @@ export async function ProductGrid({
           title={<Link href={stockProductHref(product.sku)}>{name}</Link>}
           eyebrow={t("card.stock")}
           image={src ? { src, alt: name } : null}
+          aspect={stockAspect}
+          fallback={{ icon: "package", tone: index % 2 ? "kraft" : "paper" }}
+          badges={
+            <Badge tone={product.inStock ? "primary" : "neutral"}>
+              {t(product.inStock ? "stock.inStock" : "stock.outOfStock")}
+            </Badge>
+          }
           price={text.price ?? t("price.seePrice")}
           meta={t("stock.minOrder", {
             quantity: format.number(product.minOrderQty),
