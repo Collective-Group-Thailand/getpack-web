@@ -234,6 +234,11 @@ export interface EditorChrome {
   /** Open the setup dialog by itself when there is no box yet (the studio's ① offers its own ways). */
   autoSetup?: boolean;
   /**
+   * What fills the canvas before there is a box (the studio's start screen, UX audit) — in place of
+   * the lone "choose a box" button. It is given the same context as the panels.
+   */
+  empty?: (ctx: EditorChromeContext) => React.ReactNode;
+  /**
    * The studio's stage (U4.3): 3D and flat side by side (split, the default on wide screens),
    * either alone (3D first on phones), and the outside / inside of the board.
    */
@@ -960,11 +965,15 @@ export default function Editor({
                   ) : null}
 
                   {!spec && !setupOpen && editable ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Button size="lg" onClick={openSetup}>
-                        {t("chooseBoxFirst")}
-                      </Button>
-                    </div>
+                    chrome?.empty ? (
+                      <div className="bg-bg absolute inset-0 overflow-auto">{chrome.empty(chromeContext)}</div>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Button size="lg" onClick={openSetup}>
+                          {t("chooseBoxFirst")}
+                        </Button>
+                      </div>
+                    )
                   ) : null}
                 </div>
                 {chrome?.views && view !== "flat" && spec ? (
