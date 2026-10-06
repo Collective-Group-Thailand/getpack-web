@@ -67,10 +67,13 @@ test.describe("U5.1 — the signed-in home and deep links", () => {
     await expect(page).toHaveURL(new RegExp(`^${HOSTS.admin}/`));
   });
 
-  test("a page that does not exist offers home, search and help", async ({ page }) => {
+  test("a page that does not exist offers home, search and help, inside the shell", async ({ page }) => {
     await page.goto(`${HOSTS.customer}/no-such-page-u5`);
+    await expect(page.getByRole("heading", { level: 1, name: "ไม่พบหน้านี้" })).toHaveCount(1);
+    // The header stays (UX audit: a 404 without the shell is a dead end).
+    await expect(page.getByRole("banner")).toBeVisible();
     for (const name of ["กลับหน้าแรก", "ค้นหา", "ศูนย์ช่วยเหลือ"])
-      await expect(page.getByRole("link", { name })).toBeVisible();
+      await expect(page.getByRole("main").getByRole("link", { name })).toBeVisible();
   });
 });
 
