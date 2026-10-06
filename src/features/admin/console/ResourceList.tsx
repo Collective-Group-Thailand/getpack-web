@@ -125,7 +125,7 @@ export function ResourceList<TRow extends object>({
             {t("clearFilters")}
           </Button>
         ) : null}
-        <div className="ms-auto flex items-end gap-2">
+        <div className="ms-auto flex flex-wrap items-end gap-2 max-md:ms-0">
           {savedViews ? (
             <SavedViews resource={resourceName} currentQuery={currentViewQuery} columns={null} onApply={applyQuery} />
           ) : null}

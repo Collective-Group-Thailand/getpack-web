@@ -221,6 +221,7 @@ export function DataTable<TRow extends RowData>({
       return (
         <tr
           key={row.id}
+          role="row"
           aria-selected={selectable ? isSelected : undefined}
           onClick={
             onRowClick
@@ -232,6 +233,8 @@ export function DataTable<TRow extends RowData>({
           }
           className={cn(
             "border-border hover:bg-surface-subtle border-b last:border-0",
+            // Below md a row is a card: the cells stack, each with its column's name (AdminMobile).
+            "max-md:flex max-md:flex-col max-md:gap-1.5 max-md:px-4 max-md:py-3",
             onRowClick && "cursor-pointer",
             isSelected && "bg-primary-subtle/40",
             tone === "danger" && "shadow-[inset_3px_0_0_var(--color-danger)]",
@@ -240,7 +243,7 @@ export function DataTable<TRow extends RowData>({
           )}
         >
           {selectable ? (
-            <td className={cn(cellPadding, "w-10")}>
+            <td role="cell" className={cn(cellPadding, "w-10 max-md:w-auto max-md:p-0")}>
               <input
                 type="checkbox"
                 className="accent-primary size-4 align-middle"
@@ -250,16 +253,26 @@ export function DataTable<TRow extends RowData>({
               />
             </td>
           ) : null}
-          {row.getVisibleCells().map((cell) => {
+          {row.getVisibleCells().map((cell, index) => {
             const column = columnById.get(cell.column.id);
+            const label = typeof column?.header === "string" ? column.header : undefined;
             return (
               <td
                 key={cell.id}
+                role="cell"
+                data-label={index > 0 ? label : undefined}
                 className={cn(
                   cellPadding,
                   "align-middle",
                   column?.numeric && "text-end tabular-nums",
                   column?.className,
+                  "max-md:w-auto max-md:p-0",
+                  index === 0
+                    ? "max-md:text-base max-md:font-semibold"
+                    : "max-md:flex max-md:items-baseline max-md:justify-between max-md:gap-3 max-md:text-end",
+                  index > 0 &&
+                    label &&
+                    "max-md:before:text-muted max-md:before:shrink-0 max-md:before:text-xs max-md:before:content-[attr(data-label)]",
                 )}
               >
                 <table.FlexRender cell={cell} />
@@ -285,13 +298,21 @@ export function DataTable<TRow extends RowData>({
       className={cn("border-border bg-surface relative max-h-[72dvh] overflow-auto rounded-lg border", className)}
       aria-busy={loading || undefined}
     >
-      <table className={cn("w-full border-collapse text-sm", loading && hasRows && "opacity-60")}>
+      {/*
+        Roles spelled out: below md the table is laid out as cards (`display` changes), which
+        drops the implicit table semantics in some browsers; the roles keep it a table to
+        assistive tech at every width.
+      */}
+      <table
+        role="table"
+        className={cn("w-full border-collapse text-sm max-md:block", loading && hasRows && "opacity-60")}
+      >
         <caption className={cn(showCaption ? "text-muted px-3 py-2 text-start text-sm" : "sr-only")}>{caption}</caption>
-        <thead className="bg-surface-subtle sticky top-0">
+        <thead role="rowgroup" className="bg-surface-subtle sticky top-0 max-md:sr-only">
           {table.getHeaderGroups().map((group) => (
-            <tr key={group.id} className="border-border border-b">
+            <tr key={group.id} role="row" className="border-border border-b">
               {selectable ? (
-                <th scope="col" className={cn(cellPadding, "w-10")}>
+                <th scope="col" role="columnheader" className={cn(cellPadding, "w-10")}>
                   <input
                     type="checkbox"
                     className="accent-primary size-4 align-middle"
@@ -312,6 +333,7 @@ export function DataTable<TRow extends RowData>({
                   <th
                     key={header.id}
                     scope="col"
+                    role="columnheader"
                     aria-sort={sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : undefined}
                     className={cn(
                       cellPadding,
@@ -346,7 +368,9 @@ export function DataTable<TRow extends RowData>({
             </tr>
           ))}
         </thead>
-        <tbody>{body}</tbody>
+        <tbody role="rowgroup" className="max-md:block">
+          {body}
+        </tbody>
       </table>
     </div>
   );

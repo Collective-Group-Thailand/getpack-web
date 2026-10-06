@@ -74,5 +74,33 @@
         "body": "Send a structure the factory makes for Packio to consider for its library"
       }
     }
+  },
+  "sidebar": {
+    "groups": {
+      "daily": "Daily work",
+      "plan": "Planning and capacity",
+      "finance": "Finance",
+      "factory": "Factory"
+    },
+    "items": {
+      "today": "Today",
+      "onboarding": "Getting started",
+      "jobs": "Jobs",
+      "qc": "Quality checks",
+      "samples": "Samples",
+      "ship": "Shipping",
+      "claims": "Claims",
+      "capacity": "Weekly capacity",
+      "hours": "Hours and holidays",
+      "billing": "Billing",
+      "payouts": "Payouts",
+      "prices": "Factory prices",
+      "shippingRates": "Shipping rates",
+      "performance": "Performance",
+      "styleIntakes": "Offer a dieline",
+      "requests": "Requests to Packio",
+      "knowledge": "Factory guide",
+      "settings": "Settings and users"
+    }
   }
 }

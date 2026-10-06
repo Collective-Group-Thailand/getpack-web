@@ -53,6 +53,17 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX round 2 — Phase 1: role-aware IA — 2026-10-06
+
+Branch `feat/ux-r2-p1`. Boards: PartnerDashboard (sidebar), PartnerQc, AdminMobile (V2 file = the canvas boards).
+
+- **Partner sidebar** (`partnerSidebar`): the "เพิ่มเติม" page's items moved into four groups — งานประจำวัน · แผนและกำลังผลิต · การเงิน · โรงงาน — filtered by the user's roles at this factory per the audit's IA table, and by permission; the factory and its status at the top, the user and roles at the foot. The phone keeps a bottom bar of the role's first four daily destinations + "เพิ่มเติม", which now shows the rest of the role's groups. A factory being onboarded keeps its wizard, prices and guides.
+- **QC home** `/qc` (`qcQueue`): Packio's booked inspections soonest first, jobs at a QC-form step that offer `job.record_qc`, samples to record; "รอตรวจ N". The QC form gains สุ่มตรวจ / ของดี / ของเสีย (`quantityChecked`, `quantityDefective`, counts — never money) and asks for two photos. A QC-only user sees the floor's steps but not their start/finish buttons ("ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก"), except the QC step.
+- **Shipping home**: a shipping-only user opens `/ship`, which leads with รอออกรถวันนี้ · กำลังส่ง · POD ค้าง.
+- **Admin on a phone**: a menu button opens the sidebar in a drawer (it closes on navigation); every `DataTable` lays out as cards below 768 px with each value named by its column (ARIA table roles kept); list toolbars wrap. No horizontal scroll at 390 on nine admin queues and seven partner pages (capacity's holiday badges now wrap).
+- **Customer account** (done in Phase 0): grouped nav, accordion on a phone.
+- **Not done:** count badges on sidebar items (no count endpoint per destination; the admin's come from its dashboard queues); a planner home ("สัปดาห์นี้") — the planner's sidebar leads to capacity instead.
+
 ## UX round 2 — Phase 0: blocking bugs B1–B14 and round-1 leftovers — 2026-10-06
 
 Branch `feat/ux-r2-p0` (both repos). Spec: the audit doc's "รอบ 2" table; boards from the Claude Design canvas (Checkout, CompanyApprovals, PartnerQc, StudioEditor). packio-api release **`v0.42.0`** adopted (contract 0.41.0 → 0.42.0, additive).

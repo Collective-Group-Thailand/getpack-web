@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
 
 import type { MenuEntry, StaffMe } from "@/lib/api/types";
 import { AppShell } from "@/ui/components/AppShell";
 import { CommandPalette, useCommandPaletteShortcut, useModKey } from "@/ui/components/CommandPalette";
 import { KEYCAP } from "@/ui/components/Kbd";
+import { Sheet } from "@/ui/components/Sheet";
 import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/ShortcutsOverlay";
 
 import { ActorProvider } from "../console/actor";
@@ -39,6 +41,14 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
 
   const [nav, setNav] = useState<NavState>(initialNav);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
+  // A link chosen in the drawer moves the page; the drawer goes with it.
+  const [drawerPath, setDrawerPath] = useState(pathname);
+  if (drawerPath !== pathname) {
+    setDrawerPath(pathname);
+    if (drawerOpen) setDrawerOpen(false);
+  }
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const modKey = useModKey();
@@ -77,6 +87,7 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
             actor={actor}
             collapsed={collapsed}
             onToggleSidebar={toggleNav}
+            onOpenDrawer={() => setDrawerOpen(true)}
             onOpenPalette={openPalette}
             onOpenShortcuts={openShortcuts}
             modKey={modKey}
@@ -87,6 +98,16 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
       >
         <ActorProvider actor={actor}>{children}</ActorProvider>
       </AppShell>
+
+      <Sheet
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        side="start"
+        title={t("nav")}
+        closeLabel={tCommon("actions.close")}
+      >
+        <AdminSidebar items={screens} collapsed={false} actor={actor} />
+      </Sheet>
 
       <CommandPalette
         open={paletteOpen}

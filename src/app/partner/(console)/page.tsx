@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { FACTORY_STATUS } from "@/domain/status";
@@ -33,6 +34,10 @@ export default async function PartnerHomePage() {
   const { contract } = await partnerServerApis();
   const producing =
     factory && ["trial", "active", "suspended"].includes(factory.status) && canAt(context, "factory_jobs.read");
+  // A role with one job opens on it (round 2, Phase 1): QC on its queue, shipping on today's trips.
+  const only = (role: string) => context.roles.length > 0 && context.roles.every((r) => r === role);
+  if (producing && only("factory_qc")) redirect("/qc");
+  if (producing && only("factory_shipping")) redirect("/ship");
   const [steps, prices, floor] = await Promise.all([
     onboarding
       ? attempt(
