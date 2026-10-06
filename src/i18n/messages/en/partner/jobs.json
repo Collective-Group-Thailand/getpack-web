@@ -85,7 +85,7 @@
   "qc": {
     "qcOnly": "QC records the result.",
     "answerAll": "Answer every item",
-    "photoRequired": "Add at least one photo",
+    "photoRequired": "Take at least {count} photos: the whole piece and a close-up of the print",
     "uploadFailed": "Could not upload the photos — try again",
     "recorded": "QC recorded",
     "answerFor": "Result for {item}",
@@ -99,7 +99,7 @@
     },
     "defectCount": "Count",
     "photos": "Photos of the checked work",
-    "photosHint": "At least one",
+    "photosHint": "At least {count}: the whole piece + a close-up of the print",
     "notes": "Notes",
     "submit": "Record QC",
     "items": {
@@ -115,7 +115,12 @@
       "minor": "Minor"
     },
     "severityFor": "Severity for {item}",
-    "photoStandard": "See the QC photo standard"
+    "photoStandard": "See the QC photo standard",
+    "checked": "Sampled",
+    "good": "Good",
+    "defective": "Defective",
+    "pcs": "pcs",
+    "countsInvalid": "Defective cannot exceed the number sampled"
   },
   "issue": {
     "tooShort": "Describe the issue in at least 3 characters",
@@ -220,7 +225,8 @@
     "qcRecorded": "QC recorded",
     "defect": "{item} ({severity}) {count}",
     "inspectionSample": "Sample of {count} pieces",
-    "issueResolved": "Resolved: {note} · {name}"
+    "issueResolved": "Resolved: {note} · {name}",
+    "operatorStep": "Production records this step — QC records at the quality step"
   },
   "capacity": {
     "title": "Weekly capacity",
@@ -347,5 +353,23 @@
         "value": "Designed by Packio"
       }
     }
+  },
+  "qcQueue": {
+    "title": "QC queue",
+    "body": "{date} · by Packio's inspection time and the jobs that reached QC",
+    "waiting": "{count} waiting",
+    "empty": "Nothing waiting for QC now",
+    "inspections": "Packio inspections",
+    "inspectionAt": "Packio inspects {at} · sample of {size}",
+    "inspectionUnscheduled": "Packio will book a time",
+    "atQc": "Reached the QC step — ready to check",
+    "atStep": "At {step}",
+    "due": "due {date}",
+    "samples": "Samples to record",
+    "sample": "Sample",
+    "recordSample": "Record sample",
+    "pieces": "{count} pcs",
+    "openJob": "Open checklist",
+    "startCheck": "Start check"
   }
 }

@@ -82,7 +82,7 @@ test.describe("an applicant's onboarding wizard (F005)", () => {
     await expect(page.getByText("ส่งตรวจแล้ว").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "ส่งใบสมัคร" })).toHaveCount(0);
     await gotoHydrated(page, `${HOSTS.partner}/onboarding`);
-    await expect(page.getByText("กำลังพิจารณา").first()).toBeVisible();
+    await expect(page.getByRole("main").getByText("กำลังพิจารณา").first()).toBeVisible();
 
     // The Partner team sees it in its pipeline.
     await signInAsStaff(page, "partner_manager");
@@ -169,7 +169,7 @@ test.describe("the partner zone's permissions", () => {
   test("an operator sees no prices and cannot open them", async ({ page }) => {
     await signInAsPartner(page, "operator");
     await gotoHydrated(page, `${HOSTS.partner}/more`);
-    await expect(page.getByRole("link", { name: /คำขอถึงทีมพาร์ตเนอร์/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /คำขอถึง Packio/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /ราคาของโรงงาน/ })).toHaveCount(0);
     await gotoHydrated(page, `${HOSTS.partner}/prices`);
     await expect(page.getByText("คุณไม่มีสิทธิ์เปิดหน้านี้")).toBeVisible();

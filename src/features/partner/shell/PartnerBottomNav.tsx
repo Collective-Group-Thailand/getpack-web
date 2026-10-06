@@ -7,7 +7,8 @@ import { useTranslations } from "next-intl";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { isCurrent, type PartnerNavItem } from "./nav";
+import { isCurrent } from "./nav";
+import type { SidebarItem } from "./sidebar";
 
 /**
  * Shop-floor navigation (design-system.md §5 Partner).
@@ -24,16 +25,19 @@ export function PartnerBottomNav({
   items,
   variant = "bottom",
 }: {
-  items: PartnerNavItem[];
+  /** The role's daily destinations; "เพิ่มเติม" is added last. */
+  items: SidebarItem[];
   variant?: "bottom" | "side";
 }) {
   const t = useTranslations("partner.nav");
+  const tItems = useTranslations("partner.sidebar.items");
+  const all = [...items, { key: "more" as const, href: "/more", icon: "menu" as const }];
   const pathname = usePathname();
   const bottom = variant === "bottom";
 
   const list = (
     <ul className={bottom ? "flex" : "flex flex-col gap-1 px-2"}>
-      {items.map((item) => {
+      {all.map((item) => {
         const current = isCurrent(item.href, pathname);
         return (
           <li key={item.key} className={bottom ? "flex-1" : undefined}>
@@ -49,7 +53,7 @@ export function PartnerBottomNav({
               )}
             >
               <Icon name={item.icon} size={24} />
-              {t(item.key)}
+              {item.key === "more" ? t("more") : tItems(item.key)}
             </Link>
           </li>
         );

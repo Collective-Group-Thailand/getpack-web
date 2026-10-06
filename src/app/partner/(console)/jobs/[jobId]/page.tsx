@@ -92,6 +92,11 @@ export default async function JobPage({ params }: Props) {
     download(job.dielineFileId),
   ]);
   const offered = new Set(job.nextActions.filter((action) => !action.disabledReason).map((action) => action.key));
+  // A QC inspector records quality, not production (round 2, Phase 1): the steps of the floor are
+  // shown to them, but their start / finish buttons are the operators' — except the QC step itself.
+  const qcOnly = context.roles.length > 0 && context.roles.every((role) => role === "factory_qc");
+  const mayRun = (milestone: { evidence: (typeof job.milestones)[number]["evidence"] }) =>
+    offered.has("job.update_milestone") && (!qcOnly || needsQcForm(milestone));
   const checks = qc.data ?? [];
   const current = job.milestones.find((milestone) => milestone.key === job.currentMilestoneKey);
   const stateOf = (status: string, isCurrent: boolean): StageState =>
@@ -182,16 +187,16 @@ export default async function JobPage({ params }: Props) {
                   ) : null,
                 children: isCurrent ? (
                   milestone.status === "pending" ? (
-                    offered.has("job.update_milestone") ? (
+                    mayRun(milestone) ? (
                       <StartMilestone job={job} milestone={milestone} name={name} />
                     ) : (
-                      <p className="text-muted">{t("noMilestonePermission")}</p>
+                      <p className="text-muted">{qcOnly ? t("operatorStep") : t("noMilestonePermission")}</p>
                     )
                   ) : (
                     <>
                       {qcFirst ? (
                         offered.has("job.record_qc") ? (
-                          <>
+                          <div id="qc" className="flex scroll-mt-24 flex-col gap-4">
                             <QcForm job={job} />
                             {/* The guide that applies here (U2.F7): the knowledge base's QC photo standard. */}
                             <Link
@@ -200,17 +205,17 @@ export default async function JobPage({ params }: Props) {
                             >
                               {tQc("photoStandard")}
                             </Link>
-                          </>
+                          </div>
                         ) : (
                           <p className="text-muted">{tQc("qcOnly")}</p>
                         )
                       ) : null}
                       {qcFirst ? (
                         <p className="text-muted">{t("qcFirst")}</p>
-                      ) : offered.has("job.update_milestone") ? (
+                      ) : mayRun(milestone) ? (
                         <CompleteMilestone job={job} milestone={milestone} name={name} />
                       ) : (
-                        <p className="text-muted">{t("noMilestonePermission")}</p>
+                        <p className="text-muted">{qcOnly ? t("operatorStep") : t("noMilestonePermission")}</p>
                       )}
                     </>
                   )
