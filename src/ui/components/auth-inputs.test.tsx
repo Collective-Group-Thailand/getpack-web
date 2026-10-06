@@ -5,14 +5,22 @@ import { describe, expect, it, vi } from "vitest";
 
 import { expectNoA11yViolations } from "../test";
 import { Field } from "./Field";
-import { normaliseThaiMobile, PhoneInput } from "./PhoneInput";
+import { normaliseThaiMobile, PhoneInput, isThaiMobile } from "./PhoneInput";
 import { OTPInput } from "./OTPInput";
 
-function ControlledOtp({ length = 6, onComplete }: { length?: number; onComplete?: (value: string) => void }) {
+function ControlledOtp({
+  length = 6,
+  onComplete,
+  appearance,
+}: {
+  length?: number;
+  onComplete?: (value: string) => void;
+  appearance?: "field" | "boxes";
+}) {
   const [value, setValue] = useState("");
   return (
     <Field label="รหัส OTP">
-      <OTPInput value={value} onChange={setValue} length={length} onComplete={onComplete} />
+      <OTPInput value={value} onChange={setValue} length={length} onComplete={onComplete} appearance={appearance} />
     </Field>
   );
 }
@@ -28,6 +36,22 @@ describe("OTPInput", () => {
     expect(input).toHaveValue("123456");
     // One input, not six: split boxes are where paste and autofill break.
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
+  });
+
+  it("draws one box per digit over the same single input, which still takes a paste", async () => {
+    const onComplete = vi.fn();
+    const { container } = render(<ControlledOtp appearance="boxes" onComplete={onComplete} />);
+    const input = screen.getByLabelText("รหัส OTP");
+
+    await userEvent.click(input);
+    await userEvent.paste("รหัสของคุณ 482913");
+
+    expect(input).toHaveValue("482913");
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    const boxes = container.querySelectorAll("span[aria-hidden='true']");
+    expect([...boxes].map((box) => box.textContent).join("")).toBe("482913");
+    expect(onComplete).toHaveBeenCalledWith("482913");
+    await expectNoA11yViolations(container);
   });
 
   it("offers itself to the SMS autofill and the number pad", () => {
@@ -94,14 +118,32 @@ function ControlledPhone() {
   );
 }
 
+describe("isThaiMobile", () => {
+  it("takes ten digits from 0, or nine typed after +66 without the 0", () => {
+    expect(isThaiMobile("0812345678")).toBe(true);
+    expect(isThaiMobile("812345678")).toBe(true);
+    expect(isThaiMobile("081234567")).toBe(false);
+    expect(isThaiMobile("0212345678")).toBe(false);
+  });
+});
+
 describe("PhoneInput", () => {
-  it("keeps what the user typed in the national form they read off their phone", async () => {
+  it("shows the number grouped as it is read off a phone, whatever was typed", async () => {
     render(<ControlledPhone />);
     const input = screen.getByLabelText("เบอร์มือถือ");
 
-    await userEvent.type(input, "081 234 5678");
+    await userEvent.type(input, "0812345678");
 
-    expect(input).toHaveValue("0812345678");
+    expect(input).toHaveValue("081 234 5678");
+  });
+
+  it("groups a mobile typed without its leading zero", async () => {
+    render(<ControlledPhone />);
+    const input = screen.getByLabelText("เบอร์มือถือ");
+
+    await userEvent.type(input, "812345678");
+
+    expect(input).toHaveValue("81 234 5678");
   });
 
   it("is wired to its label and hint through Field, not by hand", () => {
