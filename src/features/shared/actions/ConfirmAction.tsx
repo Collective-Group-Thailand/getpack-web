@@ -23,7 +23,14 @@ export interface ConfirmActionProps {
   confirmationPhrase?: string;
   /** Ask for a reason; the API records it with the audit entry. */
   /** `minLength` as the contract states it — `ReasonDto.reason` is 3. */
-  reason?: { label: string; required?: boolean; hint?: string; minLength?: number };
+  reason?: {
+    label: string;
+    required?: boolean;
+    hint?: string;
+    minLength?: number;
+    /** Text to start from — a message composed from the record, for the person to edit. */
+    initial?: string;
+  };
   /**
    * Called with an `Idempotency-Key` minted once when the dialog opened — so a retry after a
    * timeout replays the same request instead of repeating the act (api-conventions §3).
@@ -56,7 +63,7 @@ function ConfirmActionBody({
   const t = useTranslations("common.confirm");
   const tCommon = useTranslations("common");
   const [idempotencyKey] = useState(newIdempotencyKey);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(reason?.initial ?? "");
   const [busy, setBusy] = useState(false);
   const [missingReason, setMissingReason] = useState(false);
 
