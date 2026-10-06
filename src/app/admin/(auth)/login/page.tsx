@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 import { StaffLoginForm } from "@/features/admin/auth/StaffLoginForm";
-import { safeReturnTo } from "@/features/shared/auth/return-to";
+import { signInReturnTo } from "@/features/shared/auth/return-to";
 import { getActor } from "@/lib/auth/actor";
 import { Card } from "@/ui";
 import { BRAND_NAME } from "@/ui/brand";
@@ -17,7 +17,7 @@ export default async function StaffLoginPage({ searchParams }: { searchParams: P
   const [t, params, actor] = await Promise.all([getTranslations("auth"), searchParams, getActor("admin")]);
 
   // Already signed in: send them on, rather than offering a form that would sign them in again.
-  const returnTo = safeReturnTo(params.returnTo);
+  const returnTo = signInReturnTo(params.returnTo);
   if (actor) redirect(returnTo);
 
   return (

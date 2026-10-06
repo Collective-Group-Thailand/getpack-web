@@ -62,7 +62,9 @@ export function QueueTabs({
         const active = current === tab.value || (!current && tab.value === null);
         return (
           <Link
-            key={tab.value ?? "all"}
+            // Not "all": a list whose default tab is a queue may also have a tab valued "all" (orders),
+            // and two "all" keys was the duplicate-key error the UX audit saw on /orders (bug #5).
+            key={tab.value === null ? "\u0000default" : tab.value}
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(

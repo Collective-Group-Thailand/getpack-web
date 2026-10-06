@@ -23,15 +23,30 @@ export function QueryError({ error, onRetry }: { error: unknown; onRetry?: () =>
   const copy = useProblemCopy()(error);
 
   if (api?.status === 403)
-    return <ErrorState title={t("forbiddenTitle")} description={t("forbiddenBody")} code={api.requestId} />;
+    return (
+      <ErrorState
+        title={t("forbiddenTitle")}
+        description={t("forbiddenBody")}
+        code={api.requestId}
+        codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
+      />
+    );
   if (api?.status === 404)
-    return <ErrorState title={t("itemNotFoundTitle")} description={t("itemNotFoundBody")} code={api.requestId} />;
+    return (
+      <ErrorState
+        title={t("itemNotFoundTitle")}
+        description={t("itemNotFoundBody")}
+        code={api.requestId}
+        codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
+      />
+    );
 
   return (
     <ErrorState
       title={copy?.title ?? t("loadFailedTitle")}
       description={(copy ? copy.detail : api?.detail) ?? t("loadFailedBody")}
       code={api?.requestId || undefined}
+      codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
       action={
         onRetry ? (
           <Button variant="secondary" iconStart="refresh" onClick={onRetry}>

@@ -30,6 +30,11 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
         title={t("errors.genericTitle")}
         description={t("errors.genericBody")}
         code={error.digest}
+        codeLabels={{
+          label: t("errors.reference"),
+          copy: t("errors.copyReference"),
+          copied: t("errors.referenceCopied"),
+        }}
         action={
           <Button variant="secondary" onClick={reset}>
             {t("actions.retry")}
