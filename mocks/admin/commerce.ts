@@ -16,6 +16,7 @@ import { productTypeRef } from "./catalog";
 import type { CustomerRow } from "./customer-model";
 import type { orderDetail, orderNote, timelineEntry } from "./order-model";
 import { indexForSearch, registerQueue } from "./console";
+import { UAT_ORDER_ROLES, uatParticipants, type UatParticipant } from "../uat";
 
 type Order = z.output<typeof orderDetail>;
 type Customer = CustomerRow;
@@ -130,6 +131,63 @@ export const customers: Customer[] = FAKE_CUSTOMERS.map(([name, type, company], 
   };
 });
 
+/*
+ * The scorecard round's participants (`../uat.ts`), after the fake customers so none of those moves;
+ * only with `MOCK_DATASET=uat`. Each has the delivery address and, for a company, the tax profile
+ * the T4 / T10 task cards expect ("ส่งมาที่บริษัท", a full tax invoice).
+ */
+uatParticipants().forEach((participant, n) => {
+  const index = FAKE_CUSTOMERS.length + n;
+  const contact = participant.name.replace(" (ข้อมูลจำลอง)", "");
+  customers.push({
+    id: mockId("cus", index + 1),
+    customerCode: `C${String(250001 + index)}`,
+    displayName: participant.name,
+    phone: participant.phone,
+    email: `${participant.code.toLowerCase()}.uat@example.invalid`,
+    customerType: participant.company ? "juristic" : "individual",
+    companyName: participant.company ? `${participant.company} (ข้อมูลจำลอง)` : null,
+    createdVia: "self",
+    ordersCount: 0,
+    createdAt: bangkokIso(-60 * 24 * 120),
+    referralCode: `PKUAT${participant.code}`,
+    loyalty: { tier: "member", availablePoints: 0, spend12m: "0.00" },
+    lastOrderAt: null,
+    birthDate: null,
+    addresses: [
+      {
+        id: mockId("adr", index + 1),
+        kind: "delivery",
+        label: participant.company ? "บริษัท" : "ที่อยู่หลัก",
+        recipientName: `ผู้รับ ${contact}`,
+        phone: participant.phone,
+        line1: `${88 + n}/${n + 1} ถนนทดสอบระบบ`,
+        line2: null,
+        subdistrict: "แขวงทดสอบ",
+        district: "เขตทดสอบ",
+        province: participant.province,
+        postcode: participant.postcode,
+        isDefault: true,
+      },
+    ],
+    taxProfiles: participant.company
+      ? [
+          {
+            id: mockId("tax", index + 1),
+            taxType: "juristic",
+            name: `${participant.company} (ข้อมูลจำลอง)`,
+            taxId: `0105${String(570000000 + n * 12345).slice(0, 9)}`,
+            branchType: "head_office",
+            branchCode: "00000",
+            address: `${88 + n}/${n + 1} ถนนทดสอบระบบ ${participant.province} ${participant.postcode}`,
+            withholdsTax: false,
+            isDefault: true,
+          },
+        ]
+      : [],
+  });
+});
+
 /* ----------------------------------------------------------------------------------- orders */
 
 const PRODUCT_TYPES = ["folding_carton", "corrugated", "label_sticker", "flexible_pouch", "tag_sleeve"].map(
@@ -150,6 +208,8 @@ type Seed = {
   shipDays?: number;
   /** Delivered this many days ago (negative) while the order still waits for its receipt (F3 3.6). */
   deliveredDays?: number;
+  /** A scorecard participant's own order (`../uat.ts`): their customer, their mailer box, its role. */
+  uat?: { participant: UatParticipant; customerIndex: number; role: (typeof UAT_ORDER_ROLES)[number] };
 };
 
 /** The spread of states the queues are made of. */
@@ -174,13 +234,25 @@ const SEEDS: Seed[] = [
   })),
   ...Array.from({ length: 5 }, (): Seed => ({ status: "completed", artwork: "approved", shipDays: -10 })),
   { status: "cancelled", artwork: "awaiting_upload" },
+  // The scorecard round's orders (`../uat.ts`), last, so every seeded order above keeps its id.
+  ...uatParticipants().flatMap((participant, n) =>
+    UAT_ORDER_ROLES.map((role): Seed => {
+      const uat = { participant, customerIndex: FAKE_CUSTOMERS.length + n, role };
+      if (role === "delivered") return { status: "shipping", artwork: "approved", shipDays: 0, deliveredDays: -1, uat };
+      if (role === "inProduction") return { status: "in_production", artwork: "approved", shipDays: 3, uat };
+      return { status: "in_production", artwork: "approved", shipDays: 10, uat };
+    }),
+  ),
 ];
 
 function buildOrder(seed: Seed, index: number): Order {
-  const customer = customers[index % customers.length]!;
-  const productType = PRODUCT_TYPES[index % PRODUCT_TYPES.length]!;
-  const quantity = [500, 1000, 2000, 3000, 5000, 10000][index % 6]!;
-  const unitSatang = [1850, 1240, 690, 2475, 980, 3120][index % 6]!;
+  const customer = customers[seed.uat?.customerIndex ?? index % FAKE_CUSTOMERS.length]!;
+  const box = seed.uat?.participant.box;
+  // A participant's order is the T1 box — the catalogue's mailer box, so its page and reorder link to it.
+  const productType = box ? productTypeRef("corrugated") : PRODUCT_TYPES[index % PRODUCT_TYPES.length]!;
+  const productName = box ? "กล่องไปรษณีย์" : productType.name;
+  const quantity = box?.quantity ?? [500, 1000, 2000, 3000, 5000, 10000][index % 6]!;
+  const unitSatang = box?.unitSatang ?? [1850, 1240, 690, 2475, 980, 3120][index % 6]!;
   const productNet = unitSatang * quantity;
   const plate = index % 3 === 0 ? 150000 : 0;
   const dieBlock = index % 4 === 0 ? 120000 : 0;
@@ -345,8 +417,18 @@ function buildOrder(seed: Seed, index: number): Order {
       orderCount: 1,
     },
     specs: [
-      { label: "รูปแบบ", value: productType.code === "folding_carton" ? "กล่องฝาเสียบ (RSC)" : productType.name },
-      { label: "ขนาด", value: "120 × 80 × 60 มม." },
+      {
+        label: "รูปแบบ",
+        value: box
+          ? "กล่องไปรษณีย์ (ฝาเสียบล็อก)"
+          : productType.code === "folding_carton"
+            ? "กล่องฝาเสียบ (RSC)"
+            : productType.name,
+      },
+      {
+        label: "ขนาด",
+        value: box ? `${box.lengthMm} × ${box.widthMm} × ${box.heightMm} มม. (ขนาดใน)` : "120 × 80 × 60 มม.",
+      },
       { label: "วัสดุ", value: productType.code === "corrugated" ? "ลูกฟูก E-flute KA125" : "อาร์ตการ์ด 350 แกรม" },
       { label: "พิมพ์", value: "4 สี ด้านหน้า" },
       { label: "เคลือบ", value: index % 2 ? "เคลือบด้าน" : "ไม่เคลือบ" },
@@ -373,7 +455,7 @@ function buildOrder(seed: Seed, index: number): Order {
       {
         lineNo: 1,
         lineType: "product",
-        description: `${productType.name} ${quantity.toLocaleString("th-TH")} ชิ้น`,
+        description: `${productName} ${quantity.toLocaleString("th-TH")} ชิ้น`,
         quantity: `${quantity}.000`,
         unit: "ชิ้น",
         unitPrice: (unitSatang / 100).toFixed(6),
@@ -445,7 +527,11 @@ function buildOrder(seed: Seed, index: number): Order {
     ],
     tolerance: { shortagePct: "5", overagePct: "5" },
     // The tenth customer (the storefront's `designer` persona) ordered with the online designer.
-    designOption: designFee ? "hired_design" : index % customers.length === 9 ? "online_designer" : "own_file",
+    designOption: designFee
+      ? "hired_design"
+      : index % FAKE_CUSTOMERS.length === 9 && !seed.uat
+        ? "online_designer"
+        : "own_file",
     mockupOption: "none",
     leadTimeDays: 12,
     confirmedProductionDate: inProduction ? bangkokIso(-60 * 24 * 3).slice(0, 10) : null,
@@ -528,22 +614,31 @@ function buildOrder(seed: Seed, index: number): Order {
             jobNo: `J-2569-${String(300 + index).padStart(5, "0")}`,
             kind: "production",
             factory: FACTORY,
-            status: seed.status === "in_production" ? "in_progress" : "completed",
-            acceptDueAt: null,
+            // A participant's T11 job waits for the factory to accept it (D-074: within a business day).
+            status:
+              seed.uat?.role === "jobWaiting"
+                ? "released"
+                : seed.status === "in_production"
+                  ? "in_progress"
+                  : "completed",
+            acceptDueAt: seed.uat?.role === "jobWaiting" ? bangkokIso(60 * 20) : null,
             promisedShipDate: promised,
             atRisk: seed.urgency === "late" || seed.urgency === "due_soon",
-            milestones: ["รับงาน", "เตรียมวัตถุดิบ", "พิมพ์", "ไดคัท", "ตรวจคุณภาพ", "แพ็ก"].map((name, seq) => {
-              const done = seed.status !== "in_production" || seq < 3;
-              return {
-                seq: seq + 1,
-                key: `step_${seq + 1}`,
-                name,
-                status: done ? "completed" : seq === 3 ? "in_progress" : "pending",
-                dueAt: bangkokIso(60 * 24 * (seq - 3)),
-                completedAt: done ? bangkokIso(60 * 24 * (seq - 4)) : null,
-                onTime: done ? seq !== 2 || seed.urgency !== "late" : null,
-              };
-            }),
+            milestones:
+              seed.uat?.role === "jobWaiting"
+                ? []
+                : ["รับงาน", "เตรียมวัตถุดิบ", "พิมพ์", "ไดคัท", "ตรวจคุณภาพ", "แพ็ก"].map((name, seq) => {
+                    const done = seed.status !== "in_production" || seq < 3;
+                    return {
+                      seq: seq + 1,
+                      key: `step_${seq + 1}`,
+                      name,
+                      status: done ? "completed" : seq === 3 ? "in_progress" : "pending",
+                      dueAt: bangkokIso(60 * 24 * (seq - 3)),
+                      completedAt: done ? bangkokIso(60 * 24 * (seq - 4)) : null,
+                      onTime: done ? seq !== 2 || seed.urgency !== "late" : null,
+                    };
+                  }),
           },
         ]
       : [],
@@ -842,6 +937,10 @@ export function decideSlip(
 }
 
 /* ---------------------------------------------------------------------------------- handlers */
+
+/** Whether a commerce customer is one of the scorecard round's participants (`../uat.ts`). */
+export const isUatCustomer = (customerId: string) =>
+  customers.findIndex((customer) => customer.id === customerId) >= FAKE_CUSTOMERS.length;
 
 export const find = (orderId: string | undefined) => orders.find((order) => order.id === orderId);
 /** Recomputes the derived columns after the storefront mock changed an order (mocks/store). */

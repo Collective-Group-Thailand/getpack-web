@@ -26,6 +26,9 @@ export const styleHref = (code: string, name: string) => `/styles/${encodeURICom
 
 export const STYLES_HREF = "/styles";
 
+/** The fragment a style page opens its free-dieline form at — where signing in for it returns to (T12). */
+export const DIELINE_FRAGMENT = "dieline";
+
 /** The style code a slug names (`PK-TE-01`), or `null`. */
 export function codeOfSlug(slug: string): string | null {
   const match = CODE.exec(decodeURIComponent(slug));

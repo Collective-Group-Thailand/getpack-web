@@ -221,7 +221,7 @@
       "shippingPending": "Shipping is priced with the address",
       "noShipping": "Shipping not included"
     },
-    "tolerances": "Acceptance: {shortage}% short, {overage}% over, ±{mm} mm",
+    "tolerances": "Acceptance: {shortage} short, {overage} over, ±{mm} mm",
     "target": "Target price",
     "targetLabel": "Price per piece you aim for (THB incl. VAT)",
     "targetHint": "We tell you how far off it is",

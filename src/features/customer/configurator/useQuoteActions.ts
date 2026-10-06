@@ -19,7 +19,7 @@ import { saveQuote, type SavedQuote } from "./pricing";
 import type { Configurator, ConfiguratorState } from "./state";
 
 export type { SavedQuote } from "./pricing";
-export type QuoteAction = "cart" | "save" | "share" | "pdf" | "levers" | "sendToCs";
+export type QuoteAction = "cart" | "save" | "share" | "pdf" | "levers" | "sample" | "sendToCs";
 export type Lever = Schemas["QuoteLeverDto"];
 
 /** The kept quotation and its option for the quantity on screen. */
@@ -77,6 +77,8 @@ export function useQuoteActions({
   const [busy, setBusy] = useState<QuoteAction | null>(null);
   const [lastQuote, setLastQuote] = useState<KeptQuote | null>(null);
   const [leversFor, setLeversFor] = useState<string | null>(null);
+  /** The kept quotation a sample is being asked for (D-253), from the dock (T5). */
+  const [sampleFor, setSampleFor] = useState<string | null>(null);
 
   const calculation = buildCalculateBody(configurator, state);
   const advisory = state.advisory && state.choices.material?.[0] === state.advisory.boardId ? state.advisory : null;
@@ -183,6 +185,8 @@ export function useQuoteActions({
         });
       } else if (action === "levers") {
         setLeversFor(quote.id);
+      } else if (action === "sample") {
+        setSampleFor(quote.id);
       } else {
         const { data: routed } = await api.POST("/v1/store/quotes/{quoteId}/actions/send-to-cs", {
           params: { path: { quoteId: quote.id } },
@@ -244,6 +248,8 @@ export function useQuoteActions({
     /** The kept quotation's levers once asked for, for the quantity on screen. */
     levers: leversFor && current && leversFor === current.quote.id ? levers : null,
     applyLever,
+    sampleFor,
+    closeSample: () => setSampleFor(null),
   };
 }
 

@@ -1,7 +1,7 @@
 import { type BrowserContext, expect, type Page, test as base, type TestInfo } from "@playwright/test";
 
 import { gotoHydrated } from "../helpers/session";
-import { budgetMax, type JourneyBudget, type JourneyId, JOURNEYS } from "./budgets";
+import { budgetMax, EXCEPTIONS, judge, type JourneyBudget, type JourneyId, JOURNEYS, type Judgement } from "./budgets";
 
 /**
  * The step counter (U5.0): a walk of one scorecard task that counts what a person has to see or
@@ -16,8 +16,9 @@ import { budgetMax, type JourneyBudget, type JourneyId, JOURNEYS } from "./budge
  * A walk takes the shortest path that exists today; a moderated round measures what people
  * actually do. The difference between the two is the finding, not an error in either.
  *
- * Until U5.8, going over budget and meeting a new required field are *reported*;
- * `STEP_BUDGETS=enforce` makes both fail the test (U5.8 sets it and makes the CI job blocking).
+ * Going over budget and meeting a new required field are *reported*; `STEP_BUDGETS=enforce`
+ * makes both fail the test, and a pending walk too. CI enforces it since U5.8; a journey a decision
+ * keeps over budget passes only within its exception's ceiling (`EXCEPTIONS`, scorecard §5).
  * A walk that cannot be completed always fails — that is a broken journey, not a long one.
  */
 
@@ -168,10 +169,12 @@ export class Journey {
 
   /**
    * The journey cannot be walked yet. Records why and who builds it, then skips the test as
-   * `fixme` so the run stays green and the report still lists it.
+   * `fixme` so the run stays green and the report still lists it — unless enforced (U5.8): a gate
+   * cannot pass a journey nobody walked.
    */
   pending(reason: string, deliverable: string): never {
     this.pendingInfo = { reason, deliverable };
+    if (ENFORCE) throw new Error(`${this.def.id} cannot be walked: ${reason} (${deliverable})`);
     base.fixme(true, `pending: ${reason} (${deliverable})`);
     throw new Error("unreachable");
   }
@@ -185,7 +188,15 @@ export class Journey {
     const max = budgetMax(this.def.budget);
     const counted = this.def.budget.unit === "unexplained-warnings" ? this.metric : this.detail.length;
     if (ENFORCE && max !== null && counted !== null) {
-      expect.soft(counted, `${this.def.id} is over its budget of ${max}`).toBeLessThanOrEqual(max);
+      const exception = EXCEPTIONS[this.def.id];
+      const messages: Record<Judgement, string | null> = {
+        within: null,
+        excepted: null,
+        over: `${this.def.id} is over its budget of ${max}`,
+        "above-ceiling": `${this.def.id} is above its exception's ceiling of ${exception?.ceiling} (budget ${max})`,
+        "stale-exception": `${this.def.id} is within its budget of ${max}: remove its exception (scorecard §5, budgets.ts)`,
+      };
+      expect.soft(messages[judge(this.def.id, counted)] ?? "", `${this.def.id} step budget`).toBe("");
       expect
         .soft(this.newRequiredFields(), `${this.def.id} meets required fields the scorecard does not list`)
         .toEqual([]);
