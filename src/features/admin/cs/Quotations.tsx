@@ -49,7 +49,8 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
       sortable: true,
       cell: (row) => (
         <Link href={`/quotations/${row.id}`} className="text-primary font-mono font-medium hover:underline">
-          {row.quoteCode ?? row.id.slice(0, 8)}
+          {/* A code is issued at share or PDF; until then, say so rather than show part of a UUID. */}
+          {row.quoteCode ?? <span className="text-muted font-sans font-normal">{t("noCode")}</span>}
         </Link>
       ),
     },
@@ -168,10 +169,10 @@ export function QuotationDetail({ quoteId }: { quoteId: string }) {
         breadcrumbs={
           <Breadcrumbs
             label={t("breadcrumb")}
-            items={[{ label: t("title"), href: "/quotations" }, { label: data.quoteCode ?? data.id.slice(0, 8) }]}
+            items={[{ label: t("title"), href: "/quotations" }, { label: data.quoteCode ?? t("noCode") }]}
           />
         }
-        title={<span className="font-mono">{data.quoteCode ?? data.id.slice(0, 8)}</span>}
+        title={data.quoteCode ? <span className="font-mono">{data.quoteCode}</span> : t("draftTitle")}
         meta={<StatusChip map={QUOTE_STATUS} value={data.status} size="md" />}
         description={t("headline", {
           customer: data.customer?.displayName ?? "—",

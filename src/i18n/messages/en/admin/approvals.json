@@ -128,7 +128,14 @@
     "dayOfMonth": "Day of month",
     "name": "Name",
     "ratePct": "Rate",
-    "code": "Code"
+    "code": "Code",
+    "amount": "Amount",
+    "threshold": "Company approval threshold",
+    "groupId": "Order group",
+    "groupCode": "Order group",
+    "poNumber": "PO number",
+    "companyId": "Company",
+    "companyCode": "Company"
   },
   "delegations": {
     "title": "Delegations",
@@ -157,5 +164,7 @@
     "revokedState": "Revoked",
     "activeState": "Active",
     "empty": "No delegations"
-  }
+  },
+  "waitingForOther": "Waiting for {role} to approve",
+  "waitingForOtherBody": "Your account cannot decide this step; the approver has been notified. Due"
 }

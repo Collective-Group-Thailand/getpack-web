@@ -38,6 +38,13 @@ export const POLICY_ICONS: Record<string, IconName> = {
  */
 export const PAYLOAD_KINDS: Record<string, "money" | "percent" | "number" | "text" | "code"> = {
   orderValue: "money",
+  amount: "money",
+  threshold: "money",
+  groupId: "code",
+  groupCode: "code",
+  poNumber: "code",
+  companyId: "code",
+  companyCode: "code",
   currentLimit: "money",
   requestedLimit: "money",
   requestedPct: "percent",

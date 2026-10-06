@@ -470,5 +470,20 @@
     "cancelBody": "The team stops working on this design; to want it again you would send a new request",
     "keep": "Keep it",
     "cancelled": "Request cancelled"
+  },
+  "studioLibrary": {
+    "title": "{count} box styles in the studio",
+    "body": "Every one of these can be designed in the studio now; ordering and the price are confirmed once a factory makes that style.",
+    "count": "{count, plural, one {# style} other {# styles}}",
+    "design": "Design with this style",
+    "categories": {
+      "folding_carton": "Folding cartons",
+      "corrugated": "Corrugated boxes",
+      "tray_lid": "Trays and lid boxes",
+      "specialty": "Specialty",
+      "flat": "Flat pieces, sleeves and tags"
+    },
+    "fefco": "FEFCO {code}",
+    "ecma": "ECMA {code}"
   }
 }
