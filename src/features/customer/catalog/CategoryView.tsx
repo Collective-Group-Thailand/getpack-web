@@ -122,9 +122,7 @@ export async function CategoryView({
   const chip = (active: boolean) =>
     cn(
       "inline-flex h-9 items-center rounded-full border px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-focus-ring",
-      active
-        ? "border-primary bg-primary text-primary-fg font-medium"
-        : "border-border hover:bg-bg-subtle",
+      active ? "border-primary bg-primary text-primary-fg font-medium" : "border-border hover:bg-bg-subtle",
     );
 
   return (
@@ -142,7 +140,7 @@ export async function CategoryView({
           <p className="eyebrow">
             {category.nameEn} · {t(`groups.${categoryGroup(category)}`)}
           </p>
-          <h1 className="mt-3 text-[2.375rem] leading-tight">{name}</h1>
+          <h1 className="mt-3 text-4xl leading-[1.15]">{name}</h1>
           <p className="text-muted mt-2">{description}</p>
         </div>
         <p className="text-muted text-sm" aria-live="polite">
@@ -159,7 +157,7 @@ export async function CategoryView({
         <div className="flex min-w-0 flex-col gap-6">
           {category.types.length > 1 ? (
             <nav aria-label={t("list.types")}>
-              <ul className="flex flex-wrap gap-2">
+              <ul className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 whitespace-nowrap md:mx-0 md:flex-wrap md:px-0">
                 <li>
                   <Link href={href({})} aria-current={!selected ? "page" : undefined} className={chip(!selected)}>
                     {t("list.allTypes")}
@@ -181,7 +179,10 @@ export async function CategoryView({
           ) : null}
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <ul className="flex flex-wrap gap-2" aria-label={t("chips.label")}>
+            <ul
+              className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 whitespace-nowrap md:mx-0 md:flex-wrap md:px-0"
+              aria-label={t("chips.label")}
+            >
               {CARD_FILTERS.map((filter) => {
                 const on = filters.includes(filter);
                 return (
@@ -220,7 +221,7 @@ export async function CategoryView({
               columns={3}
               trailing={
                 hasRfq || categoryGroup(category) !== "service" ? (
-                  <li className="bg-fg text-fg-inverse rounded-card flex flex-col items-center justify-center gap-3 p-8 text-center">
+                  <li className="bg-fg text-fg-inverse rounded-card flex flex-col items-center justify-center gap-3 p-5 text-center sm:p-8">
                     <span className="grid size-12 place-items-center rounded-xl bg-current/10" aria-hidden="true">
                       <Icon name="chat" size={22} />
                     </span>
@@ -228,7 +229,7 @@ export async function CategoryView({
                     <p className="text-sm opacity-75">{t("category.rfqBody")}</p>
                     <Link
                       href={rfqHref(category.code)}
-                      className="bg-surface text-fg rounded-cta mt-1 inline-flex h-10 items-center px-5 text-sm font-semibold"
+                      className="bg-surface text-fg rounded-cta mt-1 inline-flex h-10 items-center px-4 text-sm font-semibold whitespace-nowrap sm:px-5"
                     >
                       {t("category.rfqCta")}
                     </Link>

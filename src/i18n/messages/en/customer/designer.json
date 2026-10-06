@@ -8,6 +8,7 @@
   "summary": "Inside {length}×{width}×{height} mm",
   "flatSheet": "Flat sheet {width} × {height} mm",
   "material": "Material: {name}",
+  "autosaveOnStart": "Saved automatically once you start designing",
   "chooseBoxFirst": "Choose a box to start designing",
   "saveFailedStorageFull": "Could not save — storage is full (try smaller images)",
   "imageTooLarge": "That file is larger than 8 MB",

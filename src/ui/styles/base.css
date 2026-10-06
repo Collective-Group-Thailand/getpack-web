@@ -48,6 +48,26 @@
   }
 
   /*
+   * A grid item may shrink below its content's width: a tab row or a long code in one cell never
+   * widens the page on a phone (a single implicit column is `auto`, sized to its widest child).
+   * Zero specificity, so any `min-w-*` utility still wins.
+   */
+  :where(.grid) > * {
+    min-width: 0;
+  }
+
+  /* No stranded last word: headings balance their lines, paragraphs avoid a one-word last line. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /*
    * Design language v2 "Warm Editorial" (round 2, Phase 2). The storefront sets its page titles
    * and its large section titles (≥ 22 px) in Trirong; the back office and the factory app only
    * their page title, at 30 px — sub-headings stay Anuphan for density, codes stay monospace.
@@ -56,7 +76,7 @@
   [data-zone="customer"] h2:is(.text-2xl, .text-3xl, .text-4xl, .text-display) {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   [data-zone="admin"] main h1,
@@ -64,7 +84,7 @@
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 1.875rem;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   /* One word in a storefront heading carries the accent: italic, medium, brand colour. */
@@ -344,9 +364,23 @@
  * eyebrow rules and italic figures. Decoration only — text on them is checked where it is used.
  */
 :root {
+  /* The storefront's phone tab bar (56 px + the home indicator): what floats above it sits on this. */
+  --mobile-tab-h: calc(3.5rem + env(safe-area-inset-bottom));
   --green-ink: #083f36;
   --kraft-3: #b8956a;
+  /* Kraft as text (italic figures, a hand note): ≥ 4.2:1 on the cream and white surfaces. */
+  --kraft-ink: #8f6b40;
   --card-lift: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --kraft-ink: #d1b088;
+  }
+}
+
+html[data-theme="dark"] {
+  --kraft-ink: #d1b088;
 }
 
 /* A way-in card rises 4 px on the storefront; the back office and the factory app do not move. */
@@ -364,7 +398,7 @@
   .serif {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   /* The label over a section, with its kraft lead rule (replaces the old kicker). */

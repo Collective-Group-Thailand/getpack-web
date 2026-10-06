@@ -91,7 +91,23 @@
       "message": "Write at least 10 characters"
     },
     "openLine": "Continue in LINE",
-    "lineCta": "Chat with the team on LINE"
+    "lineCta": "Chat with the team on LINE",
+    "eyebrow": "Contact Packio",
+    "selfServe": "Find it yourself, right now",
+    "shortcut": {
+      "track": {
+        "title": "Track an order",
+        "body": "See where it stands with the code on the box or your link"
+      },
+      "help": {
+        "title": "Help centre",
+        "body": "Ordering, artwork files, payment and delivery"
+      },
+      "faq": {
+        "title": "Frequent questions",
+        "body": "Short answers to what customers ask most"
+      }
+    }
   },
   "samples": {
     "title": "Sample kits",

@@ -18,6 +18,7 @@ import { StatusChip } from "@/features/shared/status/StatusChip";
 import { ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
+import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("account.home");
@@ -32,9 +33,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const me = await requireCustomer();
   const locale = await getLocale();
-  const [t, tNav, format, active, points, rfqs, launchpad, defaults, documents] = await Promise.all([
+  const [t, tNav, tOrders, format, active, points, rfqs, launchpad, defaults, documents] = await Promise.all([
     getTranslations("account.home"),
     getTranslations("account.nav"),
+    getTranslations("myOrders"),
     getFormat(),
     listMyOrders("active"),
     getPoints(),
@@ -47,9 +49,7 @@ export default async function Page() {
   // A company approver's queue leads (round 2, B2): "nothing to do" was said over an order the
   // company was waiting on them for.
   const company = await getMyCompany().catch(() => null);
-  const forMe = company?.can.approveOrders
-    ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? [])
-    : [];
+  const forMe = company?.can.approveOrders ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? []) : [];
   // Where things stand, by the API's own statuses (U2.F5): nothing is computed from dates here.
   const openRfqs = rfqs.filter((rfq) => ["submitted", "in_review", "need_info", "quoted"].includes(rfq.status)).length;
   const making = active.filter(({ order }) =>
@@ -62,7 +62,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold">{t("greeting", { name: me.displayName })}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("greeting", { name: me.displayName })}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
 
@@ -109,29 +109,34 @@ export default async function Page() {
         {todo.length === 0 && forMe.length === 0 ? (
           <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
         ) : (
-          <ul className="mt-3 flex flex-col gap-3">
+          <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-[var(--radius-card)] border">
             {todo.map(({ order, group, actions }) => (
-              <li key={order.id} className="border-border flex flex-col gap-3 rounded-xl border p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-medium">
+              <li key={order.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5">
+                <ProductThumb
+                  family={productFamilyOf(order.summary.productTypeCode)}
+                  className="hidden size-12 rounded-xl sm:flex"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">
                     <Link href={`/account/orders/${order.id}`} className="underline-offset-4 hover:underline">
                       {productNameOf(locale, order.summary)}
                     </Link>
-                    <span className="text-muted ms-2 font-mono text-sm">{order.orderCode}</span>
                   </p>
-                  <StatusChip map={ORDER_STATUS} value={order.status} />
+                  <p className="text-muted mt-0.5 flex flex-wrap items-center gap-2 text-[13px]">
+                    <span className="font-mono">{order.orderCode}</span>
+                    <StatusChip map={ORDER_STATUS} value={order.status} />
+                  </p>
                 </div>
-                {actions.length > 0 ? (
-                  <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
-                ) : null}
-                {group.status === "waiting_payment" ? (
-                  <Link
-                    href={`/account/orders/${order.id}#instalments`}
-                    className="text-primary text-sm font-medium underline-offset-4 hover:underline"
-                  >
-                    {t("payDue")}
-                  </Link>
-                ) : null}
+                <div className="flex flex-wrap items-center gap-2">
+                  {group.status === "waiting_payment" ? (
+                    <Button asChild size="sm" iconStart="credit-card">
+                      <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
+                    </Button>
+                  ) : null}
+                  {actions.length > 0 ? (
+                    <OrderActions orderId={order.id} orderCode={order.orderCode} size="sm" actions={actions} />
+                  ) : null}
+                </div>
               </li>
             ))}
           </ul>
@@ -143,19 +148,19 @@ export default async function Page() {
           <h2 id="account-documents" className="text-lg font-semibold">
             {t("documents")}
           </h2>
-          <ul className="mt-3 flex flex-col gap-2">
+          <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-[var(--radius-card)] border">
             {documents.map((doc) => (
-              <li
-                key={doc.id}
-                className="border-border flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-sm"
-              >
-                <span>
-                  {t("documentRow", {
-                    number: doc.docNumber,
-                    date: format.date(doc.documentDate),
-                    amount: format.thb(doc.grossAmount),
-                  })}
-                </span>
+              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{tOrders(`documents.types.${doc.docType}`)}</p>
+                  <p className="text-muted text-[13px]">
+                    {t("documentRow", {
+                      number: doc.docNumber,
+                      date: format.date(doc.documentDate),
+                      amount: format.thb(doc.grossAmount),
+                    })}
+                  </p>
+                </div>
                 <DocumentLink documentId={doc.id} number={doc.docNumber} />
               </li>
             ))}
@@ -163,38 +168,25 @@ export default async function Page() {
         </section>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <section aria-labelledby="account-points" className="border-border rounded-xl border p-4">
-          <h2 id="account-points" className="font-semibold">
-            {tNav("points")}
-          </h2>
-          <p className="mt-2 text-2xl font-bold tabular-nums">
-            {t("points", { points: format.number(points.availablePoints) })}
-          </p>
-          <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
-          <p className="mt-3 text-sm">
-            {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
-          </p>
-          <TierProgress points={points} className="mt-2 text-sm" />
-          <Button asChild variant="link" className="mt-2 px-0">
-            <Link href="/account/points">{t("seePoints")}</Link>
-          </Button>
-        </section>
-        <section aria-labelledby="account-links" className="border-border rounded-xl border p-4">
-          <h2 id="account-links" className="font-semibold">
-            {t("shortcuts")}
-          </h2>
-          <ul className="mt-2 flex flex-col gap-1 text-sm">
-            {(["instalments", "quotes", "rfqs", "addresses"] as const).map((key) => (
-              <li key={key}>
-                <Link href={`/account/${key}`} className="text-primary underline-offset-4 hover:underline">
-                  {tNav(key)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      <section
+        aria-labelledby="account-points"
+        className="border-border bg-surface rounded-[var(--radius-card)] border p-5"
+      >
+        <h2 id="account-points" className="font-semibold">
+          {tNav("points")}
+        </h2>
+        <p className="serif mt-2 text-3xl tabular-nums">
+          {t("points", { points: format.number(points.availablePoints) })}
+        </p>
+        <p className="text-muted text-sm">{t("pointsValue", { amount: format.thb(points.availableValue) })}</p>
+        <p className="mt-3 text-sm">
+          {t("tierNow", { tier: t(`tiers.${points.tier}`), spend: format.thb(points.spend12m) })}
+        </p>
+        <TierProgress points={points} className="mt-2 text-sm" />
+        <Button asChild variant="link" className="mt-2 px-0">
+          <Link href="/account/points">{t("seePoints")}</Link>
+        </Button>
+      </section>
     </div>
   );
 }

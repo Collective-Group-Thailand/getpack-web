@@ -76,10 +76,13 @@ export async function HowItWorks() {
               key={step}
               className="border-border grid items-start gap-3 border-t py-7 sm:grid-cols-[90px_1fr_1.1fr] sm:gap-7"
             >
-              <span className="serif text-[44px] leading-none font-medium text-[var(--kraft-3)] italic">
+              <span
+                aria-hidden="true"
+                className="serif text-[44px] leading-none font-medium text-[var(--kraft-ink)] italic"
+              >
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <h3 className="serif text-2xl leading-tight">{t(`${step}.title`)}</h3>
+              <h3 className="serif text-[1.5rem] leading-tight">{t(`${step}.title`)}</h3>
               <p className="text-muted text-[15.5px] leading-relaxed">{t(`${step}.body`)}</p>
             </li>
           ))}
@@ -236,7 +239,11 @@ export async function WhyPackio({ claimWindowDays }: { claimWindowDays: number |
         {points.map((point, index) => (
           <li
             key={point.title}
-            className={cn("border-border py-7 sm:px-7", index > 0 && "border-t sm:border-t-0 sm:border-s", index === 0 && "sm:ps-0")}
+            className={cn(
+              "border-border py-7 sm:px-7",
+              index > 0 && "border-t sm:border-s sm:border-t-0",
+              index === 0 && "sm:ps-0",
+            )}
           >
             <p className="serif text-primary text-5xl leading-none md:text-6xl">{point.big}</p>
             <h3 className="serif mt-4 text-xl">{point.title}</h3>

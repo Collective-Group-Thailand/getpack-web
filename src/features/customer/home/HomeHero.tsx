@@ -9,7 +9,6 @@ import { Icon } from "@/ui/icons";
 import { HeroStillLife } from "./HeroStillLife";
 import { QuickStart } from "./QuickStart";
 
-
 /** The figures under the hero's buttons — each one the API's, or left out. */
 export interface HeroFacts {
   /** Categories the catalogue offers. */
@@ -50,7 +49,7 @@ export async function HomeHero({
             {t.rich("titleLine2", { em: (chunks) => <em>{chunks}</em> })}
           </h1>
           <p className="rise text-muted mt-6 max-w-[28em] text-lg leading-relaxed md:text-[1.1875rem]">{t("lead")}</p>
-          <div className="rise mt-8 flex flex-wrap gap-3">
+          <div className="rise mt-8 flex flex-wrap gap-3 max-sm:[&>*]:w-full">
             <Button asChild size="lg" shape="pill" iconEnd="arrow-right">
               <Link href="#quick-quote">{t("price")}</Link>
             </Button>
@@ -62,21 +61,21 @@ export async function HomeHero({
             {facts.categories > 0 ? (
               <div>
                 <dt className="sr-only">{t("facts.categories")}</dt>
-                <dd className="serif text-3xl leading-none">{facts.categories}</dd>
-                <dd className="text-subtle mt-1 text-sm">{t("facts.categories")}</dd>
+                <dd className="serif text-[1.875rem] leading-none">{facts.categories}</dd>
+                <dd className="text-subtle mt-1.5 text-[13px]">{t("facts.categories")}</dd>
               </div>
             ) : null}
             {facts.fastestDays !== null ? (
               <div>
                 <dt className="sr-only">{t("facts.fastest")}</dt>
-                <dd className="serif text-3xl leading-none">{t("facts.days", { days: facts.fastestDays })}</dd>
-                <dd className="text-subtle mt-1 text-sm">{t("facts.fastest")}</dd>
+                <dd className="serif text-[1.875rem] leading-none">{t("facts.days", { days: facts.fastestDays })}</dd>
+                <dd className="text-subtle mt-1.5 text-[13px]">{t("facts.fastest")}</dd>
               </div>
             ) : null}
             <div>
               <dt className="sr-only">{t("facts.proofed")}</dt>
-              <dd className="serif text-3xl leading-none">{t("facts.proofedValue")}</dd>
-              <dd className="text-subtle mt-1 text-sm">{t("facts.proofed")}</dd>
+              <dd className="serif text-[1.875rem] leading-none">{t("facts.proofedValue")}</dd>
+              <dd className="text-subtle mt-1.5 text-[13px]">{t("facts.proofed")}</dd>
             </div>
           </dl>
         </div>
@@ -93,7 +92,7 @@ export async function HomeHero({
                 <small className="text-muted">{t("note.body")}</small>
               </span>
             </div>
-            <p className="serif absolute start-0 top-[4%] -rotate-6 text-[15px] font-medium text-[var(--kraft-3)] italic">
+            <p className="serif absolute start-0 top-[4%] -rotate-6 text-[15px] font-medium text-[var(--kraft-ink)] italic">
               {t("note.hand")}
             </p>
           </div>

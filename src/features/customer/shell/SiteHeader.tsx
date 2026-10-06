@@ -13,13 +13,17 @@ import { categoryHref } from "@/features/customer/catalog/paths";
 import { CustomerBell } from "./CustomerBell";
 import { emptyContent } from "./content.server";
 import { DeferredAssistant, DeferredLocaleMenu } from "./DeferredMenus";
+import { MoreLinks } from "./MoreLinks";
 import { MobileProductsMenu, ProductsMenu } from "./ProductsMenu";
 import { Link } from "@/i18n/navigation";
 import { getFormat } from "@/features/shared/format/server";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
+import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
+import { Icon } from "@/ui/icons";
 import { Brand } from "@/ui/brand";
+import { cn } from "@/ui/lib/cn";
 
 /**
  * The storefront's top bar.
@@ -134,19 +138,126 @@ export async function SiteHeader() {
         </p>
       ) : null}
       <header className="z-sticky border-border bg-surface/90 pk-condense sticky top-0 border-b backdrop-blur">
-        <div className="pk-condense-row max-w-nav mx-auto flex h-16 items-center gap-2 px-4 lg:grid lg:h-22 lg:grid-cols-[auto_1fr_auto] lg:gap-10 lg:px-10">
+        <div className="pk-condense-row max-w-nav mx-auto flex h-14 items-center gap-2 px-3 md:h-16 md:px-4 lg:grid lg:h-22 lg:grid-cols-[auto_1fr_auto] lg:gap-10 lg:px-10">
           <div className="flex items-center gap-2">
-            <MobileProductsMenu label={t("nav.menu")} closeLabel={tCommon("actions.close")}>
-              <ul className="flex flex-col gap-1 text-base font-medium">
-                {pages.map(([href, label]) => (
+            <MobileProductsMenu
+              label={t("nav.menu")}
+              closeLabel={tCommon("actions.close")}
+              headerEnd={<DeferredLocaleMenu />}
+              footer={
+                <Button asChild size="lg" shape="pill" block iconStart="chat">
+                  <Link href="/help/chat">{t("drawer.line")}</Link>
+                </Button>
+              }
+            >
+              {/* The "MobileNav" board's drawer: who you are, where to go, the categories, help. */}
+              {signedIn ? (
+                <ul className="border-border mb-4 grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      ["/account", t("nav.account"), "user"],
+                      ["/account/orders", t("drawer.orders"), "package"],
+                      ["/account/notifications", t("drawer.notifications"), "bell"],
+                      ["/help/chat", t("nav.lineChat"), "chat"],
+                    ] as const
+                  ).map(([href, label, icon]) => (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className="border-border flex min-h-12 items-center gap-2 rounded-xl border px-3 text-sm font-medium"
+                      >
+                        <Icon name={icon} size={18} aria-hidden="true" />
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="border-border bg-bg-subtle mb-4 flex items-center gap-3 rounded-2xl border p-4">
+                  <span className="bg-primary-subtle text-primary grid size-10 shrink-0 place-items-center rounded-full">
+                    <Icon name="user" size={20} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <b className="block text-[15px]">{t("drawer.guestTitle")}</b>
+                    <small className="text-muted">{t("drawer.guestBody")}</small>
+                  </span>
+                  <Button asChild size="md" shape="pill">
+                    <Link href="/sign-in">{t("nav.signIn")}</Link>
+                  </Button>
+                </div>
+              )}
+              <ul className="divide-border border-border divide-y border-y">
+                {(
+                  [
+                    ["/products", t("nav.quote"), true],
+                    ["/studio/new", t("nav.designOnline"), false],
+                    ["/samples", t("nav.pricingSamples"), false],
+                    ["/track", t("drawer.track"), false],
+                  ] as const
+                ).map(([href, label, lead]) => (
                   <li key={href}>
-                    <Link href={href} className="hover:bg-bg-subtle block rounded-lg px-2 py-2">
+                    <Link href={href} className="flex min-h-12 items-center justify-between text-base font-medium">
                       {label}
+                      <Icon
+                        name={lead ? "arrow-right" : "chevron-right"}
+                        size={18}
+                        aria-hidden="true"
+                        className={lead ? "text-primary" : "text-muted"}
+                      />
                     </Link>
                   </li>
                 ))}
               </ul>
-              {tree.length > 0 ? columns : null}
+              {tree.length > 0 ? (
+                <section aria-labelledby="drawer-categories" className="mt-6">
+                  <h2 id="drawer-categories" className="eyebrow mb-3 text-[11px] tracking-[0.06em]">
+                    {t("drawer.categories")}
+                  </h2>
+                  <ul className="grid grid-cols-2 gap-2">
+                    {tree.slice(0, 7).map((category) => (
+                      <li key={category.code}>
+                        <Link
+                          href={`/products/${encodeURIComponent(category.code)}`}
+                          className="border-border flex min-h-14 items-center gap-2.5 rounded-xl border px-3 text-sm leading-tight"
+                        >
+                          <ProductThumb
+                            family={productFamilyOf(category.code)}
+                            className="size-8 rounded-lg [&_svg]:max-w-6"
+                          />
+                          {pick(locale, category.nameTh, category.nameEn)}
+                        </Link>
+                      </li>
+                    ))}
+                    <li>
+                      <Link
+                        href="/products"
+                        className="border-primary/40 text-primary flex min-h-14 items-center gap-2.5 rounded-xl border border-dashed px-3 text-sm leading-tight font-semibold"
+                      >
+                        <Icon name="plus" size={18} aria-hidden="true" />
+                        {t("drawer.allCategories", { count: tree.length })}
+                      </Link>
+                    </li>
+                  </ul>
+                </section>
+              ) : null}
+              <section aria-labelledby="drawer-help" className="mt-6">
+                <h2 id="drawer-help" className="eyebrow mb-1 text-[11px] tracking-[0.06em]">
+                  {t("drawer.help")}
+                </h2>
+                <ul className="divide-border divide-y">
+                  {pages
+                    .filter(([href]) => href === "/articles" || href === "/contact")
+                    .concat([["/faq", t("drawer.faq")]])
+                    .map(([href, label]) => (
+                      <li key={href}>
+                        <Link href={href} className="flex min-h-12 items-center justify-between text-base">
+                          {label}
+                          <Icon name="chevron-right" size={18} aria-hidden="true" className="text-muted" />
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
+              </section>
             </MobileProductsMenu>
             <Brand href="/" className="text-xl lg:text-2xl" />
           </div>
@@ -163,17 +274,25 @@ export async function SiteHeader() {
             <Link href="/studio/new" className={navLink}>
               {t("nav.designOnline")}
             </Link>
-            <Link href="/samples" className={navLink}>
+            <Link href="/samples" className={cn(navLink, "hidden xl:inline-flex")}>
               {t("nav.pricingSamples")}
             </Link>
             {showArticles ? (
-              <Link href="/articles" className={navLink}>
+              <Link href="/articles" className={cn(navLink, "hidden xl:inline-flex")}>
                 {t("nav.articles")}
               </Link>
             ) : null}
-            <Link href="/contact" className={navLink}>
+            <Link href="/contact" className={cn(navLink, "hidden xl:inline-flex")}>
               {t("nav.contact")}
             </Link>
+            <MoreLinks
+              label={t("nav.more")}
+              links={[
+                ["/samples", t("nav.pricingSamples")],
+                ...(showArticles ? ([["/articles", t("nav.articles")]] as [string, string][]) : []),
+                ["/contact", t("nav.contact")],
+              ]}
+            />
           </nav>
 
           <div className="ms-auto flex items-center gap-1 lg:ms-0">
@@ -184,19 +303,32 @@ export async function SiteHeader() {
             stays in the bar; on a desktop the home page's contact band and the footer carry it,
             so the bar keeps to the mockup's search · cart · language.
           */}
-            <IconButton asChild name="chat" variant="ghost" size="sm" label={t("nav.lineChat")} className="lg:hidden">
+            {/* A phone's bar keeps four controls (the "MobileNav" board); LINE, the language and the
+                account are in the menu and the bottom bar there. */}
+            <IconButton
+              asChild
+              name="chat"
+              variant="ghost"
+              size="sm"
+              label={t("nav.lineChat")}
+              className="hidden md:inline-flex lg:hidden"
+            >
               <Link href="/help/chat" />
             </IconButton>
 
             <CartButton signedIn={signedIn} label={t("nav.cart")} />
 
-            <DeferredAssistant signedIn={signedIn} />
-            {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}
-            {signedIn ? <CustomerBell /> : null}
-            <DeferredLocaleMenu />
+            <span className="hidden items-center gap-1 md:flex">
+              <DeferredAssistant signedIn={signedIn} />
+              {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}
+              {signedIn ? <CustomerBell /> : null}
+              <DeferredLocaleMenu />
+            </span>
 
             <span aria-hidden className="bg-border mx-2 hidden h-6 w-px lg:block" />
-            <AccountButton signedIn={signedIn} label={t("nav.account")} signInLabel={t("nav.signIn")} />
+            <span className="hidden md:contents">
+              <AccountButton signedIn={signedIn} label={t("nav.account")} signInLabel={t("nav.signIn")} />
+            </span>
             <Button asChild size="md" className="ms-2 hidden rounded-xl lg:inline-flex">
               <Link href="/products">{t("nav.quote")}</Link>
             </Button>

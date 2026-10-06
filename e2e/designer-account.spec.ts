@@ -26,12 +26,15 @@ const UUID = /\/studio\/[0-9a-f-]{36}(\?|$)/;
 async function startFromSetup(page: Page) {
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   // With a box in the address the studio opens the setup by itself; from ① it is offered (U4.2).
-  const choose = page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" });
-  await expect(dialog.or(choose)).toBeVisible();
+  // A link that names the whole box (style and size) applies it straight away (round 2, B6).
+  const choose = page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ });
+  const ready = page.getByRole("navigation", { name: "เครื่องมือออกแบบ" });
+  await expect(dialog.or(choose).or(ready).first()).toBeVisible();
   if (await choose.isVisible()) await choose.click();
-  await expect(dialog).toBeVisible();
-  await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
-  await expect(dialog).toBeHidden();
+  if (await dialog.isVisible()) {
+    await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();
+    await expect(dialog).toBeHidden();
+  }
   await expect(page.locator("canvas").first()).toBeVisible();
 }
 

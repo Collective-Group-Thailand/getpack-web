@@ -290,6 +290,8 @@ export function SizeStep({
         <Field label={t("standardSizes")} hint={t("standardHint")}>
           <RadioCards
             columns={3}
+            // Two to a row on a phone (round 2, responsive): eleven sizes in one column ran a screen long.
+            className="grid-cols-2"
             value={state.standardSizeCode ?? undefined}
             onValueChange={(code) => {
               const size = sizes.find((entry) => entry.code === code);

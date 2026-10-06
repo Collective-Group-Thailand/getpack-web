@@ -181,7 +181,7 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
       ) : null}
 
       {/* 8:4 — the request's tabs, and the rail: where the RFQ stands, its SLA and the customer. */}
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Tabs label={t("tabsLabel")} items={tabs} value={current} onValueChange={go} />
         <RfqRail rfq={rfq} onAssign={offered.has("assign") ? () => setAction("assign") : undefined} />
       </div>
