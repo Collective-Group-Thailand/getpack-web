@@ -37,7 +37,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </div>
       <section aria-labelledby="referral-code" className="border-border flex flex-col gap-3 rounded-2xl border p-5">

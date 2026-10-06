@@ -22,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ a
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
       <header>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
         <p className="text-muted mt-1">{t("intro")}</p>
       </header>
       {added ? <Callout tone="success" title={t("added")} /> : null}

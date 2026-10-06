@@ -117,7 +117,8 @@ export function ListSearch({
         value={text}
         onValueChange={setText}
         clearLabel={t("clearSearch")}
-        placeholder={placeholder}
+        // With no hint of its own, the box says what it searches — never an empty field.
+        placeholder={placeholder ?? label}
         inputSize="sm"
         className="[&_input]:h-9"
       />

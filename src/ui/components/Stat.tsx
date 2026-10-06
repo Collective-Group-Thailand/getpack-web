@@ -36,13 +36,13 @@ export function Stat({ label, value, hint, icon, tone = "neutral", as = "div", h
     <Component
       href={href}
       className={cn(
-        "border-border bg-surface flex flex-col gap-1 rounded-lg border p-4",
+        "border-border bg-surface flex flex-col gap-1 rounded-lg border p-3 sm:p-4",
         href && "hover:border-border-strong hover:bg-surface-subtle transition-colors",
         className,
       )}
     >
-      <span className="text-muted flex items-center gap-2 text-sm">
-        {icon ? <Icon name={icon} size={16} className={toneClass} /> : null}
+      <span className="text-muted flex items-start gap-2 text-sm leading-snug">
+        {icon ? <Icon name={icon} size={16} className={cn("mt-0.5 shrink-0", toneClass)} /> : null}
         {label}
       </span>
       <span className="text-2xl font-semibold tabular-nums">{value}</span>

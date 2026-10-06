@@ -8,6 +8,7 @@ import { pick } from "@/features/customer/catalog/localize";
 import { articleHref } from "@/features/customer/catalog/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkPagination } from "@/ui/components/LinkPagination";
 import { ProductCard } from "@/ui/components/ProductCard";
@@ -94,9 +95,22 @@ export default async function ArticlesPage({
         <EmptyState
           className="mt-8"
           icon="article"
-          title={t("articles.emptyTitle")}
-          description={t("articles.emptyBody")}
-          action={<NextStep to="learn" />}
+          // In a category: back to all of them. With none at all: out to help and the products —
+          // never "learn first", whose own empty state sends the reader here (a loop).
+          title={category ? t("articles.emptyTitle") : t("articles.emptyAllTitle")}
+          description={category ? t("articles.emptyBody") : t("articles.emptyAllBody")}
+          action={
+            category ? (
+              <Button asChild>
+                <Link href="/articles">{t("articles.allArticles")}</Link>
+              </Button>
+            ) : (
+              <div className="flex flex-wrap justify-center gap-2">
+                <NextStep to="help" />
+                <NextStep to="products" variant="secondary" />
+              </div>
+            )
+          }
         />
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

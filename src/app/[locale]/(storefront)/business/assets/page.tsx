@@ -17,7 +17,7 @@ export default async function Page() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
         <p className="text-muted mt-2">{t("intro")}</p>
       </header>
       <BrandAssets companyId={company.id} assets={assets ?? []} canManage={company.can.manageAssets} />

@@ -56,7 +56,7 @@ export default async function Page({
         {t("back")}
       </Link>
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold">{t("heading", { type: rfq.productTypeName })}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("heading", { type: rfq.productTypeName })}</h1>
         <StatusChip map={RFQ_STATUS} value={rfq.status} size="md" />
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-3">

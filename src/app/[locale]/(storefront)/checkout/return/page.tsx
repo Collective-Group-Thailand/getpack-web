@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   if (!payment) notFound();
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-bold">{t("returnTitle")}</h1>
+      <h1 className="text-[2rem] leading-tight">{t("returnTitle")}</h1>
       <div className="mt-6">
         <PaymentPanel initial={payment} />
       </div>

@@ -53,6 +53,18 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX round 2 — polish after Phase 3 — 2026-10-07
+
+Branch `feat/ux-r2-polish`. The second half of the system-wide pass, from the same tour (1440 / 390, customer, admin, partner).
+
+- **One page-title size:** 43 storefront pages titled `text-2xl font-bold` (24 px, a faked bold before the Trirong fix) now open at 32 px serif like the redesigned ones; the cart 32 → 38 px.
+- **Loading — tried and withdrawn:** route-level `loading.tsx` skeletons (account, catalogue, both consoles) made every `notFound()` under them answer **200** — the boundary starts the stream before the page can say 404 (e2e caught it: `/products/no-such-thing`, the zone 404s). A correct status beats a skeleton; a navigation progress cue that does not open a Suspense boundary is the way to do it, left for later.
+- **No dead ends:** "เรียนรู้ก่อนสั่ง" with no paths sent the reader to the articles, whose own empty state sent them back. With no articles at all it now offers the help centre and the products; in an empty category, all articles. An empty cart also offers the saved quotations and a reorder — what a returning customer is usually looking for.
+- **Track:** a signed-in customer is shown their orders, not "sign in to see your orders"; the code box's hint fits a phone ("วางลิงก์หรือพิมพ์รหัสติดตาม").
+- **Account on a phone:** the to-do's actions drop under the order (the name and code no longer squeeze to "กล่องไปรษ…"); the three "where is it" figures sit three across; `Stat` is compact below `sm`.
+- **Back-office search:** 32 lists showed an empty search box; with no hint of its own it now says what it searches (its label).
+- **Learn:** the page's title and gutters match the rest of the storefront.
+
 ## UX round 2 — Phase 3: every page to its V2 board — 2026-10-07
 
 Branch `feat/ux-r2-p3`. Each page set against its board in `docs/ui/Packio Homepage Redesign (V2).html`, measured in a browser (computed styles side by side), not by eye.
