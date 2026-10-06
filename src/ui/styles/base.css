@@ -302,3 +302,12 @@
     transparent 70%
   );
 }
+
+/* The sign-in panel's soft light, from its foot: the panel's own colour, lighter — one hue (D-180). */
+@utility pk-auth-wash {
+  background-image: radial-gradient(
+    50rem 32rem at 100% 100%,
+    color-mix(in oklab, currentColor 16%, transparent),
+    transparent 62%
+  );
+}
