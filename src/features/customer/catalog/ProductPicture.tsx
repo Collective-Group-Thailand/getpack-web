@@ -46,7 +46,8 @@ export function ProductPicture({
           <BoxPreview styleId={style} values={values!} label={label} />
         </div>
       ) : (
-        <ProductPlate family={family} className="h-full bg-transparent" />
+        // Large, as on the "ProductDetail" board — the drawing is the picture until there is a photo.
+        <ProductPlate family={family} className="h-full [&_svg]:w-[58%] [&_svg]:max-w-[22rem]" />
       )}
       {badge ? <div className="absolute start-4 top-4">{badge}</div> : null}
       <figcaption className="bg-surface/90 text-muted border-border absolute end-4 bottom-4 rounded-full border px-3 py-1 text-xs">

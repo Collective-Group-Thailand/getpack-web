@@ -25,7 +25,7 @@ async function startNewDesign(page: Page, product?: string) {
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 
   // ① offers the box setup.
-  await page.getByRole("button", { name: "เลือกแบบและขนาดกล่อง" }).click();
+  await page.getByRole("button", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
   const dialog = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
   await expect(dialog).toBeVisible();
   await dialog.getByRole("button", { name: "เริ่มออกแบบ" }).click();

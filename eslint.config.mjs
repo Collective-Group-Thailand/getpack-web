@@ -200,6 +200,8 @@ const eslintConfig = [
             "*",
             "→",
             "©",
+            // The home ticker's separator (design language v2).
+            "✦",
           ],
           // `elementOverrides` would be the natural way to exempt `<Kbd>`, but it crashes
           // eslint-plugin-react 7.37.5: enabling it registers a `VariableDeclaration` visitor

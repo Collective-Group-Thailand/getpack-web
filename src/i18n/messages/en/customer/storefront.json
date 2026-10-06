@@ -17,7 +17,8 @@
     "contact": "Contact",
     "menu": "Menu",
     "signIn": "Sign in",
-    "quote": "Get a price"
+    "quote": "Get a price",
+    "more": "More"
   },
   "footer": {
     "tagline": "Your Packaging Production Partner",
@@ -164,5 +165,24 @@
     "panelBody": "Browse over a hundred box styles with the sizes they come in, or see every product on one page.",
     "styles": "Browse box styles"
   },
-  "announcement": "{label} on {type}, until {date}"
+  "announcement": "{label} on {type}, until {date}",
+  "drawer": {
+    "line": "Chat with us on LINE",
+    "orders": "Orders",
+    "notifications": "Notifications",
+    "guestTitle": "Not signed in",
+    "guestBody": "See your orders, proofs and tax documents",
+    "track": "Track an order",
+    "categories": "Categories",
+    "allCategories": "All {count} categories",
+    "help": "Help",
+    "faq": "FAQ"
+  },
+  "tabs": {
+    "home": "Home",
+    "products": "Products",
+    "design": "Design",
+    "track": "Track",
+    "account": "Account"
+  }
 }

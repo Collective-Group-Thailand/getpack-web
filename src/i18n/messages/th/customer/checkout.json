@@ -72,7 +72,8 @@
     "minus": "−{amount}",
     "net": "ยอดก่อนภาษี",
     "pointsToEarn": "รับ {points} คะแนนเมื่อคำสั่งซื้อเสร็จสิ้น",
-    "guarantee": "ดูการรับประกันงาน"
+    "guarantee": "ดูการรับประกันงาน",
+    "quantity": "{quantity} ชิ้น"
   },
   "repriced": {
     "title": "ราคาเปลี่ยนไป",

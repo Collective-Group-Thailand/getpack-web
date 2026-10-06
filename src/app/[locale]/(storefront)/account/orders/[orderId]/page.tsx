@@ -19,14 +19,7 @@ import { timelineTitle } from "@/features/customer/orders/timeline";
 import { TrackingLinkButton } from "@/features/customer/orders/TrackingLinkButton";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
-import {
-  ARTWORK_STATUS,
-  CLAIM_STATUS,
-  DOCUMENT_STATUS,
-  SAMPLE_STATUS,
-  INSTALMENT_STATUS,
-  ORDER_STATUS,
-} from "@/domain/status";
+import { CLAIM_STATUS, DOCUMENT_STATUS, SAMPLE_STATUS, INSTALMENT_STATUS, ORDER_STATUS } from "@/domain/status";
 import { Link } from "@/i18n/navigation";
 import { Callout } from "@/ui/components/Callout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
@@ -115,9 +108,9 @@ export default async function Page({
           {t("detail.back")}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">{name}</h1>
+          <h1 className="text-[2.375rem] leading-tight">{name}</h1>
+          {/* One chip (UX audit step 12): the artwork's state is in the card below and on its page. */}
           <StatusChip map={ORDER_STATUS} value={order.status} size="md" />
-          <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />
         </div>
         <p className="text-muted flex flex-wrap items-center gap-x-1 gap-y-2 text-sm">
           <span className="font-mono">{order.orderCode}</span>
@@ -132,7 +125,20 @@ export default async function Page({
           </span>
         </p>
         {detail.actions.length > 0 || payable ? (
-          <OrderActions orderId={order.id} orderCode={order.orderCode} actions={detail.actions} payable={payable} />
+          // What the customer has to do now, with its deadline (the "AccountOrder" board).
+          <div className="border-border bg-surface rounded-card flex flex-wrap items-center justify-between gap-4 border border-s-4 border-s-[var(--color-accent)] px-5 py-4.5">
+            <div className="min-w-0">
+              <p className="font-semibold">
+                {payable ? t("detail.todoPay", { label: payable.label }) : t("detail.todo")}
+              </p>
+              {payable && group?.expiresAt ? (
+                <p className="text-muted mt-1 text-sm">
+                  {t("detail.todoBy", { date: format.dateTime(group.expiresAt) })}
+                </p>
+              ) : null}
+            </div>
+            <OrderActions orderId={order.id} orderCode={order.orderCode} actions={detail.actions} payable={payable} />
+          </div>
         ) : null}
         <p className="text-sm">
           <Link
@@ -167,7 +173,7 @@ export default async function Page({
             {t("detail.companyApproval.body", { date: format.dateTime(group.placedAt) })}
           </Callout>
         ) : null}
-        {group?.expiresAt && order.status === "waiting_payment" ? (
+        {group?.expiresAt && order.status === "waiting_payment" && !payable ? (
           <Callout tone="warning">{t("detail.expires", { date: format.dateTime(group.expiresAt) })}</Callout>
         ) : null}
         {order.cancelledAt ? (
@@ -187,7 +193,7 @@ export default async function Page({
       </header>
 
       {detail.progress && detail.progress.steps.length > 0 ? (
-        <section aria-labelledby="order-stages">
+        <section aria-labelledby="order-stages" className="border-border bg-surface rounded-card border px-6 py-6">
           <h2 id="order-stages" className="sr-only">
             {t("detail.stages")}
           </h2>
@@ -195,30 +201,42 @@ export default async function Page({
         </section>
       ) : null}
 
-      <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="flex min-w-0 flex-col gap-10">
-          <section aria-labelledby="order-timeline">
-            <h2 id="order-timeline" className="text-lg font-semibold">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-5">
+          <section aria-labelledby="order-timeline" className="border-border bg-surface rounded-card border px-5 py-5">
+            <h2 id="order-timeline" className="text-base font-bold">
               {t("detail.timeline")}
             </h2>
             <Timeline
               className="mt-4"
               label={t("detail.timeline")}
-              items={detail.timeline.map((entry) => ({
-                id: entry.id,
-                title: timelineTitle(t, locale, entry),
-                icon: TIMELINE_ICON[entry.type] ?? "circle",
-                tone: SUCCESS.has(entry.type) ? ("success" as const) : ("neutral" as const),
-                time: <time dateTime={entry.occurredAt}>{format.dateTime(entry.occurredAt)}</time>,
-                description:
-                  entry.photoFileIds.length > 0 ? t("detail.photos", { count: entry.photoFileIds.length }) : undefined,
-              }))}
+              items={detail.timeline
+                .flatMap((entry) => {
+                  // An entry the storefront has no words for is left out, never a bare date (round 2, B13).
+                  const title = timelineTitle(t, locale, entry);
+                  return title ? [{ entry, title }] : [];
+                })
+                .map(({ entry, title }) => ({
+                  id: entry.id,
+                  title,
+                  icon: TIMELINE_ICON[entry.type] ?? "circle",
+                  tone: SUCCESS.has(entry.type) ? ("success" as const) : ("neutral" as const),
+                  time: <time dateTime={entry.occurredAt}>{format.dateTime(entry.occurredAt)}</time>,
+                  description:
+                    entry.photoFileIds.length > 0
+                      ? t("detail.photos", { count: entry.photoFileIds.length })
+                      : undefined,
+                }))}
             />
           </section>
 
           {instalments.length > 0 ? (
-            <section id="instalments" aria-labelledby="instalments-title">
-              <h2 id="instalments-title" className="text-lg font-semibold">
+            <section
+              id="instalments"
+              aria-labelledby="instalments-title"
+              className="border-border bg-surface rounded-card border px-5 py-5"
+            >
+              <h2 id="instalments-title" className="text-base font-bold">
                 {t("detail.instalments")}
               </h2>
               <ul className="mt-4 flex flex-col gap-2">
@@ -255,8 +273,11 @@ export default async function Page({
           ) : null}
 
           {samples.length > 0 ? (
-            <section aria-labelledby="order-samples" className="flex flex-col gap-2">
-              <h2 id="order-samples" className="text-lg font-semibold">
+            <section
+              aria-labelledby="order-samples"
+              className="border-border bg-surface rounded-card flex flex-col gap-2 border px-5 py-5"
+            >
+              <h2 id="order-samples" className="text-base font-bold">
                 {t("detail.samples")}
               </h2>
               <ul className="flex flex-col gap-2">
@@ -275,8 +296,8 @@ export default async function Page({
             </section>
           ) : null}
           {order.artworkStatus === "approved" ? <SpecSheet orderId={order.id} /> : null}
-          <section aria-labelledby="order-documents">
-            <h2 id="order-documents" className="text-lg font-semibold">
+          <section aria-labelledby="order-documents" className="border-border bg-surface rounded-card border px-5 py-5">
+            <h2 id="order-documents" className="text-base font-bold">
               {t("detail.documents")}
             </h2>
             {detail.documents.length === 0 ? (
@@ -312,8 +333,11 @@ export default async function Page({
           </section>
 
           {detail.shipments.length > 0 ? (
-            <section aria-labelledby="order-shipments">
-              <h2 id="order-shipments" className="text-lg font-semibold">
+            <section
+              aria-labelledby="order-shipments"
+              className="border-border bg-surface rounded-card border px-5 py-5"
+            >
+              <h2 id="order-shipments" className="text-base font-bold">
                 {t("detail.shipments")}
               </h2>
               <div className="mt-4 flex flex-col gap-3">
@@ -328,8 +352,8 @@ export default async function Page({
           ) : null}
 
           {detail.claims.length > 0 ? (
-            <section aria-labelledby="order-claims">
-              <h2 id="order-claims" className="text-lg font-semibold">
+            <section aria-labelledby="order-claims" className="border-border bg-surface rounded-card border px-5 py-5">
+              <h2 id="order-claims" className="text-base font-bold">
                 {t("detail.claims")}
               </h2>
               <ul className="mt-4 flex flex-col gap-2">
@@ -356,9 +380,9 @@ export default async function Page({
           ) : null}
         </div>
 
-        <aside aria-label={t("detail.what")} className="flex flex-col gap-6">
-          <section aria-labelledby="order-what">
-            <h2 id="order-what" className="text-lg font-semibold">
+        <aside aria-label={t("detail.what")} className="flex flex-col gap-5">
+          <section aria-labelledby="order-what" className="border-border bg-surface rounded-card border px-5 py-5">
+            <h2 id="order-what" className="text-base font-bold">
               {t("detail.what")}
             </h2>
             <DescriptionList
@@ -413,8 +437,8 @@ export default async function Page({
               ]}
             />
           </section>
-          <section aria-labelledby="order-price">
-            <h2 id="order-price" className="text-lg font-semibold">
+          <section aria-labelledby="order-price" className="border-border bg-surface rounded-card border px-5 py-5">
+            <h2 id="order-price" className="text-base font-bold">
               {t("detail.price")}
             </h2>
             <PriceSummary
@@ -438,8 +462,8 @@ export default async function Page({
               total={{ label: t("detail.total"), value: format.thb(order.totals.grossAmount) }}
             />
           </section>
-          <section aria-labelledby="order-delivery">
-            <h2 id="order-delivery" className="text-lg font-semibold">
+          <section aria-labelledby="order-delivery" className="border-border bg-surface rounded-card border px-5 py-5">
+            <h2 id="order-delivery" className="text-base font-bold">
               {t("detail.deliveryTo")}
             </h2>
             <ul className="mt-3 flex flex-col gap-2 text-sm">

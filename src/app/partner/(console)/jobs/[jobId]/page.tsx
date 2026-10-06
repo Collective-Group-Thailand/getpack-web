@@ -17,7 +17,7 @@ import {
 } from "@/features/partner/jobs/actions";
 import { Countdown } from "@/features/partner/jobs/Countdown";
 import { needsQcForm } from "@/features/partner/jobs/evidence";
-import { stepName } from "@/features/partner/jobs/JobCard";
+import { jobName, stepName } from "@/features/partner/jobs/JobCard";
 import { specLines } from "@/features/partner/jobs/spec";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
@@ -114,11 +114,11 @@ export default async function JobPage({ params }: Props) {
       description={
         job.promisedShipDate
           ? t("summary", {
-              title: job.title,
+              title: jobName(job),
               quantity: format.number(job.quantityOrdered),
               date: format.date(job.promisedShipDate),
             })
-          : t("summaryNoDate", { title: job.title, quantity: format.number(job.quantityOrdered) })
+          : t("summaryNoDate", { title: jobName(job), quantity: format.number(job.quantityOrdered) })
       }
       wide
     >

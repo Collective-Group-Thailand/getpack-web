@@ -8,6 +8,7 @@
   "summary": "ภายใน {length}×{width}×{height} มม.",
   "flatSheet": "แผ่นคลี่ {width} × {height} มม.",
   "material": "วัสดุ: {name}",
+  "autosaveOnStart": "บันทึกอัตโนมัติเมื่อเริ่มออกแบบ",
   "chooseBoxFirst": "เลือกกล่องเพื่อเริ่มออกแบบ",
   "saveFailedStorageFull": "บันทึกไม่สำเร็จ — พื้นที่จัดเก็บเต็ม (ลองลดขนาดรูปภาพ)",
   "imageTooLarge": "ไฟล์ใหญ่เกิน 8 MB",

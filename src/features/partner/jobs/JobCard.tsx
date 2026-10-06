@@ -16,6 +16,12 @@ export type JobSummary = Schemas["PartnerJobDto"];
 export const stepName = (step: { nameTh: string; nameEn: string }, locale: string) =>
   locale === "en" ? step.nameEn : step.nameTh;
 
+/**
+ * What a job is, in words: the product type's name (the quantity is shown beside it in its own
+ * words), falling back to the API's `title` — which spells the unit as the spec stores it ("piece").
+ */
+export const jobName = (job: Pick<JobSummary, "productTypeNameTh" | "title">) => job.productTypeNameTh ?? job.title;
+
 /** One job as the floor scans a list: number, what it is, where it stands, what is due. */
 export async function JobCard({ job }: { job: JobSummary }) {
   const [t, format, locale] = await Promise.all([getTranslations("partnerJobs.card"), getFormat(), getLocale()]);
@@ -40,7 +46,7 @@ export async function JobCard({ job }: { job: JobSummary }) {
         ) : null}
         <Icon name="chevron-right" size={24} className="text-muted ms-auto" />
       </span>
-      <span className="font-medium">{job.title}</span>
+      <span className="font-medium">{jobName(job)}</span>
       <span className="text-muted flex flex-wrap gap-x-3 text-sm">
         <span>{t("quantity", { quantity: format.number(job.quantityOrdered) })}</span>
         {job.promisedShipDate ? <span>{t("ship", { date: format.date(job.promisedShipDate) })}</span> : null}

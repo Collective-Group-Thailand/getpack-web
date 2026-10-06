@@ -5,6 +5,8 @@ import { getSupportChannels } from "@/features/customer/catalog/api.server";
 import { ContactForm } from "@/features/customer/help/ContactForm";
 import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { Link } from "@/i18n/navigation";
+import { Icon } from "@/ui/icons";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("help.contact");
@@ -17,8 +19,9 @@ export default async function Page() {
   return (
     <div className="max-w-content mx-auto grid w-full gap-10 px-5 py-10 md:px-8 md:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <header className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-muted">{t("intro")}</p>
+        <p className="eyebrow">{t("eyebrow")}</p>
+        <h1 className="text-4xl leading-tight md:text-5xl">{t("title")}</h1>
+        <p className="text-muted text-lg leading-relaxed">{t("intro")}</p>
         {/* LINE first, as the channel the team answers fastest (UX audit, /contact). */}
         {channels?.lineOaId ? (
           <Button asChild size="lg" className="self-start" iconStart="chat">
@@ -82,6 +85,37 @@ export default async function Page() {
             ]}
           />
         ) : null}
+        {/* The answers a customer can reach without waiting for anyone. */}
+        <nav aria-label={t("selfServe")} className="mt-4">
+          <p className="text-muted mb-2 text-sm font-semibold">{t("selfServe")}</p>
+          <ul className="border-border bg-surface divide-border divide-y rounded-[var(--radius-card)] border">
+            {(
+              [
+                ["track", "/track", "truck"],
+                ["help", "/help", "help"],
+                ["faq", "/faq", "chat"],
+              ] as const
+            ).map(([key, href, icon]) => (
+              <li key={key}>
+                <Link href={href} className="group hover:bg-surface-subtle flex items-center gap-3.5 px-4 py-3.5">
+                  <span className="bg-primary-subtle text-primary grid size-10 shrink-0 place-items-center rounded-xl">
+                    <Icon name={icon} size={18} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-semibold">{t(`shortcut.${key}.title`)}</span>
+                    <span className="text-muted block text-sm">{t(`shortcut.${key}.body`)}</span>
+                  </span>
+                  <Icon
+                    name="arrow-right"
+                    size={16}
+                    aria-hidden="true"
+                    className="text-muted duration-fast transition-transform motion-safe:group-hover:translate-x-1"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </header>
       <section aria-labelledby="contact-form" className="border-border bg-surface rounded-card border p-6">
         <h2 id="contact-form" className="mb-4 text-lg font-semibold">

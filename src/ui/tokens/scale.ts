@@ -93,7 +93,8 @@ export const EASING = {
  */
 export const FONT_SIZE = {
   xs: "clamp(0.75rem, 0.73rem + 0.09vw, 0.8125rem)",
-  sm: "clamp(0.875rem, 0.85rem + 0.11vw, 0.9375rem)",
+  /** 14 px everywhere (design-system scale 12/14/16; the v2 boards' controls and lists). */
+  sm: "0.875rem",
   base: "1rem",
   lg: "clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem)",
   xl: "clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem)",

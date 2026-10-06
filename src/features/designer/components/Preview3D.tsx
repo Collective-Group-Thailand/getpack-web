@@ -17,6 +17,7 @@ import {
 } from "@packio/dieline";
 
 import { IconButton } from "@/ui/components/IconButton";
+import { cn } from "@/ui/lib/cn";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 
 import { useCommentPins } from "../comments/pins";
@@ -64,6 +65,8 @@ export interface Preview3DProps {
   finishMasks?: Partial<Record<"foil" | "spot_uv" | "emboss" | "window", string>>;
   /** Fill the parent (the studio's split view) instead of a square card. */
   fill?: boolean;
+  /** With `fill`: classes for everything under the box (the studio hides it in its small floating card). */
+  controlsClassName?: string;
   /** Face-pick buttons for keyboard and screen readers (every canvas action has a panel equivalent). */
   pickLabel?: string;
 }
@@ -437,6 +440,25 @@ export function Grab({ rendererRef }: { rendererRef: React.RefObject<THREE.WebGL
   return null;
 }
 
+/** How far the camera sits from a square view; the box fits this at the camera's vertical field. */
+const CAMERA_Z = 4.2;
+
+/**
+ * Keeps the whole box in a tall, narrow view (the studio's split column): the field of view is
+ * vertical, so a portrait canvas moves the camera back by its aspect.
+ */
+function FitCamera() {
+  const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
+  const get = useThree((s) => s.get);
+  useEffect(() => {
+    const { camera, invalidate } = get();
+    camera.position.z = CAMERA_Z / Math.min(1, aspect);
+    camera.updateProjectionMatrix();
+    invalidate();
+  }, [aspect, get]);
+  return null;
+}
+
 const STEP = Math.PI / 12;
 export const INITIAL = { x: 0.35, y: -0.6 };
 const TILT = Math.PI / 2;
@@ -470,6 +492,7 @@ export default function Preview3D({
   focusedFaceId,
   onPickFace,
   fill = false,
+  controlsClassName,
   pickLabel,
   finishMasks,
 }: Preview3DProps) {
@@ -521,55 +544,9 @@ export default function Preview3D({
   const rotate = (dx: number, dy: number) =>
     setRotation((r) => ({ x: Math.max(-TILT, Math.min(TILT, r.x + dy)), y: r.y + dx }));
 
-  return (
-    <div className={fill ? "flex min-h-0 flex-1 flex-col gap-2" : "space-y-3"}>
-      <div
-        role="img"
-        aria-label={labels.canvas}
-        className={
-          fill
-            ? "bg-surface-subtle min-h-48 w-full flex-1 touch-none overflow-hidden rounded-lg"
-            : "bg-surface-subtle aspect-square w-full touch-none overflow-hidden rounded-lg"
-        }
-        onPointerDown={(event) => {
-          (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
-          drag.current = { x: event.clientX, y: event.clientY, start: rotation };
-        }}
-        onPointerMove={(event) => {
-          const d = drag.current;
-          if (!d) return;
-          setRotation({
-            x: Math.max(-TILT, Math.min(TILT, d.start.x + (event.clientY - d.y) / 120)),
-            y: d.start.y + (event.clientX - d.x) / 120,
-          });
-        }}
-        onPointerUp={() => (drag.current = null)}
-        onPointerCancel={() => (drag.current = null)}
-      >
-        <Canvas
-          camera={{ position: [0, 0, 4.2], fov: 35 }}
-          dpr={[1, 2]}
-          gl={{ preserveDrawingBuffer: true, antialias: true }}
-          frameloop="demand"
-        >
-          <Grab rendererRef={renderer} />
-          <ambientLight color={light.ambient[0]} intensity={light.ambient[1]} />
-          <directionalLight color={light.key[0]} intensity={light.key[1]} position={[3, 4, 5]} />
-          <directionalLight color={light.fill[0]} intensity={light.fill[1]} position={[-4, -1, -3]} />
-          <Box
-            sheet={{ width: dieline.width, height: dieline.height }}
-            geometry={geometry}
-            artwork={artwork}
-            insideArtwork={insideArtwork}
-            boardColour={boardColour}
-            rotation={rotation}
-            focusedFaceId={focusedFaceId}
-            onPickFace={onPickFace}
-            finishMasks={finishMasks}
-          />
-        </Canvas>
-      </div>
-
+  // Everything under the box: face picking, turning, folding, lighting.
+  const controls = (
+    <>
       {onPickFace && faceLabels ? (
         <div
           className={
@@ -661,6 +638,60 @@ export default function Preview3D({
           label: labels.lightingPreset[preset],
         }))}
       />
+    </>
+  );
+
+  return (
+    <div className={fill ? "flex min-h-0 flex-1 flex-col gap-2" : "space-y-3"}>
+      <div
+        role="img"
+        aria-label={labels.canvas}
+        className={
+          fill
+            ? "bg-surface-subtle min-h-48 w-full flex-1 touch-none overflow-hidden rounded-lg"
+            : "bg-surface-subtle aspect-square w-full touch-none overflow-hidden rounded-lg"
+        }
+        onPointerDown={(event) => {
+          (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
+          drag.current = { x: event.clientX, y: event.clientY, start: rotation };
+        }}
+        onPointerMove={(event) => {
+          const d = drag.current;
+          if (!d) return;
+          setRotation({
+            x: Math.max(-TILT, Math.min(TILT, d.start.x + (event.clientY - d.y) / 120)),
+            y: d.start.y + (event.clientX - d.x) / 120,
+          });
+        }}
+        onPointerUp={() => (drag.current = null)}
+        onPointerCancel={() => (drag.current = null)}
+      >
+        <Canvas
+          camera={{ position: [0, 0, CAMERA_Z], fov: 35 }}
+          dpr={[1, 2]}
+          gl={{ preserveDrawingBuffer: true, antialias: true }}
+          frameloop="demand"
+        >
+          <Grab rendererRef={renderer} />
+          <FitCamera />
+          <ambientLight color={light.ambient[0]} intensity={light.ambient[1]} />
+          <directionalLight color={light.key[0]} intensity={light.key[1]} position={[3, 4, 5]} />
+          <directionalLight color={light.fill[0]} intensity={light.fill[1]} position={[-4, -1, -3]} />
+          <Box
+            sheet={{ width: dieline.width, height: dieline.height }}
+            geometry={geometry}
+            artwork={artwork}
+            insideArtwork={insideArtwork}
+            boardColour={boardColour}
+            rotation={rotation}
+            focusedFaceId={focusedFaceId}
+            onPickFace={onPickFace}
+            finishMasks={finishMasks}
+          />
+        </Canvas>
+      </div>
+
+      {fill ? <div className={cn("flex shrink-0 flex-col gap-2", controlsClassName)}>{controls}</div> : controls}
     </div>
   );
 }

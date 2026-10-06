@@ -41,7 +41,7 @@ export async function cardFacts(card: Facts) {
     price: amount ? (
       <span className="flex flex-wrap items-baseline gap-x-1.5">
         <span className="text-muted text-sm">{t("price.fromLabel")}</span>
-        <span className="text-primary text-lg font-bold tabular-nums">{amount}</span>
+        <span className="serif text-primary text-xl tabular-nums">{amount}</span>
         <span className="text-muted text-sm">{t("price.perPiece")}</span>
         {campaign && card.referencePrice ? (
           <s
@@ -65,8 +65,18 @@ export async function cardFacts(card: Facts) {
       </Badge>
     ),
     promoBadge: campaign ? (
-      <Badge tone="accent" appearance="solid" icon="tag">
-        {t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}
+      // The short label on the card's corner; the whole offer with its end date for screen readers
+      // and on hover (the long form ran off the card, round 2).
+      <Badge
+        tone="accent"
+        appearance="solid"
+        className="max-w-[12rem]"
+        title={t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}
+      >
+        <span className="truncate" aria-hidden="true">
+          {campaign.label}
+        </span>
+        <span className="sr-only">{t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}</span>
       </Badge>
     ) : null,
   };
