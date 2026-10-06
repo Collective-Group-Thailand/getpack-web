@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { JOB_STATUS } from "@/domain/status";
@@ -12,6 +13,7 @@ import { STALE_TIME } from "@/lib/query/defaults";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
+import { Sheet } from "@/ui/components/Sheet";
 import { Field } from "@/ui/components/Field";
 import { Select } from "@/ui/components/Select";
 import { Icon } from "@/ui/icons";
@@ -63,8 +65,10 @@ export function ProductionBoard() {
       ).data!,
     staleTime: STALE_TIME.live,
   });
+  const [opened, setOpened] = useState<string | null>(null);
   if (board.isError) return <QueryError error={board.error} onRetry={() => void board.refetch()} />;
   if (jobs.isError) return <QueryError error={jobs.error} onRetry={() => void jobs.refetch()} />;
+  const openedJob = (jobs.data?.data ?? []).find((job) => job.id === opened) ?? null;
   // Every stage, empty or not, in the order work flows (UX audit, /production).
   const columns = stageColumns(board.data?.columns ?? [], jobs.data?.data ?? []);
   const stepLabel = new Map(
@@ -146,12 +150,15 @@ export function ProductionBoard() {
                         <li key={job.id}>
                           <Card padding="sm" className={cn("flex flex-col gap-1.5", job.atRisk && "border-danger")}>
                             <p className="flex items-center justify-between gap-2 text-sm">
-                              <Link
-                                href={`/orders/${job.orderId}?tab=production`}
+                              {/* Opens the job beside the board, not a new page (UX audit, /production). */}
+                              <button
+                                type="button"
+                                onClick={() => setOpened(job.id)}
                                 className="text-primary font-mono font-medium hover:underline"
+                                aria-haspopup="dialog"
                               >
                                 {job.jobNo}
-                              </Link>
+                              </button>
                               {job.inspectionRequired ? (
                                 <Icon name="clipboard-check" size={16} label={t("inspection")} />
                               ) : null}
@@ -213,6 +220,82 @@ export function ProductionBoard() {
           })}
         </ol>
       </div>
+
+      <Sheet
+        open={openedJob !== null}
+        onOpenChange={(open) => (open ? undefined : setOpened(null))}
+        side="end"
+        title={openedJob ? openedJob.jobNo : ""}
+        description={
+          openedJob
+            ? `${openedJob.productTypeNameTh ?? productTypes.labelOf(openedJob.productTypeCode)} · ${t("pieces", {
+                quantity: format.number(openedJob.quantityOrdered),
+              })} · ${openedJob.factoryCode}`
+            : undefined
+        }
+        closeLabel={t("close")}
+      >
+        {openedJob ? (
+          <div className="flex flex-col gap-5">
+            {openedJob.promisedShipDate ? (
+              <p className={cn("text-sm", openedJob.atRisk && "text-danger-subtle-fg font-medium")}>
+                {t("promised")} {format.date(openedJob.promisedShipDate)}
+                {openedJob.predictedFinishOn
+                  ? ` · ${t("predicted", { date: format.date(openedJob.predictedFinishOn) })}`
+                  : null}
+              </p>
+            ) : null}
+            <section aria-labelledby="job-steps">
+              <h3 id="job-steps" className="mb-2 text-sm font-semibold">
+                {t("steps")}
+              </h3>
+              <ol className="flex flex-col gap-2">
+                {openedJob.milestones.map((milestone) => (
+                  <li key={milestone.id} className="flex items-start justify-between gap-3 text-sm">
+                    <span className="flex items-center gap-2">
+                      <Icon
+                        name={
+                          milestone.status === "completed"
+                            ? "check"
+                            : milestone.status === "in_progress"
+                              ? "timer"
+                              : milestone.status === "skipped"
+                                ? "minus"
+                                : "clock"
+                        }
+                        size={16}
+                        className={milestone.status === "completed" ? "text-success" : "text-muted"}
+                      />
+                      {locale === "en" ? milestone.nameEn : milestone.nameTh}
+                    </span>
+                    <span className="text-muted text-xs">
+                      {milestone.completedAt
+                        ? format.date(milestone.completedAt)
+                        : milestone.dueAt
+                          ? t("dueOn", { date: format.date(milestone.dueAt) })
+                          : null}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+            {openedJob.inspection ? (
+              <section aria-labelledby="job-qc" className="border-border rounded-control border p-3 text-sm">
+                <h3 id="job-qc" className="mb-1 font-semibold">
+                  {t("qc")}
+                </h3>
+                <p className="text-muted">
+                  {t("qcSample", { size: format.number(openedJob.inspection.sampleSize) })} ·{" "}
+                  {t(`qcStates.${openedJob.inspection.status}`)}
+                </p>
+              </section>
+            ) : null}
+            <Button asChild variant="secondary" iconEnd="arrow-right">
+              <Link href={`/orders/${openedJob.orderId}?tab=production`}>{t("openOrder")}</Link>
+            </Button>
+          </div>
+        ) : null}
+      </Sheet>
     </div>
   );
 }
