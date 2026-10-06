@@ -235,7 +235,7 @@
   },
   "summaryOther": "Size {size} mm",
   "saveState": {
-    "savedAt": "Saved {time}",
+    "savedAt": "Autosaved {time}",
     "saving": "Saving…",
     "offline": "Offline — kept on this device, saves when back online",
     "conflict": "Saved elsewhere",
