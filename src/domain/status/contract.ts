@@ -88,6 +88,8 @@ export type RfqBasketStatus = Schemas["RfqBasketStatus"];
 export type AssistantTurnOutcome = Schemas["AssistantTurnOutcome"];
 export type CallOffStatus = Schemas["CallOffStatus"];
 export type CallOffReleaseStatus = Schemas["CallOffReleaseStatus"];
+export type StructuralRequestStatus = Schemas["StructuralRequestStatus"];
+export type StyleIntakeStatus = Schemas["StyleIntakeStatus"];
 
 /** A proof version sent to the customer (B4.1). **Source: contract** (U-F0.3). */
 export type ProofStatus = Schemas["ProofStatus"];

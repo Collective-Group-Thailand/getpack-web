@@ -312,3 +312,13 @@ Plain production build, private port (`LHCI_PORT=3270`):
 | `/studio/new?…` | 505,649 | 505,652 | unchanged |
 
 Every storefront page carries ≈ 460 B more: the menu sheet that holds the navigation below `lg` (six Thai labels overflowed a 768 px tablet; the sheet keeps Escape and close-on-follow). The home page adds the quick start and the newsletter form (≈ 4 KB). The quick start first used `Select` and cost 9.6 KB on Radix's listbox; it now uses `NativeSelect` (new in `src/ui`, the platform's picker), which is also the better control on a phone.
+
+## U3.6 — dieline intake and structural requests (2026-10-06)
+
+Three script ratchets, each by the copy and entry points U3.6 adds to every page of its zone (the
+screens themselves load on their own routes; the DXF reader and the style library only on the
+offer's page): `customer-app` 340200 → **340300** (measured 340232: the account menu entry),
+`customer-marketing` 270000 → **270100** (270018: the call to action on `/styles`), `partner`
+301000 → **301400** (301307: the "more" menu entry). After merging main's U5 layer: `partner`
+301400 → **301600** (301490); `studio` stays at U5.5's **505800** (the dieline core's
+share of the wave 2 / 3 extensions fits under it).

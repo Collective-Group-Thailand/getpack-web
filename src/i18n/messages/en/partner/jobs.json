@@ -264,5 +264,36 @@
     "noResults": "No guide matches",
     "published": "Published {date}",
     "back": "Back to all guides"
+  },
+  "intakes": {
+    "title": "Offer a dieline",
+    "body": "Send a structure the factory makes for Packio to consider for its library",
+    "offerTitle": "Send a new dieline",
+    "offerBody": "A DXF or PDF; Prepress compares it with the library",
+    "closed": "Dieline offers are not open yet (no intake terms are in force)",
+    "listTitle": "Dielines sent",
+    "empty": "No dielines sent yet",
+    "sent": "Sent {date} · {file}",
+    "asTemplate": "Used as a template of {code}",
+    "asRecipe": "Added as a new style {code}",
+    "rejected": "Rejected: {reason}",
+    "submit": {
+      "readOnly": "Only the factory's owner or planner can send dielines",
+      "drop": "Drop the dieline file here",
+      "browse": "Choose a file",
+      "hint": "DXF or PDF, up to 50 MB",
+      "chosen": "Chosen: {name}",
+      "tooLarge": "{name} is over 50 MB",
+      "wrongType": "{name} is not a DXF or PDF",
+      "title": "Name",
+      "baseCode": "Closest library style (if known)",
+      "baseCodeHint": "e.g. PK-CF-01",
+      "note": "Note",
+      "termsTitle": "Dieline intake terms, version {version}",
+      "accept": "I accept the intake terms",
+      "send": "Send the dieline",
+      "sent": "Dieline sent",
+      "failed": "The dieline could not be sent"
+    }
   }
 }

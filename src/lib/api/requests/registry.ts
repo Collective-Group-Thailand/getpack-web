@@ -9,6 +9,7 @@
 import { storeAssistantRequests } from "./store-assistant";
 import { storeContentRequests } from "./store-content";
 import { storeHomeRequests } from "./store-home";
+import { adminStructuralRequests } from "./admin-structural";
 import { storeSupportRequests } from "./store-support";
 
 export const REQUESTS = {
@@ -16,6 +17,7 @@ export const REQUESTS = {
   ...storeContentRequests,
   ...storeAssistantRequests,
   ...storeHomeRequests,
+  ...adminStructuralRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

@@ -678,5 +678,22 @@
     "refused": "Refused",
     "handedOff": "Handed to the team",
     "failed": "Failed"
+  },
+  "structuralRequest": {
+    "submitted": "Submitted",
+    "assigned": "Designer assigned",
+    "quoted": "Design fee quoted",
+    "delivered": "Design delivered",
+    "approved": "Design approved",
+    "published": "Published in the library",
+    "declined": "Declined",
+    "cancelled": "Cancelled"
+  },
+  "styleIntake": {
+    "submitted": "Awaiting review",
+    "matched": "Matched",
+    "approvedRecipe": "Approved as a new style",
+    "approvedTemplate": "Approved as a template",
+    "rejected": "Rejected"
   }
 }

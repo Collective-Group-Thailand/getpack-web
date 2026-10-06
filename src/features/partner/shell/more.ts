@@ -11,6 +11,7 @@ export interface MoreItem {
     | "claims"
     | "performance"
     | "knowledge"
+    | "styleIntakes"
     | "requests"
     | "settings";
   href: string;
@@ -30,6 +31,7 @@ export const MORE_ITEMS: MoreItem[] = [
   { key: "claims", href: "/claims", icon: "shield-alert", permission: "factory_claims.read" },
   { key: "performance", href: "/performance", icon: "chart-line", permission: "factory_scorecard.read" },
   { key: "knowledge", href: "/knowledge", icon: "article" },
+  { key: "styleIntakes", href: "/style-intakes", icon: "upload", permission: "factory_profile.read" },
   { key: "requests", href: "/requests", icon: "send" },
   { key: "settings", href: "/settings", icon: "settings" },
 ];

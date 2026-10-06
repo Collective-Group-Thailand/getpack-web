@@ -7,6 +7,7 @@ import { OrdersList } from "@/features/admin/orders";
 import { ALL_ORDERS, allOrdersList, ordersList } from "@/features/admin/orders/resources";
 import { can, getActor } from "@/lib/auth/actor";
 import { Button } from "@/ui/components/Button";
+import { StyleWorkLinks } from "@/features/admin/structural/StyleWorkLinks";
 import { PageHeader } from "@/ui/components/PageHeader";
 import Link from "next/link";
 
@@ -35,11 +36,15 @@ export default async function OrdersPage({ searchParams }: Props) {
         description={t("description")}
         actions={
           // The sample queue (U2.F3): packio-api's menu has no entry for it yet (CONTRACT-REQUEST admin.menu-samples).
-          can(actor, "samples.read") ? (
-            <Button asChild variant="secondary" iconStart="package-check">
-              <Link href="/samples">{tSamples("link")}</Link>
-            </Button>
-          ) : null
+          <span className="flex flex-wrap gap-2">
+            {can(actor, "samples.read") ? (
+              <Button asChild variant="secondary" iconStart="package-check">
+                <Link href="/samples">{tSamples("link")}</Link>
+              </Button>
+            ) : null}
+            {/* Structural design requests and dieline offers (U3.6): no menu entry yet either. */}
+            <StyleWorkLinks />
+          </span>
         }
       />
       <OrdersList initial={initial} />

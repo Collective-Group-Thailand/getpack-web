@@ -18,6 +18,8 @@ export const AWAITING_TRIAGE: readonly string[] = [
   // U-F3 (2026-10-06): the footer's company identity, the newsletter sign-up.
   "GET /v1/store/company-identity",
   "POST /v1/store/newsletter/actions/subscribe",
+  // U3.6 (2026-10-06): the staff a structural design request can be assigned to.
+  "GET /v1/admin/structural-requests/designers",
 ];
 
 /**
