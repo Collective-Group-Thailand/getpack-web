@@ -49,14 +49,14 @@ export interface Principal {
 export function principalOf(request: Request): Principal | null {
   const header = request.headers.get("authorization");
   const value = header?.startsWith("Bearer ") ? header.slice(7) : null;
-  const match = value?.match(/^seed\.access\.token\.(customer|staff|partner)(?:\.([a-z_]+))?$/);
+  const match = value?.match(/^seed\.access\.token\.(customer|staff|partner)(?:\.([a-z0-9_]+))?$/);
   if (!match) return null;
   return { audience: match[1] as Audience, persona: match[2] };
 }
 
 /** Parses a mock refresh token the same way. */
 export function principalOfRefresh(token: string | undefined): Principal | null {
-  const match = token?.match(/^seed-refresh-token-(customer|staff|partner)(?:-([a-z_]+))?$/);
+  const match = token?.match(/^seed-refresh-token-(customer|staff|partner)(?:-([a-z0-9_]+))?$/);
   if (!match) return null;
   return { audience: match[1] as Audience, persona: match[2] };
 }

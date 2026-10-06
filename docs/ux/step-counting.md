@@ -50,5 +50,8 @@ Guards keep a walk honest:
 - **New required fields are flagged.** Every visible required field on every screen is compared with the journey's allow-list in `e2e/journeys/budgets.ts`. A new one means the scorecard (and the budget) must be updated in the same change — scorecard §4.
 - **Budgets come from the scorecard.** `budgets.ts` is checked against `competitive-scorecard.md` §2 by a unit test, so the two cannot drift.
 
-Until U5.8 an over-budget journey or a new required field is **reported, not failed**
-(`STEP_BUDGETS=enforce` turns both into failures; U5.8 sets it and makes the CI job blocking).
+Since U5.8 the counters are **blocking in CI** (`STEP_BUDGETS=enforce`): a journey over its budget,
+a new required field or a walk marked pending fails the job. A journey that a decision or an API
+rule keeps over budget passes only within its known exception (`competitive-scorecard.md` §5), and
+fails once it is back within budget while still listed, so the exception is removed. Locally,
+without the variable, the same findings are reported, not failed.

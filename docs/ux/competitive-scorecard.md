@@ -42,3 +42,13 @@ Any failed gate blocks launch of the affected journey and creates a fix ticket w
 - Playwright "step counters" for T1–T12 on our side: fail CI when a journey exceeds its step budget or a required field is added without a scorecard update.
 - Funnel dashboards (studio start → add to cart, configurator → quote → cart, claim start → submit) with alerts on drops > 15 % week over week.
 - Session replay with PII masking on key journeys (consent-based) to find rage clicks and dead ends.
+
+## 5. Known exceptions to the step budgets
+A journey that a business decision or an API rule keeps over its §2 budget is listed here with the count it has today as its **ceiling**. The step counters are blocking in CI since U5.8 (`STEP_BUDGETS=enforce`): a journey fails when it is over budget without an exception, above its ceiling, or back within budget while still listed here (remove the row). An exception never changes the budget, and is reviewed at the first scorecard round after launch, when a failed gate starts blocking the journey (D-217). `e2e/journeys/budgets.ts` (`EXCEPTIONS`) is the machine-readable copy; a unit test fails when the two disagree.
+
+| Task | Ceiling | Cause | Owner of the cause |
+|---|---|---|---|
+| T5 | 5 steps | D-182: the customer must choose the measurement basis before a price (no silent default) | Pricing owner (D-182) |
+| T9 | 7 steps | D-082: a carton photo is required with every claim (store.claims.getForm cartonPhotosMin); D-198: the customer chooses the remedy | CS Lead (D-082 per claim type) · packio-api |
+| T11 | 7 taps | packio-api: factory steps run strictly in order and a photo is taken only when a step finishes | Partner Manager · packio-api |
+| T12 | 8 steps | D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 3 screens — a dieline entry without the library is open | Marketing (D-203) · packio-web (dieline entry) |

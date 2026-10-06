@@ -25,7 +25,7 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     // `e2e/journeys/*.test.ts` checks the step budgets against the scorecard (U5.0); every other
     // file under `e2e/` is a Playwright spec and never matches.
-    include: ["src/**/*.{test,spec}.{ts,tsx}", "e2e/journeys/**/*.test.ts"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}", "e2e/journeys/**/*.test.ts", "mocks/**/*.test.ts"],
     exclude: ["node_modules/**", ".next/**", "packages/**"],
   },
 });
