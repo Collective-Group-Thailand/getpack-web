@@ -19,6 +19,7 @@ import { Sheet } from "@/ui/components/Sheet";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
+import { Icon } from "@/ui/icons";
 
 import { useCan } from "../console/actor";
 import { adminBrowserApis } from "../console/api";
@@ -68,9 +69,9 @@ export function SlipsQueue({ initial }: { initial: InitialPage<SlipItem> | null 
             href={`/finance/payments/${row.paymentId}`}
             className="text-primary font-mono text-sm whitespace-nowrap hover:underline"
           >
-            {row.groupCode ?? row.paymentId.slice(0, 8)}
+            {row.groupCode ?? t("review.noGroup")}
           </Link>
-          <p className="text-muted text-xs">{tFinance(`checks.${row.lastCheck ?? "none"}`)}</p>
+          <p className="text-muted text-xs">{tFinance(`checks.${checkKey(row)}`)}</p>
         </div>
       ),
     },
@@ -130,6 +131,18 @@ export function SlipsQueue({ initial }: { initial: InitialPage<SlipItem> | null 
 type Decision = "approve" | "reject";
 
 /**
+ * What the automatic check found, in words that match the figures beside it (round 2, B11). The
+ * API reports one `mismatch` for any field that differs; when the declared amount *is* the amount
+ * due (the same decimal string — compared, never calculated), the difference is elsewhere — the
+ * time or the receiving account — and saying "the amount does not match" sent Finance looking at
+ * two equal numbers.
+ */
+function checkKey(slip: { lastCheck: SlipItem["lastCheck"]; declaredAmount: string; expectedAmount: string }): string {
+  if (slip.lastCheck === "mismatch" && slip.declaredAmount === slip.expectedAmount) return "mismatchOther";
+  return slip.lastCheck ?? "none";
+}
+
+/**
  * One slip beside what it should pay (D-061). Approving needs the bank's transaction reference —
  * the API refuses one already used, which is how a duplicate slip is caught — and is confirmed by
  * retyping the group code, since it pays the instalment and issues the tax invoice / receipt.
@@ -156,6 +169,7 @@ export function SlipReview({
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirming, setConfirming] = useState(false);
+  const [broken, setBroken] = useState(false);
 
   // The slip image is the slip's own file (`SlipQueueItemDto.fileId`), read through the generic
   // signed download (`admin.files.download`, five minutes; each download is audited, D-061).
@@ -171,7 +185,8 @@ export function SlipReview({
     enabled: Boolean(fileId),
     staleTime: 4 * 60_000,
   });
-  const code = slip.groupCode ?? slip.paymentId.slice(0, 8);
+  // Never part of a UUID on screen: a slip without its group reads "สลิป" (round 1, raw ids).
+  const code = slip.groupCode ?? t("noGroup");
 
   function check(): boolean {
     const next: Record<string, string> = {};
@@ -249,7 +264,7 @@ export function SlipReview({
               ),
             },
             { term: t("transferredAt"), description: <When at={slip.declaredTransferredAt} absoluteOnly /> },
-            { term: t("check"), description: tFinance(`checks.${slip.lastCheck ?? "none"}`) },
+            { term: t("check"), description: tFinance(`checks.${checkKey(slip)}`) },
             {
               term: t("sla"),
               description: slip.slaDueAt ? <When at={slip.slaDueAt} absoluteOnly /> : "—",
@@ -268,12 +283,33 @@ export function SlipReview({
         <figure className="border-border bg-surface-subtle flex flex-col items-center gap-2 rounded-md border p-3">
           {fileId && image.isPending ? (
             <Skeleton className="h-80 w-52" />
-          ) : image.data?.url ? (
+          ) : image.data?.url && !broken ? (
             // eslint-disable-next-line @next/next/no-img-element -- a short-lived signed URL, not an optimisable asset
-            <img src={image.data.url} alt={t("imageAlt", { code })} className="max-h-80 w-auto rounded" />
+            <img
+              src={image.data.url}
+              alt={t("imageAlt", { code })}
+              className="max-h-80 w-auto rounded"
+              onError={() => setBroken(true)}
+            />
           ) : (
-            <p className="text-muted text-sm">{t("noImage")}</p>
+            // A slip that is a PDF, or an image the browser cannot draw, is a placeholder with the
+            // file one click away — never a broken image showing its alt text (round 2, B11).
+            <div className="text-muted flex h-48 w-full flex-col items-center justify-center gap-2 text-sm">
+              <Icon name="receipt" size={32} aria-hidden="true" />
+              <p>{image.data?.url ? t("imageUnavailable") : t("noImage")}</p>
+            </div>
           )}
+          {image.data?.url ? (
+            <a
+              href={image.data.url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary inline-flex min-h-10 items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+            >
+              <Icon name="external" size={16} aria-hidden="true" />
+              {t("openFile")}
+            </a>
+          ) : null}
           {/* CONTRACT-GAP admin.slip-file — the slip carries its file id only, so the file's name is not shown. */}
         </figure>
 

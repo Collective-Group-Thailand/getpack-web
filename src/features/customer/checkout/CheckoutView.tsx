@@ -10,6 +10,7 @@ import { useFormat } from "@/features/shared/format/useFormat";
 import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
+import { newIdempotencyKey } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
@@ -40,8 +41,6 @@ const TaxProfileSheet = dynamic(() => import("./TaxProfileSheet").then((module) 
 type Preview = Schemas["CheckoutPreviewDto"];
 type Body = Schemas["CheckoutDto"];
 
-const newKey = () =>
-  typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now());
 const NO_TAX = "__receipt__";
 /** The notices the storefront has words for (the contract names none; packio-api's checkout extensions do). */
 const KNOWN_NOTICES = new Set([
@@ -133,7 +132,7 @@ export function CheckoutView({
   const [placing, setPlacing] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [repriced, setRepriced] = useState<{ before: string } | null>(null);
-  const idempotencyKey = useRef(newKey());
+  const idempotencyKey = useRef(newIdempotencyKey());
   // The funnel's checkout step, once per visit, however the customer got here — the cart, or the
   // studio's "order now" straight to checkout (U4.6, U5.1).
   const started = useRef(false);
@@ -245,20 +244,31 @@ export function CheckoutView({
         router.push(`/account/orders?placed=${encodeURIComponent(group!.groupCode)}`);
         return;
       }
-      const { data: payment } = await api.POST("/v1/store/order-groups/{groupId}/payments", {
-        params: { path: { groupId: group!.id }, header: { "Idempotency-Key": `${idempotencyKey.current}:pay` } },
-        body: { method: chosenMethod },
-      });
-      router.push(`/checkout/pay/${payment!.id}`);
+      // The order exists from here on: whatever happens to the payment, the customer is taken to it
+      // and never left on an emptied checkout (round 2, B1). Its own key — the API takes a UUID only.
+      try {
+        const { data: payment } = await api.POST("/v1/store/order-groups/{groupId}/payments", {
+          params: { path: { groupId: group!.id }, header: { "Idempotency-Key": newIdempotencyKey() } },
+          body: { method: chosenMethod },
+        });
+        router.push(`/checkout/pay/${payment!.id}`);
+      } catch {
+        const [only] = group!.orders;
+        router.push(
+          group!.orders.length === 1 && only
+            ? `/account/orders/${only.id}?payment=not_started`
+            : `/account/orders?placed=${encodeURIComponent(group!.groupCode)}&payment=not_started`,
+        );
+      }
     } catch (error) {
       setConfirming(false);
       if (isApiError(error) && (error.code === "checkout.total_changed" || error.code === "checkout.price_expired")) {
         // Priced again from scratch: the customer sees both totals and confirms the new one.
         setRepriced({ before: data.totals.grossAmount });
-        idempotencyKey.current = newKey();
+        idempotencyKey.current = newIdempotencyKey();
         await preview.refetch();
       } else {
-        if (isApiError(error)) idempotencyKey.current = newKey();
+        if (isApiError(error)) idempotencyKey.current = newIdempotencyKey();
         setFailure(isApiError(error) ? error.detail : t("failed"));
       }
       setPlacing(false);

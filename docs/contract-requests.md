@@ -224,3 +224,15 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - **Ask:** on each `QuoteStepDto`, `savingVsFirstPct: string | null` — the per-piece saving of this quantity against the smallest priced quantity, as a decimal percent string (`"18.0"`), computed by the pricing engine.
 - **Why:** the audit's price panel shows "ประหยัด 18%" on each tier; the web never computes on money (CLAUDE.md), so the figure has to come from the API.
 - **Web meanwhile:** the tier table shows per piece and total only.
+
+## `store.order-group-company-approval` — the buyer sees who must approve (UX round 2, B2, 2026-10-06)
+
+- **Today:** an order group placed over the company's threshold is `pending_company_approval`, but `OrderGroupDto` does not say who decides or until when, and the buyer can read neither the company's approvals (403) nor its members.
+- **Ask:** on `OrderGroupDto`, `companyApproval: { approvers: UserRefDto[]; requestedAt: string; expiresAt: string | null; status: ApprovalStatus; decisionComment: string | null } | null` — the members holding `company_approver` for that branch, and the decision once made (a returned order shows the approver's note to the buyer).
+- **Web meanwhile:** the order says "รอผู้อนุมัติของบริษัท" with the time it was requested; the name appears once the field ships.
+
+## `store.company-approval-summary` — what the approver is asked to approve (UX round 2, B2, 2026-10-06)
+
+- **Today:** `CompanyApprovalDto` carries the group's code, amount, threshold, requester, branch and PO — not what was ordered.
+- **Ask:** add `items: { productNameTh, productNameEn, quantity, unit, specSummaryTh, specSummaryEn }[]` and `requesterNote: string | null` (the buyer's reason) so the approver decides from the request itself (mockup "CompanyApprovals").
+- **Web meanwhile:** the request shows code, amount, how far above the threshold, requester, branch, PO and order count.

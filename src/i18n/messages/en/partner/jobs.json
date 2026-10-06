@@ -295,5 +295,57 @@
       "sent": "Dieline sent",
       "failed": "The dieline could not be sent"
     }
+  },
+  "spec": {
+    "style": {
+      "term": "Box style",
+      "value": "{name}"
+    },
+    "internal": {
+      "term": "Inside size (mm)",
+      "value": "{size}"
+    },
+    "external": {
+      "term": "Outside size (mm)",
+      "value": "{size}"
+    },
+    "overCrease": {
+      "term": "Over-crease size (mm)",
+      "value": "{size}"
+    },
+    "caliper": {
+      "term": "Board caliper",
+      "value": "{mm} mm"
+    },
+    "material": {
+      "term": "Material",
+      "value": "{name}"
+    },
+    "print": {
+      "term": "Print",
+      "value": "Outside print in {count} areas — colours and placement from the approved file"
+    },
+    "noPrint": {
+      "term": "Print",
+      "value": "Unprinted"
+    },
+    "design": {
+      "own_file": {
+        "term": "Artwork",
+        "value": "Customer's own file"
+      },
+      "online_designer": {
+        "term": "Artwork",
+        "value": "Designed in the studio"
+      },
+      "hired_design": {
+        "term": "Artwork",
+        "value": "Designed by Packio"
+      },
+      "free_design": {
+        "term": "Artwork",
+        "value": "Designed by Packio"
+      }
+    }
   }
 }

@@ -46,6 +46,9 @@ export async function signInAsCustomer(page: Page, path = "/", phone = MOCK_OTP.
   await acceptCookies(page);
   await gotoHydrated(page, `${HOSTS.customer}/sign-in?returnTo=${encodeURIComponent(path)}`);
   await completeSignIn(page, phone, "page");
-  await expect(page).toHaveURL(new RegExp(`${HOSTS.customer}${path.replace(/[?]/g, "\\?")}$`));
+  // A new studio design seeded for the design step saves at once and takes its own address
+  // (`/studio/<id>`), so it may already have moved on (round 2, B6).
+  const landed = new RegExp(`${HOSTS.customer}${path.replace(/[?]/g, "\\?")}$`);
+  await expect(page).toHaveURL(path.startsWith("/studio/new") ? /\/studio\// : landed);
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });
 }

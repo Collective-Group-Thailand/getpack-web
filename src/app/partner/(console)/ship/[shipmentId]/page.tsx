@@ -160,7 +160,12 @@ export default async function ShipmentPage({ params }: Props) {
         </PartnerSection>
       ) : null}
 
-      {action("shipment.record_pod") && !action("shipment.record_pod")?.disabledReason ? (
+      {/* The POD is the hand-over at the destination: offered once the truck has left, not while
+          the trip still waits at the gate (the API also allows it at `ready`). */}
+      {action("shipment.record_pod") &&
+      !action("shipment.record_pod")?.disabledReason &&
+      shipment.status !== "ready" &&
+      shipment.status !== "draft" ? (
         <PartnerSection title={t("podTitle")} description={t("podBody")}>
           <Card padding="lg">
             <PodForm

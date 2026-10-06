@@ -13,6 +13,7 @@ import { queryKeys } from "@/lib/api/query-keys";
 import type { Schemas } from "@/lib/api/types";
 import { toast } from "@/ui/components/Toast";
 
+import { announceCartAdd } from "../cart/cart-events";
 import { editCart } from "../cart/cart-client";
 import { addGuestLine } from "../cart/guest-cart";
 import { buildCalculateBody } from "./build";
@@ -148,6 +149,7 @@ export function useQuoteActions({
           }),
         );
         void queryClient.invalidateQueries({ queryKey: queryKeys.resource("customer", "cart") });
+        announceCartAdd();
         track("cart_item_added", {
           route: "/configure/[slug]",
           productType: configurator.productTypeCode,
@@ -235,6 +237,7 @@ export function useQuoteActions({
         body: body as Parameters<typeof saveQuote>[0],
       });
       if (added) {
+        announceCartAdd();
         track("cart_item_added", {
           route: "/configure/[slug]",
           productType: configurator.productTypeCode,

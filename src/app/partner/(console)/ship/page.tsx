@@ -62,14 +62,17 @@ export default async function ShipPage({ searchParams }: Props) {
     ),
   ]);
   const manage = canAt(context, "factory_shipments.manage");
+  // A job every destination of which has had all its pieces sent is done here (round 2, B3): the
+  // plan still lists it, with nothing left to create.
+  const waiting = plan.data?.filter((job) => job.destinations.some((destination) => destination.remainingQuantity > 0));
 
   return (
     <PartnerPage title={t("title")} wide>
       <PartnerSection title={t("plan.title")} description={t("plan.body")}>
-        {plan.data ? (
-          plan.data.length ? (
+        {waiting ? (
+          waiting.length ? (
             <ul className="flex flex-col gap-3">
-              {plan.data.map((job) => (
+              {waiting.map((job) => (
                 <li key={job.jobId} id={`job-${job.jobId}`}>
                   <Card padding="md" className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -109,9 +112,11 @@ export default async function ShipPage({ searchParams }: Props) {
                             {manage && job.blockedReason !== "inspection_pending" ? (
                               <CreateShipment
                                 jobId={job.jobId}
+                                jobNo={job.jobNo}
                                 destination={{
                                   id: destination.destinationId,
                                   recipientName: destination.recipientName,
+                                  place: [destination.provinceNameTh, destination.postcode].join(" "),
                                   left: destination.remainingQuantity,
                                 }}
                               />

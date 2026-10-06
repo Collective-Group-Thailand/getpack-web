@@ -96,20 +96,16 @@ test.describe("a job from acceptance to delivery (F001)", () => {
     const shipped: string[] = [];
     for (let round = 0; round < 2; round += 1) {
       if (round === 1) await gotoHydrated(page, `${HOSTS.partner}/ship`);
-      await page
-        .getByLabel(/^น้ำหนัก/)
-        .first()
-        .fill("12");
-      await page
-        .getByRole("button", { name: /^สร้างการจัดส่งถึง/ })
-        .first()
-        .click();
+      // "สร้างการจัดส่ง" opens the trip's sheet (round 2, B3); creating it also packs it, so the
+      // labels and packing list exist when the sheet closes.
+      await page.getByRole("button", { name: /^สร้างการจัดส่ง/ }).first().click();
+      const sheet = page.getByRole("dialog", { name: "สร้างการจัดส่ง" });
+      await sheet.getByLabel(/^น้ำหนัก/).fill("12");
+      if (round === 0) await expectAxeClean(page);
+      await sheet.getByRole("button", { name: /^สร้างการจัดส่ง \+ พิมพ์ฉลาก/ }).click();
       await expect(page).toHaveURL(/\/ship\/[0-9a-f-]+$/);
       const shipmentNo = (await page.getByRole("heading", { level: 1 }).textContent())!;
       shipped.push(shipmentNo);
-      // A draft until it is packed: then the API makes its labels and packing list.
-      await page.getByRole("button", { name: /^แพ็กเสร็จ/ }).click();
-      await toast(page, `${shipmentNo} พร้อมส่งแล้ว`);
       if (round === 0) {
         await page.getByRole("link", { name: /พิมพ์ฉลากกล่อง/ }).click();
         await expect(page.getByRole("img", { name: "QR รหัสกล่องที่ 1" })).toBeVisible();

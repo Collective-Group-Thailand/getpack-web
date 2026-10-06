@@ -15,7 +15,6 @@ const BOX = "/studio/new?product=tuck-end-box&style=tuck-end&l=70&w=40&h=150&ste
 
 async function newDesign(page: Page): Promise<string> {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });

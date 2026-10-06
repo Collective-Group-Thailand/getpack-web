@@ -18,6 +18,7 @@ import {
 import { Countdown } from "@/features/partner/jobs/Countdown";
 import { needsQcForm } from "@/features/partner/jobs/evidence";
 import { stepName } from "@/features/partner/jobs/JobCard";
+import { specLines } from "@/features/partner/jobs/spec";
 import { getFormat } from "@/features/shared/format/server";
 import { StatusChip } from "@/features/shared/status/StatusChip";
 import { Callout } from "@/ui/components/Callout";
@@ -32,12 +33,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: (await getTranslations("partnerJobs.detail"))("metaTitle") };
 }
 
-/** A spec value of the job's open snapshot map, as text. */
-const specText = (value: unknown) =>
-  typeof value === "string" || typeof value === "number" || typeof value === "boolean"
-    ? String(value)
-    : JSON.stringify(value);
-
 /**
  * One job on the shop floor (F5 5.2) on `partner.production.*`: accept or reject within the window
  * (D-074), then the milestones in order with the one next action open, QC with photos (D-076),
@@ -50,11 +45,12 @@ const specText = (value: unknown) =>
  */
 export default async function JobPage({ params }: Props) {
   const { jobId } = await params;
-  const [t, tStages, tIssue, tQc, format, locale] = await Promise.all([
+  const [t, tStages, tIssue, tQc, tSpec, format, locale] = await Promise.all([
     getTranslations("partnerJobs.detail"),
     getTranslations("partnerJobs.stages"),
     getTranslations("partnerJobs.issue"),
     getTranslations("partnerJobs.qc"),
+    getTranslations("partnerJobs.spec"),
     getFormat(),
     getLocale(),
   ]);
@@ -103,7 +99,7 @@ export default async function JobPage({ params }: Props) {
   // The step's QC form is the latest check, and it must not have failed (D-076).
   const latest = [...checks].sort((a, b) => b.performedAt.localeCompare(a.performedAt))[0];
   const passedQc = Boolean(latest && latest.result !== "fail");
-  const spec = Object.entries(job.spec);
+  const spec = specLines(job.spec, (n) => format.number(n));
 
   return (
     <PartnerPage
@@ -241,7 +237,10 @@ export default async function JobPage({ params }: Props) {
             <Card padding="md">
               <DescriptionList
                 columns={1}
-                items={spec.map(([term, value]) => ({ term, description: specText(value) }))}
+                items={spec.map((line) => ({
+                  term: tSpec(`${line.key}.term`),
+                  description: tSpec(`${line.key}.value`, line.values ?? {}),
+                }))}
               />
             </Card>
           </PartnerSection>

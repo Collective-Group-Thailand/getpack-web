@@ -323,7 +323,8 @@
     "sentToCs": "Sent to sales — request {code}",
     "viewRfqs": "View requests",
     "leverApplied": "Created quotation {code} from this option",
-    "leverAppliedNoCode": "Created a new quotation from this option"
+    "leverAppliedNoCode": "Created a new quotation from this option",
+    "goToCart": "Go to cart"
   },
   "savedFrom": "Opened from your saved quotation {code}. The price below is worked out again at today's prices.",
   "savedFromNoCode": "Opened from a quotation you saved — priced again at today’s prices",

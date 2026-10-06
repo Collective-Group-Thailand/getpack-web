@@ -41,7 +41,6 @@ type CartItem = {
 test("studio → order sheet → cart: the version pinned at the studio's price", async ({ page }) => {
   test.setTimeout(120_000);
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
 
@@ -116,7 +115,6 @@ test("studio → order sheet → cart: the version pinned at the studio's price"
 
 async function newDesign(page: Page): Promise<string> {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
@@ -188,7 +186,6 @@ test("a company buyer sends the design for approval with a view link", async ({ 
   test.setTimeout(120_000);
   // The mock's Company Admin: a member of a company (D-281).
   await signInAsCustomer(page, BOX, "0867890123");
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });

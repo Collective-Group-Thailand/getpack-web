@@ -339,7 +339,13 @@ export function Box({
           onPickFace(faceId ?? null);
         }}
       >
+        {/*
+          Keyed on whether there is a map: three.js compiles a material's shader with or without
+          one and R3F only swaps the property, so a box that started blank kept drawing plain
+          white after its artwork arrived (round 2, B6). A new material compiles with the map.
+        */}
         <meshStandardMaterial
+          key={`${texture?.uuid ?? "plain"}:${window_?.uuid ?? "solid"}`}
           map={texture}
           color={texture ? "#ffffff" : boardColour}
           side={THREE.FrontSide}
@@ -394,6 +400,7 @@ export function Box({
       ) : null}
       <mesh geometry={geometry.board}>
         <meshStandardMaterial
+          key={inside ? `map-${inside.uuid}` : "plain"}
           attach="material-0"
           map={inside}
           color={inside ? "#ffffff" : boardColour}

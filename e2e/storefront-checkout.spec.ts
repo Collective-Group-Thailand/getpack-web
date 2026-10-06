@@ -209,6 +209,33 @@ test.describe("cart and checkout", () => {
     await expect(page.getByText("ชำระเงินสำเร็จ").first()).toBeVisible();
   });
 
+  test("the order is kept when its payment cannot start: the customer lands on it with the pay button (round 2, B1)", async ({
+    page,
+  }) => {
+    await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
+    await emptyCart(page);
+    await addBox(page, "500");
+    await gotoHydrated(page, `${HOSTS.customer}/checkout`);
+    // The payment gateway refuses once; every key the page sends must be a UUID (the API's rule).
+    const keys: string[] = [];
+    await page.route("**/bff/v1/store/order-groups/*/payments", async (route) => {
+      keys.push(route.request().headers()["idempotency-key"] ?? "");
+      await route.fulfill({
+        status: 502,
+        contentType: "application/problem+json",
+        body: JSON.stringify({ type: "about:blank", title: "Bad gateway", status: 502, code: "payments.provider_error" }),
+      });
+    });
+    const summary = page.getByRole("complementary", { name: "สรุปคำสั่งซื้อ" });
+    await summary.getByRole("button", { name: /ยืนยันและชำระ/ }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและชำระเงิน" }).click();
+    await expect(page).toHaveURL(/\/account\/orders.*payment=not_started/);
+    await expect(page.getByText("สร้างคำสั่งซื้อแล้ว แต่ยังเริ่มชำระเงินไม่สำเร็จ")).toBeVisible();
+    expect(keys.length).toBeGreaterThan(0);
+    for (const key of keys) expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    await page.unroute("**/bff/v1/store/order-groups/*/payments");
+  });
+
   test("a price that moved after review is shown old and new, and confirmed again", async ({ page }) => {
     await signInAsCustomer(page, "/cart", MOCK_BUYER_PHONE);
     await emptyCart(page);
