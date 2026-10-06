@@ -47,7 +47,10 @@
     "itemNotFoundTitle": "Not found",
     "itemNotFoundBody": "It may have been removed, or it is not visible to you.",
     "loadFailedTitle": "Could not load this",
-    "loadFailedBody": "Try again. If it keeps failing, report it with the request id."
+    "loadFailedBody": "Try again. If it keeps failing, report it with the request id.",
+    "reference": "Reference",
+    "copyReference": "Copy reference",
+    "referenceCopied": "Copied"
   },
   "notifications": {
     "label": "Notifications",

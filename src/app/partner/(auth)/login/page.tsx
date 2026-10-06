@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 import { PartnerLoginForm } from "@/features/partner/auth/PartnerLoginForm";
-import { safeReturnTo } from "@/features/shared/auth/return-to";
+import { signInReturnTo } from "@/features/shared/auth/return-to";
 import { getActor } from "@/lib/auth/actor";
 import { Card } from "@/ui/components/Card";
 import { BRAND_NAME } from "@/ui/brand";
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PartnerLoginPage({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
   const [t, params, actor] = await Promise.all([getTranslations("auth"), searchParams, getActor("partner")]);
 
-  const returnTo = safeReturnTo(params.returnTo);
+  const returnTo = signInReturnTo(params.returnTo);
   if (actor) redirect(returnTo);
 
   return (

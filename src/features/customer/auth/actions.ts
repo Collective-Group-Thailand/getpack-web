@@ -17,6 +17,8 @@ export interface OtpVerifyResult {
   ok?: true;
   errorKey?: string;
   requestId?: string;
+  /** The API's own sentence for a wrong code ("… เหลือโอกาสอีก 4 ครั้ง"), shown under the field. */
+  detail?: string;
 }
 
 /**
@@ -111,14 +113,18 @@ function providerErrorFor(error: unknown): { errorKey: string; requestId?: strin
   return { errorKey: "errors.unavailable", requestId: error.requestId };
 }
 
-function otpErrorFor(error: unknown): { errorKey: string; requestId?: string } {
+function otpErrorFor(error: unknown): { errorKey: string; requestId?: string; detail?: string } {
   if (!isApiError(error)) return { errorKey: "errors.unavailable" };
 
   // The API's `code` is stable and machine-readable (api-conventions §3), so the branch is on
-  // that rather than on the localised sentence.
+  // that rather than on the localised sentence — and on the code before the status: a wrong code
+  // is a 422 too (`auth.otp_invalid`), which a status-only branch reported as a bad phone number
+  // (UX audit Flow 1, bug #1). Its `detail` says how many tries are left, so it is passed on.
   if (error.code.endsWith("otp_expired")) return { errorKey: "errors.expiredOtp", requestId: error.requestId };
+  if (error.code.endsWith("otp_invalid") || error.status === 401) {
+    return { errorKey: "errors.invalidOtp", requestId: error.requestId, detail: error.detail };
+  }
   if (error.status === 429) return { errorKey: "errors.rateLimited", requestId: error.requestId };
-  if (error.status === 401) return { errorKey: "errors.invalidOtp", requestId: error.requestId };
   if (error.status === 422) return { errorKey: "errors.invalidPhone", requestId: error.requestId };
   return { errorKey: "errors.unavailable", requestId: error.requestId };
 }

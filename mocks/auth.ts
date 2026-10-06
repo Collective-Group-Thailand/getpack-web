@@ -133,22 +133,28 @@ export const authHandlers = [
 
   http.post("*/v1/auth/customer/otp/request", async ({ request }) => {
     const body = (await request.json()) as { phone?: string };
-    if (!body.phone || !/^0\d{8,9}$/.test(body.phone)) {
-      return problem(422, "auth.invalid_phone", "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง");
+    // As packio-api's `toE164`: a national number, or a mobile without its leading zero.
+    const digits = (body.phone ?? "").replace(/[\s\-().]/g, "");
+    const national = /^[689]\d{8}$/.test(digits) ? `0${digits}` : digits;
+    if (!/^0\d{8,9}$/.test(national)) {
+      return problem(422, "validation.failed", "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง");
     }
     return HttpResponse.json({
-      challengeId: CHALLENGES[MOCK_CUSTOMER_PHONES[body.phone] ?? "returning"],
+      challengeId: CHALLENGES[MOCK_CUSTOMER_PHONES[national] ?? "returning"],
       expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
       // Seconds, not minutes: a test should not be made to wait out a real cooldown.
       resendAvailableAt: new Date(Date.now() + 3_000).toISOString(),
+      codeLength: MOCK_OTP.code.length,
+      maxAttempts: 5,
     });
   }),
 
   http.post("*/v1/auth/customer/otp/verify", async ({ request }) => {
     const body = (await request.json()) as { challengeId?: string; code?: string };
     const persona = (Object.keys(CHALLENGES) as CustomerPersona[]).find((key) => CHALLENGES[key] === body.challengeId);
+    // packio-api answers a wrong code with 422 `auth.otp_invalid` and the tries left — not a 401.
     if (!persona || body.code !== MOCK_OTP.code) {
-      return problem(401, "auth.invalid_otp", "รหัส OTP ไม่ถูกต้อง");
+      return problem(422, "auth.otp_invalid", "รหัส OTP ไม่ถูกต้อง เหลือโอกาสอีก 4 ครั้ง");
     }
     if (persona === "newcomer") resetCustomer("newcomer");
     return session("customer", undefined, persona);

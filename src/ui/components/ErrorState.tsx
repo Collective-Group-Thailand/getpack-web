@@ -1,5 +1,6 @@
 import { Icon } from "../icons";
 import { cn } from "../lib/cn";
+import { ReferenceCode } from "./ReferenceCode";
 
 export interface ErrorStateProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title: React.ReactNode;
@@ -7,17 +8,19 @@ export interface ErrorStateProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   /** Retry, or anything else that gets the user out of here. */
   action?: React.ReactNode;
   /**
-   * Support code, shown small (design-system.md §4). Monospace and selectable so it can be
-   * read out or pasted into a chat with CS.
+   * The request id, shown small as a short reference (`PK-88F013`) with a copy button that puts
+   * the full id on the clipboard (design-system.md §4; the UUID itself is never displayed).
    */
   code?: string;
+  /** "รหัสอ้างอิง" and the copy button's names, from the caller's translations. */
+  codeLabels?: { label: string; copy: string; copied: string };
 }
 
 /**
  * A failed region — specific and recoverable, never a dead end. `role="alert"` so a screen
  * reader hears it when it replaces the content that was loading.
  */
-export function ErrorState({ title, description, action, code, className, ...props }: ErrorStateProps) {
+export function ErrorState({ title, description, action, code, codeLabels, className, ...props }: ErrorStateProps) {
   return (
     <div
       role="alert"
@@ -31,7 +34,15 @@ export function ErrorState({ title, description, action, code, className, ...pro
       <p className="text-danger-subtle-fg text-lg font-medium">{title}</p>
       {description ? <p className="text-danger-subtle-fg/90 max-w-prose text-sm">{description}</p> : null}
       {action ? <div className="mt-2 flex items-center gap-2">{action}</div> : null}
-      {code ? <p className="text-muted mt-1 font-mono text-xs select-all">{code}</p> : null}
+      {code ? (
+        <ReferenceCode
+          id={code}
+          label={codeLabels?.label}
+          copyLabel={codeLabels?.copy}
+          copiedLabel={codeLabels?.copied}
+          className="mt-1"
+        />
+      ) : null}
     </div>
   );
 }

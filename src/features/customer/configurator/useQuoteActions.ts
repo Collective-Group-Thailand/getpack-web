@@ -14,6 +14,7 @@ import type { Schemas } from "@/lib/api/types";
 import { toast } from "@/ui/components/Toast";
 
 import { editCart } from "../cart/cart-client";
+import { addGuestLine } from "../cart/guest-cart";
 import { buildCalculateBody } from "./build";
 import { saveQuote, type SavedQuote } from "./pricing";
 import type { Configurator, ConfiguratorState } from "./state";
@@ -49,6 +50,7 @@ export function useQuoteActions({
   requestSignIn,
   anonymousId,
   onLeverApplied,
+  guest,
 }: {
   configurator: Configurator;
   state: ConfiguratorState;
@@ -60,6 +62,8 @@ export function useQuoteActions({
   anonymousId: string;
   /** A lever was taken: the new quotation, for the configurator to start from. */
   onLeverApplied: (quote: SavedQuote) => void;
+  /** What a guest's cart line shows (UX audit Flow 1, bug #3); absent → a guest signs in to add. */
+  guest?: { slug: string; unit: string; specs: string[]; grossAmount: string | null };
 }) {
   const t = useTranslations("configurator.actions");
   const format = useFormat();
@@ -217,6 +221,32 @@ export function useQuoteActions({
   }
 
   function run(action: QuoteAction, notes?: string) {
+    // A guest keeps the line in this browser and signs in at checkout; the cart page then saves it
+    // as a quotation at today's price. The other actions keep a quotation now, so they need a session.
+    if (!signedIn && action === "cart" && guest) {
+      const added = addGuestLine({
+        slug: guest.slug,
+        productName,
+        quantity: state.quantity,
+        unit: guest.unit,
+        grossAmount: guest.grossAmount,
+        specs: guest.specs,
+        designOption: state.designOption,
+        body: body as Parameters<typeof saveQuote>[0],
+      });
+      if (added) {
+        track("cart_item_added", {
+          route: "/configure/[slug]",
+          productType: configurator.productTypeCode,
+          quantity: state.quantity,
+          quoteMode: "instant",
+        });
+        toast.success(t("addedToCart", { name: productName }), {
+          action: { label: t("viewCart"), onClick: () => router.push("/cart") },
+        });
+        return;
+      }
+    }
     if (!signedIn) requestSignIn(() => void execute(action, notes));
     else void execute(action, notes);
   }
