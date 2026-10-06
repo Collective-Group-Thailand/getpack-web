@@ -26,8 +26,8 @@ import { Textarea } from "@/ui/components/Input";
 import { Meter } from "@/ui/components/Meter";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { toast } from "@/ui/components/Toast";
-import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
+import { checklistRows, PreflightChecklist } from "@/features/shared/artwork/PreflightChecklist";
 
 import { adminBrowserApis, problemMessage, StatusChip, useActor, useCan, useSlaFormat } from "../console";
 import type { Order } from "../orders/resources";
@@ -63,30 +63,20 @@ function Section({
   );
 }
 
-function useLocalized() {
-  const locale = useLocale();
-  return (th: string, en: string | null | undefined) => (locale === "en" && en ? en : th);
-}
-
 /* ------------------------------------------------------------------------------------ artwork */
-
-const SEVERITIES = ["block", "warn", "info"] as const;
 
 function SubmissionCard({ order, submission }: { order: Order; submission: ArtworkSubmission }) {
   const t = useTranslations("prepress.detail.artwork");
-  const localized = useLocalized();
   const actor = useActor();
   const [open, setOpen] = useState<AdminSubmissionAction["key"] | null>(null);
   const actions = adminSubmissionActions(submission, (permission) => actor.permissions.includes(permission));
   const accept = actions.find((action) => action.key === "submission.accept");
   const reject = actions.find((action) => action.key === "submission.reject");
-  const findings = (submission.preflightReport?.files ?? []).flatMap((file) =>
-    file.checks.filter((check) => check.outcome !== "pass"),
+  const locale = useLocale();
+  const rows = checklistRows(
+    (submission.preflightReport?.files ?? []).flatMap((file) => file.checks),
+    locale,
   );
-  const groups = SEVERITIES.map((severity) => ({
-    severity,
-    findings: findings.filter((finding) => finding.severity === severity),
-  })).filter((group) => group.findings.length > 0);
 
   return (
     <Section
@@ -135,47 +125,10 @@ function SubmissionCard({ order, submission }: { order: Order; submission: Artwo
       <h3 className="mb-2 text-sm font-medium">{t("report")}</h3>
       {!submission.preflightReport ? (
         <p className="text-muted text-sm">{t("reportPending")}</p>
-      ) : groups.length === 0 ? (
-        <p className="text-success-subtle-fg flex items-center gap-2 text-sm">
-          <Icon name="check" size={16} />
-          {t("clean")}
-        </p>
       ) : (
-        <div className="space-y-3">
-          {groups.map((group) => (
-            <div key={group.severity}>
-              <p
-                className={cn(
-                  "mb-1 flex items-center gap-1 text-xs font-medium",
-                  group.severity === "block"
-                    ? "text-danger"
-                    : group.severity === "warn"
-                      ? "text-warning-subtle-fg"
-                      : "text-muted",
-                )}
-              >
-                <Icon
-                  name={group.severity === "block" ? "ban" : group.severity === "warn" ? "warning" : "info"}
-                  size={14}
-                />
-                {t(`severity.${group.severity}`, { count: group.findings.length })}
-              </p>
-              <ul className="divide-border divide-y rounded-md border text-sm">
-                {group.findings.map((finding, index) => (
-                  <li key={index} className="flex flex-wrap justify-between gap-2 px-3 py-2">
-                    <span>
-                      <span className="font-medium">{t(`checks.${finding.check}`)}</span>
-                      <span className="text-muted"> · {localized(finding.messageTh, finding.messageEn)}</span>
-                    </span>
-                    {finding.page ? (
-                      <span className="text-muted text-xs">{t("page", { page: finding.page })}</span>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+        // The checklist (UX audit, preflight): size, bleed, colour mode, fonts, resolution — each
+        // passed or not — then anything else the API found.
+        <PreflightChecklist rows={rows} labelOf={(check) => t(`checks.${check}`)} />
       )}
 
       <h3 className="mt-4 mb-2 text-sm font-medium">{t("files")}</h3>
