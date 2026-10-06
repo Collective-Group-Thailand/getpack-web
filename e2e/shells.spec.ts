@@ -35,9 +35,15 @@ test.describe("admin shell", () => {
       "แคตตาล็อก",
       "ลูกค้า",
       "บริษัทคู่ค้า",
+      // Screens the API's menu does not list yet, offered by permission (`localItems`).
+      "ตัวอย่างสินค้า",
+      "คำขอออกแบบโครงสร้าง",
     ];
     await expect(nav.getByRole("link")).toHaveCount(expected.length);
-    for (const name of expected) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
+    // A link's name may end with its count badge ("คำสั่งซื้อ 34 งานรอ"), so names match from the start.
+    const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    for (const name of expected)
+      await expect(nav.getByRole("link", { name: new RegExp(`^${escape(name)}(\\s|\\d|$)`) })).toBeVisible();
 
     // Nothing this staff user was not entitled to.
     await expect(nav.getByRole("link", { name: "ผู้ใช้และสิทธิ์" })).toHaveCount(0);
