@@ -77,7 +77,7 @@ export function QuoteDock({
       <aside
         aria-label={typeof title === "string" ? title : undefined}
         className={cn(
-          "border-border bg-surface-raised rounded-card shadow-card sticky top-20 hidden flex-col gap-4 border p-5 md:flex",
+          "border-border bg-surface-raised rounded-card shadow-card sticky top-24 hidden flex-col gap-4 border p-6 md:flex",
           className,
         )}
       >

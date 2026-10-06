@@ -11,7 +11,10 @@ import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Button } from "@/ui/components/Button";
 import { DisclosureList } from "@/ui/components/DisclosureList";
 import { ImageGallery } from "@/ui/components/ImageGallery";
+import { KraftPanel } from "@/ui/components/Decor";
+import { productFamilyOf } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 
 import {
   getPriceHints,
@@ -25,6 +28,7 @@ import { absoluteImageUrl, storeImageSrc } from "./images";
 import { pick } from "./localize";
 import { categoryHref, configureHref, productHref, rfqHref } from "./paths";
 import { priceHintText } from "./PriceHint";
+import { ProductPicture } from "./ProductPicture";
 import { studioHref } from "@/features/customer/studio/paths";
 
 /**
@@ -105,121 +109,156 @@ export async function ProductView({
 
       <Breadcrumbs items={crumbs} label={t("breadcrumbs.label")} />
 
-      <div className="mt-6 grid gap-8 md:grid-cols-2 md:gap-12">
-        <ImageGallery
-          images={images}
-          labels={{
-            thumbnails: t("product.gallery"),
-            empty: t("product.galleryEmpty"),
-          }}
-        />
+      <div className="mt-6 grid gap-8 md:grid-cols-[1.15fr_1fr] md:gap-12">
+        {images.length > 0 ? (
+          <ImageGallery
+            images={images}
+            labels={{
+              thumbnails: t("product.gallery"),
+              empty: t("product.galleryEmpty"),
+            }}
+          />
+        ) : (
+          // No photo yet: the product's own dieline (its first pattern, at its first standard size),
+          // not a "no image" box (UX audit, product detail).
+          <ProductPicture
+            dielineKey={product.patterns[0]?.dielineKey ?? null}
+            size={product.standardSizes[0] ?? null}
+            family={productFamilyOf(`${product.productTypeCode} ${product.slug}`)}
+            badge={<Badge tone={instant ? "success" : "info"}>{instant ? t("card.instant") : t("card.rfq")}</Badge>}
+            label={t("product.pictureLabel", { name })}
+            caption={t("product.pictureCaption")}
+          />
+        )}
 
         <div className="flex flex-col gap-5">
           <div>
-            {type ? (
-              <p className="text-muted flex flex-wrap items-center gap-2 text-sm">
-                {pick(locale, type.nameTh, type.nameEn)}
-                <Badge tone={instant ? "success" : "info"}>{instant ? t("card.instant") : t("card.rfq")}</Badge>
-              </p>
-            ) : null}
-            <h1 className="mt-2 text-3xl font-bold md:text-4xl">{name}</h1>
-            {description ? <p className="text-muted mt-3 text-lg">{description}</p> : null}
-          </div>
-
-          <div className="border-border bg-bg-subtle rounded-xl border p-4">
-            {text.price ? <p className="text-2xl font-semibold tabular-nums">{text.price}</p> : null}
-            {text.basis ? <p className="text-muted mt-1 text-sm">{text.basis}</p> : null}
-            {text.specs ? (
-              <p className="text-muted mt-1 text-sm">{t("product.priceBasisSpecs", { specs: text.specs })}</p>
-            ) : null}
-            {text.leadTime ? (
-              <p className="mt-3 flex items-center gap-2 text-sm">
-                <Icon name="clock" size={16} aria-hidden="true" />
-                {text.leadTime}
-              </p>
-            ) : null}
-            {product.moq !== null ? (
-              <p className="mt-1 flex items-center gap-2 text-sm">
-                <Icon name="package" size={16} aria-hidden="true" />
-                {t("card.moq", { quantity: format.number(product.moq) })}
-              </p>
-            ) : null}
-            <p className="text-muted mt-3 text-xs">{instant ? t("product.priceNote") : t("product.rfqNote")}</p>
-            {rfqForm?.slaTargetHours ? (
-              <p className="text-muted mt-1 text-xs">{t("product.rfqSla", { hours: rfqForm.slaTargetHours })}</p>
-            ) : null}
-            <p className="text-muted mt-1 text-xs">
-              {t("product.toleranceNote")}{" "}
-              <Link href="/guarantee" className="underline underline-offset-4">
-                {t("product.toleranceLink")}
-              </Link>
+            <p className="text-muted flex flex-wrap items-center gap-x-2 text-sm">
+              {category && categoryName ? (
+                <Link href={categoryHref(category.code)} className="text-primary font-medium hover:underline">
+                  {categoryName}
+                </Link>
+              ) : null}
+              {type && pick(locale, type.nameTh, type.nameEn) !== categoryName ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  {pick(locale, type.nameTh, type.nameEn)}
+                </>
+              ) : null}
             </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight">{name}</h1>
+            {description ? <p className="text-muted mt-3 text-base leading-relaxed">{description}</p> : null}
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            {instant ? (
-              <Button asChild size="lg">
+          <div className="border-border bg-surface rounded-card border p-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              {hint?.startingFromPerPiece ? (
+                <p className="flex items-baseline gap-2">
+                  <span className="text-muted text-sm">{t("price.fromLabel")}</span>
+                  <span className="text-primary text-4xl font-bold tracking-tight tabular-nums">
+                    {format.thb(hint.startingFromPerPiece)}
+                  </span>
+                  <span className="text-muted text-sm">{t("price.perPiece")}</span>
+                </p>
+              ) : (
+                <p className="text-lg font-semibold">{t("price.onRequest")}</p>
+              )}
+              {text.basis ? <p className="text-muted text-sm">{text.basis}</p> : null}
+            </div>
+
+            <ul className="border-border mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t pt-4 text-sm">
+              {text.leadTime ? (
+                <li className="flex items-center gap-2">
+                  <Icon name="clock" size={16} aria-hidden="true" className="text-primary" />
+                  {text.leadTime}
+                </li>
+              ) : null}
+              {product.moq !== null ? (
+                <li className="flex items-center gap-2">
+                  <Icon name="box" size={16} aria-hidden="true" className="text-primary" />
+                  {t("card.moq", { quantity: format.number(product.moq) })}
+                </li>
+              ) : null}
+              <li>
+                <Link href="/guarantee" className="text-primary flex items-center gap-2 hover:underline">
+                  <Icon name="shield" size={16} aria-hidden="true" />
+                  {t("product.guaranteeShort")}
+                </Link>
+              </li>
+            </ul>
+
+            <Button asChild size="lg" block className="mt-5" iconEnd="arrow-right">
+              {instant ? (
                 <Link href={configureHref(product.slug)}>{t("product.configure")}</Link>
-              </Button>
-            ) : (
-              <Button asChild size="lg">
+              ) : (
                 <Link href={rfqHref(category?.code ?? product.productTypeCode)}>{t("product.requestQuote")}</Link>
-              </Button>
-            )}
-            {product.templateAvailability === "online_template" ? (
-              <Button asChild size="lg" variant="secondary">
-                {/* With the product, so the designer offers its patterns and materials and prices it. */}
-                <Link href={studioHref({ product: product.slug, step: "start" })}>{t("product.designOnline")}</Link>
-              </Button>
-            ) : null}
-            {product.templateAvailability === "drawing" ? (
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/templates">{t("product.downloadTemplate")}</Link>
-              </Button>
-            ) : null}
-            <Button asChild size="lg" variant="ghost">
-              <Link href="/help/chat">{t("product.askCs")}</Link>
+              )}
             </Button>
+            <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+              {product.templateAvailability === "online_template" ? (
+                <Button asChild variant="secondary" iconStart="pen-tool">
+                  {/* With the product, so the designer offers its patterns and materials and prices it. */}
+                  <Link href={studioHref({ product: product.slug, step: "start" })}>{t("product.designOnline")}</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="secondary" iconStart="download">
+                  <Link href={product.templateAvailability === "drawing" ? "/templates" : "/styles"}>
+                    {t("product.downloadTemplate")}
+                  </Link>
+                </Button>
+              )}
+              <Button asChild variant="secondary" iconStart="chat">
+                <Link href="/help/chat">{t("product.askCs")}</Link>
+              </Button>
+            </div>
+
+            {/* The reference behind the starting price and the fine print, small and last (UX audit). */}
+            <div className="text-muted mt-4 flex flex-col gap-1 text-xs leading-relaxed">
+              {text.specs ? <p>{t("product.priceBasisSpecs", { specs: text.specs })}</p> : null}
+              <p>{instant ? t("product.priceNote") : t("product.rfqNote")}</p>
+              {rfqForm?.slaTargetHours ? <p>{t("product.rfqSla", { hours: rfqForm.slaTargetHours })}</p> : null}
+              <p>
+                {t("product.toleranceNote")}{" "}
+                <Link href="/guarantee" className="underline underline-offset-4">
+                  {t("product.toleranceLink")}
+                </Link>
+              </p>
+            </div>
           </div>
-          <p className="text-muted mt-3 text-sm">
-            <Icon name="shield" size={14} className="me-1 inline" aria-hidden="true" />
-            <Link href="/guarantee" className="text-primary underline underline-offset-4">
-              {t("product.guarantee")}
-            </Link>
-          </p>
+
+          {product.optionGroups.length > 0 || product.patterns.length > 0 ? (
+            <section aria-labelledby="product-specs">
+              <h2 id="product-specs" className="sr-only">
+                {t("product.specs")}
+              </h2>
+              <dl className="border-border border-t">
+                {product.patterns.length > 0 ? (
+                  <div className="border-border grid grid-cols-[9rem_1fr] gap-3 border-b py-3.5">
+                    <dt className="text-muted text-sm">{t("product.patterns")}</dt>
+                    <dd className="text-sm">{product.patterns.map((pattern) => pattern.name).join(" · ")}</dd>
+                  </div>
+                ) : null}
+                {product.optionGroups.map((group) => (
+                  <div key={group.kind} className="border-border grid grid-cols-[9rem_1fr] gap-3 border-b py-3.5">
+                    <dt className="text-muted text-sm">{t(`product.optionKinds.${group.kind}`)}</dt>
+                    <dd className="text-sm">
+                      {group.options.map((option) => pick(locale, option.nameTh, option.nameEn)).join(" · ")}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          ) : null}
         </div>
       </div>
 
-      <div className="mt-12 grid gap-12 md:grid-cols-2">
-        {product.optionGroups.length > 0 ? (
-          <section aria-labelledby="product-specs">
-            <h2 id="product-specs" className="text-xl font-semibold">
-              {t("product.specs")}
-            </h2>
-            <dl className="mt-4 flex flex-col gap-3">
-              {product.optionGroups.map((group) => (
-                <div key={group.kind} className="border-border grid grid-cols-[8rem_1fr] gap-3 border-b pb-3">
-                  <dt className="text-muted text-sm">{t(`product.optionKinds.${group.kind}`)}</dt>
-                  <dd className="text-sm">
-                    {group.options.map((option) => pick(locale, option.nameTh, option.nameEn)).join(" · ")}
-                  </dd>
-                </div>
-              ))}
-              {product.patterns.length > 0 ? (
-                <div className="border-border grid grid-cols-[8rem_1fr] gap-3 border-b pb-3">
-                  <dt className="text-muted text-sm">{t("product.patterns")}</dt>
-                  <dd className="text-sm">{product.patterns.map((pattern) => pattern.name).join(" · ")}</dd>
-                </div>
-              ) : null}
-            </dl>
-          </section>
-        ) : null}
-
+      <div className="mt-14 grid gap-10 md:grid-cols-[1.15fr_1fr] md:gap-12">
         {product.standardSizes.length > 0 ? (
           <section aria-labelledby="product-sizes">
-            <h2 id="product-sizes" className="text-xl font-semibold">
+            <h2 id="product-sizes" className="text-2xl font-bold">
               {t("product.sizes")}
             </h2>
+            {instant ? <p className="text-muted mt-1 text-sm">{t("product.sizesHint")}</p> : null}
             <div className="border-border mt-4 overflow-x-auto rounded-xl border">
               <table className="w-full text-sm">
                 <caption className="sr-only">{t("product.sizesCaption", { name })}</caption>
@@ -238,10 +277,28 @@ export async function ProductView({
                 </thead>
                 <tbody>
                   {product.standardSizes.map((size) => (
-                    <tr key={size.code} className="border-border border-t">
-                      <td className="px-4 py-2 font-mono">{size.code}</td>
-                      <td className="px-4 py-2">{size.name}</td>
-                      <td className="px-4 py-2 text-end tabular-nums">
+                    <tr
+                      key={size.code}
+                      className={cn(
+                        "border-border relative border-t",
+                        instant && "hover:bg-primary-subtle/50 focus-within:bg-primary-subtle/50",
+                      )}
+                    >
+                      <td className="text-primary px-4 py-3 font-mono font-semibold">{size.code}</td>
+                      <td className="px-4 py-3">
+                        {instant ? (
+                          // The whole row opens the configurator at this size (UX audit, product detail).
+                          <Link
+                            href={`${configureHref(product.slug)}?size=${encodeURIComponent(size.code)}`}
+                            className="outline-none after:absolute after:inset-0 after:content-[''] focus-visible:underline"
+                          >
+                            {size.name}
+                          </Link>
+                        ) : (
+                          size.name
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-end tabular-nums">
                         {[size.lengthMm, size.widthMm, size.heightMm].map((mm) => format.number(mm)).join(" × ")}
                       </td>
                     </tr>
@@ -252,29 +309,43 @@ export async function ProductView({
           </section>
         ) : null}
 
-        {product.videos.length > 0 ? (
-          <section aria-labelledby="product-videos">
-            <h2 id="product-videos" className="text-xl font-semibold">
-              {t("product.videos")}
-            </h2>
-            <ul className="mt-4 flex flex-col gap-2">
-              {product.videos.map((video) => (
-                <li key={video.url}>
-                  <a
-                    href={video.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary inline-flex items-center gap-2 underline underline-offset-2"
-                  >
-                    <Icon name="play" size={16} aria-hidden="true" />
-                    {video.title ?? video.url}
-                    <Icon name="external" size={14} aria-hidden="true" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+        <div className="flex flex-col gap-6">
+          {instant ? (
+            <KraftPanel className="p-7">
+              <div className="relative">
+                <h2 className="text-xl font-bold">{t("product.customSizeTitle")}</h2>
+                <p className="mt-2 text-sm leading-relaxed">{t("product.customSizeBody")}</p>
+                <Button asChild className="bg-fg text-fg-inverse hover:bg-fg/90 mt-5">
+                  <Link href={configureHref(product.slug)}>{t("product.customSizeCta")}</Link>
+                </Button>
+              </div>
+            </KraftPanel>
+          ) : null}
+
+          {product.videos.length > 0 ? (
+            <section aria-labelledby="product-videos">
+              <h2 id="product-videos" className="text-xl font-semibold">
+                {t("product.videos")}
+              </h2>
+              <ul className="mt-4 flex flex-col gap-2">
+                {product.videos.map((video) => (
+                  <li key={video.url}>
+                    <a
+                      href={video.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary inline-flex items-center gap-2 underline underline-offset-2"
+                    >
+                      <Icon name="play" size={16} aria-hidden="true" />
+                      {video.title ?? video.url}
+                      <Icon name="external" size={14} aria-hidden="true" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
       </div>
 
       <section aria-labelledby="product-more" className="mt-12">
