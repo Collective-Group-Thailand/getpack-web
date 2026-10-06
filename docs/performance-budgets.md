@@ -300,6 +300,21 @@ Measured with the assistant **built out** (`NEXT_PUBLIC_ASSISTANT` unset — the
 
 What remains is copy every zone loads: the assistant's outcome labels (`status`) and its four problem titles. The assistant's own copy is a namespace loaded only in a build that has it, and its button lives in the header's existing client module — a server component's reference to the launcher cost every header page 2.6 KB even behind a false constant, and was moved for that reason.
 
+## U-F3 — Storefront page patterns (2026-10-06)
+
+Plain production build, private port (`LHCI_PORT=3270`):
+
+| Page | U5.5 | U-F3 | Ratchet |
+|---|---|---|---|
+| `/` | ≈ 267,600 | 273,613 | customer-marketing 273,300 → **273,700** |
+| `/search?q=…` | within 273,300 | 273,341 | (same set) |
+| `/configure/tuck-end-box` | within 346,000 | 346,064 | customer-app 346,000 → **346,100** |
+| `/studio/new?…` | 505,649 | 505,652 | unchanged |
+
+Every storefront page carries ≈ 460 B more: the menu sheet that holds the navigation below `lg` (six Thai labels overflowed a 768 px tablet; the sheet keeps Escape and close-on-follow). The home page adds the quick start and the newsletter form (≈ 4 KB). The quick start first used `Select` and cost 9.6 KB on Radix's listbox; it now uses `NativeSelect` (new in `src/ui`, the platform's picker), which is also the better control on a phone.
+
+After merging main's U3.6 (≈ 78 B on every storefront page: its account menu entry and the `/styles` call to action): `/` 273,691, `/configure/tuck-end-box` 346,142 — customer-marketing 273,700 → **273,800**, customer-app 346,100 → **346,200**.
+
 ## U3.6 — dieline intake and structural requests (2026-10-06)
 
 Three script ratchets, each by the copy and entry points U3.6 adds to every page of its zone (the

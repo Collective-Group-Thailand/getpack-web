@@ -235,3 +235,44 @@
     background-color: transparent;
   }
 }
+
+/*
+ * The storefront header condenses as the page scrolls (F3 page patterns) — a scroll-driven
+ * animation, so no script runs for it; browsers without scroll timelines keep the full height,
+ * and so does anyone who asked for less motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .pk-condense-row {
+      animation: pk-condense linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 120px;
+    }
+  }
+}
+@keyframes pk-condense {
+  to {
+    height: 3.25rem;
+  }
+}
+
+/*
+ * Stacking utilities from the `--z-*` tokens. Tailwind v4 has no z-index theme namespace, so
+ * `z-sticky` and friends resolved to nothing until these existed (a sticky header could be painted
+ * over by the page beneath it — U-F3).
+ */
+@utility z-base {
+  z-index: var(--z-base);
+}
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-modal {
+  z-index: var(--z-modal);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}

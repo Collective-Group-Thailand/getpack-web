@@ -13,44 +13,23 @@ test("T1 find a mailer box and its price for 500 pcs", async ({ page, journey })
   await j.start(HOSTS.customer);
   j.expectEvents("configurator_opened", "quote_shown");
 
-  const menu = page.getByRole("button", { name: "สินค้าและบรรจุภัณฑ์" });
-  await j.screen(
-    "products menu",
-    () => menu.click(),
-    () => expect(menu).toHaveAttribute("aria-expanded", "true"),
+  // U-F3: the home page's quick start — type, approximate inside size and quantity, priced in one go.
+  const quick = page.getByRole("form", { name: "ดูราคาเร็ว" });
+  await j.decide("type", () =>
+    quick.getByRole("combobox", { name: "ประเภท" }).selectOption({ label: "กล่องไปรษณีย์" }),
   );
-  await j.screen(
-    "category",
-    () => page.getByRole("banner").getByRole("link", { name: "กล่องกระดาษลูกฟูก" }).click(),
-    () => expect(page.getByRole("heading", { level: 1, name: "กล่องกระดาษลูกฟูก" })).toBeVisible(),
-  );
-  await j.screen(
-    "mailer box",
-    () => page.getByRole("main").getByRole("link", { name: "กล่องไปรษณีย์" }).first().click(),
-    () => expect(page.getByRole("heading", { level: 1, name: "กล่องไปรษณีย์" })).toBeVisible(),
-  );
+  await j.decide("size", async () => {
+    await quick.getByRole("textbox", { name: "ยาว" }).fill("20");
+    await quick.getByRole("textbox", { name: "กว้าง" }).fill("15");
+    await quick.getByRole("textbox", { name: "สูง" }).fill("8");
+  });
+  await j.decide("quantity", () => quick.getByRole("textbox", { name: "จำนวน (ชิ้น)" }).fill("500"));
   await j.screen(
     "configurator",
-    () => page.getByRole("link", { name: "ปรับแต่งและดูราคา" }).click(),
+    () => quick.getByRole("button", { name: "ดูราคา" }).click(),
     () => expect(dock(page)).toBeVisible(),
   );
-
-  await j.decide("unit (the task is in cm, the configurator starts in mm)", () =>
-    page.getByRole("radio", { name: "ซม." }).click(),
-  );
-  // D-182 (U2.F1): the customer says which size they mean before it is priced.
-  await j.decide("basis (the inside of the box)", () => page.getByRole("radio", { name: /ขนาดภายใน/ }).click());
-  await j.decide("size", async () => {
-    await page.getByRole("textbox", { name: "ยาว" }).fill("20");
-    await page.getByRole("textbox", { name: "กว้าง" }).fill("15");
-    await page.getByRole("textbox", { name: "สูง" }).fill("8");
-  });
   j.gap("no product-weight input: the 500 g in the task has nowhere to go (Structure Advisor, U2.2 / U2.F1)");
-  j.gap("no start from the product's size on the home page (quick-start strip, U-F3 / U5.1)");
-
-  await j.decide("quantity", () =>
-    dock(page).getByRole("table", { name: "ราคาต่อจำนวน" }).getByRole("button", { name: "เลือก 500 ชิ้น" }).click(),
-  );
 
   await j.done(async () => {
     await expect(dock(page)).toContainText("500 ชิ้น");

@@ -36,7 +36,15 @@
   "card": {
     "instant": "Instant price",
     "rfq": "Quote on request",
-    "stock": "Stock product"
+    "stock": "Stock product",
+    "moq": "Min. {quantity} pcs",
+    "referencePrice": "Usual price {price}",
+    "campaign": "{label} until {date}",
+    "availability": {
+      "instant": "Instant price",
+      "partial": "Some specs",
+      "rfq": "Request a quote"
+    }
   },
   "price": {
     "from": "From {price} / piece",
@@ -81,7 +89,12 @@
       "pattern": "Style"
     },
     "priceBasisSpecs": "Priced at: {specs}",
-    "guarantee": "Packio guarantees the work — see what we do if something goes wrong"
+    "guarantee": "Packio guarantees the work — see what we do if something goes wrong",
+    "rfqSla": "The team answers a quote request in about {hours} business hours",
+    "toleranceNote": "The quantity delivered may be slightly under or over, within the print industry's standard tolerance.",
+    "toleranceLink": "See the tolerances in the guarantee",
+    "more": "See also",
+    "materials": "Compare materials"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",
@@ -159,5 +172,18 @@
       "article": "Articles",
       "faq": "FAQs"
     }
+  },
+  "filters": {
+    "type": "Packaging type",
+    "more": "Filters for material, printing, size, minimum order, lead time and price are coming.",
+    "view": "View",
+    "views": {
+      "grid": "Grid",
+      "list": "List"
+    },
+    "applied": "Applied filters",
+    "remove": "Remove this filter",
+    "clearAll": "Clear all",
+    "search": "Search “{q}”"
   }
 }

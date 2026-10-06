@@ -48,13 +48,15 @@ export function catalogProducts(): Row[] {
 }
 
 /**
- * The U-B4 card facts (D-307, D-220, D-308). The mock keeps no reference configurations, so no
- * starting price (the card shows the RFQ route), no lead-time band and no live promotion badge.
+ * The U-B4 card facts (D-307, D-220, D-308), consistent with the mock's price hints: an instant
+ * product starts at the same fake figure at 1,000 pieces, with a fake lead time; no live
+ * promotion, so no campaign badge and no reference price.
  */
 function cardFacts(
   quoteMode: unknown,
   moq: unknown,
   tags: string[],
+  key?: string,
 ): Pick<
   Schemas["StoreProductCardDto"],
   | "startingPricePerPiece"
@@ -65,11 +67,12 @@ function cardFacts(
   | "campaignBadge"
   | "cacheTags"
 > {
+  const instant = quoteMode === "instant" && key !== undefined;
   return {
-    startingPricePerPiece: null,
-    startingPriceAssumes: null,
+    startingPricePerPiece: instant ? fakePrice(key) : null,
+    startingPriceAssumes: instant ? { quantity: 1000, specs: [] } : null,
     moq: typeof moq === "number" ? moq : null,
-    leadTimeDays: null,
+    leadTimeDays: instant ? { min: 7, max: 10 } : null,
     availability: quoteMode === "instant" ? "instant" : "rfq",
     campaignBadge: null,
     cacheTags: tags,
@@ -80,7 +83,12 @@ function card(product: Row): Schemas["StoreProductCardDto"] {
   const images = (product.images as { fileId: string }[] | undefined) ?? [];
   const type = byId(catalogueRows("productTypes"), product.productTypeId);
   return {
-    ...cardFacts(type?.quoteMode, product.quantityMin, [`catalog:type:${type?.id}`, `catalog:product:${product.slug}`]),
+    ...cardFacts(
+      type?.quoteMode,
+      product.quantityMin,
+      [`catalog:type:${type?.id}`, `catalog:product:${product.slug}`],
+      String(product.slug),
+    ),
     slug: String(product.slug),
     nameTh: String(product.nameTh),
     nameEn: String(product.nameEn),
@@ -402,7 +410,7 @@ export const storeCatalogHandlers: HttpHandler[] = [
   http.get("*/v1/store/catalog/product-types", () =>
     HttpResponse.json(
       productTypes().map((type): Schemas["StoreProductTypeDto"] => ({
-        ...cardFacts(type.quoteMode, null, [`catalog:type:${String(type.id)}`]),
+        ...cardFacts(type.quoteMode, null, [`catalog:type:${String(type.id)}`], String(type.code)),
         code: String(type.code),
         categoryCode: categoryCodeOf(type),
         nameTh: String(type.nameTh),

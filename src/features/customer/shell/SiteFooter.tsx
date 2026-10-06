@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
+import { serverRequests } from "@/lib/api/requests/server";
 import { BRAND_COMPANY, BRAND_NAME } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
 
@@ -14,7 +15,13 @@ import { Icon } from "@/ui/icons";
  * a hard-coded list.
  */
 export async function SiteFooter() {
-  const t = await getTranslations("storefront.footer");
+  const [t, identity] = await Promise.all([
+    getTranslations("storefront.footer"),
+    // CONTRACT-REQUEST store.company-identity: the registered name and tax id live in settings (D-092).
+    serverRequests("customer")
+      .then((api) => api.call("GET /v1/store/company-identity"))
+      .catch(() => null),
+  ]);
 
   const columns = [
     {
@@ -51,12 +58,12 @@ export async function SiteFooter() {
   ] as const;
 
   return (
-    <footer className="border-border bg-bg-subtle mt-16 border-t">
+    <footer className="bg-fg text-fg-inverse mt-16">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <p className="font-display text-lg font-semibold">{BRAND_NAME}</p>
-          <p className="text-muted mt-1 text-sm">{t("tagline")}</p>
-          <p className="text-muted mt-4 flex items-center gap-2 text-sm">
+          <p className="mt-1 text-sm opacity-80">{t("tagline")}</p>
+          <p className="mt-4 flex items-center gap-2 text-sm opacity-80">
             <Icon name="chat" size={16} />
             {t("lineContact")}
           </p>
@@ -68,7 +75,7 @@ export async function SiteFooter() {
             <ul className="mt-3 flex flex-col gap-2">
               {column.links.map((link) => (
                 <li key={link.key}>
-                  <Link href={link.href} className="text-muted hover:text-fg text-sm">
+                  <Link href={link.href} className="text-sm opacity-80 hover:underline hover:opacity-100">
                     {t(`${column.key}.${link.key}`)}
                   </Link>
                 </li>
@@ -78,11 +85,19 @@ export async function SiteFooter() {
         ))}
       </div>
 
-      <div className="border-border border-t">
-        <div className="text-muted mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} {BRAND_NAME} · {BRAND_COMPANY}
-          </p>
+      <div className="border-fg-inverse/20 border-t">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm opacity-80 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-1">
+            <p>
+              © {new Date().getFullYear()} {BRAND_NAME} · {BRAND_COMPANY}
+            </p>
+            {identity ? (
+              <>
+                <p>{t("operatedBy", { name: identity.legalNameTh, taxId: identity.taxId, branch: identity.branch })}</p>
+                <p>{identity.addressTh}</p>
+              </>
+            ) : null}
+          </div>
           <p>{t("paymentMethods")}</p>
         </div>
       </div>
