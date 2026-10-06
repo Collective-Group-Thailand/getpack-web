@@ -210,7 +210,10 @@
     "toolingWaived": "No repeat plate/die cost — you save {amount}",
     "toolingWaivedBody": "The factory kept {count, plural, one {# plate or die block} other {# plates or die blocks}} of this specification: reused, not charged again",
     "toolingWaiver": "Plates / die block not charged",
-    "toolingWaiverValue": "Waived ({amount})"
+    "toolingWaiverValue": "Waived ({amount})",
+    "notAllowedBody": "This specification needs a quote from the team first, or cannot be reordered automatically. Request a quote for the same product.",
+    "requestQuote": "Request a quote for this job",
+    "askTeam": "Ask the team"
   },
   "track": {
     "title": "Track an order",

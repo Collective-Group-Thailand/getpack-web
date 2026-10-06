@@ -8,12 +8,14 @@
 
 import { storeAssistantRequests } from "./store-assistant";
 import { storeContentRequests } from "./store-content";
+import { storeHomeRequests } from "./store-home";
 import { storeSupportRequests } from "./store-support";
 
 export const REQUESTS = {
   ...storeSupportRequests,
   ...storeContentRequests,
   ...storeAssistantRequests,
+  ...storeHomeRequests,
 } as const;
 
 export type Requests = typeof REQUESTS;

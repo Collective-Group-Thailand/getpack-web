@@ -7,16 +7,18 @@
     "titleLine2": "made in one place",
     "body": "{tagline} — choose a product, see its price and production time, design online and follow every step",
     "browse": "See all products",
-    "preview": "A tuck-end box dieline"
+    "preview": "A tuck-end box dieline",
+    "price": "Get a price"
   },
   "sections": {
-    "productTypes": "Packaging types",
+    "productTypes": "Choose a packaging type",
     "featured": "Featured products",
     "showcase": "Made for our customers",
     "articles": "Articles",
     "viewAll": "See all",
     "viewAllOf": "See all in {name}",
-    "promotions": "News and offers"
+    "promotions": "News and offers",
+    "stock": "Ready to ship"
   },
   "steps": {
     "heading": "How ordering with Packio works",
@@ -26,5 +28,81 @@
     "designBody": "Design on the real flat sheet or upload your file, then check the proof and approve it before production",
     "produceTitle": "Made and delivered",
     "produceBody": "Follow production and delivery at every step until it reaches you"
+  },
+  "quickStart": {
+    "label": "Quick price",
+    "type": "Type",
+    "size": "Approximate inside size (cm)",
+    "axes": {
+      "l": "Length",
+      "w": "Width",
+      "h": "Height"
+    },
+    "cm": "cm",
+    "quantity": "Quantity (pcs)",
+    "go": "See the price"
+  },
+  "process": {
+    "heading": "How ordering works",
+    "more": "Learn step by step",
+    "design": {
+      "title": "Design or upload a file",
+      "body": "Design on the real dieline in the studio, or send a file you have."
+    },
+    "price": {
+      "title": "Price and delivery date at once",
+      "body": "Prices and production dates from the real specification; special jobs get a quote."
+    },
+    "proof": {
+      "title": "Approve the proof",
+      "body": "Every job is proofed before production, revised until it is right."
+    },
+    "track": {
+      "title": "Track it to your door",
+      "body": "See every stage from production to delivery."
+    }
+  },
+  "benefits": {
+    "heading": "Why Packio",
+    "instantTitle": "Instant prices",
+    "instant": "Products priced instantly show their price and production time on one page.",
+    "designTitle": "Design online + free dielines",
+    "design": "Design on the real dieline in the studio, and download a dieline at your size for free.",
+    "moqTitle": "Small orders welcome",
+    "moqFrom": "Order from {quantity} pcs, depending on the product.",
+    "moq": "Every product shows its minimum order.",
+    "trackTitle": "Track every stage",
+    "track": "Follow the job from file and proof to production and delivery.",
+    "taxTitle": "Full tax documents",
+    "tax": "A tax invoice and receipt for every instalment paid.",
+    "claimTitle": "Claims when it is off spec",
+    "claimWithin": "Report a claim within {days} days of delivery.",
+    "claim": "Report a claim after delivery under the guarantee."
+  },
+  "work": {
+    "heading": "Work and words from customers",
+    "allReviews": "All reviews",
+    "reviewBy": "{name} · {type} · {rating}/5",
+    "emptyTitle": "Customer work will appear here",
+    "emptyBody": "We only show work and reviews from real customers who agreed to it. Meanwhile, browse every box style we make.",
+    "emptyAction": "Browse box styles"
+  },
+  "newsletter": {
+    "heading": "News from Packio",
+    "body": "Packaging articles, and promotions only when there are real ones.",
+    "email": "E-mail",
+    "consent": "I agree to receive news and promotions from Packio by e-mail; I can unsubscribe at any time.",
+    "privacy": "Read the privacy policy",
+    "subscribe": "Subscribe",
+    "done": "Subscribed — thank you.",
+    "failed": "That did not work. Try again."
+  },
+  "contact": {
+    "heading": "Contact us",
+    "hours": "Customer service",
+    "phone": "Phone",
+    "line": "LINE",
+    "email": "E-mail",
+    "chat": "Talk to the team"
   }
 }

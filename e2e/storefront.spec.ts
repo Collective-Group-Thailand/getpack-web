@@ -108,10 +108,10 @@ test.describe("the catalogue", () => {
 
   test("the header's product menu opens, lists categories, and closes on Escape", async ({ page }) => {
     await gotoHydrated(page, HOSTS.customer);
-    const toggle = page.getByRole("button", { name: "สินค้าและบรรจุภัณฑ์" });
+    const toggle = page.getByRole("button", { name: "สินค้าและบริการ" });
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("banner").getByRole("link", { name: "สติ๊กเกอร์และฉลาก" })).toBeVisible();
+    await expect(page.getByRole("banner").getByRole("link", { name: "สติ๊กเกอร์และฉลาก", exact: true })).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(toggle).toBeFocused();

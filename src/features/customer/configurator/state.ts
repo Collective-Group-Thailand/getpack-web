@@ -359,16 +359,23 @@ export function chosenOf(configurator: Configurator, state: ConfiguratorState, k
  */
 export function seedFromDesign(
   configurator: Configurator,
-  query: { pattern?: string; material?: string; l?: string; w?: string; d?: string },
+  query: { pattern?: string; material?: string; l?: string; w?: string; d?: string; qty?: string; from?: string },
 ): Partial<ConfiguratorState> | undefined {
   const mm = (value: string | undefined) => (value && /^\d{1,4}(\.\d)?$/.test(value) ? Number(value) : null);
   const [l, w, d] = [mm(query.l), mm(query.w), mm(query.d)];
+  // The home page's quick start sends the quantity too (U-F3); one the product does not take is ignored.
+  const qty = query.qty && /^\d{1,7}$/.test(query.qty) ? Number(query.qty) : null;
+  const tiers = qty !== null ? withTier(configurator, initialState(configurator).quantities, qty) : null;
   const pattern = configurator.patterns.find((candidate) => candidate.id === query.pattern);
   const material = groupsOf(configurator)
     .find((group) => group.kind === "material")
     ?.options.find((option) => option.id === query.material);
-  if (!pattern && !material && !(l && w)) return undefined;
+  if (!pattern && !material && !(l && w) && !tiers) return undefined;
   const seed: Partial<ConfiguratorState> = {};
+  if (tiers && qty !== null) {
+    seed.quantities = tiers;
+    seed.quantity = qty;
+  }
   if (pattern) seed.patternId = pattern.id;
   if (l && w) {
     seed.sizeMode = "custom";
@@ -381,6 +388,8 @@ export function seedFromDesign(
     const base = initialState(configurator);
     seed.choices = { ...base.choices, material: [material.id] };
   }
-  if (configurator.design.options.includes("online_designer")) seed.designOption = "online_designer";
+  // A design's "order this" keeps the online designer; the home page's quick start leaves the choice open.
+  if (query.from !== "home" && configurator.design.options.includes("online_designer"))
+    seed.designOption = "online_designer";
   return seed;
 }

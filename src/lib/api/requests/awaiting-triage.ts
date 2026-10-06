@@ -15,6 +15,9 @@ export const AWAITING_TRIAGE: readonly string[] = [
   "GET /v1/store/learning-paths",
   // U5.5 (2026-10-06): whether the assistant is available to me.
   "GET /v1/store/assistant/availability",
+  // U-F3 (2026-10-06): the footer's company identity, the newsletter sign-up.
+  "GET /v1/store/company-identity",
+  "POST /v1/store/newsletter/actions/subscribe",
 ];
 
 /**
