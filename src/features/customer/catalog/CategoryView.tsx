@@ -118,11 +118,12 @@ export async function CategoryView({
     { label: t("breadcrumbs.products"), href: localised("/products") },
     { label: name },
   ];
+  // Design language v2: an active chip is solid brand, as on the "ProductCategory" board.
   const chip = (active: boolean) =>
     cn(
       "inline-flex h-9 items-center rounded-full border px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-focus-ring",
       active
-        ? "border-primary bg-primary-subtle text-primary-subtle-fg font-medium"
+        ? "border-primary bg-primary text-primary-fg font-medium"
         : "border-border hover:bg-bg-subtle",
     );
 
@@ -138,7 +139,10 @@ export async function CategoryView({
       <Breadcrumbs items={crumbs} label={t("breadcrumbs.label")} />
       <div className="mt-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div className="max-w-3xl">
-          <h1 className="text-3xl font-bold tracking-tight">{name}</h1>
+          <p className="eyebrow">
+            {category.nameEn} · {t(`groups.${categoryGroup(category)}`)}
+          </p>
+          <h1 className="mt-3 text-[2.375rem] leading-tight">{name}</h1>
           <p className="text-muted mt-2">{description}</p>
         </div>
         <p className="text-muted text-sm" aria-live="polite">

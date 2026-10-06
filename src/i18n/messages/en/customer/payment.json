@@ -48,5 +48,9 @@
     "declined": "Your bank or card issuer declined it. Try another method, or contact your bank.",
     "provider_error": "The payment provider had a problem; nothing was charged. Please try again."
   },
-  "whatNext": "What happens to your job from here"
+  "whatNext": "What happens to your job from here",
+  "payingFor": "Paying for",
+  "orderLine": "{quantity} pcs · {code}",
+  "groupTotal": "Order total",
+  "afterPaying": "Once paid, our team checks your file at once and sends a proof for you to approve before production"
 }

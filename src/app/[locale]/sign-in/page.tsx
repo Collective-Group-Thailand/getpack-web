@@ -41,7 +41,8 @@ export default async function SignInPage({
   return (
     <AuthSplitLayout
       tone="brand"
-      headline={t("panel.headline")}
+      eyebrow={t("panel.eyebrow")}
+      headline={t.rich("panel.headlineRich", { em: (chunks) => <em>{chunks}</em>, br: () => <br /> })}
       lead={t("panel.lead")}
       points={[t("panel.point1"), t("panel.point2"), t("panel.point3")]}
       note={{ title: t("panel.noteTitle"), body: t("panel.noteBody") }}

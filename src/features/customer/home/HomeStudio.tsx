@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
-import { SectionHeading } from "@/ui/components/SectionHeading";
 
 import { CheckItem } from "./HomeHero";
 
@@ -16,25 +15,25 @@ export async function HomeStudio() {
   const t = await getTranslations("home.studio");
   const checks = ["styles", "preview3d", "dieline"] as const;
 
+  // The board's deep-green band, full width, with grain (design language v2).
   return (
-    <section aria-labelledby="home-studio" className="max-w-content mx-auto px-5 pt-16 md:px-8 md:pt-26">
-      <div className="bg-fg text-fg-inverse relative grid items-center gap-12 overflow-hidden rounded-2xl p-7 md:p-14 lg:grid-cols-2">
-        <div aria-hidden className="pk-band-glow absolute inset-0" />
-        <div className="relative">
-          <SectionHeading
-            id="home-studio"
-            inverse
-            kicker={t("kicker")}
-            title={
-              <>
-                {t("titleLine1")}
-                <br />
-                {t("titleLine2")}
-              </>
-            }
-            description={t("body")}
-            className="mb-0 md:mb-0"
-          />
+    <section
+      aria-labelledby="home-studio"
+      className="grain mt-24 overflow-hidden bg-[var(--green-ink)] text-white md:mt-30"
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(60%_80%_at_85%_20%,rgba(95,207,180,.22),transparent_70%)]"
+      />
+      <div className="max-w-content relative mx-auto grid items-center gap-12 px-5 py-20 md:px-8 md:py-24 lg:grid-cols-[1fr_1.05fr]">
+        <div>
+          <p className="eyebrow text-white/70">{t("kicker")}</p>
+          <h2 id="home-studio" className="mt-3.5 text-4xl leading-[1.12] md:text-5xl">
+            {t("titleLine1")}
+            <br />
+            <em className="text-[#5fcfb4]">{t("titleLine2")}</em>
+          </h2>
+          <p className="mt-4 max-w-[34em] text-[17px] leading-relaxed text-white/80">{t("body")}</p>
           <ul className="mt-6 grid gap-2.5">
             {checks.map((key) => (
               <CheckItem key={key} inverse>
@@ -43,14 +42,15 @@ export async function HomeStudio() {
             ))}
           </ul>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" variant="secondary" className="border-surface rounded-xl">
+            <Button asChild size="lg" shape="pill" variant="secondary" className="border-white bg-white text-[#1e1b18]">
               <Link href="/studio/new">{t("start")}</Link>
             </Button>
             <Button
               asChild
               size="lg"
+              shape="pill"
               variant="ghost"
-              className="border-fg-inverse/25 text-fg-inverse rounded-xl border"
+              className="border border-white/40 text-white hover:bg-white/10"
             >
               <Link href="/styles">{t("library")}</Link>
             </Button>
@@ -67,7 +67,7 @@ function StudioPicture({ title, size }: { title: string; size: string }) {
   return (
     <div
       aria-hidden
-      className="border-fg-inverse/10 bg-canvas text-fg relative flex aspect-[4/3] flex-col overflow-hidden rounded-xl border"
+      className="bg-canvas text-fg relative flex aspect-[4/3] flex-col overflow-hidden rounded-[1.375rem] shadow-[0_40px_80px_-40px_rgba(0,0,0,.55)]"
     >
       <div className="border-border bg-surface text-muted flex h-10 items-center gap-2 border-b px-3.5 text-xs">
         <span className="bg-border size-2.5 rounded-full" />

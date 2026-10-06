@@ -130,7 +130,8 @@ export default async function Page({
           { label: t("breadcrumb") },
         ]}
       />
-      <h1 className="mt-4 text-3xl font-bold tracking-tight">{t("heading", { name })}</h1>
+      <p className="eyebrow mt-4">{t("eyebrow")}</p>
+      <h1 className="mt-3 text-[2.375rem] leading-tight">{t("heading", { name })}</h1>
       <p className="text-muted mt-2 max-w-2xl">{t("intro")}</p>
       {share && !shared ? (
         <Callout tone="warning" className="mt-4 max-w-2xl">
