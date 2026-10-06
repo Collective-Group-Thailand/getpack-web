@@ -46,5 +46,6 @@
   },
   "perUnitOf": "{price} each · {quantity} {unit}",
   "reorderOf": "Reorder of {code}, with new artwork",
-  "reorderOfReused": "Reorder of {code}: the approved artwork carries over, no new proof"
+  "reorderOfReused": "Reorder of {code}: the approved artwork carries over, no new proof",
+  "orQuote": "or request a quote for this specification"
 }

@@ -8,17 +8,25 @@ import {
   listStockProducts,
 } from "@/features/customer/catalog/api.server";
 import { CatalogueNav } from "@/features/customer/catalog/CatalogueNav";
+import { pick } from "@/features/customer/catalog/localize";
 import { ProductGrid, type GridItem } from "@/features/customer/catalog/ProductGrid";
 import { ProductSearchForm } from "@/features/customer/catalog/ProductSearchForm";
+import { TypeFilter } from "@/features/customer/catalog/TypeFilter";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkPagination } from "@/ui/components/LinkPagination";
+import { Icon } from "@/ui/icons";
 
 const PER_PAGE = 24;
 
-type SearchParams = Promise<{ q?: string | string[]; page?: string | string[] }>;
+type SearchParams = Promise<{
+  q?: string | string[];
+  page?: string | string[];
+  productType?: string | string[];
+  view?: string | string[];
+}>;
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
 
@@ -46,15 +54,17 @@ export default async function ProductsPage({
   const query = await searchParams;
   const q = one(query.q);
   const page = Math.max(1, Number(one(query.page)) || 1);
+  const productType = one(query.productType);
+  const view = one(query.view) === "list" ? "list" : "grid";
 
   const [t, currentLocale, tree, products, stock] = await Promise.all([
     getTranslations("catalog"),
     getLocale(),
     getCatalogueTree(),
-    listProducts({ q, page, perPage: PER_PAGE }),
+    listProducts({ q, page, perPage: PER_PAGE, productType }),
     // Stock products are shown with the first page only: they are a shelf, not the catalogue.
     page === 1
-      ? listStockProducts({ q, perPage: 8 })
+      ? listStockProducts({ q, perPage: 8, productType })
       : Promise.resolve({ data: [], meta: { page: 1, perPage: 8, total: 0 } }),
   ]);
   const hints = await getPriceHints({
@@ -64,13 +74,29 @@ export default async function ProductsPage({
   const types = new Map(tree.flatMap((category) => category.types).map((type) => [type.code, type]));
   const pages = Math.max(1, Math.ceil(products.meta.total / products.meta.perPage));
   const action = getPathname({ href: "/products", locale: currentLocale as Locale });
-  const hrefFor = (target: number) => {
+  // Filters live in the URL (shareable, crawlable, back-button safe); a change goes back to page 1.
+  const hrefWith = (changes: Record<string, string | null>, target = 1) => {
     const search = new URLSearchParams();
-    if (q) search.set("q", q);
+    const current: Record<string, string | undefined> = { q, productType, view: view === "list" ? "list" : undefined };
+    for (const [key, value] of Object.entries({ ...current, ...changes })) if (value) search.set(key, value);
     if (target > 1) search.set("page", String(target));
     const text = search.toString();
     return text ? `/products?${text}` : "/products";
   };
+  const hrefFor = (target: number) => hrefWith({}, target);
+  const activeType = productType ? types.get(productType) : undefined;
+  const chips = [
+    ...(q ? [{ key: "q", label: t("filters.search", { q }), href: hrefWith({ q: null }) }] : []),
+    ...(activeType
+      ? [
+          {
+            key: "type",
+            label: pick(currentLocale, activeType.nameTh, activeType.nameEn),
+            href: hrefWith({ productType: null }),
+          },
+        ]
+      : []),
+  ];
 
   const catalogue: GridItem[] = products.data.map((product) => ({ kind: "catalog", product }));
   const shelf: GridItem[] = stock.data.map((product) => ({ kind: "stock", product }));
@@ -87,17 +113,55 @@ export default async function ProductsPage({
         <aside className="flex min-w-0 flex-col gap-4">
           <ProductSearchForm action={action} q={q} />
           <CatalogueNav tree={tree} />
+          <TypeFilter tree={tree} current={productType} hrefFor={(code) => hrefWith({ productType: code })} />
+          <p className="text-muted text-xs">{t("filters.more")}</p>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-10">
-          {q ? (
-            <p className="text-muted text-sm" aria-live="polite">
-              {t("list.results", { count: products.meta.total + stock.meta.total })}{" "}
-              <Link href="/products" className="text-primary underline underline-offset-2">
-                {t("list.clear")}
-              </Link>
-            </p>
-          ) : null}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-muted text-sm" aria-live="polite">
+                {t("list.results", { count: products.meta.total + stock.meta.total })}
+              </p>
+              <nav aria-label={t("filters.view")} className="flex gap-1">
+                {(["grid", "list"] as const).map((option) => (
+                  <Link
+                    key={option}
+                    href={hrefWith({ view: option === "list" ? "list" : null }, page)}
+                    aria-current={view === option ? "true" : undefined}
+                    className={
+                      view === option
+                        ? "bg-primary-subtle text-primary-subtle-fg rounded-md px-3 py-1.5 text-sm font-medium"
+                        : "hover:bg-bg-subtle rounded-md px-3 py-1.5 text-sm"
+                    }
+                  >
+                    {t(`filters.views.${option}`)}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+            {chips.length > 0 ? (
+              <ul className="flex flex-wrap items-center gap-2" aria-label={t("filters.applied")}>
+                {chips.map((chip) => (
+                  <li key={chip.key}>
+                    <Link
+                      href={chip.href}
+                      className="bg-bg-subtle hover:bg-primary-subtle inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm"
+                    >
+                      {chip.label}
+                      <Icon name="close" size={12} aria-hidden="true" />
+                      <span className="sr-only">{t("filters.remove")}</span>
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link href="/products" className="text-primary text-sm underline underline-offset-4">
+                    {t("filters.clearAll")}
+                  </Link>
+                </li>
+              </ul>
+            ) : null}
+          </div>
 
           {empty ? (
             <EmptyState
@@ -117,7 +181,7 @@ export default async function ProductsPage({
               <h2 id="catalogue-made-to-order" className="mb-4 text-xl font-semibold">
                 {t("list.productsHeading")}
               </h2>
-              <ProductGrid items={catalogue} types={types} hints={hints} />
+              <ProductGrid items={catalogue} types={types} hints={hints} layout={view} />
               <LinkPagination
                 className="mt-8"
                 page={page}

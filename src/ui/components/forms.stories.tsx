@@ -7,6 +7,7 @@ import { Field, FormSection } from "./Field";
 import { Input, NumberInput, Textarea } from "./Input";
 import { RadioCards } from "./RadioCards";
 import { SegmentedControl } from "./SegmentedControl";
+import { NativeSelect } from "./NativeSelect";
 import { Select } from "./Select";
 import { Slider } from "./Slider";
 import { Switch } from "./Switch";
@@ -93,6 +94,16 @@ export const Choices: Story = {
                 { value: "kraft-5", label: "คราฟท์ลูกฟูก 5 ชั้น (หนา 5 มม.)" },
               ]}
               placeholder="เลือกวัสดุ"
+            />
+          </Field>
+
+          <Field label="ประเภท" hint="NativeSelect — the platform's own picker, for pages on a tight script budget">
+            <NativeSelect
+              defaultValue="mailer"
+              options={[
+                { value: "mailer", label: "กล่องไปรษณีย์" },
+                { value: "tuck-end", label: "กล่องฝาเสียบ" },
+              ]}
             />
           </Field>
         </FormSection>

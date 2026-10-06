@@ -23,6 +23,7 @@ import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
 import { geoName, type Address } from "../account/address";
+import { rfqHref } from "../catalog/paths";
 import { productNameOf, specLinesOf } from "../orders/summary";
 import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
 
@@ -312,6 +313,13 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
                     >
                       {t("reprice")}
                     </Button>
+                    {/* When today's configuration needs a quote (D-043) or this was an RFQ quotation, ask instead (U-F4). */}
+                    <Link
+                      href={`${rfqHref(item.summary.productTypeCode)}${item.summary.product ? `?from=${encodeURIComponent(item.summary.product.slug)}` : ""}`}
+                      className="text-primary text-sm underline underline-offset-4"
+                    >
+                      {t("orQuote")}
+                    </Link>
                   </div>
                 </Callout>
               ) : null}

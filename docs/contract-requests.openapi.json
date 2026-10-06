@@ -193,6 +193,47 @@
         }
       }
     },
+    "/v1/store/company-identity": {
+      "get": {
+        "operationId": "store.companyIdentity.list",
+        "summary": "The operating company as printed on tax documents: registered name, tax id, branch, address",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.company-identity",
+        "x-decisions": [
+          "D-092"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operating company as printed on tax documents: registered name, tax id, branch, address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreCompanyIdentityDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/guided-help/actions/recommend": {
       "post": {
         "operationId": "store.guidedHelp.recommend",
@@ -280,6 +321,50 @@
                 }
               }
             }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/newsletter/actions/subscribe": {
+      "post": {
+        "operationId": "store.newsletter.subscribe",
+        "summary": "A guest signs up for the newsletter with the marketing-email consent version they saw",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.newsletter-subscribe",
+        "x-decisions": [
+          "D-181"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsletterSignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "A guest signs up for the newsletter with the marketing-email consent version they saw"
           },
           "4XX": {
             "description": "Problem details (api-conventions §3)",
@@ -697,6 +782,25 @@
           "rfq"
         ]
       },
+      "NewsletterSignUpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "marketingConsent": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "email",
+          "marketingConsent"
+        ]
+      },
       "ProblemDetails": {
         "description": "As defined in contract/openapi.json (api-conventions §3)."
       },
@@ -769,6 +873,42 @@
           "received",
           "awaiting_payment"
         ]
+      },
+      "StoreCompanyIdentityDto": {
+        "type": "object",
+        "properties": {
+          "legalNameTh": {
+            "type": "string"
+          },
+          "legalNameEn": {
+            "type": "string"
+          },
+          "taxId": {
+            "type": "string",
+            "pattern": "^\\d{13}$"
+          },
+          "branch": {
+            "type": "string"
+          },
+          "addressTh": {
+            "type": "string"
+          },
+          "addressEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "legalNameTh",
+          "legalNameEn",
+          "taxId",
+          "branch",
+          "addressTh",
+          "addressEn"
+        ],
+        "additionalProperties": false
       },
       "StoreGlossaryTermDto": {
         "type": "object",

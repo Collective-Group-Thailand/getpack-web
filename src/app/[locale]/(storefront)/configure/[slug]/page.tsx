@@ -38,6 +38,9 @@ type Search = {
   l?: string;
   w?: string;
   d?: string;
+  /** The home page's quick start (U-F3): a quantity, and where it came from. */
+  qty?: string;
+  from?: string;
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {

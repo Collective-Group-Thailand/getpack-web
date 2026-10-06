@@ -16,6 +16,7 @@ import { Icon } from "@/ui/icons";
 import {
   getPriceHints,
   getProductFaqs,
+  getRfqForm,
   type CatalogueCategory,
   type ProductDetail,
   type ProductType,
@@ -48,6 +49,9 @@ export async function ProductView({
     getPriceHints({ slugs: [product.slug] }),
     getProductFaqs(product.slug),
   ]);
+  // How quickly CS answers an RFQ for this type, as the form states it (D-100).
+  const rfqForm = type && type.quoteMode !== "instant" ? await getRfqForm(type.code).catch(() => null) : null;
+  const related = (category?.types ?? []).filter((other) => other.code !== product.productTypeCode).slice(0, 4);
   const hint = hints.get(product.slug);
   const text = await priceHintText(hint);
   const name = pick(locale, product.nameTh, product.nameEn);
@@ -134,7 +138,22 @@ export async function ProductView({
                 {text.leadTime}
               </p>
             ) : null}
+            {product.moq !== null ? (
+              <p className="mt-1 flex items-center gap-2 text-sm">
+                <Icon name="package" size={16} aria-hidden="true" />
+                {t("card.moq", { quantity: format.number(product.moq) })}
+              </p>
+            ) : null}
             <p className="text-muted mt-3 text-xs">{instant ? t("product.priceNote") : t("product.rfqNote")}</p>
+            {rfqForm?.slaTargetHours ? (
+              <p className="text-muted mt-1 text-xs">{t("product.rfqSla", { hours: rfqForm.slaTargetHours })}</p>
+            ) : null}
+            <p className="text-muted mt-1 text-xs">
+              {t("product.toleranceNote")}{" "}
+              <Link href="/guarantee" className="underline underline-offset-4">
+                {t("product.toleranceLink")}
+              </Link>
+            </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -257,6 +276,32 @@ export async function ProductView({
           </section>
         ) : null}
       </div>
+
+      <section aria-labelledby="product-more" className="mt-12">
+        <h2 id="product-more" className="text-xl font-semibold">
+          {t("product.more")}
+        </h2>
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {related.map((other) => (
+            <li key={other.code}>
+              <Link
+                href={`/products?productType=${encodeURIComponent(other.code)}`}
+                className="border-border hover:border-primary inline-flex rounded-full border px-3 py-1.5 text-sm"
+              >
+                {pick(locale, other.nameTh, other.nameEn)}
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link
+              href="/materials"
+              className="text-primary inline-flex px-3 py-1.5 text-sm underline underline-offset-4"
+            >
+              {t("product.materials")}
+            </Link>
+          </li>
+        </ul>
+      </section>
 
       {faqEntries.length > 0 ? (
         <section aria-labelledby="product-faqs" className="mt-12 max-w-3xl">

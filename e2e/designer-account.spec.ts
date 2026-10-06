@@ -167,7 +167,7 @@ test("a design for an order is sent to print and prepress takes it", async ({ pa
 
 test("from a product page: the studio with its live price, which follows quantity and artwork", async ({ page }) => {
   await signInAsCustomer(page, "/products/shipping-box", MOCK_DESIGNER_PHONE);
-  await page.getByRole("link", { name: "ออกแบบออนไลน์" }).click();
+  await page.getByRole("main").getByRole("link", { name: "ออกแบบออนไลน์" }).click();
   await expect(page).toHaveURL(/\/studio\/new\?product=shipping-box&step=start$/);
   await startFromSetup(page);
 
