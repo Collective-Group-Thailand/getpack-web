@@ -53,6 +53,24 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit Flow 1 — step 2: the shared design baseline — 2026-10-06
+
+Branch `feat/ux-2-design-baseline`. The audit's "Design system baseline" table, applied once in `src/ui` and the tokens so every page moves with it.
+
+| Baseline row | Done |
+|---|---|
+| Typography | **Anuphan for body and headings** (Thai + Latin, one x-height); Noto Sans Thai no longer loaded (files kept, marked unused). Scale: `text-display` 64, `text-4xl` 48, `text-3xl` 38 on a desktop. |
+| Spacing / container | `max-w-content` 1180 (`--container-content`), `max-w-nav` 1320, `max-w-console` 1440; storefront pages moved from `max-w-6xl`/`px-4` to `max-w-content px-5 md:px-8` (gutter 20 / 32). |
+| Radius | card 20 on the storefront, **16 in admin and partner** (`[data-zone]` override, like the pill CTA); `rounded-band` 28; control 12 unchanged. |
+| Buttons | `lg` 52, new `nav` 44, `md` 40; primary carries a faint brand shadow on the storefront (`shadow-cta`, none elsewhere) and lifts 1 px; **`destructive` is an outline** — solid red only on an AlertDialog's confirm (`destructive-solid`). |
+| Shadow | `shadow-lift` on hover only (product cards, library cards). |
+| Status chips | already semantic with an icon at 24 px (`Badge md`); unchanged. **Assumption:** "waiting on the customer" keeps `warning`, not the audit's accent: D-180 keeps amber for promotions. |
+| Imagery | `ProductIllustration` — 13 original line drawings by family (shipping, tuck, rigid, bag, pouch, label, tag, tube, food, display, tape, stock, service) matched from a type/category/slug code; `ProductCard` draws one instead of the `package` icon, with a top-right promo slot and a hover "ดูราคา" CTA; `ProductThumb` for cart lines; `OpenBoxIllustration` for 404s. |
+| Empty / error | `ReferenceCode` (step 1); `EmptyState` gains `titleAs`. |
+| System-wide | Cookie banner is a slim full-width bottom bar, **not shown on `/studio`, `/configure`, `/checkout`, `/design`** (nothing is tracked until answered, D-144). Language button shows "TH" / "EN". 404s: storefront inside its layout (header/footer) with the open-box drawing and three ways on; admin/partner with the brand, and inside the console layout for a miss behind sign-in. Captions on `text-subtle` moved to `text-muted` (#5B534B). **Internal decision codes removed from 214 UI strings** (th + en); `[DEV]` / "(รีวิวทดสอบ UAT)" are seed data in packio-api, not UI copy. |
+
+**Tests:** unit 1090; e2e full run 449 passed — the four failures asserted the D-codes in copy (now assert the sentence and that no code shows) and the known-flaky sitemap test, all green on re-run.
+
 ## UX audit Flow 1 — step 1: the blocking bugs — 2026-10-06
 
 From `docs/ui/Packio UX UI Audit & Spec — Flow 1 Order-to-Production.md` (the user: "อ่านไฟล์นี้แล้วดำเนินการเลย … ปิด gap ทั้งหมด"). Branch `feat/ux-1-blocking-bugs` (worktree `../packio-web-ux`); the audit's steps 2–10 follow on their own branches.
