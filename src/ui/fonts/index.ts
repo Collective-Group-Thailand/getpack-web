@@ -51,11 +51,14 @@ const displayThai = localFont({
  * and the italic accent word (`<em>`) in a heading. Medium, semibold and medium italic only, Thai
  * and Latin split like Anuphan; OFL (`OFL-trirong.txt`), self-hosted (ADR-0001). Not preloaded:
  * a heading in the fallback for one frame costs less than ~25 KB on every first paint.
+ *
+ * The semibold file answers every weight from 600 up: a heading classed `font-bold` (700) would
+ * otherwise get a browser-synthesised bold — smeared strokes, worst on Thai — not Trirong's own.
  */
 const serifLatin = localFont({
   src: [
     { path: "./files/trirong-latin-500.woff2", weight: "500", style: "normal" },
-    { path: "./files/trirong-latin-600.woff2", weight: "600", style: "normal" },
+    { path: "./files/trirong-latin-600.woff2", weight: "600 900", style: "normal" },
     { path: "./files/trirong-latin-500-italic.woff2", weight: "500", style: "italic" },
   ],
   display: "swap",
@@ -66,7 +69,7 @@ const serifLatin = localFont({
 const serifThai = localFont({
   src: [
     { path: "./files/trirong-thai-500.woff2", weight: "500", style: "normal" },
-    { path: "./files/trirong-thai-600.woff2", weight: "600", style: "normal" },
+    { path: "./files/trirong-thai-600.woff2", weight: "600 900", style: "normal" },
     { path: "./files/trirong-thai-500-italic.woff2", weight: "500", style: "italic" },
   ],
   display: "swap",

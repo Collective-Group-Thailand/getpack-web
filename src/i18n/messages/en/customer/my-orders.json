@@ -16,7 +16,7 @@
   "browse": "Browse products",
   "row": "{quantity} {unit} · ordered {date}",
   "shipBy": "Leaves the factory by {date}",
-  "payDue": "An instalment is due — pay it",
+  "payDue": "Pay now",
   "documents": {
     "download": "Get the download link",
     "open": "Open the document",

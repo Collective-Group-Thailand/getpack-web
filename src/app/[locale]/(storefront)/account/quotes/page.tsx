@@ -51,7 +51,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             return (
               <li
                 key={quote.id}
-                className="border-border flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
+                className="border-border bg-surface flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border p-4 sm:p-5"
               >
                 <div className="min-w-0">
                   <p className="font-semibold">{productNameOf(locale, quote.summary)}</p>
@@ -73,7 +73,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
                   ) : null}
                   <p className="text-muted text-xs">{t("validUntil", { date: format.date(quote.validUntil) })}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <StatusChip map={QUOTE_STATUS} value={quote.status} />
                   {quote.status === "saved" ? (
                     <RequestSample quoteId={quote.id} label={quote.quoteCode ?? productNameOf(locale, quote.summary)} />

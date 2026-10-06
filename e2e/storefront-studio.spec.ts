@@ -150,6 +150,8 @@ test("① describe your product → three boxes with reasons → ②", async ({ 
   await expect(page).toHaveURL(/\/studio\/new\?product=shipping-box&step=start$/);
   await expect(page.getByRole("dialog", { name: "ตั้งค่ากล่อง" })).toHaveCount(0);
 
+  // "มีสินค้าแล้ว อยากได้กล่อง" on the start page opens ① in a dialog (the "StudioStart" board).
+  await page.getByRole("button", { name: /มีสินค้าแล้ว อยากได้กล่อง/ }).click();
   const describe = page.getByRole("region", { name: "บอกขนาดสินค้าของคุณ" });
   await describe.getByRole("textbox", { name: "ยาว" }).fill("300");
   await describe.getByRole("textbox", { name: "กว้าง" }).fill("200");

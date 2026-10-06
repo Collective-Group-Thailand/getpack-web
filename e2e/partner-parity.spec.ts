@@ -26,9 +26,10 @@ test.use({ viewport: { width: 390, height: 844 } });
 
 test("Today counts the sample jobs and the claims", async ({ page }) => {
   await signInAsPartner(page, "owner");
-  const counters = page.getByRole("list", { name: "ภาพรวมวันนี้" });
+  const counters = page.getByRole("region", { name: "ภาพรวมวันนี้" });
   await expect(counters.getByRole("link", { name: /ตัวอย่าง/ }).first()).toBeVisible();
-  await expect(counters.getByRole("link", { name: /เคลม/ }).first()).toBeVisible();
+  // A counter with nothing in it is named in the "nothing waiting" line instead of a tile.
+  await expect(counters.getByText(/เคลม/).first()).toBeVisible();
   await expectAxeClean(page);
 });
 

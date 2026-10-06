@@ -97,12 +97,17 @@ export default async function Page() {
         </section>
       ) : null}
 
-      <section aria-labelledby="help-person" className="bg-surface-subtle flex flex-col gap-3 rounded-2xl p-6">
-        <h2 id="help-person" className="text-lg font-semibold">
-          {t("person")}
-        </h2>
-        <p className="text-muted">{t("personBody")}</p>
-        <div className="flex flex-wrap gap-2">
+      <section
+        aria-labelledby="help-person"
+        className="grain relative flex flex-col gap-5 overflow-hidden rounded-[var(--radius-card)] bg-[var(--green-ink)] p-7 text-white md:flex-row md:items-center md:justify-between md:p-9"
+      >
+        <div className="relative max-w-[34em]">
+          <h2 id="help-person" className="serif text-[1.75rem] leading-tight">
+            {t("person")}
+          </h2>
+          <p className="mt-2 leading-relaxed text-white/80">{t("personBody")}</p>
+        </div>
+        <div className="relative flex flex-wrap gap-2">
           <Button asChild iconStart="chat">
             <Link href="/help/chat">{t("chat")}</Link>
           </Button>

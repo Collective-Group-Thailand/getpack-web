@@ -121,7 +121,11 @@ export function ProductCard({
           </div>
         )}
         {badges ? <div className="absolute start-3 top-3 flex flex-wrap gap-1">{badges}</div> : null}
-        {promoBadge ? <div className="absolute end-3 top-3 flex flex-wrap gap-1">{promoBadge}</div> : null}
+        {promoBadge ? (
+          <div className="absolute end-3 top-3 flex max-w-[55%] flex-wrap justify-end gap-1 [&>*]:max-w-full">
+            {promoBadge}
+          </div>
+        ) : null}
         {hoverCta ? (
           <div
             aria-hidden="true"
@@ -136,7 +140,7 @@ export function ProductCard({
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4 md:px-5 md:pt-4.5 md:pb-5">
         {eyebrow ? <p className="text-muted text-xs">{eyebrow}</p> : null}
-        <Heading className="leading-snug font-semibold [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
+        <Heading className="text-[1.0625rem] leading-snug font-bold [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
           {title}
         </Heading>
         {price ? <p className="mt-auto pt-2 text-base tabular-nums">{price}</p> : null}

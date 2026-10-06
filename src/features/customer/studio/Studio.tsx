@@ -405,7 +405,19 @@ export function Studio({
           applySeed,
           // Before a box: the start screen fills the canvas (UX audit, studio).
           empty: (ctx) => (
-            <StartScreen onChooseBox={ctx.openSetup} productSlug={productSlug} signedIn={mode === "store"} />
+            <StartScreen
+              onChooseBox={ctx.openSetup}
+              onPickSpec={(spec) => {
+                useEditor.getState().setSpec(spec);
+                goTo("box");
+              }}
+              catalog={catalog}
+              productSlug={productSlug}
+              productName={
+                catalog?.product ? (locale === "en" ? catalog.product.nameEn : catalog.product.nameTh) : null
+              }
+              signedIn={mode === "store"}
+            />
           ),
           views: true,
           onSide,
@@ -433,7 +445,8 @@ export function Studio({
                 : true,
           notice: (
             <>
-              <StudioGuide signedIn={signedIn} />
+              {/* The tour points at the step bar and the stage, which come with a box. */}
+              {hasBox ? <StudioGuide signedIn={signedIn} /> : null}
               {lock ? (
                 <Badge tone="neutral">{t("locked", { versionNo: lock.versionNo, orderCode: lock.orderCode })}</Badge>
               ) : null}
