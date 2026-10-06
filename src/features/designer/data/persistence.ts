@@ -132,6 +132,10 @@ export function usePersistence(config: PersistenceConfig) {
       if (!snapshot.spec) return false;
       const { spec, content, name } = snapshot;
       const run = (async () => {
+        // Yield first: a guest's save is synchronous, and without this its `finally` cleared
+        // `inFlight` before `inFlight.current = run` below set it — leaving it set for good, so
+        // every later save was taken for one "already in flight" and never ran.
+        await Promise.resolve();
         setState("saving");
         try {
           if (cfg.mode === "local") {

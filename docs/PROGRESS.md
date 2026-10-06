@@ -62,7 +62,7 @@ Branch `feat/ux-3-sign-in-v2`, to the mockup's "Sign in — เบอร์ม�
 - **Over a page:** a centred 480 px dialog from `md`, the bottom sheet below (`SignInSheet`).
 - **Staff `/login`:** the same layout with the dark panel, show/hide password, "ลืมรหัสผ่าน?" explaining that the company's Superadmin resets it (**contract request `auth.staff.password-reset`**), and a link to the partner factories' sign-in on the partner host.
 - **Not done, on purpose:** Google/Apple/LINE logos and LINE green — CLAUDE.md forbids third-party assets; the buttons name the provider in words (as the home redesign decided for LINE).
-- **Fix carried here (findings slice):** a manual save pressed during a guest design's autosave now resolves after the queued save that carries the change, so "บันทึกแล้ว" is never shown before the new name is stored (the guest-import e2e caught it).
+- **Fix carried here (findings slice):** a guest's save is synchronous, so its `finally` cleared `inFlight` *before* `inFlight.current = run` set it — `inFlight` stayed set for good and every later save of that design was taken for one already in flight and never ran (latent since F4; the findings slice's local autosave exposed it — the guest-import e2e caught a lost name). The run now yields first; and a manual save pressed during an autosave resolves only after the queued save that carries the change.
 
 **Tests:** unit — PhoneInput grouping and `isThaiMobile`, OTP boxes over one input with paste and axe. e2e — sign-in suites 93/94; the one failure (`a saved quotation reopens`) needs a quotation saved by an earlier test and passes in full runs.
 
