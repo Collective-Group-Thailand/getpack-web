@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { POD_REVIEW_STATUS, SHIPMENT_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 
 import { QueueTabs, ResourceList, StatusChip, type InitialPage } from "../console";
@@ -43,7 +44,11 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
       header: t("columns.shipment"),
       cell: (row) => (
         <div className="min-w-0">
-          <Link href={`/shipments/${row.id}`} className="text-primary font-mono hover:underline">
+          {/* One line, however long the code (UX audit, /shipments). */}
+          <Link
+            href={`/shipments/${row.id}`}
+            className="text-primary inline-block min-w-[11.5rem] font-mono whitespace-nowrap hover:underline"
+          >
             {row.shipmentNo}
           </Link>
           <p className="text-muted text-xs">{[...new Set(row.items.map((item) => item.orderCode))].join(", ")}</p>
@@ -58,8 +63,12 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
       header: t("columns.status"),
       cell: (row) => (
         <div className="flex flex-col items-start gap-1">
-          <StatusChip map={SHIPMENT_STATUS} value={row.status} />
-          {row.podReview ? <StatusChip map={POD_REVIEW_STATUS} value={row.podReview.state} /> : null}
+          {/* One status: a proof of delivery waiting for review implies "delivered" (UX audit). */}
+          {row.podReview?.state === "pending" ? (
+            <StatusChip map={POD_REVIEW_STATUS} value={row.podReview.state} />
+          ) : (
+            <StatusChip map={SHIPMENT_STATUS} value={row.status} />
+          )}
           {row.blockedByPayment ? (
             <Badge size="sm" tone="warning" icon="hourglass">
               {t("paymentHold")}
@@ -88,8 +97,7 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
         <div className="text-sm">
           <p>{row.destination.recipientName}</p>
           <p className="text-muted text-xs">
-            {locale === "en" ? row.destination.province.nameEn : row.destination.province.nameTh}{" "}
-            {row.destination.postcode}
+            {locale === "en" ? row.destination.province.nameEn : row.destination.province.nameTh}
           </p>
         </div>
       ),
@@ -112,6 +120,11 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
         const last = row.events.at(-1);
         return (
           <span className="text-sm">
+            {row.podReview?.state === "pending" ? (
+              <Button asChild size="sm" variant="secondary" iconStart="file-check" className="mb-1">
+                <Link href={`/shipments/${row.id}`}>{t("reviewPod")}</Link>
+              </Button>
+            ) : null}
             {last ? <When at={last.occurredAt} /> : "–"}
             {last?.location ? <span className="text-muted block text-xs">{last.location}</span> : null}
             {row.exception?.note ? (
@@ -166,7 +179,10 @@ export function ShipmentsList({ initial }: { initial: InitialPage<Shipment> | nu
             ? [{ id: "factoryId", label: t("columns.factory"), kind: "select" as const, options: factories }]
             : []),
         ]}
-        rowTone={(row) => (row.status === "failed" || row.status === "returned" ? "danger" : undefined)}
+        rowTone={(row) =>
+          row.status === "failed" || row.status === "returned" || row.exception ? "danger" : undefined
+        }
+        rowHref={(row) => `/shipments/${row.id}`}
         empty={{ title: t("empty") }}
       />
     </div>

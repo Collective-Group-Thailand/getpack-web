@@ -7,9 +7,10 @@ import { CLAIM_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { Badge } from "@/ui/components/Badge";
 import type { DataTableColumn } from "@/ui/components/DataTable";
+import { SlaTimer } from "@/ui/components/SlaTimer";
 
-import { QueueTabs, ResourceList, StatusChip, type InitialPage } from "../console";
-import { CLAIM_ORIGINS, CLAIM_STATUSES, CLAIM_TYPES, claimsList, type Claim } from "./resources";
+import { QueueTabs, ResourceList, StatusChip, useSlaFormat, type InitialPage } from "../console";
+import { CLAIM_ORIGINS, CLAIM_TYPES, claimsList, type Claim } from "./resources";
 
 /**
  * Claims (F2 2.8, D-082, D-083): by status, type and origin, with the customer, the liability the rule
@@ -21,6 +22,7 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
   const t = useTranslations("logistics.claims");
   const tStatus = useTranslations("status");
   const format = useFormat();
+  const sla = useSlaFormat();
 
   const columns: DataTableColumn<Claim>[] = [
     {
@@ -74,7 +76,18 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
         </span>
       ),
     },
-    { id: "windowEndsAt", header: t("columns.window"), cell: (row) => <When at={row.windowEndsAt} absoluteOnly /> },
+    {
+      id: "windowEndsAt",
+      header: t("columns.window"),
+      // "เหลือ 2 วัน", coloured as it runs out (UX audit), with the date on hover.
+      cell: (row) => (
+        <SlaTimer
+          dueAt={row.windowEndsAt}
+          format={sla}
+          absolute={row.windowEndsAt ? format.dateTime(row.windowEndsAt) : undefined}
+        />
+      ),
+    },
     { id: "submittedAt", header: t("columns.submitted"), hideable: true, cell: (row) => <When at={row.submittedAt} /> },
   ];
 
@@ -83,9 +96,13 @@ export function ClaimsList({ initial }: { initial: InitialPage<Claim> | null }) 
       <QueueTabs
         label={t("statusesLabel")}
         param="status"
+        // Where a claim waits, not every status (UX audit, /claims): open, on the customer, on the
+        // factory, closed. The other statuses are the status chip on each row.
         tabs={[
-          { value: null, label: t("all"), countKey: "claims.open" },
-          ...CLAIM_STATUSES.map((status) => ({ value: status, label: tStatus(CLAIM_STATUS[status].labelKey) })),
+          { value: null, label: t("open"), countKey: "claims.open" },
+          { value: "need_info", label: t("waitingCustomer") },
+          { value: "factory_review", label: t("waitingFactory") },
+          { value: "closed", label: tStatus(CLAIM_STATUS.closed.labelKey) },
         ]}
       />
       <ResourceList

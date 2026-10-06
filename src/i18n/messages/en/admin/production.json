@@ -38,7 +38,20 @@
       "ready": "Ready to ship"
     },
     "noJobs": "No jobs",
-    "progress": "Progress through the job's steps"
+    "progress": "Progress through the job's steps",
+    "close": "Close",
+    "steps": "The job's steps",
+    "dueOn": "Due {date}",
+    "qc": "Quality inspection",
+    "qcSample": "Sample of {size}",
+    "qcStates": {
+      "in_progress": "In progress",
+      "passed": "Passed",
+      "failed": "Failed",
+      "waived": "Waived",
+      "planned": "Planned"
+    },
+    "openOrder": "Open the order"
   },
   "inspections": {
     "title": "QC inspections",

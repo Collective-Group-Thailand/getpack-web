@@ -29,7 +29,8 @@
     },
     "paymentHold": "Payment due before shipping",
     "carrierRequested": "Factory asked for a carrier",
-    "splitFrom": "Split from {no}"
+    "splitFrom": "Split from {no}",
+    "reviewPod": "Review proof"
   },
   "shipment": {
     "pageTitle": "Shipment",
@@ -186,7 +187,10 @@
     "filters": {
       "type": "Type",
       "origin": "Origin"
-    }
+    },
+    "open": "Open",
+    "waitingCustomer": "Waiting for the customer",
+    "waitingFactory": "Waiting for the factory"
   },
   "claim": {
     "pageTitle": "Claim",
