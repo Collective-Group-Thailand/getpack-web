@@ -159,7 +159,10 @@
     "emptyTitle": "No articles in this category yet",
     "emptyBody": "Try another category, or go back to all articles",
     "published": "Published {date}",
-    "back": "All articles"
+    "back": "All articles",
+    "emptyAllTitle": "No articles yet",
+    "emptyAllBody": "Meanwhile, the help centre has the answers, or browse the products and prices",
+    "allArticles": "See all articles"
   },
   "faq": {
     "title": "Frequently asked questions",

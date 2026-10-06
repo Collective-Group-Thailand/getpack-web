@@ -3,6 +3,8 @@
   "emptyTitle": "Your cart is empty",
   "emptyBody": "Configure packaging and add it here, or accept a quotation our team sent you.",
   "browse": "Browse products",
+  "emptyQuotes": "Saved quotations",
+  "emptyReorder": "Reorder an earlier job",
   "itemsLabel": "Items in your cart",
   "quote": "Quotation {code} · price holds until {date}",
   "quoteNoCode": "Price holds until {date}",

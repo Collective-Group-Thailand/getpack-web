@@ -230,9 +230,19 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
         title={t("emptyTitle")}
         description={t("emptyBody")}
         action={
-          <Button asChild>
-            <Link href="/products">{t("browse")}</Link>
-          </Button>
+          // A returning customer's cart is often empty because what they want is already saved:
+          // a quotation to accept, or an earlier job to order again.
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button asChild>
+              <Link href="/products">{t("browse")}</Link>
+            </Button>
+            <Button asChild variant="secondary" iconStart="receipt">
+              <Link href="/account/quotes">{t("emptyQuotes")}</Link>
+            </Button>
+            <Button asChild variant="secondary" iconStart="refresh">
+              <Link href="/account/orders?view=completed">{t("emptyReorder")}</Link>
+            </Button>
+          </div>
         }
       />
     );

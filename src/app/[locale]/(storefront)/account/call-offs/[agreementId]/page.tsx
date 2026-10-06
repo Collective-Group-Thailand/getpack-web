@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: Promise<{ agreementId: 
           {t("back")}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-[2rem] leading-tight">
             {pick(locale, agreement.productType.nameTh, agreement.productType.nameEn)}
           </h1>
           <StatusChip map={CALL_OFF_STATUS} value={agreement.status} size="md" />
