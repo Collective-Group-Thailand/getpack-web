@@ -195,6 +195,31 @@ export function Configurator({
       designOption: previous.designOption,
     }));
 
+  const byId = optionsById(configurator);
+  const kind = sizeKindOf(configurator);
+  const pattern = patternOf(configurator, state);
+  const sizeSummary = (() => {
+    const dims = axesOf(configurator, state)
+      .map((axis) => state.dims[axis])
+      .filter((value): value is number => value !== null)
+      .map((value) => format.number(value))
+      .join(" × ");
+    return [
+      pattern ? [pattern.name, pattern.styleCode].filter(Boolean).join(" ") : null,
+      dims ? `${dims} ${t("size.units.mm")}` : null,
+      dims && state.basis && kind === "box" ? t(`size.bases.${state.basis}.label`) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  })();
+  const choiceSummary = (step: StepKey) => {
+    const chosen = groupsIn(configurator, step)
+      .flatMap((group) => state.choices[group.kind] ?? [])
+      .map((id) => byId.get(id))
+      .filter((option) => option !== undefined)
+      .map((option) => pick(locale, option.nameTh, option.nameEn));
+    return [...new Set(chosen)].join(", ");
+  };
   const actions = useQuoteActions({
     configurator,
     state,
@@ -203,6 +228,12 @@ export function Configurator({
     requestSignIn,
     anonymousId: advisor.anonymousId,
     onLeverApplied: reseed,
+    guest: {
+      slug: configurator.slug,
+      unit,
+      specs: [sizeSummary, ...(["material", "printing", "finishing"] as const).map(choiceSummary)].filter(Boolean),
+      grossAmount: priced?.grossAmount ?? null,
+    },
   });
   const drafts = useDraft({
     configurator,
@@ -261,31 +292,6 @@ export function Configurator({
 
   /* -------------------------------------------------------------------- step summaries */
 
-  const byId = optionsById(configurator);
-  const kind = sizeKindOf(configurator);
-  const pattern = patternOf(configurator, state);
-  const sizeSummary = (() => {
-    const dims = axesOf(configurator, state)
-      .map((axis) => state.dims[axis])
-      .filter((value): value is number => value !== null)
-      .map((value) => format.number(value))
-      .join(" × ");
-    return [
-      pattern ? [pattern.name, pattern.styleCode].filter(Boolean).join(" ") : null,
-      dims ? `${dims} ${t("size.units.mm")}` : null,
-      dims && state.basis && kind === "box" ? t(`size.bases.${state.basis}.label`) : null,
-    ]
-      .filter(Boolean)
-      .join(" · ");
-  })();
-  const choiceSummary = (step: StepKey) => {
-    const chosen = groupsIn(configurator, step)
-      .flatMap((group) => state.choices[group.kind] ?? [])
-      .map((id) => byId.get(id))
-      .filter((option) => option !== undefined)
-      .map((option) => pick(locale, option.nameTh, option.nameEn));
-    return [...new Set(chosen)].join(", ");
-  };
   const loadSummary = load
     ? t("logistics.summary", {
         weight: format.number(load.productWeightG),

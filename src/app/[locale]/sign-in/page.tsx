@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { SignInPanel } from "@/features/customer/auth/SignInPanel";
 import { SiteFooter, SiteHeader } from "@/features/customer/shell";
-import { safeReturnTo } from "@/features/shared/auth/return-to";
+import { signInReturnTo } from "@/features/shared/auth/return-to";
 import { routing } from "@/i18n/routing";
 import { localePath, publicOrigin } from "@/lib/seo";
 import { hasLocale } from "next-intl";
@@ -28,7 +28,7 @@ export default async function SignInPage({
     publicOrigin(),
   ]);
   setRequestLocale(locale);
-  const returnTo = safeReturnTo(query.returnTo);
+  const returnTo = signInReturnTo(query.returnTo);
   // Where LINE's login page sends the customer back to: this page, flagged to finish the flow.
   const lineReturnUrl = `${origin}${localePath("/sign-in", hasLocale(routing.locales, locale) ? locale : routing.defaultLocale)}?provider=line&returnTo=${encodeURIComponent(returnTo)}`;
 

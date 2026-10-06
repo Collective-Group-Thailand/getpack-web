@@ -3,16 +3,17 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { IconButton } from "@/ui/components/IconButton";
 
 const SignInSheet = dynamic(() => import("./SignInSheet").then((module) => module.SignInSheet), { ssr: false });
 
 /**
- * The header's account control. Signed in, it is a link to the account. Signed out, it is still
- * that link — `/account` sends a guest to `/sign-in`, so it works without JavaScript — but once
- * the page is interactive it opens the sign-in sheet over the page instead, so signing in does
- * not lose the customer's place. The sheet's code loads on that first click.
+ * The header's account control. Signed in, it is a link to the account. Signed out, it links to
+ * `/sign-in?returnTo=<this page>` directly — no detour through `/account`'s redirect (UX audit
+ * Flow 1, bug #4), and it works without JavaScript — but once the page is interactive it opens
+ * the sign-in sheet over the page instead, so signing in does not lose the customer's place. The
+ * sheet's code loads on that first click.
  */
 export function AccountButton({
   signedIn,
@@ -25,6 +26,14 @@ export function AccountButton({
   signInLabel?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  // The path only: reading the query here would opt every page out of static rendering.
+  const here = pathname;
+  const href = signedIn
+    ? "/account"
+    : here === "/" || here.startsWith("/sign-in")
+      ? "/sign-in"
+      : `/sign-in?returnTo=${encodeURIComponent(here)}`;
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -39,7 +48,7 @@ export function AccountButton({
     <>
       {!signedIn && signInLabel ? (
         <Link
-          href="/account"
+          href={href}
           onClick={openSheet}
           className="text-fg/85 hover:bg-bg-subtle hover:text-fg focus-visible:ring-focus-ring hidden h-10 items-center rounded-lg px-2.5 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-2 lg:inline-flex"
         >
@@ -54,7 +63,7 @@ export function AccountButton({
         label={label}
         className={!signedIn && signInLabel ? "lg:hidden" : undefined}
       >
-        <Link href="/account" onClick={openSheet} />
+        <Link href={href} onClick={openSheet} />
       </IconButton>
       {loaded ? (
         <SignInSheet

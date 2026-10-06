@@ -25,10 +25,18 @@ describe("EmptyState", () => {
 describe("ErrorState", () => {
   it("announces the failure and shows a support code", async () => {
     const { container } = render(
-      <ErrorState title="โหลดข้อมูลไม่สำเร็จ" description="ลองอีกครั้ง" code="PK-500-QUOTE" />,
+      <ErrorState
+        title="โหลดข้อมูลไม่สำเร็จ"
+        description="ลองอีกครั้ง"
+        code="5fe1ecce-1234-4abc-8def-2fb5e788f013"
+        codeLabels={{ label: "รหัสอ้างอิง", copy: "คัดลอกรหัสอ้างอิง", copied: "คัดลอกแล้ว" }}
+      />,
     );
     expect(screen.getByRole("alert")).toHaveTextContent("โหลดข้อมูลไม่สำเร็จ");
-    expect(screen.getByText("PK-500-QUOTE")).toBeInTheDocument();
+    // The short reference, never the UUID (UX audit Flow 1); the copy button carries the full id.
+    expect(screen.getByText("PK-88F013")).toBeInTheDocument();
+    expect(screen.queryByText(/5fe1ecce/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "คัดลอกรหัสอ้างอิง" })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 });

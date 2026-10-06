@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
@@ -26,6 +26,7 @@ import { geoName, type Address } from "../account/address";
 import { rfqHref } from "../catalog/paths";
 import { productNameOf, specLinesOf } from "../orders/summary";
 import { editCart, lineBlockers, readCart, type Cart, type CartItem } from "./cart-client";
+import { useGuestCartMerge } from "./useGuestCartMerge";
 
 const AddressSheet = dynamic(() => import("./AddressSheet").then((module) => module.AddressSheet), { ssr: false });
 
@@ -199,9 +200,26 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
       void queryClient.invalidateQueries({ queryKey: cartKey });
     },
   });
+  // What this browser kept before signing in joins the account's cart (UX audit Flow 1, bug #3).
+  const merge = useGuestCartMerge(true);
+  useEffect(() => {
+    if (merge.merged) {
+      queryClient.setQueryData(cartKey, merge.merged.cart);
+      toast.success(t("guest.merged", { count: merge.merged.count }));
+    }
+    if (merge.failed.length > 0) toast.error(t("guest.mergeFailed", { count: merge.failed.length }));
+  }, [merge.merged, merge.failed, queryClient, t]);
   const api = browserApi();
   const nameOf = (item: Item) => productNameOf(locale, item.summary);
   const blocked = cart.items.flatMap((item) => lineBlockers(item).map((kind) => ({ item, kind })));
+
+  if (cart.items.length === 0 && merge.merging) {
+    return (
+      <p className="text-muted mt-8 text-sm" role="status">
+        {t("guest.merging")}
+      </p>
+    );
+  }
 
   if (cart.items.length === 0) {
     return (

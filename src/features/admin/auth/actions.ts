@@ -8,7 +8,7 @@ import { apiInternalUrl } from "@/lib/env/lazy-server";
 import { serverCallContext } from "@/lib/api/call-context.server";
 import { startSession } from "@/features/shared/auth/session-actions";
 
-import { safeReturnTo } from "@/features/shared/auth/return-to";
+import { signInReturnTo } from "@/features/shared/auth/return-to";
 
 export interface StaffLoginState {
   /** A message key in the `auth` namespace — never a sentence, so it stays translatable. */
@@ -27,7 +27,7 @@ export interface StaffLoginState {
 export async function signInStaff(_state: StaffLoginState, formData: FormData): Promise<StaffLoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const returnTo = safeReturnTo(String(formData.get("returnTo") ?? ""));
+  const returnTo = signInReturnTo(String(formData.get("returnTo") ?? ""));
 
   if (!email || !password) return { errorKey: "errors.invalidCredentials" };
 

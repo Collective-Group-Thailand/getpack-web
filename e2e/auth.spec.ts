@@ -34,6 +34,19 @@ test.describe("staff sign-in", () => {
     await expect(page).toHaveURL(`${HOSTS.admin}/login?returnTo=%2Forders`);
   });
 
+  test("never returns to the login page or an internal route spelling after signing in", async ({ page }) => {
+    // UX audit Flow 1, bug #2: a `returnTo` the admin host would rewrite twice ended on a 404.
+    for (const returnTo of ["/login", "/admin/orders"]) {
+      await page.context().clearCookies();
+      await page.goto(`${HOSTS.admin}/login?returnTo=${encodeURIComponent(returnTo)}`);
+      await page.getByLabel("อีเมล").fill(STAFF.email);
+      await page.getByLabel("รหัสผ่าน").fill(STAFF.password);
+      await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+      await expect(page).toHaveURL(`${HOSTS.admin}/`);
+      await expect(accountButton(page)).toBeVisible();
+    }
+  });
+
   test("refuses the wrong password without saying which half was wrong", async ({ page }) => {
     await page.goto(`${HOSTS.admin}/login`);
     await page.getByLabel("อีเมล").fill(STAFF.email);
@@ -139,8 +152,22 @@ test.describe("customer OTP sign-in", () => {
     await page.getByLabel("รหัส OTP").fill("999999");
 
     await expect(page.getByRole("status")).toContainText("รหัส OTP ไม่ถูกต้อง");
+    // A wrong code is a 422 `auth.otp_invalid`; it was once reported as a bad phone (UX audit bug #1).
+    await expect(page.getByRole("status")).not.toContainText("เบอร์มือถือ");
     // design-system.md §4: never clear a form on error.
     await expect(page.getByLabel("รหัส OTP")).toHaveValue("999999");
+  });
+});
+
+test.describe("the storefront header's sign-in link", () => {
+  test("goes straight to /sign-in and brings the customer back to the page they were on", async ({ page }) => {
+    // UX audit Flow 1, bug #4: no detour through /account's redirect.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(`${HOSTS.customer}/products`);
+    await expect(page.getByRole("banner").getByRole("link", { name: "เข้าสู่ระบบ" })).toHaveAttribute(
+      "href",
+      "/sign-in?returnTo=%2Fproducts",
+    );
   });
 });
 

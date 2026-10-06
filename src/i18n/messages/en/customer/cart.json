@@ -47,5 +47,17 @@
   "perUnitOf": "{price} each · {quantity} {unit}",
   "reorderOf": "Reorder of {code}, with new artwork",
   "reorderOfReused": "Reorder of {code}: the approved artwork carries over, no new proof",
-  "orQuote": "or request a quote for this specification"
+  "orQuote": "or request a quote for this specification",
+  "guest": {
+    "emptyBody": "Configure your packaging and add it to the cart — no account needed until you pay.",
+    "signInForSaved": "Sign in to see your saved cart",
+    "quantity": "Quantity {quantity} {unit}",
+    "edit": "Edit",
+    "priceNote": "Prices are as shown when you added each item. They are recalculated and confirmed once you sign in.",
+    "signInAtCheckout": "You sign in with your mobile number in the next step; these items move into your account.",
+    "merging": "Moving the items you added before signing in…",
+    "merged": "Moved {count, plural, one {# item} other {# items}} from before you signed in",
+    "mergeFailed": "{count, plural, one {# item} other {# items}} could not be moved because the price or product changed. Please configure again.",
+    "added": "{name} added to the cart"
+  }
 }
