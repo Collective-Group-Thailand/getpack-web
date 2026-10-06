@@ -74,5 +74,13 @@
     "xlsx": "Excel (.xlsx)",
     "csv": "CSV",
     "failed": "Export failed"
+  },
+  "kpis": {
+    "title": "This month ({from} – {to})",
+    "gmv": "Sales",
+    "paid": "Paid orders",
+    "aov": "Average order",
+    "repeat": "Repeat customers",
+    "sparkline": "Paid orders per day this month"
   }
 }

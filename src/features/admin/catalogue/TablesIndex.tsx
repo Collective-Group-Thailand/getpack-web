@@ -1,12 +1,18 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+
+import { useFormat } from "@/features/shared/format";
+import { queryKeys } from "@/lib/api/query-keys";
+import { STALE_TIME } from "@/lib/query/defaults";
 
 import { Card } from "@/ui/components/Card";
 import { Icon, type IconName } from "@/ui/icons";
 
-import { useActor } from "../console";
+import { adminBrowserApis, useActor } from "../console";
+import { listRows } from "./api";
 import { TABLES, type Section } from "./tables";
 
 const SECTIONS: Record<"catalogue" | "cms", readonly Section[]> = {
@@ -14,7 +20,23 @@ const SECTIONS: Record<"catalogue" | "cms", readonly Section[]> = {
   cms: ["content", "seo"],
 };
 
-type Entry = { key: string; href: string; icon: IconName; permission: string };
+type Entry = { key: string; href: string; icon: IconName; permission: string; path?: string };
+
+/**
+ * How many rows a table holds — "14 ประเภท", "38 วัสดุ" (UX audit, /catalogue) — read as the
+ * total of a one-row page, so the hub costs a request per card and nothing more.
+ */
+function RowCount({ path, tableKey }: { path: string; tableKey: string }) {
+  const t = useTranslations("catalogue");
+  const format = useFormat();
+  const count = useQuery({
+    queryKey: [...queryKeys.list("admin", `catalog_${tableKey}`), "count"],
+    queryFn: async () => (await listRows(adminBrowserApis().contract, path, { perPage: 1 })).meta.total,
+    staleTime: STALE_TIME.reference,
+  });
+  if (count.data === undefined) return null;
+  return <span className="text-muted text-xs tabular-nums">{t("rowCount", { count: format.number(count.data) })}</span>;
+}
 
 /**
  * The catalogue or the CMS as a map of its tables, grouped the way people look for them, and
@@ -42,6 +64,7 @@ export function TablesIndex({ zone }: { zone: "catalogue" | "cms" }) {
             href: `/${zone}/${def.key}`,
             icon: def.icon,
             permission: def.read,
+            path: def.path,
           })),
           ...(extra[section] ?? []),
         ].filter((entry) => may(entry.permission));
@@ -60,6 +83,7 @@ export function TablesIndex({ zone }: { zone: "catalogue" | "cms" }) {
                       <span>
                         <span className="block font-medium">{t(`tables.${entry.key}.title`)}</span>
                         <span className="text-muted block text-sm">{t(`tables.${entry.key}.description`)}</span>
+                        {entry.path ? <RowCount path={entry.path} tableKey={entry.key} /> : null}
                       </span>
                     </Link>
                   </Card>

@@ -10,6 +10,7 @@ import { HeaderSearch } from "@/features/customer/search/HeaderSearch";
 import { categoryHref } from "@/features/customer/catalog/paths";
 
 import { CustomerBell } from "./CustomerBell";
+import { emptyContent } from "./content.server";
 import { DeferredAssistant, DeferredLocaleMenu } from "./DeferredMenus";
 import { MobileProductsMenu, ProductsMenu } from "./ProductsMenu";
 import { Link } from "@/i18n/navigation";
@@ -31,7 +32,7 @@ import { Brand } from "@/ui/brand";
  * data, `catalog/api.server.ts`); only its open/close is a client component.
  */
 export async function SiteHeader() {
-  const [t, tCommon, tCatalog, locale, tree, jar, format] = await Promise.all([
+  const [t, tCommon, tCatalog, locale, tree, jar, format, empty] = await Promise.all([
     getTranslations("storefront"),
     getTranslations("common"),
     getTranslations("catalog"),
@@ -39,7 +40,10 @@ export async function SiteHeader() {
     getCatalogueTree(),
     cookies(),
     getFormat(),
+    emptyContent(),
   ]);
+  // No articles yet: the link waits until there is something to read (UX audit).
+  const showArticles = !empty.has("/articles");
   // Whether there is a session at all — which control to show, not who it is. The proxy has
   // already refreshed an expired access token before this renders.
   const signedIn = Boolean(readAccessToken(jar));
@@ -108,7 +112,7 @@ export async function SiteHeader() {
     ["/products", t("nav.products")],
     ["/studio/new", t("nav.designOnline")],
     ["/samples", t("nav.pricingSamples")],
-    ["/articles", t("nav.articles")],
+    ...(showArticles ? ([["/articles", t("nav.articles")]] as [string, string][]) : []),
     ["/contact", t("nav.contact")],
   ];
 
@@ -161,9 +165,11 @@ export async function SiteHeader() {
             <Link href="/samples" className={navLink}>
               {t("nav.pricingSamples")}
             </Link>
-            <Link href="/articles" className={navLink}>
-              {t("nav.articles")}
-            </Link>
+            {showArticles ? (
+              <Link href="/articles" className={navLink}>
+                {t("nav.articles")}
+              </Link>
+            ) : null}
             <Link href="/contact" className={navLink}>
               {t("nav.contact")}
             </Link>

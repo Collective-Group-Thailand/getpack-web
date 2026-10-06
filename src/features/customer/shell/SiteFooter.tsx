@@ -5,6 +5,7 @@ import { serverRequests } from "@/lib/api/requests/server";
 import { BRAND_COMPANY, BRAND_NAME, BrandMark } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
 
+import { emptyContent } from "./content.server";
 import { DeferredThemeMenu } from "./DeferredMenus";
 
 /**
@@ -17,13 +18,14 @@ import { DeferredThemeMenu } from "./DeferredMenus";
  * a hard-coded list.
  */
 export async function SiteFooter() {
-  const [t, tCommon, identity] = await Promise.all([
+  const [t, tCommon, identity, empty] = await Promise.all([
     getTranslations("storefront.footer"),
     getTranslations("common"),
     // CONTRACT-REQUEST store.company-identity: the registered name and tax id live in settings (D-092).
     serverRequests("customer")
       .then((api) => api.call("GET /v1/store/company-identity"))
       .catch(() => null),
+    emptyContent(),
   ]);
 
   const columns = [
@@ -37,7 +39,8 @@ export async function SiteFooter() {
         { key: "learn", href: "/learn" },
         { key: "materials", href: "/materials" },
         { key: "track", href: "/track" },
-      ],
+        // A section with nothing in it yet is left out rather than linked to an empty page (UX audit).
+      ].filter((link) => !empty.has(link.href)),
     },
     {
       key: "company",

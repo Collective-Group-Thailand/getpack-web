@@ -742,5 +742,6 @@
       "mirrored": "Drawn mirrored (seen from the inside)",
       "save": "Save the match"
     }
-  }
+  },
+  "rowCount": "{count} rows"
 }
