@@ -105,5 +105,19 @@
     "company_order_approval": "Company order approval",
     "referral_review": "Referral review",
     "recurring_journal": "Recurring journal"
-  }
+  },
+  "hello": "Hello, {name}",
+  "todaySummary": "<strong>{count} items</strong> in your queues {overdue, plural, =0 {— nothing late} other {— <danger># late</danger>}}",
+  "todayTitle": "To do today — soonest due first",
+  "openQueue": "Open queue",
+  "otherQueues": "Other queues",
+  "emptyHidden": "{count} empty queues hidden",
+  "emptyShown": "Showing {count} empty queues too",
+  "show": "Show",
+  "hide": "Hide",
+  "taggedTitle": "Tagged to me",
+  "latestTitle": "Latest for me",
+  "taggedNone": "Nobody has tagged you or sent you anything yet",
+  "allClearTitle": "Nothing waiting in your queues",
+  "allClearBody": "New work shows here, soonest due first"
 }

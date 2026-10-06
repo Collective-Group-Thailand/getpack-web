@@ -28,7 +28,17 @@
     "riskReasons": {
       "step_overdue": "The current step is past due",
       "late_plan": "The plan ends after the promise"
-    }
+    },
+    "stages": {
+      "awaiting": "Awaiting the factory",
+      "materials": "Materials",
+      "printing": "Printing",
+      "post_press": "Post-press",
+      "qc": "Quality check",
+      "ready": "Ready to ship"
+    },
+    "noJobs": "No jobs",
+    "progress": "Progress through the job's steps"
   },
   "inspections": {
     "title": "QC inspections",

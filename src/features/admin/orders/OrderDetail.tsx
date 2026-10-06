@@ -4,11 +4,10 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
+import { ARTWORK_STATUS, ORDER_STATUS, statusMeta } from "@/domain/status";
 import { useFormat } from "@/features/shared/format";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
 import { Callout } from "@/ui/components/Callout";
-import { PageHeader } from "@/ui/components/PageHeader";
 import { Tabs } from "@/ui/components/Tabs";
 
 import { QueryError, StatusChip, useCan } from "../console";
@@ -43,6 +42,7 @@ import type { OrderTab } from "./tabs";
  */
 export function OrderDetail({ orderId, initial, tab }: { orderId: string; initial: Order | null; tab: OrderTab }) {
   const t = useTranslations("orders.detail");
+  const tStatus = useTranslations("status");
   const format = useFormat();
   const pathname = usePathname();
   const canReviewSlips = useCan("payments.verify_slip");
@@ -98,34 +98,37 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-bg z-sticky sticky top-16 -mx-4 border-b border-transparent px-4 pt-1 pb-3 md:-mx-6 md:px-6">
-        <PageHeader
-          breadcrumbs={
-            <Breadcrumbs
-              label={t("breadcrumb")}
-              items={[{ label: t("orders"), href: "/orders" }, { label: order.orderCode }]}
-            />
-          }
-          title={<span className="font-mono">{order.orderCode}</span>}
-          meta={
-            <>
-              <StatusChip map={ORDER_STATUS} value={order.status} size="md" />
-              <StatusChip map={ARTWORK_STATUS} value={order.artworkStatus} size="md" />
-            </>
-          }
-          description={t("headline", {
+      <Breadcrumbs
+        label={t("breadcrumb")}
+        items={[{ label: t("orders"), href: "/orders" }, { label: order.orderCode }]}
+      />
+      {/* One sticky line (UX audit, order detail): code · status · customer · amount, and the
+          action this status calls for, with everything else — cancel included — behind "⋯". */}
+      <div className="bg-bg z-sticky border-border sticky top-16 -mx-4 -mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-4 py-3 md:-mx-6 md:px-6">
+        <h1 className="font-mono text-2xl font-bold">{order.orderCode}</h1>
+        <span
+          className="flex items-center"
+          title={`${t("artworkLabel")}: ${tStatus(statusMeta(ARTWORK_STATUS, order.artworkStatus).labelKey)}`}
+        >
+          <StatusChip map={ORDER_STATUS} value={order.status} size="md" />
+        </span>
+        <p className="text-muted min-w-0 text-sm">
+          {t("headline", {
             customer: group.data?.customer.displayName ?? "—",
             amount: format.thb(order.totals.grossAmount),
             group: group.data?.groupCode ?? "—",
           })}
-          actions={<OrderActionBar actions={order.nextActions} onAction={(key) => open(key)} />}
-        />
+        </p>
+        <div className="ms-auto flex items-center gap-2">
+          <OrderActionBar actions={order.nextActions} onAction={(key) => open(key)} />
+        </div>
       </div>
 
       {slipWaiting ? <Callout tone="warning" title={t("slipWaiting")} /> : null}
       {order.internal.belowMarginFloor ? <Callout tone="danger" title={t("belowFloor")} /> : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      {/* 8:4 — the tabs, and the rail with where the order stands (UX audit). */}
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Tabs
           label={t("tabsLabel")}
           items={tabs}
@@ -136,7 +139,7 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
             window.history.replaceState(null, "", next === "summary" ? pathname : `${pathname}?tab=${next}`);
           }}
         />
-        <OrderRail orderId={order.id} />
+        <OrderRail order={order} />
       </div>
 
       <OrderActionDialogs

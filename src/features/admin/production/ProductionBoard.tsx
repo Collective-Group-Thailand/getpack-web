@@ -19,7 +19,7 @@ import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, QueryError, StatusChip } from "../console";
 import { useProductTypes } from "../console/useProductTypes";
-import { AWAITING_ACCEPTANCE, boardColumns } from "./board";
+import { stageColumns } from "./board";
 import { useFactoryOptions } from "./factories";
 
 /** The most jobs one page of `admin.production.list` holds. */
@@ -65,8 +65,10 @@ export function ProductionBoard() {
   });
   if (board.isError) return <QueryError error={board.error} onRetry={() => void board.refetch()} />;
   if (jobs.isError) return <QueryError error={jobs.error} onRetry={() => void jobs.refetch()} />;
-  const columns = boardColumns(board.data?.columns ?? [], jobs.data?.data ?? []).filter(
-    (column) => !atRisk || column.atRisk > 0,
+  // Every stage, empty or not, in the order work flows (UX audit, /production).
+  const columns = stageColumns(board.data?.columns ?? [], jobs.data?.data ?? []);
+  const stepLabel = new Map(
+    (board.data?.columns ?? []).map((column) => [column.key, locale === "en" ? column.labelEn : column.labelTh]),
   );
   const truncated = (jobs.data?.meta.total ?? 0) > PER_PAGE;
   const href = (next: Record<string, string | undefined>) => {
@@ -81,7 +83,7 @@ export function ProductionBoard() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Button size="sm" variant={atRisk ? "secondary" : "primary"} asChild>
           <Link href={href({ atRisk: undefined })}>{t("all")}</Link>
         </Button>
@@ -89,7 +91,7 @@ export function ProductionBoard() {
           <Link href={href({ atRisk: "true" })}>{t("atRiskOnly")}</Link>
         </Button>
         {factories.length ? (
-          <Field label={t("factory")} className="w-56">
+          <Field label={t("factory")} labelHidden className="w-56">
             <Select
               value={factoryId ?? ALL}
               onValueChange={(value) => router.replace(href({ factoryId: value === ALL ? undefined : value }))}
@@ -98,7 +100,7 @@ export function ProductionBoard() {
           </Field>
         ) : null}
         {productTypes.options.length ? (
-          <Field label={t("productType")} className="w-56">
+          <Field label={t("productType")} labelHidden className="w-56">
             <Select
               value={productTypeCode ?? ALL}
               onValueChange={(value) => router.replace(href({ productTypeCode: value === ALL ? undefined : value }))}
@@ -107,81 +109,108 @@ export function ProductionBoard() {
           </Field>
         ) : null}
         {board.data ? (
-          <span className="text-muted text-sm">
+          <span className="text-muted ms-auto text-sm">
             {t("totals", { total: board.data.total, atRisk: board.data.atRisk })}
           </span>
         ) : null}
         {truncated ? <span className="text-muted text-xs">{t("truncated", { count: PER_PAGE })}</span> : null}
       </div>
       <div className="-mx-4 overflow-x-auto px-4" role="region" aria-label={t("title")} tabIndex={0}>
-        {board.data && columns.length === 0 ? <p className="text-muted text-sm">{t("empty")}</p> : null}
-        <ol className="flex min-w-max gap-3">
-          {columns.map((column) => (
-            <li key={column.key} className="w-64 shrink-0">
-              <h2 className="mb-2 flex items-center justify-between text-sm font-semibold">
-                <span>
-                  {column.key === AWAITING_ACCEPTANCE
-                    ? t("awaiting")
-                    : locale === "en"
-                      ? column.labelEn
-                      : column.labelTh}
-                </span>
-                <span className="text-muted flex items-center gap-2 text-xs font-normal">
-                  {t("count", { count: column.total })}
-                  {column.atRisk > 0 ? (
-                    <Badge tone="danger" size="sm">
-                      {t("risky", { count: column.atRisk })}
-                    </Badge>
-                  ) : null}
-                </span>
-              </h2>
-              <ul className="flex flex-col gap-2">
-                {column.jobs.map((job) => (
-                  <li key={job.id}>
-                    <Card padding="sm" className={cn(job.atRisk && "border-danger")}>
-                      <p className="flex items-center justify-between gap-2 text-sm">
-                        <Link
-                          href={`/orders/${job.orderId}?tab=production`}
-                          className="text-primary font-mono hover:underline"
-                        >
-                          {job.jobNo}
-                        </Link>
-                        {job.inspectionRequired ? (
-                          <Icon name="clipboard-check" size={16} label={t("inspection")} />
-                        ) : null}
-                      </p>
-                      <p className="text-muted truncate text-xs">
-                        {job.factoryCode} · {job.orderCode}
-                      </p>
-                      <p className="truncate text-xs">
-                        {job.productTypeNameTh ?? productTypes.labelOf(job.productTypeCode)} ·{" "}
-                        {t("pieces", { quantity: format.number(job.quantityOrdered) })}
-                      </p>
-                      {job.promisedShipDate ? (
-                        <p className="mt-1 text-xs">
-                          {t("promised")} {format.date(job.promisedShipDate)}
-                        </p>
-                      ) : null}
-                      {job.status === "on_hold" ? (
-                        <div className="mt-1">
-                          <StatusChip map={JOB_STATUS} value={job.status} />
-                        </div>
-                      ) : null}
-                      {job.atRisk ? (
-                        <p className="text-danger mt-1 flex items-start gap-1 text-xs font-medium">
-                          <Icon name="warning" size={14} className="mt-0.5 shrink-0" />
-                          {job.riskReason ? t(`riskReasons.${job.riskReason}`) : t("atRisk")}
-                          {job.predictedFinishOn
-                            ? ` · ${t("predicted", { date: format.date(job.predictedFinishOn) })}`
-                            : null}
-                        </p>
-                      ) : null}
-                    </Card>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+        <ol className="flex min-w-max gap-3 pb-2">
+          {columns.map((column) => {
+            const shown = atRisk ? column.jobs.filter((job) => job.atRisk) : column.jobs;
+            return (
+              <li key={column.stage} className="bg-surface-subtle rounded-card flex w-72 shrink-0 flex-col p-3">
+                <h2 className="mb-3 flex items-center justify-between px-1 text-sm font-semibold">
+                  <span>{t(`stages.${column.stage}`)}</span>
+                  <span className="text-muted flex items-center gap-2 text-xs font-normal">
+                    {t("count", { count: column.total })}
+                    {column.atRisk > 0 ? (
+                      <Badge tone="danger" size="sm">
+                        {t("risky", { count: column.atRisk })}
+                      </Badge>
+                    ) : null}
+                  </span>
+                </h2>
+                {shown.length === 0 ? (
+                  <p className="border-border text-muted rounded-control border border-dashed px-3 py-6 text-center text-sm">
+                    {t("noJobs")}
+                  </p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {shown.map((job) => {
+                      const done = job.milestones.filter((milestone) => milestone.status === "completed").length;
+                      const total = job.milestones.filter((milestone) => milestone.status !== "skipped").length;
+                      const step = job.currentMilestoneKey ? stepLabel.get(job.currentMilestoneKey) : undefined;
+                      return (
+                        <li key={job.id}>
+                          <Card padding="sm" className={cn("flex flex-col gap-1.5", job.atRisk && "border-danger")}>
+                            <p className="flex items-center justify-between gap-2 text-sm">
+                              <Link
+                                href={`/orders/${job.orderId}?tab=production`}
+                                className="text-primary font-mono font-medium hover:underline"
+                              >
+                                {job.jobNo}
+                              </Link>
+                              {job.inspectionRequired ? (
+                                <Icon name="clipboard-check" size={16} label={t("inspection")} />
+                              ) : null}
+                            </p>
+                            <p className="truncate text-sm">
+                              {job.productTypeNameTh ?? productTypes.labelOf(job.productTypeCode)} ·{" "}
+                              {t("pieces", { quantity: format.number(job.quantityOrdered) })}
+                            </p>
+                            <p className="flex flex-wrap items-center gap-1.5 text-xs">
+                              <Badge size="sm">{job.factoryCode}</Badge>
+                              <span className="text-muted">{job.orderCode}</span>
+                              {step && column.stage !== "awaiting" ? (
+                                <span className="text-muted">· {step}</span>
+                              ) : null}
+                            </p>
+                            {job.promisedShipDate ? (
+                              <p
+                                className={cn(
+                                  "text-xs",
+                                  job.atRisk ? "text-danger-subtle-fg font-medium" : "text-muted",
+                                )}
+                              >
+                                {t("promised")} {format.date(job.promisedShipDate)}
+                              </p>
+                            ) : null}
+                            {total > 0 ? (
+                              <div
+                                className="bg-border h-1 overflow-hidden rounded-full"
+                                role="progressbar"
+                                aria-label={t("progress")}
+                                aria-valuemin={0}
+                                aria-valuemax={total}
+                                aria-valuenow={done}
+                              >
+                                <div
+                                  className={cn("h-full rounded-full", job.atRisk ? "bg-danger" : "bg-primary")}
+                                  style={{ width: `${(done / total) * 100}%` }}
+                                />
+                              </div>
+                            ) : null}
+                            {job.status === "on_hold" ? <StatusChip map={JOB_STATUS} value={job.status} /> : null}
+                            {job.atRisk ? (
+                              <p className="text-danger-subtle-fg flex items-start gap-1 text-xs font-medium">
+                                <Icon name="warning" size={14} className="mt-0.5 shrink-0" />
+                                {job.riskReason ? t(`riskReasons.${job.riskReason}`) : t("atRisk")}
+                                {job.predictedFinishOn
+                                  ? ` · ${t("predicted", { date: format.date(job.predictedFinishOn) })}`
+                                  : null}
+                              </p>
+                            ) : null}
+                          </Card>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
         </ol>
       </div>
     </div>
