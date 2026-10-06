@@ -83,8 +83,9 @@ test.describe("artwork and proofs", () => {
     // Zoom and the dieline toggle.
     await page.getByRole("button", { name: "ซูมเข้า" }).click();
     await expect(page.getByRole("group", { name: "ซูม" })).toContainText("150%");
-    await page.getByRole("switch", { name: "แสดงเส้นไดคัท" }).click();
-    await expect(page.getByRole("switch", { name: "แสดงเส้นไดคัท" })).not.toBeChecked();
+    // File, dieline or both (UX audit, proof review): the file alone hides the dieline.
+    await page.getByRole("radio", { name: "ไฟล์" }).click();
+    await expect(page.getByRole("radio", { name: "ไฟล์" })).toBeChecked();
 
     // A comment without pointing (WCAG 2.5.7), then a pin by pointer.
     await page.getByRole("button", { name: "แสดงความเห็นทั้งหน้า" }).click();
