@@ -155,7 +155,7 @@ export async function ProductView({
               {hint?.startingFromPerPiece ? (
                 <p className="flex items-baseline gap-2">
                   <span className="text-muted text-sm">{t("price.fromLabel")}</span>
-                  <span className="text-primary text-4xl font-bold tracking-tight tabular-nums">
+                  <span className="serif text-primary text-4xl tabular-nums md:text-[2.75rem]">
                     {format.thb(hint.startingFromPerPiece)}
                   </span>
                   <span className="text-muted text-sm">{t("price.perPiece")}</span>

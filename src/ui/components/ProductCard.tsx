@@ -1,6 +1,6 @@
 import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
-import { ProductIllustration, type ProductFamily } from "./ProductIllustration";
+import { kraftOf, ProductIllustration, type ProductFamily } from "./ProductIllustration";
 
 export interface ProductCardImage {
   src: string;
@@ -93,7 +93,7 @@ export function ProductCard({
               ? "bg-primary-subtle text-primary-subtle-fg"
               : fallback?.tone === "paper"
                 ? "bg-bg-subtle text-muted"
-                : "bg-kraft text-muted",
+                : `${kraftOf(fallback?.family ?? "tuck")} grain text-[#3d3326]`,
         )}
       >
         {image ? (

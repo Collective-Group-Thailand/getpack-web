@@ -65,7 +65,7 @@ export function QuoteDock({
     <div aria-live={live ? "polite" : undefined} aria-atomic="true">
       {status ?? (
         <>
-          <p className="text-2xl font-bold tabular-nums">{headline}</p>
+          <p className="serif text-3xl tabular-nums">{headline}</p>
           {subline ? <p className="text-muted text-sm tabular-nums">{subline}</p> : null}
         </>
       )}

@@ -46,6 +46,35 @@ const displayThai = localFont({
 });
 
 /**
+ * Trirong — the display serif of design language v2 "Warm Editorial" (round 2, Phase 2):
+ * storefront h1 and large h2, the back office's and the factory app's page titles, large prices,
+ * and the italic accent word (`<em>`) in a heading. Medium, semibold and medium italic only, Thai
+ * and Latin split like Anuphan; OFL (`OFL-trirong.txt`), self-hosted (ADR-0001). Not preloaded:
+ * a heading in the fallback for one frame costs less than ~25 KB on every first paint.
+ */
+const serifLatin = localFont({
+  src: [
+    { path: "./files/trirong-latin-500.woff2", weight: "500", style: "normal" },
+    { path: "./files/trirong-latin-600.woff2", weight: "600", style: "normal" },
+    { path: "./files/trirong-latin-500-italic.woff2", weight: "500", style: "italic" },
+  ],
+  display: "swap",
+  variable: "--font-pk-serif-latin",
+  preload: false,
+});
+
+const serifThai = localFont({
+  src: [
+    { path: "./files/trirong-thai-500.woff2", weight: "500", style: "normal" },
+    { path: "./files/trirong-thai-600.woff2", weight: "600", style: "normal" },
+    { path: "./files/trirong-thai-500-italic.woff2", weight: "500", style: "italic" },
+  ],
+  display: "swap",
+  variable: "--font-pk-serif-thai",
+  preload: false,
+});
+
+/**
  * Mono — JetBrains Mono variable, for order codes, job numbers and tax ids. Latin only:
  * a code is never Thai script, and preloading 40 KB for the pages that show none would
  * cost the marketing LCP budget.
@@ -64,4 +93,6 @@ const mono = localFont({
  * what actually selects a family is `--font-sans` / `--font-display` / `--font-mono` in
  * the generated tokens.
  */
-export const fontClassNames = [displayLatin, displayThai, mono].map((font) => font.variable).join(" ");
+export const fontClassNames = [displayLatin, displayThai, serifLatin, serifThai, mono]
+  .map((font) => font.variable)
+  .join(" ");

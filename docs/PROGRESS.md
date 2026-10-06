@@ -53,6 +53,20 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX round 2 — Phase 2: design language v2 "Warm Editorial" — 2026-10-06
+
+Branch `feat/ux-r2-p2`. Source: the audit's "Design language v2" table and the V2 design file (`docs/ui/Packio Homepage Redesign (V2).html`, the same 25 boards as the canvas).
+
+- **Trirong** (500, 600, 500 italic; Thai and Latin; OFL) self-hosted through `next/font/local` (ADR-0001 — no runtime Google Fonts), ~68 KB, not preloaded; it is `--font-display`.
+- **Headings by zone** (`base.css`): storefront h1 and h2 at ≥ 22 px (`text-2xl` and up) in Trirong 600, `<em>` in a heading italic 500 in the primary colour; admin and partner only the page h1, Trirong 30 px; sub-headings stay Anuphan, codes monospace. The Packio wordmark stays sans (the navbar is approved as it is).
+- **Classes:** `.serif`, `.eyebrow` (12.5 px / 600 / .18em / uppercase, 28 px `--kraft-3` lead rule), `.grain` (fractalNoise SVG, opacity .5, multiply), `.kraft-1/2/3` gradients, `.rise` (18 px → 0, 0.9 s, 0.08 s stagger) — off under `prefers-reduced-motion`. Tokens `--green-ink #083f36`, `--kraft-3 #b8956a`.
+- **Buttons:** `shape="pill"` (any zone); the storefront's CTA shadow is v2's `0 14px 28px -14px` primary 70 %; a storefront secondary is an ink outline on the pill (`--cta-outline`); the back office keeps 12 px and its strong border.
+- **Cards:** storefront 22 px radius, way-in cards lift 4 px (`--card-lift`); admin/partner 16 px, no lift.
+- **Product pictures without a photo:** a kraft gradient chosen by family (`kraftOf`) with grain, behind the family's line drawing — the gallery's empty state too; no icon placeholder anywhere.
+- **Large prices** in Trirong: product page, stock product, configure dock, payment, sample.
+- **Eyebrow group labels** in the admin, partner and account sidebars (tracking tightened to .06em for Thai).
+- **Tests:** unit 1111, lint, typecheck, `tokens:check`; e2e a11y, home, storefront, UX, admin console, partner parity, quote, zones — 116 passed; one messaging test failed under load and passed on a fresh server. The ticker's reduced-motion rule belongs with the ticker itself (Phase 3, home).
+
 ## UX round 2 — Phase 1: role-aware IA — 2026-10-06
 
 Branch `feat/ux-r2-p1`. Boards: PartnerDashboard (sidebar), PartnerQc, AdminMobile (V2 file = the canvas boards).

@@ -141,7 +141,7 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
         return (
           <div key={group.key} className="mt-2 lg:mt-4">
             {/* Wide screens: a heading over the group. */}
-            <p className="text-muted hidden px-3 pb-1 text-xs font-semibold tracking-wider uppercase lg:block">
+            <p className="eyebrow hidden px-3 pb-1 text-[11px] tracking-[0.06em] lg:flex">
               {t(`groups.${group.key}`)}
             </p>
             <ul className="hidden flex-col gap-0.5 lg:flex">{group.items.map(link)}</ul>

@@ -153,7 +153,7 @@
   /* Typography (ADR-0001). */
   --font-*: initial;
   --font-sans: var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-pk-serif-latin), var(--font-pk-serif-thai), ui-serif, Georgia, serif;
   --font-mono: var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --text-xs: clamp(0.75rem, 0.73rem + 0.09vw, 0.8125rem);
   --text-sm: clamp(0.875rem, 0.85rem + 0.11vw, 0.9375rem);
@@ -417,11 +417,14 @@
   --sem-neutral-subtle-fg: oklch(0% 0 0);
 }
 
-/* Pill CTAs on the storefront only (D-180); the admin and partner zones keep 12 px. */
+/* Pill CTAs and 22 px cards on the storefront only (D-180, design language v2); the admin and
+   partner zones keep 12 px controls and 16 px cards. A secondary CTA is an ink outline there. */
 
 [data-zone="customer"] {
   --radius-cta: 9999px;
-  --shadow-cta: 0 10px 24px -12px color-mix(in oklab, var(--color-primary) 60%, transparent);
+  --shadow-cta: 0 14px 28px -14px color-mix(in oklab, var(--color-primary) 70%, transparent);
+  --radius-card: 1.375rem;
+  --cta-outline: var(--color-fg);
 }
 
 /* The back office and the factory app run denser: 16 px cards (UX audit design baseline). */
