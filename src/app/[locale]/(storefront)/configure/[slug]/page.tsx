@@ -16,7 +16,6 @@ import { productHref, rfqHref } from "@/features/customer/catalog/paths";
 import { getMyDisplayUnit, getMyDraft, getMyQuote, listMyDraftsOf } from "@/features/customer/configurator/api.server";
 import { seedFromConfiguration } from "@/features/customer/configurator/build";
 import { Configurator } from "@/features/customer/configurator/Configurator";
-import { IntentPicker } from "@/features/customer/help/IntentPickerLazy";
 import { seedFromDefaults } from "@/features/customer/configurator/defaults";
 import { seedFromDesign, type ConfiguratorState } from "@/features/customer/configurator/state";
 import { getDefaults } from "@/features/customer/account/api.server";
@@ -41,6 +40,8 @@ type Search = {
   /** The home page's quick start (U-F3): a quantity, and where it came from. */
   qty?: string;
   from?: string;
+  /** A standard size's code (the product page's size table). */
+  size?: string;
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -129,13 +130,8 @@ export default async function Page({
           { label: t("breadcrumb") },
         ]}
       />
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t("heading", { name })}</h1>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight">{t("heading", { name })}</h1>
       <p className="text-muted mt-2 max-w-2xl">{t("intro")}</p>
-      {!source && !quote ? (
-        <div className="mt-4 flex max-w-2xl flex-col">
-          <IntentPicker here="configurator" productSlug={slug} />
-        </div>
-      ) : null}
       {share && !shared ? (
         <Callout tone="warning" className="mt-4 max-w-2xl">
           {t("sharedExpired")}

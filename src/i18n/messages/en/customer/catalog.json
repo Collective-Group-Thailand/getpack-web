@@ -97,7 +97,14 @@
     "toleranceNote": "The quantity delivered may be slightly under or over, within the print industry's standard tolerance.",
     "toleranceLink": "See the tolerances in the guarantee",
     "more": "See also",
-    "materials": "Compare materials"
+    "materials": "Compare materials",
+    "pictureLabel": "The flat dieline of {name}",
+    "pictureCaption": "A dieline drawn to scale at a standard size",
+    "guaranteeShort": "Work guaranteed",
+    "sizesHint": "Pick a size to price it straight away, or set your own in the configurator",
+    "customSizeTitle": "Not a standard size?",
+    "customSizeBody": "Set length × width × height yourself; the dieline and the price follow at once",
+    "customSizeCta": "Set my own size"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",
@@ -209,5 +216,8 @@
     "recommended": "Recommended",
     "price": "Price, low → high",
     "fastest": "Fastest to make"
+  },
+  "tiles": {
+    "types": "{count, plural, one {# type} other {# types}}"
   }
 }
