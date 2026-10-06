@@ -27,6 +27,10 @@ export interface ProductGridProps {
   layout?: "grid" | "list";
   /** Stock cards on a square plate — for a row of stock alone (the home page), not a mixed grid. */
   stockAspect?: "landscape" | "square";
+  /** Columns on a wide screen: 3 beside a sidebar (a category page), 4 across the page. */
+  columns?: 3 | 4;
+  /** One more cell after the products — the category's "ไม่เจอแบบที่ต้องการ?" card. */
+  trailing?: React.ReactNode;
 }
 
 /**
@@ -41,6 +45,8 @@ export async function ProductGrid({
   eager = 2,
   layout = "grid",
   stockAspect = "landscape",
+  columns = 4,
+  trailing,
 }: ProductGridProps) {
   const [locale, t, format] = await Promise.all([getLocale(), getTranslations("catalog"), getFormat()]);
 
@@ -67,6 +73,8 @@ export async function ProductGrid({
             price={facts.price}
             meta={facts.meta}
             badges={facts.badges}
+            promoBadge={facts.promoBadge}
+            hoverCta={t("card.seePrice")}
           />
         );
       }
@@ -105,10 +113,13 @@ export async function ProductGrid({
       className={
         layout === "list"
           ? "grid grid-cols-1 gap-4 sm:grid-cols-2"
-          : "grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4"
+          : columns === 3
+            ? "grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3"
+            : "grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4"
       }
     >
       {cards}
+      {trailing}
     </ul>
   );
 }

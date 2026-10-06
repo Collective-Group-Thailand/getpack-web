@@ -6,16 +6,28 @@ import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { breadcrumbSchema, publicOrigin } from "@/lib/seo";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
-import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkPagination } from "@/ui/components/LinkPagination";
+import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { getPriceHints, listProducts, listStockProducts, type CatalogueCategory } from "./api.server";
 import { CatalogueNav } from "./CatalogueNav";
 import { pick } from "./localize";
+import {
+  CARD_FILTERS,
+  CARD_SORTS,
+  categoryGroup,
+  FAST_LEAD_DAYS,
+  passes,
+  SMALL_MOQ,
+  sortCards,
+  type CardFilter,
+  type CardSort,
+} from "./ordering";
 import { categoryHref, rfqHref } from "./paths";
+import { ProductSearchForm } from "./ProductSearchForm";
+import { SortMenu } from "./SortMenu";
 import { ProductGrid, type GridItem } from "./ProductGrid";
 
 const PER_PAGE = 24;
@@ -31,20 +43,31 @@ export async function CategoryView({
   tree,
   typeCode,
   page,
+  filters = [],
+  sort = "recommended",
 }: {
   category: CatalogueCategory;
   tree: readonly CatalogueCategory[];
   typeCode?: string;
   page: number;
+  /** The chips chosen (`?f=instant,fast`), and the order (`?sort=price`). */
+  filters?: CardFilter[];
+  sort?: CardSort;
 }) {
   const [t, locale, origin] = await Promise.all([getTranslations("catalog"), getLocale(), publicOrigin()]);
   const selected = category.types.find((type) => type.code === typeCode);
   const filter = { category: category.code, ...(selected ? { productType: selected.code } : {}), perPage: 100 };
 
   const [products, stock] = await Promise.all([listProducts(filter), listStockProducts(filter)]);
+  // Chips and order over what the API returned for this category (its facts, D-307); a chip about
+  // pricing or lead time says nothing of a stock item, so the shelf shows only without chips.
+  const cards = sortCards(
+    products.data.filter((product) => passes(product, filters)),
+    sort,
+  );
   const all = [
-    ...products.data.map((product): GridItem => ({ kind: "catalog", product })),
-    ...stock.data.map((product): GridItem => ({ kind: "stock", product })),
+    ...cards.map((product): GridItem => ({ kind: "catalog", product })),
+    ...(filters.length === 0 ? stock.data.map((product): GridItem => ({ kind: "stock", product })) : []),
   ];
   const pages = Math.max(1, Math.ceil(all.length / PER_PAGE));
   const current = Math.min(page, pages);
@@ -58,14 +81,33 @@ export async function CategoryView({
   const types = new Map(tree.flatMap((entry) => entry.types).map((type) => [type.code, type]));
   const hasRfq = category.types.some((type) => type.quoteMode === "rfq");
   const base = categoryHref(category.code);
-  const href = (target: { type?: string; page?: number }) => {
+  const href = (target: { type?: string; page?: number; filters?: CardFilter[]; sort?: CardSort }) => {
     const search = new URLSearchParams();
+    const chosen = target.filters ?? filters;
+    const order = target.sort ?? sort;
     if (target.type) search.set("type", target.type);
+    if (chosen.length > 0) search.set("f", chosen.join(","));
+    if (order !== "recommended") search.set("sort", order);
     if (target.page && target.page > 1) search.set("page", String(target.page));
     const text = search.toString();
     return text ? `${base}?${text}` : base;
   };
   const localised = (path: string) => getPathname({ href: path, locale: locale as Locale });
+  const toggle = (filter: CardFilter) =>
+    href({
+      type: selected?.code,
+      filters: filters.includes(filter)
+        ? filters.filter((item) => item !== filter)
+        : // "ราคาทันที" and "ขอใบเสนอราคา" exclude each other.
+          [...filters.filter((item) => !(filter === "instant" && item === "rfq") && !(filter === "rfq" && item === "instant")), filter],
+    });
+  const description = t("category.description", {
+    types: category.types
+      .slice(0, 4)
+      .map((type) => pick(locale, type.nameTh, type.nameEn))
+      .join(" · "),
+    mode: categoryGroup(category),
+  });
   const crumbs = [
     { label: t("breadcrumbs.home"), href: localised("/") },
     { label: t("breadcrumbs.products"), href: localised("/products") },
@@ -89,10 +131,19 @@ export async function CategoryView({
         ])}
       />
       <Breadcrumbs items={crumbs} label={t("breadcrumbs.label")} />
-      <h1 className="mt-4 text-3xl font-bold md:text-4xl">{name}</h1>
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+        <div className="max-w-3xl">
+          <h1 className="text-3xl font-bold tracking-tight">{name}</h1>
+          <p className="text-muted mt-2">{description}</p>
+        </div>
+        <p className="text-muted text-sm" aria-live="polite">
+          {t("list.results", { count: all.length })}
+        </p>
+      </div>
 
-      <div className="mt-8 grid gap-8 md:grid-cols-[14rem_1fr]">
-        <aside className="min-w-0">
+      <div className="mt-8 grid gap-8 md:grid-cols-[15rem_1fr]">
+        <aside className="flex min-w-0 flex-col gap-5">
+          <ProductSearchForm action={localised("/products")} />
           <CatalogueNav tree={tree} current={category.code} />
         </aside>
 
@@ -120,8 +171,55 @@ export async function CategoryView({
             </nav>
           ) : null}
 
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <ul className="flex flex-wrap gap-2" aria-label={t("chips.label")}>
+              {CARD_FILTERS.map((filter) => {
+                const on = filters.includes(filter);
+                return (
+                  <li key={filter}>
+                    <Link href={toggle(filter)} aria-pressed={on} className={chip(on)} scroll={false}>
+                      {on ? <Icon name="check" size={14} aria-hidden="true" className="me-1" /> : null}
+                      {t(`chips.${filter}`, { moq: SMALL_MOQ, days: FAST_LEAD_DAYS })}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <SortMenu
+              label={t("sort.label")}
+              value={sort}
+              options={CARD_SORTS.map((value) => ({ value, label: t(`sort.${value}`) }))}
+              hrefFor={Object.fromEntries(
+                CARD_SORTS.map((value) => [value, localised(href({ type: selected?.code, sort: value }))]),
+              ) as Record<CardSort, string>}
+            />
+          </div>
+
           {items.length > 0 ? (
-            <ProductGrid items={items} types={types} hints={hints} headingLevel="h2" />
+            <ProductGrid
+              items={items}
+              types={types}
+              hints={hints}
+              headingLevel="h2"
+              columns={3}
+              trailing={
+                hasRfq || categoryGroup(category) !== "service" ? (
+                  <li className="bg-fg text-fg-inverse rounded-card flex flex-col items-center justify-center gap-3 p-8 text-center">
+                    <span className="grid size-12 place-items-center rounded-xl bg-current/10" aria-hidden="true">
+                      <Icon name="chat" size={22} />
+                    </span>
+                    <p className="text-lg font-semibold">{t("category.rfqTitle")}</p>
+                    <p className="text-sm opacity-75">{t("category.rfqBody")}</p>
+                    <Link
+                      href={rfqHref(category.code)}
+                      className="bg-surface text-fg rounded-cta mt-1 inline-flex h-10 items-center px-5 text-sm font-semibold"
+                    >
+                      {t("category.rfqCta")}
+                    </Link>
+                  </li>
+                ) : null
+              }
+            />
           ) : (
             <EmptyState
               icon="box"
@@ -144,14 +242,6 @@ export async function CategoryView({
             }}
           />
 
-          {hasRfq ? (
-            <Callout tone="info" title={t("category.rfqTitle")}>
-              <p>{t("category.rfqBody")}</p>
-              <Button asChild variant="secondary" className="mt-3">
-                <Link href={rfqHref(category.code)}>{t("category.rfqCta")}</Link>
-              </Button>
-            </Callout>
-          ) : null}
         </div>
       </div>
     </div>
