@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
@@ -83,10 +84,16 @@ export function ProductsMenu({ label, children }: { label: string; children: Rea
 export function MobileProductsMenu({
   label,
   closeLabel,
+  headerEnd,
+  footer,
   children,
 }: {
   label: string;
   closeLabel: string;
+  /** Beside the title — the language switch (the "MobileNav" board). */
+  headerEnd?: React.ReactNode;
+  /** Pinned to the drawer's foot — the LINE button. */
+  footer?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -102,49 +109,69 @@ export function MobileProductsMenu({
       if (event.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    // The page under a full-screen menu does not scroll.
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
   }, [open]);
+  const close = (event: React.MouseEvent) => {
+    if ((event.target as HTMLElement).closest("a")) setOpen(false);
+  };
   return (
     <>
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="hover:bg-bg-subtle focus-visible:ring-focus-ring inline-flex size-9 items-center justify-center rounded-md outline-none focus-visible:ring-2 lg:hidden"
+        className="hover:bg-bg-subtle focus-visible:ring-focus-ring inline-flex size-10 items-center justify-center rounded-md outline-none focus-visible:ring-2 lg:hidden"
       >
-        <Icon name="menu" size={20} aria-hidden="true" />
+        <Icon name="menu" size={22} aria-hidden="true" />
         <span className="sr-only">{label}</span>
       </button>
-      {open ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={label}
-          className="bg-surface z-modal fixed inset-0 flex flex-col overflow-y-auto p-4 lg:hidden"
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-lg font-semibold">{label}</p>
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setOpen(false)}
-              className="hover:bg-bg-subtle inline-flex size-9 items-center justify-center rounded-md"
+      {/*
+        Portalled to <body>: the header's backdrop blur makes it the containing block of anything
+        `fixed` inside it, which is why the menu used to open 64 px tall (round 2, MobileNav).
+      */}
+      {open
+        ? createPortal(
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label={label}
+              className="bg-surface z-modal fixed inset-0 flex h-dvh flex-col lg:hidden"
             >
-              <Icon name="close" size={20} aria-hidden="true" />
-              <span className="sr-only">{closeLabel}</span>
-            </button>
-          </div>
-          {/* A link followed from the sheet closes it: the header stays mounted across pages. */}
-          <div
-            className="mt-4 flex flex-col gap-6"
-            onClick={(event) => {
-              if ((event.target as HTMLElement).closest("a")) setOpen(false);
-            }}
-          >
-            {children}
-          </div>
-        </div>
-      ) : null}
+              <div className="border-border flex h-14 shrink-0 items-center gap-2 border-b px-3">
+                <button
+                  type="button"
+                  autoFocus
+                  onClick={() => setOpen(false)}
+                  className="hover:bg-bg-subtle inline-flex size-10 items-center justify-center rounded-md"
+                >
+                  <Icon name="close" size={22} aria-hidden="true" />
+                  <span className="sr-only">{closeLabel}</span>
+                </button>
+                <p className="flex-1 text-lg font-semibold">{label}</p>
+                {headerEnd}
+              </div>
+              {/* A link followed from the menu closes it: the header stays mounted across pages. */}
+              <div className="flex-1 overflow-y-auto px-5 py-4" onClick={close}>
+                {children}
+              </div>
+              {footer ? (
+                <div
+                  className="border-border shrink-0 border-t px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+                  onClick={close}
+                >
+                  {footer}
+                </div>
+              ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }

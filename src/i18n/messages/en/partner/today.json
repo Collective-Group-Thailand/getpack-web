@@ -26,6 +26,7 @@
     "claimBody": "Packio is waiting for your side"
   },
   "floor": {
+    "clear": "Nothing waiting: {list}",
     "countersLabel": "Today at a glance",
     "counters": {
       "toAccept": "To accept",

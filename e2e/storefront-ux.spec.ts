@@ -206,8 +206,8 @@ test.describe("U5.2 — first visit", () => {
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
     await expect(page.locator("section[aria-labelledby=intent-title]")).toHaveCount(0);
     await gotoHydrated(page, `${HOSTS.customer}/studio/new?product=tuck-end-box`);
-    const picker = page.locator("section[aria-labelledby=intent-title]");
-    await expect(picker.getByRole("heading", { name: "วันนี้อยากเริ่มจากอะไร" })).toBeVisible();
+    // The studio's start page asks it, as its title (the "StudioStart" board).
+    await expect(page.getByRole("heading", { level: 1, name: /วันนี้อยากเริ่มจากอะไร/ })).toBeVisible();
     await expectNoViolations(page);
   });
 

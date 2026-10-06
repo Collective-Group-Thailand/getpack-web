@@ -661,6 +661,11 @@ export default function Editor({
     dieline,
   };
   const stepPanel = chrome?.panel?.(chromeContext) ?? null;
+  // Before a box (the "StudioStart" board): the start screen is the whole page — no rail, stage,
+  // step bar or status bar; the stage stays mounted, out of sight, so it measures itself in time.
+  // It stays under the setup dialog too, so closing the dialog returns focus to the card that
+  // opened it (WCAG 2.4.3).
+  const starting = !spec && editable && Boolean(chrome?.empty);
   const railTools = RAIL.filter((item) =>
     item.id === "comments" ? !!chrome?.comments : (chrome?.rail?.(item.id) ?? true),
   );
@@ -695,6 +700,8 @@ export default function Editor({
         {...(chrome?.views
           ? {
               fill: true,
+              // The small floating card below 1280 shows the box alone; "3 มิติ" has the controls.
+              controlsClassName: view === "split" ? "max-xl:hidden" : undefined,
               insideArtwork: artworks.inside,
               finishMasks,
               faceLabels: Object.fromEntries(faceNames),
@@ -739,7 +746,7 @@ export default function Editor({
               </span>
             ) : null}
 
-            {editable ? (
+            {editable && !starting ? (
               <div className="ms-2 hidden items-center gap-0.5 md:flex" role="group" aria-label={t("toolbar.label")}>
                 <IconButton
                   name="undo"
@@ -790,7 +797,9 @@ export default function Editor({
               {chrome?.presentation && spec ? (
                 <IconButton name="eye" label={t("present.launch")} size="sm" onClick={() => setPresenting(true)} />
               ) : null}
-              {editable ? (
+              {starting ? (
+                <span className="me-2 hidden text-xs sm:inline">{t("autosaveOnStart")}</span>
+              ) : editable ? (
                 <Button size="sm" onClick={() => void save()} disabled={!spec} iconStart="save">
                   {tCommon("actions.save")}
                 </Button>
@@ -807,52 +816,54 @@ export default function Editor({
                 </>
               ) : null}
 
-              <DropdownMenu
-                label={t("exportMenu.label")}
-                trigger={
-                  <Button size="sm" variant="ghost" disabled={!spec} iconStart="download">
-                    <span className="hidden sm:inline">{tCommon("actions.export")}</span>
-                  </Button>
-                }
-                items={[
-                  {
-                    id: "pdf",
-                    label: t("exportMenu.pdf"),
-                    description: t("exportMenu.pdfHint"),
-                    onSelect: () => doExport("pdf"),
-                  },
-                  {
-                    id: "png",
-                    label: t("exportMenu.png"),
-                    description: t("exportMenu.pngHint"),
-                    onSelect: () => doExport("png"),
-                  },
-                  {
-                    id: "png-guides",
-                    label: t("exportMenu.pngGuides"),
-                    description: t("exportMenu.pngGuidesHint"),
-                    onSelect: () => doExport("png-guides"),
-                  },
-                  {
-                    id: "svg",
-                    label: t("exportMenu.svg"),
-                    description: t("exportMenu.svgHint"),
-                    onSelect: () => doExport("svg"),
-                  },
-                  {
-                    id: "dxf",
-                    label: t("exportMenu.dxf"),
-                    description: t("exportMenu.dxfHint"),
-                    onSelect: () => doExport("dxf"),
-                  },
-                  {
-                    id: "dieline-pdf",
-                    label: t("exportMenu.dielinePdf"),
-                    description: t("exportMenu.dielinePdfHint"),
-                    onSelect: () => doExport("dieline-pdf"),
-                  },
-                ]}
-              />
+              {starting ? null : (
+                <DropdownMenu
+                  label={t("exportMenu.label")}
+                  trigger={
+                    <Button size="sm" variant="ghost" disabled={!spec} iconStart="download">
+                      <span className="hidden sm:inline">{tCommon("actions.export")}</span>
+                    </Button>
+                  }
+                  items={[
+                    {
+                      id: "pdf",
+                      label: t("exportMenu.pdf"),
+                      description: t("exportMenu.pdfHint"),
+                      onSelect: () => doExport("pdf"),
+                    },
+                    {
+                      id: "png",
+                      label: t("exportMenu.png"),
+                      description: t("exportMenu.pngHint"),
+                      onSelect: () => doExport("png"),
+                    },
+                    {
+                      id: "png-guides",
+                      label: t("exportMenu.pngGuides"),
+                      description: t("exportMenu.pngGuidesHint"),
+                      onSelect: () => doExport("png-guides"),
+                    },
+                    {
+                      id: "svg",
+                      label: t("exportMenu.svg"),
+                      description: t("exportMenu.svgHint"),
+                      onSelect: () => doExport("svg"),
+                    },
+                    {
+                      id: "dxf",
+                      label: t("exportMenu.dxf"),
+                      description: t("exportMenu.dxfHint"),
+                      onSelect: () => doExport("dxf"),
+                    },
+                    {
+                      id: "dieline-pdf",
+                      label: t("exportMenu.dielinePdf"),
+                      description: t("exportMenu.dielinePdfHint"),
+                      onSelect: () => doExport("dieline-pdf"),
+                    },
+                  ]}
+                />
+              )}
               {primaryAction}
 
               <IconButton
@@ -883,10 +894,12 @@ export default function Editor({
             </Callout>
           ) : null}
 
-          {chrome?.below?.(chromeContext)}
+          {starting ? null : chrome?.below?.(chromeContext)}
+
+          {starting ? <div className="min-h-0 flex-1 overflow-y-auto">{chrome!.empty!(chromeContext)}</div> : null}
 
           {/* One step panel: beside the stage on wide screens, under it on phones (CSS order). */}
-          <div className={cn("flex min-h-0 flex-1", stepPanel && "flex-col lg:flex-row")}>
+          <div className={cn("flex min-h-0 flex-1", stepPanel && "flex-col lg:flex-row", starting && "hidden")}>
             {stepPanel ? (
               <section
                 aria-label={t("rail.label")}
@@ -983,16 +996,12 @@ export default function Editor({
                     </div>
                   ) : null}
 
-                  {!spec && !setupOpen && editable ? (
-                    chrome?.empty ? (
-                      <div className="bg-bg absolute inset-0 overflow-auto">{chrome.empty(chromeContext)}</div>
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Button size="lg" onClick={openSetup}>
-                          {t("chooseBoxFirst")}
-                        </Button>
-                      </div>
-                    )
+                  {!spec && !setupOpen && editable && !chrome?.empty ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Button size="lg" onClick={openSetup}>
+                        {t("chooseBoxFirst")}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
                 {chrome?.views && view !== "flat" && spec ? (
@@ -1000,7 +1009,11 @@ export default function Editor({
                     aria-label={t("stage.model")}
                     className={cn(
                       "bg-surface flex min-h-0 flex-col p-2",
-                      view === "split" ? "border-border w-[42%] shrink-0 border-s" : "flex-1",
+                      // Below 1280 the split's 3D floats as a card over the canvas, so an open tool
+                      // panel never squeezes the artwork (the "StudioEditor" board's responsive note).
+                      view === "split"
+                        ? "border-border shadow-overlay absolute end-3 bottom-3 z-20 max-h-[calc(100%-1.5rem)] w-64 overflow-y-auto rounded-2xl border xl:static xl:max-h-none xl:w-[42%] xl:shrink-0 xl:overflow-visible xl:rounded-none xl:border-0 xl:border-s xl:shadow-none"
+                        : "flex-1",
                     )}
                   >
                     {preview}
@@ -1123,7 +1136,7 @@ export default function Editor({
               )}
             </section>
           ) : null}
-          {chrome?.dock ? (
+          {chrome?.dock && !starting ? (
             <div className="border-border bg-surface shrink-0 border-t px-3 py-2 lg:hidden">
               {chrome.dock(chromeContext, "bar")}
             </div>
@@ -1171,13 +1184,15 @@ export default function Editor({
             </nav>
           ) : null}
 
-          <StatusBar
-            dieline={canvasDieline}
-            issues={issues}
-            onShowChecks={showChecks}
-            onFit={() => setFitSignal((signal) => signal + 1)}
-            onShortcuts={() => setShortcutsOpen(true)}
-          />
+          {starting ? null : (
+            <StatusBar
+              dieline={canvasDieline}
+              issues={issues}
+              onShowChecks={showChecks}
+              onFit={() => setFitSignal((signal) => signal + 1)}
+              onShortcuts={() => setShortcutsOpen(true)}
+            />
+          )}
 
           {editable ? (
             <SetupModal

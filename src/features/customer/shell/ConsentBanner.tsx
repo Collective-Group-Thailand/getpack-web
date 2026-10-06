@@ -62,18 +62,19 @@ export function ConsentBanner() {
       // privacy policy to decide has to be able to reach it.
       role="region"
       aria-label={t("title")}
-      // A slim full-width bar at the very bottom (56 px on a desktop), so it never floats over a
-      // page's call to action (UX audit, system-wide).
-      className="border-border bg-surface-raised z-sticky fixed inset-x-0 bottom-0 border-t"
+      // A phone: a small card floating just above the tab bar (`--mobile-tab-h`), never over it
+      // (the "MobileNav" board). From `md`, the same card at the bottom start corner — it never
+      // covers a page's width of content, and the help button keeps the other corner.
+      className="border-border bg-surface-raised z-sticky shadow-overlay fixed inset-x-3 bottom-[calc(var(--mobile-tab-h)+0.75rem)] rounded-2xl border md:start-6 md:end-auto md:bottom-6 md:w-[26rem]"
     >
-      <div className="max-w-nav mx-auto flex flex-col gap-2 px-4 py-3 md:min-h-14 md:flex-row md:items-center md:gap-4 md:py-2">
+      <div className="flex flex-col gap-3 px-4 py-3.5 md:px-5 md:py-4">
         <p className="text-muted flex-1 text-sm">
           {t("body")} {replayEnabled ? `${t("replay")} ` : null}
           <Link href="/legal/cookies" className="underline underline-offset-2">
             {t("learnMore")}
           </Link>
         </p>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 justify-end gap-2">
           {/* Equal weight: refusing must not be harder than accepting. */}
           <Button variant="secondary" size="sm" onClick={() => choose(false)}>
             {t("reject")}

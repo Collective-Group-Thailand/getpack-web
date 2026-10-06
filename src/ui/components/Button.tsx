@@ -14,7 +14,7 @@ import { useSlotChild } from "../lib/useSlotChild";
  */
 export const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 rounded-control font-medium whitespace-nowrap",
+    "inline-flex items-center justify-center gap-2 rounded-control font-semibold whitespace-nowrap",
     "transition-[color,background-color,border-color,box-shadow,translate] duration-fast ease-standard",
     // Target size ≥ 24 px (WCAG 2.5.8); the partner zone raises this to 48 px with size="xl".
     "min-h-6",
@@ -53,11 +53,11 @@ export const buttonVariants = cva(
       size: {
         sm: "h-8 px-3 text-sm",
         /** In a card: 40 px. */
-        md: "h-10 px-4 text-base",
+        md: "h-10 px-4 text-[0.9375rem]",
         /** The navbar and a table's actions: 44 px. */
-        nav: "h-11 px-5 text-base",
-        /** A hero or a form's submit: 52 px. */
-        lg: "h-13 px-6 text-lg",
+        nav: "h-11 px-5 text-[0.9375rem]",
+        /** A hero or a form's submit: 52 px. Labels are 15–15.5 px semibold (design language v2). */
+        lg: "h-13 px-6 text-[0.96875rem]",
         /** Shop-floor: 48 px+ targets and 18 px text (design-system.md §5). */
         xl: "h-14 px-8 text-lg",
       },

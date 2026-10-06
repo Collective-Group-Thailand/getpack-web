@@ -255,7 +255,8 @@ export async function ProductView({
       <div className="mt-14 grid gap-10 md:grid-cols-[1.15fr_1fr] md:gap-12">
         {product.standardSizes.length > 0 ? (
           <section aria-labelledby="product-sizes">
-            <h2 id="product-sizes" className="text-2xl font-bold">
+            <p className="eyebrow">{t("product.sizesEyebrow")}</p>
+            <h2 id="product-sizes" className="mt-3 text-2xl">
               {t("product.sizes")}
             </h2>
             {instant ? <p className="text-muted mt-1 text-sm">{t("product.sizesHint")}</p> : null}

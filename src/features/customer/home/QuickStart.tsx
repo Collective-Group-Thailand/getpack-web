@@ -8,7 +8,6 @@ import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
-import { Icon } from "@/ui/icons";
 
 /** Approximate size in whole centimetres, sent to the configurator in millimetres (its unit, D-183). */
 const CM = /^\d{1,3}(\.\d)?$/;
@@ -41,35 +40,35 @@ export function QuickStart({ products }: { products: { slug: string; name: strin
     router.push(`/configure/${slug}?${query.toString()}`);
   }
 
+  // The board's paper slip: kraft-underlined fields on white, uppercase labels, serif ×.
+  const line =
+    "h-12 rounded-none border-0 border-b-[1.5px] border-[var(--kraft-3)] bg-transparent px-0.5 text-lg shadow-none focus-visible:border-primary focus-visible:ring-0";
+  const label = "text-subtle mb-1 block text-xs font-semibold tracking-[0.1em] uppercase";
   return (
     <form
       onSubmit={go}
       aria-label={t("label")}
-      className="border-border bg-surface shadow-overlay rounded-2xl border p-5 md:px-6 md:pt-5.5 md:pb-6"
+      className="border-border bg-surface rounded-[1.375rem] border px-6 pt-6 pb-7 shadow-[0_30px_60px_-36px_rgba(60,40,20,.4)] md:px-7.5"
     >
-      <p className="text-primary mb-3.5 flex items-center gap-1.5 text-xs font-semibold">
-        <Icon name="calculator" size={16} />
-        {t("heading")}
-      </p>
-      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[1.3fr_1.7fr_0.8fr_auto]">
-        <Field label={t("type")}>
+      <div className="grid items-end gap-7 sm:grid-cols-2 lg:grid-cols-[1.3fr_1.6fr_0.8fr_auto]">
+        <label className="block">
+          <span className={label}>{t("type")}</span>
           <NativeSelect
-            className="bg-bg h-12 text-base"
+            className={line}
             value={slug}
             onValueChange={setSlug}
             options={products.map((p) => ({ value: p.slug, label: p.name }))}
           />
-        </Field>
+        </label>
         <fieldset>
-          <legend className="mb-1.5 text-sm font-medium">{t("size")}</legend>
-          <div className="text-subtle grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-1.5">
+          <legend className={label}>{t("size")}</legend>
+          <div className="text-subtle serif grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2.5 text-xl font-medium">
             {(["l", "w", "h"] as const).map((axis, index) => (
               <Fragment key={axis}>
                 {index > 0 ? <span aria-hidden>×</span> : null}
                 <Field label={t(`axes.${axis}`)} labelHidden>
                   <Input
-                    inputSize="lg"
-                    className="bg-bg text-base"
+                    className={`${line} font-sans`}
                     inputMode="decimal"
                     placeholder={t(`axes.${axis}`)}
                     value={size[axis]}
@@ -80,16 +79,16 @@ export function QuickStart({ products }: { products: { slug: string; name: strin
             ))}
           </div>
         </fieldset>
-        <Field label={t("quantity")}>
+        <label className="block">
+          <span className={label}>{t("quantity")}</span>
           <Input
-            inputSize="lg"
-            className="bg-bg text-base"
+            className={line}
             inputMode="numeric"
             value={quantity}
             onChange={(event) => setQuantity(event.target.value.trim())}
           />
-        </Field>
-        <Button type="submit" size="lg" iconEnd="arrow-right" className="rounded-xl" disabled={!slug || !counted}>
+        </label>
+        <Button type="submit" size="lg" shape="pill" iconEnd="arrow-right" disabled={!slug || !counted}>
           {t("go")}
         </Button>
       </div>

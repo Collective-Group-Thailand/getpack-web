@@ -12,7 +12,7 @@ const ITEMS: { key: string; href: string; icon: IconName }[] = [
   { key: "home", href: "/", icon: "home" },
   { key: "products", href: "/products", icon: "box" },
   { key: "design", href: "/studio/new", icon: "palette" },
-  { key: "orders", href: "/account/orders", icon: "package" },
+  { key: "track", href: "/track", icon: "truck" },
   { key: "account", href: "/account", icon: "user" },
 ];
 
@@ -25,11 +25,12 @@ const ITEMS: { key: string; href: string; icon: IconName }[] = [
  */
 export function MobileBottomNav() {
   const t = useTranslations("storefront.nav");
+  const tTabs = useTranslations("storefront.tabs");
   const pathname = usePathname();
 
   return (
     <nav aria-label={t("mobile")}>
-      <ul className="flex">
+      <ul className="flex pb-[env(safe-area-inset-bottom)]">
         {ITEMS.map((item) => {
           const current = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
@@ -39,12 +40,20 @@ export function MobileBottomNav() {
                 href={item.href}
                 aria-current={current ? "page" : undefined}
                 className={cn(
-                  "flex h-14 flex-col items-center justify-center gap-0.5 text-[0.6875rem]",
-                  current ? "text-primary font-medium" : "text-muted",
+                  "flex h-14 flex-col items-center justify-center gap-0.5 text-[11px] whitespace-nowrap",
+                  current ? "text-primary font-semibold" : "text-muted",
                 )}
               >
-                <Icon name={item.icon} size={20} />
-                {t(item.key)}
+                {/* One-line labels, the current tab in a pill (the "MobileNav" board). */}
+                <span
+                  className={cn(
+                    "grid h-7 w-12 place-items-center rounded-full",
+                    current && "bg-primary-subtle text-primary-subtle-fg",
+                  )}
+                >
+                  <Icon name={item.icon} size={22} />
+                </span>
+                {tTabs(item.key)}
               </Link>
             </li>
           );

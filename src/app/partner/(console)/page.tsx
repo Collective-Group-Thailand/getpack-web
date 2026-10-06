@@ -180,40 +180,57 @@ export default async function PartnerHomePage() {
 
       {floor?.data ? (
         <>
-          <ul className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label={tFloor("countersLabel")}>
-            {(
-              [
-                ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
-                ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.milestonesDueToday],
-                ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
-                ["onHold", "/jobs?view=all", "pause", floor.data.counters.onHold],
-                ["inspections", "/jobs?view=all", "shield", floor.data.counters.inspectionsPlanned],
-                ["samples", "/samples", "package-check", samplesToRecord],
-                ["claims", "/claims", "shield-alert", claimsToAnswer],
-              ] as const
-            ).map(([key, href, icon, value]) => {
-              const overdue = key === "toAccept" ? floor.data!.counters.acceptanceOverdue : 0;
-              return (
-                <li key={key}>
-                  <Stat
-                    as={Link}
-                    href={href}
-                    label={tFloor(`counters.${key}`)}
-                    value={value}
-                    icon={icon}
-                    hint={overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined}
-                    tone={
-                      (key === "atRisk" && value > 0) || overdue > 0 || (key === "claims" && value > 0)
-                        ? "danger"
-                        : key === "toAccept" && value > 0
-                          ? "warning"
-                          : "neutral"
-                    }
-                  />
-                </li>
-              );
-            })}
-          </ul>
+          {(() => {
+            const counters = [
+              ["toAccept", "/jobs?view=to_accept", "inbox", floor.data.counters.awaitingAcceptance],
+              ["dueToday", "/jobs?view=in_production", "calendar", floor.data.counters.milestonesDueToday],
+              ["atRisk", "/jobs?view=late", "warning", floor.data.counters.atRisk],
+              ["onHold", "/jobs?view=all", "pause", floor.data.counters.onHold],
+              ["inspections", "/jobs?view=all", "shield", floor.data.counters.inspectionsPlanned],
+              ["samples", "/samples", "package-check", samplesToRecord],
+              ["claims", "/claims", "shield-alert", claimsToAnswer],
+            ] as const;
+            const busy = counters.filter(([, , , value]) => value > 0);
+            const clear = counters.filter(([, , , value]) => value === 0);
+            return (
+              <section aria-label={tFloor("countersLabel")} className="flex flex-col gap-2">
+                {busy.length ? (
+                  <ul className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                    {busy.map(([key, href, icon, value]) => {
+                      const overdue = key === "toAccept" ? floor.data!.counters.acceptanceOverdue : 0;
+                      return (
+                        <li key={key}>
+                          <Stat
+                            as={Link}
+                            href={href}
+                            label={tFloor(`counters.${key}`)}
+                            value={value}
+                            icon={icon}
+                            hint={overdue > 0 ? tFloor("acceptanceOverdue", { count: overdue }) : undefined}
+                            tone={
+                              (key === "atRisk" && value > 0) || overdue > 0 || (key === "claims" && value > 0)
+                                ? "danger"
+                                : key === "toAccept" && value > 0
+                                  ? "warning"
+                                  : "neutral"
+                            }
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+                {clear.length ? (
+                  <p className="text-muted flex items-start gap-2 text-sm">
+                    <Icon name="check" size={16} className="text-success mt-0.5 shrink-0" aria-hidden="true" />
+                    <span>
+                      {tFloor("clear", { list: clear.map(([key]) => tFloor(`counters.${key}`)).join(" · ") })}
+                    </span>
+                  </p>
+                ) : null}
+              </section>
+            );
+          })()}
           {floor.data.alerts.length ? (
             <ul className="flex flex-col gap-2">
               {floor.data.alerts.map((alert) => (

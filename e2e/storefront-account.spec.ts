@@ -42,7 +42,7 @@ test.describe("the account", () => {
       .getByRole("region", { name: "สิ่งที่ต้องทำ" })
       .or(page.locator("section[aria-labelledby=account-todo]"));
     // What needs doing: the orders' own actions, and a group waiting for its payment.
-    await expect(todo.getByRole("link", { name: "มีงวดที่ต้องชำระ — ไปชำระ" }).first()).toBeVisible();
+    await expect(todo.getByRole("link", { name: "ชำระเงิน" }).first()).toBeVisible();
     await expectNoViolations(page);
 
     await page.getByRole("navigation", { name: "บัญชีของฉัน" }).getByRole("link", { name: "คำสั่งซื้อ" }).click();

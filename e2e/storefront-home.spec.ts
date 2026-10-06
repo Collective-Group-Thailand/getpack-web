@@ -29,7 +29,8 @@ test("the home page: sections in order, the quick start lands in a priced config
   await gotoHydrated(page, HOSTS.customer);
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
-  for (const heading of ["สั่งผลิตง่าย ๆ ใน 4 ขั้นตอน", "ทำไมต้อง Packio", "ผลงานและเสียงจากลูกค้า", "รับข่าวสารจาก Packio"])
+  // The "Main" board's sections (round 2, Phase 3): how it works, the categories, why Packio, voices, newsletter.
+  for (const heading of [/^จากไอเดีย/, "บรรจุภัณฑ์ที่สั่งผลิตได้", /^เราไม่ได้แค่พิมพ์กล่อง/, "ผลงานและเสียงจากลูกค้า", /^รับบทความ/])
     await expect(main.getByRole("heading", { level: 2, name: heading })).toBeVisible();
   await expect(page.getByRole("contentinfo")).toContainText(/เลขประจำตัวผู้เสียภาษี/);
   await expectNoViolations(page);

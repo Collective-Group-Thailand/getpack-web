@@ -50,14 +50,14 @@ export function NewsletterForm() {
       className="mt-5.5 flex flex-col gap-3.5"
       noValidate
     >
-      {/* On the home page's dark band: one translucent pill holding the address and the button. */}
-      <div className="border-fg-inverse/15 bg-fg-inverse/10 flex flex-col gap-2 rounded-2xl border p-1.5 sm:flex-row">
-        <Field label={t("email")} labelHidden className="min-w-0 flex-1">
+      {/* The board's closing row: a kraft-underlined address field and a pill beside it. */}
+      <div className="flex flex-col items-end gap-4 sm:flex-row">
+        <Field label={t("email")} className="min-w-0 flex-1">
           <Input
             type="email"
             autoComplete="email"
             placeholder={t("placeholder")}
-            className="text-fg-inverse placeholder:text-fg-inverse/60 h-11.5 border-0 bg-transparent px-3 text-base"
+            className="focus-visible:border-primary h-12 rounded-none border-0 border-b-[1.5px] border-[var(--kraft-3)] bg-transparent px-0.5 text-lg shadow-none focus-visible:ring-0"
             value={email}
             onChange={(event) => setEmail(event.target.value.trim())}
           />
@@ -65,7 +65,7 @@ export function NewsletterForm() {
         <Button
           type="submit"
           size="lg"
-          className="h-11.5 rounded-xl"
+          shape="pill"
           loading={state === "busy"}
           disabled={!valid || !consent}
         >
@@ -75,11 +75,11 @@ export function NewsletterForm() {
       <Checkbox
         checked={consent}
         onCheckedChange={(next) => setConsent(next === true)}
-        className="text-fg-inverse/75"
+        className="text-muted"
         label={
           <>
             {t("consent")}{" "}
-            <Link href="/legal/privacy" className="text-fg-inverse underline underline-offset-4">
+            <Link href="/legal/privacy" className="text-primary underline underline-offset-4">
               {t("privacy")}
             </Link>
           </>

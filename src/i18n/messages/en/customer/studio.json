@@ -365,24 +365,38 @@
     }
   },
   "startScreen": {
-    "title": "Where would you like to start?",
-    "lead": "Pick the way that fits your job; you can always change your mind",
+    "step": "Step 1 of 5 · Choose where to start",
+    "title": "Where would you like to <em>start?</em>",
+    "lead": "Pick one and we take you the shortest way — every design is saved to your account to come back to",
+    "leadGuest": "Pick one and we take you the shortest way — sign in to keep designs in your account",
+    "forProduct": "For {name}",
+    "popular": "Popular",
     "box": {
-      "title": "Choose a box",
-      "body": "Pick a style and a size, then design on the flat sheet and see it as a 3D box at once"
+      "title": "Choose a box and design it",
+      "body": "Pick from {count} styles, enter a size, then design on the real flat sheet with a 3D view",
+      "go": "Start"
     },
     "product": {
-      "title": "I have the product",
-      "body": "Tell us its size; we suggest the box and the board, with the price"
+      "title": "I have a product, I need a box",
+      "body": "Enter the product's size; we suggest a box style and an inside size that fits",
+      "go": "Enter product size"
     },
     "file": {
       "title": "I have a finished file",
-      "body": "Choose the spec, see the price and attach your file; prepress checks it before production"
+      "body": "Skip designing: set the spec and price, then upload your file for prepress to check",
+      "go": "Set the spec"
     },
     "reorder": {
-      "title": "Reorder",
-      "body": "Open an earlier order and order it again with its approved file in one click"
+      "title": "Reorder an earlier job",
+      "body": "Pick a design you ordered before, change the quantity and order in a few clicks",
+      "go": "See earlier jobs"
     },
-    "recent": "Your recent designs →"
+    "recentTitle": "Your recent designs",
+    "recentAll": "See all ({count})",
+    "recentEdited": "Edited {when}",
+    "recentOrdered": "Ordered · {code}",
+    "sample": "Play with a sample design (not saved)",
+    "describeTitle": "I have a product, I need a box",
+    "close": "Close"
   }
 }

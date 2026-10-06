@@ -72,7 +72,8 @@
     "minus": "−{amount}",
     "net": "Before VAT",
     "pointsToEarn": "Earns {points} points once completed",
-    "guarantee": "See our guarantee"
+    "guarantee": "See our guarantee",
+    "quantity": "{quantity} pcs"
   },
   "repriced": {
     "title": "The price changed",

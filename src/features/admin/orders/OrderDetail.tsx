@@ -128,7 +128,7 @@ export function OrderDetail({ orderId, initial, tab }: { orderId: string; initia
       {order.internal.belowMarginFloor ? <Callout tone="danger" title={t("belowFloor")} /> : null}
 
       {/* 8:4 — the tabs, and the rail with where the order stands (UX audit). */}
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Tabs
           label={t("tabsLabel")}
           items={tabs}
