@@ -1,6 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -30,6 +31,8 @@ export interface ResourceListProps<TRow extends object> {
   filters?: readonly FilterDef[];
   /** Label of the search box; omit for a list the API cannot search. */
   searchLabel?: string;
+  /** Where a row leads: a click anywhere on the row opens it (the row's own link stays). */
+  rowHref?: (row: TRow) => string;
   searchPlaceholder?: string;
   initial?: InitialPage<TRow> | null;
   /** Actions for the selected rows. Selection only appears when this is given. */
@@ -61,6 +64,7 @@ export function ResourceList<TRow extends object>({
   caption,
   filters = [],
   searchLabel,
+  rowHref,
   searchPlaceholder,
   initial,
   bulkActions,
@@ -71,6 +75,7 @@ export function ResourceList<TRow extends object>({
   empty,
 }: ResourceListProps<TRow>) {
   const t = useTranslations("console.list");
+  const router = useRouter();
   const format = useFormat();
   const { state, update, setFilter, applyQuery, defaults } = useListState(resource.defaults);
   const [selected, setSelected] = useState<string[]>([]);
@@ -167,6 +172,7 @@ export function ResourceList<TRow extends object>({
         onSelectedChange={setSelected}
         loading={query.isFetching}
         rowTone={rowTone}
+        onRowClick={rowHref ? (row) => router.push(rowHref(row)) : undefined}
         skeletonRows={Math.min(state.perPage, 10)}
         labels={{ selectAll: t("selectAll"), selectRow: (name) => t("selectRow", { name }), sortBy: t("sortBy") }}
         error={

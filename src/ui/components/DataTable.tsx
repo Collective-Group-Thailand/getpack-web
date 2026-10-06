@@ -93,6 +93,11 @@ export interface DataTableProps<TRow> {
   rowTone?: (row: TRow) => RowTone | undefined;
   /** How many skeleton rows to draw — match the page size so nothing jumps. */
   skeletonRows?: number;
+  /**
+   * The whole row opens the record on a pointer click (UX audit: "คลิกทั้งแถว"). Keyboard and
+   * screen-reader users keep the row's own link; clicks on a control inside the row are its own.
+   */
+  onRowClick?: (row: TRow) => void;
   className?: string;
 }
 
@@ -119,6 +124,7 @@ export function DataTable<TRow extends RowData>({
   rowTone,
   skeletonRows = 8,
   className,
+  onRowClick,
 }: DataTableProps<TRow>) {
   const definitions = useMemo<ColumnDef<typeof features, TRow>[]>(
     () =>
@@ -216,8 +222,17 @@ export function DataTable<TRow extends RowData>({
         <tr
           key={row.id}
           aria-selected={selectable ? isSelected : undefined}
+          onClick={
+            onRowClick
+              ? (event) => {
+                  if ((event.target as HTMLElement).closest("a, button, input, select, textarea, label")) return;
+                  onRowClick(row.original);
+                }
+              : undefined
+          }
           className={cn(
             "border-border hover:bg-surface-subtle border-b last:border-0",
+            onRowClick && "cursor-pointer",
             isSelected && "bg-primary-subtle/40",
             tone === "danger" && "shadow-[inset_3px_0_0_var(--color-danger)]",
             tone === "warning" && "shadow-[inset_3px_0_0_var(--color-warning)]",
