@@ -8,6 +8,8 @@ import { ReorderView } from "@/features/customer/fulfilment/ReorderView";
 import { getMyOrder } from "@/features/customer/orders/api.server";
 import { productNameOf, specLinesOf } from "@/features/customer/orders/summary";
 import { Link } from "@/i18n/navigation";
+import { rfqHref } from "@/features/customer/catalog/paths";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 
 type Params = { orderId: string };
@@ -53,7 +55,24 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           unit={tCatalog(`stock.units.${order.summary.unit}`)}
         />
       ) : (
-        <Callout tone="info">{t("notAllowed")}</Callout>
+        // Not priced instantly any more (D-043: the type or this configuration now needs a quote), or
+        // not offered: never a dead end — the same product type as a quote request, pre-filled from
+        // the product it was (U-F4).
+        <Callout tone="info" title={t("notAllowed")}>
+          <p className="text-sm">{t("notAllowedBody")}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button asChild size="sm">
+              <Link
+                href={`${rfqHref(order.summary.productTypeCode)}${order.summary.product ? `?from=${encodeURIComponent(order.summary.product.slug)}` : ""}`}
+              >
+                {t("requestQuote")}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="secondary">
+              <Link href="/account/messages">{t("askTeam")}</Link>
+            </Button>
+          </div>
+        </Callout>
       )}
     </div>
   );

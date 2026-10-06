@@ -58,8 +58,12 @@ test("when packio-api has it switched off, the panel says so and offers the team
 
 test("a guest is asked to sign in first", async ({ page }) => {
   await gotoHydrated(page, `${HOSTS.customer}/products`);
-  await page.getByRole("button", { name: "ถามผู้ช่วย AI" }).click();
   const panel = page.getByRole("dialog", { name: "ผู้ช่วย Packio" });
+  // The button is server-rendered; its lazy chunk may hydrate after the page does.
+  await expect(async () => {
+    await page.getByRole("button", { name: "ถามผู้ช่วย AI" }).click();
+    await expect(panel).toBeVisible({ timeout: 1_000 });
+  }).toPass();
   await expect(panel.getByRole("link", { name: "เข้าสู่ระบบ" })).toBeVisible();
 });
 

@@ -146,7 +146,7 @@ test("② the print method configures the editor and the price; a size that cann
 
 test("① describe your product → three boxes with reasons → ②", async ({ page }) => {
   await signInAsCustomer(page, "/products/shipping-box", MOCK_DESIGNER_PHONE);
-  await page.getByRole("link", { name: "ออกแบบออนไลน์" }).click();
+  await page.getByRole("main").getByRole("link", { name: "ออกแบบออนไลน์" }).click();
   await expect(page).toHaveURL(/\/studio\/new\?product=shipping-box&step=start$/);
   await expect(page.getByRole("dialog", { name: "ตั้งค่ากล่อง" })).toHaveCount(0);
 

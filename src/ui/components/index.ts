@@ -89,6 +89,7 @@ export { RadioCards, type RadioCardOption, type RadioCardsProps } from "./RadioC
 export { RichTextView, safeHref, type RichTextNode, type RichTextViewProps } from "./RichTextView";
 export { SearchInput, type SearchInputProps } from "./SearchInput";
 export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from "./SegmentedControl";
+export { NativeSelect, type NativeSelectProps } from "./NativeSelect";
 export { Select, type SelectOption, type SelectProps } from "./Select";
 export { SectionDivider, type SectionDividerProps } from "./SectionDivider";
 export { Separator, type SeparatorProps } from "./Separator";

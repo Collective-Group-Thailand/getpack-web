@@ -537,3 +537,37 @@ Sources: `docs/prompts/U3-style-library.md` §U3.4 (wave 3: 15 bases, 51 variant
 - **Rows 2–6 met:** 45 of 51 variants drawn (2 cannot be made, 4 deferred); new modules implemented; gates pass; words pending; mapping and manifest updated.
 - **Rows 7–8:** API-side.
 
+
+## U-F3 — Storefront page patterns (D-180, D-181) — 2026-10-06
+
+`docs/prompts/U1-update-2026-09-29.md` §U-F3 against `F3-storefront.md` §Page patterns, on `main` at `714d9b2`, contract v0.41.0 (U-B4's card facts are in it: `availability`, `startingPricePerPiece` + `startingPriceAssumes`, `moq`, `leadTimeDays`, `campaignBadge`, `referencePrice` on `StoreProductTypeDto` / `StoreProductCardDto`, D-307).
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1.1 | Sticky header, condensing on scroll | partial | `SiteHeader.tsx:46` sticky, fixed 64 px | condenses after the first scroll (CSS, no script on the server path) |
+| 1.2 | Centred nav: หน้าแรก · สินค้า&บริการ · ออกแบบออนไลน์ · ราคา&ตัวอย่าง · บทความ · ติดต่อ | partial | products · styles · design · articles · help | the spec's six; styles and help move into the menu and the footer |
+| 1.3 | Mega menu: columns of categories, each type with "ราคาทันที" / "บางสเปก" / "ขอใบเสนอราคา" from the API; a visual panel and the full catalogue | partial | `ProductsMenu` lists categories only | columns by category with every type and its availability chip; a panel to the style library and the catalogue |
+| 1.4 | Mobile: full-screen menu with the same chips | missing | bottom nav only | a menu button (phone) opening a full-screen sheet with the same columns |
+| 1.5 | Announcement bar only for a real live campaign | missing | — | shown only when a type carries a `campaignBadge` (a live automatic promotion with its real end date, D-307) |
+| 1.6 | Cart with count | API gap | no store read short of the whole cart | contract request `store.cart-count`; icon without a count until then |
+| 2 | Home: exactly 8 sections in order, quick-start strip, static hero | partial | CMS-ordered sections (`page.tsx:103`), hero carousel from banners, no quick start | the 8 sections in order; hero with a quick-start strip (type → approximate size → quantity → price) into the configurator pre-filled; CMS content kept where it maps (types, showcase, articles); below the fold lazy |
+| 2.5 | "ทำไมต้อง Packio" — only claims the business can back | missing | — | six benefits, the figures (claim window) read from `store.guarantee` |
+| 2.6 | Work & testimonials only from real permitted customers, else the empty-state variant | partial | showcase from the CMS | showcase + verified reviews (U2.F4); empty-state variant otherwise |
+| 2.8 | Newsletter with PDPA consent, contact strip, footer with Collective Group (Thailand) and tax id (D-092) | partial / API gap | footer has no company line; no newsletter API; contact strip data exists (`store.support.getChannels`) | contact strip from the API; contract requests `store.newsletter-subscribe` and `store.company-identity` (D-092 keeps the registered name and tax id in settings) |
+| 3 | Catalogue: filters, chips, clear all, toolbar (count, view, sort), URL-synced, server pagination | partial | `/products` has search and pagination | type and category filters (what `store.catalog.listProducts` takes), chips, clear all, count, grid / list view, sort; the other facets (material, printing, size, MOQ, lead time, availability, price) → contract request `store.catalog-product-facets` |
+| 4 | Product page: starting price + assumed quantity, MOQ, lead time, tolerance note, CTAs, RFQ SLA, sizes, materials, FAQs, related types, dieline | partial | `ProductView.tsx` has price + basis, lead time, CTAs, sizes, FAQs, template | MOQ, tolerance note (D-021, from the type's tolerances), the RFQ response time, related types, a link to the materials library |
+| 5 | Card rule (D-181, D-307) | partial | cards read separate price hints; no MOQ, no "บางสเปก", no campaign badge | cards read the card's own facts: starting price with its assumed quantity, MOQ, lead time, availability chip, campaign badge with its end date and the reference price only with it |
+
+## U-F4 — Pricing ownership & tiers: gap check (D-042, D-043, D-044) — 2026-10-06
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Partner price screens adapt to the mode (rate-card acceptance with per-line exceptions vs proposals) | met | `features/partner/prices/RateCardReview.tsx`, `ShippingCardReview.tsx` (U-F0.4, U-B3) | — |
+| 2 | Tiers per product type with what moving up unlocks | met | partner capability / tiers (U2.F7 parity) | — |
+| 3 | The partner bundle never carries suggestions, benchmarks or other factories' values (test) | met | packio-api U-B3 guards partner responses; `partner-mocks.test.ts` | — |
+| 4 | "ตารางราคา", never "ต้นทุน", for factory prices | met | the one "ต้นทุน" in `partner/prices.json` is the factory's own fixed-cost share, not a price | — |
+| 5 | Admin pricing arrangement, rate-card editor, proposal review, coverage map | met | `features/admin/partners/tabs/Pricing.tsx`, `ProposalReview.tsx`, coverage (U-B3) | — |
+| 6 | Configurator → pre-filled RFQ on `rfq_required` | met | configurator routes with `routedFrom` (D-102) | — |
+| 7 | CS calculators on `rfq_required` | met | `features/admin/cs/Quotations.tsx` | — |
+| 8 | Cart re-pricing and reorder on a configuration that is no longer instant | missing | `pricing.not_instant` shows the generic message | offer "ขอใบเสนอราคา" for that product type, pre-filled from the product, in the reorder page and the cart |
+| 9 | Tier-B envelopes once packio-api publishes them | met (API) | `store.catalog.resolveQuotePath` (D-234) | — |

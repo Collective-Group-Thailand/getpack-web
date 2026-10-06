@@ -2,7 +2,7 @@
   "nav": {
     "primary": "Main navigation",
     "mobile": "Bottom navigation",
-    "products": "Products",
+    "products": "Products & services",
     "help": "Help",
     "cart": "Cart",
     "account": "My account",
@@ -11,7 +11,11 @@
     "design": "Design",
     "orders": "Orders",
     "articles": "Articles",
-    "styles": "Styles"
+    "styles": "Styles",
+    "designOnline": "Design online",
+    "pricingSamples": "Prices & samples",
+    "contact": "Contact",
+    "menu": "Menu"
   },
   "footer": {
     "tagline": "Your Packaging Production Partner",
@@ -41,7 +45,8 @@
       "terms": "Terms of use",
       "privacy": "Privacy policy (PDPA)",
       "cookies": "Cookie policy"
-    }
+    },
+    "operatedBy": "Operated by {name} · tax id {taxId} ({branch})"
   },
   "comingSoon": {
     "search": "Search",
@@ -150,5 +155,11 @@
       "verified": "Verified from a real order",
       "link": "Customer reviews"
     }
-  }
+  },
+  "menu": {
+    "panelTitle": "Not sure which box?",
+    "panelBody": "Browse over a hundred box styles with the sizes they come in, or see every product on one page.",
+    "styles": "Browse box styles"
+  },
+  "announcement": "{label} on {type}, until {date}"
 }

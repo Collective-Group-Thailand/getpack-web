@@ -68,10 +68,83 @@ export function ProductsMenu({ label, children }: { label: string; children: Rea
       <div
         id={panelId}
         hidden={!open}
-        className="border-border bg-surface shadow-overlay absolute start-0 top-full mt-2 w-[min(40rem,calc(100vw-2rem))] rounded-xl border p-4"
+        className="border-border bg-surface shadow-overlay absolute start-0 top-full mt-2 w-[min(56rem,calc(100vw-2rem))] rounded-xl border p-4"
       >
         {children}
       </div>
     </div>
+  );
+}
+
+/**
+ * The same menu on a phone (F3 page patterns: "full-screen menu with the same chips"): a button in
+ * the header opens the columns full screen; Escape, the close button or a new page closes it.
+ */
+export function MobileProductsMenu({
+  label,
+  closeLabel,
+  children,
+}: {
+  label: string;
+  closeLabel: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (seenPath !== pathname) {
+    setSeenPath(pathname);
+    setOpen(false);
+  }
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  return (
+    <>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        className="hover:bg-bg-subtle focus-visible:ring-focus-ring inline-flex size-9 items-center justify-center rounded-md outline-none focus-visible:ring-2 lg:hidden"
+      >
+        <Icon name="menu" size={20} aria-hidden="true" />
+        <span className="sr-only">{label}</span>
+      </button>
+      {open ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          className="bg-surface z-modal fixed inset-0 flex flex-col overflow-y-auto p-4 lg:hidden"
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-lg font-semibold">{label}</p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setOpen(false)}
+              className="hover:bg-bg-subtle inline-flex size-9 items-center justify-center rounded-md"
+            >
+              <Icon name="close" size={20} aria-hidden="true" />
+              <span className="sr-only">{closeLabel}</span>
+            </button>
+          </div>
+          {/* A link followed from the sheet closes it: the header stays mounted across pages. */}
+          <div
+            className="mt-4 flex flex-col gap-6"
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest("a")) setOpen(false);
+            }}
+          >
+            {children}
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
