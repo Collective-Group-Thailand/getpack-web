@@ -50,6 +50,10 @@ test("a free dieline from a style's page, on the real API", async ({ context, pa
   if (response.status() === 201) {
     expect(body.url).toMatch(/^https?:/);
     await expect(panel.getByText(/^ดาวน์โหลด .+ แล้ว$/)).toBeVisible();
+    // T12's "file opens with named layers" (scorecard §2): D-302's layers, each a PDF layer (OCG)
+    // with its own spot swatch — the PDF is the panel's default format.
+    const pdf = (await (await page.request.get(body.url)).body()).toString("latin1");
+    for (const name of ["/OCG", "CutContour", "Crease", "Bleed", "Safe"]) expect(pdf, name).toContain(name);
   } else {
     // Recorded, not hidden: the engine flag or a seed range the engine refuses.
     expect(

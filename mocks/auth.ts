@@ -12,6 +12,7 @@ import { DEFAULT_PERSONA, MOCK_PASSWORD, menuFor, personaByEmail, personaByKey, 
 import { factoryNameOf } from "./partner/factory-names";
 import { partnerPersonaByEmail, partnerPersonaByKey, permissionsOf, type PartnerPersona } from "./partner/personas";
 import { MOCK_CUSTOMER_PHONES, resetCustomer, type CustomerPersona } from "./store/customers";
+import { uatParticipants, uatPersona } from "./uat";
 import { accessToken, principalOf, principalOfRefresh, problem, refreshToken, type Audience } from "./support";
 
 /** The default staff credentials the F1 tests use: a CS agent. */
@@ -36,6 +37,13 @@ const CHALLENGES: Record<CustomerPersona, string> = {
   companybuyer: "00000000-0000-4000-8000-0000000000c7",
   founder: "00000000-0000-4000-8000-0000000000c8",
   designer: "00000000-0000-4000-8000-0000000000c9",
+  // The scorecard round's participants (`./uat.ts`, only with MOCK_DATASET=uat).
+  ...Object.fromEntries(
+    uatParticipants().map((participant, n) => [
+      uatPersona(participant),
+      `00000000-0000-4000-8000-00000000ca${String(n + 1).padStart(2, "0")}`,
+    ]),
+  ),
 };
 /** Firebase and LINE tokens the mock accepts (the SDKs never run against the mock). */
 export const MOCK_ID_TOKENS = { google: "mock.firebase.google", apple: "mock.firebase.apple", line: "mock.line" };

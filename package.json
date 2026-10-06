@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:mock": "API_MOCKS=1 next dev",
+    "dev:uat": "API_MOCKS=1 MOCK_DATASET=uat next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

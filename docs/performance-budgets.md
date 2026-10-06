@@ -324,3 +324,16 @@ offer's page): `customer-app` 340200 → **340300** (measured 340232: the accoun
 301000 → **301400** (301307: the "more" menu entry). After merging main's U5 layer: `partner`
 301400 → **301600** (301490); `studio` stays at U5.5's **505800** (the dieline core's
 share of the wave 2 / 3 extensions fits under it).
+
+## U5.8 — release gate (2026-10-06)
+
+Plain production build, private port (`LHCI_PORT=3210`), sets `customer-app` and `customer-marketing`:
+
+| Page | before | U5.8 | Ratchet |
+|---|---|---|---|
+| `/configure/tuck-end-box` | 346,142 | 346,280 | customer-app 346,200 → **346,300** |
+| style pages, `/`, `/products` … | within 273,800 | within 273,800 | unchanged |
+
+The configurator's +138 B is the dock's "ขอตัวอย่างก่อนสั่งผลิต" button and the loader of the sample
+request, which itself loads only when pressed (T5). The style page's return-to-the-open-form after
+signing in (T12) fits inside the marketing budget.

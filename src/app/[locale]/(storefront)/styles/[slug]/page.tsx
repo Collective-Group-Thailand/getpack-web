@@ -10,7 +10,7 @@ import { configureHref, rfqHref } from "@/features/customer/catalog/paths";
 import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
-import { codeOfSlug, styleHref, styleSlug, STYLES_HREF } from "@/features/customer/styles/paths";
+import { codeOfSlug, DIELINE_FRAGMENT, styleHref, styleSlug, STYLES_HREF } from "@/features/customer/styles/paths";
 import { studioHref as studioEntry } from "@/features/customer/studio/paths";
 import { StyleDetailActions } from "@/features/customer/styles/StyleDetailActions";
 import { VariantPicker } from "@/features/customer/styles/VariantPicker";
@@ -212,7 +212,7 @@ export default async function StylePage({ params }: { params: Params }) {
           dieline={{
             sizeRanges: style.sizeRanges,
             signedIn,
-            signInHref: `/sign-in?returnTo=${encodeURIComponent(href)}`,
+            signInHref: `/sign-in?returnTo=${encodeURIComponent(`${href}#${DIELINE_FRAGMENT}`)}`,
             orderHref: style.startingPrice ? configureHref(style.startingPrice.catalogProductSlug) : null,
           }}
           rfqActions={

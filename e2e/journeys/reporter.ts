@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import type { Reporter, TestCase, TestResult } from "@playwright/test/reporter";
 
-import { type Budget, budgetMax, type JourneyId, JOURNEYS } from "./budgets";
+import { type Budget, budgetMax, EXCEPTIONS, type JourneyId, JOURNEYS, judge } from "./budgets";
 import { JOURNEY_ANNOTATION, type JourneyRecord } from "./fixture";
 
 /**
@@ -43,8 +43,18 @@ function verdict(row: Row): string {
   if (!record) return "not run";
   if (record.state === "pending") return "pending";
   if (!record.completed) return "**walk failed**";
-  if (record.overBudget) return "**over budget**";
-  return budgetMax(record.budget) === null ? "counted" : "within budget";
+  switch (judge(record.id, counted(record))) {
+    case "over":
+      return "**over budget**";
+    case "above-ceiling":
+      return `**above its exception's ceiling (${EXCEPTIONS[record.id]!.ceiling})**`;
+    case "excepted":
+      return `over budget — exception (≤ ${EXCEPTIONS[record.id]!.ceiling}, scorecard §5)`;
+    case "stale-exception":
+      return "**within budget — remove its exception**";
+    case "within":
+      return budgetMax(record.budget) === null ? "counted" : "within budget";
+  }
 }
 
 export default class JourneyReporter implements Reporter {
@@ -91,10 +101,13 @@ export default class JourneyReporter implements Reporter {
 
     lines.push(
       ...section(
-        "Over budget (input for U5.1)",
+        "Over budget",
         over.map(({ id, row }) => {
           const steps = row.record!.detail.map((step) => `${step.kind[0]}:${step.name}`).join(" → ");
-          return `**${id}** ${JOURNEYS[id].journey}: ${counted(row.record!)} vs ${budgetText(JOURNEYS[id].budget)} — ${steps}`;
+          const exception = EXCEPTIONS[id];
+          return `**${id}** ${JOURNEYS[id].journey}: ${counted(row.record!)} vs ${budgetText(JOURNEYS[id].budget)} — ${steps}${
+            exception ? ` · exception: ${exception.cause}` : ""
+          }`;
         }),
       ),
       ...section(
