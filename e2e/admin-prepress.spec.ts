@@ -61,7 +61,7 @@ test.describe("preflight (D-070)", () => {
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(13)}`);
     await expect(page.getByText("ขนาดไม่ตรงแบบกล่อง")).toBeVisible();
     await expect(page.getByRole("button", { name: "รับไปทำปรู๊ฟ" })).toBeDisabled();
-    await expect(page.getByText(/D-070/).first()).toBeVisible();
+    await expect(page.getByText(/มีจุดที่ต้องแก้ก่อนทำปรู๊ฟ/).first()).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "ส่งคืนให้แก้ไข" }).click();
@@ -144,7 +144,8 @@ test.describe("design services (D-071)", () => {
     const panel = page.getByRole("tabpanel");
     await expect(panel).toContainText("3 จาก 3 รอบ");
     await expect(panel).toContainText("รอบถัดไป (รอบที่ 4) มีค่าใช้จ่าย ฿500.00");
-    await expect(panel).toContainText("D-071");
+    await expect(panel).toContainText("ลูกค้าต้องยืนยันและชำระก่อนเริ่มรอบนี้");
+    await expect(panel).not.toContainText("D-071"); // no internal decision codes in the UI (UX audit)
     await expectAxeClean(page);
   });
 
