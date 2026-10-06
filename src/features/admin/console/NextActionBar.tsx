@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { nextActionMeta, primaryAction, type NextAction } from "@/domain/status";
 import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { Tooltip } from "@/ui/components/Tooltip";
 
@@ -43,9 +44,10 @@ export function NextActionBar({ actions, supported, labelOf, onAction }: NextAct
   // in the API's order — but a destructive action (cancel, void) never leads while a constructive
   // one is open: it sits behind "more", one deliberate step away.
   const performable = actions.filter((action) => supported.has(actionVerb(action.key)));
+  // A destructive action never leads, even alone (UX audit, order detail: cancel lives in "⋯").
+  const constructive = performable.filter((action) => nextActionMeta(action.key).tone !== "danger");
   const lead =
-    performable.find((action) => !action.disabledReason && nextActionMeta(action.key).tone !== "danger") ??
-    primaryAction(performable);
+    constructive.find((action) => !action.disabledReason) ?? primaryAction(constructive) ?? undefined;
   const rest = actions.filter((action) => action !== lead);
 
   const label = (action: NextAction) => labelOf?.(actionVerb(action.key)) ?? t(nextActionMeta(action.key).labelKey);
@@ -72,11 +74,8 @@ export function NextActionBar({ actions, supported, labelOf, onAction }: NextAct
             disabled: Boolean(action.disabledReason) || !supported.has(actionVerb(action.key)),
             onSelect: () => run(action),
           }))}
-          trigger={
-            <Button variant="secondary" iconEnd="chevron-down">
-              {tConsole("more")}
-            </Button>
-          }
+          // "⋯" (UX audit): the other actions, cancel among them, one deliberate step away.
+          trigger={<IconButton name="more" variant="secondary" label={tConsole("more")} />}
         />
       ) : null}
       {lead ? (

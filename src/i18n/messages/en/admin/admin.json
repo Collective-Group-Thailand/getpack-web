@@ -17,7 +17,8 @@
       "title": "Search and commands",
       "placeholder": "Type to search",
       "empty": "Nothing found. Try an order code, a phone number or an e-mail."
-    }
+    },
+    "waiting": "waiting"
   },
   "menu": {
     "dashboard": "Overview",
@@ -54,7 +55,10 @@
     "cms": "Site content",
     "ops": "Ops monitor",
     "inbox": "Customer inbox",
-    "assistant": "AI assistant"
+    "assistant": "AI assistant",
+    "samples": "Samples",
+    "structural_requests": "Structural design requests",
+    "style_intakes": "Style intakes"
   },
   "palette": {
     "screens": "Screens",

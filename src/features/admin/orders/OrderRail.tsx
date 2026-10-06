@@ -14,14 +14,16 @@ import { Card, CardHeader, CardTitle } from "@/ui/components/Card";
 import { Combobox, type ComboboxOption } from "@/ui/components/Combobox";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
+import type { ProgressState } from "@/ui/components/ProgressTracker";
 import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
-import type { IconName } from "@/ui/icons";
+import { Icon, type IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, problemMessage, useRoleLabel, useStaffDirectory } from "../console";
 
 type Entry = Schemas["StaffTimelineEntryDto"];
+type Order = Schemas["AdminOrderDto"];
 
 /** The timeline types the desk has words for (`orders.rail.types`). */
 const KNOWN_TYPES = new Set([
@@ -60,12 +62,101 @@ const KIND_ICONS: Record<string, IconName> = {
  * with promised against actual for production steps (`promisedAt`, v0.5.0) — and the team's
  * internal notes.
  */
-export function OrderRail({ orderId }: { orderId: string }) {
+export function OrderRail({ order }: { order: Order }) {
   return (
-    <div className="flex flex-col gap-4">
-      <Notes orderId={orderId} />
-      <OrderTimeline orderId={orderId} />
+    // Sticky beside the tabs on a wide screen (UX audit, order detail: "rail sticky").
+    <div className="flex flex-col gap-4 xl:sticky xl:top-24 xl:self-start">
+      <OrderStages order={order} />
+      <DueCard order={order} />
+      <Notes orderId={order.id} />
+      <OrderTimeline orderId={order.id} />
     </div>
+  );
+}
+
+type Stage = "ordered" | "paid" | "artwork" | "production" | "shipping";
+const STAGES: Stage[] = ["ordered", "paid", "artwork", "production", "shipping"];
+
+/**
+ * Where the order is, in five stages (UX audit: "ไทม์ไลน์สถานะ 5 ขั้น"), read off the order's own
+ * status and artwork status — facts the API keeps (B3.1), not a status of the desk's.
+ */
+function stageStates(order: Order): Record<Stage, ProgressState> {
+  const paid = order.status !== "waiting_payment";
+  const artworkDone = order.artworkStatus === "approved";
+  const produced = order.status === "shipping" || order.status === "completed";
+  const state = (done: boolean, current: boolean): ProgressState => (done ? "done" : current ? "current" : "upcoming");
+  if (order.status === "cancelled") {
+    return { ordered: "done", paid: "skipped", artwork: "skipped", production: "skipped", shipping: "skipped" };
+  }
+  return {
+    ordered: "done",
+    paid: state(paid, !paid),
+    artwork: state(artworkDone, paid && !artworkDone),
+    production: state(produced, order.status === "in_production"),
+    shipping: state(order.status === "completed", order.status === "shipping"),
+  };
+}
+
+function OrderStages({ order }: { order: Order }) {
+  const t = useTranslations("orders.rail");
+  const states = stageStates(order);
+  return (
+    <Card padding="md">
+      <CardHeader>
+        <CardTitle>{t("stagesTitle")}</CardTitle>
+      </CardHeader>
+      <ol className="flex flex-col">
+        {STAGES.map((stage, index) => {
+          const state = states[stage];
+          return (
+            <li
+              key={stage}
+              className="relative flex gap-3 pb-4 last:pb-0"
+              aria-current={state === "current" ? "step" : undefined}
+            >
+              {index < STAGES.length - 1 ? (
+                <span aria-hidden="true" className="bg-border absolute start-[0.6875rem] top-6 bottom-0 w-px" />
+              ) : null}
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "relative grid size-6 shrink-0 place-items-center rounded-full border-2",
+                  state === "done" && "border-primary bg-primary text-primary-fg",
+                  state === "current" && "border-warning bg-surface",
+                  (state === "upcoming" || state === "skipped") && "border-border-strong bg-surface",
+                )}
+              >
+                {state === "done" ? <Icon name="check" size={12} /> : null}
+                {state === "current" ? <span className="bg-warning size-2.5 rounded-full" /> : null}
+              </span>
+              <div className="min-w-0">
+                <p className={cn("text-sm font-medium", state === "upcoming" && "text-muted")}>
+                  {t(`stages.${stage}`)}
+                </p>
+                <p className="text-muted text-xs">{t(`stageStates.${state}`)}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </Card>
+  );
+}
+
+/** The promised ship date, and the estimated delivery when the API has one. */
+function DueCard({ order }: { order: Order }) {
+  const t = useTranslations("orders.rail");
+  const format = useFormat();
+  if (!order.promisedShipDate && !order.estimatedDeliveryDate) return null;
+  return (
+    <Card padding="md">
+      <p className="text-muted text-sm">{t("dueTitle")}</p>
+      <p className="mt-1 text-2xl font-bold">{format.date(order.promisedShipDate ?? order.estimatedDeliveryDate)}</p>
+      {order.estimatedDeliveryDate && order.promisedShipDate ? (
+        <p className="text-muted mt-1 text-sm">{t("deliveryBy", { date: format.date(order.estimatedDeliveryDate) })}</p>
+      ) : null}
+    </Card>
   );
 }
 

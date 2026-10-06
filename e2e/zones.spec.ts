@@ -51,7 +51,7 @@ test.describe("each host renders its own zone", () => {
   test("the admin zone renders its own screens once there is a session", async ({ page }) => {
     await signInAsStaff(page);
 
-    await expect(page.getByRole("heading", { level: 1, name: "ภาพรวมงาน" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
@@ -88,7 +88,7 @@ test.describe("cross-zone paths are refused", () => {
       expect(response.status()).toBe(404);
       // Not a redirect to a login page, and not the admin shell either.
       expect(new URL(page.url()).pathname).toBe(new URL(url).pathname);
-      await expect(page.getByRole("heading", { level: 1, name: "ภาพรวมงาน" })).toHaveCount(0);
+      await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toHaveCount(0);
     });
   }
 

@@ -105,5 +105,19 @@
     "company_order_approval": "อนุมัติคำสั่งซื้อของบริษัท",
     "referral_review": "ตรวจสอบการแนะนำเพื่อน",
     "recurring_journal": "รายการบัญชีประจำ"
-  }
+  },
+  "hello": "สวัสดี {name}",
+  "todaySummary": "มี <strong>{count} งาน</strong> ในคิวของคุณ {overdue, plural, =0 {ไม่มีงานเลยกำหนด} other {และ <danger># งาน</danger> เลยกำหนด}}",
+  "todayTitle": "ต้องทำวันนี้ — เรียงตามกำหนด",
+  "openQueue": "เปิดคิว",
+  "otherQueues": "คิวงานอื่น",
+  "emptyHidden": "ซ่อน {count} คิวที่ว่าง",
+  "emptyShown": "แสดง {count} คิวที่ว่างอยู่ด้วย",
+  "show": "แสดง",
+  "hide": "ซ่อน",
+  "taggedTitle": "แท็กถึงฉัน",
+  "latestTitle": "อัปเดตถึงฉันล่าสุด",
+  "taggedNone": "ยังไม่มีใครแท็กหรือแจ้งเรื่องถึงคุณ",
+  "allClearTitle": "ไม่มีงานค้างในคิวของคุณ",
+  "allClearBody": "เมื่อมีงานใหม่เข้ามา จะแสดงที่นี่ตามกำหนดที่ใกล้ที่สุด"
 }

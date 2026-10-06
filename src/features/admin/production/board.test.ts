@@ -38,3 +38,19 @@ describe("the production board's columns", () => {
     ]);
   });
 });
+
+describe("the six fixed stages (UX audit)", () => {
+  it("places route steps by what they are and keeps every stage, empty or not", async () => {
+    const { stageOf, stageColumns, STAGES } = await import("./board");
+    expect(stageOf("awaiting_acceptance")).toBe("awaiting");
+    expect(stageOf("job_received")).toBe("materials");
+    expect(stageOf("printing")).toBe("printing");
+    expect(stageOf("diecut")).toBe("post_press");
+    expect(stageOf("qc_check")).toBe("qc");
+    expect(stageOf("ready_to_ship")).toBe("ready");
+    const columns = stageColumns([{ key: "printing", labelTh: "พิมพ์", labelEn: "Printing", total: 2, atRisk: 1 }], []);
+    expect(columns.map((column) => column.stage)).toEqual([...STAGES]);
+    expect(columns.find((column) => column.stage === "printing")).toMatchObject({ total: 2, atRisk: 1 });
+    expect(columns.find((column) => column.stage === "qc")).toMatchObject({ total: 0, jobs: [] });
+  });
+});

@@ -87,8 +87,11 @@ export interface DateFormatOptions {
    * the legacy system showed customers; English defaults to `ce`.
    */
   era?: "be" | "ce";
-  /** `short` → 17 ก.ย. 2569 · `long` → 17 กันยายน 2569 · `numeric` → 17/09/2569 · `month` → ก.ย. 2569 */
-  style?: "short" | "long" | "numeric" | "month";
+  /**
+   * `short` → 17 ก.ย. 2569 · `long` → 17 กันยายน 2569 · `numeric` → 17/09/2569 · `month` → ก.ย. 2569 ·
+   * `dayMonth` → 17 ก.ย. (a date in a dense table, this year)
+   */
+  style?: "short" | "long" | "numeric" | "month" | "dayMonth";
 }
 
 /**
@@ -106,7 +109,7 @@ export function formatDate(input: DateInput, locale: Locale = "th", options: Dat
     timeZone: TIME_ZONE,
     ...(style === "month" ? {} : { day: "numeric" as const }),
     month: style === "numeric" ? "2-digit" : style === "long" ? "long" : "short",
-    year: "numeric",
+    ...(style === "dayMonth" ? {} : { year: "numeric" as const }),
   }).formatToParts(date);
 
   return parts

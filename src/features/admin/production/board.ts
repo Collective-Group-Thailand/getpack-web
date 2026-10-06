@@ -33,3 +33,42 @@ export function boardColumns(columns: readonly Column[], jobs: readonly Job[]): 
   const live = jobs.filter((job) => (LIVE_JOB_STATUSES as readonly string[]).includes(job.status));
   return columns.map((column) => ({ ...column, jobs: live.filter((job) => columnKeyOf(job) === column.key) }));
 }
+
+/**
+ * The board's six fixed stages (UX audit, /production): every stage is a column, with or without
+ * jobs, in the order work flows. Route step keys are per product (a route template's own keys), so
+ * each one is placed in a stage by what it is; a key the board does not recognise sits with the
+ * post-press work, where most of a route's own steps are.
+ */
+export const STAGES = ["awaiting", "materials", "printing", "post_press", "qc", "ready"] as const;
+export type Stage = (typeof STAGES)[number];
+
+export function stageOf(key: string): Stage {
+  if (key === AWAITING_ACCEPTANCE) return "awaiting";
+  if (/receiv|material|paper|board|stock|prepare/.test(key)) return "materials";
+  if (/print|plate|offset|flexo|digital/.test(key)) return "printing";
+  if (/qc|inspect|quality|check/.test(key)) return "qc";
+  if (/ready|pack|ship|dispatch|deliver/.test(key)) return "ready";
+  return "post_press";
+}
+
+export interface StageColumn {
+  stage: Stage;
+  total: number;
+  atRisk: number;
+  jobs: Job[];
+}
+
+/** The API's columns gathered into the six stages; counts are the API's, summed per stage. */
+export function stageColumns(columns: readonly Column[], jobs: readonly Job[]): StageColumn[] {
+  const placed = boardColumns(columns, jobs);
+  return STAGES.map((stage) => {
+    const mine = placed.filter((column) => stageOf(column.key) === stage);
+    return {
+      stage,
+      total: mine.reduce((sum, column) => sum + column.total, 0),
+      atRisk: mine.reduce((sum, column) => sum + column.atRisk, 0),
+      jobs: mine.flatMap((column) => column.jobs),
+    };
+  });
+}

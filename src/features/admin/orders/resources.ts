@@ -45,7 +45,8 @@ export const ordersList = defineList<OrderQueueItem>({
   },
   getRowId: (row) => row.orderId,
   getRowName: (row) => row.orderCode,
-  defaults: { filterKeys: ["queue"] },
+  // Six columns by default (UX audit, /orders); the group's expiry and the placed date are a click away.
+  defaults: { filterKeys: ["queue"], hidden: ["groupExpiresAt", "placedAt"] },
   // A queue with SLA timers on it.
   staleTime: STALE_TIME.live,
 });

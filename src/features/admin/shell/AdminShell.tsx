@@ -12,7 +12,7 @@ import { ShortcutsOverlay, useShortcutsOverlayShortcut } from "@/ui/components/S
 import { ActorProvider } from "../console/actor";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminTopbar } from "./AdminTopbar";
-import { sidebarItems } from "./menu";
+import { localItems, sidebarItems } from "./menu";
 import { usePaletteItems } from "./palette";
 import { NAV_COOKIE, NAV_COOKIE_MAX_AGE, type NavState } from "./nav-cookie";
 
@@ -44,7 +44,11 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
   const modKey = useModKey();
 
   const collapsed = nav === "collapsed";
-  const screens = sidebarItems(menu);
+  const fromApi = sidebarItems(menu);
+  const screens = [
+    ...fromApi,
+    ...localItems(actor.permissions).filter((item) => !fromApi.some((entry) => entry.key === item.key)),
+  ];
   const palette = usePaletteItems(query, screens, () => setPaletteOpen(false));
 
   const toggleNav = useCallback(() => {
@@ -79,7 +83,7 @@ export function AdminShell({ actor, menu, initialNav, envBadge, children }: Admi
             envBadge={envBadge}
           />
         }
-        sidebar={<AdminSidebar items={screens} collapsed={collapsed} />}
+        sidebar={<AdminSidebar items={screens} collapsed={collapsed} actor={actor} />}
       >
         <ActorProvider actor={actor}>{children}</ActorProvider>
       </AppShell>
