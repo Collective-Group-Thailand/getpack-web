@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { Icon } from "../icons";
 import { cn } from "../lib/cn";
 
 export interface GalleryImage {
@@ -39,12 +38,12 @@ export function ImageGallery({ images, labels, className }: ImageGalleryProps) {
     return (
       <div
         className={cn(
-          "bg-bg-subtle text-subtle rounded-card flex aspect-[4/3] flex-col items-center justify-center gap-2",
+          // Kraft and paper grain, never an icon (design language v2).
+          "kraft-2 grain rounded-card flex aspect-[4/3] flex-col items-center justify-end p-5",
           className,
         )}
       >
-        <Icon name="box" size={64} aria-hidden="true" />
-        <p className="text-muted text-sm">{labels.empty}</p>
+        <p className="rounded-full bg-white/70 px-3 py-1 text-sm text-[#3d3326]">{labels.empty}</p>
       </div>
     );
   }
