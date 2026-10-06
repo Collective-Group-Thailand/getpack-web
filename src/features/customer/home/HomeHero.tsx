@@ -75,7 +75,7 @@ export async function HomeHero({
             ) : null}
             <div>
               <dt className="sr-only">{t("facts.proofed")}</dt>
-              <dd className="serif text-3xl leading-none">100%</dd>
+              <dd className="serif text-3xl leading-none">{t("facts.proofedValue")}</dd>
               <dd className="text-subtle mt-1 text-sm">{t("facts.proofed")}</dd>
             </div>
           </dl>

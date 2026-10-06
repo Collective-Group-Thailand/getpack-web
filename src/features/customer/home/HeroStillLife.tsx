@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals -- the drawn boxes' own printed labels: part of the artwork, not UI copy. */
 /**
  * The home hero's still life (design language v2, the "Main" board): three printed boxes on kraft
  * with their shadows, drawn — not a photo, and not anyone's product. Decorative: the hero's words

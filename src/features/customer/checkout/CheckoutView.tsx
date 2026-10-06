@@ -328,17 +328,22 @@ export function CheckoutView({
       : translate("other", { code: notice.code });
 
   // The sections are numbered in the order they show (the "Checkout" board); a finished one ticks.
-  let stepNo = 0;
-  const step = (done = false): number | "done" => {
-    stepNo += 1;
-    return done ? "done" : stepNo;
-  };
   const delivered = cart.items.every((item) => item.destinationsComplete);
+  const shown = [
+    "delivery",
+    "tax",
+    "promotions",
+    ...((pointsBounds?.balance ?? pointsBalance) > 0 ? ["points"] : []),
+    ...(company ? ["company"] : []),
+    "schedule",
+    ...(dueNow && !needsApproval && !data?.company?.onCredit ? ["method"] : []),
+  ];
+  const step = (key: string, done = false): number | "done" => (done ? "done" : shown.indexOf(key) + 1);
 
   return (
     <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
       <div className="flex flex-col gap-4">
-        <FormSection card step={step(delivered)} title={t("delivery.title")}>
+        <FormSection card step={step("delivery", delivered)} title={t("delivery.title")}>
           <RadioCards
             aria-label={t("delivery.title")}
             columns={2}
@@ -391,7 +396,7 @@ export function CheckoutView({
           </Button>
         </FormSection>
 
-        <FormSection card step={step(true)} title={t("tax.title")} description={t("tax.hint")}>
+        <FormSection card step={step("tax", true)} title={t("tax.title")} description={t("tax.hint")}>
           <RadioCards
             aria-label={t("tax.title")}
             columns={2}
@@ -415,7 +420,7 @@ export function CheckoutView({
           </Button>
         </FormSection>
 
-        <FormSection card step={step()} title={t("promotions.title")} description={t("promotions.hint")}>
+        <FormSection card step={step("promotions")} title={t("promotions.title")} description={t("promotions.hint")}>
           <form
             className="flex items-start gap-2"
             onSubmit={(event) => {
@@ -475,7 +480,7 @@ export function CheckoutView({
         {(pointsBounds?.balance ?? pointsBalance) > 0 ? (
           <FormSection
             card
-            step={step()}
+            step={step("points")}
             title={t("points.title")}
             description={t("points.hint", { balance: format.number(pointsBounds?.balance ?? pointsBalance) })}
           >
@@ -508,7 +513,7 @@ export function CheckoutView({
         {company ? (
           <FormSection
             card
-            step={step()}
+            step={step("company")}
             title={t("company.title")}
             description={t("company.intro", { name: company.legalName, code: company.companyCode ?? "" })}
           >
@@ -543,7 +548,7 @@ export function CheckoutView({
           </FormSection>
         ) : null}
 
-        <FormSection card step={step()} title={t("schedule.title")} description={t("schedule.hint")}>
+        <FormSection card step={step("schedule")} title={t("schedule.title")} description={t("schedule.hint")}>
           {data ? (
             data.paymentSchedule ? (
               <ul className="border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
@@ -563,7 +568,7 @@ export function CheckoutView({
         </FormSection>
 
         {dueNow && !needsApproval && !data?.company?.onCredit ? (
-          <FormSection card step={step()} title={t("method.title")} description={t("method.hint")}>
+          <FormSection card step={step("method")} title={t("method.title")} description={t("method.hint")}>
             <RadioCards
               aria-label={t("method.title")}
               columns={2}
