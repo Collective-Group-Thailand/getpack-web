@@ -1,7 +1,7 @@
 {
   "shipments": {
     "title": "Shipments",
-    "description": "The factory delivers; a fallback carrier where it cannot; POD always (D-013, D-114)",
+    "description": "The factory delivers; a fallback carrier where it cannot; POD always",
     "all": "All",
     "search": "Search shipment, order or tracking number",
     "empty": "No shipments",
@@ -39,7 +39,7 @@
     "packingList": "Packing list",
     "labels": "Carton labels",
     "pod": "Proof of delivery",
-    "podNote": "An accepted factory POD makes the payout eligible (D-013)",
+    "podNote": "An accepted factory POD makes the payout eligible",
     "acceptPod": "Accept POD",
     "rejectPod": "Reject POD",
     "receiver": "Receiver",
@@ -52,7 +52,7 @@
     },
     "reviewNote": "Review note",
     "tolerance": "Delivered against tolerance",
-    "toleranceNote": "The order's result from the system, against the tolerance locked at quotation (D-021, D-080)",
+    "toleranceNote": "The order's result from the system, against the tolerance locked at quotation",
     "outcomes": {
       "exact": "{delivered} of {ordered}: exact",
       "shortage_within": "{delivered} of {ordered}: short within tolerance — pro-rata credit",
@@ -72,7 +72,7 @@
     "contents": "Contents",
     "cartons": "{count} cartons · about {weight} kg",
     "economics": "Shipping economics",
-    "economicsNote": "What Packio pays the factory or the fallback carrier (D-013, D-141)",
+    "economicsNote": "What Packio pays the factory or the fallback carrier",
     "factoryPayout": "Factory payout",
     "carrierCost": "Carrier cost",
     "splitTitle": "Split the shipment",
@@ -142,7 +142,7 @@
   },
   "claims": {
     "title": "Claims",
-    "description": "Within 7 days of receipt, with product and carton photos; liability by the D-083 rules",
+    "description": "Within 7 days of receipt, with product and carton photos; liability by rules",
     "statusesLabel": "Claim statuses",
     "all": "Open",
     "search": "Search claim or order",
@@ -236,7 +236,7 @@
     "window": "Window ends",
     "shipment": "Shipment",
     "evidence": "Evidence",
-    "evidenceNote": "Product photos and shipping-carton photos are required (D-082)",
+    "evidenceNote": "Product photos and shipping-carton photos are required",
     "productPhotos": "Product photos",
     "cartonPhotos": "Carton photos",
     "noPhotos": "No photos",

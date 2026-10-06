@@ -19,8 +19,13 @@ export const RADIUS = {
   full: "9999px",
   /** Buttons, inputs, selects, segmented controls — every zone, admin included (D-180). */
   control: "0.75rem",
-  /** Cards, media, dialogs, the quote dock. */
-  card: "1rem",
+  /**
+   * Cards, media, dialogs, the quote dock: 20 px on the storefront (UX audit design baseline);
+   * `build-tokens.ts` brings it back to 16 px in the denser admin and partner zones.
+   */
+  card: "1.25rem",
+  /** Hero pictures and full-width bands (UX audit: "hero/band 28"). */
+  band: "1.75rem",
   /**
    * The primary call to action. A control everywhere, and a **pill on the storefront only**:
    * `build-tokens.ts` overrides it under `[data-zone="customer"]`, which each root layout
@@ -32,6 +37,19 @@ export const RADIUS = {
 /** The value `--radius-cta` takes in the customer zone. */
 export const CUSTOMER_CTA_RADIUS = "9999px";
 
+/** The card radius in the admin and partner zones, which run denser (UX audit: "radius card 16"). */
+export const DENSE_CARD_RADIUS = "1rem";
+
+/**
+ * Content widths (UX audit design baseline): storefront content 1180 px, its navbar 1320 px, the
+ * admin's full width capped at 1440 px. Tailwind turns `--container-*` into `max-w-*`.
+ */
+export const CONTAINER = {
+  content: "73.75rem",
+  nav: "82.5rem",
+  console: "90rem",
+} as const;
+
 /**
  * Two elevation levels only (D-180), tinted with the warm ink (#1E1B18) rather than black
  * so they do not muddy the paper under them. No neumorphism, no double borders.
@@ -42,7 +60,14 @@ export const SHADOW = {
   card: "0 1px 2px rgb(30 27 24 / 0.06)",
   /** Menus, popovers, dialogs, sheets, the sticky quote dock. */
   overlay: "0 8px 24px rgb(30 27 24 / 0.1)",
+  /** A card lifted on hover — only on hover (UX audit: no shadow on a resting card). */
+  lift: "0 20px 40px -24px rgb(60 40 20 / 0.35)",
+  /** The primary button's faint brand glow; `none` outside the storefront (see build-tokens.ts). */
+  cta: "none",
 } as const;
+
+/** `--shadow-cta` in the customer zone: the primary colour, faint, below the button. */
+export const CUSTOMER_CTA_SHADOW = "0 10px 24px -12px color-mix(in oklab, var(--color-primary) 60%, transparent)";
 
 /** Hovers 150–200 ms, sheets and drawers 250 ms (D-180). */
 export const DURATION = {
@@ -69,10 +94,12 @@ export const FONT_SIZE = {
   lg: "clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem)",
   xl: "clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem)",
   "2xl": "clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem)",
-  "3xl": "clamp(1.875rem, 1.66rem + 0.98vw, 2.25rem)",
+  /** A page title: 38 px on a desktop (UX audit type scale 64 / 48 / 38). */
+  "3xl": "clamp(1.875rem, 1.6rem + 1.2vw, 2.375rem)",
+  /** A section opener: 48 px. */
   "4xl": "clamp(2.25rem, 1.87rem + 1.7vw, 3rem)",
-  /** The page's one h1 on marketing pages — hero and section openers (D-180). */
-  display: "clamp(2rem, 5vw, 3.25rem)",
+  /** The page's one h1 on marketing pages — the hero (D-180): 64 px on a desktop. */
+  display: "clamp(2.5rem, 1.6rem + 3.6vw, 4rem)",
 } as const;
 
 /** Thai needs room for upper vowels and tone marks: body ≥ 1.6, headings no tighter than 1.25. */
@@ -94,10 +121,13 @@ export const FONT_WEIGHT = {
  * Font stacks. The `--font-pk-*` variables are produced by `next/font/local`
  * (`src/ui/fonts`); Latin comes first so the metric-matched Latin companion wins for
  * ASCII, and Thai codepoints fall through to the Thai subset (ADR-0001).
+ *
+ * One family for body and headings — Anuphan, Thai and Latin (UX audit design baseline: "ฟอนต์
+ * ไทย/ละตินชุดเดียว เพื่อให้ x-height เท่ากัน"); Noto Sans Thai is no longer loaded.
  */
 export const FONT_FAMILY = {
-  sans: "var(--font-pk-sans-latin), var(--font-pk-sans-thai), ui-sans-serif, system-ui, sans-serif",
-  display: "var(--font-pk-display-latin), var(--font-pk-display-thai), var(--font-pk-sans-latin), sans-serif",
+  sans: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
+  display: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
   mono: "var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 

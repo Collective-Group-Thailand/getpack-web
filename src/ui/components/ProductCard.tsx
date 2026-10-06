@@ -1,5 +1,6 @@
 import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
+import { ProductIllustration, type ProductFamily } from "./ProductIllustration";
 
 export interface ProductCardImage {
   src: string;
@@ -27,14 +28,19 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
    */
   actions?: React.ReactNode;
   /**
-   * What stands in for a missing photo: an icon on a kraft, paper or brand-tint plate, so a grid
-   * of products without photography still reads as a set rather than as broken images.
+   * What stands in for a missing photo: the product family's line drawing (or, for a non-product
+   * card, an icon) on a kraft, paper or brand-tint plate, so a grid without photography still
+   * reads as a set rather than as broken images — never a generic box icon (UX audit baseline).
    */
-  fallback?: { icon: IconName; tone?: "kraft" | "paper" | "primary" };
+  fallback?: { family?: ProductFamily; icon?: IconName; tone?: "kraft" | "paper" | "primary" };
   /** Image plate proportions: 4:3 for made-to-order types, square for stock items. */
   aspect?: "landscape" | "square";
-  /** Badges over the image corner ("ราคาทันที", "ขอใบเสนอราคา"). */
+  /** Badges over the image's top-left corner ("ราคาทันที", "ขอใบเสนอราคา"). */
   badges?: React.ReactNode;
+  /** A campaign badge, top-right, apart from the mode badge (UX audit: "badge โปรโมชันมุมขวาบน"). */
+  promoBadge?: React.ReactNode;
+  /** Revealed on hover and focus at the foot of the picture ("ดูราคา"); the whole card is the link. */
+  hoverCta?: React.ReactNode;
   /** The heading level in the page outline. */
   headingLevel?: "h2" | "h3";
   /** Above the fold: load the image eagerly and at high priority (LCP). */
@@ -58,6 +64,8 @@ export function ProductCard({
   price,
   meta,
   badges,
+  promoBadge,
+  hoverCta,
   actions,
   fallback,
   aspect = "landscape",
@@ -70,7 +78,7 @@ export function ProductCard({
   return (
     <Component
       className={cn(
-        "group border-border bg-surface focus-within:ring-focus-ring rounded-card hover:shadow-overlay duration-base ease-standard relative flex flex-col overflow-hidden border transition-[transform,box-shadow] focus-within:ring-2 motion-safe:hover:-translate-y-0.5",
+        "group border-border bg-surface focus-within:ring-focus-ring rounded-card hover:shadow-lift duration-base ease-standard relative flex flex-col overflow-hidden border transition-[transform,box-shadow] focus-within:ring-2 motion-safe:hover:-translate-y-1",
         className,
       )}
       {...props}
@@ -79,11 +87,11 @@ export function ProductCard({
         className={cn(
           "relative overflow-hidden",
           aspect === "square" ? "aspect-square" : "aspect-[4/3]",
-          image || !fallback
+          image
             ? "bg-bg-subtle"
-            : fallback.tone === "primary"
+            : fallback?.tone === "primary"
               ? "bg-primary-subtle text-primary-subtle-fg"
-              : fallback.tone === "paper"
+              : fallback?.tone === "paper"
                 ? "bg-bg-subtle text-muted"
                 : "bg-kraft text-muted",
         )}
@@ -101,18 +109,37 @@ export function ProductCard({
             className="duration-base ease-standard h-full w-full object-cover transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         ) : (
-          <div className={cn("flex h-full items-center justify-center", !fallback && "text-subtle")} aria-hidden="true">
-            <Icon name={fallback?.icon ?? "box"} size={fallback ? 56 : 48} />
+          <div className="flex h-full items-center justify-center p-6" aria-hidden="true">
+            {fallback?.icon && !fallback.family ? (
+              <Icon name={fallback.icon} size={56} />
+            ) : (
+              <ProductIllustration
+                family={fallback?.family ?? "tuck"}
+                className="duration-base ease-standard max-w-36 transition-transform group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              />
+            )}
           </div>
         )}
-        {badges ? <div className="absolute start-2 top-2 flex flex-wrap gap-1">{badges}</div> : null}
+        {badges ? <div className="absolute start-3 top-3 flex flex-wrap gap-1">{badges}</div> : null}
+        {promoBadge ? <div className="absolute end-3 top-3 flex flex-wrap gap-1">{promoBadge}</div> : null}
+        {hoverCta ? (
+          <div
+            aria-hidden="true"
+            className="duration-base ease-standard absolute inset-x-3 bottom-3 flex justify-center opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+          >
+            <span className="bg-primary text-primary-fg rounded-cta shadow-cta inline-flex h-10 items-center gap-1.5 px-4 text-sm font-medium">
+              {hoverCta}
+              <Icon name="arrow-right" size={16} />
+            </span>
+          </div>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4 md:px-5 md:pt-4.5 md:pb-5">
         {eyebrow ? <p className="text-muted text-xs">{eyebrow}</p> : null}
         <Heading className="leading-snug font-semibold [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
           {title}
         </Heading>
-        {price ? <p className="mt-auto pt-2 text-sm font-medium tabular-nums">{price}</p> : null}
+        {price ? <p className="mt-auto pt-2 text-base tabular-nums">{price}</p> : null}
         {meta ? <p className="text-muted text-xs">{meta}</p> : null}
         {actions ? <div className="relative z-10 mt-2 flex flex-wrap items-center gap-1">{actions}</div> : null}
       </div>

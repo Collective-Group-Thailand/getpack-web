@@ -50,7 +50,7 @@
   },
   "list": {
     "title": "Partner factories",
-    "description": "Factories by onboarding stage; the Partner team creates them and invites the owner (D-171).",
+    "description": "Factories by onboarding stage; the Partner team creates them and invites the owner.",
     "statusesLabel": "Factory statuses",
     "all": "All",
     "columns": {
@@ -131,7 +131,7 @@
       "start-trial": {
         "label": "Start trial",
         "title": "Start the trial",
-        "body": "{name} ({code}) may take trial jobs; the first 3 are fully inspected (D-076)."
+        "body": "{name} ({code}) may take trial jobs; the first 3 are fully inspected."
       },
       "suspend": {
         "label": "Suspend",
@@ -156,7 +156,7 @@
     "activate": {
       "open": "Request activation",
       "title": "Request activation",
-      "body": "Sends {name} ({code}) for the Partner team's approval; a passed site visit is required (D-041).",
+      "body": "Sends {name} ({code}) for the Partner team's approval; a passed site visit is required.",
       "confirm": "Request approval",
       "hint": "e.g. all 3 trial jobs passed",
       "done": "Activation sent for approval"
@@ -287,7 +287,7 @@
     "wrongType": "{name} is not an accepted type",
     "needFile": "Choose a file",
     "banks": "Bank accounts",
-    "banksNote": "A change needs Finance to call back a number on file, then two approvals (D-033).",
+    "banksNote": "A change needs Finance to call back a number on file, then two approvals.",
     "proposeBank": "Propose an account",
     "proposeBody": "The account of {code} is used once approved.",
     "propose": "Send for approval",
@@ -382,7 +382,7 @@
     "effectiveHint": "Empty = now",
     "reason": "Reason",
     "zones": "Delivery zones",
-    "zonesNote": "Where the factory delivers itself, and the extra days (D-013)",
+    "zonesNote": "Where the factory delivers itself, and the extra days",
     "serves": "Serves {zone}",
     "extraDays": "Extra days for {zone}",
     "days": "days",
@@ -403,14 +403,14 @@
   },
   "terms": {
     "arrangement": "Pricing arrangement",
-    "arrangementNote": "The factory's own price list, or Packio's rate card (D-042)",
+    "arrangementNote": "The factory's own price list, or Packio's rate card",
     "modes": {
       "factory_price_list": "Factory price list",
       "platform_rate_card": "Platform rate card"
     },
     "ownershipMode": "Mode",
     "participations": "Participation per product type",
-    "participationsNote": "Decides instant price or RFQ for customers (D-043)",
+    "participationsNote": "Decides instant price or RFQ for customers",
     "tier": "Tier {tier}",
     "tierLabel": "Tier",
     "changeTier": "Change tier",
@@ -422,13 +422,13 @@
     "envelope": "Envelope (tier B)",
     "envelopeHint": "e.g. standard sizes only",
     "tolerance": "Tolerance",
-    "toleranceNote": "How far short or over is not a breach (D-021); a factory-specific override is approved (D-173)",
+    "toleranceNote": "How far short or over is not a breach; a factory-specific override is approved",
     "toleranceValue": "Short {shortage}, over {overage}",
     "shortage": "Shortage",
     "overage": "Overage",
     "allTypes": "All types (default)",
     "payout": "Payout policy",
-    "payoutNote": "Advance, balance and terms (D-022); a factory-specific override is approved (D-173)",
+    "payoutNote": "Advance, balance and terms; a factory-specific override is approved",
     "payoutValue": "Advance {advance} {advanceTrigger} · balance {balanceTrigger} · paid in {terms} days · claims {claim} days",
     "triggers": {
       "job_accepted": "When the job is accepted",
@@ -453,7 +453,7 @@
       "payout": "New payout policy"
     },
     "dialogBody": "For factory {code}, from the date given",
-    "needsApproval": "Needs a Superadmin's approval before it applies (D-173)",
+    "needsApproval": "Needs a Superadmin's approval before it applies",
     "effectiveFrom": "Effective from",
     "effectiveHint": "Empty = as soon as approved",
     "reason": "Reason",
@@ -466,7 +466,7 @@
     "title": "Site visits",
     "record": "Record a visit",
     "recordBody": "For factory {code}",
-    "required": "A passed visit is required before activation (D-041)",
+    "required": "A passed visit is required before activation",
     "none": "No visit yet",
     "checklistVersion": "Checklist {version}",
     "checklist": "Checklist",
@@ -502,7 +502,7 @@
   },
   "pricing": {
     "lists": "Price lists",
-    "listsNote": "Factory cost is shown only to those allowed (D-141, D-044)",
+    "listsNote": "Factory cost is shown only to those allowed",
     "version": "Version {no}",
     "since": "since",
     "noVersion": "No price yet",
@@ -540,7 +540,7 @@
   },
   "proposals": {
     "title": "Price proposals",
-    "description": "Factories' proposals, and Packio's rate cards out for acceptance (D-040, D-042)",
+    "description": "Factories' proposals, and Packio's rate cards out for acceptance",
     "directionsLabel": "Direction",
     "all": "All",
     "directions": {
@@ -662,7 +662,7 @@
   },
   "coverage": {
     "title": "Instant price coverage",
-    "description": "Which types quote instantly, which only by RFQ, and who covers them (D-043)",
+    "description": "Which types quote instantly, which only by RFQ, and who covers them",
     "productType": "Product type",
     "path": "Quote path",
     "instant": "Instant",
@@ -670,7 +670,7 @@
     "why": "Why",
     "reasons": {
       "instant_available": "An active tier-A factory with prices in force",
-      "type_rfq_only": "The type is quoted on request (D-100)",
+      "type_rfq_only": "The type is quoted on request",
       "no_active_factory": "No active factory makes it",
       "no_price_list": "No tier A/B price list in force",
       "envelope_not_covered": "Tier B only: instant within its envelope"
@@ -683,7 +683,7 @@
   },
   "indices": {
     "title": "Price indices",
-    "description": "Material and cost-driver indices behind the suggestions (D-040)",
+    "description": "Material and cost-driver indices behind the suggestions",
     "series": "Series",
     "kinds": {
       "material": "Material",

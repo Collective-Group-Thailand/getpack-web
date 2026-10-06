@@ -23,7 +23,10 @@ import { fileURLToPath } from "node:url";
 import { oklchCss } from "../src/ui/tokens/color";
 import { PALETTES, PRINT, STEPS } from "../src/ui/tokens/primitives";
 import {
+  CONTAINER,
   CUSTOMER_CTA_RADIUS,
+  CUSTOMER_CTA_SHADOW,
+  DENSE_CARD_RADIUS,
   DURATION,
   EASING,
   FONT_FAMILY,
@@ -92,6 +95,7 @@ function themeBlock(): string {
   lines.push(`--spacing: ${SPACING_BASE};`);
   for (const [name, value] of Object.entries(RADIUS)) lines.push(`--radius-${name}: ${value};`);
   for (const [name, value] of Object.entries(SHADOW)) lines.push(`--shadow-${name}: ${value};`);
+  for (const [name, value] of Object.entries(CONTAINER)) lines.push(`--container-${name}: ${value};`);
 
   lines.push("", "/* Motion (respect prefers-reduced-motion — see src/ui/styles/base.css). */");
   for (const [name, value] of Object.entries(DURATION)) lines.push(`--duration-${name}: ${value};`);
@@ -114,7 +118,9 @@ export function buildTokensCss(): string {
     block('[data-theme="dark"]', semanticVars("dark")),
     block('[data-theme="hc"]', semanticVars("hc")),
     "/* Pill CTAs on the storefront only (D-180); the admin and partner zones keep 12 px. */",
-    block('[data-zone="customer"]', [`--radius-cta: ${CUSTOMER_CTA_RADIUS};`]),
+    block('[data-zone="customer"]', [`--radius-cta: ${CUSTOMER_CTA_RADIUS};`, `--shadow-cta: ${CUSTOMER_CTA_SHADOW};`]),
+    "/* The back office and the factory app run denser: 16 px cards (UX audit design baseline). */",
+    block('[data-zone="admin"],\n[data-zone="partner"]', [`--radius-card: ${DENSE_CARD_RADIUS};`]),
     "",
   ].join("\n\n");
 }

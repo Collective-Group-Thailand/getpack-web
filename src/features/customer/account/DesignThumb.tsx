@@ -10,6 +10,6 @@ export function DesignThumb({ fileId, empty }: { fileId: string | null; empty: s
     // eslint-disable-next-line @next/next/no-img-element
     <img src={url} alt="" className="h-full w-full object-contain" loading="lazy" />
   ) : (
-    <span className="text-subtle flex h-full items-center justify-center text-xs">{empty}</span>
+    <span className="text-muted flex h-full items-center justify-center text-xs">{empty}</span>
   );
 }

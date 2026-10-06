@@ -4,6 +4,7 @@ import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
 import { ProductCard } from "@/ui/components/ProductCard";
+import { productFamilyOf } from "@/ui/components/ProductIllustration";
 
 import type { PriceHint, ProductCard as ProductCardDto, ProductType, StockProduct } from "./api.server";
 import { storeImageSrc } from "./images";
@@ -62,6 +63,7 @@ export async function ProductGrid({
             title={<Link href={productHref(product.slug)}>{name}</Link>}
             eyebrow={type ? pick(locale, type.nameTh, type.nameEn) : undefined}
             image={src ? { src, alt: name } : null}
+            fallback={{ family: productFamilyOf(`${product.productTypeCode} ${product.slug}`), tone: "kraft" }}
             price={facts.price}
             meta={facts.meta}
             badges={facts.badges}
@@ -82,7 +84,7 @@ export async function ProductGrid({
           eyebrow={t("card.stock")}
           image={src ? { src, alt: name } : null}
           aspect={stockAspect}
-          fallback={{ icon: "package", tone: index % 2 ? "kraft" : "paper" }}
+          fallback={{ family: "stock", tone: index % 2 ? "kraft" : "paper" }}
           badges={
             <Badge tone={product.inStock ? "primary" : "neutral"}>
               {t(product.inStock ? "stock.inStock" : "stock.outOfStock")}

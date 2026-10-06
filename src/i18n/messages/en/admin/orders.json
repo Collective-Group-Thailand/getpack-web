@@ -192,7 +192,7 @@
       },
       "margin": {
         "title": "Cost and margin",
-        "hint": "Shown only to roles that may see factory cost (D-141).",
+        "hint": "Shown only to roles that may see factory cost.",
         "buyCost": "Factory buy price",
         "amount": "Margin",
         "pct": "Margin %",
@@ -201,7 +201,7 @@
     },
     "payments": {
       "schedule": "Payment schedule",
-      "scheduleHint": "Instalments required before production must be paid before it starts (D-020).",
+      "scheduleHint": "Instalments required before production must be paid before it starts.",
       "seq": "#",
       "instalment": "Instalment",
       "trigger": "Due",
@@ -288,7 +288,7 @@
     },
     "production": {
       "noJobs": "Not in production yet",
-      "noJobsBody": "Production starts by itself once artwork is approved and the pre-production instalments are paid (D-073).",
+      "noJobsBody": "Production starts by itself once artwork is approved and the pre-production instalments are paid.",
       "job": "Job {jobNo}",
       "atRisk": "At risk",
       "kinds": {
@@ -326,7 +326,7 @@
     },
     "documents": {
       "title": "Documents",
-      "issuer": "Issued by Collective Group (Thailand) under the Packio brand (D-010).",
+      "issuer": "Issued by Collective Group (Thailand) under the Packio brand.",
       "type": "Type",
       "number": "Number",
       "issuedAt": "Issued",
@@ -345,7 +345,7 @@
     "claims": {
       "title": "Claims",
       "none": "No claims",
-      "noneBody": "Customers can claim within 7 days of receipt (D-082).",
+      "noneBody": "Customers can claim within 7 days of receipt.",
       "types": {
         "damaged": "Damaged",
         "wrong_spec": "Wrong spec",
@@ -380,7 +380,7 @@
     },
     "startProduction": {
       "title": "Start production manually?",
-      "body": "Production normally starts by itself once artwork is approved and the pre-production instalments are paid; starting manually is an audited exception with a reason (D-073).",
+      "body": "Production normally starts by itself once artwork is approved and the pre-production instalments are paid; starting manually is an audited exception with a reason.",
       "confirm": "Start production",
       "reason": "Why this is an exception",
       "reasonHint": "Recorded in the audit log",

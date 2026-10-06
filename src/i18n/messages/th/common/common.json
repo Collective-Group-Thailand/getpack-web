@@ -50,7 +50,8 @@
     "loadFailedBody": "ลองอีกครั้ง หากยังไม่ได้ กรุณาแจ้งทีมพร้อมรหัสคำขอ",
     "reference": "รหัสอ้างอิง",
     "copyReference": "คัดลอกรหัสอ้างอิง",
-    "referenceCopied": "คัดลอกแล้ว"
+    "referenceCopied": "คัดลอกแล้ว",
+    "backHome": "กลับหน้าหลัก"
   },
   "notifications": {
     "label": "การแจ้งเตือน",

@@ -50,7 +50,8 @@
     "loadFailedBody": "Try again. If it keeps failing, report it with the request id.",
     "reference": "Reference",
     "copyReference": "Copy reference",
-    "referenceCopied": "Copied"
+    "referenceCopied": "Copied",
+    "backHome": "Back to the start"
   },
   "notifications": {
     "label": "Notifications",

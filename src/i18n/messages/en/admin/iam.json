@@ -119,7 +119,7 @@
   "roles": {
     "title": "Roles and permissions",
     "breadcrumb": "Breadcrumb",
-    "description": "The D-140 roles and their permissions, as the backend defines them.",
+    "description": "The roles and their permissions, as the backend defines them.",
     "audience": "Audience",
     "audiences": {
       "staff": "Packio staff",
@@ -131,6 +131,6 @@
     "granted": "granted",
     "notGranted": "not granted",
     "sensitive": " (sensitive)",
-    "sensitiveLegend": "Permissions marked with this icon expose factory buy prices or margins (D-141)."
+    "sensitiveLegend": "Permissions marked with this icon expose factory buy prices or margins."
   }
 }

@@ -31,7 +31,7 @@ import { SectionHeading, sectionLinkClass } from "@/ui/components/SectionHeading
 import { Icon, type IconName } from "@/ui/icons";
 
 /** The page column and the rhythm between sections (home redesign, 2026-10-06). */
-const SECTION = "mx-auto max-w-[1180px] px-5 pt-16 md:px-8 md:pt-26";
+const SECTION = "mx-auto max-w-content px-5 pt-16 md:px-8 md:pt-26";
 
 /**
  * The storefront home, in the order of the 2026-10-06 redesign (F3 page patterns, D-180, D-181):

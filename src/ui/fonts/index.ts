@@ -16,33 +16,17 @@ import localFont from "next/font/local";
  * belong at the end of `--font-sans` / `--font-display` / `--font-mono` instead. The
  * metric-adjusted local fallback Next generates for CLS stays: Arial carries no Thai.
  *
- * Total 149 KB for all five files, against the 180 KB in ADR-0001.
+ * Anuphan (both halves) and JetBrains Mono — well under the 180 KB in ADR-0001; Noto Sans Thai
+ * was dropped when Anuphan became the body face too.
  *
  * Fonts for *artwork* inside the designer are a separate catalogue (`FONT_FAMILIES`) and are
  * F4 Part C's problem, including outlining or embedding them in print PDFs.
  */
 
-/** UI — Noto Sans Thai variable. Tone marks stack correctly at 14–16 px. */
-const sansLatin = localFont({
-  src: "./files/noto-sans-thai-latin.woff2",
-  weight: "100 900",
-  style: "normal",
-  display: "swap",
-  variable: "--font-pk-sans-latin",
-  // The UI face is on every page in both scripts: preload both halves.
-  preload: true,
-});
-
-const sansThai = localFont({
-  src: "./files/noto-sans-thai-thai.woff2",
-  weight: "100 900",
-  style: "normal",
-  display: "swap",
-  variable: "--font-pk-sans-thai",
-  preload: true,
-});
-
-/** Display — Anuphan variable, for h1–h4. Thai-native geometric, legible at 48 px. */
+/**
+ * Anuphan variable — the one UI face, body and headings (UX audit design baseline: one Thai/Latin
+ * family so both scripts share an x-height). Thai-native geometric, legible from 13 to 64 px.
+ */
 const displayLatin = localFont({
   src: "./files/anuphan-latin.woff2",
   weight: "100 700",
@@ -80,6 +64,4 @@ const mono = localFont({
  * what actually selects a family is `--font-sans` / `--font-display` / `--font-mono` in
  * the generated tokens.
  */
-export const fontClassNames = [sansLatin, sansThai, displayLatin, displayThai, mono]
-  .map((font) => font.variable)
-  .join(" ");
+export const fontClassNames = [displayLatin, displayThai, mono].map((font) => font.variable).join(" ");

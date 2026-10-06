@@ -2,7 +2,7 @@
   "picker": {
     "title": "CS calculators",
     "breadcrumb": "Breadcrumb",
-    "description": "The seven instant calculators (D-100). Choose what the customer needs.",
+    "description": "The seven instant calculators. Choose what the customer needs.",
     "types": {
       "folding": {
         "name": "Folding carton",
@@ -133,7 +133,7 @@
     },
     "noResultsTitle": "Nothing calculated yet",
     "noResultsBody": "Fill in the spec and calculate: the system picks the factory and print type for each quantity",
-    "routeToRfq": "No instant price covers this specification — it goes to RFQ (D-043).",
+    "routeToRfq": "No instant price covers this specification — it goes to RFQ.",
     "openRfq": "Go to RFQs",
     "columns": {
       "quantity": "Quantity",
@@ -157,10 +157,10 @@
     "exportFailed": "Could not create the PDF",
     "createOrder": "Order from this quotation",
     "needCustomer": "Choose a customer before saving the quotation",
-    "quoteReady": "Quotation {code} is valid until {until} (price locked, D-051)",
+    "quoteReady": "Quotation {code} is valid until {until} (price locked)",
     "rfqOnlyTitle": "This type is quote on request (RFQ) only",
     "rfqOnlyNotPublished": "This type's calculator is not live yet. Send it as a request for quote; the desk never shows a price the real calculator did not give.",
-    "rfqOnlyByCatalogue": "The catalogue has this type on quote on request for now (D-043)",
+    "rfqOnlyByCatalogue": "The catalogue has this type on quote on request for now",
     "productType": "Product type",
     "removeQuantity": "Remove {quantity}",
     "calculateFailed": "Could not price this",
@@ -178,23 +178,23 @@
       "no_band": "No band for this weight"
     },
     "tooling": "Plates and dies {amount}",
-    "discountAtCheckout": "Discounts are given when the order is placed; above the CS limit the system asks for approval (D-052)",
+    "discountAtCheckout": "Discounts are given when the order is placed; above the CS limit the system asks for approval",
     "presets": "Common quantities",
     "quantityRange": "Orderable {min}–{max}",
     "quantityOutside": "This quantity is outside what this product can be ordered in",
-    "discountAtCheckoutLimit": "Discounts are given when the order is created. CS may give up to {pct} on its own; above that it needs approval (D-052).",
+    "discountAtCheckoutLimit": "Discounts are given when the order is created. CS may give up to {pct} on its own; above that it needs approval.",
     "note": "Internal note",
     "noteHint": "Never shown to the customer or on the PDF"
   },
   "memo": {
     "title": "Request a discount",
-    "routing": "It goes to the approver for that band only; anything below the margin floor goes to C-Level (D-052, D-162).",
+    "routing": "It goes to the approver for that band only; anything below the margin floor goes to C-Level.",
     "reason": "Reason",
     "reasonHint": "e.g. a competitor's price, a repeat customer, the volume",
     "submit": "Send for approval",
     "created": "Sent for approval",
     "failed": "Could not send the memo",
-    "body": "A {pct}% discount on the customer's cart, routed to the approver for that band (D-052, D-162)"
+    "body": "A {pct}% discount on the customer's cart, routed to the approver for that band"
   },
   "newCustomer": {
     "title": "New customer",
@@ -239,10 +239,10 @@
     "designHints": {
       "own_file": "Checked automatically before the proof",
       "online_designer": "The customer designs it in Packio",
-      "hired_design": "Our designers; 3 free rounds (D-071)"
+      "hired_design": "Our designers; 3 free rounds"
     },
     "mockup": "Mockup",
-    "mockupHint": "A paid add-on (D-072)",
+    "mockupHint": "A paid add-on",
     "mockupOptions": {
       "none": "None",
       "with_print": "Printed",
@@ -261,21 +261,21 @@
     "total": "Total",
     "validUntil": "Price valid until",
     "place": "Place order",
-    "placeHint": "The customer receives payment links for the schedule the system picks (D-020).",
+    "placeHint": "The customer receives payment links for the schedule the system picks.",
     "placed": "Order group {code} placed",
     "failed": "Could not place the order",
     "noCustomer": "This quotation has no customer, so no order can be placed from it",
     "cartBusy": "The customer's cart holds {count} other items. Checkout takes the whole cart: remove them first, or let the customer check out.",
     "removeFromCart": "Remove from cart",
     "discount": "Discount",
-    "discountHint": "The system checks it against the CS limit (D-052)",
+    "discountHint": "The system checks it against the CS limit",
     "discountFormat": "A number with up to 2 decimals",
     "aboveLimit": "This discount is above what CS may give: ask for approval with a discount memo",
     "requestMemo": "Ask for approval",
     "memoState": "Discount memo {pct}",
     "openApproval": "Open the approval",
     "refreshMemo": "Check again",
-    "discountHintLimit": "CS may give up to {pct} on its own; checked when the order is placed (D-052)"
+    "discountHintLimit": "CS may give up to {pct} on its own; checked when the order is placed"
   },
   "address": {
     "title": "Add a delivery address",
@@ -295,7 +295,7 @@
     "title": "Quotations",
     "detailTitle": "Quotation",
     "breadcrumb": "Breadcrumb",
-    "description": "Quotations from every channel; prices are locked for 15 days (D-051).",
+    "description": "Quotations from every channel; prices are locked for 15 days.",
     "search": "Search quotations",
     "columns": {
       "code": "Number",
@@ -336,7 +336,7 @@
   },
   "memos": {
     "title": "Discount memos",
-    "description": "Discounts above the CS limit and how they were decided (D-052).",
+    "description": "Discounts above the CS limit and how they were decided.",
     "search": "Search memos",
     "columns": {
       "customer": "Customer",

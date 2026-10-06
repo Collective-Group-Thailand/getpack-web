@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { CONSENT_ALL, CONSENT_DENIED, consentModeSignals } from "@/lib/analytics/consent";
 import { useConsent } from "@/lib/analytics/useConsent";
 import { replayEnabled } from "@/lib/observability/report";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 
 /**
@@ -19,11 +19,19 @@ import { Button } from "@/ui/components/Button";
  * "Refuse" is a button of equal weight beside "accept", not a link in the corner. Consent that
  * is harder to refuse than to give is not freely given, which is the PDPA's own test.
  */
+/**
+ * Pages where the banner would sit on the one control that matters — the studio's canvas, the
+ * configurator's price bar, checkout's pay button (UX audit, system-wide). The question waits for
+ * the next page; until it is answered nothing is tracked, which is the safe default (D-144).
+ */
+const QUIET_PATHS = /^\/(?:studio|configure|checkout|design)(?:\/|$)/;
+
 export function ConsentBanner() {
   const t = useTranslations("storefront.consent");
   const { asked, save } = useConsent();
+  const pathname = usePathname();
 
-  if (asked) return null;
+  if (asked || QUIET_PATHS.test(pathname)) return null;
 
   function choose(granted: boolean) {
     const next = granted ? CONSENT_ALL : CONSENT_DENIED;
@@ -54,9 +62,11 @@ export function ConsentBanner() {
       // privacy policy to decide has to be able to reach it.
       role="region"
       aria-label={t("title")}
-      className="border-border bg-surface-raised z-sticky shadow-overlay fixed inset-x-0 bottom-0 border-t md:bottom-4 md:mx-auto md:max-w-2xl md:rounded-xl md:border"
+      // A slim full-width bar at the very bottom (56 px on a desktop), so it never floats over a
+      // page's call to action (UX audit, system-wide).
+      className="border-border bg-surface-raised z-sticky fixed inset-x-0 bottom-0 border-t"
     >
-      <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center">
+      <div className="max-w-nav mx-auto flex flex-col gap-2 px-4 py-3 md:min-h-14 md:flex-row md:items-center md:gap-4 md:py-2">
         <p className="text-muted flex-1 text-sm">
           {t("body")} {replayEnabled ? `${t("replay")} ` : null}
           <Link href="/legal/cookies" className="underline underline-offset-2">
