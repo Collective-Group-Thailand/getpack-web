@@ -276,3 +276,29 @@
 @utility z-toast {
   z-index: var(--z-toast);
 }
+
+/*
+ * Storefront surfaces (home redesign, 2026-10-06). Decorative fills only — all from semantic
+ * tokens, so dark and high-contrast themes follow without overrides. Soft, single-hue washes:
+ * D-180 rules out heavy gradients.
+ */
+
+/* The designer's dotted work area, borrowed for marketing pictures of it. */
+@utility pk-dot-grid {
+  background-image: radial-gradient(var(--color-canvas-grid) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* A warm kraft wash in the top corner of the hero. */
+@utility pk-hero-wash {
+  background-image: radial-gradient(56rem 30rem at 88% -10%, var(--color-kraft), transparent 60%);
+}
+
+/* The brand-tint glow in the corner of a dark band. */
+@utility pk-band-glow {
+  background-image: radial-gradient(
+    38rem 19rem at 100% 0,
+    color-mix(in oklab, var(--color-primary) 55%, transparent),
+    transparent 70%
+  );
+}

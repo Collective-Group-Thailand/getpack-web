@@ -10,7 +10,7 @@ import { HeaderSearch } from "@/features/customer/search/HeaderSearch";
 import { categoryHref } from "@/features/customer/catalog/paths";
 
 import { CustomerBell } from "./CustomerBell";
-import { DeferredAssistant, DeferredLocaleMenu, DeferredThemeMenu } from "./DeferredMenus";
+import { DeferredAssistant, DeferredLocaleMenu } from "./DeferredMenus";
 import { MobileProductsMenu, ProductsMenu } from "./ProductsMenu";
 import { Link } from "@/i18n/navigation";
 import { getFormat } from "@/features/shared/format/server";
@@ -99,6 +99,9 @@ export async function SiteHeader() {
     </div>
   );
 
+  const navLink =
+    "text-fg/85 hover:bg-bg-subtle hover:text-fg focus-visible:ring-focus-ring inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-2";
+
   // Below `lg` the primary navigation lives in the menu sheet; seven Thai labels do not fit a tablet.
   const pages: [string, string][] = [
     ["/", tCommon("nav.home")],
@@ -126,55 +129,55 @@ export async function SiteHeader() {
         </p>
       ) : null}
       <header className="z-sticky border-border bg-surface/90 pk-condense sticky top-0 border-b backdrop-blur">
-        <div className="pk-condense-row mx-auto flex h-16 max-w-6xl items-center gap-2 px-4">
-          <MobileProductsMenu label={t("nav.menu")} closeLabel={tCommon("actions.close")}>
-            <ul className="flex flex-col gap-1 text-base font-medium">
-              {pages.map(([href, label]) => (
-                <li key={href}>
-                  <Link href={href} className="hover:bg-bg-subtle block rounded-lg px-2 py-2">
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {tree.length > 0 ? columns : null}
-          </MobileProductsMenu>
-          <Brand href="/" />
+        <div className="pk-condense-row mx-auto flex h-16 max-w-[1320px] items-center gap-2 px-4 lg:grid lg:h-22 lg:grid-cols-[auto_1fr_auto] lg:gap-10 lg:px-10">
+          <div className="flex items-center gap-2">
+            <MobileProductsMenu label={t("nav.menu")} closeLabel={tCommon("actions.close")}>
+              <ul className="flex flex-col gap-1 text-base font-medium">
+                {pages.map(([href, label]) => (
+                  <li key={href}>
+                    <Link href={href} className="hover:bg-bg-subtle block rounded-lg px-2 py-2">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {tree.length > 0 ? columns : null}
+            </MobileProductsMenu>
+            <Brand href="/" className="text-xl lg:text-2xl" />
+          </div>
 
-          <nav aria-label={t("nav.primary")} className="mx-auto hidden items-center gap-1 lg:flex">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">{tCommon("nav.home")}</Link>
-            </Button>
+          {/* The logo is the way home on a desktop, so the bar keeps five destinations (mockup, 2026-10-06). */}
+          <nav aria-label={t("nav.primary")} className="hidden items-center justify-center gap-2 lg:flex xl:gap-6">
             {tree.length > 0 ? (
               <ProductsMenu label={t("nav.products")}>{columns}</ProductsMenu>
             ) : (
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/products">{t("nav.products")}</Link>
-              </Button>
+              <Link href="/products" className={navLink}>
+                {t("nav.products")}
+              </Link>
             )}
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/studio/new">{t("nav.designOnline")}</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/samples">{t("nav.pricingSamples")}</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/articles">{t("nav.articles")}</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/contact">{t("nav.contact")}</Link>
-            </Button>
+            <Link href="/studio/new" className={navLink}>
+              {t("nav.designOnline")}
+            </Link>
+            <Link href="/samples" className={navLink}>
+              {t("nav.pricingSamples")}
+            </Link>
+            <Link href="/articles" className={navLink}>
+              {t("nav.articles")}
+            </Link>
+            <Link href="/contact" className={navLink}>
+              {t("nav.contact")}
+            </Link>
           </nav>
 
-          <div className="ms-auto flex items-center gap-1">
+          <div className="ms-auto flex items-center gap-1 lg:ms-0">
             <HeaderSearch label={tCommon("actions.search")} />
 
             {/*
-            LINE is how a Thai customer expects to reach a supplier (D-143, D-151). It is a
-            link rather than an embedded widget: a third-party chat script on every storefront
-            page would cost more than the budget allows and would need its own CSP origin.
+            LINE is how a Thai customer expects to reach a supplier (D-143, D-151). On a phone it
+            stays in the bar; on a desktop the home page's contact band and the footer carry it,
+            so the bar keeps to the mockup's search · cart · language.
           */}
-            <IconButton asChild name="chat" variant="ghost" size="sm" label={t("nav.lineChat")}>
+            <IconButton asChild name="chat" variant="ghost" size="sm" label={t("nav.lineChat")} className="lg:hidden">
               <Link href="/help/chat" />
             </IconButton>
 
@@ -183,20 +186,15 @@ export async function SiteHeader() {
             </IconButton>
 
             <DeferredAssistant signedIn={signedIn} />
-            <AccountButton signedIn={signedIn} label={t("nav.account")} />
-
             {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}
             {signedIn ? <CustomerBell /> : null}
             <DeferredLocaleMenu />
-            <DeferredThemeMenu
-              label={tCommon("theme.label")}
-              choiceLabels={{
-                system: tCommon("theme.system"),
-                light: tCommon("theme.light"),
-                dark: tCommon("theme.dark"),
-                hc: tCommon("theme.hc"),
-              }}
-            />
+
+            <span aria-hidden className="bg-border mx-2 hidden h-6 w-px lg:block" />
+            <AccountButton signedIn={signedIn} label={t("nav.account")} signInLabel={t("nav.signIn")} />
+            <Button asChild size="md" className="ms-2 hidden rounded-xl lg:inline-flex">
+              <Link href="/products">{t("nav.quote")}</Link>
+            </Button>
           </div>
         </div>
       </header>

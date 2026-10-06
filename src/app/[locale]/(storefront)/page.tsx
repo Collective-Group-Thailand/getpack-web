@@ -9,40 +9,46 @@ import {
   listProducts,
   listShowcase,
   listStockProducts,
-  type Banner,
+  type SupportChannels,
 } from "@/features/customer/catalog/api.server";
 import { cardFacts } from "@/features/customer/catalog/cardFacts";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
 import { articleHref, productHref } from "@/features/customer/catalog/paths";
 import { ProductGrid } from "@/features/customer/catalog/ProductGrid";
+import { HomeHero } from "@/features/customer/home/HomeHero";
+import { HomeStudio } from "@/features/customer/home/HomeStudio";
 import { NewsletterForm } from "@/features/customer/home/NewsletterForm";
-import { QuickStart } from "@/features/customer/home/QuickStart";
 import { getGuarantee, listReviews } from "@/features/customer/trust/api.server";
-import { BoxPreview } from "@/features/designer/components/BoxPreview";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
+import { IconTile, KraftPanel } from "@/ui/components/Decor";
 import { ProductCard } from "@/ui/components/ProductCard";
-import { Icon } from "@/ui/icons";
+import { SectionHeading, sectionLinkClass } from "@/ui/components/SectionHeading";
+import { Icon, type IconName } from "@/ui/icons";
+
+/** The page column and the rhythm between sections (home redesign, 2026-10-06). */
+const SECTION = "mx-auto max-w-[1180px] px-5 pt-16 md:px-8 md:pt-26";
 
 /**
- * The storefront home in the eight sections of the F3 page patterns (U-F3, D-180, D-181), in order:
- * hero with the quick start · product types · how ordering works · ready-to-ship stock · why
- * Packio · work and verified reviews · articles · newsletter and contact. Every figure on it comes
- * from the API (starting prices with what they assume, MOQ, lead times, the claim window); a
- * section with nothing real to show shows its honest empty variant or nothing — never an invented
- * quote, review count or statistic.
+ * The storefront home, in the order of the 2026-10-06 redesign (F3 page patterns, D-180, D-181):
+ * hero with the quick quote · how ordering works · product types · ready-to-ship stock · the
+ * online studio · why Packio · work and verified reviews · articles · newsletter and contact.
+ * Every figure on it comes from the API (starting prices with what they assume, MOQ, lead times,
+ * the claim window, support hours); a section with nothing real to show shows its honest empty
+ * variant or nothing — never an invented quote, review count or statistic.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, tCommon, tree, heroBanners, products, stock, showcase, reviews, articles, guarantee, channels, format] =
+  const [t, tCatalog, tree, heroBanners, products, stock, showcase, reviews, articles, guarantee, channels, format] =
     await Promise.all([
       getTranslations("home"),
-      getTranslations("common"),
+      getTranslations("catalog"),
       getCatalogueTree(),
       getBanners("home_hero"),
       listProducts({ perPage: 48 }).catch(() => ({ data: [], meta: { page: 1, perPage: 48, total: 0 } })),
@@ -54,7 +60,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       getSupportChannels(),
       getFormat(),
     ]);
-  const hero = heroBanners[0];
   const types = tree.flatMap((category) => category.types);
   const priced = new Set(types.filter((type) => type.availability !== "rfq").map((type) => type.code));
   const quickStart = products.data
@@ -67,174 +72,205 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const stockHints = await getPriceHints({ skus: stock.data.map((product) => product.sku) });
   const work = showcase?.data ?? [];
   const quotes = reviews.reviews.filter((review) => review.comment).slice(0, 3);
+  // Special work goes to the RFQ form of a category the catalogue quotes by hand, when it has one.
+  const rfqTypes = types.filter((type) => type.availability === "rfq");
+  const rfqCategory = rfqTypes[0]?.categoryCode ?? null;
+  // Two rows at most: the priced types, then one card standing for everything quoted by hand.
+  const shownTypes = types.filter((type) => type.availability !== "rfq").slice(0, rfqTypes.length ? 7 : 8);
 
-  const steps = (["design", "price", "proof", "track"] as const).map((key) => ({
-    key,
-    title: t(`process.${key}.title`),
-    body: t(`process.${key}.body`),
-  }));
-  const benefits = [
-    { key: "instant", icon: "calculator" as const, body: t("benefits.instant") },
-    { key: "design", icon: "palette" as const, body: t("benefits.design") },
+  const steps: { key: "design" | "price" | "proof" | "track"; icon: IconName }[] = [
+    { key: "design", icon: "upload" },
+    { key: "price", icon: "calculator" },
+    { key: "proof", icon: "file-check" },
+    { key: "track", icon: "truck" },
+  ];
+  const benefits: { key: string; icon: IconName; body: string }[] = [
+    { key: "design", icon: "palette", body: t("benefits.design") },
     {
       key: "moq",
-      icon: "package" as const,
+      icon: "package",
       body: lowestMoq !== null ? t("benefits.moqFrom", { quantity: format.number(lowestMoq) }) : t("benefits.moq"),
     },
-    { key: "track", icon: "truck" as const, body: t("benefits.track") },
-    { key: "tax", icon: "receipt" as const, body: t("benefits.tax") },
+    { key: "track", icon: "truck", body: t("benefits.track") },
+    { key: "tax", icon: "receipt", body: t("benefits.tax") },
     {
       key: "claim",
-      icon: "shield" as const,
+      icon: "shield",
       body: guarantee ? t("benefits.claimWithin", { days: guarantee.claimWindowDays }) : t("benefits.claim"),
     },
   ];
 
-  const heading = (id: string, title: string, more?: { href: string; label: string }) => (
-    <div className="mb-6 flex items-end justify-between gap-4">
-      <h2 id={id} className="text-2xl font-semibold">
-        {title}
-      </h2>
-      {more ? (
-        <Link href={more.href} className="text-primary shrink-0 text-sm underline-offset-2 hover:underline">
-          {more.label}
-        </Link>
-      ) : null}
-    </div>
+  const more = (href: string, label: string) => (
+    <Link href={href} className={sectionLinkClass}>
+      {label}
+      <Icon name="arrow-right" size={16} />
+    </Link>
   );
 
   return (
     <>
-      {/* 1 · Hero: one static picture (the LCP), two ways in, and the quick start. */}
-      <section className="bg-bg-subtle">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:grid-cols-[1.2fr_1fr] md:py-16">
-          <div>
-            <h1 className="text-display leading-tight font-bold">
-              {t("hero.titleLine1")}
-              <br />
-              <span className="text-primary">{t("hero.titleLine2")}</span>
-            </h1>
-            <p className="text-muted mt-4 max-w-md text-lg">{t("hero.body", { tagline: tCommon("brand.tagline") })}</p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild size="lg">
-                <Link href="/products">{t("hero.price")}</Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/studio/new">{tCommon("nav.startDesigning")}</Link>
-              </Button>
-            </div>
-            <QuickStart products={quickStart} />
-          </div>
-          {hero ? (
-            <HeroBanner banner={hero} />
-          ) : (
-            <Card elevation="raised" padding="lg" className="aspect-[4/3] rounded-2xl">
-              {/* The product, not a stock photo: a real dieline from @packio/dieline. */}
-              <BoxPreview
-                styleId="tuck-end"
-                values={{ length: 70, width: 40, height: 110 }}
-                label={t("hero.preview")}
-              />
+      {/* 1 · Hero and the quick quote overlapping it. */}
+      <HomeHero banner={heroBanners[0]} products={quickStart} />
+
+      {/* 2 · How ordering works, four steps. */}
+      <section aria-labelledby="home-process" className={SECTION}>
+        <SectionHeading
+          id="home-process"
+          kicker={t("process.kicker")}
+          title={t("process.heading")}
+          action={more("/learn", t("process.more"))}
+        />
+        <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((step, index) => (
+            <Card as="li" key={step.key} padding="lg" interactive>
+              <div className="mb-4.5 flex items-center justify-between">
+                <IconTile name={step.icon} tone="solid" />
+                <span className="text-muted text-xs font-bold tracking-[0.06em]">
+                  {t("process.step", { number: String(index + 1).padStart(2, "0") })}
+                </span>
+              </div>
+              <h3 className="mb-1.5 text-lg font-bold">{t(`process.${step.key}.title`)}</h3>
+              <p className="text-muted text-sm leading-relaxed">{t(`process.${step.key}.body`)}</p>
             </Card>
-          )}
-        </div>
+          ))}
+        </ol>
       </section>
 
-      {/* 2 · Product types, each with how it is priced and what its price assumes (D-307). */}
+      {/* 3 · Product types, each with how it is priced and what its price assumes (D-307). */}
       {types.length > 0 ? (
-        <section aria-labelledby="home-types" className="mx-auto max-w-6xl px-4 pt-16">
-          {heading("home-types", t("sections.productTypes"), { href: "/products", label: t("sections.viewAll") })}
-          <ul className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
+        <section aria-labelledby="home-types" className={SECTION}>
+          <SectionHeading
+            id="home-types"
+            kicker={t("sections.productTypesKicker")}
+            title={t("sections.productTypes")}
+            description={
+              priced.size > 0 && priced.size < types.length
+                ? t("sections.productTypesSub", { count: priced.size })
+                : undefined
+            }
+            action={more("/products", t("sections.viewAllProducts"))}
+          />
+          <ul className="-mx-5 flex snap-x gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 lg:grid-cols-4">
             {await Promise.all(
-              types.map(async (type) => {
+              shownTypes.map(async (type, index) => {
                 const facts = await cardFacts(type);
                 const name = pick(locale, type.nameTh, type.nameEn);
                 return (
                   <ProductCard
                     key={type.code}
                     as="li"
-                    className="w-60 shrink-0 snap-start md:w-auto"
+                    className="w-64 shrink-0 snap-start md:w-auto"
                     title={<Link href={`/products?productType=${encodeURIComponent(type.code)}`}>{name}</Link>}
+                    fallback={{ icon: index % 2 ? "box" : "package", tone: index % 3 === 2 ? "paper" : "kraft" }}
+                    eyebrow={<span className="flex flex-wrap gap-1">{facts.badges}</span>}
                     price={facts.price}
                     meta={facts.meta}
-                    badges={facts.badges}
                   />
                 );
               }),
             )}
+            {rfqTypes.length > 0 ? (
+              <ProductCard
+                as="li"
+                className="w-64 shrink-0 snap-start md:w-auto"
+                title={<Link href="/products">{t("sections.specialTitle")}</Link>}
+                fallback={{ icon: "document", tone: "primary" }}
+                eyebrow={<Badge tone="info">{tCatalog("card.availability.rfq")}</Badge>}
+                meta={t("sections.specialMeta", {
+                  names: rfqTypes
+                    .slice(0, 4)
+                    .map((type) => pick(locale, type.nameTh, type.nameEn))
+                    .join(" · "),
+                })}
+              />
+            ) : null}
           </ul>
         </section>
       ) : null}
 
-      {/* 3 · How ordering works, four steps. */}
-      <section aria-labelledby="home-process" className="bg-bg-subtle mt-16">
-        <div className="mx-auto max-w-6xl px-4 py-16">
-          {heading("home-process", t("process.heading"), { href: "/learn", label: t("process.more") })}
-          <ol className="grid gap-6 md:grid-cols-4">
-            {steps.map((step, index) => (
-              <li key={step.key}>
-                <span
-                  aria-hidden
-                  className="bg-primary text-primary-fg mb-3 flex size-9 items-center justify-center rounded-full font-semibold"
-                >
-                  {index + 1}
-                </span>
-                <h3 className="font-medium">{step.title}</h3>
-                <p className="text-muted mt-1 text-sm">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
       {/* 4 · Ready to ship. */}
       {stock.data.length > 0 ? (
-        <section aria-labelledby="home-stock" className="mx-auto max-w-6xl px-4 pt-16">
-          {heading("home-stock", t("sections.stock"), { href: "/products", label: t("sections.viewAll") })}
+        <section aria-labelledby="home-stock" className={SECTION}>
+          <SectionHeading
+            id="home-stock"
+            kicker={t("sections.stockKicker")}
+            title={t("sections.stock")}
+            description={t("sections.stockSub")}
+            action={more("/products", t("sections.viewAll"))}
+          />
           <ProductGrid
             items={stock.data.map((product) => ({ kind: "stock" as const, product }))}
             types={new Map()}
             hints={stockHints}
             eager={0}
+            stockAspect="square"
           />
         </section>
       ) : null}
 
-      {/* 5 · Why Packio — six things the business can show, figures from the API. */}
-      <section aria-labelledby="home-benefits" className="mx-auto max-w-6xl px-4 pt-16">
-        {heading("home-benefits", t("benefits.heading"))}
+      {/* 5 · The online studio. */}
+      <HomeStudio />
+
+      {/* 6 · Why Packio — one lead claim and five things the business can show, figures from the API. */}
+      <section aria-labelledby="home-benefits" className={SECTION}>
+        <SectionHeading
+          id="home-benefits"
+          kicker={t("benefits.kicker")}
+          title={t("benefits.heading")}
+          description={t("benefits.sub")}
+        />
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <li className="bg-primary text-primary-fg rounded-card flex flex-col p-7 sm:col-span-2 lg:col-span-1 lg:row-span-2">
+            <IconTile name="clock" tone="inverse" size="lg" className="mb-5" />
+            <h3 className="font-display mb-2 text-2xl font-bold">{t("benefits.instantTitle")}</h3>
+            <p className="text-primary-fg leading-relaxed">{t("benefits.instantLong")}</p>
+            <Button
+              asChild
+              variant="secondary"
+              className="text-primary-subtle-fg mt-6 h-11.5 self-start rounded-xl border-0 lg:mt-auto"
+            >
+              <Link href="/products">{t("benefits.instantCta")}</Link>
+            </Button>
+          </li>
           {benefits.map((benefit) => (
-            <li key={benefit.key} className="border-border flex items-start gap-3 rounded-xl border p-4">
-              <Icon name={benefit.icon} size={22} className="text-primary mt-0.5 shrink-0" aria-hidden="true" />
-              <div>
-                <h3 className="font-medium">{t(`benefits.${benefit.key}Title`)}</h3>
-                <p className="text-muted mt-1 text-sm">{benefit.body}</p>
-              </div>
-            </li>
+            <Card as="li" key={benefit.key} padding="lg" interactive>
+              <IconTile name={benefit.icon} className="mb-4.5" />
+              <h3 className="mb-1.5 text-lg font-bold">{t(`benefits.${benefit.key}Title`)}</h3>
+              <p className="text-muted text-sm leading-relaxed">{benefit.body}</p>
+            </Card>
           ))}
         </ul>
       </section>
 
-      {/* 6 · Work and words from real customers — or the honest empty variant. */}
-      <section aria-labelledby="home-work" className="mx-auto max-w-6xl px-4 pt-16">
-        {heading(
-          "home-work",
-          t("work.heading"),
-          quotes.length ? { href: "/reviews", label: t("work.allReviews") } : undefined,
-        )}
-        {work.length === 0 && quotes.length === 0 ? (
-          <div className="border-border flex flex-col items-start gap-3 rounded-xl border border-dashed p-6">
-            <p className="font-medium">{t("work.emptyTitle")}</p>
-            <p className="text-muted text-sm">{t("work.emptyBody")}</p>
-            <Button asChild variant="secondary">
-              <Link href="/styles">{t("work.emptyAction")}</Link>
-            </Button>
-          </div>
-        ) : (
+      {/* 7 · Work and words from real customers — or the honest empty variant. */}
+      {work.length === 0 && quotes.length === 0 ? (
+        <section aria-labelledby="home-work" className={SECTION}>
+          <KraftPanel className="grid items-center gap-8 p-7 md:grid-cols-[1.3fr_auto] md:p-14">
+            <div className="relative">
+              <Badge className="bg-surface/60 text-fg">{t("work.heading")}</Badge>
+              <h2 id="home-work" className="font-display mt-3 text-3xl leading-tight font-bold md:text-4xl">
+                {t("work.emptyTitle")}
+              </h2>
+              <p className="text-fg/80 mt-3 text-lg">{t("work.emptyBody")}</p>
+            </div>
+            <div className="relative">
+              <Button asChild size="lg" iconEnd="arrow-right" className="rounded-xl">
+                <Link href="/styles">{t("work.emptyAction")}</Link>
+              </Button>
+            </div>
+          </KraftPanel>
+        </section>
+      ) : (
+        <section aria-labelledby="home-work" className={SECTION}>
+          <SectionHeading
+            id="home-work"
+            kicker={t("work.kicker")}
+            title={t("work.heading")}
+            action={quotes.length ? more("/reviews", t("work.allReviews")) : undefined}
+          />
           <div className="flex flex-col gap-6">
             {work.length > 0 ? (
-              <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+              <ul className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4">
                 {work.map((item) => {
                   const name = pick(locale, item.nameTh, item.nameEn);
                   const src = storeImageSrc(item.imageUrl);
@@ -251,11 +287,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               </ul>
             ) : null}
             {quotes.length > 0 ? (
-              <ul className="grid gap-4 md:grid-cols-3">
+              <ul className="grid gap-5 md:grid-cols-3">
                 {quotes.map((review) => (
-                  <li key={review.id} className="border-border rounded-xl border p-4">
+                  <Card as="li" key={review.id} padding="lg">
                     <figure>
-                      <blockquote className="text-sm">
+                      <blockquote>
                         <q>{review.comment}</q>
                       </blockquote>
                       <figcaption className="text-muted mt-3 text-xs">
@@ -266,19 +302,24 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                         })}
                       </figcaption>
                     </figure>
-                  </li>
+                  </Card>
                 ))}
               </ul>
             ) : null}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
-      {/* 7 · Articles. */}
+      {/* 8 · Articles. */}
       {articles && articles.data.length > 0 ? (
-        <section aria-labelledby="home-articles" className="mx-auto max-w-6xl px-4 pt-16">
-          {heading("home-articles", t("sections.articles"), { href: "/articles", label: t("sections.viewAll") })}
-          <ul className="grid gap-4 md:grid-cols-3">
+        <section aria-labelledby="home-articles" className={SECTION}>
+          <SectionHeading
+            id="home-articles"
+            kicker={t("sections.articlesKicker")}
+            title={t("sections.articles")}
+            action={more("/articles", t("sections.viewAll"))}
+          />
+          <ul className="grid gap-5 md:grid-cols-3">
             {articles.data.map((article) => {
               const name = pick(locale, article.titleTh, article.titleEn);
               const src = storeImageSrc(article.coverUrl);
@@ -288,6 +329,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   as="li"
                   title={<Link href={articleHref(article.slug)}>{name}</Link>}
                   image={src ? { src, alt: "" } : null}
+                  fallback={{ icon: "article", tone: "paper" }}
                   eyebrow={format.date(article.publishedAt)}
                   meta={article.excerptTh}
                 />
@@ -297,97 +339,76 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         </section>
       ) : null}
 
-      {/* 8 · Newsletter and how to reach us (the footer follows). */}
-      <section aria-labelledby="home-closing" className="mx-auto mt-16 grid max-w-6xl gap-8 px-4 pb-16 md:grid-cols-2">
-        <div>
-          <h2 id="home-closing" className="text-2xl font-semibold">
-            {t("newsletter.heading")}
-          </h2>
-          <p className="text-muted mt-2 text-sm">{t("newsletter.body")}</p>
-          <div className="mt-4">
+      {/* 9 · Newsletter and how to reach us, on one dark band (the footer follows). */}
+      <section aria-labelledby="home-closing" className={SECTION}>
+        <div className="bg-fg text-fg-inverse relative grid gap-12 overflow-hidden rounded-2xl p-7 md:p-12 lg:grid-cols-[1.2fr_1fr]">
+          <div aria-hidden className="pk-band-glow absolute inset-0" />
+          <div className="relative">
+            <h2 id="home-closing" className="font-display text-3xl font-bold">
+              {t("newsletter.heading")}
+            </h2>
+            <p className="text-fg-inverse/75 mt-2">{t("newsletter.body")}</p>
             <NewsletterForm />
           </div>
-        </div>
-        <div className="bg-bg-subtle rounded-2xl p-6">
-          <h2 className="text-lg font-semibold">{t("contact.heading")}</h2>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            {channels?.hours ? (
-              <div>
-                <dt className="text-muted">{t("contact.hours")}</dt>
-                <dd>{channels.hours}</dd>
-              </div>
-            ) : null}
-            {channels?.phone ? (
-              <div>
-                <dt className="text-muted">{t("contact.phone")}</dt>
-                <dd>
-                  <a href={`tel:${channels.phone}`} className="underline underline-offset-4">
-                    {channels.phone}
-                  </a>
-                </dd>
-              </div>
-            ) : null}
-            {channels?.lineOaId ? (
-              <div>
-                <dt className="text-muted">{t("contact.line")}</dt>
-                <dd>{channels.lineOaId}</dd>
-              </div>
-            ) : null}
-            {channels?.email ? (
-              <div>
-                <dt className="text-muted">{t("contact.email")}</dt>
-                <dd>
-                  <a href={`mailto:${channels.email}`} className="underline underline-offset-4">
-                    {channels.email}
-                  </a>
-                </dd>
-              </div>
-            ) : null}
-          </dl>
-          <Button asChild variant="secondary" className="mt-4" iconStart="chat">
-            <Link href="/help/chat">{t("contact.chat")}</Link>
-          </Button>
+          <ContactPanel channels={channels} rfqCategory={rfqCategory} />
         </div>
       </section>
     </>
   );
 }
 
-/**
- * A banner's target is an admin-entered path; only a path inside the site becomes a link, and
- * it is not prefetched — nothing guarantees the page exists, and a prefetch that 404s holds its
- * socket open (see `ComingSoon`).
- */
-function bannerTarget(url: string | null): string | null {
-  if (!url || !url.startsWith("/") || url.startsWith("//")) return null;
-  // Admins enter paths with a locale prefix ("/th/products/…"); the router adds the locale.
-  return url.replace(/^\/(th|en)(?=\/|$)/, "") || "/";
-}
+/** The closing band's right half: support hours and channels from the API, and two ways to talk. */
+async function ContactPanel({
+  channels,
+  rfqCategory,
+}: {
+  channels: SupportChannels | null;
+  rfqCategory: string | null;
+}) {
+  const t = await getTranslations("home.contact");
+  const rows = [
+    { key: "phone", value: channels?.phone, href: channels?.phone ? `tel:${channels.phone}` : null },
+    { key: "line", value: channels?.lineOaId, href: null },
+    { key: "email", value: channels?.email, href: channels?.email ? `mailto:${channels.email}` : null },
+  ] as const;
 
-function HeroBanner({ banner }: { banner: Banner }) {
-  const src = storeImageSrc(banner.desktopImageUrl);
-  const target = bannerTarget(banner.targetUrl);
-  if (!src) return null;
-  const image = (
-    // eslint-disable-next-line @next/next/no-img-element -- API-origin image (see ProductCard)
-    <img
-      src={src}
-      alt={banner.title}
-      width={1200}
-      height={900}
-      fetchPriority="high"
-      className="aspect-[4/3] w-full rounded-2xl object-cover"
-    />
-  );
-  return target ? (
-    <Link
-      href={target}
-      prefetch={false}
-      className="focus-visible:ring-focus-ring block rounded-2xl outline-none focus-visible:ring-2"
-    >
-      {image}
-    </Link>
-  ) : (
-    image
+  return (
+    <div className="border-fg-inverse/15 bg-fg-inverse/5 rounded-card relative flex flex-col border p-7">
+      <h3 className="text-xl font-bold">{t("bandTitle")}</h3>
+      {channels?.hours ? (
+        <p className="text-fg-inverse/75 mt-2.5 flex items-center gap-2 text-sm">
+          <Icon name="clock" size={16} />
+          {t("hoursLine", { hours: channels.hours })}
+        </p>
+      ) : null}
+      <dl className="text-fg-inverse/75 mt-3 grid gap-1 text-sm">
+        {rows.map((row) =>
+          row.value ? (
+            <div key={row.key} className="flex gap-2">
+              <dt>{t(row.key)}</dt>
+              <dd>
+                {row.href ? (
+                  <a href={row.href} className="text-fg-inverse underline underline-offset-4">
+                    {row.value}
+                  </a>
+                ) : (
+                  row.value
+                )}
+              </dd>
+            </div>
+          ) : null,
+        )}
+      </dl>
+      <div className="mt-6 flex flex-col gap-2.5">
+        <Button asChild size="lg" variant="secondary" iconStart="chat" className="rounded-xl border-0">
+          <Link href="/help/chat">{t("chat")}</Link>
+        </Button>
+        {rfqCategory ? (
+          <Button asChild size="lg" variant="ghost" className="border-fg-inverse/25 rounded-xl border">
+            <Link href={`/rfq/${encodeURIComponent(rfqCategory)}`}>{t("rfq")}</Link>
+          </Button>
+        ) : null}
+      </div>
+    </div>
   );
 }

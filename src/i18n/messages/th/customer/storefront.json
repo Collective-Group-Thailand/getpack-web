@@ -15,7 +15,9 @@
     "designOnline": "ออกแบบออนไลน์",
     "pricingSamples": "ราคาและตัวอย่าง",
     "contact": "ติดต่อ",
-    "menu": "เมนู"
+    "menu": "เมนู",
+    "signIn": "เข้าสู่ระบบ",
+    "quote": "คำนวณราคา"
   },
   "footer": {
     "tagline": "พาร์ตเนอร์งานผลิตบรรจุภัณฑ์ของคุณ",
@@ -46,7 +48,8 @@
       "privacy": "นโยบายความเป็นส่วนตัว (PDPA)",
       "cookies": "นโยบายคุกกี้"
     },
-    "operatedBy": "ดำเนินการโดย {name} · เลขประจำตัวผู้เสียภาษี {taxId} ({branch})"
+    "operatedBy": "ดำเนินการโดย {name} · เลขประจำตัวผู้เสียภาษี {taxId} ({branch})",
+    "by": "โดย {company}"
   },
   "comingSoon": {
     "search": "ค้นหา",
