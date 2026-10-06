@@ -6,7 +6,7 @@ import { upstreamApi } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/problem";
 import { apiInternalUrl } from "@/lib/env/lazy-server";
 import { serverCallContext } from "@/lib/api/call-context.server";
-import { safeReturnTo } from "@/features/shared/auth/return-to";
+import { signInReturnTo } from "@/features/shared/auth/return-to";
 import { startSession } from "@/features/shared/auth/session-actions";
 
 export interface PartnerLoginState {
@@ -30,7 +30,7 @@ export async function signInPartner(_state: PartnerLoginState, formData: FormDat
   const password = String(formData.get("password") ?? "");
   const pin = String(formData.get("pin") ?? "").trim();
   const deviceId = String(formData.get("deviceId") ?? "").trim();
-  const returnTo = safeReturnTo(String(formData.get("returnTo") ?? ""));
+  const returnTo = signInReturnTo(String(formData.get("returnTo") ?? ""));
 
   if (!email || (!password && !pin)) return { errorKey: "errors.invalidPartnerCredentials" };
 

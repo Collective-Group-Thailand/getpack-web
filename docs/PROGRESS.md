@@ -53,6 +53,23 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit Flow 1 — step 1: the blocking bugs — 2026-10-06
+
+From `docs/ui/Packio UX UI Audit & Spec — Flow 1 Order-to-Production.md` (the user: "อ่านไฟล์นี้แล้วดำเนินการเลย … ปิด gap ทั้งหมด"). Branch `feat/ux-1-blocking-bugs` (worktree `../packio-web-ux`); the audit's steps 2–10 follow on their own branches.
+
+| # | Audit finding | Root cause found | Fix |
+|---|---|---|---|
+| 1 | OTP verify fails with "กรุณาใส่เบอร์มือถือในประเทศไทยให้ถูกต้อง" | **Not** a phone normalisation mismatch — verify sends only the challenge id. packio-api answers a wrong code with **422 `auth.otp_invalid`**, and `otpErrorFor` mapped every 422 to "invalid phone". The mock answered 401, so no test could see it. And with fake integrations the API's code is random and kept in memory, so `000000` was never the code on the real stack. | Branch on `code` before status (`auth.otp_invalid` → "รหัส OTP ไม่ถูกต้อง" + the API's "เหลือโอกาสอีก n ครั้ง"); mock aligned with the API (422 `auth.otp_invalid`, 422 `validation.failed`, `codeLength`, `maxAttempts`, `8x` numbers). packio-api `963e753`: `toE164` accepts a mobile without its leading zero. **Open:** how a UAT tester reads the OTP on the fake-SMS stack — a fixed `000000` in fake mode was proposed and not applied (blocked as a security weakening); the owner decides. |
+| 2 | Admin login → 404 | A `returnTo` in the internal spelling (`/admin/orders`) is rewritten again by the proxy (`/admin/admin/orders`). | `signInReturnTo()` (shared): never a sign-in page, never `/admin` · `/partner` · `/bff`; used by the three login pages and both staff/partner actions. |
+| 3 | `/cart` forces sign-in | The API has no guest cart and a saved quotation is a customer's. | A **guest cart in this browser** (`guest-cart.ts`: the `store.quotes.save` body and the price the API showed — display only, no token, no personal data); the configurator adds to it for a guest; `/cart` shows it (`GuestCartView`) with checkout → `/sign-in?returnTo=/cart`; the signed-in cart moves each line in (save quotation at today's price → add item), keeping a line that fails. |
+| 4 | Header "เข้าสู่ระบบ" goes through `/account` | — | Links to `/sign-in?returnTo=<this path>`; still opens the sheet when interactive. |
+| 5 | Admin `/orders` "2 Issues" | Duplicate React key `all` in `QueueTabs` (default tab and the "ทั้งหมด" tab). | Distinct key for the default tab. |
+| — | UUID request ids shown to customers | — | `ReferenceCode` (src/ui): "รหัสอ้างอิง PK-88F013" + copy (the full id goes to the clipboard, never on screen); `ErrorState` and `RequestIdNote` use it. |
+
+**Assumptions:** the guest cart keeps the price shown at the time and says so; the account's cart re-prices on sign-in (D-051). The query string is not carried into the header's `returnTo` (reading it would opt every page out of static rendering).
+
+**Tests:** unit 1090 (new `signInReturnTo`, ErrorState shows `PK-…` not the UUID); e2e `auth` 14 (new: admin `returnTo` `/login` and `/admin/orders` land on `/`; wrong OTP is not "phone"; header link), `storefront-quote` guest → cart → checkout → sign-in → merged.
+
 ## Home redesign — 2026-10-06
 
 Requested by the user from a design mockup (`Homepage — Desktop-html.zip`, `Main.dc.html` at 1440 px). Plan approved; scope: home + header + footer, Studio section added, Articles kept. Branch `feat/home-redesign` (worktree `../packio-web-home`).

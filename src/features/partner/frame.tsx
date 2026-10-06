@@ -89,14 +89,29 @@ export async function PageError({ error }: { error: unknown }) {
   const t = await getTranslations("common.errors");
   const api = isApiError(error) ? error : null;
   if (api?.status === 403)
-    return <ErrorState title={t("forbiddenTitle")} description={t("forbiddenBody")} code={api.requestId} />;
+    return (
+      <ErrorState
+        title={t("forbiddenTitle")}
+        description={t("forbiddenBody")}
+        code={api.requestId}
+        codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
+      />
+    );
   if (api?.status === 404)
-    return <ErrorState title={t("itemNotFoundTitle")} description={t("itemNotFoundBody")} code={api.requestId} />;
+    return (
+      <ErrorState
+        title={t("itemNotFoundTitle")}
+        description={t("itemNotFoundBody")}
+        code={api.requestId}
+        codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
+      />
+    );
   return (
     <ErrorState
       title={t("loadFailedTitle")}
       description={api?.detail || t("loadFailedBody")}
       code={api?.requestId || undefined}
+      codeLabels={{ label: t("reference"), copy: t("copyReference"), copied: t("referenceCopied") }}
     />
   );
 }

@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** The `ops` menu entry packio-api returns to holders of `ops.read` (B6.3). */
 export default async function OpsPage() {
-  const t = await getTranslations("platform.ops");
+  const [t, tErrors] = await Promise.all([getTranslations("platform.ops"), getTranslations("common.errors")]);
   const result = await loadSignals();
 
   return (
@@ -23,7 +23,16 @@ export default async function OpsPage() {
       {"signals" in result ? (
         <OpsSignals signals={result.signals} />
       ) : (
-        <ErrorState title={t("loadFailed")} description={t("loadFailedBody")} code={result.requestId} />
+        <ErrorState
+          title={t("loadFailed")}
+          description={t("loadFailedBody")}
+          code={result.requestId}
+          codeLabels={{
+            label: tErrors("reference"),
+            copy: tErrors("copyReference"),
+            copied: tErrors("referenceCopied"),
+          }}
+        />
       )}
     </ConsolePage>
   );

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
 import { acceptCookies, completeSignIn, signInAsCustomer } from "./helpers/customer";
-import { gotoHydrated, signInAsStaff } from "./helpers/session";
+import { gotoHydrated, MOCK_OTP, signInAsStaff } from "./helpers/session";
 
 /**
  * F3 3.2 end to end: configure (3D preview, live price, price breaks, route to RFQ), keep the
@@ -123,13 +123,27 @@ test.describe("the configurator", () => {
 });
 
 test.describe("keeping the price", () => {
-  test("a guest who adds to the cart signs in and the item goes in", async ({ page }) => {
+  test("a guest adds to the cart without an account, and signing in at checkout moves the line in", async ({
+    page,
+  }) => {
+    // UX audit Flow 1, bug #3: the cart is a guest's too; only checkout asks for an account.
     await acceptCookies(page);
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
     await expect(dock(page).getByText(/\/ ชิ้น$/)).toBeVisible();
     await dock(page).getByRole("button", { name: "เพิ่มลงตะกร้า" }).click();
-    await completeSignIn(page);
     await expect(page.getByText("เพิ่มกล่องฝาเสียบลงตะกร้าแล้ว")).toBeVisible();
+
+    await gotoHydrated(page, `${HOSTS.customer}/cart`);
+    await expect(page).toHaveURL(`${HOSTS.customer}/cart`);
+    const line = page.getByRole("list", { name: "รายการในตะกร้า" }).getByRole("article");
+    await expect(line).toHaveCount(1);
+    await expect(line.getByRole("heading", { name: "กล่องฝาเสียบ" })).toBeVisible();
+
+    await page.getByRole("link", { name: "ดำเนินการชำระเงิน" }).click();
+    await expect(page).toHaveURL(/\/sign-in\?returnTo=%2Fcart$/);
+    await completeSignIn(page, MOCK_OTP.phone, "page");
+    await expect(page).toHaveURL(`${HOSTS.customer}/cart`);
+    await expect(page.getByText(/ย้ายรายการจากตะกร้าก่อนเข้าสู่ระบบแล้ว 1 รายการ/)).toBeVisible();
   });
 
   test("a saved quote can be shared, and the link reopens the configuration", async ({ page, context }) => {
