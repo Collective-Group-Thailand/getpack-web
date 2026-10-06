@@ -152,10 +152,10 @@ jobs:
     name: step counters (scorecard T1–T12)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Not blocking until U5.8 (docs/prompts/U5-ux-excellence.md): a journey over its step budget
-    # or a new required field is reported in the job summary, not failed. U5.8 deletes this line
-    # and sets STEP_BUDGETS=enforce below, and the counters become a gate.
-    continue-on-error: true
+    # Blocking since U5.8 (docs/prompts/U5-ux-excellence.md): a journey over its step budget
+    # without a known exception (competitive-scorecard.md §5), above its exception's ceiling, back
+    # within budget while still excepted, not walkable, or meeting a required field the scorecard
+    # does not list fails the job.
     steps:
       - uses: actions/checkout@v5
 
@@ -174,9 +174,14 @@ jobs:
       # The reporter appends the step table to the job summary (e2e/journeys/reporter.ts).
       - name: Step counters
         run: pnpm e2e:journeys
+        env:
+          STEP_BUDGETS: enforce
 
-      # The studio's 3D orbit under a 4× CPU throttle, alone on the runner (U4.3).
+      # The studio's 3D orbit under a 4× CPU throttle, alone on the runner (U4.3). Still advisory:
+      # U5.8 makes the step counters a gate, not this measurement.
       - name: Studio performance
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: pnpm e2e:perf
 
       - uses: actions/upload-artifact@v4

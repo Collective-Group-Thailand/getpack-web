@@ -34,10 +34,17 @@ test("T4 order 1,000 pcs from the studio, up to payment", async ({ page, journey
   if (await setup.isVisible()) await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  // The task card starts T4 from "the T3 design" — checked and fixed. The heading lands near a fold
+  // on this narrow box, so its one-click fix is applied here, before counting: that is T3's work.
+  const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
+  await steps.getByRole("button", { name: /ตรวจงาน/ }).click();
+  await expect(page.getByRole("heading", { name: "ตรวจงานก่อนสั่งผลิต" })).toBeVisible();
+  const fixes = page.getByRole("button", { name: "ย้ายเข้าเขตปลอดภัย" });
+  for (let left = await fixes.count(); left > 0; left--) await fixes.first().click();
+  await expect(fixes).toHaveCount(0);
   await j.startHere();
   j.expectEvents("studio_add_to_cart", "checkout_started", "order_placed");
 
-  const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
   await j.screen(
     "the studio's order step",
     () => steps.getByRole("button", { name: /สั่งผลิต/ }).click(),

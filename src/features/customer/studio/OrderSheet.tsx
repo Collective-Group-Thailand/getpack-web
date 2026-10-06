@@ -10,7 +10,7 @@ import { activeStage } from "@/features/designer/active-stage";
 import type { EditorChromeContext } from "@/features/designer/components/Editor";
 import type { PrintRule } from "@/features/designer/lib/checks";
 import { useEditor } from "@/features/designer/store/editor";
-import { formatDate, formatTHB } from "@/i18n/format";
+import { formatDate, formatPercent, formatTHB } from "@/i18n/format";
 import { Link, useRouter } from "@/i18n/navigation";
 import { track } from "@/lib/analytics/track";
 import { browserApi } from "@/lib/api/browser";
@@ -312,8 +312,10 @@ export function OrderSheet({
           {chosen.toleranceShortagePct !== null || chosen.toleranceDimensionalMm !== null ? (
             <p className="text-muted text-xs">
               {t("tolerances", {
-                shortage: chosen.toleranceShortagePct ?? "—",
-                overage: chosen.toleranceOveragePct ?? "—",
+                // The API's decimal strings ("5.0000"), trimmed for reading — never computed on.
+                shortage:
+                  chosen.toleranceShortagePct === null ? "—" : formatPercent(chosen.toleranceShortagePct, locale),
+                overage: chosen.toleranceOveragePct === null ? "—" : formatPercent(chosen.toleranceOveragePct, locale),
                 mm: chosen.toleranceDimensionalMm ?? "—",
               })}
             </p>

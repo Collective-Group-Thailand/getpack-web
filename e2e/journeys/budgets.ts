@@ -10,6 +10,10 @@
  * name. A field that is not listed is reported as new, and becomes a failure with the budgets
  * at U5.8 (`STEP_BUDGETS=enforce`). The lists are the fields the walks met on 2026-09-29 (the U5.0
  * baseline); the checkout's contact fields arrive pre-filled from the account.
+ *
+ * `EXCEPTIONS` is scorecard §5: a journey a business decision or an API rule keeps over its budget,
+ * capped at the count it has today. Enforced, a walk fails when it is over budget without one, above
+ * its ceiling, or back within budget while its exception is still listed (so it gets removed).
  */
 
 export type JourneyId = "T1" | "T2" | "T3" | "T4" | "T5" | "T6" | "T7" | "T8" | "T9" | "T10" | "T11" | "T12";
@@ -113,11 +117,59 @@ export const JOURNEYS: Record<JourneyId, JourneyBudget> = {
     journey: "dieline",
     budget: { unit: "steps", max: 3 },
     start: "home page, signed out",
-    requiredFields: [],
+    // The sign-in D-271 asks for on the way (step-counting rule 8).
+    requiredFields: ["เบอร์มือถือ"],
   },
 };
 
 /** The number a walk is compared with, or `null` when the task is not judged by a count. */
 export function budgetMax(budget: Budget): number | null {
   return budget.unit === "lever-found" ? null : budget.max;
+}
+
+/** A journey kept over its budget by a decision or an API rule, until it is reviewed (scorecard §5). */
+export interface BudgetException {
+  /** The count it may not go above: the count it had when the exception was recorded. */
+  ceiling: number;
+  /** Why the frontend cannot bring it within budget, by decision id or API rule. */
+  cause: string;
+  /** Who can change the cause. */
+  owner: string;
+}
+
+export const EXCEPTIONS: Partial<Record<JourneyId, BudgetException>> = {
+  T5: {
+    ceiling: 5,
+    cause: "D-182: the customer must choose the measurement basis before a price (no silent default)",
+    owner: "Pricing owner (D-182)",
+  },
+  T9: {
+    ceiling: 7,
+    cause:
+      "D-082: a carton photo is required with every claim (store.claims.getForm cartonPhotosMin); D-198: the customer chooses the remedy",
+    owner: "CS Lead (D-082 per claim type) · packio-api",
+  },
+  T11: {
+    ceiling: 7,
+    cause: "packio-api: factory steps run strictly in order and a photo is taken only when a step finishes",
+    owner: "Partner Manager · packio-api",
+  },
+  T12: {
+    ceiling: 8,
+    cause:
+      "D-203 / D-271: the free dieline needs a signed-in customer (2 steps); reaching a style from the home page takes 3 screens — a dieline entry without the library is open",
+    owner: "Marketing (D-203) · packio-web (dieline entry)",
+  },
+};
+
+/** How a counted walk stands against its budget and its exception, if any. */
+export type Judgement = "within" | "excepted" | "over" | "above-ceiling" | "stale-exception";
+
+export function judge(id: JourneyId, counted: number | null): Judgement {
+  const max = budgetMax(JOURNEYS[id].budget);
+  const exception = EXCEPTIONS[id];
+  if (max === null || counted === null) return "within";
+  if (counted <= max) return exception ? "stale-exception" : "within";
+  if (!exception) return "over";
+  return counted <= exception.ceiling ? "excepted" : "above-ceiling";
 }

@@ -26,9 +26,20 @@
 import type { Schemas } from "@/lib/api/types";
 
 import { principalOf } from "../support";
+import { UAT_PARTICIPANTS, uatParticipants, uatPersona } from "../uat";
 
 export type CustomerPersona =
-  "returning" | "newcomer" | "buyer" | "artist" | "receiver" | "companyadmin" | "companybuyer" | "founder" | "designer";
+  | "returning"
+  | "newcomer"
+  | "buyer"
+  | "artist"
+  | "receiver"
+  | "companyadmin"
+  | "companybuyer"
+  | "founder"
+  | "designer"
+  /** A scorecard round's participant, P01–P10 (`../uat.ts`; only with `MOCK_DATASET=uat`). */
+  | `uat_p${string}`;
 
 export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0812345678": "returning",
@@ -40,6 +51,7 @@ export const MOCK_CUSTOMER_PHONES: Record<string, CustomerPersona> = {
   "0878901234": "companybuyer",
   "0889012345": "founder",
   "0856789012": "designer",
+  ...Object.fromEntries(uatParticipants().map((participant) => [participant.phone, uatPersona(participant)])),
 };
 
 export const CONSENT_PURPOSES = [
@@ -73,6 +85,25 @@ export interface MockCustomer {
 }
 
 function fresh(persona: CustomerPersona): MockCustomer {
+  const participant = UAT_PARTICIPANTS.findIndex((candidate) => uatPersona(candidate) === persona);
+  if (participant !== -1) {
+    // A participant owns the commerce customer appended for them (`../admin/commerce`), after the twelve fakes.
+    const row = UAT_PARTICIPANTS[participant]!;
+    return {
+      persona,
+      id: `00000000-0000-4000-8000-0000000a${String(participant + 1).padStart(4, "0")}`,
+      displayName: row.name,
+      email: `${row.code.toLowerCase()}.uat@packio.invalid`,
+      phone: row.phone,
+      ownerIndex: 12 + participant,
+      customerType: row.company ? "juristic" : "individual",
+      identities: [{ provider: "phone_otp", linkedAt: "2026-06-01T10:00:00+07:00" }],
+      points: 0,
+      consents: new Map(
+        CONSENT_PURPOSES.map(({ purpose, required }) => [purpose, { granted: required, versionNo: 1 }]),
+      ),
+    };
+  }
   if (persona === "newcomer") {
     return {
       persona,
@@ -136,7 +167,7 @@ function fresh(persona: CustomerPersona): MockCustomer {
       ownerIndex: 9,
     },
   };
-  const account = accounts[persona as Exclude<CustomerPersona, "newcomer">];
+  const account = accounts[persona as Exclude<CustomerPersona, "newcomer" | `uat_p${string}`>];
   return {
     persona,
     id: `00000000-0000-4000-8000-00000000000${account.n}`,
@@ -166,6 +197,9 @@ const customers: Record<CustomerPersona, MockCustomer> = {
   companybuyer: fresh("companybuyer"),
   founder: fresh("founder"),
   designer: fresh("designer"),
+  ...Object.fromEntries(
+    uatParticipants().map((participant) => [uatPersona(participant), fresh(uatPersona(participant))]),
+  ),
 };
 
 /** A persona's customer, for a mock acting on someone else's behalf (a company approver placing a buyer's order). */

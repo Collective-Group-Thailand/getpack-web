@@ -174,6 +174,18 @@ export function ConfiguratorDock({
           </Button>
         </div>
       ) : null}
+      {priced ? (
+        <Button
+          block
+          size="sm"
+          variant="ghost"
+          iconStart="package-check"
+          loading={busy === "sample"}
+          onClick={() => onAction("sample")}
+        >
+          {tActions("requestSample")}
+        </Button>
+      ) : null}
       {lineHref ? (
         <Button block size="sm" variant="ghost" asChild iconStart="chat">
           <a href={lineHref} target="_blank" rel="noopener noreferrer">

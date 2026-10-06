@@ -56,6 +56,10 @@ const ChoicesStep = dynamic(() => import("./ChoicesStep").then((module) => modul
 const LogisticsStep = dynamic(() => import("./LogisticsStep").then((module) => module.LogisticsStep), {
   loading: stepLoading,
 });
+// The sample request (T5) loads only when asked for, so the configurator's script stays in budget.
+const RequestSampleDialog = dynamic(() =>
+  import("@/features/customer/samples/RequestSample").then((module) => module.RequestSampleDialog),
+);
 const AdvisorPanel = dynamic(() => import("./AdvisorPanel").then((module) => module.AdvisorPanel), {
   loading: stepLoading,
 });
@@ -549,6 +553,15 @@ export function Configurator({
         designHref={designHref}
         lineHref={lineHref}
       />
+
+      {actions.sampleFor ? (
+        <RequestSampleDialog
+          quoteId={actions.sampleFor}
+          open
+          onOpenChange={(open) => !open && actions.closeSample()}
+          defaultPostcode={state.postcode}
+        />
+      ) : null}
 
       {signIn.open || signIn.then ? (
         <SignInSheet

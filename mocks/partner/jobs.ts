@@ -23,7 +23,7 @@ import { http, HttpResponse } from "msw";
 
 import type { Schemas } from "@/lib/api/types";
 
-import { orders, type MockOrder } from "../admin/commerce";
+import { isUatCustomer, orders, type MockOrder } from "../admin/commerce";
 import { partnerJobActions } from "../admin/floor-actions";
 import { inspections } from "../admin/governance";
 import { PRODUCT_TYPES } from "../admin/catalog";
@@ -133,6 +133,13 @@ function seed() {
   for (const { order, job } of jobs) {
     const extra = extraOf(job);
     // Released (and accepted) a while back, so their advances have been paid (D-022).
+    if (job.status === "released") {
+      // A scorecard participant's T11 job (`../uat.ts`): released this morning, not yet accepted.
+      extra.releasedAt = bangkokIso(-HOUR * 2);
+      extra.acceptedAt = null;
+      extra.history = [{ at: extra.releasedAt, text: "Packio ส่งงานให้โรงงาน", actor: null }];
+      continue;
+    }
     extra.releasedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7));
     extra.acceptedAt = bangkokIso(-DAY * (job.status === "completed" ? 30 : 7) + HOUR * 3);
     let quantity = Math.round(order.quantity * 1.04);
@@ -154,8 +161,10 @@ function seed() {
     inspections.some((item) => item.job.id === jobId && ["planned", "in_progress", "failed"].includes(item.status));
   const paidUp = (order: MockOrder) =>
     !order.instalments.some((item) => item.requiredBefore === "shipping" && item.status !== "paid");
-  const calm = jobs.filter(({ order, job }) => job.status === "in_progress" && order.urgency === "normal").at(-1);
-  const shippable = jobs.find(({ order, job }) => job.status === "in_progress" && paidUp(order) && !open(job.id));
+  // Never a scorecard participant's order: theirs keep the state their task cards describe.
+  const ours = jobs.filter(({ order }) => !isUatCustomer(order.customer.id));
+  const calm = ours.filter(({ order, job }) => job.status === "in_progress" && order.urgency === "normal").at(-1);
+  const shippable = ours.find(({ order, job }) => job.status === "in_progress" && paidUp(order) && !open(job.id));
   [calm, shippable]
     .filter((item): item is NonNullable<typeof item> => !!item)
     .forEach(({ order, job }, index) => {
