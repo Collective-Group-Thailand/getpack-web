@@ -99,7 +99,12 @@ export async function CategoryView({
       filters: filters.includes(filter)
         ? filters.filter((item) => item !== filter)
         : // "ราคาทันที" and "ขอใบเสนอราคา" exclude each other.
-          [...filters.filter((item) => !(filter === "instant" && item === "rfq") && !(filter === "rfq" && item === "instant")), filter],
+          [
+            ...filters.filter(
+              (item) => !(filter === "instant" && item === "rfq") && !(filter === "rfq" && item === "instant"),
+            ),
+            filter,
+          ],
     });
   const description = t("category.description", {
     types: category.types
@@ -177,7 +182,12 @@ export async function CategoryView({
                 const on = filters.includes(filter);
                 return (
                   <li key={filter}>
-                    <Link href={toggle(filter)} aria-pressed={on} className={chip(on)} scroll={false}>
+                    <Link
+                      href={toggle(filter)}
+                      aria-current={on ? "true" : undefined}
+                      className={chip(on)}
+                      scroll={false}
+                    >
                       {on ? <Icon name="check" size={14} aria-hidden="true" className="me-1" /> : null}
                       {t(`chips.${filter}`, { moq: SMALL_MOQ, days: FAST_LEAD_DAYS })}
                     </Link>
@@ -189,9 +199,11 @@ export async function CategoryView({
               label={t("sort.label")}
               value={sort}
               options={CARD_SORTS.map((value) => ({ value, label: t(`sort.${value}`) }))}
-              hrefFor={Object.fromEntries(
-                CARD_SORTS.map((value) => [value, localised(href({ type: selected?.code, sort: value }))]),
-              ) as Record<CardSort, string>}
+              hrefFor={
+                Object.fromEntries(
+                  CARD_SORTS.map((value) => [value, localised(href({ type: selected?.code, sort: value }))]),
+                ) as Record<CardSort, string>
+              }
             />
           </div>
 
@@ -241,7 +253,6 @@ export async function CategoryView({
               page: (n) => t("pagination.page", { page: n }),
             }}
           />
-
         </div>
       </div>
     </div>
