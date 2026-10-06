@@ -312,8 +312,8 @@
   "shipment": {
     "draft": "ร่างรอบส่ง",
     "ready": "พร้อมส่ง",
-    "pickedUp": "รับของแล้ว",
-    "inTransit": "อยู่ระหว่างขนส่ง",
+    "pickedUp": "ออกจากโรงงานแล้ว",
+    "inTransit": "กำลังส่ง",
     "outForDelivery": "กำลังนำส่ง",
     "delivered": "ส่งถึงแล้ว",
     "failed": "นำส่งไม่สำเร็จ",

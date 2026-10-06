@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { getDefaults, getLaunchpad, getPoints } from "@/features/customer/account/api.server";
 import { LaunchpadPanel } from "@/features/customer/account/Launchpad";
+import { getApprovals, getMyCompany } from "@/features/customer/business/api.server";
 import { DocumentLink } from "@/features/customer/orders/DocumentLink";
 import { latestDocuments } from "@/features/customer/repeat/api.server";
 import { listMyRfqs } from "@/features/customer/rfq/api.server";
@@ -43,6 +44,12 @@ export default async function Page() {
     getDefaults().catch(() => null),
     latestDocuments(5).catch(() => []),
   ]);
+  // A company approver's queue leads (round 2, B2): "nothing to do" was said over an order the
+  // company was waiting on them for.
+  const company = await getMyCompany().catch(() => null);
+  const forMe = company?.can.approveOrders
+    ? ((await getApprovals(company.id, "pending").catch(() => null)) ?? [])
+    : [];
   // Where things stand, by the API's own statuses (U2.F5): nothing is computed from dates here.
   const openRfqs = rfqs.filter((rfq) => ["submitted", "in_review", "need_info", "quoted"].includes(rfq.status)).length;
   const making = active.filter(({ order }) =>
@@ -80,11 +87,26 @@ export default async function Page() {
         </div>
       </section>
 
+      {forMe.length > 0 ? (
+        <Link
+          href="/business/approvals"
+          className="border-warning/40 bg-warning-subtle hover:border-warning flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border p-5"
+        >
+          <span>
+            <span className="block text-lg font-semibold">{t("approvalsForYou", { count: forMe.length })}</span>
+            <span className="text-muted text-sm">
+              {t("approvalsForYouBody", { company: company?.tradeName ?? company?.legalName ?? "" })}
+            </span>
+          </span>
+          <span className="text-primary text-sm font-semibold">{t("approvalsOpen")}</span>
+        </Link>
+      ) : null}
+
       <section aria-labelledby="account-todo">
         <h2 id="account-todo" className="text-lg font-semibold">
           {t("todo")}
         </h2>
-        {todo.length === 0 ? (
+        {todo.length === 0 && forMe.length === 0 ? (
           <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-3">

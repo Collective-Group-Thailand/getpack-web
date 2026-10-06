@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
+import { useJustAdded } from "@/features/customer/cart/cart-events";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/ui/components/Badge";
@@ -74,6 +75,7 @@ export function ConfiguratorDock({
 }: ConfiguratorDockProps) {
   const t = useTranslations("configurator.dock");
   const tActions = useTranslations("configurator.actions");
+  const justAdded = useJustAdded();
   const format = useFormat();
   const step = steps?.find((candidate) => candidate.quantity === state.quantity);
   const priced = step?.instant ? step : null;
@@ -133,9 +135,16 @@ export function ConfiguratorDock({
     : [];
 
   const primary = priced ? (
-    <Button block loading={busy === "cart"} onClick={() => onAction("cart")} iconStart="cart">
-      {tActions("addToCart")}
-    </Button>
+    justAdded ? (
+      // For a few seconds after an add, the same place takes the customer to the cart (round 2, B7).
+      <Button block asChild variant="secondary" iconStart="check">
+        <Link href="/cart">{tActions("goToCart")}</Link>
+      </Button>
+    ) : (
+      <Button block loading={busy === "cart"} onClick={() => onAction("cart")} iconStart="cart">
+        {tActions("addToCart")}
+      </Button>
+    )
   ) : (
     <Button block asChild variant={noPrice || !configurator.instant ? "primary" : "secondary"}>
       <Link href={rfqHref}>{tActions("requestQuote")}</Link>

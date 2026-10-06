@@ -112,7 +112,7 @@ test.describe("Packio for business", () => {
     const approver = await other.newPage();
     await signInAsCustomer(approver, "/business/approvals", PHONES.admin);
     const card = approver.getByRole("article").filter({ hasText: requestNo });
-    await expect(card).toContainText("PO PO-E2E-01");
+    await expect(card).toContainText("PO-E2E-01");
     await expectNoViolations(approver);
     await card.getByRole("button", { name: `อนุมัติ ${requestNo}`, exact: true }).click();
     const dialog = approver.getByRole("alertdialog", { name: `อนุมัติ ${requestNo}?` });
@@ -124,7 +124,7 @@ test.describe("Packio for business", () => {
 
   test("a decided approval says who decided, when, and how many orders it placed", async ({ page }) => {
     await signInAsCustomer(page, "/business/approvals?view=decided", PHONES.admin);
-    const decided = page.getByRole("article").first();
+    const decided = page.getByRole("region", { name: "ประวัติล่าสุด" }).getByRole("listitem").first();
     await expect(decided).toContainText("อนุมัติแล้ว");
     await expect(decided).toContainText(/ตัดสินเมื่อ/);
     await expect(decided).toContainText("2 คำสั่งซื้อ");

@@ -201,6 +201,7 @@ function stock(product: Row): Schemas["StoreStockProductDto"] {
   const attributes = (product.attributes as { attribute: string; valueId: string; valueCode: string }[]) ?? [];
   const num = (value: unknown) => (typeof value === "number" ? value : null);
   return {
+    id: String(product.id),
     campaignBadge: null,
     cacheTags: [`catalog:type:${String(product.productTypeId)}`],
     sku: String(product.sku),

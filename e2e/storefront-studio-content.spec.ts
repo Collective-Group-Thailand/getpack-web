@@ -56,7 +56,6 @@ test.describe.configure({ mode: "serial" });
 
 test("a Packio template re-flows onto the box, then takes my brand", async ({ page }) => {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
 
@@ -86,7 +85,6 @@ test("a Packio template re-flows onto the box, then takes my brand", async ({ pa
 
 test("Packio elements, a validated barcode, a nutrition block, a finish layer and a gradient", async ({ page }) => {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
 
@@ -144,7 +142,6 @@ test("Packio elements, a validated barcode, a nutrition block, a finish layer an
 test("the company's brand kit: the Company Admin keeps it, one click restyles the template", async ({ page }) => {
   // The mock's `companyadmin` persona (storefront-business.spec's Company Admin).
   await signInAsCustomer(page, BOX, "0867890123");
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
 

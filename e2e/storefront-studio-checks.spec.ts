@@ -29,7 +29,6 @@ async function expectNoViolations(page: Page) {
 
 test("a finding fixed in one click, a warning accepted with the version, and the soft proof", async ({ page }) => {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   const id = STUDIO.exec(page.url())![1]!;
 

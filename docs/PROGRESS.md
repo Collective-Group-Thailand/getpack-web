@@ -53,6 +53,38 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX round 2 — Phase 0: blocking bugs B1–B14 and round-1 leftovers — 2026-10-06
+
+Branch `feat/ux-r2-p0` (both repos). Spec: the audit doc's "รอบ 2" table; boards from the Claude Design canvas (Checkout, CompanyApprovals, PartnerQc, StudioEditor). packio-api release **`v0.42.0`** adopted (contract 0.41.0 → 0.42.0, additive).
+
+| Bug | Root cause found | Fix |
+|---|---|---|
+| B1 checkout | The payment call sent `"<key>:pay"` (the API takes a UUID only) after the order existed; the error left the customer on an emptied checkout. The mock accepted any key. | A fresh UUID v4 per call (`newIdempotencyKey`, with a `getRandomValues` fallback outside a secure context); a failed payment start goes to the order (`?payment=not_started`, banner + pay button). Mock now refuses a non-UUID key; e2e test added. |
+| B2 B2B | The company pages existed at `/business` but nothing in the account led there; the notification printed `{{payload.policyKey}}` and had no link. | Account nav "บริษัทของฉัน" (approvals with a count, company, credit, members, settings — by `CompanyDto.can`); overview card "รออนุมัติจากคุณ N"; `/account/company` → `/business`; approvals to the board (one note, อนุมัติ / ส่งกลับให้แก้ไข, tabs, `?request=` focus); buyer's order shows "รอผู้อนุมัติของบริษัท". API: inbox link `/business/approvals?request=` and policy names rendered in place of keys. |
+| B3 partner shipping | The ship plan returns jobs already fully shipped; the page dropped their destinations but kept the cards — no button anywhere. | Fully shipped jobs hidden; "สร้างการจัดส่ง" opens a sheet (quantity, cartons, weight, own truck / Packio booking) → create + pack (labels) [+ request carrier]; a half-done attempt finishes instead of duplicating. |
+| B4 studio session | **Refresh-token race**: parallel BFF calls (the studio fires many) each met the expired token and refreshed with the same single-use refresh token; the API revoked the family as theft. Reproduced: 1×200 + 5×401 and signed out; fixed: 6×200, still signed in. | `refreshSession` single-flight on `globalThis` (proxy and BFF share it) with a 30 s reuse window. Step 5 copy follows the session again. |
+| B5 stock products | "สั่งซื้อสินค้านี้" linked to `/configure/<sku>` (no configurator for stock); the store DTO had no id to price with. | Quantity + live price + add to cart on the product page (`standard_product`, `stockProductId`); API `StoreStockProductDto.id`. |
+| B6 studio | (a) the sample link only changed the query — the same-route studio kept its state; (b) no product without `?product=` → no price, local-only design; (c) the first save ran before the configurator → version without box fields; (d) 3D: first artwork draw found no stage and never retried; then three.js kept the map-less shader after the texture arrived. | Studio keyed by its seed; `applySeed` starts with the box when a later step is asked; the page resolves the style's product (instant first, by type); a re-save when the configurator lands; artwork draw retries; the material is keyed on its map. |
+| B7 | — | Header cart badge (cart read / guest cart), "ไปที่ตะกร้า" on the add button for 8 s, toast kept. |
+| B8 | `summary` is null in UAT master data; the UI fell back to the key. | Purpose names and one-line descriptions per known key (summary wins when present). |
+| B9 | — | Account icon menu (บัญชีของฉัน · คำสั่งซื้อ · ออกจากระบบ) and sign-out at the foot of the account nav. |
+| B10 | React resets a form after its action. | Email controlled, password cleared, focus on password. |
+| B11 | `mismatch` is one code for any differing field. | Equal amounts → "ยอดตรง — แต่เวลาโอนหรือบัญชีปลายทางไม่ตรง"; image placeholder on load error + "เปิดไฟล์สลิป"; no UUID prefix as the code. |
+| B12 | — | "23 ชม. 59 นาที (หมดอายุ …)" while hours remain, `m:ss` in the last hour, `ProgressRing` (new in `src/ui`). |
+| B13 | (earlier slice) | Unlabelled timeline types hidden; labels for payment, preflight, production, documents, claims. |
+| B14 | sonner pauses while the pointer rests on a toast. | "ออกจากโรงงานแล้ว / กำลังส่ง"; toasts get a close button, 5 s. |
+| Round 1 | — | Partner job spec as readable lines (`specLines`, no JSON/ids); POD form only once the truck has left (`ready` excluded). Admin 404, quotation refs, approvals detail, `/styles` were closed in UX steps 1–6a. |
+
+**Also done early (Phase 1 item):** the account nav is grouped (คำสั่งซื้อ · งานของฉัน · บริษัทของฉัน · บัญชี) and folds into an accordion on a phone.
+
+**Contract requests:** `store.order-group-company-approval` (approver names for the buyer), `store.company-approval-summary` (what is being approved).
+
+**Tests:** unit 1108+ green (new: single-flight refresh, `timeLeft`, `specLines`); lint and typecheck clean; e2e — 16 suites, 155 passed, then the touched suites again green (`storefront-account` "order's page" fails only after other suites' mock state, green alone). Fixed on the way: the account menu's early return unmounted the sign-in sheet before its consent step; the header cart count shared the cart page's query key and showed it an older cart.
+
+**UAT on the integrated stack (API :3000 `nest --watch`, web :3001):** C01 configure → add (toast, badge 1, "ไปที่ตะกร้า") → checkout → `/checkout/pay/{id}` with "QR ใช้ได้อีก 23 ชม. 59 นาที" and the ring; C11 sees "บริษัทของฉัน · คำขออนุมัติ 1", the overview card, approves UATOG-2610-00011 with a note (toast, history with the note); C11's notification reads "คำขออนุมัติ คำสั่งซื้อของบริษัท รอการตัดสินใจของคุณ" and links to the request; factory-shipping: a wrong password keeps the email (B10), the ship plan no longer lists the two fully shipped jobs (B3); the refresh race reproduced and gone (B4). **Not walkable on UAT:** a new slip — the stack's storage is fake (`fake-s3.invalid`), so the browser cannot upload one, and no slip waited for Finance; creating a shipment — no job had pieces left to ship; QC inspection is Phase 1.
+
+**Known gaps:** the mock API does not price stock products (dev:mock shows "คำนวณราคาไม่สำเร็จ" on a stock product page; the real API does). UAT folding-carton products are quotation-only, so a tuck-end sample shows "ขอใบเสนอราคา" — correct for the data.
+
 ## UX audit Flow 2–3 — steps 8–10: logistics, CS calculator, studio start, content and master data — 2026-10-06
 
 Branches `feat/ux-8-logistics` → `feat/ux-9-cs-studio` → `feat/ux-10-content` (stacked; one full e2e run over the three).

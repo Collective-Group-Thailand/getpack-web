@@ -17,7 +17,9 @@ import { Button } from "@/ui/components/Button";
 import { CameraCapture, type CapturedPhoto } from "@/ui/components/CameraCapture";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput, Textarea } from "@/ui/components/Input";
+import { RadioCards } from "@/ui/components/RadioCards";
 import { Select } from "@/ui/components/Select";
+import { Sheet } from "@/ui/components/Sheet";
 import { SignaturePad } from "@/ui/components/SignaturePad";
 import { toast } from "@/ui/components/Toast";
 
@@ -34,27 +36,40 @@ function useIntentKey() {
 
 /* ------------------------------------------------------------------------ new shipment */
 
+type Carrier = "fleet" | "packio";
+
 /**
- * A draft trip to one destination of a finished job (D-110): the quantity it takes — all that is
- * left, or part of it for a split — its cartons, which become its labels when it is packed, and
- * its weight.
+ * "สร้างการจัดส่ง" on a finished job's destination (D-110, round 2 B3): a sheet with the trip —
+ * the quantity it takes (all that is left, or part of it for a split), its cartons and weight, and
+ * who drives it. Creating it also packs it, so the carton labels exist when the sheet closes
+ * (`partner.shipments.create` → `markReady`); "ให้ Packio จองขนส่ง" then asks for the fallback
+ * carrier (`requestCarrier`, D-013 / D-114). Each call keeps its own key across a retry, so a
+ * second press after a half-done attempt never makes a second trip.
  */
 export function CreateShipment({
   jobId,
+  jobNo,
   destination,
 }: {
   jobId: string;
-  destination: { id: string; recipientName: string; left: number };
+  jobNo: string;
+  destination: { id: string; recipientName: string; place: string; left: number };
 }) {
   const t = useTranslations("partnerShip.create");
   const format = useFormat();
   const router = useRouter();
-  const key = useIntentKey();
+  const createKey = useIntentKey();
+  const readyKey = useIntentKey();
+  const carrierKey = useIntentKey();
+  const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(String(destination.left));
   const [cartons, setCartons] = useState("1");
   const [weight, setWeight] = useState("");
+  const [carrier, setCarrier] = useState<Carrier>("fleet");
   const [error, setError] = useState<{ quantity?: string; cartons?: string; weight?: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  /** The trip made by an earlier attempt whose later steps failed — finished, never made again. */
+  const [made, setMade] = useState<{ id: string; shipmentNo: string; ready: boolean } | null>(null);
 
   async function create(event: React.FormEvent) {
     event.preventDefault();
@@ -62,73 +77,145 @@ export function CreateShipment({
     const boxes = Number(cartons);
     // The scale reads kilograms; the contract takes whole grams (a weight, not money).
     const grams = Math.round(Number(weight) * 1000);
-    if (!Number.isInteger(qty) || qty < 1 || qty > destination.left)
-      return setError({ quantity: t("quantityRange", { max: format.number(destination.left) }) });
-    if (!Number.isInteger(boxes) || boxes < 1) return setError({ cartons: t("cartonsRange") });
-    if (!Number.isFinite(grams) || grams < 1) return setError({ weight: t("weightRequired") });
+    if (!made) {
+      if (!Number.isInteger(qty) || qty < 1 || qty > destination.left)
+        return setError({ quantity: t("quantityRange", { max: format.number(destination.left) }) });
+      if (!Number.isInteger(boxes) || boxes < 1) return setError({ cartons: t("cartonsRange") });
+      if (!Number.isFinite(grams) || grams < 1) return setError({ weight: t("weightRequired") });
+    }
     setError(null);
     setBusy(true);
+    const api = browserApi();
+    let trip = made;
     try {
-      const created = (
-        await browserApi().POST("/v1/partner/shipments", {
-          params: { header: { "Idempotency-Key": key.get() } },
-          body: {
-            items: [{ jobId, destinationId: destination.id, quantity: qty }],
-            cartonsCount: boxes,
-            weightG: grams,
-          },
-        })
-      ).data!;
-      key.done();
-      toast.success(t("created", { no: created.shipmentNo }));
-      router.push(`/ship/${created.id}`);
+      if (!trip) {
+        const created = (
+          await api.POST("/v1/partner/shipments", {
+            params: { header: { "Idempotency-Key": createKey.get() } },
+            body: {
+              items: [{ jobId, destinationId: destination.id, quantity: qty }],
+              cartonsCount: boxes,
+              weightG: grams,
+            },
+          })
+        ).data!;
+        createKey.done();
+        trip = { id: created.id, shipmentNo: created.shipmentNo, ready: false };
+      }
+      if (!trip.ready) {
+        await api.POST("/v1/partner/shipments/{shipmentId}/actions/ready", {
+          params: { path: { shipmentId: trip.id }, header: { "Idempotency-Key": readyKey.get() } },
+        });
+        readyKey.done();
+        trip = { ...trip, ready: true };
+      }
+      if (carrier === "packio") {
+        await api.POST("/v1/partner/shipments/{shipmentId}/actions/request-carrier", {
+          params: { path: { shipmentId: trip.id }, header: { "Idempotency-Key": carrierKey.get() } },
+          body: { reason: t("packioReason") },
+        });
+        carrierKey.done();
+      }
+      setMade(null);
+      toast.success(t("created", { no: trip.shipmentNo }));
+      setOpen(false);
+      router.push(`/ship/${trip.id}`);
     } catch (failure) {
-      setError({
-        quantity:
-          isApiError(failure) && failure.errors[0] ? failure.errors[0].message : problemMessage(failure, t("failed")),
-      });
+      const message =
+        isApiError(failure) && failure.errors[0] ? failure.errors[0].message : problemMessage(failure, t("failed"));
+      // A trip that exists is not lost: its fields are locked and the button finishes what is
+      // left (pack, carrier) instead of making another.
+      setMade(trip);
+      if (trip) toast.error(t("partly", { no: trip.shipmentNo, reason: message }));
+      else setError({ quantity: message });
     } finally {
       setBusy(false);
     }
   }
 
+  const locked = Boolean(made) || busy;
+  const labels = Number(cartons);
+
   return (
-    <form onSubmit={(event) => void create(event)} className="flex flex-col gap-3" noValidate>
-      <div className="grid grid-cols-3 gap-2">
-        <Field label={t("quantity")} error={error?.quantity}>
-          <NumberInput
-            inputSize="lg"
-            inputMode="numeric"
-            min={1}
-            max={destination.left}
-            value={quantity}
-            onChange={(event) => setQuantity(event.target.value)}
-          />
-        </Field>
-        <Field label={t("cartons")} error={error?.cartons}>
-          <NumberInput
-            inputSize="lg"
-            inputMode="numeric"
-            min={1}
-            value={cartons}
-            onChange={(event) => setCartons(event.target.value)}
-          />
-        </Field>
-        <Field label={t("weight")} error={error?.weight}>
-          <NumberInput
-            inputSize="lg"
-            inputMode="decimal"
-            min={0}
-            unit={t("kg")}
-            value={weight}
-            onChange={(event) => setWeight(event.target.value)}
-          />
-        </Field>
-      </div>
-      <Button type="submit" size="xl" iconStart="package" loading={busy}>
-        {t("action", { name: destination.recipientName })}
+    <>
+      <Button size="lg" iconStart="truck" className="w-full" onClick={() => setOpen(true)}>
+        {t("open")}
+        <span className="sr-only"> {destination.recipientName}</span>
       </Button>
-    </form>
+      <Sheet
+        open={open}
+        onOpenChange={(next) => !busy && setOpen(next)}
+        title={t("title")}
+        description={t("subtitle", { jobNo, left: format.number(destination.left) })}
+        closeLabel={t("cancel")}
+      >
+        <form id={`ship-${jobId}-${destination.id}`} onSubmit={(event) => void create(event)} noValidate>
+          <div className="flex flex-col gap-5">
+            <div className="border-border bg-surface-subtle rounded-xl border p-3">
+              <p className="font-medium">{destination.recipientName}</p>
+              <p className="text-muted text-sm">{destination.place}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <Field label={t("quantity")} error={error?.quantity}>
+                <NumberInput
+                  inputSize="lg"
+                  inputMode="numeric"
+                  min={1}
+                  max={destination.left}
+                  disabled={locked}
+                  value={quantity}
+                  onChange={(event) => setQuantity(event.target.value)}
+                />
+              </Field>
+              <Field label={t("cartons")} error={error?.cartons}>
+                <NumberInput
+                  inputSize="lg"
+                  inputMode="numeric"
+                  min={1}
+                  disabled={locked}
+                  value={cartons}
+                  onChange={(event) => setCartons(event.target.value)}
+                />
+              </Field>
+              <Field label={t("weight")} error={error?.weight}>
+                <NumberInput
+                  inputSize="lg"
+                  inputMode="decimal"
+                  min={0}
+                  unit={t("kg")}
+                  disabled={locked}
+                  value={weight}
+                  onChange={(event) => setWeight(event.target.value)}
+                />
+              </Field>
+            </div>
+            <p className="text-muted -mt-3 text-sm">{t("splitHint")}</p>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-2 font-medium">{t("carrier")}</legend>
+              <RadioCards<Carrier>
+                columns={1}
+                value={carrier}
+                onValueChange={setCarrier}
+                options={[
+                  { value: "fleet", label: t("fleet"), description: t("fleetHint") },
+                  { value: "packio", label: t("packio"), description: t("packioHint") },
+                ]}
+              />
+            </fieldset>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button type="button" variant="secondary" size="lg" disabled={busy} onClick={() => setOpen(false)}>
+                {t("cancel")}
+              </Button>
+              <Button type="submit" size="lg" iconStart="package" loading={busy}>
+                {made
+                  ? t("finish", { no: made.shipmentNo })
+                  : t("submit", { count: Number.isInteger(labels) && labels > 0 ? labels : 1 })}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </Sheet>
+    </>
   );
 }
 

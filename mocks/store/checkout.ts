@@ -104,6 +104,8 @@ function split(total: number, shares: number[]): number[] {
 }
 
 /** A buyer's company, as the business mock (F3 3.7) reports it to checkout. */
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export interface CheckoutCompany {
   companyId: string;
   /** The tax-invoice branch: the company's default (head office). */
@@ -1173,6 +1175,10 @@ export const storeCheckoutHandlers = [
     if (!customer) return unauthenticated();
     if (!request.headers.get("idempotency-key"))
       return problem(400, "idempotency.key_required", "ต้องส่ง Idempotency-Key");
+    // packio-api takes a UUID and nothing else (api-conventions §3); the mock refused nothing and
+    // let the storefront's "<key>:pay" through to UAT (round 2, B1).
+    if (!UUID.test(request.headers.get("idempotency-key")!))
+      return problem(400, "validation.failed", "Idempotency-Key ต้องเป็น uuid");
     const body = await bodyOf<Schemas["InitiatePaymentDto"]>(request);
     const seeded = orders.find((order) => order.groupId === params.groupId);
     const group = groups.get(String(params.groupId)) ?? (seeded ? groupForOrder(seeded) : undefined);

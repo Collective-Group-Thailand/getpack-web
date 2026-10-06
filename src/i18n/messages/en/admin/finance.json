@@ -37,7 +37,8 @@
       "duplicate": "Reference already used elsewhere",
       "unreadable": "Slip could not be read",
       "provider_error": "Slip checker unavailable",
-      "none": "Not checked automatically"
+      "none": "Not checked automatically",
+      "mismatchOther": "Amount matches — the time or receiving account does not; check the slip"
     },
     "accountWithBank": "{bank} · xxx{last4}",
     "accountLast4": "xxx{last4}",
@@ -121,7 +122,10 @@
       "confirmRejectBody": "The slip for {code} will not count as payment; the customer is asked for a new one.",
       "approved": "Slip for {code} approved",
       "rejected": "Slip for {code} rejected",
-      "failed": "Could not record the review"
+      "failed": "Could not record the review",
+      "imageUnavailable": "The slip cannot be shown here",
+      "openFile": "Open the slip file",
+      "noGroup": "Slip"
     }
   },
   "payments": {

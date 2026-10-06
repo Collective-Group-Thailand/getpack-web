@@ -1,39 +1,66 @@
 import { pick } from "@/features/customer/catalog/localize";
 import type { Schemas } from "@/lib/api/types";
 
-/** The timeline types the storefront has words for (`myOrders.timelineTypes`). */
-const KNOWN = new Set([
-  "order.placed",
-  "payment.received",
-  "artwork.submitted",
-  "proof.sent",
-  "proof.approved",
-  "proof.changes_requested",
-  "shipment.picked_up",
-  "shipment.in_transit",
-  "shipment.out_for_delivery",
-  "shipment.delivered",
-  "order.receipt_confirmed",
-  "order.cancelled",
-]);
+type Translate = (key: string, values?: Record<string, string>) => string;
+type Params = Record<string, unknown>;
+
+function text(value: unknown): string {
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
+
+/** The timeline types the storefront has words for, each with the params its sentence uses. */
+const LABELLED: Record<string, (params: Params) => Record<string, string>> = {
+  "order.placed": () => ({}),
+  "payment.initiated": () => ({}),
+  "payment.received": () => ({}),
+  "instalment.due": (p) => ({ seq: text(p["seq"]) }),
+  "artwork.submitted": () => ({}),
+  "artwork.preflight_completed": () => ({}),
+  "artwork.accepted_for_proof": () => ({}),
+  "proof.sent": () => ({}),
+  "proof.approved": () => ({}),
+  "proof.changes_requested": () => ({}),
+  "production.queued": () => ({}),
+  "shipment.ready": () => ({}),
+  "shipment.picked_up": () => ({}),
+  "shipment.in_transit": () => ({}),
+  "shipment.out_for_delivery": () => ({}),
+  "shipment.delivered": () => ({}),
+  "delivery.reconciled": () => ({}),
+  "customer_document.issued": (p) => ({ number: text(p["docNumber"]) }),
+  "claim.submitted": (p) => ({ claimNo: text(p["claimNo"]) }),
+  "claim.under_review": (p) => ({ claimNo: text(p["claimNo"]) }),
+  "order.receipt_confirmed": () => ({}),
+  "order.cancelled": () => ({}),
+};
+
+/** `CustomerDocumentType`: invoice, tax invoice / receipt, receipt, credit note, debit note. */
+const DOCUMENT_KINDS = new Set<string>(["iv", "tr", "rc", "cn", "dn"]);
 
 /**
- * A timeline entry's title (`store.timeline.get`): the API sends what happened (`type`) and an i18n
- * key with its params for the client to render. A production milestone names itself (its
- * `labelTh`/`labelEn` params); the others are the storefront's words per type.
+ * A timeline entry's title (`store.timeline.get`), or `null` when the entry is left out.
  *
- * CONTRACT-GAP store.orders — the contract does not list the keys it sends, so an entry the
- * storefront has no words for says "updated" rather than showing a key.
+ * The API sends what happened (`type`) with its params; a production milestone names itself
+ * (`labelTh`/`labelEn`), the others are the storefront's words per type. Bookkeeping the customer
+ * sees elsewhere — the schedule being drawn up, the group mirroring its order, a status change the
+ * entries around it explain, an instalment marked paid beside "payment received" — and any type the
+ * storefront has no words for are left out, never a bare "order updated" repeated at one time
+ * (round 2, B13).
+ *
+ * CONTRACT-GAP store.orders — the contract does not list the types it sends.
  */
-export function timelineTitle(
-  t: (key: string, values?: Record<string, string>) => string,
-  locale: string,
-  entry: Schemas["TimelineEntryDto"],
-): string {
-  const params = entry.params as { labelTh?: unknown; labelEn?: unknown };
-  if (entry.type === "production.milestone_reached" && typeof params.labelTh === "string")
-    return t("timelineTypes.production_milestone", {
-      stage: pick(locale, params.labelTh, typeof params.labelEn === "string" ? params.labelEn : null),
-    });
-  return KNOWN.has(entry.type) ? t(`timelineTypes.${entry.type.replace(".", "_")}`) : t("timelineTypes.other");
+export function timelineTitle(t: Translate, locale: string, entry: Schemas["TimelineEntryDto"]): string | null {
+  const params = (entry.params ?? {}) as Params;
+  if (entry.type === "production.milestone_reached") {
+    if (typeof params["labelTh"] !== "string") return null;
+    const labelEn = typeof params["labelEn"] === "string" ? params["labelEn"] : null;
+    return t("timelineTypes.production_milestone", { stage: pick(locale, params["labelTh"], labelEn) });
+  }
+  const values = LABELLED[entry.type];
+  if (!values) return null;
+  if (entry.type === "customer_document.issued") {
+    const kind = text(params["docType"]);
+    return t(`timelineTypes.document.${DOCUMENT_KINDS.has(kind) ? kind : "other"}`, values(params));
+  }
+  return t(`timelineTypes.${entry.type.replace(".", "_")}`, values(params));
 }

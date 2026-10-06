@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { AccountButton } from "@/features/customer/auth/AccountButton";
+import { CartButton } from "@/features/customer/cart/CartButton";
 import { readAccessToken } from "@/lib/auth/session";
 
 import { getCatalogueTree } from "@/features/customer/catalog/api.server";
@@ -187,9 +188,7 @@ export async function SiteHeader() {
               <Link href="/help/chat" />
             </IconButton>
 
-            <IconButton asChild name="cart" variant="ghost" size="sm" label={t("nav.cart")}>
-              <Link href="/cart" />
-            </IconButton>
+            <CartButton signedIn={signedIn} label={t("nav.cart")} />
 
             <DeferredAssistant signedIn={signedIn} />
             {/* A guest has no notifications; the bell (a Popover and a query) is for a session. */}
