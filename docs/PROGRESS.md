@@ -53,6 +53,19 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit Flow 1 — step 3: sign-in, customer and staff — 2026-10-06
+
+Branch `feat/ux-3-sign-in-v2`, to the mockup's "Sign in — เบอร์มือถือ" / "ยืนยัน OTP" artboards.
+
+- **`/sign-in` is a page of its own** (no navbar/footer): `AuthSplitLayout` — brand panel (headline, three points, the dieline note; one hue, soft wash, dot grid) and the form in a 440 px column; below `md` the form alone. Back-home and "ยังไม่มีบัญชี?" over the form's corners.
+- **`SignInFlow`** (shared by the page and the overlay): phone → OTP → consent/profile. Phone: flag + `+66`, grouped as typed (`081 234 5678`), `inputmode=numeric`, `autocomplete=tel-national`; accepts `08x…` or `8x…` (`isThaiMobile`); the button opens at a whole number. OTP: **six 64 px boxes drawn over one real input** (paste, SMS autofill and screen readers behave as before — "better than the mockup": split inputs break paste), verifies on the last digit, the number with "แก้ไข", reference `PK-…` from the challenge, a live expiry countdown (`m:ss`), resend after the API's cool-down, errors **inline under the field** with the API's "เหลือโอกาสอีก n ครั้ง", and a reference code only for system failures. Code length from the challenge (`codeLength`), 6 as the fallback.
+- **Over a page:** a centred 480 px dialog from `md`, the bottom sheet below (`SignInSheet`).
+- **Staff `/login`:** the same layout with the dark panel, show/hide password, "ลืมรหัสผ่าน?" explaining that the company's Superadmin resets it (**contract request `auth.staff.password-reset`**), and a link to the partner factories' sign-in on the partner host.
+- **Not done, on purpose:** Google/Apple/LINE logos and LINE green — CLAUDE.md forbids third-party assets; the buttons name the provider in words (as the home redesign decided for LINE).
+- **Fix carried here (findings slice):** a manual save pressed during a guest design's autosave now resolves after the queued save that carries the change, so "บันทึกแล้ว" is never shown before the new name is stored (the guest-import e2e caught it).
+
+**Tests:** unit — PhoneInput grouping and `isThaiMobile`, OTP boxes over one input with paste and axe. e2e — sign-in suites 93/94; the one failure (`a saved quotation reopens`) needs a quotation saved by an earlier test and passes in full runs.
+
 ## UX audit — the user's findings from real actions — 2026-10-06
 
 Branch `feat/ux-6a-user-findings`. Raised by the user mid-run ("สิ่งที่พบเพิ่มจากการกด action จริง"); taken ahead of the audit's steps 6, 9 and 10, where they belong.

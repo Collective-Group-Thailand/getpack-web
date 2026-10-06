@@ -103,6 +103,7 @@ export function usePersistence(config: PersistenceConfig) {
   const boxRef = useRef<BoxFields | null>(config.initialBox ?? null);
   const inFlight = useRef<Promise<boolean> | null>(null);
   const again = useRef<"autosave" | "manual" | null>(null);
+  const followUp = useRef<{ promise: Promise<boolean>; resolve: (ok: boolean) => void } | null>(null);
   const configRef = useRef(config);
   useEffect(() => {
     configRef.current = config;
@@ -119,7 +120,13 @@ export function usePersistence(config: PersistenceConfig) {
       if (!cfg.editable) return false;
       if (inFlight.current) {
         again.current = kind === "manual" || again.current === "manual" ? "manual" : "autosave";
-        return inFlight.current;
+        // Resolve when the queued save has run, not the one in flight: a "บันทึก" pressed during an
+        // autosave must not report saved before the change it carries is stored.
+        if (!followUp.current) {
+          let resolve!: (ok: boolean) => void;
+          followUp.current = { promise: new Promise<boolean>((done) => (resolve = done)), resolve };
+        }
+        return followUp.current.promise;
       }
       const snapshot = useEditor.getState();
       if (!snapshot.spec) return false;
@@ -249,7 +256,12 @@ export function usePersistence(config: PersistenceConfig) {
       const ok = await run;
       const next = again.current;
       again.current = null;
-      if (next && useEditor.getState().dirty) void rerun.current?.(next);
+      const waiting = followUp.current;
+      followUp.current = null;
+      if (next && useEditor.getState().dirty) {
+        const queued = rerun.current?.(next) ?? Promise.resolve(false);
+        if (waiting) void queued.then(waiting.resolve);
+      } else waiting?.resolve(ok);
       return ok;
     },
     [setState],
