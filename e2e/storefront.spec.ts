@@ -49,7 +49,8 @@ test.describe("the catalogue", () => {
     // A draft in the back office is not in the shop.
     await expect(page.getByRole("link", { name: "กล่องถาด" })).toHaveCount(0);
 
-    await page.getByRole("navigation", { name: "หมวดสินค้า" }).getByRole("link", { name: "กล่องกระดาษลูกฟูก" }).click();
+    // Category tiles, instant-price categories first (UX audit, /products).
+    await page.getByRole("region", { name: "หมวดสินค้า" }).getByRole("link", { name: /^กล่องกระดาษลูกฟูก/ }).click();
     await expect(page).toHaveURL(`${HOSTS.customer}/products/corrugated`);
     await expect(page.getByRole("heading", { level: 1, name: "กล่องกระดาษลูกฟูก" })).toBeVisible();
 
@@ -60,7 +61,13 @@ test.describe("the catalogue", () => {
   test("a product page shows its price with its basis, its sizes and FAQs, and one next step", async ({ page }) => {
     await page.goto(`${HOSTS.customer}/products/tuck-end-box`);
 
-    await expect(page.getByText(/^เริ่มต้น ฿\d+\.\d{2} \/ ชิ้น$/)).toBeVisible();
+    await expect(
+      page
+        .locator("main")
+        .getByText(/^฿\d+\.\d{2}$/)
+        .first(),
+    ).toBeVisible();
+    await expect(page.locator("main")).toContainText(/เริ่มต้น\s*฿\d+\.\d{2}\s*\/ ชิ้น/);
     await expect(page.getByText(/ที่ 1,000 ชิ้น · รวม VAT/)).toBeVisible();
     await expect(page.getByText("ผลิต 7–10 วันทำการ")).toBeVisible();
     await expect(page.getByRole("table", { name: /ขนาดมาตรฐาน/ }).getByRole("row")).toHaveCount(4);
@@ -196,7 +203,9 @@ test.describe("signing in", () => {
     await expect(page).toHaveURL(`${HOSTS.customer}/en/account/orders`);
   });
 
-  test("the header's sign-in link opens sign-in over the page; a returning customer goes straight on", async ({ page }) => {
+  test("the header's sign-in link opens sign-in over the page; a returning customer goes straight on", async ({
+    page,
+  }) => {
     await gotoHydrated(page, `${HOSTS.customer}/products`);
     await page.getByRole("banner").getByRole("link", { name: "เข้าสู่ระบบ" }).click();
     const sheet = await signIn(page, MOCK_OTP.phone);
