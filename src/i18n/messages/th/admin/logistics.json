@@ -29,7 +29,8 @@
     },
     "paymentHold": "รอชำระก่อนส่ง",
     "carrierRequested": "โรงงานขอขนส่งสำรอง",
-    "splitFrom": "แยกจาก {no}"
+    "splitFrom": "แยกจาก {no}",
+    "reviewPod": "ตรวจหลักฐาน"
   },
   "shipment": {
     "pageTitle": "การจัดส่ง",
@@ -186,7 +187,10 @@
     "filters": {
       "type": "ประเภท",
       "origin": "ที่มา"
-    }
+    },
+    "open": "เปิดอยู่",
+    "waitingCustomer": "รอลูกค้า",
+    "waitingFactory": "รอโรงงาน"
   },
   "claim": {
     "pageTitle": "เคลม",
