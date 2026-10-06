@@ -17,6 +17,7 @@ import {
   type FilterKey,
 } from "@/features/customer/styles/query";
 import { StyleResults } from "@/features/customer/styles/StyleResults";
+import { StudioStyleLibrary } from "@/features/customer/styles/StudioStyleLibrary";
 import { StyleCardActions } from "@/features/customer/styles/StyleCardActions";
 import { cardWords, StyleCardFace } from "@/features/customer/styles/StyleCardFace";
 import { getFormat } from "@/features/shared/format/server";
@@ -193,7 +194,8 @@ export default async function StylesPage({
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-muted text-sm" aria-live="polite">
-              {t("list.results", { count: total })}
+              {/* With nothing published yet the studio's own styles stand in, so "0 แบบ" would be wrong. */}
+              {list.data.length === 0 && !filtered ? null : t("list.results", { count: total })}
               {filtered ? (
                 <>
                   {" "}
@@ -222,7 +224,9 @@ export default async function StylesPage({
             </nav>
           </div>
 
-          {list.data.length === 0 ? (
+          {list.data.length === 0 && !filtered ? (
+            <StudioStyleLibrary />
+          ) : list.data.length === 0 ? (
             <EmptyState
               icon="search"
               title={t("list.emptyTitle")}

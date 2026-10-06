@@ -98,35 +98,44 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
 
   const step = currentStep(approval);
   const blocker = decisionBlocker(approval, actor.id);
+  // Who can decide now: the API still enforces it; this only says so instead of hiding the buttons
+  // without a word (UX audit, approvals: "role ไม่มีสิทธิ์ให้แสดง รอผู้อนุมัติ").
   const mine = approval.requester.id === actor.id;
+  const waitingOnOthers = approval.status === "pending" && !blocker && !mine && !canAct;
   const policyLabel = t.has(`policies.${approval.policy}`) ? t(`policies.${approval.policy}`) : approval.policy;
   const summary = `${policyLabel}${approval.amount ? ` · ${format.thb(approval.amount)}` : ""}`;
 
-  const payloadItems = Object.entries(approval.payload as Record<string, unknown>).map(([key, value]) => {
-    const kind = PAYLOAD_KINDS[key];
-    const text =
-      kind === "money" && typeof value === "string"
-        ? format.thb(value)
-        : kind === "percent" && typeof value === "string"
-          ? format.percent(value)
-          : kind === "number" && typeof value === "number"
-            ? format.number(value)
-            : typeof value === "string" || typeof value === "number"
-              ? String(value)
-              : null;
-    return {
-      term: t.has(`fields.${key}`) ? t(`fields.${key}`) : key,
-      description:
-        text === null ? (
-          <JsonView value={value} label={key} />
-        ) : kind === "code" ? (
-          <span className="font-mono">{text}</span>
-        ) : (
-          text
-        ),
-      wide: key === "reason" || text === null,
-    };
-  });
+  // A snapshot reads as labelled facts: an empty value says nothing, so it is left out (UX audit:
+  // "ซ่อน null"), and a key without a label is humanised rather than shown as raw JSON.
+  const payloadItems = Object.entries(approval.payload as Record<string, unknown>)
+    .filter(([, value]) => value !== null && value !== undefined && value !== "")
+    // An internal id (a UUID) means nothing to a person; the snapshot's names and codes carry it.
+    .filter(([, value]) => !(typeof value === "string" && UUID.test(value)))
+    .map(([key, value]) => {
+      const kind = PAYLOAD_KINDS[key];
+      const text =
+        kind === "money" && typeof value === "string"
+          ? format.thb(value)
+          : kind === "percent" && typeof value === "string"
+            ? format.percent(value)
+            : kind === "number" && typeof value === "number"
+              ? format.number(value)
+              : typeof value === "string" || typeof value === "number"
+                ? String(value)
+                : null;
+      return {
+        term: t.has(`fields.${key}`) ? t(`fields.${key}`) : humanise(key),
+        description:
+          text === null ? (
+            <JsonView value={value} label={key} />
+          ) : kind === "code" ? (
+            <span className="font-mono">{text}</span>
+          ) : (
+            text
+          ),
+        wide: key === "reason" || text === null,
+      };
+    });
 
   return (
     <div className="flex flex-col gap-5">
@@ -180,6 +189,14 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
         }
       />
 
+      {waitingOnOthers && step ? (
+        <Callout tone="info" title={t("waitingForOther", { role: roleLabel(step.role) })}>
+          <span className="flex flex-wrap items-center gap-x-2">
+            {t("waitingForOtherBody")}
+            <SlaTimer dueAt={step.dueAt} format={sla} absolute={format.dateTime(step.dueAt)} />
+          </span>
+        </Callout>
+      ) : null}
       {blocker === "own_request" ? <Callout tone="info" title={t("blockers.ownRequest")} /> : null}
       {blocker === "already_acted" ? <Callout tone="info" title={t("blockers.alreadyActed")} /> : null}
       {approval.flags.includes("below_margin_floor") ? (
@@ -306,4 +323,15 @@ export function ApprovalDetail({ requestId, initial }: { requestId: string; init
       />
     </div>
   );
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** `poNumber` → "Po number": a field the copy has no label for yet still reads as words. */
+function humanise(key: string): string {
+  const words = key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }

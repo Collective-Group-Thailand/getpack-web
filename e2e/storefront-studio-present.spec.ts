@@ -33,7 +33,7 @@ async function open(page: Page) {
   await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 }
 
 test("two named versions, compared side by side and overlaid", async ({ page }) => {
@@ -49,7 +49,7 @@ test("two named versions, compared side by side and overlaid", async ({ page }) 
   let history = await nameVersion("รอบแรก");
   await page.keyboard.press("Escape");
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   history = await nameVersion("รอบสอง");
 
   const first = history.getByRole("listitem").filter({ hasText: "รอบแรก" });

@@ -53,6 +53,19 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit — the user's findings from real actions — 2026-10-06
+
+Branch `feat/ux-6a-user-findings`. Raised by the user mid-run ("สิ่งที่พบเพิ่มจากการกด action จริง"); taken ahead of the audit's steps 6, 9 and 10, where they belong.
+
+| Finding | What it was | Fix |
+|---|---|---|
+| Approvals: no approve/reject for CS Lead; snapshot shows raw keys (`amount`, `groupId`, `poNumber null`) | The buttons **exist** but were hidden without a word when the account lacks `approvals.act` (by design: the API decides who may act). Payload keys without a label printed as-is, `null`s included. | Pending and not yours to decide → an info callout "รอ {role} อนุมัติ" with the step's SLA timer. Payload: labels for `amount`, `threshold`, `groupId/groupCode`, `poNumber`, `companyId/companyCode`; `null`/empty hidden; UUID values hidden; any other key humanised. A "เตือนอีกครั้ง" button waits for **contract request `admin.approvals.remind`**. |
+| `/quotations` number shows part of a UUID | `quoteCode` is issued only at share or PDF; the list fell back to `id.slice(0, 8)`. | "ยังไม่ออกเลขที่" in the list, the detail title and CS's create-order notice. **Contract request:** issue `quoteCode` when the quotation is kept. |
+| `/styles` shows "0 แบบ" while the studio has dozens | Two sources: the API lists only *publishable* styles (D-243; 0 on UAT — no recipe bundle, no verified capability), the studio draws `@packio/dieline`'s 30 recipes. | With nothing published and no filter, `/styles` shows the studio's own 30 styles by category (FEFCO/ECMA codes where verified) with "ออกแบบด้วยแบบนี้" into the studio, and an honest note that ordering waits for a factory; the "0 แบบ" count is hidden. |
+| Studio uses the browser's `beforeunload` dialog (stalls automation) | Account designs autosaved; a guest's design did not, so the prompt guarded it. | A guest's design autosaves too (to this browser); the prompt is gone; the bar says "บันทึกอัตโนมัติ {time}". The first autosave of a new guest design updates the address with `history.replaceState` rather than a navigation, which had remounted the editor and dropped a name typed meanwhile. |
+
+**Tests:** designer + studio e2e 34/34 (assertions follow the new "บันทึกอัตโนมัติ" label); admin console/orders, styles and business suites green.
+
 ## UX audit Flow 1 — step 2: the shared design baseline — 2026-10-06
 
 Branch `feat/ux-2-design-baseline`. The audit's "Design system baseline" table, applied once in `src/ui` and the tokens so every page moves with it.

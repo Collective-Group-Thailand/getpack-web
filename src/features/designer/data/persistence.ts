@@ -15,7 +15,8 @@ import { drafts, type Draft } from "./drafts";
 /**
  * Where a design is kept and how it is saved.
  *
- * - `local` — a guest's design in this browser (as BoxStudio did); saved when asked.
+ * - `local` — a guest's design in this browser (as BoxStudio did); autosaved a moment after each
+ *   change, like the others (the browser's storage is its home, so there is no separate draft).
  * - `store` — a signed-in customer's design in the account (`store.designs`): autosaved a
  *   moment after each change under `If-Match`; a save another tab beat answers 412 and opens the
  *   conflict choice instead of overwriting; unsaved work is kept in IndexedDB meanwhile.
@@ -141,6 +142,7 @@ export function usePersistence(config: PersistenceConfig) {
               updatedAt: now,
             });
             if (!ok) throw new Error("storage.full");
+            setLastSavedAt(new Date(now).toISOString());
             if (!previous) cfg.onCreated?.(snapshot.designId);
           } else if (cfg.mode === "store") {
             const box = cfg.box?.() ?? null;
@@ -256,10 +258,12 @@ export function usePersistence(config: PersistenceConfig) {
     rerun.current = saveNow;
   }, [saveNow]);
 
-  // Autosave, and the IndexedDB draft, a moment after each change (not for a guest's local design:
-  // the browser *is* its storage, and the e2e flow saves it by hand).
+  // Autosave a moment after each change, and for an account's design an IndexedDB draft too (a
+  // guest's local design needs none: the browser *is* its storage). This replaces the browser's
+  // `beforeunload` prompt (UX audit, studio).
   useEffect(() => {
-    if (!config.editable || config.mode === "local") return;
+    if (!config.editable) return;
+    const local = config.mode === "local";
     let autosave: ReturnType<typeof setTimeout> | undefined;
     let draft: ReturnType<typeof setTimeout> | undefined;
     const unsubscribe = useEditor.subscribe((s, prev) => {
@@ -268,16 +272,17 @@ export function usePersistence(config: PersistenceConfig) {
       const delay = s.spec !== prev.spec ? BOX_SAVE_DELAY_MS : AUTOSAVE_DELAY_MS;
       if (stateRef.current !== "conflict") setState("dirty");
       clearTimeout(draft);
-      draft = setTimeout(() => {
-        void drafts.put({
-          key: draftKey(),
-          name: s.name,
-          spec: s.spec,
-          content: s.content,
-          baseVersionNo: versionNo.current,
-          savedAt: Date.now(),
-        });
-      }, DRAFT_DELAY_MS);
+      if (!local)
+        draft = setTimeout(() => {
+          void drafts.put({
+            key: draftKey(),
+            name: s.name,
+            spec: s.spec,
+            content: s.content,
+            baseVersionNo: versionNo.current,
+            savedAt: Date.now(),
+          });
+        }, DRAFT_DELAY_MS);
       clearTimeout(autosave);
       autosave = setTimeout(() => {
         if (stateRef.current !== "conflict") void saveNow("autosave");

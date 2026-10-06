@@ -38,7 +38,7 @@ test("a finding fixed in one click, a warning accepted with the version, and the
     await addHeading(page);
     await page.getByRole("spinbutton", { name: /^ขนาด/ }).fill("1.5");
   }
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
   await page
     .getByRole("navigation", { name: "ขั้นตอนการออกแบบ" })
@@ -53,7 +53,7 @@ test("a finding fixed in one click, a warning accepted with the version, and the
   // One fixed in a click.
   await panel.getByRole("button", { name: "ขยายตัวอักษร" }).first().click();
   await expect(small).toHaveCount(1);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
   // The other accepted: packio-api evaluates this rule on the document and keeps the acceptance.
   await expect(panel.getByRole("button", { name: "รับทราบ ใช้แบบนี้" })).toBeVisible({ timeout: 15_000 });

@@ -52,10 +52,10 @@ test("a signed-in design is saved in the account, autosaved, and keeps its versi
 
   // The first autosave creates the design and swaps /studio/new for its id.
   await expect(page).toHaveURL(UUID, { timeout: 15_000 });
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole("textbox", { name: "ชื่อแบบ" }).fill("กล่องในบัญชี E2E");
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
   await page.reload();
   await expect(page.getByRole("textbox", { name: "ชื่อแบบ" })).toHaveValue("กล่องในบัญชี E2E");
@@ -100,7 +100,7 @@ test("two tabs saving the same design meet the conflict choice instead of overwr
   await expect(conflict).toBeVisible();
   await conflict.getByRole("button", { name: "ใช้ฉบับของฉัน" }).click();
   await expect(conflict).toBeHidden();
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 });
 
 test("a guest's browser design is imported into the account after sign-in", async ({ page }) => {

@@ -275,7 +275,8 @@
     "memoState": "Discount memo {pct}",
     "openApproval": "Open the approval",
     "refreshMemo": "Check again",
-    "discountHintLimit": "CS may give up to {pct} on its own; checked when the order is placed"
+    "discountHintLimit": "CS may give up to {pct} on its own; checked when the order is placed",
+    "quoteNoCode": "Quotation (no number yet)"
   },
   "address": {
     "title": "Add a delivery address",
@@ -332,7 +333,9 @@
     "rfq": "From RFQ",
     "createdBy": "Created by",
     "note": "Internal note",
-    "specs": "Specification"
+    "specs": "Specification",
+    "noCode": "No number yet",
+    "draftTitle": "Quotation (no number yet)"
   },
   "memos": {
     "title": "Discount memos",
