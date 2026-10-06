@@ -1,4 +1,4 @@
-import { Icon } from "../icons";
+import { Icon, type IconName } from "../icons";
 import { cn } from "../lib/cn";
 
 export interface ProductCardImage {
@@ -26,6 +26,13 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
    * title link so they stay separately clickable and focusable.
    */
   actions?: React.ReactNode;
+  /**
+   * What stands in for a missing photo: an icon on a kraft, paper or brand-tint plate, so a grid
+   * of products without photography still reads as a set rather than as broken images.
+   */
+  fallback?: { icon: IconName; tone?: "kraft" | "paper" | "primary" };
+  /** Image plate proportions: 4:3 for made-to-order types, square for stock items. */
+  aspect?: "landscape" | "square";
   /** Badges over the image corner ("ราคาทันที", "ขอใบเสนอราคา"). */
   badges?: React.ReactNode;
   /** The heading level in the page outline. */
@@ -52,6 +59,8 @@ export function ProductCard({
   meta,
   badges,
   actions,
+  fallback,
+  aspect = "landscape",
   headingLevel: Heading = "h3",
   priority = false,
   as: Component = "article",
@@ -61,12 +70,24 @@ export function ProductCard({
   return (
     <Component
       className={cn(
-        "group border-border bg-surface focus-within:ring-focus-ring rounded-card hover:shadow-card relative flex flex-col overflow-hidden border transition-shadow focus-within:ring-2",
+        "group border-border bg-surface focus-within:ring-focus-ring rounded-card hover:shadow-overlay duration-base ease-standard relative flex flex-col overflow-hidden border transition-[transform,box-shadow] focus-within:ring-2 motion-safe:hover:-translate-y-0.5",
         className,
       )}
       {...props}
     >
-      <div className="bg-bg-subtle relative aspect-[4/3] overflow-hidden">
+      <div
+        className={cn(
+          "relative overflow-hidden",
+          aspect === "square" ? "aspect-square" : "aspect-[4/3]",
+          image || !fallback
+            ? "bg-bg-subtle"
+            : fallback.tone === "primary"
+              ? "bg-primary-subtle text-primary-subtle-fg"
+              : fallback.tone === "paper"
+                ? "bg-bg-subtle text-muted"
+                : "bg-kraft text-muted",
+        )}
+      >
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element -- see the component comment
           <img
@@ -80,15 +101,15 @@ export function ProductCard({
             className="duration-base ease-standard h-full w-full object-cover transition-transform group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         ) : (
-          <div className="text-subtle flex h-full items-center justify-center" aria-hidden="true">
-            <Icon name="box" size={48} />
+          <div className={cn("flex h-full items-center justify-center", !fallback && "text-subtle")} aria-hidden="true">
+            <Icon name={fallback?.icon ?? "box"} size={fallback ? 56 : 48} />
           </div>
         )}
         {badges ? <div className="absolute start-2 top-2 flex flex-wrap gap-1">{badges}</div> : null}
       </div>
-      <div className="flex flex-1 flex-col gap-1 p-4">
+      <div className="flex flex-1 flex-col gap-1 p-4 md:px-5 md:pt-4.5 md:pb-5">
         {eyebrow ? <p className="text-muted text-xs">{eyebrow}</p> : null}
-        <Heading className="leading-snug font-medium [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
+        <Heading className="leading-snug font-semibold [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
           {title}
         </Heading>
         {price ? <p className="mt-auto pt-2 text-sm font-medium tabular-nums">{price}</p> : null}

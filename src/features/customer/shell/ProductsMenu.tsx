@@ -55,7 +55,7 @@ export function ProductsMenu({ label, children }: { label: string; children: Rea
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
-        className="hover:bg-bg-subtle focus-visible:ring-focus-ring inline-flex h-8 items-center gap-1 rounded-md px-3 text-sm font-medium outline-none focus-visible:ring-2"
+        className="text-fg/85 hover:bg-bg-subtle hover:text-fg focus-visible:ring-focus-ring aria-expanded:text-fg inline-flex h-10 items-center gap-1 rounded-lg px-3 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-2"
       >
         {label}
         <Icon

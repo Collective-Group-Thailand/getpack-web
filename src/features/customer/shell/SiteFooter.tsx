@@ -2,8 +2,10 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 import { serverRequests } from "@/lib/api/requests/server";
-import { BRAND_COMPANY, BRAND_NAME } from "@/ui/brand";
+import { BRAND_COMPANY, BRAND_NAME, BrandMark } from "@/ui/brand";
 import { Icon } from "@/ui/icons";
+
+import { DeferredThemeMenu } from "./DeferredMenus";
 
 /**
  * The storefront footer: help, contact, the ways to pay, and the legal links PDPA requires
@@ -15,8 +17,9 @@ import { Icon } from "@/ui/icons";
  * a hard-coded list.
  */
 export async function SiteFooter() {
-  const [t, identity] = await Promise.all([
+  const [t, tCommon, identity] = await Promise.all([
     getTranslations("storefront.footer"),
+    getTranslations("common"),
     // CONTRACT-REQUEST store.company-identity: the registered name and tax id live in settings (D-092).
     serverRequests("customer")
       .then((api) => api.call("GET /v1/store/company-identity"))
@@ -59,11 +62,16 @@ export async function SiteFooter() {
 
   return (
     <footer className="bg-fg text-fg-inverse mt-16">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-[1180px] gap-10 px-5 pt-14 pb-10 sm:grid-cols-2 md:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <p className="font-display text-lg font-semibold">{BRAND_NAME}</p>
-          <p className="mt-1 text-sm opacity-80">{t("tagline")}</p>
-          <p className="mt-4 flex items-center gap-2 text-sm opacity-80">
+          <p className="font-display flex items-center gap-2.5 text-xl font-bold">
+            <BrandMark size={32} />
+            {BRAND_NAME}
+          </p>
+          <p className="text-fg-inverse/75 mt-3.5 max-w-[28em] text-sm leading-relaxed">
+            {t("tagline")} {t("by", { company: BRAND_COMPANY })}
+          </p>
+          <p className="text-fg-inverse/75 mt-3 flex items-center gap-2 text-sm">
             <Icon name="chat" size={16} />
             {t("lineContact")}
           </p>
@@ -71,11 +79,14 @@ export async function SiteFooter() {
 
         {columns.map((column) => (
           <nav key={column.key} aria-label={t(`${column.key}.heading`)}>
-            <h2 className="text-sm font-medium">{t(`${column.key}.heading`)}</h2>
-            <ul className="mt-3 flex flex-col gap-2">
+            <h2 className="text-sm font-bold">{t(`${column.key}.heading`)}</h2>
+            <ul className="mt-4 flex flex-col gap-3">
               {column.links.map((link) => (
                 <li key={link.key}>
-                  <Link href={link.href} className="text-sm opacity-80 hover:underline hover:opacity-100">
+                  <Link
+                    href={link.href}
+                    className="text-fg-inverse/75 hover:text-fg-inverse focus-visible:ring-fg-inverse rounded-sm text-sm outline-none focus-visible:ring-2"
+                  >
                     {t(`${column.key}.${link.key}`)}
                   </Link>
                 </li>
@@ -85,8 +96,8 @@ export async function SiteFooter() {
         ))}
       </div>
 
-      <div className="border-fg-inverse/20 border-t">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm opacity-80 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mx-auto max-w-[1180px] px-5 pb-7 md:px-8">
+        <div className="border-fg-inverse/15 text-fg-inverse/70 flex flex-col gap-3 border-t pt-5.5 text-xs sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-1">
             <p>
               © {new Date().getFullYear()} {BRAND_NAME} · {BRAND_COMPANY}
@@ -98,7 +109,19 @@ export async function SiteFooter() {
               </>
             ) : null}
           </div>
-          <p>{t("paymentMethods")}</p>
+          <div className="flex items-center gap-3">
+            <p>{t("paymentMethods")}</p>
+            {/* The theme choice lives here so the header keeps to the mockup and it stays on every page. */}
+            <DeferredThemeMenu
+              label={tCommon("theme.label")}
+              choiceLabels={{
+                system: tCommon("theme.system"),
+                light: tCommon("theme.light"),
+                dark: tCommon("theme.dark"),
+                hc: tCommon("theme.hc"),
+              }}
+            />
+          </div>
         </div>
       </div>
     </footer>

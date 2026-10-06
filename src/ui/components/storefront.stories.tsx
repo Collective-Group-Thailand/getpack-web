@@ -2,8 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Badge } from "./Badge";
 import { Button } from "./Button";
+import { Card } from "./Card";
+import { Highlight, IconTile, KraftPanel } from "./Decor";
 import { ProductCard } from "./ProductCard";
 import { SectionDivider } from "./SectionDivider";
+import { SectionHeading, sectionLinkClass } from "./SectionHeading";
 
 const meta = {
   title: "Storefront/Art direction",
@@ -117,6 +120,50 @@ export const Composition: Story = {
           </a>
         </p>
       </section>
+    </div>
+  ),
+};
+
+/**
+ * The home page's section furniture (redesign, 2026-10-06): a kicker-and-title heading with its
+ * "see all" link, cards that lift on hover with an icon tile, the kraft highlighter and the kraft
+ * invitation band. Copy is placeholder.
+ */
+export const HomeSections: Story = {
+  render: () => (
+    <div className="bg-bg flex flex-col gap-12 p-8">
+      <h1 className="font-display text-4xl font-bold">
+        Packaging, <Highlight className="text-primary">in one place</Highlight>
+      </h1>
+      <section aria-labelledby="story-steps">
+        <SectionHeading
+          id="story-steps"
+          kicker="How it works"
+          title="Order in four steps"
+          description="One line of context under the title."
+          action={
+            <a href="#steps" className={sectionLinkClass}>
+              Learn step by step
+            </a>
+          }
+        />
+        <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {(["upload", "calculator", "file-check", "truck"] as const).map((icon, index) => (
+            <Card as="li" key={icon} padding="lg" interactive>
+              <IconTile name={icon} tone={index === 0 ? "solid" : "primary"} className="mb-4" />
+              <h3 className="mb-1.5 text-lg font-bold">Step {index + 1}</h3>
+              <p className="text-muted text-sm">A short line about this step.</p>
+            </Card>
+          ))}
+        </ol>
+      </section>
+      <KraftPanel className="grid items-center gap-6 p-10 md:grid-cols-[1fr_auto]">
+        <div className="relative">
+          <h2 className="font-display text-3xl font-bold">Customer work is coming here</h2>
+          <p className="text-fg/80 mt-2">Only real, permitted work and reviews.</p>
+        </div>
+        <Button className="relative rounded-xl">Browse box styles</Button>
+      </KraftPanel>
     </div>
   ),
 };

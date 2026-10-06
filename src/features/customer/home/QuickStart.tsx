@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
+import { Icon } from "@/ui/icons";
 
 /** Approximate size in whole centimetres, sent to the configurator in millimetres (its unit, D-183). */
 const CM = /^\d{1,3}(\.\d)?$/;
@@ -44,34 +45,54 @@ export function QuickStart({ products }: { products: { slug: string; name: strin
     <form
       onSubmit={go}
       aria-label={t("label")}
-      className="border-border bg-surface shadow-card mt-8 grid gap-3 rounded-2xl border p-4 sm:grid-cols-[1.4fr_2fr_1fr_auto] sm:items-end"
+      className="border-border bg-surface shadow-overlay rounded-2xl border p-5 md:px-6 md:pt-5.5 md:pb-6"
     >
-      <Field label={t("type")}>
-        <NativeSelect
-          value={slug}
-          onValueChange={setSlug}
-          options={products.map((p) => ({ value: p.slug, label: p.name }))}
-        />
-      </Field>
-      <fieldset className="grid grid-cols-3 gap-2">
-        <legend className="mb-1 text-sm font-medium">{t("size")}</legend>
-        {(["l", "w", "h"] as const).map((axis) => (
-          <Field key={axis} label={t(`axes.${axis}`)}>
-            <Input
-              inputMode="decimal"
-              placeholder={t("cm")}
-              value={size[axis]}
-              onChange={(event) => setSize((current) => ({ ...current, [axis]: event.target.value.trim() }))}
-            />
-          </Field>
-        ))}
-      </fieldset>
-      <Field label={t("quantity")}>
-        <Input inputMode="numeric" value={quantity} onChange={(event) => setQuantity(event.target.value.trim())} />
-      </Field>
-      <Button type="submit" size="lg" disabled={!slug || !counted}>
-        {t("go")}
-      </Button>
+      <p className="text-primary mb-3.5 flex items-center gap-1.5 text-xs font-semibold">
+        <Icon name="calculator" size={16} />
+        {t("heading")}
+      </p>
+      <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-[1.3fr_1.7fr_0.8fr_auto]">
+        <Field label={t("type")}>
+          <NativeSelect
+            className="bg-bg h-12 text-base"
+            value={slug}
+            onValueChange={setSlug}
+            options={products.map((p) => ({ value: p.slug, label: p.name }))}
+          />
+        </Field>
+        <fieldset>
+          <legend className="mb-1.5 text-sm font-medium">{t("size")}</legend>
+          <div className="text-subtle grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-1.5">
+            {(["l", "w", "h"] as const).map((axis, index) => (
+              <Fragment key={axis}>
+                {index > 0 ? <span aria-hidden>×</span> : null}
+                <Field label={t(`axes.${axis}`)} labelHidden>
+                  <Input
+                    inputSize="lg"
+                    className="bg-bg text-base"
+                    inputMode="decimal"
+                    placeholder={t(`axes.${axis}`)}
+                    value={size[axis]}
+                    onChange={(event) => setSize((current) => ({ ...current, [axis]: event.target.value.trim() }))}
+                  />
+                </Field>
+              </Fragment>
+            ))}
+          </div>
+        </fieldset>
+        <Field label={t("quantity")}>
+          <Input
+            inputSize="lg"
+            className="bg-bg text-base"
+            inputMode="numeric"
+            value={quantity}
+            onChange={(event) => setQuantity(event.target.value.trim())}
+          />
+        </Field>
+        <Button type="submit" size="lg" iconEnd="arrow-right" className="rounded-xl" disabled={!slug || !counted}>
+          {t("go")}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -46,6 +46,7 @@ export {
   type DimensionInputProps,
   type LengthUnit,
 } from "./DimensionInput";
+export { Highlight, IconTile, KraftPanel } from "./Decor";
 export { Dialog, DialogClose, type DialogProps } from "./Dialog";
 export { DisclosureList, type DisclosureItem, type DisclosureListProps } from "./DisclosureList";
 export { DropdownMenu, type DropdownMenuProps, type MenuItem } from "./DropdownMenu";
@@ -88,6 +89,7 @@ export { QuoteDock, QuoteDockSpacer, type QuoteDockProps } from "./QuoteDock";
 export { RadioCards, type RadioCardOption, type RadioCardsProps } from "./RadioCards";
 export { RichTextView, safeHref, type RichTextNode, type RichTextViewProps } from "./RichTextView";
 export { SearchInput, type SearchInputProps } from "./SearchInput";
+export { SectionHeading, sectionLinkClass, type SectionHeadingProps } from "./SectionHeading";
 export { SegmentedControl, type SegmentedControlProps, type SegmentedOption } from "./SegmentedControl";
 export { NativeSelect, type NativeSelectProps } from "./NativeSelect";
 export { Select, type SelectOption, type SelectProps } from "./Select";

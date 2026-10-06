@@ -14,23 +14,47 @@ const SignInSheet = dynamic(() => import("./SignInSheet").then((module) => modul
  * the page is interactive it opens the sign-in sheet over the page instead, so signing in does
  * not lose the customer's place. The sheet's code loads on that first click.
  */
-export function AccountButton({ signedIn, label }: { signedIn: boolean; label: string }) {
+export function AccountButton({
+  signedIn,
+  label,
+  signInLabel,
+}: {
+  signedIn: boolean;
+  label: string;
+  /** Signed out on a desktop, show this text link ("เข้าสู่ระบบ") in place of the account icon. */
+  signInLabel?: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  function openSheet(event: React.MouseEvent) {
+    if (signedIn || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    setLoaded(true);
+    setOpen(true);
+  }
+
   return (
     <>
-      <IconButton asChild name="user" variant="ghost" size="sm" label={label}>
+      {!signedIn && signInLabel ? (
         <Link
           href="/account"
-          onClick={(event) => {
-            if (signedIn || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-            event.preventDefault();
-            setLoaded(true);
-            setOpen(true);
-          }}
-        />
+          onClick={openSheet}
+          className="text-fg/85 hover:bg-bg-subtle hover:text-fg focus-visible:ring-focus-ring hidden h-10 items-center rounded-lg px-2.5 text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-2 lg:inline-flex"
+        >
+          {signInLabel}
+        </Link>
+      ) : null}
+      <IconButton
+        asChild
+        name="user"
+        variant="ghost"
+        size="sm"
+        label={label}
+        className={!signedIn && signInLabel ? "lg:hidden" : undefined}
+      >
+        <Link href="/account" onClick={openSheet} />
       </IconButton>
       {loaded ? (
         <SignInSheet
