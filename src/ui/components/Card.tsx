@@ -15,8 +15,16 @@ const cardVariants = cva("rounded-card bg-surface", {
       md: "p-4",
       lg: "p-6",
     },
+    /**
+     * A card that is itself a way in (a link stretched over it, or a step in a sequence): it rises
+     * a few pixels and takes the overlay shadow on hover. Motion only when the user allows it.
+     */
+    interactive: {
+      true: "duration-base ease-standard transition-[transform,box-shadow] hover:shadow-overlay motion-safe:hover:-translate-y-0.5",
+      false: "",
+    },
   },
-  defaultVariants: { elevation: "flat", padding: "md" },
+  defaultVariants: { elevation: "flat", padding: "md", interactive: false },
 });
 
 type CardElement = "div" | "article" | "li" | "section";
@@ -26,9 +34,9 @@ export interface CardProps extends React.HTMLAttributes<HTMLElement>, VariantPro
   as?: CardElement;
 }
 
-/** A surface that groups related content. It carries no interaction of its own. */
-export function Card({ className, elevation, padding, as: Component = "div", ...props }: CardProps) {
-  return <Component className={cn(cardVariants({ elevation, padding }), className)} {...props} />;
+/** A surface that groups related content. It carries no interaction of its own; `interactive` only styles hover. */
+export function Card({ className, elevation, padding, interactive, as: Component = "div", ...props }: CardProps) {
+  return <Component className={cn(cardVariants({ elevation, padding, interactive }), className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
