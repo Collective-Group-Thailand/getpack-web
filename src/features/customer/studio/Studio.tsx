@@ -37,6 +37,7 @@ import { RULE_HELP } from "./help";
 import { SampleDesignLink } from "./SampleDesign";
 import { StepBar } from "./StepBar";
 import { StudioGuide } from "./StudioGuide";
+import { studioHref } from "./paths";
 import { initialStep, lockedReason, type StepFacts, type StudioStep } from "./steps";
 import { useStudioChecks } from "./checks";
 import { useChecksClean, useStudioFunnel } from "./funnel";
@@ -114,9 +115,17 @@ export function Studio({
     staleTime: 5 * 60_000,
   });
   const configuratorRef = useRef(configurator.data ?? null);
+  // An account design saves its box fields (style, size, calculator spec) only once the product's
+  // configurator is here; a box made before it arrived — the sample, a style link — was saved
+  // without them, and the dock could never price it (round 2, B6). Save once more when it lands.
+  const boxSaved = useRef(Boolean(design?.box?.spec));
   useEffect(() => {
     configuratorRef.current = configurator.data ?? null;
-  }, [configurator.data]);
+    if (!configurator.data || boxSaved.current || mode !== "store") return;
+    if (!useEditor.getState().spec) return;
+    boxSaved.current = true;
+    useEditor.setState({ dirty: true });
+  }, [configurator.data, mode]);
 
   useEffect(() => {
     if (catalog?.rules.bleedMm) useEditor.getState().setBleed(catalog.rules.bleedMm);
@@ -189,6 +198,8 @@ export function Studio({
 
   // ① offers its own ways to a box: the setup dialog opens only when asked there.
   const [autoSetup] = useState(() => step !== "start");
+  // A link that names the box and asks for a later step (the sample, a style page) starts there.
+  const [applySeed] = useState(() => Boolean(seed) && !design && step !== "start" && step !== "box");
 
   /** Moves to a step and keeps it in the address, without a navigation (the editor stays as it is). */
   const goTo = useCallback(
@@ -214,6 +225,22 @@ export function Studio({
         if (s.spec && !prev.spec && stepRef.current === "start" && s.dirty) goTo("design");
       }),
     [goTo],
+  );
+
+  // A box chosen on ① with no product behind it (the studio opened from the header) cannot be
+  // priced or kept in the account: open it again by its style and size, so the page finds the
+  // style's product (round 2, B6). Only for a design nothing has been drawn on yet.
+  useEffect(
+    () =>
+      useEditor.subscribe((s, prev) => {
+        if (productSlug || design || !s.spec || prev.spec) return;
+        if (s.content.elements.length > 0) return;
+        const values = s.spec.values as Record<string, unknown>;
+        const [l, w, h] = [values["length"], values["width"], values["height"]];
+        if (typeof l !== "number" || typeof w !== "number" || typeof h !== "number") return;
+        router.replace(studioHref({ style: s.spec.styleId, dims: { l, w, h }, step: "design" }));
+      }),
+    [productSlug, design, router],
   );
 
   // A step that closed (the content was removed) falls back to the last open one.
@@ -375,6 +402,7 @@ export function Studio({
           ),
           panel,
           autoSetup,
+          applySeed,
           // Before a box: the start screen fills the canvas (UX audit, studio).
           empty: (ctx) => (
             <StartScreen onChooseBox={ctx.openSetup} productSlug={productSlug} signedIn={mode === "store"} />

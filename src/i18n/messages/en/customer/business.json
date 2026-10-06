@@ -274,8 +274,8 @@
     "failed": "That didn't work. Please try again."
   },
   "approvals": {
-    "pageTitle": "Order approvals",
-    "introApprover": "Orders over your company's threshold wait for you. Approving places them as the buyer checked them out.",
+    "pageTitle": "Approvals",
+    "introApprover": "Company orders above the buyer's limit need your approval before they are paid",
     "introBuyer": "Your orders waiting for the company's approver.",
     "views": "Views",
     "pending": "Waiting",
@@ -288,7 +288,7 @@
     "status": {
       "pending": "Waiting",
       "approved": "Approved",
-      "rejected": "Rejected",
+      "rejected": "Returned",
       "expired": "Expired",
       "withdrawn": "Withdrawn"
     },
@@ -299,7 +299,7 @@
     "approve": "Approve",
     "reject": "Reject",
     "approveTitle": "Approve {request}?",
-    "approveBody": "The {amount} order is placed as {name} checked it out, and they are asked to pay.",
+    "approveBody": "Approve {name}'s order of {amount} — they can pay straight away",
     "rejectTitle": "Reject {request}",
     "reason": "Reason",
     "reasonHint": "The buyer sees this",
@@ -313,7 +313,26 @@
     "branch": "Branch {name}",
     "over": "Over {amount}",
     "expires": "Lapses {date}",
-    "decidedBy": "Decided by {name} on {date}"
+    "decidedBy": "Decided by {name} on {date}",
+    "all": "All",
+    "waitingYou": "Waiting for you",
+    "requestedAt": "Requested {date}",
+    "decideBy": "decide by {date}",
+    "cardTitle": "{request} · {count, plural, one {# order} other {# orders}}",
+    "requestedBy": "Ordered by {name}",
+    "poLabel": "PO number",
+    "ordersLabel": "Orders",
+    "limitLabel": "Buyer's limit",
+    "total": "Total",
+    "aboveLimit": "Above the buyer's limit of {amount}",
+    "note": "Note to the buyer",
+    "noteHint": "The buyer and accounting see this note",
+    "notePlaceholder": "e.g. Approved, but please split the delivery in two",
+    "noteRequired": "Tell the buyer what to change (at least 3 characters)",
+    "return": "Return for changes",
+    "returned": "{request} returned to the buyer",
+    "buyerWaiting": "Waiting for your company's approver — you can pay as soon as it is approved",
+    "history": "Recent history"
   },
   "credit": {
     "title": "Credit & statements",

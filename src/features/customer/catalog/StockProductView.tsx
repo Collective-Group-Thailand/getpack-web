@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { TrackOnView } from "@/features/customer/analytics/TrackOnView";
@@ -5,6 +6,7 @@ import { JsonLd } from "@/features/customer/seo/JsonLd";
 import { getFormat } from "@/features/shared/format/server";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { readAccessToken } from "@/lib/auth/session";
 import { breadcrumbSchema, productSchema, publicOrigin } from "@/lib/seo";
 import { Badge } from "@/ui/components/Badge";
 import { Breadcrumbs } from "@/ui/components/Breadcrumbs";
@@ -15,11 +17,13 @@ import { Icon } from "@/ui/icons";
 import { getPriceHints, type StockProduct } from "./api.server";
 import { absoluteImageUrl, storeImageSrc } from "./images";
 import { pick } from "./localize";
-import { configureHref, stockProductHref } from "./paths";
+import { stockProductHref } from "./paths";
 import { priceHintText } from "./PriceHint";
+import { StockOrderPanel } from "./StockOrderPanel";
 
 /** A stock product (D-100 "standard / stock products"): ready-made, sold by the unit above a minimum. */
 export async function StockProductView({ product }: { product: StockProduct }) {
+  const signedIn = Boolean(readAccessToken(await cookies()));
   const [t, locale, format, origin, hints] = await Promise.all([
     getTranslations("catalog"),
     getLocale(),
@@ -103,20 +107,23 @@ export async function StockProductView({ product }: { product: StockProduct }) {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            {product.inStock ? (
-              <Button asChild size="lg">
-                <Link href={configureHref(product.sku)}>{t("stock.order")}</Link>
-              </Button>
-            ) : (
-              <Button size="lg" disabled>
-                {t("stock.order")}
-              </Button>
-            )}
-            <Button asChild size="lg" variant="ghost">
-              <Link href="/help/chat">{t("product.askCs")}</Link>
+          {product.inStock ? (
+            <StockOrderPanel
+              stockProductId={product.id}
+              sku={product.sku}
+              name={name}
+              unit={unit}
+              minOrderQty={product.minOrderQty}
+              signedIn={signedIn}
+            />
+          ) : (
+            <Button size="lg" disabled>
+              {t("stock.outOfStock")}
             </Button>
-          </div>
+          )}
+          <Button asChild size="lg" variant="ghost" className="self-start">
+            <Link href="/help/chat">{t("product.askCs")}</Link>
+          </Button>
 
           <section aria-labelledby="stock-details">
             <h2 id="stock-details" className="text-xl font-semibold">

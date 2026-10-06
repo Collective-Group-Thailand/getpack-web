@@ -55,10 +55,52 @@ export interface RefreshedSession {
  * `forwardedFor` is the visitor's address (`src/lib/security/client-ip.ts`): the proxy and the
  * BFF read it from the request they are handling, since neither can use `next/headers`.
  */
-export async function refreshSession(
+export function refreshSession(
   zone: Zone,
   refreshToken: string,
   forwardedFor: string | null = null,
+): Promise<RefreshedSession | null> {
+  const flights = inFlight();
+  const now = Date.now();
+  for (const [token, flight] of flights) if (now - flight.startedAt > REUSE_WINDOW_MS) flights.delete(token);
+  const running = flights.get(refreshToken);
+  if (running) return running.result;
+  const result = exchange(zone, refreshToken, forwardedFor);
+  flights.set(refreshToken, { startedAt: now, result });
+  return result;
+}
+
+/**
+ * How long one refresh token's answer is handed to every request that presents it.
+ *
+ * A page fires requests in parallel — the studio's autosave, pricing and checks, a navigation's
+ * prefetches — and when the access token runs out each of them meets a 401 holding the *same*
+ * refresh token. Sent twice, it reads as theft: the API keeps the first rotation and revokes the
+ * whole family for the second (`auth.refresh_reused`), and the customer is signed out for having
+ * opened the studio (round 2, B4). So the first request refreshes and the others, in flight or
+ * arriving with the old cookie a moment later, are given its result. Long enough for a browser to
+ * pick up the rotated cookies; far shorter than a refresh token's life.
+ */
+const REUSE_WINDOW_MS = 30_000;
+
+interface Flight {
+  startedAt: number;
+  result: Promise<RefreshedSession | null>;
+}
+
+/**
+ * Process-wide, on `globalThis`: the proxy and the BFF route handlers are bundled apart, so a
+ * module-level map would give each its own copy and they would still race each other.
+ */
+function inFlight(): Map<string, Flight> {
+  const holder = globalThis as typeof globalThis & { __packioRefreshFlights?: Map<string, Flight> };
+  return (holder.__packioRefreshFlights ??= new Map());
+}
+
+async function exchange(
+  zone: Zone,
+  refreshToken: string,
+  forwardedFor: string | null,
 ): Promise<RefreshedSession | null> {
   try {
     const api = upstreamApi({ baseUrl: await apiInternalUrl(), forwardedFor });

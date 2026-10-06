@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import { getDesignerCatalog } from "@/features/customer/catalog/api.server";
+import { getStyle } from "@packio/dieline";
+
+import { defaultProductForStyle, getDesignerCatalog } from "@/features/customer/catalog/api.server";
 import { getMyDesign } from "@/features/customer/designer/api.server";
 import { seedOf, text, uuid, type Query } from "@/features/customer/designer/seed";
 import { Studio } from "@/features/customer/studio/Studio";
@@ -33,19 +35,29 @@ export default async function StudioPage({
   const saved = signedIn && id !== "new" ? await getMyDesign(id) : null;
   if (signedIn && id !== "new" && !saved && uuid(id)) notFound();
 
-  const productSlug = text(query.product) ?? (saved?.data.product.slug || undefined);
+  const seed = id === "new" ? seedOf(query) : undefined;
+  // A box style with no product (the header, the sample): the style's own product type prices it.
+  const productSlug =
+    text(query.product) ??
+    (saved?.data.product.slug || undefined) ??
+    (seed && !saved ? ((await defaultProductForStyle(getStyle(seed.style).category)) ?? undefined) : undefined);
   const catalog = await getDesignerCatalog(productSlug);
   const document = saved ? documentOf(saved.data) : null;
   const orderId = uuid(query.order);
   const itemId = uuid(query.item) ?? orderId;
   const orderCode = text(query.orderCode);
 
+  // A new design's seed is its identity: another `?style=&l=&w=&h=` (the sample link, a style
+  // page) on the same route mounts a fresh studio instead of keeping the old one's state (round 2, B6).
+  const seedKey = id === "new" ? ["style", "l", "w", "h", "product", "template"].map((k) => text(query[k]) ?? "").join(":") : id;
+
   return (
     <Studio
+      key={seedKey}
       id={saved?.data.id ?? id}
       signedIn={signedIn}
       catalog={catalog}
-      seed={id === "new" ? seedOf(query) : undefined}
+      seed={seed ? { ...seed, productSlug: seed.productSlug ?? productSlug ?? null } : undefined}
       templateId={id === "new" ? uuid(query.template) : null}
       link={orderId && itemId && signedIn ? { orderId, itemId, orderCode: orderCode ?? "" } : null}
       productSlug={productSlug ?? null}

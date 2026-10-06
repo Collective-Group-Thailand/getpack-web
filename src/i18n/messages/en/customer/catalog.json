@@ -125,7 +125,18 @@
       "job": "jobs",
       "round": "rounds",
       "trip": "trips"
-    }
+    },
+    "quantity": "Quantity",
+    "belowMinimum": "Minimum order {quantity} {unit}",
+    "totalFor": "Total for {quantity} {unit} · VAT included",
+    "leadTime": "ships in {days} business days",
+    "noPrice": "This quantity cannot be priced yet — ask our team",
+    "priceFailed": "Pricing failed — try another quantity",
+    "addToCart": "Add to cart",
+    "goToCart": "Go to cart",
+    "added": "{name} added to the cart",
+    "viewCart": "View cart",
+    "failed": "Could not add to the cart"
   },
   "category": {
     "rfqTitle": "Can't find what you need?",

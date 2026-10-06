@@ -30,7 +30,10 @@ export const controlVariants = cva(
 export interface InputProps
   extends
     Omit<React.InputHTMLAttributes<HTMLInputElement>, "size">,
-    Pick<VariantProps<typeof controlVariants>, "inputSize"> {}
+    Pick<VariantProps<typeof controlVariants>, "inputSize"> {
+  /** React 19 passes `ref` as a prop; it reaches the `<input>` with the rest. */
+  ref?: React.Ref<HTMLInputElement>;
+}
 
 export function Input({ className, inputSize, type = "text", ...props }: InputProps) {
   const fieldProps = useFieldProps();

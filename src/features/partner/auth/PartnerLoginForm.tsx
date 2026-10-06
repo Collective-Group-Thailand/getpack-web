@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { RequestIdNote } from "@/features/shared/auth/RequestIdNote";
@@ -23,6 +23,13 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const [state, formAction, pending] = useActionState<PartnerLoginState, FormData>(signInPartner, {});
+  // React resets a form after its action; the email is kept (controlled) so a mistyped password
+  // costs only the password, and the cursor goes back to it (round 2, B10).
+  const [email, setEmail] = useState("");
+  const password = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (state.errorKey && email) password.current?.focus();
+  }, [state, email]);
 
   return (
     <form action={formAction} className="flex flex-col gap-5" noValidate>
@@ -35,7 +42,16 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
       <input type="hidden" name="returnTo" value={returnTo} />
 
       <Field label={t("partner.email")} required requiredLabel={tCommon("state.required")}>
-        <Input name="email" type="email" autoComplete="username" inputSize="lg" autoFocus required />
+        <Input
+          name="email"
+          type="email"
+          autoComplete="username"
+          inputSize="lg"
+          autoFocus
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
       </Field>
 
       {/*
@@ -44,7 +60,7 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
         password. The action checks that one of the two was filled.
       */}
       <Field label={t("partner.password")}>
-        <Input name="password" type="password" autoComplete="current-password" inputSize="lg" />
+        <Input ref={password} name="password" type="password" autoComplete="current-password" inputSize="lg" />
       </Field>
 
       <Field label={t("partner.devicePin")} hint={t("partner.devicePinHint")}>

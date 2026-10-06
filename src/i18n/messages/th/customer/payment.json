@@ -14,6 +14,7 @@
   "qrTitle": "สแกนเพื่อชำระเงิน",
   "qrAlt": "คิวอาร์โค้ดพร้อมเพย์ ยอด {amount}",
   "countdown": "QR ใช้ได้อีก {minutes}:{seconds} นาที",
+  "countdownHours": "QR ใช้ได้อีก {hours} ชม. {minutes} นาที (หมดอายุ {until})",
   "waiting": "กำลังรอการชำระเงิน หน้านี้จะอัปเดตเอง",
   "qrStep1": "เปิดแอปธนาคารแล้วเลือกสแกน QR",
   "qrStep2": "ตรวจสอบยอดและชื่อผู้รับ Collective Group (Thailand)",

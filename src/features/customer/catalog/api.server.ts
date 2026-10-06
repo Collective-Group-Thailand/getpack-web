@@ -379,6 +379,31 @@ export async function getDesignerCatalog(product?: string): Promise<DesignerCata
   );
 }
 
+/**
+ * The product a studio design priced from a style alone belongs to (round 2, B6): the studio is
+ * opened from the header, the home page or "ลองเล่นกับแบบตัวอย่าง" with a box style and no product,
+ * and without one it could neither keep the design in the account nor ask for its price. The style's
+ * category is a product type code (`folding_carton`, `corrugated`); the first product of that type
+ * in the admin's merchandising order that has a designer catalogue is taken, an instantly priced one
+ * first. `null` when none has.
+ */
+export async function defaultProductForStyle(category: string): Promise<string | null> {
+  const typeCodes = category === "corrugated" ? ["corrugated", "folding_carton"] : ["folding_carton", "corrugated"];
+  // Within the style's own type an instantly priced product wins over one sold by quotation, so
+  // the dock can show a price; another type is never taken for a price (it would be the wrong box).
+  for (const productType of typeCodes) {
+    const page = await orFallback(listProducts({ productType, perPage: 8 }), null);
+    let quoted: string | null = null;
+    for (const product of page?.data ?? []) {
+      if (!(await getDesignerCatalog(product.slug))) continue;
+      if ((await orFallback(getConfigurator(product.slug), null))?.instant) return product.slug;
+      quoted ??= product.slug;
+    }
+    if (quoted) return quoted;
+  }
+  return null;
+}
+
 /* ------------------------------------------------------------------------- style library */
 
 export type StyleCard = Schemas["StyleCardDto"];

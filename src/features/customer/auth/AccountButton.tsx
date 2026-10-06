@@ -1,15 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
 
+import { signOut } from "@/features/shared/auth/sign-out";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { IconButton } from "@/ui/components/IconButton";
 
 const SignInSheet = dynamic(() => import("./SignInSheet").then((module) => module.SignInSheet), { ssr: false });
 
 /**
- * The header's account control. Signed in, it is a link to the account. Signed out, it links to
+ * The header's account control. Signed in, it opens a menu — บัญชีของฉัน · คำสั่งซื้อ ·
+ * ออกจากระบบ (round 2, B9: a customer had no way to sign out). Signed out, it links to
  * `/sign-in?returnTo=<this page>` directly — no detour through `/account`'s redirect (UX audit
  * Flow 1, bug #4), and it works without JavaScript — but once the page is interactive it opens
  * the sign-in sheet over the page instead, so signing in does not lose the customer's place. The
@@ -36,6 +40,8 @@ export function AccountButton({
       : `/sign-in?returnTo=${encodeURIComponent(here)}`;
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const t = useTranslations("auth");
+  const [leaving, startLeaving] = useTransition();
 
   function openSheet(event: React.MouseEvent) {
     if (signedIn || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -44,9 +50,41 @@ export function AccountButton({
     setOpen(true);
   }
 
-  return (
+  // The sign-in sheet stays mounted when the session starts: the header turns signed-in as soon as
+  // the OTP is verified, while the sheet still has the consent and profile steps to show.
+  const sheet = loaded ? (
+    <SignInSheet
+      open={open}
+      onOpenChange={setOpen}
+      onSignedIn={() => {
+        setOpen(false);
+        // Server components read the session cookie; re-render them with it.
+        router.refresh();
+      }}
+    />
+  ) : null;
+
+  const control = signedIn ? (
+    <DropdownMenu
+      label={label}
+      align="end"
+      trigger={<IconButton name="user" variant="ghost" size="sm" label={label} loading={leaving} />}
+      items={[
+        { id: "account", label: t("menu.account"), icon: "dashboard", onSelect: () => router.push("/account") },
+        { id: "orders", label: t("menu.orders"), icon: "package", onSelect: () => router.push("/account/orders") },
+        {
+          id: "sign-out",
+          label: t("signOut"),
+          icon: "log-out",
+          tone: "destructive",
+          separatorBefore: true,
+          onSelect: () => startLeaving(() => signOut("customer")),
+        },
+      ]}
+    />
+  ) : (
     <>
-      {!signedIn && signInLabel ? (
+      {signInLabel ? (
         <Link
           href={href}
           onClick={openSheet}
@@ -61,21 +99,18 @@ export function AccountButton({
         variant="ghost"
         size="sm"
         label={label}
-        className={!signedIn && signInLabel ? "lg:hidden" : undefined}
+        className={signInLabel ? "lg:hidden" : undefined}
       >
         <Link href={href} onClick={openSheet} />
       </IconButton>
-      {loaded ? (
-        <SignInSheet
-          open={open}
-          onOpenChange={setOpen}
-          onSignedIn={() => {
-            setOpen(false);
-            // Server components read the session cookie; re-render them with it.
-            router.refresh();
-          }}
-        />
-      ) : null}
+    </>
+  );
+
+  // The sheet keeps its place whichever control shows, so React keeps it mounted across sign-in.
+  return (
+    <>
+      {control}
+      {sheet}
     </>
   );
 }

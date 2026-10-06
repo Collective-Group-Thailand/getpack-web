@@ -14,6 +14,7 @@
   "qrTitle": "Scan to pay",
   "qrAlt": "PromptPay QR code for {amount}",
   "countdown": "QR valid for {minutes}:{seconds}",
+  "countdownHours": "QR valid for {hours} h {minutes} min (until {until})",
   "waiting": "Waiting for payment — this page updates by itself",
   "qrStep1": "Open your banking app and scan the QR",
   "qrStep2": "Check the amount and the payee, Collective Group (Thailand)",

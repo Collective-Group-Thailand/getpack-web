@@ -69,7 +69,17 @@
     "replenishment": "สั่งซ้ำตามรอบ",
     "callOffs": "สัญญาเรียกของ",
     "messages": "ข้อความ",
-    "structuralRequests": "คำขอออกแบบโครงสร้าง"
+    "structuralRequests": "คำขอออกแบบโครงสร้าง",
+    "waiting": "รายการรอคุณ",
+    "approvals": "คำขออนุมัติ",
+    "companyOrders": "ภาพรวมและคำสั่งซื้อของบริษัท",
+    "groups": {
+      "orders": "คำสั่งซื้อ",
+      "work": "งานของฉัน",
+      "company": "บริษัทของฉัน",
+      "companyNamed": "บริษัทของฉัน · {name}",
+      "account": "บัญชี"
+    }
   },
   "home": {
     "title": "บัญชีของฉัน",
@@ -98,7 +108,10 @@
     "suggestions": "ถึงเวลาสั่งเพิ่มหรือยัง",
     "allSuggestions": "ดูทั้งหมด",
     "documents": "เอกสารล่าสุด",
-    "documentRow": "{number} · {date} · {amount}"
+    "documentRow": "{number} · {date} · {amount}",
+    "approvalsForYou": "รออนุมัติจากคุณ {count} รายการ",
+    "approvalsForYouBody": "คำสั่งซื้อของ {company} ที่เกินวงเงินผู้สั่งซื้อ",
+    "approvalsOpen": "เปิดคำขออนุมัติ →"
   },
   "quotes": {
     "title": "ใบเสนอราคาที่บันทึกไว้",
