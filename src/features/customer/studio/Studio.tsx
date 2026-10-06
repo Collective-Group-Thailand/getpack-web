@@ -32,6 +32,7 @@ import type { PrintRule } from "@/features/designer/lib/checks";
 import { artworkColours } from "./state";
 import { studioFieldsOf } from "./spec";
 import { IntentPicker } from "@/features/customer/help/IntentPickerLazy";
+import { StartScreen } from "./StartScreen";
 import { RULE_HELP } from "./help";
 import { SampleDesignLink } from "./SampleDesign";
 import { StepBar } from "./StepBar";
@@ -374,6 +375,10 @@ export function Studio({
           ),
           panel,
           autoSetup,
+          // Before a box: the start screen fills the canvas (UX audit, studio).
+          empty: (ctx) => (
+            <StartScreen onChooseBox={ctx.openSetup} productSlug={productSlug} signedIn={mode === "store"} />
+          ),
           views: true,
           onSide,
           comments:
