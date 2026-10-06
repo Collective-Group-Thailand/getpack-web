@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { MEMO_STATUS, QUOTE_STATUS } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
@@ -14,6 +15,7 @@ import { DataTable, type DataTableColumn } from "@/ui/components/DataTable";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { toast } from "@/ui/components/Toast";
+import { cn } from "@/ui/lib/cn";
 
 import {
   adminBrowserApis,
@@ -39,19 +41,28 @@ const CHANNELS = ["web", "cs", "line", "b2b"] as const;
  */
 export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | null }) {
   const t = useTranslations("cs.quotations");
+  const canOrder = useCan("carts.manage_on_behalf");
   const tStatus = useTranslations("status");
   const format = useFormat();
   const { labelOf } = useProductTypes();
+  // Six columns (UX audit, /quotations): the code with its product, the customer, quantities, the
+  // total, the status, and how long it holds — the channel and the date kept one click away.
   const columns: DataTableColumn<Quotation>[] = [
     {
       id: "quoteCode",
       header: t("columns.code"),
       sortable: true,
       cell: (row) => (
-        <Link href={`/quotations/${row.id}`} className="text-primary font-mono font-medium hover:underline">
-          {/* A code is issued at share or PDF; until then, say so rather than show part of a UUID. */}
-          {row.quoteCode ?? <span className="text-muted font-sans font-normal">{t("noCode")}</span>}
-        </Link>
+        <div className="min-w-0">
+          <Link
+            href={`/quotations/${row.id}`}
+            className="text-primary font-mono font-medium whitespace-nowrap hover:underline"
+          >
+            {/* A code is issued at share or PDF; until then, say so rather than show part of a UUID. */}
+            {row.quoteCode ?? <span className="text-muted font-sans font-normal">{t("noCode")}</span>}
+          </Link>
+          <p className="text-muted truncate text-xs">{labelOf(row.productTypeCode)}</p>
+        </div>
       ),
     },
     {
@@ -64,7 +75,6 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
         </div>
       ),
     },
-    { id: "productType", header: t("columns.product"), cell: (row) => labelOf(row.productTypeCode) },
     {
       id: "channel",
       header: t("columns.channel"),
@@ -84,7 +94,11 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
       id: "quantities",
       header: t("columns.quantities"),
       numeric: true,
-      cell: (row) => row.options.map((option) => format.number(option.quantity)).join(" / "),
+      cell: (row) => (
+        <span className="whitespace-nowrap">
+          {row.options.map((option) => format.number(option.quantity)).join(" / ")}
+        </span>
+      ),
     },
     {
       id: "grossAmount",
@@ -93,8 +107,30 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
       cell: (row) => (row.options[0] ? format.thb(row.options[0].grossAmount) : "—"),
     },
     { id: "status", header: t("columns.status"), cell: (row) => <StatusChip map={QUOTE_STATUS} value={row.status} /> },
-    { id: "validUntil", header: t("columns.validUntil"), cell: (row) => format.date(row.validUntil) },
-    { id: "createdAt", header: t("columns.created"), sortable: true, cell: (row) => <When at={row.createdAt} /> },
+    { id: "validUntil", header: t("columns.validUntil"), cell: (row) => <ValidUntil date={row.validUntil} /> },
+    {
+      id: "createdAt",
+      header: t("columns.created"),
+      sortable: true,
+      hideable: true,
+      cell: (row) => <When at={row.createdAt} />,
+    },
+    {
+      id: "actions",
+      header: <span className="sr-only">{t("columns.actions")}</span>,
+      cell: (row) => (
+        <span className="flex justify-end gap-1">
+          {canOrder && (row.status === "saved" || row.status === "shared") ? (
+            <Button asChild size="sm" variant="ghost" iconStart="cart">
+              <Link href={`/orders/new?quote=${row.id}`}>{t("toOrder")}</Link>
+            </Button>
+          ) : null}
+          <Button asChild size="sm" variant="ghost" iconStart="document">
+            <Link href={`/quotations/${row.id}`}>{t("open")}</Link>
+          </Button>
+        </span>
+      ),
+    },
   ];
   return (
     <ResourceList
@@ -117,6 +153,7 @@ export function QuotationsList({ initial }: { initial: InitialPage<Quotation> | 
           options: CHANNELS.map((value) => ({ value, label: t(`channels.${value}`) })),
         },
       ]}
+      rowHref={(row) => `/quotations/${row.id}`}
       empty={{ title: t("empty"), description: t("emptyBody") }}
     />
   );
@@ -327,7 +364,35 @@ export function MemosList({ initial }: { initial: InitialPage<DiscountMemo> | nu
         },
       ]}
       rowTone={(row) => (row.belowMarginFloor ? "danger" : undefined)}
-      empty={{ title: t("empty") }}
+      // A memo is asked for while CS builds an order for a customer (its discount step), so the
+      // way to make one starts there (UX audit: the page had no way to create one).
+      empty={{
+        title: t("empty"),
+        description: t("emptyBody"),
+        action: (
+          <Button asChild iconStart="plus">
+            <Link href="/cs">{t("create")}</Link>
+          </Button>
+        ),
+      }}
     />
+  );
+}
+
+/** "ใช้ได้ถึง" on one line, amber within three days and red once it has lapsed (UX audit). */
+function ValidUntil({ date }: { date: string | null }) {
+  const format = useFormat();
+  const [today] = useState(() => new Date().toISOString().slice(0, 10));
+  if (!date) return <span className="text-muted">–</span>;
+  const days = Math.round((Date.parse(date.slice(0, 10)) - Date.parse(today)) / 86_400_000);
+  return (
+    <span
+      className={cn(
+        "whitespace-nowrap",
+        days < 0 ? "text-danger-subtle-fg font-semibold" : days < 3 ? "text-warning-subtle-fg font-medium" : undefined,
+      )}
+    >
+      {format.date(date, { style: date.slice(0, 4) === today.slice(0, 4) ? "dayMonth" : "short" })}
+    </span>
   );
 }

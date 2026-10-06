@@ -45,7 +45,10 @@
       "b2b": "B2B"
     },
     "submittedFrom": "Submitted from",
-    "submittedTo": "Submitted to"
+    "submittedTo": "Submitted to",
+    "claim": "Take it",
+    "claimed": "Assigned to you",
+    "claimFailed": "Could not assign it to you"
   },
   "actions": {
     "labels": {
@@ -204,7 +207,21 @@
       "target": "{type} target: {hours} business hours",
       "code": "Customer code",
       "phone": "Phone",
-      "email": "Email"
+      "email": "Email",
+      "stagesTitle": "Where the request stands",
+      "stages": {
+        "received": "Received",
+        "factories": "Factory prices",
+        "quoted": "Quotation",
+        "answered": "Customer's answer",
+        "ordered": "Ordered"
+      },
+      "stageStates": {
+        "done": "Done",
+        "current": "In progress",
+        "upcoming": "Not yet",
+        "skipped": "Skipped"
+      }
     },
     "request": {
       "title": "What was asked",
