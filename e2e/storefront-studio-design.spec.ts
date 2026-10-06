@@ -68,7 +68,7 @@ test("text placed on ฝาบน picked in 3D lands on the matching flat panel 
   await model.getByRole("group", { name: "เลือกด้านที่จะออกแบบ" }).getByRole("button", { name: "ฝา (บน)" }).click();
   await expect(page.getByRole("status").filter({ hasText: "กำลังแก้: ฝา (บน)" }).first()).toBeVisible();
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
   const response = await page.request.get(`${HOSTS.customer}/bff/v1/store/designs/${id}`);
   const saved = (await response.json()) as SavedDocument;

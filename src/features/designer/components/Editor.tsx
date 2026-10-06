@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+
+import { getPathname } from "@/i18n/navigation";
 import type Konva from "konva";
 import { nanoid } from "nanoid";
 
@@ -381,7 +383,12 @@ export default function Editor({
     updatedAt: session.design?.updatedAt ?? null,
     create: session.create,
     onCreated: (designId) => {
-      if (id !== designId) nav.replace(designHref(designId));
+      if (id === designId) return;
+      // A guest's design is autosaved from its first change, often mid-typing: a navigation would
+      // remount the editor and drop what was typed meanwhile, so only the address bar changes.
+      if (session.mode === "local")
+        window.history.replaceState(window.history.state, "", getPathname({ href: designHref(designId), locale }));
+      else nav.replace(designHref(designId));
     },
     onSaved: session.onSaved,
     box: session.box,

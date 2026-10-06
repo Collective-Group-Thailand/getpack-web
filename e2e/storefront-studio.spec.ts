@@ -89,7 +89,7 @@ test("style card → studio → price → quantity → new price, every step rev
   // Back to ③: the heading is still on the sheet, and a reload opens the step from the address.
   await steps.getByRole("button", { name: /ออกแบบ/ }).click();
   await expect(page.getByRole("navigation", { name: "เครื่องมือออกแบบ" })).toBeVisible();
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   await page.reload();
   await expect(steps.getByRole("button", { name: /ออกแบบ/ })).toHaveAttribute("aria-current", "step");
   await expect(perPiece).toBeVisible({ timeout: 15_000 });
