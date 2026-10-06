@@ -143,7 +143,7 @@ export function SampleView({ sample }: { sample: Sample }) {
             {t("quoteTitle")}
           </h2>
           {sample.sellGrossAmount ? (
-            <p className="text-2xl font-bold tabular-nums">{formatTHB(sample.sellGrossAmount, locale)}</p>
+            <p className="serif text-3xl tabular-nums">{formatTHB(sample.sellGrossAmount, locale)}</p>
           ) : null}
           <p className="text-muted text-sm">
             {[

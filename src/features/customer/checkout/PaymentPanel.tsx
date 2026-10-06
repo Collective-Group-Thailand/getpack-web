@@ -103,7 +103,7 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div>
         <p className="text-muted text-sm">{t("reference", { code: data.referenceCode })}</p>
-        <p className="text-3xl font-bold tabular-nums">{format.thb(data.cashAmount)}</p>
+        <p className="serif text-4xl tabular-nums">{format.thb(data.cashAmount)}</p>
         {data.whtAmount !== "0.00" ? (
           <p className="text-muted text-xs">
             {t("withheld", { total: format.thb(data.amount), wht: format.thb(data.whtAmount) })}

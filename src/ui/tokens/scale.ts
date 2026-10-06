@@ -67,7 +67,11 @@ export const SHADOW = {
 } as const;
 
 /** `--shadow-cta` in the customer zone: the primary colour, faint, below the button. */
-export const CUSTOMER_CTA_SHADOW = "0 10px 24px -12px color-mix(in oklab, var(--color-primary) 60%, transparent)";
+/** Design language v2: `0 14px 28px -14px rgba(13,122,102,.7)` in the light theme, from the primary token. */
+export const CUSTOMER_CTA_SHADOW = "0 14px 28px -14px color-mix(in oklab, var(--color-primary) 70%, transparent)";
+
+/** Design language v2: storefront cards are 22 px (the back office keeps 16, `DENSE_CARD_RADIUS`). */
+export const CUSTOMER_CARD_RADIUS = "1.375rem";
 
 /** Hovers 150–200 ms, sheets and drawers 250 ms (D-180). */
 export const DURATION = {
@@ -127,7 +131,8 @@ export const FONT_WEIGHT = {
  */
 export const FONT_FAMILY = {
   sans: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
-  display: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
+  /** Trirong (design language v2): headings by zone — see `src/ui/styles/base.css`. */
+  display: "var(--font-pk-serif-latin), var(--font-pk-serif-thai), ui-serif, Georgia, serif",
   mono: "var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 

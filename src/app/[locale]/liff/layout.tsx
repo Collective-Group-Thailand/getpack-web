@@ -20,7 +20,7 @@ export default async function LiffLayout({ children }: { children: React.ReactNo
       </a>
       <header className="border-border bg-surface sticky top-0 z-30 border-b">
         <div className="mx-auto flex h-12 max-w-xl items-center gap-2 px-4">
-          <Link href="/liff" className="font-display font-semibold">
+          <Link href="/liff" className="font-sans font-semibold">
             {BRAND_NAME}
           </Link>
           <span className="text-muted text-sm">{t("tagline")}</span>
