@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals -- the drawn boxes' own printed labels: part of the artwork, not UI copy. */
 /**
  * The home page's category tiles' drawings (design language v2, the "Main" board): a folding
  * carton set, a corrugated mailer, a kraft bag and a label roll, on the tile's kraft wash.

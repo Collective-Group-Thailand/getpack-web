@@ -28,7 +28,8 @@
       "categories": "packaging categories",
       "fastest": "fastest production",
       "days": "{days} days",
-      "proofed": "proofed before production"
+      "proofed": "proofed before production",
+      "proofedValue": "100%"
     },
     "note": {
       "title": "Proof approved",
