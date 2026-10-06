@@ -212,3 +212,9 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 
 - `POST /v1/admin/approvals/{requestId}/actions/remind` → 202; re-sends the current step's notification to its role, at most once per `approvals.remind_cooldown_minutes`. For a requester or a colleague without `approvals.act`, who now sees "รอ {role} อนุมัติ" and the step's due time instead of no buttons at all.
 - **Web meanwhile:** the waiting message and the due time only; no button until the endpoint exists.
+
+## `auth.staff.password-reset` — staff can reset a forgotten password themselves (UX audit, 2026-10-06)
+
+- `POST /v1/auth/staff/password-reset/request` `{ email }` → 202 always (no account enumeration); e-mails a single-use link valid `auth.password_reset_minutes`.
+- `POST /v1/auth/staff/password-reset/confirm` `{ token, password }` → 204; revokes the user's sessions; audited.
+- **Web meanwhile:** "ลืมรหัสผ่าน?" on the staff login explains that the company's Superadmin sets a new one.
