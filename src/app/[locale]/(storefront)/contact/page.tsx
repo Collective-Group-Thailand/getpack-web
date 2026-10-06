@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { getSupportChannels } from "@/features/customer/catalog/api.server";
 import { ContactForm } from "@/features/customer/help/ContactForm";
+import { Button } from "@/ui/components/Button";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,10 +15,22 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const [t, channels] = await Promise.all([getTranslations("help.contact"), getSupportChannels()]);
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-10 px-4 py-10 lg:grid-cols-[18rem_minmax(0,1fr)]">
+    <div className="max-w-content mx-auto grid w-full gap-10 px-5 py-10 md:px-8 md:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <header className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted">{t("intro")}</p>
+        {/* LINE first, as the channel the team answers fastest (UX audit, /contact). */}
+        {channels?.lineOaId ? (
+          <Button asChild size="lg" className="self-start" iconStart="chat">
+            <a
+              href={`https://line.me/R/ti/p/${encodeURIComponent(channels.lineOaId)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t("lineCta")}
+            </a>
+          </Button>
+        ) : null}
         {channels ? (
           <DescriptionList
             items={[
@@ -70,7 +83,7 @@ export default async function Page() {
           />
         ) : null}
       </header>
-      <section aria-labelledby="contact-form">
+      <section aria-labelledby="contact-form" className="border-border bg-surface rounded-card border p-6">
         <h2 id="contact-form" className="mb-4 text-lg font-semibold">
           {t("formTitle")}
         </h2>

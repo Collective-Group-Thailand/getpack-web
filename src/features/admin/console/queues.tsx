@@ -42,10 +42,13 @@ export function QueueTabs({
   tabs,
   param = "queue",
   label,
+  hideEmpty = false,
 }: {
   tabs: readonly QueueTab[];
   param?: string;
   label: string;
+  /** Leave out a counted tab with nothing in it, unless it is the one open (UX audit, /companies). */
+  hideEmpty?: boolean;
 }) {
   const t = useTranslations("console.queues");
   const format = useFormat();
@@ -58,6 +61,7 @@ export function QueueTabs({
     <nav aria-label={label} className="border-border -mb-px flex gap-1 overflow-x-auto border-b">
       {tabs.map((tab) => {
         const summary = tab.countKey ? queues.find((queue) => queue.key === tab.countKey) : undefined;
+        if (hideEmpty && summary && summary.count === 0 && current !== tab.value) return null;
         const href = tab.value ? `${pathname}?${param}=${encodeURIComponent(tab.value)}` : pathname;
         const active = current === tab.value || (!current && tab.value === null);
         return (
