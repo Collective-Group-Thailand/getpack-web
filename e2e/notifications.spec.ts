@@ -25,7 +25,8 @@ test.describe("notification centre", () => {
 
     await expect(async () => {
       await page.getByRole("button", { name: /การแจ้งเตือน/ }).click();
-      await expect(page.getByText("รับชำระเงินแล้ว (ข้อมูลจำลอง)")).toBeVisible({ timeout: 1_000 });
+      // In the bell's panel: the dashboard lists the same update in its own panel too.
+      await expect(page.getByRole("dialog").getByText("รับชำระเงินแล้ว (ข้อมูลจำลอง)")).toBeVisible({ timeout: 1_000 });
     }).toPass({ timeout: 15_000 });
 
     await expect(page.getByRole("button", { name: "อ่านทั้งหมดแล้ว" })).toBeVisible();

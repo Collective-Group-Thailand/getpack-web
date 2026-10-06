@@ -126,12 +126,12 @@ test.describe("order actions", () => {
     await gotoHydrated(page, `${HOSTS.admin}/orders/${order(2)}`);
     const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
 
-    // The order's own actions (`nextActions`): cancel leads; submitting artwork on the customer's
-    // behalf is offered too, and shows disabled — the desk has no flow for it yet.
+    // The order's own actions (`nextActions`): a destructive one never leads (UX audit) — cancel is
+    // in "⋯" with submitting artwork on the customer's behalf, shown disabled (no flow for it yet).
+    await expect(page.getByRole("button", { name: "ยกเลิกคำสั่งซื้อ" })).toHaveCount(0);
     await page.getByRole("button", { name: "การดำเนินการอื่น" }).click();
     await expect(page.getByRole("menuitem", { name: /ส่งไฟล์งาน/ })).toBeDisabled();
-    await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "ยกเลิกคำสั่งซื้อ" }).click();
+    await page.getByRole("menuitem", { name: /ยกเลิกคำสั่งซื้อ/ }).click();
     const dialog = page.getByRole("alertdialog");
     // Only the reasons staff may give (D-060).
     await page.getByRole("combobox", { name: /เหตุผล/ }).click();
