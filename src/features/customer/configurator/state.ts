@@ -359,7 +359,17 @@ export function chosenOf(configurator: Configurator, state: ConfiguratorState, k
  */
 export function seedFromDesign(
   configurator: Configurator,
-  query: { pattern?: string; material?: string; l?: string; w?: string; d?: string; qty?: string; from?: string },
+  query: {
+    pattern?: string;
+    material?: string;
+    l?: string;
+    w?: string;
+    d?: string;
+    qty?: string;
+    from?: string;
+    /** A standard size's code, from a row of the product page's size table (UX audit). */
+    size?: string;
+  },
 ): Partial<ConfiguratorState> | undefined {
   const mm = (value: string | undefined) => (value && /^\d{1,4}(\.\d)?$/.test(value) ? Number(value) : null);
   const [l, w, d] = [mm(query.l), mm(query.w), mm(query.d)];
@@ -370,8 +380,17 @@ export function seedFromDesign(
   const material = groupsOf(configurator)
     .find((group) => group.kind === "material")
     ?.options.find((option) => option.id === query.material);
-  if (!pattern && !material && !(l && w) && !tiers) return undefined;
+  const standard = query.size
+    ? configurator.standardSizes.find((candidate) => candidate.code === query.size)
+    : undefined;
+  if (!pattern && !material && !(l && w) && !tiers && !standard) return undefined;
   const seed: Partial<ConfiguratorState> = {};
+  if (standard) {
+    seed.sizeMode = "standard";
+    seed.standardSizeCode = standard.code;
+    seed.dims = { ...NO_DIMS, l: standard.lengthMm, w: standard.widthMm, d: standard.heightMm };
+    seed.basis = "internal";
+  }
   if (tiers && qty !== null) {
     seed.quantities = tiers;
     seed.quantity = qty;

@@ -23,7 +23,6 @@ type Facts = Pick<
  */
 export async function cardFacts(card: Facts) {
   const [t, format] = await Promise.all([getTranslations("catalog"), getFormat()]);
-  const price = card.startingPricePerPiece ? t("price.from", { price: format.thb(card.startingPricePerPiece) }) : null;
   const assumes = card.startingPriceAssumes
     ? t("price.basisQuantity", { quantity: format.number(card.startingPriceAssumes.quantity) })
     : null;
@@ -35,37 +34,40 @@ export async function cardFacts(card: Facts) {
     : null;
   const moq = card.moq !== null ? t("card.moq", { quantity: format.number(card.moq) }) : null;
   const campaign = card.campaignBadge;
+  // UX audit, product card: the price bold in brand colour with the reference price struck through
+  // on the same line, then one caption line — the quantity it assumes, the MOQ, the lead time.
+  const amount = card.startingPricePerPiece ? format.thb(card.startingPricePerPiece) : null;
   return {
-    price: price ? (
-      <span className="flex flex-wrap items-baseline gap-x-2">
-        <span>{price}</span>
+    price: amount ? (
+      <span className="flex flex-wrap items-baseline gap-x-1.5">
+        <span className="text-muted text-sm">{t("price.fromLabel")}</span>
+        <span className="text-primary text-lg font-bold tabular-nums">{amount}</span>
+        <span className="text-muted text-sm">{t("price.perPiece")}</span>
         {campaign && card.referencePrice ? (
           <s
-            className="text-muted text-xs"
+            className="text-muted ms-1 text-sm"
             aria-label={t("card.referencePrice", { price: format.thb(card.referencePrice) })}
           >
             {format.thb(card.referencePrice)}
           </s>
         ) : null}
-        {assumes ? <span className="text-muted text-xs font-normal">{assumes}</span> : null}
       </span>
     ) : (
-      t("price.onRequest")
+      <span className="text-muted text-sm">{t("price.onRequest")}</span>
     ),
-    meta: [moq, leadTime].filter(Boolean).join(" · ") || null,
+    meta: [assumes, moq, leadTime].filter(Boolean).join(" · ") || null,
     badges: (
-      <>
-        <Badge
-          tone={card.availability === "instant" ? "success" : card.availability === "partial" ? "warning" : "info"}
-        >
-          {t(`card.availability.${card.availability}`)}
-        </Badge>
-        {campaign ? (
-          <Badge tone="accent" icon="tag">
-            {t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}
-          </Badge>
-        ) : null}
-      </>
+      <Badge
+        tone={card.availability === "instant" ? "success" : card.availability === "partial" ? "warning" : "info"}
+        className="bg-surface/95"
+      >
+        {t(`card.availability.${card.availability}`)}
+      </Badge>
     ),
+    promoBadge: campaign ? (
+      <Badge tone="accent" appearance="solid" icon="tag">
+        {t("card.campaign", { label: campaign.label, date: format.date(campaign.endsAt) })}
+      </Badge>
+    ) : null,
   };
 }

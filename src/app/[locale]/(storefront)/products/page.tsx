@@ -7,11 +7,10 @@ import {
   listProducts,
   listStockProducts,
 } from "@/features/customer/catalog/api.server";
-import { CatalogueNav } from "@/features/customer/catalog/CatalogueNav";
 import { pick } from "@/features/customer/catalog/localize";
 import { ProductGrid, type GridItem } from "@/features/customer/catalog/ProductGrid";
+import { CategoryTiles } from "@/features/customer/catalog/CategoryTiles";
 import { ProductSearchForm } from "@/features/customer/catalog/ProductSearchForm";
-import { TypeFilter } from "@/features/customer/catalog/TypeFilter";
 import { getPathname, Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
@@ -109,37 +108,39 @@ export default async function ProductsPage({
         {!q ? <p className="text-muted mt-2">{t("list.intro")}</p> : null}
       </header>
 
-      <div className="mt-8 grid gap-8 md:grid-cols-[14rem_1fr]">
-        <aside className="flex min-w-0 flex-col gap-4">
+      {/* One toolbar: search as you type, the result count, and the view toggle (UX audit). */}
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <div className="min-w-0 flex-1 sm:max-w-md">
           <ProductSearchForm action={action} q={q} />
-          <CatalogueNav tree={tree} />
-          <TypeFilter tree={tree} current={productType} hrefFor={(code) => hrefWith({ productType: code })} />
-          <p className="text-muted text-xs">{t("filters.more")}</p>
-        </aside>
+        </div>
+        <p className="text-muted ms-auto text-sm" aria-live="polite">
+          {t("list.results", { count: products.meta.total + stock.meta.total })}
+        </p>
+        <nav aria-label={t("filters.view")} className="border-border bg-surface rounded-control flex border p-1">
+          {(["grid", "list"] as const).map((option) => (
+            <Link
+              key={option}
+              href={hrefWith({ view: option === "list" ? "list" : null }, page)}
+              aria-current={view === option ? "true" : undefined}
+              aria-label={t(`filters.views.${option}`)}
+              title={t(`filters.views.${option}`)}
+              className={
+                view === option
+                  ? "bg-primary-subtle text-primary-subtle-fg grid size-9 place-items-center rounded-lg"
+                  : "text-muted hover:bg-bg-subtle grid size-9 place-items-center rounded-lg"
+              }
+            >
+              <Icon name={option === "grid" ? "dashboard" : "list-bullet"} size={18} aria-hidden="true" />
+            </Link>
+          ))}
+        </nav>
+      </div>
 
+      {!q && !productType && page === 1 ? <CategoryTiles tree={tree} /> : null}
+
+      <div className="mt-10 flex flex-col gap-10">
         <div className="flex min-w-0 flex-col gap-10">
           <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-muted text-sm" aria-live="polite">
-                {t("list.results", { count: products.meta.total + stock.meta.total })}
-              </p>
-              <nav aria-label={t("filters.view")} className="flex gap-1">
-                {(["grid", "list"] as const).map((option) => (
-                  <Link
-                    key={option}
-                    href={hrefWith({ view: option === "list" ? "list" : null }, page)}
-                    aria-current={view === option ? "true" : undefined}
-                    className={
-                      view === option
-                        ? "bg-primary-subtle text-primary-subtle-fg rounded-md px-3 py-1.5 text-sm font-medium"
-                        : "hover:bg-bg-subtle rounded-md px-3 py-1.5 text-sm"
-                    }
-                  >
-                    {t(`filters.views.${option}`)}
-                  </Link>
-                ))}
-              </nav>
-            </div>
             {chips.length > 0 ? (
               <ul className="flex flex-wrap items-center gap-2" aria-label={t("filters.applied")}>
                 {chips.map((chip) => (
