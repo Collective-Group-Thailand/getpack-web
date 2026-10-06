@@ -82,7 +82,7 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 - E2E (mock): new `storefront-home.spec.ts` — the eight sections, quick start into a priced configurator with the size and quantity carried over, newsletter consent, menu → type filter → chips → list view → clear all, MOQ and tolerance link, the tablet menu sheet (no horizontal scroll at 768 px); axe clean. Full chromium suite **447 passed**; the one failure (the assistant's guest case) was a click before its lazy button hydrated on the heavier catalogue — the test now retries the press.
 - Journeys: **T1 discovery → price 4 steps, within budget** (was over; the quick start). T12 unchanged at 6 (its start is the home page's "เริ่มออกแบบ", kept). **T4 fails on `main` too** as of this session (the studio's added heading now lands too near a fold, so a preflight warning blocks "สั่งเลย"); not caused here, recorded for the studio's owner.
 - **Real API** (v0.41.0): home 200 without `store.company-identity` (the footer omits the line); `storefront`, `configurator`, `ux`, `rfq`, `repeat` integration specs 8/8.
-- Lighthouse (plain build, private port): within budget after two documented ratchet moves (`docs/performance-budgets.md` U-F3).
+- Lighthouse (plain build, private port): within budget after documented ratchet moves (`docs/performance-budgets.md` U-F3), re-measured after merging main's U3.6.
 
 ---
 
