@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { readFilters, readSort } from "@/features/customer/catalog/ordering";
 import { CategoryView } from "@/features/customer/catalog/CategoryView";
 import { absoluteImageUrl } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
@@ -11,7 +12,12 @@ import { StockProductView } from "@/features/customer/catalog/StockProductView";
 import { publicOrigin } from "@/lib/seo";
 
 type Params = Promise<{ locale: string; key: string }>;
-type SearchParams = Promise<{ type?: string | string[]; page?: string | string[] }>;
+type SearchParams = Promise<{
+  type?: string | string[];
+  page?: string | string[];
+  f?: string | string[];
+  sort?: string | string[];
+}>;
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) || undefined;
 
@@ -68,6 +74,8 @@ export default async function ProductKeyPage({ params, searchParams }: { params:
         tree={resolved.tree}
         typeCode={one(query.type)}
         page={Math.max(1, Number(one(query.page)) || 1)}
+        filters={readFilters(one(query.f))}
+        sort={readSort(one(query.sort))}
       />
     );
   }

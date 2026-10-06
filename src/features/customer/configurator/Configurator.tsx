@@ -300,7 +300,7 @@ export function Configurator({
       })
     : undefined;
 
-  const statusOf = (step: StepKey): StepStatus => {
+  const ownStatusOf = (step: StepKey): StepStatus => {
     const own = ((): StepStatus => {
       if (step === "size") return sizeOk ? "complete" : state.basis === null ? "upcoming" : "error";
       if (step === "logistics") return load ? "complete" : "upcoming";
@@ -322,8 +322,17 @@ export function Configurator({
       if (step === "summary") return ready ? "complete" : "upcoming";
       return "complete";
     })();
-    if (step !== current) return own;
-    return own === "error" ? "error" : "current";
+    return own;
+  };
+  // Steps are ticked in order (UX audit, configure): a later step that has its defaults is not
+  // shown as done while an earlier one still waits, which read as "steps 5–6 done, 4 not".
+  const statusOf = (step: StepKey): StepStatus => {
+    const index = steps.indexOf(step);
+    const earlierOpen = steps.slice(0, index).some((earlier) => ownStatusOf(earlier) !== "complete");
+    const own = ownStatusOf(step);
+    const ordered = own === "complete" && earlierOpen ? "upcoming" : own;
+    if (step !== current) return ordered;
+    return ordered === "error" ? "error" : "current";
   };
 
   const summaryOf = (step: StepKey): string | undefined => {
@@ -495,7 +504,9 @@ export function Configurator({
   const rfqHref = `${rfqPath}?from=${encodeURIComponent(configurator.slug)}${calculationId ? `&calc=${calculationId}` : ""}`;
 
   return (
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_20rem] lg:grid-cols-[minmax(0,1fr)_22rem]">
+    // 7:5 — the preview and the steps on the left, the price panel (with add-to-cart) on the right,
+    // sticky so the total and the button stay in view (UX audit, configure).
+    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_21rem] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-10">
       <div className="flex min-w-0 flex-col gap-6">
         <ConfiguratorPreview configurator={configurator} state={state} productName={name} />
         <Stepper

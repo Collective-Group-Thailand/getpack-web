@@ -218,3 +218,9 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - `POST /v1/auth/staff/password-reset/request` `{ email }` → 202 always (no account enumeration); e-mails a single-use link valid `auth.password_reset_minutes`.
 - `POST /v1/auth/staff/password-reset/confirm` `{ token, password }` → 204; revokes the user's sessions; audited.
 - **Web meanwhile:** "ลืมรหัสผ่าน?" on the staff login explains that the company's Superadmin sets a new one.
+
+## `store.quotes.calculate` — the saving of each quantity step against the first (UX audit, 2026-10-06)
+
+- **Ask:** on each `QuoteStepDto`, `savingVsFirstPct: string | null` — the per-piece saving of this quantity against the smallest priced quantity, as a decimal percent string (`"18.0"`), computed by the pricing engine.
+- **Why:** the audit's price panel shows "ประหยัด 18%" on each tier; the web never computes on money (CLAUDE.md), so the figure has to come from the API.
+- **Web meanwhile:** the tier table shows per piece and total only.

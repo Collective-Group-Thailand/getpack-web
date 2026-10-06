@@ -201,15 +201,14 @@ test.describe("U5.2 / U5.6 — content that teaches", () => {
 test.describe("U5.2 — first visit", () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test("the configurator asks what brings you here, and remembers the answer", async ({ page }) => {
+  test("the studio asks what brings you here; the configurator does not ask again", async ({ page }) => {
+    // UX audit, configure: the intent card is asked once, in the studio, not above the 3D preview.
     await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
+    await expect(page.locator("section[aria-labelledby=intent-title]")).toHaveCount(0);
+    await gotoHydrated(page, `${HOSTS.customer}/studio/new?product=tuck-end-box`);
     const picker = page.locator("section[aria-labelledby=intent-title]");
     await expect(picker.getByRole("heading", { name: "วันนี้อยากเริ่มจากอะไร" })).toBeVisible();
     await expectNoViolations(page);
-    await picker.getByRole("button", { name: /ยังไม่มีแบบ ช่วยออกแบบ/ }).click();
-    await expect(page).toHaveURL(/\/studio\/new\?product=tuck-end-box/);
-    await gotoHydrated(page, `${HOSTS.customer}/configure/tuck-end-box`);
-    await expect(page.getByRole("button", { name: "ไม่แน่ใจว่าจะเริ่มยังไง? ให้เราช่วยแนะนำ" })).toBeVisible();
   });
 
   test("the studio shows three tips once, dismissible and back from the question mark", async ({ page }) => {

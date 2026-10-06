@@ -44,7 +44,8 @@
       "instant": "Instant price",
       "partial": "Some specs",
       "rfq": "Request a quote"
-    }
+    },
+    "seePrice": "See prices"
   },
   "price": {
     "from": "From {price} / piece",
@@ -56,7 +57,9 @@
     "leadTime": "Made in {min}–{max} business days",
     "leadTimeExact": "Made in {days} business days",
     "onRequest": "Priced to your spec",
-    "seePrice": "See the price on the product page"
+    "seePrice": "See the price on the product page",
+    "fromLabel": "From",
+    "perPiece": "/ piece"
   },
   "product": {
     "gallery": "Product images",
@@ -94,7 +97,14 @@
     "toleranceNote": "The quantity delivered may be slightly under or over, within the print industry's standard tolerance.",
     "toleranceLink": "See the tolerances in the guarantee",
     "more": "See also",
-    "materials": "Compare materials"
+    "materials": "Compare materials",
+    "pictureLabel": "The flat dieline of {name}",
+    "pictureCaption": "A dieline drawn to scale at a standard size",
+    "guaranteeShort": "Work guaranteed",
+    "sizesHint": "Pick a size to price it straight away, or set your own in the configurator",
+    "customSizeTitle": "Not a standard size?",
+    "customSizeBody": "Set length × width × height yourself; the dieline and the price follow at once",
+    "customSizeCta": "Set my own size"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",
@@ -118,9 +128,10 @@
     }
   },
   "category": {
-    "rfqTitle": "Need a specification that is not listed?",
-    "rfqBody": "Tell us the size, material and quantity and our team will quote within a business day",
-    "rfqCta": "Request a quote"
+    "rfqTitle": "Can't find what you need?",
+    "rfqBody": "Send the spec and get a quotation within a business day",
+    "rfqCta": "Request a quote",
+    "description": "{types} {mode, select, instant {— prices and lead times shown on every item} rfq {— send the spec, get a quotation within a business day} other {— services from Packio's design team}}"
   },
   "menu": {
     "toggle": "Product categories",
@@ -185,5 +196,28 @@
     "remove": "Remove this filter",
     "clearAll": "Clear all",
     "search": "Search “{q}”"
+  },
+  "groups": {
+    "instant": "Instant price",
+    "rfq": "By quotation",
+    "service": "Services",
+    "types": "types"
+  },
+  "chips": {
+    "label": "Filter products",
+    "instant": "Instant price",
+    "rfq": "By quotation",
+    "moq100": "MOQ ≤ {moq}",
+    "fast": "Made in ≤ {days} days",
+    "promo": "On promotion"
+  },
+  "sort": {
+    "label": "Sort by",
+    "recommended": "Recommended",
+    "price": "Price, low → high",
+    "fastest": "Fastest to make"
+  },
+  "tiles": {
+    "types": "{count, plural, one {# type} other {# types}}"
   }
 }
