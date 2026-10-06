@@ -111,7 +111,8 @@ export function ListSearch({
   const t = useTranslations("console.filters");
   const [text, setText] = useDebouncedValue(value, onChange);
   return (
-    <Field label={label} className="w-full max-w-sm">
+    // The placeholder says what to type; the label stays for screen readers only (UX audit: one-line toolbar).
+    <Field label={label} labelHidden className="w-full max-w-sm">
       <SearchInput
         value={text}
         onValueChange={setText}

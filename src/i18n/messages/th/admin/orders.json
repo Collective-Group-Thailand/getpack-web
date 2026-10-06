@@ -365,7 +365,8 @@
       "job": "งาน",
       "round": "รอบ",
       "trip": "เที่ยว"
-    }
+    },
+    "artworkLabel": "ไฟล์งาน"
   },
   "actions": {
     "failed": "ทำรายการไม่สำเร็จ",
@@ -461,7 +462,23 @@
       "other": "อัปเดตคำสั่งซื้อ"
     },
     "promisedOnTime": "ตามแผนกำหนด {at}",
-    "promisedLate": "ช้ากว่าแผน (กำหนด {at})"
+    "promisedLate": "ช้ากว่าแผน (กำหนด {at})",
+    "stagesTitle": "สถานะงาน",
+    "stages": {
+      "ordered": "สั่งซื้อแล้ว",
+      "paid": "ชำระเงิน",
+      "artwork": "ตรวจไฟล์และปรู๊ฟ",
+      "production": "ผลิต",
+      "shipping": "จัดส่ง"
+    },
+    "stageStates": {
+      "done": "เสร็จแล้ว",
+      "current": "กำลังดำเนินการ",
+      "upcoming": "ยังไม่ถึง",
+      "skipped": "ยกเลิก"
+    },
+    "dueTitle": "กำหนดส่ง",
+    "deliveryBy": "คาดว่าลูกค้าได้รับ {date}"
   },
   "group": {
     "title": "กลุ่มคำสั่งซื้อ",

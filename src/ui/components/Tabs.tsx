@@ -34,14 +34,14 @@ export function Tabs({ items, value, defaultValue, onValueChange, label, classNa
       onValueChange={onValueChange}
       className={className}
     >
-      <TabsPrimitive.List aria-label={label} className="border-border flex gap-1 border-b">
+      <TabsPrimitive.List aria-label={label} className="border-border flex gap-1 overflow-x-auto border-b">
         {items.map((item) => (
           <TabsPrimitive.Trigger
             key={item.value}
             value={item.value}
             disabled={item.disabled}
             className={cn(
-              "text-muted -mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium",
+              "text-muted -mb-px shrink-0 border-b-2 border-transparent px-3 py-2 text-sm font-medium whitespace-nowrap",
               "hover:text-fg data-[state=active]:border-primary data-[state=active]:text-fg",
               "disabled:pointer-events-none disabled:opacity-50",
             )}

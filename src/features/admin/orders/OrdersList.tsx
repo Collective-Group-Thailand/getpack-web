@@ -3,9 +3,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
-import { ARTWORK_STATUS, ORDER_STATUS } from "@/domain/status";
+import { ARTWORK_STATUS, ORDER_STATUS, statusMeta } from "@/domain/status";
 import { useFormat, When } from "@/features/shared/format";
 import { newIdempotencyKey } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -14,6 +14,7 @@ import { Button } from "@/ui/components/Button";
 import type { DataTableColumn } from "@/ui/components/DataTable";
 import { SlaTimer } from "@/ui/components/SlaTimer";
 import { toast } from "@/ui/components/Toast";
+import { cn } from "@/ui/lib/cn";
 
 import {
   adminBrowserApis,
@@ -151,6 +152,7 @@ function OrderCode({
 
 function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null }) {
   const t = useTranslations("orders.list");
+  const tStatus = useTranslations("status");
   const format = useFormat();
   const canManage = useCan("orders.manage");
 
@@ -171,18 +173,26 @@ function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null 
     {
       id: "status",
       header: t("columns.status"),
-      cell: (row) => (
-        <div className="flex flex-wrap gap-1">
-          <StatusChip map={ORDER_STATUS} value={row.status} />
-          <StatusChip map={ARTWORK_STATUS} value={row.artworkStatus} />
-        </div>
-      ),
+      // One chip; the artwork's own state is the sub-status, on hover and for screen readers
+      // (UX audit: "chip เดียว + sub-status เป็น tooltip").
+      cell: (row) => {
+        const artwork = statusMeta(ARTWORK_STATUS, row.artworkStatus);
+        return (
+          <span title={`${t("artworkStatus")}: ${tStatus(artwork.labelKey)}`}>
+            <StatusChip map={ORDER_STATUS} value={row.status} />
+            <span className="sr-only">
+              {" "}
+              {t("artworkStatus")}: {tStatus(artwork.labelKey)}
+            </span>
+          </span>
+        );
+      },
     },
     {
       id: "promisedShipDate",
       header: t("columns.ship"),
       sortable: true,
-      cell: (row) => format.date(row.promisedShipDate),
+      cell: (row) => <DueDate date={row.promisedShipDate} />,
     },
     {
       id: "groupExpiresAt",
@@ -190,7 +200,13 @@ function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null 
       hideable: true,
       cell: (row) => (row.groupExpiresAt ? <When at={row.groupExpiresAt} /> : "–"),
     },
-    { id: "placedAt", header: t("columns.created"), sortable: true, cell: (row) => <When at={row.placedAt} /> },
+    {
+      id: "placedAt",
+      header: t("columns.created"),
+      sortable: true,
+      hideable: true,
+      cell: (row) => <When at={row.placedAt} />,
+    },
   ];
 
   return (
@@ -204,8 +220,31 @@ function QueueOrders({ initial }: { initial: InitialPage<OrderQueueItem> | null 
       searchPlaceholder={t("searchPlaceholder")}
       bulkActions={canManage ? (ids, clear) => <ReminderButton ids={ids} clear={clear} /> : undefined}
       toolbarEnd={<CreateButton />}
+      rowHref={(row) => `/orders/${row.orderId}`}
       empty={{ title: t("emptyTitle"), description: t("emptyBody") }}
     />
+  );
+}
+
+/**
+ * A promised date on one line — "20 ต.ค." in the current year — coloured as it nears: amber within
+ * three days, red once it has passed (UX audit, /orders).
+ */
+function DueDate({ date }: { date: string | null }) {
+  const format = useFormat();
+  const [today] = useState(() => new Date().toISOString().slice(0, 10));
+  if (!date) return <span className="text-muted">–</span>;
+  const days = Math.round((Date.parse(date.slice(0, 10)) - Date.parse(today)) / 86_400_000);
+  return (
+    <span
+      className={cn(
+        "whitespace-nowrap tabular-nums",
+        days < 0 ? "text-danger-subtle-fg font-semibold" : days <= 3 ? "text-warning-subtle-fg font-medium" : undefined,
+      )}
+      title={format.date(date, { style: "long" })}
+    >
+      {format.date(date, { style: date.slice(0, 4) === today.slice(0, 4) ? "dayMonth" : "short" })}
+    </span>
   );
 }
 

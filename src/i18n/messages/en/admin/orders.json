@@ -365,7 +365,8 @@
       "job": "jobs",
       "round": "rounds",
       "trip": "trips"
-    }
+    },
+    "artworkLabel": "Artwork"
   },
   "actions": {
     "failed": "That did not work",
@@ -461,7 +462,23 @@
       "other": "Order updated"
     },
     "promisedOnTime": "On plan (due {at})",
-    "promisedLate": "Behind plan (due {at})"
+    "promisedLate": "Behind plan (due {at})",
+    "stagesTitle": "Where it stands",
+    "stages": {
+      "ordered": "Ordered",
+      "paid": "Payment",
+      "artwork": "Artwork and proof",
+      "production": "Production",
+      "shipping": "Delivery"
+    },
+    "stageStates": {
+      "done": "Done",
+      "current": "In progress",
+      "upcoming": "Not yet",
+      "skipped": "Cancelled"
+    },
+    "dueTitle": "Due to ship",
+    "deliveryBy": "Expected with the customer on {date}"
   },
   "group": {
     "title": "Order group",
