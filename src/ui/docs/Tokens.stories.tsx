@@ -257,7 +257,7 @@ export const Typography: Story = {
         </div>
       ))}
       <h1 className="text-display mt-4 font-bold">กล่องที่ผลิตได้จริง — h1 clamp(2rem, 5vw, 3.25rem)</h1>
-      <p className="font-display text-3xl">Anuphan สำหรับหัวเรื่อง — ป้ายชื่อกล่อง</p>
+      <p className="font-display text-3xl">Trirong สำหรับหัวเรื่อง — <em>ป้ายชื่อกล่อง</em></p>
       <p className="tabular-nums">Noto Sans Thai · ตัวเลขตาราง 1,234.56 ฿ · 11,111 ชิ้น</p>
       <p className="font-mono">PK-2569-00042 · JetBrains Mono</p>
     </div>

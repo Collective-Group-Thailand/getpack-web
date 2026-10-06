@@ -20,7 +20,8 @@ const cardVariants = cva("rounded-card bg-surface", {
      * a few pixels and takes the overlay shadow on hover. Motion only when the user allows it.
      */
     interactive: {
-      true: "duration-base ease-standard transition-[transform,box-shadow] hover:shadow-overlay motion-safe:hover:-translate-y-0.5",
+      // The lift is the zone's (`--card-lift`): 4 px on the storefront, none in the back office.
+      true: "duration-base ease-standard transition-[transform,box-shadow] hover:shadow-overlay motion-safe:hover:translate-y-[calc(var(--card-lift,2px)*-1)]",
       false: "",
     },
   },

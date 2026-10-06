@@ -34,7 +34,7 @@ export function PartnerSidebar({
       </div>
       {groups.map((group) => (
         <div key={group.key} className="flex flex-col gap-1">
-          <p className="text-muted px-3 text-xs font-semibold tracking-[0.12em] uppercase">{t(`groups.${group.key}`)}</p>
+          <p className="eyebrow px-3 text-[11px] tracking-[0.06em]">{t(`groups.${group.key}`)}</p>
           <ul className="flex flex-col gap-0.5">
             {group.items.map((item) => {
               const current = isCurrent(item.href, pathname);

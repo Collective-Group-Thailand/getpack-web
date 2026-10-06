@@ -126,7 +126,7 @@ export function StockOrderPanel({
           <Skeleton className="h-12 w-48" />
         ) : step?.grossAmount ? (
           <p className="flex flex-col">
-            <span className="text-2xl font-semibold tabular-nums">{format.thb(step.grossAmount)}</span>
+            <span className="serif text-3xl tabular-nums">{format.thb(step.grossAmount)}</span>
             <span className="text-muted text-sm">
               {t("totalFor", { quantity: format.number(step.quantity), unit })}
               {step.leadTimeDays ? ` · ${t("leadTime", { days: step.leadTimeDays })}` : ""}

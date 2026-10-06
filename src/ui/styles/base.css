@@ -40,11 +40,38 @@
   h2,
   h3,
   h4 {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     line-height: var(--leading-tight);
     font-weight: var(--font-weight-semibold);
     /* Thai tone marks sit above the cap height; tight tracking collides with them. */
     letter-spacing: 0;
+  }
+
+  /*
+   * Design language v2 "Warm Editorial" (round 2, Phase 2). The storefront sets its page titles
+   * and its large section titles (≥ 22 px) in Trirong; the back office and the factory app only
+   * their page title, at 30 px — sub-headings stay Anuphan for density, codes stay monospace.
+   */
+  [data-zone="customer"] h1,
+  [data-zone="customer"] h2:is(.text-2xl, .text-3xl, .text-4xl, .text-display) {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  [data-zone="admin"] main h1,
+  [data-zone="partner"] main h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.875rem;
+    letter-spacing: -0.01em;
+  }
+
+  /* One word in a storefront heading carries the accent: italic, medium, brand colour. */
+  [data-zone="customer"] :is(h1, h2) em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--color-primary);
   }
 
   /*
@@ -310,4 +337,117 @@
     color-mix(in oklab, currentColor 16%, transparent),
     transparent 62%
   );
+}
+
+/*
+ * Design language v2 colours: the deep green of dark bands and the auth panel, and the kraft of
+ * eyebrow rules and italic figures. Decoration only — text on them is checked where it is used.
+ */
+:root {
+  --green-ink: #083f36;
+  --kraft-3: #b8956a;
+  --card-lift: 2px;
+}
+
+/* A way-in card rises 4 px on the storefront; the back office and the factory app do not move. */
+[data-zone="customer"] {
+  --card-lift: 4px;
+}
+
+[data-zone="admin"],
+[data-zone="partner"] {
+  --card-lift: 0px;
+}
+
+@layer components {
+  /* The display serif on anything — a large price, a figure, a statement. */
+  .serif {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* The label over a section, with its kraft lead rule (replaces the old kicker). */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1px;
+    background: var(--kraft-3);
+    flex: none;
+  }
+
+  /* Paper grain over a hero, a tile, a product placeholder or a kraft band. */
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: multiply;
+    border-radius: inherit;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.24 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Kraft placeholders for a product with no photo — three gradients, never an icon. */
+  .kraft-1 {
+    background: linear-gradient(150deg, #e9dcc5 0%, #d9c39f 55%, #c9ab7e 100%);
+  }
+
+  .kraft-2 {
+    background: linear-gradient(160deg, #efe5d3 0%, #e1cfae 60%, #cfb388 100%);
+  }
+
+  .kraft-3 {
+    background: linear-gradient(140deg, #dcc7a3 0%, #c8a97b 60%, #b8956a 100%);
+  }
+
+  /* Page-load stagger: each `.rise` comes up 18 px over 0.9 s, the next 0.08 s later. */
+  .rise {
+    animation: pk-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  .rise:nth-child(2) {
+    animation-delay: 0.08s;
+  }
+
+  .rise:nth-child(3) {
+    animation-delay: 0.16s;
+  }
+
+  .rise:nth-child(4) {
+    animation-delay: 0.24s;
+  }
+
+  .rise:nth-child(5) {
+    animation-delay: 0.32s;
+  }
+
+  @keyframes pk-rise {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise {
+      animation: none;
+    }
+  }
 }

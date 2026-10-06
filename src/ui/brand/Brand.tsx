@@ -25,7 +25,7 @@ export function Brand({ href = "/", className }: { href?: string; className?: st
   return (
     <Link
       href={href}
-      className={`font-display flex items-center gap-2 font-semibold tracking-tight ${className ?? ""}`}
+      className={`font-sans flex items-center gap-2 font-semibold tracking-tight ${className ?? ""}`}
     >
       <BrandMark />
       <span>{BRAND_NAME}</span>

@@ -67,7 +67,7 @@ export async function SiteFooter() {
     <footer className="bg-fg text-fg-inverse mt-16">
       <div className="max-w-content mx-auto grid gap-10 px-5 pt-14 pb-10 sm:grid-cols-2 md:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <p className="font-display flex items-center gap-2.5 text-xl font-bold">
+          <p className="font-sans flex items-center gap-2.5 text-xl font-bold">
             <BrandMark size={32} />
             {BRAND_NAME}
           </p>
