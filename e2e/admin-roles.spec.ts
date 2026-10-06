@@ -22,9 +22,14 @@ for (const persona of PERSONAS) {
 
     const nav = page.getByRole("navigation", { name: "เมนูหลัก" });
     const entries = MENU_CATALOGUE.filter((entry) => entitled(persona, entry));
-    await expect(nav.getByRole("link")).toHaveCount(entries.length);
-
+    // The sidebar also offers screens packio-api's menu does not list yet, by permission
+    // (`localItems`, CONTRACT-REQUEST admin.menu-samples); every one of them must open too.
+    const LOCAL = ["/samples", "/structural-requests", "/style-intakes"];
+    await expect(nav.getByRole("link").first()).toBeVisible();
     const hrefs = await nav.getByRole("link").evaluateAll((links) => links.map((link) => link.getAttribute("href")!));
+    expect(hrefs.filter((href) => !LOCAL.includes(href) || entries.some((entry) => entry.path === href))).toHaveLength(
+      entries.length,
+    );
     for (const href of hrefs) {
       await gotoHydrated(page, `${HOSTS.admin}${href}`);
       await expect(page.getByRole("heading", { level: 1 }), href).toBeVisible();

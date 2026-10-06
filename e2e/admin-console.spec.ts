@@ -90,18 +90,23 @@ test.describe("dashboard", () => {
   test("opens on the queues this person may work", async ({ page }) => {
     // packio-api's queues (admin.dashboard.get), each behind its working permission.
     await signInAsStaff(page, "finance");
-    await expect(page.getByRole("heading", { level: 1, name: "ภาพรวมงาน" })).toBeVisible();
-    const queues = page.getByRole("region", { name: "คิวงานของคุณ" });
-    await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toBeVisible();
-    await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toHaveAttribute("href", "/finance/slips");
+    await expect(page.getByRole("heading", { level: 1, name: /^สวัสดี/ })).toBeVisible();
+    // Today's queues lead; the rest are a compact list, empty ones folded behind "แสดง" (UX audit).
+    const queues = page.getByRole("main");
+    const slips = queues.getByRole("link", { name: /สลิปรอตรวจ/ });
+    if ((await slips.count()) === 0) await queues.getByRole("button", { name: "แสดง" }).click();
+    await expect(slips.first()).toBeVisible();
+    await expect(slips.first()).toHaveAttribute("href", "/finance/slips");
     await expect(page.getByRole("heading", { name: "รอคุณอนุมัติ" })).toBeVisible();
     await expectAxeClean(page);
   });
 
   test("a CS agent's queues are the orders it works, not Finance's", async ({ page }) => {
     await signInAsStaff(page, "cs");
-    const queues = page.getByRole("region", { name: "คิวงานของคุณ" });
-    await expect(queues.getByRole("link", { name: /รอชำระ/ })).toBeVisible();
+    const queues = page.getByRole("main");
+    const show = queues.getByRole("button", { name: "แสดง" });
+    if (await show.count()) await show.click();
+    await expect(queues.getByRole("link", { name: /รอชำระ/ }).first()).toBeVisible();
     await expect(queues.getByRole("link", { name: /สลิปรอตรวจ/ })).toHaveCount(0);
   });
 });
