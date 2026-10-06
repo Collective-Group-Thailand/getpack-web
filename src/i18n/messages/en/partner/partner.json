@@ -68,6 +68,10 @@
       "knowledge": {
         "title": "Factory guides",
         "body": "Standards and how to work with Packio"
+      },
+      "styleIntakes": {
+        "title": "Offer a dieline",
+        "body": "Send a structure the factory makes for Packio to consider for its library"
       }
     }
   }

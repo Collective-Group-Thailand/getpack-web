@@ -571,3 +571,16 @@ Sources: `docs/prompts/U3-style-library.md` §U3.4 (wave 3: 15 bases, 51 variant
 | 7 | CS calculators on `rfq_required` | met | `features/admin/cs/Quotations.tsx` | — |
 | 8 | Cart re-pricing and reorder on a configuration that is no longer instant | missing | `pricing.not_instant` shows the generic message | offer "ขอใบเสนอราคา" for that product type, pre-filled from the product, in the reorder page and the cart |
 | 9 | Tier-B envelopes once packio-api publishes them | met (API) | `store.catalog.resolveQuotePath` (D-234) | — |
+
+## U3.6 — Partner dieline intake & structural design requests — 2026-10-06
+
+Sources: `docs/prompts/U3-style-library.md` §U3.6; D-272 (partner dieline intake), D-273 (structural design requests), D-242 (style imports); packio-api `v0.41.0`: `admin.styleIntakes.*`, `partner.styleIntakes.*` (+ `getTerms`), `admin.structuralRequests.*`, `store.structuralRequests.*`. Evidence from `main` at `f46582d`.
+
+| # | Requirement | Status | Evidence | Planned change |
+|---|---|---|---|---|
+| 1 | Admin/prepress screen: import a partner DXF/PDF, overlay it on the closest recipe, adjust parameters until it matches (deviation ≤ 0.5 mm), save as a new recipe or a fixed-size template with the partner's permission record | missing | no screen; the engine reads no DXF | `@packio/dieline/library`: `parseDxf` (LINE, ARC, CIRCLE, LWPOLYLINE with bulges, POLYLINE, SPLINE; `$INSUNITS`) and `deviationFrom` (both ways, mirrored if closer; tolerance 0.5 mm). `/admin/style-intakes` + detail: provenance (factory, sha256, terms version), the matcher (DXF opened from disk, recipe, board and sizes, overlay, deviation), match → approve as recipe / template → or reject. PDF: reviewed by eye (no PDF renderer) |
+| 1b | The factory's side | missing | — | `/partner/style-intakes`: the terms in force (none: closed), DXF/PDF upload, title, closest base, note, acceptance; the offers with Prepress's decision |
+| 2 | Customer "ไม่เจอแบบที่ต้องการ" → structural design request → status in the account → published style appears, requester notified | missing | — | CTA on `/styles`; `/account/structural-requests` (new, list, detail with progress and cancel); admin desk `/structural-requests`: assign (CONTRACT-REQUEST `admin.structural-request-designers`: CS cannot list staff), link the service RFQ, decline, deliver (designer), approve and publish (Prepress). Notifications are packio-api's |
+| — | Menu entries | missing | not in packio-api's menu catalogue | CONTRACT-REQUEST `admin.menu-styles`; buttons on the catalogue, prepress and orders pages |
+
+**Outcome (2026-10-06):** rows 1, 1b, 2 met on the published contract plus one contract request; the e2e walks all three zones (`e2e/style-intake.spec.ts`).
