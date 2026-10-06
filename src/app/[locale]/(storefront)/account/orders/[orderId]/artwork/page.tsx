@@ -37,7 +37,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
           {t("back", { code: artwork.order.orderCode })}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">{t("title")}</h1>
+          <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
           <StatusChip map={ARTWORK_STATUS} value={artwork.order.artworkStatus} size="md" />
         </div>
       </header>

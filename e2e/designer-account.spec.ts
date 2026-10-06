@@ -127,8 +127,11 @@ test("a guest's browser design is imported into the account after sign-in", asyn
 test("the order's artwork page opens the designer on its box", async ({ page }) => {
   await signInAsCustomer(page, `/account/orders/${DESIGN_ORDER}/artwork`, MOCK_DESIGNER_PHONE);
   // The order's dieline and size (`store.artwork.getRules`) and its product (`OrderDto.summary`).
-  await page.getByRole("link", { name: "ออกแบบออนไลน์บนกล่องนี้" }).click();
-  await expect(page).toHaveURL(/\/studio\/new\?(product=[^&]+&)?style=[a-z-]+&l=\d+&w=\d+&h=\d+/);
+  const open = page.getByRole("link", { name: "ออกแบบออนไลน์บนกล่องนี้" });
+  // The link names the whole box; the studio applies it and, once saved, takes the design's own
+  // address (round 2, B6) — so the box is asserted on the link, not on wherever the page got to.
+  await expect(open).toHaveAttribute("href", /\/studio\/new\?(product=[^&]+&)?style=[a-z-]+&l=\d+&w=\d+&h=\d+/);
+  await open.click();
   await expect(page).toHaveURL(new RegExp(`order=${DESIGN_ORDER}`));
 });
 

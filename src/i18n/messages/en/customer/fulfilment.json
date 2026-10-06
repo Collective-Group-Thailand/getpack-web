@@ -235,10 +235,13 @@
     "shipmentNo": "Delivery {shipment}",
     "arrivesBy": "Expected by {date}",
     "delivered": "Delivered on {date}",
-    "codePlaceholder": "Paste the tracking link, or the 6–64 character code on the carton label",
+    "codePlaceholder": "Paste the link or type the code",
     "signInTitle": "Have a Packio account?",
     "signInBody": "Sign in to see every order, the proofs waiting for you and the instalments due, in one place",
-    "signInCta": "Sign in to see all your orders"
+    "signInCta": "Sign in to see all your orders",
+    "mineTitle": "All your orders",
+    "mineBody": "Every order, the proofs waiting for you and the instalments due are in your account",
+    "mineCta": "See my orders"
   },
   "claimTimeline": {
     "title": "Claim status",

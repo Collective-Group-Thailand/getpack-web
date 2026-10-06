@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { TrackForm } from "@/features/customer/fulfilment/TrackForm";
 import { Link, redirect } from "@/i18n/navigation";
+import { getActor } from "@/lib/auth/actor";
 import { Button } from "@/ui/components/Button";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,7 +22,12 @@ export default async function Page({
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ code?: string | string[] }>;
 }) {
-  const [{ locale }, query, t] = await Promise.all([params, searchParams, getTranslations("fulfilment.track")]);
+  const [{ locale }, query, t, me] = await Promise.all([
+    params,
+    searchParams,
+    getTranslations("fulfilment.track"),
+    getActor("customer"),
+  ]);
   const code = (Array.isArray(query.code) ? query.code[0] : query.code)?.trim() ?? "";
   if (/^[A-Za-z0-9_-]{6,64}$/.test(code)) redirect({ href: `/track/${code}`, locale });
   return (
@@ -37,10 +43,13 @@ export default async function Page({
         </div>
         {/* The board's dark card: everything you ordered, one sign-in away. */}
         <aside className="rounded-card flex flex-col items-start gap-3 bg-[#1e1b18] p-6 text-white">
-          <p className="serif text-xl">{t("signInTitle")}</p>
-          <p className="text-sm text-white/75">{t("signInBody")}</p>
+          {/* Signed in already: the orders themselves, not a sign-in prompt. */}
+          <p className="serif text-xl">{me ? t("mineTitle") : t("signInTitle")}</p>
+          <p className="text-sm text-white/75">{me ? t("mineBody") : t("signInBody")}</p>
           <Button asChild variant="secondary" className="border-white bg-white text-[#1e1b18]">
-            <Link href="/sign-in?returnTo=%2Faccount%2Forders">{t("signInCta")}</Link>
+            <Link href={me ? "/account/orders" : "/sign-in?returnTo=%2Faccount%2Forders"}>
+              {me ? t("mineCta") : t("signInCta")}
+            </Link>
           </Button>
         </aside>
       </div>

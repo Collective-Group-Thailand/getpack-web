@@ -46,7 +46,7 @@ export async function BusinessDashboard({
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">{company.legalName}</h1>
+          <h1 className="text-[2rem] leading-tight">{company.legalName}</h1>
           <Badge tone={STATUS_TONE[company.status]}>{t(`status.${company.status}`)}</Badge>
         </div>
         <p className="text-muted text-sm">

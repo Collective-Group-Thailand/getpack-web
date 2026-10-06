@@ -21,7 +21,7 @@ export default async function Page() {
   const [t, format, samples] = await Promise.all([getTranslations("myOrders.samples"), getFormat(), listMySamples()]);
   return (
     <div>
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
       {samples.length === 0 ? (
         <EmptyState

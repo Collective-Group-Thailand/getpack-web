@@ -23,7 +23,7 @@ export default async function Page() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
       <header>
-        <h1 className="text-2xl font-bold">{t("chatTitle")}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("chatTitle")}</h1>
         <p className="text-muted mt-2">{t("chatIntro")}</p>
       </header>
       {signedIn ? (

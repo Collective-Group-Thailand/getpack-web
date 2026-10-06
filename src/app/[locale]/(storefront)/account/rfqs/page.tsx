@@ -33,7 +33,7 @@ export default async function Page() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
       <p className="text-muted mt-1">{t("intro")}</p>
       {draft || sent.length > 0 ? (
         <section aria-labelledby="rfq-baskets" className="mt-6">
