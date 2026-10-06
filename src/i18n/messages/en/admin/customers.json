@@ -102,7 +102,7 @@
     "available": "Available",
     "worth": "Worth {value}",
     "pending": "Pending",
-    "pendingNote": "After completion and the claim window (D-132)",
+    "pendingNote": "After completion and the claim window",
     "expiringSoon": "Expiring soon",
     "tier": "Tier",
     "tiers": {
@@ -117,7 +117,7 @@
   },
   "referrals": {
     "title": "Friends referred with {code}",
-    "note": "Points once the friend's first order passes the claim window (D-136)",
+    "note": "Points once the friend's first order passes the claim window",
     "queue": "Referral review queue",
     "referee": "Friend",
     "when": "Referred",

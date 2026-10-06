@@ -64,7 +64,7 @@ set and the print/PDF variants beside it.
 
 ## Typography
 
-ADR-0001: Noto Sans Thai (UI), Anuphan (display), JetBrains Mono (codes) — all SIL OFL,
+ADR-0001: Anuphan (UI and display — one face since the 2026-10-06 UX audit; Noto Sans Thai is no longer loaded), JetBrains Mono (codes) — all SIL OFL,
 self-hosted from `src/ui/fonts`. If the brand kit specifies licensed faces, the licence must
 cover web embedding *and* PDF embedding, because the print PDF carries them (F4 Part C).
 

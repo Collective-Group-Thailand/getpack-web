@@ -49,7 +49,7 @@ function Thumbnail({ src, fileId, empty }: { src: string | null; fileId: string 
     // eslint-disable-next-line @next/next/no-img-element
     <img src={url} alt="" className="h-full w-full object-contain" />
   ) : (
-    <span className="text-subtle flex h-full items-center justify-center text-sm">{empty}</span>
+    <span className="text-muted flex h-full items-center justify-center text-sm">{empty}</span>
   );
 }
 
@@ -234,7 +234,7 @@ export default function MyDesigns({ account }: { account: StoreDesign[] | null }
                 </div>
                 {row.spec ? <p className="text-muted mt-1 text-xs">{row.spec}</p> : null}
                 <div className="mt-3 flex items-center justify-between gap-2">
-                  <span className="text-subtle text-xs">
+                  <span className="text-muted text-xs">
                     {t("card.updated", { date: formatDateTime(row.updatedAt, locale) })}
                   </span>
                   <div className="flex gap-1">

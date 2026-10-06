@@ -139,7 +139,7 @@ function Confirmation({
           would dismiss it even while the typed confirmation is still locked.
         */}
         <Button
-          variant={tone === "destructive" ? "destructive" : "primary"}
+          variant={tone === "destructive" ? "destructive-solid" : "primary"}
           onClick={onConfirm}
           disabled={locked}
           loading={loading}

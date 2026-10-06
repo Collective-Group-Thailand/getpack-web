@@ -75,7 +75,7 @@
   },
   "slips": {
     "title": "Slip review",
-    "description": "Transfer slips the automatic check could not pass. Finance reviews each within 4 business hours (D-061), earliest deadline first.",
+    "description": "Transfer slips the automatic check could not pass. Finance reviews each within 4 business hours, earliest deadline first.",
     "search": "Search by order group code",
     "empty": "No slips to review",
     "emptyBody": "Slips that pass the automatic check confirm the payment without waiting for Finance.",
@@ -179,7 +179,7 @@
   },
   "refunds": {
     "title": "Customer refunds",
-    "description": "Every refund is approved by a Finance Manager other than the requester; a bank-transfer refund is then recorded by another Finance user with its reference (D-169).",
+    "description": "Every refund is approved by a Finance Manager other than the requester; a bank-transfer refund is then recorded by another Finance user with its reference.",
     "empty": "No refunds",
     "openPayment": "Open the payment",
     "columns": {
@@ -394,7 +394,7 @@
   },
   "creditNotes": {
     "title": "Credit notes",
-    "description": "Credit notes requested and what became of them. A credit note is numbered and posted only once a Finance Manager other than the requester approves it (D-169).",
+    "description": "Credit notes requested and what became of them. A credit note is numbered and posted only once a Finance Manager other than the requester approves it.",
     "search": "Search by order code or details",
     "empty": "No credit note requests yet",
     "new": "Request a credit note",
@@ -435,7 +435,7 @@
       "kind": "Kind",
       "kindHint": "Each kind maps to its statutory reason.",
       "kindHints": {
-        "shortage": "Short, but within the agreed tolerance (D-080)",
+        "shortage": "Short, but within the agreed tolerance",
         "claim": "Defective or off-spec, per the claim decision",
         "cancellation": "Cancelled after the deposit, before production",
         "price_reduction": "A lower price for the goods or service",
@@ -482,7 +482,7 @@
     },
     "items": {
       "title": "Trade receivables",
-      "description": "What customers and companies still owe, by due date. A company more than 7 days overdue cannot place credit orders (D-122).",
+      "description": "What customers and companies still owe, by due date. A company more than 7 days overdue cannot place credit orders.",
       "search": "Search by document, customer, company or order",
       "viewsLabel": "View",
       "all": "All",
@@ -580,7 +580,7 @@
     },
     "statements": {
       "title": "Company monthly statement",
-      "description": "Every credit-term order up to the chosen month, what was paid and what is still open, for consolidated payment (D-125).",
+      "description": "Every credit-term order up to the chosen month, what was paid and what is still open, for consolidated payment.",
       "company": "Company",
       "pickCompany": "Choose a company",
       "month": "Month",
@@ -599,7 +599,7 @@
     },
     "dunning": {
       "title": "Payment reminders",
-      "description": "Reminders sent to customers 7 days before the due date, on it, and after it (D-122).",
+      "description": "Reminders sent to customers 7 days before the due date, on it, and after it.",
       "remindedAt": "Reminded at",
       "sentAt": "Sent at",
       "document": "Document",
@@ -779,7 +779,7 @@
     },
     "open": {
       "title": "Open payables",
-      "description": "What Packio owes, net and VAT separately, with the date each becomes payable under the payout policy frozen on its PO (D-022, D-164).",
+      "description": "What Packio owes, net and VAT separately, with the date each becomes payable under the payout policy frozen on its PO.",
       "search": "Search by vendor, PO or order",
       "empty": "No open payables",
       "waiting": "Waiting for an event",
@@ -857,7 +857,7 @@
     },
     "goodsReceipts": {
       "title": "Goods receipts",
-      "description": "Recorded from the POD and the reconciled quantity; the factory is paid for the lower of delivered and ordered (D-165, P15).",
+      "description": "Recorded from the POD and the reconciled quantity; the factory is paid for the lower of delivered and ordered (, P15).",
       "search": "Search by GR or PO number",
       "empty": "Nothing received yet",
       "received": "{quantity} delivered",
@@ -872,7 +872,7 @@
     },
     "statements": {
       "title": "Factory billing statements",
-      "description": "Packio generates the statement from PO and delivery for the factory to confirm; the factory then issues its own tax invoice (D-090).",
+      "description": "Packio generates the statement from PO and delivery for the factory to confirm; the factory then issues its own tax invoice.",
       "search": "Search by statement number",
       "empty": "No billing statements",
       "breadcrumb": "You are here",
@@ -1151,7 +1151,7 @@
   },
   "payouts": {
     "title": "Factory and vendor payout runs",
-    "description": "Finance builds a run from what is payable and proposes it; a C-Level other than the proposer approves; then the bank file goes out and the bank's result is recorded (D-022, D-166).",
+    "description": "Finance builds a run from what is payable and proposes it; a C-Level other than the proposer approves; then the bank file goes out and the bank's result is recorded.",
     "search": "Search by run number",
     "empty": "No payout runs yet",
     "new": "New payout run",
@@ -1490,7 +1490,7 @@
     },
     "accounts": {
       "title": "Company bank accounts",
-      "description": "A new account is usable after two approvers (Finance, then Finance Manager — D-169).",
+      "description": "A new account is usable after two approvers (Finance, then Finance Manager —).",
       "propose": "Propose an account",
       "account": "Account",
       "purpose": "Used for",

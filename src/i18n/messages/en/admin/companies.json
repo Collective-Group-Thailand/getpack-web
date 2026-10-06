@@ -1,7 +1,7 @@
 {
   "list": {
     "title": "Companies (B2B)",
-    "description": "Business accounts, KYC documents and credit standing (D-120…D-125)",
+    "description": "Business accounts, KYC documents and credit standing",
     "statusesLabel": "Account statuses",
     "all": "All",
     "search": "Search name, code or tax ID",
@@ -33,7 +33,7 @@
       "orders": "Orders"
     },
     "blocked": "Credit orders blocked: payment overdue",
-    "blockedBody": "Prepaid orders still work; the block lifts once the overdue amount is paid. No late fee (D-122).",
+    "blockedBody": "Prepaid orders still work; the block lifts once the overdue amount is paid. No late fee.",
     "reason": "Reason",
     "changed": "Status changed",
     "failed": "The action failed",
@@ -41,7 +41,7 @@
       "approve-kyc": {
         "label": "Approve KYC",
         "title": "Approve the KYC",
-        "body": "{name} becomes active, gets its company code and starts prepaid; the required documents must be verified first (D-120, D-121)."
+        "body": "{name} becomes active, gets its company code and starts prepaid; the required documents must be verified first."
       },
       "reject-kyc": {
         "label": "Return",
@@ -70,7 +70,7 @@
   },
   "overview": {
     "terms": "Terms",
-    "termsNote": "PO numbers and the internal approval threshold are set by the company's own admin (D-123, D-125)",
+    "termsNote": "PO numbers and the internal approval threshold are set by the company's own admin",
     "vat": "VAT registered",
     "vatYes": "Yes",
     "vatNo": "No",
@@ -92,7 +92,7 @@
     "withholdsNo": "No",
     "none": "–",
     "receivables": "Receivables and discount",
-    "receivablesNote": "What the open invoices owe (D-122) and the company discount in force (D-124)",
+    "receivablesNote": "What the open invoices owe and the company discount in force",
     "open": "Open",
     "overdue": "Overdue",
     "oldestDays": "oldest {days} days",
@@ -106,7 +106,7 @@
   },
   "kyc": {
     "title": "KYC documents",
-    "rule": "Company certificate no older than 6 months, PP20 if VAT-registered, signatory details (D-120)",
+    "rule": "Company certificate no older than 6 months, PP20 if VAT-registered, signatory details",
     "doc": "Document",
     "types": {
       "company_certificate": "Company certificate",
@@ -155,7 +155,7 @@
   },
   "branches": {
     "title": "Branches",
-    "note": "One tax invoice per branch (D-125)",
+    "note": "One tax invoice per branch",
     "code": "Branch code",
     "name": "Name",
     "headOffice": "Head office",
@@ -164,7 +164,7 @@
   },
   "credit": {
     "title": "Credit",
-    "note": "New accounts pay first; a limit is requested once eligible, and who approves depends on the amount (D-121)",
+    "note": "New accounts pay first; a limit is requested once eligible, and who approves depends on the amount",
     "request": "Request a limit",
     "limit": "Limit",
     "term": "Term",
@@ -208,7 +208,7 @@
     "versionStatus": "Status",
     "requested": "Requested by",
     "receivables": "Receivables by age",
-    "receivablesNote": "Overdue amounts block credit orders by the system's rule (D-122)",
+    "receivablesNote": "Overdue amounts block credit orders by the system's rule",
     "aging": {
       "current": "Not yet due",
       "d1_30": "1–30 days over",
@@ -226,7 +226,7 @@
   },
   "statements": {
     "title": "Monthly figures",
-    "note": "For consolidated payment; tax invoices are still per order (D-125)",
+    "note": "For consolidated payment; tax invoices are still per order",
     "opening": "Opening",
     "invoiced": "Invoiced",
     "paid": "Paid",

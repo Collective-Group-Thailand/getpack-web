@@ -152,8 +152,8 @@
 
   /* Typography (ADR-0001). */
   --font-*: initial;
-  --font-sans: var(--font-pk-sans-latin), var(--font-pk-sans-thai), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-pk-display-latin), var(--font-pk-display-thai), var(--font-pk-sans-latin), sans-serif;
+  --font-sans: var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --text-xs: clamp(0.75rem, 0.73rem + 0.09vw, 0.8125rem);
   --text-sm: clamp(0.875rem, 0.85rem + 0.11vw, 0.9375rem);
@@ -161,9 +161,9 @@
   --text-lg: clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem);
   --text-xl: clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem);
   --text-2xl: clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem);
-  --text-3xl: clamp(1.875rem, 1.66rem + 0.98vw, 2.25rem);
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.2vw, 2.375rem);
   --text-4xl: clamp(2.25rem, 1.87rem + 1.7vw, 3rem);
-  --text-display: clamp(2rem, 5vw, 3.25rem);
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4rem);
   --leading-tight: 1.25;
   --leading-snug: 1.4;
   --leading-normal: 1.6;
@@ -182,11 +182,17 @@
   --radius-2xl: 1.5rem;
   --radius-full: 9999px;
   --radius-control: 0.75rem;
-  --radius-card: 1rem;
+  --radius-card: 1.25rem;
+  --radius-band: 1.75rem;
   --radius-cta: 0.75rem;
   --shadow-none: none;
   --shadow-card: 0 1px 2px rgb(30 27 24 / 0.06);
   --shadow-overlay: 0 8px 24px rgb(30 27 24 / 0.1);
+  --shadow-lift: 0 20px 40px -24px rgb(60 40 20 / 0.35);
+  --shadow-cta: none;
+  --container-content: 73.75rem;
+  --container-nav: 82.5rem;
+  --container-console: 90rem;
 
   /* Motion (respect prefers-reduced-motion — see src/ui/styles/base.css). */
   --duration-fast: 150ms;
@@ -415,5 +421,13 @@
 
 [data-zone="customer"] {
   --radius-cta: 9999px;
+  --shadow-cta: 0 10px 24px -12px color-mix(in oklab, var(--color-primary) 60%, transparent);
+}
+
+/* The back office and the factory app run denser: 16 px cards (UX audit design baseline). */
+
+[data-zone="admin"],
+[data-zone="partner"] {
+  --radius-card: 1rem;
 }
 

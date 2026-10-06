@@ -111,7 +111,8 @@ test.describe("order actions", () => {
 
     await page.getByRole("button", { name: "เริ่มผลิต" }).click();
     const dialog = page.getByRole("alertdialog");
-    await expect(dialog).toContainText("D-073");
+    await expect(dialog).toContainText("การเริ่มด้วยมือเป็นกรณียกเว้น");
+    await expect(dialog).not.toContainText("D-073"); // no internal decision codes in the UI (UX audit)
     await dialog.getByLabel(/พิมพ์/).fill(code);
     await dialog.getByLabel(/เหตุผลของกรณียกเว้น/).fill("ลูกค้าเร่งงานเปิดตัวสินค้า");
     await dialog.getByRole("button", { name: "เริ่มผลิต" }).click();

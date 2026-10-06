@@ -20,6 +20,7 @@ import { NumberInput } from "@/ui/components/Input";
 import { PriceSummary } from "@/ui/components/PriceSummary";
 import { Select } from "@/ui/components/Select";
 import { toast } from "@/ui/components/Toast";
+import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { Icon } from "@/ui/icons";
 
 import { geoName, type Address } from "../account/address";
@@ -244,14 +245,14 @@ export function CartView({ initialCart, initialAddresses }: { initialCart: Cart;
           <li key={item.id} className="border-border rounded-2xl border p-4">
             <article aria-labelledby={`cart-item-${item.id}`} className="flex flex-col gap-4">
               <div className="flex items-start gap-4">
-                <div className="bg-bg-subtle flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-                  {item.summary.product?.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- catalogue image from the API
+                {item.summary.product?.imageUrl ? (
+                  <div className="bg-bg-subtle flex size-16 shrink-0 overflow-hidden rounded-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- catalogue image from the API */}
                     <img src={item.summary.product.imageUrl} alt="" className="size-full object-cover" />
-                  ) : (
-                    <Icon name="box" size={24} aria-hidden="true" className="text-muted" />
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <ProductThumb family={productFamilyOf(item.summary.product?.slug)} />
+                )}
                 <div className="min-w-0 flex-1">
                   <h2 id={`cart-item-${item.id}`} className="font-semibold">
                     {nameOf(item)}

@@ -129,7 +129,7 @@ export async function SiteHeader() {
         </p>
       ) : null}
       <header className="z-sticky border-border bg-surface/90 pk-condense sticky top-0 border-b backdrop-blur">
-        <div className="pk-condense-row mx-auto flex h-16 max-w-[1320px] items-center gap-2 px-4 lg:grid lg:h-22 lg:grid-cols-[auto_1fr_auto] lg:gap-10 lg:px-10">
+        <div className="pk-condense-row max-w-nav mx-auto flex h-16 items-center gap-2 px-4 lg:grid lg:h-22 lg:grid-cols-[auto_1fr_auto] lg:gap-10 lg:px-10">
           <div className="flex items-center gap-2">
             <MobileProductsMenu label={t("nav.menu")} closeLabel={tCommon("actions.close")}>
               <ul className="flex flex-col gap-1 text-base font-medium">

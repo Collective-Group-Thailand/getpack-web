@@ -3,9 +3,9 @@
     "title": "Settings",
     "detailTitle": "Setting",
     "breadcrumb": "Breadcrumb",
-    "description": "Every configurable business value, what is in force, what is scheduled and its history. Every change is effective-dated and audited (D-063).",
+    "description": "Every configurable business value, what is in force, what is scheduled and its history. Every change is effective-dated and audited.",
     "search": "Search settings",
-    "searchPlaceholder": "Key, description or decision id (D-052)",
+    "searchPlaceholder": "Key, description or decision id",
     "clearSearch": "Clear search",
     "noMatch": "No setting matches",
     "columns": {
@@ -88,7 +88,7 @@
       "failed": "Could not change the value",
       "pendingExists": "A change is already waiting for approval.",
       "masked": "This value is hidden from you, so it cannot be changed here.",
-      "notOwner": "Only {role} can change this value (D-063).",
+      "notOwner": "Only {role} can change this value.",
       "hints": {
         "string": "Text",
         "integer": "A whole number",
@@ -187,7 +187,7 @@
   },
   "templates": {
     "title": "Notification templates",
-    "description": "The messages sent to customers, staff and factories, per language and version: draft, test, then publish (D-143).",
+    "description": "The messages sent to customers, staff and factories, per language and version: draft, test, then publish.",
     "columns": {
       "key": "Template",
       "description": "Description",
@@ -248,7 +248,7 @@
   },
   "routes": {
     "title": "Notification routes",
-    "description": "Which event reaches whom, on which channel, with which template (D-143, D-144).",
+    "description": "Which event reaches whom, on which channel, with which template.",
     "rulesTitle": "Rules the system always enforces",
     "rulesBody": "SMS only for critical events; marketing only with consent and inside 09:00–20:00; transactional e-mail cannot be switched off.",
     "columns": {

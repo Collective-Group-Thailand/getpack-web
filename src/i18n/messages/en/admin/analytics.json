@@ -1,6 +1,6 @@
 {
   "title": "Demand analytics",
-  "description": "What customers ask for, what we cannot yet serve, and capacity — the case for recruiting factories (D-102); nightly rollups",
+  "description": "What customers ask for, what we cannot yet serve, and capacity — the case for recruiting factories; nightly rollups",
   "range": "Period",
   "ranges": {
     "7d": "7 days",
@@ -205,7 +205,7 @@
   },
   "assistant": {
     "title": "AI assistant",
-    "description": "The enabling gate (D-306), the Thai evaluation results, usage and cost.",
+    "description": "The enabling gate, the Thai evaluation results, usage and cost.",
     "cleared": "Cleared — it can be switched on outside local",
     "notCleared": "Not cleared to be switched on outside local",
     "gate": "It can be switched on once a provider is chosen under ADR-0012 and the latest evaluation meets the minimum pass rate with every red-team case passed.",

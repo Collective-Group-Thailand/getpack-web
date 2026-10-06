@@ -11,6 +11,8 @@ export interface EmptyStateProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   action?: React.ReactNode;
   /** Slot for an original illustration; keep the icon when there is none. */
   illustration?: React.ReactNode;
+  /** The title's element — `h1` when the empty state is the whole page (a 404), so it is not said twice. */
+  titleAs?: "p" | "h1" | "h2" | "h3";
 }
 
 /**
@@ -23,6 +25,7 @@ export function EmptyState({
   icon = "box",
   action,
   illustration,
+  titleAs: Title = "p",
   className,
   ...props
 }: EmptyStateProps) {
@@ -35,7 +38,7 @@ export function EmptyState({
       {...props}
     >
       {illustration ?? <Icon name={icon} size={32} className="text-subtle" />}
-      <p className="text-lg font-medium">{title}</p>
+      <Title className="text-lg font-medium">{title}</Title>
       {description ? <p className="text-muted max-w-prose text-sm">{description}</p> : null}
       {action ? <div className="mt-2 flex items-center gap-2">{action}</div> : null}
     </div>

@@ -19,7 +19,7 @@ export function CompareTray() {
       aria-label={t("tray")}
       className="border-border bg-surface shadow-card z-sticky fixed inset-x-0 bottom-16 border-t md:bottom-0"
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
+      <div className="max-w-content mx-auto flex flex-wrap items-center gap-2 px-4 py-3">
         <h2 className="text-sm font-medium">{t("tray")}</h2>
         <ul className="flex flex-wrap gap-1">
           {compare.codes.map((code) => (
