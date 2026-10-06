@@ -1,37 +1,51 @@
+import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 
 import { StaffLoginForm } from "@/features/admin/auth/StaffLoginForm";
+import { AuthSplitLayout } from "@/features/shared/auth/AuthSplitLayout";
 import { signInReturnTo } from "@/features/shared/auth/return-to";
 import { getActor } from "@/lib/auth/actor";
-import { Card } from "@/ui";
-import { BRAND_NAME } from "@/ui/brand";
+import { zoneHosts } from "@/lib/env/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth");
   return { title: t("staff.title") };
 }
 
+/**
+ * Staff sign-in (UX audit Flow 1, step 3): the storefront's sign-in layout with the back office's
+ * dark panel, the form on the right, and the way to the partner factories' app below it.
+ */
 export default async function StaffLoginPage({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
-  const [t, params, actor] = await Promise.all([getTranslations("auth"), searchParams, getActor("admin")]);
+  const [t, params, actor, requestHeaders] = await Promise.all([
+    getTranslations("auth.staff"),
+    searchParams,
+    getActor("admin"),
+    headers(),
+  ]);
 
   // Already signed in: send them on, rather than offering a form that would sign them in again.
   const returnTo = signInReturnTo(params.returnTo);
   if (actor) redirect(returnTo);
 
-  return (
-    <main id="main" className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-4 py-16">
-      <div className="mb-6">
-        <p className="text-muted text-sm font-medium">{BRAND_NAME}</p>
-        {/* The page's one h1. `CardTitle` starts at h2 by design, so the heading lives here. */}
-        <h1 className="mt-1 text-2xl font-semibold">{t("staff.title")}</h1>
-        <p className="text-muted mt-1 text-sm">{t("staff.subtitle")}</p>
-      </div>
+  // The partner zone is another host of this same deployment, on the scheme this request came in on.
+  const scheme = requestHeaders.get("x-forwarded-proto") ?? (process.env.NODE_ENV === "production" ? "https" : "http");
+  const partnerLoginUrl = `${scheme}://${zoneHosts.partner}/login`;
 
-      <Card padding="lg" elevation="raised">
-        <StaffLoginForm returnTo={returnTo} />
-      </Card>
-    </main>
+  return (
+    <AuthSplitLayout
+      tone="ink"
+      headline={t("panelHeadline")}
+      lead={t("panelLead")}
+      points={[t("point1"), t("point2"), t("point3")]}
+      homeLink={(children) => <Link href="/">{children}</Link>}
+    >
+      <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+      <p className="text-muted mt-2 mb-8 text-base">{t("subtitle")}</p>
+      <StaffLoginForm returnTo={returnTo} partnerLoginUrl={partnerLoginUrl} />
+    </AuthSplitLayout>
   );
 }

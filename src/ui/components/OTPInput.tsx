@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useFieldProps } from "./Field";
 import { controlVariants } from "./Input";
 import { cn } from "../lib/cn";
@@ -13,6 +15,13 @@ export interface OTPInputProps {
   disabled?: boolean;
   /** Called once the field holds a full-length code, so the form can submit itself. */
   onComplete?: (value: string) => void;
+  /**
+   * `boxes`: one box per digit, 64 px (UX audit, sign-in) — drawn over the same single input, so
+   * pasting, SMS autofill and a screen reader behave exactly as with `field`.
+   */
+  appearance?: "field" | "boxes";
+  /** The field is wrong (an error message sits under it). */
+  invalid?: boolean;
   className?: string;
 }
 
@@ -29,8 +38,19 @@ export interface OTPInputProps {
  * It composes `controlVariants` rather than restyling, so it inherits the invalid border, the
  * disabled treatment and the product's one focus ring (design-system.md §8).
  */
-export function OTPInput({ value, onChange, onBlur, length, disabled, onComplete, className }: OTPInputProps) {
+export function OTPInput({
+  value,
+  onChange,
+  onBlur,
+  length,
+  disabled,
+  onComplete,
+  appearance = "field",
+  invalid,
+  className,
+}: OTPInputProps) {
   const fieldProps = useFieldProps();
+  const [focused, setFocused] = useState(false);
 
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     // Keep only digits, so a pasted "123 456" — or "รหัส 123456" out of an SMS — still works.
@@ -39,7 +59,7 @@ export function OTPInput({ value, onChange, onBlur, length, disabled, onComplete
     if (digits.length === length) onComplete?.(digits);
   }
 
-  return (
+  const input = (boxes: boolean) => (
     <input
       {...fieldProps}
       type="text"
@@ -54,15 +74,48 @@ export function OTPInput({ value, onChange, onBlur, length, disabled, onComplete
       // limit, applied after the non-digits are gone.
       value={value}
       onChange={handleChange}
-      onBlur={onBlur}
+      onFocus={() => setFocused(true)}
+      onBlur={() => {
+        setFocused(false);
+        onBlur?.();
+      }}
+      aria-invalid={invalid || fieldProps["aria-invalid"] || undefined}
       disabled={disabled ?? fieldProps.disabled}
-      className={cn(
-        controlVariants({ inputSize: "lg" }),
-        // The indent matches the tracking so the digits stay optically centred: letter
-        // spacing is added after each character, including the last.
-        "text-center indent-[0.5em] font-mono tracking-[0.5em] tabular-nums",
-        className,
-      )}
+      className={
+        boxes
+          ? // Over the boxes, invisible but real: it takes the taps, the keys and the paste.
+            "absolute inset-0 h-full w-full cursor-text bg-transparent text-transparent caret-transparent opacity-0 outline-none selection:bg-transparent"
+          : cn(
+              controlVariants({ inputSize: "lg" }),
+              // The indent matches the tracking so the digits stay optically centred: letter
+              // spacing is added after each character, including the last.
+              "text-center indent-[0.5em] font-mono tracking-[0.5em] tabular-nums",
+              className,
+            )
+      }
     />
+  );
+
+  if (appearance === "field") return input(false);
+
+  const active = Math.min(value.length, length - 1);
+  return (
+    <div className={cn("relative grid gap-2 sm:gap-2.5", className)} style={{ gridTemplateColumns: `repeat(${length}, minmax(0, 1fr))` }}>
+      {Array.from({ length }, (_, index) => (
+        <span
+          key={index}
+          aria-hidden="true"
+          className={cn(
+            "rounded-control bg-surface flex h-14 items-center justify-center border text-2xl font-semibold tabular-nums transition-colors sm:h-16",
+            invalid ? "border-danger" : "border-border-strong",
+            focused && index === active && !invalid && "border-primary ring-primary/25 ring-4",
+            disabled && "opacity-60",
+          )}
+        >
+          {value[index] ?? ""}
+        </span>
+      ))}
+      {input(true)}
+    </div>
   );
 }

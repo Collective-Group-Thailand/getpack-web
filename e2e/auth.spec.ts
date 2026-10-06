@@ -19,7 +19,7 @@ test.describe("staff sign-in", () => {
     await expect(page).toHaveURL(`${HOSTS.admin}/login`);
 
     await page.getByLabel("อีเมล").fill(STAFF.email);
-    await page.getByLabel("รหัสผ่าน").fill(STAFF.password);
+    await page.getByLabel("รหัสผ่าน", { exact: true }).fill(STAFF.password);
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
 
     await expect(page).toHaveURL(`${HOSTS.admin}/`);
@@ -40,7 +40,7 @@ test.describe("staff sign-in", () => {
       await page.context().clearCookies();
       await page.goto(`${HOSTS.admin}/login?returnTo=${encodeURIComponent(returnTo)}`);
       await page.getByLabel("อีเมล").fill(STAFF.email);
-      await page.getByLabel("รหัสผ่าน").fill(STAFF.password);
+      await page.getByLabel("รหัสผ่าน", { exact: true }).fill(STAFF.password);
       await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
       await expect(page).toHaveURL(`${HOSTS.admin}/`);
       await expect(accountButton(page)).toBeVisible();
@@ -50,7 +50,7 @@ test.describe("staff sign-in", () => {
   test("refuses the wrong password without saying which half was wrong", async ({ page }) => {
     await page.goto(`${HOSTS.admin}/login`);
     await page.getByLabel("อีเมล").fill(STAFF.email);
-    await page.getByLabel("รหัสผ่าน").fill("not-the-password");
+    await page.getByLabel("รหัสผ่าน", { exact: true }).fill("not-the-password");
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
 
     await expect(page.getByRole("status")).toContainText("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
@@ -126,7 +126,7 @@ test.describe("customer OTP sign-in", () => {
 
     // The hint names the number the code went to, which is what someone needs in order to
     // notice they typed the wrong one.
-    await expect(page.getByText(OTP.phone, { exact: false })).toBeVisible();
+    await expect(page.getByText("081 234 5678", { exact: false })).toBeVisible();
 
     await page.getByLabel("รหัส OTP").fill(OTP.code);
 

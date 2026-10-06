@@ -32,7 +32,10 @@ const SIGN_IN = {
 
 async function signIn(page: Page, phone: string, locale: keyof typeof SIGN_IN = "th") {
   const labels = SIGN_IN[locale];
-  const sheet = page.getByRole("dialog", { name: labels.title });
+  // Over a page it is a dialog (a sheet on a phone); /sign-in itself is a page of its own.
+  const sheet = new URL(page.url()).pathname.endsWith("/sign-in")
+    ? page.getByRole("main")
+    : page.getByRole("dialog", { name: labels.title });
   await sheet.getByLabel(labels.phone).fill(phone);
   await sheet.getByRole("button", { name: labels.send }).click();
   await sheet.getByLabel(labels.otp).fill(MOCK_OTP.code);
@@ -229,10 +232,10 @@ test.describe("signing in", () => {
 
   test("Google, Apple and LINE are offered but off when this deployment has no credentials", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/sign-in`);
-    for (const name of ["เข้าสู่ระบบด้วย Google", "เข้าสู่ระบบด้วย Apple", "เข้าสู่ระบบด้วย LINE"]) {
+    for (const name of ["ดำเนินการต่อด้วย Google", "ดำเนินการต่อด้วย Apple", "ดำเนินการต่อด้วย LINE"]) {
       await expect(page.getByRole("button", { name })).toBeDisabled();
     }
-    await expect(page.getByRole("link", { name: "อ่านประกาศความเป็นส่วนตัว" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "นโยบายความเป็นส่วนตัว" })).toBeVisible();
   });
 });
 
