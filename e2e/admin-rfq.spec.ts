@@ -254,7 +254,8 @@ test.describe("closing an RFQ", () => {
 
     await moreAction(page, /ปฏิเสธคำขอ/);
     const dialog = page.getByRole("alertdialog", { name: "ปฏิเสธคำขอราคา" });
-    await expect(dialog).toContainText("D-102");
+    await expect(dialog).toContainText("ความต้องการที่ไม่ได้รับการตอบสนอง");
+    await expect(dialog).not.toContainText("D-102"); // no internal decision codes in the UI (UX audit)
     await choose(page, /^เหตุผล/, "กำลังการผลิตเต็มในช่วงที่ต้องการ");
     await dialog.getByLabel(new RegExp(`พิมพ์ ${code}`)).fill(code);
     await dialog.getByRole("button", { name: "ปฏิเสธคำขอ" }).click();
