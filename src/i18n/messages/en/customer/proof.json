@@ -90,5 +90,9 @@
     "hint": "The studio's drawing of the version locked to this order, to compare with the proof below. The proof is what confirms the print.",
     "label": "Design {title}, version {versionNo}",
     "open": "Open in the studio (editing makes a new version)"
-  }
+  },
+  "layers": "Show",
+  "layerFile": "File",
+  "layerDieline": "Dieline",
+  "layerBoth": "Both"
 }

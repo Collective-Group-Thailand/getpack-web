@@ -148,5 +148,14 @@
     "messages": "Message the team",
     "styles": "See box styles",
     "learn": "Learn before you order"
+  },
+  "preflight": {
+    "states": {
+      "pass": "Passed",
+      "fail": "Failed — must be fixed",
+      "warn": "Should be fixed",
+      "unknown": "Not checked"
+    },
+    "page": "Page {page}"
   }
 }

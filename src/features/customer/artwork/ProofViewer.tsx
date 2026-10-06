@@ -24,7 +24,6 @@ import { IconButton } from "@/ui/components/IconButton";
 import { Textarea } from "@/ui/components/Input";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { Select } from "@/ui/components/Select";
-import { Switch } from "@/ui/components/Switch";
 import { toast } from "@/ui/components/Toast";
 import { cn } from "@/ui/lib/cn";
 
@@ -47,6 +46,7 @@ const isImage = (proof: Proof) => proof.proofFile.mimeType.startsWith("image/");
 function Page({
   proof,
   overlay,
+  fileHidden = false,
   zoom,
   threads,
   selected,
@@ -58,6 +58,8 @@ function Page({
 }: {
   proof: Proof;
   overlay: boolean;
+  /** Only the dieline: the file stays in place (it gives the page its size) but is not drawn. */
+  fileHidden?: boolean;
   zoom: number;
   threads: Thread[];
   selected?: string | null;
@@ -130,7 +132,7 @@ function Page({
         <img
           src={imageUrl}
           alt={t("pageAlt", { version: proof.versionNo })}
-          className="block w-full select-none"
+          className={cn("block w-full select-none", fileHidden && "invisible")}
           draggable={false}
         />
         {overlay && overlayUrl && !overlayBroken ? (
@@ -311,7 +313,9 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
   );
   const [slider, setSlider] = useState(50);
   const [zoom, setZoom] = useState(1);
-  const [overlay, setOverlay] = useState(true);
+  // What shows (UX audit, proof review): the file, the dieline, or the dieline over the file.
+  const [layers, setLayers] = useState<"file" | "dieline" | "both">("both");
+  const overlay = layers !== "file";
   const [tool, setTool] = useState<Tool>("view");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [comment, setComment] = useState("");
@@ -465,7 +469,17 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               </Button>
             </div>
             {proof.dielineFileId ? (
-              <Switch checked={overlay} onCheckedChange={setOverlay} label={t("dieline")} />
+              <SegmentedControl
+                label={t("layers")}
+                size="sm"
+                value={layers}
+                onValueChange={setLayers}
+                options={[
+                  { value: "file", label: t("layerFile") },
+                  { value: "dieline", label: t("layerDieline") },
+                  { value: "both", label: t("layerBoth") },
+                ]}
+              />
             ) : null}
           </>
         ) : null}
@@ -511,6 +525,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
               <Page
                 proof={proof}
                 overlay={overlay}
+                fileHidden={layers === "dieline"}
                 zoom={zoom}
                 threads={threads}
                 selected={selected}
@@ -556,6 +571,7 @@ export function ProofViewer({ initial, version }: { initial: Artwork; version: n
                       <Page
                         proof={entry}
                         overlay={overlay}
+                        fileHidden={layers === "dieline"}
                         zoom={zoom}
                         threads={[]}
                         label={t("canvas", { version: entry.versionNo })}
