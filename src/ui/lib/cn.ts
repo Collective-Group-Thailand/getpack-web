@@ -11,8 +11,8 @@ import { extendTailwindMerge } from "tailwind-merge";
  * shadow or type size in the tokens is missing here.
  */
 export const SEMANTIC_SCALE_NAMES = {
-  radius: ["control", "card", "cta"],
-  shadow: ["card", "overlay"],
+  radius: ["control", "card", "cta", "band"],
+  shadow: ["card", "overlay", "lift", "cta"],
   text: ["display"],
 };
 

@@ -49,7 +49,7 @@ export async function StockProductView({ product }: { product: StockProduct }) {
   const unit = t(`stock.units.${product.unit}`);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+    <div className="max-w-content mx-auto px-5 py-8 md:px-8 md:py-12">
       <TrackOnView
         name="product_viewed"
         properties={{ route: "/products/[key]", productType: "standard_product", quoteMode: "instant" }}

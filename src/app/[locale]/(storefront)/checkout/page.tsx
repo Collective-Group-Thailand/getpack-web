@@ -27,7 +27,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   if (cart.items.length === 0) return redirect({ href: "/cart", locale });
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="max-w-content mx-auto px-5 py-8 md:px-8">
       <Link href="/cart" className="text-primary text-sm underline-offset-4 hover:underline">
         {t("backToCart")}
       </Link>

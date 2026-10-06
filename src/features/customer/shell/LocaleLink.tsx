@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { DropdownMenu } from "@/ui/components/DropdownMenu";
-import { IconButton } from "@/ui/components/IconButton";
+import { LocaleTrigger } from "./LocaleTrigger";
 
 /**
  * The storefront's language switcher.
@@ -41,7 +41,7 @@ export function LocaleLink({
       label={t("label")}
       open={open}
       onOpenChange={onOpenChange}
-      trigger={<IconButton name="language" variant="ghost" size="sm" label={t("label")} autoFocus={autoFocus} />}
+      trigger={<LocaleTrigger label={t("label")} autoFocus={autoFocus} />}
       items={routing.locales.map((locale) => ({
         id: locale,
         selected: locale === current,

@@ -1,7 +1,7 @@
 {
   "list": {
     "title": "Requests for quote",
-    "description": "Quotes customers asked for where no instant price exists. Each category has its own SLA (D-100).",
+    "description": "Quotes customers asked for where no instant price exists. Each category has its own SLA.",
     "queuesLabel": "RFQ queues",
     "queues": {
       "all": "All",
@@ -69,7 +69,7 @@
     },
     "decline": {
       "title": "Decline the RFQ",
-      "body": "{code} for {customer} will be closed and recorded as unmet demand (D-102). This cannot be undone.",
+      "body": "{code} for {customer} will be closed and recorded as unmet demand. This cannot be undone.",
       "confirm": "Decline",
       "reason": "Reason",
       "reasonHint": "Groups unmet demand in the reports.",
@@ -81,7 +81,7 @@
     },
     "send": {
       "title": "Send quote version {version}",
-      "body": "Sent to {customer} for {code}. The price holds for the policy period (D-051) from the day it is sent.",
+      "body": "Sent to {customer} for {code}. The price holds for the policy period from the day it is sent.",
       "line": "{quantity} pcs",
       "supersedes": "Version {version}, sent earlier, will be superseded.",
       "confirm": "Send to customer",
@@ -168,7 +168,7 @@
       "leadTime": "Enter 1–365 days"
     },
     "buyPrice": "Factory cost {price}",
-    "validityAtSend": "The price holds for the policy period (D-051) from the day it is sent.",
+    "validityAtSend": "The price holds for the policy period from the day it is sent.",
     "stale": "Someone changed this request meanwhile. The latest is shown; check it and save again."
   },
   "detail": {
@@ -232,7 +232,7 @@
     "factories": {
       "title": "Factory costs",
       "request": "Request factory cost",
-      "costNote": "A factory's answer is its cost, shown only to the roles allowed to see it (D-141).",
+      "costNote": "A factory's answer is its cost, shown only to the roles allowed to see it.",
       "factory": "Factory",
       "status": "Status",
       "due": "Answer by",
@@ -247,7 +247,7 @@
       "remindFailed": "Could not send the reminder",
       "none": "No factory asked yet",
       "noneBody": "Ask the factories that make this category, then quote from their answers.",
-      "noCostNote": "Factory cost is shown only to the roles allowed to see it (D-141). Set the sell price in the quote.",
+      "noCostNote": "Factory cost is shown only to the roles allowed to see it. Set the sell price in the quote.",
       "answered": "Answered",
       "reply": "Factory's answer",
       "requestedBy": "Asked by {name}"
@@ -273,7 +273,7 @@
       "none": "No quote yet",
       "noneBody": "Compose one when you have a price to offer.",
       "shipping": "Shipping",
-      "validityAtSend": "Validity set when sent (D-051)"
+      "validityAtSend": "Validity set when sent"
     },
     "messages": {
       "title": "Messages",

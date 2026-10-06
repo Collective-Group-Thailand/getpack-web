@@ -40,7 +40,7 @@ export function ShortcutsOverlay({ open, onOpenChange, title, closeLabel, shortc
       <div className="flex flex-col gap-5">
         {[...groups].map(([group, items]) => (
           <section key={group}>
-            {group ? <h3 className="text-subtle mb-2 text-xs font-medium tracking-wide uppercase">{group}</h3> : null}
+            {group ? <h3 className="text-muted mb-2 text-xs font-medium tracking-wide uppercase">{group}</h3> : null}
             <dl className="flex flex-col gap-2">
               {items.map((shortcut) => (
                 <div key={shortcut.description} className="flex items-baseline justify-between gap-4">

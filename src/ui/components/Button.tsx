@@ -15,7 +15,7 @@ import { useSlotChild } from "../lib/useSlotChild";
 export const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 rounded-control font-medium whitespace-nowrap",
-    "transition-colors duration-fast ease-standard",
+    "transition-[color,background-color,border-color,box-shadow,translate] duration-fast ease-standard",
     // Target size ≥ 24 px (WCAG 2.5.8); the partner zone raises this to 48 px with size="xl".
     "min-h-6",
     "disabled:pointer-events-none disabled:opacity-50",
@@ -26,7 +26,9 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         // `rounded-cta`: a pill on the storefront, 12 px in the admin and partner zones (D-180).
-        primary: "rounded-cta bg-primary text-primary-fg hover:bg-primary-hover",
+        // `shadow-cta`: a faint brand glow on the storefront, none elsewhere (UX audit baseline).
+        primary:
+          "rounded-cta bg-primary text-primary-fg shadow-cta hover:bg-primary-hover motion-safe:hover:-translate-y-px",
         secondary: "border border-border-strong bg-surface text-fg hover:bg-surface-subtle",
         /*
          * Ghost inherits its colour instead of forcing `text-fg`, and tints its hover from
@@ -35,13 +37,24 @@ export const buttonVariants = cva(
          * Forcing `text-fg` there gave 1.89:1, which only a real browser could measure.
          */
         ghost: "text-inherit hover:bg-current/10",
-        destructive: "bg-danger text-danger-fg hover:bg-danger-hover",
+        /*
+         * Red is for destructive actions only, and never the loudest thing on the page (UX audit
+         * baseline: "สีแดงใช้เฉพาะ destructive และเป็น outline/ghost เสมอ") — an outline, so the
+         * screen's primary action stays the one that stands out.
+         */
+        destructive: "border border-danger/45 bg-surface text-danger-subtle-fg hover:bg-danger-subtle",
+        /** Only the confirm button inside an AlertDialog, where the destructive step is the point. */
+        "destructive-solid": "bg-danger text-danger-fg hover:bg-danger-hover",
         link: "text-primary underline underline-offset-4 hover:text-primary-hover",
       },
       size: {
         sm: "h-8 px-3 text-sm",
+        /** In a card: 40 px. */
         md: "h-10 px-4 text-base",
-        lg: "h-12 px-6 text-lg",
+        /** The navbar and a table's actions: 44 px. */
+        nav: "h-11 px-5 text-base",
+        /** A hero or a form's submit: 52 px. */
+        lg: "h-13 px-6 text-lg",
         /** Shop-floor: 48 px+ targets and 18 px text (design-system.md §5). */
         xl: "h-14 px-8 text-lg",
       },

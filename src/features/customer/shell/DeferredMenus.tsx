@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 
 import { ASSISTANT_BUILT_IN } from "@/features/customer/assistant/flag";
 import { IconButton } from "@/ui/components/IconButton";
+
+import { LocaleTrigger } from "./LocaleTrigger";
 import type { IconName } from "@/ui/icons";
 import { useTheme } from "@/ui/theme/ThemeProvider";
 import type { ThemeChoice } from "@/ui/theme/themes";
@@ -54,7 +56,7 @@ function Placeholder({ icon, label, handlers }: { icon: IconName; label: string;
 export function DeferredLocaleMenu() {
   const t = useTranslations("common.locale");
   const { loaded, open, setOpen, handlers } = useIntent(loadLocaleLink);
-  const placeholder = <Placeholder icon="language" label={t("label")} handlers={handlers} />;
+  const placeholder = <LocaleTrigger label={t("label")} {...handlers} />;
   if (!loaded) return placeholder;
   return (
     <Suspense fallback={placeholder}>

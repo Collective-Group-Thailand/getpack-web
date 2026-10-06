@@ -90,7 +90,7 @@ export default async function ComparePage({
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+    <div className="max-w-content mx-auto px-5 py-8 md:px-8 md:py-12">
       <Breadcrumbs
         label={t("breadcrumbs.library")}
         items={[{ label: t("breadcrumbs.library"), href: STYLES_HREF }, { label: t("compare.heading") }]}

@@ -31,7 +31,7 @@ export async function HomeHero({
   return (
     <>
       <section className="bg-bg pk-hero-wash relative overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32">
-        <div className="mx-auto grid max-w-[1180px] items-center gap-12 px-5 md:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+        <div className="max-w-content mx-auto grid items-center gap-12 px-5 md:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           <div>
             <p className="bg-primary-subtle text-primary-subtle-fg border-primary/20 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
               <span aria-hidden className="bg-primary ring-primary/20 size-1.5 rounded-full ring-4" />
@@ -63,7 +63,7 @@ export async function HomeHero({
       </section>
 
       {/* Home §1b: the quick quote, overlapping the hero. */}
-      <section className="relative z-10 mx-auto -mt-16 max-w-[1180px] px-5 md:px-8">
+      <section className="max-w-content relative z-10 mx-auto -mt-16 px-5 md:px-8">
         <QuickStart products={products} />
       </section>
     </>

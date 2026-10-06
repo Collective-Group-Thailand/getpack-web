@@ -11,7 +11,7 @@ import { readAccessToken } from "@/lib/auth/session";
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const signedIn = Boolean(readAccessToken(await cookies()));
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="max-w-content mx-auto px-5 py-8 md:px-8">
       {signedIn ? (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
           <AccountNav />

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
-import { IconTile } from "@/ui/components/Decor";
+import { productFamilyOf, ProductThumb } from "@/ui/components/ProductIllustration";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconButton } from "@/ui/components/IconButton";
 import { Icon } from "@/ui/icons";
@@ -50,7 +50,7 @@ export function GuestCartView({ signInHref }: { signInHref: string }) {
         {lines.map((line) => (
           <li key={line.id} className="border-border bg-surface rounded-card border p-5">
             <article aria-labelledby={`guest-line-${line.id}`} className="flex items-start gap-4">
-              <IconTile name="box" tone="kraft" size="lg" />
+              <ProductThumb family={productFamilyOf(line.slug)} />
               <div className="min-w-0 flex-1">
                 <h2 id={`guest-line-${line.id}`} className="text-base font-semibold">
                   <Link href={`/configure/${line.slug}`} className="hover:text-primary">
