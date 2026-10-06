@@ -53,6 +53,17 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit Flow 2 — step 7: preflight and proof review — 2026-10-06
+
+Branch `feat/ux-7-proof`.
+
+- **`PreflightChecklist`** (`src/features/shared/artwork`): the five checks every file is held to — size, bleed, colour mode, fonts, resolution — always listed, each **ผ่าน / ไม่ผ่าน — ต้องแก้ / ควรแก้ / ยังไม่ได้ตรวจ** with the API's own sentence and page, then any other check that found something (D-070; the findings are the API's). Prepress's submission card uses it in place of the grouped findings.
+- **"ขอไฟล์ใหม่"** (reject a submission) opens with the customer's message **drafted from what did not pass** — one line per failed check with its finding — for prepress to edit; `ConfirmAction.reason.initial` added for it.
+- **Proof viewer** (customer, and the LIFF page that shares it): **ไฟล์ / ไดไลน์ / ซ้อน** in place of the on/off dieline switch, beside the existing zoom, pins and rectangles, approve / request changes.
+- **Already in place, kept:** the customer's pin comments on the image, the approval record, prepress's annotations list. **Not done:** one-click "แก้ให้" per check (no API action for it).
+
+**Tests:** unit `PreflightChecklist` (core rows always, states, the drafted message); e2e prepress + artwork 16/16 (the dieline switch step now picks "ไฟล์").
+
 ## UX audit Flow 2 — step 6: approvals, RFQ, quotations — 2026-10-06
 
 Branch `feat/ux-6-sales` (after the findings slice, which already gave the approval detail its waiting-for state and labelled snapshot).
