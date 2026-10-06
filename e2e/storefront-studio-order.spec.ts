@@ -46,7 +46,7 @@ test("studio → order sheet → cart: the version pinned at the studio's price"
   const id = STUDIO.exec(page.url())![1]!;
 
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
 
   const steps = page.getByRole("navigation", { name: "ขั้นตอนการออกแบบ" });
   await steps.getByRole("button", { name: /สั่งผลิต/ }).click();
@@ -119,7 +119,7 @@ async function newDesign(page: Page): Promise<string> {
   await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   return STUDIO.exec(page.url())![1]!;
 }
 
@@ -191,7 +191,7 @@ test("a company buyer sends the design for approval with a view link", async ({ 
   await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
-  await expect(page.getByRole("status").filter({ hasText: "บันทึกแล้ว" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });
   await toOrderStep(page);
   await expect(page.getByRole("button", { name: "ส่งขออนุมัติ" })).toBeEnabled({ timeout: 15_000 });
   await page.getByRole("button", { name: "ส่งขออนุมัติ" }).click();
