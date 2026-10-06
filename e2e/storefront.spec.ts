@@ -193,9 +193,9 @@ test.describe("signing in", () => {
     await expect(page).toHaveURL(`${HOSTS.customer}/en/account/orders`);
   });
 
-  test("the header opens sign-in over the page; a returning customer goes straight on", async ({ page }) => {
+  test("the header's sign-in link opens sign-in over the page; a returning customer goes straight on", async ({ page }) => {
     await gotoHydrated(page, `${HOSTS.customer}/products`);
-    await page.getByRole("banner").getByRole("link", { name: "บัญชีของฉัน" }).click();
+    await page.getByRole("banner").getByRole("link", { name: "เข้าสู่ระบบ" }).click();
     const sheet = await signIn(page, MOCK_OTP.phone);
     await expect(sheet).toBeHidden();
     await expect(page).toHaveURL(`${HOSTS.customer}/products`);
@@ -206,7 +206,7 @@ test.describe("signing in", () => {
   test("a new customer accepts the required terms, may skip marketing, and completes a profile", async ({ page }) => {
     // The e-mail comes from a verified sign-in (D-224): the profile asks a name and a type only.
     await gotoHydrated(page, `${HOSTS.customer}/products`);
-    await page.getByRole("banner").getByRole("link", { name: "บัญชีของฉัน" }).click();
+    await page.getByRole("banner").getByRole("link", { name: "เข้าสู่ระบบ" }).click();
     const sheet = await signIn(page, MOCK_NEW_CUSTOMER_PHONE);
 
     const accept = sheet.getByRole("button", { name: "ยอมรับและดำเนินการต่อ" });

@@ -15,7 +15,9 @@
     "designOnline": "Design online",
     "pricingSamples": "Prices & samples",
     "contact": "Contact",
-    "menu": "Menu"
+    "menu": "Menu",
+    "signIn": "Sign in",
+    "quote": "Get a price"
   },
   "footer": {
     "tagline": "Your Packaging Production Partner",
@@ -46,7 +48,8 @@
       "privacy": "Privacy policy (PDPA)",
       "cookies": "Cookie policy"
     },
-    "operatedBy": "Operated by {name} · tax id {taxId} ({branch})"
+    "operatedBy": "Operated by {name} · tax id {taxId} ({branch})",
+    "by": "by {company}"
   },
   "comingSoon": {
     "search": "Search",
