@@ -45,7 +45,10 @@
       "b2b": "B2B"
     },
     "submittedFrom": "ส่งคำขอตั้งแต่",
-    "submittedTo": "ส่งคำขอถึง"
+    "submittedTo": "ส่งคำขอถึง",
+    "claim": "รับงาน",
+    "claimed": "รับงานแล้ว",
+    "claimFailed": "รับงานไม่สำเร็จ"
   },
   "actions": {
     "labels": {
@@ -204,7 +207,21 @@
       "target": "เป้าหมายของ{type}: {hours} ชม.ทำการ",
       "code": "รหัสลูกค้า",
       "phone": "โทรศัพท์",
-      "email": "อีเมล"
+      "email": "อีเมล",
+      "stagesTitle": "ขั้นตอนคำขอ",
+      "stages": {
+        "received": "รับคำขอ",
+        "factories": "ขอราคาโรงงาน",
+        "quoted": "ออกใบเสนอราคา",
+        "answered": "ลูกค้าตอบ",
+        "ordered": "สั่งซื้อ"
+      },
+      "stageStates": {
+        "done": "เสร็จแล้ว",
+        "current": "กำลังดำเนินการ",
+        "upcoming": "ยังไม่ถึง",
+        "skipped": "ข้าม"
+      }
     },
     "request": {
       "title": "รายละเอียดคำขอ",

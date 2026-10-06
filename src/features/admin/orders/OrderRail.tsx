@@ -17,10 +17,11 @@ import { Textarea } from "@/ui/components/Input";
 import type { ProgressState } from "@/ui/components/ProgressTracker";
 import { Timeline } from "@/ui/components/Timeline";
 import { toast } from "@/ui/components/Toast";
-import { Icon, type IconName } from "@/ui/icons";
+import type { IconName } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import { adminBrowserApis, problemMessage, useRoleLabel, useStaffDirectory } from "../console";
+import { StageList } from "../console/StageList";
 
 type Entry = Schemas["StaffTimelineEntryDto"];
 type Order = Schemas["AdminOrderDto"];
@@ -102,45 +103,16 @@ function OrderStages({ order }: { order: Order }) {
   const t = useTranslations("orders.rail");
   const states = stageStates(order);
   return (
-    <Card padding="md">
-      <CardHeader>
-        <CardTitle>{t("stagesTitle")}</CardTitle>
-      </CardHeader>
-      <ol className="flex flex-col">
-        {STAGES.map((stage, index) => {
-          const state = states[stage];
-          return (
-            <li
-              key={stage}
-              className="relative flex gap-3 pb-4 last:pb-0"
-              aria-current={state === "current" ? "step" : undefined}
-            >
-              {index < STAGES.length - 1 ? (
-                <span aria-hidden="true" className="bg-border absolute start-[0.6875rem] top-6 bottom-0 w-px" />
-              ) : null}
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "relative grid size-6 shrink-0 place-items-center rounded-full border-2",
-                  state === "done" && "border-primary bg-primary text-primary-fg",
-                  state === "current" && "border-warning bg-surface",
-                  (state === "upcoming" || state === "skipped") && "border-border-strong bg-surface",
-                )}
-              >
-                {state === "done" ? <Icon name="check" size={12} /> : null}
-                {state === "current" ? <span className="bg-warning size-2.5 rounded-full" /> : null}
-              </span>
-              <div className="min-w-0">
-                <p className={cn("text-sm font-medium", state === "upcoming" && "text-muted")}>
-                  {t(`stages.${stage}`)}
-                </p>
-                <p className="text-muted text-xs">{t(`stageStates.${state}`)}</p>
-              </div>
-            </li>
-          );
-        })}
-      </ol>
-    </Card>
+    <StageList
+      title={t("stagesTitle")}
+      stages={STAGES.map((stage) => ({ key: stage, label: t(`stages.${stage}`), state: states[stage] }))}
+      stateLabels={{
+        done: t("stageStates.done"),
+        current: t("stageStates.current"),
+        upcoming: t("stageStates.upcoming"),
+        skipped: t("stageStates.skipped"),
+      }}
+    />
   );
 }
 

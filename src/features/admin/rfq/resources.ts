@@ -64,7 +64,8 @@ export const rfqList = defineList<Rfq>({
   },
   getRowId: (row) => row.id,
   getRowName: (row) => row.rfqCode,
-  defaults: { filterKeys: ["queue", ...RFQ_FILTERS] },
+  // Soonest first-response deadline first (UX audit, /rfq: "เรียง default ตาม SLA ใกล้หมด").
+  defaults: { filterKeys: ["queue", ...RFQ_FILTERS], sort: "slaDueAt", order: "asc" },
   // A queue with SLA timers on it.
   staleTime: STALE_TIME.live,
 });

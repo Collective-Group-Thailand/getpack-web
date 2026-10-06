@@ -53,6 +53,18 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit Flow 2 — step 6: approvals, RFQ, quotations — 2026-10-06
+
+Branch `feat/ux-6-sales` (after the findings slice, which already gave the approval detail its waiting-for state and labelled snapshot).
+
+- **Approvals list:** "รอคุณอนุมัติ (n)" as cards — the policy, the requester and step, the reason on one line, the amount large, the SLA timer — with **approve and reject inline** (reject asks its reason), a checkbox on every request this person may decide and **"อนุมัติ n รายการที่เลือก"** (one call each, no bulk endpoint; failures named); a request this person may not decide says why (own request / already acted). The history table follows on the same page. Not done: the "over my approval limit" warning — the actor carries no limit.
+- **RFQ list:** four working tabs (ใหม่ · ของฉัน · รอข้อมูล · รอโรงงาน) and ทั้งหมด; "quoted" and "overdue" are the status filter and the red rows; **sorted by the first-response deadline by default**; an unassigned row offers **"รับงาน"** (assign to me) to whoever holds `rfqs.manage`; the whole row opens it.
+- **RFQ detail:** 8:4 with a sticky rail led by a **five-step RFQ tracker** (รับคำขอ → ขอราคาโรงงาน → ออกใบเสนอราคา → ลูกค้าตอบ → สั่งซื้อ) read off consultations, quotations and status; `StageList` is shared with the order rail.
+- **Quotations:** six columns — the code (or "ยังไม่ออกเลขที่") with its product type under it, customer, quantities, total, status, "ใช้ได้ถึง" on one line coloured within three days — the channel and the created date one click away; row actions **สร้างคำสั่งซื้อ** (a saved or shared quotation, for `carts.manage_on_behalf`) and **เปิด** (PDF and resend live on the detail: `request-pdf`, `share`); the whole row opens it.
+- **Every admin list:** with nothing in it and nothing searched or filtered, the empty state stands alone instead of a table of headers over one empty row; **discount memos** say where a memo is raised and offer "สร้างบันทึกขอส่วนลด" (into the CS desk).
+
+**Tests:** admin e2e 220 passed in the shared run; the 11 failures were sign-in timeouts and an axe timeout under load — all 27 green alone.
+
 ## UX audit Flow 1 — step 5: admin dashboard, orders, order detail, production, sidebar — 2026-10-06
 
 Branch `feat/ux-5-admin`, to the mockup's "Admin — Dashboard" and "Admin — Order detail" artboards.

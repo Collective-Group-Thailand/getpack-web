@@ -158,39 +158,55 @@ export function ResourceList<TRow extends object>({
         </div>
       ) : null}
 
-      <DataTable
-        caption={caption}
-        columns={columns}
-        rows={rows}
-        getRowId={resource.getRowId}
-        getRowName={resource.getRowName}
-        sort={state.sort ? { id: state.sort, desc: state.order === "desc" } : null}
-        onSortChange={(sort) => update({ sort: sort.id, order: sort.desc ? "desc" : "asc" })}
-        hiddenColumns={state.hidden}
-        selectable={Boolean(bulkActions)}
-        selected={selected}
-        onSelectedChange={setSelected}
-        loading={query.isFetching}
-        rowTone={rowTone}
-        onRowClick={rowHref ? (row) => router.push(rowHref(row)) : undefined}
-        skeletonRows={Math.min(state.perPage, 10)}
-        labels={{ selectAll: t("selectAll"), selectRow: (name) => t("selectRow", { name }), sortBy: t("sortBy") }}
-        error={
-          query.isError && rows.length === 0 ? (
-            <QueryError error={query.error} onRetry={() => void query.refetch()} />
-          ) : undefined
-        }
-        empty={
-          <EmptyState
-            icon="inbox"
-            title={empty?.title ?? t("emptyTitle")}
-            description={
-              empty?.description ?? (state.q || Object.keys(state.filters).length > 0 ? t("emptyFiltered") : undefined)
-            }
-            action={empty?.action}
-          />
-        }
-      />
+      {/* Nothing at all and nothing narrowed: the empty state stands alone, not a table of headers
+          over one empty row (UX audit, /discount-memos). With a search or filter the table stays. */}
+      {!query.isFetching &&
+      !query.isError &&
+      rows.length === 0 &&
+      !state.q &&
+      JSON.stringify(state.filters) === JSON.stringify(defaults.filters ?? {}) ? (
+        <EmptyState
+          icon="inbox"
+          title={empty?.title ?? t("emptyTitle")}
+          description={empty?.description}
+          action={empty?.action}
+        />
+      ) : (
+        <DataTable
+          caption={caption}
+          columns={columns}
+          rows={rows}
+          getRowId={resource.getRowId}
+          getRowName={resource.getRowName}
+          sort={state.sort ? { id: state.sort, desc: state.order === "desc" } : null}
+          onSortChange={(sort) => update({ sort: sort.id, order: sort.desc ? "desc" : "asc" })}
+          hiddenColumns={state.hidden}
+          selectable={Boolean(bulkActions)}
+          selected={selected}
+          onSelectedChange={setSelected}
+          loading={query.isFetching}
+          rowTone={rowTone}
+          onRowClick={rowHref ? (row) => router.push(rowHref(row)) : undefined}
+          skeletonRows={Math.min(state.perPage, 10)}
+          labels={{ selectAll: t("selectAll"), selectRow: (name) => t("selectRow", { name }), sortBy: t("sortBy") }}
+          error={
+            query.isError && rows.length === 0 ? (
+              <QueryError error={query.error} onRetry={() => void query.refetch()} />
+            ) : undefined
+          }
+          empty={
+            <EmptyState
+              icon="inbox"
+              title={empty?.title ?? t("emptyTitle")}
+              description={
+                empty?.description ??
+                (state.q || Object.keys(state.filters).length > 0 ? t("emptyFiltered") : undefined)
+              }
+              action={empty?.action}
+            />
+          }
+        />
+      )}
 
       {meta && meta.total > 0 ? (
         <Pagination
