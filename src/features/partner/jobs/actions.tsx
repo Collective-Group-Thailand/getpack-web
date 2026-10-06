@@ -338,6 +338,9 @@ export function CompleteMilestone({ job, milestone, name }: { job: PartnerJob; m
 
 /* ------------------------------------------------------------------------------------ QC */
 
+/** The QC board asks for the whole piece and a close-up of the print. */
+const QC_MIN_PHOTOS = 2;
+
 const SEVERITIES = ["critical", "major", "minor"] as const satisfies readonly Schemas["DefectSeverity"][];
 type DefectInput = { severity: Schemas["DefectSeverity"]; count: string };
 
@@ -359,8 +362,20 @@ export function QcForm({ job }: { job: PartnerJob }) {
   const [defects, setDefects] = useState<Partial<Record<QcChecklistItem, DefectInput>>>({});
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
   const [notes, setNotes] = useState("");
+  const [checked, setChecked] = useState("");
+  const [defective, setDefective] = useState("0");
   const [uploading, setUploading] = useState(false);
   const complete = QC_CHECKLIST_ITEMS.every((item) => answers[item]);
+  // Counts of pieces, not money: the inspected sample and how many of it failed.
+  const checkedCount = Number(checked);
+  const defectiveCount = Number(defective);
+  const countsValid =
+    checked === "" ||
+    (Number.isInteger(checkedCount) &&
+      checkedCount > 0 &&
+      Number.isInteger(defectiveCount) &&
+      defectiveCount >= 0 &&
+      defectiveCount <= checkedCount);
   const failed = QC_CHECKLIST_ITEMS.filter((item) => answers[item] === "fail");
   const derived = complete ? (failed.length === 0 ? "pass" : "fail") : null;
   const chosen = result ?? derived;
@@ -368,7 +383,9 @@ export function QcForm({ job }: { job: PartnerJob }) {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!complete || !chosen) return void toast.error(t("answerAll"));
-    if (!photos.length) return void toast.error(t("photoRequired"));
+    // Two photos at least: the whole piece and a close-up of the print (round 2, the QC board).
+    if (photos.length < QC_MIN_PHOTOS) return void toast.error(t("photoRequired", { count: QC_MIN_PHOTOS }));
+    if (!countsValid) return void toast.error(t("countsInvalid"));
     setUploading(true);
     let photoFileIds: string[];
     try {
@@ -395,6 +412,7 @@ export function QcForm({ job }: { job: PartnerJob }) {
                 : [];
             }),
             photoFileIds,
+            ...(checked !== "" ? { quantityChecked: checkedCount, quantityDefective: defectiveCount } : {}),
             ...(notes.trim() ? { note: notes.trim() } : {}),
           },
         }),
@@ -464,7 +482,34 @@ export function QcForm({ job }: { job: PartnerJob }) {
           />
         </Field>
       ) : null}
-      <Field label={t("photos")} hint={t("photosHint")} error={errors.photoFileIds}>
+      <div className="grid grid-cols-3 gap-2">
+        <Field label={t("checked")} error={!countsValid ? t("countsInvalid") : undefined}>
+          <NumberInput
+            inputSize="lg"
+            inputMode="numeric"
+            min={1}
+            unit={t("pcs")}
+            value={checked}
+            onChange={(event) => setChecked(event.target.value)}
+          />
+        </Field>
+        <Field label={t("good")}>
+          <output className="border-border bg-surface-subtle flex h-12 items-center rounded-xl border px-3 tabular-nums">
+            {checked !== "" && countsValid ? checkedCount - defectiveCount : "—"}
+          </output>
+        </Field>
+        <Field label={t("defective")}>
+          <NumberInput
+            inputSize="lg"
+            inputMode="numeric"
+            min={0}
+            unit={t("pcs")}
+            value={defective}
+            onChange={(event) => setDefective(event.target.value)}
+          />
+        </Field>
+      </div>
+      <Field label={t("photos")} hint={t("photosHint", { count: QC_MIN_PHOTOS })} error={errors.photoFileIds}>
         <CameraCapture photos={photos} onChange={setPhotos} labels={cameraLabels} />
       </Field>
       <Field label={t("notes")}>

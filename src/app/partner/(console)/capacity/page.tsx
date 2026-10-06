@@ -50,8 +50,9 @@ export default async function CapacityPage() {
         <PartnerSection title={t("closures")}>
           <ul className="flex flex-wrap gap-2">
             {days.map((day) => (
-              <li key={`${day.day}-${day.source}`}>
+              <li key={`${day.day}-${day.source}`} className="max-w-full">
                 <Badge
+                  className="h-auto py-1 whitespace-normal"
                   tone={day.kind === "extra_working_day" ? "info" : day.source === "factory" ? "warning" : "neutral"}
                   icon="calendar"
                 >

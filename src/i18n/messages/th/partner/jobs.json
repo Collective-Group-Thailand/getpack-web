@@ -85,7 +85,7 @@
   "qc": {
     "qcOnly": "ฝ่ายตรวจคุณภาพเป็นผู้บันทึกผล",
     "answerAll": "ตอบให้ครบทุกข้อ",
-    "photoRequired": "แนบรูปอย่างน้อยหนึ่งรูป",
+    "photoRequired": "ถ่ายรูปอย่างน้อย {count} รูป: ภาพรวม และระยะใกล้งานพิมพ์",
     "uploadFailed": "อัปโหลดรูปไม่สำเร็จ ลองอีกครั้ง",
     "recorded": "บันทึกผลตรวจคุณภาพแล้ว",
     "answerFor": "ผลของ {item}",
@@ -99,7 +99,7 @@
     },
     "defectCount": "จำนวน",
     "photos": "รูปถ่ายงานที่ตรวจ",
-    "photosHint": "อย่างน้อยหนึ่งรูป",
+    "photosHint": "อย่างน้อย {count} รูป: ภาพรวม + ระยะใกล้งานพิมพ์",
     "notes": "หมายเหตุ",
     "submit": "บันทึกผลตรวจคุณภาพ",
     "items": {
@@ -115,7 +115,12 @@
       "minor": "เล็กน้อย"
     },
     "severityFor": "ระดับข้อบกพร่องของ {item}",
-    "photoStandard": "ดูมาตรฐานการถ่ายรูป QC"
+    "photoStandard": "ดูมาตรฐานการถ่ายรูป QC",
+    "checked": "สุ่มตรวจ",
+    "good": "ของดี",
+    "defective": "ของเสีย",
+    "pcs": "ชิ้น",
+    "countsInvalid": "จำนวนของเสียต้องไม่เกินจำนวนที่สุ่มตรวจ"
   },
   "issue": {
     "tooShort": "เล่าปัญหาอย่างน้อย 3 ตัวอักษร",
@@ -220,7 +225,8 @@
     "qcRecorded": "บันทึกผลตรวจ",
     "defect": "{item} ({severity}) {count}",
     "inspectionSample": "สุ่มตรวจ {count} ชิ้น",
-    "issueResolved": "แก้แล้ว: {note} · {name}"
+    "issueResolved": "แก้แล้ว: {note} · {name}",
+    "operatorStep": "ขั้นนี้ฝ่ายผลิตเป็นผู้บันทึก — ฝ่าย QC บันทึกที่ขั้นตรวจคุณภาพ"
   },
   "capacity": {
     "title": "กำลังผลิตรายสัปดาห์",
@@ -347,5 +353,23 @@
         "value": "ทีม Packio ออกแบบให้"
       }
     }
+  },
+  "qcQueue": {
+    "title": "คิวตรวจคุณภาพ",
+    "body": "{date} · เรียงตามเวลาที่ Packio นัดตรวจและขั้นที่ถึงคิว QC",
+    "waiting": "รอตรวจ {count}",
+    "empty": "ไม่มีงานรอตรวจตอนนี้",
+    "inspections": "Packio นัดตรวจ",
+    "inspectionAt": "Packio นัดตรวจ {at} · สุ่ม {size} ชิ้น",
+    "inspectionUnscheduled": "Packio จะนัดเวลาตรวจ",
+    "atQc": "ถึงขั้นตรวจคุณภาพ — พร้อมเริ่มตรวจ",
+    "atStep": "ถึงขั้น {step}",
+    "due": "ครบกำหนด {date}",
+    "samples": "ตัวอย่างที่ต้องบันทึก",
+    "sample": "ตัวอย่าง",
+    "recordSample": "บันทึกตัวอย่าง",
+    "pieces": "{count} ชิ้น",
+    "openJob": "เปิดใบตรวจ",
+    "startCheck": "เริ่มตรวจ"
   }
 }

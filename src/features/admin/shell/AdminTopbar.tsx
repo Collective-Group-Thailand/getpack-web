@@ -19,6 +19,8 @@ export interface AdminTopbarProps {
   actor: StaffMe;
   collapsed: boolean;
   onToggleSidebar: () => void;
+  /** Below `md` the sidebar is a drawer (round 2, Phase 1 — the "AdminMobile" board). */
+  onOpenDrawer: () => void;
   onOpenPalette: () => void;
   onOpenShortcuts: () => void;
   /** `⌘` or `Ctrl`, resolved for this platform. */
@@ -31,6 +33,7 @@ export function AdminTopbar({
   actor,
   collapsed,
   onToggleSidebar,
+  onOpenDrawer,
   onOpenPalette,
   onOpenShortcuts,
   modKey,
@@ -49,6 +52,15 @@ export function AdminTopbar({
         aria-expanded={!collapsed}
         onClick={onToggleSidebar}
         className="hidden md:inline-flex"
+      />
+      <IconButton
+        name="menu"
+        variant="ghost"
+        size="sm"
+        label={t("openNav")}
+        aria-haspopup="dialog"
+        onClick={onOpenDrawer}
+        className="md:hidden"
       />
       <Brand href="/" className="me-2" />
 
