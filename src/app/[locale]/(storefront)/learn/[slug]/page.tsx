@@ -32,7 +32,7 @@ export default async function Page({ params }: Props) {
         {t("back")}
       </Link>
       <header>
-        <h1 className="text-2xl font-bold">{pick(locale, path.titleTh, path.titleEn)}</h1>
+        <h1 className="text-[2rem] leading-tight">{pick(locale, path.titleTh, path.titleEn)}</h1>
         <p className="text-muted mt-2">{pick(locale, path.summaryTh, path.summaryEn)}</p>
       </header>
       <ol className="flex flex-col gap-3">

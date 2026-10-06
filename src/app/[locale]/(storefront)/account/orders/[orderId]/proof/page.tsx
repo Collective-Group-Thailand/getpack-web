@@ -53,7 +53,7 @@ export default async function Page({
         >
           {t("back")}
         </Link>
-        <h1 className="text-2xl font-bold">{t("titleFor", { code: artwork.order.orderCode })}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("titleFor", { code: artwork.order.orderCode })}</h1>
         {artwork.rules?.dieline?.styleCode ? (
           // D-184: the style code rides on the proof, as on the quote, order and job.
           <p className="text-muted text-sm">{t("styleCode", { code: artwork.rules.dieline.styleCode })}</p>

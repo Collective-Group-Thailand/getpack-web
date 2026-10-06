@@ -39,7 +39,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         <Link href={`/account/orders/${order.id}`} className="text-primary text-sm underline-offset-4 hover:underline">
           {t("back", { code: order.orderCode })}
         </Link>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <h1 className="text-[2rem] leading-tight">{t("title")}</h1>
       </header>
       {form?.open ? (
         <>

@@ -17,10 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Page() {
   const [t, locale, paths] = await Promise.all([getTranslations("help.learn"), getLocale(), listLearningPaths()]);
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-5 py-10 md:px-8 md:py-14">
       <header>
-        <h1 className="text-2xl font-bold">{t("title")}</h1>
-        <p className="text-muted mt-2 max-w-prose">{t("intro")}</p>
+        <h1 className="text-4xl leading-tight md:text-5xl">{t("title")}</h1>
+        <p className="text-muted mt-3 max-w-prose text-lg">{t("intro")}</p>
       </header>
       {paths.length === 0 ? (
         <EmptyState

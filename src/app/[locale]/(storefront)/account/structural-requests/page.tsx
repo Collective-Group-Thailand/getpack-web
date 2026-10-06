@@ -30,7 +30,7 @@ export default async function Page() {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{t("listTitle")}</h1>
+          <h1 className="text-[2rem] leading-tight">{t("listTitle")}</h1>
           <p className="text-muted mt-1">{t("listIntro")}</p>
         </div>
         <Button asChild iconStart="plus">

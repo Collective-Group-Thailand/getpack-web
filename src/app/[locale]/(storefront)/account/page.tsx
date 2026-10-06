@@ -74,7 +74,7 @@ export default async function Page() {
         <h2 id="account-where" className="text-lg font-semibold">
           {t("where")}
         </h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
           <Stat as={Link} href="/account/rfqs" label={t("openRequests")} value={format.number(openRfqs)} icon="inbox" />
           <Stat
             as={Link}
@@ -127,7 +127,7 @@ export default async function Page() {
                     <StatusChip map={ORDER_STATUS} value={order.status} />
                   </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex basis-full flex-wrap items-center gap-2 sm:basis-auto">
                   {group.status === "waiting_payment" ? (
                     <Button asChild size="sm" iconStart="credit-card">
                       <Link href={`/account/orders/${order.id}#instalments`}>{t("payDue")}</Link>
