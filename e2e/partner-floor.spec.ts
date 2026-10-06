@@ -79,7 +79,13 @@ test.describe("a job from acceptance to delivery (F001)", () => {
         for (const group of await page.getByRole("radiogroup", { name: /^ผลของ / }).all()) {
           await group.getByRole("radio", { name: "ผ่าน", exact: true }).click();
         }
-        await photo(page, "qc.jpg");
+        // Two photos: the whole piece and a close-up of the print (round 2, the QC board).
+        await page.locator('input[type="file"]').setInputFiles([
+          { name: "qc-whole.jpg", mimeType: "image/jpeg", buffer: JPEG },
+          { name: "qc-print.jpg", mimeType: "image/jpeg", buffer: JPEG },
+        ]);
+        await expect(page.getByRole("button", { name: /^ลบรูปที่ 2/ })).toBeVisible();
+        await page.getByLabel("สุ่มตรวจ").fill("20");
         await page.getByRole("button", { name: /^บันทึกผลตรวจคุณภาพ/ }).click();
         await toast(page, "บันทึกผลตรวจคุณภาพแล้ว");
       }

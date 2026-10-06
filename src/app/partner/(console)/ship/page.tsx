@@ -38,7 +38,7 @@ export default async function ShipPage({ searchParams }: Props) {
   const [t, format] = await Promise.all([getTranslations("partnerShip"), getFormat()]);
   const context = await factoryContext();
   const { contract } = await partnerServerApis();
-  const [plan, list] = await Promise.all([
+  const [plan, list, every] = await Promise.all([
     attempt(
       async () =>
         (
@@ -60,14 +60,45 @@ export default async function ShipPage({ searchParams }: Props) {
           })
         ).data!,
     ),
+    // Today at a glance (round 2, Phase 1): what waits at the gate, what is on the road, which POD is due.
+    attempt(async () => (await contract.GET("/v1/partner/shipments", { params: { query: { perPage: 100 } } })).data!),
   ]);
   const manage = canAt(context, "factory_shipments.manage");
+  const trips = every.data?.data ?? [];
+  const moving = ["picked_up", "in_transit", "out_for_delivery"];
+  const glance = {
+    gate: trips.filter((trip) => trip.status === "ready").length,
+    road: trips.filter((trip) => moving.includes(trip.status)).length,
+    pod: trips.filter((trip) => trip.carrier === "factory_fleet" && !trip.proofOfDelivery && moving.includes(trip.status))
+      .length,
+  };
   // A job every destination of which has had all its pieces sent is done here (round 2, B3): the
   // plan still lists it, with nothing left to create.
   const waiting = plan.data?.filter((job) => job.destinations.some((destination) => destination.remainingQuantity > 0));
 
   return (
     <PartnerPage title={t("title")} wide>
+      {every.data ? (
+        <ul className="grid grid-cols-3 gap-3" aria-label={t("glance.label")}>
+          {(
+            [
+              ["gate", "open"],
+              ["road", "in_transit"],
+              ["pod", "in_transit"],
+            ] as const
+          ).map(([key, target]) => (
+            <li key={key}>
+              <Link
+                href={`/ship?view=${target}`}
+                className="border-border bg-surface hover:bg-surface-subtle flex min-h-20 flex-col justify-center rounded-xl border p-3"
+              >
+                <span className="text-2xl font-bold tabular-nums">{format.number(glance[key])}</span>
+                <span className="text-muted text-sm">{t(`glance.${key}`)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <PartnerSection title={t("plan.title")} description={t("plan.body")}>
         {waiting ? (
           waiting.length ? (

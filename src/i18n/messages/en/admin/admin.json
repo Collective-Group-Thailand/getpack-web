@@ -18,7 +18,8 @@
       "placeholder": "Type to search",
       "empty": "Nothing found. Try an order code, a phone number or an e-mail."
     },
-    "waiting": "waiting"
+    "waiting": "waiting",
+    "openNav": "Open navigation"
   },
   "menu": {
     "dashboard": "Overview",
