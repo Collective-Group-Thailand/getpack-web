@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { ConsolePage } from "@/features/admin/console/ConsolePage";
+import { ReportsKpis } from "@/features/admin/reports/ReportsKpis";
 import { ReportsIndex } from "@/features/admin/reports";
 import { PageHeader } from "@/ui/components/PageHeader";
 
@@ -14,6 +15,7 @@ export default async function ReportsPage() {
   return (
     <ConsolePage>
       <PageHeader title={t("title")} description={t("description")} />
+      <ReportsKpis />
       <ReportsIndex />
     </ConsolePage>
   );

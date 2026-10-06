@@ -53,6 +53,29 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## UX audit Flow 2–3 — steps 8–10: logistics, CS calculator, studio start, content and master data — 2026-10-06
+
+Branches `feat/ux-8-logistics` → `feat/ux-9-cs-studio` → `feat/ux-10-content` (stacked; one full e2e run over the three).
+
+**Step 8 — production, shipments, claims.**
+- Production board: a job's number **opens a drawer beside the board** (its steps with done / due dates, its QC inspection, the promised and predicted dates, "เปิดคำสั่งซื้อ") instead of leaving the page. Not done: "เลื่อน stage" — the factory reports its steps (partner zone); the admin has no action for it. Not done: the second, by-factory timeline view.
+- Shipments: the number on one line (min 11.5 rem); **one status** — a proof of delivery waiting for review stands in for "delivered"; destination = name + province; **"ตรวจหลักฐาน"** on a row waiting for review (into the shipment's own review); exception rows red; the whole row opens it. Not done: a POD thumbnail in the list (the row carries no photo).
+- Claims: four tabs where a claim waits — เปิดอยู่ · รอลูกค้า · รอโรงงาน · ปิด (the other statuses are the row's chip); "แจ้งได้ถึง" as a countdown ("เหลือ 2 วัน"), coloured as it runs out. Not done: evidence beside the approved proof on the claim detail.
+
+**Step 9 — CS calculator, studio start.**
+- CS calculator: 7:5 with the result and its actions (save as quotation, PDF, create order) **sticky** on the right. Not done: live recalculation on every change and single-choice colours as a segmented control (the options come from the configurator engine as they are).
+- Studio: before a box is chosen the canvas is **the start screen** — "วันนี้อยากเริ่มจากอะไร", four large cards with drawings (เลือกแบบกล่อง → the setup dialog · มีสินค้าแล้ว / มีไฟล์งานแล้ว → the configurator · สั่งซ้ำ → my orders), "แบบล่าสุดของคุณ" when signed in, and the sample box — through a new `EditorChrome.empty` slot (the plain designer keeps its button).
+
+**Step 10 — content, master data, reports.**
+- `/track`: `?code=` from an SMS / LINE link goes straight to the result; the field says what to paste; a sign-in card "เข้าสู่ระบบเพื่อดูทุกคำสั่งซื้อ". **Not done by decision:** the order code and product on the public result — D-224 keeps them off a link anyone may hold.
+- `/contact`: 1180 container, 38 px title, **LINE first as the primary button**, the form in a card beside the channels.
+- Footer and header: a content section with nothing published (articles, glossary, learning paths, materials) is **left out of the nav** instead of linking to an empty page (`content.server.ts`, React-cached; a failed check keeps the link).
+- Admin catalogue: each card shows its **row count**. Not done: "last edited" (no list sort that is safe on every table).
+- Marketing: the page is called what the menu calls it (การตลาด). Not done: segmented top tabs (`SectionNav` is shared by every hub).
+- Companies: "บริษัทคู่ค้า" as in the menu; **a counted tab with nothing in it is hidden** (`QueueTabs.hideEmpty`).
+- Reports: **a KPI row** — this month's sales, paid orders, average order, repeat rate, with a sparkline of paid orders per day — from `admin.analytics.sales`, for `analytics.read`. Not done: on-time % and receivables (other rollups).
+- Not done: `/samples` selling kits (no kit catalogue in the API), the shared 3-column content layout.
+
 ## UX audit Flow 2 — step 7: preflight and proof review — 2026-10-06
 
 Branch `feat/ux-7-proof`.
