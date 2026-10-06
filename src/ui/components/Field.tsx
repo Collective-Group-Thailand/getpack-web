@@ -154,18 +154,46 @@ export function useFieldGroupProps(): {
 export function FormSection({
   title,
   description,
+  step,
+  card = false,
   className,
   children,
 }: {
   title: React.ReactNode;
   description?: React.ReactNode;
+  /**
+   * A numbered badge before the title (the "Checkout" board): the step's number, or `"done"` for a
+   * tick once the section is complete. Decoration — the title still says what the section is.
+   */
+  step?: number | "done";
+  /** The section as a white card (design language v2's checkout). */
+  card?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("space-y-4", className)}>
+    <section
+      className={cn(
+        "space-y-4",
+        card && "border-border bg-surface rounded-card border px-5 py-5 md:px-6",
+        className,
+      )}
+    >
       <div>
-        <h3 className="text-base font-semibold">{title}</h3>
+        <h3 className={cn("font-semibold", card ? "flex items-center gap-2.5 text-[17px] font-bold" : "text-base")}>
+          {step !== undefined ? (
+            <span
+              aria-hidden="true"
+              className={cn(
+                "grid size-6.5 shrink-0 place-items-center rounded-full text-[13px] font-bold",
+                step === "done" ? "bg-primary-subtle text-primary-subtle-fg" : "bg-primary text-primary-fg",
+              )}
+            >
+              {step === "done" ? "✓" : step}
+            </span>
+          ) : null}
+          {title}
+        </h3>
         {description ? <p className="text-muted mt-0.5 text-sm">{description}</p> : null}
       </div>
       {children}

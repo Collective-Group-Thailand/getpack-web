@@ -104,7 +104,8 @@
     "sizesHint": "Pick a size to price it straight away, or set your own in the configurator",
     "customSizeTitle": "Not a standard size?",
     "customSizeBody": "Set length × width × height yourself; the dieline and the price follow at once",
-    "customSizeCta": "Set my own size"
+    "customSizeCta": "Set my own size",
+    "sizesEyebrow": "Standard sizes"
   },
   "stock": {
     "minOrder": "Minimum order {quantity} {unit}",

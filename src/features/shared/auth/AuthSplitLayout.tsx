@@ -6,6 +6,8 @@ import { cn } from "@/ui/lib/cn";
 export interface AuthSplitLayoutProps {
   /** `brand` — the storefront's teal; `ink` — the back office's dark panel (UX audit: staff login). */
   tone: "brand" | "ink";
+  /** The small label over the headline (design language v2's eyebrow). */
+  eyebrow?: React.ReactNode;
   /** The panel's headline and the line under it. */
   headline: React.ReactNode;
   lead: React.ReactNode;
@@ -30,6 +32,7 @@ export interface AuthSplitLayoutProps {
  */
 export function AuthSplitLayout({
   tone,
+  eyebrow,
   headline,
   lead,
   points = [],
@@ -44,7 +47,10 @@ export function AuthSplitLayout({
       <aside
         className={cn(
           "relative hidden flex-col overflow-hidden px-10 py-12 md:flex lg:px-16",
-          tone === "brand" ? "bg-primary text-primary-fg" : "bg-fg text-fg-inverse",
+          // The storefront's panel is the deep green of design language v2, with paper grain.
+          tone === "brand"
+            ? "grain bg-[linear-gradient(160deg,#0d5a4c_0%,var(--green-ink)_55%,#0a4a3f_100%)] text-white"
+            : "bg-fg text-fg-inverse",
         )}
       >
         <div aria-hidden="true" className="pk-auth-wash absolute inset-0" />
@@ -56,7 +62,10 @@ export function AuthSplitLayout({
         <div className="relative">{homeLink(<BrandLockup />)}</div>
 
         <div className="relative my-auto max-w-[32rem] py-10">
-          <p className="text-4xl leading-tight font-bold tracking-tight lg:text-[2.75rem]">{headline}</p>
+          {eyebrow ? <p className="eyebrow mb-4 text-current/70">{eyebrow}</p> : null}
+          <p className="serif text-4xl leading-[1.12] lg:text-[3.625rem] [&_em]:font-medium [&_em]:text-[#5fcfb4] [&_em]:italic">
+            {headline}
+          </p>
           <p className="mt-5 text-lg leading-relaxed opacity-80">{lead}</p>
           {points.length > 0 ? (
             <ul className="mt-9 grid gap-4">

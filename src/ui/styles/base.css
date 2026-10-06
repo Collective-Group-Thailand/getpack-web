@@ -445,8 +445,20 @@
     }
   }
 
+  /* The home page's category ticker: 40 s, linear, round the loop (the list is drawn twice). */
+  .pk-ticker {
+    animation: pk-ticker 40s linear infinite;
+  }
+
+  @keyframes pk-ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .rise {
+    .rise,
+    .pk-ticker {
       animation: none;
     }
   }

@@ -21,6 +21,7 @@ import { Field, FormSection } from "@/ui/components/Field";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { PriceSummary, type PriceRow } from "@/ui/components/PriceSummary";
+import { ProductThumb, productFamilyOf } from "@/ui/components/ProductIllustration";
 import { RadioCards } from "@/ui/components/RadioCards";
 import { Skeleton } from "@/ui/components/Skeleton";
 
@@ -326,10 +327,18 @@ export function CheckoutView({
         })
       : translate("other", { code: notice.code });
 
+  // The sections are numbered in the order they show (the "Checkout" board); a finished one ticks.
+  let stepNo = 0;
+  const step = (done = false): number | "done" => {
+    stepNo += 1;
+    return done ? "done" : stepNo;
+  };
+  const delivered = cart.items.every((item) => item.destinationsComplete);
+
   return (
-    <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="flex flex-col gap-10">
-        <FormSection title={t("delivery.title")}>
+    <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_25rem]">
+      <div className="flex flex-col gap-4">
+        <FormSection card step={step(delivered)} title={t("delivery.title")}>
           <RadioCards
             aria-label={t("delivery.title")}
             columns={2}
@@ -382,7 +391,7 @@ export function CheckoutView({
           </Button>
         </FormSection>
 
-        <FormSection title={t("tax.title")} description={t("tax.hint")}>
+        <FormSection card step={step(true)} title={t("tax.title")} description={t("tax.hint")}>
           <RadioCards
             aria-label={t("tax.title")}
             columns={2}
@@ -406,7 +415,7 @@ export function CheckoutView({
           </Button>
         </FormSection>
 
-        <FormSection title={t("promotions.title")} description={t("promotions.hint")}>
+        <FormSection card step={step()} title={t("promotions.title")} description={t("promotions.hint")}>
           <form
             className="flex items-start gap-2"
             onSubmit={(event) => {
@@ -465,6 +474,8 @@ export function CheckoutView({
 
         {(pointsBounds?.balance ?? pointsBalance) > 0 ? (
           <FormSection
+            card
+            step={step()}
             title={t("points.title")}
             description={t("points.hint", { balance: format.number(pointsBounds?.balance ?? pointsBalance) })}
           >
@@ -496,6 +507,8 @@ export function CheckoutView({
 
         {company ? (
           <FormSection
+            card
+            step={step()}
             title={t("company.title")}
             description={t("company.intro", { name: company.legalName, code: company.companyCode ?? "" })}
           >
@@ -530,7 +543,7 @@ export function CheckoutView({
           </FormSection>
         ) : null}
 
-        <FormSection title={t("schedule.title")} description={t("schedule.hint")}>
+        <FormSection card step={step()} title={t("schedule.title")} description={t("schedule.hint")}>
           {data ? (
             data.paymentSchedule ? (
               <ul className="border-border flex flex-col gap-1 rounded-lg border p-3 text-sm">
@@ -550,7 +563,7 @@ export function CheckoutView({
         </FormSection>
 
         {dueNow && !needsApproval && !data?.company?.onCredit ? (
-          <FormSection title={t("method.title")} description={t("method.hint")}>
+          <FormSection card step={step()} title={t("method.title")} description={t("method.hint")}>
             <RadioCards
               aria-label={t("method.title")}
               columns={2}
@@ -568,11 +581,26 @@ export function CheckoutView({
 
       <aside
         aria-labelledby="checkout-summary"
-        className="border-border h-fit rounded-2xl border p-5 lg:sticky lg:top-20"
+        className="border-border bg-surface rounded-card h-fit border px-6 py-5.5 lg:sticky lg:top-20"
       >
-        <h2 id="checkout-summary" className="text-lg font-semibold">
+        <h2 id="checkout-summary" className="text-[17px] font-bold">
           {t("summary.title")}
         </h2>
+        {/* What is being bought, before the money (round 2, step 14). */}
+        <ul className="border-border mt-3.5 flex flex-col gap-3 border-b pb-3.5">
+          {cart.items.map((item) => (
+            <li key={item.id} className="grid grid-cols-[4rem_1fr] gap-3">
+              <ProductThumb family={productFamilyOf(item.productTypeCode)} className="size-16 rounded-xl" />
+              <div className="min-w-0">
+                <p className="text-[14.5px] leading-snug font-semibold">{productNameOf(locale, item.summary)}</p>
+                <p className="text-muted mt-1 flex justify-between gap-2 text-[13.5px]">
+                  <span>{t("summary.quantity", { quantity: format.number(item.quantity) })}</span>
+                  <b className="text-fg tabular-nums">{format.thb(item.productGrossAmount)}</b>
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
         {repriced && data ? (
           <Callout tone="warning" live className="mt-4" title={t("repriced.title")}>
             {t("repriced.body", {
