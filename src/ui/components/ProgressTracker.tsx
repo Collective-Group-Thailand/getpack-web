@@ -69,7 +69,7 @@ export function ProgressTracker({ stages, label, stateLabels, className }: Progr
                 className={cn(
                   "text-sm font-medium",
                   stage.state === "upcoming" && "text-muted",
-                  stage.state === "skipped" && "text-subtle line-through",
+                  stage.state === "skipped" && "text-muted line-through",
                 )}
               >
                 {stage.title}

@@ -15,7 +15,7 @@
   },
   "campaigns": {
     "title": "Campaigns",
-    "description": "A THB budget per campaign; the API alerts at the threshold and stops at the budget (D-154)",
+    "description": "A THB budget per campaign; the API alerts at the threshold and stops at the budget",
     "statusesLabel": "Campaign statuses",
     "all": "All",
     "search": "Search campaigns",
@@ -124,7 +124,7 @@
   },
   "promotions": {
     "title": "Promotions",
-    "description": "Coupons, automatic promotions and the referral discount, in the order the engine applies them; the margin guard always holds (D-053)",
+    "description": "Coupons, automatic promotions and the referral discount, in the order the engine applies them; the margin guard always holds",
     "kindsLabel": "Promotion kinds",
     "all": "All",
     "kinds": {
@@ -186,7 +186,7 @@
     "benefitNote": "What the customer gets; only the fields of its type are used",
     "benefitLocked": "Already redeemed: the benefit is fixed — create a new promotion instead",
     "limits": "Limits",
-    "marginGuard": "The API never lets discounts take an order below the margin floor; the excess is capped and reported (D-053)",
+    "marginGuard": "The API never lets discounts take an order below the margin floor; the excess is capped and reported",
     "noCampaign": "No campaign",
     "addTier": "Add a tier",
     "removeTier": "Remove tier {no}",
@@ -246,7 +246,7 @@
     "kindHints": {
       "coupon": "Customers type a code; generate codes after saving",
       "automatic": "Applies by itself when its conditions match",
-      "referral": "The referee's first-order discount (D-136)"
+      "referral": "The referee's first-order discount"
     },
     "kinds": {
       "coupon": "Coupon code",
@@ -374,7 +374,7 @@
   },
   "referrals": {
     "title": "Referrals",
-    "description": "The referrer earns points once the referee's first order passes the claim window; matches with the referrer are held for Marketing's review in approvals (D-136)",
+    "description": "The referrer earns points once the referee's first order passes the claim window; matches with the referrer are held for Marketing's review in approvals",
     "statusesLabel": "Referral statuses",
     "all": "All",
     "empty": "No referrals",
@@ -402,7 +402,7 @@
   },
   "loyalty": {
     "title": "Loyalty and referral rules",
-    "description": "The values the API earns and rewards by; each change is a new dated version (D-063) by the setting's owner",
+    "description": "The values the API earns and rewards by; each change is a new dated version by the setting's owner",
     "none": "No settings found",
     "history": "History",
     "change": "New version",

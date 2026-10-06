@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const [actor, t] = await Promise.all([getActor("customer"), getTranslations("cart"), params]);
   if (!actor) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="max-w-content mx-auto px-5 py-8 md:px-8">
         <h1 className="text-2xl font-bold md:text-3xl">{t("title")}</h1>
         <GuestCartView signInHref={`/sign-in?returnTo=${encodeURIComponent("/cart")}`} />
       </div>
@@ -28,7 +28,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   }
   const { cart, addresses } = await getCartAndBook();
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="max-w-content mx-auto px-5 py-8 md:px-8">
       <h1 className="text-2xl font-bold md:text-3xl">{t("title")}</h1>
       <CartView initialCart={cart} initialAddresses={addresses} />
     </div>

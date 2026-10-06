@@ -99,7 +99,7 @@
     },
     "defectCount": "Count",
     "photos": "Photos of the checked work",
-    "photosHint": "At least one (D-076)",
+    "photosHint": "At least one",
     "notes": "Notes",
     "submit": "Record QC",
     "items": {

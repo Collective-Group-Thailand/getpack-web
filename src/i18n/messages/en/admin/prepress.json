@@ -93,7 +93,7 @@
     },
     "requote": {
       "title": "Re-quote the design",
-      "body": "A change to the structure or concept is a new design, not a revision (D-071). {code}'s design (fee {fee}) stops and the customer is re-quoted.",
+      "body": "A change to the structure or concept is a new design, not a revision. {code}'s design (fee {fee}) stops and the customer is re-quoted.",
       "confirm": "Re-quote",
       "reason": "What the customer changed",
       "reasonHint": "The customer sees this.",
@@ -202,7 +202,7 @@
         "cs": "Sent by CS"
       },
       "blocked": {
-        "preflight_blocked": "Blocking findings must be fixed before a proof (size or bleed, D-070)",
+        "preflight_blocked": "Blocking findings must be fixed before a proof (size or bleed)",
         "preflight_pending": "Preflight is still running; wait for its result"
       },
       "rejectReason": "Why it was sent back",
@@ -221,7 +221,7 @@
       "freeRounds": "Free rounds used",
       "freeUsed": "{used} of {free}",
       "nextChargeable": "The next round ({round}) costs {fee}",
-      "nextChargeableBody": "The customer confirms and pays before it starts (D-071).",
+      "nextChargeableBody": "The customer confirms and pays before it starts.",
       "designer": "Designer",
       "noDesigner": "Not assigned",
       "fee": "Design fee (net)",

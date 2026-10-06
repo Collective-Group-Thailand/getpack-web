@@ -17,7 +17,7 @@ export async function HomeStudio() {
   const checks = ["styles", "preview3d", "dieline"] as const;
 
   return (
-    <section aria-labelledby="home-studio" className="mx-auto max-w-[1180px] px-5 pt-16 md:px-8 md:pt-26">
+    <section aria-labelledby="home-studio" className="max-w-content mx-auto px-5 pt-16 md:px-8 md:pt-26">
       <div className="bg-fg text-fg-inverse relative grid items-center gap-12 overflow-hidden rounded-2xl p-7 md:p-14 lg:grid-cols-2">
         <div aria-hidden className="pk-band-glow absolute inset-0" />
         <div className="relative">

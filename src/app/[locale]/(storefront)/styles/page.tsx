@@ -88,7 +88,7 @@ export default async function StylesPage({
     : list.facets.category.reduce((n, f) => n + f.count, 0);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 pb-28 md:py-12">
+    <div className="max-w-content mx-auto px-5 py-8 pb-28 md:px-8 md:py-12">
       <JsonLd
         data={{
           "@context": "https://schema.org",

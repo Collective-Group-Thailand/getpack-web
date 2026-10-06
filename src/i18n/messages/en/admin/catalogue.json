@@ -139,7 +139,7 @@
     "slug": "Lower case, digits and hyphens, e.g. mailer-box",
     "rfqSpecSchema": "The fields a customer fills in to ask for a quote",
     "constraints": "The minimum and maximum sizes this pattern accepts",
-    "isSpecial": "Foil, emboss, window: +20 pp inspection (D-076)",
+    "isSpecial": "Foil, emboss, window: +20 pp inspection",
     "targetUrl": "An https:// URL or a site path",
     "pageKey": "The page's path, e.g. /th/products/mailer-box",
     "status": "Archive instead of deleting; the history stays"
@@ -249,11 +249,11 @@
   "tables": {
     "product-types": {
       "title": "Product types",
-      "description": "The 14 types of D-100 and how each is quoted"
+      "description": "The 14 product types and how each is quoted"
     },
     "product-categories": {
       "title": "Product categories",
-      "description": "Reporting categories (D-030)"
+      "description": "Reporting categories"
     },
     "patterns": {
       "title": "Patterns",
@@ -273,7 +273,7 @@
     },
     "materials": {
       "title": "Materials",
-      "description": "What customers choose from; no prices — each factory prices its own (D-044)"
+      "description": "What customers choose from; no prices — each factory prices its own"
     },
     "material-families": {
       "title": "Material families",
@@ -369,7 +369,7 @@
     },
     "provinces": {
       "title": "Provinces",
-      "description": "Admin-maintained, never imported from outside (D-161, D-170)"
+      "description": "Admin-maintained, never imported from outside"
     },
     "districts": {
       "title": "Districts",
@@ -413,7 +413,7 @@
     },
     "import": {
       "title": "Excel import & export",
-      "description": "Export as the template, edit, and import through a preview (D-005)"
+      "description": "Export as the template, edit, and import through a preview"
     }
   },
   "sectionTitles": {
@@ -427,7 +427,7 @@
   },
   "home": {
     "catalogueTitle": "Catalogue",
-    "catalogueDescription": "The platform's master data: types, materials, patterns, products and geography. No prices — those are each factory's (D-005, D-044).",
+    "catalogueDescription": "The platform's master data: types, materials, patterns, products and geography. No prices — those are each factory's.",
     "cmsTitle": "Site content",
     "cmsDescription": "Banners, the home page, articles, FAQs, videos and SEO"
   },
@@ -443,7 +443,7 @@
   },
   "quoteMode": {
     "title": "Instant or RFQ",
-    "body": "A type can quote instantly only once its calculator has shipped (D-100), and a given spec only when a factory's prices cover it (D-043); everything else goes to RFQ.",
+    "body": "A type can quote instantly only once its calculator has shipped, and a given spec only when a factory's prices cover it; everything else goes to RFQ.",
     "column": "Quote mode",
     "toRfq": "Switch to RFQ",
     "toInstant": "Switch to instant",

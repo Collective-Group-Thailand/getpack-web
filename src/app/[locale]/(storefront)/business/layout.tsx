@@ -11,7 +11,7 @@ import { readAccessToken } from "@/lib/auth/session";
 export default async function BusinessLayout({ children }: { children: React.ReactNode }) {
   const company = readAccessToken(await cookies()) ? await getMyCompany() : null;
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8">
+    <div className="max-w-content mx-auto w-full px-5 py-8 md:px-8">
       {company ? (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
           <BusinessNav can={company.can} />

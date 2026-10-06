@@ -80,7 +80,7 @@ export async function CategoryView({
     );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:py-12">
+    <div className="max-w-content mx-auto px-5 py-8 md:px-8 md:py-12">
       <JsonLd
         data={breadcrumbSchema([
           { name: crumbs[0]!.label, url: `${origin}${crumbs[0]!.href}` },

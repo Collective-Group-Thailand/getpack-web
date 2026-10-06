@@ -62,7 +62,7 @@ export async function SiteFooter() {
 
   return (
     <footer className="bg-fg text-fg-inverse mt-16">
-      <div className="mx-auto grid max-w-[1180px] gap-10 px-5 pt-14 pb-10 sm:grid-cols-2 md:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="max-w-content mx-auto grid gap-10 px-5 pt-14 pb-10 sm:grid-cols-2 md:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <p className="font-display flex items-center gap-2.5 text-xl font-bold">
             <BrandMark size={32} />
@@ -96,7 +96,7 @@ export async function SiteFooter() {
         ))}
       </div>
 
-      <div className="mx-auto max-w-[1180px] px-5 pb-7 md:px-8">
+      <div className="max-w-content mx-auto px-5 pb-7 md:px-8">
         <div className="border-fg-inverse/15 text-fg-inverse/70 flex flex-col gap-3 border-t pt-5.5 text-xs sm:flex-row sm:items-start sm:justify-between">
           <div className="flex flex-col gap-1">
             <p>

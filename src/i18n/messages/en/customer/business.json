@@ -87,7 +87,7 @@
       },
       "credit_blocked": {
         "title": "Credit orders paused",
-        "body": "{amount} is {days} days overdue. You can still order and pay first, with no penalty (D-122)."
+        "body": "{amount} is {days} days overdue. You can still order and pay first, with no penalty."
       }
     },
     "seeStatements": "See statements",
@@ -383,7 +383,7 @@
     },
     "download": "Get download link",
     "open": "Open",
-    "blockedShort": "The company has overdue amounts; you can order and pay in advance as usual (D-122)",
+    "blockedShort": "The company has overdue amounts; you can order and pay in advance as usual",
     "statementMetaShort": "Invoiced {invoiced} · paid {paid} · outstanding {balance}",
     "statementOnFile": "A financial statement is already on file",
     "note": "Note to Finance (optional)",
@@ -435,7 +435,7 @@
     "adminOnly": "Only the company admin can change these.",
     "approvalTitle": "Order approval",
     "approvalOn": "Orders over an amount need approval",
-    "approvalHint": "Your approver is told every time an order goes over it (D-123)",
+    "approvalHint": "Your approver is told every time an order goes over it",
     "threshold": "Approval amount (THB)",
     "thresholdHint": "VAT included, e.g. 50000",
     "poTitle": "PO numbers",

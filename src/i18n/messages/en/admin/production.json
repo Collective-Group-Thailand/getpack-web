@@ -7,7 +7,7 @@
   },
   "board": {
     "title": "Production board",
-    "description": "Live jobs by current milestone; at-risk comes from the SLA engine's forecast (D-074, D-075)",
+    "description": "Live jobs by current milestone; at-risk comes from the SLA engine's forecast",
     "all": "All",
     "atRiskOnly": "At risk only",
     "count": "{count} jobs",
@@ -32,7 +32,7 @@
   },
   "inspections": {
     "title": "QC inspections",
-    "description": "Packio's risk-based inspections, ISO 2859-1 level II (D-076)",
+    "description": "Packio's risk-based inspections, ISO 2859-1 level II",
     "columns": {
       "job": "Job",
       "reasons": "Why selected",
@@ -70,7 +70,7 @@
   },
   "scorecards": {
     "title": "Factory scorecards",
-    "description": "A factory's monthly scorecard over the latest 12 months, the same the factory sees, weighed in allocation (D-155, D-075)",
+    "description": "A factory's monthly scorecard over the latest 12 months, the same the factory sees, weighed in allocation",
     "factory": "Factory",
     "jobs": "Jobs",
     "metrics": {
