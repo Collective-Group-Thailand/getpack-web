@@ -22,6 +22,8 @@ import { Tabs } from "@/ui/components/Tabs";
 import { toast } from "@/ui/components/Toast";
 
 import { adminBrowserApis, problemMessage, QueryError, StatusChip, useActor, useCan, useSlaFormat } from "../console";
+import { StageList } from "../console/StageList";
+import type { ProgressState } from "@/ui/components/ProgressTracker";
 import { useRfq, useSettleRfq, useUnmetDemandReasons } from "./data";
 import { RfqActionBar, RfqActionDialogs, type RfqActionKey } from "./RfqActions";
 import { FactoriesTab, MessagesTab, QuotesTab, RequestTab } from "./RfqTabs";
@@ -178,7 +180,8 @@ export function RfqDetail({ rfqId, initial, tab }: { rfqId: string; initial: Rfq
         />
       ) : null}
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      {/* 8:4 — the request's tabs, and the rail: where the RFQ stands, its SLA and the customer. */}
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <Tabs label={t("tabsLabel")} items={tabs} value={current} onValueChange={go} />
         <RfqRail rfq={rfq} onAssign={offered.has("assign") ? () => setAction("assign") : undefined} />
       </div>
@@ -238,8 +241,32 @@ function RfqRail({ rfq, onAssign }: { rfq: Rfq; onAssign?: () => void }) {
   const actor = useActor();
   const late = rfq.firstResponseAt && rfq.slaDueAt && Date.parse(rfq.firstResponseAt) > Date.parse(rfq.slaDueAt);
 
+  // The RFQ's five steps (UX audit, RFQ detail): read off what the API publishes about it.
+  const asked = rfq.consultations.length > 0;
+  const quoted = rfq.quotations.some((quote) => quote.status !== "draft");
+  const answered = rfq.status === "accepted" || rfq.status === "declined";
+  const ordered = rfq.status === "accepted" && Boolean(rfq.acceptedQuoteId);
+  const step = (done: boolean, current: boolean): ProgressState => (done ? "done" : current ? "current" : "upcoming");
+  const stages = [
+    { key: "received", state: step(true, false) },
+    { key: "factories", state: step(asked || quoted, !asked && !quoted) },
+    { key: "quoted", state: step(quoted, asked && !quoted) },
+    { key: "answered", state: step(answered, quoted && !answered) },
+    { key: "ordered", state: step(ordered, answered && !ordered && rfq.status === "accepted") },
+  ] as const;
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 xl:sticky xl:top-24 xl:self-start">
+      <StageList
+        title={t("stagesTitle")}
+        stages={stages.map((stage) => ({ ...stage, label: t(`stages.${stage.key}`) }))}
+        stateLabels={{
+          done: t("stageStates.done"),
+          current: t("stageStates.current"),
+          upcoming: t("stageStates.upcoming"),
+          skipped: t("stageStates.skipped"),
+        }}
+      />
       <Card padding="md">
         <CardHeader>
           <CardTitle>{t("sla")}</CardTitle>

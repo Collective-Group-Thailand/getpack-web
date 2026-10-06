@@ -73,8 +73,14 @@ export const quotationsList = defineList<Quotation>({
   fetch: async ({ contract }, query) =>
     (await contract.GET("/v1/admin/quotes", { params: { query: query as never } })).data!,
   getRowId: (row) => row.id,
-  getRowName: (row) => row.quoteCode ?? row.id.slice(0, 8),
-  defaults: { filterKeys: ["status", "customerId", "channel"], sort: "createdAt", order: "desc" },
+  // Names a checkbox for screen readers only; a quotation without a code is named by its status.
+  getRowName: (row) => row.quoteCode ?? row.status,
+  defaults: {
+    filterKeys: ["status", "customerId", "channel"],
+    sort: "createdAt",
+    order: "desc",
+    hidden: ["channel", "createdAt"],
+  },
 });
 
 export const memosList = defineList<DiscountMemo>({
