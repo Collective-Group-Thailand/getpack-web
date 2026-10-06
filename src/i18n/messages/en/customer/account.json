@@ -69,7 +69,17 @@
     "replenishment": "Replenishment",
     "callOffs": "Call-offs",
     "messages": "Messages",
-    "structuralRequests": "Structural design requests"
+    "structuralRequests": "Structural design requests",
+    "waiting": "waiting for you",
+    "approvals": "Approvals",
+    "companyOrders": "Company overview and orders",
+    "groups": {
+      "orders": "Orders",
+      "work": "My work",
+      "company": "My company",
+      "companyNamed": "My company · {name}",
+      "account": "Account"
+    }
   },
   "home": {
     "title": "My account",
@@ -98,7 +108,10 @@
     "suggestions": "Time to order again?",
     "allSuggestions": "See all",
     "documents": "Latest documents",
-    "documentRow": "{number} · {date} · {amount}"
+    "documentRow": "{number} · {date} · {amount}",
+    "approvalsForYou": "{count, plural, one {# order} other {# orders}} waiting for your approval",
+    "approvalsForYouBody": "{company} orders above the buyer's limit",
+    "approvalsOpen": "Open approvals →"
   },
   "quotes": {
     "title": "Saved quotations",

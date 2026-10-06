@@ -29,7 +29,6 @@ async function expectNoViolations(page: Page) {
 
 async function newDesign(page: Page, phone: string): Promise<string> {
   await signInAsCustomer(page, BOX, phone);
-  await page.getByRole("dialog", { name: "ตั้งค่ากล่อง" }).getByRole("button", { name: "เริ่มออกแบบ" }).click();
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   await addHeading(page);
   await expect(page.getByRole("status").filter({ hasText: "บันทึกอัตโนมัติ" })).toBeVisible({ timeout: 15_000 });

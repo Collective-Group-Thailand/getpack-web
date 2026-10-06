@@ -116,7 +116,15 @@
     "samples": "This order's sample",
     "sampleOpen": "Open the sample asked for on {date}",
     "sampleHold": "This order starts production once you approve the sample",
-    "guarantee": "Our guarantee"
+    "guarantee": "Our guarantee",
+    "paymentNotStarted": {
+      "title": "Your order is placed, but the payment did not start",
+      "body": "The order is saved. Use the pay button to try again."
+    },
+    "companyApproval": {
+      "title": "Waiting for your company's approver",
+      "body": "Requested on {date} · above your ordering limit, so your company's approver decides first — then you can pay straight away"
+    }
   },
   "tolerance": {
     "title": "Quantity received",
@@ -149,7 +157,23 @@
     "shipment_delivered": "Delivered",
     "order_receipt_confirmed": "Receipt confirmed",
     "order_cancelled": "Order cancelled",
-    "other": "Order updated"
+    "payment_initiated": "Payment started",
+    "instalment_due": "Instalment {seq} due",
+    "artwork_preflight_completed": "Artwork checked automatically",
+    "artwork_accepted_for_proof": "Artwork accepted — proof in progress",
+    "production_queued": "Queued for production",
+    "shipment_ready": "Packed and ready to ship",
+    "delivery_reconciled": "Delivered quantity checked",
+    "claim_submitted": "Claim {claimNo} reported",
+    "claim_under_review": "Claim {claimNo} under review",
+    "document": {
+      "iv": "Invoice {number} issued",
+      "tr": "Tax invoice / receipt {number} issued",
+      "rc": "Receipt {number} issued",
+      "cn": "Credit note {number} issued",
+      "dn": "Debit note {number} issued",
+      "other": "Document {number} issued"
+    }
   },
   "arrivesBy": "Expected by {date}",
   "samples": {

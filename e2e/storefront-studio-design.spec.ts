@@ -32,8 +32,7 @@ async function expectNoViolations(page: Page) {
 
 async function openStudio(page: Page) {
   await signInAsCustomer(page, BOX, MOCK_DESIGNER_PHONE);
-  const setup = page.getByRole("dialog", { name: "ตั้งค่ากล่อง" });
-  await setup.getByRole("button", { name: "เริ่มออกแบบ" }).click();
+  // A link that names the box and asks for the design step starts with that box (round 2, B6).
   await expect(page).toHaveURL(STUDIO, { timeout: 15_000 });
   return STUDIO.exec(page.url())![1]!;
 }

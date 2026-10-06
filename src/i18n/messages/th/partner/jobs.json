@@ -295,5 +295,57 @@
       "sent": "ส่งแบบแล้ว",
       "failed": "ส่งแบบไม่สำเร็จ"
     }
+  },
+  "spec": {
+    "style": {
+      "term": "แบบกล่อง",
+      "value": "{name}"
+    },
+    "internal": {
+      "term": "ขนาดภายใน (มม.)",
+      "value": "{size}"
+    },
+    "external": {
+      "term": "ขนาดภายนอก (มม.)",
+      "value": "{size}"
+    },
+    "overCrease": {
+      "term": "ขนาดตามรอยพับ (มม.)",
+      "value": "{size}"
+    },
+    "caliper": {
+      "term": "ความหนาบอร์ด",
+      "value": "{mm} มม."
+    },
+    "material": {
+      "term": "วัสดุ",
+      "value": "{name}"
+    },
+    "print": {
+      "term": "งานพิมพ์",
+      "value": "พิมพ์ด้านนอก {count} ตำแหน่ง — ดูสีและตำแหน่งจากไฟล์ที่อนุมัติ"
+    },
+    "noPrint": {
+      "term": "งานพิมพ์",
+      "value": "ไม่พิมพ์"
+    },
+    "design": {
+      "own_file": {
+        "term": "ไฟล์งาน",
+        "value": "ลูกค้าส่งไฟล์เอง"
+      },
+      "online_designer": {
+        "term": "ไฟล์งาน",
+        "value": "ออกแบบในสตูดิโอ"
+      },
+      "hired_design": {
+        "term": "ไฟล์งาน",
+        "value": "ทีม Packio ออกแบบให้"
+      },
+      "free_design": {
+        "term": "ไฟล์งาน",
+        "value": "ทีม Packio ออกแบบให้"
+      }
+    }
   }
 }

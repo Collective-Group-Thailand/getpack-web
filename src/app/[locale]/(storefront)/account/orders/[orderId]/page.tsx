@@ -68,9 +68,15 @@ const SUCCESS = new Set(["payment.received", "proof.approved", "shipment.deliver
  * delivery and why it was cancelled — each from its own published read (`getMyOrder`). Nothing here
  * computes; every figure and date is the API's.
  */
-export default async function Page({ params }: { params: Promise<Params> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams: Promise<{ payment?: string }>;
+}) {
   await requireCustomer();
-  const { orderId } = await params;
+  const [{ orderId }, query] = await Promise.all([params, searchParams]);
   const [t, tCatalog, format, locale, detail, design, samples] = await Promise.all([
     getTranslations("myOrders"),
     getTranslations("catalog"),
@@ -147,6 +153,20 @@ export default async function Page({ params }: { params: Promise<Params> }) {
             </>
           ) : null}
         </p>
+        {query.payment === "not_started" && payable ? (
+          // Checkout placed the order but could not start its payment (round 2, B1): the order is
+          // safe and the pay button above starts it again.
+          <Callout tone="warning" live title={t("detail.paymentNotStarted.title")}>
+            {t("detail.paymentNotStarted.body")}
+          </Callout>
+        ) : null}
+        {group?.status === "pending_company_approval" ? (
+          // CONTRACT-REQUEST store.order-group-company-approval — the group does not name its
+          // approvers yet, so the buyer reads "the company's approver" until it does (round 2, B2).
+          <Callout tone="info" icon="stamp" title={t("detail.companyApproval.title")}>
+            {t("detail.companyApproval.body", { date: format.dateTime(group.placedAt) })}
+          </Callout>
+        ) : null}
         {group?.expiresAt && order.status === "waiting_payment" ? (
           <Callout tone="warning">{t("detail.expires", { date: format.dateTime(group.expiresAt) })}</Callout>
         ) : null}

@@ -1,6 +1,6 @@
 /**
  * GENERATED FILE — do not edit.
- * Source: contract/openapi.json (packio-api 0.41.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
+ * Source: contract/openapi.json (packio-api 0.42.0) · Regenerate: pnpm gen:api · Gate: pnpm gen:api --check
  */
 
 export interface paths {
@@ -57753,6 +57753,12 @@ export interface components {
              * @example 150
              */
             heightMm: number | null;
+            /**
+             * Format: uuid
+             * @description The stock product's id — what `store.quotes.calculate` takes as `configuration.stockProductId` for a `standard_product`, so the product page can price a quantity and add it to the cart.
+             * @example 0192f3a0-7c1e-7d2a-9b1f-00000000c001
+             */
+            id: string;
             /**
              * @example [
              *       "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009"
@@ -208111,6 +208117,7 @@ export interface operations {
                      *           "capacityMl": 250,
                      *           "description": "ขวดใส ฝาเกลียว 28 มม.",
                      *           "heightMm": 150,
+                     *           "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c001",
                      *           "imageUrls": [
                      *             "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009"
                      *           ],
@@ -208212,6 +208219,7 @@ export interface operations {
                      *       "capacityMl": 250,
                      *       "description": "ขวดใส ฝาเกลียว 28 มม.",
                      *       "heightMm": 150,
+                     *       "id": "0192f3a0-7c1e-7d2a-9b1f-00000000c001",
                      *       "imageUrls": [
                      *         "/v1/store/catalog/images/0192f3a0-7c1e-7d2a-9b1f-00000000c009"
                      *       ],

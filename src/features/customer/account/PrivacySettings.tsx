@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
+import { useConsentLabel } from "@/features/customer/auth/consent-label";
 import { useFormat } from "@/features/shared/format/useFormat";
 import { useRouter } from "@/i18n/navigation";
 import { browserApi } from "@/lib/api/browser";
@@ -40,6 +41,7 @@ export function PrivacySettings({
   requests: PrivacyRequest[];
 }) {
   const t = useTranslations("account.privacy");
+  const label = useConsentLabel();
   const format = useFormat();
   const router = useRouter();
   const [consents, setConsents] = useState(initialConsents);
@@ -90,7 +92,12 @@ export function PrivacySettings({
             <li key={consent.purpose} className="border-border flex flex-col gap-2 rounded-lg border p-4">
               {consent.required ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium">{consent.summary ?? consent.purpose}</p>
+                  <div>
+                    <p className="text-sm font-medium">{label(consent).name}</p>
+                    {label(consent).description ? (
+                      <p className="text-muted text-sm">{label(consent).description}</p>
+                    ) : null}
+                  </div>
                   <Badge tone="neutral">{t("required")}</Badge>
                 </div>
               ) : (
@@ -99,7 +106,7 @@ export function PrivacySettings({
                   className="justify-between"
                   checked={consent.granted === true}
                   onCheckedChange={(value) => void decide(consent.purpose, value)}
-                  label={consent.summary ?? consent.purpose}
+                  label={label(consent).name}
                   description={consent.outdated ? t("outdated") : undefined}
                 />
               )}

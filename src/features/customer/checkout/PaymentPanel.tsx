@@ -20,10 +20,12 @@ import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
+import { ProgressRing } from "@/ui/components/ProgressRing";
 import { QRCode } from "@/ui/components/QRCode";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
 
+import { lifeLeft, timeLeft } from "./time-left";
 import { WhatHappensNext } from "./WhatHappensNext";
 
 export type Payment = Schemas["PaymentDto"];
@@ -173,13 +175,27 @@ export function PaymentPanel({ initial }: { initial: Payment }) {
             label={t("qrAlt", { amount: format.thb(data.cashAmount) })}
             className="rounded-lg bg-white p-2"
           />
-          {left !== null ? (
-            <p className="tabular-nums" aria-live="off">
-              {t("countdown", {
-                minutes: Math.floor(left / 60_000),
-                seconds: String(Math.floor((left % 60_000) / 1000)).padStart(2, "0"),
-              })}
-            </p>
+          {left !== null && data.expiresAt ? (
+            <div className="flex items-center gap-3">
+              <ProgressRing
+                value={lifeLeft(data.createdAt, data.expiresAt, left)}
+                size={40}
+                stroke={4}
+                tone={left < 15 * 60_000 ? "warning" : "primary"}
+              />
+              <p className="text-start tabular-nums" aria-live="off">
+                {(() => {
+                  const parts = timeLeft(left);
+                  return parts.kind === "hours"
+                    ? t("countdownHours", {
+                        hours: parts.hours,
+                        minutes: parts.minutes,
+                        until: format.dateTime(data.expiresAt),
+                      })
+                    : t("countdown", { minutes: parts.minutes, seconds: parts.seconds });
+                })()}
+              </p>
+            </div>
           ) : null}
           <p className="text-muted flex items-center gap-2 text-sm" aria-live="polite">
             <Icon name="spinner" size={16} className="animate-spin" aria-hidden="true" />

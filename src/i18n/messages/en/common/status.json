@@ -312,7 +312,7 @@
   "shipment": {
     "draft": "Draft",
     "ready": "Ready",
-    "pickedUp": "Picked up",
+    "pickedUp": "Left the factory",
     "inTransit": "In transit",
     "outForDelivery": "Out for delivery",
     "delivered": "Delivered",

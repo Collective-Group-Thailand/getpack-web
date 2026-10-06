@@ -42,7 +42,21 @@
     "weight": "Weight",
     "kg": "kg",
     "action": "Ship to {name}",
-    "weightRequired": "Enter the total weight"
+    "weightRequired": "Enter the total weight",
+    "open": "Create shipment",
+    "title": "Create shipment",
+    "subtitle": "{jobNo} · {left} pcs ready to ship",
+    "splitHint": "You can send part of it — the rest becomes another trip",
+    "carrier": "How it goes",
+    "fleet": "Our own truck",
+    "fleetHint": "Record a POD (photos + signature) on hand-over",
+    "packio": "Ask Packio to book a carrier",
+    "packioHint": "Packio sends a pickup slot · confirmed within 2 hours",
+    "packioReason": "The factory asked Packio to book a carrier when creating the shipment",
+    "cancel": "Cancel",
+    "submit": "Create shipment + print {count, plural, one {# label} other {# labels}}",
+    "finish": "Finish {no}",
+    "partly": "{no} was created but the next step failed: {reason} — press again to continue"
   },
   "dispatch": {
     "action": "Dispatch",

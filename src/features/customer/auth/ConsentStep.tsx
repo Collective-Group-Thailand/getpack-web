@@ -8,6 +8,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 
+import { useConsentLabel } from "./consent-label";
 import { recordConsents, type Consent, type ConsentSource } from "./onboarding";
 
 /**
@@ -29,6 +30,7 @@ export function ConsentStep({
   onDone: () => void;
 }) {
   const t = useTranslations("auth.customer.consent");
+  const label = useConsentLabel();
   const { consent: cookieConsent } = useConsent();
   const [choices, setChoices] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
@@ -65,27 +67,37 @@ export function ConsentStep({
     });
   };
 
-  const row = (consent: Consent) => (
-    <li key={consent.purpose}>
-      <Checkbox
-        checked={Boolean(choices[consent.purpose])}
-        onCheckedChange={(checked) => setChoices((current) => ({ ...current, [consent.purpose]: checked === true }))}
-        disabled={pending}
-        required={consent.required}
-        label={consent.summary ?? consent.purpose}
-        description={
-          consent.text ? (
-            <details>
-              <summary className="text-primary cursor-pointer text-sm underline underline-offset-2">
-                {t("readFull")}
-              </summary>
-              <p className="text-muted mt-2 text-sm whitespace-pre-line">{consent.text}</p>
-            </details>
-          ) : undefined
-        }
-      />
-    </li>
-  );
+  const row = (consent: Consent) => {
+    const { name, description } = label(consent);
+    return (
+      <li key={consent.purpose}>
+        <Checkbox
+          checked={Boolean(choices[consent.purpose])}
+          onCheckedChange={(checked) =>
+            setChoices((current) => ({ ...current, [consent.purpose]: checked === true }))
+          }
+          disabled={pending}
+          required={consent.required}
+          label={name}
+          description={
+            description || consent.text ? (
+              <>
+                {description ? <span className="block">{description}</span> : null}
+                {consent.text ? (
+                  <details>
+                    <summary className="text-primary cursor-pointer text-sm underline underline-offset-2">
+                      {t("readFull")}
+                    </summary>
+                    <p className="text-muted mt-2 text-sm whitespace-pre-line">{consent.text}</p>
+                  </details>
+                ) : null}
+              </>
+            ) : undefined
+          }
+        />
+      </li>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4">

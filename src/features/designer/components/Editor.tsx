@@ -108,9 +108,16 @@ function useArtwork(
   }>({ outside: null, inside: null, finishes: {} });
   useEffect(() => {
     if (!active || !dieline) return;
+    let waits = 0;
+    let retry: ReturnType<typeof setTimeout> | undefined;
     const draw = () => {
       const s = stage();
-      if (!s) return;
+      // The canvas mounts a moment after the dieline exists; a first draw that found no stage
+      // tried again only on the next edit, so the 3D box stayed blank (round 2, B6).
+      if (!s) {
+        if (waits++ < 40) retry = setTimeout(draw, 150);
+        return;
+      }
       const pxPerMm = longSidePx / Math.max(dieline.width, dieline.height);
       const url = renderDieline(s, dieline, { pxPerMm, withGuides: false, marginMm: 0 });
       // The outside's finishes as masks for the model (U4.4): the window's inverted (the board stays).
@@ -142,6 +149,7 @@ function useArtwork(
     return () => {
       clearTimeout(first);
       clearTimeout(timer);
+      clearTimeout(retry);
       unsubscribe();
     };
   }, [active, stage, dieline, side, longSidePx]);
@@ -233,6 +241,12 @@ export interface EditorChrome {
   notice?: React.ReactNode;
   /** Open the setup dialog by itself when there is no box yet (the studio's ① offers its own ways). */
   autoSetup?: boolean;
+  /**
+   * A new design whose seed is complete (style and size, `?style=&l=&w=&h=`) starts with that box
+   * instead of the setup dialog — the studio's "ลองเล่นกับแบบตัวอย่าง" and links that ask for the
+   * design step (round 2, B6). The dialog stays one click away to change it.
+   */
+  applySeed?: boolean;
   /**
    * What fills the canvas before there is a box (the studio's start screen, UX audit) — in place of
    * the lone "choose a box" button. It is given the same context as the panels.
@@ -405,6 +419,20 @@ export default function Editor({
         : null,
   });
 
+  /** The setup dialog's starting point for a new design: the seed, with the catalogue's material. */
+  const seedSpec = (): DesignSpec | null => {
+    if (!seed) return null;
+    const materials = materialsFor(catalog, seed.style, seed.patternId);
+    const chosen = materials.find((m) => m.id === seed.materialId) ?? materials[0];
+    return {
+      specVersion: SPEC_VERSION,
+      styleId: seed.style,
+      values: { ...seed.dims },
+      ...(chosen ? withMaterial(chosen, locale) : fallbackMaterial(seed.style)),
+      patternId: seed.patternId ?? null,
+    };
+  };
+
   /*
    * Loading the design. Both setState calls below are part of that load, not a reaction to it:
    * a guest's design lives in localStorage, which cannot be read during render, and the editor
@@ -429,9 +457,14 @@ export default function Editor({
         editor.load({ id: local.id, name: local.name, spec: local.spec, content: local.content });
       } else {
         editor.load({ id: id === "new" ? nanoid(10) : id, name: t("untitled"), spec: null });
+        const seeded = editable && chrome?.applySeed ? seedSpec() : null;
+        if (seeded) {
+          editor.setSpec(seeded);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setFitSignal((signal) => signal + 1);
+        }
         // A design with no box opens straight into setup — there is nothing else to show.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        if (editable && chrome?.autoSetup !== false) setSetupOpen(true);
+        else if (editable && chrome?.autoSetup !== false) setSetupOpen(true);
       }
     }
     setLoaded(true);
@@ -559,20 +592,6 @@ export default function Editor({
   };
 
   const leave = () => nav.push(exitHref);
-
-  /** The setup dialog's starting point for a new design: the seed, with the catalogue's material. */
-  const seedSpec = (): DesignSpec | null => {
-    if (!seed) return null;
-    const materials = materialsFor(catalog, seed.style, seed.patternId);
-    const chosen = materials.find((m) => m.id === seed.materialId) ?? materials[0];
-    return {
-      specVersion: SPEC_VERSION,
-      styleId: seed.style,
-      values: { ...seed.dims },
-      ...(chosen ? withMaterial(chosen, locale) : fallbackMaterial(seed.style)),
-      patternId: seed.patternId ?? null,
-    };
-  };
 
   const stage = useCallback(() => stageRef.current, []);
   useEffect(() => {
