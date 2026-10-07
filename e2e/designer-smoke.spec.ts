@@ -18,8 +18,11 @@ async function startNewDesign(page: Page, product?: string) {
   // An old /design link lands in the studio (U4.2).
   if (product) await page.goto(`/design/new?product=${product}`);
   else {
+    // The header's "เริ่มออกแบบฟรี" opens the studio's front door (Phase 4); a blank design starts at /studio/new.
     await page.goto(HOME);
     await page.getByRole("link", { name: "เริ่มออกแบบ" }).first().click();
+    await expect(page).toHaveURL(/\/studio$/);
+    await page.goto("/studio/new");
   }
   await expect(page).toHaveURL(/\/studio\/new(\?|$)/);
   await page.locator("html[data-hydrated]").waitFor({ timeout: 30_000 });

@@ -173,39 +173,22 @@
       "print": "Print",
       "quantity": "Quantity"
     },
-    "shapes": {
-      "mailer": "Mailer",
-      "lid": "Lid",
-      "tuck": "Tuck end"
-    },
-    "shapeNames": {
-      "mailer": "Mailer box",
-      "lid": "Lid box",
-      "tuck": "Tuck-end box"
-    },
-    "materials": {
-      "kraft350": "Kraft 350g",
-      "art350": "Art card 350g",
-      "corrE": "E-flute"
-    },
     "prints": {
       "none": "No print",
       "one": "1 colour",
       "full": "Full colour"
     },
     "custom": "Custom",
-    "unavailable": "Not offered for this shape",
     "priceCaption": "Per piece · {qty} pcs · incl. VAT",
     "total": "total {total}",
     "lead": "Delivered in about {days} working days",
     "lock": "price held {days} days",
     "calculating": "Calculating the price…",
     "unpriced": "This size or quantity has no instant price yet — continue designing to see it in the next step, or chat with us on LINE",
-    "rfq": "We quote this shape to your spec — send us the size and quantity",
-    "requestQuote": "Request a quote",
-    "noSetup": "Pick a shape, size and board — the real price follows in the next step",
+    "noSetup": "No box has an instant price right now — start designing and see the price in the next step",
     "continue": "Continue designing",
     "configure": "See the price breakdown and more options",
-    "sizeChip": "{w} × {d} × {h}"
+    "sizeChip": "{w} × {d} × {h}",
+    "box": "box"
   }
 }

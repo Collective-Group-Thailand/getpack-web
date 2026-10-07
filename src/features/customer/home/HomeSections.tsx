@@ -56,12 +56,10 @@ export interface HeroFacts {
 
 export async function HomeHero({
   setup,
-  validityDays,
   photo,
   facts,
 }: {
   setup: HeroShapeSetup[];
-  validityDays: number | null;
   photo: HomePhoto | null;
   facts: HeroFacts;
 }) {
@@ -110,7 +108,7 @@ export async function HomeHero({
             </div>
           </div>
         </div>
-        <StudioHeroPanel setup={setup} validityDays={validityDays} />
+        <StudioHeroPanel setup={setup} />
       </div>
     </section>
   );
@@ -219,14 +217,14 @@ export async function TemplateGallery({
           ) : null}
         </li>
         {rest.map((style) => card(style))}
-        <li className="bg-sage flex min-h-64 flex-col p-6.5 text-white">
+        <li className="bg-sage text-fg-inverse flex min-h-64 flex-col p-6.5">
           <h3 className="text-2xl leading-tight">{t.rich("custom.title", br)}</h3>
-          <p className="mt-2.5 text-sm leading-relaxed text-white/85">{t("custom.body")}</p>
+          <p className="text-fg-inverse mt-2.5 text-sm leading-relaxed">{t("custom.body")}</p>
           <Button
             asChild
             size="md"
             variant="secondary"
-            className="text-fg mt-auto self-start border-white bg-white hover:bg-white/90"
+            className="border-surface bg-surface text-fg hover:bg-surface/90 mt-auto self-start"
           >
             <Link href="/account/structural-requests">{t("custom.action")}</Link>
           </Button>
@@ -499,7 +497,7 @@ export async function StudioCapabilities() {
           <div className="border-border rounded-control grid gap-2.5 border px-3.5 py-3 text-[13px]">
             {(
               [
-                ["owner", "bg-sage text-white"],
+                ["owner", "bg-sage text-fg-inverse"],
                 ["designer", "bg-sage-subtle text-fg"],
               ] as const
             ).map(([who, tone]) => (
@@ -562,9 +560,9 @@ export async function QualityBand({
         ? t("factsClaim", { days: claimDays })
         : t("factsNone");
   const shortcut =
-    "rounded-card bg-surface text-fg block p-4.5 outline-none focus-visible:ring-2 focus-visible:ring-white";
+    "rounded-card bg-surface text-fg block p-4.5 outline-none focus-visible:ring-2 focus-visible:ring-fg-inverse";
   return (
-    <section aria-labelledby="home-quality" className="bg-sage mt-20 text-white md:mt-26">
+    <section aria-labelledby="home-quality" className="bg-sage text-fg-inverse mt-20 md:mt-26">
       <div className={cn("grid", photo && "lg:grid-cols-2")}>
         {photo ? (
           <figure className="relative min-h-72 overflow-hidden lg:min-h-[520px]">
@@ -574,10 +572,10 @@ export async function QualityBand({
         <div
           className={cn("w-full max-w-[45rem] px-5 py-14 md:px-8 lg:py-20", photo ? "lg:ps-18 lg:pe-12" : "mx-auto")}
         >
-          <h2 id="home-quality" className="text-[1.75rem] leading-[1.15] text-white md:text-4xl">
+          <h2 id="home-quality" className="text-fg-inverse text-[1.75rem] leading-[1.15] md:text-4xl">
             {t.rich("title", br)}
           </h2>
-          <p className="mt-4.5 max-w-[30em] text-white/85">{t("body")}</p>
+          <p className="text-fg-inverse mt-4.5 max-w-[30em]">{t("body")}</p>
           <ul className="mt-8 grid gap-4 sm:grid-cols-2">
             {(
               [
@@ -597,7 +595,9 @@ export async function QualityBand({
               </li>
             ))}
           </ul>
-          <p className="mt-9 max-w-[32em] border-t border-white/25 pt-6 text-[0.9375rem] text-white/90">{facts}</p>
+          <p className="border-fg-inverse/25 text-fg-inverse mt-9 max-w-[32em] border-t pt-6 text-[0.9375rem]">
+            {facts}
+          </p>
         </div>
       </div>
     </section>

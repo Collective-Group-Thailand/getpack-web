@@ -39,6 +39,16 @@ export async function saveQuote(
   return data!;
 }
 
+/** The catalogue product a price query was for, from its key (the body, as JSON). */
+function productOf(key: unknown): string | null {
+  if (typeof key !== "string") return null;
+  try {
+    return (JSON.parse(key) as CalculateBody).configuration.catalogProductId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** `value`, once it has stopped changing for `delay` ms. */
 export function useDebounced<T>(value: T, delay: number): T {
   const [settled, setSettled] = useState(value);
@@ -66,7 +76,11 @@ export function useLivePrice(body: CalculateBody | null, delay: number = PRICE_D
     queryKey: [...queryKeys.zone("customer"), "quote-price", settledKey],
     queryFn: ({ signal }) => calculate(settled!, signal),
     enabled: settled !== null,
-    placeholderData: (previous) => previous,
+    // The last price stays up (marked updating) while the next is fetched — but only for the same
+    // product: the home page's Studio panel switches products, and another product's price must
+    // never stand in for this one's, even for a moment.
+    placeholderData: (previous, previousQuery) =>
+      productOf(previousQuery?.queryKey.at(-1)) === settled?.configuration.catalogProductId ? previous : undefined,
     staleTime: 60_000,
   });
   return {

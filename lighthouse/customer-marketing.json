@@ -4,6 +4,7 @@
     "collect": {
       "url": [
         "http://localhost:3200/",
+        "http://localhost:3200/studio",
         "http://localhost:3200/products",
         "http://localhost:3200/products/tuck-end-box",
         "http://localhost:3200/articles/choosing-box-paper",

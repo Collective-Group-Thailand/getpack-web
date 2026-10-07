@@ -17,6 +17,7 @@ import { Popover } from "@/ui/components/Popover";
 import { Spinner } from "@/ui/components/Spinner";
 
 import { markAllRead, markRead, useNotifications, type NotificationItem } from "./notifications";
+import { proofTerms } from "@/i18n/terms";
 
 /** Beyond this the badge says "99+"; the exact figure is in the accessible name. */
 const BADGE_MAX = 99;
@@ -35,7 +36,13 @@ export function NotificationBell({ zone }: { zone: Zone }) {
   const [open, setOpen] = useState(false);
 
   const { data, isPending } = useNotifications(zone);
-  const items = data?.items ?? [];
+  // The API's words, in the glossary's (Proof wording, Phase 4 §4.5) until packio-api adopts it.
+  const audience = zone === "customer" ? "customer" : "staff";
+  const items = (data?.items ?? []).map((item) => ({
+    ...item,
+    title: proofTerms(item.title, audience),
+    body: proofTerms(item.body, audience),
+  }));
   const unreadCount = data?.unreadCount ?? 0;
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeys.list(zone, "notifications") });

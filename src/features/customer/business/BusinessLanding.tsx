@@ -38,11 +38,8 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         </h2>
         <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {BENEFITS.map((benefit) => (
-            <li
-              key={benefit.key}
-              className="border-border bg-surface flex flex-col gap-4 rounded-card border p-6"
-            >
-              <span className="bg-primary-subtle text-primary grid size-11 place-items-center rounded-control">
+            <li key={benefit.key} className="border-border bg-surface rounded-card flex flex-col gap-4 border p-6">
+              <span className="bg-primary-subtle text-primary rounded-control grid size-11 place-items-center">
                 <Icon name={benefit.icon} size={22} aria-hidden="true" />
               </span>
               <div>
@@ -55,20 +52,20 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
       </section>
       <section
         aria-labelledby="business-steps"
-        className="rounded-card bg-sage relative overflow-hidden p-7 text-white md:p-10"
+        className="rounded-card bg-sage text-fg-inverse relative overflow-hidden p-7 md:p-10"
       >
         <h2 id="business-steps" className="serif relative text-[1.75rem]">
           {t("stepsTitle")}
         </h2>
         <ol className="relative mt-6 grid gap-6 md:grid-cols-3">
           {(["one", "two", "three"] as const).map((step, index) => (
-            <li key={step} className="flex gap-4 border-t border-white/15 pt-5">
-              <span className="serif shrink-0 text-4xl leading-none text-white/70" aria-hidden="true">
+            <li key={step} className="border-fg-inverse/15 flex gap-4 border-t pt-5">
+              <span className="serif text-fg-inverse shrink-0 text-4xl leading-none" aria-hidden="true">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>
                 <p className="font-semibold">{t(`steps.${step}.title`)}</p>
-                <p className="mt-1 text-sm leading-relaxed text-white/75">{t(`steps.${step}.body`)}</p>
+                <p className="text-fg-inverse mt-1 text-sm leading-relaxed">{t(`steps.${step}.body`)}</p>
               </div>
             </li>
           ))}

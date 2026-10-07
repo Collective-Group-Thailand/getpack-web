@@ -101,15 +101,23 @@ describe("design language v3", () => {
   });
 });
 
+/*
+ * Acceptance, re-scoped in the Phase 4 review: zero in UI copy, i18n and the enum→label mapping —
+ * what a user can read. API-written text (problem details, notifications, settings labels) is
+ * mapped at display by `src/i18n/terms.ts` until packio-api adopts the glossary; docs may quote
+ * the old word (the docs/ui header note does).
+ */
 describe("Proof terminology (Phase 4 §4.5)", () => {
   // Built from parts so this file is not itself a hit for the repo-wide grep.
   const transliteration = ["ปรู", "๊ฟ"].join("");
   const never = new RegExp([transliteration, "ตัวอย่างงานพิมพ์", "พิสูจน์อักษร"].join("|"));
 
   it("never uses the transliteration or the other rejected words", () => {
+    // The mapping layer and its test are the one place that must name the old words.
+    const mapping = ["src/i18n/terms.ts", "src/i18n/terms.test.ts"];
     expect(
       scan(
-        words.filter((file) => file !== SELF),
+        words.filter((file) => file !== SELF && !mapping.includes(file)),
         never,
       ),
     ).toEqual([]);

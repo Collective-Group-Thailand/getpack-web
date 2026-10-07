@@ -7,6 +7,7 @@
  * of it, so a screen never has to parse a response body or guess at a message.
  */
 
+import { proofTerms, type TermAudience } from "@/i18n/terms";
 import type { Schemas } from "./types";
 
 export type ProblemDetails = Schemas["ProblemDetails"];
@@ -77,7 +78,12 @@ function isProblemDetails(value: unknown): value is ProblemDetails {
  * with the status, the request id from the response headers, and a synthetic code, so error
  * states have something to show and support has something to trace.
  */
-export async function toApiError(response: Response, fallbackRequestId?: string): Promise<ApiError> {
+export async function toApiError(
+  response: Response,
+  fallbackRequestId?: string,
+  /** Whose words the detail is mapped to (Proof wording, Phase 4 §4.5) — from the request's surface. */
+  audience: TermAudience = "staff",
+): Promise<ApiError> {
   const requestId = response.headers.get("x-request-id") ?? fallbackRequestId ?? "";
 
   let body: unknown = null;
@@ -88,7 +94,12 @@ export async function toApiError(response: Response, fallbackRequestId?: string)
   }
 
   if (isProblemDetails(body)) {
-    return new ApiError({ ...body, requestId: body.requestId || requestId });
+    return new ApiError({
+      ...body,
+      title: proofTerms(body.title, audience),
+      detail: proofTerms(body.detail, audience),
+      requestId: body.requestId || requestId,
+    });
   }
 
   return new ApiError({

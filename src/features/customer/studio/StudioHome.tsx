@@ -66,6 +66,9 @@ export async function StudioHome({
       : design.lengthMm === null || design.widthMm === null
         ? t("status.size")
         : t("status.ready");
+  // "มีรายการควรตรวจ" only when the API says so: `hasIssues` is requested (store.designs.list,
+  // with `issueCount`) and read here only once a response carries it — no line otherwise.
+  const flagged = (design: MyDesign) => (design as unknown as Record<string, unknown>).hasIssues === true;
 
   return (
     <div className={cn(HOME_WRAP, "pt-10 pb-20 md:pt-14")}>
@@ -188,6 +191,7 @@ export async function StudioHome({
                         {[
                           t("edited", { when: format.relative(design.updatedAt) }),
                           design.versionNo !== null ? t("version", { n: design.versionNo }) : null,
+                          flagged(design) ? t("status.issues") : null,
                           statusOf(design),
                         ]
                           .filter(Boolean)

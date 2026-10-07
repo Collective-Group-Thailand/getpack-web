@@ -7,19 +7,18 @@ import { pick } from "@/features/customer/catalog/localize";
 /**
  * The home page's CMS content (Phase 4, the V4 "Main" board), from the back office's home
  * sections (`/admin/cms/home-sections`). The contract leaves a section's `config` to the
- * storefront ("interpreted by the storefront"), so three `custom` sections carry what the board
- * needs and nothing on the page is invented when one is missing:
+ * storefront ("interpreted by the storefront"), so two `custom` sections carry the page's
+ * editorial content — photos, captions, customer stories — and nothing on the page is invented
+ * when one is missing. Everything priced or configurable (the hero panel's shapes, sizes, boards,
+ * inks and quantities) is the catalogue's, never the CMS's (`studio-hero.server.ts`):
  *
  * - `home-photos` — every photo on the page, each with its alt text and a caption that describes
  *   the object only: `{ hero, mosaic: [5], process: [sample, packing], quality, templates: { <style code>: photo } }`.
  *   A block whose photos are missing is left out (the mosaic needs all five).
- * - `studio-hero` — which catalogue product each of the hero panel's shapes prices, and which of
- *   that product's option codes each material and print chip stands for:
- *   `{ shapes: { mailer: "<product slug>", lid, tuck }, materials: { kraft350: ["<code>"], art350, corrE }, prints: { one: ["<ink code>"], full: ["<ink code>"] } }`.
  * - `customer-cases` — customer stories: `{ cases: [{ approved, image, brand, province, item, quantity, days, quote }] }`.
  *   The section shows only when at least three are approved; never a placeholder.
  *
- * CONTRACT-REQUEST store.home-content — typed DTOs for these three would let the API validate
+ * CONTRACT-REQUEST store.home-content — typed DTOs for these two would let the API validate
  * what an editor saves (docs/contract-requests.md); until then a malformed entry is skipped here.
  */
 
@@ -35,19 +34,6 @@ export interface HomePhotos {
   process: { sample: HomePhoto | null; packing: HomePhoto | null };
   quality: HomePhoto | null;
   templates: Map<string, HomePhoto>;
-}
-
-export const HERO_SHAPES = ["mailer", "lid", "tuck"] as const;
-export const HERO_MATERIALS = ["kraft350", "art350", "corrE"] as const;
-export const HERO_PRINTS = ["none", "one", "full"] as const;
-export type HeroShape = (typeof HERO_SHAPES)[number];
-export type HeroMaterial = (typeof HERO_MATERIALS)[number];
-export type HeroPrint = (typeof HERO_PRINTS)[number];
-
-export interface StudioHeroConfig {
-  shapes: Partial<Record<HeroShape, string>>;
-  materials: Partial<Record<HeroMaterial, string[]>>;
-  prints: Partial<Record<Exclude<HeroPrint, "none">, string[]>>;
 }
 
 export interface CustomerCase {
@@ -66,8 +52,6 @@ export const MIN_CASES = 3;
 const record = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 const text = (value: unknown): string | null => (typeof value === "string" && value.trim() ? value.trim() : null);
-const strings = (value: unknown): string[] =>
-  Array.isArray(value) ? value.flatMap((item) => (text(item) ? [text(item)!] : [])) : [];
 const count = (value: unknown): number | null =>
   typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
 
@@ -97,7 +81,6 @@ function section(sections: HomeSection[], slug: string): Record<string, unknown>
 
 export interface HomeContent {
   photos: HomePhotos;
-  studioHero: StudioHeroConfig | null;
   cases: CustomerCase[];
 }
 
@@ -106,7 +89,6 @@ export async function getHomeContent(locale: string): Promise<HomeContent> {
   const sections = await getHomeSections().catch(() => [] as HomeSection[]);
   return {
     photos: photosOf(locale, section(sections, "home-photos")),
-    studioHero: studioHeroOf(section(sections, "studio-hero")),
     cases: casesOf(locale, section(sections, "customer-cases")),
   };
 }
@@ -127,22 +109,6 @@ export function photosOf(locale: string, config: Record<string, unknown> | null)
     quality: photo(locale, config?.quality),
     templates,
   };
-}
-
-export function studioHeroOf(config: Record<string, unknown> | null): StudioHeroConfig | null {
-  const shapes = record(config?.shapes);
-  if (!shapes) return null;
-  const out: StudioHeroConfig = { shapes: {}, materials: {}, prints: {} };
-  for (const shape of HERO_SHAPES) {
-    const slug = text(shapes[shape]);
-    if (slug) out.shapes[shape] = slug;
-  }
-  const materials = record(config?.materials);
-  for (const material of HERO_MATERIALS) out.materials[material] = strings(materials?.[material]);
-  const prints = record(config?.prints);
-  out.prints.one = strings(prints?.one);
-  out.prints.full = strings(prints?.full);
-  return Object.keys(out.shapes).length > 0 ? out : null;
 }
 
 export function casesOf(locale: string, config: Record<string, unknown> | null): CustomerCase[] {

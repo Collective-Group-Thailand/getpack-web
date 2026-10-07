@@ -440,7 +440,8 @@
     "status": {
       "ordered": "ordered · {code}",
       "ready": "ready to order",
-      "size": "size to confirm"
+      "size": "size to confirm",
+      "issues": "has items to check"
     },
     "open": "Open",
     "help": "Stuck? Ask the team from the design page — we open your draft and help fix it right away"

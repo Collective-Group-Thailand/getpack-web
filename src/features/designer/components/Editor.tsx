@@ -73,6 +73,7 @@ import { FocusChip } from "./shell/FocusChip";
 import { RAIL, RailPanel, SelectionPanel, type RailId } from "./shell/panels";
 import { shortcutList, useEditorShortcuts } from "./shell/shortcuts";
 import { StatusBar } from "./shell/StatusBar";
+import { proofTerms } from "@/i18n/terms";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
 const Presentation = dynamic(() => import("./Presentation"), { ssr: false });
@@ -1046,7 +1047,10 @@ export default function Editor({
                   ) : null}
                   {softProof && proofProfile ? (
                     <span className="text-muted text-xs" role="status">
-                      {locale === "en" ? rulesQuery.data!.softProof.label.en : rulesQuery.data!.softProof.label.th}
+                      {proofTerms(
+                        locale === "en" ? rulesQuery.data!.softProof.label.en : rulesQuery.data!.softProof.label.th,
+                        "customer",
+                      )}
                       {proofProfile.label ? ` · ${proofProfile.label}` : null}
                     </span>
                   ) : null}

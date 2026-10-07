@@ -99,13 +99,13 @@ export default async function Page() {
 
       <section
         aria-labelledby="help-person"
-        className="rounded-card bg-sage relative flex flex-col gap-5 overflow-hidden p-7 text-white md:flex-row md:items-center md:justify-between md:p-9"
+        className="rounded-card bg-sage text-fg-inverse relative flex flex-col gap-5 overflow-hidden p-7 md:flex-row md:items-center md:justify-between md:p-9"
       >
         <div className="relative max-w-[34em]">
           <h2 id="help-person" className="serif text-[1.75rem] leading-tight">
             {t("person")}
           </h2>
-          <p className="mt-2 leading-relaxed text-white/80">{t("personBody")}</p>
+          <p className="text-fg-inverse mt-2 leading-relaxed">{t("personBody")}</p>
         </div>
         <div className="relative flex flex-wrap gap-2">
           <Button asChild iconStart="chat">
