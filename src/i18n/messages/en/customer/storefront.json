@@ -26,7 +26,7 @@
     "startFree": "Start designing free"
   },
   "footer": {
-    "tagline": "Your Packaging Production Partner",
+    "tagline": "A packaging design studio and production partner",
     "lineContact": "Reach us on LINE, 09:00–18:00 daily",
     "paymentMethods": "Pay by bank transfer · PromptPay QR · credit or debit card · instalments",
     "help": {
@@ -40,7 +40,7 @@
       "materials": "Materials library"
     },
     "company": {
-      "heading": "Company",
+      "heading": "Packio",
       "about": "About Packio",
       "partner": "Become a partner factory",
       "contact": "Contact us",
@@ -55,7 +55,21 @@
       "cookies": "Cookie policy"
     },
     "operatedBy": "Operated by {name} · tax id {taxId} ({branch})",
-    "by": "by {company}"
+    "by": "by {company}",
+    "studio": {
+      "heading": "Studio",
+      "start": "Start designing",
+      "templates": "All box templates",
+      "learn": "File preparation guide",
+      "materials": "Materials library"
+    },
+    "order": {
+      "heading": "Order",
+      "products": "Products & prices",
+      "upload": "Upload a file",
+      "business": "Business accounts",
+      "track": "Track an order"
+    }
   },
   "comingSoon": {
     "search": "Search",

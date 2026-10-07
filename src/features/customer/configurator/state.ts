@@ -369,6 +369,13 @@ export function seedFromDesign(
     from?: string;
     /** A standard size's code, from a row of the product page's size table (UX audit). */
     size?: string;
+    /**
+     * Front ink colours, comma-separated option ids — the home page's Studio panel (Phase 4) sends
+     * its print choice so the configurator opens on the very configuration it priced. `none` = blank.
+     */
+    ink?: string;
+    /** How the artwork comes (`DesignOption`) — `/studio/upload` opens the configurator on `own_file`. */
+    design?: string;
   },
 ): Partial<ConfiguratorState> | undefined {
   const mm = (value: string | undefined) => (value && /^\d{1,4}(\.\d)?$/.test(value) ? Number(value) : null);
@@ -383,7 +390,15 @@ export function seedFromDesign(
   const standard = query.size
     ? configurator.standardSizes.find((candidate) => candidate.code === query.size)
     : undefined;
-  if (!pattern && !material && !(l && w) && !tiers && !standard) return undefined;
+  const front = groupsOf(configurator).find((group) => group.kind === "print_front");
+  const inks =
+    query.ink === "none"
+      ? []
+      : query.ink
+        ? query.ink.split(",").filter((id) => front?.options.some((option) => option.id === id))
+        : null;
+  const design = configurator.design.options.find((option) => option === query.design);
+  if (!pattern && !material && !(l && w) && !tiers && !standard && !inks && !design) return undefined;
   const seed: Partial<ConfiguratorState> = {};
   if (standard) {
     seed.sizeMode = "standard";
@@ -403,12 +418,17 @@ export function seedFromDesign(
     // The designer draws a box on its inside size (F4).
     seed.basis = sizeKindOf(configurator) === "box" ? "internal" : "product";
   }
-  if (material) {
+  if (material || inks) {
     const base = initialState(configurator);
-    seed.choices = { ...base.choices, material: [material.id] };
+    seed.choices = {
+      ...base.choices,
+      ...(material ? { material: [material.id] } : {}),
+      ...(inks && front ? { print_front: inks } : {}),
+    };
   }
   // A design's "order this" keeps the online designer; the home page's quick start leaves the choice open.
-  if (query.from !== "home" && configurator.design.options.includes("online_designer"))
+  if (design) seed.designOption = design;
+  else if (query.from !== "home" && configurator.design.options.includes("online_designer"))
     seed.designOption = "online_designer";
   return seed;
 }
