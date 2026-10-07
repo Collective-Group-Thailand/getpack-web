@@ -238,11 +238,16 @@ export function StudioHeroPanel({ setup }: { setup: HeroShapeSetup[] }) {
                 {t("continue")}
               </Link>
             </div>
+            {/* Always takes its line, so the panel does not grow when the price arrives (CLS). */}
             {configureHref && step?.unitPrice ? (
               <Link href={configureHref} className="text-muted mt-2 inline-block border-b border-current text-[13px]">
                 {t("configure")}
               </Link>
-            ) : null}
+            ) : (
+              <span aria-hidden="true" className="mt-2 inline-block text-[13px]">
+                &nbsp;
+              </span>
+            )}
           </div>
         </div>
       </div>
