@@ -3,6 +3,12 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
+import { assertThirdPartyAssets } from "./build-checks/no-untracked-third-party-assets.mjs";
+
+// A production build (and `next start`) refuses images under public/media without a known licence
+// in their folder's manifest — e.g. the dev-only interim home photos (`HOME_PHOTOS_LOCAL_MANIFEST`).
+if (process.env.NODE_ENV === "production") assertThirdPartyAssets();
+
 const nextConfig: NextConfig = {
   // CLAUDE.md in this repo is hand-written project documentation (see its "Read before
   // every task" list); Next 16 would otherwise overwrite it with generated agent rules.

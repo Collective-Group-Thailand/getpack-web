@@ -43,6 +43,17 @@ describe("serverEnvSchema", () => {
     expect(() => parseEnv(development, { TRUSTED_PROXY_HOPS: "one" }, "server")).toThrow(/TRUSTED_PROXY_HOPS/);
   });
 
+  it("allows the local home-photo fallback only outside production", () => {
+    expect(parseEnv(development, { HOME_PHOTOS_LOCAL_MANIFEST: "1" }, "server").HOME_PHOTOS_LOCAL_MANIFEST).toBe("1");
+    expect(parseEnv(production, productionHosts(), "server").HOME_PHOTOS_LOCAL_MANIFEST).toBeUndefined();
+    expect(() => parseEnv(production, { ...productionHosts(), HOME_PHOTOS_LOCAL_MANIFEST: "1" }, "server")).toThrow(
+      /HOME_PHOTOS_LOCAL_MANIFEST/,
+    );
+    expect(() => parseEnv(production, { ...productionHosts(), HOME_PHOTOS_LOCAL_MANIFEST: "0" }, "server")).toThrow(
+      /HOME_PHOTOS_LOCAL_MANIFEST/,
+    );
+  });
+
   it("rejects a URL where a Host header value belongs", () => {
     expect(() => parseEnv(development, { ADMIN_HOST: "https://admin.packio.co.th" }, "server")).toThrow(/ADMIN_HOST/);
   });
