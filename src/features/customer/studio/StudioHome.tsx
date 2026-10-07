@@ -4,7 +4,7 @@ import { DesignThumb } from "@/features/customer/account/DesignThumb";
 import type { StyleCard } from "@/features/customer/catalog/api.server";
 import type { MyDesign } from "@/features/customer/designer/api.server";
 import { DielineGlyph } from "@/features/customer/home/DielineGlyph";
-import { HOME_WRAP, TemplateCard } from "@/features/customer/home/HomeSections";
+import { HOME_WRAP, TemplateCard } from "@/features/customer/home/parts";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";

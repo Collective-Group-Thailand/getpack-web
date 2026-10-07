@@ -33,7 +33,8 @@ export function StudioComments({
   const company = useQuery({
     queryKey: [...queryKeys.zone("customer"), "company", companyId],
     queryFn: async () =>
-      (await browserApi().GET("/v1/store/companies/{companyId}", { params: { path: { companyId: companyId! } } })).data!,
+      (await browserApi().GET("/v1/store/companies/{companyId}", { params: { path: { companyId: companyId! } } }))
+        .data!,
     enabled: !!companyId,
     staleTime: 10 * 60_000,
   });

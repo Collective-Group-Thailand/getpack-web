@@ -199,8 +199,8 @@ export function StudioHeroPanel({ setup }: { setup: HeroShapeSetup[] }) {
           ) : null}
 
           <div className="border-fg mt-auto border-t pt-4" aria-live="polite" aria-busy={price.pending || undefined}>
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div className="min-h-[5.25rem] min-w-0">
+            <div className="flex flex-col items-start gap-3">
+              <div className="min-h-[5.5rem] min-w-0">
                 {!current ? (
                   <p className="text-muted max-w-[22em] text-sm">{t("noSetup")}</p>
                 ) : step?.unitPrice ? (

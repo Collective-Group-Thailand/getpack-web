@@ -5,7 +5,6 @@ import { pick } from "@/features/customer/catalog/localize";
 import { categoryHref } from "@/features/customer/catalog/paths";
 import { compareDecimal } from "@/features/customer/studio/decimal";
 import { facetLabel, type StylesT } from "@/features/customer/styles/labels";
-import { styleHref } from "@/features/customer/styles/paths";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
@@ -14,7 +13,7 @@ import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
 import type { CustomerCase, HomePhoto } from "./content.server";
-import { DielineGlyph } from "./DielineGlyph";
+import { HOME_WRAP, Photo, TemplateCard, UNDERLINE } from "./parts";
 import { NewsletterForm } from "./NewsletterForm";
 import { StudioHeroPanel } from "./StudioHeroPanel";
 import type { HeroShapeSetup } from "./studio-hero.server";
@@ -25,27 +24,9 @@ import type { HeroShapeSetup } from "./studio-hero.server";
  * panels only where the board shows a screen — the Studio panel, the UI samples, the shortcuts.
  * Every figure is the API's; a block with nothing real to show is left out.
  */
-export const HOME_WRAP = "mx-auto w-full max-w-[82.5rem] px-5 md:px-8 xl:px-12";
 const SECTION = cn(HOME_WRAP, "pt-20 md:pt-26");
 const H2 = "text-[1.875rem] leading-[1.1] md:text-[2.5rem]";
-const UNDERLINE = "border-b border-current pb-px font-medium";
 const br = { br: () => <br /> };
-
-/** A CMS photo (API origin, so a plain `img`), covering its frame. */
-function Photo({ photo, className, eager = false }: { photo: HomePhoto; className?: string; eager?: boolean }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element -- API-origin image (see ProductCard)
-    <img
-      src={photo.src}
-      alt={photo.alt}
-      width={800}
-      height={600}
-      loading={eager ? "eager" : "lazy"}
-      decoding="async"
-      className={cn("block size-full object-cover", className)}
-    />
-  );
-}
 
 /* ----------------------------------------------------------------------------------------- 1 */
 
@@ -231,52 +212,6 @@ export async function TemplateGallery({
         </li>
       </ul>
     </section>
-  );
-}
-
-/** One template: its picture well (a CMS photo, or the family's outline), the dieline tile, its name. */
-export function TemplateCard({
-  style,
-  locale,
-  photo,
-  meta,
-  action,
-  big = false,
-}: {
-  style: StyleCard;
-  locale: string;
-  photo: HomePhoto | null;
-  meta: string;
-  action?: string;
-  big?: boolean;
-}) {
-  const name = pick(locale, style.nameTh, style.nameEn);
-  return (
-    <li className={cn(big && "sm:col-span-2 sm:row-span-2")}>
-      <Link href={styleHref(style.code, name)} className="group block outline-none">
-        <figure className={cn("bg-sage-subtle relative overflow-hidden", big ? "aspect-square" : "aspect-[4/3]")}>
-          {photo ? (
-            <Photo photo={{ ...photo, alt: "" }} />
-          ) : (
-            <span className="grid size-full place-items-center p-8">
-              <DielineGlyph family={style.family} className="w-1/2 max-w-56" />
-            </span>
-          )}
-          <span className="border-border bg-surface rounded-thumb absolute start-2.5 top-2.5 h-[46px] w-16 border p-1">
-            <DielineGlyph family={style.family} className="size-full" />
-          </span>
-        </figure>
-        <span className="block pt-2.5">
-          <b className={cn("block font-semibold", big ? "text-xl" : "text-[0.9375rem]")}>{name}</b>
-          <small className="text-muted mt-0.5 block text-[13px]">{meta}</small>
-          {action ? (
-            <span className={cn("mt-2.5 inline-block text-[0.84375rem] group-focus-visible:ring-2", UNDERLINE)}>
-              {action}
-            </span>
-          ) : null}
-        </span>
-      </Link>
-    </li>
   );
 }
 

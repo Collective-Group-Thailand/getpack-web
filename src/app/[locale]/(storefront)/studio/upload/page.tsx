@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { listProducts } from "@/features/customer/catalog/api.server";
 import { storeImageSrc } from "@/features/customer/catalog/images";
 import { pick } from "@/features/customer/catalog/localize";
-import { HOME_WRAP } from "@/features/customer/home/HomeSections";
+import { HOME_WRAP } from "@/features/customer/home/parts";
 import { getFormat } from "@/features/shared/format/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/ui/components/Button";
