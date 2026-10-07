@@ -53,6 +53,14 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## One typeface: Anuphan everywhere — 2026-10-07
+
+Branch `feat/font-anuphan-only`. Asked: "ใช้ font Anuphan อันเดียวทั้งเว็บ". Trirong (Phase 2's display serif) is removed — its files, its `@font-face` and its licence copy (~68 KB fewer font bytes; nothing for the display face to fetch).
+
+- `--font-display` is now the same Anuphan stack as `--font-sans`; what made "display" display stays: weight 600, tracking −0.01em (−0.015em was tuned for the serif), the sizes. `.serif` keeps its name (it means "display setting" now) so no page changed for it.
+- Anuphan has no italic, and a browser-slanted Thai is worse than none: the accent word in a storefront heading (`<em>`) is the brand colour only; the italic step numbers, the hand note and the SVG labels lost their slant.
+- Checked: home, sign-in, catalogue at 1440 (no tone-mark collisions at the hero's 1.04 leading); unit 1111, lint, typecheck, `tokens:check`; e2e a11y, home, storefront, zones, visual — 63 passed (4 timed out under 3 workers and passed alone).
+
 ## UX round 2 — polish after Phase 3 — 2026-10-07
 
 Branch `feat/ux-r2-polish`. The second half of the system-wide pass, from the same tour (1440 / 390, customer, admin, partner).

@@ -153,7 +153,7 @@
   /* Typography (ADR-0001). */
   --font-*: initial;
   --font-sans: var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-pk-serif-latin), var(--font-pk-serif-thai), ui-serif, Georgia, serif;
+  --font-display: var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --text-xs: clamp(0.75rem, 0.73rem + 0.09vw, 0.8125rem);
   --text-sm: 0.875rem;

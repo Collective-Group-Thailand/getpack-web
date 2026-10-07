@@ -132,8 +132,8 @@ export const FONT_WEIGHT = {
  */
 export const FONT_FAMILY = {
   sans: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
-  /** Trirong (design language v2): headings by zone — see `src/ui/styles/base.css`. */
-  display: "var(--font-pk-serif-latin), var(--font-pk-serif-thai), ui-serif, Georgia, serif",
+  /** One face for the whole site: display text is Anuphan too, set heavier and tighter (base.css). */
+  display: "var(--font-pk-display-latin), var(--font-pk-display-thai), ui-sans-serif, system-ui, sans-serif",
   mono: "var(--font-pk-mono), ui-monospace, SFMono-Regular, Menlo, monospace",
 } as const;
 
