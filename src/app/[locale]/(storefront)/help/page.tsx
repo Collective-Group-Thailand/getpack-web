@@ -99,7 +99,7 @@ export default async function Page() {
 
       <section
         aria-labelledby="help-person"
-        className="grain relative flex flex-col gap-5 overflow-hidden rounded-[var(--radius-card)] bg-[var(--green-ink)] p-7 text-white md:flex-row md:items-center md:justify-between md:p-9"
+        className="rounded-card bg-sage relative flex flex-col gap-5 overflow-hidden p-7 text-white md:flex-row md:items-center md:justify-between md:p-9"
       >
         <div className="relative max-w-[34em]">
           <h2 id="help-person" className="serif text-[1.75rem] leading-tight">

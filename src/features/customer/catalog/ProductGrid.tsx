@@ -17,7 +17,7 @@ export type GridItem = { kind: "catalog"; product: ProductCardDto } | { kind: "s
 
 export interface ProductGridProps {
   items: readonly GridItem[];
-  /** Product types by code: the card's eyebrow and its instant / RFQ badge. */
+  /** Product types by code: the card's top line and its instant / RFQ badge. */
   types: ReadonlyMap<string, ProductType>;
   hints: ReadonlyMap<string, PriceHint>;
   headingLevel?: "h2" | "h3";
@@ -67,7 +67,7 @@ export async function ProductGrid({
             headingLevel={headingLevel}
             priority={index < eager}
             title={<Link href={productHref(product.slug)}>{name}</Link>}
-            eyebrow={type ? pick(locale, type.nameTh, type.nameEn) : undefined}
+            topLine={type ? pick(locale, type.nameTh, type.nameEn) : undefined}
             image={src ? { src, alt: name } : null}
             fallback={{ family: productFamilyOf(`${product.productTypeCode} ${product.slug}`), tone: "kraft" }}
             price={facts.price}
@@ -89,7 +89,7 @@ export async function ProductGrid({
           headingLevel={headingLevel}
           priority={index < eager}
           title={<Link href={stockProductHref(product.sku)}>{name}</Link>}
-          eyebrow={t("card.stock")}
+          topLine={t("card.stock")}
           image={src ? { src, alt: name } : null}
           aspect={stockAspect}
           fallback={{ family: "stock", tone: index % 2 ? "kraft" : "paper" }}

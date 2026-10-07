@@ -74,7 +74,7 @@ export function QuantityStep({ configurator, state, onChange, unit }: QuantitySt
               <li
                 key={quantity}
                 className={cn(
-                  "flex items-center rounded-full border",
+                  "flex items-center rounded-control border",
                   selected ? "border-primary bg-primary-subtle" : "border-border-strong",
                 )}
               >

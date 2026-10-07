@@ -11,7 +11,7 @@ import { cn } from "../lib/cn";
  * engine, never a status, and never a manufactured "only N left" (D-181). Warnings are
  * `warning`.
  */
-export const badgeVariants = cva("inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap", {
+export const badgeVariants = cva("inline-flex items-center gap-1 rounded-control font-medium whitespace-nowrap", {
   variants: {
     tone: {
       neutral: "",

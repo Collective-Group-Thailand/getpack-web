@@ -84,7 +84,7 @@ export default async function QcPage() {
   return (
     <PartnerPage title={t("title")} description={t("body", { date: format.date(new Date().toISOString()) })} wide>
       <p className="flex flex-wrap gap-2" aria-live="polite">
-        <span className="bg-warning-subtle text-warning-subtle-fg rounded-full px-3 py-1 font-semibold">
+        <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-3 py-1 font-semibold">
           {t("waiting", { count: waiting })}
         </span>
       </p>

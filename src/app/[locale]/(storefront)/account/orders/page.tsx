@@ -52,7 +52,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
         <h2 id="orders-documents" className="text-lg font-semibold">
           {tHome("documents")}
         </h2>
-        <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-[var(--radius-card)] border">
+        <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-card border">
           {documents.map((doc) => (
             <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
               <div className="flex min-w-0 items-center gap-3">
@@ -121,7 +121,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ v
             <li key={order.id}>
               <article
                 aria-labelledby={`order-${order.id}`}
-                className="border-border bg-surface hover:border-border-strong flex gap-4 rounded-[var(--radius-card)] border p-4 transition-colors sm:p-5"
+                className="border-border bg-surface hover:border-border-strong flex gap-4 rounded-card border p-4 transition-colors sm:p-5"
               >
                 <ProductThumb
                   family={productFamilyOf(order.summary.productTypeCode)}

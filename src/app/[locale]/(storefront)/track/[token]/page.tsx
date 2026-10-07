@@ -44,8 +44,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <header className="flex flex-col gap-2">
         <p className="text-muted text-sm">{t("eyebrow")}</p>
         <div className="flex flex-wrap items-center gap-3">
-          <p className="eyebrow">{t("eyebrow")}</p>
-          <h1 className="mt-3 text-[2.375rem] leading-tight">{t("title")}</h1>
+          <h1 className="text-[2.375rem] leading-tight">{t("title")}</h1>
           {ORDER_STATUSES.has(tracking.status) ? (
             <StatusChip map={ORDER_STATUS} value={tracking.status as keyof typeof ORDER_STATUS} size="md" />
           ) : null}

@@ -78,7 +78,7 @@ export const Composition: Story = {
           <ProductCard
             as="li"
             title={<a href="#mailer">กล่องไปรษณีย์ (ตัวอย่าง)</a>}
-            eyebrow="กล่องกระดาษลูกฟูก"
+            topLine="กล่องกระดาษลูกฟูก"
             image={{ src: picture(35), alt: "กล่องไปรษณีย์" }}
             price="เริ่มต้น ฿4.20 / ชิ้น ที่ 1,000 ชิ้น"
             meta="ขั้นต่ำ 500 ชิ้น · ผลิต 7–10 วันทำการ"
@@ -87,7 +87,7 @@ export const Composition: Story = {
           <ProductCard
             as="li"
             title={<a href="#sleeve">ปลอกสวมกล่อง (ตัวอย่าง)</a>}
-            eyebrow="ป้ายแท็กและปลอก"
+            topLine="ป้ายแท็กและปลอก"
             image={{ src: picture(160), alt: "ปลอกสวมกล่อง" }}
             price="เริ่มต้น ฿2.10 / ชิ้น ที่ 2,000 ชิ้น"
             meta="ขั้นต่ำ 1,000 ชิ้น · ผลิต 5–7 วันทำการ"
@@ -103,7 +103,7 @@ export const Composition: Story = {
           <ProductCard
             as="li"
             title={<a href="#rigid">กล่องแข็งฝาแม่เหล็ก (ตัวอย่าง)</a>}
-            eyebrow="กล่องแข็งและกล่องของขวัญ"
+            topLine="กล่องแข็งและกล่องของขวัญ"
             image={{ src: picture(280), alt: "กล่องแข็ง" }}
             price="ขอใบเสนอราคา"
             meta="ตอบภายใน 1 วันทำการ"
@@ -125,7 +125,7 @@ export const Composition: Story = {
 };
 
 /**
- * The home page's section furniture (redesign, 2026-10-06): a kicker-and-title heading with its
+ * The home page's section furniture (redesign, 2026-10-06): a title heading with its
  * "see all" link, cards that lift on hover with an icon tile, the kraft highlighter and the kraft
  * invitation band. Copy is placeholder.
  */
@@ -138,7 +138,6 @@ export const HomeSections: Story = {
       <section aria-labelledby="story-steps">
         <SectionHeading
           id="story-steps"
-          kicker="How it works"
           title="Order in four steps"
           description="One line of context under the title."
           action={

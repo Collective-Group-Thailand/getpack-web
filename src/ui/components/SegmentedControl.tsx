@@ -58,9 +58,10 @@ export function SegmentedControl<T extends string = string>({
           disabled={option.disabled}
           aria-label={option.ariaLabel}
           className={cn(
-            "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap",
+            "inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent font-medium whitespace-nowrap",
             "text-muted duration-fast ease-standard transition-colors",
-            "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:shadow-card",
+            // Design language v3: the chosen segment is an ink hairline and semibold — no shadow.
+            "data-[state=on]:bg-surface data-[state=on]:text-fg data-[state=on]:border-fg data-[state=on]:font-semibold",
             "disabled:pointer-events-none disabled:opacity-50",
             size === "sm" ? "h-7 px-2 text-xs" : size === "xl" ? "h-12 px-4 text-lg" : "h-9 px-3 text-sm",
           )}

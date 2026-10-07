@@ -4,8 +4,6 @@ export interface SectionHeadingProps extends Omit<React.HTMLAttributes<HTMLDivEl
   /** The `id` the section's `aria-labelledby` points at. */
   id?: string;
   title: React.ReactNode;
-  /** A short label above the title ("How it works"). Decorative wayfinding, not the section's name. */
-  kicker?: React.ReactNode;
   /** One line under the title. */
   description?: React.ReactNode;
   /** A link to more, pinned to the end on wide screens — the caller passes the locale-aware `Link`. */
@@ -16,13 +14,13 @@ export interface SectionHeadingProps extends Omit<React.HTMLAttributes<HTMLDivEl
 }
 
 /**
- * A marketing section's opening: kicker, title, an optional line of context and a "see all"
- * link. One component so every storefront section opens at the same rhythm and size.
+ * A marketing section's opening: the title, an optional line of context and a "see all" link — no
+ * label above the title (design language v3). One component so every storefront section opens at
+ * the same rhythm and size.
  */
 export function SectionHeading({
   id,
   title,
-  kicker,
   description,
   action,
   inverse = false,
@@ -33,20 +31,10 @@ export function SectionHeading({
   return (
     <div className={cn("mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 md:mb-9", className)} {...props}>
       <div className="max-w-2xl">
-        {kicker ? (
-          <p
-            className={cn(
-              "text-xs font-bold tracking-[0.08em] uppercase",
-              inverse ? "text-fg-inverse/80" : "text-primary",
-            )}
-          >
-            {kicker}
-          </p>
-        ) : null}
         <Heading
           id={id}
           className={cn(
-            "font-display mt-2 text-2xl leading-tight font-bold tracking-tight md:text-3xl",
+            "text-2xl leading-tight font-semibold md:text-3xl",
             inverse && "text-fg-inverse",
           )}
         >

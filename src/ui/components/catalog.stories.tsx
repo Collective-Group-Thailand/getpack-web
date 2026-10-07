@@ -35,7 +35,7 @@ export const ProductGrid: Story = {
       <ProductCard
         as="li"
         title={<a href="#mailer">กล่องไปรษณีย์ (ตัวอย่าง)</a>}
-        eyebrow="กล่องกระดาษลูกฟูก"
+        topLine="กล่องกระดาษลูกฟูก"
         image={{ src: picture(30), alt: "กล่องไปรษณีย์" }}
         price="เริ่มต้น ฿4.20 / ชิ้น"
         meta="ผลิต 7–10 วันทำการ"
@@ -45,14 +45,14 @@ export const ProductGrid: Story = {
       <ProductCard
         as="li"
         title={<a href="#tag">ป้ายแท็กห้อยสินค้า (ตัวอย่าง)</a>}
-        eyebrow="ป้ายแท็กและปลอก"
+        topLine="ป้ายแท็กและปลอก"
         image={null}
         price="เริ่มต้น ฿1.80 / ชิ้น"
       />
       <ProductCard
         as="li"
         title={<a href="#gift">กล่องแข็งฝาแม่เหล็ก (ตัวอย่าง)</a>}
-        eyebrow="กล่องแข็งและกล่องของขวัญ"
+        topLine="กล่องแข็งและกล่องของขวัญ"
         image={{ src: picture(280), alt: "กล่องแข็ง" }}
         price="ขอใบเสนอราคา"
         badges={<Badge tone="info">ขอใบเสนอราคา</Badge>}

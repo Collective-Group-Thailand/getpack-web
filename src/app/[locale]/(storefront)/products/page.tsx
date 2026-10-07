@@ -147,7 +147,7 @@ export default async function ProductsPage({
                   <li key={chip.key}>
                     <Link
                       href={chip.href}
-                      className="bg-bg-subtle hover:bg-primary-subtle inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm"
+                      className="bg-bg-subtle hover:bg-primary-subtle inline-flex items-center gap-1 rounded-control px-3 py-1 text-sm"
                     >
                       {chip.label}
                       <Icon name="close" size={12} aria-hidden="true" />

@@ -50,10 +50,10 @@ export async function HomeHero({
           </h1>
           <p className="rise text-muted mt-6 max-w-[28em] text-lg leading-relaxed md:text-[1.1875rem]">{t("lead")}</p>
           <div className="rise mt-8 flex flex-wrap gap-3 max-sm:[&>*]:w-full">
-            <Button asChild size="lg" shape="pill" iconEnd="arrow-right">
+            <Button asChild size="lg" iconEnd="arrow-right">
               <Link href="#quick-quote">{t("price")}</Link>
             </Button>
-            <Button asChild size="lg" shape="pill" variant="secondary">
+            <Button asChild size="lg" variant="secondary">
               <Link href="/studio/new">{t("design")}</Link>
             </Button>
           </div>

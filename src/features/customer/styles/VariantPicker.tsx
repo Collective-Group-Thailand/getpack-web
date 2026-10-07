@@ -132,7 +132,7 @@ export function VariantPicker({
                         aria-describedby={reason ? reasonId : undefined}
                         onClick={() => option.available && setSelection((s) => change(s, axis, option.value))}
                         className={cn(
-                          "focus-visible:ring-focus-ring rounded-full border px-3 py-1.5 text-sm outline-none focus-visible:ring-2",
+                          "focus-visible:ring-focus-ring rounded-control border px-3 py-1.5 text-sm outline-none focus-visible:ring-2",
                           on
                             ? "border-primary bg-primary-subtle text-primary-subtle-fg font-medium"
                             : "border-border hover:bg-bg-subtle",
