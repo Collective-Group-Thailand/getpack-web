@@ -74,7 +74,7 @@ export function AuthSplitLayout({
             <DielineSketch />
             <div>
               <p className="font-semibold">{note.title}</p>
-              <p className="mt-1 text-sm leading-relaxed opacity-75">{note.body}</p>
+              <p className="mt-1 text-sm leading-relaxed opacity-90">{note.body}</p>
             </div>
           </div>
         ) : null}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { casesOf, MIN_CASES, photosOf, studioHeroOf } from "./content.server";
+import { casesOf, MIN_CASES, photosOf } from "./content.server";
 import { isoBox, MATERIAL_TINT } from "./iso-box";
 
 const photo = (id: string) => ({ url: `/v1/store/catalog/images/${id}`, alt: { th: `รูป ${id}`, en: `Photo ${id}` } });
@@ -45,22 +45,6 @@ describe("home CMS content (Phase 4)", () => {
 
   it("never serves a photo from outside the API or the media store", () => {
     expect(photosOf("th", { hero: { url: "javascript:alert(1)", alt: "x" } }).hero).toBeNull();
-  });
-
-  it("reads the studio panel's products and option codes", () => {
-    expect(studioHeroOf(null)).toBeNull();
-    expect(studioHeroOf({ shapes: {} })).toBeNull();
-    expect(
-      studioHeroOf({
-        shapes: { mailer: "mailer-box", oval: "x" },
-        materials: { corrE: ["E", 3] },
-        prints: { one: ["black"] },
-      }),
-    ).toEqual({
-      shapes: { mailer: "mailer-box" },
-      materials: { kraft350: [], art350: [], corrE: ["E"] },
-      prints: { one: ["black"], full: [] },
-    });
   });
 });
 

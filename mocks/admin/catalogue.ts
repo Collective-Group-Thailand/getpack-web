@@ -522,6 +522,31 @@ const TABLES: Record<string, TableConfig> = {
       { code: "M", name: "ขนาดกลาง 15×15×7 ซม.", lengthMm: 150, widthMm: 150, heightMm: 70, sort: 20 },
       { code: "L", name: "ขนาดใหญ่ 20×20×10 ซม.", lengthMm: 200, widthMm: 200, heightMm: 100, sort: 30 },
     ],
+    // The corrugated products' own standard sizes (Phase 4: the home page's Studio panel offers a
+    // product's standard sizes, so a mailer needs some). Plain rows: the variants above merge over
+    // the contract example, which belongs to the tuck-end box.
+    rows: [
+      ...(
+        [
+          ["mailer-box", 1, "A", "เบอร์ A 18×12×5 ซม.", 180, 120, 50],
+          ["mailer-box", 1, "B", "เบอร์ B 25×18×8 ซม.", 250, 180, 80],
+          ["mailer-box", 1, "C", "เบอร์ C 30×22×10 ซม.", 300, 220, 100],
+          ["shipping-box", 3, "S", "ขนาดเล็ก 20×15×10 ซม.", 200, 150, 100],
+          ["shipping-box", 3, "M", "ขนาดกลาง 30×20×15 ซม.", 300, 200, 150],
+        ] as const
+      ).map(([, product, code, name, lengthMm, widthMm, heightMm], index) => ({
+        id: mockId("sts", 51 + index),
+        catalogProductId: mockId("ctp", product),
+        code,
+        name,
+        lengthMm,
+        widthMm,
+        heightMm,
+        sort: (index + 1) * 10,
+        status: "active",
+        updatedAt: "2026-10-01T09:00:00+07:00",
+      })),
+    ],
   },
   stockAttributeValues: {
     path: "/v1/admin/catalog/stock-attribute-values",
@@ -727,21 +752,6 @@ const TABLES: Record<string, TableConfig> = {
     // Phase 4 (V4 "Main" board): the home page's own content, read by `home/content.server.ts`.
     // Plain rows — the contract has no list example for home sections to merge variants over.
     rows: [
-      {
-        id: mockId("hms", 51),
-        updatedAt: "2026-10-01T09:00:00+07:00",
-        slug: "studio-hero",
-        kind: "custom",
-        status: "published",
-        titleTh: "สตูดิโอหน้าแรก",
-        titleEn: "Home studio panel",
-        sort: 50,
-        config: {
-          shapes: { mailer: "mailer-box", lid: "magnetic-gift-box", tuck: "tuck-end-box" },
-          materials: { kraft350: ["kraft-350", "kraft-300"], art350: ["art-card-350"], corrE: ["E"] },
-          prints: { one: ["black"], full: ["cmyk"] },
-        },
-      },
       {
         id: mockId("hms", 52),
         updatedAt: "2026-10-01T09:00:00+07:00",

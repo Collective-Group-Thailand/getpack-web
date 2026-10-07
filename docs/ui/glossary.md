@@ -98,4 +98,4 @@
 | ซัพพลายเออร์ (to a customer) | โรงงานพาร์ตเนอร์ | Packio is the seller; the factory relationship is not the customer's (D-010) |
 | สินค้า (for a box) | the box style by name | "Name the thing" (`voice-and-tone.md`) |
 | คลิกที่นี่ | the verb for the action | |
-| ป-รู๊ฟ (the transliteration, written here hyphenated so the repo grep stays at zero), ตัวอย่างงานพิมพ์, พิสูจน์อักษร | แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์ for customers; Proof for statuses, the back office, the factory app and page names | Phase 4 §4.5; CI fails on the first one (`src/ui/design-language.test.ts`) |
+| ปรู๊ฟ, ตัวอย่างงานพิมพ์, พิสูจน์อักษร | แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์ for customers; Proof for statuses, the back office, the factory app and page names | Phase 4 §4.5. Zero in UI copy, i18n and the display mapping (CI: `src/ui/design-language.test.ts`); API text is mapped at display (`src/i18n/terms.ts`) until packio-api adopts this glossary |

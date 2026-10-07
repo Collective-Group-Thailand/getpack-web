@@ -41,9 +41,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getGuarantee().catch(() => null),
     getNetworkStats().catch(() => null),
   ]);
-  const setup = content.studioHero ? await getStudioHeroSetup(content.studioHero, locale) : [];
+  const setup = await getStudioHeroSetup(locale);
 
-  const instantTypes = tree.flatMap((category) => category.types).filter((type) => type.availability !== "rfq");
   // Instant-price categories lead, as they lead the catalogue (UX audit step 4).
   const categories = [...tree].sort(
     (a, b) =>
@@ -52,17 +51,19 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   );
   const styleCategories = styles?.facets.category ?? [];
   const templateCount = styleCategories.reduce((sum, facet) => sum + facet.count, 0);
-  const moqs = instantTypes.map((type) => type.moq).filter((moq): moq is number => moq !== null);
-  const validityDays = setup.find((shape) => shape.configurator)?.configurator?.quoteValidityDays ?? null;
+  // The minimum order is policy: the configurators' own `quantity.min`, the value /configure enforces.
+  const minimums = setup.map((shape) => shape.configurator.quantity.min).filter((min): min is number => min !== null);
   const factories = network?.network.published ? network.network.partnerCount : null;
 
   return (
     <>
       <HomeHero
         setup={setup}
-        validityDays={validityDays}
         photo={content.photos.hero}
-        facts={{ templates: templateCount > 0 ? templateCount : null, moq: moqs.length ? Math.min(...moqs) : null }}
+        facts={{
+          templates: templateCount > 0 ? templateCount : null,
+          moq: minimums.length ? Math.min(...minimums) : null,
+        }}
       />
       <TrustRow />
       {content.photos.mosaic ? <PhotoMosaic photos={content.photos.mosaic} /> : null}

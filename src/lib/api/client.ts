@@ -20,6 +20,7 @@ import { isUpstreamPathAllowed, type Zone } from "@/lib/zones";
 
 import { MOCK_SCENARIO_HEADER } from "./mock-scenario";
 import { ApiError, toApiError } from "./problem";
+import { audienceOfPath } from "@/i18n/terms";
 import type { ApiPaths } from "./types";
 
 export const CSRF_HEADER = "x-packio-csrf";
@@ -147,7 +148,11 @@ function contextMiddleware({
 const problemMiddleware: Middleware = {
   async onResponse({ request, response }) {
     if (response.ok) return response;
-    throw await toApiError(response, request.headers.get(REQUEST_ID_HEADER) ?? undefined);
+    throw await toApiError(
+      response,
+      request.headers.get(REQUEST_ID_HEADER) ?? undefined,
+      audienceOfPath(new URL(request.url).pathname),
+    );
   },
 };
 

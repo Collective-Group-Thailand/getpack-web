@@ -2,81 +2,83 @@ import "server-only";
 
 import { resolveStyleId } from "@packio/dieline";
 
-import {
-  getConfigurator,
-  getProduct,
-  getProductTypes,
-  type Configurator,
-} from "@/features/customer/catalog/api.server";
+import { getConfigurator, listProducts, type Configurator } from "@/features/customer/catalog/api.server";
 import { pick } from "@/features/customer/catalog/localize";
-import { rfqHref } from "@/features/customer/catalog/paths";
-import { groupsOf, isProcessInk } from "@/features/customer/configurator/model";
+import { groupsOf, isProcessInk, sizeKindOf } from "@/features/customer/configurator/model";
 
-import {
-  HERO_MATERIALS,
-  HERO_SHAPES,
-  type HeroMaterial,
-  type HeroShape,
-  type StudioHeroConfig,
-} from "./content.server";
+import type { IsoShape } from "./iso-box";
 
-/** One of the panel's shapes, resolved against the catalogue product the CMS names for it. */
+/** How many shapes, sizes, boards and quantities the hero panel offers (the "Main" board). */
+const SHAPES = 3;
+const SIZES = 3;
+const MATERIALS = 3;
+const QUANTITIES = 4;
+
+/**
+ * One of the hero panel's shapes: a catalogue product priced online, with the presets its own
+ * configurator publishes (`store.catalog.getConfigurator` — the endpoint `/configure` reads). The
+ * CMS has no say in any of it (Phase 4 review): shapes, sizes, boards, inks and quantities are
+ * the catalogue's.
+ */
 export interface HeroShapeSetup {
-  key: HeroShape;
   productSlug: string;
-  /**
-   * The product's configurator — the very one `/configure/<slug>` prices with. `null` when the
-   * product is quoted by hand (D-043): the panel then offers the request-for-quote path instead.
-   */
-  configurator: Configurator | null;
-  /** Where "request a quote" goes when there is no instant price. */
-  rfqHref: string;
+  name: string;
+  /** How the drawing tells it apart: a mailer's seam, a lid's rim, a tuck end. */
+  drawing: IsoShape;
+  configurator: Configurator;
   /** The `@packio/dieline` style the studio opens on, from the product's first pattern. */
   styleId: string | null;
-  /** Each material chip as this product offers it — its option id and its own name — or absent. */
-  materials: Partial<Record<HeroMaterial, { id: string; name: string }>>;
-  /** Front inks for "1 colour" and "full colour", as option ids; absent when the product has none. */
+  /** The product's standard sizes, in mm (inside size, D-182). */
+  sizes: { code: string; l: number; w: number; d: number }[];
+  materials: { id: string; name: string; tint: "kraft350" | "art350" | "corrE"; isDefault: boolean }[];
+  /** Front inks for "1 colour" and "full colour", as option ids; null when the product has none. */
   inks: { one: string[] | null; full: string[] | null };
+  quantities: number[];
 }
 
 /**
- * The hero panel's catalogue, from the `studio-hero` home section: each shape's product and its
- * configurator, and each chip's option on that product. A chip whose option the product does not
- * offer is left out for that shape — the panel disables it rather than price something else.
+ * The hero panel's shapes: the first box products the catalogue prices online and gives standard
+ * sizes, in the catalogue's own order. An empty list when there are none — the panel then only
+ * points to the studio.
  */
-export async function getStudioHeroSetup(config: StudioHeroConfig, locale: string): Promise<HeroShapeSetup[]> {
-  const shapes = HERO_SHAPES.flatMap((key) => (config.shapes[key] ? [{ key, slug: config.shapes[key] }] : []));
-  const types = await getProductTypes().catch(() => []);
-  return Promise.all(
-    shapes.map(async ({ key, slug }): Promise<HeroShapeSetup> => {
-      const [configurator, product] = await Promise.all([
-        getConfigurator(slug).catch(() => null),
-        getProduct(slug).catch(() => null),
-      ]);
-      const groups = configurator ? groupsOf(configurator) : [];
-      const materialOptions = groups.find((group) => group.kind === "material")?.options ?? [];
-      const inkOptions = groups.find((group) => group.kind === "print_front")?.options ?? [];
-      const byCode = (codes: string[] | undefined, options: typeof materialOptions) =>
-        (codes ?? []).map((code) => options.find((option) => option.code === code)).find(Boolean) ?? null;
-
-      const materials: HeroShapeSetup["materials"] = {};
-      for (const material of HERO_MATERIALS) {
-        const option = byCode(config.materials[material], materialOptions);
-        if (option) materials[material] = { id: option.id, name: pick(locale, option.nameTh, option.nameEn) };
-      }
-      // "Full colour" is the process ink when the CMS names none; "1 colour" must be named.
-      const one = byCode(config.prints.one, inkOptions);
-      const full = byCode(config.prints.full, inkOptions) ?? inkOptions.find(isProcessInk) ?? null;
-      const type = types.find((candidate) => candidate.code === product?.productTypeCode);
-      return {
-        key,
-        productSlug: slug,
-        configurator: configurator?.instant ? configurator : null,
-        rfqHref: `${rfqHref(type?.categoryCode ?? product?.productTypeCode ?? "")}?from=${encodeURIComponent(slug)}`,
-        styleId: resolveStyleId(configurator?.patterns[0]?.dielineKey),
-        materials,
-        inks: { one: one ? [one.id] : null, full: full ? [full.id] : null },
-      };
-    }),
+export async function getStudioHeroSetup(locale: string): Promise<HeroShapeSetup[]> {
+  const products = await listProducts({ perPage: 48 }).catch(() => null);
+  const candidates = (products?.data ?? []).filter((product) => product.availability !== "rfq");
+  const configurators = await Promise.all(
+    candidates.slice(0, 12).map((product) => getConfigurator(product.slug).catch(() => null)),
   );
+  const shapes: HeroShapeSetup[] = [];
+  candidates.slice(0, 12).forEach((product, index) => {
+    const configurator = configurators[index];
+    if (shapes.length >= SHAPES || !configurator?.instant) return;
+    if (sizeKindOf(configurator) !== "box" || configurator.standardSizes.length === 0) return;
+    const groups = groupsOf(configurator);
+    const materials = groups.find((group) => group.kind === "material")?.options ?? [];
+    const inks = groups.find((group) => group.kind === "print_front")?.options ?? [];
+    const one = inks.find((option) => !isProcessInk(option) && option.isDefault) ?? inks.find((o) => !isProcessInk(o));
+    const full = inks.find(isProcessInk);
+    const { min, max, presets } = configurator.quantity;
+    const corrugated = configurator.calculator === "corrugate";
+    shapes.push({
+      productSlug: product.slug,
+      name: pick(locale, product.nameTh, product.nameEn),
+      drawing: corrugated ? "mailer" : product.productTypeCode === "rigid_box" ? "lid" : "tuck",
+      configurator,
+      styleId: resolveStyleId(configurator.patterns[0]?.dielineKey),
+      sizes: configurator.standardSizes
+        .slice(0, SIZES)
+        .map((size) => ({ code: size.code, l: size.lengthMm, w: size.widthMm, d: size.heightMm })),
+      materials: materials.slice(0, MATERIALS).map((option) => ({
+        id: option.id,
+        name: pick(locale, option.nameTh, option.nameEn),
+        tint: corrugated ? "corrE" : /kraft/i.test(option.code) ? "kraft350" : "art350",
+        isDefault: option.isDefault,
+      })),
+      inks: { one: one ? [one.id] : null, full: full ? [full.id] : null },
+      quantities: presets
+        .filter((quantity) => (min === null || quantity >= min) && (max === null || quantity <= max))
+        .slice(0, QUANTITIES),
+    });
+  });
+  return shapes;
 }

@@ -116,7 +116,7 @@ test.describe("proofs", () => {
 
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(header(page)).toContainText("ส่ง Proof ให้ลูกค้าแล้ว");
-    await page.getByRole("tab", { name: /^ Proof/ }).click();
+    await page.getByRole("tab", { name: /^Proof/ }).click();
     await expect(page.getByRole("tabpanel")).toContainText("รอลูกค้าตรวจ Proof");
   });
 
