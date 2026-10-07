@@ -140,6 +140,48 @@
         }
       }
     },
+    "/v1/store/catalog/hero-presets": {
+      "get": {
+        "operationId": "store.catalog.heroPresets.list",
+        "summary": "The homepage Studio hero's shapes, boards, prints, sizes and quantities, read against the catalogue",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.catalog.hero-presets",
+        "x-decisions": [
+          "D-310",
+          "D-043"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The homepage Studio hero's shapes, boards, prints, sizes and quantities, read against the catalogue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeroPresetsDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/store/catalog/materials": {
       "get": {
         "operationId": "store.catalog.materials.list",
@@ -365,6 +407,102 @@
         "responses": {
           "204": {
             "description": "A guest signs up for the newsletter with the marketing-email consent version they saw"
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/public-config": {
+      "get": {
+        "operationId": "store.publicConfig.list",
+        "summary": "The figures the storefront states: minimum orders, price lock, claim window, support, counts",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.public-config",
+        "x-decisions": [
+          "D-309",
+          "D-307",
+          "D-051",
+          "D-082"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The figures the storefront states: minimum orders, price lock, claim window, support, counts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicConfigDto"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Problem details (api-conventions §3)",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/store/quotes/actions/preview": {
+      "post": {
+        "operationId": "store.quotes.preview",
+        "summary": "Price one hero selection by the store.quotes.calculate path (reference configuration + selection)",
+        "tags": [
+          "store"
+        ],
+        "x-contract-request": "store.quotes.preview",
+        "x-decisions": [
+          "D-310",
+          "D-220"
+        ],
+        "security": [
+          {},
+          {
+            "customer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeroPreviewRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Price one hero selection by the store.quotes.calculate path (reference configuration + selection)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeroPreviewDto"
+                }
+              }
+            }
           },
           "4XX": {
             "description": "Problem details (api-conventions §3)",
@@ -735,6 +873,324 @@
           "unsure"
         ]
       },
+      "HeroBoard": {
+        "type": "string",
+        "enum": [
+          "kraft350",
+          "art350",
+          "corrE"
+        ]
+      },
+      "HeroPresetsDto": {
+        "type": "object",
+        "properties": {
+          "shapes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HeroShapePresetDto"
+            }
+          },
+          "default": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HeroSelectionDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "shapes",
+          "default"
+        ],
+        "additionalProperties": false
+      },
+      "HeroPreviewDto": {
+        "type": "object",
+        "properties": {
+          "selection": {
+            "$ref": "#/components/schemas/HeroSelectionDto"
+          },
+          "productTypeCode": {
+            "type": "string"
+          },
+          "configuration": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "calculation": {
+            "type": "object",
+            "properties": {
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "quantity": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "instant": {
+                      "type": "boolean"
+                    },
+                    "unitPrice": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "productAmount": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "leadTimeDays": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "quantity",
+                    "instant",
+                    "unitPrice",
+                    "productAmount",
+                    "leadTimeDays"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "steps"
+            ],
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "selection",
+          "productTypeCode",
+          "configuration",
+          "calculation"
+        ],
+        "additionalProperties": false
+      },
+      "HeroPreviewRequestDto": {
+        "type": "object",
+        "properties": {
+          "shape": {
+            "$ref": "#/components/schemas/HeroShape"
+          },
+          "sizeCode": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "board": {
+            "$ref": "#/components/schemas/HeroBoard"
+          },
+          "print": {
+            "$ref": "#/components/schemas/HeroPrint"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "deliveryPostcode": {
+            "type": "string",
+            "pattern": "^\\d{5}$"
+          }
+        },
+        "required": [
+          "shape",
+          "sizeCode",
+          "board",
+          "print",
+          "quantity"
+        ]
+      },
+      "HeroPrint": {
+        "type": "string",
+        "enum": [
+          "none",
+          "one",
+          "full"
+        ]
+      },
+      "HeroSelectionDto": {
+        "type": "object",
+        "properties": {
+          "shape": {
+            "$ref": "#/components/schemas/HeroShape"
+          },
+          "sizeCode": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "board": {
+            "$ref": "#/components/schemas/HeroBoard"
+          },
+          "print": {
+            "$ref": "#/components/schemas/HeroPrint"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "shape",
+          "sizeCode",
+          "board",
+          "print",
+          "quantity"
+        ],
+        "additionalProperties": false
+      },
+      "HeroShape": {
+        "type": "string",
+        "enum": [
+          "mailer",
+          "lid",
+          "tuck"
+        ]
+      },
+      "HeroShapePresetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/HeroShape"
+          },
+          "productSlug": {
+            "type": "string"
+          },
+          "catalogProductId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patternId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dielineKey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "lengthMm": {
+                  "type": "number"
+                },
+                "widthMm": {
+                  "type": "number"
+                },
+                "heightMm": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "code",
+                "lengthMm",
+                "widthMm",
+                "heightMm"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "boards": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/components/schemas/HeroBoard"
+                },
+                "optionId": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "id",
+                "optionId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "prints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/components/schemas/HeroPrint"
+                },
+                "inkOptionIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "inkOptionIds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "quantities": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "quoteValidityDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "productSlug",
+          "catalogProductId",
+          "patternId",
+          "dielineKey",
+          "sizes",
+          "boards",
+          "prints",
+          "quantities",
+          "quoteValidityDays"
+        ],
+        "additionalProperties": false
+      },
       "LearningActionDto": {
         "type": "object",
         "properties": {
@@ -803,6 +1259,176 @@
       },
       "ProblemDetails": {
         "description": "As defined in contract/openapi.json (api-conventions §3)."
+      },
+      "PublicConfigDto": {
+        "type": "object",
+        "properties": {
+          "minOrderQty": {
+            "type": "object",
+            "properties": {
+              "custom": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "readyStock": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "custom",
+              "readyStock"
+            ],
+            "additionalProperties": false
+          },
+          "priceLockDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "claimWindowDays": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "proofSlaBusinessDays": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "supportHours": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "tz": {
+                    "type": "string"
+                  },
+                  "days": {
+                    "type": "string",
+                    "enum": [
+                      "daily",
+                      "business_days",
+                      "mon_fri",
+                      "mon_sat"
+                    ]
+                  },
+                  "open": {
+                    "type": "string",
+                    "pattern": "^\\d{2}:\\d{2}$"
+                  },
+                  "close": {
+                    "type": "string",
+                    "pattern": "^\\d{2}:\\d{2}$"
+                  }
+                },
+                "required": [
+                  "tz",
+                  "days",
+                  "open",
+                  "close"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "supportReplyMinutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "templateCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "factoryCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lineOaId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "phone",
+              "lineOaId",
+              "email"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "minOrderQty",
+          "priceLockDays",
+          "claimWindowDays",
+          "proofSlaBusinessDays",
+          "supportHours",
+          "supportReplyMinutes",
+          "templateCount",
+          "factoryCount",
+          "contact"
+        ],
+        "additionalProperties": false
       },
       "Recyclability": {
         "type": "string",

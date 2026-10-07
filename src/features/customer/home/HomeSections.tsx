@@ -16,7 +16,7 @@ import type { CustomerCase, HomePhoto } from "./content.server";
 import { HOME_WRAP, Photo, TemplateCard, UNDERLINE } from "./parts";
 import { NewsletterForm } from "./NewsletterForm";
 import { StudioHeroPanel } from "./StudioHeroPanel";
-import type { HeroShapeSetup } from "./studio-hero.server";
+import type { StudioHero } from "./studio-hero.server";
 
 /**
  * The home page's sections, to the V4 "Main" board (design language v3): one wrap of 1320 px with
@@ -36,11 +36,11 @@ export interface HeroFacts {
 }
 
 export async function HomeHero({
-  setup,
+  hero,
   photo,
   facts,
 }: {
-  setup: HeroShapeSetup[];
+  hero: StudioHero;
   photo: HomePhoto | null;
   facts: HeroFacts;
 }) {
@@ -89,7 +89,7 @@ export async function HomeHero({
             </div>
           </div>
         </div>
-        <StudioHeroPanel setup={setup} />
+        <StudioHeroPanel shapes={hero.shapes} initial={hero.initial} />
       </div>
     </section>
   );

@@ -4,6 +4,9 @@ import { publishableFaqs } from "@/features/customer/catalog/faq-hygiene";
 
 import { casesOf, MIN_CASES, photosOf } from "./content.server";
 import { isPackagingCategory } from "./HomeSections";
+import { candidates, reconcile } from "./studio-hero";
+import enHome from "@/i18n/messages/en/customer/home.json";
+import thHome from "@/i18n/messages/th/customer/home.json";
 import { isoBox, MATERIAL_TINT } from "./iso-box";
 
 const photo = (id: string) => ({ url: `/v1/store/catalog/images/${id}`, alt: { th: `รูป ${id}`, en: `Photo ${id}` } });
@@ -104,5 +107,68 @@ describe("home data hygiene (Main board review)", () => {
     expect(isPackagingCategory(category("standard_product"))).toBe(false);
     expect(isPackagingCategory(category("service", "standard_product"))).toBe(false);
     expect(isPackagingCategory(category("folding_carton", "service"))).toBe(true);
+  });
+});
+
+describe("Studio hero presets (Main board review)", () => {
+  const shape = (id: "mailer" | "lid" | "tuck", quantities: number[], boards: ("kraft350" | "art350" | "corrE")[]) => ({
+    id,
+    productSlug: id,
+    catalogProductId: "00000000-0000-4000-8000-000000000001",
+    patternId: "00000000-0000-4000-8000-000000000002",
+    dielineKey: null,
+    sizes: [{ code: "S", lengthMm: 100, widthMm: 100, heightMm: 50 }],
+    boards: boards.map((board) => ({ id: board, optionId: "00000000-0000-4000-8000-000000000003" })),
+    prints: [
+      { id: "none" as const, inkOptionIds: [] },
+      { id: "one" as const, inkOptionIds: ["00000000-0000-4000-8000-000000000004"] },
+    ],
+    quantities,
+    quoteValidityDays: 15,
+  });
+  const shapes = [shape("mailer", [300, 500], ["corrE"]), shape("tuck", [500, 1000], ["kraft350", "art350"])];
+
+  it("labels every shape and board in at most 14 characters, so a chip never overflows the panel", () => {
+    for (const messages of [thHome, enHome]) {
+      for (const label of [...Object.values(messages.panel.shapes), ...Object.values(messages.panel.boards)])
+        // Characters as read — a Thai mark (์) sits on its letter, it is not a character of its own.
+        expect([...new Intl.Segmenter("th", { granularity: "grapheme" }).segment(label)].length).toBeLessThanOrEqual(
+          14,
+        );
+    }
+    expect(thHome.panel.shapes).toEqual({ mailer: "ไปรษณีย์", lid: "ฝาครอบ", tuck: "ฝาเสียบ" });
+    expect(thHome.panel.boards).toEqual({ kraft350: "คราฟท์ 350g", art350: "อาร์ตการ์ด 350g", corrE: "ลูกฟูก E" });
+  });
+
+  it("falls back from the default to the nearest offered presets, never repeating one", () => {
+    const first = {
+      shape: "mailer" as const,
+      sizeCode: "S",
+      board: "corrE" as const,
+      print: "one" as const,
+      quantity: 300,
+    };
+    expect(candidates(first, shapes)).toEqual([
+      first,
+      { ...first, quantity: 500 },
+      { shape: "tuck", sizeCode: "S", board: "kraft350", print: "one", quantity: 500 },
+    ]);
+    expect(candidates(null, [])).toEqual([]);
+  });
+
+  it("moves a choice the new shape does not offer to that shape's own first one", () => {
+    const onMailer = {
+      shape: "mailer" as const,
+      sizeCode: "S",
+      board: "corrE" as const,
+      print: "one" as const,
+      quantity: 300,
+    };
+    expect(reconcile({ ...onMailer, shape: "tuck" }, shapes)).toEqual({
+      ...onMailer,
+      shape: "tuck",
+      board: "kraft350",
+      quantity: 500,
+    });
   });
 });
