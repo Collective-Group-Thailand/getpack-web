@@ -48,6 +48,16 @@ export async function listMyDesigns(): Promise<MyDesign[]> {
   return data!.data;
 }
 
+/** The customer's latest designs and how many there are in all (the studio's front door). */
+export async function listRecentDesigns(perPage: number): Promise<{ data: MyDesign[]; total: number }> {
+  const { data } = await (
+    await serverApi("customer")
+  ).GET("/v1/store/designs", {
+    params: { query: { perPage, sort: "updatedAt", order: "desc" } },
+  });
+  return { data: data!.data, total: data!.meta.total };
+}
+
 export type SharedDesignData = Schemas["SharedDesignDto"];
 
 /**

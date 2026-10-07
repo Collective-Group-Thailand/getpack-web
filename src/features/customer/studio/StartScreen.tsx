@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -55,7 +56,9 @@ export function StartScreen({
 }) {
   const t = useTranslations("studio.startScreen");
   const format = useFormat();
-  const [describing, setDescribing] = useState(false);
+  // `/studio/new?start=product` (the studio's front door, "มีสินค้าแล้ว") opens on describing it.
+  const search = useSearchParams();
+  const [describing, setDescribing] = useState(search.get("start") === "product");
   const configure = productSlug ? `/configure/${productSlug}` : "/products";
   const recent = useQuery({
     queryKey: ["studio", "start", "recent"],
@@ -78,11 +81,11 @@ export function StartScreen({
   const body = (intent: Intent, popular = false) => (
     <>
       {popular ? (
-        <span className="bg-primary-subtle text-primary-subtle-fg absolute end-4 top-4 rounded-control px-2 py-0.5 text-[11px] font-semibold">
+        <span className="bg-primary-subtle text-primary-subtle-fg rounded-control absolute end-4 top-4 px-2 py-0.5 text-[11px] font-semibold">
           {t("popular")}
         </span>
       ) : null}
-      <span className={cn("grid size-13 place-items-center rounded-control", TILE[intent].className)}>
+      <span className={cn("rounded-control grid size-13 place-items-center", TILE[intent].className)}>
         <Icon name={TILE[intent].icon} size={24} aria-hidden="true" />
       </span>
       <span className="mt-5 text-lg leading-snug font-semibold">{t(`${intent}.title`)}</span>
@@ -107,13 +110,7 @@ export function StartScreen({
   return (
     <div className="mx-auto flex w-full max-w-[1116px] flex-col px-5 py-10 md:px-8 md:py-14">
       <div className="text-center">
-        <p className="bg-primary-subtle text-primary-subtle-fg inline-flex items-center gap-2 rounded-control px-3 py-1 text-[13px] font-semibold">
-          <span aria-hidden="true" className="bg-primary size-1.5 rounded-full" />
-          {t("step")}
-        </p>
-        <h1 className="mt-4 text-4xl leading-tight md:text-[3.25rem]">
-          {t.rich("title", { em: (chunks) => <em>{chunks}</em> })}
-        </h1>
+        <h1 className="text-4xl leading-tight md:text-[3.25rem]">{t("title")}</h1>
         <p className="text-muted mx-auto mt-3 max-w-[40em]">{signedIn ? t("lead") : t("leadGuest")}</p>
         {productName ? <p className="mt-2 text-sm font-medium">{t("forProduct", { name: productName })}</p> : null}
       </div>
@@ -164,7 +161,7 @@ export function StartScreen({
                 <li key={design.id}>
                   <Link
                     href={`/studio/${design.id}`}
-                    className="border-border bg-surface hover:shadow-lift focus-visible:ring-focus-ring flex items-center gap-4 rounded-card border p-3.5 outline-none focus-visible:ring-2"
+                    className="border-border bg-surface hover:shadow-lift focus-visible:ring-focus-ring rounded-card flex items-center gap-4 border p-3.5 outline-none focus-visible:ring-2"
                   >
                     <span className="bg-sage-subtle rounded-thumb size-16 shrink-0 overflow-hidden">
                       <DesignThumb fileId={design.thumbnailFileId} empty="" />
@@ -189,7 +186,7 @@ export function StartScreen({
                 dims: { l: 70, w: 40, h: 150 },
                 step: "design",
               })}
-              className="border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring flex h-full min-h-[5.75rem] items-center justify-center gap-2 rounded-card border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
+              className="border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring rounded-card flex h-full min-h-[5.75rem] items-center justify-center gap-2 border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
             >
               <Icon name="sparkles" size={16} aria-hidden="true" />
               {t("sample")}
