@@ -144,7 +144,7 @@ export const artworkContractHandlers = [
     if (submission.preflightStatus === "pending" || submission.preflightStatus === "running")
       return problem(409, "artwork.preflight_pending", "กำลังตรวจไฟล์ รอผลก่อน");
     if (submission.preflightStatus === "blocked")
-      return problem(409, "artwork.preflight_blocked", "ไฟล์มีจุดที่ต้องแก้ก่อนทำปรู๊ฟ (D-070)");
+      return problem(409, "artwork.preflight_blocked", "ไฟล์มีจุดที่ต้องแก้ก่อนทำ Proof (D-070)");
     if (notAccepting(detail)) return problem(409, "artwork.not_accepting", "คำสั่งซื้อนี้ไม่รับไฟล์งานแล้ว");
     const body = (await request.json().catch(() => null)) as Schemas["OptionalNoteDto"] | null;
     submission.status = "accepted_for_proof";
@@ -189,7 +189,7 @@ export const artworkContractHandlers = [
     if (!detail) return notFound("ไม่พบคำสั่งซื้อนี้");
     const body = (await request.json()) as Schemas["SendProofDto"];
     if (!body.proofFileId)
-      return problem(422, "validation.failed", "แนบไฟล์ปรู๊ฟ", [
+      return problem(422, "validation.failed", "แนบไฟล์ Proof", [
         { path: "proofFileId", code: "required", message: "required" },
       ]);
     if (notAccepting(detail)) return problem(409, "artwork.not_accepting", "คำสั่งซื้อนี้ไม่รับไฟล์งานแล้ว");
@@ -225,7 +225,7 @@ export const artworkContractHandlers = [
   http.get("*/v1/admin/proofs/:proofId", ({ params, request }) => {
     if (!allowed(request, "artwork.read")) return forbidden();
     const found = byProof(String(params.proofId));
-    if (!found) return notFound("ไม่พบปรู๊ฟนี้");
+    if (!found) return notFound("ไม่พบ Proof นี้");
     return HttpResponse.json(toProof(found.detail, found.proof, "staff"));
   }),
 
@@ -233,10 +233,10 @@ export const artworkContractHandlers = [
     const who = allowed(request, "prepress.review");
     if (!who) return forbidden();
     const found = byProof(String(params.proofId));
-    if (!found) return notFound("ไม่พบปรู๊ฟนี้");
+    if (!found) return notFound("ไม่พบ Proof นี้");
     // Prepress answers while the customer decides, and after changes were requested (B4.1).
     if (found.proof.status !== "pending_customer" && found.proof.status !== "changes_requested")
-      return problem(409, "proofs.annotation_closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
+      return problem(409, "proofs.annotation_closed", "Proof ฉบับนี้ปิดการแสดงความเห็นแล้ว");
     const body = (await request.json()) as Schemas["AnnotateProofDto"];
     const list = proofAnnotations.get(found.proof.id) ?? [];
     // A reply takes its parent's kind, page and geometry; a new annotation must give them.

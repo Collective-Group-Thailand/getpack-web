@@ -76,8 +76,10 @@
 | ราคาต่อชิ้น | Unit price | |
 | ขั้นราคา | Price break | Quantity tiers |
 | ค่าเริ่มงาน | Setup charge | |
-| ปรู๊ฟ | Proof | Digital proof unless a physical one is bought (D-072) |
-| ปรู๊ฟจริง / ตัวอย่างจริง | Physical proof / mockup | A paid add-on |
+| ตรวจแบบก่อนพิมพ์ | Proof check (the step) | Customer-facing name of the step (Phase 4) |
+| แบบตัวอย่าง | Proof (the file) | Customer-facing: "ส่งแบบตัวอย่างให้ดู", "อนุมัติแบบตัวอย่าง v2", "ไฟล์และแบบตัวอย่าง". Digital unless a physical one is bought (D-072) |
+| Proof | Proof | System status, admin, partner and page names, in English with spaces around it: "รอ Proof", "Proof อนุมัติแล้ว", "ไฟล์งานและ Proof", page "Proof review" |
+| ตัวอย่างจริง | Physical proof / mockup | A paid add-on |
 | อาร์ตเวิร์ก | Artwork | The customer's print-ready file |
 | พรีเฟลท | Preflight | The automatic file check (D-070) |
 | ระยะเวลาผลิต | Lead time | In business days; the API computes it |
@@ -96,3 +98,4 @@
 | ซัพพลายเออร์ (to a customer) | โรงงานพาร์ตเนอร์ | Packio is the seller; the factory relationship is not the customer's (D-010) |
 | สินค้า (for a box) | the box style by name | "Name the thing" (`voice-and-tone.md`) |
 | คลิกที่นี่ | the verb for the action | |
+| ป-รู๊ฟ (the transliteration, written here hyphenated so the repo grep stays at zero), ตัวอย่างงานพิมพ์, พิสูจน์อักษร | แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์ for customers; Proof for statuses, the back office, the factory app and page names | Phase 4 §4.5; CI fails on the first one (`src/ui/design-language.test.ts`) |

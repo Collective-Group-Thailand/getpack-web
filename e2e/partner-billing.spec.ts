@@ -102,7 +102,7 @@ test.describe("claims, performance and settings", () => {
     const claimNo = (await page.getByRole("heading", { level: 1 }).textContent())!;
     await expectAxeClean(page);
     await page.getByRole("radio", { name: /โต้แย้ง/ }).click();
-    await page.getByLabel(/^รายละเอียด/).fill("ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ กล่องแพ็กแน่นก่อนส่ง");
+    await page.getByLabel(/^รายละเอียด/).fill("ผลิตตาม Proof ที่ลูกค้าอนุมัติ กล่องแพ็กแน่นก่อนส่ง");
     await page.getByRole("button", { name: "ส่งคำตอบ" }).click();
     await dialog(page).getByRole("button", { name: "ส่งคำตอบ" }).click();
     await expect(page.getByText(`ส่งคำตอบเคลม ${claimNo} แล้ว`)).toBeVisible();
@@ -111,7 +111,7 @@ test.describe("claims, performance and settings", () => {
     await signInAsStaff(page, "cs_lead");
     await gotoHydrated(page, `${HOSTS.admin}/claims`);
     await page.getByRole("link", { name: claimNo }).first().click();
-    await expect(page.getByText("ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ กล่องแพ็กแน่นก่อนส่ง").first()).toBeVisible();
+    await expect(page.getByText("ผลิตตาม Proof ที่ลูกค้าอนุมัติ กล่องแพ็กแน่นก่อนส่ง").first()).toBeVisible();
   });
 
   test("performance and settings read, add a user, and switch to high contrast", async ({ page }) => {

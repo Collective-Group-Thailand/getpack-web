@@ -54,7 +54,7 @@ test.describe("artwork and proofs", () => {
     await expect(page.getByText("อัปโหลดแล้ว")).toBeVisible();
     await page.getByLabel(/หมายเหตุถึงทีมพรีเพรส/).fill("ด้านโลโก้คือด้านหน้า");
     await page.getByRole("button", { name: "ส่งไฟล์ให้ตรวจ" }).click();
-    await expect(page.getByText("ไฟล์ผ่านการตรวจเบื้องต้น ทีมพรีเพรสจะจัดทำปรู๊ฟให้")).toBeVisible();
+    await expect(page.getByText("ไฟล์ผ่านการตรวจเบื้องต้น ทีมพรีเพรสจะจัดทำแบบตัวอย่างให้")).toBeVisible();
     await expect(page.getByRole("region", { name: "ไฟล์ที่ส่งแล้ว" })).toContainText("ฉบับที่ 1");
   });
 
@@ -63,11 +63,11 @@ test.describe("artwork and proofs", () => {
     const page = await context.newPage();
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${ARTIST_ORDER}`);
-    await page.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
+    await page.getByRole("button", { name: "รับไปทำ Proof" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "รับไปทำ Proof" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
-    await page.getByRole("button", { name: "อัปโหลดและส่งปรู๊ฟ" }).click();
-    const dialog = page.getByRole("alertdialog", { name: "ส่งปรู๊ฟฉบับที่ 1" });
+    await page.getByRole("button", { name: "อัปโหลดและส่ง Proof" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "ส่ง Proof ฉบับที่ 1" });
     await dialog.locator('input[type="file"]').first().setInputFiles(PDF("proof.pdf"));
     await dialog.getByRole("button", { name: "อัปโหลดและส่ง" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
@@ -76,9 +76,9 @@ test.describe("artwork and proofs", () => {
 
   test("the customer comments on the proof and approves it", async ({ page }) => {
     await signInAsCustomer(page, `/account/orders/${ARTIST_ORDER}/artwork`, MOCK_ARTIST_PHONE);
-    await page.getByRole("link", { name: "ตรวจปรู๊ฟ" }).first().click();
+    await page.getByRole("link", { name: "ตรวจแบบตัวอย่าง" }).first().click();
     await expect(page).toHaveURL(/\/proof\?version=1$/);
-    await expect(page.getByRole("img", { name: "ภาพปรู๊ฟฉบับที่ 1" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "ภาพแบบตัวอย่าง v1" })).toBeVisible();
 
     // Zoom and the dieline toggle.
     await page.getByRole("button", { name: "ซูมเข้า" }).click();
@@ -94,7 +94,7 @@ test.describe("artwork and proofs", () => {
     await expect(page.getByRole("button", { name: /^ความเห็นที่ 1: ขอสีพื้นหลัง/ })).toBeVisible();
 
     await page.getByRole("radio", { name: "ปักหมุด" }).click();
-    await page.getByRole("img", { name: "ภาพปรู๊ฟฉบับที่ 1" }).click({ position: { x: 120, y: 90 }, force: true });
+    await page.getByRole("img", { name: "ภาพแบบตัวอย่าง v1" }).click({ position: { x: 120, y: 90 }, force: true });
     await page.getByLabel("ความเห็น", { exact: true }).fill("โลโก้ชิดขอบเกินไป");
     await page.getByRole("button", { name: "บันทึกความเห็น" }).click();
     await expect(page.getByRole("heading", { name: "ความเห็น (2)" })).toBeVisible();
@@ -107,7 +107,7 @@ test.describe("artwork and proofs", () => {
     const checklist = page.getByRole("group", { name: "ตรวจทุกข้อก่อนอนุมัติ" });
     for (const box of await checklist.getByRole("checkbox").all()) await box.click();
     await approve.click();
-    const dialog = page.getByRole("alertdialog", { name: "อนุมัติปรู๊ฟฉบับที่ 1?" });
+    const dialog = page.getByRole("alertdialog", { name: "อนุมัติแบบตัวอย่าง v1?" });
     await expect(dialog).toContainText(ARTIST_CODE);
     await dialog.getByRole("textbox").fill(ARTIST_CODE);
     await dialog.getByRole("button", { name: "อนุมัติเพื่อผลิต" }).click();
