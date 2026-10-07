@@ -18,7 +18,12 @@
     "menu": "Menu",
     "signIn": "Sign in",
     "quote": "Get a price",
-    "more": "More"
+    "more": "More",
+    "studio": "Design studio",
+    "templates": "Box templates",
+    "productsPricing": "Products & prices",
+    "business": "For business",
+    "startFree": "Start designing free"
   },
   "footer": {
     "tagline": "Your Packaging Production Partner",
@@ -171,12 +176,14 @@
     "orders": "Orders",
     "notifications": "Notifications",
     "guestTitle": "Not signed in",
-    "guestBody": "See your orders, proofs and tax documents",
+    "guestBody": "See your orders, sample proofs and tax documents",
     "track": "Track an order",
     "categories": "Categories",
     "allCategories": "All {count} categories",
     "help": "Help",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "articles": "Articles & guides",
+    "contact": "Contact us"
   },
   "tabs": {
     "home": "Home",
