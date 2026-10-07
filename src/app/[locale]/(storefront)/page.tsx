@@ -8,6 +8,7 @@ import {
   HomeFaq,
   HomeHero,
   PhotoMosaic,
+  isPackagingCategory,
   ProductRows,
   QualityBand,
   ScreenToFactory,
@@ -43,12 +44,15 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ]);
   const setup = await getStudioHeroSetup(locale);
 
-  // Instant-price categories lead, as they lead the catalogue (UX audit step 4).
-  const categories = [...tree].sort(
-    (a, b) =>
-      Number(b.types.some((type) => type.availability !== "rfq")) -
-      Number(a.types.some((type) => type.availability !== "rfq")),
-  );
+  // Instant-price categories lead, as they lead the catalogue (UX audit step 4). Only packaging
+  // a customer configures: the `standard_product` and `service` types are bookkeeping, not a range.
+  const categories = tree
+    .filter(isPackagingCategory)
+    .sort(
+      (a, b) =>
+        Number(b.types.some((type) => type.availability !== "rfq")) -
+        Number(a.types.some((type) => type.availability !== "rfq")),
+    );
   const styleCategories = styles?.facets.category ?? [];
   const templateCount = styleCategories.reduce((sum, facet) => sum + facet.count, 0);
   // The minimum order is policy: the configurators' own `quantity.min`, the value /configure enforces.

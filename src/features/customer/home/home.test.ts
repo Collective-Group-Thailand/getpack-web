@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { publishableFaqs } from "@/features/customer/catalog/faq-hygiene";
+
 import { casesOf, MIN_CASES, photosOf } from "./content.server";
+import { isPackagingCategory } from "./HomeSections";
 import { isoBox, MATERIAL_TINT } from "./iso-box";
 
 const photo = (id: string) => ({ url: `/v1/store/catalog/images/${id}`, alt: { th: `รูป ${id}`, en: `Photo ${id}` } });
@@ -71,5 +74,35 @@ describe("isoBox", () => {
         .map(Number);
       expect(Math.max(...numbers.map(Math.abs))).toBeLessThanOrEqual(160);
     }
+  });
+});
+
+describe("home data hygiene (Main board review)", () => {
+  const faq = (questionTh: string, answerTh: string) => ({ questionTh, answerTh, questionEn: null, answerEn: null });
+  const group = (categoryNameTh: string | null, faqs: ReturnType<typeof faq>[]) => ({
+    categoryCode: categoryNameTh ? "x" : null,
+    categoryNameTh,
+    categoryNameEn: null,
+    faqs,
+  });
+
+  it("drops [DEV] fixtures and strips decision references from FAQs", () => {
+    const groups = publishableFaqs([
+      group(null, [
+        faq("[DEV] คำถามทดสอบ", "[DEV] คำตอบ"),
+        faq("ล็อกราคากี่วัน", "15 วัน (D-051) ตามใบเสนอราคา (D-051, D-176)"),
+      ]),
+      group("[DEV] การสั่งซื้อ", [faq("ข้อ", "ตอบ")]),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0]!.faqs).toEqual([faq("ล็อกราคากี่วัน", "15 วัน ตามใบเสนอราคา")]);
+  });
+
+  it("lists only packaging categories", () => {
+    const category = (...codes: string[]) =>
+      ({ code: "c", types: codes.map((code) => ({ code })) }) as unknown as Parameters<typeof isPackagingCategory>[0];
+    expect(isPackagingCategory(category("standard_product"))).toBe(false);
+    expect(isPackagingCategory(category("service", "standard_product"))).toBe(false);
+    expect(isPackagingCategory(category("folding_carton", "service"))).toBe(true);
   });
 });
