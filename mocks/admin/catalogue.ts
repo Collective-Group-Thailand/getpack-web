@@ -20,6 +20,13 @@ import { etagOf, table, type Row, type TableConfig } from "./tables";
 
 const R = "catalog.read";
 const M = "catalog.manage";
+/** A home-page photo for the mock's CMS (`home-photos`): the mock serves a drawn placeholder for any file id. */
+const homePhoto = (fileId: string, th: string, en: string) => ({
+  url: `/v1/store/catalog/images/${fileId}`,
+  alt: { th, en },
+  caption: { th, en },
+});
+
 const CMS = "cms.manage";
 const GEO = "geography.manage";
 
@@ -716,6 +723,62 @@ const TABLES: Record<string, TableConfig> = {
         config: { limit: 8 },
       },
       { slug: "articles", kind: "articles", titleTh: "บทความ", titleEn: "Articles", sort: 40, config: { limit: 3 } },
+    ],
+    // Phase 4 (V4 "Main" board): the home page's own content, read by `home/content.server.ts`.
+    // Plain rows — the contract has no list example for home sections to merge variants over.
+    rows: [
+      {
+        id: mockId("hms", 51),
+        updatedAt: "2026-10-01T09:00:00+07:00",
+        slug: "studio-hero",
+        kind: "custom",
+        status: "published",
+        titleTh: "สตูดิโอหน้าแรก",
+        titleEn: "Home studio panel",
+        sort: 50,
+        config: {
+          shapes: { mailer: "mailer-box", lid: "magnetic-gift-box", tuck: "tuck-end-box" },
+          materials: { kraft350: ["kraft-350", "kraft-300"], art350: ["art-card-350"], corrE: ["E"] },
+          prints: { one: ["black"], full: ["cmyk"] },
+        },
+      },
+      {
+        id: mockId("hms", 52),
+        updatedAt: "2026-10-01T09:00:00+07:00",
+        slug: "home-photos",
+        kind: "custom",
+        status: "published",
+        titleTh: "รูปหน้าแรก",
+        titleEn: "Home photos",
+        sort: 60,
+        config: {
+          hero: homePhoto("home-hero", "กระดาษห่อคราฟท์ พิมพ์ลาย 1 สี", "Kraft wrapping paper, one-colour print"),
+          mosaic: [
+            homePhoto("home-mosaic-1", "กล่องลูกฟูก E-flute สำหรับส่งพัสดุ", "E-flute corrugated shipping box"),
+            homePhoto("home-mosaic-2", "กล่องฝาครอบคราฟท์ ปั๊มฟอยล์ทอง", "Kraft lid box, gold foil"),
+            homePhoto("home-mosaic-3", "ตรวจสีหน้าแท่นพิมพ์", "Colour check at the press"),
+            homePhoto("home-mosaic-4", "กล่องฝาเสียบ อาร์ตการ์ด พิมพ์ 1 สี", "Tuck-end box, art card, one colour"),
+            homePhoto("home-mosaic-5", "ถุงกระดาษคราฟท์หูแบน", "Kraft paper bag, flat handles"),
+          ],
+          process: {
+            sample: homePhoto("home-process-sample", "ตัวอย่างกล่องคราฟท์ที่ผลิตแล้ว", "A produced kraft sample box"),
+            packing: homePhoto("home-process-packing", "แพ็กกล่องเตรียมจัดส่ง", "Boxes packed for delivery"),
+          },
+          quality: homePhoto("home-quality", "เครื่องพิมพ์ออฟเซ็ตในโรงงาน", "An offset press at a partner factory"),
+        },
+      },
+      // Fewer than three approved: the storefront leaves the customer-stories section out.
+      {
+        id: mockId("hms", 53),
+        updatedAt: "2026-10-01T09:00:00+07:00",
+        slug: "customer-cases",
+        kind: "custom",
+        status: "published",
+        titleTh: "เคสลูกค้า",
+        titleEn: "Customer stories",
+        sort: 70,
+        config: { cases: [] },
+      },
     ],
   },
   articleCategories: {

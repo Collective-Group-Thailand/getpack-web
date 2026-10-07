@@ -42,6 +42,10 @@ type Search = {
   from?: string;
   /** A standard size's code (the product page's size table). */
   size?: string;
+  /** Front ink option ids, comma-separated, or `none` (the home page's Studio panel). */
+  ink?: string;
+  /** How the artwork comes (`/studio/upload` sends `own_file`). */
+  design?: string;
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {

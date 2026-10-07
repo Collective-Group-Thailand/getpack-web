@@ -3,226 +3,209 @@
     "description": "Order packaging online with Packio: see starting prices and production times straight away, design boxes at true size, and follow every step of production"
   },
   "hero": {
-    "titleLine1": "The right box,",
-    "titleLine2": "made in <em>one place</em>",
-    "body": "{tagline} — choose a product, see its price and production time, design online and follow every step",
-    "browse": "See all products",
-    "preview": "A tuck-end box dieline",
-    "price": "Get a price",
-    "lead": "See the price and ship date at once, design on the real dieline, approve the proof before production, and follow every step until it arrives.",
-    "design": "Start designing online",
-    "checks": {
-      "instant": "Instant price and production date",
-      "dieline": "Free dieline download",
-      "proof": "A proof before every job",
-      "tax": "Tax invoice for every payment"
-    },
-    "noteSize": "A dieline at true size",
-    "noteSizeBody": "Change width × length × height instantly",
-    "noteProof": "Proof before production",
-    "noteProofBody": "Revise until it is right",
-    "legendCut": "Cut line",
-    "legendFold": "Fold line",
-    "eyebrow": "Your Packaging Production Partner · Bangkok",
+    "title": "Boxes your customers remember<br></br>designed by you, right here<br></br>priced as you go",
+    "lead": "We make boxes, bags and labels for small and growing brands. Enter a size, pick a board, place your logo, see the real box in 3D and order it — the price and delivery date follow every change, no waiting for a quotation.",
+    "start": "Start designing free",
+    "upload": "Have a file? Upload it",
+    "caption": "Try the panel on the right — the price you see is the price you can order at.",
+    "captionMobile": "Try the panel below — the price you see is the price you can order at.",
     "facts": {
-      "categories": "packaging categories",
-      "fastest": "fastest production",
-      "days": "{days} days",
-      "proofed": "proofed before production",
-      "proofedValue": "100%"
-    },
-    "note": {
-      "title": "Proof approved",
-      "body": "Ready for production",
-      "hand": "4-colour print · matte"
-    },
-    "slipNote": "No account needed · VAT included",
-    "slipNoteDays": "No account needed · VAT included · price held {days} days"
+      "label": "At a glance",
+      "templates": "<b>{count}</b> box templates to start from",
+      "proof": "<b>Every job</b> checked by our prepress team",
+      "moq": "<b>{count}</b> pieces minimum order"
+    }
   },
-  "sections": {
-    "productTypes": "Packaging we make",
-    "featured": "Featured products",
-    "showcase": "Made for our customers",
-    "articles": "Articles",
-    "viewAll": "See all",
-    "viewAllOf": "See all in {name}",
-    "promotions": "News and offers",
-    "stock": "Ready to ship",
-    "productTypesKicker": "Products",
-    "productTypesSub": "{count, plural, one {# type is} other {# types are}} priced instantly; ask for a quote on any other type on the same page.",
-    "viewAllProducts": "See all products",
-    "stockKicker": "Ready to ship",
-    "stockSub": "Stock items, no production wait — order right away.",
-    "articlesKicker": "Articles",
-    "specialTitle": "Special work / any type",
-    "specialMeta": "{names} and more"
-  },
-  "steps": {
-    "heading": "How ordering with Packio works",
-    "chooseTitle": "Choose a product and spec",
-    "chooseBody": "Pick the type, size, material and quantity and see the price and production date at once, or request a quote for something special",
-    "designTitle": "Design and approve",
-    "designBody": "Design on the real flat sheet or upload your file, then check the proof and approve it before production",
-    "produceTitle": "Made and delivered",
-    "produceBody": "Follow production and delivery at every step until it reaches you"
-  },
-  "quickStart": {
-    "label": "Quick price",
-    "type": "Packaging type",
-    "size": "Size L × W × H (cm)",
-    "axes": {
-      "l": "Length",
-      "w": "Width",
-      "h": "Height"
-    },
-    "cm": "cm",
-    "quantity": "Quantity (pcs)",
-    "go": "See the price now",
-    "heading": "Quick price check — no sign-up needed"
-  },
-  "process": {
-    "heading": "Order in 4 simple steps",
-    "more": "Learn step by step",
-    "design": {
-      "title": "Design or upload a file",
-      "body": "Design on the real dieline in the studio, or send a file you have."
+  "trust": {
+    "label": "Why Packio",
+    "dieline": {
+      "title": "Dielines at true size",
+      "body": "Enter a size and the box unfolds — download the dieline free"
     },
     "price": {
-      "title": "Price and delivery date at once",
-      "body": "Prices and production dates from the real specification; special jobs get a quote."
+      "title": "Prices that follow you",
+      "body": "Change the board or the quantity and the price changes with it"
     },
     "proof": {
-      "title": "Approve the proof",
-      "body": "Every job is proofed before production, revised until it is right."
+      "title": "A person checks every job",
+      "body": "Every design is checked before print — we tell you first where it would not look right"
     },
-    "track": {
-      "title": "Track it to your door",
-      "body": "See every stage from production to delivery."
+    "delivery": {
+      "title": "Made and delivered",
+      "body": "Every stage visible, with QC photos before the box is closed"
+    }
+  },
+  "mosaic": {
+    "label": "Work we have made"
+  },
+  "templates": {
+    "title": "No need to start from scratch",
+    "all": "See all {count} templates",
+    "allShort": "See every box template",
+    "body": "Pick the closest shape and enter your size — the dieline adjusts. Every template is a shape our partner factories really make — none is here just for show.",
+    "count": "{count} templates · {categories} categories",
+    "start": "Start from this one",
+    "custom": {
+      "title": "Can't find your shape?<br></br>Send the spec, we build it",
+      "body": "Magnetic lids, tubes, displays — our team draws the dieline, then you open it in the studio like any other template",
+      "action": "Send a spec"
+    }
+  },
+  "process": {
+    "title": "The same box<br></br>from the first line to your customer's hands",
+    "lead": "What you see in the studio is what the factory receives — the same file, the same size, never redrawn by someone else",
+    "studio": {
+      "day": "Day 0 · in the studio",
+      "title": "A dieline at true size",
+      "body": "Enter 18×12×5 and the box unfolds, with its safe zone and fold lines"
     },
-    "kicker": "How it works",
-    "step": "Step {number}"
+    "proof": {
+      "day": "Day 1 · checked before print",
+      "title": "Checked by prepress",
+      "body": "The logo is sharp, the colours print, the safe zone passes — approve to start production"
+    },
+    "sample": {
+      "day": "Day 4 · a real sample",
+      "title": "One sample box (if you ask)",
+      "body": "Photographed for you first, or delivered — then confirm the whole run"
+    },
+    "delivered": {
+      "day": "Day 9 · delivered",
+      "title": "500 boxes with QC photos",
+      "body": "Every lot checked before it is closed; the tax invoice is issued as soon as you pay"
+    },
+    "dielineLabel": "A tuck-end dieline with its cut and fold lines and a logo",
+    "boxLabel": "A kraft box with the logo placed, in 3D"
   },
-  "benefits": {
-    "heading": "Why Packio",
-    "instantTitle": "Instant prices",
-    "instant": "Products priced instantly show their price and production time on one page.",
-    "designTitle": "Design online + free dielines",
-    "design": "Design on the real dieline in the studio, and download a dieline at your size for free.",
-    "moqTitle": "Small orders welcome",
-    "moqFrom": "Order from {quantity} pcs, depending on the product.",
-    "moq": "Every product shows its minimum order.",
-    "trackTitle": "Track every stage",
-    "track": "Follow the job from file and proof to production and delivery.",
-    "taxTitle": "Full tax documents",
-    "tax": "A tax invoice and receipt for every instalment paid.",
-    "claimTitle": "Claims when it is off spec",
-    "claimWithin": "Report a claim within {days} days of delivery.",
-    "claim": "Report a claim after delivery under the guarantee.",
-    "kicker": "Why Packio",
-    "sub": "Everything a packaging job needs, from the first file to delivery.",
-    "instantLong": "See price and production date on one page for products priced instantly — no waiting for a sales call. Compare quantities and materials yourself.",
-    "instantCta": "Try the price calculator"
+  "cases": {
+    "title": "Small brands that want to look big",
+    "all": "See all work",
+    "quantity": "{count} pcs",
+    "days": "{count} working days"
   },
-  "work": {
-    "heading": "Work and words from customers",
-    "allReviews": "All reviews",
-    "reviewBy": "{name} · {type} · {rating}/5",
-    "emptyTitle": "Real customer work is coming here",
-    "emptyBody": "We only show work and reviews from real customers who agreed to it. Meanwhile, browse every box style we make.",
-    "emptyAction": "Browse box styles",
-    "kicker": "Customer work",
-    "eyebrow": "Customer stories"
+  "capabilities": {
+    "title": "What ordinary design software won't tell you<br></br>the studio will",
+    "lead": "The studio knows which board this file prints on, at what size, in which factory — so it warns you before it becomes a bad job",
+    "sample": "Screen sample",
+    "checks": {
+      "title": "Files checked while you design",
+      "body": "Resolution, safe zone, colours that cannot print — flagged as you place them, not days after you send the file",
+      "lowRes": "Logo at 72 dpi — it will break up at 4 cm. Use an SVG or 300 dpi or more",
+      "fold": "\"30 ml\" sits 2 mm from a fold — it may be cut. Move it inside the 3 mm safe zone",
+      "colour": "Pantone 3425 C on kraft — we match it as closely as the board allows; see the real colour on your sample proof"
+    },
+    "cost": {
+      "title": "See the cost before you decide",
+      "body": "Every option shows what it adds, quantities side by side — no new quotation each time you change your mind",
+      "pieces": "{count} pcs",
+      "board": "Switch to art card 350g",
+      "foil": "Add gold foil to the logo"
+    },
+    "team": {
+      "title": "Show your team before you order",
+      "body": "Share a link to comment on the 3D box, keep every version, go back to any, and order the version everyone agreed on",
+      "ownerName": "Por · brand owner",
+      "ownerSays": "Could the logo move up a little? It looks close to the edge",
+      "designerName": "Nat · designer",
+      "designerSays": "Moved — version 3, have a look at the front",
+      "latest": "v3 · latest"
+    }
+  },
+  "quality": {
+    "title": "We don't have one factory<br></br>but we run quality like one",
+    "body": "Each kind of job goes to the factory in our audited network that does it best. Our people check and photograph every lot before it is closed — and the studio is a choice, not a requirement: have a file already or ordering again, use these two",
+    "upload": {
+      "title": "Upload a print file",
+      "body": "PDF/AI — resolution and safe zone checked for you",
+      "go": "Upload"
+    },
+    "business": {
+      "title": "Business accounts",
+      "body": "Easy reorders · several approvers · credit terms",
+      "go": "Apply for an account"
+    },
+    "factsBoth": "Our network has {factories} partner factories today; every lot is photographed at QC before it is closed, and if something is wrong when it arrives you can claim within {days} days.",
+    "factsClaim": "Every lot is photographed at QC before it is closed, and if something is wrong when it arrives you can claim within {days} days.",
+    "factsNone": "Every lot is photographed at QC before it is closed, and if something is wrong when it arrives you can claim from the order page."
+  },
+  "products": {
+    "title": "What we make",
+    "all": "See all {count} categories",
+    "from": "from {price}",
+    "moq": "min. {count}",
+    "rfq": "Priced to your spec"
+  },
+  "faq": {
+    "title": "Before your first order<br></br>people usually ask",
+    "lead": "Can't find the answer? Just ask us",
+    "leadHours": "Can't find the answer? Just ask — the team answers during working hours, {hours}",
+    "all": "See every question"
+  },
+  "contact": {
+    "title": "Stuck somewhere in the studio?<br></br>Talk to us",
+    "lead": "Our team uses the same studio as you — we open your draft and help fix it right away",
+    "leadHours": "Our team uses the same studio as you — we open your draft and help fix it right away. LINE {hours}",
+    "line": "Chat on LINE",
+    "chat": "Talk to the team",
+    "phone": "or call {phone}"
   },
   "newsletter": {
-    "heading": "News from Packio",
-    "body": "Packaging articles, and promotions only when there are real ones.",
+    "heading": "File preparation and paper, explained",
+    "body": "Once a month — paper, print and cost. No pushy promotions.",
     "email": "E-mail",
     "consent": "I agree to receive news and promotions from Packio by e-mail; I can unsubscribe at any time.",
     "privacy": "Read the privacy policy",
     "subscribe": "Subscribe",
     "done": "Subscribed — thank you.",
     "failed": "That did not work. Try again.",
-    "placeholder": "Your e-mail",
-    "headingEditorial": "Packaging articles<br></br>once a month, no spam"
+    "placeholder": "Your e-mail"
   },
-  "contact": {
-    "heading": "Contact us",
-    "hours": "Customer service",
-    "phone": "Phone",
-    "line": "LINE",
-    "email": "E-mail",
-    "chat": "Talk to the team on LINE",
-    "bandTitle": "Questions? Talk to the team",
-    "hoursLine": "Reach the team {hours}",
-    "rfq": "Request a quote for special work"
-  },
-  "studio": {
-    "kicker": "Online Studio",
-    "titleLine1": "Design on the real dieline",
-    "titleLine2": "no designer needed",
-    "body": "Enter a size and the dieline is drawn at once. Place your logo, text and pictures, see the box in 3D before you order, and download the dieline free to keep working.",
-    "checks": {
-      "styles": "A dieline for every box style we make",
-      "preview3d": "3D preview before you order",
-      "dieline": "Free dieline download"
+  "panel": {
+    "title": "Studio · new draft",
+    "unsaved": "Not saved yet",
+    "summary": "{shape} · {size} cm",
+    "fullscreen": "Open full screen",
+    "previewLabel": "Preview of a {shape}, {size} cm",
+    "labels": {
+      "shape": "Shape",
+      "size": "Size (cm)",
+      "material": "Board",
+      "print": "Print",
+      "quantity": "Quantity"
     },
-    "start": "Start designing",
-    "library": "Browse box styles",
-    "pictureTitle": "Packio Studio",
-    "pictureSize": "Tuck-end box 10×5×15"
-  },
-  "how": {
-    "eyebrow": "How it works",
-    "heading": "From an idea\nto a box in your hands\nin 4 steps",
-    "sub": "Someone looks after every step — and you see all of it on one page.",
-    "more": "Learn before you order",
-    "design": {
-      "title": "Design it, or send a file",
-      "body": "Design on the real dieline in the studio, download dielines free, or upload your file — it is checked for print at once."
+    "shapes": {
+      "mailer": "Mailer",
+      "lid": "Lid",
+      "tuck": "Tuck end"
     },
-    "price": {
-      "title": "Price and ship date at once",
-      "body": "Priced from the real spec; compare quantities and materials yourself. Special work asks for a quotation on the same page."
+    "shapeNames": {
+      "mailer": "Mailer box",
+      "lid": "Lid box",
+      "tuck": "Tuck-end box"
     },
-    "proof": {
-      "title": "Approve the proof first",
-      "body": "Prepress checks every file and sends a proof before production — change it until you are happy."
+    "materials": {
+      "kraft350": "Kraft 350g",
+      "art350": "Art card 350g",
+      "corrE": "E-flute"
     },
-    "track": {
-      "title": "Follow it to the door",
-      "body": "See every step — print, die-cut, gluing, QC, dispatch — with proof of delivery and a tax invoice for every payment."
-    }
-  },
-  "tiles": {
-    "eyebrow": "Products",
-    "heading": "Packaging we make",
-    "all": "All {count} categories",
-    "from": "from {price}/pc",
-    "rfqEyebrow": "Anything else",
-    "rfqTitle": "Special work — ask for a quote",
-    "rfqBody": "Envelopes, bottles, rigid boxes, tubes, displays — send the spec and our team prices it",
-    "rfqAction": "Ask for a quote"
-  },
-  "stock": {
-    "eyebrow": "Ready to ship"
-  },
-  "why": {
-    "statement": "We don't just print boxes —<br></br>we look after <em>the whole way</em><br></br>to your customer's hands",
-    "sub": "Packio vets partner factories nationwide, inspects every lot and takes responsibility for the job — from the first file to the invoice.",
-    "claim": {
-      "big": "{days} days",
-      "title": "to report a claim after delivery",
-      "body": "Not as proofed? Report it with photos on the order; we answer within the guaranteed time."
+    "prints": {
+      "none": "No print",
+      "one": "1 colour",
+      "full": "Full colour"
     },
-    "qc": {
-      "big": "Every lot",
-      "title": "QC with photos",
-      "body": "The factory records its inspection and photos before packing — you see them on the order."
-    },
-    "tax": {
-      "big": "Complete",
-      "title": "A tax invoice for every payment",
-      "body": "Deposit, instalments or company credit — documents are issued automatically for you to download."
-    }
+    "custom": "Custom",
+    "unavailable": "Not offered for this shape",
+    "priceCaption": "Per piece · {qty} pcs · incl. VAT",
+    "total": "total {total}",
+    "lead": "Delivered in about {days} working days",
+    "lock": "price held {days} days",
+    "calculating": "Calculating the price…",
+    "unpriced": "This size or quantity has no instant price yet — continue designing to see it in the next step, or chat with us on LINE",
+    "rfq": "We quote this shape to your spec — send us the size and quantity",
+    "requestQuote": "Request a quote",
+    "noSetup": "Pick a shape, size and board — the real price follows in the next step",
+    "continue": "Continue designing",
+    "configure": "See the price breakdown and more options",
+    "sizeChip": "{w} × {d} × {h}"
   }
 }
