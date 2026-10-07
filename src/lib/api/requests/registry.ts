@@ -8,6 +8,8 @@
 
 import { storeAssistantRequests } from "./store-assistant";
 import { storeContentRequests } from "./store-content";
+import { storeConfigRequests } from "./store-config";
+import { storeHeroRequests } from "./store-hero";
 import { storeHomeRequests } from "./store-home";
 import { adminStructuralRequests } from "./admin-structural";
 import { storeSupportRequests } from "./store-support";
@@ -17,6 +19,8 @@ export const REQUESTS = {
   ...storeContentRequests,
   ...storeAssistantRequests,
   ...storeHomeRequests,
+  ...storeHeroRequests,
+  ...storeConfigRequests,
   ...adminStructuralRequests,
 } as const;
 

@@ -16,8 +16,9 @@ import {
   TemplateGallery,
   TrustRow,
 } from "@/features/customer/home/HomeSections";
-import { getStudioHeroSetup } from "@/features/customer/home/studio-hero.server";
+import { getStudioHero } from "@/features/customer/home/studio-hero.server";
 import { getGuarantee, getNetworkStats } from "@/features/customer/trust/api.server";
+import { serverRequests } from "@/lib/api/requests/server";
 
 /**
  * The storefront home, Studio-first (Phase 4, the V4 "Main" board — design language v3): the hero
@@ -42,7 +43,13 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     getGuarantee().catch(() => null),
     getNetworkStats().catch(() => null),
   ]);
-  const setup = await getStudioHeroSetup(locale);
+  // CONTRACT-REQUEST store.public-config (D-309): the minimum order the storefront states.
+  const [config, hero] = await Promise.all([
+    serverRequests("customer")
+      .then((api) => api.call("GET /v1/store/public-config"))
+      .catch(() => null),
+    getStudioHero(),
+  ]);
 
   // Instant-price categories lead, as they lead the catalogue (UX audit step 4). Only packaging
   // a customer configures: the `standard_product` and `service` types are bookkeeping, not a range.
@@ -55,18 +62,17 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     );
   const styleCategories = styles?.facets.category ?? [];
   const templateCount = styleCategories.reduce((sum, facet) => sum + facet.count, 0);
-  // The minimum order is policy: the configurators' own `quantity.min`, the value /configure enforces.
-  const minimums = setup.map((shape) => shape.configurator.quantity.min).filter((min): min is number => min !== null);
   const factories = network?.network.published ? network.network.partnerCount : null;
 
   return (
     <>
       <HomeHero
-        setup={setup}
+        hero={hero}
         photo={content.photos.hero}
         facts={{
           templates: templateCount > 0 ? templateCount : null,
-          moq: minimums.length ? Math.min(...minimums) : null,
+          // The made-to-order minimum from public config — never a catalogue floor worked out here.
+          moq: config?.minOrderQty.custom ?? null,
         }}
       />
       <TrustRow />
