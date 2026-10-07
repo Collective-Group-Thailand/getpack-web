@@ -145,7 +145,7 @@
     top: calc(var(--spacing) * 2);
     left: calc(var(--spacing) * 2);
     z-index: var(--z-toast);
-    border-radius: var(--radius-md);
+    @apply rounded-control;
     background-color: var(--color-surface);
     color: var(--color-fg);
     box-shadow: var(--shadow-overlay);

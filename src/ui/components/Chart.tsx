@@ -120,7 +120,7 @@ export function Chart<TRow extends Record<string, unknown>>({
         contentStyle={{
           background: "var(--color-surface-raised)",
           border: "1px solid var(--color-border)",
-          borderRadius: 8,
+          borderRadius: "var(--radius-control)",
           color: "var(--color-fg)",
         }}
       />

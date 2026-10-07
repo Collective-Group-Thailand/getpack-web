@@ -42,7 +42,6 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
       <header className="flex flex-col gap-2">
-        <p className="text-muted text-sm">{t("eyebrow")}</p>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-[2.375rem] leading-tight">{t("title")}</h1>
           {ORDER_STATUSES.has(tracking.status) ? (
