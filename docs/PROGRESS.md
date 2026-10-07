@@ -53,6 +53,14 @@ Running log maintained by the coding agent. Newest entry on top. This log starts
 | 2026-10-06 | **Home redesign** — storefront home, header and footer to the "Homepage — Desktop" mockup | **Header**: logo · five centred links (หน้าแรก moves to the logo) · search, cart, language · เข้าสู่ระบบ text link for guests · คำนวณราคา button; theme menu moved to the footer. **Home**: hero with tag, kraft-highlighted title, two CTAs, four checks and the real tuck-end dieline (or the admin banner); the quick quote as a card overlapping the hero; four step cards; product types capped at two rows (priced types + one "งานพิเศษ / ทุกประเภท" card naming the RFQ-only types); square stock cards with an in-stock badge; **new Online Studio dark band**; Why Packio with a lead card; kraft invitation band for the empty work state; articles kept; newsletter and contact on one dark band. **Footer**: mockup grid, brand mark. `src/ui`: `SectionHeading`, `Decor` (`Highlight`, `KraftPanel`, `IconTile`), `Card interactive`, `ProductCard` `fallback`/`aspect`, `pen-tool` icon, `pk-dot-grid`/`pk-hero-wash`/`pk-band-glow` utilities. | Real product photography for types and stock (fallback art until then); cart count (`store.cart-count`) | See the section below |
 ---
 
+## Sign-in pages: one look in every zone — 2026-10-07
+
+Branch `feat/partner-login-split`. Asked: the factory sign-in did not follow the others, and both it and the staff one should look like the storefront's `/sign-in`.
+
+- **Factory** (`partner/login`): was a plain card; now `AuthSplitLayout` like the storefront — the green panel with grain, eyebrow "Packio Partner", a two-line headline whose second line is the accent ("งานผลิตทั้งหมด / ในมือถือเครื่องเดียว"), three points, a note card (add to home screen, scan a job sheet's QR); "ยังไม่ได้เป็นพันธมิตร? สมัครเป็นโรงงานพันธมิตร" over the form's corner (the storefront's `/partner-with-us`). The form gains show/hide password and "ลืมรหัสผ่าน?" (who sets a new one — no self-service reset, as for staff); fields and the button keep their shop-floor sizes (48 px+).
+- **Staff** (`admin/login`): the dark ink panel gives way to the same green panel — eyebrow "Packio Back Office", "ทุกคิวงานของทีม / ในหน้าเดียว", and a note on ⌘K search. Form unchanged.
+- Checked: both at 1440 and the factory one at 390 (panel steps aside, the form has the screen); lint, unit 1111; e2e zones, a11y, admin console, partner floor / onboarding / parity — 75 passed.
+
 ## One typeface: Anuphan everywhere — 2026-10-07
 
 Branch `feat/font-anuphan-only`. Asked: "ใช้ font Anuphan อันเดียวทั้งเว็บ". Trirong (Phase 2's display serif) is removed — its files, its `@font-face` and its licence copy (~68 KB fewer font bytes; nothing for the display face to fetch).
