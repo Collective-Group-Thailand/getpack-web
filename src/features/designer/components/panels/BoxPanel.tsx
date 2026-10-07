@@ -75,7 +75,7 @@ export function BoxPanel({ onOpenSetup, onOpenRules }: { onOpenSetup: () => void
               aria-pressed={focusedFaceId === face.id}
               onClick={() => focusFace(focusedFaceId === face.id ? null : face.id)}
               className={cn(
-                "focus-visible:ring-focus-ring rounded-full border px-2.5 py-1 text-xs outline-none focus-visible:ring-2",
+                "focus-visible:ring-focus-ring rounded-control border px-2.5 py-1 text-xs outline-none focus-visible:ring-2",
                 focusedFaceId === face.id
                   ? "border-primary bg-primary-subtle text-primary-subtle-fg"
                   : "border-border hover:bg-surface-subtle",

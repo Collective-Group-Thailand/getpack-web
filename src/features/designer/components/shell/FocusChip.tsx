@@ -20,7 +20,7 @@ export function FocusChip({ dieline }: { dieline: Dieline }) {
   return (
     <div
       role="status"
-      className="bg-surface-raised border-border shadow-card absolute start-1/2 top-3 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border py-1 ps-3 pe-1 text-sm rtl:translate-x-1/2"
+      className="bg-surface-raised border-border shadow-card absolute start-1/2 top-3 z-10 flex -translate-x-1/2 items-center gap-2 rounded-control border py-1 ps-3 pe-1 text-sm rtl:translate-x-1/2"
     >
       <span>{t("editing", { name: names.get(face.id) ?? face.label })}</span>
       <span className="text-muted hidden items-center gap-1 text-xs sm:flex">

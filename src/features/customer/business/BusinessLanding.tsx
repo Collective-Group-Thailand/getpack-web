@@ -19,16 +19,15 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
   return (
     <div className="flex flex-col gap-14">
       <header className="flex max-w-3xl flex-col gap-4">
-        <p className="eyebrow">{t("eyebrow")}</p>
         <h1 className="text-4xl leading-[1.12] md:text-5xl lg:text-[3.5rem]">{t("title")}</h1>
         <p className="text-muted max-w-[40em] text-lg leading-relaxed">{t("intro")}</p>
         <div className="mt-2 flex flex-wrap gap-3">
-          <Button asChild size="lg" shape="pill" iconEnd="arrow-right">
+          <Button asChild size="lg" iconEnd="arrow-right">
             <Link href={signedIn ? "/business/apply" : `/sign-in?returnTo=${encodeURIComponent("/business/apply")}`}>
               {t("apply")}
             </Link>
           </Button>
-          <Button asChild size="lg" shape="pill" variant="secondary">
+          <Button asChild size="lg" variant="secondary">
             <Link href="/contact">{t("talk")}</Link>
           </Button>
         </div>
@@ -41,9 +40,9 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
           {BENEFITS.map((benefit) => (
             <li
               key={benefit.key}
-              className="border-border bg-surface flex flex-col gap-4 rounded-[var(--radius-card)] border p-6"
+              className="border-border bg-surface flex flex-col gap-4 rounded-card border p-6"
             >
-              <span className="bg-primary-subtle text-primary grid size-11 place-items-center rounded-[14px]">
+              <span className="bg-primary-subtle text-primary grid size-11 place-items-center rounded-control">
                 <Icon name={benefit.icon} size={22} aria-hidden="true" />
               </span>
               <div>
@@ -56,7 +55,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
       </section>
       <section
         aria-labelledby="business-steps"
-        className="grain relative overflow-hidden rounded-[var(--radius-card)] bg-[var(--green-ink)] p-7 text-white md:p-10"
+        className="rounded-card bg-sage relative overflow-hidden p-7 text-white md:p-10"
       >
         <h2 id="business-steps" className="serif relative text-[1.75rem]">
           {t("stepsTitle")}
@@ -64,7 +63,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         <ol className="relative mt-6 grid gap-6 md:grid-cols-3">
           {(["one", "two", "three"] as const).map((step, index) => (
             <li key={step} className="flex gap-4 border-t border-white/15 pt-5">
-              <span className="serif shrink-0 text-4xl leading-none text-[var(--kraft-3)]" aria-hidden="true">
+              <span className="serif shrink-0 text-4xl leading-none text-white/70" aria-hidden="true">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>

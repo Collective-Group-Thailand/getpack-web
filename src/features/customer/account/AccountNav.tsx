@@ -119,7 +119,7 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
           <Icon name={item.icon} size={16} aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate">{item.ns === "business" ? tBusiness(item.key) : t(item.key)}</span>
           {item.badge ? (
-            <span className="bg-warning-subtle text-warning-subtle-fg rounded-full px-2 text-xs font-semibold tabular-nums">
+            <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-2 text-xs font-semibold tabular-nums">
               {item.badge}
               <span className="sr-only"> {t("waiting")}</span>
             </span>
@@ -141,7 +141,7 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
         return (
           <div key={group.key} className="mt-2 lg:mt-4">
             {/* Wide screens: a heading over the group. */}
-            <p className="eyebrow hidden px-3 pb-1 text-[11px] tracking-[0.06em] lg:flex">
+            <p className="text-muted hidden px-3 pb-1 text-xs font-semibold lg:flex">
               {t(`groups.${group.key}`)}
             </p>
             <ul className="hidden flex-col gap-0.5 lg:flex">{group.items.map(link)}</ul>
@@ -150,7 +150,7 @@ export function AccountNav({ company = null }: { company?: AccountCompany | null
               <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
                 <span className="min-w-0 flex-1 truncate">{title}</span>
                 {group.items.some((item) => item.badge) ? (
-                  <span className="bg-warning-subtle text-warning-subtle-fg rounded-full px-2 text-xs font-semibold">
+                  <span className="bg-warning-subtle text-warning-subtle-fg rounded-control px-2 text-xs font-semibold">
                     {group.items.reduce((sum, item) => sum + (item.badge ?? 0), 0)}
                   </span>
                 ) : null}

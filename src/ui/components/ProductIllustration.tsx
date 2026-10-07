@@ -209,13 +209,13 @@ export function OpenBoxIllustration({ className }: { className?: string }) {
 }
 
 /**
- * One of the three kraft gradients (design language v2), chosen by the family so a product looks
- * the same everywhere. Paired with `.grain` wherever a product has no photo — never an icon.
+ * One of two flat fills (design language v3: sage well or kraft), chosen by the family so a
+ * product looks the same everywhere — wherever a product has no photo, never an icon.
  */
-export function kraftOf(family: string): "kraft-1" | "kraft-2" | "kraft-3" {
+export function kraftOf(family: string): "bg-sage-subtle" | "bg-kraft" {
   let hash = 0;
   for (const char of family) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return (["kraft-1", "kraft-2", "kraft-3"] as const)[hash % 3]!;
+  return (["bg-sage-subtle", "bg-kraft"] as const)[hash % 2]!;
 }
 
 /** A small kraft plate holding a family's drawing — a cart or order line without a photo. */
@@ -225,7 +225,7 @@ export function ProductThumb({ family, className }: { family: ProductFamily; cla
       aria-hidden="true"
       className={cn(
         kraftOf(family),
-        "grain flex size-16 shrink-0 items-center justify-center rounded-lg text-[#3d3326]",
+        "rounded-thumb text-fg flex size-16 shrink-0 items-center justify-center",
         className,
       )}
     >
@@ -239,7 +239,7 @@ export function ProductPlate({ family, className }: { family: ProductFamily; cla
   return (
     <div
       aria-hidden="true"
-      className={cn(kraftOf(family), "grain flex aspect-[4/3] items-center justify-center p-6 text-[#3d3326]", className)}
+      className={cn(kraftOf(family), "text-fg flex aspect-[4/3] items-center justify-center p-6", className)}
     >
       <ProductIllustration family={family} className="max-w-32" />
     </div>

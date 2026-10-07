@@ -148,7 +148,7 @@ export default function SearchDialog({ open, onOpenChange }: { open: boolean; on
               <button
                 type="button"
                 onClick={() => setQ(entry)}
-                className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-full border px-3 py-1 text-sm outline-none focus-visible:ring-2"
+                className="border-border hover:bg-bg-subtle focus-visible:ring-focus-ring rounded-control border px-3 py-1 text-sm outline-none focus-visible:ring-2"
               >
                 {entry}
               </button>

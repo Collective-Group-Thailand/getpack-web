@@ -43,8 +43,9 @@
     font-family: var(--font-sans);
     line-height: var(--leading-tight);
     font-weight: var(--font-weight-semibold);
-    /* Thai tone marks sit above the cap height; tight tracking collides with them. */
-    letter-spacing: 0;
+    /* Design language v3: every heading 600, −0.02em; no italic heading anywhere. */
+    letter-spacing: -0.02em;
+    font-style: normal;
   }
 
   /*
@@ -68,23 +69,12 @@
   }
 
   /*
-   * Design language v2 "Warm Editorial" (round 2, Phase 2). The storefront sets its page titles
-   * and its large section titles (≥ 22 px) in the display setting (Anuphan 600, tighter); the back office and the factory app only
-   * their page title, at 30 px — sub-headings stay Anuphan for density, codes stay monospace.
+   * The back office and the factory app set their page title at 30 px; sub-headings stay at their
+   * own sizes for density (design language v3 keeps one typeface, Anuphan, everywhere).
    */
-  [data-zone="customer"] h1,
-  [data-zone="customer"] h2:is(.text-2xl, .text-3xl, .text-4xl, .text-display) {
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-
   [data-zone="admin"] main h1,
   [data-zone="partner"] main h1 {
-    font-family: var(--font-display);
-    font-weight: 600;
     font-size: 1.875rem;
-    letter-spacing: -0.01em;
   }
 
   /* One word in a storefront heading carries the accent: the brand colour (Anuphan has no italic). */
@@ -324,130 +314,31 @@
 }
 
 /*
- * Storefront surfaces (home redesign, 2026-10-06). Decorative fills only — all from semantic
- * tokens, so dark and high-contrast themes follow without overrides. Soft, single-hue washes:
- * D-180 rules out heavy gradients.
+ * Patterns, not gradients (design language v3 has no gradient anywhere): the designer's dotted
+ * work area and the hairline grid behind a box preview, as SVG tiles in a warm grey at partial
+ * opacity, so they sit on the light and the dark canvas alike.
  */
-
-/* The designer's dotted work area, borrowed for marketing pictures of it. */
 @utility pk-dot-grid {
-  background-image: radial-gradient(var(--color-canvas-grid) 1px, transparent 1px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18'%3E%3Ccircle cx='1' cy='1' r='1' fill='rgb(120 110 98 / 0.45)'/%3E%3C/svg%3E");
   background-size: 18px 18px;
 }
 
-/* A warm kraft wash in the top corner of the hero. */
-@utility pk-hero-wash {
-  background-image: radial-gradient(56rem 30rem at 88% -10%, var(--color-kraft), transparent 60%);
+@utility pk-line-grid {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M0 .5H24M.5 0V24' fill='none' stroke='rgb(120 110 98 / 0.22)'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
 }
 
-/* The brand-tint glow in the corner of a dark band. */
-@utility pk-band-glow {
-  background-image: radial-gradient(
-    38rem 19rem at 100% 0,
-    color-mix(in oklab, var(--color-primary) 55%, transparent),
-    transparent 70%
-  );
-}
-
-/* The sign-in panel's soft light, from its foot: the panel's own colour, lighter — one hue (D-180). */
-@utility pk-auth-wash {
-  background-image: radial-gradient(
-    50rem 32rem at 100% 100%,
-    color-mix(in oklab, currentColor 16%, transparent),
-    transparent 62%
-  );
-}
-
-/*
- * Design language v2 colours: the deep green of dark bands and the auth panel, and the kraft of
- * eyebrow rules and large figures. Decoration only — text on them is checked where it is used.
- */
 :root {
   /* The storefront's phone tab bar (56 px + the home indicator): what floats above it sits on this. */
   --mobile-tab-h: calc(3.5rem + env(safe-area-inset-bottom));
-  --green-ink: #083f36;
-  --kraft-3: #b8956a;
-  /* Kraft as text (large figures, a hand note): ≥ 4.2:1 on the cream and white surfaces. */
-  --kraft-ink: #8f6b40;
-  --card-lift: 2px;
-}
-
-@media (prefers-color-scheme: dark) {
-  html:not([data-theme]) {
-    --kraft-ink: #d1b088;
-  }
-}
-
-html[data-theme="dark"] {
-  --kraft-ink: #d1b088;
-}
-
-/* A way-in card rises 4 px on the storefront; the back office and the factory app do not move. */
-[data-zone="customer"] {
-  --card-lift: 4px;
-}
-
-[data-zone="admin"],
-[data-zone="partner"] {
-  --card-lift: 0px;
 }
 
 @layer components {
-  /* The display setting on anything — a large price, a figure, a statement (Anuphan 600, tighter). */
+  /* The display setting on anything — a large price, a figure, a statement (Anuphan 600, v3 tracking). */
   .serif {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-
-  /* The label over a section, with its kraft lead rule (replaces the old kicker). */
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--color-muted);
-  }
-
-  .eyebrow::before {
-    content: "";
-    width: 28px;
-    height: 1px;
-    background: var(--kraft-3);
-    flex: none;
-  }
-
-  /* Paper grain over a hero, a tile, a product placeholder or a kraft band. */
-  .grain {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .grain::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.5;
-    mix-blend-mode: multiply;
-    border-radius: inherit;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.36 0 0 0 0 0.24 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  /* Kraft placeholders for a product with no photo — three gradients, never an icon. */
-  .kraft-1 {
-    background: linear-gradient(150deg, #e9dcc5 0%, #d9c39f 55%, #c9ab7e 100%);
-  }
-
-  .kraft-2 {
-    background: linear-gradient(160deg, #efe5d3 0%, #e1cfae 60%, #cfb388 100%);
-  }
-
-  .kraft-3 {
-    background: linear-gradient(140deg, #dcc7a3 0%, #c8a97b 60%, #b8956a 100%);
+    letter-spacing: -0.02em;
   }
 
   /* Page-load stagger: each `.rise` comes up 18 px over 0.9 s, the next 0.08 s later. */

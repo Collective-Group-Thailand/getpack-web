@@ -121,6 +121,8 @@
   --color-canvas-grid: var(--sem-canvas-grid);
   --color-kraft: var(--sem-kraft);
   --color-kraft-strong: var(--sem-kraft-strong);
+  --color-sage: var(--sem-sage);
+  --color-sage-subtle: var(--sem-sage-subtle);
   --color-primary: var(--sem-primary);
   --color-primary-fg: var(--sem-primary-fg);
   --color-primary-subtle: var(--sem-primary-subtle);
@@ -175,20 +177,23 @@
 
   /* Space, radius, elevation. */
   --spacing: 0.25rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1rem;
   --radius-full: 9999px;
-  --radius-control: 0.75rem;
-  --radius-card: 1.25rem;
-  --radius-band: 1.75rem;
-  --radius-cta: 0.75rem;
+  --radius-control: 0.625rem;
+  --radius-card: 0.875rem;
+  --radius-panel: 1rem;
+  --radius-thumb: 0.375rem;
+  --radius-band: 1rem;
+  --radius-cta: 0.625rem;
   --shadow-none: none;
   --shadow-card: 0 1px 2px rgb(30 27 24 / 0.06);
   --shadow-overlay: 0 8px 24px rgb(30 27 24 / 0.1);
   --shadow-lift: 0 20px 40px -24px rgb(60 40 20 / 0.35);
+  --shadow-panel: 0 24px 60px -30px rgb(29 27 23 / 0.25);
   --shadow-cta: none;
   --container-content: 73.75rem;
   --container-nav: 82.5rem;
@@ -213,31 +218,33 @@
 /* Light is the base: no cookie, no OS preference, no surprises. */
 
 :root {
-  --sem-bg: oklch(98.01% 0.0074 80.72);
-  --sem-bg-subtle: oklch(94.86% 0.0165 79.35);
+  --sem-bg: oklch(96.51% 0.0074 80.72);
+  --sem-bg-subtle: oklch(94.12% 0.0103 81.79);
   --sem-surface: oklch(100% 0 0);
-  --sem-surface-subtle: oklch(98.01% 0.0074 80.72);
+  --sem-surface-subtle: oklch(96.51% 0.0074 80.72);
   --sem-surface-raised: oklch(100% 0 0);
   --sem-overlay: oklch(26.2% 0.011 72 / 0.55);
-  --sem-border: oklch(90.72% 0.0201 77.31);
+  --sem-border: oklch(90.51% 0.0133 82.4);
   --sem-border-strong: oklch(58.8% 0.022 72);
-  --sem-fg: oklch(22.44% 0.0074 67.44);
-  --sem-muted: oklch(44.75% 0.0166 67.38);
-  --sem-subtle: oklch(64% 0.0207 72);
+  --sem-fg: oklch(22.29% 0.0082 84.59);
+  --sem-muted: oklch(46.26% 0.0142 79.72);
+  --sem-subtle: oklch(63.85% 0.0168 77.01);
   --sem-fg-inverse: oklch(100% 0 0);
-  --sem-primary-hover: oklch(43.55% 0.0779 176.5);
+  --sem-primary-hover: oklch(36.76% 0.0645 174.84);
   --sem-danger-hover: oklch(42.8% 0.1558 29);
-  --sem-focus-ring: oklch(51.9% 0.0945 175.5);
+  --sem-focus-ring: oklch(43.56% 0.0778 174.02);
   --sem-canvas: oklch(96.2% 0.0031 72);
   --sem-canvas-grid: oklch(85.5% 0.0106 72);
-  --sem-kraft: oklch(88.8% 0.0361 79.66);
+  --sem-kraft: oklch(85.38% 0.0388 81.49);
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
-  --sem-primary: oklch(51.9% 0.0945 175.5);
+  --sem-sage: oklch(53.22% 0.0313 153.31);
+  --sem-sage-subtle: oklch(93.53% 0.0091 134.87);
+  --sem-primary: oklch(43.56% 0.0778 174.02);
   --sem-primary-fg: oklch(100% 0 0);
-  --sem-primary-subtle: oklch(95.33% 0.0147 175.72);
-  --sem-primary-subtle-fg: oklch(43.55% 0.0779 176.5);
+  --sem-primary-subtle: oklch(93.53% 0.0091 134.87);
+  --sem-primary-subtle-fg: oklch(36.76% 0.0645 174.84);
   --sem-accent: oklch(70.79% 0.1524 65.49);
-  --sem-accent-fg: oklch(22.44% 0.0074 67.44);
+  --sem-accent-fg: oklch(22.29% 0.0082 84.59);
   --sem-accent-subtle: oklch(96.2% 0.0224 66);
   --sem-accent-subtle-fg: oklch(35.2% 0.1088 66);
   --sem-success: oklch(52.73% 0.1371 150.07);
@@ -286,6 +293,8 @@
     --sem-canvas-grid: oklch(42.8% 0.018 72);
     --sem-kraft: oklch(31.94% 0.0227 72.45);
     --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
+    --sem-sage: oklch(69.54% 0.0312 153.09);
+    --sem-sage-subtle: oklch(25.98% 0.0136 154.28);
     --sem-primary: oklch(65.85% 0.1134 175.21);
     --sem-primary-fg: oklch(19.3% 0.0108 80.52);
     --sem-primary-subtle: oklch(28.37% 0.0384 176.01);
@@ -337,6 +346,8 @@
   --sem-canvas-grid: oklch(42.8% 0.018 72);
   --sem-kraft: oklch(31.94% 0.0227 72.45);
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
+  --sem-sage: oklch(69.54% 0.0312 153.09);
+  --sem-sage-subtle: oklch(25.98% 0.0136 154.28);
   --sem-primary: oklch(65.85% 0.1134 175.21);
   --sem-primary-fg: oklch(19.3% 0.0108 80.52);
   --sem-primary-subtle: oklch(28.37% 0.0384 176.01);
@@ -371,7 +382,7 @@
   --sem-bg: oklch(100% 0 0);
   --sem-bg-subtle: oklch(100% 0 0);
   --sem-surface: oklch(100% 0 0);
-  --sem-surface-subtle: oklch(98.01% 0.0074 80.72);
+  --sem-surface-subtle: oklch(96.51% 0.0074 80.72);
   --sem-surface-raised: oklch(100% 0 0);
   --sem-overlay: oklch(0% 0 0 / 0.7);
   --sem-border: oklch(50.5% 0.0207 72);
@@ -385,8 +396,10 @@
   --sem-focus-ring: oklch(0% 0 0);
   --sem-canvas: oklch(100% 0 0);
   --sem-canvas-grid: oklch(65.8% 0.0207 72);
-  --sem-kraft: oklch(88.8% 0.0361 79.66);
+  --sem-kraft: oklch(85.38% 0.0388 81.49);
   --sem-kraft-strong: oklch(75.13% 0.0713 77.16);
+  --sem-sage: oklch(36% 0.0313 153.31);
+  --sem-sage-subtle: oklch(100% 0 0);
   --sem-primary: oklch(35.2% 0.068 176);
   --sem-primary-fg: oklch(100% 0 0);
   --sem-primary-subtle: oklch(98.5% 0.006 176);
@@ -415,22 +428,5 @@
   --sem-neutral-fg: oklch(100% 0 0);
   --sem-neutral-subtle: oklch(96.2% 0.0031 72);
   --sem-neutral-subtle-fg: oklch(0% 0 0);
-}
-
-/* Pill CTAs and 22 px cards on the storefront only (D-180, design language v2); the admin and
-   partner zones keep 12 px controls and 16 px cards. A secondary CTA is an ink outline there. */
-
-[data-zone="customer"] {
-  --radius-cta: 9999px;
-  --shadow-cta: 0 14px 28px -14px color-mix(in oklab, var(--color-primary) 70%, transparent);
-  --radius-card: 1.375rem;
-  --cta-outline: var(--color-fg);
-}
-
-/* The back office and the factory app run denser: 16 px cards (UX audit design baseline). */
-
-[data-zone="admin"],
-[data-zone="partner"] {
-  --radius-card: 1rem;
 }
 

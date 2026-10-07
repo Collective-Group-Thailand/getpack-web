@@ -42,13 +42,13 @@ export async function HomeStudio() {
             ))}
           </ul>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" shape="pill" variant="secondary" className="border-white bg-white text-[#1e1b18]">
+            <Button asChild size="lg" variant="secondary" className="border-white bg-white text-[#1e1b18]">
               <Link href="/studio/new">{t("start")}</Link>
             </Button>
             <Button
               asChild
               size="lg"
-              shape="pill"
+             
               variant="ghost"
               className="border border-white/40 text-white hover:bg-white/10"
             >

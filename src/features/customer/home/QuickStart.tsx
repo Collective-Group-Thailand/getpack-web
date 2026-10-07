@@ -88,7 +88,7 @@ export function QuickStart({ products }: { products: { slug: string; name: strin
             onChange={(event) => setQuantity(event.target.value.trim())}
           />
         </label>
-        <Button type="submit" size="lg" shape="pill" iconEnd="arrow-right" disabled={!slug || !counted}>
+        <Button type="submit" size="lg" iconEnd="arrow-right" disabled={!slug || !counted}>
           {t("go")}
         </Button>
       </div>

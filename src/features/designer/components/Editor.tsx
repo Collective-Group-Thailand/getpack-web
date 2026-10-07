@@ -966,15 +966,11 @@ export default function Editor({
                 <div
                   ref={wrapRef}
                   className={cn(
-                    "relative min-w-0 flex-1 overflow-hidden",
+                    "pk-dot-grid relative min-w-0 flex-1 overflow-hidden",
                     // In 3D only the flat canvas stays mounted (it draws the 3D's artwork), out of sight.
                     view === "3d" && "pointer-events-none invisible absolute inset-0",
                   )}
                   aria-hidden={view === "3d" || undefined}
-                  style={{
-                    backgroundImage: "radial-gradient(var(--color-canvas-grid) 1px, transparent 1px)",
-                    backgroundSize: "18px 18px",
-                  }}
                 >
                   {dieline && paperColour && size.width > 0 ? (
                     <DesignCanvas

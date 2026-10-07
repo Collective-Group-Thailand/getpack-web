@@ -145,7 +145,7 @@ export async function SiteHeader() {
               closeLabel={tCommon("actions.close")}
               headerEnd={<DeferredLocaleMenu />}
               footer={
-                <Button asChild size="lg" shape="pill" block iconStart="chat">
+                <Button asChild size="lg" block iconStart="chat">
                   <Link href="/help/chat">{t("drawer.line")}</Link>
                 </Button>
               }
@@ -181,7 +181,7 @@ export async function SiteHeader() {
                     <b className="block text-[15px]">{t("drawer.guestTitle")}</b>
                     <small className="text-muted">{t("drawer.guestBody")}</small>
                   </span>
-                  <Button asChild size="md" shape="pill">
+                  <Button asChild size="md">
                     <Link href="/sign-in">{t("nav.signIn")}</Link>
                   </Button>
                 </div>
@@ -210,7 +210,7 @@ export async function SiteHeader() {
               </ul>
               {tree.length > 0 ? (
                 <section aria-labelledby="drawer-categories" className="mt-6">
-                  <h2 id="drawer-categories" className="eyebrow mb-3 text-[11px] tracking-[0.06em]">
+                  <h2 id="drawer-categories" className="text-muted mb-3 text-xs font-semibold">
                     {t("drawer.categories")}
                   </h2>
                   <ul className="grid grid-cols-2 gap-2">
@@ -241,7 +241,7 @@ export async function SiteHeader() {
                 </section>
               ) : null}
               <section aria-labelledby="drawer-help" className="mt-6">
-                <h2 id="drawer-help" className="eyebrow mb-1 text-[11px] tracking-[0.06em]">
+                <h2 id="drawer-help" className="text-muted mb-1 text-xs font-semibold">
                   {t("drawer.help")}
                 </h2>
                 <ul className="divide-border divide-y">

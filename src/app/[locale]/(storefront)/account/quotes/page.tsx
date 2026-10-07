@@ -51,7 +51,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
             return (
               <li
                 key={quote.id}
-                className="border-border bg-surface flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border p-4 sm:p-5"
+                className="border-border bg-surface flex flex-wrap items-center justify-between gap-3 rounded-card border p-4 sm:p-5"
               >
                 <div className="min-w-0">
                   <p className="font-semibold">{productNameOf(locale, quote.summary)}</p>

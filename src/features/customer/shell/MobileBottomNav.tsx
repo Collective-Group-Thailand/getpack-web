@@ -47,7 +47,7 @@ export function MobileBottomNav() {
                 {/* One-line labels, the current tab in a pill (the "MobileNav" board). */}
                 <span
                   className={cn(
-                    "grid h-7 w-12 place-items-center rounded-full",
+                    "grid h-7 w-12 place-items-center rounded-control",
                     current && "bg-primary-subtle text-primary-subtle-fg",
                   )}
                 >

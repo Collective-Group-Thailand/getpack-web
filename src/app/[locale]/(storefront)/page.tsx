@@ -150,7 +150,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <p className="text-fg/80 mt-3 max-w-[34em] text-lg">{t("work.emptyBody")}</p>
             </div>
             <div className="relative">
-              <Button asChild size="lg" shape="pill">
+              <Button asChild size="lg">
                 <Link href="/styles">{t("work.emptyAction")}</Link>
               </Button>
             </div>
@@ -232,7 +232,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   title={<Link href={articleHref(article.slug)}>{name}</Link>}
                   image={src ? { src, alt: "" } : null}
                   fallback={{ icon: "article", tone: "paper" }}
-                  eyebrow={format.date(article.publishedAt)}
+                  topLine={format.date(article.publishedAt)}
                   meta={article.excerptTh}
                 />
               );
@@ -300,11 +300,11 @@ async function ContactPanel({
         )}
       </dl>
       <div className="mt-6 flex flex-col gap-2.5">
-        <Button asChild size="lg" shape="pill" iconStart="chat">
+        <Button asChild size="lg" iconStart="chat">
           <Link href="/help/chat">{t("chat")}</Link>
         </Button>
         {rfqCategory ? (
-          <Button asChild size="lg" shape="pill" variant="secondary">
+          <Button asChild size="lg" variant="secondary">
             <Link href={`/rfq/${encodeURIComponent(rfqCategory)}`}>{t("rfq")}</Link>
           </Button>
         ) : null}

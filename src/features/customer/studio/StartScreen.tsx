@@ -25,7 +25,7 @@ const TILE: Record<Intent, { icon: IconName; className: string }> = {
   box: { icon: "box", className: "bg-primary-subtle text-primary" },
   product: { icon: "ruler", className: "bg-warning-subtle text-warning-subtle-fg" },
   file: { icon: "upload", className: "bg-surface-subtle text-fg" },
-  reorder: { icon: "refresh", className: "kraft-2 text-[#3d3326]" },
+  reorder: { icon: "refresh", className: "bg-sage-subtle text-fg" },
 };
 
 /** How many recent designs the start page lists before "see all". */
@@ -70,7 +70,7 @@ export function StartScreen({
 
   const card = (popular = false) =>
     cn(
-      "group bg-surface relative flex h-full flex-col rounded-[var(--radius-card)] border p-6 text-start outline-none",
+      "group bg-surface relative flex h-full flex-col rounded-card border p-6 text-start outline-none",
       "duration-fast transition-[box-shadow,translate] hover:shadow-lift motion-safe:hover:-translate-y-0.5",
       "focus-visible:ring-focus-ring focus-visible:ring-2",
       popular ? "border-primary border-[1.5px]" : "border-border",
@@ -78,11 +78,11 @@ export function StartScreen({
   const body = (intent: Intent, popular = false) => (
     <>
       {popular ? (
-        <span className="bg-primary-subtle text-primary-subtle-fg absolute end-4 top-4 rounded-full px-2 py-0.5 text-[11px] font-semibold">
+        <span className="bg-primary-subtle text-primary-subtle-fg absolute end-4 top-4 rounded-control px-2 py-0.5 text-[11px] font-semibold">
           {t("popular")}
         </span>
       ) : null}
-      <span className={cn("grid size-13 place-items-center rounded-[14px]", TILE[intent].className)}>
+      <span className={cn("grid size-13 place-items-center rounded-control", TILE[intent].className)}>
         <Icon name={TILE[intent].icon} size={24} aria-hidden="true" />
       </span>
       <span className="mt-5 text-lg leading-snug font-semibold">{t(`${intent}.title`)}</span>
@@ -107,7 +107,7 @@ export function StartScreen({
   return (
     <div className="mx-auto flex w-full max-w-[1116px] flex-col px-5 py-10 md:px-8 md:py-14">
       <div className="text-center">
-        <p className="bg-primary-subtle text-primary-subtle-fg inline-flex items-center gap-2 rounded-full px-3 py-1 text-[13px] font-semibold">
+        <p className="bg-primary-subtle text-primary-subtle-fg inline-flex items-center gap-2 rounded-control px-3 py-1 text-[13px] font-semibold">
           <span aria-hidden="true" className="bg-primary size-1.5 rounded-full" />
           {t("step")}
         </p>
@@ -164,9 +164,9 @@ export function StartScreen({
                 <li key={design.id}>
                   <Link
                     href={`/studio/${design.id}`}
-                    className="border-border bg-surface hover:shadow-lift focus-visible:ring-focus-ring flex items-center gap-4 rounded-[var(--radius-card)] border p-3.5 outline-none focus-visible:ring-2"
+                    className="border-border bg-surface hover:shadow-lift focus-visible:ring-focus-ring flex items-center gap-4 rounded-card border p-3.5 outline-none focus-visible:ring-2"
                   >
-                    <span className="kraft-1 size-16 shrink-0 overflow-hidden rounded-xl">
+                    <span className="bg-sage-subtle rounded-thumb size-16 shrink-0 overflow-hidden">
                       <DesignThumb fileId={design.thumbnailFileId} empty="" />
                     </span>
                     <span className="min-w-0">
@@ -189,7 +189,7 @@ export function StartScreen({
                 dims: { l: 70, w: 40, h: 150 },
                 step: "design",
               })}
-              className="border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring flex h-full min-h-[5.75rem] items-center justify-center gap-2 rounded-[var(--radius-card)] border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
+              className="border-border text-muted hover:text-fg hover:border-primary focus-visible:ring-focus-ring flex h-full min-h-[5.75rem] items-center justify-center gap-2 rounded-card border border-dashed px-4 text-center text-sm font-medium outline-none focus-visible:ring-2"
             >
               <Icon name="sparkles" size={16} aria-hidden="true" />
               {t("sample")}

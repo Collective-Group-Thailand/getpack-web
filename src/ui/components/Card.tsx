@@ -16,12 +16,11 @@ const cardVariants = cva("rounded-card bg-surface", {
       lg: "p-6",
     },
     /**
-     * A card that is itself a way in (a link stretched over it, or a step in a sequence): it rises
-     * a few pixels and takes the overlay shadow on hover. Motion only when the user allows it.
+     * A card that is itself a way in (a link stretched over it, or a step in a sequence): its
+     * hairline darkens on hover (design language v3 — no lift, no shadow).
      */
     interactive: {
-      // The lift is the zone's (`--card-lift`): 4 px on the storefront, none in the back office.
-      true: "duration-base ease-standard transition-[transform,box-shadow] hover:shadow-overlay motion-safe:hover:translate-y-[calc(var(--card-lift,2px)*-1)]",
+      true: "duration-base ease-standard transition-colors hover:border-border-strong",
       false: "",
     },
   },

@@ -19,7 +19,6 @@ export default async function Page() {
   return (
     <div className="max-w-content mx-auto grid w-full gap-10 px-5 py-10 md:px-8 md:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
       <header className="flex flex-col gap-4">
-        <p className="eyebrow">{t("eyebrow")}</p>
         <h1 className="text-4xl leading-tight md:text-5xl">{t("title")}</h1>
         <p className="text-muted text-lg leading-relaxed">{t("intro")}</p>
         {/* LINE first, as the channel the team answers fastest (UX audit, /contact). */}
@@ -88,7 +87,7 @@ export default async function Page() {
         {/* The answers a customer can reach without waiting for anyone. */}
         <nav aria-label={t("selfServe")} className="mt-4">
           <p className="text-muted mb-2 text-sm font-semibold">{t("selfServe")}</p>
-          <ul className="border-border bg-surface divide-border divide-y rounded-[var(--radius-card)] border">
+          <ul className="border-border bg-surface divide-border divide-y rounded-card border">
             {(
               [
                 ["track", "/track", "truck"],

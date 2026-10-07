@@ -6,8 +6,6 @@ import { cn } from "@/ui/lib/cn";
 export interface AuthSplitLayoutProps {
   /** `brand` — the storefront's teal; `ink` — the back office's dark panel (UX audit: staff login). */
   tone: "brand" | "ink";
-  /** The small label over the headline (design language v2's eyebrow). */
-  eyebrow?: React.ReactNode;
   /** The panel's headline and the line under it. */
   headline: React.ReactNode;
   lead: React.ReactNode;
@@ -28,11 +26,10 @@ export interface AuthSplitLayoutProps {
  * in a 440 px column on the right. Below `md` the panel steps aside and the form has the screen.
  *
  * The panel is decoration plus three honest sentences; the form is the page's `<main>`. One solid
- * hue with a soft wash and a dot grid — no heavy gradient (D-180).
+ * hue, nothing over it (design language v3: no gradient, no grain, no label over the headline).
  */
 export function AuthSplitLayout({
   tone,
-  eyebrow,
   headline,
   lead,
   points = [],
@@ -47,23 +44,14 @@ export function AuthSplitLayout({
       <aside
         className={cn(
           "relative hidden flex-col overflow-hidden px-10 py-12 md:flex lg:px-16",
-          // The storefront's panel is the deep green of design language v2, with paper grain.
-          tone === "brand"
-            ? "grain bg-[linear-gradient(160deg,#0d5a4c_0%,var(--green-ink)_55%,#0a4a3f_100%)] text-white"
-            : "bg-fg text-fg-inverse",
+          // The storefront's panel is the brand green, flat (design language v3).
+          tone === "brand" ? "bg-primary text-primary-fg" : "bg-fg text-fg-inverse",
         )}
       >
-        <div aria-hidden="true" className="pk-auth-wash absolute inset-0" />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 [background-image:radial-gradient(color-mix(in_oklab,currentColor_14%,transparent)_1px,transparent_1px)] [background-size:22px_22px] opacity-40"
-        />
-
         <div className="relative">{homeLink(<BrandLockup />)}</div>
 
         <div className="relative my-auto max-w-[32rem] py-10">
-          {eyebrow ? <p className="eyebrow mb-4 text-current/70">{eyebrow}</p> : null}
-          <p className="serif text-4xl leading-[1.12] lg:text-[3.625rem] [&_em]:text-[#5fcfb4] [&_em]:not-italic">
+          <p className="serif text-4xl leading-[1.1] lg:text-[3.625rem] [&_em]:text-current/70 [&_em]:not-italic">
             {headline}
           </p>
           <p className="mt-5 text-lg leading-relaxed opacity-80">{lead}</p>
@@ -82,7 +70,7 @@ export function AuthSplitLayout({
         </div>
 
         {note ? (
-          <div className="rounded-card relative flex items-center gap-5 border border-current/20 bg-current/[0.06] p-6">
+          <div className="rounded-control relative flex items-center gap-5 border border-current/20 bg-current/[0.06] p-6">
             <DielineSketch />
             <div>
               <p className="font-semibold">{note.title}</p>
@@ -105,7 +93,7 @@ function BrandLockup() {
   return (
     <span className="inline-flex items-center gap-2.5 text-2xl font-bold tracking-tight">
       {/* On a light ring, so the mark reads on the teal panel as well as on the dark one. */}
-      <span className="bg-surface inline-flex rounded-[0.7rem] p-0.5">
+      <span className="bg-surface rounded-control inline-flex p-0.5">
         <BrandMark size={32} />
       </span>
       {BRAND_NAME}

@@ -62,7 +62,7 @@ export function NewsletterForm() {
             onChange={(event) => setEmail(event.target.value.trim())}
           />
         </Field>
-        <Button type="submit" size="lg" shape="pill" loading={state === "busy"} disabled={!valid || !consent}>
+        <Button type="submit" size="lg" loading={state === "busy"} disabled={!valid || !consent}>
           {t("subscribe")}
         </Button>
       </div>

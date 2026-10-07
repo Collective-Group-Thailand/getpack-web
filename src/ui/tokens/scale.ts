@@ -1,44 +1,40 @@
 /**
  * Tier 1 — the non-colour primitives: space, radius, elevation, motion, type.
  *
- * Values come from design-system.md §2 (4-px spacing, radius 4/8/12/16/full, fluid type
- * 12→48 with Thai body line-height ≥ 1.6), refined by §Art direction (D-180): 12-px controls,
- * 16-px cards, pill CTAs on the storefront only, two elevation levels, and 150/200/250 ms
- * ease-out motion honouring `prefers-reduced-motion`.
+ * Values come from design-system.md §2 (4-px spacing, fluid type 12→48 with Thai body
+ * line-height ≥ 1.6), refined by §Art direction (D-180) and design language v3 (Phase 4):
+ * radius 10 control / 14 card / 16 panel / 6 thumb and circles, no pills, no button shadows,
+ * and 150/200/250 ms ease-out motion honouring `prefers-reduced-motion`.
  */
 
 /** 4-px base. Tailwind's own `--spacing` multiplier, so `p-4` stays 16 px. */
 export const SPACING_BASE = "0.25rem";
 
 export const RADIUS = {
-  sm: "0.25rem",
-  md: "0.5rem",
-  lg: "0.75rem",
-  xl: "1rem",
-  "2xl": "1.5rem",
+  /*
+   * Design language v3 (Phase 4) has four radii and nothing else; the Tailwind steps alias them
+   * so an existing `rounded-lg` lands on one of the four instead of a fifth value.
+   */
+  sm: "0.375rem",
+  md: "0.625rem",
+  lg: "0.625rem",
+  xl: "0.875rem",
+  "2xl": "1rem",
+  /** Circles only — an avatar, a status dot. Never a pill: CI refuses `rounded-full` on a non-square. */
   full: "9999px",
-  /** Buttons, inputs, selects, segmented controls — every zone, admin included (D-180). */
-  control: "0.75rem",
-  /**
-   * Cards, media, dialogs, the quote dock: 20 px on the storefront (UX audit design baseline);
-   * `build-tokens.ts` brings it back to 16 px in the denser admin and partner zones.
-   */
-  card: "1.25rem",
-  /** Hero pictures and full-width bands (UX audit: "hero/band 28"). */
-  band: "1.75rem",
-  /**
-   * The primary call to action. A control everywhere, and a **pill on the storefront only**:
-   * `build-tokens.ts` overrides it under `[data-zone="customer"]`, which each root layout
-   * stamps on `<html>`. The admin keeps 12 px.
-   */
-  cta: "0.75rem",
+  /** Buttons, inputs, selects, chips, tags, segmented controls — every zone: 10 px. */
+  control: "0.625rem",
+  /** Cards, panels, list rows, dialogs, the quote dock — every zone: 14 px. */
+  card: "0.875rem",
+  /** The hero's Studio panel, a full-width picture: 16 px. */
+  panel: "1rem",
+  /** Dieline thumbnails and small pictures: 6 px. */
+  thumb: "0.375rem",
+  /** Hero pictures and bands — the panel radius (kept as a name so older call sites resolve). */
+  band: "1rem",
+  /** The primary call to action: a control, in every zone (no pill CTAs in v3). */
+  cta: "0.625rem",
 } as const;
-
-/** The value `--radius-cta` takes in the customer zone. */
-export const CUSTOMER_CTA_RADIUS = "9999px";
-
-/** The card radius in the admin and partner zones, which run denser (UX audit: "radius card 16"). */
-export const DENSE_CARD_RADIUS = "1rem";
 
 /**
  * Content widths (UX audit design baseline): storefront content 1180 px, its navbar 1320 px, the
@@ -62,16 +58,11 @@ export const SHADOW = {
   overlay: "0 8px 24px rgb(30 27 24 / 0.1)",
   /** A card lifted on hover — only on hover (UX audit: no shadow on a resting card). */
   lift: "0 20px 40px -24px rgb(60 40 20 / 0.35)",
-  /** The primary button's faint brand glow; `none` outside the storefront (see build-tokens.ts). */
+  /** The hero's Studio panel — the one resting shadow design language v3 keeps. */
+  panel: "0 24px 60px -30px rgb(29 27 23 / 0.25)",
+  /** Buttons carry no shadow in v3; the name stays so a call site resolves to nothing. */
   cta: "none",
 } as const;
-
-/** `--shadow-cta` in the customer zone: the primary colour, faint, below the button. */
-/** Design language v2: `0 14px 28px -14px rgba(13,122,102,.7)` in the light theme, from the primary token. */
-export const CUSTOMER_CTA_SHADOW = "0 14px 28px -14px color-mix(in oklab, var(--color-primary) 70%, transparent)";
-
-/** Design language v2: storefront cards are 22 px (the back office keeps 16, `DENSE_CARD_RADIUS`). */
-export const CUSTOMER_CARD_RADIUS = "1.375rem";
 
 /** Hovers 150–200 ms, sheets and drawers 250 ms (D-180). */
 export const DURATION = {
