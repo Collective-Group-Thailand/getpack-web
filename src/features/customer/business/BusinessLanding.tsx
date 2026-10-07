@@ -64,10 +64,7 @@ export async function BusinessLanding({ signedIn }: { signedIn: boolean }) {
         <ol className="relative mt-6 grid gap-6 md:grid-cols-3">
           {(["one", "two", "three"] as const).map((step, index) => (
             <li key={step} className="flex gap-4 border-t border-white/15 pt-5">
-              <span
-                className="serif shrink-0 text-4xl leading-none font-medium text-[var(--kraft-3)] italic"
-                aria-hidden="true"
-              >
+              <span className="serif shrink-0 text-4xl leading-none text-[var(--kraft-3)]" aria-hidden="true">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>

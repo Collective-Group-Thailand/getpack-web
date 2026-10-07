@@ -63,7 +63,7 @@ export function AuthSplitLayout({
 
         <div className="relative my-auto max-w-[32rem] py-10">
           {eyebrow ? <p className="eyebrow mb-4 text-current/70">{eyebrow}</p> : null}
-          <p className="serif text-4xl leading-[1.12] lg:text-[3.625rem] [&_em]:font-medium [&_em]:text-[#5fcfb4] [&_em]:italic">
+          <p className="serif text-4xl leading-[1.12] lg:text-[3.625rem] [&_em]:text-[#5fcfb4] [&_em]:not-italic">
             {headline}
           </p>
           <p className="mt-5 text-lg leading-relaxed opacity-80">{lead}</p>
