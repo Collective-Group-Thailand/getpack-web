@@ -39,6 +39,16 @@ export async function saveQuote(
   return data!;
 }
 
+/** The catalogue product a price query was for, from its key (the body, as JSON). */
+function productOf(key: unknown): string | null {
+  if (typeof key !== "string") return null;
+  try {
+    return (JSON.parse(key) as CalculateBody).configuration.catalogProductId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** `value`, once it has stopped changing for `delay` ms. */
 export function useDebounced<T>(value: T, delay: number): T {
   const [settled, setSettled] = useState(value);
@@ -52,20 +62,25 @@ export function useDebounced<T>(value: T, delay: number): T {
 /**
  * The live price for a configuration: debounced, and cancelled when it goes stale.
  *
- * The key is the body itself, so the same configuration is never priced twice, and TanStack
+ * `delay` is the pause first (the home page's Studio panel asks after 250 ms — a chip is one click,
+ * not a keystroke). The key is the body itself, so the same configuration is never priced twice, and TanStack
  * aborts the request of a configuration the customer has already moved on from (its signal is
  * handed to `fetch`). The previous price stays on screen while the next is fetched, marked as
  * updating, so the dock never flashes empty between keystrokes.
  */
-export function useLivePrice(body: CalculateBody | null) {
+export function useLivePrice(body: CalculateBody | null, delay: number = PRICE_DEBOUNCE_MS) {
   const key = body ? JSON.stringify(body) : null;
-  const settledKey = useDebounced(key, PRICE_DEBOUNCE_MS);
+  const settledKey = useDebounced(key, delay);
   const settled = settledKey ? (JSON.parse(settledKey) as CalculateBody) : null;
   const query = useQuery({
     queryKey: [...queryKeys.zone("customer"), "quote-price", settledKey],
     queryFn: ({ signal }) => calculate(settled!, signal),
     enabled: settled !== null,
-    placeholderData: (previous) => previous,
+    // The last price stays up (marked updating) while the next is fetched — but only for the same
+    // product: the home page's Studio panel switches products, and another product's price must
+    // never stand in for this one's, even for a moment.
+    placeholderData: (previous, previousQuery) =>
+      productOf(previousQuery?.queryKey.at(-1)) === settled?.configuration.catalogProductId ? previous : undefined,
     staleTime: 60_000,
   });
   return {

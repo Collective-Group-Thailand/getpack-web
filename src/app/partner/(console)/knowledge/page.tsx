@@ -59,8 +59,8 @@ export default async function KnowledgePage({
             aria-current={!category ? "page" : undefined}
             className={
               !category
-                ? "bg-primary-subtle inline-flex min-h-12 items-center rounded-full px-4"
-                : "border-border inline-flex min-h-12 items-center rounded-full border px-4"
+                ? "bg-primary-subtle inline-flex min-h-12 items-center rounded-control px-4"
+                : "border-border inline-flex min-h-12 items-center rounded-control border px-4"
             }
           >
             {t("all")}
@@ -72,8 +72,8 @@ export default async function KnowledgePage({
               aria-current={category === c.slug ? "page" : undefined}
               className={
                 category === c.slug
-                  ? "bg-primary-subtle inline-flex min-h-12 items-center rounded-full px-4"
-                  : "border-border inline-flex min-h-12 items-center rounded-full border px-4"
+                  ? "bg-primary-subtle inline-flex min-h-12 items-center rounded-control px-4"
+                  : "border-border inline-flex min-h-12 items-center rounded-control border px-4"
               }
             >
               {pick(locale, c.nameTh, c.nameEn)}

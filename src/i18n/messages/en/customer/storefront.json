@@ -18,10 +18,15 @@
     "menu": "Menu",
     "signIn": "Sign in",
     "quote": "Get a price",
-    "more": "More"
+    "more": "More",
+    "studio": "Design studio",
+    "templates": "Box templates",
+    "productsPricing": "Products & prices",
+    "business": "For business",
+    "startFree": "Start designing free"
   },
   "footer": {
-    "tagline": "Your Packaging Production Partner",
+    "tagline": "A packaging design studio and production partner",
     "lineContact": "Reach us on LINE, 09:00–18:00 daily",
     "paymentMethods": "Pay by bank transfer · PromptPay QR · credit or debit card · instalments",
     "help": {
@@ -35,7 +40,7 @@
       "materials": "Materials library"
     },
     "company": {
-      "heading": "Company",
+      "heading": "Packio",
       "about": "About Packio",
       "partner": "Become a partner factory",
       "contact": "Contact us",
@@ -50,7 +55,21 @@
       "cookies": "Cookie policy"
     },
     "operatedBy": "Operated by {name} · tax id {taxId} ({branch})",
-    "by": "by {company}"
+    "by": "by {company}",
+    "studio": {
+      "heading": "Studio",
+      "start": "Start designing",
+      "templates": "All box templates",
+      "learn": "File preparation guide",
+      "materials": "Materials library"
+    },
+    "order": {
+      "heading": "Order",
+      "products": "Products & prices",
+      "upload": "Upload a file",
+      "business": "Business accounts",
+      "track": "Track an order"
+    }
   },
   "comingSoon": {
     "search": "Search",
@@ -171,12 +190,14 @@
     "orders": "Orders",
     "notifications": "Notifications",
     "guestTitle": "Not signed in",
-    "guestBody": "See your orders, proofs and tax documents",
+    "guestBody": "See your orders, sample proofs and tax documents",
     "track": "Track an order",
     "categories": "Categories",
     "allCategories": "All {count} categories",
     "help": "Help",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "articles": "Articles & guides",
+    "contact": "Contact us"
   },
   "tabs": {
     "home": "Home",

@@ -17,7 +17,7 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
   title: React.ReactNode;
   image?: ProductCardImage | null;
   /** A short line above the title: the product type, "สินค้าสต็อก". */
-  eyebrow?: React.ReactNode;
+  topLine?: React.ReactNode;
   /** The caller formats it ("เริ่มต้น ฿3.50 / ชิ้น") from what the API returned. */
   price?: React.ReactNode;
   /** Lead time, minimum order — one quiet line. */
@@ -60,7 +60,7 @@ export interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLElement>
 export function ProductCard({
   title,
   image,
-  eyebrow,
+  topLine,
   price,
   meta,
   badges,
@@ -93,7 +93,7 @@ export function ProductCard({
               ? "bg-primary-subtle text-primary-subtle-fg"
               : fallback?.tone === "paper"
                 ? "bg-bg-subtle text-muted"
-                : `${kraftOf(fallback?.family ?? "tuck")} grain text-[#3d3326]`,
+                : `${kraftOf(fallback?.family ?? "tuck")} text-fg`,
         )}
       >
         {image ? (
@@ -131,7 +131,7 @@ export function ProductCard({
             aria-hidden="true"
             className="duration-base ease-standard absolute inset-x-3 bottom-3 flex justify-center opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
           >
-            <span className="bg-primary text-primary-fg rounded-cta shadow-cta inline-flex h-10 items-center gap-1.5 px-4 text-sm font-medium">
+            <span className="bg-primary text-primary-fg rounded-control inline-flex h-10 items-center gap-1.5 px-4 text-sm font-medium">
               {hoverCta}
               <Icon name="arrow-right" size={16} />
             </span>
@@ -139,7 +139,7 @@ export function ProductCard({
         ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4 md:px-5 md:pt-4.5 md:pb-5">
-        {eyebrow ? <p className="text-muted text-xs">{eyebrow}</p> : null}
+        {topLine ? <p className="text-muted text-xs">{topLine}</p> : null}
         <Heading className="text-[1.0625rem] leading-snug font-bold [&_a]:outline-none [&_a]:after:absolute [&_a]:after:inset-0 [&_a]:after:content-['']">
           {title}
         </Heading>

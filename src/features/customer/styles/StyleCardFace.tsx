@@ -37,7 +37,7 @@ export function StyleCardFace({
       as="article"
       priority={priority}
       title={<Link href={styleHref(style.code, words.name)}>{words.name}</Link>}
-      eyebrow={
+      topLine={
         <>
           {words.category} · <span className="font-mono">{style.code}</span>
         </>

@@ -60,8 +60,8 @@ test.describe("preflight (D-070)", () => {
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(13)}`);
     await expect(page.getByText("ขนาดไม่ตรงแบบกล่อง")).toBeVisible();
-    await expect(page.getByRole("button", { name: "รับไปทำปรู๊ฟ" })).toBeDisabled();
-    await expect(page.getByText(/มีจุดที่ต้องแก้ก่อนทำปรู๊ฟ/).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "รับไปทำ Proof" })).toBeDisabled();
+    await expect(page.getByText(/มีจุดที่ต้องแก้ก่อนทำ Proof/).first()).toBeVisible();
     await expectAxeClean(page);
 
     await page.getByRole("button", { name: "ส่งคืนให้แก้ไข" }).click();
@@ -77,16 +77,16 @@ test.describe("preflight (D-070)", () => {
   test("accepting a file with warnings names them and asks why they are acceptable", async ({ page }) => {
     await signInAsStaff(page, "prepress");
     await gotoHydrated(page, `${HOSTS.admin}/prepress/${order(14)}`);
-    await page.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
-    const dialog = page.getByRole("alertdialog", { name: "รับไฟล์ฉบับที่ 1 ไปทำปรู๊ฟ" });
+    await page.getByRole("button", { name: "รับไปทำ Proof" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "รับไฟล์ฉบับที่ 1 ไปทำ Proof" });
     await expect(dialog).toContainText("ข้อควรระวัง 2 ข้อ");
     // The note is the acknowledgement `admin.artwork.accept` records: refused in place without it.
-    await dialog.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
+    await dialog.getByRole("button", { name: "รับไปทำ Proof" }).click();
     await expect(dialog).toBeVisible();
     await dialog.getByLabel(/^เหตุผลที่ยอมรับข้อควรระวัง/).fill("ลูกค้ายืนยันใช้ภาพนี้ทางโทรศัพท์");
-    await dialog.getByRole("button", { name: "รับไปทำปรู๊ฟ" }).click();
+    await dialog.getByRole("button", { name: "รับไปทำ Proof" }).click();
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "อัปโหลดและส่งปรู๊ฟ" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "อัปโหลดและส่ง Proof" })).toBeVisible();
   });
 
   test("the order's owner is assigned from the workspace", async ({ page }) => {
@@ -108,16 +108,16 @@ test.describe("proofs", () => {
     // read-only preview beside the files is no longer shown.
     const code = (await page.getByRole("heading", { level: 1 }).textContent())!.trim();
 
-    await page.getByRole("button", { name: "อัปโหลดและส่งปรู๊ฟ" }).click();
-    const dialog = page.getByRole("alertdialog", { name: "ส่งปรู๊ฟฉบับที่ 1" });
+    await page.getByRole("button", { name: "อัปโหลดและส่ง Proof" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "ส่ง Proof ฉบับที่ 1" });
     await expect(dialog).toContainText(code);
     await attach(dialog);
     await dialog.getByRole("button", { name: "อัปโหลดและส่ง" }).click();
 
     await expect(page.getByRole("alertdialog")).toHaveCount(0);
-    await expect(header(page)).toContainText("ส่งปรู๊ฟให้ลูกค้าแล้ว");
-    await page.getByRole("tab", { name: /^ปรู๊ฟ/ }).click();
-    await expect(page.getByRole("tabpanel")).toContainText("รอลูกค้าตรวจปรู๊ฟ");
+    await expect(header(page)).toContainText("ส่ง Proof ให้ลูกค้าแล้ว");
+    await page.getByRole("tab", { name: /^Proof/ }).click();
+    await expect(page.getByRole("tabpanel")).toContainText("รอลูกค้าตรวจ Proof");
   });
 
   test("the customer's annotations are answered and resolved", async ({ page }) => {

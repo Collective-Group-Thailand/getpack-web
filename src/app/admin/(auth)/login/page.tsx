@@ -38,7 +38,6 @@ export default async function StaffLoginPage({ searchParams }: { searchParams: P
   return (
     <AuthSplitLayout
       tone="brand"
-      eyebrow={t("panelEyebrow")}
       headline={t.rich("headlineRich", { em: (chunks) => <em>{chunks}</em>, br: () => <br /> })}
       lead={t("panelLead")}
       points={[t("point1"), t("point2"), t("point3")]}

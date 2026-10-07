@@ -12,7 +12,7 @@ import type { SidebarGroup } from "./sidebar";
 
 /**
  * The partner sidebar on tablets and office screens (round 2, Phase 1): the role's destinations in
- * four groups under eyebrow headings, the factory at the top and who is signed in at the foot. It
+ * four groups under small group labels, the factory at the top and who is signed in at the foot. It
  * sits inside AppShell's own `<nav>`, so it adds no landmark of its own.
  */
 export function PartnerSidebar({
@@ -34,7 +34,7 @@ export function PartnerSidebar({
       </div>
       {groups.map((group) => (
         <div key={group.key} className="flex flex-col gap-1">
-          <p className="eyebrow px-3 text-[11px] tracking-[0.06em]">{t(`groups.${group.key}`)}</p>
+          <p className="text-muted px-3 text-xs font-semibold">{t(`groups.${group.key}`)}</p>
           <ul className="flex flex-col gap-0.5">
             {group.items.map((item) => {
               const current = isCurrent(item.href, pathname);

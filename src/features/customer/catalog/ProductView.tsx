@@ -255,8 +255,7 @@ export async function ProductView({
       <div className="mt-14 grid gap-10 md:grid-cols-[1.15fr_1fr] md:gap-12">
         {product.standardSizes.length > 0 ? (
           <section aria-labelledby="product-sizes">
-            <p className="eyebrow">{t("product.sizesEyebrow")}</p>
-            <h2 id="product-sizes" className="mt-3 text-2xl">
+            <h2 id="product-sizes" className="text-2xl">
               {t("product.sizes")}
             </h2>
             {instant ? <p className="text-muted mt-1 text-sm">{t("product.sizesHint")}</p> : null}
@@ -358,7 +357,7 @@ export async function ProductView({
             <li key={other.code}>
               <Link
                 href={`/products?productType=${encodeURIComponent(other.code)}`}
-                className="border-border hover:border-primary inline-flex rounded-full border px-3 py-1.5 text-sm"
+                className="border-border hover:border-primary inline-flex rounded-control border px-3 py-1.5 text-sm"
               >
                 {pick(locale, other.nameTh, other.nameEn)}
               </Link>

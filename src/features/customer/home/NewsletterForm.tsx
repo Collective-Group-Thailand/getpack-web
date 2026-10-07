@@ -47,22 +47,21 @@ export function NewsletterForm() {
     <form
       onSubmit={(event) => void submit(event)}
       aria-label={t("heading")}
-      className="mt-5.5 flex flex-col gap-3.5"
+      className="mt-4 flex flex-col gap-3.5"
       noValidate
     >
-      {/* The board's closing row: a kraft-underlined address field and a pill beside it. */}
-      <div className="flex flex-col items-end gap-4 sm:flex-row">
+      {/* The board's closing row: the address field and an outlined button beside it (design language v3). */}
+      <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-end">
         <Field label={t("email")} className="min-w-0 flex-1">
           <Input
             type="email"
             autoComplete="email"
             placeholder={t("placeholder")}
-            className="focus-visible:border-primary h-12 rounded-none border-0 border-b-[1.5px] border-[var(--kraft-3)] bg-transparent px-0.5 text-lg shadow-none focus-visible:ring-0"
             value={email}
             onChange={(event) => setEmail(event.target.value.trim())}
           />
         </Field>
-        <Button type="submit" size="lg" shape="pill" loading={state === "busy"} disabled={!valid || !consent}>
+        <Button type="submit" variant="secondary" loading={state === "busy"} disabled={!valid || !consent}>
           {t("subscribe")}
         </Button>
       </div>

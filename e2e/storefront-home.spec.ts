@@ -2,13 +2,14 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
-import { acceptCookies } from "./helpers/customer";
+import { acceptCookies, signInAsCustomer } from "./helpers/customer";
 import { gotoHydrated } from "./helpers/session";
 
 /**
- * U-F3 / U-F4 against the mock API: the home page's eight sections and its quick start into a
- * prefilled configurator, the header's product menu into the catalogue's type filter, the
- * catalogue's chips and list view, the newsletter's consent, and the footer's company line.
+ * Phase 4 (V4 "Main" board) against the mock API: the home page's sections in order, the hero's
+ * Studio panel priced exactly as the configurator prices the same choices, the newsletter's
+ * consent, the header's five links, the tablet menu, no horizontal scroll at four widths, and a
+ * session that survives leaving the studio (B4).
  */
 
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -25,60 +26,103 @@ test.beforeEach(async ({ page }) => {
   await acceptCookies(page);
 });
 
-test("the home page: sections in order, the quick start lands in a priced configurator", async ({ page }) => {
+test("the home page: the v10 sections in the board's order, and no stories without three approved", async ({
+  page,
+}) => {
   await gotoHydrated(page, HOSTS.customer);
   const main = page.getByRole("main");
-  await expect(main.getByRole("heading", { level: 1 })).toBeVisible();
-  // The "Main" board's sections (round 2, Phase 3): how it works, the categories, why Packio, voices, newsletter.
-  for (const heading of [/^จากไอเดีย/, "บรรจุภัณฑ์ที่สั่งผลิตได้", /^เราไม่ได้แค่พิมพ์กล่อง/, "ผลงานและเสียงจากลูกค้า", /^รับบทความ/])
-    await expect(main.getByRole("heading", { level: 2, name: heading })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 1, name: /กล่องที่ลูกค้าจำได้/ })).toBeVisible();
+  const headings = [
+    "ไม่ต้องเริ่มจากศูนย์",
+    /^กล่องใบเดียวกัน/,
+    /^สิ่งที่โปรแกรมทั่วไปไม่บอกคุณ/,
+    /^เราไม่ได้มีโรงงานเดียว/,
+    "สิ่งที่เราผลิต",
+    /^ติดอยู่ตรงไหนในสตูดิโอ/,
+  ];
+  const tops: number[] = [];
+  for (const name of headings) {
+    const heading = main.getByRole("heading", { level: 2, name });
+    await expect(heading).toBeVisible();
+    tops.push((await heading.boundingBox())!.y);
+  }
+  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+  // The mock's CMS has no approved customer stories: the section is left out, not a placeholder.
+  await expect(main.getByRole("heading", { name: "แบรนด์เล็กที่อยากดูเป็นแบรนด์ใหญ่" })).toHaveCount(0);
   await expect(page.getByRole("contentinfo")).toContainText(/เลขประจำตัวผู้เสียภาษี/);
   await expectNoViolations(page);
+});
 
-  const quick = page.getByRole("form", { name: "ดูราคาเร็ว" });
-  await quick.getByRole("textbox", { name: "ยาว" }).fill("20");
-  await quick.getByRole("textbox", { name: "กว้าง" }).fill("15");
-  await quick.getByRole("textbox", { name: "สูง" }).fill("8");
-  await quick.getByRole("textbox", { name: "จำนวน (ชิ้น)" }).fill("500");
-  await quick.getByRole("button", { name: "ดูราคา" }).click();
-  await expect(page).toHaveURL(/\/configure\/[^?]+\?.*qty=500/);
-  await expect(page).toHaveURL(/l=200&w=150&d=80/);
+test("the hero's Studio panel prices exactly what the configurator prices for the same choices", async ({ page }) => {
+  await gotoHydrated(page, HOSTS.customer);
+  const panel = page.getByRole("region", { name: "สตูดิโอ · แบบร่างใหม่" });
+  // Every chip is the catalogue's: the shapes are products priced online, the rest their configurator's.
+  await panel.getByRole("group", { name: "ทรงกล่อง" }).getByRole("button", { name: "กล่องฝาเสียบ" }).click();
+  await panel.getByRole("group", { name: "ขนาด (ซม.)" }).getByRole("button", { name: "15 × 15 × 7" }).click();
+  await panel.getByRole("group", { name: "จำนวน" }).getByRole("button", { name: "1,000" }).click();
+  await expect(panel.getByRole("button", { name: "1,000" })).toHaveAttribute("aria-pressed", "true");
+  await expect(panel.getByText("ราคาต่อชิ้น · 1,000 ชิ้น · รวม VAT")).toBeVisible();
+  // The price has settled for these choices (the panel marks an update in flight as busy).
+  await expect(panel.locator("[aria-busy]")).toHaveCount(0);
+  const unit = (
+    await panel
+      .getByText(/^฿[\d,]+\.\d{2}/)
+      .first()
+      .innerText()
+  ).match(/฿[\d,]+\.\d{2}/)![0];
+
+  await panel.getByRole("link", { name: "ดูรายละเอียดราคาและปรับสเปกเพิ่ม" }).click();
+  await expect(page).toHaveURL(/\/configure\/tuck-end-box\?.*size=M.*qty=1000/);
   const dock = page.getByRole("complementary", { name: "ราคาของคุณ" });
-  await expect(dock).toContainText("500 ชิ้น");
+  await expect(dock).toContainText("1,000 ชิ้น");
+  await expect(dock).toContainText(`${unit} / ชิ้น`);
+});
+
+test("the panel's shapes and quantities are the catalogue's, not fixed in the page", async ({ page }) => {
+  await gotoHydrated(page, HOSTS.customer);
+  const panel = page.getByRole("region", { name: "สตูดิโอ · แบบร่างใหม่" });
+  await expect(panel.getByRole("group", { name: "ทรงกล่อง" }).getByRole("button")).toHaveText([
+    "กล่องฝาเสียบ",
+    "กล่องไปรษณีย์",
+    "กล่องลูกฟูกฝาชน",
+  ]);
+  // The mock configurators' presets (500 … 10,000), the first four.
+  await expect(panel.getByRole("group", { name: "จำนวน" }).getByRole("button")).toHaveText([
+    "500",
+    "1,000",
+    "2,000",
+    "3,000",
+  ]);
 });
 
 test("the newsletter asks for consent before it signs anyone up", async ({ page }) => {
   await gotoHydrated(page, HOSTS.customer);
-  const form = page.getByRole("form", { name: "รับข่าวสารจาก Packio" });
+  const form = page.getByRole("form", { name: "คู่มือเตรียมไฟล์และเรื่องกระดาษ" });
   await form.getByRole("textbox", { name: "อีเมล" }).fill("buyer@example.com");
-  const subscribe = form.getByRole("button", { name: "สมัครรับข่าวสาร" });
+  const subscribe = form.getByRole("button", { name: "สมัคร" });
   await expect(subscribe).toBeDisabled();
   await form.getByRole("checkbox").check();
   await subscribe.click();
   await expect(page.getByText("สมัครแล้ว ขอบคุณที่ติดตาม")).toBeVisible();
 });
 
-test("the product menu leads to the catalogue filtered by type, with chips and a list view", async ({ page }) => {
+test("the header's five links, in the board's order, lead to the studio, templates, products, business and contact", async ({
+  page,
+}) => {
   await gotoHydrated(page, HOSTS.customer);
-  const banner = page.getByRole("banner");
-  await banner.getByRole("button", { name: "สินค้าและบริการ" }).click();
-  const typeLink = banner.locator('a[href*="productType="]').first();
-  const typeName = (await typeLink.innerText()).split("\n")[0]!.trim();
-  await typeLink.click();
-  await expect(page).toHaveURL(/\/products\?productType=/);
-
-  const chips = page.getByRole("list", { name: "ตัวกรองที่ใช้" });
-  await expect(chips).toContainText(typeName);
-  await expect(page.getByRole("main").getByText(/^\d+ รายการ$/)).toBeVisible();
-
-  await page.getByRole("navigation", { name: "มุมมอง" }).getByRole("link", { name: "รายการ" }).click();
-  await expect(page).toHaveURL(/view=list/);
-  await expect(page).toHaveURL(/productType=/);
-  await expectNoViolations(page);
-
-  await page.getByRole("link", { name: "ล้างทั้งหมด" }).click();
-  await expect(page).not.toHaveURL(/productType=/);
-  await expect(page.getByRole("list", { name: "ตัวกรองที่ใช้" })).toHaveCount(0);
+  const nav = page.getByRole("banner").getByRole("navigation", { name: "เมนูหลัก" });
+  await expect(nav.getByRole("link")).toHaveText([
+    "สตูดิโอออกแบบ",
+    "แบบกล่อง",
+    "สินค้าและราคา",
+    "สำหรับธุรกิจ",
+    "ติดต่อ",
+  ]);
+  await page.getByRole("banner").getByRole("link", { name: "เริ่มออกแบบฟรี" }).click();
+  await expect(page).toHaveURL(/\/studio$/);
+  await expect(page.getByRole("heading", { level: 1, name: "วันนี้อยากเริ่มจากอะไร" })).toBeVisible();
+  await page.getByRole("banner").getByRole("link", { name: "แบบกล่อง" }).click();
+  await expect(page).toHaveURL(/\/styles$/);
 });
 
 test("a product page states its MOQ and where tolerances are explained", async ({ page }) => {
@@ -93,14 +137,39 @@ test("a product page states its MOQ and where tolerances are explained", async (
   await expect(page.getByRole("link", { name: "ดูเกณฑ์ในการรับประกัน" })).toBeVisible();
 });
 
-test("on a tablet the header fits and the menu sheet carries every page", async ({ page }) => {
+test("on a tablet the header fits and the menu sheet carries the same five links", async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 900 });
   await gotoHydrated(page, HOSTS.customer);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(768);
   await page.getByRole("banner").getByRole("button", { name: "เมนู" }).click();
   const sheet = page.getByRole("dialog", { name: "เมนู" });
-  await expect(sheet.getByRole("link", { name: "ราคาและตัวอย่าง" })).toBeVisible();
+  for (const name of ["สตูดิโอออกแบบ", "แบบกล่อง", "สินค้าและราคา", "สำหรับธุรกิจ"])
+    await expect(sheet.getByRole("link", { name, exact: true })).toBeVisible();
   await sheet.getByRole("link", { name: "ติดต่อ" }).click();
   await expect(page).toHaveURL(/\/contact$/);
   await expect(sheet).toBeHidden();
+});
+
+for (const path of ["/", "/studio"]) {
+  test(`${path} has no horizontal scroll at 390, 768, 1054 and 1440`, async ({ page }) => {
+    for (const width of [390, 768, 1054, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoHydrated(page, `${HOSTS.customer}${path}`);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+        `${path} at ${width}`,
+      ).toBeLessThanOrEqual(width);
+    }
+  });
+}
+
+test("leaving the studio keeps the customer signed in (B4)", async ({ page }) => {
+  await signInAsCustomer(page, "/studio");
+  await expect(page.getByRole("heading", { level: 1, name: "วันนี้อยากเริ่มจากอะไร" })).toBeVisible();
+  await page.getByRole("link", { name: /เลือกแบบกล่องแล้วออกแบบ/ }).click();
+  await expect(page).toHaveURL(/\/styles/);
+  await gotoHydrated(page, `${HOSTS.customer}/studio/new?style=tuck-end&l=70&w=40&h=150&step=design`);
+  await gotoHydrated(page, HOSTS.customer);
+  await expect(page.getByRole("banner").getByRole("button", { name: "บัญชีของฉัน" })).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("link", { name: "เข้าสู่ระบบ" })).toHaveCount(0);
 });

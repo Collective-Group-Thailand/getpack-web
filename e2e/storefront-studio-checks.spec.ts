@@ -72,6 +72,6 @@ test("a finding fixed in one click, a warning accepted with the version, and the
 
   // The soft proof: the substrate's preview transform, labelled as a preview.
   await page.getByRole("switch", { name: "ดูแบบพิมพ์จริง" }).click();
-  await expect(page.getByText(/ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา/)).toBeVisible();
+  await expect(page.getByText(/ภาพจำลองบนหน้าจอ ไม่ใช่แบบตัวอย่างที่ใช้ยืนยันงานพิมพ์/)).toBeVisible();
   await expectNoViolations(page);
 });

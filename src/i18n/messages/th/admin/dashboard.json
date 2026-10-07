@@ -35,9 +35,9 @@
     "prepress": {
       "queue": "งานก่อนพิมพ์",
       "design_rounds": "งานออกแบบ",
-      "changes_requested": "ลูกค้าขอแก้ปรู๊ฟ",
+      "changes_requested": "ลูกค้าขอแก้ Proof",
       "submissions": "ไฟล์รอตรวจ (preflight)",
-      "proofs_waiting": "ปรู๊ฟอยู่กับลูกค้า"
+      "proofs_waiting": "Proof อยู่กับลูกค้า"
     },
     "production": {
       "at_risk": "งานผลิตเสี่ยงล่าช้า",

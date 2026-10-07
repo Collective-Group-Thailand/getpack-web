@@ -47,7 +47,15 @@ business dates.
 `docs/PROGRESS.md`). Use the wrappers in `navigation.ts` rather than `next/link` inside the
 customer zone so `/en` survives a navigation.
 
-## Not here yet
+## Glossary
 
-The packaging glossary (Thai ↔ English), so apps and emails share one vocabulary, and the
-ESLint rule that blocks hard-coded UI strings — both F1.
+The packaging vocabulary (Thai ↔ English) is `docs/ui/glossary.md`; messages follow it. One rule
+CI enforces (`src/ui/design-language.test.ts`), from Phase 4 §4.5:
+
+| Where                                          | Word                                                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Customer copy — the step                       | ตรวจแบบก่อนพิมพ์                                                                                 |
+| Customer copy — the file                       | แบบตัวอย่าง ("ส่งแบบตัวอย่างให้ดู", "อนุมัติแบบตัวอย่าง v2", "ไฟล์และแบบตัวอย่าง")               |
+| Statuses, back office, factory app, page names | Proof, in English with a space either side ("รอ Proof", "Proof อนุมัติแล้ว", "ไฟล์งานและ Proof") |
+
+The Thai transliteration of "proof", ตัวอย่างงานพิมพ์ and พิสูจน์อักษร are never used.

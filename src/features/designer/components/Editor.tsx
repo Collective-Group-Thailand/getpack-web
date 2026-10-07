@@ -73,6 +73,7 @@ import { FocusChip } from "./shell/FocusChip";
 import { RAIL, RailPanel, SelectionPanel, type RailId } from "./shell/panels";
 import { shortcutList, useEditorShortcuts } from "./shell/shortcuts";
 import { StatusBar } from "./shell/StatusBar";
+import { proofTerms } from "@/i18n/terms";
 
 const DesignCanvas = dynamic(() => import("./DesignCanvas"), { ssr: false });
 const Presentation = dynamic(() => import("./Presentation"), { ssr: false });
@@ -966,15 +967,11 @@ export default function Editor({
                 <div
                   ref={wrapRef}
                   className={cn(
-                    "relative min-w-0 flex-1 overflow-hidden",
+                    "pk-dot-grid relative min-w-0 flex-1 overflow-hidden",
                     // In 3D only the flat canvas stays mounted (it draws the 3D's artwork), out of sight.
                     view === "3d" && "pointer-events-none invisible absolute inset-0",
                   )}
                   aria-hidden={view === "3d" || undefined}
-                  style={{
-                    backgroundImage: "radial-gradient(var(--color-canvas-grid) 1px, transparent 1px)",
-                    backgroundSize: "18px 18px",
-                  }}
                 >
                   {dieline && paperColour && size.width > 0 ? (
                     <DesignCanvas
@@ -1050,7 +1047,10 @@ export default function Editor({
                   ) : null}
                   {softProof && proofProfile ? (
                     <span className="text-muted text-xs" role="status">
-                      {locale === "en" ? rulesQuery.data!.softProof.label.en : rulesQuery.data!.softProof.label.th}
+                      {proofTerms(
+                        locale === "en" ? rulesQuery.data!.softProof.label.en : rulesQuery.data!.softProof.label.th,
+                        "customer",
+                      )}
                       {proofProfile.label ? ` · ${proofProfile.label}` : null}
                     </span>
                   ) : null}

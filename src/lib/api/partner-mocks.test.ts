@@ -568,14 +568,14 @@ describe("the factory's money and account (F001, F5 5.3)", () => {
     const answered = (
       await owner.POST("/v1/partner/claims/{claimId}/actions/respond", {
         params: { path: { claimId: waiting.id }, header: key("cr1") },
-        body: { response: "disputed", note: "ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ" },
+        body: { response: "disputed", note: "ผลิตตาม Proof ที่ลูกค้าอนุมัติ" },
       })
     ).data!;
     expect(answered).toMatchObject({ factoryResponse: "disputed", status: "under_review", nextActions: [] });
     const desk = (
       await staff("cs_lead").GET("/v1/admin/claims/{claimId}", { params: { path: { claimId: waiting.id } } })
     ).data!;
-    expect(desk.factoryResponseNote).toBe("ผลิตตามปรู๊ฟที่ลูกค้าอนุมัติ");
+    expect(desk.factoryResponseNote).toBe("ผลิตตาม Proof ที่ลูกค้าอนุมัติ");
 
     await expect(
       partner("operator").GET("/v1/partner/factories/{factoryId}/users", { params: { path } }),

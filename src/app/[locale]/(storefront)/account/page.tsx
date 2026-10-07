@@ -90,7 +90,7 @@ export default async function Page() {
       {forMe.length > 0 ? (
         <Link
           href="/business/approvals"
-          className="border-warning/40 bg-warning-subtle hover:border-warning flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-card)] border p-5"
+          className="border-warning/40 bg-warning-subtle hover:border-warning flex flex-wrap items-center justify-between gap-3 rounded-card border p-5"
         >
           <span>
             <span className="block text-lg font-semibold">{t("approvalsForYou", { count: forMe.length })}</span>
@@ -109,7 +109,7 @@ export default async function Page() {
         {todo.length === 0 && forMe.length === 0 ? (
           <p className="text-muted mt-2 text-sm">{t("nothingToDo")}</p>
         ) : (
-          <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-[var(--radius-card)] border">
+          <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-card border">
             {todo.map(({ order, group, actions }) => (
               <li key={order.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5">
                 <ProductThumb
@@ -148,7 +148,7 @@ export default async function Page() {
           <h2 id="account-documents" className="text-lg font-semibold">
             {t("documents")}
           </h2>
-          <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-[var(--radius-card)] border">
+          <ul className="border-border bg-surface divide-border mt-3 divide-y rounded-card border">
             {documents.map((doc) => (
               <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
                 <div className="min-w-0">
@@ -170,7 +170,7 @@ export default async function Page() {
 
       <section
         aria-labelledby="account-points"
-        className="border-border bg-surface rounded-[var(--radius-card)] border p-5"
+        className="border-border bg-surface rounded-card border p-5"
       >
         <h2 id="account-points" className="font-semibold">
           {tNav("points")}

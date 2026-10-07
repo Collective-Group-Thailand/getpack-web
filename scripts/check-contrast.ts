@@ -72,6 +72,10 @@ export const PAIRS: Pair[] = [
   { fg: "info-subtle-fg", bg: "info-subtle", min: 4.5, why: "info badge / callout" },
   { fg: "neutral-subtle-fg", bg: "neutral-subtle", min: 4.5, why: "neutral badge / callout" },
   { fg: "fg", bg: "canvas", min: 4.5, why: "designer chrome text over the work area" },
+  // Design language v3: the sage band carries white text; a sage-subtle well carries ink.
+  { fg: "fg-inverse", bg: "sage", min: 4.5, why: "text on the sage band" },
+  { fg: "fg", bg: "sage-subtle", min: 4.5, why: "text on a sage well" },
+  { fg: "muted", bg: "sage-subtle", min: 4.5, why: "secondary text on a sage well" },
 ];
 
 /**

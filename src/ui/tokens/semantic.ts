@@ -45,6 +45,12 @@ interface BaseSlots {
    */
   kraft: Oklch;
   "kraft-strong": Oklch;
+  /**
+   * Sage (design language v3): the quiet green of a full-width band and of a template card's
+   * picture well. `sage` carries white text; `sage-subtle` carries ink.
+   */
+  sage: Oklch;
+  "sage-subtle": Oklch;
 }
 
 /**
@@ -101,7 +107,9 @@ const light = build(
     muted: L["ink-600"],
     // One notch darker than ramp step 500: on the warm paper page that step gives 2.97:1,
     // just under the 3:1 placeholders need.
-    subtle: { ...P.neutral[500], l: 0.64 },
+    // v3's ink-3 (#948D83) gives 2.97:1 on the paper page, a hair under the 3:1 placeholders need,
+    // so it goes one notch darker. Captions are text, not decoration: they use `muted` (AA).
+    subtle: { ...L["ink-300"], l: L["ink-300"].l - 0.008 },
     "fg-inverse": WHITE,
     "primary-hover": L["primary-700"],
     "danger-hover": P.red[800],
@@ -110,6 +118,8 @@ const light = build(
     "canvas-grid": P.neutral[300],
     kraft: L["kraft-200"],
     "kraft-strong": L["kraft-400"],
+    sage: L.sage,
+    "sage-subtle": L["sage-50"],
   },
   {
     primary: { base: L["primary-600"], fg: WHITE, subtle: L["primary-50"], subtleFg: L["primary-700"] },
@@ -152,6 +162,8 @@ const dark = build(
     "canvas-grid": P.neutral[800],
     kraft: D["kraft-200"],
     "kraft-strong": D["kraft-400"],
+    sage: D.sage,
+    "sage-subtle": D["sage-50"],
   },
   {
     primary: { base: D["primary-600"], fg: D["paper-50"], subtle: D["primary-50"], subtleFg: P.brand[300] },
@@ -190,6 +202,8 @@ const hc = build(
     "canvas-grid": P.neutral[500],
     kraft: L["kraft-200"],
     "kraft-strong": L["kraft-400"],
+    sage: { ...L.sage, l: 0.36 },
+    "sage-subtle": WHITE,
   },
   {
     primary: { base: P.brand[900], fg: WHITE, subtle: P.brand[50], subtleFg: P.brand[950] },

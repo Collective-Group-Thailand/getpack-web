@@ -186,7 +186,7 @@ export function ProductionBoard() {
                             ) : null}
                             {total > 0 ? (
                               <div
-                                className="bg-border h-1 overflow-hidden rounded-full"
+                                className="bg-border h-1 overflow-hidden rounded-control"
                                 role="progressbar"
                                 aria-label={t("progress")}
                                 aria-valuemin={0}
@@ -194,7 +194,7 @@ export function ProductionBoard() {
                                 aria-valuenow={done}
                               >
                                 <div
-                                  className={cn("h-full rounded-full", job.atRisk ? "bg-danger" : "bg-primary")}
+                                  className={cn("h-full rounded-control", job.atRisk ? "bg-danger" : "bg-primary")}
                                   style={{ width: `${(done / total) * 100}%` }}
                                 />
                               </div>

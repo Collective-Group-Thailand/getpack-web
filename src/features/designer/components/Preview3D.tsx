@@ -566,8 +566,8 @@ export default function Preview3D({
                 className={
                   "shrink-0 whitespace-nowrap " +
                   (focusedFaceId === r.id
-                    ? "bg-primary-subtle text-primary-subtle-fg focus-visible:ring-focus-ring rounded-full px-2 py-0.5 text-xs outline-none focus-visible:ring-2"
-                    : "hover:bg-surface-subtle focus-visible:ring-focus-ring rounded-full px-2 py-0.5 text-xs outline-none focus-visible:ring-2")
+                    ? "bg-primary-subtle text-primary-subtle-fg focus-visible:ring-focus-ring rounded-control px-2 py-0.5 text-xs outline-none focus-visible:ring-2"
+                    : "hover:bg-surface-subtle focus-visible:ring-focus-ring rounded-control px-2 py-0.5 text-xs outline-none focus-visible:ring-2")
                 }
               >
                 {faceLabels[r.id]}

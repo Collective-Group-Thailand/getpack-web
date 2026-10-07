@@ -62,7 +62,7 @@ export default async function JobsPage({ searchParams }: Props) {
                 href={href(key)}
                 aria-current={key === view ? "page" : undefined}
                 className={cn(
-                  "border-border inline-flex min-h-12 items-center rounded-full border px-4 font-medium",
+                  "border-border inline-flex min-h-12 items-center rounded-control border px-4 font-medium",
                   key === view ? "bg-primary text-primary-fg border-primary" : "bg-surface hover:bg-surface-subtle",
                 )}
               >
