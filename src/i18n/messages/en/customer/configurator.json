@@ -602,6 +602,5 @@
     "shareDraft": "Share the configuration",
     "draftKept": "Draft kept until {date}",
     "draftHint": "Drafts are kept 90 days after the last change; a shared link works for 15 days"
-  },
-  "eyebrow": "Configure · price as you go"
+  }
 }

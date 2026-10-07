@@ -3,6 +3,7 @@ import nextTypescript from "eslint-config-next/typescript";
 import prettier from "eslint-config-prettier";
 
 import noMoneyArithmetic from "./eslint-rules/no-money-arithmetic.mjs";
+import noStockPhotos from "./eslint-rules/no-stock-photos.mjs";
 
 /**
  * A zone may not import another zone's features (00-master-plan.md §3). One app serves
@@ -248,6 +249,13 @@ const eslintConfig = [
     ignores: ["**/*.test.{ts,tsx}", "**/*.stories.tsx"],
     plugins: { packio: { rules: { "no-money-arithmetic": noMoneyArithmetic } } },
     rules: { "packio/no-money-arithmetic": "error" },
+  },
+
+  {
+    // Photos come from the CMS, never a stock library (Phase 4 §4.6) — in every zone and in the mocks.
+    files: ["src/**/*.{ts,tsx}", "mocks/**/*.ts"],
+    plugins: { "packio-photos": { rules: { "no-stock-photos": noStockPhotos } } },
+    rules: { "packio-photos/no-stock-photos": "error" },
   },
 
   zoneBoundary("customer", ["admin", "partner"]),

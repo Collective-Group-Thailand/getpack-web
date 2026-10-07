@@ -26,7 +26,7 @@ export interface AuthSplitLayoutProps {
  * in a 440 px column on the right. Below `md` the panel steps aside and the form has the screen.
  *
  * The panel is decoration plus three honest sentences; the form is the page's `<main>`. One solid
- * hue, nothing over it (design language v3: no gradient, no grain, no label over the headline).
+ * hue, nothing over it (design language v3: no gradient, no texture, no label over the headline).
  */
 export function AuthSplitLayout({
   tone,

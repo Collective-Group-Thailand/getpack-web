@@ -223,7 +223,6 @@
     "codeHint": "e.g. trk… from the carton label",
     "invalid": "That code doesn't look right — please check it",
     "submit": "Track",
-    "eyebrow": "Order tracking",
     "what": "{product}, {quantity} {unit}",
     "eta": "Expected by {date}",
     "stages": "Progress",

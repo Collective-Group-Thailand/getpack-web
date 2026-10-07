@@ -223,7 +223,6 @@
     "codeHint": "เช่น trk… จากป้ายกล่อง",
     "invalid": "รหัสนี้ไม่ถูกต้อง ตรวจสอบอีกครั้ง",
     "submit": "ติดตาม",
-    "eyebrow": "Order tracking",
     "what": "{product} {quantity} {unit}",
     "eta": "คาดว่าจะส่งถึงภายใน {date}",
     "stages": "ความคืบหน้า",
