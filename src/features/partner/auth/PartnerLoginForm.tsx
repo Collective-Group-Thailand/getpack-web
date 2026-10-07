@@ -9,6 +9,7 @@ import { RequestIdNote } from "@/features/shared/auth/RequestIdNote";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
+import { IconButton } from "@/ui/components/IconButton";
 import { Input } from "@/ui/components/Input";
 
 import { signInPartner, type PartnerLoginState } from "./actions";
@@ -26,6 +27,8 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
   // React resets a form after its action; the email is kept (controlled) so a mistyped password
   // costs only the password, and the cursor goes back to it (round 2, B10).
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
   const password = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (state.errorKey && email) password.current?.focus();
@@ -60,8 +63,41 @@ export function PartnerLoginForm({ returnTo }: { returnTo: string }) {
         password. The action checks that one of the two was filled.
       */}
       <Field label={t("partner.password")}>
-        <Input ref={password} name="password" type="password" autoComplete="current-password" inputSize="lg" />
+        <div className="relative">
+          <Input
+            ref={password}
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            inputSize="lg"
+            className="pe-14"
+          />
+          <IconButton
+            name="eye"
+            variant="ghost"
+            label={showPassword ? t("partner.hidePassword") : t("partner.showPassword")}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword((shown) => !shown)}
+            className="absolute end-1.5 top-1/2 -translate-y-1/2"
+          />
+        </div>
       </Field>
+      <div className="-mt-2 flex justify-end">
+        <button
+          type="button"
+          className="text-primary min-h-11 text-sm font-medium underline-offset-4 hover:underline"
+          aria-expanded={forgotOpen}
+          onClick={() => setForgotOpen((open) => !open)}
+        >
+          {t("partner.forgot")}
+        </button>
+      </div>
+      {forgotOpen ? (
+        // No self-service reset (as for staff): say who sets a new one.
+        <p className="bg-surface-subtle text-muted rounded-control -mt-2 px-4 py-3 text-sm">
+          {t("partner.forgotBody")}
+        </p>
+      ) : null}
 
       <Field label={t("partner.devicePin")} hint={t("partner.devicePinHint")}>
         <Input name="pin" type="password" inputMode="numeric" autoComplete="off" inputSize="lg" />
