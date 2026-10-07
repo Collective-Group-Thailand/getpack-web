@@ -43,7 +43,7 @@ export function StepBar({
                 aria-describedby={locked ? `studio-step-${id}-locked` : undefined}
                 className={cn(
                   // No colour transition: axe (and a reader) must never meet a half-faded pair.
-                  "focus-visible:ring-focus-ring flex items-center gap-1.5 rounded-control px-3 py-1 text-sm outline-none focus-visible:ring-2",
+                  "focus-visible:ring-focus-ring rounded-control flex items-center gap-1.5 px-3 py-1 text-sm outline-none focus-visible:ring-2",
                   "disabled:cursor-not-allowed",
                   id === step
                     ? "bg-primary-subtle text-primary-subtle-fg font-semibold"

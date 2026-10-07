@@ -337,3 +337,24 @@ Plain production build, private port (`LHCI_PORT=3210`), sets `customer-app` and
 The configurator's +138 B is the dock's "ขอตัวอย่างก่อนสั่งผลิต" button and the loader of the sample
 request, which itself loads only when pressed (T5). The style page's return-to-the-open-form after
 signing in (T12) fits inside the marketing budget.
+
+## UX round 2 Phase 4 — homepage v10, Studio-first (2026-10-07)
+
+Plain production build, private port, set `customer-marketing` (now with `/studio`). `main` built
+the same way already failed this budget on every page — the rounds after U5.8 added script to the
+shared shell without a ratchet:
+
+| Page | `main` | Phase 4 | |
+|---|---|---|---|
+| `/` | 282,018 | 290,816 | the hero's Studio panel |
+| `/studio` | — | 277,298 | new page |
+| `/products/tuck-end-box` | 282,766 | 282,995 | header and footer |
+| `/products` | 278,685 | 278,853 | header and footer |
+| `/styles`, a style page | 281,032 / 281,403 | 281,200 / 281,572 | header and footer |
+| `/faq`, an article | 276,043 | 276,211 | header and footer |
+
+Ratchet: customer-marketing 273,800 → **291,000**. The panel's +8.8 KB is the configurator's own
+state and body builder (`seedFromDesign`, `initialState`, `buildCalculateBody`) — reused on
+purpose, so the hero's price is the configurator's by construction (Phase 4 §4.3). The header and
+footer add ≈ 170 B per page (avatar and name, the account menu's notifications entry). The ≈ 8 KB
+`main` had already gained on every page is recorded here, not found: it predates Phase 4.
