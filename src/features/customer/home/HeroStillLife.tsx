@@ -207,9 +207,7 @@ export function HeroStillLife() {
             fill="#0a5f50"
           >
             mali
-            <tspan fontStyle="italic" fontWeight="500">
-              glow
-            </tspan>
+            <tspan fontWeight="500">glow</tspan>
           </text>
           <text
             x="22"

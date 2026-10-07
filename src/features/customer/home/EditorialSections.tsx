@@ -76,10 +76,7 @@ export async function HowItWorks() {
               key={step}
               className="border-border grid items-start gap-3 border-t py-7 sm:grid-cols-[90px_1fr_1.1fr] sm:gap-7"
             >
-              <span
-                aria-hidden="true"
-                className="serif text-[44px] leading-none font-medium text-[var(--kraft-ink)] italic"
-              >
+              <span aria-hidden="true" className="serif text-[44px] leading-none text-[var(--kraft-ink)]">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <h3 className="serif text-[1.5rem] leading-tight">{t(`${step}.title`)}</h3>
