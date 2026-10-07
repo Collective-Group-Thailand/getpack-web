@@ -18,7 +18,7 @@ export interface HeroFacts {
 }
 
 /**
- * Home §1 to the "Main" board (design language v2): the eyebrow, the serif title with its italic
+ * Home §1 to the "Main" board (design language v2): the eyebrow, the display title with its coloured
  * accent, two pill buttons, three figures over a hairline, the still life on the right — or the
  * admin's `home_hero` banner when there is one — and the quick quote as a paper slip under it.
  * Every figure is the API's (D-181); the third, "every job proofed before production", is how
@@ -92,7 +92,7 @@ export async function HomeHero({
                 <small className="text-muted">{t("note.body")}</small>
               </span>
             </div>
-            <p className="serif absolute start-0 top-[4%] -rotate-6 text-[15px] font-medium text-[var(--kraft-ink)] italic">
+            <p className="serif absolute start-0 top-[4%] -rotate-6 text-[15px] font-medium text-[var(--kraft-ink)]">
               {t("note.hand")}
             </p>
           </div>

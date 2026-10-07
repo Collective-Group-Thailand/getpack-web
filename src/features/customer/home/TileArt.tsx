@@ -73,10 +73,10 @@ export function FoldingTileArt() {
       <circle cx="116.5" cy="98.5" r="1.3" fill="rgba(70,45,20,.35)"></circle>
       <g transform="translate(58.0,200.0) skewY(30)">
         <rect x="0" y="-130" width="52" height="130" fill="#0d7a66"></rect>
-        <text x="8" y="-74" fontFamily="Trirong,serif" fontWeight="600" fontSize="13" fill="#fff">
+        <text x="8" y="-74" style={{ fontFamily: "var(--font-display)" }} fontWeight="600" fontSize="13" fill="#fff">
           mali
         </text>
-        <text x="8" y="-58" fontFamily="Trirong,serif" fontStyle="italic" fontSize="13" fill="#fff">
+        <text x="8" y="-58" style={{ fontFamily: "var(--font-display)" }} fontSize="13" fill="#fff">
           glow
         </text>
       </g>
@@ -316,7 +316,15 @@ export function LabelTileArt() {
       <ellipse cx="160" cy="90" rx="26" ry="9" fill="#e7d8c0"></ellipse>
       <g transform="translate(160,120)">
         <rect x="-40" y="0" width="80" height="34" rx="4" fill="#0d7a66"></rect>
-        <text x="0" y="22" textAnchor="middle" fontFamily="Trirong,serif" fontWeight="600" fontSize="14" fill="#fff">
+        <text
+          x="0"
+          y="22"
+          textAnchor="middle"
+          style={{ fontFamily: "var(--font-display)" }}
+          fontWeight="600"
+          fontSize="14"
+          fill="#fff"
+        >
           ฉลาก
         </text>
       </g>
