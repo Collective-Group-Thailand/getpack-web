@@ -98,9 +98,9 @@ describe("Button", () => {
   });
 
   it("lets a caller override a conflicting utility", () => {
-    render(<Button className="rounded-full">บันทึก</Button>);
+    render(<Button className="rounded-none">บันทึก</Button>);
     const className = screen.getByRole("button").className;
-    expect(className).toContain("rounded-full");
+    expect(className).toContain("rounded-none");
     expect(className).not.toContain("rounded-md");
   });
 });

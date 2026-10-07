@@ -468,7 +468,7 @@ function refresh(detail: Detail): Detail {
         ? [
             {
               key: "submission.accept",
-              disabledReason: blocking ? "มีจุดที่ต้องแก้ก่อนทำปรู๊ฟ (ขนาดไม่ตรงหรือไม่มีระยะตัดตก, D-070)" : null,
+              disabledReason: blocking ? "มีจุดที่ต้องแก้ก่อนทำ Proof (ขนาดไม่ตรงหรือไม่มีระยะตัดตก, D-070)" : null,
             },
             { key: "submission.reject" },
           ]
@@ -826,7 +826,7 @@ export function customerDecide(
   who: { id: string; displayName: string },
 ): Detail | Response {
   const current = detail.proofs.find((item) => item.id === proofId);
-  if (!current || current.status !== "pending_customer") return conflict("ปรู๊ฟฉบับนี้ไม่ได้รอการตรวจแล้ว");
+  if (!current || current.status !== "pending_customer") return conflict("Proof ฉบับนี้ไม่ได้รอการตรวจแล้ว");
   current.status = outcome;
   current.decidedAt = bangkokIso();
   current.decidedBy = who;

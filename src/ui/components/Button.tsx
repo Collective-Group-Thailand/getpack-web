@@ -15,7 +15,7 @@ import { useSlotChild } from "../lib/useSlotChild";
 export const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 rounded-control font-semibold whitespace-nowrap",
-    "transition-[color,background-color,border-color,box-shadow,translate] duration-fast ease-standard",
+    "transition-[color,background-color,border-color] duration-fast ease-standard",
     // Target size ≥ 24 px (WCAG 2.5.8); the partner zone raises this to 48 px with size="xl".
     "min-h-6",
     "disabled:pointer-events-none disabled:opacity-50",
@@ -25,14 +25,10 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // `rounded-cta`: a pill on the storefront, 12 px in the admin and partner zones (D-180).
-        // `shadow-cta`: a faint brand glow on the storefront, none elsewhere (UX audit baseline).
-        primary:
-          "rounded-cta bg-primary text-primary-fg shadow-cta hover:bg-primary-hover motion-safe:hover:-translate-y-px",
-        // On the storefront an ink outline on the CTA's pill (design language v2); elsewhere the
-        // control radius and the strong border, as before.
-        secondary:
-          "rounded-cta border border-[var(--cta-outline,var(--color-border-strong))] bg-surface text-fg hover:bg-surface-subtle",
+        // Design language v3: a 10 px control in every zone — no pill, no shadow, no hover lift.
+        primary: "bg-primary text-primary-fg hover:bg-primary-hover",
+        // An ink outline on the page's own colour.
+        secondary: "border border-fg bg-transparent text-fg hover:bg-fg/5",
         /*
          * Ghost inherits its colour instead of forcing `text-fg`, and tints its hover from
          * that same colour. On a normal surface it inherits the body colour; on an inverted
@@ -56,19 +52,14 @@ export const buttonVariants = cva(
         md: "h-10 px-4 text-[0.9375rem]",
         /** The navbar and a table's actions: 44 px. */
         nav: "h-11 px-5 text-[0.9375rem]",
-        /** A hero or a form's submit: 52 px. Labels are 15–15.5 px semibold (design language v2). */
+        /** A hero or a form's submit: 52 px. Labels are 15–15.5 px semibold. */
         lg: "h-13 px-6 text-[0.96875rem]",
         /** Shop-floor: 48 px+ targets and 18 px text (design-system.md §5). */
         xl: "h-14 px-8 text-lg",
       },
       block: { true: "w-full", false: "" },
-      /**
-       * `pill` rounds the button fully in any zone (design language v2 `Button shape="pill"`);
-       * by default it follows its zone — a pill CTA on the storefront, 12 px in the back office.
-       */
-      shape: { pill: "rounded-full", zone: "" },
     },
-    defaultVariants: { variant: "primary", size: "md", block: false, shape: "zone" },
+    defaultVariants: { variant: "primary", size: "md", block: false },
   },
 );
 
@@ -91,7 +82,6 @@ export function Button({
   variant,
   size,
   block,
-  shape,
   asChild = false,
   loading = false,
   disabled,
@@ -114,7 +104,7 @@ export function Button({
     <Component
       // A button inside a form defaults to `submit`, which is rarely what a toolbar wants.
       type={asChild ? undefined : (type ?? "button")}
-      className={cn(buttonVariants({ variant, size, block, shape }), className)}
+      className={cn(buttonVariants({ variant, size, block }), className)}
       disabled={asChild ? undefined : disabled || loading}
       aria-busy={loading || undefined}
       {...props}

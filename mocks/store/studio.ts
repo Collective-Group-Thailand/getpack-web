@@ -197,7 +197,7 @@ export const MOCK_STUDIO_RULES: Schemas["StudioRulesDto"] = {
   ),
   // Fake soft-proof profiles (the seed has none until Prepress supplies them, D-279).
   softProof: {
-    label: { th: "ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่ปรู๊ฟสัญญา", en: "Preview, not a contract proof" },
+    label: { th: "ภาพจำลองบนหน้าจอ ไม่ใช่แบบตัวอย่างที่ใช้ยืนยันงานพิมพ์", en: "Preview, not a contract proof" },
     profiles: [
       {
         materialClass: "paperboard",

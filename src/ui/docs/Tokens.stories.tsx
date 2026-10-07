@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { contrastRatio, oklchToHex } from "../tokens/color";
 import { ART, PALETTES, PRINT, STATUS, STEPS } from "../tokens/primitives";
-import { CUSTOMER_CTA_RADIUS, DURATION, EASING, FONT_SIZE, RADIUS, SHADOW } from "../tokens/scale";
+import { DURATION, EASING, FONT_SIZE, RADIUS, SHADOW } from "../tokens/scale";
 import { SEMANTIC_KEYS, THEME_NAMES, THEMES, type SemanticKey, type ThemeName } from "../tokens/semantic";
 
 /**
@@ -50,7 +50,10 @@ const ART_USE: Record<keyof (typeof ART)["light"], string> = {
   "kraft-400": "illustration accents — never text",
   border: "hairline borders",
   "ink-900": "primary text",
-  "ink-600": "secondary text",
+  "ink-600": "secondary text, captions",
+  "ink-300": "placeholders, disabled — never body text",
+  sage: "the sage band (white text)",
+  "sage-50": "sage wells, template picture wells",
   "primary-600": "actions, links, active nav",
   "primary-700": "hover / pressed",
   "primary-50": "tints, selected states",
@@ -63,7 +66,7 @@ export const ArtDirection: Story = {
     docs: {
       description: {
         story:
-          "The proposed Packio palette, verbatim from design-system.md §Art direction; replaced " +
+          "The Packio palette, design language v3 (Phase 4); replaced " +
           "wholesale when a brand kit arrives (tokens only). Dark primary-700 is shown as " +
           "proposed — it fails AA, so dark hover uses a lighter step (see PROGRESS).",
       },
@@ -161,7 +164,7 @@ export const Palette: Story = {
         <div className="flex flex-wrap gap-3">
           {Object.entries(PRINT).map(([name, colour]) => (
             <div key={name} className="flex items-center gap-2">
-              <span className="h-1 w-8 rounded-full" style={{ backgroundColor: oklchToHex(colour) }} />
+              <span className="h-1 w-8 rounded-control" style={{ backgroundColor: oklchToHex(colour) }} />
               <code className="text-xs">{name}</code>
             </div>
           ))}
@@ -270,9 +273,9 @@ export const Shape: Story = {
     docs: {
       description: {
         story:
-          "D-180: 12 px controls, 16 px cards and media, and a pill primary CTA on the storefront " +
-          `only (\`--radius-cta\` becomes ${CUSTOMER_CTA_RADIUS} under \`[data-zone="customer"]\`). ` +
-          "Two elevation levels. Hovers 150–200 ms ease-out, sheets 250 ms; reduced motion is honoured.",
+          "Design language v3: 10 px controls, 14 px cards, 16 px for the hero panel, 6 px thumbnails, " +
+          "circles for avatars — no pills, no button shadows. Hovers 150–200 ms ease-out, sheets 250 ms; " +
+          "reduced motion is honoured.",
       },
     },
   },

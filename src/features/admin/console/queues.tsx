@@ -80,7 +80,7 @@ export function QueueTabs({
             {summary ? (
               <span
                 className={cn(
-                  "rounded-full px-1.5 text-xs tabular-nums",
+                  "rounded-control px-1.5 text-xs tabular-nums",
                   summary.overdueCount > 0 ? "bg-danger-subtle text-danger-subtle-fg" : "bg-surface-subtle text-muted",
                 )}
               >

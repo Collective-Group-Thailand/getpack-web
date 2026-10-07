@@ -303,7 +303,7 @@
       "close": "ปิดเคลม"
     },
     "customer": "ลูกค้า",
-    "approvedProof": "ปรู๊ฟที่ลูกค้าอนุมัติ",
+    "approvedProof": "Proof ที่ลูกค้าอนุมัติ",
     "approvedProofBody": "ฉบับที่ {version}",
     "approvedFile": "ไฟล์ที่อนุมัติ",
     "channels": {

@@ -11,7 +11,7 @@ import { cn } from "@/ui/lib/cn";
 const ITEMS: { key: string; href: string; icon: IconName }[] = [
   { key: "home", href: "/", icon: "home" },
   { key: "products", href: "/products", icon: "box" },
-  { key: "design", href: "/studio/new", icon: "palette" },
+  { key: "design", href: "/studio", icon: "palette" },
   { key: "track", href: "/track", icon: "truck" },
   { key: "account", href: "/account", icon: "user" },
 ];
@@ -44,10 +44,10 @@ export function MobileBottomNav() {
                   current ? "text-primary font-semibold" : "text-muted",
                 )}
               >
-                {/* One-line labels, the current tab in a pill (the "MobileNav" board). */}
+                {/* One-line labels, the current tab on a sage-tinted control (the "Mobile — navbar" board). */}
                 <span
                   className={cn(
-                    "grid h-7 w-12 place-items-center rounded-full",
+                    "grid h-7 w-12 place-items-center rounded-control",
                     current && "bg-primary-subtle text-primary-subtle-fg",
                   )}
                 >

@@ -166,7 +166,7 @@ export default async function PriceListPage({ params, searchParams }: Props) {
                         href={href({ component: item.component })}
                         aria-current={item.component === component ? "page" : undefined}
                         className={cn(
-                          "border-border inline-flex min-h-12 items-center rounded-full border px-4",
+                          "border-border inline-flex min-h-12 items-center rounded-control border px-4",
                           item.component === component
                             ? "bg-primary text-primary-fg border-primary"
                             : "bg-surface hover:bg-surface-subtle",

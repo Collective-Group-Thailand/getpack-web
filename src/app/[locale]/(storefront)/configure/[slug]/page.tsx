@@ -42,6 +42,10 @@ type Search = {
   from?: string;
   /** A standard size's code (the product page's size table). */
   size?: string;
+  /** Front ink option ids, comma-separated, or `none` (the home page's Studio panel). */
+  ink?: string;
+  /** How the artwork comes (`/studio/upload` sends `own_file`). */
+  design?: string;
 };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
@@ -130,8 +134,7 @@ export default async function Page({
           { label: t("breadcrumb") },
         ]}
       />
-      <p className="eyebrow mt-4">{t("eyebrow")}</p>
-      <h1 className="mt-3 text-[2.375rem] leading-tight">{t("heading", { name })}</h1>
+      <h1 className="mt-4 text-[2.375rem] leading-tight">{t("heading", { name })}</h1>
       <p className="text-muted mt-2 max-w-2xl">{t("intro")}</p>
       {share && !shared ? (
         <Callout tone="warning" className="mt-4 max-w-2xl">

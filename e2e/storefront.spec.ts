@@ -50,7 +50,10 @@ test.describe("the catalogue", () => {
     await expect(page.getByRole("link", { name: "กล่องถาด" })).toHaveCount(0);
 
     // Category tiles, instant-price categories first (UX audit, /products).
-    await page.getByRole("region", { name: "หมวดสินค้า" }).getByRole("link", { name: /^กล่องกระดาษลูกฟูก/ }).click();
+    await page
+      .getByRole("region", { name: "หมวดสินค้า" })
+      .getByRole("link", { name: /^กล่องกระดาษลูกฟูก/ })
+      .click();
     await expect(page).toHaveURL(`${HOSTS.customer}/products/corrugated`);
     await expect(page.getByRole("heading", { level: 1, name: "กล่องกระดาษลูกฟูก" })).toBeVisible();
 
@@ -116,15 +119,16 @@ test.describe("the catalogue", () => {
     );
   });
 
-  test("the header's product menu opens, lists categories, and closes on Escape", async ({ page }) => {
+  test("the header's สินค้าและราคา leads to the catalogue's categories", async ({ page }) => {
     await gotoHydrated(page, HOSTS.customer);
-    const toggle = page.getByRole("button", { name: "สินค้าและบริการ" });
-    await toggle.click();
-    await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(page.getByRole("banner").getByRole("link", { name: "สติ๊กเกอร์และฉลาก", exact: true })).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(toggle).toBeFocused();
+    await page.getByRole("banner").getByRole("link", { name: "สินค้าและราคา" }).click();
+    await expect(page).toHaveURL(/\/products$/);
+    await expect(
+      page
+        .getByRole("main")
+        .getByRole("link", { name: /สติ๊กเกอร์และฉลาก/ })
+        .first(),
+    ).toBeVisible();
   });
 
   test("the sitemap walks the catalogue and articles", async ({ request }) => {
@@ -211,8 +215,8 @@ test.describe("signing in", () => {
     const sheet = await signIn(page, MOCK_OTP.phone);
     await expect(sheet).toBeHidden();
     await expect(page).toHaveURL(`${HOSTS.customer}/products`);
-    // Signed in, the bell appears.
-    await expect(page.getByRole("button", { name: /การแจ้งเตือน/ })).toBeVisible();
+    // Signed in, the header shows the customer's avatar and name in place of "เข้าสู่ระบบ".
+    await expect(page.getByRole("banner").getByRole("button", { name: "บัญชีของฉัน" })).toBeVisible();
   });
 
   test("a new customer accepts the required terms, may skip marketing, and completes a profile", async ({ page }) => {

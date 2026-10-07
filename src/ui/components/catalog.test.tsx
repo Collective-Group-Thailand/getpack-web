@@ -13,7 +13,7 @@ describe("ProductCard", () => {
     const { container } = render(
       <ProductCard
         title={<a href="#mailer-box">กล่องไปรษณีย์</a>}
-        eyebrow="กล่องลูกฟูก"
+        topLine="กล่องลูกฟูก"
         price="เริ่มต้น ฿3.50 / ชิ้น"
         meta="ผลิต 7–10 วันทำการ"
         image={{ src: "/img.svg", alt: "กล่องไปรษณีย์" }}

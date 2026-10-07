@@ -2,6 +2,8 @@
 
 Oct 6, 2026 · @Superball
 
+> **Terminology note (Phase 4.5, 2026-10-07).** This document predates the Proof wording. Where it says **ปรู๊ฟ**, read **Proof** for statuses, the back office, the factory app and page names ("รอ Proof", "Proof อนุมัติแล้ว", "ไฟล์งานและ Proof"), and **แบบตัวอย่าง** for the file in customer copy ("อนุมัติแบบตัวอย่าง v2", "ไฟล์และแบบตัวอย่าง") — the step is **ตรวจแบบก่อนพิมพ์**. The rule lives in `docs/ui/glossary.md`; text the API still writes the old way is mapped at display (`src/i18n/terms.ts`).
+
 ## ขอบเขตและวิธีตรวจ
 
 ตรวจ Flow 1 "ลูกค้าสั่งซื้อ → CS รับงาน → โรงงานผลิต" บน dev build (`localhost:3001` ฝั่งลูกค้า, `admin.localhost:3001` หลังบ้าน) ที่ viewport 1054×685 และตรวจ markup/token ผ่าน DevTools วันที่ 6 ต.ค. 2569

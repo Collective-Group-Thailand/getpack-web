@@ -55,7 +55,7 @@ export default async function ArticlesPage({
   };
   const chip = (active: boolean) =>
     cn(
-      "inline-flex h-9 items-center rounded-full border px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-focus-ring",
+      "inline-flex h-9 items-center rounded-control border px-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-focus-ring",
       active
         ? "border-primary bg-primary-subtle text-primary-subtle-fg font-medium"
         : "border-border hover:bg-bg-subtle",
@@ -125,7 +125,7 @@ export default async function ArticlesPage({
                 priority={index < 2}
                 title={<Link href={articleHref(article.slug)}>{name}</Link>}
                 image={src ? { src, alt: "" } : null}
-                eyebrow={format.date(article.publishedAt)}
+                topLine={format.date(article.publishedAt)}
                 meta={article.excerptTh}
               />
             );

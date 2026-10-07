@@ -89,7 +89,7 @@ export default function ARView({ input, name, onClose }: { input: BoxModelInput;
               width: "100%",
               height: "22rem",
               background: "var(--color-surface-subtle)",
-              borderRadius: "0.5rem",
+              borderRadius: "var(--radius-control)",
             }}
           />
           <p className="text-sm">{t("size", { size })}</p>

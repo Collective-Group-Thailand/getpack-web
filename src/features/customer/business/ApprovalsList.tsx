@@ -117,7 +117,7 @@ export function ApprovalsList({
                   tabIndex={isFocus ? -1 : undefined}
                   aria-labelledby={`approval-${approval.id}`}
                   className={cn(
-                    "border-border bg-surface overflow-hidden rounded-[var(--radius-card)] border border-s-4 border-s-warning outline-none",
+                    "border-border bg-surface overflow-hidden rounded-card border border-s-4 border-s-warning outline-none",
                     isFocus && "ring-primary ring-2",
                   )}
                 >
@@ -215,7 +215,7 @@ export function ApprovalsList({
           <h2 id="approvals-history" className="font-semibold">
             {t("history")}
           </h2>
-          <ul className="border-border bg-surface divide-border divide-y rounded-[var(--radius-card)] border">
+          <ul className="border-border bg-surface divide-border divide-y rounded-card border">
             {history.map((approval) => (
               <li key={approval.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
                 <div className="min-w-0">

@@ -121,7 +121,7 @@ export default async function StylesPage({
                   href={listHref(query, { category })}
                   aria-current={current ? "page" : undefined}
                   className={cn(
-                    "focus-visible:ring-focus-ring block rounded-full px-3 py-1.5 text-sm whitespace-nowrap outline-none focus-visible:ring-2",
+                    "focus-visible:ring-focus-ring block rounded-control px-3 py-1.5 text-sm whitespace-nowrap outline-none focus-visible:ring-2",
                     current ? "bg-primary text-primary-fg" : "hover:bg-bg-subtle",
                   )}
                 >
@@ -214,7 +214,7 @@ export default async function StylesPage({
                   aria-current={s === sort ? "true" : undefined}
                   rel="nofollow"
                   className={cn(
-                    "focus-visible:ring-focus-ring rounded-full px-2.5 py-1 outline-none focus-visible:ring-2",
+                    "focus-visible:ring-focus-ring rounded-control px-2.5 py-1 outline-none focus-visible:ring-2",
                     s === sort ? "bg-primary-subtle text-primary-subtle-fg font-medium" : "hover:bg-bg-subtle",
                   )}
                 >

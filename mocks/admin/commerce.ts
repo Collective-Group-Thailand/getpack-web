@@ -788,7 +788,7 @@ export function timelineOf(order: Order): TimelineEntry[] {
       id: `${proof.id}:sent`,
       at: proof.sentAt,
       kind: "proof.sent",
-      title: `ส่งปรู๊ฟ v${proof.versionNo}`,
+      title: `ส่ง Proof v${proof.versionNo}`,
       detail: null,
       actor: null,
       visibility: "customer",

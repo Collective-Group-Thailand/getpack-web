@@ -496,7 +496,7 @@ function proofContext(request: Request, proofId: string) {
     const proof = detail?.proofs.find((candidate) => candidate.id === proofId);
     if (detail && proof) return { customer, order, detail, proof };
   }
-  return problem(404, "http.not_found", "ไม่พบปรู๊ฟนี้");
+  return problem(404, "http.not_found", "ไม่พบแบบตัวอย่างนี้");
 }
 
 /** The next revision after a delivered design, free or charged (D-071): the desk's own bookkeeping. */
@@ -604,7 +604,7 @@ export const storeArtworkHandlers = [
     const found = proofContext(request, String(params.proofId));
     if (found instanceof Response) return found;
     if (found.proof.status !== "pending_customer")
-      return problem(409, "proofs.annotation_closed", "ปรู๊ฟฉบับนี้ปิดการแสดงความเห็นแล้ว");
+      return problem(409, "proofs.annotation_closed", "แบบตัวอย่างฉบับนี้ปิดการแสดงความเห็นแล้ว");
     const body = (await request.json()) as Schemas["AnnotateProofDto"];
     if (!body.comment?.trim()) return problem(422, "validation.failed", "กรุณาพิมพ์ความเห็น");
     // A new annotation names its place; a reply takes its parent's.
@@ -684,7 +684,7 @@ export const storeArtworkHandlers = [
       "approved",
       whoOf(found.customer, found.order.customer.displayName),
     );
-    if (decided instanceof Response) return problem(409, "proofs.not_pending", "ปรู๊ฟฉบับนี้ไม่ได้รอการตรวจแล้ว");
+    if (decided instanceof Response) return problem(409, "proofs.not_pending", "แบบตัวอย่างฉบับนี้ไม่ได้รอการตรวจแล้ว");
     // The approved design closes its round and the service (D-071, design-services onProofDecision).
     const round = designProofs.get(found.proof.id);
     const service = found.detail.designService;
@@ -714,7 +714,7 @@ export const storeArtworkHandlers = [
       "changes_requested",
       whoOf(found.customer, found.order.customer.displayName),
     );
-    if (decided instanceof Response) return problem(409, "proofs.not_pending", "ปรู๊ฟฉบับนี้ไม่ได้รอการตรวจแล้ว");
+    if (decided instanceof Response) return problem(409, "proofs.not_pending", "แบบตัวอย่างฉบับนี้ไม่ได้รอการตรวจแล้ว");
     decisionComments.set(found.proof.id, body.comment);
     if (round && service) openRevision(service, body.comment);
     return HttpResponse.json(toProof(refreshPrepress(found.detail), found.proof));

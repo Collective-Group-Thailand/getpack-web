@@ -53,7 +53,7 @@ export function AdminSidebar({
           <div key={group.key}>
             <p
               id={headingId}
-              className={cn("eyebrow mb-1 px-3 text-[11px] tracking-[0.06em]", collapsed && "sr-only")}
+              className={cn("text-muted mb-1 px-3 text-xs font-semibold", collapsed && "sr-only")}
             >
               {t(`menuGroups.${group.key}`)}
             </p>
@@ -86,7 +86,7 @@ export function AdminSidebar({
                     {waiting.get(item.key)?.count ? (
                       <span
                         className={cn(
-                          "ms-auto rounded-full px-1.5 text-xs font-medium tabular-nums",
+                          "ms-auto rounded-control px-1.5 text-xs font-medium tabular-nums",
                           waiting.get(item.key)!.overdue
                             ? "bg-danger-subtle text-danger-subtle-fg"
                             : "bg-surface-subtle text-fg",

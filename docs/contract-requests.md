@@ -236,3 +236,26 @@ From F2 on, every request is also **code**: a zod definition in `src/lib/api/req
 - **Today:** `CompanyApprovalDto` carries the group's code, amount, threshold, requester, branch and PO — not what was ordered.
 - **Ask:** add `items: { productNameTh, productNameEn, quantity, unit, specSummaryTh, specSummaryEn }[]` and `requesterNote: string | null` (the buyer's reason) so the approver decides from the request itself (mockup "CompanyApprovals").
 - **Web meanwhile:** the request shows code, amount, how far above the threshold, requester, branch, PO and order count.
+
+## `store.home-content` — typed home content: photos, captions and customer stories (Phase 4, 2026-10-07)
+
+- **Today:** the home page reads two `custom` home sections whose `config` the contract leaves to the storefront ("interpreted by the storefront"): `home-photos` (`{ hero, mosaic: [5], process: { sample, packing }, quality, templates: { <style code>: photo } }`, each photo `{ url, alt: { th, en }, caption: { th, en } }`) and `customer-cases` (`{ cases: [{ approved, image, brand, province, item, quantity, days, quote }] }`). The web validates each entry and skips a malformed one (`src/features/customer/home/content.server.ts`). The CMS holds nothing priced or configurable: the hero panel's shapes, sizes, boards, inks and quantities come from `store.catalog.listProducts` and each product's `store.catalog.getConfigurator` — the endpoint `/configure` reads (Phase 4 review).
+- **Ask:** typed DTOs for the two (validated on save in the CMS, with an image picker over the media store), and for a case an approval record (who approved it, the customer's written permission, when) — the section shows only with at least three approved.
+- **Data meanwhile:** packio-api's seed should create both sections (the mock's rows in `mocks/admin/catalogue.ts` are the shape); without them the photo blocks and the stories are left out.
+
+## `store.settings.proof-turnaround` and `store.support-channels.reply-minutes` — the two figures the home page states without a number (Phase 4, 2026-10-07)
+
+- **Today:** the V4 board says "1 วัน ตรวจแบบ" and "เราตอบภายใน 15 นาทีในเวลาทำการ"; no setting the store can read holds either.
+- **Ask:** `proofTurnaroundBusinessDays: number | null` (prepress's committed time from accepted file to the first proof) on a public settings read, and `replyMinutes: number | null` on `StoreSupportChannelsDto`.
+- **Web meanwhile:** "ตรวจแบบโดยทีมปรีเพรสทุกงาน" and "ทีมตอบในเวลาทำการ {hours}" — the practice, no number.
+
+## `store.designs.list` — `hasIssues` and `issueCount` on each design (Phase 4 §4.4, 2026-10-07)
+
+- **Ask:** on `DesignDocumentDto` in lists, `hasIssues: boolean` and `issueCount: integer | null` — whether, and how many, of the current version's print-check findings (D-278) are still open, so the studio's front door can say "ควรตรวจ n รายการ".
+- **Web meanwhile:** "มีรายการควรตรวจ" appears only when a response carries `hasIssues: true`; without the field the line is not shown. Each recent design also says สั่งผลิตแล้ว · {code}, รอยืนยันขนาด (no size yet) or พร้อมสั่ง.
+
+## Proof wording in the contract (Phase 4 §4.5, 2026-10-07)
+
+- The web no longer uses the Thai transliteration of "proof" anywhere (customer copy: แบบตัวอย่าง / ตรวจแบบก่อนพิมพ์; statuses, back office, factory app: Proof). It survives only in packio-api's own strings that reach `schema.d.ts` and `mocks/generated/` through `pnpm gen:api`: the soft-proof label example (`ภาพจำลองเพื่อดูตัวอย่าง ไม่ใช่…สัญญา`) and the `mockups.exists` problem detail.
+- **Ask:** packio-api adopts `docs/ui/glossary.md` for its Thai problem details, notification texts, settings labels and examples, then a contract release.
+- **Web meanwhile:** `src/i18n/terms.ts` maps the old words at display — every API problem `title`/`detail` (audience from the request's surface: store → แบบตัวอย่าง, admin/partner → Proof), notification titles and bodies, the studio's soft-proof label — so no user reads the old term while this is pending.

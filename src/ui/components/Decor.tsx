@@ -26,7 +26,7 @@ export function KraftPanel({ className, children, ...props }: React.HTMLAttribut
     <div className={cn("bg-kraft text-fg relative overflow-hidden rounded-2xl", className)} {...props}>
       <div
         aria-hidden
-        className="border-kraft-strong absolute -end-12 -top-10 size-96 rotate-12 rounded-[2.5rem] border-2 border-dashed"
+        className="border-kraft-strong absolute -end-12 -top-10 size-96 rotate-12 rounded-panel border-2 border-dashed"
       />
       {children}
     </div>

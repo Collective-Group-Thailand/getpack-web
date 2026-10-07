@@ -48,7 +48,7 @@ export function isThaiMobile(digits: string): boolean {
 
 function ThaiFlag() {
   return (
-    <svg viewBox="0 0 24 16" width="22" height="15" aria-hidden="true" className="rounded-[2px]">
+    <svg viewBox="0 0 24 16" width="22" height="15" aria-hidden="true">
       <rect width="24" height="16" fill="#A51931" />
       <rect y="2.7" width="24" height="10.6" fill="#F4F5F8" />
       <rect y="5.3" width="24" height="5.4" fill="#2D2A4A" />

@@ -92,6 +92,9 @@ export interface ArtSet {
   border: Oklch;
   "ink-900": Oklch;
   "ink-600": Oklch;
+  "ink-300": Oklch;
+  sage: Oklch;
+  "sage-50": Oklch;
   "primary-600": Oklch;
   "primary-700": Oklch;
   "primary-50": Oklch;
@@ -102,23 +105,28 @@ const art = (values: Record<keyof ArtSet, string>): ArtSet =>
   Object.fromEntries(Object.entries(values).map(([key, hex]) => [key, hexToOklch(hex)])) as unknown as ArtSet;
 
 /**
- * The D-180 palette, verbatim from `design-system.md` §Art direction (values Proposed). Hex
- * in, so a brand kit is pasted rather than translated; `semantic.ts` decides where each one
- * goes and `scripts/check-contrast.ts` decides whether it may.
+ * The D-180 palette, as design language v3 (Phase 4, the "Main" board of the V4 design file)
+ * names it: paper `#F6F3EE`, ink `#1D1B17` / `#5D5850` / `#948D83`, hairline `#E4DFD6`, sage
+ * `#5F7264` / `#E7EBE5`, green `#0F5F4E` / `#0B4A3D`, kraft `#DCCDB3`. Hex in, so a brand kit is
+ * pasted rather than translated; `semantic.ts` decides where each one goes and
+ * `scripts/check-contrast.ts` decides whether it may.
  */
 export const ART = {
   light: art({
-    "paper-50": "#FBF8F3",
-    "paper-100": "#F4EDE2",
+    "paper-50": "#F6F3EE",
+    "paper-100": "#EFEBE4",
     surface: "#FFFFFF",
-    "kraft-200": "#E7D8C0",
+    "kraft-200": "#DCCDB3",
     "kraft-400": "#C8A97B",
-    border: "#E8DFD2",
-    "ink-900": "#1E1B18",
-    "ink-600": "#5B534B",
-    "primary-600": "#0D7A66",
-    "primary-700": "#0A5F50",
-    "primary-50": "#E6F3EF",
+    border: "#E4DFD6",
+    "ink-900": "#1D1B17",
+    "ink-600": "#5D5850",
+    "ink-300": "#948D83",
+    sage: "#5F7264",
+    "sage-50": "#E7EBE5",
+    "primary-600": "#0F5F4E",
+    "primary-700": "#0B4A3D",
+    "primary-50": "#E7EBE5",
     "accent-500": "#E08A18",
   }),
   dark: art({
@@ -130,6 +138,9 @@ export const ART = {
     border: "#3A3229",
     "ink-900": "#F7F3EC",
     "ink-600": "#C3BAAE",
+    "ink-300": "#968D80",
+    sage: "#8FA394",
+    "sage-50": "#1F2621",
     "primary-600": "#2AA88E",
     // The spec proposes #0D7A66 here; it fails the gate in dark (see semantic.ts), so the
     // hover the dark theme actually uses is a lighter step, and this value is kept only as
