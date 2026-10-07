@@ -16,8 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Staff sign-in (UX audit Flow 1, step 3): the storefront's sign-in layout with the back office's
- * dark panel, the form on the right, and the way to the partner factories' app below it.
+ * Staff sign-in (UX audit Flow 1, step 3): the storefront's sign-in layout and panel, the form on
+ * the right, and the way to the partner factories' app below it.
  */
 export default async function StaffLoginPage({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
   const [t, params, actor, requestHeaders] = await Promise.all([
@@ -37,10 +37,12 @@ export default async function StaffLoginPage({ searchParams }: { searchParams: P
 
   return (
     <AuthSplitLayout
-      tone="ink"
-      headline={t("panelHeadline")}
+      tone="brand"
+      eyebrow={t("panelEyebrow")}
+      headline={t.rich("headlineRich", { em: (chunks) => <em>{chunks}</em>, br: () => <br /> })}
       lead={t("panelLead")}
       points={[t("point1"), t("point2"), t("point3")]}
+      note={{ title: t("noteTitle"), body: t("noteBody") }}
       homeLink={(children) => <Link href="/">{children}</Link>}
     >
       <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
