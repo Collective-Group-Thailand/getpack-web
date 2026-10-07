@@ -1,7 +1,7 @@
 {
   "list": {
     "title": "งานก่อนพิมพ์",
-    "description": "ไฟล์งาน ปรู๊ฟ แบบกล่อง และงานออกแบบที่รอฝ่ายก่อนพิมพ์ แต่ละขั้นตอนมี SLA ของตัวเอง",
+    "description": "ไฟล์งาน Proof แบบกล่อง และงานออกแบบที่รอฝ่ายก่อนพิมพ์ แต่ละขั้นตอนมี SLA ของตัวเอง",
     "queuesLabel": "ขั้นตอนงานก่อนพิมพ์",
     "columns": {
       "order": "คำสั่งซื้อ",
@@ -14,7 +14,7 @@
       "assignee": "ผู้รับผิดชอบ"
     },
     "fileVersion": "ไฟล์ฉบับที่ {version}",
-    "proofVersion": "ปรู๊ฟฉบับที่ {version}",
+    "proofVersion": "Proof ฉบับที่ {version}",
     "withCustomer": "รอลูกค้าตรวจ",
     "search": "ค้นหางานก่อนพิมพ์",
     "searchPlaceholder": "เลขคำสั่งซื้อ",
@@ -23,7 +23,7 @@
     "queues": {
       "submissions": "ไฟล์รอตรวจ (preflight)",
       "changes_requested": "ลูกค้าขอแก้ไข",
-      "proofs_waiting": "ปรู๊ฟอยู่กับลูกค้า"
+      "proofs_waiting": "Proof อยู่กับลูกค้า"
     },
     "noSla": "ไม่มี SLA",
     "you": "คุณ",
@@ -33,7 +33,7 @@
   },
   "actions": {
     "labels": {
-      "upload_proof": "อัปโหลดและส่งปรู๊ฟ",
+      "upload_proof": "อัปโหลดและส่ง Proof",
       "send_template": "ส่งแบบกล่องให้ลูกค้า",
       "deliver_round": "ส่งงานออกแบบรอบนี้",
       "requote_design": "เสนอราคาออกแบบใหม่",
@@ -54,21 +54,21 @@
       "personHint": "แสดงเฉพาะผู้ที่มีสิทธิ์ทำงานก่อนพิมพ์"
     },
     "proof": {
-      "title": "ส่งปรู๊ฟฉบับที่ {version}",
-      "body": "ปรู๊ฟของ {code} จะส่งถึงลูกค้า และฉบับที่รอลูกค้าตรวจอยู่จะถูกแทนที่",
+      "title": "ส่ง Proof ฉบับที่ {version}",
+      "body": "Proof ของ {code} จะส่งถึงลูกค้า และฉบับที่รอลูกค้าตรวจอยู่จะถูกแทนที่",
       "confirm": "อัปโหลดและส่ง",
       "submission": "ทำจากไฟล์งาน",
       "chooseSubmission": "เลือกไฟล์งาน",
       "submissionOption": "ไฟล์ฉบับที่ {version} (ผ่านการตรวจแล้ว)",
-      "file": "ไฟล์ปรู๊ฟ (PDF)",
+      "file": "ไฟล์ Proof (PDF)",
       "fileHint": "ไฟล์ที่ลูกค้าจะตรวจและอนุมัติ",
       "dieline": "ไฟล์แบบกล่อง (ถ้ามี)",
       "dielineHint": "แนบเพื่อให้ลูกค้าเห็นตำแหน่งพับและตัด",
       "note": "หมายเหตุถึงลูกค้า",
       "noteHint": "ไม่บังคับ",
       "needSubmission": "กรุณาเลือกไฟล์งาน",
-      "needFile": "กรุณาแนบไฟล์ปรู๊ฟ",
-      "done": "ส่งปรู๊ฟฉบับที่ {version} แล้ว"
+      "needFile": "กรุณาแนบไฟล์ Proof",
+      "done": "ส่ง Proof ฉบับที่ {version} แล้ว"
     },
     "template": {
       "title": "ส่งแบบกล่องให้ลูกค้า",
@@ -100,11 +100,11 @@
       "done": "ส่งเรื่องเสนอราคาใหม่แล้ว"
     },
     "accept": {
-      "title": "รับไฟล์ฉบับที่ {version} ไปทำปรู๊ฟ",
-      "body": "ไฟล์ของ {code} ผ่านการตรวจ จะนำไปทำปรู๊ฟ",
-      "bodyWarnings": "ไฟล์ของ {code} มีข้อควรระวัง {count} ข้อ รับไปทำปรู๊ฟโดยยอมรับข้อควรระวังเหล่านี้",
-      "confirm": "รับไปทำปรู๊ฟ",
-      "done": "รับไฟล์ไปทำปรู๊ฟแล้ว",
+      "title": "รับไฟล์ฉบับที่ {version} ไปทำ Proof",
+      "body": "ไฟล์ของ {code} ผ่านการตรวจ จะนำไปทำ Proof",
+      "bodyWarnings": "ไฟล์ของ {code} มีข้อควรระวัง {count} ข้อ รับไปทำ Proof โดยยอมรับข้อควรระวังเหล่านี้",
+      "confirm": "รับไปทำ Proof",
+      "done": "รับไฟล์ไปทำ Proof แล้ว",
       "note": "เหตุผลที่ยอมรับข้อควรระวัง",
       "noteHint": "บันทึกไว้กับการรับไฟล์ เช่น ลูกค้ายืนยันใช้ภาพนี้",
       "noteOptional": "ไม่บังคับ"
@@ -125,7 +125,7 @@
     "tabsLabel": "ส่วนของงานก่อนพิมพ์",
     "tabs": {
       "artwork": "ไฟล์งาน",
-      "proofs": "ปรู๊ฟ",
+      "proofs": "Proof",
       "template": "แบบกล่อง",
       "design": "งานออกแบบ"
     },
@@ -166,12 +166,12 @@
         "designer": "จากโปรแกรมออกแบบออนไลน์",
         "design_service": "จากงานจ้างออกแบบ"
       },
-      "accept": "รับไปทำปรู๊ฟ",
+      "accept": "รับไปทำ Proof",
       "reject": "ส่งคืนให้แก้ไข",
       "report": "ผลการตรวจไฟล์ (preflight)",
       "clean": "ไม่พบปัญหา",
       "severity": {
-        "block": "ต้องแก้ก่อนทำปรู๊ฟ ({count})",
+        "block": "ต้องแก้ก่อนทำ Proof ({count})",
         "warn": "ข้อควรระวัง ({count})",
         "info": "ข้อมูล ({count})"
       },
@@ -202,8 +202,8 @@
         "cs": "CS ส่งแทน"
       },
       "blocked": {
-        "preflight_blocked": "มีจุดที่ต้องแก้ก่อนทำปรู๊ฟ (ขนาดไม่ตรงหรือไม่มีระยะตัดตก)",
-        "preflight_pending": "กำลังตรวจไฟล์ รอผลก่อนรับไปทำปรู๊ฟ"
+        "preflight_blocked": "มีจุดที่ต้องแก้ก่อนทำ Proof (ขนาดไม่ตรงหรือไม่มีระยะตัดตก)",
+        "preflight_pending": "กำลังตรวจไฟล์ รอผลก่อนรับไปทำ Proof"
       },
       "rejectReason": "เหตุผลที่ส่งคืน",
       "note": "หมายเหตุจากลูกค้า: {note}",
@@ -247,11 +247,11 @@
       "ownerCustomer": "แบบของลูกค้า {name}"
     },
     "proofs": {
-      "none": "ยังไม่มีปรู๊ฟ",
-      "noneBody": "ทำปรู๊ฟจากไฟล์ที่ผ่านการตรวจแล้วส่งให้ลูกค้าอนุมัติ",
-      "upload": "อัปโหลดปรู๊ฟ",
-      "uploadNext": "อัปโหลดปรู๊ฟฉบับที่ {version}",
-      "version": "ปรู๊ฟฉบับที่ {version}",
+      "none": "ยังไม่มี Proof",
+      "noneBody": "ทำ Proof จากไฟล์ที่ผ่านการตรวจแล้วส่งให้ลูกค้าอนุมัติ",
+      "upload": "อัปโหลด Proof",
+      "uploadNext": "อัปโหลด Proof ฉบับที่ {version}",
+      "version": "Proof ฉบับที่ {version}",
       "openCount": "ความเห็นค้าง {count}",
       "fromFile": "ทำจาก",
       "fileVersion": "ไฟล์ฉบับที่ {version}",
@@ -268,7 +268,7 @@
       "annotations": "ความเห็นของลูกค้า",
       "noAnnotations": "ยังไม่มีความเห็น",
       "loadFailed": "โหลดความเห็นไม่สำเร็จ",
-      "pageMap": "ตำแหน่งความเห็น {count} จุดบนหน้าปรู๊ฟ",
+      "pageMap": "ตำแหน่งความเห็น {count} จุดบนหน้า Proof",
       "thread": "หน้า {page} · {kind}",
       "kinds": {
         "pin": "หมุด",
@@ -285,7 +285,7 @@
       "replied": "ตอบความเห็นแล้ว",
       "replyFailed": "ตอบความเห็นไม่สำเร็จ",
       "decisionComment": "ความเห็นของลูกค้า",
-      "dielineFile": "ไฟล์แบบกล่องของปรู๊ฟ",
+      "dielineFile": "ไฟล์แบบกล่องของ Proof",
       "resolvedBy": "แก้โดย {name}"
     },
     "template": {

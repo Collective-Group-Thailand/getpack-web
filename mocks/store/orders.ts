@@ -51,7 +51,7 @@ const bangkokDate = (date: string, days: number) =>
 const STEPS = {
   ordered: ["สั่งซื้อ", "Ordered"],
   paid: ["ชำระเงิน", "Paid"],
-  artwork: ["ไฟล์งานและปรู๊ฟ", "Artwork and proof"],
+  artwork: ["ไฟล์และแบบตัวอย่าง", "Artwork and proof"],
   production: ["ผลิต", "Production"],
   shipping: ["จัดส่ง", "Shipping"],
   completed: ["รับสินค้า", "Received"],

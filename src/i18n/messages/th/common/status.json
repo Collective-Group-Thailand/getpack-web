@@ -19,7 +19,7 @@
     "awaitingUpload": "รอไฟล์งาน",
     "uploaded": "อัปโหลดไฟล์แล้ว",
     "inReview": "กำลังตรวจไฟล์",
-    "proofSent": "ส่งปรู๊ฟให้ลูกค้าแล้ว",
+    "proofSent": "ส่ง Proof ให้ลูกค้าแล้ว",
     "changesRequested": "ขอให้แก้ไขไฟล์",
     "approved": "อนุมัติไฟล์แล้ว"
   },
@@ -231,9 +231,9 @@
     "ended": "สิ้นสุดแล้ว"
   },
   "proof": {
-    "pendingCustomer": "รอลูกค้าตรวจปรู๊ฟ",
-    "approved": "อนุมัติปรู๊ฟแล้ว",
-    "changesRequested": "ขอให้แก้ไขปรู๊ฟ",
+    "pendingCustomer": "รอลูกค้าตรวจ Proof",
+    "approved": "Proof อนุมัติแล้ว",
+    "changesRequested": "ขอให้แก้ไข Proof",
     "superseded": "มีฉบับใหม่แทนแล้ว"
   },
   "proposal": {
@@ -337,7 +337,7 @@
   "submission": {
     "submitted": "ส่งไฟล์แล้ว",
     "superseded": "มีไฟล์ใหม่แทนแล้ว",
-    "acceptedForProof": "ผ่านการตรวจ พร้อมทำปรู๊ฟ",
+    "acceptedForProof": "ผ่านการตรวจ พร้อมทำ Proof",
     "rejected": "ส่งคืนให้แก้ไข"
   },
   "drawing": {
@@ -388,7 +388,7 @@
     "unknown": "ดำเนินการ",
     "payInstalment": "ชำระงวดถัดไป",
     "uploadArtwork": "ส่งไฟล์งาน",
-    "reviewProof": "ตรวจและอนุมัติปรู๊ฟ",
+    "reviewProof": "ตรวจและอนุมัติ Proof",
     "openClaim": "แจ้งปัญหาสินค้า",
     "designBrief": "ส่งบรีฟงานออกแบบ",
     "reviewDesign": "ตรวจงานออกแบบ",
